@@ -35,7 +35,7 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@lexical/link": "0.48.0",
-    "@mdxeditor/editor": "^4.2.3",
+    "@mdxeditor/editor": "^4.2.5",
     "@tickernelz/paperclip-pro-adapter-claude-local": "workspace:*",
     "@tickernelz/paperclip-pro-adapter-codex-local": "workspace:*",
     "@tickernelz/paperclip-pro-adapter-cursor-cloud": "workspace:*",
