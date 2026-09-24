@@ -65,6 +65,13 @@ function escapeSystemd(value: string): string {
     .replaceAll("%", "%%");
 }
 
+function escapeSystemdPath(value: string): string {
+  if (/\r|\n/.test(value)) {
+    throw new Error("Systemd service values must not contain line breaks");
+  }
+  return value.replaceAll("%", "%%");
+}
+
 function escapeXml(value: string): string {
   return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&apos;");
 }
@@ -116,6 +123,10 @@ export async function isExecutableFile(filePath: string): Promise<boolean> {
   }
 }
 
+export function resolveServiceEnvironmentFilePath(homeDir: string, instanceId: string): string {
+  return path.join(homeDir, "instances", instanceId, "service.env");
+}
+
 export function systemdServiceName(instanceId: string): string {
   return instanceId === "default" ? "paperclip-pro.service" : `paperclip-pro-${instanceId}.service`;
 }
@@ -135,6 +146,7 @@ StartLimitBurst=5
 Type=notify
 NotifyAccess=all
 ExecStart="${escapeSystemd(input.shimPath)}" run --instance "${escapeSystemd(input.instanceId)}"
+EnvironmentFile=-${escapeSystemdPath(resolveServiceEnvironmentFilePath(input.homeDir, input.instanceId))}
 Environment="PAPERCLIP_SERVICE_MANAGED=1"
 Environment="PAPERCLIP_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
 Environment="PAPERCLIP_HOME=${escapeSystemd(input.homeDir)}"

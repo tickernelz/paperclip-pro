@@ -37,6 +37,12 @@ describe("service definition generation", () => {
     expect(unit).not.toContain("API_KEY");
   });
 
+  it("sources an optional per-instance environment file so operator environment survives unit rewrites", () => {
+    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
+    expect(unit).toContain("EnvironmentFile=-/home/alice/.paperclip/instances/team-a/service.env");
+    expect(unit.indexOf("EnvironmentFile=-")).toBeLessThan(unit.indexOf('Environment="PAPERCLIP_HOME='));
+  });
+
   it("escapes systemd variable and specifier expansion in configured values", () => {
     const unit = renderSystemdUnit({
       instanceId: "team-$USER-%i",
@@ -46,6 +52,7 @@ describe("service definition generation", () => {
 
     expect(unit).toContain('ExecStart="/home/$$USER/%%i/paperclip-pro" run --instance "team-$$USER-%%i"');
     expect(unit).toContain('Environment="PAPERCLIP_HOME=/home/$$USER/%%i/.paperclip"');
+    expect(unit).toContain("EnvironmentFile=-/home/$USER/%%i/.paperclip/instances/team-$USER-%%i/service.env");
   });
 
   it.each([
