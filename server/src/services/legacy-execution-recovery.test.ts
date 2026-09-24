@@ -64,6 +64,15 @@ it("retains the hold until the provider actually acknowledges cancellation", () 
   }
 });
 
+it("separates a detected clean shutdown from a lost process", () => {
+  const shutdown = { runtimeMode: "legacy", status: "interrupted",
+    errorCode: "server_shutdown_interrupted", resultJson: {} };
+  expect(legacyExecutionNeedsReconciliation(shutdown)).toBe(false);
+  expect(legacyExecutionNeedsReconciliation({ ...shutdown, scheduledRetryAttempt: 2 })).toBe(false);
+  expect(legacyExecutionNeedsReconciliation({ ...shutdown, errorCode: "process_lost" })).toBe(true);
+  expect(legacyExecutionNeedsReconciliation({ ...shutdown, status: "failed" })).toBe(true);
+});
+
 it("retries a busy AI subscription only when no provider work started", () => {
    const waiting = { runtimeMode: "legacy", status: "cancelled", errorCode: "ai_connection_busy", scheduledRetryAttempt: 10,
      resultJson: { executionRecovery: { kind: "ai_connection_wait", providerWorkStarted: false } } };
