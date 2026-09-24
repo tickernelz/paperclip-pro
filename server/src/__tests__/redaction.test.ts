@@ -656,6 +656,28 @@ second-line\" status=401`,
     expect(redactEventPayload(sanitized)).toEqual(sanitized);
   });
 
+  it("leaves a streamed \"Bearer \" fragment record untouched", () => {
+    const record =
+      '{"type":"message_update","assistantMessageEvent":{"type":"toolcall_delta","contentIndex":0,"delta":"Bearer "}}';
+
+    const redacted = redactSensitiveText(record);
+
+    expect(redacted).toBe(record);
+    expect(() => JSON.parse(redacted) as unknown).not.toThrow();
+  });
+
+  it("still redacts genuinely quoted bearer values", () => {
+    expect(redactSensitiveText('Authorization: "Bearer abc123def456"')).toBe(
+      `Authorization: "${REDACTED_EVENT_VALUE}"`,
+    );
+    expect(
+      redactSensitiveText(String.raw`{\"authorization\":\"Bearer abc123def456\"}`),
+    ).toBe(String.raw`{\"authorization\":\"***REDACTED***\"}`);
+    expect(redactSensitiveText('Bearer "abc123def456" trailing')).toBe(
+      `Bearer "${REDACTED_EVENT_VALUE}" trailing`,
+    );
+  });
+
   it("keeps a JSON line valid when redacting an escaped env dump inside a string", () => {
     const secret =
       "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXBlcmNsaXAtcnVuIn0.s1gnatureS1gnatureS1gnature";
