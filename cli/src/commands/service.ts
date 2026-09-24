@@ -24,11 +24,10 @@ function output(value: unknown, json: boolean | undefined): void {
   else console.log(JSON.stringify(value, null, 2));
 }
 
-async function resolveManager(opts: CommonOptions): Promise<ServiceManager | null> {
+async function resolveManager(opts: CommonOptions): Promise<ServiceManager> {
   const detection = await detectServiceManager({ instanceId: opts.instance });
   if (detection.supported) return detection.manager;
-  output({ supported: false, message: detection.reason }, opts.json);
-  return null;
+  throw new Error(detection.reason);
 }
 
 function healthUrl(instanceId: string): string {
@@ -241,7 +240,7 @@ export function registerServiceCommands(program: Command): void {
     .option("--no-start-on-login", "Install without enabling start on login")
     .option("--enable-linger", "Allow systemd startup without an active login session", false)
     .action(async (opts) => {
-      const manager = await resolveManager(opts); if (!manager) return;
+      const manager = await resolveManager(opts);
       const result = await manager.install({ startNow: opts.startNow, startOnLogin: opts.startOnLogin });
       let lingerEnabled = false;
       if (manager.enableLinger) {
@@ -255,7 +254,7 @@ export function registerServiceCommands(program: Command): void {
     });
 
   common(service.command("uninstall").description("Stop, disable, and remove the background service")).action(async (opts) => {
-    const manager = await resolveManager(opts); if (!manager) return;
+    const manager = await resolveManager(opts);
     await manager.uninstall();
     const status = await manager.status();
     if (status.installed || status.active) throw new Error(`${manager.serviceName} is still loaded after uninstall.`);
@@ -263,7 +262,7 @@ export function registerServiceCommands(program: Command): void {
   });
 
   common(service.command("start").description("Start the background service")).action(async (opts) => {
-    const manager = await resolveManager(opts); if (!manager) return;
+    const manager = await resolveManager(opts);
     await manager.start();
     output(await manager.status(), opts.json);
   });
@@ -271,7 +270,7 @@ export function registerServiceCommands(program: Command): void {
   common(service.command("stop").description("Stop the background service"))
     .option("--force", "Stop even while agent runs are still executing", false)
     .action(async (opts) => {
-      const manager = await resolveManager(opts); if (!manager) return;
+      const manager = await resolveManager(opts);
       await guardServiceStop({ instanceId: opts.instance, force: opts.force });
       await manager.stop();
       output(await manager.status(), opts.json);
@@ -307,7 +306,7 @@ export function registerServiceCommands(program: Command): void {
     });
 
   common(service.command("status").description("Show supervisor and health status")).action(async (opts) => {
-    const manager = await resolveManager(opts); if (!manager) return;
+    const manager = await resolveManager(opts);
     const instanceId = resolvePaperclipInstanceId(opts.instance);
     output({ ...await manager.status(), health: await probeHealth(instanceId) }, opts.json);
   });
@@ -316,7 +315,7 @@ export function registerServiceCommands(program: Command): void {
     .option("-f, --follow", "Follow new log output", false)
     .option("-n, --lines <count>", "Number of recent lines", "100")
     .action(async (opts) => {
-      const manager = await resolveManager(opts); if (!manager) return;
+      const manager = await resolveManager(opts);
       const lines = Number.parseInt(opts.lines, 10);
       if (!Number.isInteger(lines) || lines < 1) throw new Error("--lines must be a positive integer.");
       await manager.logs(opts.follow, lines);
