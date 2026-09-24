@@ -198,6 +198,14 @@ describe("managed install commands", () => {
     expect(assetCallIndex).toBeLessThan(firstPackIndex);
   });
 
+  it("packs prepared bundles without lifecycle scripts so prepack cannot rebuild or delete staged files", async () => {
+    const sha = "f".repeat(40);
+    const runCommand = createGitCheckoutRunCommand(sha);
+    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    const bundlePack = runCommand.mock.calls.find(([file, args]) => file === "npm" && args[0] === "pack" && args[1]?.includes("workspace-package-"));
+    expect(bundlePack?.[1]).toContain("--ignore-scripts");
+  });
+
   it("resolves the complete server workspace dependency closure in dependency order", () => {
     const checkout = path.join(root, "checkout");
     const packages = [
