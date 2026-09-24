@@ -5,6 +5,14 @@ import type { Command } from "commander";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
 import { detectServiceManager, type ServiceManager, type ServiceStatus } from "../services/service-manager.js";
+import {
+  assertAdmissionRestored,
+  assertNoLiveRuns,
+  createInstanceRunControl,
+  drainInstanceForRestart,
+  type InstanceRunControl,
+  type LiveRunsSnapshot,
+} from "../services/instance-drain.js";
 import { buildLocalHealthUrl } from "../utils/health-url.js";
 
 type CommonOptions = { instance?: string; json?: boolean };
@@ -162,6 +170,68 @@ export async function restartManagedService(input: { instanceId?: string; expect
   });
 }
 
+export interface SafeRestartOptions {
+  instanceId?: string;
+  expectedVersion?: string | null;
+  waitForDrain?: boolean;
+  force?: boolean;
+  drain?: boolean;
+  drainTimeoutMs?: number;
+  control?: InstanceRunControl;
+  onPoll?: (snapshot: LiveRunsSnapshot) => void;
+  pollMs?: number;
+  restart?: (input: { instanceId?: string; expectedVersion?: string | null; waitForDrain?: boolean }) => Promise<unknown>;
+}
+
+export async function safeRestartManagedService(options: SafeRestartOptions = {}): Promise<{
+  restarted: unknown;
+  drained: boolean;
+  liveRunsBefore: number;
+  admission: "accepting";
+}> {
+  const instanceId = resolvePaperclipInstanceId(options.instanceId);
+  const control = options.control ?? createInstanceRunControl(instanceId);
+  const restart = options.restart ?? restartManagedService;
+  let drained = false;
+  let liveRunsBefore = 0;
+
+  if (options.force) {
+    drained = false;
+  } else if (options.drain) {
+    const settled = await drainInstanceForRestart({
+      control,
+      timeoutMs: options.drainTimeoutMs ?? 900_000,
+      pollMs: options.pollMs,
+      onPoll: options.onPoll,
+    });
+    liveRunsBefore = settled.count;
+    drained = true;
+  } else {
+    await assertNoLiveRuns({ verb: "restart", control });
+  }
+
+  const restarted = await restart({
+    instanceId: options.instanceId,
+    expectedVersion: options.expectedVersion,
+    waitForDrain: options.waitForDrain,
+  });
+  await assertAdmissionRestored(control);
+  return { restarted, drained, liveRunsBefore, admission: "accepting" };
+}
+
+export async function guardServiceStop(options: {
+  instanceId?: string;
+  force?: boolean;
+  control?: InstanceRunControl;
+}): Promise<void> {
+  const instanceId = resolvePaperclipInstanceId(options.instanceId);
+  await assertNoLiveRuns({
+    verb: "stop",
+    force: options.force,
+    control: options.control ?? createInstanceRunControl(instanceId),
+  });
+}
+
 export function registerServiceCommands(program: Command): void {
   const service = program.command("service").description("Manage Paperclip as a background service");
   const common = (command: Command) => command.option("-i, --instance <id>", "Local instance id (default: default)").option("--json", "Print machine-readable JSON", false);
@@ -192,18 +262,49 @@ export function registerServiceCommands(program: Command): void {
     output({ uninstalled: true, serviceName: manager.serviceName }, opts.json);
   });
 
-  for (const verb of ["start", "stop"] as const) {
-    common(service.command(verb).description(`${verb === "start" ? "Start" : "Stop"} the background service`)).action(async (opts) => {
+  common(service.command("start").description("Start the background service")).action(async (opts) => {
+    const manager = await resolveManager(opts); if (!manager) return;
+    await manager.start();
+    output(await manager.status(), opts.json);
+  });
+
+  common(service.command("stop").description("Stop the background service"))
+    .option("--force", "Stop even while agent runs are still executing", false)
+    .action(async (opts) => {
       const manager = await resolveManager(opts); if (!manager) return;
-      await manager[verb]();
+      await guardServiceStop({ instanceId: opts.instance, force: opts.force });
+      await manager.stop();
       output(await manager.status(), opts.json);
     });
-  }
 
   common(service.command("restart").description("Hot-restart the service while preserving active agent runs"))
     .option("--wait", "Wait for active runs to drain instead of adopting them", false)
+    .option("--drain", "Stop admitting new runs, wait for the live ones to finish, then restart", false)
+    .option("--drain-timeout <seconds>", "How long --drain waits for live runs before giving up", "900")
+    .option("--force", "Restart even while agent runs are still executing", false)
     .option("--expected-version <version>", "Require the restarted server to report this version")
-    .action(async (opts) => output(await restartManagedService({ instanceId: opts.instance, expectedVersion: opts.expectedVersion, waitForDrain: opts.wait }), opts.json));
+    .action(async (opts) => {
+      const drainTimeoutSeconds = Number.parseInt(opts.drainTimeout, 10);
+      if (!Number.isInteger(drainTimeoutSeconds) || drainTimeoutSeconds < 1) {
+        throw new Error("--drain-timeout must be a positive number of seconds.");
+      }
+      const result = await safeRestartManagedService({
+        instanceId: opts.instance,
+        expectedVersion: opts.expectedVersion,
+        waitForDrain: opts.wait,
+        drain: opts.drain,
+        force: opts.force,
+        drainTimeoutMs: drainTimeoutSeconds * 1_000,
+        onPoll: opts.json
+          ? undefined
+          : (snapshot) => {
+            if (snapshot.count > 0 || snapshot.pendingWakes > 0) {
+              console.log(`Draining: ${snapshot.count} live run(s), ${snapshot.pendingWakes} pending wake(s) remaining.`);
+            }
+          },
+      });
+      output(result, opts.json);
+    });
 
   common(service.command("status").description("Show supervisor and health status")).action(async (opts) => {
     const manager = await resolveManager(opts); if (!manager) return;

@@ -1358,6 +1358,10 @@ export function stopTaskDrain(): { wasActive: boolean } {
   return { wasActive };
 }
 
+export function listActiveRunExecutionIds(): string[] {
+  return [...activeRunExecutions];
+}
+
 /**
  * Report the task-drain state for this process only. `activeRuns` and
  * `pendingWakes` count in-process work. A process restart clears both
@@ -29434,6 +29438,7 @@ export function heartbeatService(
     getTaskDrainStatus,
     computeTaskDrain,
     applyTaskDrain,
+    listActiveRunExecutionIds,
 
     promoteDueScheduledRetries,
     retryScheduledRetryNow,
