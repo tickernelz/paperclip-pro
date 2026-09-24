@@ -178,7 +178,7 @@ describe("managed install commands", () => {
       file === "corepack" ||
       (file === "npm" && args[0] === "pack") ||
       (file === process.execPath && args[0]?.endsWith("prepare-bundled-package.mjs")));
-    expect(buildCalls).toHaveLength(9);
+    expect(buildCalls).toHaveLength(10);
     for (const call of buildCalls) {
       const env = call[2]?.env;
       expect(env, `${call[0]} ${call[1].join(" ")} must run with an explicit env`).toBeDefined();
@@ -186,6 +186,16 @@ describe("managed install commands", () => {
     }
     const uiPackCall = buildCalls.find(([file, , options]) => file === "corepack" && options?.env?.PAPERCLIP_RELEASE_REUSE_UI_DIST === "1");
     expect(uiPackCall).toBeDefined();
+  });
+
+  it("stages the release package assets before packaging so the server tarball carries ui-dist", async () => {
+    const sha = "e".repeat(40);
+    const runCommand = createGitCheckoutRunCommand(sha);
+    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    const assetCallIndex = runCommand.mock.calls.findIndex(([file, args]) => file === "bash" && args[0] === "scripts/prepare-release-package-assets.sh");
+    const firstPackIndex = runCommand.mock.calls.findIndex(([file, args]) => args.includes("pack"));
+    expect(assetCallIndex).toBeGreaterThanOrEqual(0);
+    expect(assetCallIndex).toBeLessThan(firstPackIndex);
   });
 
   it("resolves the complete server workspace dependency closure in dependency order", () => {

@@ -43,7 +43,7 @@ function commandOutputTail(error: unknown, stream: "stdout" | "stderr"): string 
   if (!error || typeof error !== "object" || !(stream in error)) return "";
   const value = (error as Record<string, unknown>)[stream];
   if (typeof value !== "string") return "";
-  const lines = value.trim().split(/\r?\n/).filter((line) => line.trim().length > 0);
+  const lines = value.trim().split(/\r?\n/);
   return lines.slice(-COMMAND_OUTPUT_TAIL_LINES).join("\n");
 }
 
@@ -288,6 +288,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     await runCommand("corepack", ["pnpm", "install", "--frozen-lockfile"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("bash", ["scripts/build-npm.sh", "--skip-checks", "--skip-typecheck"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("corepack", ["pnpm", "-r", "--filter", "@tickernelz/paperclip-pro-server...", "--if-present", "run", "build"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
+    await runCommand("bash", ["scripts/prepare-release-package-assets.sh"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     const metadata = JSON.parse(fs.readFileSync(path.join(checkoutPath, "cli", "package.json"), "utf8")) as { version: string };
     const workspacePackages = resolveGitInstallWorkspacePackages(checkoutPath);
     for (const [index, workspacePackage] of workspacePackages.entries()) {
