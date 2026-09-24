@@ -10,9 +10,13 @@ import {
   assertNoLiveRuns,
   createInstanceRunControl,
   drainInstanceForRestart,
+  isProcessAlive,
+  resolveInstanceEndpoint,
+  type InstanceEndpoint,
   type InstanceRunControl,
   type LiveRunsSnapshot,
 } from "../services/instance-drain.js";
+import { readRuntimeInfo, type PaperclipRuntimeInfo } from "../runtime-info.js";
 import { buildLocalHealthUrl } from "../utils/health-url.js";
 
 type CommonOptions = { instance?: string; json?: boolean };
@@ -36,9 +40,9 @@ function healthUrl(instanceId: string): string {
   return buildLocalHealthUrl(config?.server.host, config?.server.port ?? 3100);
 }
 
-async function probeHealth(instanceId: string): Promise<HealthResult> {
+async function probeHealth(instanceId: string, apiBase?: string): Promise<HealthResult> {
   try {
-    const response = await fetch(healthUrl(instanceId), { signal: AbortSignal.timeout(2_000) });
+    const response = await fetch(apiBase ? `${apiBase}/api/health` : healthUrl(instanceId), { signal: AbortSignal.timeout(2_000) });
     const body = await response.json() as { status?: unknown; serverVersion?: unknown; version?: unknown };
     return { ok: response.ok && body.status === "ok", serverVersion: typeof body.serverVersion === "string" ? body.serverVersion : typeof body.version === "string" ? body.version : null };
   } catch (error) {
@@ -125,7 +129,7 @@ export async function withHotRestartLock<T>(
 
 async function writeHotRestartIntent(status: ServiceStatus, instanceId: string, drainRequired: boolean): Promise<{ requestedAt: string }> {
   if (!status.pid) throw new Error(`Cannot restart ${status.serviceName}: supervisor did not report a server pid.`);
-  const health = await probeHealth(instanceId);
+  const health = await probeHealth(instanceId, resolveInstanceEndpoint(instanceId).apiBase);
   const instanceRoot = resolvePaperclipInstanceRoot(instanceId);
   const requestedAt = new Date().toISOString();
   await fs.mkdir(instanceRoot, { recursive: true });
@@ -169,6 +173,45 @@ export async function restartManagedService(input: { instanceId?: string; expect
   });
 }
 
+export async function startManagedService(input: { instanceId?: string } = {}): Promise<{ status: ServiceStatus; health: HealthResult }> {
+  const instanceId = resolvePaperclipInstanceId(input.instanceId);
+  const detection = await detectServiceManager({ instanceId });
+  if (!detection.supported) throw new Error(detection.reason);
+  await detection.manager.start();
+  const health = await waitForHealth(instanceId, null);
+  return { status: await detection.manager.status(), health };
+}
+
+export interface InstanceLiveness {
+  running: boolean;
+  detail: string;
+}
+
+export async function resolveInstanceLiveness(input: {
+  instanceId: string;
+  status?: () => Promise<ServiceStatus>;
+  readRuntime?: (instanceId: string) => PaperclipRuntimeInfo | null;
+  isProcessAlive?: (pid: number) => boolean;
+}): Promise<InstanceLiveness> {
+  const alive = input.isProcessAlive ?? isProcessAlive;
+  const runtime = (input.readRuntime ?? readRuntimeInfo)(input.instanceId);
+  if (runtime && alive(runtime.pid)) {
+    return { running: true, detail: `server pid ${runtime.pid} is listening on ${runtime.host}:${runtime.port}` };
+  }
+  let status: ServiceStatus;
+  if (input.status) {
+    status = await input.status();
+  } else {
+    const detection = await detectServiceManager({ instanceId: input.instanceId });
+    if (!detection.supported) throw new Error(detection.reason);
+    status = await detection.manager.status();
+  }
+  if (status.active && status.pid) {
+    return { running: true, detail: `${status.serviceName} is active (pid ${status.pid})` };
+  }
+  return { running: false, detail: `${status.serviceName} is not running` };
+}
+
 export interface SafeRestartOptions {
   instanceId?: string;
   expectedVersion?: string | null;
@@ -177,20 +220,36 @@ export interface SafeRestartOptions {
   drain?: boolean;
   drainTimeoutMs?: number;
   control?: InstanceRunControl;
+  admissionControl?: InstanceRunControl;
+  endpoint?: InstanceEndpoint;
+  liveness?: () => Promise<InstanceLiveness>;
   onPoll?: (snapshot: LiveRunsSnapshot) => void;
   pollMs?: number;
   restart?: (input: { instanceId?: string; expectedVersion?: string | null; waitForDrain?: boolean }) => Promise<unknown>;
+  start?: (input: { instanceId?: string }) => Promise<unknown>;
 }
 
 export async function safeRestartManagedService(options: SafeRestartOptions = {}): Promise<{
+  action: "restarted" | "started";
   restarted: unknown;
   drained: boolean;
   liveRunsBefore: number;
   admission: "accepting";
 }> {
   const instanceId = resolvePaperclipInstanceId(options.instanceId);
-  const control = options.control ?? createInstanceRunControl(instanceId);
   const restart = options.restart ?? restartManagedService;
+  const start = options.start ?? startManagedService;
+  const liveness = options.control
+    ? { running: true, detail: "instance control was supplied" }
+    : await (options.liveness ?? (() => resolveInstanceLiveness({ instanceId })))();
+
+  if (!liveness.running) {
+    const started = await start({ instanceId: options.instanceId });
+    return { action: "started", restarted: started, drained: false, liveRunsBefore: 0, admission: "accepting" };
+  }
+
+  const control = options.control
+    ?? createInstanceRunControl(instanceId, { endpoint: options.endpoint ?? resolveInstanceEndpoint(instanceId) });
   let drained = false;
   let liveRunsBefore = 0;
 
@@ -214,20 +273,29 @@ export async function safeRestartManagedService(options: SafeRestartOptions = {}
     expectedVersion: options.expectedVersion,
     waitForDrain: options.waitForDrain,
   });
-  await assertAdmissionRestored(control);
-  return { restarted, drained, liveRunsBefore, admission: "accepting" };
+  const admissionControl = options.admissionControl
+    ?? options.control
+    ?? createInstanceRunControl(instanceId, { endpoint: resolveInstanceEndpoint(instanceId) });
+  await assertAdmissionRestored(admissionControl);
+  return { action: "restarted", restarted, drained, liveRunsBefore, admission: "accepting" };
 }
 
 export async function guardServiceStop(options: {
   instanceId?: string;
   force?: boolean;
   control?: InstanceRunControl;
+  liveness?: () => Promise<InstanceLiveness>;
 }): Promise<void> {
   const instanceId = resolvePaperclipInstanceId(options.instanceId);
+  if (!options.control) {
+    const liveness = await (options.liveness ?? (() => resolveInstanceLiveness({ instanceId })))();
+    if (!liveness.running) return;
+  }
   await assertNoLiveRuns({
     verb: "stop",
     force: options.force,
-    control: options.control ?? createInstanceRunControl(instanceId),
+    control: options.control
+      ?? createInstanceRunControl(instanceId, { endpoint: resolveInstanceEndpoint(instanceId), verb: "stop" }),
   });
 }
 

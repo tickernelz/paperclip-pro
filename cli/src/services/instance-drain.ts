@@ -1,5 +1,6 @@
 import { getStoredBoardCredential } from "../client/board-auth.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
+import { readRuntimeInfo, type PaperclipRuntimeInfo } from "../runtime-info.js";
 import { buildLocalAppUrl } from "../utils/health-url.js";
 
 export interface LiveRunSummary {
@@ -44,10 +45,53 @@ export class DrainTimeoutError extends Error {
   }
 }
 
-export function resolveInstanceApiBase(instanceId: string): string {
+export interface InstanceEndpoint {
+  apiBase: string;
+  source: "runtime-info" | "config";
+  pid: number | null;
+}
+
+export interface InstanceEndpointDeps {
+  readRuntime?: (instanceId: string) => PaperclipRuntimeInfo | null;
+  isProcessAlive?: (pid: number) => boolean;
+}
+
+export class InstanceUnreachableError extends Error {
+  readonly endpoint: InstanceEndpoint;
+
+  constructor(message: string, endpoint: InstanceEndpoint, options?: { cause?: unknown }) {
+    super(message, options);
+    this.name = "InstanceUnreachableError";
+    this.endpoint = endpoint;
+  }
+}
+
+export function isProcessAlive(pid: number): boolean {
+  try {
+    process.kill(pid, 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === "EPERM";
+  }
+}
+
+export function resolveConfiguredInstanceApiBase(instanceId: string): string {
   process.env.PAPERCLIP_INSTANCE_ID = instanceId;
   const config = readConfig(resolveConfigPath());
   return buildLocalAppUrl(config?.server.host, config?.server.port ?? 3100);
+}
+
+export function resolveInstanceEndpoint(instanceId: string, deps: InstanceEndpointDeps = {}): InstanceEndpoint {
+  const runtime = (deps.readRuntime ?? readRuntimeInfo)(instanceId);
+  const alive = deps.isProcessAlive ?? isProcessAlive;
+  if (runtime && alive(runtime.pid)) {
+    return { apiBase: buildLocalAppUrl(runtime.host, runtime.port), source: "runtime-info", pid: runtime.pid };
+  }
+  return { apiBase: resolveConfiguredInstanceApiBase(instanceId), source: "config", pid: null };
+}
+
+export function resolveInstanceApiBase(instanceId: string, deps: InstanceEndpointDeps = {}): string {
+  return resolveInstanceEndpoint(instanceId, deps).apiBase;
 }
 
 function emptySnapshot(): LiveRunsSnapshot {
@@ -72,25 +116,46 @@ function normalizeSnapshot(body: unknown): LiveRunsSnapshot {
   };
 }
 
+export function describeUnreachableInstance(endpoint: InstanceEndpoint, verb: string): string {
+  const origin = endpoint.source === "runtime-info"
+    ? `the running server (pid ${endpoint.pid}) reported ${endpoint.apiBase}`
+    : `the configured address ${endpoint.apiBase}`;
+  return `Refusing to ${verb} Paperclip: it is running but its API is unreachable at ${endpoint.apiBase}, so live agent runs cannot be counted (${origin}). Check the service logs, or pass --force to ${verb} anyway and interrupt whatever is running.`;
+}
+
 export function createInstanceRunControl(
   instanceId: string,
-  options: { apiBase?: string; fetchImpl?: typeof fetch; timeoutMs?: number } = {},
+  options: {
+    apiBase?: string;
+    endpoint?: InstanceEndpoint;
+    fetchImpl?: typeof fetch;
+    timeoutMs?: number;
+    verb?: string;
+  } = {},
 ): InstanceRunControl {
-  const apiBase = options.apiBase ?? resolveInstanceApiBase(instanceId);
+  const endpoint: InstanceEndpoint = options.endpoint
+    ?? (options.apiBase ? { apiBase: options.apiBase, source: "config", pid: null } : resolveInstanceEndpoint(instanceId));
+  const apiBase = endpoint.apiBase;
   const fetchImpl = options.fetchImpl ?? fetch;
   const timeoutMs = options.timeoutMs ?? 5_000;
+  const verb = options.verb ?? "restart";
 
   async function call(path: string, method: "GET" | "POST" | "DELETE", body?: unknown): Promise<unknown> {
     const token = getStoredBoardCredential(apiBase)?.token;
     const headers: Record<string, string> = {};
     if (token) headers.authorization = `Bearer ${token}`;
     if (body !== undefined) headers["content-type"] = "application/json";
-    const response = await fetchImpl(`${apiBase}${path}`, {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    let response: Response;
+    try {
+      response = await fetchImpl(`${apiBase}${path}`, {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch (error) {
+      throw new InstanceUnreachableError(describeUnreachableInstance(endpoint, verb), endpoint, { cause: error });
+    }
     if (!response.ok) {
       throw new Error(`Paperclip API ${method} ${path} failed with HTTP ${response.status}.`);
     }
