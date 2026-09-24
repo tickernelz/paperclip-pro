@@ -450,8 +450,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const remote = adapterExecutionTargetIsRemote(executionTarget);
   const workspace = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspace.cwd, "").trim();
+  const workspaceSource = asString(workspace.source, "");
   const configuredCwd = asString(config.cwd, "").trim();
-  const cwd = workspaceCwd || configuredCwd || process.cwd();
+  const useConfiguredInsteadOfAgentHome = workspaceSource === "agent_home" && configuredCwd.length > 0;
+  const effectiveWorkspaceCwd = useConfiguredInsteadOfAgentHome ? "" : workspaceCwd;
+  const cwd = effectiveWorkspaceCwd || configuredCwd || process.cwd();
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
 
   const preparedConfig = await prepareOmpRuntimeConfig(config, { forceMaterialized: remote });
@@ -472,8 +475,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     refreshPaperclipWorkspaceEnvForExecution({
       env,
       envConfig: {},
-      workspaceCwd,
-      workspaceSource: asString(workspace.source, ""),
+      workspaceCwd: effectiveWorkspaceCwd,
+      workspaceSource,
       workspaceStrategy: asString(workspace.strategy, ""),
       workspaceId: asString(workspace.workspaceId, ""),
       workspaceRepoUrl: asString(workspace.repoUrl, ""),
@@ -555,8 +558,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       refreshPaperclipWorkspaceEnvForExecution({
         env,
         envConfig: {},
-        workspaceCwd,
-        workspaceSource: asString(workspace.source, ""),
+        workspaceCwd: effectiveWorkspaceCwd,
+        workspaceSource,
         workspaceStrategy: asString(workspace.strategy, ""),
         workspaceId: asString(workspace.workspaceId, ""),
         workspaceRepoUrl: asString(workspace.repoUrl, ""),
