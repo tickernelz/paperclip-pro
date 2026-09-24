@@ -209,6 +209,13 @@ describe("managed install commands", () => {
     ]);
   });
 
+  it("stages every workspace dependency of the shipped server from the repository manifest", () => {
+    const repoRoot = path.resolve(import.meta.dirname, "..", "..", "..");
+    const staged = resolveGitInstallWorkspacePackages(repoRoot).map(({ name }) => name);
+    expect(staged).toContain("@tickernelz/paperclip-pro-adapter-omp-local");
+    expect(staged).toContain("@tickernelz/paperclip-pro-server");
+  });
+
   it("includes child-process stderr in command failures", async () => {
     await expect(runCommandWithDiagnostics(process.execPath, ["-e", "process.stderr.write('unsupported workspace dependency\\n'); process.exit(1)"]))
       .rejects.toThrow("unsupported workspace dependency");
