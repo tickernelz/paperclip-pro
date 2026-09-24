@@ -94,6 +94,11 @@ export const ADAPTER_SESSION_MANAGEMENT: Record<string, AdapterSessionManagement
     nativeContextManagement: "confirmed",
     defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
   },
+  omp_local: {
+    supportsSessionResume: true,
+    nativeContextManagement: "confirmed",
+    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
+  },
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
