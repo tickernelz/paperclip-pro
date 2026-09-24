@@ -26,6 +26,8 @@ export interface ParsedOmpOutput {
   unknownLines: string[];
 }
 
+const BROKEN_TOOL_END_RE =
+  /^\{"type":"tool_execution_end","toolCallId":"([^"\\]{1,200})"(?:,"toolName":"([^"\\]{1,200})")?/;
 const UNKNOWN_LINE_LIMIT = 50;
 const UNKNOWN_LINE_CHARS = 200;
 
@@ -176,6 +178,7 @@ export function createOmpOutputAccumulator(): OmpOutputAccumulator {
       const salvaged = salvageRedactedEvents(line);
       if (salvaged.length === 0) {
         recordUnknown(rawLine);
+        settleBrokenToolEnd(line);
         return;
       }
       for (const recovered of salvaged) handleEvent(recovered, rawLine);
@@ -183,6 +186,26 @@ export function createOmpOutputAccumulator(): OmpOutputAccumulator {
     }
 
     handleEvent(event, rawLine);
+  };
+
+  const settleBrokenToolEnd = (line: string): void => {
+    const match = BROKEN_TOOL_END_RE.exec(line);
+    if (!match) return;
+    const id = match[1]!;
+    const existing = toolCalls.get(id);
+    if (existing) {
+      if (existing.result === null) existing.result = "";
+      return;
+    }
+    const call: ParsedOmpToolCall = {
+      toolCallId: id,
+      toolName: match[2] ?? "",
+      args: null,
+      result: "",
+      isError: false,
+    };
+    toolCalls.set(id, call);
+    toolCallList.push(call);
   };
 
   const handleEvent = (event: JsonObject, rawLine: string): void => {

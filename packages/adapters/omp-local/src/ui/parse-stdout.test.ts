@@ -71,4 +71,19 @@ describe("parseOmpStdoutLine tool pairing", () => {
 
     expect(entry).toMatchObject({ kind: "tool_result", delta: true, ts: "2026-09-24T19:01:05.507Z" });
   });
+
+  it("settles a tool end whose payload is unrecoverable", () => {
+    const truncatedEnd = "{\"type\":\"tool_execution_end\",\"toolCallId\":\"toolu_01Fgxs9Ue6AVD4trWhFvE7f4\",\"toolName\":\"fabric_exec\",\"result\":{\"content\":";
+
+    const entries = parseOmpStdoutLine(truncatedEnd, "2026-09-25T02:00:00.000Z");
+    const settled = entries.find((entry) => entry.kind === "tool_result");
+
+    expect(settled).toMatchObject({
+      kind: "tool_result",
+      toolUseId: "toolu_01Fgxs9Ue6AVD4trWhFvE7f4",
+      toolName: "fabric_exec",
+      isError: false,
+    });
+    expect(entries.some((entry) => entry.kind === "system")).toBe(true);
+  });
 });
