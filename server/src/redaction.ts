@@ -558,6 +558,19 @@ function escapedQuotedValueEnd(
     : lineEnd(input, start);
 }
 
+function closesEnclosingString(input: string, afterQuote: number): boolean {
+  const next = input[afterQuote];
+  return (
+    next === undefined ||
+    next === "\n" ||
+    next === "\r" ||
+    next === "," ||
+    next === "}" ||
+    next === "]" ||
+    next === ":"
+  );
+}
+
 function escapedQuoteAt(input: string, index: number): '"' | "'" | null {
   if (input[index] !== "\\") return null;
   const quote = input[index + 1];
@@ -605,6 +618,7 @@ function authorizationCredentialRange(
 
   const rawValueQuote = input[valueStart];
   if (rawValueQuote === '"' || rawValueQuote === "'") {
+    if (closesEnclosingString(input, valueStart + 1)) return null;
     const quotedEnd = rawQuotedValueEnd(input, valueStart, rawValueQuote);
     const content = input.slice(valueStart + 1, quotedEnd - 1).trimStart();
     if (!/^(?:Bearer|Basic)\b/i.test(content)) return null;
@@ -617,6 +631,7 @@ function authorizationCredentialRange(
 
   const escapedValueQuote = escapedQuoteAt(input, valueStart);
   if (escapedValueQuote) {
+    if (closesEnclosingString(input, valueStart + 2)) return null;
     const quotedEnd = escapedQuotedValueEnd(
       input,
       valueStart,
@@ -718,6 +733,7 @@ function redactStandaloneBearerCredentials(input: string): string {
     let replacement = REDACTED_EVENT_VALUE;
     const rawQuote = input[credentialStart];
     if (rawQuote === '"' || rawQuote === "'") {
+      if (closesEnclosingString(input, credentialStart + 1)) continue;
       end = credentialEndAfterQuotedDelimiter(
         input,
         rawQuotedValueEnd(input, credentialStart, rawQuote),
@@ -726,6 +742,7 @@ function redactStandaloneBearerCredentials(input: string): string {
     } else {
       const escapedQuote = escapedQuoteAt(input, credentialStart);
       if (escapedQuote) {
+        if (closesEnclosingString(input, credentialStart + 2)) continue;
         end = credentialEndAfterQuotedDelimiter(
           input,
           escapedQuotedValueEnd(input, credentialStart, escapedQuote),
