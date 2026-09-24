@@ -1049,3 +1049,52 @@ export function redactSensitiveText(input: string): string {
     REDACTED_EVENT_VALUE,
   );
 }
+
+function isSecretPayloadKey(key: string, value: unknown): boolean {
+  return (
+    SECRET_PAYLOAD_KEY_RE.test(key) &&
+    !AUDIT_REASON_PAYLOAD_KEY_RE.test(key) &&
+    !isAuditCountField(key, value)
+  );
+}
+
+function redactJsonNode(value: unknown, key?: string): unknown {
+  if (typeof value === "string") {
+    return key !== undefined && isSecretPayloadKey(key, value)
+      ? REDACTED_EVENT_VALUE
+      : redactSensitiveText(value);
+  }
+  if (Array.isArray(value))
+    return value.map((entry) => redactJsonNode(entry, key));
+  if (isPlainObject(value)) {
+    const redacted: Record<string, unknown> = {};
+    for (const [childKey, childValue] of Object.entries(value))
+      redacted[childKey] = redactJsonNode(childValue, childKey);
+    return redacted;
+  }
+  return value;
+}
+
+function redactStructuredLogLine(line: string): string | null {
+  if (!line.startsWith("{") && !line.startsWith("[")) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(line);
+  } catch {
+    return null;
+  }
+  if (parsed === null || typeof parsed !== "object") return null;
+  return JSON.stringify(redactJsonNode(parsed));
+}
+
+export function redactRunLogChunkText(chunk: string): string {
+  const segments = chunk.split("\n");
+  const lastIndex = segments.length - 1;
+  return segments
+    .map((segment, index) => {
+      const structured =
+        index < lastIndex ? redactStructuredLogLine(segment) : null;
+      return structured ?? redactSensitiveText(segment);
+    })
+    .join("\n");
+}
