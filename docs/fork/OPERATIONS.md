@@ -276,14 +276,14 @@ paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
 
 `--data-dir` isolates state from `~/.paperclip-pro` (`cli/src/index.ts:63`).
 
-## Security: the hostname allow-list does not protect sign-up
+## Security: emptying allowedHostnames does not lock out the public host
 
-`server.allowedHostnames` does not cover Better Auth routes under `/api/auth/*`. With `auth.disableSignUp=false`, a POST to `https://paperclip.zhafron.my.id/api/auth/sign-up/email` creates a real user and session even when `allowedHostnames` is empty. This was reproduced on 2026-09-24.
+`auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.
 
-Keep `auth.disableSignUp=true` whenever the instance is reachable through the tunnel. To add a person:
+Keep `auth.disableSignUp=true` whenever the tunnel is up. To add a person:
 
 1. Use the invite flow: `paperclip-pro auth bootstrap-ceo --force --base-url https://paperclip.zhafron.my.id` for a new instance admin, or a company invite from the board.
-2. If sign-up must be opened briefly, first remove the `paperclip.zhafron.my.id` ingress from `~/.cloudflared/zhafron-apps.yml` and restart `zhafron-apps-tunnel.service`, then re-enable it after `disableSignUp` is back to `true`.
+2. If sign-up must be opened briefly, first remove the `paperclip.zhafron.my.id` ingress from `~/.cloudflared/zhafron-apps.yml` and restart `zhafron-apps-tunnel.service`, then restore it after `disableSignUp` is back to `true`.
 
 Verify the seal after any auth change:
 
