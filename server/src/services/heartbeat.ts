@@ -28806,7 +28806,7 @@ export function heartbeatService(
 
           if (control) {
             await waitForAdapterStop(control.settled);
-            const stopped = await getRun(run.id);
+            const stopped = await getRun(run.id, { unsafeFullResultJson: true });
             if (stopped && isHeartbeatRunTerminalStatus(stopped.status)) {
               if (
                 parseObject(stopped.resultJson?.executionCancellation).state !==
