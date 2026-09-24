@@ -14316,10 +14316,9 @@ export function heartbeatService(
     // Native sessions have their own fenced same-run controller. Legacy
     // bootstrap recovery shares the durable delay and incident counter with
     // transient retries; process loss must not open a second retry budget.
+    if (run.runtimeMode === "native") return null;
     if (
-      run.runtimeMode === "native" ||
-      (isGracefulShutdownInterruptedRun(run) &&
-        !hasConversationContinuationPolicy(run.resultJson)) ||
+      !isGracefulShutdownInterruptedRun(run) &&
       legacyExecutionNeedsReconciliation(run)
     )
       return null;
