@@ -27,7 +27,7 @@ import {
   routines,
   routineTriggers,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   copyGitHooksToWorktreeGitDir,
   copySeededSecretsKey,
@@ -1943,6 +1943,22 @@ describe("worktree helpers", () => {
         process.env.PAPERCLIP_CONFIG = originalPaperclipConfig;
       }
       fs.rmSync(tempRoot, { recursive: true, force: true });
+    }
+  });
+
+  it("resolves --from-instance against the configured Paperclip home, not the real user home", () => {
+    const isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-home-"));
+    const previous = process.env.PAPERCLIP_HOME;
+    process.env.PAPERCLIP_HOME = isolatedHome;
+
+    try {
+      expect(resolveSourceConfigPath({ fromInstance: "team-a" })).toBe(
+        path.resolve(isolatedHome, "instances", "team-a", "config.json"),
+      );
+    } finally {
+      if (previous === undefined) delete process.env.PAPERCLIP_HOME;
+      else process.env.PAPERCLIP_HOME = previous;
+      fs.rmSync(isolatedHome, { recursive: true, force: true });
     }
   });
 

@@ -20,8 +20,8 @@ import type {
   ToolConnectionTestCallStatus,
   ToolConnectionTestDecision,
   ToolUpstreamPending,
-} from "@paperclipai/shared";
-import { checkOAuthEndpointUrl } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { checkOAuthEndpointUrl } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";

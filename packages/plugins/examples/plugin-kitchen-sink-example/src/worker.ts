@@ -21,8 +21,8 @@ import {
   type ScopeKey,
   type ToolResult,
   type ToolRunContext,
-} from "@paperclipai/plugin-sdk";
-import type { Goal, Issue } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { Goal, Issue } from "@tickernelz/paperclip-pro-shared";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,

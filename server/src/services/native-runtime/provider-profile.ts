@@ -3,7 +3,7 @@ import {
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
   resolvePaperclipRunnerPermissionMode,
   type PaperclipRunnerProvider,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   AGENTCORE_QUALIFIED_MODEL,
   CLAUDE_MANAGED_QUALIFIED_MODEL,

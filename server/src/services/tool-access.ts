@@ -1,4 +1,4 @@
-import { isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@paperclipai/shared";
+import { isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/paperclip-pro-shared";
 import { instanceSettingsService } from "./instance-settings.js";
 import { githubBotRequest } from "./chat-github-client.js";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
@@ -26,7 +26,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   connectionGrantMembers,
@@ -65,7 +65,7 @@ import {
   toolProfiles,
   toolRuntimeMetricCounters,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   AppDefinition,
   ConnectionGrantKind,
@@ -148,7 +148,7 @@ import type {
   UnbindToolProfileBinding,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   CLASS3_STATIC_LEASE_ALLOWLIST,
   GITHUB_CONNECTOR_PROFILES,
@@ -166,19 +166,19 @@ import {
   resolveConnectionMethodServerUrl,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   checkMcpRemoteHeaderName,
   checkMcpRemoteHeaderValue,
   mcpRemoteHeaderNameFromConfigPath,
   mcpRemoteHeaderRejectionMessage,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   checkOAuthEndpointUrl,
   oauthEndpointUrlRejectionMessage,
   type OAuthEndpointKind,
   type OAuthEndpointUrlRejection,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   badRequest,
   conflict,
@@ -216,7 +216,7 @@ import {
 } from "./remote-url-credentials.js";
 import { secretService } from "./secrets.js";
 import { agentmailApi } from "./agentmail-api.js";
-import type { ConfigureRailwaySsh, RailwaySshSetup } from "@paperclipai/shared";
+import type { ConfigureRailwaySsh, RailwaySshSetup } from "@tickernelz/paperclip-pro-shared";
 import { generateRailwaySshKey, RAILWAY_SSH_SECRET_PATH, validateRailwayKnownHosts } from "./railway-ssh.js";
 import { createRailwayClient, discoverRailwayWorkspace, isRailwayConnection, isRailwayEndpoint, isRailwayToolBlocked, normalizeRailwayToolName, RAILWAY_TOOLS, RAILWAY_TOOL_PREFIX, railwayRisk, RailwayError } from "./railway.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
@@ -239,7 +239,7 @@ import {
   ToolRuntimeSupervisorError,
 } from "./tool-runtime-supervisor.js";
 import { listConnectionLifecycleEvents } from "./tool-connection-activity.js";
-import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@paperclipai/shared";
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/paperclip-pro-shared";
 import {
   appWithPaperclipCloudConnectorAvailability,
   paperclipCloudConnectorCapabilitiesFromEnv,
@@ -17177,7 +17177,7 @@ export function toolAccessService(
       ]);
       const repositories = new Map<
         string,
-        import("@paperclipai/shared").ProjectRepository
+        import("@tickernelz/paperclip-pro-shared").ProjectRepository
       >();
       let connectionCount = 0;
       let failedConnectionCount = 0;

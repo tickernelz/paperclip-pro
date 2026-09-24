@@ -9,7 +9,7 @@ import type {
   ToolProfileNewToolReviewDecision,
   ToolProfileNewToolReviewItem,
   ToolProfileWithDetails,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";

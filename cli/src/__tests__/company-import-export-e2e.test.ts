@@ -219,7 +219,7 @@ async function runCliJson<T>(
   opts: TestPaperclipEnv & { apiBase?: string; includeConfigArg?: boolean },
 ) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
-  const cliArgs = ["--silent", "paperclipai", ...args];
+  const cliArgs = ["--silent", "paperclip-pro", ...args];
   if (opts.apiBase) {
     cliArgs.push("--api-base", opts.apiBase);
   }
@@ -253,7 +253,7 @@ async function waitForServer(
   while (Date.now() - startedAt < 30_000) {
     if (child.exitCode !== null) {
       throw new Error(
-        `paperclipai run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
+        `paperclip-pro run exited before healthcheck succeeded.\nstdout:\n${output.stdout.join("")}\nstderr:\n${output.stderr.join("")}`,
       );
     }
 
@@ -272,7 +272,7 @@ async function waitForServer(
   );
 }
 
-describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
+describeEmbeddedPostgres("paperclip-pro company import/export e2e", () => {
   let tempRoot = "";
   let configPath = "";
   let exportDir = "";
@@ -303,7 +303,7 @@ describeEmbeddedPostgres("paperclipai company import/export e2e", () => {
     const output = { stdout: [] as string[], stderr: [] as string[] };
     const child = spawn(
       "pnpm",
-      ["paperclipai", "run", "--config", configPath],
+      ["paperclip-pro", "run", "--config", configPath],
       {
         cwd: repoRoot,
         env: createServerEnv(configPath, port, tempDb.connectionString, {

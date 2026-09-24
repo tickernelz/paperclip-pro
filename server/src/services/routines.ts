@@ -2,7 +2,7 @@ import { verifyAppWebhook } from "./app-webhook.js";
 import crypto from "node:crypto";
 import { verifyFirefliesWebhook } from "./fireflies-webhook.js";
 import { and, asc, desc, eq, gt, inArray, isNotNull, isNull, lte, ne, not, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   activityLog,
@@ -28,7 +28,7 @@ import {
   routines,
   routineTriggers,
   routineWebhookTestReceipts,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   CreateRoutine,
   CreateRoutineTrigger,
@@ -46,7 +46,7 @@ import type {
   RunRoutine,
   UpdateRoutine,
   UpdateRoutineTrigger,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   WORKSPACE_BRANCH_ROUTINE_VARIABLE,
   getBuiltinRoutineVariableValues,
@@ -58,8 +58,8 @@ import {
   routineRevisionSnapshotSchema,
   stringifyRoutineVariableValue,
   syncRoutineVariablesWithTemplate,
-} from "@paperclipai/shared";
-import { trackRoutineRun } from "@paperclipai/shared/telemetry";
+} from "@tickernelz/paperclip-pro-shared";
+import { trackRoutineRun } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { conflict, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { getTelemetryClient } from "../telemetry.js";

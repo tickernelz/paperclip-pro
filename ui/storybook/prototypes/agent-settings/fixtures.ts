@@ -3,17 +3,17 @@ import type {
   AgentInstructionsBundle,
   AgentSkillSnapshot,
   CompanySkillListItem,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   storybookHiredAgent,
   storybookAgents,
   storybookIssues,
   storybookSecrets,
 } from "../../fixtures/paperclipData";
-import { models as claudeModels } from "@paperclipai/adapter-claude-local";
-import { models as openCodeModels } from "@paperclipai/adapter-opencode-local";
+import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-claude-local";
+import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-opencode-local";
 import { storybookEnvironments } from "../../fixtures/onboardingEnvironment";
-import { models as codexModels } from "@paperclipai/adapter-codex-local";
+import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-codex-local";
 import { runtimeTestResult, type TestOutcome } from "../new-agent-fixtures";
 export const COMPANY = "company-storybook";
 export const ID = "agent-settings-preview";

@@ -1,7 +1,7 @@
 import type {
   ChatProvider,
   ChatResourceAvailability,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 export type ChatProviderLifecycleEffect =
   | {

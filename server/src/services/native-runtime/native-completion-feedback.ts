@@ -13,7 +13,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   normalizePrpResultSignals,
   type PrpStructuredRunResult,

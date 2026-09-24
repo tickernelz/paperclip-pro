@@ -5,7 +5,7 @@ import {
   inferOpenAiCompatibleBiller,
   type AdapterExecutionContext,
   type AdapterExecutionResult,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   type AdapterExecutionTargetPaperclipBridgeHandle,
   adapterExecutionTargetIsRemote,
@@ -24,7 +24,7 @@ import {
   resolveAdapterExecutionTargetTimeoutSec,
   runAdapterExecutionTargetProcess,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
   asBoolean,
@@ -42,7 +42,7 @@ import {
   renderTemplate,
   sanitizeInheritedPaperclipEnv,
   stringifyPaperclipWakePayload,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { OMP_INSTALL_COMMAND } from "../metadata.js";
 import {
   prepareOmpRuntimeConfig,

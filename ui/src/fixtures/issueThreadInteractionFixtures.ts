@@ -1,4 +1,4 @@
-import { legacyIssueThreadInteractionResolverPolicyAlias } from "@paperclipai/shared";
+import { legacyIssueThreadInteractionResolverPolicyAlias } from "@tickernelz/paperclip-pro-shared";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import type {
   IssueChatComment,

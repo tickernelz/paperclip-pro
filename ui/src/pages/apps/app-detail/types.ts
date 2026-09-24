@@ -6,7 +6,7 @@ import type {
   ToolConnectionLifecycleEvent,
   ToolCatalogEntry,
   ToolConnection,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 export type AccessDraft = { mode: "all" | "specific"; agentIds: Set<string> };
 

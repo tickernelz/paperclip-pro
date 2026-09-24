@@ -57,7 +57,7 @@ test("comments, teams, emails and partial account matches do not grant access", 
   for (const codeowners of [
     "# @cryppadotta\n.github/** @other",
     ".github/** @other # @cryppadotta",
-    ".github/** @paperclipai/cryppadotta",
+    ".github/** @tickernelz/paperclip-pro-cryppadotta",
     ".github/** cryppadotta@example.com",
     ".github/** @cryppadotta-extra",
     "",

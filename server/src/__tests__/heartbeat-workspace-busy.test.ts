@@ -23,7 +23,7 @@ import {
   issues,
   projects,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -47,8 +47,8 @@ import {
 import { instanceSettingsService } from "../services/instance-settings.ts";
 
 // Exercise the real SSH lease and heartbeat paths without connecting to a host.
-vi.mock("@paperclipai/adapter-utils/ssh", async (importOriginal) => ({
-  ...await importOriginal<typeof import("@paperclipai/adapter-utils/ssh")>(),
+vi.mock("@tickernelz/paperclip-pro-adapter-utils/ssh", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-utils/ssh")>(),
   ensureSshWorkspaceReady: async (config: { remoteWorkspacePath: string }) => ({
     remoteCwd: config.remoteWorkspacePath,
   }),

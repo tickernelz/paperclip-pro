@@ -29,13 +29,13 @@ No Docker or external database required. Paperclip uses embedded PostgreSQL auto
 For a first-time install:
 
 ```sh
-pnpm paperclipai run
+pnpm paperclip-pro run
 ```
 
 This does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclipai doctor` with repair enabled
+2. Runs `paperclip-pro doctor` with repair enabled
 3. Starts the server when checks pass
 
 ## Bind Presets In Dev
@@ -64,7 +64,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames:
 
 ```sh
-npx paperclipai allowed-hostname dotta-macbook-pro
+npx @tickernelz/paperclip-pro allowed-hostname dotta-macbook-pro
 ```
 
 For full setup and troubleshooting, see [Tailscale Private Access](/deploy/tailscale-private-access).
@@ -84,12 +84,12 @@ curl http://localhost:3100/api/companies
 For safer parallel local experiments, initialize a dedicated worktree instance instead of reusing your main checkout:
 
 ```sh
-npx paperclipai worktree:make local-lab --seed-mode minimal
+npx @tickernelz/paperclip-pro worktree:make local-lab --seed-mode minimal
 cd ~/paperclip-local-lab
-pnpm paperclipai worktree env                       # inspect generated env exports
-eval "$(npx paperclipai worktree env)"             # bash/zsh
-pnpm paperclipai run
-pnpm paperclipai doctor
+pnpm paperclip-pro worktree env                       # inspect generated env exports
+eval "$(npx @tickernelz/paperclip-pro worktree env)"             # bash/zsh
+pnpm paperclip-pro run
+pnpm paperclip-pro doctor
 ```
 
 If the experiment gets noisy, repair or reseed the worktree without touching the main branch:
@@ -97,13 +97,13 @@ If the experiment gets noisy, repair or reseed the worktree without touching the
 ```sh
 # worktree repair rebuilds the local checkout metadata, so run the checked-out CLI through the direct-exec form.
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch paperclip-local-lab
-npx paperclipai worktree reseed --from . --to paperclip-local-lab
+npx @tickernelz/paperclip-pro worktree reseed --from . --to paperclip-local-lab
 ```
 
 When done, shut it down and remove the isolated state explicitly:
 
 ```sh
-npx paperclipai worktree:cleanup local-lab --force
+npx @tickernelz/paperclip-pro worktree:cleanup local-lab --force
 ```
 
 ## Reset Dev Data
@@ -111,7 +111,7 @@ npx paperclipai worktree:cleanup local-lab --force
 To wipe local data and start fresh:
 
 ```sh
-rm -rf ~/.paperclip/instances/default/db
+rm -rf ~/.paperclip-pro/instances/default/db
 pnpm dev
 ```
 
@@ -119,14 +119,14 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| Config | `~/.paperclip/instances/default/config.json` |
-| Database | `~/.paperclip/instances/default/db` |
-| Storage | `~/.paperclip/instances/default/data/storage` |
-| Secrets key | `~/.paperclip/instances/default/secrets/master.key` |
-| Logs | `~/.paperclip/instances/default/logs` |
+| Config | `~/.paperclip-pro/instances/default/config.json` |
+| Database | `~/.paperclip-pro/instances/default/db` |
+| Storage | `~/.paperclip-pro/instances/default/data/storage` |
+| Secrets key | `~/.paperclip-pro/instances/default/secrets/master.key` |
+| Logs | `~/.paperclip-pro/instances/default/logs` |
 
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclipai run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclip-pro run
 ```

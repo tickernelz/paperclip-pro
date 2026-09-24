@@ -1,4 +1,4 @@
-import type { ActivityEvent } from "@paperclipai/shared";
+import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
 import type { TaskChatSkillCreatedItem } from "./task-chat-model";
 
 export function skillCreatedItems(events: readonly ActivityEvent[]): TaskChatSkillCreatedItem[] {

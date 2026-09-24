@@ -27,7 +27,7 @@ import type {
   AdapterExecutionTargetProcessSessionBridgeHandle,
   AdapterManagedRuntimeAsset,
   PreparedAdapterExecutionTargetRuntime,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import type {
   AcpRunContext,
   AcquiredRunResources,

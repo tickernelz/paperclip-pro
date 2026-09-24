@@ -1,4 +1,4 @@
-import type { IssueRecoveryAction } from "@paperclipai/shared";
+import type { IssueRecoveryAction } from "@tickernelz/paperclip-pro-shared";
 import type { CurrentBoardAccess } from "../api/access";
 
 function asRecord(value: unknown): Record<string, unknown> | null {

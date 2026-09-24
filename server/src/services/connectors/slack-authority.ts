@@ -6,7 +6,7 @@ import {
   type Db,
   type chatEndpoints,
   type chatConversations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, inArray } from "drizzle-orm";
 import { captureRunIdentity } from "../run-identity.js";
 import { forbidden } from "../../errors.js";

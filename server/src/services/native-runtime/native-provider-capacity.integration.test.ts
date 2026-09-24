@@ -11,12 +11,12 @@ import {
   issueRecoveryActions,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ControlPlanePort,
   NativeExecutionInputV1,
   PrpEvent,
-} from "@paperclipai/paperclip-runner";
+} from "@tickernelz/paperclip-pro-paperclip-runner";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 
 const provider = vi.hoisted(() => ({ execute: vi.fn() }));

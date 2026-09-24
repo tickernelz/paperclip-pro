@@ -6,7 +6,7 @@ import type {
   ToolCatalogEntry,
   ToolConnection,
   ToolConnectionCapabilities,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import {
   issueThreadInteractionFixtureMeta,

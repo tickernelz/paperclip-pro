@@ -36,7 +36,7 @@ import {
   INSTANCE_FEATURE_CATALOG,
   instanceExperimentalSettingsSchema,
   type ManagedExperimentalFeatureKey,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 export type ManagedConfigEnv = Record<string, string | undefined>;
 

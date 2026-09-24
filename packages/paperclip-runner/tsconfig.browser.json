@@ -16,16 +16,16 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@paperclipai/paperclip-runner/browser": [
+      "@tickernelz/paperclip-pro-paperclip-runner/browser": [
         "src/browser/index.ts"
       ],
-      "@paperclipai/paperclip-runner/react": [
+      "@tickernelz/paperclip-pro-paperclip-runner/react": [
         "src/react/index.ts"
       ],
-      "@paperclipai/paperclip-runner/standalone": [
+      "@tickernelz/paperclip-pro-paperclip-runner/standalone": [
         "src/standalone/index.ts"
       ],
-      "@paperclipai/paperclip-runner/styles.css": [
+      "@tickernelz/paperclip-pro-paperclip-runner/styles.css": [
         "styles.css"
       ],
       "@paperclip-runner-local/capability": [

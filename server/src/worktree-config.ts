@@ -7,13 +7,13 @@ import {
   mergePaperclipConfig,
   paperclipConfigSchema,
   type PaperclipConfig,
-} from "@paperclipai/shared";
-import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@paperclipai/shared/env-file";
+} from "@tickernelz/paperclip-pro-shared";
+import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/paperclip-pro-shared/env-file";
 import {
   readWorktreePortRegistry,
   withWorktreePortRegistryLockSync,
   writeWorktreePortRegistry,
-} from "@paperclipai/shared/worktree-port-registry";
+} from "@tickernelz/paperclip-pro-shared/worktree-port-registry";
 import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
 import { rewriteUrlPort } from "./url-utils.js";
 

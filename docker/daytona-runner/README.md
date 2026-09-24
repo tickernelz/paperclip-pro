@@ -31,7 +31,7 @@ provider manifest, and remote controller version checks aligned.
 
 ## Build and verify
 
-Run `pnpm --filter @paperclipai/paperclip-runner test:opencode:qualification`
+Run `pnpm --filter @tickernelz/paperclip-pro-paperclip-runner test:opencode:qualification`
 after installing dependencies to exercise the actual pinned OpenCode executable.
 It checks health/version, session creation and retrieval, SSE messages, an async
 prompt, and session deletion against a loopback mock provider. It uses an

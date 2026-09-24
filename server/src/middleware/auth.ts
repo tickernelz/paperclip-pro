@@ -1,7 +1,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Request, RequestHandler } from "express";
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
   agentApiKeys,
@@ -11,7 +11,7 @@ import {
   companyMemberships,
   heartbeatRuns,
   instanceUserRoles,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   MAX_ISSUE_PREFIX_ATTEMPTS,
   deriveIssuePrefixBase,
@@ -21,7 +21,7 @@ import {
   rekeyCompanyIssueIdentifiers,
 } from "../services/issue-prefix.js";
 import { verifyLocalAgentJwt } from "../agent-auth-jwt.js";
-import { isUuidLike, normalizeAgentApiKeyScope, type DeploymentMode } from "@paperclipai/shared";
+import { isUuidLike, normalizeAgentApiKeyScope, type DeploymentMode } from "@tickernelz/paperclip-pro-shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "./logger.js";
 import { captureRunIdentity } from "../services/run-identity.js";

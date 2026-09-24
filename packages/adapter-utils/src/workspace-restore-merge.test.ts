@@ -544,7 +544,7 @@ describe("workspace restore merge", () => {
       const previousHome = process.env.PAPERCLIP_HOME;
       process.env.PAPERCLIP_HOME = fakeProcessHome;
       // Stand in for the real host home directory, so the "no env at all"
-      // fallback lands under a temp dir instead of the real ~/.paperclip.
+      // fallback lands under a temp dir instead of the real ~/.paperclip-pro.
       const homedirSpy = vi.spyOn(os, "homedir").mockReturnValue(fallbackOsHome);
       try {
         const targetDir = path.join(rootDir, "target");

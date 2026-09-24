@@ -17,8 +17,8 @@ import {
   heartbeatRuns,
   issues,
   projects,
-} from "@paperclipai/db";
-import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

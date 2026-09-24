@@ -8,7 +8,7 @@ import {
   createDb,
   instanceUserRoles,
   principalPermissionGrants,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   claimBoardOwnership,
   getBoardClaimWarningUrl,

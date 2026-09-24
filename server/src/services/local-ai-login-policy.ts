@@ -1,4 +1,4 @@
-import type { DeploymentMode, DeploymentExposure } from "@paperclipai/shared";
+import type { DeploymentMode, DeploymentExposure } from "@tickernelz/paperclip-pro-shared";
 
 /** Same server-host boundary as local stdio runtimes. */
 export function supportsLocalAiLogin(options: {

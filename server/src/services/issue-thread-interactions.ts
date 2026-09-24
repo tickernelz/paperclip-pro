@@ -1,5 +1,5 @@
 import { currentContinuationOrigins } from "./execution-continuation.js";
-import { connectionIntentDeliveries } from "@paperclipai/db";
+import { connectionIntentDeliveries } from "@tickernelz/paperclip-pro-db";
 import { isDeepStrictEqual } from "node:util";
 import {
   and,
@@ -13,7 +13,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   companySecretProposals,
@@ -28,11 +28,11 @@ import {
   issues,
   toolActionRequests,
   toolOauthStates,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   trackInteractionCreated,
   trackInteractionResolved,
-} from "@paperclipai/shared/telemetry";
+} from "@tickernelz/paperclip-pro-shared/telemetry";
 import type {
   AcceptIssueThreadInteraction,
   AskUserQuestionsAnswer,
@@ -61,7 +61,7 @@ import type {
   SuggestTasksResultCreatedTask,
   SubmitIssueThreadInteractionVerdicts,
   WithdrawIssueThreadInteraction,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   acceptIssueThreadInteractionSchema,
   askUserQuestionsPayloadSchema,
@@ -84,7 +84,7 @@ import {
   suggestTasksResultSchema,
   submitIssueThreadInteractionVerdictsSchema,
   withdrawIssueThreadInteractionSchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { z } from "zod";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { getTelemetryClient } from "../telemetry.js";

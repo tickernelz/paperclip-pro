@@ -15,7 +15,7 @@ Paperclip ships both Hermes adapters as built-ins:
 
 No Adapter manager installation is required for normal use. Adapter manager is
 only needed when you intentionally install an external
-`@paperclipai/hermes-paperclip-adapter` package to override or shadow a built-in
+`@tickernelz/paperclip-pro-hermes-paperclip-adapter` package to override or shadow a built-in
 adapter while developing the Hermes package. If the external override is paused
 or removed, Paperclip restores the built-in `hermes_local` / `hermes_gateway`
 adapter.
@@ -79,9 +79,9 @@ The UI prompt points Hermes at the same machine-readable onboarding endpoints:
 For CLI-driven setup, create and inspect the invite directly:
 
 ```sh
-npx paperclipai invite create --company-id <company-id> --payload-json '{"requestType":"agent"}'
-npx paperclipai invite show <token>
-npx paperclipai invite onboarding:text <token>
+npx @tickernelz/paperclip-pro invite create --company-id <company-id> --payload-json '{"requestType":"agent"}'
+npx @tickernelz/paperclip-pro invite show <token>
+npx @tickernelz/paperclip-pro invite onboarding:text <token>
 ```
 
 Hermes should submit a join request with `requestType: "agent"` and
@@ -119,14 +119,14 @@ After Hermes submits the join request:
 2. Approve it from the board UI, or use:
 
    ```sh
-   npx paperclipai join list --company-id <company-id> --status pending_approval
-   npx paperclipai join approve <request-id> --company-id <company-id>
+   npx @tickernelz/paperclip-pro join list --company-id <company-id> --status pending_approval
+   npx @tickernelz/paperclip-pro join approve <request-id> --company-id <company-id>
    ```
 
 3. Hermes claims the one-time agent API key:
 
    ```sh
-   npx paperclipai join claim-key <request-id> --claim-secret <secret>
+   npx @tickernelz/paperclip-pro join claim-key <request-id> --claim-secret <secret>
    ```
 
 4. Store the claimed Paperclip key in Hermes runtime state or secrets. The claim
@@ -182,12 +182,12 @@ Use these entry points depending on who is driving setup:
   onboarding prompt.
 - Invite API: `GET /api/invites/:token/onboarding.txt` for the generated
   llm.txt-style setup instructions.
-- CLI invite flow: `npx paperclipai invite create`, `invite show`,
+- CLI invite flow: `npx @tickernelz/paperclip-pro invite create`, `invite show`,
   `invite onboarding:text`, `join approve`, and `join claim-key`.
 - Smoke helpers: `pnpm smoke:hermes-gateway-e2e` for fresh-state Docker
   verification and `pnpm smoke:hermes-gateway-join` for an already-running
   gateway.
 - Adapter development override: Adapter manager can install
-  `@paperclipai/hermes-paperclip-adapter` as an external override, but normal
+  `@tickernelz/paperclip-pro-hermes-paperclip-adapter` as an external override, but normal
   operators should use the built-in `hermes_local` and `hermes_gateway`
   adapters.

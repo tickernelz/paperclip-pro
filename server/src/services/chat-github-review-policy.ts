@@ -7,7 +7,7 @@ import {
   type GitHubReviewConclusion,
   type GitHubReviewEventContext,
   type GitHubReviewPolicy,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 export function effectiveGitHubReviewPolicy(
   configuration: GitHubChatConfiguration,

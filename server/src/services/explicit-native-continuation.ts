@@ -10,7 +10,7 @@ import {
   agents, agentWakeupRequests, approvals, issueApprovals, issueThreadInteractions,
   environmentLeases, heartbeatRuns, issueComments, issueRecoveryActions,
   issues, nativeRunFinalizations, nativeRunResults, type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
 import { adapterExecutionControls } from "./adapter-execution-control.js";

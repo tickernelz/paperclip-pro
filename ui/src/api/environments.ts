@@ -11,7 +11,7 @@ import type {
   FinishEnvironmentCustomImageSetupSession,
   StartEnvironmentCustomImageSetupSession,
   CreateEnvironmentCustomImageTerminalSessionToken,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
 export interface EnvironmentCustomImageOverview {

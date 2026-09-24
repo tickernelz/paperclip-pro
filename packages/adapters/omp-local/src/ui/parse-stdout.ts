@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@paperclipai/adapter-utils";
+import type { TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
 
 type JsonRecord = Record<string, unknown>;
 

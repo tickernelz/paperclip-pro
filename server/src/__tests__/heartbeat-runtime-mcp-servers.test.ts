@@ -19,7 +19,7 @@ import {
   toolProfileBindings,
   toolProfileEntries,
   toolProfiles,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

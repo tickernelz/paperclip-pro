@@ -355,7 +355,7 @@ import {
   type IssueTreeControlMode,
   type WorkspaceFileRef,
   workspaceFileRefSchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 // Stable empty array for React Query `data` defaults. A literal `= []` default
 // creates a new array reference on every render while `data` is undefined

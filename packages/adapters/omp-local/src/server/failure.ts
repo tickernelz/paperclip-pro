@@ -1,4 +1,4 @@
-import type { AdapterExecutionResult } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
 
 type AdapterExecutionErrorFamily = NonNullable<AdapterExecutionResult["errorFamily"]>;
 

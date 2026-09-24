@@ -1,4 +1,4 @@
-import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE, isRemoteMcpConnectorId, isRemoteMcpConnectorMethod } from "@paperclipai/shared";
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE, isRemoteMcpConnectorId, isRemoteMcpConnectorMethod } from "@tickernelz/paperclip-pro-shared";
 import { RemoteMcpManagement } from "@/features/connections/remote-mcp/RemoteMcpManagement";
 import { remoteMcpProviders } from "@/features/connections/remote-mcp/providers";
 import { ManagedAiConnectionDetails } from "@/components/ai-connections/ManagedAiConnectionDetails";
@@ -12,13 +12,13 @@ import type {
   ToolConnection,
   ToolPolicy,
   ToolProfileWithDetails,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   connectionDisplaySecondaryHint,
   humanizeConnectionDisplayName,
   aiSubscriptionNeedsIsolatedLogin,
   isToolConnectionAttentionHealth as isAttentionHealthStatus,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { Navigate, useParams, useNavigate, useSearchParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";

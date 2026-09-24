@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import type { ExecutionContinuationEnvelope, AskUserQuestionsInteraction } from "@paperclipai/shared";
+import type { ExecutionContinuationEnvelope, AskUserQuestionsInteraction } from "@tickernelz/paperclip-pro-shared";
 
 import { formatDurableQuestionResponseSummary } from "../question-response-delivery.js";
 import { buildNativeCompletionContract } from "./completion-contracts.js";
-import { renderPaperclipWakePrompt } from "@paperclipai/adapter-utils/server-utils";
+import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { buildNativeExecutionInput } from "./native-execution-input.js";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
 

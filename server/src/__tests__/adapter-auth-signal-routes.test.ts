@@ -104,8 +104,8 @@ vi.mock("../services/instance-settings.js", () => ({
   instanceSettingsService: () => mockInstanceSettingsService,
 }));
 
-vi.mock("@paperclipai/adapter-codex-local/server", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@paperclipai/adapter-codex-local/server")>();
+vi.mock("@tickernelz/paperclip-pro-adapter-codex-local/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-codex-local/server")>();
   return {
     ...actual,
     evaluateCodexCredentialReadiness: mockEvaluateCodexCredentialReadiness,

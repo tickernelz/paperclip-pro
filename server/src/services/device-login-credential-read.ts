@@ -32,7 +32,7 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
-import type { Environment, EnvironmentLease } from "@paperclipai/shared";
+import type { Environment, EnvironmentLease } from "@tickernelz/paperclip-pro-shared";
 import type { EnvironmentRuntimeService } from "./environment-runtime.js";
 import { validateLoginSessionHome } from "./login-command.js";
 

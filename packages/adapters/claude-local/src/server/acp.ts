@@ -8,38 +8,38 @@ import type {
   AdapterEnvironmentTestResult,
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   parseLocalProcessFilesystemScope,
   parseLocalProcessNetworkScope,
-} from "@paperclipai/adapter-utils/local-process-sandbox";
+} from "@tickernelz/paperclip-pro-adapter-utils/local-process-sandbox";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
   readAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
   runAdapterExecutionTargetProcess,
-} from "@paperclipai/adapter-utils/execution-target";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   DEFAULT_ACP_ENGINE_MODE,
   DEFAULT_ACP_ENGINE_NON_INTERACTIVE_PERMISSIONS,
   DEFAULT_ACP_ENGINE_PERMISSION_MODE,
   DEFAULT_ACP_ENGINE_WARM_HANDLE_IDLE_MS,
-} from "@paperclipai/adapter-utils/acpx-engine/constants";
+} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/constants";
 import type {
   AcpxEngineExecutorOptions,
   AcpxRemoteManagedHomeContext,
   AcpxRemoteManagedHomeResult,
   AcpxTerminalSessionFailure,
   AcpxTerminalFailureClassification,
-} from "@paperclipai/adapter-utils/acpx-engine/execute";
+} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/execute";
 import {
   asBoolean,
   asNumber,
   asString,
   parseObject,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   materializeRemoteClaudeConfig,
   prepareClaudeConfigSeed,
@@ -51,7 +51,7 @@ import {
   classifyThrownErrorClass,
   logSandboxProbeDiagnostic,
 } from "./probe-diagnostics.js";
-import { createWorkspaceRestoreTeardown } from "@paperclipai/adapter-utils/workspace-restore-teardown";
+import { createWorkspaceRestoreTeardown } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-teardown";
 import { buildLocalAdapterTestProbeEnv } from "./probe-env.js";
 import { detectClaudeLoginRequired, extractClaudeRetryNotBefore, isClaudeProviderQuotaError, parseClaudeStreamJson } from "./parse.js";
 import { buildClaudeProbePermissionArgs, claudeSandboxPermissionEnv } from "./permissions.js";
@@ -383,7 +383,7 @@ export function createClaudeAcpExecutor(options: ClaudeAcpExecutorOptions = {}):
   return async (ctx) => {
     let currentExecutor = executor;
     if (!currentExecutor) {
-      const { createAcpxEngineExecutor } = await import("@paperclipai/adapter-utils/acpx-engine/execute");
+      const { createAcpxEngineExecutor } = await import("@tickernelz/paperclip-pro-adapter-utils/acpx-engine/execute");
       currentExecutor = createAcpxEngineExecutor(withClaudeAcpDefaults(options));
       executor = currentExecutor;
     }

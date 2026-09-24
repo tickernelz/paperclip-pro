@@ -18,7 +18,7 @@ import {
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,
   renderPaperclipWakePrompt,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 const NATIVE_GITHUB_ATTACHMENT_RECOVERY_GUIDANCE = [
   "## GitHub attachment recovery navigation",

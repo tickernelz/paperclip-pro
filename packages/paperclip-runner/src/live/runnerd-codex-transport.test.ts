@@ -1382,8 +1382,8 @@ it("keeps a scoped npm-installed package inside its portable dependency root", a
   const deployedPackageRoot = join(
     deploymentRoot,
     "node_modules",
-    "@paperclipai",
-    "paperclip-runner",
+    "@tickernelz",
+    "paperclip-pro-paperclip-runner",
   );
   await mkdir(join(deployedPackageRoot, "dist", "cli"), { recursive: true });
   try {

@@ -1,4 +1,4 @@
-# @paperclipai/shared
+# @tickernelz/paperclip-pro-shared
 
 ## 0.3.1
 

@@ -100,10 +100,10 @@ describe("Scenario chat deployment boundary", () => {
 
     for (const [path, source] of closure) {
       expect(source, path).not.toMatch(/\bimport\s*\(/);
-      expect(source, path).not.toMatch(/PaperclipControlPlanePort|PAPERCLIP_API_(?:URL|KEY)|@paperclipai\/db/);
+      expect(source, path).not.toMatch(/PaperclipControlPlanePort|PAPERCLIP_API_(?:URL|KEY)|@tickernelz\/paperclip-pro-db/);
       for (const specifier of importSpecifiers(source)) {
         expect(specifier, `${path} imports outside the standalone boundary`).not.toMatch(
-          /^(?:server|ui|cli)(?:\/|$)|^@paperclipai\/(?!paperclip-runner(?:\/|$))/,
+          /^(?:server|ui|cli)(?:\/|$)|^@tickernelz\/paperclip-pro-(?!paperclip-runner(?:\/|$))/,
         );
       }
     }

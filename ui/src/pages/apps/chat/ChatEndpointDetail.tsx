@@ -4,7 +4,7 @@ import { ChatCommunicationInstructions } from "./ChatCommunicationInstructions";
 import { SlackAvatarSettings } from "./SlackAvatarStep";
 import { agentsApi } from "@/api/agents";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
-import { resolveAgentAppearance } from "@paperclipai/shared";
+import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { GitHubBotManagement, GitHubReviews } from "./GitHubBotManagement";
 import { EmailEndpointSettings } from "./EmailEndpointSetup";
 import { useEffect, useMemo, useState } from "react";

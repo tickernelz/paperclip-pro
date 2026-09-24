@@ -1,4 +1,4 @@
-import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@paperclipai/shared";
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/paperclip-pro-shared";
 import { ManagedAiConnectionRow } from "@/components/ai-connections/ManagedAiConnectionDetails";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -16,14 +16,14 @@ import {
   ServerCog,
   Trash2,
 } from "lucide-react";
-import type { ToolApplication, ToolConnection } from "@paperclipai/shared";
+import type { ToolApplication, ToolConnection } from "@tickernelz/paperclip-pro-shared";
 import {
   getAppDefinitionForUrl,
   isRemoteMcpConnectorId,
   getAppStoreDefinition,
   isToolConnectionAttentionHealth,
   aiSubscriptionNeedsIsolatedLogin,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { useNavigate } from "@/lib/router";
 import { useChatConnectorsEnabled } from "@/hooks/useChatConnectorsEnabled";
 import { useMcpAggregatorsEnabled } from "@/hooks/useMcpAggregatorsEnabled";

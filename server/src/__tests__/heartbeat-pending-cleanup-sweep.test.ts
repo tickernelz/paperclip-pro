@@ -9,7 +9,7 @@ import {
   createDb,
   environmentLeases,
   environments,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

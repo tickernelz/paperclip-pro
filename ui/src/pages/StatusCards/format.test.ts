@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StatusCardUpdate } from "@paperclipai/shared";
+import type { StatusCardUpdate } from "@tickernelz/paperclip-pro-shared";
 
 import {
   estimateStatusCardCost,

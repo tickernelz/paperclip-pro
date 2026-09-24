@@ -8,7 +8,7 @@ export const PROPOSED_TELEMETRY_SCHEMA_VERSION = "proposed-telemetry-extractor.v
 
 const DEFAULT_EVENTS_FILE = "packages/shared/src/telemetry/events.ts";
 const EVENT_NAME_PATTERN = /^[a-z0-9][a-z0-9._:-]{1,63}$/;
-const ISSUE_PATTERN = /^(PAP-\d+|https:\/\/github\.com\/paperclipai\/paperclip\/issues\/\d+)$/;
+const ISSUE_PATTERN = /^(PAP-\d+|https:\/\/github\.com\/paperclip-pro\/paperclip\/issues\/\d+)$/;
 
 export function assertRepoRelativePath(value) {
   if (typeof value !== "string" || value.length === 0) {

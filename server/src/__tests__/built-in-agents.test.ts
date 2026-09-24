@@ -21,8 +21,8 @@ import {
   principalPermissionGrants,
   routines,
   routineTriggers,
-} from "@paperclipai/db";
-import { readPaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-db";
+import { readPaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

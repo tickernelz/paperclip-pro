@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
 
 const manifest: PaperclipPluginManifestV1 = {
   id: "paperclip.createos-sandbox-provider",

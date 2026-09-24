@@ -53,14 +53,14 @@ import {
   projects,
   workspaceRuntimeServices,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { eq } from "drizzle-orm";
 import {
   deriveViteHmrPort,
   RUNTIME_EXPOSURE_APP_PORT_MAX,
   RUNTIME_EXPOSURE_APP_PORT_MIN,
   RUNTIME_EXPOSURE_HMR_PORT_OFFSET,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 import type { BrokerClient, BrokerListenerRequest } from "../services/runtime-exposure/broker-client.js";
 import { readListenerBindFacts } from "../services/runtime-exposure/loopback-listener.js";
@@ -101,7 +101,7 @@ let NEXT_HMR_PORT: number;
  * must be read before that happens. Mirrors the default in
  * `resolvePaperclipHomeDir`.
  */
-const REAL_PAPERCLIP_HOME = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip");
+const REAL_PAPERCLIP_HOME = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro");
 
 /**
  * Every port a local Paperclip instance's on-disk service registry currently

@@ -12,7 +12,7 @@ import {
   nativeRunResults,
   statusDecisions,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { nativeSha256 } from "./canonical.js";
 
 type Binding = {

@@ -5,14 +5,14 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   buildPersistentSkillSnapshot,
   ensurePaperclipSkillSymlink,
   readPaperclipRuntimeSkillEntries,
   readInstalledSkillTargets,
   resolveLegacyPaperclipDesiredSkillNames,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 

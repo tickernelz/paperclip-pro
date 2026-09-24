@@ -1,4 +1,4 @@
-# @paperclipai/adapter-utils
+# @tickernelz/paperclip-pro-adapter-utils
 
 ## Unreleased
 

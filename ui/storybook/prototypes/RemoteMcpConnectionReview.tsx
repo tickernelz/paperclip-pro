@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ToolConnectionAccessSummary, ToolConnectionTestAgent } from "@paperclipai/shared";
+import type { ToolConnectionAccessSummary, ToolConnectionTestAgent } from "@tickernelz/paperclip-pro-shared";
 import { Button } from "@/components/ui/button";
 import { queryKeys } from "@/lib/queryKeys";
 import { RemoteMcpConnectionSetup } from "@/features/connections/remote-mcp/RemoteMcpConnectionSetup";

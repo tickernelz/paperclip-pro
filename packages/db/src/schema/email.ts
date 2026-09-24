@@ -15,7 +15,7 @@ import type {
   EmailEnvelope,
   EmailDeliveryOutcome,
   EmailSendInput,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   chatEndpoints,
   chatConversations,

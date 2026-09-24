@@ -8,7 +8,7 @@ import {
   RefreshCw,
   XCircle,
 } from "lucide-react";
-import type { ChatEndpointSetupState } from "@paperclipai/shared";
+import type { ChatEndpointSetupState } from "@tickernelz/paperclip-pro-shared";
 import { agentsApi } from "@/api/agents";
 import {
   chatEndpointsApi,

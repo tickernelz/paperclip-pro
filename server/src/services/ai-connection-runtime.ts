@@ -4,17 +4,17 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { type Db, companySecrets, connectionGrants } from "@paperclipai/db";
+import { type Db, companySecrets, connectionGrants } from "@tickernelz/paperclip-pro-db";
 import {
   AI_CONNECTION_CAPABILITIES,
   type AiConnectionBinding,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionService } from "./ai-connections.js";
 import { secretService } from "./secrets.js";
-import { decideCodexAuthMerge } from "@paperclipai/adapter-codex-local/server";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@paperclipai/adapter-utils/execution-target";
-import { decideGrokAuthMerge } from "@paperclipai/adapter-grok-local/server";
+import { decideCodexAuthMerge } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { decideGrokAuthMerge } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 
 export function isAiConnectionBusy(error: unknown): error is HttpError {
   return error instanceof HttpError && error.status === 422 &&

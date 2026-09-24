@@ -9,9 +9,9 @@ import {
 
 test("manifest changes without base state validate all release-enabled packages", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@paperclipai/a", publishFromCi: true },
-    { dir: "packages/b", name: "@paperclipai/b", publishFromCi: true },
-    { dir: "packages/c", name: "@paperclipai/c", publishFromCi: false },
+    { dir: "packages/a", name: "@tickernelz/paperclip-pro-a", publishFromCi: true },
+    { dir: "packages/b", name: "@tickernelz/paperclip-pro-b", publishFromCi: true },
+    { dir: "packages/c", name: "@tickernelz/paperclip-pro-c", publishFromCi: false },
   ];
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -21,19 +21,19 @@ test("manifest changes without base state validate all release-enabled packages"
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@paperclipai/a", "@paperclipai/b"],
+    ["@tickernelz/paperclip-pro-a", "@tickernelz/paperclip-pro-b"],
   );
 });
 
 test("manifest changes only validate newly release-enabled packages relative to base state", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@paperclipai/a", publishFromCi: true },
-    { dir: "packages/b", name: "@paperclipai/b", publishFromCi: true },
-    { dir: "packages/c", name: "@paperclipai/c", publishFromCi: false },
+    { dir: "packages/a", name: "@tickernelz/paperclip-pro-a", publishFromCi: true },
+    { dir: "packages/b", name: "@tickernelz/paperclip-pro-b", publishFromCi: true },
+    { dir: "packages/c", name: "@tickernelz/paperclip-pro-c", publishFromCi: false },
   ];
   const baseReleaseState = {
     source: "manifest",
-    byDir: new Map([["packages/a", { name: "@paperclipai/a", publishFromCi: true }]]),
+    byDir: new Map([["packages/a", { name: "@tickernelz/paperclip-pro-a", publishFromCi: true }]]),
   };
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -44,14 +44,14 @@ test("manifest changes only validate newly release-enabled packages relative to 
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@paperclipai/b"],
+    ["@tickernelz/paperclip-pro-b"],
   );
 });
 
 test("package-specific changes only validate affected release-enabled packages", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@paperclipai/a", publishFromCi: true },
-    { dir: "packages/b", name: "@paperclipai/b", publishFromCi: true },
+    { dir: "packages/a", name: "@tickernelz/paperclip-pro-a", publishFromCi: true },
+    { dir: "packages/b", name: "@tickernelz/paperclip-pro-b", publishFromCi: true },
   ];
 
   const changedPackages = collectReleasePackagesForChangedPaths(
@@ -61,7 +61,7 @@ test("package-specific changes only validate affected release-enabled packages",
 
   assert.deepEqual(
     changedPackages.map((pkg) => pkg.name),
-    ["@paperclipai/b"],
+    ["@tickernelz/paperclip-pro-b"],
   );
 });
 
@@ -77,8 +77,8 @@ test("non-404 npm failures are treated as registry errors", () => {
 
 test("base release state falls back to public packages when manifest is absent", () => {
   const releasePackages = [
-    { dir: "packages/a", name: "@paperclipai/a", publishFromCi: true },
-    { dir: "packages/b", name: "@paperclipai/b", publishFromCi: true },
+    { dir: "packages/a", name: "@tickernelz/paperclip-pro-a", publishFromCi: true },
+    { dir: "packages/b", name: "@tickernelz/paperclip-pro-b", publishFromCi: true },
   ];
 
   const baseReleaseState = getBaseReleaseState("base-sha", releasePackages, (_revision, filePath) => {
@@ -87,11 +87,11 @@ test("base release state falls back to public packages when manifest is absent",
     }
 
     if (filePath === "packages/a/package.json") {
-      return JSON.stringify({ name: "@paperclipai/a", private: false });
+      return JSON.stringify({ name: "@tickernelz/paperclip-pro-a", private: false });
     }
 
     if (filePath === "packages/b/package.json") {
-      return JSON.stringify({ name: "@paperclipai/b", private: true });
+      return JSON.stringify({ name: "@tickernelz/paperclip-pro-b", private: true });
     }
 
     return null;
@@ -99,6 +99,6 @@ test("base release state falls back to public packages when manifest is absent",
 
   assert.equal(baseReleaseState?.source, "public-packages");
   assert.deepEqual([...baseReleaseState.byDir.entries()], [
-    ["packages/a", { name: "@paperclipai/a", publishFromCi: true }],
+    ["packages/a", { name: "@tickernelz/paperclip-pro-a", publishFromCi: true }],
   ]);
 });

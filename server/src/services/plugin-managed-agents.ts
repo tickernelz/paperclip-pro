@@ -1,17 +1,17 @@
 import { and, eq, isNull, ne } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   companies,
   pluginEntities,
   pluginManagedResources,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   Agent,
   PaperclipPluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { notFound } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";

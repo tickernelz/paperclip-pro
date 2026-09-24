@@ -10,7 +10,7 @@ import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -24,9 +24,9 @@ vi.mock("../telemetry.js", () => ({
   getTelemetryClient: () => mockTelemetryClient,
 }));
 
-vi.mock("@paperclipai/shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/shared/telemetry")>(
-    "@paperclipai/shared/telemetry",
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async () => {
+  const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-shared/telemetry")>(
+    "@tickernelz/paperclip-pro-shared/telemetry",
   );
   return {
     ...actual,

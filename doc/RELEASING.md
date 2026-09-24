@@ -52,7 +52,7 @@ Important constraints:
 Every stable release has four separate surfaces:
 
 1. **Verification** — the exact git SHA passes typecheck, tests, and build
-2. **npm** — `paperclipai` and public workspace packages are published
+2. **npm** — `paperclip-pro` and public workspace packages are published
 3. **GitHub** — the stable release gets a git tag and GitHub Release
 4. **Website / announcements** — the stable changelog is published externally and announced
 
@@ -97,18 +97,18 @@ It:
 - computes the canary version for the current UTC date
 - publishes workspace packages dependency-first under npm dist-tag `canary`
 - waits for each package version to become registry-visible before continuing
-- publishes the user-facing `paperclipai` package last, so `paperclipai@canary` does not advance before the full package set exists
+- publishes the user-facing `paperclip-pro` package last, so `@tickernelz/paperclip-pro@canary` does not advance before the full package set exists
 - verifies that `canary` resolves to the just-published version and that published internal dependencies exist on npm
-- installs `paperclipai@canary` into a clean temporary prefix as the final npm gate
+- installs `@tickernelz/paperclip-pro@canary` into a clean temporary prefix as the final npm gate
 - fails by default if npm leaves `latest` pointing at a canary; use `--allow-canary-latest` only when that state is intentional
 - creates a git tag `canary/vYYYY.MDD.P-canary.N`
 
 Users install canaries with:
 
 ```bash
-npx paperclipai@canary onboard
+npx @tickernelz/paperclip-pro@canary onboard
 # or
-npx paperclipai@canary onboard --data-dir "$(mktemp -d /tmp/paperclip-canary.XXXXXX)"
+npx @tickernelz/paperclip-pro@canary onboard --data-dir "$(mktemp -d /tmp/paperclip-canary.XXXXXX)"
 ```
 
 ### Nightly
@@ -142,7 +142,7 @@ push, and the Docker dispatch.
 Users install nightlies with:
 
 ```bash
-npx paperclipai@nightly onboard
+npx @tickernelz/paperclip-pro@nightly onboard
 ```
 
 ### Beta
@@ -178,7 +178,7 @@ Betas are manual promotions. Dispatch
 Users install betas with:
 
 ```bash
-npx paperclipai@beta onboard
+npx @tickernelz/paperclip-pro@beta onboard
 ```
 
 #### Beta fix path: candidate branches
@@ -396,7 +396,7 @@ post-publish verification.
 
 Minimum checks:
 
-- `npx paperclipai@canary onboard` installs
+- `npx @tickernelz/paperclip-pro@canary onboard` installs
 - onboarding completes without crashes
 - authenticated login works with the smoke credentials
 - the browser lands in onboarding on a fresh instance

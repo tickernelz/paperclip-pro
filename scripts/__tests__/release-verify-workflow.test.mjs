@@ -39,7 +39,7 @@ test("chaos verification isolates callers that verify the same source commit", (
 test("canary reuses exact-source proof while stable keeps full verification", () => {
   const releaseWorkflow = readWorkflow("release.yml");
   const canary = releaseWorkflow.split("  verify_canary:\n")[1].split("\n  publish_canary:")[0];
-  assert.match(canary, /github\.repository == 'paperclipai\/paperclip' && github\.event_name == 'push' && github\.ref == 'refs\/heads\/master'/);
+  assert.match(canary, /github\.repository == 'paperclip-pro\/paperclip' && github\.event_name == 'push' && github\.ref == 'refs\/heads\/master'/);
   assert.match(canary, /actions: read/);
   assert.match(canary, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(canary, /SOURCE_SHA: \$\{\{ github\.sha \}\}/);
@@ -191,7 +191,7 @@ test("release smoke workflow extends the container readiness budget for CI", () 
     "utf8",
   );
 
-  // CI containers cold-install paperclipai and embedded postgres, so the
+  // CI containers cold-install paperclip-pro and embedded postgres, so the
   // workflow must extend the harness's local-default readiness budget.
   assert.match(smokeWorkflow, /SMOKE_READY_TIMEOUT_SECONDS=\d+/);
   const ciBudget = Number(
@@ -227,7 +227,7 @@ test("release verify workflow covers the same split test surface as stable PR ve
     .flatMap(([, checks]) => checks.split(" "));
   assert.deepEqual(runnerChecks, runnerScripts["check:all"].split(" && ")
     .map((command) => command.replace(/^pnpm run /, "")));
-  assert.match(verifyWorkflow, /pnpm --filter @paperclipai\/paperclip-runner "\$check"/);
+  assert.match(verifyWorkflow, /pnpm --filter @tickernelz\/paperclip-pro-paperclip-runner "\$check"/);
   assert.match(verifyWorkflow, /runner_workflow_evals:/);
   assert.match(verifyWorkflow, /runner_chaos_evals:/);
   assert.match(
@@ -437,7 +437,7 @@ test("direct Grok qualification installs the pinned binary and scopes the select
   const workflow = readWorkflow("runner-protocol-live-evals.yml");
   assert.ok(workflow.includes("XAI_API_KEY: ${{ matrix.credentialName == 'XAI_API_KEY' && secrets.XAI_API_KEY || '' }}"));
   assert.ok(workflow.includes("if [ -f packages/grok-acp/install.mjs ]; then"));
-  assert.ok(workflow.indexOf("node packages/grok-acp/install.mjs") < workflow.indexOf("pnpm --filter @paperclipai/paperclip-runner deploy --prod"));
+  assert.ok(workflow.indexOf("node packages/grok-acp/install.mjs") < workflow.indexOf("pnpm --filter @tickernelz/paperclip-pro-paperclip-runner deploy --prod"));
   assert.ok(workflow.includes("PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: ${{ matrix.credentialName == 'PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET' && secrets.GROK_AUTH_JSON || '' }}"));
   assert.equal((workflow.match(/secrets\.GROK_AUTH_JSON/gu) ?? []).length, 1);
 });

@@ -9,7 +9,7 @@ import {
   UserRound,
   UserRoundPen,
 } from "lucide-react";
-import type { DeploymentMode } from "@paperclipai/shared";
+import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";

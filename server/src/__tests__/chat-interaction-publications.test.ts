@@ -18,8 +18,8 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
-import type { ChatProvider } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
 import { enqueueTerminalIssueInteractionChatPublications } from "../services/chat-interaction-publications.js";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
 import {

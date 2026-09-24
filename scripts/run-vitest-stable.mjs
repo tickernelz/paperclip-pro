@@ -20,20 +20,20 @@ const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@paperclipai/shared",
-  "@paperclipai/skills-catalog",
-  "@paperclipai/db",
-  "@paperclipai/adapter-utils",
-  "@paperclipai/adapter-claude-local",
-  "@paperclipai/adapter-codex-local",
-  "@paperclipai/adapter-grok-local",
-  "@paperclipai/adapter-openclaw-gateway",
-  "@paperclipai/adapter-opencode-local",
-  "@paperclipai/plugin-daytona",
-  "@paperclipai/plugin-sdk",
-  "@paperclipai/create-paperclip-plugin",
-  "@paperclipai/ui",
-  "paperclipai",
+  "@tickernelz/paperclip-pro-shared",
+  "@tickernelz/paperclip-pro-skills-catalog",
+  "@tickernelz/paperclip-pro-db",
+  "@tickernelz/paperclip-pro-adapter-utils",
+  "@tickernelz/paperclip-pro-adapter-claude-local",
+  "@tickernelz/paperclip-pro-adapter-codex-local",
+  "@tickernelz/paperclip-pro-adapter-grok-local",
+  "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
+  "@tickernelz/paperclip-pro-adapter-opencode-local",
+  "@tickernelz/paperclip-pro-plugin-daytona",
+  "@tickernelz/paperclip-pro-plugin-sdk",
+  "@tickernelz/paperclip-pro-create-paperclip-plugin",
+  "@tickernelz/paperclip-pro-ui",
+  "paperclip-pro",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -94,7 +94,7 @@ const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@paperclipai/ui", "paperclipai"];
+const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "paperclip-pro"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const allowedGeneralGroupNames = [
@@ -377,13 +377,13 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {
   if (groupName === generalChatGroupName) {
-    runVitest(["--project", "@paperclipai/server", ...serializedServerVitestArgs, chatSuite],
+    runVitest(["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, chatSuite],
       "chat integration test shard", { index: shardIndex ?? 0, count: shardCount ?? 1 });
     return;
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@paperclipai/server", ...serializedServerVitestArgs, nativeRunnerSuite],
+      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, nativeRunnerSuite],
       "native runner vertical-slice suite",
     );
     return;
@@ -413,7 +413,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       runVitest(
         [
           "--project",
-          "@paperclipai/server",
+          "@tickernelz/paperclip-pro-server",
           ...serializedServerVitestArgs,
           ...shardFiles,
         ],
@@ -431,7 +431,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@tickernelz/paperclip-pro-server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -467,7 +467,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@tickernelz/paperclip-pro-server",
         routeTest.repoPath,
         "--pool=forks",
         "--isolate",

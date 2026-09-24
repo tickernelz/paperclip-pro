@@ -1,23 +1,23 @@
-import { resolveAgentAppearance, agentAvatarUrl } from "@paperclipai/shared";
+import { resolveAgentAppearance, agentAvatarUrl } from "@tickernelz/paperclip-pro-shared";
 import { listOpenRouterModels } from "../services/openrouter-models.js";
 import { prepareManagedAiRuntime, assertManagedAiProjectAuth, stripAiAuthBindings } from "../services/ai-connection-runtime.js";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, aiConnectionBindingSchema, type AiConnectionBinding } from "@paperclipai/shared";
-import { toolConnections } from "@paperclipai/db";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, aiConnectionBindingSchema, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
+import { toolConnections } from "@tickernelz/paperclip-pro-db";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { defaultAiConnectionForHire } from "../services/agent-ai-connection-default.js";
 import { assertAiConnectionCreateAccess, canInstallSharedAiConnectionForNewAgent, responsibleUserForAiRequest, validateAiApiKey } from "./ai-connections.js";
-import { isAiConnectionCompatible } from "@paperclipai/shared";
+import { isAiConnectionCompatible } from "@tickernelz/paperclip-pro-shared";
 import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSkills, isConnectorSkill } from "../services/connector-runtime.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
-import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@paperclipai/adapter-utils";
+import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
 import { executionProjectionForRun, executionProjectionsForRuns } from "../services/execution-projection.js";
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { generateKeyPairSync, randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { ChatChannelService } from "../services/chat-channels.js";
-import { activityLog, agents as agentsTable, chatConversations, companies, heartbeatRuns, issues as issuesTable, projects as projectsTable } from "@paperclipai/db";
+import { activityLog, agents as agentsTable, chatConversations, companies, heartbeatRuns, issues as issuesTable, projects as projectsTable } from "@tickernelz/paperclip-pro-db";
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
 import { sha256Digest } from "../services/feedback-redaction.js";
 import {
@@ -50,7 +50,7 @@ import {
   submitBrowserCodeRequestSchema,
   toAccountHandle,
   type AgentAdapterType,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   isForbiddenConfigEnvKey,
   normalizePaperclipRunnerAdapterConfig,
@@ -59,8 +59,8 @@ import {
   resolvePaperclipInstanceRootForAdapter,
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
-import { trackAgentCreated } from "@paperclipai/shared/telemetry";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { trackAgentCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { inheritNativeRunnerAdapterConfig } from "../services/native-runtime/native-agent-runtime-inheritance.js";
 import { agentInstructionsBundleMode } from "../services/agent-instructions.js";
@@ -96,13 +96,13 @@ import { environmentService } from "../services/environments.js";
 import { resolveEnvironmentExecutionTarget } from "../services/environment-execution-target.js";
 import { environmentRuntimeService } from "../services/environment-runtime.js";
 import { resolvePluginSandboxProviderDriverByKey } from "../services/plugin-environment-driver.js";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestResult,
-} from "@paperclipai/adapter-utils";
-import { evaluateCodexCredentialReadiness } from "@paperclipai/adapter-codex-local/server";
-import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-adapter-utils";
+import { evaluateCodexCredentialReadiness } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@tickernelz/paperclip-pro-shared";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
 import { skillVersionSelectionMap } from "../services/runtime-skill-selections.js";
 import { isFixedClaudeOAuthBinding, secretService } from "../services/secrets.js";
@@ -154,7 +154,7 @@ import {
   isTruthyRuntimeEnvValue,
   resolveWorktreeRunExecutionActivationState,
 } from "../services/instance-settings.js";
-import { runClaudeLogin } from "@paperclipai/adapter-claude-local/server";
+import { runClaudeLogin } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
 import { createInviteRateLimiter } from "../services/invite-rate-limit.js";
 import {
   SetupTokenSessionService,
@@ -189,12 +189,12 @@ import type {
   ClaudeOAuthTokenStatusResponse,
   ClaudeSetupTokenOverwrite,
   SetupTokenTransportAdvisory,
-} from "@paperclipai/shared";
-import { SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@paperclipai/adapter-codex-local";
+} from "@tickernelz/paperclip-pro-adapter-codex-local";
 import {
   checkStagedCredentialReadiness,
   promoteDeviceLoginCredential,
@@ -202,11 +202,11 @@ import {
   resolveManagedCodexHomeDir,
   withAccountHomeSecretMutationLock,
   withCodexAccountHomePromotionLock,
-} from "@paperclipai/adapter-codex-local/server";
+} from "@tickernelz/paperclip-pro-adapter-codex-local/server";
 import {
   checkStagedGrokCredentialReadiness,
   promoteGrokDeviceLoginCredential,
-} from "@paperclipai/adapter-grok-local/server";
+} from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 import {
   AdapterAuthSessionConflictError,
   createDeviceLoginService,
@@ -217,12 +217,12 @@ import {
   DEVICE_LOGIN_PROVIDER_UNSUPPORTED_CODE,
   type CredentialPromotion,
 } from "../services/device-login-service.js";
-import type { AdapterAuthSessionOwnerResponse } from "@paperclipai/shared";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@paperclipai/adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@paperclipai/adapter-gemini-local";
-import { DEFAULT_KIMI_LOCAL_MODEL } from "@paperclipai/adapter-kimi-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@paperclipai/adapter-opencode-local";
-import { requireOpenCodeModelId } from "@paperclipai/adapter-opencode-local/server";
+import type { AdapterAuthSessionOwnerResponse } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_CURSOR_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-cursor-local";
+import { DEFAULT_GEMINI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-gemini-local";
+import { DEFAULT_KIMI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-kimi-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+import { requireOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import {
   loadDefaultAgentInstructionsBundle,
   resolveDefaultAgentInstructionsBundleRole,

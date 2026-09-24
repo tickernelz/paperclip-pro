@@ -2,7 +2,7 @@ import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
   AdapterRuntimeServiceReport,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   asNumber,
   asString,
@@ -15,7 +15,7 @@ import {
   selectInitialCommunicationGuidance,
   joinPromptSections,
   stringifyPaperclipWakePayload,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import crypto, { randomUUID } from "node:crypto";
 import { WebSocket } from "ws";
 

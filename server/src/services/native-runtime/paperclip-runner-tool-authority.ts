@@ -8,13 +8,13 @@ import { isConnectorTool, executeConnectorTool, type ConnectorAssignment } from 
 import { resolveNativeRuntimeMcpSnapshot } from "./runtime-context.js";
 import { connectionIntentService } from "../connection-intents.js";
 import { RUNTIME_CONNECTION_TOOL_DEFINITIONS } from "../connection-tool-definitions.js";
-import { connectionsSearchInputSchema, connectionRequestInputSchema, CONNECTION_INTENT_AGENT_GUIDANCE } from "@paperclipai/shared";
+import { connectionsSearchInputSchema, connectionRequestInputSchema, CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
 import { createHash } from "node:crypto";
-import { paperclipChatFilePreparationDelivery } from "@paperclipai/adapter-utils/chat-file-delivery";
+import { paperclipChatFilePreparationDelivery } from "@tickernelz/paperclip-pro-adapter-utils/chat-file-delivery";
 import {
   isPaperclipExternalChatContractTurn,
   normalizePaperclipWakePayload,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { runnerApiToolsEnabled } from "./runner-api-rollout.js";
 import { openRunnerApiWorkspaceFile } from "./runner-api-files.js";
 import { basename } from "node:path";
@@ -27,7 +27,7 @@ import { badRequest, forbidden } from "../../errors.js";
 import { searchRunnerApi } from "./runner-api-catalog.js";
 import { executeRunnerApi, validateRunnerApiCall, RUNNER_API_MAX_BYTES, type RunnerApiFile } from "./runner-api-client.js";
 import { and, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
   agents,
@@ -41,7 +41,7 @@ import {
   issueDocuments,
   issues,
   issueThreadInteractions,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { CAPABILITY_SEMANTIC_TOOL_CATALOG } from "../../vendor/paperclip-runner/index.js";
 import { agentService } from "../agents.js";
 import { approvalService } from "../approvals.js";

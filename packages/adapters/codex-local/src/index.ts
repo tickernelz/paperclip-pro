@@ -1,6 +1,6 @@
 import {
   PAPERCLIP_RUNNER_DEFAULT_MODELS,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 
 export const type = "codex_local";
 export const label = "Codex";
@@ -165,7 +165,7 @@ Notes:
 - Prompts are piped via stdin (Codex receives "-" prompt argument).
 - If instructionsFilePath is configured, Paperclip prepends that file's contents to the stdin prompt on every run.
 - Codex exec automatically applies repo-scoped AGENTS.md instructions from the active workspace. Paperclip cannot suppress that discovery in exec mode, so repo AGENTS.md files may still apply even when you only configured an explicit instructionsFilePath.
-- Paperclip injects desired local skills into the effective CODEX_HOME/skills/ directory at execution time so Codex can discover "$paperclip" and related skills without polluting the project working directory. For new and updated agents, Paperclip assigns an isolated managed home at ~/.paperclip/instances/<id>/companies/<companyId>/agents/<agentId>/codex-home/skills/; when CODEX_HOME is explicitly overridden in adapter config, that override is used instead.
+- Paperclip injects desired local skills into the effective CODEX_HOME/skills/ directory at execution time so Codex can discover "$paperclip" and related skills without polluting the project working directory. For new and updated agents, Paperclip assigns an isolated managed home at ~/.paperclip-pro/instances/<id>/companies/<companyId>/agents/<agentId>/codex-home/skills/; when CODEX_HOME is explicitly overridden in adapter config, that override is used instead.
 - New and updated codex_local agents persist an empty OPENAI_API_KEY override by default so a host-level OPENAI_API_KEY cannot leak into Codex runs through process inheritance. Explicit CODEX_HOME overrides must not point at the shared company codex-home, $CODEX_HOME, or ~/.codex.
 - Some model/tool combinations reject certain effort levels (for example minimal with web search enabled).
 - Fast mode is supported on GPT-6 (astra/sol/luna), GPT-5.6 (sol/terra/luna), GPT-5.5, GPT-5.4 and manual model IDs. When enabled for those models, Paperclip applies \`service_tier="fast"\` and \`features.fast_mode=true\`.

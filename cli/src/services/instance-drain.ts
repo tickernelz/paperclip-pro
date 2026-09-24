@@ -122,7 +122,7 @@ export function formatLiveRunsBlocker(verb: string, snapshot: LiveRunsSnapshot):
   const issueLabel = issueIds.length > 0 ? ` on issue${issueIds.length === 1 ? "" : "s"} ${issueIds.join(", ")}` : "";
   const detail = describeLiveRuns(snapshot);
   const pending = snapshot.pendingWakes > 0 ? `\n${snapshot.pendingWakes} queued wake(s) are also still pending.` : "";
-  return `Refusing to ${verb} Paperclip: ${snapshot.count} live agent run(s)${issueLabel} would be interrupted.${detail ? `\n${detail}` : ""}${pending}\nWait for them to finish, run "paperclipai service restart --drain" to stop admitting new runs and wait, or pass --force to interrupt them now.`;
+  return `Refusing to ${verb} Paperclip: ${snapshot.count} live agent run(s)${issueLabel} would be interrupted.${detail ? `\n${detail}` : ""}${pending}\nWait for them to finish, run "paperclip-pro service restart --drain" to stop admitting new runs and wait, or pass --force to interrupt them now.`;
 }
 
 export async function assertNoLiveRuns(input: {

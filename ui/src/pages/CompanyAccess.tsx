@@ -4,7 +4,7 @@ import {
   HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
   hidesCompanyPage,
   type Agent,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { Shield, ShieldCheck, Trash2 } from "lucide-react";
 import { accessApi, type CompanyMember } from "@/api/access";
 import { agentsApi } from "@/api/agents";

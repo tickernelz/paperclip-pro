@@ -14,7 +14,7 @@ import { applyConnectorSkills, prepareConnectorSkillDelivery, resolveConnectorAs
 import { admitExplicitNativeContinuation, undeliveredLegacyUserCommentIds } from "./explicit-native-continuation.js";
 import { connectionIntentService } from "./connection-intents.js";
 import { managedAiSessionFingerprintConfig, prepareManagedAiRuntime, assertManagedAiProjectAuth, stripAiAuthBindings, isAiConnectionBusy, AI_AUTH_ENV_KEYS } from "./ai-connection-runtime.js";
-import { aiConnectionBindingSchema } from "@paperclipai/shared";
+import { aiConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
 import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
 import { CONVERSATION_CONTINUATION_POLICY, claimedAdapterType, runUsedConversationAdapter, hasConversationContinuationPolicy, isConversationAdapter } from "./conversation-continuation.js";
 import { recordExecutionWait } from "./execution-wait.js";
@@ -37,10 +37,10 @@ import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
-import { renderPaperclipWakePrompt } from "@paperclipai/adapter-utils/server-utils";
-import { PROJECT_REPOSITORIES_DIR, readGitWorkspaceSnapshot } from "@paperclipai/adapter-utils/git-workspace-sync";
+import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { PROJECT_REPOSITORIES_DIR, readGitWorkspaceSnapshot } from "@tickernelz/paperclip-pro-adapter-utils/git-workspace-sync";
 import { isWorkspaceGitScanError, WorkspaceGitScanError, WORKSPACE_GIT_SCAN_ERROR_CODES } from "./workspace-git-operation-scheduler.js";
-import { captureDirectorySnapshot, mergeDirectoryWithBaseline } from "@paperclipai/adapter-utils/workspace-restore-merge";
+import { captureDirectorySnapshot, mergeDirectoryWithBaseline } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import { initializeRunIdentity, explicitOperatorRunIdentity } from "./run-identity.js";
 import {
   assertDurableChatWakeupReceipt,
@@ -55,9 +55,9 @@ import {
   cleanupGitHubOperationLaunchers,
   prepareGitHubExecutionEnvironment,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { agentService } from "./agents.js";
-import { normalizeLegacyRunnerProvider } from "@paperclipai/adapter-utils";
+import { normalizeLegacyRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
@@ -82,7 +82,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   CHAT_PROVIDERS,
@@ -108,7 +108,7 @@ import {
   type RoutineRevisionSnapshotV1,
   type RunLivenessState,
   type SourceTrustMetadata,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentConfigRevisions,
@@ -162,7 +162,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { conflict, HttpError, notFound } from "../errors.js";
 import {
   getStartupTraceContext,
@@ -301,7 +301,7 @@ import {
   nativeChatWorkspaceCwd,
   nativeChatWorkspaceMatches,
 } from "./native-runtime/native-chat-workspace.js";
-import { trackAgentFirstHeartbeat } from "@paperclipai/shared/telemetry";
+import { trackAgentFirstHeartbeat } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import {
   emitAgentTaskRun,
@@ -561,16 +561,16 @@ import {
   resolveSessionCompactionPolicy,
   type RuntimeStatusUpdate,
   type SessionCompactionPolicy,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   readPaperclipSkillSyncPreference,
   selectPaperclipTaskMarkdown,
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
   writePaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
-import { extractSkillMentionIds, isUuidLike } from "@paperclipai/shared";
-import { evaluateCodexCredentialReadiness } from "@paperclipai/adapter-codex-local/server";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { extractSkillMentionIds, isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import { evaluateCodexCredentialReadiness } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
 import { environmentService } from "./environments.js";
 import { parseExecutionPolicyBootstrapEnv } from "./execution-policy-bootstrap.js";
 import { retryChatControlAdmission } from "./chat-control-admission-retry.js";

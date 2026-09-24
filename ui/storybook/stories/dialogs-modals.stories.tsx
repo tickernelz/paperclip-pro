@@ -5,7 +5,7 @@ import type {
   ExecutionWorkspaceCloseReadiness,
   Goal,
   IssueAttachment,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { DocumentDiffModal } from "@/components/DocumentDiffModal";
@@ -19,7 +19,7 @@ import { PathInstructionsModal } from "@/components/PathInstructionsModal";
 import { useCompany } from "@/context/CompanyContext";
 import { useDialog } from "@/context/DialogContext";
 import { queryKeys } from "@/lib/queryKeys";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@tickernelz/paperclip-pro-shared";
 import {
   storybookAgents,
   storybookAuthSession,

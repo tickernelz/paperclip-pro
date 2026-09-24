@@ -1,9 +1,9 @@
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type {
   EnvironmentProbeResult,
   PluginEnvironmentConfig,
   PluginEnvironmentDriverDeclaration,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type {
   PluginEnvironmentExecuteParams,
   PluginEnvironmentExecuteResult,
@@ -19,7 +19,7 @@ import type {
   PluginEnvironmentLease,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentRealizeWorkspaceResult,
-} from "@paperclipai/plugin-sdk";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
 import { unprocessable } from "../errors.js";
 import {
   collectSecretRefPaths,

@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { getAppStoreDefinition } from "@paperclipai/shared";
+import { getAppStoreDefinition } from "@tickernelz/paperclip-pro-shared";
 import { AppDetail } from "./AppDetail";
 import { APP_TABS } from "./app-tabs";
 
@@ -1581,7 +1581,7 @@ describe("AppDetail", () => {
       connection: { id: "conn-1", uid: "conn-1" },
       grants: [dedicatedGitHubGrant({ kind: "user", subjectAgentId: null, subjectUserId: "user-1" }, {
         repositoryCount: empty ? 0 : 3,
-        installationOwnerLogins: ["paperclipai", "dottabot", "empty-org"],
+        installationOwnerLogins: ["paperclip-pro", "dottabot", "empty-org"],
         repositories: empty ? [] : [
           { id: "1", fullName: "paperclipai/first", installationId: "456" },
           { id: "2", fullName: "paperclipai/second", installationId: "456" },

@@ -18,7 +18,7 @@ import {
   isGoogleWorkspaceConnectorProfileId,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   loadPaperclipCloudConnectorIdentity,
   paperclipCloudConnectorEnrollmentStatus,

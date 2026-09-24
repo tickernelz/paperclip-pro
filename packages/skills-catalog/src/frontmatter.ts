@@ -4,6 +4,6 @@ export {
   asStringArray,
   parseFrontmatterMarkdown,
   type MarkdownDoc,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
-export { isFrontmatterPlainRecord as isPlainRecord } from "@paperclipai/shared";
+export { isFrontmatterPlainRecord as isPlainRecord } from "@tickernelz/paperclip-pro-shared";

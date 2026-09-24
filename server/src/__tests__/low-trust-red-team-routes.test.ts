@@ -35,11 +35,11 @@ import {
   issueWorkProducts,
   principalPermissionGrants,
   projects,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
   LOW_TRUST_REVIEW_PRESET,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

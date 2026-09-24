@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
-import type { BindMode, DeploymentExposure, DeploymentMode } from "@paperclipai/shared";
+import type { BindMode, DeploymentExposure, DeploymentMode } from "@tickernelz/paperclip-pro-shared";
 
 import { parse as parseEnvFileContents } from "dotenv";
 
@@ -93,7 +93,7 @@ function resolveAgentJwtSecretStatus(
 
   return {
     status: "warn",
-    message: "missing (run `npx paperclipai onboard`)",
+    message: "missing (run `npx @tickernelz/paperclip-pro onboard`)",
   };
 }
 

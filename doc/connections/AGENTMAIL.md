@@ -147,11 +147,11 @@ also expose these operations. The CLI uses the same authenticated
 operations and inherits the agent run ID:
 
 ```sh
-paperclipai email inboxes
-paperclipai email thread "$PAPERCLIP_TASK_ID"
-paperclipai email send --file email-request.json
-paperclipai email reply --file email-reply.json
-paperclipai email delivery '<publication-uuid>'
+paperclip-pro email inboxes
+paperclip-pro email thread "$PAPERCLIP_TASK_ID"
+paperclip-pro email send --file email-request.json
+paperclip-pro email reply --file email-reply.json
+paperclip-pro email delivery '<publication-uuid>'
 ```
 
 A `202` response includes task, conversation, and publication IDs immediately.

@@ -76,7 +76,7 @@ Resolution order:
 
 Behavior requirements:
 
-- `paperclipai connect` must show the resolved API base before any auth or mutation and allow the user to override it.
+- `paperclip-pro connect` must show the resolved API base before any auth or mutation and allow the user to override it.
 - Non-interactive commands must accept `--api-base` and produce a clear connection error that includes the attempted URL and a health-check hint.
 - Profiles must persist `apiBase` so a board/agent persona is always tied to the API instance it was created for.
 - Commands that mint or use tokens must not silently fall back to a different API base if a stored credential is missing. They should ask interactively or fail with instructions in non-interactive mode.
@@ -89,7 +89,7 @@ Behavior requirements:
 Command:
 
 ```sh
-paperclipai connect
+paperclip-pro connect
 ```
 
 Flow:
@@ -132,9 +132,9 @@ Expected profile shape should evolve from today's context:
 Commands:
 
 ```sh
-paperclipai token board create --company-id <company-id> --name "external-admin"
-paperclipai token board list
-paperclipai token board revoke <key-id>
+paperclip-pro token board create --company-id <company-id> --name "external-admin"
+paperclip-pro token board list
+paperclip-pro token board revoke <key-id>
 ```
 
 Requirements:
@@ -162,9 +162,9 @@ API gap:
 Commands:
 
 ```sh
-paperclipai token agent create --company-id <company-id> --agent <agent-id-or-name> --name "external-worker"
-paperclipai token agent list --company-id <company-id> --agent <agent-id-or-name>
-paperclipai token agent revoke --agent <agent-id-or-name> <key-id>
+paperclip-pro token agent create --company-id <company-id> --agent <agent-id-or-name> --name "external-worker"
+paperclip-pro token agent list --company-id <company-id> --agent <agent-id-or-name>
+paperclip-pro token agent revoke --agent <agent-id-or-name> <key-id>
 ```
 
 Requirements:
@@ -190,15 +190,15 @@ CLI gap:
 Required user-facing shape:
 
 ```sh
-paperclipai agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
+paperclip-pro agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
 ```
 
 Recommended safer variants:
 
 ```sh
-paperclipai agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
-paperclipai agent prompt --profile my-agent "Prompt here"
-paperclipai board prompt --agent <agent-name-or-id> "Prompt here"
+paperclip-pro agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
+paperclip-pro agent prompt --profile my-agent "Prompt here"
+paperclip-pro board prompt --agent <agent-name-or-id> "Prompt here"
 ```
 
 Behavior:
@@ -287,12 +287,12 @@ Missing CLI surfaces:
 CLI commands to add:
 
 ```sh
-paperclipai agent wake <agent>
-paperclipai run list --company-id <company-id>
-paperclipai run get <run-id>
-paperclipai run log <run-id>
-paperclipai run cancel <run-id>
-paperclipai issue runs <issue-id>
+paperclip-pro agent wake <agent>
+paperclip-pro run list --company-id <company-id>
+paperclip-pro run get <run-id>
+paperclip-pro run log <run-id>
+paperclip-pro run cancel <run-id>
+paperclip-pro issue runs <issue-id>
 ```
 
 ### P1: Projects and Goals
@@ -313,8 +313,8 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai project list|get|create|update|delete
-paperclipai goal list|get|create|update|delete
+paperclip-pro project list|get|create|update|delete
+paperclip-pro goal list|get|create|update|delete
 ```
 
 ### P1: Issue Parity Beyond Basic CRUD
@@ -361,14 +361,14 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai issue child create <issue-id>
-paperclipai issue document list|get|put|delete|lock|unlock|revisions|restore
-paperclipai issue work-product list|create|update|delete
-paperclipai issue interaction list|create|accept|reject|respond|cancel
-paperclipai issue attachment list|upload|download|delete
-paperclipai issue force-release <issue-id>
-paperclipai issue label list|create|delete
-paperclipai issue read|unread|archive|unarchive
+paperclip-pro issue child create <issue-id>
+paperclip-pro issue document list|get|put|delete|lock|unlock|revisions|restore
+paperclip-pro issue work-product list|create|update|delete
+paperclip-pro issue interaction list|create|accept|reject|respond|cancel
+paperclip-pro issue attachment list|upload|download|delete
+paperclip-pro issue force-release <issue-id>
+paperclip-pro issue label list|create|delete
+paperclip-pro issue read|unread|archive|unarchive
 ```
 
 ### P1: Agent Lifecycle and Configuration
@@ -405,11 +405,11 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai agent create|update|pause|resume|approve|terminate|delete
-paperclipai agent org
-paperclipai agent config get|revisions|rollback
-paperclipai agent instructions get|set|file
-paperclipai adapter list|models|profiles|detect|test|install|enable|disable|reload
+paperclip-pro agent create|update|pause|resume|approve|terminate|delete
+paperclip-pro agent org
+paperclip-pro agent config get|revisions|rollback
+paperclip-pro agent instructions get|set|file
+paperclip-pro adapter list|models|profiles|detect|test|install|enable|disable|reload
 ```
 
 ### P1: Costs, Budgets, and Finance
@@ -430,10 +430,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai cost summary|by-agent|by-project|by-provider|issue
-paperclipai cost event create
-paperclipai finance event create|list|summary
-paperclipai budget overview|set-company|set-agent|policy-create|incident-resolve
+paperclip-pro cost summary|by-agent|by-project|by-provider|issue
+paperclip-pro cost event create
+paperclip-pro finance event create|list|summary
+paperclip-pro budget overview|set-company|set-agent|policy-create|incident-resolve
 ```
 
 ### P1: Access, Invites, and Memberships
@@ -456,10 +456,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai invite create|list|revoke|show|onboarding
-paperclipai join list|approve|reject|claim-key
-paperclipai member list|update|archive|permissions
-paperclipai admin user list|promote|demote|company-access
+paperclip-pro invite create|list|revoke|show|onboarding
+paperclip-pro join list|approve|reject|claim-key
+paperclip-pro member list|update|archive|permissions
+paperclip-pro admin user list|promote|demote|company-access
 ```
 
 ### P2: Routines, Workspaces, Environments
@@ -477,10 +477,10 @@ Missing CLI surfaces:
 Commands:
 
 ```sh
-paperclipai routine list|create|get|update|run|runs|trigger|revision
-paperclipai environment list|create|get|update|delete|probe|leases
-paperclipai workspace list|get|update|operations|runtime
-paperclipai project workspace list|create|update|delete|runtime
+paperclip-pro routine list|create|get|update|run|runs|trigger|revision
+paperclip-pro environment list|create|get|update|delete|probe|leases
+paperclip-pro workspace list|get|update|operations|runtime
+paperclip-pro project workspace list|create|update|delete|runtime
 ```
 
 ### P2: Instance, Sidebar, Assets, Profile, and Miscellaneous
@@ -514,31 +514,31 @@ Missing CLI surfaces:
 Recommended command hierarchy:
 
 ```text
-paperclipai connect
-paperclipai token board|agent create|list|revoke
-paperclipai whoami
-paperclipai prompt ...
-paperclipai board ...
-paperclipai agent ...
-paperclipai issue ...
-paperclipai project ...
-paperclipai goal ...
-paperclipai run ...
-paperclipai cost ...
-paperclipai budget ...
-paperclipai routine ...
-paperclipai environment ...
-paperclipai workspace ...
-paperclipai invite ...
-paperclipai member ...
-paperclipai plugin ...
-paperclipai instance ...
+paperclip-pro connect
+paperclip-pro token board|agent create|list|revoke
+paperclip-pro whoami
+paperclip-pro prompt ...
+paperclip-pro board ...
+paperclip-pro agent ...
+paperclip-pro issue ...
+paperclip-pro project ...
+paperclip-pro goal ...
+paperclip-pro run ...
+paperclip-pro cost ...
+paperclip-pro budget ...
+paperclip-pro routine ...
+paperclip-pro environment ...
+paperclip-pro workspace ...
+paperclip-pro invite ...
+paperclip-pro member ...
+paperclip-pro plugin ...
+paperclip-pro instance ...
 ```
 
 Alias policy:
 
 - Keep existing commands working.
-- Add aliases only for high-frequency flows, for example `paperclipai ask` as an alias for `paperclipai prompt`.
+- Add aliases only for high-frequency flows, for example `paperclip-pro ask` as an alias for `paperclip-pro prompt`.
 
 ## Authorization Rules
 
@@ -598,12 +598,12 @@ Automated tests should prefer mocked HTTP/server fixtures where possible. Live/A
 
 ## Acceptance Criteria
 
-- A new user can run `paperclipai connect`, confirm or override the API base, select board or agent, and get a saved working profile tied to that API base.
+- A new user can run `paperclip-pro connect`, confirm or override the API base, select board or agent, and get a saved working profile tied to that API base.
 - A board operator can mint an agent key for a selected agent in a selected company without using `agent local-cli`.
 - A script can run a one-liner equivalent to:
 
 ```sh
-paperclipai agent-prompt AgentName "$AGENT_API_KEY" "Prompt here"
+paperclip-pro agent-prompt AgentName "$AGENT_API_KEY" "Prompt here"
 ```
 
 - The one-liner creates or updates Paperclip work, does not require a browser, and fails with a clear company/agent mismatch error when the token does not belong to the requested agent.

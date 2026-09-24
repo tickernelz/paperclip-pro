@@ -12,7 +12,7 @@ import {
   approvals, issueApprovals, issueThreadInteractions,
   agentWakeupRequests, agents, companies, createDb, heartbeatRunEvents, heartbeatRuns, issueComments, issueRecoveryActions,
   issues, nativeRunFinalizations, nativeRunResults, completionContracts, environmentLeases, environments, issueRelations, issueTreeHolds, issueTreeHoldMembers,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase, getEmbeddedPostgresTestSupport } from "../__tests__/helpers/embedded-postgres.js";
 import { admitExplicitNativeContinuation } from "./explicit-native-continuation.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";

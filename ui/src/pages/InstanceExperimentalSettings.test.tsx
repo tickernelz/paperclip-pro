@@ -3,11 +3,11 @@
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { INSTANCE_FEATURE_KEYS } from "@paperclipai/shared";
+import { INSTANCE_FEATURE_KEYS } from "@tickernelz/paperclip-pro-shared";
 import type {
   InstanceExperimentalSettings as InstanceExperimentalSettingsPayload,
   InstanceExperimentalSettingsWithManaged,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InstanceExperimentalSettings } from "./InstanceExperimentalSettings";
 import { queryKeys } from "../lib/queryKeys";

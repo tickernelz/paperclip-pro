@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Agent, Company, InstanceExperimentalSettings } from "@paperclipai/shared";
+import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
 import {
   assertTestDriveDatabaseIsolation,
   bootstrapTestDrive,
@@ -267,14 +267,14 @@ describe("test-drive bootstrap validation", () => {
   });
 
   it("removes literal keys from the JavaScript argv view", () => {
-    const splitArgv = ["node", "paperclipai", "test-drive", "--api-key", "literal-secret"];
-    const joinedArgv = ["node", "paperclipai", "test-drive", "--api-key=literal-secret"];
+    const splitArgv = ["node", "paperclip-pro", "test-drive", "--api-key", "literal-secret"];
+    const joinedArgv = ["node", "paperclip-pro", "test-drive", "--api-key=literal-secret"];
 
     redactTestDriveArgv("literal-secret", splitArgv);
     redactTestDriveArgv("literal-secret", joinedArgv);
 
-    expect(splitArgv).toEqual(["node", "paperclipai", "test-drive", "--api-key", "[REDACTED]"]);
-    expect(joinedArgv).toEqual(["node", "paperclipai", "test-drive", "--api-key=[REDACTED]"]);
+    expect(splitArgv).toEqual(["node", "paperclip-pro", "test-drive", "--api-key", "[REDACTED]"]);
+    expect(joinedArgv).toEqual(["node", "paperclip-pro", "test-drive", "--api-key=[REDACTED]"]);
   });
 });
 
@@ -490,7 +490,7 @@ describe("test-drive foreground lifecycle", () => {
       bind: "loopback",
       installService: false,
       skipServiceManagerCheck: true,
-      introLabel: "paperclipai test-drive",
+      introLabel: "paperclip-pro test-drive",
     });
     expect(events).toEqual(["listening", "initialized", "browser"]);
   });

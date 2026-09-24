@@ -5,7 +5,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, asc, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents as agentsTable,
   assets,
@@ -25,9 +25,9 @@ import {
   issues,
   issueThreadInteractions,
   issueWorkProducts,
-} from "@paperclipai/db";
-import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
-import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-db";
+import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import type {
   AgentDesiredSkillEntry,
   CatalogSkill,
@@ -93,7 +93,7 @@ import type {
   CompanySkillVersionFileInventoryEntry,
   IssueAttachment,
   IssueDocument,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   isUuidLike,
   joinFrontmatterBlock,
@@ -101,7 +101,7 @@ import {
   parseFrontmatterMarkdown,
   splitFrontmatterBlock,
   stringifyFrontmatter,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
@@ -1002,7 +1002,7 @@ function deriveImportedSkillSource(
         : null);
     const [owner, repoName] = (repo ?? "").split("/");
     if (repo && owner && repoName) {
-      const sourceKind = owner === "paperclipai"
+      const sourceKind = owner === "paperclip-pro"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("paperclipai/paperclip/")
         ? "paperclip_bundled"
@@ -1311,7 +1311,7 @@ function isPaperclipBundledSkillKey(key: string) {
 
 function paperclipBundledFolderCategory(key: string, metadata?: unknown) {
   const keyParts = key.split("/");
-  if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) {
+  if (keyParts[0] === "paperclip-pro" && keyParts[1] === "bundled" && keyParts[2]) {
     return keyParts[2];
   }
   if (isPaperclipBundledSkillKey(key)) return "paperclip-core";
@@ -6166,7 +6166,7 @@ export function companySkillService(db: Db) {
         existing
         && existingMeta.sourceKind === "paperclip_bundled"
         && incomingKind === "github"
-        && incomingOwner === "paperclipai"
+        && incomingOwner === "paperclip-pro"
         && incomingRepo === "paperclip"
       ) {
         out.push(existing);

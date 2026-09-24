@@ -19,7 +19,7 @@
  *     [--dry-run] [--json]
  *
  * Or in a Paperclip checkout shell:
- *   pnpm --filter @paperclipai/db exec tsx scripts/clean-poisoned-claude-sessions.ts --dry-run
+ *   pnpm --filter @tickernelz/paperclip-pro-db exec tsx scripts/clean-poisoned-claude-sessions.ts --dry-run
  *
  * Exits 0 on success even when nothing was healed. Idempotent.
  */

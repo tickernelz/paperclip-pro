@@ -29,7 +29,7 @@ import {
   issueComments,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -149,7 +149,7 @@ function registerModuleMocks() {
 
   // The adapter registry reads the disabled set from this store. Mock it so a
   // test can declare an adapter disabled without writing to the real
-  // ~/.paperclip/adapter-settings.json.
+  // ~/.paperclip-pro/adapter-settings.json.
   vi.doMock("../services/adapter-plugin-store.js", () => ({
     getDisabledAdapterTypes: mockAdapterPluginStore.getDisabledAdapterTypes,
     isAdapterDisabled: (type: string) =>

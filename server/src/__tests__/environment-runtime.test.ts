@@ -9,7 +9,7 @@ import {
   getSshEnvLabSupport,
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
-} from "@paperclipai/adapter-utils/ssh";
+} from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import {
   agents,
   builtInManagedResources,
@@ -24,7 +24,7 @@ import {
   issues,
   plugins,
   projects,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -48,7 +48,7 @@ import {
   getActiveStepContext,
   runWithRuntimeParent,
   type StartupSpanContext,
-} from "@paperclipai/adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
 import { traceparentFromContextToken } from "../instrumentation.ts";
 import { ROOT_CONTEXT, trace } from "@opentelemetry/api";
 import { buildNativeHarnessBackupManifest } from "../services/native-runtime/native-session-executor.ts";
@@ -1188,7 +1188,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -1529,7 +1529,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -2306,7 +2306,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -2673,7 +2673,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-ready-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-ready-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-ready-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -2772,7 +2772,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-reload-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-reload-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-reload-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -2890,7 +2890,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-missing-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-missing-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-missing-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -3023,7 +3023,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: SECRET_REF_PLUGIN_KEY,
-      packageName: "@paperclipai/plugin-secret-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-secret-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -3280,7 +3280,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -3404,7 +3404,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -3543,7 +3543,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -3862,7 +3862,7 @@ describeEmbeddedPostgres("environmentRuntimeService", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.fake-plugin-sandbox-provider",
-      packageName: "@paperclipai/plugin-fake-sandbox",
+      packageName: "@tickernelz/paperclip-pro-plugin-fake-sandbox",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],

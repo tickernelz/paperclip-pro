@@ -7,7 +7,7 @@ import type {
   ToolConnectionTestAgent,
   ToolConnectionTestCallResult,
   ToolConnectionTestDecision,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { TestPanel } from "@/pages/apps/app-detail/TestPanel";
 

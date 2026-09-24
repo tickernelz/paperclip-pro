@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, approvals, companies, companyMemberships, companySecrets, connectionGrants, createDb, heartbeatRuns, issues, toolCatalogEntries, toolActionRequests, toolConnections, toolPolicies, toolProfileBindings, toolProfiles, toolAccessAuditEvents } from "@paperclipai/db";
+import { agents, approvals, companies, companyMemberships, companySecrets, connectionGrants, createDb, heartbeatRuns, issues, toolCatalogEntries, toolActionRequests, toolConnections, toolPolicies, toolProfileBindings, toolProfiles, toolAccessAuditEvents } from "@tickernelz/paperclip-pro-db";
 import { toolAccessService } from "../services/tool-access.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { RAILWAY_API_URL, RAILWAY_MCP_URL, RAILWAY_QUERIES } from "../services/railway.js";

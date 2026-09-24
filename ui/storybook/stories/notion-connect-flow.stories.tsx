@@ -7,7 +7,7 @@ import {
   type ConnectionGrant,
   type ConnectionGrantsResponse,
   type ToolConnection,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { Browse } from "@/pages/apps/Browse";
 import { AppLogo } from "@/pages/apps/AppLogo";

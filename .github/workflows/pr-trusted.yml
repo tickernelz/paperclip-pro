@@ -403,7 +403,7 @@ jobs:
             pnpm install --frozen-lockfile
           fi
 
-      # typecheck:build-gaps builds @paperclipai/server, whose build script
+      # typecheck:build-gaps builds @tickernelz/paperclip-pro-server, whose build script
       # rebuilds the Runner release binary; without the shared Rust cache that
       # is a ~3m40s cold compile of all third-party crates (run 35036001734,
       # 2026-09-15). Same restore-only contract as Verify Paperclip Runner.
@@ -542,7 +542,7 @@ jobs:
             shard_count: 3
           # workspaces-a was the slowest check in the fully-green PR run
           # 31371439296 (2026-08-10) at 319s, with the ui project's single
-          # vitest invocation accounting for ~224s and the paperclipai CLI
+          # vitest invocation accounting for ~224s and the paperclip-pro CLI
           # ~37s. Two shards use Vitest's native --shard on each project's
           # file list (ui: 439 files, cli: 54), bringing each job to roughly
           # half the suite time (~130s + setup) without a duration manifest.
@@ -822,7 +822,7 @@ jobs:
         # so the vitest lanes' --shard lands on `vitest run`. Do not add a
         # `--` separator: pnpm forwards it literally and vitest would then
         # read the shard flag as a test filter.
-        run: pnpm --filter @paperclipai/paperclip-runner ${{ matrix.command }}
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner ${{ matrix.command }}
 
   build:
     name: Build
@@ -931,7 +931,7 @@ jobs:
           save-if: false
 
       - name: Build Runner Evalbook viewer
-        run: pnpm --filter @paperclipai/paperclip-runner build:issue-thread
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
 
       - name: Build
         run: pnpm build
@@ -1262,8 +1262,8 @@ jobs:
 
       - name: Generate Paperclip config
         run: |
-          mkdir -p ~/.paperclip/instances/default
-          cat > ~/.paperclip/instances/default/config.json << 'CONF'
+          mkdir -p ~/.paperclip-pro/instances/default
+          cat > ~/.paperclip-pro/instances/default/config.json << 'CONF'
           {
             "$meta": { "version": 1, "updatedAt": "2026-01-01T00:00:00.000Z", "source": "onboard" },
             "database": { "mode": "embedded-postgres" },

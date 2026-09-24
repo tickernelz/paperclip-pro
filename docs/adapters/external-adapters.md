@@ -20,14 +20,14 @@ Paperclip supports external adapter plugins that can be installed from npm packa
 Hermes is built in with two stable adapter type keys:
 
 - `hermes_local` starts the local Hermes CLI from
-  `@paperclipai/hermes-paperclip-adapter`.
+  `@tickernelz/paperclip-pro-hermes-paperclip-adapter`.
 - `hermes_gateway` calls an already-running Hermes API server through
-  `@paperclipai/hermes-paperclip-adapter/gateway`.
+  `@tickernelz/paperclip-pro-hermes-paperclip-adapter/gateway`.
 
-The legacy `@paperclipai/adapter-hermes-gateway` package is a deprecated
+The legacy `@tickernelz/paperclip-pro-adapter-hermes-gateway` package is a deprecated
 compatibility shim for one release. It preserves the old gateway exports while
 forwarding to the unified Hermes package. New external override packages should
-depend on or link `@paperclipai/hermes-paperclip-adapter` and declare the type
+depend on or link `@tickernelz/paperclip-pro-hermes-paperclip-adapter` and declare the type
 they override (`hermes_local` or `hermes_gateway`); the type keys did not
 change.
 
@@ -70,7 +70,7 @@ my-adapter/
     "build": "tsc"
   },
   "dependencies": {
-    "@paperclipai/adapter-utils": "^2026.325.0",
+    "@tickernelz/paperclip-pro-adapter-utils": "^2026.325.0",
     "picocolors": "^1.1.0"
   },
   "devDependencies": {
@@ -134,7 +134,7 @@ export { createServerAdapter } from "./server/index.js";
 ### src/server/index.ts
 
 ```ts
-import type { ServerAdapterModule } from "@paperclipai/adapter-utils";
+import type { ServerAdapterModule } from "@tickernelz/paperclip-pro-adapter-utils";
 import { type, models, agentConfigurationDoc } from "../index.js";
 import { execute } from "./execute.js";
 import { testEnvironment } from "./test.js";
@@ -158,13 +158,13 @@ The core execution function. Receives an `AdapterExecutionContext` and returns a
 import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 
 import {
   runChildProcess,
   buildPaperclipEnv,
   renderTemplate,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 export async function execute(
   ctx: AdapterExecutionContext,
@@ -212,7 +212,7 @@ export async function execute(
 }
 ```
 
-#### Available Helpers from `@paperclipai/adapter-utils`
+#### Available Helpers from `@tickernelz/paperclip-pro-adapter-utils`
 
 | Helper | Purpose |
 |--------|---------|
@@ -229,7 +229,7 @@ Validates the adapter configuration before running. Returns structured diagnosti
 import type {
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 
 export async function testEnvironment(
   ctx: AdapterEnvironmentTestContext,
@@ -299,7 +299,7 @@ Local adapters are symlinked into Paperclip's adapter directory. Changes to the 
 
 ### Via adapter-plugins.json
 
-For development, you can also edit `~/.paperclip/adapter-plugins.json` directly:
+For development, you can also edit `~/.paperclip-pro/adapter-plugins.json` directly:
 
 ```json
 [
@@ -317,7 +317,7 @@ For development, you can also edit `~/.paperclip/adapter-plugins.json` directly:
 If your agent runtime supports sessions (conversation continuity across heartbeats), implement a session codec:
 
 ```ts
-import type { AdapterSessionCodec } from "@paperclipai/adapter-utils";
+import type { AdapterSessionCodec } from "@tickernelz/paperclip-pro-adapter-utils";
 
 export const sessionCodec: AdapterSessionCodec = {
   deserialize(raw) {

@@ -1,5 +1,4 @@
 import { constants as fsConstants, promises as fs } from "node:fs";
-import os from "node:os";
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import type {
@@ -8,8 +7,9 @@ import type {
   PluginLocalFolderListing,
   PluginLocalFolderProblem,
   PluginLocalFolderStatus,
-} from "@paperclipai/plugin-sdk";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
 import { badRequest, forbidden, notFound } from "../errors.js";
+import { resolvePaperclipHomeDir } from "../home-paths.js";
 
 export interface StoredPluginLocalFolderConfig {
   path: string;
@@ -592,7 +592,7 @@ export async function deletePluginLocalFolderFile(
 }
 
 export function defaultLocalFolderBasePath(pluginKey: string, companyId: string) {
-  return path.join(os.homedir(), ".paperclip", "plugin-data", companyId, pluginKey);
+  return path.join(resolvePaperclipHomeDir(), "plugin-data", companyId, pluginKey);
 }
 
 export function assertConfiguredLocalFolder(status: PluginLocalFolderStatus) {

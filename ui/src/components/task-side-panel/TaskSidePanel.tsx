@@ -12,7 +12,7 @@ import {
   isArtifactReviewDocumentKey,
   type Issue,
   type IssueDocument,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   Box,
   FileCode2,

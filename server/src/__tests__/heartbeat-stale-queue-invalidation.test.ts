@@ -14,8 +14,8 @@ import {
   issueDocuments,
   issueThreadInteractions,
   issues,
-} from "@paperclipai/db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

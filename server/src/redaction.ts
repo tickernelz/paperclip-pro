@@ -1,5 +1,5 @@
-import { redactCommandText } from "@paperclipai/adapter-utils";
-import { isPublicExecutorToolSelector } from "@paperclipai/adapter-utils/command-redaction";
+import { redactCommandText } from "@tickernelz/paperclip-pro-adapter-utils";
+import { isPublicExecutorToolSelector } from "@tickernelz/paperclip-pro-adapter-utils/command-redaction";
 
 const SECRET_FIELD_NAME_PATTERN = String.raw`[A-Za-z0-9_-]*(?:api[-_]?key|access[-_]?token|auth(?:_?token)?|token|authorization|bearer|secret|passwd|password|credential|jwt|private[-_]?key|cookie|connectionstring|browser[-_]?code|login[-_]?url)[A-Za-z0-9_-]*`;
 

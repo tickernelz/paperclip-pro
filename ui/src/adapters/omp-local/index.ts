@@ -1,5 +1,5 @@
 import type { UIAdapterModule } from "../types";
-import { parseOmpStdoutLine } from "@paperclipai/adapter-omp-local/ui";
+import { parseOmpStdoutLine } from "@tickernelz/paperclip-pro-adapter-omp-local/ui";
 import { SchemaConfigFields, buildSchemaAdapterConfig } from "../schema-config-fields";
 
 export const ompLocalUIAdapter: UIAdapterModule = {

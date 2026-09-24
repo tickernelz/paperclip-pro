@@ -16,8 +16,8 @@ import {
   issueThreadInteractions,
   issueWorkProducts,
   issues,
-} from "@paperclipai/db";
-import type { AttentionItem } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

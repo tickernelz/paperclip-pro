@@ -11,7 +11,7 @@ import { AiConnectionDesignExamples } from "@/components/ai-connections/AiConnec
 import { SavedProviderKeySelect } from "../components/onboarding/SavedProviderKeySelect";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentCharacter } from "@/components/AgentCharacter";
-import { AGENT_PALETTE_IDS, appearanceForPalette } from "@paperclipai/shared";
+import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
 import { RepositoryEditor } from "@/components/RepositoryEditor";
 import { TaskChatRunnerActivityGroup } from "@/components/task-chat/TaskChatRunnerActivityGroup";
 import { TaskChatMarker } from "@/components/task-chat/TaskChatMarker";
@@ -167,7 +167,7 @@ import {
   pendingConnectionIntentInteraction,
   retryConnectionIntentInteraction,
 } from "@/fixtures/issueThreadInteractionFixtures";
-import type { CompanySecret, EnvBinding, Issue } from "@paperclipai/shared";
+import type { CompanySecret, EnvBinding, Issue } from "@tickernelz/paperclip-pro-shared";
 import { CollectionToolbar } from "@/components/CollectionToolbar";
 import { IssueRow } from "@/components/IssueRow";
 import {
@@ -189,7 +189,7 @@ import {
   sampleTeam,
   warnTeam,
 } from "@/pages/TeamCatalog.fixtures";
-import type { IssueWorkProduct } from "@paperclipai/shared";
+import type { IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
 
 /* ------------------------------------------------------------------ */
 /*  Sample data for the Issue Output surface showcase                  */

@@ -131,8 +131,8 @@ RUN find packages/paperclip-runner/runner packages/paperclip-runner/protocol -ty
 # Both the browser bundle and server stamp need the source commit. Declare it
 # after the stable dependency layers, before either application build.
 ARG PAPERCLIP_BUILD_COMMIT=""
-RUN pnpm --filter @paperclipai/ui build
-RUN pnpm --filter @paperclipai/plugin-sdk build
+RUN pnpm --filter @tickernelz/paperclip-pro-ui build
+RUN pnpm --filter @tickernelz/paperclip-pro-plugin-sdk build
 # The server build runs scripts/write-build-stamp.mjs, which stamps the built
 # commit into dist/build-info.json. The build context has no .git, so the
 # script reads PAPERCLIP_BUILD_COMMIT instead. Docker exposes an ARG to the
@@ -140,7 +140,7 @@ RUN pnpm --filter @paperclipai/plugin-sdk build
 # same ARG again for the runtime fallback; an ARG goes out of scope at the
 # end of its stage. Empty for local `docker build`, which then writes no stamp.
 ENV NODE_OPTIONS=--max-old-space-size=4096
-RUN pnpm --filter @paperclipai/server build
+RUN pnpm --filter @tickernelz/paperclip-pro-server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
 RUN rm -rf packages/paperclip-runner/runner/target
 

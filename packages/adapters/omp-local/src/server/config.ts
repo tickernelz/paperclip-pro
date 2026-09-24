@@ -6,11 +6,11 @@ import type {
   AdapterModel,
   ConfigFieldOption,
   ConfigFieldSchema,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   ensurePathInEnv,
   runChildProcess,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { listOmpModels } from "./models.js";
 import { normalizeOmpProfile, resolveOmpProfile } from "./profile.js";

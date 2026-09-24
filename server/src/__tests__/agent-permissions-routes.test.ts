@@ -1,8 +1,8 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@paperclipai/adapter-opencode-local";
-import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import { hoistModuleGraph } from "./helpers/hoist-module-graph.js";
 
 vi.mock("acpx/runtime", () => ({
@@ -124,15 +124,15 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@paperclipai/adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@paperclipai/adapter-opencode-local/server")>("@paperclipai/adapter-opencode-local/server");
+  vi.doMock("@tickernelz/paperclip-pro-adapter-opencode-local/server", async () => {
+    const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-adapter-opencode-local/server")>("@tickernelz/paperclip-pro-adapter-opencode-local/server");
     return {
       ...actual,
       ensureOpenCodeModelConfiguredAndAvailable: mockEnsureOpenCodeModelConfiguredAndAvailable,
     };
   });
 
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));

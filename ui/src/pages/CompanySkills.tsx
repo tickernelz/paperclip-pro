@@ -22,7 +22,7 @@ import type {
   CompanySkillUpdateRequest,
   CompanySkillUpdateStatus,
   CompanySkillVersion,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { companySkillsApi } from "../api/companySkills";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
@@ -172,7 +172,7 @@ import {
   XOctagon,
 } from "lucide-react";
 import { GithubIcon } from "../components/icons/github-icon";
-import type { FolderListItem, FolderListResult } from "@paperclipai/shared";
+import type { FolderListItem, FolderListResult } from "@tickernelz/paperclip-pro-shared";
 
 type SkillTreeNode = {
   name: string;

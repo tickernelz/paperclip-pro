@@ -62,13 +62,13 @@ append_runtime_dir() {
   fi
 }
 
-paperclip_home="$(expand_home "${PAPERCLIP_HOME:-$HOME/.paperclip}")"
+paperclip_home="$(expand_home "${PAPERCLIP_HOME:-$HOME/.paperclip-pro}")"
 paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
 append_runtime_dir "$paperclip_home/instances/$paperclip_instance_id/runtime-services"
 
 if [[ "${PAPERCLIP_KILL_WORKSPACES_ONLY_CURRENT:-}" != "1" ]]; then
   for dir in \
-    "$HOME"/.paperclip/instances/*/runtime-services \
+    "$HOME"/.paperclip-pro/instances/*/runtime-services \
     "$HOME"/.paperclip-worktrees/instances/*/runtime-services \
     "$REPO_ROOT"/.paperclip/instances/*/runtime-services \
     "$REPO_ROOT"/.paperclip/runtime-services/instances/*/runtime-services

@@ -48,7 +48,7 @@ export NODE_ENV=test PORT=3211 \
   PAPERCLIP_BIND=loopback \
   PAPERCLIP_DEPLOYMENT_MODE=local_trusted \
   PAPERCLIP_DEPLOYMENT_EXPOSURE=private
-pnpm paperclipai onboard --yes --run    # serves http://127.0.0.1:3211, own embedded PG
+pnpm paperclip-pro onboard --yes --run    # serves http://127.0.0.1:3211, own embedded PG
 # wait for: GET /api/health -> 200
 ```
 

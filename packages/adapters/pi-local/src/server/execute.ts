@@ -2,7 +2,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@paperclipai/adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterExecutionContext, type AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -24,7 +24,7 @@ import {
   runAdapterExecutionTargetProcess,
   runAdapterExecutionTargetShellCommand,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   asString,
   asNumber,
@@ -51,8 +51,8 @@ import {
   DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   runChildProcess,
-} from "@paperclipai/adapter-utils/server-utils";
-import { shellQuote } from "@paperclipai/adapter-utils/ssh";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 import { preparePiRuntimeConfig } from "./runtime-config.js";

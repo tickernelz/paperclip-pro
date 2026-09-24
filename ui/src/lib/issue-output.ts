@@ -2,7 +2,7 @@ import {
   attachmentArtifactWorkProductMetadataSchema,
   type AttachmentArtifactWorkProductMetadata,
   type IssueWorkProduct,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 /**
  * Helpers + selectors for the issue Output surface (PAP-10162 Phase 3).

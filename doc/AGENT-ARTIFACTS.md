@@ -108,7 +108,7 @@ When a task produces a user-inspectable deliverable file:
 5. Then set the final issue status.
 
 For a response that is explicitly intended for an external chat conversation,
-also pass each intended file with `paperclipai issue comment --attachment-id
+also pass each intended file with `paperclip-pro issue comment --attachment-id
 <id>`. Paperclip binds only those exact uploaded files to that comment; other
 task attachments remain internal.
 

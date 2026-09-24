@@ -5,7 +5,7 @@
 import type { SshRemoteExecutionSpec } from "./ssh.js";
 import type { AdapterExecutionTarget } from "./execution-target.js";
 import type { RuntimeStatusSink } from "./runtime-progress.js";
-import type { ExecutionContinuationEnvelope, NativeFinalizationResult } from "@paperclipai/shared";
+import type { ExecutionContinuationEnvelope, NativeFinalizationResult } from "@tickernelz/paperclip-pro-shared";
 
 export interface AdapterAgent {
   id: string;

@@ -6,7 +6,7 @@ import type {
   CompanySecretProviderConfig,
   SecretProposalAgentRef,
   SecretProposalView,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

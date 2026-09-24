@@ -217,7 +217,7 @@ export async function loginBoardCli(params: {
     method: "POST",
     body: JSON.stringify({
       command,
-      clientName: params.clientName?.trim() || "paperclipai cli",
+      clientName: params.clientName?.trim() || "paperclip-pro cli",
       requestedAccess: params.requestedAccess,
       requestedCompanyId: params.requestedCompanyId?.trim() || null,
     }),

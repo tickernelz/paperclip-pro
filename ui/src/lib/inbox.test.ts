@@ -10,7 +10,7 @@ import type {
   Issue,
   JoinRequest,
   ProjectWorkspace,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   DEFAULT_INBOX_ISSUE_COLUMNS,
   buildGroupedInboxSections,

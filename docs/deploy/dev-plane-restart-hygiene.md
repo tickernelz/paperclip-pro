@@ -22,11 +22,11 @@ Every control-plane restart hard-kills any heartbeat run in flight at that momen
 
 Two signals, cross-referenced:
 
-**1. Server start markers in the instance log.** Each boot logs `Server listening on <host>:<port>`. Logs live at `~/.paperclip/instances/<instance>/server.log`, rotated daily to `server.log-YYYYMMDD.gz`.
+**1. Server start markers in the instance log.** Each boot logs `Server listening on <host>:<port>`. Logs live at `~/.paperclip-pro/instances/<instance>/server.log`, rotated daily to `server.log-YYYYMMDD.gz`.
 
 ```bash
-grep -h "Server listening" ~/.paperclip/instances/default/server.log
-zgrep -h "Server listening" ~/.paperclip/instances/default/server.log-20260706.gz
+grep -h "Server listening" ~/.paperclip-pro/instances/default/server.log
+zgrep -h "Server listening" ~/.paperclip-pro/instances/default/server.log-20260706.gz
 ```
 
 Many markers minutes apart = restart burst.

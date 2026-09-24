@@ -3,7 +3,7 @@ import type { Request } from "express";
 import {
   issues as issueRows,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { conflict } from "../errors.js";
@@ -12,7 +12,7 @@ import {
   isUuidLike,
   previewIssueTreeControlSchema,
   releaseIssueTreeHoldSchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { validate } from "../middleware/validate.js";
 import {
   heartbeatService,

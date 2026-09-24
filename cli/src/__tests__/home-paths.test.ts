@@ -16,7 +16,7 @@ describe("home path resolution", () => {
     process.env = { ...ORIGINAL_ENV };
   });
 
-  it("defaults to ~/.paperclip and default instance", () => {
+  it("defaults to ~/.paperclip-pro and default instance", () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
     process.env.PAPERCLIP_HOME = home;
     delete process.env.PAPERCLIP_INSTANCE_ID;

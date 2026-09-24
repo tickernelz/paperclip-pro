@@ -3,13 +3,13 @@ import type { IncomingHttpHeaders } from "node:http";
 import { betterAuth, type Auth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { toNodeHandler } from "better-auth/node";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   authAccounts,
   authSessions,
   authUsers,
   authVerifications,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type { Config } from "../config.js";
 import { resolvePaperclipInstanceId } from "../home-paths.js";
 import {

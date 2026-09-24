@@ -1,4 +1,4 @@
-import { asBoolean, asString, asStringArray } from "@paperclipai/adapter-utils/server-utils";
+import { asBoolean, asString, asStringArray } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,

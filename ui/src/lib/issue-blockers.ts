@@ -1,4 +1,4 @@
-import type { IssueRelationIssueSummary } from "@paperclipai/shared";
+import type { IssueRelationIssueSummary } from "@tickernelz/paperclip-pro-shared";
 
 export type WaitingBlockerStatus = "done" | "running" | "queued";
 

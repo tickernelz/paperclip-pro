@@ -6,7 +6,7 @@ import {
   type AiConnectionBinding,
   type AiAuthMethod,
   type AiProvider,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { AiConnectionPicker } from "./AiConnectionPicker";
 import { AiConnectionLegacyNotice } from "./AiConnectionManagement";

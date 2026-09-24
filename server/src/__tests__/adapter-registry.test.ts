@@ -1,6 +1,6 @@
-import { probeAcpxClaudeInstallation } from "@paperclipai/paperclip-runner/live";
+import { probeAcpxClaudeInstallation } from "@tickernelz/paperclip-pro-paperclip-runner/live";
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { buildSandboxNpmInstallCommand } from "@paperclipai/adapter-utils";
+import { buildSandboxNpmInstallCommand } from "@tickernelz/paperclip-pro-adapter-utils";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
 import {
@@ -17,7 +17,7 @@ import {
   setOverridePaused,
 } from "../adapters/registry.js";
 
-vi.mock("@paperclipai/paperclip-runner/live", () => ({ probeAcpxClaudeInstallation: vi.fn(async () => undefined) }));
+vi.mock("@tickernelz/paperclip-pro-paperclip-runner/live", () => ({ probeAcpxClaudeInstallation: vi.fn(async () => undefined) }));
 
 const externalAdapter: ServerAdapterModule = {
   type: "external_test",

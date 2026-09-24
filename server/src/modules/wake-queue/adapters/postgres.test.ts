@@ -2,7 +2,7 @@ import { instanceSettingsService } from "../../../services/instance-settings.js"
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
   agentWakeupRequests,
@@ -13,7 +13,7 @@ import {
   issueComments,
   issueRecoveryActions,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

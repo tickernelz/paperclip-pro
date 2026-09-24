@@ -1,6 +1,6 @@
 import { registerEmailCommands } from "./commands/client/email.js";
 import { Command } from "commander";
-import { warnIfUnsupportedNodeVersion } from "@paperclipai/shared/node-version";
+import { warnIfUnsupportedNodeVersion } from "@tickernelz/paperclip-pro-shared/node-version";
 import { onboard } from "./commands/onboard.js";
 import { doctor } from "./commands/doctor.js";
 import { envCommand } from "./commands/env.js";
@@ -61,12 +61,12 @@ import {
 
 const program = new Command();
 const DATA_DIR_OPTION_HELP =
-  "Paperclip data directory root (isolates state from ~/.paperclip)";
+  "Paperclip data directory root (isolates state from ~/.paperclip-pro)";
 
 program.enablePositionalOptions();
 
 program
-  .name("paperclipai")
+  .name("paperclip-pro")
   .description("Paperclip CLI — setup, diagnose, and configure your instance")
   .version(cliVersion);
 

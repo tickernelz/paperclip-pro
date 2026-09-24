@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, heartbeatRuns, issues, toolCatalogEntries, toolConnectionInstalls, toolInvocations, companies, companyMemberships, createDb, toolConnections, toolPolicies, toolProfileEntries } from "@paperclipai/db";
+import { agents, heartbeatRuns, issues, toolCatalogEntries, toolConnectionInstalls, toolInvocations, companies, companyMemberships, createDb, toolConnections, toolPolicies, toolProfileEntries } from "@tickernelz/paperclip-pro-db";
 import { eq } from "drizzle-orm";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { toolAccessService } from "../services/tool-access.js";

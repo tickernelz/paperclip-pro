@@ -396,7 +396,7 @@ For deployment mode and bind semantics generally, see [DEPLOYMENT-MODES.md](./DE
 These are intentional gaps as of the MCP Access Governance v1 launch. Track or work around as noted.
 
 - **Audit-write failures are production incidents.** `mcp_runtime_audit_write_failures` is backed by the durable runtime metric counter and fires when MCP audit-event persistence fails. Treat any firing alert as a control-plane incident — page CloudOps and freeze tool calls until audit durability is restored.
-- **No CLI surface for tool access yet.** Connections, profiles, policies, approvals, and trust rules are managed via the UI and the REST API only. There is no `paperclipai tool ...` subcommand.
+- **No CLI surface for tool access yet.** Connections, profiles, policies, approvals, and trust rules are managed via the UI and the REST API only. There is no `paperclip-pro tool ...` subcommand.
 - **No bulk catalog review.** When an upstream server adds many new tools at once, you review each quarantined entry individually. Bulk operations are planned but not in v1.
 - **Trust rules match exact argument shapes only.** A trust rule built from one approval covers calls whose canonical argument hash matches and whose catalog schema hash is unchanged. Wildcards and structural filters across the rest of the schema are not supported in v1.
 - **Rate limits are per-policy.** Rate limit counters are scoped to the matching policy and counter key. There is no cross-policy aggregation (e.g. "300 requests/hour across all GitHub policies"). Operators who need that wire two `rate_limit` policies and accept the additive behavior.

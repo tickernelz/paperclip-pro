@@ -4,13 +4,13 @@ import type { ReactNode } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Agent, Environment, EnvironmentCapabilities } from "@paperclipai/shared";
+import type { Agent, Environment, EnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToastProvider } from "../context/ToastContext";
 import type { BuiltInAgentState } from "../api/builtInAgents";
 import { Agents } from "./Agents";
 import { Agents as ProductionAgents } from "./Agents.production";
-import type { AgentOrgChainHealth } from "@paperclipai/shared";
+import type { AgentOrgChainHealth } from "@tickernelz/paperclip-pro-shared";
 
 const mockRouterState = vi.hoisted(() => ({
   pathname: "/agents/all",

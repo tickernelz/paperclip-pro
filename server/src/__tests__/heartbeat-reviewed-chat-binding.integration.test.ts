@@ -19,8 +19,8 @@ import {
   companyMemberships,
   chatDeliveries,
   chatMessageLinks,
-} from "@paperclipai/db";
-import { renderPaperclipWakePrompt } from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-db";
+import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import {
   attestReviewedExternalChatRun,

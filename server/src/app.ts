@@ -13,12 +13,12 @@ import {
 import path from "node:path";
 import fs from "node:fs";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   derivePaperclipViteHmrPort,
   type DeploymentExposure,
   type DeploymentMode,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { InspectDatabaseBackupHealthOptions } from "./services/database-backup-health.js";
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
@@ -167,7 +167,7 @@ import { setPluginEventBus } from "./services/activity-log.js";
 import { createPluginDevWatcher } from "./services/plugin-dev-watcher.js";
 import { createPluginHostServiceCleanup } from "./services/plugin-host-service-cleanup.js";
 import { pluginRegistryService } from "./services/plugin-registry.js";
-import { createHostClientHandlers } from "@paperclipai/plugin-sdk";
+import { createHostClientHandlers } from "@tickernelz/paperclip-pro-plugin-sdk";
 import type { BetterAuthSessionResult } from "./auth/better-auth.js";
 import { createCachedViteHtmlRenderer } from "./vite-html-renderer.js";
 import {

@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@paperclipai/adapter-utils";
-import type { RunProcessResult } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { RunProcessResult } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetRemoteCwd,
@@ -22,7 +22,7 @@ import {
   resolveAdapterExecutionTargetCommandForLogs,
   runAdapterExecutionTargetProcess,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   asString,
   asNumber,
@@ -50,15 +50,15 @@ import {
   shapePaperclipWorkspaceEnvForExecution,
   DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
-} from "@paperclipai/adapter-utils/server-utils";
-import { buildSkillLibraryManifestMarkdown } from "@paperclipai/adapter-utils/skill-library-manifest";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { buildSkillLibraryManifestMarkdown } from "@tickernelz/paperclip-pro-adapter-utils/skill-library-manifest";
 import {
   parseLocalProcessFilesystemScope,
   parseLocalProcessSandboxExtraPaths,
   parseLocalProcessNetworkAllowlist,
   parseLocalProcessNetworkScope,
   type LocalProcessSandboxOptions,
-} from "@paperclipai/adapter-utils/local-process-sandbox";
+} from "@tickernelz/paperclip-pro-adapter-utils/local-process-sandbox";
 import {
   claudeModelUsageTotals,
   parseClaudeStreamJson,

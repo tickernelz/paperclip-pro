@@ -35,7 +35,7 @@ Common adapter choices:
 Use `hermes_local` when Paperclip should start the local Hermes CLI. Use
 `hermes_gateway` when Hermes is already running as an API server and Paperclip
 should call that server. Both are built-in adapter types from the unified
-`@paperclipai/hermes-paperclip-adapter` package.
+`@tickernelz/paperclip-pro-hermes-paperclip-adapter` package.
 
 For `opencode_local`, configure an explicit `adapterConfig.model` (`provider/model`).
 Paperclip validates the selected model against live `opencode models` output.

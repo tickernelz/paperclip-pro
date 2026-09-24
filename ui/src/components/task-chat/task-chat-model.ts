@@ -19,11 +19,11 @@ import type {
   IssueDocument,
   IssueDocumentSummary,
   IssueWorkProduct,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type {
   PaperclipQuestionResponse,
   PaperclipQuestionSet,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 
 export type { PaperclipQuestionResponse, PaperclipQuestionSet };
 

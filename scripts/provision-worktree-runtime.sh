@@ -4,7 +4,7 @@ set -euo pipefail
 
 base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip}"
+paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip-pro}"
 paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
 paperclip_dir="$worktree_cwd/.paperclip"
 worktree_config_path="$paperclip_dir/config.json"
@@ -149,18 +149,18 @@ run_ensure_seeded() {
     return
   fi
 
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        pnpm paperclipai worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
+        pnpm paperclip-pro worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
     )
     return
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
+  if command -v paperclip-pro >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        paperclipai worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
+        paperclip-pro worktree ensure-seeded --config "$worktree_config_path" ${source_config_args[@]+"${source_config_args[@]}"}
     )
     return
   fi
@@ -173,7 +173,7 @@ if run_ensure_seeded; then
 else
   exit_code=$?
   if [[ "$exit_code" -eq 127 ]]; then
-    echo "No usable paperclipai CLI found; cannot seed the worktree database." >&2
+    echo "No usable paperclip-pro CLI found; cannot seed the worktree database." >&2
   fi
   exit "$exit_code"
 fi

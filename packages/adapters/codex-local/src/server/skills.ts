@@ -3,13 +3,13 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   buildRuntimeMountedSkillSnapshot,
   readPaperclipRuntimeSkillEntries,
   resolveLegacyPaperclipDesiredSkillNames,
   resolvePaperclipDesiredSkillNames,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 

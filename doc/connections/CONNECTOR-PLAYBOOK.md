@@ -268,7 +268,7 @@ The durable pieces are:
   HTTP header name and prefix.
 
 On the default local provider, values are encrypted with the instance master
-key under `~/.paperclip/instances/<instance>/secrets/master.key`. A usable
+key under `~/.paperclip-pro/instances/<instance>/secrets/master.key`. A usable
 backup requires both the database and this key. Hosted provider-vault behavior
 is configured under Company Settings; the connection contract remains refs,
 not raw values.
@@ -902,9 +902,9 @@ without a test-name filter before handoff.
 Targeted type checks:
 
 ```sh
-pnpm --filter @paperclipai/shared typecheck
-pnpm --filter @paperclipai/server typecheck
-pnpm --filter @paperclipai/ui typecheck
+pnpm --filter @tickernelz/paperclip-pro-shared typecheck
+pnpm --filter @tickernelz/paperclip-pro-server typecheck
+pnpm --filter @tickernelz/paperclip-pro-ui typecheck
 ```
 
 If UI code changed, also run:
@@ -919,7 +919,7 @@ Use a worktree-local instance; never point two worktrees at the same embedded
 database.
 
 ```sh
-paperclipai worktree init
+paperclip-pro worktree init
 pnpm dev
 ```
 

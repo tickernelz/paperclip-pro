@@ -1,4 +1,4 @@
-import type { ProjectRepository, ProjectWorkspace } from "@paperclipai/shared";
+import type { ProjectRepository, ProjectWorkspace } from "@tickernelz/paperclip-pro-shared";
 import { unprocessable } from "../errors.js";
 import { isConnectionGrantAudienceAllowed } from "./tool-gateway.js";
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# End-to-end proof that `paperclipai update` works ACROSS VERSIONS, including
+# End-to-end proof that `paperclip-pro update` works ACROSS VERSIONS, including
 # database migrations, against a real managed install with a live service.
 #
 # Journey (real GitHub, real embedded Postgres, real systemd/launchd service):
@@ -38,7 +38,7 @@ export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
 export PAPERCLIP_HOME="$HOME/.paperclip-e2e-update"
 
-SHIM="$HOME/.local/bin/paperclipai"
+SHIM="$HOME/.local/bin/paperclip-pro"
 STORE="$PAPERCLIP_HOME/cli"
 BACKUP_DIR="$PAPERCLIP_HOME/instances/default/data/backups"
 RESULTS=()
@@ -103,7 +103,7 @@ else
   mkdir -p "$HOME/e2e-upd-bootstrap-cli"
   ( cd "$HOME/e2e-upd-bootstrap-cli" && npm install --no-fund --no-audit "$BOOT/cli/$TARBALL" > "$HOME/e2e-upd-bootstrap-npm.log" 2>&1 ) \
     || { tail -40 "$HOME/e2e-upd-bootstrap-npm.log"; fail_ "1c bootstrap npm install"; exit 1; }
-  BOOTSTRAP_CLI="$HOME/e2e-upd-bootstrap-cli/node_modules/paperclipai/dist/index.js"
+  BOOTSTRAP_CLI="$HOME/e2e-upd-bootstrap-cli/node_modules/@tickernelz/paperclip-pro/dist/index.js"
 fi
 node "$BOOTSTRAP_CLI" --version >/dev/null || { fail_ "1d bootstrap CLI smoke"; exit 1; }
 pass "1 bootstrap CLI ready"

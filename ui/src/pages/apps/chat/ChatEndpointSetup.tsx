@@ -1,4 +1,4 @@
-import { SLACK_BOT_TOOL_SCOPES } from "@paperclipai/shared";
+import { SLACK_BOT_TOOL_SCOPES } from "@tickernelz/paperclip-pro-shared";
 import { defaultSlackAppName, slackBotNameForAgent } from "./slack-app-name";
 import { GitHubChatSetup } from "./GitHubChatSetup";
 import { GitHubAgentTrustWarning } from "@/components/GitHubAgentTrustWarning";
@@ -7,7 +7,7 @@ import { ChatSetupNavigation } from "@/components/chat/ChatSetupNavigation";
 import { SlackAvatarStep } from "./SlackAvatarStep";
 import { useSlackAvatarProgress } from "./slack-avatar-progress";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
-import { resolveAgentAppearance } from "@paperclipai/shared";
+import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { SlackIdentityStep } from "./SlackIdentityStep";
 import { PhotonConnectStep } from "./PhotonConnectStep";
 import { EmailEndpointSetup } from "./EmailEndpointSetup";
@@ -43,7 +43,7 @@ import { useNavigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useCopyAction } from "@/lib/use-copy-action";
-import { isAgentStatusInvokable, slackAppConfigurationSchema, type SlackAppConfiguration } from "@paperclipai/shared";
+import { isAgentStatusInvokable, slackAppConfigurationSchema, type SlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import {
   createGitHubPrivateKeyReadGuard,

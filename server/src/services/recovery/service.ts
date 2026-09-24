@@ -17,7 +17,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   hasCommittedNativeBoardResponseWait,
   readNativeBoardResponseWaitSource,
@@ -30,7 +30,7 @@ import {
   requiresExecutionReconciliation,
   type IssueCommentMetadata,
   type IssueCommentPresentation,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentTaskSessions,
@@ -52,7 +52,7 @@ import {
   nativeRunResults,
   statusDecisions,
   workAssessments,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { parseObject, asBoolean, asNumber } from "../../adapters/utils.js";
 import { runningProcesses } from "../../adapters/index.js";
 import {

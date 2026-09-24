@@ -3,7 +3,7 @@ import type {
   AdapterSessionCodec,
   AdapterSessionManagement,
   ServerAdapterModule,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   agentConfigurationDoc,
   models,

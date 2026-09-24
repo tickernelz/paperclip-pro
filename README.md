@@ -312,7 +312,7 @@ bash install.sh
 ```
 
 The installer ensures Node.js 24.11 or newer is available, installs a managed
-Paperclip CLI under `~/.paperclip/cli`, and starts interactive onboarding. It
+Paperclip CLI under `~/.paperclip-pro/cli`, and starts interactive onboarding. It
 can also install Paperclip as a background service on supported Linux and
 macOS systems. The checksum detects transfer or publishing mistakes, but it is
 served from the same origin as the script; use a release-tag or commit-pinned
@@ -322,7 +322,7 @@ For a non-interactive managed install:
 
 ```bash
 curl -fsSL https://paperclip.ing/install.sh | bash -s -- --no-prompt --no-onboard
-paperclipai onboard --yes
+paperclip-pro onboard --yes
 ```
 
 The piped form requires supported Node.js, npm, and npx to already be present.
@@ -333,7 +333,7 @@ pipe.
 To try Paperclip without installing anything permanently:
 
 ```bash
-npx --registry https://registry.npmjs.org paperclipai onboard --yes
+npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
 ```
 
 For an isolated manual test instance that is already initialized with a CEO
@@ -341,9 +341,9 @@ agent, use `test-drive`. It stays in the foreground, never installs a service
 or creates a first task, and opens the browser only after setup succeeds:
 
 ```bash
-ANTHROPIC_API_KEY=... npx paperclipai test-drive
-OPENAI_API_KEY=... npx paperclipai test-drive --harness codex
-OPENROUTER_API_KEY=... npx paperclipai test-drive \
+ANTHROPIC_API_KEY=... npx @tickernelz/paperclip-pro test-drive
+OPENAI_API_KEY=... npx @tickernelz/paperclip-pro test-drive --harness codex
+OPENROUTER_API_KEY=... npx @tickernelz/paperclip-pro test-drive \
   --harness opencode \
   --model openrouter/anthropic/claude-sonnet-4.5
 ```
@@ -357,7 +357,7 @@ reuse behavior.
 
 > **Troubleshooting: private npm registry `.npmrc`**
 >
-> If this fails with an `E404` for `paperclipai` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclipai` against that private registry instead of the public npm registry.
+> If this fails with an `E404` for `paperclip-pro` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclip-pro` against that private registry instead of the public npm registry.
 >
 > Diagnostic:
 >
@@ -368,18 +368,18 @@ reuse behavior.
 > Workaround (cross-platform; force the public npm registry for this command):
 >
 > ```bash
-> npx --registry https://registry.npmjs.org paperclipai onboard --yes
+> npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
 > ```
 
 That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
 
 ```bash
-paperclipai onboard --yes --bind lan
+paperclip-pro onboard --yes --bind lan
 # or:
-paperclipai onboard --yes --bind tailnet
+paperclip-pro onboard --yes --bind tailnet
 ```
 
-If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `paperclipai configure` to edit settings.
+If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `paperclip-pro configure` to edit settings.
 
 See [`doc/INSTALLING.md`](doc/INSTALLING.md) for pinned versions, canary and
 git-ref installs, updates, rollback, service management, and uninstalling.
@@ -527,7 +527,7 @@ MIT &copy; 2026 [Paperclip Labs, Inc](https://paperclip.ing)
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=paperclipai%2Fpaperclip&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=paperclip-pro%2Fpaperclip&type=date&legend=top-left">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&theme=dark&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />

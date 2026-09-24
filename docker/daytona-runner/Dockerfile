@@ -32,10 +32,10 @@ ARG PAPERCLIP_RUNNER_LOCK_SHA256=57b298aceebc48bb94ea0593347348256475da7b2fddb77
 RUN pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile \
     && printf '%s  pnpm-lock.yaml\n' "${PAPERCLIP_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
     && sha256sum -c /tmp/provider-lock.sha256 \
-    && pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'
+    && pnpm install --frozen-lockfile --filter '@tickernelz/paperclip-pro-paperclip-runner...'
 ARG PAPERCLIP_RUNNER_SOURCE_REVISION
 RUN test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
-RUN pnpm --filter @paperclipai/paperclip-runner build:typescript \
+RUN pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:typescript \
     && PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_RUNNER_SOURCE_REVISION}" \
       node packages/paperclip-runner/scripts/build-provider-pack.mjs /provider-pack \
     && chmod -R a+rX /provider-pack

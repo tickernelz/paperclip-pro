@@ -65,7 +65,7 @@ run_shellcheck
 
 echo "==> existing Node"
 run_with_node with-node bash /paperclip-scripts/install.sh --no-prompt --no-onboard
-assert_line "$RESULTS_DIR/with-node.args" "paperclipai@latest"
+assert_line "$RESULTS_DIR/with-node.args" "@tickernelz/paperclip-pro@latest"
 assert_line "$RESULTS_DIR/with-node.args" "install"
 assert_line "$RESULTS_DIR/with-node.args" "--yes"
 assert_line "$RESULTS_DIR/with-node.args" "--registry=https://registry.npmjs.org"
@@ -142,7 +142,7 @@ docker run --rm \
   -e PATH="/paperclip-scripts/install-sh-fixtures:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
   node:24-bookworm-slim \
   bash /paperclip-scripts/install.sh
-assert_line "$RESULTS_DIR/env.args" "paperclipai@2026.722.0"
+assert_line "$RESULTS_DIR/env.args" "@tickernelz/paperclip-pro@2026.722.0"
 assert_line "$RESULTS_DIR/env.args" "--version"
 assert_line "$RESULTS_DIR/env.args" "2026.722.0"
 assert_no_line "$RESULTS_DIR/env.args" "--repo"
@@ -157,7 +157,7 @@ docker run --rm \
   -e PATH="/paperclip-scripts/install-sh-fixtures:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
   ubuntu:24.04 \
   bash -c 'apt-get update >/dev/null && apt-get install -y ca-certificates curl >/dev/null && bash /paperclip-scripts/install.sh --no-prompt --no-onboard'
-assert_line "$RESULTS_DIR/no-node.args" "paperclipai@latest"
+assert_line "$RESULTS_DIR/no-node.args" "@tickernelz/paperclip-pro@latest"
 node_version="$(cat "$RESULTS_DIR/no-node.args.node")"
 node_major="${node_version#v}"
 node_major="${node_major%%.*}"

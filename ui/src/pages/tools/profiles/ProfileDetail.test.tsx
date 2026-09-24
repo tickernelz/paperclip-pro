@@ -10,7 +10,7 @@ import type {
   ToolProfileEntry,
   ToolProfileSummary,
   ToolProfileWithDetails,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const navigate = vi.hoisted(() => vi.fn());

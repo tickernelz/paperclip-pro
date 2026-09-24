@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { REMOTE_MCP_CONNECTOR_METHODS, type ToolConnection } from "@paperclipai/shared";
+import { REMOTE_MCP_CONNECTOR_METHODS, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
 import { Button } from "@/components/ui/button";
 import { ConnectionChoiceList } from "../ConnectionChoiceList";
 import { readConnectionIntentOAuthOutcome, type ConnectionSetupFlowProps } from "../ConnectionSetupFlow";

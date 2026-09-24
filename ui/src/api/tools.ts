@@ -63,7 +63,7 @@ import type {
   ConnectionGrantsResponse,
   ToolConnectionCreateCapabilities,
   ToolAppMetadataPreflightResult,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
 /**

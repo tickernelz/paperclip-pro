@@ -12,13 +12,13 @@ import {
   issues,
   nativeRunFinalizations,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { conflict } from "../errors.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
 import {
   EXECUTION_RECONCILIATION_CAUSES,
   type ExecutionReconciliation,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { parseIssueExecutionState } from "./issue-execution-policy.js";
 import { isSupersededConversationRun } from "./agent-conversations.js";
 

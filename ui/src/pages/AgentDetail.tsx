@@ -1,5 +1,5 @@
 import { AgentCharacter } from "../components/AgentCharacter";
-import { characterStateForAgent } from "@paperclipai/shared";
+import { characterStateForAgent } from "@tickernelz/paperclip-pro-shared";
 import { mergeRunLogChunks, readChunkSeq } from "../lib/run-log-chunks";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -33,7 +33,7 @@ import { getAdapterDisplay } from "../adapters/adapter-display-registry";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
-import { redactCommandText as redactCommandSecretText } from "@paperclipai/adapter-utils";
+import { redactCommandText as redactCommandSecretText } from "@tickernelz/paperclip-pro-adapter-utils";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { assetsApi } from "../api/assets";
 import { toolsApi } from "../api/tools";
@@ -113,7 +113,7 @@ import {
   type WorkspaceOperation,
   isResponsibleUserDenialCode,
   responsibleUserLabel,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { ResponsibleUserDenialNotice } from "../components/ResponsibleUserDenialNotice";
 import { RunWorkspaceRecoverySurface } from "../components/RunWorkspaceRecoverySurface";
 import { RunnerInspector } from "../components/RunnerInspector";
@@ -123,7 +123,7 @@ import {
   runRequestedProviderTrace,
 } from "../components/ProviderTraceStatusBadge";
 import { buildPermissionsForTrustPreset, getTrustPreset } from "../lib/trust-policy-ui";
-import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@paperclipai/adapter-utils";
+import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@tickernelz/paperclip-pro-adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 import {
   isStarred,

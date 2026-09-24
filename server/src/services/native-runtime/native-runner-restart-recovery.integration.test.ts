@@ -17,7 +17,7 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import {

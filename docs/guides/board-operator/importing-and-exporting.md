@@ -44,7 +44,7 @@ The **Import** page previews the package, lets you resolve name collisions and a
 Export a company into a portable folder:
 
 ```sh
-paperclipai company export <company-id> --out ./my-export
+paperclip-pro company export <company-id> --out ./my-export
 ```
 
 ### Options
@@ -63,13 +63,13 @@ paperclipai company export <company-id> --out ./my-export
 
 ```sh
 # Export company with agents and projects
-paperclipai company export abc123 --out ./backup --include company,agents,projects
+paperclip-pro company export abc123 --out ./backup --include company,agents,projects
 
 # Export everything including tasks and skills
-paperclipai company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
+paperclip-pro company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
 
 # Export only specific skills
-paperclipai company export abc123 --out ./skills-only --include skills --skills review,deploy
+paperclip-pro company export abc123 --out ./skills-only --include skills --skills review,deploy
 ```
 
 ### What Gets Exported
@@ -89,17 +89,17 @@ Import from a local directory, GitHub URL, or GitHub shorthand:
 
 ```sh
 # From a local folder
-paperclipai company import ./my-export
+paperclip-pro company import ./my-export
 
 # From a GitHub URL
-paperclipai company import https://github.com/org/repo
+paperclip-pro company import https://github.com/org/repo
 
 # From a GitHub subfolder
-paperclipai company import https://github.com/org/repo/tree/main/companies/acme
+paperclip-pro company import https://github.com/org/repo/tree/main/companies/acme
 
 # From GitHub shorthand
-paperclipai company import org/repo
-paperclipai company import org/repo/companies/acme
+paperclip-pro company import org/repo
+paperclip-pro company import org/repo/companies/acme
 ```
 
 ### Options
@@ -141,7 +141,7 @@ When running interactively (no `--yes` or `--json` flags), the import command sh
 Always preview first with `--dry-run`:
 
 ```sh
-paperclipai company import org/repo --target existing --company-id abc123 --dry-run
+paperclip-pro company import org/repo --target existing --company-id abc123 --dry-run
 ```
 
 The preview shows:
@@ -159,7 +159,7 @@ Imports can additionally request `pauseAutomations` (the default in the app's Im
 **Clone a company template from GitHub:**
 
 ```sh
-paperclipai company import org/company-templates/engineering-team \
+paperclip-pro company import org/company-templates/engineering-team \
   --target new \
   --new-company-name "My Engineering Team"
 ```
@@ -167,7 +167,7 @@ paperclipai company import org/company-templates/engineering-team \
 **Add agents from a package into your existing company:**
 
 ```sh
-paperclipai company import ./shared-agents \
+paperclip-pro company import ./shared-agents \
   --target existing \
   --company-id abc123 \
   --include agents \
@@ -177,13 +177,13 @@ paperclipai company import ./shared-agents \
 **Import a specific branch or tag:**
 
 ```sh
-paperclipai company import org/repo --ref v2.0.0 --dry-run
+paperclip-pro company import org/repo --ref v2.0.0 --dry-run
 ```
 
 **Non-interactive import (CI/scripts):**
 
 ```sh
-paperclipai company import ./package \
+paperclip-pro company import ./package \
   --target new \
   --yes \
   --json

@@ -1,4 +1,4 @@
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
 import { parseOmpJsonLine } from "./parse.js";
 
 type ProgressSink = NonNullable<AdapterExecutionContext["onRuntimeProgress"]>;
