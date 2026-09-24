@@ -401,6 +401,40 @@ function inlineWhitespaceEnd(input: string, start: number): number {
   return index;
 }
 
+function lineEnd(input: string, start: number): number {
+  for (let index = start; index < input.length; index += 1) {
+    if (input[index] === "\n" || input[index] === "\r") return index;
+  }
+  return input.length;
+}
+
+function startsIndependentRecordLine(input: string, index: number) {
+  if (input[index] !== "\r" && input[index] !== "\n") return false;
+  let cursor = index + 1;
+  if (input[index] === "\r" && input[cursor] === "\n") cursor += 1;
+  while (input[cursor] === " " || input[cursor] === "\t") cursor += 1;
+  return input[cursor] === "{" || input[cursor] === "[";
+}
+
+function credentialScanLimit(input: string, start: number): number {
+  for (let index = start; index < input.length; index += 1) {
+    const char = input[index];
+    if (char !== "\n" && char !== "\r") continue;
+    if (startsIndependentRecordLine(input, index)) return index;
+  }
+  return input.length;
+}
+
+function redactedSpanText(span: string, replacement: string): string {
+  const segments = span.split(/(\r\n|\n|\r)/);
+  let text = replacement;
+  for (let index = 1; index < segments.length; index += 2) {
+    const continuation = segments[index + 1] ?? "";
+    text += `${segments[index]}${continuation.length > 0 ? REDACTED_EVENT_VALUE : ""}`;
+  }
+  return text;
+}
+
 function quotedValueBoundary(
   input: string,
   index: number,
@@ -449,7 +483,7 @@ function rawQuotedValueEnd(
   start: number,
   quote: '"' | "'",
 ): number {
-  const end = input.length;
+  const end = credentialScanLimit(input, start);
   let provisionalEnd: number | null = null;
   let unsafeAfterProvisional = false;
   for (let index = start + 1; index < end; index += 1) {
@@ -475,13 +509,9 @@ function rawQuotedValueEnd(
       }
     }
   }
-  // Whitespace normally separates safe trailing context, so retain a final
-  // provisional delimiter when no later quote contradicts it. Literal newlines
-  // can occur inside provider-controlled credentials, so an unterminated
-  // malformed value fails closed through the complete bounded diagnostic.
   return provisionalEnd !== null && !unsafeAfterProvisional
     ? provisionalEnd
-    : end;
+    : lineEnd(input, start);
 }
 
 function escapedQuotedValueEnd(
@@ -489,7 +519,7 @@ function escapedQuotedValueEnd(
   start: number,
   quote: '"' | "'",
 ): number {
-  const end = input.length;
+  const end = credentialScanLimit(input, start);
   let provisionalEnd: number | null = null;
   let unsafeAfterProvisional = false;
   for (let index = start + 2; index < end; index += 1) {
@@ -525,7 +555,7 @@ function escapedQuotedValueEnd(
   }
   return provisionalEnd !== null && !unsafeAfterProvisional
     ? provisionalEnd
-    : end;
+    : lineEnd(input, start);
 }
 
 function escapedQuoteAt(input: string, index: number): '"' | "'" | null {
@@ -538,12 +568,7 @@ function credentialEndAfterQuotedDelimiter(input: string, quotedEnd: number) {
   if (isTrustedQuotedValueBoundary(input, quotedEnd)) return quotedEnd;
   if (startsIndependentCredentialLine(input, quotedEnd)) return quotedEnd;
 
-  // A closing delimiter followed immediately by more token bytes is not a
-  // trustworthy credential boundary (for example `"abc"defg`). Once a
-  // provider diagnostic is malformed this way, whitespace is not a safe
-  // boundary either (`"a"b c"`). Fail closed through the rest of the
-  // diagnostic so no later credential fragment survives.
-  return input.length;
+  return lineEnd(input, quotedEnd);
 }
 
 interface AuthorizationCredentialRange {
@@ -659,7 +684,10 @@ function redactAuthorizationCredentials(input: string): string {
       match.index + match[0].length,
     );
     if (!range || range.start < copiedThrough) continue;
-    parts.push(input.slice(copiedThrough, range.start), range.replacement);
+    parts.push(
+      input.slice(copiedThrough, range.start),
+      redactedSpanText(input.slice(range.start, range.end), range.replacement),
+    );
     copiedThrough = range.end;
     authorizationWord.lastIndex = range.end;
   }
@@ -711,7 +739,10 @@ function redactStandaloneBearerCredentials(input: string): string {
     }
 
     if (credentialStart < copiedThrough) continue;
-    parts.push(input.slice(copiedThrough, credentialStart), replacement);
+    parts.push(
+      input.slice(copiedThrough, credentialStart),
+      redactedSpanText(input.slice(credentialStart, end), replacement),
+    );
     copiedThrough = end;
     bearerWord.lastIndex = end;
   }
