@@ -50,6 +50,11 @@
     "publishFromCi": true
   },
   {
+    "dir": "packages/adapters/omp-local",
+    "name": "@tickernelz/paperclip-pro-adapter-omp-local",
+    "publishFromCi": true
+  },
+  {
     "dir": "packages/adapters/opencode-local",
     "name": "@tickernelz/paperclip-pro-adapter-opencode-local",
     "publishFromCi": true

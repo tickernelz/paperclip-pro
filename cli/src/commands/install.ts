@@ -37,6 +37,16 @@ export type CommandRunner = (
 
 type ReleasePackageEntry = { dir: string; name: string };
 
+const COMMAND_OUTPUT_TAIL_LINES = 40;
+
+function commandOutputTail(error: unknown, stream: "stdout" | "stderr"): string {
+  if (!error || typeof error !== "object" || !(stream in error)) return "";
+  const value = (error as Record<string, unknown>)[stream];
+  if (typeof value !== "string") return "";
+  const lines = value.trim().split(/\r?\n/);
+  return lines.slice(-COMMAND_OUTPUT_TAIL_LINES).join("\n");
+}
+
 export async function runCommandWithDiagnostics(
   file: string,
   args: string[],
@@ -45,11 +55,11 @@ export async function runCommandWithDiagnostics(
   try {
     return await execFileAsync(file, args, { ...options, encoding: "utf8" });
   } catch (error) {
-    const stderr = error && typeof error === "object" && "stderr" in error && typeof error.stderr === "string"
-      ? error.stderr.trim()
-      : "";
-    if (!stderr || (error instanceof Error && error.message.includes(stderr))) throw error;
-    throw new Error(`${error instanceof Error ? error.message : String(error)}\n${stderr}`, { cause: error });
+    const message = error instanceof Error ? error.message : String(error);
+    const sections = [commandOutputTail(error, "stderr"), commandOutputTail(error, "stdout")]
+      .filter((section) => section.length > 0 && !message.includes(section));
+    if (sections.length === 0) throw error;
+    throw new Error([message, ...sections].join("\n"), { cause: error });
   }
 }
 
@@ -278,6 +288,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     await runCommand("corepack", ["pnpm", "install", "--frozen-lockfile"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("bash", ["scripts/build-npm.sh", "--skip-checks", "--skip-typecheck"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("corepack", ["pnpm", "-r", "--filter", "@tickernelz/paperclip-pro-server...", "--if-present", "run", "build"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
+    await runCommand("bash", ["scripts/prepare-release-package-assets.sh"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     const metadata = JSON.parse(fs.readFileSync(path.join(checkoutPath, "cli", "package.json"), "utf8")) as { version: string };
     const workspacePackages = resolveGitInstallWorkspacePackages(checkoutPath);
     for (const [index, workspacePackage] of workspacePackages.entries()) {
@@ -287,7 +298,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
       if (bundledDependencies.length > 0) {
         const stagedPackage = path.join(stagingRoot, `workspace-package-${index}`);
         await runCommand(process.execPath, [path.join(checkoutPath, "scripts", "prepare-bundled-package.mjs"), packageDir, stagedPackage], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
-        await runCommand("npm", ["pack", stagedPackage, "--pack-destination", stagingRoot], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 16 * 1024 * 1024 });
+        await runCommand("npm", ["pack", stagedPackage, "--ignore-scripts", "--pack-destination", stagingRoot], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 16 * 1024 * 1024 });
       } else {
         await runCommand("corepack", ["pnpm", "--dir", workspacePackage.dir, "pack", "--pack-destination", stagingRoot], { cwd: checkoutPath, env: buildEnv({ PAPERCLIP_RELEASE_REUSE_UI_DIST: "1" }), maxBuffer: 32 * 1024 * 1024 });
       }
