@@ -33,7 +33,7 @@ const nonServerProjects = [
   "@tickernelz/paperclip-pro-plugin-sdk",
   "@tickernelz/paperclip-pro-create-paperclip-plugin",
   "@tickernelz/paperclip-pro-ui",
-  "paperclip-pro",
+  "@tickernelz/paperclip-pro",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -94,7 +94,7 @@ const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "paperclip-pro"];
+const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "@tickernelz/paperclip-pro"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const allowedGeneralGroupNames = [
