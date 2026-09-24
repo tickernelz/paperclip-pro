@@ -924,8 +924,8 @@ importers:
         specifier: ^1.9.0
         version: 1.9.1
       '@photon-ai/advanced-imessage':
-        specifier: 2.1.0
-        version: 2.1.0(@grpc/grpc-js@1.14.4)(nice-grpc-common@2.0.4)(nice-grpc@2.1.17)
+        specifier: 2.2.0
+        version: 2.2.0(@grpc/grpc-js@1.14.4)(nice-grpc-common@2.0.4)(nice-grpc@2.1.17)
       '@tickernelz/paperclip-pro-adapter-claude-local':
         specifier: workspace:*
         version: link:../packages/adapters/claude-local
@@ -3484,8 +3484,8 @@ packages:
   '@paralleldrive/cuid2@2.3.1':
     resolution: {integrity: sha512-XO7cAxhnTZl0Yggq6jOgjiOHhbgcO4NqFqwSmQpjK3b6TEE6Uj/jfSk6wzYyemh3+I0sHirKSetjQwn5cZktFw==}
 
-  '@photon-ai/advanced-imessage@2.1.0':
-    resolution: {integrity: sha512-KT/aCBWcq667alyKe8DclqDUa/0fUuW2ZYDCxfIKuQBm08U4JcNG56fCdNUd69MFkKkzZgW35j59EYsx5DnLcQ==}
+  '@photon-ai/advanced-imessage@2.2.0':
+    resolution: {integrity: sha512-WpRU/dAfPwZo6OZAwdKJ6YTmrJZAbhAVlO2skRucMmgyGHrhpyHt3p7ZJKvlkT900Fx7bFMN1VxheuV+jNh2KQ==}
     engines: {node: '>=18.17'}
     peerDependencies:
       '@grpc/grpc-js': ^1.12.6
@@ -7684,6 +7684,7 @@ packages:
 
   opencode-ai@1.18.32:
     resolution: {integrity: sha512-SCrZWdq44y/EoH2+fE4HLcXS+DzpVqHPzmXk3p2RrufYy8LWvpfhRhKtijb5ktvx8r94ScqToqwHxR0BwS65OQ==}
+    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 
@@ -11382,7 +11383,7 @@ snapshots:
     dependencies:
       '@noble/hashes': 1.8.0
 
-  '@photon-ai/advanced-imessage@2.1.0(@grpc/grpc-js@1.14.4)(nice-grpc-common@2.0.4)(nice-grpc@2.1.17)':
+  '@photon-ai/advanced-imessage@2.2.0(@grpc/grpc-js@1.14.4)(nice-grpc-common@2.0.4)(nice-grpc@2.1.17)':
     dependencies:
       '@bufbuild/protobuf': 2.15.0
     optionalDependencies:
