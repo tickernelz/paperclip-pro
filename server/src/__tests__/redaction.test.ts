@@ -593,7 +593,7 @@ def status=401`,
         input: String.raw`authorization=\"Bearer first-line\"
 request failed with Bearer standalone\"embedded-tail`,
         expected: String.raw`authorization=\"***REDACTED***\"
-request failed with Bearer ***REDACTED***`,
+request failed with Bearer ***REDACTED***\"embedded-tail`,
       },
       {
         input: String.raw`{\"authorization\":\"Bearer a\"b c\"} suffix`,
@@ -654,6 +654,48 @@ second-line\" status=401`,
       },
     });
     expect(redactEventPayload(sanitized)).toEqual(sanitized);
+  });
+
+  it("keeps a JSON line valid when redacting an escaped env dump inside a string", () => {
+    const secret =
+      "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXBlcmNsaXAtcnVuIn0.s1gnatureS1gnatureS1gnature";
+    const envLines = [
+      "AGENT_HOME=/home/user/.paperclip-pro/instances/default",
+      "BETTER_AUTH_TRUSTED_ORIGINS=https://paperclip.example.com,http://localhost:3100",
+      `PAPERCLIP_API_KEY=${secret}`,
+      'PAPERCLIP_SANDBOX_READ_PATHS=["/etc/resolv.conf","/etc/hosts"]',
+      "PAPERCLIP_RUNTIME_API_URL=https://paperclip.example.com",
+      "PWD=/home/user/.paperclip-pro/instances/default",
+    ];
+    const line = JSON.stringify({
+      type: "tool_execution_end",
+      toolCallId: "toolu_env_dump",
+      toolName: "fabric_exec",
+      result: {
+        content: [{ type: "text", text: `${envLines.join("\n")}\n` }],
+        details: { readOnlyPaths: '"/etc/resolv.conf","/etc/hosts"' },
+      },
+      isError: false,
+    });
+
+    const redacted = redactSensitiveText(line);
+
+    expect(() => JSON.parse(redacted) as unknown).not.toThrow();
+    expect(redacted).not.toContain(secret);
+    expect(redacted).toContain(REDACTED_EVENT_VALUE);
+    const text = (
+      JSON.parse(redacted) as {
+        result: { content: { text: string }[]; details: { readOnlyPaths: string } };
+      }
+    );
+    const redactedEnvLines = text.result.content[0]!.text.split("\n");
+    expect(redactedEnvLines[0]).toBe(envLines[0]);
+    expect(redactedEnvLines[1]).toBe(envLines[1]);
+    expect(redactedEnvLines[2]).toBe(`PAPERCLIP_API_KEY=${REDACTED_EVENT_VALUE}`);
+    expect(redactedEnvLines[3]).toBe(envLines[3]);
+    expect(redactedEnvLines[4]).toBe(envLines[4]);
+    expect(redactedEnvLines[5]).toBe(envLines[5]);
+    expect(text.result.details.readOnlyPaths).toBe('"/etc/resolv.conf","/etc/hosts"');
   });
 
   it("redacts every body line of a quoted credential that spans several lines", () => {

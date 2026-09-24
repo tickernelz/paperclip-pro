@@ -351,9 +351,9 @@ const CLI_SECRET_FLAG_RE = new RegExp(
   "i",
 );
 const JSON_SECRET_FIELD_TEXT_RE = new RegExp(
-  String.raw`((?:"|')?${SECRET_FIELD_NAME_PATTERN}(?:"|')?\s*:\s*(?:"|'))[^"'` +
+  String.raw`((?:"|')?${SECRET_FIELD_NAME_PATTERN}(?:"|')?\s*:\s*(?:"|'))(?:\\[\s\S]|[^"'` +
     "`" +
-    String.raw`\r\n]+((?:"|'))`,
+    String.raw`\\\r\n])+((?:"|'))`,
   "gi",
 );
 const ESCAPED_JSON_SECRET_FIELD_TEXT_RE = new RegExp(
@@ -664,7 +664,7 @@ function authorizationCredentialRange(
       end = credentialStart;
       // Embedded quote/backtick bytes do not make an unquoted credential safe;
       // consume them through the next structural or whitespace boundary.
-      while (end < input.length && !/[\s,;}\]]/.test(input[end])) end += 1;
+      while (end < input.length && !/[\s,;}\]\\]/.test(input[end])) end += 1;
     }
   }
   return { start: valueStart, end, replacement: REDACTED_EVENT_VALUE };
@@ -734,7 +734,7 @@ function redactStandaloneBearerCredentials(input: string): string {
         replacement = `${delimiter}${REDACTED_EVENT_VALUE}${delimiter}`;
       } else {
         end = credentialStart;
-        while (end < input.length && !/[\s,;}\]]/.test(input[end])) end += 1;
+        while (end < input.length && !/[\s,;}\]\\]/.test(input[end])) end += 1;
       }
     }
 

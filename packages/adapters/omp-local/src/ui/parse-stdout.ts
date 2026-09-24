@@ -225,6 +225,22 @@ function salvageRedactedEvents(line: string): JsonRecord[] {
   return events;
 }
 
+const BROKEN_TOOL_END_RE =
+  /^\{"type":"tool_execution_end","toolCallId":"([^"\\]{1,200})"(?:,"toolName":"([^"\\]{1,200})")?/;
+
+function settledToolEnd(line: string, ts: string): TranscriptEntry[] {
+  const match = BROKEN_TOOL_END_RE.exec(line);
+  if (!match) return [];
+  return [{
+    kind: "tool_result",
+    ts,
+    toolUseId: match[1]!,
+    toolName: match[2] ?? "tool",
+    content: "",
+    isError: false,
+  }];
+}
+
 function unreadableEntry(line: string, ts: string): TranscriptEntry[] {
   const match = /^\{"type":"([A-Za-z_]+)"/.exec(line);
   const kb = (line.length / 1024).toFixed(1);
@@ -259,6 +275,8 @@ export function parseOmpStdoutLine(line: string, ts: string): TranscriptEntry[] 
 
   const salvaged = salvageRedactedEvents(line);
   if (salvaged.length > 0) return salvaged.flatMap((event) => parseOmpEvent(event, ts, raw));
+  const settled = settledToolEnd(line, ts);
+  if (settled.length > 0) return [...settled, ...unreadableEntry(line, ts)];
   return line.startsWith("{") ? unreadableEntry(line, ts) : raw();
 }
 

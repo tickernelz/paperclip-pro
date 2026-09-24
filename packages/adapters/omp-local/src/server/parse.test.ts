@@ -22,4 +22,15 @@ describe("createOmpOutputAccumulator redaction salvage", () => {
     expect(toolCalls[0]!.result).not.toBeNull();
     expect(unknownLines).toEqual([]);
   });
+
+  it("settles a tool call whose end payload is unrecoverable", () => {
+    const accumulator = createOmpOutputAccumulator();
+
+    accumulator.push(CAPTURED_TOOL_START);
+    accumulator.push("{\"type\":\"tool_execution_end\",\"toolCallId\":\"call_455341\",\"toolName\":\"fabric_exec\",\"result\":{\"content\":");
+
+    const { toolCalls } = accumulator.result();
+    expect(toolCalls).toHaveLength(1);
+    expect(toolCalls[0]!.result).not.toBeNull();
+  });
 });
