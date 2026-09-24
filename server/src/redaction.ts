@@ -401,6 +401,13 @@ function inlineWhitespaceEnd(input: string, start: number): number {
   return index;
 }
 
+function lineEnd(input: string, start: number): number {
+  for (let index = start; index < input.length; index += 1) {
+    if (input[index] === "\n" || input[index] === "\r") return index;
+  }
+  return input.length;
+}
+
 function quotedValueBoundary(
   input: string,
   index: number,
@@ -449,7 +456,7 @@ function rawQuotedValueEnd(
   start: number,
   quote: '"' | "'",
 ): number {
-  const end = input.length;
+  const end = lineEnd(input, start);
   let provisionalEnd: number | null = null;
   let unsafeAfterProvisional = false;
   for (let index = start + 1; index < end; index += 1) {
@@ -475,13 +482,9 @@ function rawQuotedValueEnd(
       }
     }
   }
-  // Whitespace normally separates safe trailing context, so retain a final
-  // provisional delimiter when no later quote contradicts it. Literal newlines
-  // can occur inside provider-controlled credentials, so an unterminated
-  // malformed value fails closed through the complete bounded diagnostic.
   return provisionalEnd !== null && !unsafeAfterProvisional
     ? provisionalEnd
-    : end;
+    : lineEnd(input, start);
 }
 
 function escapedQuotedValueEnd(
@@ -489,7 +492,7 @@ function escapedQuotedValueEnd(
   start: number,
   quote: '"' | "'",
 ): number {
-  const end = input.length;
+  const end = lineEnd(input, start);
   let provisionalEnd: number | null = null;
   let unsafeAfterProvisional = false;
   for (let index = start + 2; index < end; index += 1) {
@@ -525,7 +528,7 @@ function escapedQuotedValueEnd(
   }
   return provisionalEnd !== null && !unsafeAfterProvisional
     ? provisionalEnd
-    : end;
+    : lineEnd(input, start);
 }
 
 function escapedQuoteAt(input: string, index: number): '"' | "'" | null {
@@ -538,12 +541,7 @@ function credentialEndAfterQuotedDelimiter(input: string, quotedEnd: number) {
   if (isTrustedQuotedValueBoundary(input, quotedEnd)) return quotedEnd;
   if (startsIndependentCredentialLine(input, quotedEnd)) return quotedEnd;
 
-  // A closing delimiter followed immediately by more token bytes is not a
-  // trustworthy credential boundary (for example `"abc"defg`). Once a
-  // provider diagnostic is malformed this way, whitespace is not a safe
-  // boundary either (`"a"b c"`). Fail closed through the rest of the
-  // diagnostic so no later credential fragment survives.
-  return input.length;
+  return lineEnd(input, quotedEnd);
 }
 
 interface AuthorizationCredentialRange {

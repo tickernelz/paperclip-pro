@@ -548,39 +548,41 @@ describe("redaction", () => {
       },
       {
         input: 'Authorization: Basic "abc"defg retry\nsafe context',
-        expected: `Authorization: ${REDACTED_EVENT_VALUE}`,
+        expected: `Authorization: ${REDACTED_EVENT_VALUE}\nsafe context`,
       },
       {
         input:
           String.raw`Authorization: Basic \"abc\"defg retry` + "\nsafe context",
-        expected: `Authorization: ${REDACTED_EVENT_VALUE}`,
+        expected: `Authorization: ${REDACTED_EVENT_VALUE}\nsafe context`,
       },
       {
         input: 'authorization="Bearer abc\ndef" status=401',
-        expected: `authorization="${REDACTED_EVENT_VALUE}" status=401`,
+        expected: `authorization="${REDACTED_EVENT_VALUE}"\ndef" status=401`,
       },
       {
         input: String.raw`authorization=\"Bearer abc
 def\" status=401`,
-        expected: String.raw`authorization=\"***REDACTED***\" status=401`,
+        expected:
+          String.raw`authorization=\"***REDACTED***\"` + "\n" + String.raw`def\" status=401`,
       },
       {
         input: 'authorization="Bearer abc"\ndef" status=401',
-        expected: `authorization="${REDACTED_EVENT_VALUE}" status=401`,
+        expected: `authorization="${REDACTED_EVENT_VALUE}"\ndef" status=401`,
       },
       {
         input: String.raw`authorization=\"Bearer abc\"
 def\" status=401`,
-        expected: String.raw`authorization=\"***REDACTED***\" status=401`,
+        expected:
+          String.raw`authorization=\"***REDACTED***\"` + "\n" + String.raw`def\" status=401`,
       },
       {
         input: 'authorization="Bearer abc"\ndef status=401',
-        expected: `authorization="${REDACTED_EVENT_VALUE}"`,
+        expected: `authorization="${REDACTED_EVENT_VALUE}"\ndef status=401`,
       },
       {
         input: String.raw`authorization=\"Bearer abc\"
 def status=401`,
-        expected: String.raw`authorization=\"***REDACTED***\"`,
+        expected: String.raw`authorization=\"***REDACTED***\"` + "\ndef status=401",
       },
       {
         input:
@@ -644,12 +646,47 @@ second-line\" status=401`,
         diagnostics: [
           String.raw`Bearer \"***REDACTED***\"`,
           String.raw`{\"authorization\":\"***REDACTED***\"} suffix`,
-          String.raw`authorization=\"***REDACTED***\" status=401`,
-          String.raw`authorization=\"***REDACTED***\" status=401`,
+          String.raw`authorization=\"***REDACTED***\"` +
+            "\n" +
+            String.raw`second-line\" status=401`,
+          String.raw`authorization=\"***REDACTED***\"` +
+            "\n" +
+            String.raw`second-line\" status=401`,
         ],
       },
     });
     expect(redactEventPayload(sanitized)).toEqual(sanitized);
+  });
+
+  it("keeps one JSONL record per line when a credential value has no closing quote", () => {
+    const secret = "sk-live-omp-secret-token";
+    const recordWithSecret = `{"type":"message_update","assistantMessageEvent":{"type":"toolcall_delta","contentIndex":0,"delta":"Bearer "${secret}}}`;
+    const nextRecord =
+      '{"type":"message_update","assistantMessageEvent":{"type":"toolcall_delta","contentIndex":0,"delta":"$PAPERC"}}';
+    const stream = `${recordWithSecret}\n${nextRecord}`;
+
+    const redacted = redactSensitiveText(stream);
+    const lines = redacted.split("\n");
+
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toBe(nextRecord);
+    expect(redacted).not.toContain(secret);
+    expect(lines[0]).toContain(REDACTED_EVENT_VALUE);
+  });
+
+  it("keeps one JSONL record per line when a serialized credential value has no closing quote", () => {
+    const secret = "sk-live-omp-escaped-token";
+    const recordWithSecret = `{"payload":"{\\"authorization\\":\\"Bearer \\"${secret}"}`;
+    const nextRecord = '{"type":"tool_execution_end","toolCallId":"call_1","isError":false}';
+    const stream = `${recordWithSecret}\r\n${nextRecord}`;
+
+    const redacted = redactSensitiveText(stream);
+    const lines = redacted.split("\r\n");
+
+    expect(lines).toHaveLength(2);
+    expect(lines[1]).toBe(nextRecord);
+    expect(redacted).not.toContain(secret);
+    expect(lines[0]).toContain(REDACTED_EVENT_VALUE);
   });
 
   it("redacts inline secrets from command metadata without hiding safe command text", () => {
