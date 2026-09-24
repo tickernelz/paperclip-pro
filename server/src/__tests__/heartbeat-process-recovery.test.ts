@@ -3555,8 +3555,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     },
   );
 
-  it("terminalizes an unsupported legacy session on shutdown without speculative replay", async () => {
-    const { agentId, runId, issueId, wakeupRequestId } = await seedRunFixture({
+  it("terminalizes an unsupported legacy session on shutdown without parking the issue", async () => {
+    const { companyId, agentId, runId, issueId, wakeupRequestId } = await seedRunFixture({
       adapterType: "process",
       agentStatus: "running",
     });
@@ -3599,12 +3599,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         .select()
         .from(issueRecoveryActions)
         .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
-    ).toEqual([
-      expect.objectContaining({
-        cause: "legacy_execution_requires_reconciliation",
-        ownerType: "board",
-      }),
-    ]);
+    ).toEqual([]);
+    const { getExecutionBlocker } = await import("../services/execution-blocker.js");
+    expect(await getExecutionBlocker(db, companyId, issueId)).toBeNull();
   });
 
   it("suspends native Paperclip Runner ownership on graceful restart without cancelling or creating a retry run", async () => {
@@ -3708,8 +3705,43 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(wakeup?.status).toBe("claimed");
   });
 
-  it("does not duplicate a legacy reconciliation action across repeated shutdowns", async () => {
-    const { agentId, runId, issueId } = await seedRunFixture({
+  it("keeps an issue dispatchable after a clean shutdown ends its run", async () => {
+    const { companyId, agentId, runId, issueId } = await seedRunFixture({
+      adapterType: "process",
+      agentStatus: "running",
+    });
+
+    await heartbeatService(db).drainRunningRunsForShutdown("SIGTERM");
+
+    const [stopped] = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.id, runId));
+    expect(stopped).toMatchObject({
+      status: "interrupted",
+      errorCode: "server_shutdown_interrupted",
+    });
+    expect(
+      await db
+        .select()
+        .from(issueRecoveryActions)
+        .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
+    ).toEqual([]);
+
+    const { getExecutionBlocker } = await import("../services/execution-blocker.js");
+    expect(await getExecutionBlocker(db, companyId, issueId)).toBeNull();
+
+    const [task] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(task).toMatchObject({
+      assigneeAgentId: agentId,
+      executionRunId: null,
+      checkoutRunId: null,
+    });
+    expect(task!.status).not.toBe("blocked");
+  });
+
+  it("keeps a repeatedly restarted issue free of reconciliation holds", async () => {
+    const { companyId, agentId, runId, issueId } = await seedRunFixture({
       adapterType: "process",
       agentStatus: "running",
     });
@@ -3728,7 +3760,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         .select()
         .from(issueRecoveryActions)
         .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
-    ).toHaveLength(1);
+    ).toEqual([]);
+    const { getExecutionBlocker } = await import("../services/execution-blocker.js");
+    expect(await getExecutionBlocker(db, companyId, issueId)).toBeNull();
   });
 
   it("does not reset an exhausted incident budget on server restart", async () => {

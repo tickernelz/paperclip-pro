@@ -22,6 +22,7 @@ import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./
 import { claimQueuedNativeReviewRun } from "./native-runtime/native-review-dispatch.js";
 import { buildNativeReviewRequest } from "./native-runtime/native-review-prompt.js";
 import {
+  isGracefulShutdownInterruptedRun,
   legacyExecutionNeedsReconciliation,
   terminalizeLegacyExecution,
 } from "./legacy-execution-recovery.js";
@@ -14315,7 +14316,12 @@ export function heartbeatService(
     // Native sessions have their own fenced same-run controller. Legacy
     // bootstrap recovery shares the durable delay and incident counter with
     // transient retries; process loss must not open a second retry budget.
-    if (run.runtimeMode === "native" || legacyExecutionNeedsReconciliation(run))
+    if (
+      run.runtimeMode === "native" ||
+      (isGracefulShutdownInterruptedRun(run) &&
+        !hasConversationContinuationPolicy(run.resultJson)) ||
+      legacyExecutionNeedsReconciliation(run)
+    )
       return null;
     const scheduled = await scheduleBoundedRetryForRun(run, agent, { now });
     return scheduled.outcome === "scheduled" ? scheduled.run : null;
