@@ -557,23 +557,23 @@ describe("redaction", () => {
       },
       {
         input: 'authorization="Bearer abc\ndef" status=401',
-        expected: `authorization="${REDACTED_EVENT_VALUE}"\ndef" status=401`,
+        expected: `authorization="${REDACTED_EVENT_VALUE}"\n${REDACTED_EVENT_VALUE} status=401`,
       },
       {
         input: String.raw`authorization=\"Bearer abc
 def\" status=401`,
         expected:
-          String.raw`authorization=\"***REDACTED***\"` + "\n" + String.raw`def\" status=401`,
+          String.raw`authorization=\"***REDACTED***\"` + `\n${REDACTED_EVENT_VALUE} status=401`,
       },
       {
         input: 'authorization="Bearer abc"\ndef" status=401',
-        expected: `authorization="${REDACTED_EVENT_VALUE}"\ndef" status=401`,
+        expected: `authorization="${REDACTED_EVENT_VALUE}"\n${REDACTED_EVENT_VALUE} status=401`,
       },
       {
         input: String.raw`authorization=\"Bearer abc\"
 def\" status=401`,
         expected:
-          String.raw`authorization=\"***REDACTED***\"` + "\n" + String.raw`def\" status=401`,
+          String.raw`authorization=\"***REDACTED***\"` + `\n${REDACTED_EVENT_VALUE} status=401`,
       },
       {
         input: 'authorization="Bearer abc"\ndef status=401',
@@ -647,15 +647,31 @@ second-line\" status=401`,
           String.raw`Bearer \"***REDACTED***\"`,
           String.raw`{\"authorization\":\"***REDACTED***\"} suffix`,
           String.raw`authorization=\"***REDACTED***\"` +
-            "\n" +
-            String.raw`second-line\" status=401`,
+            `\n${REDACTED_EVENT_VALUE} status=401`,
           String.raw`authorization=\"***REDACTED***\"` +
-            "\n" +
-            String.raw`second-line\" status=401`,
+            `\n${REDACTED_EVENT_VALUE} status=401`,
         ],
       },
     });
     expect(redactEventPayload(sanitized)).toEqual(sanitized);
+  });
+
+  it("redacts every body line of a quoted credential that spans several lines", () => {
+    const body = [
+      "-----BEGIN PRIVATE KEY-----",
+      "MIIBVgIBADANBgkqhkiG9w0BAQEFAASCAUAwggE8AgEAAkEA0Z3VS5JJcds3xfn",
+      "-----END PRIVATE KEY-----",
+    ];
+    const input = `authorization="Bearer ${body.join("\n")}" status=401`;
+
+    const redacted = redactSensitiveText(input);
+    const lines = redacted.split("\n");
+
+    expect(lines).toHaveLength(3);
+    for (const bodyLine of body) expect(redacted).not.toContain(bodyLine);
+    expect(lines[0]).toBe(`authorization="${REDACTED_EVENT_VALUE}"`);
+    expect(lines[1]).toBe(REDACTED_EVENT_VALUE);
+    expect(lines[2]).toBe(`${REDACTED_EVENT_VALUE} status=401`);
   });
 
   it("keeps one JSONL record per line when a credential value has no closing quote", () => {
