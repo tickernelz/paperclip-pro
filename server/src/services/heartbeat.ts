@@ -864,6 +864,7 @@ const GIT_SENSITIVE_LOCAL_ADAPTER_TYPES = new Set([
   "grok_local",
   "hermes_local",
   "kimi_local",
+  "omp_local",
   "opencode_local",
   "pi_local",
 ]);
@@ -1253,6 +1254,7 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
   "gemini_local",
   "hermes_local",
   "kimi_local",
+  "omp_local",
   "opencode_local",
   "pi_local",
 ]);
