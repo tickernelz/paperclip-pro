@@ -221,6 +221,12 @@ describe("managed install commands", () => {
       .rejects.toThrow("unsupported workspace dependency");
   });
 
+  it("includes child-process stdout in command failures because build tools report causes there", async () => {
+    const encodedCause = Buffer.from("cargo: command not found", "utf8").toString("base64");
+    await expect(runCommandWithDiagnostics(process.execPath, ["-e", `process.stdout.write(Buffer.from('${encodedCause}','base64').toString()+'\\n'); process.exit(1)`]))
+      .rejects.toThrow("cargo: command not found");
+  });
+
   it("installs through the shim, reports provenance, and uninstalls without deleting user data", async () => {
     const version = "2026.720.0";
     const runCommand = vi.fn(async (file: string, args: string[], _options?: unknown) => {

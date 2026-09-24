@@ -37,6 +37,16 @@ export type CommandRunner = (
 
 type ReleasePackageEntry = { dir: string; name: string };
 
+const COMMAND_OUTPUT_TAIL_LINES = 40;
+
+function commandOutputTail(error: unknown, stream: "stdout" | "stderr"): string {
+  if (!error || typeof error !== "object" || !(stream in error)) return "";
+  const value = (error as Record<string, unknown>)[stream];
+  if (typeof value !== "string") return "";
+  const lines = value.trim().split(/\r?\n/).filter((line) => line.trim().length > 0);
+  return lines.slice(-COMMAND_OUTPUT_TAIL_LINES).join("\n");
+}
+
 export async function runCommandWithDiagnostics(
   file: string,
   args: string[],
@@ -45,11 +55,11 @@ export async function runCommandWithDiagnostics(
   try {
     return await execFileAsync(file, args, { ...options, encoding: "utf8" });
   } catch (error) {
-    const stderr = error && typeof error === "object" && "stderr" in error && typeof error.stderr === "string"
-      ? error.stderr.trim()
-      : "";
-    if (!stderr || (error instanceof Error && error.message.includes(stderr))) throw error;
-    throw new Error(`${error instanceof Error ? error.message : String(error)}\n${stderr}`, { cause: error });
+    const message = error instanceof Error ? error.message : String(error);
+    const sections = [commandOutputTail(error, "stderr"), commandOutputTail(error, "stdout")]
+      .filter((section) => section.length > 0 && !message.includes(section));
+    if (sections.length === 0) throw error;
+    throw new Error([message, ...sections].join("\n"), { cause: error });
   }
 }
 
