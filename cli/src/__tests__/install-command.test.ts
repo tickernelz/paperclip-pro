@@ -188,6 +188,14 @@ describe("managed install commands", () => {
     expect(uiPackCall).toBeDefined();
   });
 
+  it("stamps the resolved SHA into the build so /api/health reports a commit", async () => {
+    const sha = "a".repeat(40);
+    const runCommand = createGitCheckoutRunCommand(sha);
+    await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
+    const serverBuild = runCommand.mock.calls.find(([file, args]) => file === "corepack" && args.includes("@tickernelz/paperclip-pro-server..."));
+    expect(serverBuild?.[2]?.env?.PAPERCLIP_BUILD_COMMIT).toBe(sha);
+  });
+
   it("stages the release package assets before packaging so the server tarball carries ui-dist", async () => {
     const sha = "e".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
