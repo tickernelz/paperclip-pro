@@ -14,6 +14,7 @@ import test from "node:test";
 import {
   createBundledInstallManifest,
   materializePublishManifest,
+  readWorkspacePackageVersions,
   selectBundledDependencyPatches,
 } from "./prepare-bundled-package.mjs";
 
@@ -36,6 +37,20 @@ const required = [
   ["@chat-adapter/telegram", "4.39.0"],
   ["@discordjs/ws", "1.2.3"],
 ];
+
+test("published server resolves workspace dependencies to the versions the workspace actually declares", () => {
+  const workspaceVersions = readWorkspacePackageVersions(repoRoot);
+  const published = materializePublishManifest(serverPackage, workspaceVersions);
+  for (const [name, specifier] of Object.entries(serverPackage.dependencies ?? {})) {
+    if (!specifier.startsWith("workspace:")) continue;
+    assert.equal(
+      published.dependencies[name],
+      workspaceVersions.get(name),
+      `${name} must be published at the version its own package.json declares`,
+    );
+  }
+  assert.notEqual(workspaceVersions.get("@tickernelz/paperclip-pro-plugin-sdk"), serverPackage.version);
+});
 
 for (const [name, version] of required) {
   test(`published server retains the patched ${name}@${version} runtime`, () => {
