@@ -765,7 +765,7 @@ export function adapterRoutes(options: {
     // Runtime-changing adapter management routes above require instance admin.
     assertBoardOrgAccess(req);
     const { type } = req.params;
-    const source = getOrExtractUiParserSource(type);
+    const source = getOrExtractUiParserSource(type, findServerAdapter(type)?.uiParserPath);
     if (!source) {
       res.status(404).json({ error: `No UI parser available for adapter "${type}".` });
       return;

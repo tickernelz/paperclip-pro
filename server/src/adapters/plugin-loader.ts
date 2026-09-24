@@ -37,9 +37,20 @@ export function getUiParserSource(adapterType: string): string | undefined {
  * On cache miss, attempt on-demand extraction from the plugin store.
  * Makes the ui-parser.js endpoint self-healing.
  */
-export function getOrExtractUiParserSource(adapterType: string): string | undefined {
+export function getOrExtractUiParserSource(
+  adapterType: string,
+  builtinParserPath?: string,
+): string | undefined {
   const cached = uiParserCache.get(adapterType);
   if (cached) return cached;
+
+  if (builtinParserPath) {
+    const builtin = readBuiltinUiParserSource(adapterType, builtinParserPath);
+    if (builtin) {
+      uiParserCache.set(adapterType, builtin);
+      return builtin;
+    }
+  }
 
   const record = getAdapterPluginByType(adapterType);
   if (!record) return undefined;
@@ -59,6 +70,31 @@ export function getOrExtractUiParserSource(adapterType: string): string | undefi
 // ---------------------------------------------------------------------------
 // Shared helpers
 // ---------------------------------------------------------------------------
+
+function readBuiltinUiParserSource(adapterType: string, parserPath: string): string | undefined {
+  const resolved = path.resolve(parserPath);
+  if (!fs.existsSync(resolved)) {
+    logger.warn(
+      { type: adapterType, uiParserPath: resolved },
+      "Adapter declares a uiParserPath that does not exist — falling back to the plugin store",
+    );
+    return undefined;
+  }
+  try {
+    const source = fs.readFileSync(resolved, "utf-8");
+    logger.info(
+      { type: adapterType, uiParserPath: resolved, size: source.length, origin: "builtin" },
+      "UI parser loaded from the registered adapter module",
+    );
+    return source;
+  } catch (err) {
+    logger.warn(
+      { type: adapterType, uiParserPath: resolved, err },
+      "Failed to read the adapter uiParserPath",
+    );
+    return undefined;
+  }
+}
 
 function resolvePackageDir(record: Pick<AdapterPluginRecord, "localPath" | "packageName">): string {
   return record.localPath
