@@ -1,5 +1,14 @@
 # CLI Reference
 
+> **Fork notice.** This is the `paperclip-pro` CLI from
+> [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro), a hard fork of
+> `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
+> `npx @tickernelz/paperclip-pro …` and `npm install -g paperclip-pro` example below is
+> inherited from upstream and will fail with a 404. Run the installed
+> `paperclip-pro` shim, or `pnpm paperclip-pro …` from a source checkout; both take the
+> same arguments and the same inert-`argv` guarantees `npx` provides. See
+> [INSTALLING.md](INSTALLING.md) and [`../docs/fork/OPERATIONS.md`](../docs/fork/OPERATIONS.md).
+
 Paperclip CLI now supports both:
 
 - installation and lifecycle management (`install`, `uninstall`, `update`, `upgrade`, `service`)
@@ -123,24 +132,21 @@ Use repo script in development:
 pnpm paperclip-pro --help
 ```
 
-Recommended installation and interactive onboarding:
+Recommended installation and interactive onboarding, from a source checkout:
 
 ```sh
-curl -fsSLO https://paperclip.ing/install.sh
-curl -fsSLO https://paperclip.ing/install.sh.sha256
-if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum -c install.sh.sha256
-else
-  shasum -a 256 -c install.sh.sha256
-fi
-bash install.sh
+git clone https://github.com/tickernelz/paperclip-pro.git
+cd paperclip-pro
+pnpm install --frozen-lockfile
+pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+paperclip-pro onboard --yes
 ```
 
-The checksum detects transfer or publishing mistakes but is served from the
-same origin as the installer. Use a release-tag or commit-pinned GitHub copy
-when you need an independently hosted source. Piped installs require supported
-Node.js, npm, and npx to already be installed; download the script first before
-allowing it to bootstrap Node.js with privileged package-manager commands.
+`--repo` is required because it otherwise defaults to the upstream repository
+(`cli/src/commands/install.ts:27`). `--ref` accepts a branch, tag, or commit SHA;
+use a SHA for a reproducible install. The upstream `paperclip.ing/install.sh`
+bootstrap installs upstream Paperclip, not this fork.
+
 
 First-time local bootstrap from a source checkout:
 
@@ -151,7 +157,7 @@ pnpm paperclip-pro run
 Choose local instance:
 
 ```sh
-npx @tickernelz/paperclip-pro run --instance dev
+paperclip-pro run --instance dev
 ```
 
 ## Isolated Manual Test Drives

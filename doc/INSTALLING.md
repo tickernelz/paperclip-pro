@@ -1,65 +1,45 @@
-# Installing Paperclip
+# Installing Paperclip Pro
 
-Paperclip supports a managed installation, an ephemeral `npx` tryout, a
-traditional global npm installation, and development from a source checkout.
-The managed installation is recommended because it provides atomic updates,
-rollback, git-ref installs, and a stable entrypoint for the background service.
+> **Fork notice.** This repository is [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes nothing to npm, and `https://paperclip.ing/install.sh` installs **upstream Paperclip**, not this fork. Ignore any npm or vanity-installer instruction below that survives from upstream: the supported install path for this product is the git install in the next section.
+
+Paperclip Pro supports a managed installation from a git ref and development
+from a source checkout. The managed installation is recommended because it
+provides atomic updates, rollback, and a stable entrypoint for the background
+service.
 
 ## Recommended Install
 
-On macOS, Linux, or WSL2:
+On macOS, Linux, or WSL2, with Node.js 24.11+, pnpm 9.15.4, `git`, `curl`,
+`tar`, and `corepack` available:
 
 ```sh
-curl -fsSLO https://paperclip.ing/install.sh
-curl -fsSLO https://paperclip.ing/install.sh.sha256
-if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum -c install.sh.sha256
-else
-  shasum -a 256 -c install.sh.sha256
-fi
-bash install.sh
+git clone https://github.com/tickernelz/paperclip-pro.git
+cd paperclip-pro
+pnpm install --frozen-lockfile
+pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
 ```
 
-The bootstrap script:
+`install` resolves the ref through the GitHub API, downloads that exact commit
+as a tarball, builds the workspace, packs every workspace package, installs the
+tarballs into a payload under `~/.paperclip-pro/cli/installs`, smoke-tests
+`--version`, and only then flips the `current` pointer and writes the
+`~/.local/bin/paperclip-pro` shim.
 
-1. verifies that the platform is supported;
-2. ensures Node.js 24.11 or newer is available;
-3. delegates installation to `paperclip-pro install`;
-4. starts interactive onboarding when stdin and stdout are terminals.
+`--repo` is required: it defaults to the upstream repository
+(`cli/src/commands/install.ts:27`). `--ref` is mandatory for a git install and
+cannot be combined with `--canary` or `--version`, which resolve against npm
+(`cli/src/commands/install.ts:139`-`cli/src/commands/install.ts:147`). Pass a
+commit SHA instead of `main` for a reproducible, pinned install.
 
-The script prints and confirms any command that requires elevated privileges.
-Third-party Node.js bootstrap scripts are pinned and SHA-256 verified before
-execution; the installer stops if a published script changes unexpectedly.
-The `paperclip.ing` checksum detects transfer or publishing mistakes, but it is
-served from the same origin as the script and is not an independent
-authenticity proof. For an independently hosted source, download a release-tag
-or commit-pinned copy from GitHub, review it, and run that local file.
-
-Use `--no-prompt` for automation and `--no-onboard` to stop after installing.
-The piped form only proceeds when supported Node.js, npm, and npx are already
-installed; if Node.js bootstrap is required, download the script first so the
-privileged commands are inspectable before execution:
+Then onboard:
 
 ```sh
-curl -fsSL https://paperclip.ing/install.sh | bash -s -- --no-prompt --no-onboard
 paperclip-pro onboard --yes
 ```
 
-If the vanity installer endpoint is unavailable, fetch the same
-release-controlled source from GitHub raw content:
-
-```sh
-raw_base=https://raw.githubusercontent.com/paperclipai/paperclip
-curl -fsSL "$raw_base/master/scripts/install.sh" | bash
-```
-
-For audits or incident response, pin the raw URL to a release tag or commit SHA
-instead of `master` and download it first. That immutable GitHub URL provides a
-separate delivery path from `paperclip.ing`; do not treat a checksum served by
-the same origin as the artifact as an independent trust anchor.
-
-Each installer flag also has a `PAPERCLIP_INSTALL_*` environment-variable
-equivalent. This helps where passing arguments through a pipe is awkward.
+Day-two operation — state layout, `service.env`, safe restarts, updates,
+backups, admin bootstrap, sandboxed test runs — is in
+[`../docs/fork/OPERATIONS.md`](../docs/fork/OPERATIONS.md).
 
 Codex ACP workspace sessions enable networking so agents can report task outcomes.
 To disable it explicitly, set `extraArgs` to
@@ -79,7 +59,8 @@ and prepend its directory to `PATH` for child tools, including ACP servers with
 an `/usr/bin/env node` shebang. Re-run the installer using the supported
 Node runtime after changing runtime installations, then restart the service.
 For example, put the supported Node's bin directory first on `PATH` and run
-`npx @tickernelz/paperclip-pro@latest install --yes`. Do not use the old managed shim to
+`paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes` from a
+source checkout via `pnpm paperclip-pro`. Do not use the old managed shim to
 re-pin Node: it intentionally continues launching its previously pinned runtime.
 Installs and updates refresh existing managed shims in place. Updates reject an
 unsupported running Node before installing or activating a payload; read-only
@@ -126,38 +107,33 @@ the exact `export PATH` command instead of editing shell files silently.
 
 ## Install Sources
 
-Install the current stable release:
+The npm channels below exist in the CLI but resolve against the public npm
+registry, which carries no `@tickernelz/paperclip-pro` package. For this fork,
+`--canary` and `--version` are unusable; install a git ref.
+
+Install this fork's `main`:
 
 ```sh
-npx --registry https://registry.npmjs.org paperclip-pro install
+paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
 ```
 
-Install canary or pin an exact published version:
+Pin a tag or an exact commit:
 
 ```sh
-npx --registry https://registry.npmjs.org paperclip-pro install --canary
-npx --registry https://registry.npmjs.org paperclip-pro install --version 2026.720.0
+paperclip-pro install --repo tickernelz/paperclip-pro --ref v0.3.1 --yes
+paperclip-pro install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
 ```
 
-Install a branch, tag, or commit from GitHub:
+Without `--repo`, `--ref` installs from upstream `paperclipai/paperclip`
+(`cli/src/commands/install.ts:27`), which is a different product.
 
-```sh
-npx --registry https://registry.npmjs.org paperclip-pro install --ref master
-npx --registry https://registry.npmjs.org paperclip-pro install --ref v2026.720.0
-npx --registry https://registry.npmjs.org paperclip-pro install --ref <commit-sha>
-```
-
-Use a fork by adding `--repo owner/repository`:
-
-```sh
-npx --registry https://registry.npmjs.org paperclip-pro install \
-  --repo your-org/paperclip \
-  --ref your-branch
-```
+Before the shim exists, run the same command from a source checkout with
+`pnpm paperclip-pro install ...`.
 
 Git-ref installs resolve the requested ref to an exact commit before building.
 Review and trust the repository and ref: installing a git ref executes that
 revision's package installation and release build scripts on your machine.
+
 
 ## Onboarding And The Service
 
@@ -245,31 +221,30 @@ are pinned; provide a new target when you want them to move.
 
 ## Other Installation Methods
 
-Ephemeral tryout with no managed install:
-
-```sh
-npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
-```
-
-Traditional global npm install:
-
-```sh
-npm install --global --registry https://registry.npmjs.org paperclip-pro
-paperclip-pro onboard
-```
+The npm-registry routes below cannot serve this fork: neither `paperclip-pro`
+nor `@tickernelz/paperclip-pro` is published (`npm view` returns 404). The only
+alternative to a managed git install is a source checkout.
 
 Source checkout for development:
 
 ```sh
-git clone https://github.com/paperclipai/paperclip.git
-cd paperclip
-pnpm install
+git clone https://github.com/tickernelz/paperclip-pro.git
+cd paperclip-pro
+pnpm install --frozen-lockfile
 pnpm dev
 ```
 
-The managed `paperclip-pro update` command can update managed and global npm
-installs. For source checkouts it reports the appropriate git workflow instead
-of modifying the checkout automatically.
+Isolated manual trial that never installs a service:
+
+```sh
+pnpm paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
+```
+
+The managed `paperclip-pro update` command updates managed installs. For source
+checkouts it reports the appropriate git workflow instead of modifying the
+checkout automatically; for this fork, re-run
+`paperclip-pro install --repo tickernelz/paperclip-pro --ref <ref> --yes`.
+
 
 ## Diagnose An Installation
 
