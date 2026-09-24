@@ -1002,7 +1002,7 @@ function deriveImportedSkillSource(
         : null);
     const [owner, repoName] = (repo ?? "").split("/");
     if (repo && owner && repoName) {
-      const sourceKind = owner === "paperclip-pro"
+      const sourceKind = owner === "paperclipai"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("paperclipai/paperclip/")
         ? "paperclip_bundled"
@@ -1311,7 +1311,7 @@ function isPaperclipBundledSkillKey(key: string) {
 
 function paperclipBundledFolderCategory(key: string, metadata?: unknown) {
   const keyParts = key.split("/");
-  if (keyParts[0] === "paperclip-pro" && keyParts[1] === "bundled" && keyParts[2]) {
+  if (keyParts[0] === "paperclipai" && keyParts[1] === "bundled" && keyParts[2]) {
     return keyParts[2];
   }
   if (isPaperclipBundledSkillKey(key)) return "paperclip-core";
@@ -6166,7 +6166,7 @@ export function companySkillService(db: Db) {
         existing
         && existingMeta.sourceKind === "paperclip_bundled"
         && incomingKind === "github"
-        && incomingOwner === "paperclip-pro"
+        && incomingOwner === "paperclipai"
         && incomingRepo === "paperclip"
       ) {
         out.push(existing);

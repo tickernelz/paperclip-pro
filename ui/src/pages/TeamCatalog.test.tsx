@@ -103,7 +103,7 @@ describe("TeamCatalog routes", () => {
   it("round-trips file paths containing literal tildes", () => {
     const route = teamRoute("paperclipai/bundled/test/team", "agents/a~b/AGENTS.md");
 
-    expect(route).toBe("/teams-catalog/paperclip-pro%2Fbundled%2Ftest%2Fteam/files/agents%7Ea~b%7EAGENTS.md");
+    expect(route).toBe("/teams-catalog/paperclipai%2Fbundled%2Ftest%2Fteam/files/agents%7Ea~b%7EAGENTS.md");
     expect(parseTeamRoute(route.replace("/teams-catalog/", ""))).toEqual({
       catalogRef: "paperclipai/bundled/test/team",
       filePath: "agents/a~b/AGENTS.md",

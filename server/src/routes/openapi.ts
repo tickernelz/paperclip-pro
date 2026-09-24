@@ -6217,6 +6217,15 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/instance/live-runs",
+  tags: ["instance"],
+  summary:
+    "List the run executions this process is still running, with the current task-drain status, so a restart can wait for them to settle",
+  responses: { 200: r.ok(), 401: r.unauthorized },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/instance/lifecycle",
   tags: ["instance"],
   summary:

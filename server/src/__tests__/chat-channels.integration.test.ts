@@ -5350,7 +5350,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(observedIssuer).toBe(appId);
     expect(configured).toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclip-pro",
+      providerAccountId: "paperclipai",
       botExternalId: "789",
       botUsername: "maya-paperclip[bot]",
       setup: { step: "test", webhookVerifiedAt: expect.any(String) },
@@ -5915,7 +5915,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ),
     ).resolves.toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclip-pro",
+      providerAccountId: "paperclipai",
       botExternalId: "991124",
       botUsername: "maya-selectable-events[bot]",
     });
