@@ -275,3 +275,26 @@ paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
 
 `--data-dir` isolates state from `~/.paperclip-pro` (`cli/src/index.ts:63`).
+
+## Security: the hostname allow-list does not protect sign-up
+
+`server.allowedHostnames` does not cover Better Auth routes under `/api/auth/*`. With `auth.disableSignUp=false`, a POST to `https://paperclip.zhafron.my.id/api/auth/sign-up/email` creates a real user and session even when `allowedHostnames` is empty. This was reproduced on 2026-09-24.
+
+Keep `auth.disableSignUp=true` whenever the instance is reachable through the tunnel. To add a person:
+
+1. Use the invite flow: `paperclip-pro auth bootstrap-ceo --force --base-url https://paperclip.zhafron.my.id` for a new instance admin, or a company invite from the board.
+2. If sign-up must be opened briefly, first remove the `paperclip.zhafron.my.id` ingress from `~/.cloudflared/zhafron-apps.yml` and restart `zhafron-apps-tunnel.service`, then re-enable it after `disableSignUp` is back to `true`.
+
+Verify the seal after any auth change:
+
+```bash
+curl -s -X POST https://paperclip.zhafron.my.id/api/auth/sign-up/email \
+  -H 'Content-Type: application/json' -H 'Origin: https://paperclip.zhafron.my.id' \
+  -d '{"name":"probe","email":"probe@example.invalid","password":"x-probe-x-probe"}'
+```
+
+Expected: `400 EMAIL_PASSWORD_SIGN_UP_DISABLED`.
+
+## CLI login for board operations
+
+`paperclip-pro service restart --drain` and other board calls need a board credential. Run `paperclip-pro auth login --instance-admin` and approve the printed URL while signed in to the board. Approval is rejected unless the request carries a trusted browser origin, so approve it from the board in a browser, not with a bare API call.
