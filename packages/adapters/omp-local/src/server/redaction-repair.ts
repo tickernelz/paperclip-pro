@@ -64,3 +64,51 @@ export function repairRedactedJsonLine(line: string): string | null {
   }
   return jsonErrorPosition(current) < 0 ? current : null;
 }
+
+const SALVAGE_EVENT_PREFIX = '{"type":"';
+const SALVAGE_MAX_EVENTS = 8;
+
+function balancedObjectEnd(line: string, start: number): number {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < line.length; index += 1) {
+    const char = line[index];
+    if (inString) {
+      if (escaped) escaped = false;
+      else if (char === "\\") escaped = true;
+      else if (char === '"') inString = false;
+      continue;
+    }
+    if (char === '"') inString = true;
+    else if (char === "{") depth += 1;
+    else if (char === "}") {
+      depth -= 1;
+      if (depth === 0) return index + 1;
+    }
+  }
+  return -1;
+}
+
+export function salvageRedactedEvents(line: string): Record<string, unknown>[] {
+  if (!line.includes(REDACTED_LOG_MARKER)) return [];
+  const events: Record<string, unknown>[] = [];
+  let cursor = line.indexOf(REDACTED_LOG_MARKER);
+  while (cursor >= 0 && events.length < SALVAGE_MAX_EVENTS) {
+    const start = line.indexOf(SALVAGE_EVENT_PREFIX, cursor + REDACTED_LOG_MARKER.length);
+    if (start < 0) break;
+    const end = balancedObjectEnd(line, start);
+    if (end > start) {
+      try {
+        const parsed: unknown = JSON.parse(line.slice(start, end));
+        if (parsed !== null && typeof parsed === "object" && !Array.isArray(parsed)) {
+          events.push(parsed as Record<string, unknown>);
+        }
+      } catch {
+        break;
+      }
+    }
+    cursor = line.indexOf(REDACTED_LOG_MARKER, start);
+  }
+  return events;
+}

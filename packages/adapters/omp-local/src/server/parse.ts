@@ -1,4 +1,4 @@
-import { repairRedactedJsonLine } from "./redaction-repair.js";
+import { repairRedactedJsonLine, salvageRedactedEvents } from "./redaction-repair.js";
 
 export interface ParsedOmpToolCall {
   toolCallId: string;
@@ -173,10 +173,19 @@ export function createOmpOutputAccumulator(): OmpOutputAccumulator {
     if (!line) return;
     const event = parsedEvent === undefined ? parseOmpJsonLine(line) : parsedEvent;
     if (!event) {
-      recordUnknown(rawLine);
+      const salvaged = salvageRedactedEvents(line);
+      if (salvaged.length === 0) {
+        recordUnknown(rawLine);
+        return;
+      }
+      for (const recovered of salvaged) handleEvent(recovered, rawLine);
       return;
     }
 
+    handleEvent(event, rawLine);
+  };
+
+  const handleEvent = (event: JsonObject, rawLine: string): void => {
     const type = string(event.type);
     let handled = true;
     switch (type) {
