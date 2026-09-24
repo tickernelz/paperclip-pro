@@ -1,21 +1,20 @@
 <p align="center">
-  <img src="doc/assets/banner.jpg" alt="Paperclip is the app people use to manage AI agents for work." width="720" />
+  <img src="doc/assets/banner.jpg" alt="Paperclip Pro" width="720" />
 </p>
 
 <p align="center">
   <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="https://docs.paperclip.ing"><strong>Docs</strong></a> &middot;
-  <a href="https://github.com/paperclipai/paperclip"><strong>GitHub</strong></a> &middot;
-  <a href="https://discord.gg/m4HZY7xNG3"><strong>Discord</strong></a> &middot;
-  <a href="https://x.com/papercliping"><strong>Twitter</strong></a> &middot;
-  <a href="https://paperclip.ing"><strong>Website</strong></a>
+  <a href="docs/fork/OPERATIONS.md"><strong>Operations</strong></a> &middot;
+  <a href="https://github.com/tickernelz/paperclip-pro"><strong>This fork</strong></a> &middot;
+  <a href="https://github.com/paperclipai/paperclip"><strong>Upstream</strong></a> &middot;
+  <a href="https://docs.paperclip.ing"><strong>Upstream docs</strong></a> &middot;
+  <a href="https://paperclip.ing"><strong>Upstream website</strong></a>
 </p>
 
 <p align="center">
-  <a href="https://github.com/paperclipai/paperclip/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <a href="https://github.com/paperclipai/paperclip/stargazers"><img src="https://img.shields.io/github/stars/paperclipai/paperclip?style=flat" alt="Stars" /></a>
-  <a href="https://www.star-history.com/paperclipai/paperclip"><img src="https://api.star-history.com/badge?repo=paperclipai/paperclip" alt="Star History Rank" /></a>
-  <a href="https://discord.gg/m4HZY7xNG3"><img src="https://img.shields.io/badge/discord-join-7289da" alt="Discord" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
+  <img src="https://img.shields.io/badge/fork-hard%20fork-orange" alt="Hard fork" />
+  <img src="https://img.shields.io/badge/upstream-paperclipai%2Fpaperclip%407b7c4d417-lightgrey" alt="Upstream base" />
 </p>
 
 <br/>
@@ -26,7 +25,33 @@
 
 <br/>
 
-# Paperclip is the app people use to manage AI agents for work.
+# Paperclip Pro
+
+**Paperclip Pro is a hard fork of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417`. It is not an upstream release and is not endorsed by Paperclip Labs, Inc.**
+
+It is maintained independently at [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro). All 32 workspace packages are renamed under the `@tickernelz/paperclip-pro` scope, the CLI binary is `paperclip-pro`, and instance state lives under `~/.paperclip-pro` instead of `~/.paperclip` — so this fork installs and runs beside an upstream instance instead of replacing it.
+
+The fork tracks no upstream release cadence and publishes nothing to the npm registry. Install it from this git repository; see [Quickstart](#quickstart). Report fork bugs in this repository, never in the upstream tracker.
+
+## What this fork changes
+
+Everything below is on `main` and absent from upstream `7b7c4d417`.
+
+| Change | Where |
+| --- | --- |
+| **First-party `omp_local` adapter.** Runs the local Oh My Pi (OMP) coding-agent CLI as a Paperclip agent runtime: server execution, CLI event formatting, model discovery through `omp models --json`, and a UI transcript parser. | [`packages/adapters/omp-local`](packages/adapters/omp-local); registered at `server/src/adapters/registry.ts:133` and `server/src/adapters/builtin-adapter-types.ts:16` |
+| **`uiParserPath` for statically registered adapters.** `GET /api/adapters/:type/ui-parser.js` used to answer 404 for every built-in adapter because the loader only consulted the external plugin store. | `packages/adapter-utils/src/types.ts:462`, `server/src/adapters/plugin-loader.ts:74`, `server/src/routes/adapters.ts:768` |
+| **Sandboxed transcript parser worker survives global lockdown.** Plain `self.fetch = undefined` assignments failed on read-only worker globals and took the worker down; denied globals are now installed through `Object.defineProperty` inside `try`/`catch`. | `ui/src/adapters/sandboxed-parser-worker.ts:46`–`ui/src/adapters/sandboxed-parser-worker.ts:55` |
+| **A clean shutdown no longer parks issues.** A graceful stop has a known provider outcome, so only genuine process loss still earns a reconciliation hold. | `server/src/services/legacy-execution-recovery.ts:14`, `server/src/services/legacy-execution-recovery.ts:29` |
+| **Runs this server interrupted during shutdown are rescheduled** instead of refused as process loss; native runtimes stay suspended. | `server/src/services/heartbeat.ts:14325`, `server/src/services/heartbeat.ts:14327` |
+| **Interrupt acknowledgement is read from the full result JSON.** The safe 64 KiB projection strips `executionCancellation`, so a successful adapter interrupt on an oversized run was reported to the UI as a termination conflict. | `server/src/services/heartbeat.ts:28820` |
+| **`service restart --drain` plus a live-run guard.** Restart and stop refuse while agent runs are executing unless you drain or force. | `cli/src/commands/service.ts:210`, `cli/src/commands/service.ts:282`–`cli/src/commands/service.ts:284`, `cli/src/services/instance-drain.ts:128` |
+| **Isolated home.** `PAPERCLIP_HOME` defaults to `~/.paperclip-pro`; config, embedded Postgres, logs, storage, and backups all resolve under `~/.paperclip-pro/instances/<id>`. | `packages/shared/src/home-paths.ts:16`–`packages/shared/src/home-paths.ts:19`, `packages/shared/src/config-schema.ts:27` |
+| **Per-instance `EnvironmentFile` in the systemd unit.** `ensureCurrent()` rewrites the unit on every install, start, and restart, so operator environment used to be lost; the unit now sources an optional `<instanceRoot>/service.env` the CLI never overwrites. | `cli/src/services/service-manager.ts:126`, `cli/src/services/service-manager.ts:149` |
+
+Operators: read [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
+
+---
 
 Open-source orchestration for teams of AI agents.
 
@@ -300,102 +325,53 @@ Paperclip is a full control plane, not a wrapper. Before you build any of this y
 
 Open source. Self-hosted. No Paperclip account required.
 
+This fork is not published to npm: `npm view @tickernelz/paperclip-pro` returns 404, and `https://paperclip.ing/install.sh` installs **upstream**, not this fork. Install from git.
+
+**Requirements:** Node.js 24.11+ (`package.json` `engines`), pnpm 9.15.4 (`packageManager`), `git`, `curl`, `tar`, and `corepack`.
+
+### 1. Bootstrap the CLI from a source checkout
+
 ```bash
-curl -fsSLO https://paperclip.ing/install.sh
-curl -fsSLO https://paperclip.ing/install.sh.sha256
-if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum -c install.sh.sha256
-else
-  shasum -a 256 -c install.sh.sha256
-fi
-bash install.sh
+git clone https://github.com/tickernelz/paperclip-pro.git
+cd paperclip-pro
+pnpm install --frozen-lockfile
+pnpm paperclip-pro --help
 ```
 
-The installer ensures Node.js 24.11 or newer is available, installs a managed
-Paperclip CLI under `~/.paperclip-pro/cli`, and starts interactive onboarding. It
-can also install Paperclip as a background service on supported Linux and
-macOS systems. The checksum detects transfer or publishing mistakes, but it is
-served from the same origin as the script; use a release-tag or commit-pinned
-GitHub copy when you need an independently hosted source.
+### 2. Install a managed payload from this repository
 
-For a non-interactive managed install:
+`install` builds the given git ref into `~/.paperclip-pro/cli` and writes the `paperclip-pro` shim to `~/.local/bin`. `--ref` is mandatory for a git install and `--repo` defaults to the upstream repository (`cli/src/commands/install.ts:27`), so both flags are required here:
 
 ```bash
-curl -fsSL https://paperclip.ing/install.sh | bash -s -- --no-prompt --no-onboard
+pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+```
+
+Pin an exact commit instead of a branch when you want a reproducible install; `--ref` accepts a branch, tag, or SHA (`cli/src/commands/install.ts:139`-`cli/src/commands/install.ts:147`). `--ref` cannot be combined with `--canary` or `--version`, both of which resolve against npm and therefore do not work for this fork.
+
+### 3. Onboard
+
+```bash
 paperclip-pro onboard --yes
 ```
 
-The piped form requires supported Node.js, npm, and npx to already be present.
-If Node.js bootstrap is required, download and review `install.sh` before
-running it so no privileged dependency-install command is accepted through a
-pipe.
-
-To try Paperclip without installing anything permanently:
-
-```bash
-npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
-```
-
-For an isolated manual test instance that is already initialized with a CEO
-agent, use `test-drive`. It stays in the foreground, never installs a service
-or creates a first task, and opens the browser only after setup succeeds:
-
-```bash
-ANTHROPIC_API_KEY=... npx @tickernelz/paperclip-pro test-drive
-OPENAI_API_KEY=... npx @tickernelz/paperclip-pro test-drive --harness codex
-OPENROUTER_API_KEY=... npx @tickernelz/paperclip-pro test-drive \
-  --harness opencode \
-  --model openrouter/anthropic/claude-sonnet-4.5
-```
-
-Each run without `--data-dir` gets a unique, retained temporary directory; its
-absolute path is printed at startup. Pass `--data-dir` to reuse one, or
-`--no-browser` to leave the initialized instance unopened. When invoked from a
-linked Git worktree, `test-drive` also enables task execution in that worktree.
-See [`doc/CLI.md`](doc/CLI.md#isolated-manual-test-drives) for credential and
-reuse behavior.
-
-> **Troubleshooting: private npm registry `.npmrc`**
->
-> If this fails with an `E404` for `paperclip-pro` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclip-pro` against that private registry instead of the public npm registry.
->
-> Diagnostic:
->
-> ```bash
-> npm config get registry
-> ```
->
-> Workaround (cross-platform; force the public npm registry for this command):
->
-> ```bash
-> npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
-> ```
-
-That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
+`onboard` defaults to trusted local loopback. For authenticated/private mode choose a bind preset explicitly:
 
 ```bash
 paperclip-pro onboard --yes --bind lan
-# or:
 paperclip-pro onboard --yes --bind tailnet
 ```
 
-If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `paperclip-pro configure` to edit settings.
+Rerunning `onboard` keeps an existing config; use `paperclip-pro configure` to edit settings. To install the background service, use `paperclip-pro onboard --install-service` or `paperclip-pro service install`.
 
-See [`doc/INSTALLING.md`](doc/INSTALLING.md) for pinned versions, canary and
-git-ref installs, updates, rollback, service management, and uninstalling.
-
-Or manually:
+### Or run straight from the checkout
 
 ```bash
-git clone https://github.com/paperclipai/paperclip.git
-cd paperclip
-pnpm install
 pnpm dev
 ```
 
 This starts the API server at `http://localhost:3100`. An embedded PostgreSQL database is created automatically — no setup required.
 
-> **Requirements:** Node.js 24.11+, pnpm 9.15+
+Day-two operation of an installed instance (state layout, safe restarts, backups, new admins, sandboxed test runs) is documented in [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
 
 <br/>
 
@@ -514,26 +490,21 @@ We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for deta
 
 ## Community
 
-- [Discord](https://discord.gg/m4HZY7xNG3) — Join the community
-- [Twitter / X](https://x.com/papercliping) — Follow updates and announcements
-- [GitHub Issues](https://github.com/paperclipai/paperclip/issues) — bugs and feature requests
-- [GitHub Discussions](https://github.com/paperclipai/paperclip/discussions) — ideas and RFC
+This fork:
+
+- [GitHub Issues](https://github.com/tickernelz/paperclip-pro/issues) — bugs and feature requests **for this fork**
+
+Upstream project (do not file fork bugs there):
+
+- [Discord](https://discord.gg/m4HZY7xNG3) — upstream community
+- [Twitter / X](https://x.com/papercliping) — upstream updates
+- [GitHub](https://github.com/paperclipai/paperclip) — upstream issues and discussions
 
 <br/>
 
 ## License
 
-MIT &copy; 2026 [Paperclip Labs, Inc](https://paperclip.ing)
-
-## Star History
-
-<a href="https://www.star-history.com/?repos=paperclip-pro%2Fpaperclip&type=date&legend=top-left">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&theme=dark&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
-    <img src="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" alt="Star History Chart" />
-  </picture>
-</a>
+MIT. Upstream work is copyright Paperclip Labs, Inc ([paperclip.ing](https://paperclip.ing)); fork modifications are copyright the paperclip-pro maintainers. Both notices are in [`LICENSE`](LICENSE).
 
 <br/>
 
