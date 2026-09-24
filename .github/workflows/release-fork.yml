@@ -1,0 +1,93 @@
+name: Release fork packages
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version as YYYY.MDD.P. Empty uses today's UTC date.
+        required: false
+        type: string
+      dist_tag:
+        description: npm dist-tag to publish under
+        required: true
+        type: string
+        default: latest
+      auth:
+        description: npm authentication mode (token for the first bootstrap publish, oidc afterwards)
+        required: true
+        type: choice
+        options:
+          - oidc
+          - token
+        default: oidc
+      dry_run:
+        description: Preview every package with --dry-run instead of publishing
+        required: true
+        type: boolean
+        default: true
+
+concurrency:
+  group: release-fork
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    name: Publish @tickernelz/paperclip-pro packages
+    if: github.repository != 'paperclipai/paperclip'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.15.4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Validate release package manifest
+        run: node ./scripts/release-package-map.mjs check
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Restore tracked install-time changes
+        run: git checkout -- pnpm-lock.yaml
+
+      - name: Publish package set
+        env:
+          GITHUB_ACTIONS: "true"
+          RELEASE_VERSION: ${{ inputs.version }}
+          RELEASE_DIST_TAG: ${{ inputs.dist_tag }}
+          RELEASE_DRY_RUN: ${{ inputs.dry_run }}
+          NODE_AUTH_TOKEN: ${{ inputs.auth == 'token' && secrets.NPM_TOKEN || '' }}
+        run: |
+          args=(--dist-tag "$RELEASE_DIST_TAG")
+          if [ -n "$RELEASE_VERSION" ]; then
+            args+=(--version "$RELEASE_VERSION")
+          fi
+          if [ "$RELEASE_DRY_RUN" != "true" ]; then
+            args+=(--publish)
+          fi
+          bash ./scripts/release-fork.sh "${args[@]}"
+
+      - name: Dump npm debug logs
+        if: failure()
+        run: |
+          shopt -s nullglob
+          for f in "$HOME"/.npm/_logs/*.log; do
+            echo "===== $f ====="
+            tail -n 300 "$f" | sed -E \
+              -e 's#((authorization|_authToken|_auth|node_auth_token|npm_token)"?[[:space:]]*[:=][[:space:]]*"?)(Bearer[[:space:]]+)?[^",[:space:]]+#\1***REDACTED***#Ig'
+          done
