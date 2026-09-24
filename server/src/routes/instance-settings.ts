@@ -1,5 +1,6 @@
 import { Router, type Request } from "express";
-import { companies, type Db } from "@paperclipai/db";
+import { companies, heartbeatRuns, type Db } from "@paperclipai/db";
+import { inArray, sql } from "drizzle-orm";
 import {
   patchInstanceSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
@@ -298,6 +299,39 @@ export function instanceSettingsRoutes(db: Db) {
   router.get("/instance/task-drain", async (req, res) => {
     assertBoardOrgAccess(req);
     res.json(heartbeat.getTaskDrainStatus());
+  });
+
+  router.get("/instance/live-runs", async (req, res) => {
+    assertBoardOrgAccess(req);
+    const status = heartbeat.getTaskDrainStatus();
+    const runIds = heartbeat.listActiveRunExecutionIds();
+    const rows = runIds.length === 0
+      ? []
+      : await db
+        .select({
+          id: heartbeatRuns.id,
+          companyId: heartbeatRuns.companyId,
+          agentId: heartbeatRuns.agentId,
+          status: heartbeatRuns.status,
+          startedAt: heartbeatRuns.startedAt,
+          issueId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`.as("issueId"),
+        })
+        .from(heartbeatRuns)
+        .where(inArray(heartbeatRuns.id, runIds));
+    const described = new Map(rows.map((row) => [row.id, row]));
+    res.json({
+      draining: status.draining,
+      pendingWakes: status.pendingWakes,
+      count: runIds.length,
+      runs: runIds.map((id) => described.get(id) ?? {
+        id,
+        companyId: null,
+        agentId: null,
+        status: null,
+        startedAt: null,
+        issueId: null,
+      }),
+    });
   });
 
   router.post(
