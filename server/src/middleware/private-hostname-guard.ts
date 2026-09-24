@@ -1,27 +1,35 @@
 import type { Request, RequestHandler } from "express";
 
+function normalizeHostname(value: string): string {
+  const normalized = value.trim().toLowerCase();
+  return normalized.startsWith("[") && normalized.endsWith("]")
+    ? normalized.slice(1, -1)
+    : normalized;
+}
+
 function isLoopbackHostname(hostname: string): boolean {
-  const normalized = hostname.trim().toLowerCase();
+  const normalized = normalizeHostname(hostname);
   return normalized === "localhost" || normalized === "127.0.0.1" || normalized === "::1";
 }
 
 function extractHostname(req: Request): string | null {
-  const forwardedHost = req.header("x-forwarded-host")?.split(",")[0]?.trim();
+  const resolved = req.hostname?.trim();
+  if (resolved) return normalizeHostname(resolved);
+
   const hostHeader = req.header("host")?.trim();
-  const raw = forwardedHost || hostHeader;
-  if (!raw) return null;
+  if (!hostHeader) return null;
 
   try {
-    return new URL(`http://${raw}`).hostname.trim().toLowerCase();
+    return normalizeHostname(new URL(`http://${hostHeader}`).hostname);
   } catch {
-    return raw.trim().toLowerCase();
+    return normalizeHostname(hostHeader);
   }
 }
 
 function normalizeAllowedHostnames(values: string[]): string[] {
   const unique = new Set<string>();
   for (const value of values) {
-    const trimmed = value.trim().toLowerCase();
+    const trimmed = normalizeHostname(value);
     if (!trimmed) continue;
     unique.add(trimmed);
   }
