@@ -109,6 +109,13 @@ import {
   findExistingIssueBlockersResolvedWakeForReadyState,
 } from "../issue-dependency-wakeups.js";
 import { evaluateAgentInvokabilityFromDb } from "../agent-invokability.js";
+import type { AgentInvokability } from "../agent-invokability.js";
+import {
+  classifyStrandedScopeExemption,
+  isAssigneeLifecycleBlocked,
+  isBenignRunCancellation,
+  type StrandedScopeExemption,
+} from "./stranded-scope.js";
 import { isHeartbeatWakeOnDemandEnabled } from "../heartbeat-policy.js";
 import {
   DEFAULT_MAX_SUCCESSFUL_RUN_HANDOFF_ATTEMPTS,
@@ -457,6 +464,7 @@ function didAutomaticRecoveryFail(
     | typeof EXECUTION_REVIEW_PARTICIPANT_RECOVERY_REASON,
 ) {
   if (!latestRun) return false;
+  if (isBenignRunCancellation(latestRun)) return false;
 
   const latestContext = parseObject(latestRun.contextSnapshot);
   const latestRetryReason = readNonEmptyString(latestContext.retryReason);
@@ -3747,6 +3755,35 @@ export function recoveryService(
     return scheduled ? "queued" : "skipped";
   }
 
+  async function getAssigneeInvokability(
+    issue: typeof issues.$inferSelect,
+  ): Promise<AgentInvokability | null> {
+    if (!issue.assigneeAgentId) return null;
+    const assignee = await getAgent(issue.assigneeAgentId);
+    if (!assignee || assignee.companyId !== issue.companyId) return null;
+    return evaluateAgentInvokabilityFromDb(db, assignee);
+  }
+
+  async function strandedEscalationExemption(
+    issue: typeof issues.$inferSelect,
+    latestRun: LatestIssueRun,
+  ): Promise<StrandedScopeExemption | null> {
+    const [invokability, unresolvedBlockerIds, hasQueuedWake] = await Promise.all([
+      getAssigneeInvokability(issue),
+      existingUnresolvedBlockerIssueIds(issue.companyId, issue.id),
+      latestRun ? Promise.resolve(false) : hasQueuedIssueWake(issue.companyId, issue.id),
+    ]);
+    return classifyStrandedScopeExemption({
+      invokability,
+      unresolvedBlockerCount: unresolvedBlockerIds.length,
+      latestRun,
+      hasQueuedWake,
+      operatorCancelled: issue.assigneeAgentId
+        ? isOperatorCancelledRun(latestRun, issue.assigneeAgentId)
+        : false,
+    });
+  }
+
   async function escalateStrandedAssignedIssue(input: {
     issue: typeof issues.$inferSelect;
     previousStatus: StrandedPreviousStatus;
@@ -3768,6 +3805,26 @@ export function recoveryService(
       input.latestRun,
       input.recoveryCause,
     );
+    if (recoveryCause === "stranded_assigned_issue") {
+      const exemption = await strandedEscalationExemption(
+        input.issue,
+        input.latestRun,
+      );
+      if (exemption) {
+        logger.info(
+          {
+            issueId: input.issue.id,
+            identifier: input.issue.identifier,
+            previousStatus: input.previousStatus,
+            latestRunId: input.latestRun?.id ?? null,
+            latestRunErrorCode: input.latestRun?.errorCode ?? null,
+            exemption,
+          },
+          "skipped stranded escalation for an issue that is waiting rather than stranded",
+        );
+        return null;
+      }
+    }
     const recoveryAction = await ensureSourceScopedStrandedRecoveryAction({
       issue: input.issue,
       previousStatus: input.previousStatus,
@@ -4201,6 +4258,7 @@ export function recoveryService(
       providerQuotaMonitored: 0,
       recentProgressExempted: 0,
       operatorCancelExempted: 0,
+      assigneeNotSchedulableExempted: 0,
       onboardingFirstTaskExempted: 0,
       skipped: 0,
       issueIds: [] as string[],
@@ -4297,10 +4355,11 @@ export function recoveryService(
       }
 
       const agent = await getAgent(agentId);
-      const agentInvokable =
+      const agentInvokability =
         agent && agent.companyId === issue.companyId
-          ? await isAgentInvokable(agent)
-          : false;
+          ? await evaluateAgentInvokabilityFromDb(db, agent)
+          : null;
+      const agentInvokable = agentInvokability?.invokable === true;
       if (
         agent?.status === "paused" &&
         agent.companyId === issue.companyId &&
@@ -4322,6 +4381,8 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
+        } else if (isAssigneeLifecycleBlocked(agentInvokability)) {
+          result.assigneeNotSchedulableExempted += 1;
         } else {
           const updated = await escalateStrandedAssignedIssue({
             issue,
@@ -4746,6 +4807,10 @@ export function recoveryService(
           !participantLatestRun ||
           !isTerminalIssueRun(participantLatestRun)
         ) {
+          if (!agentInvokable && isAssigneeLifecycleBlocked(agentInvokability)) {
+            result.assigneeNotSchedulableExempted += 1;
+            continue;
+          }
           if (!agentInvokable) {
             const updated = await escalateStrandedAssignedIssue({
               issue,
