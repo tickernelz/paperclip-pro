@@ -471,7 +471,7 @@ describe("routine routes", () => {
     expect(mockRoutineService.updateTrigger).not.toHaveBeenCalled();
   });
 
-  it("requires an assigned agent for routine revision history access", async () => {
+  it("lets a non-assignee company agent read routine revision history", async () => {
     const app = await createApp({
       type: "agent",
       agentId: otherAgentId,
@@ -480,7 +480,20 @@ describe("routine routes", () => {
 
     const res = await request(app).get(`/api/routines/${routineId}/revisions`);
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(200);
+    expect(mockRoutineService.listRevisions).toHaveBeenCalled();
+  });
+
+  it("refuses routine revision history to an agent from another company", async () => {
+    const app = await createApp({
+      type: "agent",
+      agentId: otherAgentId,
+      companyId: "66666666-6666-4666-8666-666666666666",
+    });
+
+    const res = await request(app).get(`/api/routines/${routineId}/revisions`);
+
+    expect(res.status).toBe(404);
     expect(mockRoutineService.listRevisions).not.toHaveBeenCalled();
   });
 

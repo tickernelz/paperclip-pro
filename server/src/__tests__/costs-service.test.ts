@@ -317,6 +317,7 @@ describe("cost routes", () => {
     const app = createAppWithActor({
       type: "agent",
       agentId: "agent-1",
+      agentRole: "engineer",
       companyId: "company-1",
       runId: "run-1",
     });
@@ -326,7 +327,7 @@ describe("cost routes", () => {
       .send({ budgetMonthlyCents: 2500 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: "Board access required" });
+    expect(res.body.error).toContain("is not authorized for company:agents");
     expect(mockAgentService.update).not.toHaveBeenCalled();
     expect(mockBudgetService.upsertPolicy).not.toHaveBeenCalled();
     expect(mockLogActivity).not.toHaveBeenCalled();
@@ -336,6 +337,7 @@ describe("cost routes", () => {
     const app = createAppWithActor({
       type: "agent",
       agentId: "agent-2",
+      agentRole: "engineer",
       companyId: "company-1",
       runId: "run-2",
     });
@@ -345,10 +347,32 @@ describe("cost routes", () => {
       .send({ budgetMonthlyCents: 2500 });
 
     expect(res.status).toBe(403);
-    expect(res.body).toEqual({ error: "Board access required" });
+    expect(res.body.error).toContain("is not authorized for company:agents");
     expect(mockAgentService.update).not.toHaveBeenCalled();
     expect(mockBudgetService.upsertPolicy).not.toHaveBeenCalled();
     expect(mockLogActivity).not.toHaveBeenCalled();
+  });
+
+  it("lets a ceo agent update a same-company agent budget", async () => {
+    mockAgentService.update.mockResolvedValueOnce({
+      id: "agent-1",
+      companyId: "company-1",
+      budgetMonthlyCents: 2500,
+    });
+    const app = createAppWithActor({
+      type: "agent",
+      agentId: "agent-2",
+      agentRole: "ceo",
+      companyId: "company-1",
+      runId: "run-2",
+    });
+
+    const res = await request(app)
+      .patch("/api/agents/agent-1/budgets")
+      .send({ budgetMonthlyCents: 2500 });
+
+    expect(res.status).toBe(200);
+    expect(mockAgentService.update).toHaveBeenCalledWith("agent-1", { budgetMonthlyCents: 2500 });
   });
 
   it("allows authorized board users to update an agent budget and budget policy", async () => {

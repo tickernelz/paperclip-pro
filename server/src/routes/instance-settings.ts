@@ -26,7 +26,7 @@ import {
 } from "../services/index.js";
 import { environmentService } from "../services/environments.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
-import { assertBoardOrgAccess, getActorInfo } from "./authz.js";
+import { assertBoardOrgAccess, assertBoardOrgOrAgentAuthority, getActorInfo } from "./authz.js";
 
 function sameJsonValue(a: unknown, b: unknown): boolean {
   if (a === b) return true;
@@ -252,7 +252,7 @@ export function instanceSettingsRoutes(db: Db) {
     // Experimental settings are readable by any authenticated org member
     // or instance admin. Updating them remains instance-admin only because
     // this payload includes instance-wide operational controls.
-    assertBoardOrgAccess(req);
+    assertBoardOrgOrAgentAuthority(req, "work:read");
     res.json(await svc.getExperimental());
   });
 

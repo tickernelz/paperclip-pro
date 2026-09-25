@@ -67,7 +67,7 @@ import {
 import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import type { StorageService } from "../storage/types.js";
-import { assertBoard, assertCompanyAccess, assertInstanceAdmin, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, getActorInfo, hasCompanyAccess } from "./authz.js";
 import { COMPANY_IMPORT_ROUTE_PATH } from "./company-import-paths.js";
 
 // A company import can arrive one of two ways on the import + preview routes:
@@ -375,7 +375,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
   }
 
   router.get("/", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "work:read");
     const scope = req.query.scope;
     if (scope !== undefined && scope !== "accessible") {
       throw badRequest("scope must be a single accessible value when provided");
@@ -384,7 +384,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     // Navigation needs the same membership scope as company detail routes.
     // Instance admins can inspect the directory without membership, but that
     // visibility alone does not let them open a company's inbox or tasks.
-    if (scope === "accessible") {
+    if (scope === "accessible" || req.actor.type === "agent") {
       res.json(result.filter((company) => hasCompanyAccess(req, company.id)));
       return;
     }
@@ -397,10 +397,12 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
   });
 
   router.get("/stats", async (req, res) => {
-    assertBoard(req);
-    const allowed = req.actor.source === "local_implicit" || req.actor.isInstanceAdmin
-      ? null
-      : new Set(req.actor.companyIds ?? []);
+    assertBoardOrAgentAuthority(req, "work:read");
+    const allowed = req.actor.type === "agent"
+      ? new Set(req.actor.companyId ? [req.actor.companyId] : [])
+      : req.actor.source === "local_implicit" || req.actor.isInstanceAdmin
+        ? null
+        : new Set(req.actor.companyIds ?? []);
     const stats = await svc.stats();
     if (!allowed) {
       res.json(stats);
@@ -482,11 +484,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
 
   router.get("/:companyId", async (req, res) => {
     const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    // Allow agents (CEO) to read their own company; board always allowed
-    if (req.actor.type !== "agent") {
-      assertBoard(req);
-    }
+    assertBoardOrAgentAuthority(req, "work:read", companyId);
     const company = await svc.getById(companyId);
     if (!company) {
       res.status(404).json({ error: "Company not found" });
@@ -497,8 +495,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
 
   router.get("/:companyId/feedback-traces", async (req, res) => {
     const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "work:read", companyId);
 
     const targetTypeRaw = typeof req.query.targetType === "string" ? req.query.targetType : undefined;
     const voteRaw = typeof req.query.vote === "string" ? req.query.vote : undefined;
