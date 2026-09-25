@@ -27,7 +27,7 @@ test("release package list only contains CI-enrolled packages", () => {
 test("release package list publishes the installable channel entrypoint last", () => {
   const enabledPackages = getReleasePackages();
 
-  assert.equal(enabledPackages.at(-1)?.name, "paperclip-pro");
+  assert.equal(enabledPackages.at(-1)?.name, "@tickernelz/paperclip-pro");
   assert.ok(enabledPackages.slice(0, -1).some((pkg) => pkg.name === "@tickernelz/paperclip-pro-server"));
 });
 
