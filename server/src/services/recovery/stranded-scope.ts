@@ -34,9 +34,7 @@ export function isAssigneeLifecycleBlocked(
 ): boolean {
   if (!invokability || invokability.invokable) return false;
   return (
-    invokability.reason === "paused" ||
-    invokability.reason === "terminated" ||
-    invokability.reason === "pending_approval"
+    invokability.reason === "paused" || invokability.reason === "pending_approval"
   );
 }
 
