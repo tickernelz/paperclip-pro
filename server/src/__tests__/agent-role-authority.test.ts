@@ -303,6 +303,17 @@ describe("agent authority audit middleware", () => {
       assertBoardOrAgentAuthority(req, capability, COMPANY);
       res.status(409).json({ error: "conflict" });
     });
+    app.post("/service-decided", (req, res) => {
+      req.actor.exercisedAgentAuthority = {
+        capability: "company:agents",
+        reason: "agent_role_ceo",
+        companyId: COMPANY,
+      };
+      res.json({ ok: true });
+    });
+    app.post("/grant-backed", (_req, res) => {
+      res.json({ ok: true });
+    });
     app.use(errorHandler);
     return app;
   }
@@ -341,6 +352,26 @@ describe("agent authority audit middleware", () => {
     const boardRes = await request(board).post("/mutate").send({});
     expect(boardRes.status).toBe(200);
 
+    expect(loggedActivities).toHaveLength(0);
+  });
+
+  it("writes one authority row when the authorization service decided the elevation", async () => {
+    const app = auditApp(agentActor({ agentId: CEO_AGENT, role: "ceo" }), "company:agents");
+    const res = await request(app).post("/service-decided").send({});
+    expect(res.status).toBe(200);
+    expect(loggedActivities).toHaveLength(1);
+    expect(loggedActivities[0]).toMatchObject({
+      actorType: "agent",
+      actorId: CEO_AGENT,
+      action: "agent.authority_exercised",
+      details: { authorityReason: "agent_role_ceo", path: "/service-decided" },
+    });
+  });
+
+  it("writes no authority row for an agent write allowed by an explicit grant", async () => {
+    const app = auditApp(agentActor({ agentId: CEO_AGENT, role: "ceo" }), "company:agents");
+    const res = await request(app).post("/grant-backed").send({});
+    expect(res.status).toBe(200);
     expect(loggedActivities).toHaveLength(0);
   });
 });

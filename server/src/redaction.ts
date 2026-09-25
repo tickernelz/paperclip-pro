@@ -7,7 +7,7 @@ const SECRET_PAYLOAD_KEY_RE = new RegExp(SECRET_FIELD_NAME_PATTERN, "i");
 // Authorization reasons are policy decision codes, not credentials. They must
 // remain visible in audit receipts even though the field name contains
 // "authorization". JWT-shaped values are still caught by the value guard below.
-const AUDIT_REASON_PAYLOAD_KEY_RE = /^authorizationReason$/;
+const AUDIT_REASON_PAYLOAD_KEY_RE = /^(?:authorization|authority)Reason$/;
 const AUDIT_SURFACE_PAYLOAD_KEY_RE = /^surface$/;
 /**
  * Cleanup counts on a connection-removal receipt (PAP-17119). Their names name
