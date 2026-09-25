@@ -69,7 +69,6 @@ export function buildDocumentPrintHtml(meta: DocumentPdfMeta): string {
     "<style>" + PRINT_STYLES + "</style>",
     "</head>",
     '<body><article class="markdown-body">',
-    "<h1>" + title + "</h1>",
     renderDocumentMarkdownToHtml(meta.markdown),
     "</article></body></html>",
   ].join("\n");
@@ -138,8 +137,6 @@ export async function renderDocumentPdf(meta: DocumentPdfMeta): Promise<Buffer> 
   const executablePath = resolveChromiumExecutable();
   if (!executablePath) throw new HttpError(503, CHROMIUM_UNAVAILABLE_MESSAGE);
   const { default: puppeteer } = await import("puppeteer-core");
-  const chrome = escapeHtml(meta.issueIdentifier) + " &middot; " + escapeHtml(meta.title)
-    + " &middot; Revision " + String(meta.revisionNumber);
   const browser = await puppeteer.launch({
     executablePath,
     headless: true,
@@ -153,11 +150,11 @@ export async function renderDocumentPdf(meta: DocumentPdfMeta): Promise<Buffer> 
       format: "A4",
       printBackground: true,
       displayHeaderFooter: true,
-      headerTemplate: pdfChromeTemplate('<span style="float:left">' + chrome + "</span>"),
+      headerTemplate: pdfChromeTemplate(""),
       footerTemplate: pdfChromeTemplate(
-        '<span style="float:left">' + chrome + '</span><span style="float:right"><span class="pageNumber"></span> / <span class="totalPages"></span></span>',
+        '<span style="float:right"><span class="pageNumber"></span> / <span class="totalPages"></span></span>',
       ),
-      margin: { top: "18mm", bottom: "18mm", left: "14mm", right: "14mm" },
+      margin: { top: "14mm", bottom: "18mm", left: "14mm", right: "14mm" },
       tagged: true,
     });
     return Buffer.from(pdf);
