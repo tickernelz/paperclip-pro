@@ -510,6 +510,19 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         group: "Capabilities",
       },
       {
+        key: "paperclipMcpTransport",
+        label: "Paperclip MCP transport",
+        type: "select",
+        default: "http",
+        options: [
+          { value: "http", label: "Server-hosted endpoint (no extra process)" },
+          { value: "stdio", label: "Bundled stdio server (fallback)" },
+        ],
+        hint: "The server-hosted endpoint costs no process and no extra memory per run; the bundled stdio server is the fallback.",
+        group: "Capabilities",
+        meta: { visibleWhen: { key: "paperclipMcp", notValues: ["false"] } },
+      },
+      {
         key: "paperclipMcpToolsets",
         label: "Paperclip MCP toolsets",
         type: "text",

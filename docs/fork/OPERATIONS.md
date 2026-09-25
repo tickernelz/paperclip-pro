@@ -376,31 +376,42 @@ backstop.
 Every `omp_local` run declares one extra MCP server, `paperclip`, through a
 per-run `--extension <tmpdir>` package holding a single `.mcp.json`
 (`packages/adapters/omp-local/src/server/paperclip-mcp.ts`). The extension is
-appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading,
-and the generated file references the run env (`${PAPERCLIP_API_KEY}` and
-friends) instead of embedding the values. The adapter config exposes
-`paperclipMcp` (default on) and `paperclipMcpToolsets` (default `core`).
+appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
 
-The server is the agents' only path to Paperclip, so the adapter completes an
-MCP handshake with the resolved binary before it spawns OMP. A server that
-cannot start fails the run with `errorCode: paperclip_mcp_unavailable` instead
-of letting the agent run tool-less, and the same code is raised when OMP itself
-reports `MCP server "paperclip" failed to connect`. Turning `paperclipMcp` off
-logs a warning on the run's stderr: that agent has no Paperclip tools.
+By default the entry is `type: http` and points at the server-hosted endpoint
+`$PAPERCLIP_API_URL/mcp/paperclip?toolsets=core`, with
+`Authorization: Bearer ${PAPERCLIP_API_KEY}` (an env reference, never a literal)
+and `X-Paperclip-Run-Id`. That costs no process and no extra memory per run.
+`paperclipMcpTransport: stdio` is the fallback: it spawns the bundled
+`paperclip-mcp-server` with the run's identity in its env. The adapter config
+also exposes `paperclipMcp` (default on) and `paperclipMcpToolsets`
+(default `core`).
 
-Measured on 2026-09-25 (WSL, Node 24.18.0, `core` toolset, 3 probes each):
+MCP is the agents' only path to Paperclip, so the adapter completes an MCP
+`initialize` before it spawns OMP: a POST against the endpoint with a 5 s
+timeout, or the handshake with the binary under the stdio fallback. Downtime
+fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
+`errorCode: paperclip_mcp_credential_rejected`, and the unavailable code is
+raised again when OMP itself reports `MCP server "paperclip" failed to
+connect`. Turning `paperclipMcp` off logs a warning on the run's stderr: that
+agent has no Paperclip tools.
 
-| Measurement | Without the server | With the server |
+Why the endpoint is the default: measured on 2026-09-25 (WSL, Node 24.18.0,
+`core` toolset, 3 probes each) the stdio fallback costs a whole process per run.
+
+| Measurement | No MCP server | Bundled stdio server |
 | --- | --- | --- |
 | omp spawn to `agent_start` | 1842 / 1862 / 2002 ms | 2406 / 2458 / 2530 ms |
 | `paperclip-mcp-server` RSS at steady state | — | 127.4 / 127.4 / 127.3 MB |
 
-So the server costs about 0.6 s of run startup and ~127 MB of resident memory
-for the life of the run (61 `core` tools, `tools/list` 35 kB) — most of it the
-floor under it: a bare Node 24 process is 43 MB and the MCP SDK with Zod adds
-about 35 MB before any Paperclip code. The same server measured 191–193 MB
-before its tool definitions were filtered per toolset, so keep an eye on this
-number when the tool surface grows, and size local run concurrency with it.
+That is about 0.6 s of run startup and ~127 MB resident for the life of the run
+(61 `core` tools, `tools/list` 35 kB) — most of it a floor: a bare Node 24
+process is 43 MB and the MCP SDK with Zod adds about 35 MB before any Paperclip
+code, and the same server measured 191–193 MB before its tool definitions were
+filtered per toolset. Ten concurrent local runs would therefore hold about
+1.3 GB in stdio servers alone, which is why the HTTP endpoint is the default and
+the stdio path is only a fallback.
+
 OMP connects its MCP servers during startup, before `agent_start`, so the tools
 are in the tool list for the first model turn; the connect failure warning also
 lands before `agent_start`, which is why the adapter can stop the run before a

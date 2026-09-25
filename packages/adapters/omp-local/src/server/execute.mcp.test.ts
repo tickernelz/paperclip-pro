@@ -10,16 +10,19 @@ vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (impor
 
 vi.mock("./paperclip-mcp.js", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
-  return { ...actual, probePaperclipMcpServer: vi.fn() };
+  return { ...actual, probePaperclipMcpServer: vi.fn(), probePaperclipMcpEndpoint: vi.fn() };
 });
 
 import { execute } from "./execute.js";
 import {
   PAPERCLIP_MCP_BIN,
   PAPERCLIP_MCP_PACKAGE,
+  PAPERCLIP_MCP_CREDENTIAL_CODE,
   PAPERCLIP_MCP_UNAVAILABLE_CODE,
   buildPaperclipMcpServerEntry,
+  paperclipMcpEndpoint,
   paperclipMcpToolsets,
+  probePaperclipMcpEndpoint,
   probePaperclipMcpServer,
   resolvePaperclipMcpServerCommand,
 } from "./paperclip-mcp.js";
@@ -27,6 +30,7 @@ import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adap
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
 const probeMock = vi.mocked(probePaperclipMcpServer);
+const endpointProbeMock = vi.mocked(probePaperclipMcpEndpoint);
 
 interface Invocation {
   args: string[];
@@ -53,6 +57,8 @@ describe("OMP local Paperclip MCP wiring", () => {
     captured = null;
     probeMock.mockReset();
     probeMock.mockResolvedValue({ ok: true, detail: "handshake ok", toolCount: 61, durationMs: 42 });
+    endpointProbeMock.mockReset();
+    endpointProbeMock.mockResolvedValue({ ok: true, detail: "handshake ok", toolCount: null, durationMs: 9 });
     runProcessMock.mockReset();
     runProcessMock.mockImplementation((async (
       _runId: string,
@@ -143,10 +149,32 @@ describe("OMP local Paperclip MCP wiring", () => {
     });
   }
 
-  it("arms the paperclip MCP server for the run by default", async () => {
+  it("points the run at the server-hosted MCP endpoint by default", async () => {
     const invocation = await run({});
     expect(invocation.mcpDir).toBeTruthy();
     expect(invocation.extensionDirs[0]).toBe(invocation.mcpDir);
+    expect(invocation.mcpServer).toMatchObject({
+      type: "http",
+      enabled: true,
+      url: paperclipMcpEndpoint(invocation.env.PAPERCLIP_API_URL, "core"),
+      headers: {
+        Authorization: "Bearer ${PAPERCLIP_API_KEY}",
+        "X-Paperclip-Run-Id": "run-mcp",
+      },
+    });
+    expect(invocation.env.PAPERCLIP_API_KEY).toBe("run-jwt");
+    expect(invocation.systemPrompt).toContain("paperclipListIssues");
+  });
+
+  it("passes the configured toolsets to the endpoint", async () => {
+    const invocation = await run({ paperclipMcpToolsets: " extended , core " });
+    expect(invocation.mcpServer?.url).toBe(paperclipMcpEndpoint(invocation.env.PAPERCLIP_API_URL, "extended,core"));
+    expect(invocation.mcpServer?.url).toContain("toolsets=extended%2Ccore");
+    expect(invocation.systemPrompt).toContain("toolsets: extended,core");
+  });
+
+  it("falls back to the bundled stdio server when configured", async () => {
+    const invocation = await run({ paperclipMcpTransport: "stdio" });
     expect(invocation.mcpServer).toMatchObject({ type: "stdio", enabled: true });
     expect(invocation.mcpServer?.args).toEqual(expect.arrayContaining(["--toolsets", "core"]));
     expect(invocation.mcpServer?.env).toMatchObject({
@@ -156,15 +184,6 @@ describe("OMP local Paperclip MCP wiring", () => {
       PAPERCLIP_RUN_ID: "run-mcp",
       PAPERCLIP_MCP_TOOLSETS: "core",
     });
-    expect(invocation.env.PAPERCLIP_API_KEY).toBe("run-jwt");
-    expect(invocation.systemPrompt).toContain("paperclipListIssues");
-  });
-
-  it("passes the configured toolsets to the server", async () => {
-    const invocation = await run({ paperclipMcpToolsets: " extended , core " });
-    expect(invocation.mcpServer?.args).toEqual(expect.arrayContaining(["--toolsets", "extended,core"]));
-    expect(invocation.mcpServer?.env).toMatchObject({ PAPERCLIP_MCP_TOOLSETS: "extended,core" });
-    expect(invocation.systemPrompt).toContain("toolsets: extended,core");
   });
 
   it("pins the server off and warns that the agent has no Paperclip tools", async () => {
@@ -173,15 +192,16 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
     expect(invocation.systemPrompt).not.toContain("paperclipListIssues");
     expect(probeMock).not.toHaveBeenCalled();
+    expect(endpointProbeMock).not.toHaveBeenCalled();
     const logs: Array<{ stream: string; chunk: string }> = [];
     await runResult({ paperclipMcp: false }, logs);
     expect(logs.some((entry) => entry.stream === "stderr" && entry.chunk.includes("has no Paperclip tools this run"))).toBe(true);
   });
 
-  it("fails the run before spawning OMP when the MCP server cannot start", async () => {
-    probeMock.mockResolvedValue({
+  it("fails the run before spawning OMP when the MCP endpoint does not answer", async () => {
+    endpointProbeMock.mockResolvedValue({
       ok: false,
-      detail: "server exited early (code 1, signal null): Missing PAPERCLIP_API_URL",
+      detail: "no answer within 5000ms",
       toolCount: null,
       durationMs: 120,
     });
@@ -189,9 +209,23 @@ describe("OMP local Paperclip MCP wiring", () => {
     const result = await runResult({}, logs);
     expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
     expect(result.exitCode).toBe(1);
-    expect(result.errorMessage).toContain("Missing PAPERCLIP_API_URL");
+    expect(result.errorMessage).toContain("no answer within 5000ms");
     expect(runProcessMock).not.toHaveBeenCalled();
     expect(logs.some((entry) => entry.stream === "stderr" && entry.chunk.includes("is unavailable"))).toBe(true);
+  });
+
+  it("separates a rejected run credential from endpoint downtime", async () => {
+    endpointProbeMock.mockResolvedValue({
+      ok: false,
+      credentialRejected: true,
+      detail: "the endpoint rejected this run's credentials (HTTP 401)",
+      toolCount: null,
+      durationMs: 18,
+    });
+    const result = await runResult({});
+    expect(result.errorCode).toBe(PAPERCLIP_MCP_CREDENTIAL_CODE);
+    expect(result.errorMessage).toContain("rejected this run's credentials");
+    expect(runProcessMock).not.toHaveBeenCalled();
   });
 
   it("fails the run when OMP reports that the MCP server did not connect", async () => {
@@ -292,6 +326,7 @@ describe("Paperclip MCP server entry", () => {
     expect(paperclipMcpToolsets({ paperclipMcpToolsets: " , " })).toBe("core");
     const entry = buildPaperclipMcpServerEntry({
       enabled: true,
+      transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },
       toolsets: "core",
       env: { PAPERCLIP_API_URL: "http://localhost:3100", PAPERCLIP_API_KEY: "k", PAPERCLIP_RUN_ID: "  " },
@@ -306,6 +341,7 @@ describe("Paperclip MCP server entry", () => {
   it("never writes the api key itself into the generated config", () => {
     const entry = buildPaperclipMcpServerEntry({
       enabled: true,
+      transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },
       toolsets: "core",
       env: { PAPERCLIP_API_KEY: "super-secret-token" },

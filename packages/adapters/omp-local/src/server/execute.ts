@@ -61,11 +61,15 @@ import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 import {
   PAPERCLIP_MCP_BIN,
+  PAPERCLIP_MCP_CREDENTIAL_CODE,
   PAPERCLIP_MCP_CONNECT_FAILURE_RE,
   PAPERCLIP_MCP_SERVER_NAME,
   PAPERCLIP_MCP_TOOLSETS_ENV,
   PAPERCLIP_MCP_UNAVAILABLE_CODE,
   paperclipMcpGuidance,
+  paperclipMcpEndpoint,
+  paperclipMcpTransport,
+  probePaperclipMcpEndpoint,
   paperclipMcpToolsets,
   probePaperclipMcpServer,
   resolvePaperclipMcpServerCommand,
@@ -693,25 +697,38 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
     const mcpToolsets = paperclipMcpToolsets(executionConfig);
     const mcpEnabled = asBoolean(executionConfig.paperclipMcp, true);
-    const mcpCommand = remote
+    const mcpTransport = paperclipMcpTransport(executionConfig);
+    const mcpCommand = remote || mcpTransport === "http"
       ? { command: PAPERCLIP_MCP_BIN, args: ["--toolsets", mcpToolsets], source: "path" as const }
       : resolvePaperclipMcpServerCommand();
     const mcpApiKey = asString(invocationEnv.PAPERCLIP_API_KEY, "").trim();
+    const mcpEndpoint = paperclipMcpEndpoint(asString(invocationEnv.PAPERCLIP_API_URL, ""), mcpToolsets);
     let mcpProbe: PaperclipMcpProbe | null = null;
-    if (mcpEnabled && mcpApiKey && !remote) {
-      mcpProbe = await probePaperclipMcpServer({
-        command: mcpCommand,
-        env: { ...invocationEnv, [PAPERCLIP_MCP_TOOLSETS_ENV]: mcpToolsets },
-      });
+    if (mcpEnabled && mcpApiKey && (mcpTransport === "http" || !remote)) {
+      mcpProbe = mcpTransport === "http"
+        ? await probePaperclipMcpEndpoint({
+            url: mcpEndpoint,
+            apiKey: mcpApiKey,
+            runId: asString(invocationEnv.PAPERCLIP_RUN_ID, runId),
+          })
+        : await probePaperclipMcpServer({
+            command: mcpCommand,
+            env: { ...invocationEnv, [PAPERCLIP_MCP_TOOLSETS_ENV]: mcpToolsets },
+          });
       if (!mcpProbe.ok) {
-        const message = `Paperclip MCP server (${mcpCommand.command}) is unavailable: ${mcpProbe.detail}`;
+        const source = mcpTransport === "http" ? mcpEndpoint : mcpCommand.command;
+        const message = mcpProbe.credentialRejected
+          ? `Paperclip MCP endpoint (${source}) rejected this run's credentials: ${mcpProbe.detail}`
+          : `Paperclip MCP ${mcpTransport === "http" ? "endpoint" : "server"} (${source}) is unavailable: ${mcpProbe.detail}`;
         await onLog("stderr", `[paperclip] ${message}\n`);
         return {
           exitCode: 1,
           signal: null,
           timedOut: false,
           errorMessage: message,
-          errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+          errorCode: mcpProbe.credentialRejected
+            ? PAPERCLIP_MCP_CREDENTIAL_CODE
+            : PAPERCLIP_MCP_UNAVAILABLE_CODE,
           usageBasis: "per_run",
           sessionId: null,
           sessionParams: null,
@@ -719,9 +736,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           resultJson: {
             capabilityManifest: CAPABILITY_MANIFEST,
             paperclipMcp: {
-              command: mcpCommand.command,
-              args: mcpCommand.args,
-              source: mcpCommand.source,
+              transport: mcpTransport,
+              source,
               toolsets: mcpToolsets,
               detail: mcpProbe.detail,
               durationMs: mcpProbe.durationMs,
@@ -748,6 +764,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         target: runtimeTarget,
         remote,
         enabled: mcpEnabled,
+        transport: mcpTransport,
         toolsets: mcpToolsets,
         command: mcpCommand,
         env: invocationEnv,

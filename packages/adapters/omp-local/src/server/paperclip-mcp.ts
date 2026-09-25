@@ -16,7 +16,10 @@ export const PAPERCLIP_MCP_DEFAULT_TOOLSETS = "core";
 export const PAPERCLIP_MCP_TOOLSETS_ENV = "PAPERCLIP_MCP_TOOLSETS";
 export const PAPERCLIP_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
 export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server "paperclip" failed to connect/;
+export const PAPERCLIP_MCP_HTTP_PATH = "/mcp/paperclip";
+export const PAPERCLIP_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
+const HTTP_PROBE_TIMEOUT_MS = 5_000;
 
 const RUN_ENV_KEYS = [
   "PAPERCLIP_API_URL",
@@ -45,6 +48,17 @@ export function paperclipMcpToolsets(config: Record<string, unknown>): string {
   return parts.length > 0 ? parts.join(",") : PAPERCLIP_MCP_DEFAULT_TOOLSETS;
 }
 
+export function paperclipMcpTransport(config: Record<string, unknown>): "http" | "stdio" {
+  return asString(config.paperclipMcpTransport, "").trim() === "stdio" ? "stdio" : "http";
+}
+
+/** Server-hosted MCP endpoint for this run, mirroring the API base the curl path uses. */
+export function paperclipMcpEndpoint(apiUrl: string, toolsets: string): string {
+  const trimmed = apiUrl.trim().replace(/\/+$/, "");
+  const base = trimmed.endsWith("/api") ? trimmed : `${trimmed}/api`;
+  return `${base}${PAPERCLIP_MCP_HTTP_PATH}?toolsets=${encodeURIComponent(toolsets)}`;
+}
+
 /** Locate the stdio MCP server shipped with this install: nearest `.bin` shim, then `dist/stdio.js`, then PATH. */
 export function resolvePaperclipMcpServerCommand(options: {
   searchFrom?: string;
@@ -68,10 +82,22 @@ export function resolvePaperclipMcpServerCommand(options: {
 
 export function buildPaperclipMcpServerEntry(input: {
   enabled: boolean;
+  transport: "http" | "stdio";
   command: PaperclipMcpCommand;
   toolsets: string;
   env: Record<string, string>;
 }): Record<string, unknown> {
+  if (input.transport === "http") {
+    return {
+      type: "http",
+      enabled: input.enabled,
+      url: paperclipMcpEndpoint(input.env.PAPERCLIP_API_URL ?? "", input.toolsets),
+      headers: {
+        Authorization: "Bearer ${PAPERCLIP_API_KEY}",
+        "X-Paperclip-Run-Id": (input.env.PAPERCLIP_RUN_ID ?? "").trim(),
+      },
+    };
+  }
   const env: Record<string, string> = {};
   for (const key of RUN_ENV_KEYS) {
     const value = input.env[key];
@@ -90,6 +116,7 @@ export function buildPaperclipMcpServerEntry(input: {
 
 export function renderPaperclipMcpConfig(input: {
   enabled: boolean;
+  transport: "http" | "stdio";
   command: PaperclipMcpCommand;
   toolsets: string;
   env: Record<string, string>;
@@ -112,6 +139,91 @@ export interface PaperclipMcpProbe {
   detail: string;
   toolCount: number | null;
   durationMs: number;
+  credentialRejected?: boolean;
+}
+
+/** POST `initialize` at the server-hosted endpoint; 401/403 is a credential fault, anything else is downtime. */
+export async function probePaperclipMcpEndpoint(input: {
+  url: string;
+  apiKey: string;
+  runId: string;
+  timeoutMs?: number;
+  fetchImpl?: typeof fetch;
+}): Promise<PaperclipMcpProbe> {
+  const startedAt = Date.now();
+  const call = input.fetchImpl ?? fetch;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), input.timeoutMs ?? HTTP_PROBE_TIMEOUT_MS);
+  try {
+    const response = await call(input.url, {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${input.apiKey}`,
+        "X-Paperclip-Run-Id": input.runId,
+        "Content-Type": "application/json",
+        Accept: "application/json, text/event-stream",
+      },
+      body: JSON.stringify({
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2024-11-05",
+          capabilities: {},
+          clientInfo: { name: "paperclip-omp-local", version: "1" },
+        },
+      }),
+    });
+    const body = await response.text();
+    if (response.status === 401 || response.status === 403) {
+      return {
+        ok: false,
+        credentialRejected: true,
+        detail: `the endpoint rejected this run's credentials (HTTP ${response.status})`,
+        toolCount: null,
+        durationMs: Date.now() - startedAt,
+      };
+    }
+    if (!response.ok) {
+      return {
+        ok: false,
+        detail: `HTTP ${response.status}: ${body.slice(0, 200)}`,
+        toolCount: null,
+        durationMs: Date.now() - startedAt,
+      };
+    }
+    let parsed: { result?: unknown; error?: { message?: string } };
+    try {
+      parsed = JSON.parse(body) as typeof parsed;
+    } catch {
+      return {
+        ok: false,
+        detail: `the endpoint answered with non-JSON: ${body.slice(0, 200)}`,
+        toolCount: null,
+        durationMs: Date.now() - startedAt,
+      };
+    }
+    if (parsed.error || !parsed.result) {
+      return {
+        ok: false,
+        detail: parsed.error?.message ?? "initialize returned no result",
+        toolCount: null,
+        durationMs: Date.now() - startedAt,
+      };
+    }
+    return { ok: true, detail: "handshake ok", toolCount: null, durationMs: Date.now() - startedAt };
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error);
+    return {
+      ok: false,
+      detail: controller.signal.aborted ? `no answer within ${input.timeoutMs ?? HTTP_PROBE_TIMEOUT_MS}ms` : reason,
+      toolCount: null,
+      durationMs: Date.now() - startedAt,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Start the resolved server, complete the MCP handshake and list its tools. */
@@ -227,6 +339,7 @@ export async function writePaperclipMcpExtension(input: {
   target: AdapterExecutionTarget | null | undefined;
   remote: boolean;
   enabled: boolean;
+  transport: "http" | "stdio";
   toolsets: string;
   command: PaperclipMcpCommand;
   env: Record<string, string>;
@@ -237,6 +350,7 @@ export async function writePaperclipMcpExtension(input: {
 }): Promise<PaperclipMcpExtension> {
   const content = renderPaperclipMcpConfig({
     enabled: input.enabled,
+    transport: input.transport,
     command: input.command,
     toolsets: input.toolsets,
     env: input.env,
