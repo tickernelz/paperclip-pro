@@ -371,6 +371,55 @@ reports its startup signal, and on a timer armed for the bypass deadline; the
 30-second heartbeat scheduler tick (`HEARTBEAT_SCHEDULER_INTERVAL_MS`) is the
 backstop.
 
+## 11. Paperclip MCP tools in `omp_local` runs
+
+Every `omp_local` run declares one extra MCP server, `paperclip`, through a
+per-run `--extension <tmpdir>` package holding a single `.mcp.json`
+(`packages/adapters/omp-local/src/server/paperclip-mcp.ts`). The extension is
+appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
+
+By default the entry is `type: http` and points at the server-hosted endpoint
+`$PAPERCLIP_API_URL/mcp/paperclip?toolsets=core`, with
+`Authorization: Bearer ${PAPERCLIP_API_KEY}` (an env reference, never a literal)
+and `X-Paperclip-Run-Id`. That costs no process and no extra memory per run.
+`paperclipMcpTransport: stdio` is the fallback: it spawns the bundled
+`paperclip-mcp-server` with the run's identity in its env. The adapter config
+also exposes `paperclipMcp` (default on) and `paperclipMcpToolsets`
+(default `core`).
+
+MCP is the agents' only path to Paperclip, so the adapter completes an MCP
+`initialize` before it spawns OMP: a POST against the endpoint with a 5 s
+timeout, or the handshake with the binary under the stdio fallback. Downtime
+fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
+`errorCode: paperclip_mcp_credential_rejected`, and the unavailable code is
+raised again when OMP itself reports `MCP server "paperclip" failed to
+connect`. Turning `paperclipMcp` off logs a warning on the run's stderr: that
+agent has no Paperclip tools.
+
+Why the endpoint is the default, measured on 2026-09-25 (WSL, Node 24.18.0,
+`core` toolset). The run-time figures come from real sandboxed runs, timed from
+the run log's first line to `agent_start`:
+
+| Measurement | Server-hosted endpoint | Bundled stdio server |
+| --- | --- | --- |
+| run start to `agent_start` | 2123 / 1792 / 1732 ms | 2447 / 2169 ms |
+| extra processes per run | 0 | 1 |
+| `paperclip-mcp-server` RSS | — | 127.4 / 127.4 / 127.3 MB |
+
+A separate no-MCP baseline, timed from process spawn, was 1842 / 1862 / 2002 ms,
+so the endpoint costs roughly nothing at startup while the stdio fallback costs
+about half a second and a whole process. That process holds ~127 MB for the life
+of the run (61 `core` tools, `tools/list` 35 kB), most of it a floor: a bare
+Node 24 process is 43 MB and the MCP SDK with Zod adds about 35 MB before any
+Paperclip code, and the same server measured 191–193 MB before its tool
+definitions were filtered per toolset. Ten concurrent local runs would hold
+about 1.3 GB in stdio servers alone, which is why HTTP is the default.
+
+OMP connects its MCP servers during startup, before `agent_start`, so the tools
+are in the tool list for the first model turn; the connect failure warning also
+lands before `agent_start`, which is why the adapter can stop the run before a
+turn is spent.
+
 ## Security: emptying allowedHostnames does not lock out the public host
 
 `auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.
