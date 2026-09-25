@@ -16922,8 +16922,11 @@ export function heartbeatService(
   }
 
   async function countRunningLocalCliRuns() {
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
+    const rows = await db
+      .select({
+        id: heartbeatRuns.id,
+        processGroupId: heartbeatRuns.processGroupId,
+      })
       .from(heartbeatRuns)
       .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
       .where(
@@ -16932,7 +16935,42 @@ export function heartbeatService(
           inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
         ),
       );
-    return Number(count ?? 0);
+    return rows.filter(
+      (row) =>
+        runningProcesses.has(row.id) ||
+        activeRunExecutions.has(row.id) ||
+        (!!row.processGroupId && isProcessGroupAlive(row.processGroupId)),
+    ).length;
+  }
+
+  async function startNextQueuedLocalCliRuns(finishedAgentId: string) {
+    const finished = await getAgent(finishedAgentId);
+    if (!isLocalCliAdapterType(finished?.adapterType)) return;
+    const slots =
+      resolveMaxConcurrentLocalRuns(runtimeEnv) -
+      (await countRunningLocalCliRuns());
+    if (slots <= 0) return;
+    const cutoff = await getWorktreeExecutionCutoff();
+    const queued = await db
+      .select({ agentId: heartbeatRuns.agentId })
+      .from(heartbeatRuns)
+      .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
+      .where(
+        and(
+          eq(heartbeatRuns.status, "queued"),
+          ne(heartbeatRuns.agentId, finishedAgentId),
+          inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
+          cutoff ? gte(heartbeatRuns.createdAt, cutoff) : undefined,
+        ),
+      )
+      .orderBy(asc(heartbeatRuns.createdAt));
+    const dispatched = new Set<string>();
+    for (const row of queued) {
+      if (dispatched.size >= slots) break;
+      if (dispatched.has(row.agentId)) continue;
+      dispatched.add(row.agentId);
+      await startNextQueuedRunForAgent(row.agentId);
+    }
   }
 
   async function withChatControlRecoveryGate(
@@ -26096,6 +26134,7 @@ export function heartbeatService(
             });
         }
         await startNextQueuedRunForAgent(run.agentId);
+        await startNextQueuedLocalCliRuns(run.agentId);
       }
     }
   }
