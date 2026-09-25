@@ -398,6 +398,7 @@ function buildWakeText(
   }
 
   const issueIdHint = payload.taskId ?? payload.issueId ?? "";
+  const apiBaseHint = paperclipEnv.PAPERCLIP_API_URL ?? "<set PAPERCLIP_API_URL>";
 
   if (conversationTaskMarkdown !== undefined) {
     return [
@@ -405,7 +406,7 @@ function buildWakeText(
       "Set these values in your run context:",
       ...envLines,
       `Load PAPERCLIP_API_KEY from ${claimedApiKeyPath} (the token saved after claim-api-key).`,
-      "Do every Paperclip read and write through the Paperclip MCP tools.",
+      "Use Authorization: Bearer $PAPERCLIP_API_KEY on every API call and X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID on every mutation.",
       "Follow the supplied chat mode directive. Keep this conversation available for the next message.",
       structuredWakePrompt,
       conversationTaskMarkdown,
@@ -415,7 +416,7 @@ function buildWakeText(
   const lines = [
     "Paperclip wake event for a cloud adapter.",
     "",
-    "Run this procedure now. Do not guess undocumented tools and do not ask for additional heartbeat docs.",
+    "Run this procedure now. Do not guess undocumented endpoints and do not ask for additional heartbeat docs.",
     "",
     "Set these values in your run context:",
     ...envLines,
@@ -423,6 +424,7 @@ function buildWakeText(
     "",
     `Load PAPERCLIP_API_KEY from ${claimedApiKeyPath} (the token you saved after claim-api-key).`,
     "",
+    `api_base=${apiBaseHint}`,
     `task_id=${payload.taskId ?? ""}`,
     `issue_id=${payload.issueId ?? ""}`,
     `wake_reason=${payload.wakeReason ?? ""}`,
@@ -431,34 +433,35 @@ function buildWakeText(
     `approval_status=${payload.approvalStatus ?? ""}`,
     `linked_issue_ids=${payload.issueIds.join(",")}`,
     "",
-    "Tool rules:",
-    "- Do every Paperclip read and write through the Paperclip MCP tools.",
-    "- Use only the tools named below; do not invent tool names.",
-    "- For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.",
+    "HTTP rules:",
+    "- Use Authorization: Bearer $PAPERCLIP_API_KEY on every API call.",
+    "- Use X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID on every mutating API call.",
+    "- Use only /api endpoints listed below.",
+    "- Do NOT call guessed endpoints like /api/cloud-adapter/*, /api/cloud-adapters/*, /api/adapters/cloud/*, or /api/heartbeat.",
     "",
     "Workflow:",
-    "1) paperclipMe",
+    "1) GET /api/agents/me",
     `2) Determine issueId: PAPERCLIP_TASK_ID if present, otherwise issue_id (${issueIdHint}).`,
-    '   Pass that id as the issueId argument of every tool below. Never pass the literal text "{issueId}".',
+    '   Replace {issueId} in every endpoint below with that determined id. Never send the literal text "{issueId}" in a URL.',
     "3) If issueId exists:",
-    "   - paperclipCheckoutIssue with issueId: issueId, agentId: \"$PAPERCLIP_AGENT_ID\", expectedStatuses: [\"todo\",\"backlog\",\"blocked\",\"in_review\"]",
-    "   - paperclipGetIssue with issueId: issueId",
-    "   - paperclipListComments with issueId: issueId",
+    "   - POST /api/issues/{issueId}/checkout with {\"agentId\":\"$PAPERCLIP_AGENT_ID\",\"expectedStatuses\":[\"todo\",\"backlog\",\"blocked\",\"in_review\"]}",
+    "   - GET /api/issues/{issueId}",
+    "   - GET /api/issues/{issueId}/comments",
     "   - Execute the issue instructions exactly. If the issue is actionable, take concrete action in this run; do not stop at a plan unless planning was requested.",
     "   - Leave durable progress with a clear next action. Use child issues for long or parallel delegated work instead of polling agents, sessions, or processes.",
-    "   - Create child issues with paperclipCreateChildIssue when you know what needs to be done; use paperclipSuggestTasks, paperclipAskUserQuestions, or paperclipRequestConfirmation when the board/user must choose, answer, or confirm before you can continue.",
-    "   - For plan approval, update the plan document first, then call paperclipRequestConfirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}; wait for acceptance before creating implementation subtasks.",
-    "   - If blocked, paperclipUpdateIssue with issueId: issueId, status: \"blocked\", comment: \"what is blocked, who owns the unblock, and the next action\".",
-    "   - If instructions require a comment, paperclipAddComment with issueId: issueId, body: \"...\".",
-    "   - paperclipUpdateIssue with issueId: issueId, status: \"done\", comment: \"what changed and why\".",
+    "   - Create child issues directly when you know what needs to be done; use POST /api/issues/{issueId}/interactions with kind suggest_tasks, ask_user_questions, or request_confirmation when the board/user must choose, answer, or confirm before you can continue.",
+    "   - For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}; wait for acceptance before creating implementation subtasks.",
+    "   - If blocked, PATCH /api/issues/{issueId} with {\"status\":\"blocked\",\"comment\":\"what is blocked, who owns the unblock, and the next action\"}.",
+    "   - If instructions require a comment, POST /api/issues/{issueId}/comments with {\"body\":\"...\"}.",
+    "   - PATCH /api/issues/{issueId} with {\"status\":\"done\",\"comment\":\"what changed and why\"}.",
     "4) If issueId does not exist:",
-    "   - paperclipListIssues with companyId: \"$PAPERCLIP_COMPANY_ID\", assigneeAgentId: \"$PAPERCLIP_AGENT_ID\", status: \"todo,in_progress,in_review,blocked\"",
+    "   - GET /api/companies/$PAPERCLIP_COMPANY_ID/issues?assigneeAgentId=$PAPERCLIP_AGENT_ID&status=todo,in_progress,in_review,blocked",
     "   - Pick in_progress first, then in_review when you were woken by a comment, then todo, then blocked, then execute step 3.",
     "",
-    "Useful tools for issue work:",
-    "- paperclipAddComment",
-    "- paperclipUpdateIssue",
-    "- paperclipCreateIssue (when asked to create a new issue)",
+    "Useful endpoints for issue work:",
+    "- POST /api/issues/{issueId}/comments",
+    "- PATCH /api/issues/{issueId}",
+    "- POST /api/companies/{companyId}/issues (when asked to create a new issue)",
     ...(structuredWakePrompt
       ? [
           "",
@@ -1106,6 +1109,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const structuredWakePrompt = renderPaperclipWakePrompt(ctx.context.paperclipWake, {
     includeExecutionContract: true,
     conversationMode: ctx.context.conversationMode === true,
+    paperclipAccess: "rest",
   });
   const structuredWakeJson = stringifyPaperclipWakePayload(ctx.context.paperclipWake);
   const wakeText = buildWakeText(

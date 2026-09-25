@@ -10,6 +10,7 @@ const COPIED_SHARED_FILES = ["config.json", "config.toml", "instructions.md"] as
 const SYMLINKED_SHARED_FILES = ["auth.json"] as const;
 const MANAGED_MCP_BLOCK_START = "# BEGIN PAPERCLIP MANAGED MCP";
 const MANAGED_MCP_BLOCK_END = "# END PAPERCLIP MANAGED MCP";
+const TOML_BARE_KEY_RE = /^[A-Za-z0-9_-]+$/;
 
 /**
  * The allowlist of managed `CODEX_HOME` entries that the codex-local adapter
@@ -31,6 +32,7 @@ export type ManagedCodexMcpGateway = {
   name: string;
   endpointPath: string;
   bearerToken: string;
+  headers?: Record<string, string>;
 };
 
 export function mergeManagedCodexMcpGateways(
@@ -312,11 +314,17 @@ function buildManagedMcpBlock(input: {
       );
     }
     const url = new URL(gateway.endpointPath, input.apiBaseUrl).toString();
+    const headers = Object.entries({
+      Authorization: `Bearer ${gateway.bearerToken}`,
+      ...gateway.headers,
+    })
+      .map(([key, value]) => `${TOML_BARE_KEY_RE.test(key) ? key : tomlString(key)} = ${tomlString(value)}`)
+      .join(", ");
     lines.push(
       "",
       `[mcp_servers.${tomlString(managedName)}]`,
       `url = ${tomlString(url)}`,
-      `headers = { Authorization = ${tomlString(`Bearer ${gateway.bearerToken}`)} }`,
+      `headers = { ${headers} }`,
     );
   });
   lines.push(MANAGED_MCP_BLOCK_END);

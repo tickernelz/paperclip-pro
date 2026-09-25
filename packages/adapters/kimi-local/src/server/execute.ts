@@ -42,9 +42,10 @@ import {
   selectPaperclipTaskMarkdown,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { paperclipAccessGuidance } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import {
   SANDBOX_INSTALL_COMMAND,
   modelSupportsEffort,
@@ -158,17 +159,6 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
   ].join("\n");
 }
 
-function renderApiAccessNote(env: Record<string, string>): string {
-  if (!hasNonEmptyEnvValue(env, "PAPERCLIP_API_URL") || !hasNonEmptyEnvValue(env, "PAPERCLIP_API_KEY")) return "";
-  return [
-    "Paperclip API access note:",
-    "Paperclip work goes through the Paperclip MCP tools, not shell commands.",
-    "For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.",
-    "",
-    "",
-  ].join("\n");
-}
-
 async function buildKimiSkillsDir(
   config: Record<string, unknown>,
 ): Promise<string> {
@@ -210,11 +200,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
 
+  const paperclipAccess = "rest" as const;
   const promptTemplate = asString(
     config.promptTemplate,
     context.conversationMode === true
       ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+      : paperclipAgentPromptTemplate(paperclipAccess),
   );
   const command = asString(config.command, "kimi");
   const model = asString(config.model, "").trim();
@@ -521,6 +512,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     conversationMode: context.conversationMode === true,
     resumedSession: Boolean(sessionId),
     suppressIssueDescription: taskContextNote.length > 0,
+    paperclipAccess,
   });
   const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
   const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
@@ -528,7 +520,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const paperclipEnvNote = renderPaperclipEnvNote(env);
-  const apiAccessNote = renderApiAccessNote(env);
+  const apiAccessNote = paperclipAccessGuidance(paperclipAccess, { shellHint: "shell commands" });
   const basePrompt = joinPromptSections([
     instructionsPrefix,
     renderedBootstrapPrompt,

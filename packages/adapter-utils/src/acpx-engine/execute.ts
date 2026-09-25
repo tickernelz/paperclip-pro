@@ -45,7 +45,7 @@ import {
   describeWorkspaceRestoreFailure,
 } from "../workspace-restore-merge.js";
 import {
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   applyPaperclipWorkspaceEnv,
   asNumber,
@@ -74,6 +74,14 @@ import {
   shapePaperclipWorkspaceEnvForExecution,
   type PaperclipSkillEntry,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  PAPERCLIP_MCP_SERVER_NAME,
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpToolsets,
+  type PaperclipAccessMode,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import { paperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import {
   createAcpRuntime,
@@ -488,6 +496,8 @@ interface AcpxPreparedRuntime {
   sessionStagingLeaseRelease: (() => void) | null;
   remoteExecutionIdentity: Record<string, unknown> | null;
   skillPromptInstructions: string;
+  paperclipAccess: PaperclipAccessMode;
+  paperclipToolsets: string;
   skillsIdentity: Record<string, unknown>;
   childStderrLogPath: string | null;
   paperclipClaudeSettings: PaperclipClaudeSettingsResult | null;
@@ -1900,6 +1910,25 @@ async function buildRuntime(input: {
     url: server.url,
     headers: [{ name: "Authorization", value: `Bearer ${server.token}` }],
   }));
+  const paperclipEnvForAccess = {
+    ...buildPaperclipEnv(agent),
+    PAPERCLIP_RUN_ID: runId,
+    ...(authToken ? { PAPERCLIP_API_KEY: authToken } : {}),
+  };
+  const paperclipAccess = paperclipAccessMode(config, paperclipEnvForAccess);
+  const paperclipToolsets = paperclipMcpToolsets(config);
+  if (paperclipAccess === "mcp") {
+    const target = paperclipMcpHttpTarget({
+      env: paperclipEnvForAccess,
+      toolsets: paperclipToolsets,
+    });
+    mcpServers.unshift({
+      type: "http",
+      name: PAPERCLIP_MCP_SERVER_NAME,
+      url: target.url,
+      headers: Object.entries(target.headers).map(([name, value]) => ({ name, value })),
+    });
+  }
   // Resolve the wall-clock timeout through the shared execution-target
   // resolver so sandbox-backed runs pick up the 4h backstop default while
   // local/SSH runs keep the historical "0 = no adapter timeout" behavior.
@@ -2541,6 +2570,8 @@ async function buildRuntime(input: {
     sessionStagingLeaseRelease,
     remoteExecutionIdentity,
     skillPromptInstructions,
+    paperclipAccess,
+    paperclipToolsets,
     skillsIdentity: {
       ...skillsIdentity,
       commandNotes: skillCommandNotes,
@@ -2915,26 +2946,26 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
   ].join("\n");
 }
 
-function renderApiAccessNote(env: Record<string, string>): string {
+function renderApiAccessNote(
+  env: Record<string, string>,
+  access: PaperclipAccessMode,
+  toolsets: string,
+): string {
   if (!env.PAPERCLIP_API_URL || !env.PAPERCLIP_API_KEY) return "";
-  const lines = [
-    "Paperclip API access note:",
-    "Paperclip work goes through the Paperclip MCP tools, not the terminal.",
-    "Read example: call paperclipMe to load the current actor.",
-  ];
-  if (env.PAPERCLIP_TASK_ID) {
-    lines.push(
-      "Scoped issue comment example:",
-      `  paperclipAddComment with id: "$PAPERCLIP_TASK_ID", body: "Status update from agent."`,
-    );
-  } else {
+  const lines = ["Paperclip API access note:", paperclipAccessGuidance(access, { toolsets })];
+  if (!env.PAPERCLIP_TASK_ID) {
     lines.push("Use a real issue id from the current context before making issue write requests.");
   }
-  lines.push("For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.");
   return lines.join("\n");
 }
 
-async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean, env: Record<string, string>): Promise<{
+async function buildPrompt(
+  ctx: AdapterExecutionContext,
+  resumedSession: boolean,
+  env: Record<string, string>,
+  paperclipAccess: PaperclipAccessMode,
+  paperclipToolsets: string,
+): Promise<{
   prompt: string;
   promptMetrics: Record<string, number>;
   commandNotes: string[];
@@ -2946,7 +2977,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     ? configuredPromptTemplate
     : context.conversationMode === true
       ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE;
+      : paperclipAgentPromptTemplate(paperclipAccess);
   const instructionsFilePath = asString(config.instructionsFilePath, "").trim();
   const instructionsDir = instructionsFilePath ? `${path.dirname(instructionsFilePath)}/` : "";
   let instructionsPrefix = "";
@@ -2994,6 +3025,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
     // The task-context markdown is the authoritative brief on this lane; keep
     // the wake prompt's description copy out so the prompt carries it once.
     suppressIssueDescription: taskContextNote.length > 0,
+    paperclipAccess,
   });
   const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
   const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
@@ -3003,7 +3035,7 @@ async function buildPrompt(ctx: AdapterExecutionContext, resumedSession: boolean
       : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const paperclipEnvNote = externalChatTurn ? "" : renderPaperclipEnvNote(env);
-  const apiAccessNote = externalChatTurn ? "" : renderApiAccessNote(env);
+  const apiAccessNote = externalChatTurn ? "" : renderApiAccessNote(env, paperclipAccess, paperclipToolsets);
   const prompt = joinPromptSections([
     promptInstructionsPrefix,
     renderedBootstrapPrompt,
@@ -4687,7 +4719,13 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
         // boundary. A failure here returns an error result with phase
         // `prepare_turn`.
         preparePhaseStart = now();
-        const { prompt, promptMetrics, commandNotes } = await buildPrompt(ctx, resumedSession, prepared.env);
+        const { prompt, promptMetrics, commandNotes } = await buildPrompt(
+          ctx,
+          resumedSession,
+          prepared.env,
+          prepared.paperclipAccess,
+          prepared.paperclipToolsets,
+        );
         runPrompt = joinPromptSections([prepared.skillPromptInstructions, prompt]);
         await emitAcpxLog(ctx, {
           type: "acpx.session",

@@ -174,6 +174,37 @@ describe("execute", () => {
     expect(body.session_id).toBe("paperclip:company:company-1:agent:agent-1:issue:issue-1");
   });
 
+  it("teaches the Paperclip REST surface because the gateway cannot mount an MCP server", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/v1/runs")) {
+        return new Response(JSON.stringify({ run_id: "run-hermes-1", status: "started" }), { status: 200 });
+      }
+      if (url.endsWith("/events")) {
+        return new Response(
+          sseStream(["event: run.completed", "data: {\"status\":\"completed\",\"output\":\"done\"}", ""].join("\n")),
+          { status: 200, headers: { "content-type": "text/event-stream" } },
+        );
+      }
+      return new Response(JSON.stringify({ status: "completed", output: "done" }), { status: 200 });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await execute(makeCtx({
+      apiBaseUrl: "http://127.0.0.1:8642",
+      apiKey: "secret-key",
+      timeoutSec: 5,
+    }));
+
+    expect(result.exitCode).toBe(0);
+    const calls = fetchMock.mock.calls as Array<[RequestInfo | URL, RequestInit?]>;
+    const createCall = calls.find(([input]) => String(input).endsWith("/v1/runs"));
+    const prompt = JSON.parse(String((createCall?.[1] as RequestInit).body)).input as string;
+    expect(prompt).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
+    expect(prompt).toContain("X-Paperclip-Run-Id");
+    expect(prompt).not.toMatch(/paperclip[A-Z]/);
+  });
+
   it.each([false, true])("preserves chat handoff policy on gateway turns (resumed=%s)", async (resumed) => {
     const fetchMock = vi.fn(async (input: RequestInfo | URL) => new Response(JSON.stringify(
       String(input).endsWith("/v1/runs")

@@ -48,11 +48,12 @@ import {
   selectPaperclipTaskMarkdown,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   runChildProcess,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+import { paperclipRestGuidance } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
 import { ensurePiModelConfiguredAndAvailable } from "./models.js";
 import { preparePiRuntimeConfig } from "./runtime-config.js";
@@ -62,6 +63,13 @@ const __moduleDir = path.dirname(fileURLToPath(import.meta.url));
 
 const PAPERCLIP_SESSIONS_DIR = path.join(os.homedir(), ".pi", "paperclips");
 const PI_AGENT_SKILLS_DIR = path.join(os.homedir(), ".pi", "agent", "skills");
+
+const PI_PAPERCLIP_AGENT_PROMPT_TEMPLATE = [
+  "Paperclip API guidance:",
+  paperclipRestGuidance({ shellHint: "the Pi shell tool" }),
+  "",
+  paperclipAgentPromptTemplate("rest"),
+].join("\n");
 
 function firstNonEmptyLine(text: string): string {
   return (
@@ -232,7 +240,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     config.promptTemplate,
     context.conversationMode === true
       ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+      : PI_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
   );
   const command = asString(config.command, "pi");
   const model = asString(config.model, "").trim();
@@ -587,7 +595,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           `Resolve any relative file references from ${instructionsFileDir}.\n\n` +
           (context.conversationMode === true
             ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-            : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
+            : PI_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
       } catch (err) {
         instructionsReadFailed = true;
         const reason = err instanceof Error ? err.message : String(err);
@@ -624,6 +632,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       conversationMode: context.conversationMode === true,
       resumedSession: canResumeSession,
       suppressIssueDescription: taskContextNote.length > 0,
+      paperclipAccess: "rest",
     });
     const shouldUseResumeDeltaPrompt = canResumeSession && wakePrompt.length > 0;
     const renderedHeartbeatPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)

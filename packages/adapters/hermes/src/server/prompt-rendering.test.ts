@@ -215,6 +215,7 @@ test("renders safe Paperclip API examples from environment variables with multil
   expect(prompt).toContain("jq -n --arg status done --arg comment \"$body\"");
   expect(prompt).toContain("--data-binary @-");
   expect(prompt).not.toContain("Authorization: Bearer <");
+  expect(prompt).not.toMatch(/paperclip[A-Z]/);
 });
 
 test("preserves custom prompt templates while exposing runtime and wake variables", () => {

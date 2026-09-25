@@ -39,9 +39,20 @@ import {
   isPaperclipRecoveryWakePayload,
   resolveLegacyPaperclipDesiredSkillNames,
   refreshPaperclipWorkspaceEnvForExecution,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpToolsets,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import {
+  paperclipMcpHttpTarget,
+  renderPaperclipGrokConfig,
+  writePaperclipMcpMount,
+  type PaperclipMcpMount,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { DEFAULT_GROK_LOCAL_MODEL } from "../index.js";
 import { copyBackGrokAuth } from "./grok-auth-copyback.js";
 import { grokHomeHasUsableAuth, resolveManagedGrokHomeDir, stageGrokHomeForSync } from "./grok-home.js";
@@ -72,17 +83,6 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
     "Paperclip runtime note:",
     `The following PAPERCLIP_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
-    "",
-    "",
-  ].join("\n");
-}
-
-function renderApiAccessNote(env: Record<string, string>): string {
-  if (!hasNonEmptyEnvValue(env, "PAPERCLIP_API_URL") || !hasNonEmptyEnvValue(env, "PAPERCLIP_API_KEY")) return "";
-  return [
-    "Paperclip API access note:",
-    "Paperclip work goes through the Paperclip MCP tools, not shell commands.",
-    "For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.",
     "",
     "",
   ].join("\n");
@@ -202,12 +202,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
 
-  const promptTemplate = asString(
-    config.promptTemplate,
-    context.conversationMode === true
-      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  );
   const command = asString(config.command, "grok");
   const model = asString(config.model, DEFAULT_GROK_LOCAL_MODEL).trim();
   // No default permission mode: Grok >= 1.0 enforces `dontAsk` as
@@ -254,6 +248,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   // every exit path (teardown and setup failure alike), mirroring the Codex
   // adapter's `stagedCodexHomeDir` handling.
   let stagedGrokHomeDir: string | null = null;
+  let paperclipMcpMount: PaperclipMcpMount | null = null;
 
   try {
     const envConfig = parseObject(config.env);
@@ -425,6 +420,31 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       }
     }
 
+    const paperclipAccess = paperclipAccessMode(config, env);
+    const paperclipToolsets = paperclipMcpToolsets(config);
+    const promptTemplate = asString(
+      config.promptTemplate,
+      context.conversationMode === true
+        ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+        : paperclipAgentPromptTemplate(paperclipAccess),
+    );
+    if (paperclipAccess === "mcp") {
+      paperclipMcpMount = await writePaperclipMcpMount({
+        runId,
+        target: executionTarget,
+        remote: executionTargetIsRemote,
+        content: renderPaperclipGrokConfig(paperclipMcpHttpTarget({ env, toolsets: paperclipToolsets })),
+        fileName: "config.toml",
+        localPrefix: "paperclip-grok-mcp-",
+        remoteDir: path.posix.join(effectiveExecutionCwd, ".paperclip-runtime", "grok", "mcp"),
+        cwd,
+        env,
+        timeoutSec,
+        graceSec,
+      });
+      env.GROK_CONFIG_PATH = paperclipMcpMount.filePath;
+    }
+
     const runtimeExecutionTarget = overrideAdapterExecutionTargetRemoteCwd(executionTarget, effectiveExecutionCwd);
     const effectiveEnv = Object.fromEntries(
       Object.entries({ ...process.env, ...env }).filter(
@@ -477,6 +497,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       if (stagedAssets.stagedSkillsCount > 0) {
         notes.push(`Staged ${stagedAssets.stagedSkillsCount} Paperclip skill(s) into .claude/skills for native Grok discovery.`);
       }
+      if (paperclipMcpMount) {
+        notes.push(`Mounted the Paperclip MCP server via GROK_CONFIG_PATH=${paperclipMcpMount.filePath}.`);
+      }
       return notes;
     })();
 
@@ -496,6 +519,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       conversationMode: context.conversationMode === true,
       resumedSession: Boolean(sessionId),
       suppressIssueDescription: taskContextNote.length > 0,
+      paperclipAccess,
     });
     const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
     const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
@@ -503,7 +527,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       : renderTemplate(promptTemplate, templateData);
     const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
     const paperclipEnvNote = renderPaperclipEnvNote(env);
-    const apiAccessNote = renderApiAccessNote(env);
+    const apiAccessNote = paperclipAccessGuidance(paperclipAccess, {
+      toolsets: paperclipToolsets,
+      shellHint: "shell commands",
+    });
     const basePrompt = joinPromptSections([
       wakePrompt,
       taskContextNote,
@@ -699,6 +726,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     await Promise.all([
       restoreRemoteWorkspace?.(),
       stagedAssets.cleanup(),
+      paperclipMcpMount?.cleanup(),
     ]);
   }
 }

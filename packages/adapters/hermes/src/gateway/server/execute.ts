@@ -13,6 +13,7 @@ import {
   selectPaperclipTaskMarkdown,
   stringifyPaperclipWakePayload,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { paperclipRestGuidance } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import {
   ADAPTER_TYPE,
   DEFAULT_EVENT_RECONNECT_MS,
@@ -278,6 +279,7 @@ function buildInput(ctx: AdapterExecutionContext, paperclipApiUrl: string | null
     // The task-context markdown is the authoritative brief on this lane; keep
     // the wake prompt's description copy out so the prompt carries it once.
     suppressIssueDescription: Boolean(taskMarkdown),
+    paperclipAccess: "rest",
   });
   const wakePayloadJson = stringifyPaperclipWakePayload(ctx.context.paperclipWake, {
     omitIssueDescription: Boolean(taskMarkdown),
@@ -294,6 +296,9 @@ function buildInput(ctx: AdapterExecutionContext, paperclipApiUrl: string | null
     ...(paperclipApiUrl ? [`- Paperclip API URL: ${paperclipApiUrl}`] : []),
     ...(issueWorkMode ? [`- Issue work mode: ${issueWorkMode}`] : []),
     "",
+    "Paperclip API guidance:",
+    paperclipRestGuidance({ shellHint: "the Hermes host terminal" }),
+    "",
     ...(ctx.context.conversationMode === true || isPaperclipRecoveryWakePayload(ctx.context.paperclipWake)
       ? []
       : [
@@ -301,7 +306,7 @@ function buildInput(ctx: AdapterExecutionContext, paperclipApiUrl: string | null
           "- Take concrete action in this run when the task is actionable.",
           "- Do not stop at a plan unless the issue asks for planning only.",
           "- Leave durable progress and update the issue to a clear final disposition.",
-          "- Do every Paperclip read and write through the Paperclip MCP tools.",
+          "- Use X-Paperclip-Run-Id on mutating Paperclip API requests when a Paperclip API key is available.",
           "",
         ]),
     wakePrompt,

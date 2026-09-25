@@ -583,4 +583,55 @@ describe("pi remote execution", () => {
     const usedSession = sessionIndex >= 0 ? call?.[2][sessionIndex + 1] : null;
     expect(usedSession).not.toBe("/remote/workspace/.paperclip-runtime/pi/sessions/session-123.jsonl");
   });
+
+  it("teaches the Paperclip REST surface because Pi ships no MCP client", async () => {
+    const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-pi-rest-"));
+    cleanupDirs.push(rootDir);
+    const workspaceDir = path.join(rootDir, "workspace");
+    await mkdir(workspaceDir, { recursive: true });
+
+    await execute({
+      runId: "run-rest",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "Pi Builder",
+        adapterType: "pi_local",
+        adapterConfig: {},
+      },
+      runtime: {
+        sessionId: null,
+        sessionParams: null,
+        sessionDisplayId: null,
+        taskKey: null,
+      },
+      config: { command: "pi", model: "openai/gpt-5.4-mini" },
+      context: {
+        paperclipWorkspace: { cwd: workspaceDir, source: "project_primary" },
+        paperclipWake: { reason: "issue_assigned", issue: { id: "issue-1", title: "Do the thing" } },
+      },
+      executionTransport: {
+        remoteExecution: {
+          host: "127.0.0.1",
+          port: 2222,
+          username: "fixture",
+          remoteWorkspacePath: "/remote/workspace",
+          remoteCwd: "/remote/workspace",
+          privateKey: "PRIVATE KEY",
+          knownHosts: "[127.0.0.1]:2222 ssh-ed25519 AAAA",
+          strictHostKeyChecking: true,
+        },
+      },
+      onLog: async () => {},
+    });
+
+    const call = runChildProcess.mock.calls[0] as unknown as [string, string, string[]] | undefined;
+    const args = call?.[2] ?? [];
+    const systemPrompt = args[args.indexOf("--append-system-prompt") + 1] ?? "";
+    const userPrompt = args[args.length - 1] ?? "";
+    expect(systemPrompt).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
+    expect(systemPrompt).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
+    expect(systemPrompt).not.toMatch(/paperclip[A-Z]/);
+    expect(userPrompt).not.toMatch(/paperclip[A-Z]/);
+  });
 });

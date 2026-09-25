@@ -47,10 +47,18 @@ import {
   renderPaperclipWakePrompt,
   selectPaperclipTaskMarkdown,
   isPaperclipRecoveryWakePayload,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   joinPromptSections,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  PAPERCLIP_MCP_RUN_ID_HEADER,
+  PAPERCLIP_MCP_SERVER_NAME,
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpEndpoint,
+  paperclipMcpToolsets,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import {
   parseLocalProcessFilesystemScope,
   parseLocalProcessSandboxExtraPaths,
@@ -586,11 +594,18 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const { runId, agent, runtime, config, context, onLog, onMeta, onEvent, onSpawn, authToken } = ctx;
 
+  const paperclipRunEnv = {
+    ...buildPaperclipEnv(agent),
+    PAPERCLIP_RUN_ID: runId,
+    ...(authToken ? { PAPERCLIP_API_KEY: authToken } : {}),
+  };
+  const paperclipAccess = paperclipAccessMode(config, paperclipRunEnv);
+  const paperclipToolsets = paperclipMcpToolsets(config);
   const promptTemplate = asString(
     config.promptTemplate,
     context.conversationMode === true
       ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+      : paperclipAgentPromptTemplate(paperclipAccess),
   );
   const command = asString(config.command, "codex");
   const model = asString(config.model, "");
@@ -757,8 +772,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       endpointPath: server.url,
       bearerToken: server.token,
     }));
+    const paperclipGateways: ManagedCodexMcpGateway[] = paperclipAccess === "mcp"
+      ? [{
+          name: PAPERCLIP_MCP_SERVER_NAME,
+          endpointPath: paperclipMcpEndpoint(paperclipBaseEnv.PAPERCLIP_API_URL, paperclipToolsets),
+          bearerToken: paperclipRunEnv.PAPERCLIP_API_KEY ?? "",
+          headers: { [PAPERCLIP_MCP_RUN_ID_HEADER]: runId },
+        }]
+      : [];
     const managedMcpGateways = mergeManagedCodexMcpGateways(
-      runtimeMcpGateways,
+      [...paperclipGateways, ...runtimeMcpGateways],
       managedMcpGatewaysFromContext(context),
     );
     const managedMcp = await writeManagedCodexMcpConfig({
@@ -1123,6 +1146,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       resumedSession: Boolean(sessionId),
       conversationMode: context.conversationMode === true,
       suppressIssueDescription: taskContextNote.length > 0,
+      paperclipAccess,
     });
     const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
     const promptInstructionsPrefix = shouldUseResumeDeltaPrompt ? "" : instructionsPrefix;
@@ -1203,6 +1227,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     const prompt = joinPromptSections([
       promptInstructionsPrefix,
       renderedBootstrapPrompt,
+      paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets }),
       wakePrompt,
       codexFallbackHandoffNote,
       sessionHandoffNote,

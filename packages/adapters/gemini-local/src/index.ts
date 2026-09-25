@@ -54,6 +54,8 @@ Core fields:
 - nonInteractivePermissions (string, optional): ACP non-interactive permission fallback when engine="acp"; deny or fail
 - stateDir (string, optional): ACP state directory override when engine="acp"
 - warmHandleIdleMs (number, optional): warm ACP process idle timeout when engine="acp"; defaults to 0
+- paperclipMcp (boolean, optional): mount the Paperclip API as MCP tools for the run; defaults to true
+- paperclipMcpToolsets (string, optional): comma-separated Paperclip MCP toolsets (core, extended, all); defaults to "core"
 
 Operational fields:
 - timeoutSec (number, optional): run timeout in seconds
@@ -66,4 +68,5 @@ Notes:
 - Sessions resume with --resume when stored session cwd matches the current cwd.
 - Paperclip auto-injects local skills into \`~/.gemini/skills/\` via symlinks, so the CLI can discover both credentials and skills in their natural location.
 - Authentication can use GEMINI_API_KEY / GOOGLE_API_KEY or local Gemini CLI login.
+- With \`paperclipMcp\` enabled and run API credentials present, the CLI lane writes a run-scoped settings file with the \`paperclip\` MCP server and points GEMINI_CLI_SYSTEM_SETTINGS_PATH at it, so the agent reaches the board through paperclip* tools. Otherwise the prompt teaches the REST API instead.
 `;

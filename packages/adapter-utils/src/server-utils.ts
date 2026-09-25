@@ -13,6 +13,7 @@ import {
 import { buildSshSpawnTarget, type SshRemoteExecutionSpec } from "./ssh.js";
 import { redactCommandText } from "./command-redaction.js";
 import { paperclipChatFilePreparationDelivery } from "./chat-file-delivery.js";
+import type { PaperclipAccessMode } from "./paperclip-mcp.js";
 import {
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
   resolvePaperclipRunnerModel,
@@ -206,30 +207,40 @@ export function resolvePaperclipInstanceRootForAdapter(
   return path.resolve(homeDir, "instances", instanceId);
 }
 
-export const DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE = [
-  "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work.",
-  "",
-  "Execution contract:",
-  "- Start actionable work in this heartbeat; do not stop at a plan unless the issue asks for planning.",
-  "- Leave durable progress in comments, documents, or work products, then update the issue to a clear final disposition before ending the heartbeat.",
-  "- Comments, documents, screenshots, work products, and `Remaining` bullets are evidence, not valid liveness paths by themselves.",
-  "- Final disposition checklist: mark `done` when complete; use `in_review` only with a real reviewer, approval, interaction, or monitor path; use `blocked` only with first-class blockers or a named unblock owner/action; create delegated follow-up issues with blockers when another agent owns the next step; keep `in_progress` only when a live continuation path exists.",
-  "- Prefer the smallest verification that proves the change; do not default to full workspace typecheck/build/test on every heartbeat unless the task scope warrants it.",
-  "- After 2 consecutive failures of the same control-plane write, stop retrying that write for the rest of the heartbeat. Continue useful work, report the failure in the final response, and rely on the adapter/runtime status channel as the sanctioned fallback.",
-  "- Use child issues for parallel or long delegated work instead of polling agents, sessions, or processes.",
-  "- If woken by a human comment on a dependency-blocked issue, respond or triage the comment without treating the blocked deliverable work as unblocked.",
-  "- Create child issues directly when you know what needs to be done; use issue-thread interactions when the board/user must choose suggested tasks, answer structured questions, or confirm a proposal.",
-  "- Use `PAPERCLIP_SCRATCH_DIR` / `PAPERCLIP_RUN_SCRATCH_DIR` for temporary scratch files instead of ad hoc `/tmp` paths; Paperclip removes that run-owned directory after the run ends.",
-  "- To ask for that input, create an interaction on the current issue with `paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation` using `issueId: $PAPERCLIP_TASK_ID`. Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance.",
-  "- Never create probe or throwaway issue-thread interactions to discover the interactions API shape or your permissions; schema discovery goes through the OpenAPI spec and explicit validation errors, not placeholder cards. Every ask_user_questions, suggest_tasks, or request_confirmation you post must carry a real, answerable prompt; withdraw one you no longer need instead of leaving it pending.",
-  "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` in the `paperclipAddComment` or `paperclipUpdateIssue` arguments for that issue (substitute that issue's real id when it is not the current task). Generic agent comments on closed issues are inert by default.",
-  "- For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}. Wait for acceptance before creating implementation subtasks, and create a fresh confirmation after superseding board/user comments if approval is still needed.",
-  "- If blocked, mark the issue blocked and name the unblock owner and action.",
-  "- Respect budget, pause/cancel, approval gates, and company boundaries.",
-  "- When the server-authenticated wake payload includes an External chat response contract, that narrower contract replaces the generic Paperclip comment, status, checkout, and final-disposition steps above for that turn. Follow the external-chat contract exactly; it does not relax any permission, approval, execution-policy, containment, budget, pause/cancel, or company boundary.",
-  "",
-  CONNECTION_INTENT_AGENT_GUIDANCE,
-].join("\n");
+/** The heartbeat contract, rendered against the Paperclip surface the adapter actually armed. */
+export function paperclipAgentPromptTemplate(access: PaperclipAccessMode): string {
+  const mcp = access === "mcp";
+  return [
+    "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work.",
+    "",
+    "Execution contract:",
+    "- Start actionable work in this heartbeat; do not stop at a plan unless the issue asks for planning.",
+    "- Leave durable progress in comments, documents, or work products, then update the issue to a clear final disposition before ending the heartbeat.",
+    "- Comments, documents, screenshots, work products, and `Remaining` bullets are evidence, not valid liveness paths by themselves.",
+    "- Final disposition checklist: mark `done` when complete; use `in_review` only with a real reviewer, approval, interaction, or monitor path; use `blocked` only with first-class blockers or a named unblock owner/action; create delegated follow-up issues with blockers when another agent owns the next step; keep `in_progress` only when a live continuation path exists.",
+    "- Prefer the smallest verification that proves the change; do not default to full workspace typecheck/build/test on every heartbeat unless the task scope warrants it.",
+    "- After 2 consecutive failures of the same control-plane write, stop retrying that write for the rest of the heartbeat. Continue useful work, report the failure in the final response, and rely on the adapter/runtime status channel as the sanctioned fallback.",
+    "- Use child issues for parallel or long delegated work instead of polling agents, sessions, or processes.",
+    "- If woken by a human comment on a dependency-blocked issue, respond or triage the comment without treating the blocked deliverable work as unblocked.",
+    "- Create child issues directly when you know what needs to be done; use issue-thread interactions when the board/user must choose suggested tasks, answer structured questions, or confirm a proposal.",
+    "- Use `PAPERCLIP_SCRATCH_DIR` / `PAPERCLIP_RUN_SCRATCH_DIR` for temporary scratch files instead of ad hoc `/tmp` paths; Paperclip removes that run-owned directory after the run ends.",
+    mcp
+      ? "- To ask for that input, create an interaction on the current issue with `paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation` using `issueId: $PAPERCLIP_TASK_ID`. Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance."
+      : "- To ask for that input, create an interaction on the current issue with POST /api/issues/$PAPERCLIP_TASK_ID/interactions using kind suggest_tasks, ask_user_questions, or request_confirmation. Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance.",
+    "- Never create probe or throwaway issue-thread interactions to discover the interactions API shape or your permissions; schema discovery goes through the OpenAPI spec and explicit validation errors, not placeholder cards. Every ask_user_questions, suggest_tasks, or request_confirmation you post must carry a real, answerable prompt; withdraw one you no longer need instead of leaving it pending.",
+    mcp
+      ? "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` in the `paperclipAddComment` or `paperclipUpdateIssue` arguments for that issue (substitute that issue's real id when it is not the current task). Generic agent comments on closed issues are inert by default."
+      : "- When you intentionally restart follow-up work on a completed assigned issue, include structured `resume: true` with the POST /api/issues/$PAPERCLIP_TASK_ID/comments or PATCH /api/issues/$PAPERCLIP_TASK_ID comment payload (substitute that issue's real id when it is not the current task). Generic agent comments on closed issues are inert by default.",
+    "- For plan approval, update the plan document first, then create request_confirmation targeting the latest plan revision with idempotencyKey confirmation:{issueId}:plan:{revisionId}. Wait for acceptance before creating implementation subtasks, and create a fresh confirmation after superseding board/user comments if approval is still needed.",
+    "- If blocked, mark the issue blocked and name the unblock owner and action.",
+    "- Respect budget, pause/cancel, approval gates, and company boundaries.",
+    "- When the server-authenticated wake payload includes an External chat response contract, that narrower contract replaces the generic Paperclip comment, status, checkout, and final-disposition steps above for that turn. Follow the external-chat contract exactly; it does not relax any permission, approval, execution-policy, containment, budget, pause/cancel, or company boundary.",
+    "",
+    CONNECTION_INTENT_AGENT_GUIDANCE,
+  ].join("\n");
+}
+
+export const DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE = paperclipAgentPromptTemplate("mcp");
 
 // Chat behavior is supplied centrally by the server's task-context markdown.
 // Keep the ordinary task's completion/delegation contract out of this template.
@@ -2217,6 +2228,7 @@ function renderPaperclipWakePromptBody(
     // (the authoritative, uncapped brief) so the description is not delivered
     // twice in one prompt.
     suppressIssueDescription?: boolean;
+    paperclipAccess?: PaperclipAccessMode;
   } = {},
 ): string {
   const normalized = normalizePaperclipWakePayload(value);
@@ -2990,7 +3002,9 @@ function renderPaperclipWakePromptBody(
     lines.push(
       "",
       "The harness already checked out this issue for the current run.",
-      "Do not call `paperclipCheckoutIssue` for it again unless you intentionally switch to a different task.",
+      options.paperclipAccess === "rest"
+        ? "Do not call `POST /api/issues/$PAPERCLIP_TASK_ID/checkout` again unless you intentionally switch to a different task."
+        : "Do not call `paperclipCheckoutIssue` for it again unless you intentionally switch to a different task.",
       "",
     );
   }

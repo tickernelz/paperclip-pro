@@ -184,6 +184,21 @@ describe("cursor_cloud execute", () => {
     expect(sdkAgent.send.mock.calls[0]?.[0]).toContain(description);
   });
 
+  it("teaches the Paperclip REST surface because the cloud worker mounts no MCP server", async () => {
+    const sdkAgent = createMockSdkAgent();
+    createMock.mockResolvedValue(sdkAgent);
+    const ctx = createContext();
+    delete ctx.config.promptTemplate;
+
+    const result = await execute(ctx);
+
+    expect(result.exitCode).toBe(0);
+    const prompt = String(sdkAgent.send.mock.calls[0]?.[0]);
+    expect(prompt).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
+    expect(prompt).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
+    expect(prompt).not.toMatch(/paperclip[A-Z]/);
+  });
+
   it("creates a fresh Cursor agent and injects Paperclip env without CURSOR_API_KEY", async () => {
     const run = createMockRun({
       agentId: "agent-fresh",

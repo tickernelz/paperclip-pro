@@ -26,7 +26,7 @@ import {
   startAdapterExecutionTargetPaperclipBridge,
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   asBoolean,
   asNumber,
   asString,
@@ -43,6 +43,10 @@ import {
   sanitizeInheritedPaperclipEnv,
   stringifyPaperclipWakePayload,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  paperclipRestGuidance,
+  type PaperclipAccessMode,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import { OMP_INSTALL_COMMAND } from "../metadata.js";
 import {
   prepareOmpRuntimeConfig,
@@ -335,6 +339,7 @@ async function buildPrompts(input: {
   runId: string;
   resumedSession: boolean;
   cwd: string;
+  paperclipAccess: PaperclipAccessMode;
   onLog: AdapterExecutionContext["onLog"];
 }): Promise<{
   systemPrompt: string;
@@ -370,15 +375,17 @@ async function buildPrompts(input: {
     }
   }
 
-  const paperclipContract = renderTemplate(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE, templateData);
+  const contractTemplate = paperclipAgentPromptTemplate(input.paperclipAccess);
+  const paperclipContract = renderTemplate(contractTemplate, templateData);
   const systemPrompt = joinPromptSections([instructions, paperclipContract]);
-  const promptTemplate = asString(input.config.promptTemplate, DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
+  const promptTemplate = asString(input.config.promptTemplate, contractTemplate);
   const bootstrapTemplate = asString(input.config.bootstrapPromptTemplate, "");
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
     ? renderTemplate(bootstrapTemplate, templateData).trim()
     : "";
   const wakePrompt = renderPaperclipWakePrompt(input.context.paperclipWake, {
     resumedSession: input.resumedSession,
+    paperclipAccess: input.paperclipAccess,
   });
   const wakePayload = parseObject(input.context.paperclipWake);
   const recoveryWake = Object.keys(parseObject(wakePayload.recovery)).length > 0 ||
@@ -775,6 +782,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       });
     }
     const mcpArmed = mcpEnabled && mcpExtension !== null;
+    const paperclipAccess: PaperclipAccessMode = mcpArmed ? "mcp" : "rest";
 
     const prompts = await buildPrompts({
       config: executionConfig,
@@ -783,16 +791,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       runId,
       resumedSession: canResume,
       cwd,
+      paperclipAccess,
       onLog,
     });
-    if (runtimeToolGuidance || mcpArmed) {
-      prompts.systemPrompt = joinPromptSections([
-        prompts.systemPrompt,
-        runtimeToolGuidance,
-        mcpArmed ? paperclipMcpGuidance(mcpToolsets, mcpProbe?.toolCount ?? null) : "",
-      ]);
-      prompts.promptMetrics.systemPromptChars = prompts.systemPrompt.length;
-    }
+    prompts.systemPrompt = joinPromptSections([
+      prompts.systemPrompt,
+      runtimeToolGuidance,
+      mcpArmed
+        ? paperclipMcpGuidance(mcpToolsets, mcpProbe?.toolCount ?? null)
+        : paperclipRestGuidance(),
+    ]);
+    prompts.promptMetrics.systemPromptChars = prompts.systemPrompt.length;
     const commandNotes = [
       ...preparedConfig.notes,
       ...prompts.notes,

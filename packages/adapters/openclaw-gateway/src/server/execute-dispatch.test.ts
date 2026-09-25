@@ -135,11 +135,30 @@ describe("openclaw_gateway execute dispatch boundary", () => {
     expect(websocketState.messages).toHaveLength(1);
     const prompt = websocketState.messages[0]!;
     expect(prompt).toContain(directive);
-    expect(prompt).toContain("Do every Paperclip read and write through the Paperclip MCP tools.");
+    expect(prompt).toContain(
+      "Use Authorization: Bearer $PAPERCLIP_API_KEY on every API call and X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID on every mutation.",
+    );
+    expect(prompt).not.toMatch(/paperclip[A-Z]/);
     expect(prompt).not.toContain("Execution contract:");
     expect(prompt).not.toContain("Create child issues");
     expect(prompt).not.toContain('"status":"done"');
     expect(prompt).not.toContain("GET /api/issues/{issueId}/comments");
+  });
+
+  it("teaches the Paperclip REST surface because the gateway mounts no MCP server", async () => {
+    const ctx = createContext();
+    ctx.config.paperclipApiUrl = "http://127.0.0.1:3100/api";
+
+    const result = await execute(ctx);
+
+    expect(result.exitCode).toBe(0);
+    const prompt = websocketState.messages[0]!;
+    expect(prompt).toContain("- Use Authorization: Bearer $PAPERCLIP_API_KEY on every API call.");
+    expect(prompt).toContain("- Use X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID on every mutating API call.");
+    expect(prompt).toContain("api_base=http://127.0.0.1:3100/api");
+    expect(prompt).toContain("1) GET /api/agents/me");
+    expect(prompt).toContain("POST /api/issues/{issueId}/checkout");
+    expect(prompt).not.toMatch(/paperclip[A-Z]/);
   });
 
   it("reports dispatch after transport setup and before the remote agent request", async () => {

@@ -41,6 +41,8 @@ Core fields:
 - command (string, optional): defaults to "grok"
 - extraArgs (string[], optional): additional CLI args
 - env (object, optional): KEY=VALUE environment variables
+- paperclipMcp (boolean, optional): defaults to true. Mounts the Paperclip API as MCP tools for the run through a run-scoped \`GROK_CONFIG_PATH\` overlay. Turn it off to make the agent use the REST API instead.
+- paperclipMcpToolsets (string, optional): comma-separated Paperclip MCP toolsets (core, extended, all). Defaults to core.
 
 Operational fields:
 - timeoutSec (number, optional): run timeout in seconds

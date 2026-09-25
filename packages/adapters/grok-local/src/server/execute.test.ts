@@ -69,6 +69,15 @@ vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", () => ({
   resolveAdapterExecutionTargetTimeoutSec: (_target: unknown, timeoutSec: number) => timeoutSec,
   runAdapterExecutionTargetProcess: (...args: unknown[]) =>
     (mocks.runProcessMock as (...args: unknown[]) => unknown)(...args),
+  runAdapterExecutionTargetShellCommand: async () => ({
+    exitCode: 0,
+    signal: null,
+    timedOut: false,
+    stdout: "",
+    stderr: "",
+    pid: 1,
+    startedAt: new Date().toISOString(),
+  }),
 }));
 
 import { execute } from "./execute.js";

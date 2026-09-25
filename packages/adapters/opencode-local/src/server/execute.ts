@@ -43,7 +43,7 @@ import {
   selectPaperclipTaskMarkdown,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   runChildProcess,
   isPaperclipSkillSourceMissing,
@@ -51,6 +51,17 @@ import {
   readPaperclipIssueWorkModeFromContext,
   resolveLegacyPaperclipDesiredSkillNames,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpToolsets,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import {
+  paperclipMcpHttpTarget,
+  renderPaperclipOpenCodeConfig,
+  writePaperclipMcpMount,
+  type PaperclipMcpMount,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { isOpenCodeUnknownSessionError, parseOpenCodeJsonl } from "./parse.js";
 import {
   ensureOpenCodeModelConfiguredAndAvailable,
@@ -229,12 +240,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
 
-  const promptTemplate = asString(
-    config.promptTemplate,
-    context.conversationMode === true
-      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  );
   const command = asString(config.command, "opencode");
   const model = asString(config.model, "").trim();
   const variant = asString(config.variant, "").trim();
@@ -379,6 +384,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     let localSkillsDir: string | null = null;
     let remoteRuntimeRootDir: string | null = null;
     let paperclipBridge: Awaited<ReturnType<typeof startAdapterExecutionTargetPaperclipBridge>> = null;
+    let paperclipMcpMount: PaperclipMcpMount | null = null;
 
     if (executionTarget?.kind === "remote") {
       localSkillsDir = await buildOpenCodeSkillsDir(config);
@@ -499,6 +505,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       }
     }
 
+    const paperclipAccess = paperclipAccessMode(config, preparedRuntimeConfig.env);
+    const paperclipToolsets = paperclipMcpToolsets(config);
+    const promptTemplate = asString(
+      config.promptTemplate,
+      context.conversationMode === true
+        ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+        : paperclipAgentPromptTemplate(paperclipAccess),
+    );
+
     const runtimeSessionParams = parseObject(runtime.sessionParams);
     const runtimeSessionId = asString(runtimeSessionParams.sessionId, runtime.sessionId ?? "");
     const runtimeSessionCwd = asString(runtimeSessionParams.cwd, "");
@@ -578,18 +593,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       conversationMode: context.conversationMode === true,
       resumedSession: Boolean(sessionId),
       suppressIssueDescription: taskContextNote.length > 0,
+      paperclipAccess,
     });
     const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
     const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
       ? ""
       : renderTemplate(promptTemplate, templateData);
     const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+    const runEnv = preparedRuntimeConfig.env;
+    const apiAccessNote =
+      Boolean((runEnv.PAPERCLIP_API_URL ?? "").trim()) && Boolean((runEnv.PAPERCLIP_API_KEY ?? "").trim())
+        ? paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets, shellHint: "bash" })
+        : "";
     const basePrompt = joinPromptSections([
       instructionsPrefix,
       renderedBootstrapPrompt,
       wakePrompt,
       taskContextNote,
       sessionHandoffNote,
+      apiAccessNote,
       renderedPrompt,
     ]);
     const promptMetrics = {
@@ -599,6 +621,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       wakePromptChars: wakePrompt.length,
       taskContextChars: taskContextNote.length,
       sessionHandoffChars: sessionHandoffNote.length,
+      runtimeNoteChars: apiAccessNote.length,
       heartbeatPromptChars: renderedPrompt.length,
     };
 
@@ -736,6 +759,34 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       };
     };
 
+    if (paperclipAccess === "mcp") {
+      paperclipMcpMount = await writePaperclipMcpMount({
+        runId,
+        target: runtimeExecutionTarget,
+        remote: executionTargetIsRemote,
+        content: renderPaperclipOpenCodeConfig(
+          paperclipMcpHttpTarget({ env: runEnv, toolsets: paperclipToolsets }),
+        ),
+        fileName: "opencode.json",
+        localPrefix: "paperclip-opencode-mcp-",
+        remoteDir: remoteRuntimeRootDir ? path.posix.join(remoteRuntimeRootDir, "mcp") : null,
+        cwd: effectiveExecutionCwd,
+        env: runEnv,
+        timeoutSec,
+        graceSec,
+      });
+      runEnv.OPENCODE_CONFIG = paperclipMcpMount.filePath;
+      loggedEnv = buildInvocationEnvForLogs(runEnv, {
+        runtimeEnv: Object.fromEntries(
+          Object.entries(ensurePathInEnv({ ...process.env, ...runEnv })).filter(
+            (entry): entry is [string, string] => typeof entry[1] === "string",
+          ),
+        ),
+        includeRuntimeKeys: ["HOME"],
+        resolvedCommand,
+      });
+    }
+
     try {
       const initial = await runAttempt(sessionId);
       const initialFailed =
@@ -758,6 +809,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       await Promise.all([
         paperclipBridge?.stop(),
         restoreRemoteWorkspace?.(),
+        paperclipMcpMount?.cleanup() ?? Promise.resolve(),
         localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
       ]);
     }

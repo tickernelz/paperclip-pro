@@ -47,6 +47,7 @@ import {
   syncCursorSkills,
   testEnvironment as cursorTestEnvironment,
   sessionCodec as cursorSessionCodec,
+  getConfigSchema as getCursorLocalConfigSchema,
 } from "@tickernelz/paperclip-pro-adapter-cursor-local/server";
 import {
   agentConfigurationDoc as cursorAgentConfigurationDoc,
@@ -79,6 +80,7 @@ import {
   sessionCodec as grokSessionCodec,
   GROK_DEVICE_LOGIN_COMMAND,
   parseGrokDeviceLoginPrompt,
+  getConfigSchema as getGrokConfigSchema,
 } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 import {
   agentConfigurationDoc as grokAgentConfigurationDoc,
@@ -106,6 +108,7 @@ import {
   testEnvironment as openCodeTestEnvironment,
   sessionCodec as openCodeSessionCodec,
   listOpenCodeModels,
+  getConfigSchema as getOpenCodeConfigSchema,
 } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import {
   agentConfigurationDoc as openCodeAgentConfigurationDoc,
@@ -683,6 +686,7 @@ const cursorLocalAdapter: ServerAdapterModule = {
   requiresMaterializedRuntimeSkills: true,
   getRuntimeCommandSpec: buildCursorRuntimeCommandSpec,
   agentConfigurationDoc: cursorAgentConfigurationDoc,
+  getConfigSchema: getCursorLocalConfigSchema,
 };
 
 const cursorCloudAdapter: ServerAdapterModule = {
@@ -749,6 +753,7 @@ const grokLocalAdapter: ServerAdapterModule = {
     installCommand: null,
   }),
   agentConfigurationDoc: grokAgentConfigurationDoc,
+  getConfigSchema: getGrokConfigSchema,
   loginCapability: grokLoginCapability,
 };
 
@@ -818,6 +823,7 @@ const openCodeLocalAdapter: ServerAdapterModule = {
   requiresMaterializedRuntimeSkills: true,
   getRuntimeCommandSpec: (config) => buildNpmRuntimeCommandSpec(config, "opencode", "opencode-ai"),
   agentConfigurationDoc: openCodeAgentConfigurationDoc,
+  getConfigSchema: getOpenCodeConfigSchema,
 };
 
 const piLocalAdapter: ServerAdapterModule = {
