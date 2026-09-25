@@ -134,6 +134,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     status: string;
     errorCode: string | null;
     retryReason?: string;
+    error?: string;
   }) {
     const runId = randomUUID();
     await db.insert(heartbeatRuns).values({
@@ -142,7 +143,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
       agentId: input.agentId,
       invocationSource: "manual",
       status: input.status,
-      error: input.errorCode ? `run ended: ${input.errorCode}` : null,
+      error: input.error ?? (input.errorCode ? `run ended: ${input.errorCode}` : null),
       errorCode: input.errorCode,
       resultJson: { executionRecovery: { kind: "bootstrap", providerWorkStarted: false } },
       startedAt: new Date("2026-09-25T06:20:00.000Z"),
@@ -289,7 +290,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(await strandedEscalationRows(companyId)).toHaveLength(0);
   });
 
-  it("leaves a setup_failed continuation for the user to retry instead of blocking it", async () => {
+  it("leaves a stale-context setup failure for the user to retry instead of blocking it", async () => {
     const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
     await seedRun({
       companyId,
@@ -297,6 +298,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
       issueId,
       status: "failed",
       errorCode: "setup_failed",
+      error: "continuation_source_context_missing",
       retryReason: "issue_continuation_needed",
     });
     const enqueueWakeup = vi.fn(async () => null);
@@ -308,6 +310,28 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(issue?.status).toBe("in_progress");
     expect(await strandedEscalationRows(companyId)).toHaveLength(0);
     expect(await db.select().from(issueRecoveryActions)).toHaveLength(0);
+  });
+
+  it("still escalates a repeatable setup failure once", async () => {
+    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+    await seedRun({
+      companyId,
+      agentId: coderId,
+      issueId,
+      status: "failed",
+      errorCode: "setup_failed",
+      error: "Low-trust execution requires isolated workspaces to be enabled.",
+      retryReason: "issue_continuation_needed",
+    });
+    const enqueueWakeup = vi.fn(async () => null);
+
+    const result = await recoveryService(db, { enqueueWakeup }).reconcileStrandedAssignedIssues();
+
+    expect(result.escalated).toBe(1);
+    expect(result.continuationRequeued).toBe(0);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(issue?.status).toBe("blocked");
+    expect(await strandedEscalationRows(companyId)).toHaveLength(1);
   });
 
   it("still escalates a genuinely stranded issue with an active assignee and no blockers", async () => {
