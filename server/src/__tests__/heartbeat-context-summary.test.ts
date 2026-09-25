@@ -129,8 +129,8 @@ describe("buildPaperclipTaskMarkdown", () => {
     expect(markdown).toContain(
       '"contentPath":"/api/attachments/attachment-text/content"',
     );
-    expect(markdown).toContain("PAPERCLIP_API_URL");
-    expect(markdown).toContain("PAPERCLIP_API_KEY");
+    expect(markdown).toContain("`paperclipListIssueAttachments` lists what is attached");
+    expect(markdown).toContain("`paperclipApiRequest`");
     expect(markdown).toContain("never invoke `npx`");
     expect(markdown).toContain(
       "Do not infer file contents from filenames or metadata",
