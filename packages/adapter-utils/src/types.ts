@@ -460,6 +460,8 @@ export interface ServerAdapterModule {
   sessionCodec?: AdapterSessionCodec;
   sessionManagement?: import("./session-compaction.js").AdapterSessionManagement;
   uiParserPath?: string;
+  /** Reports that this stdout line means the CLI finished booting; without it, first stdout counts. */
+  isStartupComplete?: (stdoutLine: string) => boolean;
   supportsLocalAgentJwt?: boolean;
   /** How this adapter receives Paperclip's run-scoped control tools. */
   runtimeToolDelivery?: AdapterRuntimeToolDelivery;

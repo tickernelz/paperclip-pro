@@ -13,9 +13,12 @@ import {
 import { detectModel, getConfigSchema, resolveOmpCommand } from "./config.js";
 import { execute } from "./execute.js";
 import { listOmpModels, refreshOmpModels } from "./models.js";
+import { isOmpStartupComplete } from "./parse.js";
 import { getOmpQuotaWindows } from "./quota.js";
 import { listOmpSkills, syncOmpSkills } from "./skills.js";
 import { testEnvironment } from "./test.js";
+
+export { isOmpStartupComplete } from "./parse.js";
 
 function nonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
@@ -96,6 +99,7 @@ export function createServerAdapter(): ServerAdapterModule {
     models: advertisedModels,
     listModels,
     refreshModels,
+    isStartupComplete: isOmpStartupComplete,
     supportsLocalAgentJwt: true,
     runtimeToolDelivery: "environment",
     getQuotaWindows: getOmpQuotaWindows,

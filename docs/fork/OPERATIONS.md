@@ -333,6 +333,43 @@ One-time owner setup before the first publish:
 4. Afterwards `auth=oidc` covers the publishes; keep the token for the
    `latest` promotion.
 
+## 10. Local CLI run concurrency
+
+Local CLI adapters (`codex_local`, `omp_local`, `pi_local`, ...) are memory-hungry
+while they boot: each child loads its extensions, plugins and MCP servers before
+it can accept a turn. On 2026-09-25 nine `omp` children started at once, exhausted
+WSL memory and stalled the server for 64 seconds. The instance therefore applies
+two caps at the queued-run claim point (`server/src/services/heartbeat.ts`,
+`startNextQueuedRunForAgent`), and the board shows anything held back as
+"Waiting to start".
+
+| Variable | Default | Bounds | Meaning |
+| --- | --- | --- | --- |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 10 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
+| `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
+
+A run counts as *starting* from the moment it is claimed until its adapter
+declares the child booted. An adapter declares this with the optional
+`isStartupComplete(stdoutLine)` hook on its `ServerAdapterModule`; an adapter
+that does not implement it is counted as started on its child's first stdout
+chunk.
+
+`omp_local` implements it (`packages/adapters/omp-local/src/server/parse.ts`,
+`isOmpStartupComplete`) as the first JSON line whose `type` is an agent/turn/
+message/tool/result event — `agent_start` in practice. Its `{"type":"session"}`
+header only means the process is alive: measured on production runs it lands
+2.4–9.0 s after `adapter.invoke`, with `agent_start` a further 2.5–6.0 s later,
+so extension and MCP loading can still be in flight when the header prints.
+Progress notices such as `Still starting after 10s — phase: loadExtensions` go
+to **stderr** and never release the gate; on 2026-09-25 a slow MCP boot printed
+them at 00:42:04.766 and 00:42:23.716, with `session` at 00:42:30.059 and
+`agent_start` only at 00:42:35.617.
+
+Queued local runs are re-evaluated when a local run finishes, when a starting run
+reports its startup signal, and on a timer armed for the bypass deadline; the
+30-second heartbeat scheduler tick (`HEARTBEAT_SCHEDULER_INTERVAL_MS`) is the
+backstop.
 
 ## Security: emptying allowedHostnames does not lock out the public host
 

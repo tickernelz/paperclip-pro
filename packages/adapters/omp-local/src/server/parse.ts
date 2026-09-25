@@ -113,6 +113,25 @@ export function parseOmpJsonLine(line: string): JsonObject | null {
   return repaired === null ? null : parseJsonObject(repaired);
 }
 
+const OMP_STARTUP_COMPLETE_EVENT_TYPES = new Set([
+  "agent_start",
+  "agent_end",
+  "turn_start",
+  "turn_end",
+  "message_start",
+  "message_end",
+  "tool_execution_start",
+  "tool_execution_end",
+  "result",
+  "error",
+]);
+
+export function isOmpStartupComplete(stdoutLine: string): boolean {
+  const event = parseOmpJsonLine(stdoutLine);
+  const eventType = typeof event?.type === "string" ? event.type : null;
+  return eventType !== null && OMP_STARTUP_COMPLETE_EVENT_TYPES.has(eventType);
+}
+
 export interface OmpOutputAccumulator {
   push(rawLine: string, event?: JsonObject | null): void;
   result(): ParsedOmpOutput;
