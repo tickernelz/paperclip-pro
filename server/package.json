@@ -67,6 +67,7 @@
     "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
     "@tickernelz/paperclip-pro-db": "workspace:*",
     "@tickernelz/paperclip-pro-hermes-paperclip-adapter": "workspace:*",
+    "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
     "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*",
     "@tickernelz/paperclip-pro-shared": "workspace:*",
     "@tickernelz/paperclip-pro-skills-catalog": "workspace:*",

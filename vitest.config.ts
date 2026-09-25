@@ -18,6 +18,7 @@ export default defineConfig({
       "packages/adapters/openclaw-gateway",
       "packages/adapters/opencode-local",
       "packages/adapters/pi-local",
+      "packages/mcp-server",
       "packages/plugins/sdk",
       "packages/plugins/create-paperclip-plugin",
       "packages/plugins/sandbox-providers/daytona",

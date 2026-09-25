@@ -1,20 +1,53 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
-import { readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
-import { createToolDefinitions } from "./tools.js";
+import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
 
-export function createPaperclipMcpServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
+export async function resolveManagementAuthority(
+  client: PaperclipApiClient,
+  config: PaperclipMcpConfig,
+): Promise<boolean> {
+  try {
+    const actor = await client.requestJson<{ role?: unknown; authorityCapabilities?: unknown }>(
+      "GET",
+      "/agents/me",
+    );
+    if (Array.isArray(actor?.authorityCapabilities)) {
+      return actor.authorityCapabilities.some(
+        (capability) => typeof capability === "string" && capability.startsWith("company:"),
+      );
+    }
+    return hasManagementAuthority(typeof actor?.role === "string" ? actor.role : null);
+  } catch {
+    return hasManagementAuthority(config.agentRole);
+  }
+}
+
+export function createPaperclipMcpServer(
+  config: PaperclipMcpConfig = readConfigFromEnv(),
+  management = false,
+) {
   const server = new McpServer({
     name: "paperclip",
     version: "0.1.0",
   });
 
   const client = new PaperclipApiClient(config);
-  const tools = createToolDefinitions(client);
+  const { definitions: tools, listing } = paperclipToolCatalog(client, config.toolsets, management);
   for (const tool of tools) {
-    server.tool(tool.name, tool.description, tool.schema.shape, tool.execute);
+    server.registerTool(
+      tool.name,
+      {
+        description: tool.description,
+        inputSchema: tool.schema.shape,
+        ...(tool.annotations ? { annotations: tool.annotations } : {}),
+      },
+      tool.execute,
+    );
   }
+  server.server.setRequestHandler(ListToolsRequestSchema, () => listing);
 
   return {
     server,
@@ -24,7 +57,8 @@ export function createPaperclipMcpServer(config: PaperclipMcpConfig = readConfig
 }
 
 export async function runServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
-  const { server } = createPaperclipMcpServer(config);
+  const management = await resolveManagementAuthority(new PaperclipApiClient(config), config);
+  const { server } = createPaperclipMcpServer(config, management);
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

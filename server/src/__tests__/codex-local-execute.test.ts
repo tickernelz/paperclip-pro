@@ -1362,7 +1362,7 @@ process.exit(1);
       expect(promptMetrics.taskContextChars).toBe(resumedSession ? policy.length : `Full description that must not replay\n${policy}`.length);
       if (conversationMode) {
         expect(invocationPrompt).toContain(AGENT_CHAT_DIRECTIVE);
-        expect(invocationPrompt).toContain("baseRevisionId set to that latestRevisionId");
+        expect(invocationPrompt).toContain("`baseRevisionId` set to that latestRevisionId");
         expect(capture.prompt).not.toContain("Execution contract:");
         expect(capture.prompt).not.toContain("Use child issues");
       } else {

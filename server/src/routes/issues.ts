@@ -228,9 +228,11 @@ import { privateJsonEtag } from "../middleware/private-json-etag.js";
 import { createRequestPromiseMemo } from "../lib/request-promise-memo.js";
 import {
   assertBoard,
+  assertBoardOrAgentAuthority,
   assertCompanyAccess,
   getAccessibleResource,
   getActorInfo,
+  hasAgentAuthority,
 } from "./authz.js";
 import {
   assertNoAgentHostWorkspaceCommandMutation,
@@ -2515,7 +2517,7 @@ function readSecretProposalContinuationContext(interaction: {
       decision: "accepted",
       executionStatus,
       ...(sourceSecretLabel ? { sourceSecretLabel } : {}),
-      instructions: `the binding was created at ${configPath}; verify it with GET /api/agents/me/secrets before using it.`,
+      instructions: `the binding was created at ${configPath}; verify it with paperclipApiRequest with method: "GET" and path: "/agents/me/secrets" before using it.`,
     };
   }
   return {
@@ -5961,15 +5963,15 @@ export function issueRoutes(
 
     const isCreator = interaction.createdByAgentId === actorAgentId;
     const isAssignee = issue.assigneeAgentId === actorAgentId;
-    if (!isCreator && !isAssignee) {
+    if (!isCreator && !isAssignee && !hasAgentAuthority(req, "work:issues")) {
       res.status(403).json({
         error:
           "Only the interaction creator, current issue assignee, or a board user may withdraw it",
       });
       return false;
     }
-    if (isAssignee) return assertAgentIssueMutationAllowed(req, res, issue);
-    return true;
+    if (isCreator && !isAssignee) return true;
+    return assertAgentIssueMutationAllowed(req, res, issue);
   }
 
   async function assertTaskWatchdogCreateIssueAllowed(
@@ -9168,7 +9170,7 @@ export function issueRoutes(
         executionReconciliation,
       } = req.body;
       if (outcome === "false_positive" || outcome === "cancelled") {
-        assertBoard(req);
+        assertBoardOrAgentAuthority(req, "company:issue_control", existing.companyId);
       }
 
       const actor = getActorInfo(req);
@@ -9221,7 +9223,7 @@ export function issueRoutes(
             if (automatic?.replay === "blocked" && executionReconciliation) {
               // An automatic no-replay disposition is final until new evidence
               // arrives. Keep the supported evidence API usable without a dialog.
-              assertBoard(req);
+              assertBoardOrAgentAuthority(req, "company:issue_control", existing.companyId);
               if (
                 activeRecoveryAction ||
                 sourceIssueStatus !== "todo" ||
@@ -9263,7 +9265,7 @@ export function issueRoutes(
           sourceIssueStatus === "todo" &&
           requiresExecutionReconciliation(activeRecoveryAction.cause)
         ) {
-          assertBoard(req);
+          assertBoardOrAgentAuthority(req, "company:issue_control", existing.companyId);
           await validateExecutionReconciliation({
             db: tx as unknown as Db,
             companyId: lockedIssue.companyId,
@@ -12621,7 +12623,7 @@ export function issueRoutes(
   });
 
   router.post("/issues/:id/scheduled-retry/retry-now", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:issue_control");
     const id = req.params.id as string;
     const issue = await getAccessibleResource(
       req,
@@ -12671,9 +12673,9 @@ export function issueRoutes(
         "Issue not found",
       );
       if (!issue) return;
-      assertBoard(req);
+      assertBoardOrAgentAuthority(req, "company:issue_control", issue.companyId);
 
-      if (req.actor.source !== "local_implicit") {
+      if (req.actor.type === "board" && req.actor.source !== "local_implicit") {
         const userId = req.actor.userId?.trim();
         const membership = userId
           ? await db

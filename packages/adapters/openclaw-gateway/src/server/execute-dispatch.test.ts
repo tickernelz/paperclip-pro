@@ -135,7 +135,7 @@ describe("openclaw_gateway execute dispatch boundary", () => {
     expect(websocketState.messages).toHaveLength(1);
     const prompt = websocketState.messages[0]!;
     expect(prompt).toContain(directive);
-    expect(prompt).toContain("X-Paperclip-Run-Id");
+    expect(prompt).toContain("Do every Paperclip read and write through the Paperclip MCP tools.");
     expect(prompt).not.toContain("Execution contract:");
     expect(prompt).not.toContain("Create child issues");
     expect(prompt).not.toContain('"status":"done"');

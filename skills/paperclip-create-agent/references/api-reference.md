@@ -1,37 +1,36 @@
 # Paperclip Create Agent API Reference
 
-## Core Endpoints
+## Tools
 
-- `GET /llms/agent-configuration.txt`
-- `GET /llms/agent-configuration/:adapterType.txt`
-- `GET /llms/agent-icons.txt`
-- `GET /api/companies/:companyId/agent-configurations`
-- `GET /api/companies/:companyId/skills`
-- `POST /api/companies/:companyId/skills/import`
-- `GET /api/agents/:agentId/configuration`
-- `POST /api/agents/:agentId/skills/sync`
-- `POST /api/companies/:companyId/agent-hires`
-- `POST /api/companies/:companyId/agents`
-- `GET /api/agents/:agentId/config-revisions`
-- `POST /api/agents/:agentId/config-revisions/:revisionId/rollback`
-- `POST /api/issues/:issueId/approvals`
-- `GET /api/approvals/:approvalId/issues`
+Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
 
-Approval collaboration:
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| Read the company adapter-configuration catalogue | `paperclipListAgentConfigurations` (extended) | `companyId` |
+| List the company skill library | `paperclipListSkills` | `companyId` |
+| Import a skill into the company library | `paperclipImportSkill` (extended) | `companyId`, import fields |
+| Read one agent's resolved configuration | `paperclipGetAgentConfiguration` (extended) | `id` |
+| Sync skills onto an agent | `paperclipSyncAgentSkill` (extended) | `id`, sync fields |
+| Submit a hire request (agent draft + approval) | `paperclipCreateAgentHire` (extended) | `companyId`, hire fields below |
+| Create an agent directly, no approval | `paperclipCreateAgent` (extended) | `companyId`, same shape as the hire fields |
+| List agent config revisions | `paperclipListAgentConfigRevisions` (extended) | `id` |
+| Roll back a config revision | `paperclipRollbackAgentConfigRevision` (extended) | `id`, `revisionId` |
+| Link an approval to an issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
+| List issues linked to an approval | `paperclipGetApprovalIssues` | `approvalId` |
+| Approval details | `paperclipGetApproval` | `approvalId` |
+| Approval comments | `paperclipListApprovalComments` | `approvalId` |
+| Add an approval comment | `paperclipAddApprovalComment` | `approvalId`, `body` |
+| Approve, reject, request revision (board), or resubmit | `paperclipApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`. |
 
-- `GET /api/approvals/:approvalId`
-- `POST /api/approvals/:approvalId/request-revision` (board)
-- `POST /api/approvals/:approvalId/resubmit`
-- `GET /api/approvals/:approvalId/comments`
-- `POST /api/approvals/:approvalId/comments`
-- `GET /api/approvals/:approvalId/issues`
+Adapter documentation and the icon catalogue are plain-text documents published by the deployment at `/llms/agent-configuration.txt`, `/llms/agent-configuration/<adapterType>.txt`, and `/llms/agent-icons.txt`. They are documentation, not API operations, and have no tool; `paperclipListAgentConfigurations` returns the structured adapter-configuration catalogue.
 
-## `POST /api/companies/:companyId/agent-hires`
+## `paperclipCreateAgentHire`
 
-Request body matches agent create shape:
+Arguments match the agent create shape:
 
 ```json
 {
+  "companyId": "{companyId}",
   "name": "CTO",
   "role": "cto",
   "title": "Chief Technology Officer",
@@ -62,7 +61,7 @@ Request body matches agent create shape:
 }
 ```
 
-Response:
+Result:
 
 ```json
 {
@@ -103,7 +102,7 @@ For hire approvals:
 
 ## Safety Notes
 
-- Config read APIs redact obvious secrets.
+- Config read tools redact obvious secrets.
 - `pending_approval` agents cannot run heartbeats, receive assignments, or create keys.
 - All actions are logged in activity for auditability.
 - Use markdown in issue/approval comments and include links to approval, agent, and source issue.

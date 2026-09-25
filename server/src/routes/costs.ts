@@ -20,7 +20,7 @@ import {
   accessService,
   logActivity,
 } from "../services/index.js";
-import { assertBoard, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
+import { assertBoardOrAgentAuthority, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
 import { fetchAllQuotaWindows } from "../services/quota-windows.js";
 import { badRequest } from "../errors.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
@@ -143,7 +143,7 @@ export function costRoutes(
   router.post("/companies/:companyId/finance-events", validate(createFinanceEventSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:settings", companyId);
 
     const event = await finance.createEvent(companyId, {
       ...req.body,
@@ -273,7 +273,7 @@ export function costRoutes(
   router.get("/companies/:companyId/costs/quota-windows", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "work:read", companyId);
     // validate companyId resolves to a real company so the "__none__" sentinel
     // and any forged ids are rejected before we touch provider credentials
     const company = await companies.getById(companyId);
@@ -297,8 +297,8 @@ export function costRoutes(
     "/companies/:companyId/budgets/policies",
     validate(upsertBudgetPolicySchema),
     async (req, res) => {
-      assertBoard(req);
       const companyId = req.params.companyId as string;
+      assertBoardOrAgentAuthority(req, "company:settings", companyId);
       assertCompanyAccess(req, companyId);
       const summary = await budgets.upsertPolicy(companyId, req.body, req.actor.userId ?? "board");
       res.json(summary);
@@ -309,8 +309,8 @@ export function costRoutes(
     "/companies/:companyId/budget-incidents/:incidentId/resolve",
     validate(resolveBudgetIncidentSchema),
     async (req, res) => {
-      assertBoard(req);
       const companyId = req.params.companyId as string;
+      assertBoardOrAgentAuthority(req, "company:settings", companyId);
       const incidentId = req.params.incidentId as string;
       assertCompanyAccess(req, companyId);
       const incident = await budgets.resolveIncident(companyId, incidentId, req.body, req.actor.userId ?? "board");
@@ -328,8 +328,8 @@ export function costRoutes(
   });
 
   router.patch("/companies/:companyId/budgets", validate(updateBudgetSchema), async (req, res) => {
-    assertBoard(req);
     const companyId = req.params.companyId as string;
+    assertBoardOrAgentAuthority(req, "company:settings", companyId);
     assertCompanyAccess(req, companyId);
     const company = await companies.update(companyId, { budgetMonthlyCents: req.body.budgetMonthlyCents });
     if (!company) {
@@ -366,7 +366,7 @@ export function costRoutes(
     const agent = await getAccessibleResource(req, res, agents.getById(agentId), "Agent not found");
     if (!agent) return;
 
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents", agent.companyId);
 
     const updated = await agents.update(agentId, { budgetMonthlyCents: req.body.budgetMonthlyCents });
     if (!updated) {

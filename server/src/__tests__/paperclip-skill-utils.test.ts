@@ -275,9 +275,9 @@ describe("paperclip skill utils", () => {
     expect(skillBody).not.toContain("/api/companies/$PAPERCLIP_COMPANY_ID/issues/$PAPERCLIP_TASK_ID/attachments");
     expect(referenceBody).toContain("Generated Artifacts and Work Products");
     expect(referenceBody).toContain("scripts/paperclip-upload-artifact.sh");
-    expect(referenceBody).toContain("POST");
-    expect(referenceBody).toContain("/api/companies/$PAPERCLIP_COMPANY_ID/issues/$PAPERCLIP_TASK_ID/attachments");
-    expect(referenceBody).toContain("/api/issues/$PAPERCLIP_TASK_ID/work-products");
+    expect(referenceBody).toContain("paperclipCreateIssueWorkProduct");
+    expect(referenceBody).toContain("Attachment upload is a multipart upload and has no MCP tool");
+    expect(referenceBody).toContain("paperclipDeleteAttachment");
     expect(referenceBody).toContain('--chat-comment "Here is the requested image."');
     expect(referenceBody).toContain("not proof of external");
     expect(referenceBody).toContain("--retry-unknown-upload");
@@ -521,8 +521,8 @@ describe("paperclip skill utils", () => {
   it("uses the authoritative PATCH response to confirm monitor scheduling", async () => {
     const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
 
-    expect(skillBody).toContain("Use that request's default full response");
-    expect(skillBody).toContain("do not issue a confirming GET");
+    expect(skillBody).toContain("Read that tool result to confirm");
+    expect(skillBody).toContain("do not issue a confirming read");
     expect(skillBody).toContain("`monitorNextCheckAt` is non-null");
     expect(skillBody).toContain("`assigneeAgentId` is set");
     expect(skillBody).toContain("`assigneeUserId` is null");
@@ -532,8 +532,8 @@ describe("paperclip skill utils", () => {
     const skillBody = await fs.readFile(path.resolve("skills/paperclip/SKILL.md"), "utf8");
 
     expect(skillBody).toContain("Verify writes — never infer them");
-    expect(skillBody).toContain("An empty response body means the write FAILED");
-    expect(skillBody).toContain("Never pipe a disposition write through `head`/`tail`");
+    expect(skillBody).toContain("An error result means the write FAILED");
+    expect(skillBody).toContain('must say the write FAILED — not that it "was sent"');
     // The helper's verification behavior (HTTP status parsing, retry
     // classification, attempt bound, exit codes) is exercised end-to-end in
     // paperclip-issue-update-helper.test.ts against a live local server.

@@ -2,6 +2,7 @@ import { slackToolRoutes } from "./routes/slack-tools.js";
 import { agentAvatarRoutes } from "./routes/agent-avatars.js";
 import { aiConnectionRoutes } from "./routes/ai-connections.js";
 import { projectToolRoutes } from "./routes/project-tools.js";
+import { paperclipMcpRoutes } from "./routes/paperclip-mcp.js";
 import { emailChannelService } from "./services/email-channels.js";
 import { emailRoutes, emailWebhookRoutes } from "./routes/email.js";
 import { toolActionDeliveryService } from "./services/tool-action-delivery.js";
@@ -23,6 +24,7 @@ import type { InspectDatabaseBackupHealthOptions } from "./services/database-bac
 import type { StorageService } from "./storage/types.js";
 import { httpLogger, errorHandler } from "./middleware/index.js";
 import { actorMiddleware } from "./middleware/auth.js";
+import { agentAuthorityAudit } from "./middleware/agent-authority-audit.js";
 import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import {
   privateHostnameGuard,
@@ -565,6 +567,7 @@ export async function createApp(
       resolveSession: opts.resolveSession,
     }),
   );
+  app.use(agentAuthorityAudit(db));
   // After the actor middleware on purpose: a valid Cloud control assertion
   // REPLACES whatever actor the request otherwise resolved to, and only on
   // the one endpoint it authorizes (see the middleware for the contract).
@@ -746,6 +749,7 @@ export async function createApp(
   );
   api.use(assetRoutes(db, opts.storageService));
   api.use(projectToolRoutes(db));
+  api.use(paperclipMcpRoutes(db));
   api.use(projectRoutes(db));
   api.use(caseRoutes(db, opts.storageService));
   api.use(issueTreeControlRoutes(db, { pluginWorkerManager: workerManager }));

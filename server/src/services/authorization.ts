@@ -20,7 +20,15 @@ import type {
   SkillTestAgentKeyScope,
   TaskBridgeAgentKeyScope,
 } from "@tickernelz/paperclip-pro-shared";
-import { LOW_TRUST_REVIEW_PRESET, extractAgentMentionIds, type LowTrustBoundary } from "@tickernelz/paperclip-pro-shared";
+import {
+  LOW_TRUST_REVIEW_PRESET,
+  agentAuthorityReason,
+  agentRoleHasAuthority,
+  extractAgentMentionIds,
+  type AgentAuthorityCapability,
+  type AgentAuthorityReason,
+  type LowTrustBoundary,
+} from "@tickernelz/paperclip-pro-shared";
 import {
   LOW_TRUST_ISSUE_ANCESTRY_MAX_DEPTH,
   isIssueWithinLowTrustBoundary,
@@ -43,6 +51,12 @@ export type AuthorizationActor =
     ignoreInstanceAdmin?: boolean;
     agentId?: string | null;
     companyId?: string | null;
+    agentRole?: string | null;
+    exercisedAgentAuthority?: {
+      capability: AgentAuthorityCapability;
+      reason: AgentAuthorityReason;
+      companyId: string;
+    } | null;
     keyId?: string | null;
     keyScope?: AgentApiKeyScope | null;
     runId?: string | null;
@@ -76,6 +90,33 @@ export type AuthorizationAction =
   | "runtime:manage"
   | "secrets:read"
   | "secrets:propose";
+
+export const AGENT_AUTHORITY_ACTION_CAPABILITIES: Partial<
+  Record<AuthorizationAction, AgentAuthorityCapability>
+> = {
+  "agent:read": "work:read",
+  "agent_config:read": "work:read",
+  "audit:view_agent_actions": "work:read",
+  "company_scope:read": "work:read",
+  "decision_queue:read": "work:read",
+  "project:read": "work:read",
+  "issue:read": "work:read",
+  "issue:comment": "work:issues",
+  "issue:mutate": "work:issues",
+  "tasks:assign": "work:issues",
+  "tasks:manage_active_checkouts": "company:issue_control",
+  "agent:wake": "company:agents",
+  "agent_config:update": "company:agents",
+  "agents:configure": "company:agents",
+  "agents:create": "company:agents",
+  "runtime:manage": "company:agents",
+  "environments:manage": "company:settings",
+  "pipelines:write": "company:projects",
+  "users:invite": "company:members",
+  "joins:approve": "company:members",
+  "decision_queue:manage": "company:approvals",
+  "decision_triage:manage": "company:approvals",
+};
 
 export type AuthorizationResource =
   | { type: "company"; companyId: string }
@@ -118,6 +159,8 @@ export type AuthorizationDecision = {
     | "allow_company_member"
     | "allow_simple_company_member"
     | "allow_manager_chain"
+    | "allow_agent_role_ceo"
+    | "allow_agent_work_authority"
     | "inbox_target_user_unresolved"
     | "inbox_management_disabled"
     | "inbox_agent_not_allowed"
@@ -1960,7 +2003,6 @@ export function authorizationService(db: Db | DbTransaction) {
       });
     }
 
-
     if (input.action === "inbox:manage") {
       if (!isSimpleAssignableAgentStatus(actorAgent.status)) {
         return deny({
@@ -2286,6 +2328,28 @@ export function authorizationService(db: Db | DbTransaction) {
       });
     }
 
+
+    const authorityCapability = AGENT_AUTHORITY_ACTION_CAPABILITIES[input.action];
+    if (
+      authorityCapability
+      && trustResolution.kind === "standard"
+      && isSimpleAssignableAgentStatus(actorAgent.status)
+      && agentRoleHasAuthority(actorAgent.role, authorityCapability)
+    ) {
+      const reason = agentAuthorityReason(actorAgent.role);
+      input.actor.exercisedAgentAuthority = {
+        capability: authorityCapability,
+        reason,
+        companyId,
+      };
+      return allow({
+        action: input.action,
+        reason: reason === "agent_role_ceo" ? "allow_agent_role_ceo" : "allow_agent_work_authority",
+        explanation: reason === "agent_role_ceo"
+          ? `Allowed by company authority of the ${actorAgent.role} agent role for ${authorityCapability}.`
+          : `Allowed by standard agent work authority for ${authorityCapability}.`,
+      });
+    }
     return deny({
       action: input.action,
       reason: "deny_missing_grant",

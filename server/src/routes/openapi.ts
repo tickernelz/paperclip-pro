@@ -10148,6 +10148,34 @@ registerCurrentRoute({
 
 registerCurrentRoute({
   method: "post",
+  path: "/api/mcp/paperclip",
+  tags: ["projects"],
+  summary: "Call the Paperclip tool surface over the server-hosted MCP endpoint",
+  body: z.object({
+    jsonrpc: z.literal("2.0"),
+    id: z.union([z.string(), z.number()]).nullable().optional(),
+    method: z.string(),
+    params: z.record(z.string(), z.unknown()).optional(),
+  }),
+  responses: { 200: r.ok(), 202: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/mcp/paperclip",
+  tags: ["projects"],
+  summary: "Reject the server-to-client stream the stateless Paperclip MCP endpoint does not offer",
+});
+
+registerCurrentRoute({
+  method: "delete",
+  path: "/api/mcp/paperclip",
+  tags: ["projects"],
+  summary: "Reject session termination the stateless Paperclip MCP endpoint does not implement",
+});
+
+registerCurrentRoute({
+  method: "post",
   path: "/runtime-tools/github/credentials",
   tags: ["connection-intents"],
   summary:

@@ -4,7 +4,7 @@ Run this checklist on every heartbeat. This covers both your local planning/memo
 
 ## 1. Identity and Context
 
-- `GET /api/agents/me` -- confirm your id, role, budget, chainOfCommand.
+- `paperclipMe` -- confirm your id, role, budget, chainOfCommand.
 - Check wake context: `PAPERCLIP_TASK_ID`, `PAPERCLIP_WAKE_REASON`, `PAPERCLIP_WAKE_COMMENT_ID`.
 
 ## 2. Local Planning Check
@@ -24,7 +24,7 @@ If `PAPERCLIP_APPROVAL_ID` is set:
 
 ## 4. Get Assignments
 
-- `GET /api/companies/{companyId}/issues?assigneeAgentId={your-id}&status=todo,in_progress,in_review,blocked`
+- `paperclipListIssues` with `companyId`, `assigneeAgentId` set to your id, and `status: "todo,in_progress,in_review,blocked"`.
 - Prioritize: `in_progress` first, then `in_review` when you were woken by a comment on it, then `todo`. Skip `blocked` unless you can unblock it.
 - If there is already an active run on an `in_progress` task, just move on to the next thing.
 - If `PAPERCLIP_TASK_ID` is set and assigned to you, prioritize that task.
@@ -32,8 +32,8 @@ If `PAPERCLIP_APPROVAL_ID` is set:
 ## 5. Checkout and Work
 
 - For scoped issue wakes, Paperclip may already checkout the current issue in the harness before your run starts.
-- Only call `POST /api/issues/{id}/checkout` yourself when you intentionally switch to a different task or the wake context did not already claim the issue.
-- Never retry a 409 -- that task belongs to someone else.
+- Only call `paperclipCheckoutIssue` yourself when you intentionally switch to a different task or the wake context did not already claim the issue.
+- Never retry a conflict -- that task belongs to someone else.
 - Do the work. Update status and comment when done.
 
 Status quick guide:
@@ -47,8 +47,8 @@ Status quick guide:
 
 ## 6. Delegation
 
-- Create subtasks with `POST /api/companies/{companyId}/issues`. Always set `parentId` and `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, set `inheritExecutionWorkspaceFromIssueId` to the source issue.
-- When you know the needed work and owner, create those subtasks directly. When the board/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `POST /api/issues/{issueId}/interactions` using `kind: "suggest_tasks"`, `kind: "ask_user_questions"`, or `kind: "request_confirmation"` and `continuationPolicy: "wake_assignee"` when the answer should wake you.
+- Create subtasks with `paperclipCreateChildIssue`. Always set `goalId`. For non-child follow-ups that must stay on the same checkout/worktree, use `paperclipCreateIssue` and set `inheritExecutionWorkspaceFromIssueId` to the source issue.
+- When you know the needed work and owner, create those subtasks directly. When the board/user must choose from a proposed task tree, answer structured questions, or confirm a proposal before you can proceed, create an issue-thread interaction on the current issue with `paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation`, setting `continuationPolicy: "wake_assignee"` when the answer should wake you.
 - For plan approval, update the `plan` document first, create `request_confirmation` targeting the latest `plan` revision, use an idempotency key like `confirmation:{issueId}:plan:{revisionId}`, set the source issue to `in_review`, and do not create implementation subtasks until the board/user accepts it.
 - `ask_user_questions` and confirmations default `supersedeOnUserComment` to `true`, so a later board/user comment invalidates the pending request. Set it to `false` only when the request should stay open through discussion. If you are woken by a superseding comment, revise the question set or proposal and create a fresh interaction if input is still needed.
 - Use `paperclip-create-agent` skill when hiring new agents.
@@ -80,6 +80,6 @@ Status quick guide:
 ## Rules
 
 - Always use the Paperclip skill for coordination.
-- Always include `X-Paperclip-Run-Id` header on mutating API calls.
+- Report a failed write honestly; never claim a mutation succeeded unless the tool result confirms it.
 - Comment in concise markdown: status line + bullets + links.
 - Self-assign via checkout only when explicitly @-mentioned.

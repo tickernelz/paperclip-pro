@@ -1027,12 +1027,12 @@ describe.sequential("issue thread interaction routes", () => {
     expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
-  it("rejects withdrawal by an unrelated agent", async () => {
-    const app = await createApp({ type: "agent", agentId: "33333333-3333-4333-8333-333333333333", companyId: "company-1", runId: RUN_3 });
+  it("rejects withdrawal by an agent from another company", async () => {
+    const app = await createApp({ type: "agent", agentId: "33333333-3333-4333-8333-333333333333", companyId: "company-2", runId: RUN_3 });
     const res = await request(app)
       .post("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/interactions/interaction-withdraw/withdraw")
       .send({});
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
     expect(mockInteractionService.withdrawInteraction).not.toHaveBeenCalled();
   });
 
@@ -1448,7 +1448,7 @@ describe.sequential("issue thread interaction routes", () => {
             proposalId,
             configPath: "access.NEW_ALIAS",
             executionStatus: "executed",
-            instructions: expect.stringContaining("GET /api/agents/me/secrets"),
+            instructions: expect.stringContaining('paperclipApiRequest with method: "GET" and path: "/agents/me/secrets"'),
           }),
         }),
       }),

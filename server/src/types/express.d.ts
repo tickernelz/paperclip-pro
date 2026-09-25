@@ -1,6 +1,10 @@
 export {};
 
-import type { AgentApiKeyScope } from "@tickernelz/paperclip-pro-shared";
+import type {
+  AgentApiKeyScope,
+  AgentAuthorityCapability,
+  AgentAuthorityReason,
+} from "@tickernelz/paperclip-pro-shared";
 
 declare global {
   namespace Express {
@@ -11,7 +15,14 @@ declare global {
         userName?: string | null;
         userEmail?: string | null;
         agentId?: string;
+        agentRole?: string | null;
+        agentPermissions?: Record<string, unknown> | null;
         companyId?: string;
+        exercisedAgentAuthority?: {
+          capability: AgentAuthorityCapability;
+          reason: AgentAuthorityReason;
+          companyId: string;
+        } | null;
         companyIds?: string[];
         sessionId?: string | null;
         memberships?: Array<{
@@ -31,6 +42,13 @@ declare global {
         onBehalfOfUserId?: string | null;
         identityContextId?: string | null;
         source?: "local_implicit" | "session" | "board_key" | "agent_key" | "agent_jwt" | "cloud_tenant" | "cloud_control" | "none";
+      };
+      agentAuthority?: {
+        capability: AgentAuthorityCapability;
+        reason: AgentAuthorityReason;
+        companyId: string;
+        agentId: string;
+        runId: string | null;
       };
     }
   }

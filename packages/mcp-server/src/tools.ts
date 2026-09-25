@@ -2,28 +2,40 @@ import { z } from "zod";
 import {
   CONNECTION_REQUEST_TOOL_DESCRIPTION,
   CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
+} from "@tickernelz/paperclip-pro-shared/connection-intent-guidance";
+import { createApprovalSchema } from "@tickernelz/paperclip-pro-shared/validators/approval";
+import {
+  connectionRequestInputSchema,
+  connectionsSearchInputSchema,
+} from "@tickernelz/paperclip-pro-shared/validators/connection-intent";
+import {
   addIssueCommentSchema,
   askUserQuestionsPayloadSchema,
   checkoutIssueSchema,
-  connectionRequestInputSchema,
-  connectionsSearchInputSchema,
-  createApprovalSchema,
   createIssueInputSchema,
   issueThreadInteractionContinuationPolicySchema,
+  issueThreadInteractionResolverPolicySchema,
+  linkIssueApprovalSchema,
   requestCheckboxConfirmationPayloadSchema,
   requestConfirmationPayloadSchema,
   suggestTasksPayloadSchema,
   updateIssueSchema,
   upsertIssueDocumentSchema,
-  linkIssueApprovalSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/paperclip-pro-shared/validators/issue";
 import { PaperclipApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
+
+export interface ToolAnnotations {
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+}
 
 export interface ToolDefinition {
   name: string;
   description: string;
   schema: z.ZodObject;
+  annotations?: ToolAnnotations;
   execute: (input: Record<string, unknown>) => Promise<{
     content: Array<{ type: "text"; text: string }>;
   }>;
@@ -34,11 +46,13 @@ function makeTool<TSchema extends z.ZodRawShape>(
   description: string,
   schema: z.ZodObject<TSchema>,
   execute: (input: z.infer<typeof schema>) => Promise<unknown>,
+  annotations?: ToolAnnotations,
 ): ToolDefinition {
   return {
     name,
     description,
     schema,
+    ...(annotations ? { annotations } : {}),
     execute: async (input) => {
       try {
         const parsed = schema.parse(input);
@@ -128,13 +142,77 @@ const upsertDocumentToolSchema = z.object({
   baseRevisionId: z.string().guid().nullable().optional(),
 });
 
-const createIssueToolSchema = z.object({
-  companyId: companyIdOptional,
-}).merge(createIssueInputSchema);
+function advancedFields(route: string) {
+  return z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe(
+      `any other field accepted by ${route}; see paperclipApiRequest for the full schema`,
+    );
+}
 
-const updateIssueToolSchema = z.object({
-  issueId: issueIdSchema,
-}).merge(updateIssueSchema);
+const createIssueToolSchema = z
+  .object({
+    companyId: companyIdOptional,
+    advanced: advancedFields("POST /companies/{companyId}/issues"),
+  })
+  .merge(
+    createIssueInputSchema.pick({
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      workMode: true,
+      harnessKind: true,
+      reviewPolicy: true,
+      projectId: true,
+      goalId: true,
+      parentId: true,
+      inheritExecutionWorkspaceFromIssueId: true,
+      assigneeAgentId: true,
+      assigneeUserId: true,
+      labelIds: true,
+      blockedByIssueIds: true,
+      billingCode: true,
+      requestDepth: true,
+      initialPlan: true,
+      idempotencyKey: true,
+      allowDuplicate: true,
+    }),
+  );
+
+const updateIssueToolSchema = z
+  .object({
+    issueId: issueIdSchema,
+    advanced: advancedFields("PATCH /issues/{id}"),
+  })
+  .merge(
+    updateIssueSchema.pick({
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      workMode: true,
+      reviewPolicy: true,
+      projectId: true,
+      goalId: true,
+      parentId: true,
+      assigneeAgentId: true,
+      assigneeUserId: true,
+      onBehalfOfUserId: true,
+      labelIds: true,
+      blockedByIssueIds: true,
+      billingCode: true,
+      requestDepth: true,
+      comment: true,
+      commentClientRequestId: true,
+      attachmentIds: true,
+      reviewInteractionId: true,
+      reopen: true,
+      resume: true,
+      interrupt: true,
+    }),
+  );
 
 const checkoutIssueToolSchema = z.object({
   issueId: issueIdSchema,
@@ -146,46 +224,38 @@ const addCommentToolSchema = z.object({
   issueId: issueIdSchema,
 }).merge(addIssueCommentSchema);
 
-const createSuggestTasksToolSchema = z.object({
+const interactionToolFields = {
   issueId: issueIdSchema,
   idempotencyKey: z.string().trim().max(255).nullable().optional(),
   sourceCommentId: z.string().guid().nullable().optional(),
   sourceRunId: z.string().guid().nullable().optional(),
   title: z.string().trim().max(240).nullable().optional(),
   summary: z.string().trim().max(1000).nullable().optional(),
+  resolverPolicy: issueThreadInteractionResolverPolicySchema.optional(),
+  addresseeAgentId: z.string().guid().nullable().optional(),
+  addresseeUserId: z.string().trim().min(1).nullable().optional(),
+};
+
+const createSuggestTasksToolSchema = z.object({
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: suggestTasksPayloadSchema,
 });
 
 const createAskUserQuestionsToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: askUserQuestionsPayloadSchema,
 });
 
 const createRequestConfirmationToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("none"),
   payload: requestConfirmationPayloadSchema,
 });
 
 const createRequestCheckboxConfirmationToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: requestCheckboxConfirmationPayloadSchema,
 });
@@ -267,8 +337,35 @@ async function getIssueWorkspaceRuntime(client: PaperclipApiClient, issueId: str
   };
 }
 
+const READ_ONLY_CURATED_TOOLS: Record<string, true> = {
+  paperclipMe: true,
+  paperclipInboxLite: true,
+  paperclipListAgents: true,
+  paperclipListSkills: true,
+  paperclipGetAgent: true,
+  paperclipListIssues: true,
+  paperclipGetIssue: true,
+  paperclipGetHeartbeatContext: true,
+  paperclipListComments: true,
+  paperclipGetComment: true,
+  paperclipListIssueApprovals: true,
+  paperclipListDocuments: true,
+  paperclipGetDocument: true,
+  paperclipListDocumentRevisions: true,
+  paperclipListProjects: true,
+  paperclipGetProject: true,
+  paperclipGetIssueWorkspaceRuntime: true,
+  paperclipWaitForIssueWorkspaceService: true,
+  paperclipListGoals: true,
+  paperclipGetGoal: true,
+  paperclipListApprovals: true,
+  paperclipGetApproval: true,
+  paperclipGetApprovalIssues: true,
+  paperclipListApprovalComments: true,
+};
+
 export function createToolDefinitions(client: PaperclipApiClient): ToolDefinition[] {
-  return [
+  const tools: ToolDefinition[] = [
     makeTool(
       "connections_search",
       CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
@@ -436,6 +533,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
           { body: target },
         );
       },
+      { destructiveHint: true },
     ),
     makeTool(
       "paperclipWaitForIssueWorkspaceService",
@@ -515,15 +613,19 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       "paperclipCreateIssue",
       "Create a new issue",
       createIssueToolSchema,
-      async ({ companyId, ...body }) =>
-        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, { body }),
+      async ({ companyId, advanced, ...body }) =>
+        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, {
+          body: { ...body, ...advanced },
+        }),
     ),
     makeTool(
       "paperclipUpdateIssue",
       "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work",
       updateIssueToolSchema,
-      async ({ issueId, ...body }) =>
-        client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, { body }),
+      async ({ issueId, advanced, ...body }) =>
+        client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, {
+          body: { ...body, ...advanced },
+        }),
     ),
     makeTool(
       "paperclipCheckoutIssue",
@@ -635,17 +737,18 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipUnlinkIssueApproval",
-      "Unlink an approval from an issue",
+      "Unlink an approval from an issue. The approval itself is kept; only the link is removed.",
       z.object({ issueId: issueIdSchema, approvalId: approvalIdSchema }),
       async ({ issueId, approvalId }) =>
         client.requestJson(
           "DELETE",
           `/issues/${encodeURIComponent(issueId)}/approvals/${encodeURIComponent(approvalId)}`,
         ),
+      { destructiveHint: true, idempotentHint: true },
     ),
     makeTool(
       "paperclipApprovalDecision",
-      "Approve, reject, request revision, or resubmit an approval",
+      "Approve, reject, request revision, or resubmit an approval. Agents may only use resubmit; approve, reject, and requestRevision require a board actor and return 403 for an agent key.",
       approvalDecisionSchema,
       async ({ approvalId, action, decisionNote, payloadJson }) => {
         const path =
@@ -664,6 +767,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
 
         return client.requestJson("POST", path, { body });
       },
+      { destructiveHint: true },
     ),
     makeTool(
       "paperclipAddApprovalComment",
@@ -688,4 +792,9 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       },
     ),
   ];
+  return tools.map((tool) =>
+    READ_ONLY_CURATED_TOOLS[tool.name]
+      ? { ...tool, annotations: { readOnlyHint: true, idempotentHint: true, ...tool.annotations } }
+      : tool,
+  );
 }

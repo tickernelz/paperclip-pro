@@ -1,4 +1,4 @@
-import { resolveAgentAppearance, agentAvatarUrl } from "@tickernelz/paperclip-pro-shared";
+import { resolveAgentAppearance, agentAvatarUrl, agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
 import { listOpenRouterModels } from "../services/openrouter-models.js";
 import { prepareManagedAiRuntime, assertManagedAiProjectAuth, stripAiAuthBindings } from "../services/ai-connection-runtime.js";
 import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, aiConnectionBindingSchema, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
@@ -84,7 +84,8 @@ import {
 import { badRequest, conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { ONBOARDING_FIRST_TASK_SKILL_KEY, PAPERCLIP_CORE_SKILL_KEYS } from "../services/company-skills.js";
 import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
-import { assertAuthenticated, assertBoard, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
+import { assertAuthenticated, assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
 import { runAdapterLoginStartSpine } from "./adapter-login-route-spine.js";
 import { isLoginCommandSupportedAdapterType } from "../services/login-command.js";
 import {
@@ -1746,8 +1747,7 @@ export function agentRoutes(
   }
 
   async function assertBoardCanManageAgentsForCompany(req: Request, companyId: string) {
-    assertBoard(req);
-    assertCompanyAccess(req, companyId);
+    assertBoardOrAgentAuthority(req, "company:agents", companyId);
     const decision = await access.decide({
       actor: req.actor,
       action: "agents:create",
@@ -1758,9 +1758,8 @@ export function agentRoutes(
   }
 
   async function assertBoardCanWakeAgent(req: Request, agent: { id: string; companyId: string }) {
-    assertBoard(req);
     if (!hasCompanyAccess(req, agent.companyId)) throw notFound("Agent not found");
-    assertCompanyAccess(req, agent.companyId);
+    assertBoardOrAgentAuthority(req, "company:agents", agent.companyId);
     const decision = await access.decide({
       actor: req.actor, action: "agent:wake",
       resource: { type: "agent", companyId: agent.companyId, agentId: agent.id },
@@ -4150,6 +4149,7 @@ export function agentRoutes(
         title: agent.title,
         status: agent.status,
         keyScope: req.actor.keyScope,
+        authorityCapabilities: agentAuthorityCapabilities(agent.role),
       });
       return;
     }
@@ -4159,10 +4159,16 @@ export function agentRoutes(
       return;
     }
     if (trustPreset.kind === "low_trust_review") {
-      res.json(buildLowTrustSelfView(agent));
+      res.json({
+        ...buildLowTrustSelfView(agent),
+        authorityCapabilities: agentAuthorityCapabilities(agent.role),
+      });
       return;
     }
-    res.json(await buildAgentDetail(agent));
+    res.json({
+      ...(await buildAgentDetail(agent)),
+      authorityCapabilities: agentAuthorityCapabilities(agent.role),
+    });
   });
 
   router.get("/agents/me/inbox-lite", async (req, res) => {
@@ -4372,7 +4378,7 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/runtime-state", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!agent) return;
@@ -4383,7 +4389,7 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/task-sessions", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!agent) return;
@@ -4399,7 +4405,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/runtime-state/reset-session", validate(resetAgentSessionSchema), async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!agent) return;
@@ -4435,6 +4441,7 @@ export function agentRoutes(
   router.post("/companies/:companyId/agent-hires", validate(createAgentHireSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     await assertCanCreateAgentsForCompany(req, companyId);
+    assertNoAgentAuthorityEscalation({ req, write: req.body, target: null });
     const sourceIssueIds = parseSourceIssueIds(req.body);
     const {
       desiredSkills: requestedDesiredSkills,
@@ -4755,6 +4762,7 @@ export function agentRoutes(
   router.post("/companies/:companyId/agents", validate(createAgentSchema), async (req, res) => {
     const companyId = req.params.companyId as string;
     await assertCanCreateAgentsForCompany(req, companyId);
+    assertNoAgentAuthorityEscalation({ req, write: req.body, target: null });
 
     const company = await db
       .select()
@@ -4767,7 +4775,7 @@ export function agentRoutes(
     }
     if (company.requireBoardApprovalForNewAgents) {
       throw conflict(
-        "Direct agent creation requires board approval. Use POST /api/companies/:companyId/agent-hires to create a pending hire approval.",
+        "Direct agent creation requires board approval. Use paperclipCreateAgentHire to create a pending hire approval.",
       );
     }
 
@@ -4940,6 +4948,11 @@ export function agentRoutes(
     } else {
       await assertBoardCanManageAgentsForCompany(req, existing.companyId);
     }
+    assertNoAgentAuthorityEscalation({
+      req,
+      write: { permissions: req.body },
+      target: { id: existing.id, role: existing.role ?? null, permissions: existing.permissions },
+    });
 
     const agent = await svc.updatePermissions(id, req.body);
     if (!agent) {
@@ -5221,6 +5234,11 @@ export function agentRoutes(
     const id = req.params.id as string;
     const existing = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!existing) return;
+    assertNoAgentAuthorityEscalation({
+      req,
+      write: req.body,
+      target: { id: existing.id, role: existing.role ?? null, permissions: existing.permissions },
+    });
 
     if (hasOwn(req.body as object, "permissions")) {
       res.status(422).json({ error: "Use /api/agents/:id/permissions for permission changes" });
@@ -5428,7 +5446,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/pause", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -5489,7 +5507,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/clear-error", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const existing = await getAccessibleAgent(req, res, id);
     if (!existing) {
@@ -5521,7 +5539,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/approve", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const existing = await getAccessibleAgent(req, res, id);
     if (!existing) {
@@ -5575,7 +5593,7 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/terminate", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const existing = await getAccessibleAgent(req, res, id);
     if (!existing) {
@@ -5620,10 +5638,13 @@ export function agentRoutes(
       "Cancelled because the agent was terminated or became invalid-org-chain under a terminated manager",
     );
 
+    const terminateActor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: terminateActor.actorType,
+      actorId: terminateActor.actorId,
+      agentId: terminateActor.agentId,
+      runId: terminateActor.runId,
       action: "agent.terminated",
       entityType: "agent",
       entityId: agent.id,
@@ -5645,7 +5666,7 @@ export function agentRoutes(
   });
 
   router.delete("/agents/:id", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     if (!(await getAccessibleAgent(req, res, id))) {
       return;
@@ -5669,7 +5690,7 @@ export function agentRoutes(
   });
 
   router.get("/agents/:id/keys", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const agent = await getAccessibleAgent(req, res, id);
     if (!agent) {
@@ -5680,20 +5701,23 @@ export function agentRoutes(
   });
 
   router.post("/agents/:id/keys", validate(createAgentKeySchema), async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const agent = await getAccessibleAgent(req, res, id);
     if (!agent) {
       return;
     }
     const key = await svc.createApiKey(id, req.body.name, req.body.scope, {
-      responsibleUserId: req.actor.userId ?? null,
+      responsibleUserId: req.actor.userId ?? req.actor.onBehalfOfUserId ?? null,
     });
 
+    const createActor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: createActor.actorType,
+      actorId: createActor.actorId,
+      agentId: createActor.agentId,
+      runId: createActor.runId,
       action: "agent.key_created",
       entityType: "agent",
       entityId: agent.id,
@@ -5709,7 +5733,7 @@ export function agentRoutes(
   });
 
   router.delete("/agents/:id/keys/:keyId", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const id = req.params.id as string;
     const keyId = req.params.keyId as string;
     const agent = await getAccessibleAgent(req, res, id);
@@ -5729,10 +5753,13 @@ export function agentRoutes(
       return;
     }
 
+    const revokeActor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: revokeActor.actorType,
+      actorId: revokeActor.actorId,
+      agentId: revokeActor.agentId,
+      runId: revokeActor.runId,
       action: "agent.key_revoked",
       entityType: "agent",
       entityId: agent.id,
@@ -6804,7 +6831,7 @@ export function agentRoutes(
   });
 
   router.post("/heartbeat-runs/:runId/cancel", async (req, res) => {
-    assertBoard(req);
+    assertBoardOrAgentAuthority(req, "company:agents");
     const runId = readHeartbeatRunId(req);
     const existing = await getAccessibleResource(req, res, heartbeat.getRun(runId), "Heartbeat run not found");
     if (!existing) return;
@@ -6836,7 +6863,7 @@ export function agentRoutes(
   router.post(
     "/heartbeat-runs/:runId/runtime-requests/:requestId/resolve",
     async (req, res) => {
-      assertBoard(req);
+      assertBoardOrAgentAuthority(req, "company:agents");
       const runId = readHeartbeatRunId(req);
       const requestId = req.params.requestId as string;
       const existing = await getAccessibleResource(
@@ -7103,7 +7130,7 @@ export function agentRoutes(
   router.post(
     "/heartbeat-runs/:runId/provider-trace/reproject-workspace-diffs",
     async (req, res) => {
-      assertBoard(req);
+      assertBoardOrAgentAuthority(req, "company:agents");
       const runId = readHeartbeatRunId(req);
       const run = await getAccessibleResource(
         req,

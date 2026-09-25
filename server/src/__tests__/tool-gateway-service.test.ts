@@ -483,7 +483,8 @@ describeEmbeddedPostgres("tool gateway service", () => {
     expect(payload.toolActions.length).toBeLessThanOrEqual(8);
     expect(payload.interactionIds.length).toBe(payload.toolActions.length);
     expect(payload.toolActionOutcomeCount).toBe(12);
-    expect(payload.paperclipAgentMessage.text).toContain(payload.toolActionResultsUrl);
+    expect(payload.toolActionResultsUrl).toBe(`/api/issues/${payload.issueId}/interactions`);
+    expect(payload.paperclipAgentMessage.text).toContain(`paperclipListIssueInteractions on issue ${payload.issueId}`);
     expect((await db.select().from(toolActionDeliveries)).every(row => row.deliveredAt)).toBe(true);
     // The reference retains all outcomes and their full notes, not just snippets.
     expect((await db.select().from(issueThreadInteractions)).every(row => JSON.stringify(row.result).length > 12_000)).toBe(true);

@@ -971,6 +971,9 @@ importers:
       '@tickernelz/paperclip-pro-hermes-paperclip-adapter':
         specifier: workspace:*
         version: link:../packages/adapters/hermes
+      '@tickernelz/paperclip-pro-mcp-server':
+        specifier: workspace:*
+        version: link:../packages/mcp-server
       '@tickernelz/paperclip-pro-plugin-sdk':
         specifier: workspace:*
         version: link:../packages/plugins/sdk
