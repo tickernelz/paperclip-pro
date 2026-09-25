@@ -281,14 +281,18 @@ describe.sequential("company route cross-company authorization", () => {
     expect(res.body.map((company: { id: string }) => company.id)).toEqual([companyAId, companyBId]);
   });
 
-  it.each([{ type: "none", source: "none" }, companyACeoActor()])(
-    "rejects navigation list requests from a $type actor",
-    async (actor) => {
-      const app = await createApp(actor);
-      await request(app).get("/api/companies?scope=accessible").expect(403);
-      expect(mockCompanyService.list).not.toHaveBeenCalled();
-    },
-  );
+  it("rejects navigation list requests from an unauthenticated actor", async () => {
+    const app = await createApp({ type: "none", source: "none" });
+    await request(app).get("/api/companies?scope=accessible").expect(401);
+    expect(mockCompanyService.list).not.toHaveBeenCalled();
+  });
+
+  it("scopes the navigation list to the agent's own company", async () => {
+    mockCompanyService.list.mockResolvedValue([createCompany(companyAId), createCompany(companyBId)]);
+    const app = await createApp(companyACeoActor());
+    const res = await request(app).get("/api/companies?scope=accessible").expect(200);
+    expect(res.body.map((company: { id: string }) => company.id)).toEqual([companyAId]);
+  });
 
   it.each([
     {
