@@ -215,8 +215,6 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
 
     expect(await waitForCondition(async () => adapterGate.waiters.length > 0)).toBe(true);
     adapterGate.waiters.shift()!();
-    // No resumeQueuedRuns() here on purpose: freeing a slot must dispatch the
-    // other agent's queued run on its own.
     expect(await waitForCondition(async () => {
       const running = await runningRunIds(companyId);
       return running.length === 1 && !firstWave.includes(running[0]!);

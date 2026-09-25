@@ -16921,10 +16921,6 @@ export function heartbeatService(
     return Number(count ?? 0);
   }
 
-  // The cap exists to bound local CLI processes, so it counts processes, not
-  // rows. A `running` row that no process backs — a fixture row, a row stranded
-  // by a crash, a row a previous controller left behind — would otherwise
-  // occupy a slot forever and starve every queued local run on the instance.
   async function countRunningLocalCliRuns() {
     const rows = await db
       .select({
@@ -16947,10 +16943,6 @@ export function heartbeatService(
     ).length;
   }
 
-  // Freeing a local CLI slot frees it for the whole instance, not for the agent
-  // whose run just ended. Without this sweep a run held back by the instance cap
-  // waits for the next scheduler pass, because every other dispatch path is
-  // keyed to a single agent.
   async function startNextQueuedLocalCliRuns(finishedAgentId: string) {
     const finished = await getAgent(finishedAgentId);
     if (!isLocalCliAdapterType(finished?.adapterType)) return;
