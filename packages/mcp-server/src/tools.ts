@@ -2,21 +2,25 @@ import { z } from "zod";
 import {
   CONNECTION_REQUEST_TOOL_DESCRIPTION,
   CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
+} from "@tickernelz/paperclip-pro-shared/connection-intent-guidance";
+import { createApprovalSchema } from "@tickernelz/paperclip-pro-shared/validators/approval";
+import {
+  connectionRequestInputSchema,
+  connectionsSearchInputSchema,
+} from "@tickernelz/paperclip-pro-shared/validators/connection-intent";
+import {
   addIssueCommentSchema,
   askUserQuestionsPayloadSchema,
   checkoutIssueSchema,
-  connectionRequestInputSchema,
-  connectionsSearchInputSchema,
-  createApprovalSchema,
   createIssueInputSchema,
   issueThreadInteractionContinuationPolicySchema,
+  linkIssueApprovalSchema,
   requestCheckboxConfirmationPayloadSchema,
   requestConfirmationPayloadSchema,
   suggestTasksPayloadSchema,
   updateIssueSchema,
   upsertIssueDocumentSchema,
-  linkIssueApprovalSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/paperclip-pro-shared/validators/issue";
 import { PaperclipApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 
@@ -137,13 +141,77 @@ const upsertDocumentToolSchema = z.object({
   baseRevisionId: z.string().guid().nullable().optional(),
 });
 
-const createIssueToolSchema = z.object({
-  companyId: companyIdOptional,
-}).merge(createIssueInputSchema);
+function advancedFields(route: string) {
+  return z
+    .record(z.string(), z.unknown())
+    .optional()
+    .describe(
+      `any other field accepted by ${route}; see paperclipApiRequest for the full schema`,
+    );
+}
 
-const updateIssueToolSchema = z.object({
-  issueId: issueIdSchema,
-}).merge(updateIssueSchema);
+const createIssueToolSchema = z
+  .object({
+    companyId: companyIdOptional,
+    advanced: advancedFields("POST /companies/{companyId}/issues"),
+  })
+  .merge(
+    createIssueInputSchema.pick({
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      workMode: true,
+      harnessKind: true,
+      reviewPolicy: true,
+      projectId: true,
+      goalId: true,
+      parentId: true,
+      inheritExecutionWorkspaceFromIssueId: true,
+      assigneeAgentId: true,
+      assigneeUserId: true,
+      labelIds: true,
+      blockedByIssueIds: true,
+      billingCode: true,
+      requestDepth: true,
+      initialPlan: true,
+      idempotencyKey: true,
+      allowDuplicate: true,
+    }),
+  );
+
+const updateIssueToolSchema = z
+  .object({
+    issueId: issueIdSchema,
+    advanced: advancedFields("PATCH /issues/{id}"),
+  })
+  .merge(
+    updateIssueSchema.pick({
+      title: true,
+      description: true,
+      status: true,
+      priority: true,
+      workMode: true,
+      reviewPolicy: true,
+      projectId: true,
+      goalId: true,
+      parentId: true,
+      assigneeAgentId: true,
+      assigneeUserId: true,
+      onBehalfOfUserId: true,
+      labelIds: true,
+      blockedByIssueIds: true,
+      billingCode: true,
+      requestDepth: true,
+      comment: true,
+      commentClientRequestId: true,
+      attachmentIds: true,
+      reviewInteractionId: true,
+      reopen: true,
+      resume: true,
+      interrupt: true,
+    }),
+  );
 
 const checkoutIssueToolSchema = z.object({
   issueId: issueIdSchema,
@@ -552,15 +620,19 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       "paperclipCreateIssue",
       "Create a new issue",
       createIssueToolSchema,
-      async ({ companyId, ...body }) =>
-        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, { body }),
+      async ({ companyId, advanced, ...body }) =>
+        client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, {
+          body: { ...body, ...advanced },
+        }),
     ),
     makeTool(
       "paperclipUpdateIssue",
       "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work",
       updateIssueToolSchema,
-      async ({ issueId, ...body }) =>
-        client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, { body }),
+      async ({ issueId, advanced, ...body }) =>
+        client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, {
+          body: { ...body, ...advanced },
+        }),
     ),
     makeTool(
       "paperclipCheckoutIssue",

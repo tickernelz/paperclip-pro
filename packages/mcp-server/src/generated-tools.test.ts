@@ -3,6 +3,7 @@ import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, resolveToolsets } from "./config.js";
 import { createGeneratedToolDefinitions, generatedToolSpecs } from "./generated-tools.js";
 import { createToolDefinitions } from "./tools.js";
+import { createPaperclipToolDefinitions, leanToolListing } from "./index.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 
 function makeClient() {
@@ -196,5 +197,49 @@ describe("generated Paperclip API tools", () => {
     for (const tool of tools) {
       expect(Object.keys(tool.schema.shape).length).toBeGreaterThanOrEqual(0);
     }
+  });
+
+  it("merges advanced fields into a narrowed generated body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "project-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateProject");
+    expect(Object.keys(tool.schema.shape)).toContain("advanced");
+    expect(Object.keys(tool.schema.shape)).not.toContain("executionWorkspacePolicy");
+
+    await tool.execute({
+      id: "66666666-6666-6666-6666-666666666666",
+      name: "Platform",
+      advanced: { executionWorkspacePolicy: { mode: "shared" } },
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({
+      name: "Platform",
+      executionWorkspacePolicy: { mode: "shared" },
+    });
+  });
+
+  it("lists core tools without JSON Schema validation metadata", () => {
+    const listing = leanToolListing(
+      createPaperclipToolDefinitions(makeClient(), {
+        apiUrl: "http://localhost:3100/api",
+        apiKey: "token-123",
+        companyId: null,
+        agentId: null,
+        runId: null,
+        toolsets: ["core"],
+        agentRole: null,
+      }),
+    );
+    const serialized = JSON.stringify(listing.tools);
+    expect(serialized).not.toContain('"$schema":');
+    expect(Buffer.byteLength(serialized)).toBeLessThan(48_000);
+    const updateIssue = listing.tools.find((tool) => tool.name === "paperclipUpdateIssue");
+    expect(updateIssue?.inputSchema.required).toEqual(["issueId"]);
+    const properties = updateIssue?.inputSchema.properties as Record<string, unknown>;
+    expect(properties.issueId).toEqual({ type: "string" });
+    expect(properties.advanced).toMatchObject({ type: "object" });
+    expect(properties.executionPolicy).toBeUndefined();
   });
 });

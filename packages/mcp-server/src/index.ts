@@ -1,9 +1,25 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
 import { createGeneratedToolDefinitions } from "./generated-tools.js";
+import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
 import { createToolDefinitions, type ToolDefinition } from "./tools.js";
+
+export function leanToolListing(tools: ReadonlyArray<ToolDefinition>) {
+  return {
+    tools: tools.map((tool) => ({
+      name: tool.name,
+      description: tool.description,
+      inputSchema: leanJsonSchema(
+        z.toJSONSchema(tool.schema, { target: "draft-7", io: "input" }),
+      ) as JsonSchemaObject,
+      ...(tool.annotations ? { annotations: tool.annotations } : {}),
+    })),
+  };
+}
 
 export async function resolveManagementAuthority(
   client: PaperclipApiClient,
@@ -53,6 +69,7 @@ export function createPaperclipMcpServer(
       tool.execute,
     );
   }
+  server.server.setRequestHandler(ListToolsRequestSchema, () => leanToolListing(tools));
 
   return {
     server,

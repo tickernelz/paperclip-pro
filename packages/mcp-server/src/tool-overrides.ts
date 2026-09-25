@@ -12,6 +12,7 @@ export interface ToolOverride {
   toolset?: ToolsetName;
   annotations?: ToolAnnotationOverride;
   requiredHint?: string;
+  bodyFields?: string[];
 }
 
 export const CURATED_OPERATIONS: Record<string, string> = {
@@ -160,6 +161,18 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     name: "paperclipCreateProject",
     description: "Create a project in the company.",
     toolset: "core",
+    bodyFields: [
+      "color",
+      "description",
+      "goalId",
+      "goalIds",
+      "idempotencyKey",
+      "leadAgentId",
+      "repositoryIds",
+      "repositoryUrls",
+      "status",
+      "targetDate",
+    ],
   },
   "POST /api/companies/{companyId}/goals": {
     name: "paperclipCreateGoal",
@@ -205,6 +218,17 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     name: "paperclipUpdateProject",
     description: "Update a project's name, description, or settings.",
     toolset: "core",
+    bodyFields: [
+      "archivedAt",
+      "color",
+      "description",
+      "goalId",
+      "goalIds",
+      "leadAgentId",
+      "name",
+      "status",
+      "targetDate",
+    ],
   },
   "PATCH /api/goals/{id}": {
     name: "paperclipUpdateGoal",

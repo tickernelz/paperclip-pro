@@ -417,4 +417,33 @@ describe("paperclip MCP tools", () => {
 
     expect(response.content[0]?.text).toContain("must not contain '..'");
   });
+
+  it("sends curated fields and advanced fields in one issue update body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateIssue");
+    await tool.execute({
+      issueId: "PAP-1135",
+      status: "done",
+      advanced: { executionPolicy: { monitor: { nextCheckAt: "2026-01-01T00:00:00.000Z" } } },
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({
+      status: "done",
+      executionPolicy: { monitor: { nextCheckAt: "2026-01-01T00:00:00.000Z" } },
+    });
+  });
+
+  it("still enforces the required issue id on an update", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateIssue");
+    const response = await tool.execute({ status: "done" });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response.content[0]?.text).toContain("issueId");
+  });
 });

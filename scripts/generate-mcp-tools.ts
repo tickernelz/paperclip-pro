@@ -2,7 +2,7 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildOpenApiDocument } from "../server/src/routes/openapi.js";
-
+import { leanJsonSchema } from "../packages/mcp-server/src/lean-schema.js";
 import {
   CURATED_OPERATIONS,
   PROBE_BOARD_DENIED_OPERATIONS,
@@ -66,7 +66,13 @@ export interface GeneratedTool {
   permissions: string[];
   boardGuard: string | null;
   parameters: GeneratedParameter[];
-  body?: { required: boolean; documented: boolean; mode: "merge" | "nest"; schema: Json };
+  body?: {
+    required: boolean;
+    documented: boolean;
+    mode: "merge" | "nest";
+    advanced?: boolean;
+    schema: Json;
+  };
 }
 
 export interface GeneratorResult {
@@ -231,13 +237,13 @@ function uniqueName(base: string, path: string, method: string, taken: Set<strin
 function jsonBodySchema(
   operation: Json,
   document: Json,
-): { required: boolean; documented: boolean; schema: Json } | null {
+): { required: boolean; documented: boolean; advanced?: boolean; schema: Json } | null {
   const content = operation.requestBody?.content as Json | undefined;
   if (!content) return null;
   const media = content["application/json"];
   if (!media?.schema) return null;
   const required = operation.requestBody.required === true;
-  const schema = normalizeSchema(dereference(document, media.schema));
+  const schema = leanJsonSchema(normalizeSchema(dereference(document, media.schema))) as Json;
   if (schema.type === "object" || schema.properties || schema.anyOf) {
     return { required, documented: true, schema };
   }
@@ -432,11 +438,31 @@ export function generate(): GeneratorResult {
         name: parameter.name as string,
         in: parameter.in as "path" | "query",
         required: parameter.required === true,
-        schema: normalizeSchema(dereference(document, parameter.schema ?? {})),
+        schema: leanJsonSchema(
+          normalizeSchema(dereference(document, parameter.schema ?? {})),
+        ) as Json,
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
     const body = jsonBodySchema(candidate.operation, document);
+    if (body && override.bodyFields) {
+      if (!body.documented || body.schema.type !== "object") {
+        throw new Error(`bodyFields on ${candidate.key} needs a documented object body`);
+      }
+      const properties = (body.schema.properties ?? {}) as Json;
+      const missing = override.bodyFields.filter((field) => !(field in properties));
+      if (missing.length > 0) {
+        throw new Error(`Unknown bodyFields on ${candidate.key}: ${missing.join(", ")}`);
+      }
+      const keep = new Set([...((body.schema.required as string[]) ?? []), ...override.bodyFields]);
+      body.schema = {
+        ...body.schema,
+        properties: Object.fromEntries(
+          Object.entries(properties).filter(([key]) => keep.has(key)),
+        ),
+      };
+      body.advanced = true;
+    }
     const parameterNames = new Set(parameters.map((parameter) => parameter.name));
     const bodyProperties = Object.keys((body?.schema.properties ?? {}) as Json);
     const mode: "merge" | "nest" =
@@ -494,7 +520,15 @@ export function generate(): GeneratorResult {
       boardGuard: guardEvidence?.boardGuard ?? (probeDenial ? `probe:${probeDenial}` : null),
       parameters,
       ...(body
-        ? { body: { required: body.required, documented: body.documented, mode, schema: body.schema } }
+        ? {
+            body: {
+              required: body.required,
+              documented: body.documented,
+              mode,
+              ...(body.advanced ? { advanced: true } : {}),
+              schema: body.schema,
+            },
+          }
         : {}),
     });
   }

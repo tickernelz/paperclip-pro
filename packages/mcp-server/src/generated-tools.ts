@@ -38,6 +38,7 @@ const generatedToolSchema = z.object({
       required: z.boolean(),
       documented: z.boolean(),
       mode: z.enum(["merge", "nest"]),
+      advanced: z.boolean().optional(),
       schema: jsonSchemaValue,
     })
     .optional(),
@@ -47,11 +48,35 @@ export type GeneratedToolSpec = z.infer<typeof generatedToolSchema>;
 
 let cachedSpecs: GeneratedToolSpec[] | undefined;
 
+const generatedToolListSchema = z.array(generatedToolSchema);
+
+function readGeneratedToolFile(): unknown[] {
+  const parsed: unknown = JSON.parse(
+    readFileSync(new URL("./generated/api-tools.json", import.meta.url), "utf8"),
+  );
+  if (!Array.isArray(parsed)) {
+    throw new Error("Generated MCP tool definitions must be an array");
+  }
+  return parsed;
+}
+
 export function generatedToolSpecs(): GeneratedToolSpec[] {
-  cachedSpecs ??= z
-    .array(generatedToolSchema)
-    .parse(JSON.parse(readFileSync(new URL("./generated/api-tools.json", import.meta.url), "utf8")));
+  cachedSpecs ??= generatedToolListSchema.parse(readGeneratedToolFile());
   return cachedSpecs;
+}
+
+function selectedToolSpecs(
+  toolsets: ReadonlyArray<ToolsetName>,
+  management: boolean,
+): GeneratedToolSpec[] {
+  const selected = readGeneratedToolFile().filter((entry) => {
+    const spec = entry as { toolset?: unknown; authority?: unknown };
+    return (
+      toolsets.includes(spec.toolset as ToolsetName) &&
+      (management || spec.authority === "agent")
+    );
+  });
+  return generatedToolListSchema.parse(selected);
 }
 
 function inputSchema(spec: GeneratedToolSpec): z.ZodObject {
@@ -77,7 +102,15 @@ function inputSchema(spec: GeneratedToolSpec): z.ZodObject {
   if (!(converted instanceof z.ZodObject)) {
     throw new Error(`Generated tool ${spec.name} did not produce an object schema`);
   }
-  return converted;
+  if (!spec.body?.advanced) return converted;
+  return converted.extend({
+    advanced: z
+      .record(z.string(), z.unknown())
+      .optional()
+      .describe(
+        `any other field accepted by ${spec.method} ${spec.path}; see paperclipApiRequest for the full schema`,
+      ),
+  });
 }
 
 function requestPath(client: PaperclipApiClient, spec: GeneratedToolSpec, values: Record<string, unknown>) {
@@ -111,9 +144,7 @@ export function createGeneratedToolDefinitions(
   toolsets: ReadonlyArray<ToolsetName>,
   management = false,
 ): ToolDefinition[] {
-  return generatedToolSpecs()
-    .filter((spec) => toolsets.includes(spec.toolset))
-    .filter((spec) => spec.authority === "agent" || management)
+  return selectedToolSpecs(toolsets, management)
     .map((spec) => {
       const schema = inputSchema(spec);
       return {
@@ -128,8 +159,10 @@ export function createGeneratedToolDefinitions(
         execute: async (input: Record<string, unknown>) => {
           try {
             const values: Record<string, unknown> = { ...schema.parse(input) };
+            const advanced = values.advanced as Record<string, unknown> | undefined;
+            delete values.advanced;
             const path = requestPath(client, spec, values);
-            const body =
+            const requestBody =
               spec.body?.mode === "nest"
                 ? values.body
                 : spec.body
@@ -137,6 +170,10 @@ export function createGeneratedToolDefinitions(
                   : spec.method === "GET"
                     ? undefined
                     : {};
+            const body =
+              advanced && requestBody !== undefined && requestBody !== null
+                ? { ...(requestBody as Record<string, unknown>), ...advanced }
+                : requestBody;
             return formatTextResponse(
               await client.requestJson(spec.method, path, body === undefined ? {} : { body }),
             );
