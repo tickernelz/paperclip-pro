@@ -1,0 +1,265 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  policy:
+    name: Policy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Validate migration ordering against the target branch
+        if: github.event_name == 'pull_request'
+        run: >-
+          node .github/scripts/check-pr-migration-order.mjs
+          "${{ github.event.pull_request.base.sha }}"
+          "${{ github.event.pull_request.head.sha }}"
+
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Validate Node version policy
+        run: pnpm check:node-version
+
+      - name: Reject git push in adapter/runtime code
+        run: node ./scripts/check-no-git-push.mjs
+
+      - name: Validate feature module boundaries
+        run: pnpm check:module-boundaries
+
+      - name: Validate release package manifest
+        run: node ./scripts/release-package-map.mjs check
+
+      - name: Test repository gate scripts
+        run: |
+          node --test ./scripts/check-no-git-push.test.mjs
+          node --test ./scripts/check-module-boundaries.test.mjs
+          node --test ./scripts/__tests__/run-vitest-stable-shard.test.mjs
+          node --test ./scripts/__tests__/e2e-shard.test.mjs
+          node --test '.github/scripts/tests/*.test.mjs'
+
+      - name: Validate dependency resolution
+        run: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile
+
+  typecheck:
+    name: Typecheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Typecheck workspaces whose build scripts skip TypeScript
+        run: pnpm run typecheck:build-gaps
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+        with:
+          save-store: "true"
+      - name: Build Runner Evalbook viewer
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
+      - name: Build
+        run: pnpm build
+
+  runner:
+    name: Verify Paperclip Runner
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Select the pinned Runner Rust toolchain
+        working-directory: packages/paperclip-runner
+        run: |
+          set -uo pipefail
+          if ! command -v rustup >/dev/null 2>&1; then
+            echo '::notice title=Runner Rust cache::rustup is unavailable; building with the image default toolchain'
+            exit 0
+          fi
+          rustup show
+          toolchain="$(rustup show active-toolchain | awk '{print $1}')"
+          echo "RUSTUP_TOOLCHAIN=$toolchain" >> "$GITHUB_ENV"
+          extra_toolchains="$(rustup toolchain list | awk '{print $1}' | grep -vx "$toolchain" || true)"
+          if [ -n "$extra_toolchains" ]; then
+            echo "$extra_toolchains" | xargs -n1 rustup toolchain uninstall \
+              || echo '::notice title=Runner Rust cache::could not remove an extra toolchain; the cache key may not match'
+          fi
+          rustup toolchain list
+
+      - name: Runner Rust dependencies
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+      - name: Static checks
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:static
+
+      - name: Rust checks
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:runner
+
+      - name: TypeScript suites
+        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner test:typescript:vitest
+
+  general:
+    name: Tests (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: general-server-without-chat
+            label: server 1/5
+            shard_index: 0
+            shard_count: 5
+          - group: general-server-without-chat
+            label: server 2/5
+            shard_index: 1
+            shard_count: 5
+          - group: general-server-without-chat
+            label: server 3/5
+            shard_index: 2
+            shard_count: 5
+          - group: general-server-without-chat
+            label: server 4/5
+            shard_index: 3
+            shard_count: 5
+          - group: general-server-without-chat
+            label: server 5/5
+            shard_index: 4
+            shard_count: 5
+          - group: general-chat
+            label: chat
+          - group: general-workspaces-a
+            label: workspaces-a
+          - group: general-workspaces-b
+            label: workspaces-b
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Run grouped test suites
+        run: |
+          if [ -n "${{ matrix.shard_count }}" ]; then
+            pnpm test:run:general -- --group '${{ matrix.group }}' \
+              --shard-index ${{ matrix.shard_index }} --shard-count ${{ matrix.shard_count }}
+          else
+            pnpm test:run:general -- --group '${{ matrix.group }}'
+          fi
+
+  serialized:
+    name: Tests (serialized ${{ matrix.shard_index }}/4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_index: [0, 1, 2, 3]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Run serialized server test shard
+        run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 4
+
+  e2e:
+    name: E2E (${{ matrix.shard_index }}/3)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        shard_index: [0, 1, 2]
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Verify runner Chrome
+        run: google-chrome --version
+
+      - name: Generate Paperclip config
+        run: |
+          mkdir -p ~/.paperclip-pro/instances/default
+          cat > ~/.paperclip-pro/instances/default/config.json << 'CONF'
+          {
+            "$meta": { "version": 1, "updatedAt": "2026-01-01T00:00:00.000Z", "source": "onboard" },
+            "database": { "mode": "embedded-postgres" },
+            "logging": { "mode": "file" },
+            "server": { "deploymentMode": "local_trusted", "host": "127.0.0.1", "port": 3100 },
+            "auth": { "baseUrlMode": "auto" },
+            "storage": { "provider": "local_disk" },
+            "secrets": { "provider": "local_encrypted", "strictMode": false }
+          }
+          CONF
+
+      - name: Run e2e tests
+        env:
+          PAPERCLIP_E2E_SKIP_LLM: "true"
+          PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
+        run: |
+          specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 3)"
+          echo "shard ${{ matrix.shard_index }} specs: $specs"
+          # shellcheck disable=SC2086
+          pnpm run test:e2e $specs
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: playwright-report-${{ matrix.shard_index }}
+          path: |
+            tests/e2e/playwright-report/
+            tests/e2e/test-results/
+          retention-days: 7
+
+  verify:
+    name: verify
+    if: always()
+    needs: [policy, typecheck, build, runner, general, serialized, e2e]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Fail if any lane failed
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+        run: |
+          set -euo pipefail
+          echo "$RESULTS"
+          failed="$(jq -r 'to_entries | map(select(.value.result != "success") | .key + "=" + .value.result) | join(" ")' <<< "$RESULTS")"
+          if [ -n "$failed" ]; then
+            echo "failed lanes: $failed"
+            exit 1
+          fi

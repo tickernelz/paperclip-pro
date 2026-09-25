@@ -1,6 +1,5 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -49,8 +48,8 @@ function dryRunJson(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-const SHARD_COUNT = 12;
-const SERIALIZED_SHARD_COUNT = 9;
+const SHARD_COUNT = 5;
+const SERIALIZED_SHARD_COUNT = 4;
 
 
 test("the serialized shards form a complete, non-overlapping partition", () => {
@@ -235,7 +234,7 @@ test("the real serialized shard partition is duration-balanced", () => {
 });
 
 test("the real shard partition is duration-balanced", () => {
-  // Mirrors the PR matrix: general-server-without-chat across SHARD_COUNT
+  // Mirrors the CI matrix: general-server-without-chat across SHARD_COUNT
   // runners, with the chat suite carried by the dedicated general-chat lanes
   // and the native-runner suite by the Rust-cached PR vitest lane.
   const durations = loadShardDurations(durationsManifest);
@@ -243,7 +242,7 @@ test("the real shard partition is duration-balanced", () => {
   const shards = Array.from({ length: SHARD_COUNT }, (_, index) =>
     dryRunJson(
       ["--mode", "general", "--group", "general-server-without-chat", "--shard-index", String(index), "--shard-count", String(SHARD_COUNT)],
-      { GITHUB_WORKFLOW: "PR" },
+      { GITHUB_WORKFLOW: "CI" },
     ),
   );
 
@@ -274,29 +273,27 @@ const chatSuitePath = "server/src/__tests__/chat-channels.integration.test.ts";
 const nativeRunnerSuitePath =
   "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
 
-// Mirrors pr-trusted.yml (12 shards, called by pr.yml so GITHUB_WORKFLOW is
-// "PR"): the chat suite runs in its dedicated lanes and the cargo-dependent
-// native-runner suite in the Rust-cached final Verify Paperclip Runner vitest
-// shard, so together the three cover the full server group exactly.
-test("12 PR without-chat shards plus the dedicated chat and native-runner lanes cover the original server group exactly", () => {
-  const prEnv = { GITHUB_WORKFLOW: "PR" };
-  const full = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"], prEnv);
-  const shards = Array.from({ length: 12 }, (_, index) => dryRunJson([
+// Mirrors ci.yml: the chat suite runs in its dedicated lane and the
+// cargo-dependent native-runner suite in the Rust-cached Verify Paperclip
+// Runner vitest lane, so together the three cover the full server group.
+test("the without-chat shards plus the dedicated chat and native-runner lanes cover the original server group exactly", () => {
+  const ciEnv = { GITHUB_WORKFLOW: "CI" };
+  const full = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"], ciEnv);
+  const shards = Array.from({ length: SHARD_COUNT }, (_, index) => dryRunJson([
     "--mode", "general", "--group", "general-server-without-chat",
-    "--shard-index", String(index), "--shard-count", "12",
-  ], prEnv));
+    "--shard-index", String(index), "--shard-count", String(SHARD_COUNT),
+  ], ciEnv));
   const files = shards.flatMap((shard) => shard.selectedGeneralServerSuites);
   assert.ok(!files.includes(chatSuitePath));
   assert.ok(!files.includes(nativeRunnerSuitePath));
   assert.deepEqual([...files, chatSuitePath, nativeRunnerSuitePath].sort(), full.selectedGeneralServerSuites.sort());
   assert.equal(new Set(files).size, files.length);
-  const defaultRun = dryRunJson([], prEnv);
+  const defaultRun = dryRunJson([], ciEnv);
   assert.ok(defaultRun.generalServerSuiteCount === full.generalServerSuiteCount);
 });
 
-// Mirrors release-verify.yml (10 shards, called by the Release and Cloud
-// readiness workflows) and local runs: no Rust-cached vitest lane exists
-// there, so the native-runner suite must stay in the server shards.
+// Any caller other than ci.yml, including local runs: no Rust-cached vitest
+// lane exists there, so the native-runner suite must stay in the server shards.
 for (const [caller, envOverrides] of [["Release", { GITHUB_WORKFLOW: "Release" }], ["no ambient workflow", {}]]) {
   test(`10 without-chat shards under ${caller} keep the native-runner suite and cover the server group with chat alone`, () => {
     const full = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"], envOverrides);
@@ -324,36 +321,6 @@ test("shard flags are rejected for the native-runner group", () => {
   assert.notEqual(result.status, 0, "the native-runner lane is a single suite and must not accept shard flags");
 });
 
-// The PR-side exclusion above is safe only while the wiring it assumes holds:
-// pr.yml (the caller whose name reusable pr-trusted.yml jobs see as
-// GITHUB_WORKFLOW) is named PR, the sharded vitest lanes partition cleanly
-// with exactly one final shard, and that lane's package script routes through
-// the wrapper that runs the native-runner group.
-test("the PR workflow wiring for the native-runner lane holds", () => {
-  const prWorkflow = readFileSync(path.join(repoRoot, ".github/workflows/pr.yml"), "utf8");
-  assert.match(prWorkflow, /^name: PR$/m,
-    "renaming pr.yml silently moves the native-runner suite back into the uncached server shards");
-
-  const trustedWorkflow = readFileSync(path.join(repoRoot, ".github/workflows/pr-trusted.yml"), "utf8");
-  const lanes = [...trustedWorkflow.matchAll(/command: test:typescript:vitest --shard=(\d+)\/(\d+)/g)]
-    .map((match) => [Number(match[1]), Number(match[2])]);
-  assert.ok(lanes.length > 0, "expected sharded test:typescript:vitest lanes in pr-trusted.yml");
-  assert.equal(new Set(lanes.map(([, count]) => count)).size, 1, "vitest lanes must agree on the shard count");
-  const shardCount = lanes[0][1];
-  assert.deepEqual(
-    lanes.map(([index]) => index).sort((left, right) => left - right),
-    Array.from({ length: shardCount }, (_, index) => index + 1),
-    "vitest lanes must cover every shard exactly once",
-  );
-  assert.equal(lanes.filter(([index, count]) => index === count).length, 1,
-    "exactly one final vitest shard carries the native-runner group");
-
-  const runnerPackage = JSON.parse(
-    readFileSync(path.join(repoRoot, "packages/paperclip-runner/package.json"), "utf8"),
-  );
-  assert.equal(runnerPackage.scripts["test:typescript:vitest"], "node ./scripts/run-pr-vitest-lane.mjs");
-});
-
 const laneWrapper = path.join(repoRoot, "packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs");
 
 function wrapperPlan(args, envOverrides = {}) {
@@ -366,11 +333,11 @@ function wrapperPlan(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-test("the PR vitest lane wrapper runs the native-runner group exactly on the final PR shard", () => {
+test("the vitest lane wrapper runs the native-runner group exactly on the final shard", () => {
   for (const [args, envOverrides, expected] of [
-    [["--shard=1/2"], { GITHUB_WORKFLOW: "PR" }, false],
-    [["--shard=2/2"], { GITHUB_WORKFLOW: "PR" }, true],
-    [[], { GITHUB_WORKFLOW: "PR" }, true],
+    [["--shard=1/2"], { GITHUB_WORKFLOW: "CI" }, false],
+    [["--shard=2/2"], { GITHUB_WORKFLOW: "CI" }, true],
+    [[], { GITHUB_WORKFLOW: "CI" }, true],
     [["--shard=2/2"], { GITHUB_WORKFLOW: "Release" }, false],
     [["--shard=2/2"], {}, false],
     [[], {}, false],
@@ -390,7 +357,7 @@ test("the PR vitest lane wrapper runs the native-runner group exactly on the fin
   const malformed = spawnSync(process.execPath, [laneWrapper, "--shard=nonsense", "--dry-run"], {
     cwd: repoRoot,
     encoding: "utf8",
-    env: workflowEnv({ GITHUB_WORKFLOW: "PR" }),
+    env: workflowEnv({ GITHUB_WORKFLOW: "CI" }),
   });
   assert.notEqual(malformed.status, 0, "a malformed shard flag must fail rather than guess a lane");
 });

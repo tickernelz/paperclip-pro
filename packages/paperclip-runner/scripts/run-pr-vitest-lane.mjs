@@ -12,15 +12,14 @@
 // and the workflow files themselves list this lane's command as a package
 // script — so the suite moves here without a workflow-file change.
 //
-// Contract, mirrored in scripts/run-vitest-stable.mjs (prWorkflowName) and
+// Contract, mirrored in scripts/run-vitest-stable.mjs (ciWorkflowName) and
 // pinned by scripts/__tests__/run-vitest-stable-shard.test.mjs:
-// - Only the PR workflow (pr.yml, whose GITHUB_WORKFLOW the reusable
-//   pr-trusted.yml jobs inherit) excludes the suite from the server shards,
-//   and only there does this wrapper run it. Any other caller — local runs,
-//   release-verify.yml — keeps the suite in the server group, so a renamed
-//   workflow degrades to the slower covered path instead of losing coverage.
+// - Only the CI workflow (ci.yml) excludes the suite from the server shards,
+//   and only there does this wrapper run it. Any other caller keeps the suite
+//   in the server group, so a renamed workflow degrades to the slower covered
+//   path instead of losing coverage.
 // - The suite runs on the lane whose --shard=N/M has N === M (or an unsharded
-//   invocation), so exactly one PR lane carries it.
+//   invocation), so exactly one lane carries it.
 import { spawnSync } from "node:child_process";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -37,8 +36,8 @@ if (shardArg && !shardMatch) {
   process.exit(1);
 }
 const isFinalShard = !shardArg || shardMatch[1] === shardMatch[2];
-const isPrWorkflow = process.env.GITHUB_WORKFLOW === "PR";
-const runNativeRunnerGroup = isPrWorkflow && isFinalShard;
+const isCiWorkflow = process.env.GITHUB_WORKFLOW === "CI";
+const runNativeRunnerGroup = isCiWorkflow && isFinalShard;
 
 const plannedCommands = [
   { command: "pnpm", args: ["run", "ensure:eval-build-deps"], cwd: packageRoot },
@@ -54,7 +53,7 @@ const plannedCommands = [
 ];
 
 if (dryRun) {
-  console.log(JSON.stringify({ isPrWorkflow, isFinalShard, runNativeRunnerGroup, plannedCommands }, null, 2));
+  console.log(JSON.stringify({ isCiWorkflow, isFinalShard, runNativeRunnerGroup, plannedCommands }, null, 2));
   process.exit(0);
 }
 
