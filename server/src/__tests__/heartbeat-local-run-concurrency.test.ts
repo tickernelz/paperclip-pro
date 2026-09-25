@@ -179,6 +179,53 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(5);
   }, 60_000);
 
+  it("ignores a running row that no local process backs", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 1);
+    const strandedCompanyId = randomUUID();
+    const [stranded] = await seedAgentsWithWork(strandedCompanyId, 1);
+    await db.insert(heartbeatRuns).values({
+      companyId: strandedCompanyId,
+      agentId: stranded!.agentId,
+      status: "running",
+      responsibleUserId: "responsible-user",
+    });
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(1);
+  }, 60_000);
+
+  it("dispatches another agent's queued run as soon as a cap slot frees", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 2);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    const firstWave = await runningRunIds(companyId);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    expect(await waitForCondition(async () => adapterGate.waiters.length > 0)).toBe(true);
+    adapterGate.waiters.shift()!();
+    // No resumeQueuedRuns() here on purpose: freeing a slot must dispatch the
+    // other agent's queued run on its own.
+    expect(await waitForCondition(async () => {
+      const running = await runningRunIds(companyId);
+      return running.length === 1 && !firstWave.includes(running[0]!);
+    })).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(2);
+  }, 60_000);
+
   it("starts every queued local run when the instance cap allows it", async () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 5);

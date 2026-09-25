@@ -16921,9 +16921,16 @@ export function heartbeatService(
     return Number(count ?? 0);
   }
 
+  // The cap exists to bound local CLI processes, so it counts processes, not
+  // rows. A `running` row that no process backs — a fixture row, a row stranded
+  // by a crash, a row a previous controller left behind — would otherwise
+  // occupy a slot forever and starve every queued local run on the instance.
   async function countRunningLocalCliRuns() {
-    const [{ count }] = await db
-      .select({ count: sql<number>`count(*)` })
+    const rows = await db
+      .select({
+        id: heartbeatRuns.id,
+        processGroupId: heartbeatRuns.processGroupId,
+      })
       .from(heartbeatRuns)
       .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
       .where(
@@ -16932,7 +16939,46 @@ export function heartbeatService(
           inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
         ),
       );
-    return Number(count ?? 0);
+    return rows.filter(
+      (row) =>
+        runningProcesses.has(row.id) ||
+        activeRunExecutions.has(row.id) ||
+        (!!row.processGroupId && isProcessGroupAlive(row.processGroupId)),
+    ).length;
+  }
+
+  // Freeing a local CLI slot frees it for the whole instance, not for the agent
+  // whose run just ended. Without this sweep a run held back by the instance cap
+  // waits for the next scheduler pass, because every other dispatch path is
+  // keyed to a single agent.
+  async function startNextQueuedLocalCliRuns(finishedAgentId: string) {
+    const finished = await getAgent(finishedAgentId);
+    if (!isLocalCliAdapterType(finished?.adapterType)) return;
+    const slots =
+      resolveMaxConcurrentLocalRuns(runtimeEnv) -
+      (await countRunningLocalCliRuns());
+    if (slots <= 0) return;
+    const cutoff = await getWorktreeExecutionCutoff();
+    const queued = await db
+      .select({ agentId: heartbeatRuns.agentId })
+      .from(heartbeatRuns)
+      .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
+      .where(
+        and(
+          eq(heartbeatRuns.status, "queued"),
+          ne(heartbeatRuns.agentId, finishedAgentId),
+          inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
+          cutoff ? gte(heartbeatRuns.createdAt, cutoff) : undefined,
+        ),
+      )
+      .orderBy(asc(heartbeatRuns.createdAt));
+    const dispatched = new Set<string>();
+    for (const row of queued) {
+      if (dispatched.size >= slots) break;
+      if (dispatched.has(row.agentId)) continue;
+      dispatched.add(row.agentId);
+      await startNextQueuedRunForAgent(row.agentId);
+    }
   }
 
   async function withChatControlRecoveryGate(
@@ -26096,6 +26142,7 @@ export function heartbeatService(
             });
         }
         await startNextQueuedRunForAgent(run.agentId);
+        await startNextQueuedLocalCliRuns(run.agentId);
       }
     }
   }
