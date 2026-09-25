@@ -1347,6 +1347,24 @@ export function countLocalCliRunsStarting(staleAfterMs: number, now = Date.now()
   return localCliStartingRuns.size;
 }
 
+export function reportsStartupComplete(
+  adapter: { isStartupComplete?: (stdoutLine: string) => boolean },
+  chunk: string,
+) {
+  const predicate = adapter.isStartupComplete;
+  if (!predicate) return true;
+  for (const line of chunk.split("\n")) {
+    const trimmed = line.trim();
+    if (!trimmed) continue;
+    try {
+      if (predicate(trimmed)) return true;
+    } catch {
+      return false;
+    }
+  }
+  return false;
+}
+
 export function readLocalCliRunStartingAt(runId: string) {
   return localCliStartingRuns.get(runId) ?? null;
 }
@@ -23041,13 +23059,6 @@ export function heartbeatService(
             },
           });
         };
-        const onAdapterChildLog = async (
-          stream: "stdout" | "stderr",
-          chunk: string,
-        ) => {
-          if (stream === "stdout") markLocalCliRunStartupSignal(run.id);
-          await onLog(stream, chunk);
-        };
         if (runScopedMentionedSkillKeys.length > 0) {
           await onLog(
             "stdout",
@@ -23164,6 +23175,15 @@ export function heartbeatService(
         };
 
         const adapter = getServerAdapter(agent.adapterType);
+        const onAdapterChildLog = async (
+          stream: "stdout" | "stderr",
+          chunk: string,
+        ) => {
+          if (stream === "stdout" && reportsStartupComplete(adapter, chunk)) {
+            markLocalCliRunStartupSignal(run.id);
+          }
+          await onLog(stream, chunk);
+        };
         const durableGoalControlRun =
           readNonEmptyString(context.goalControlRequestId) !== null ||
           context.resumeSessionGoalHeartbeat === true;

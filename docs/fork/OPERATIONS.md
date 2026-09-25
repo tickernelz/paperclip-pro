@@ -349,16 +349,22 @@ two caps at the queued-run claim point (`server/src/services/heartbeat.ts`,
 | `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
 | `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
 
-A run counts as *starting* from the moment it is claimed until its adapter child
-writes its first **stdout** chunk. For `omp` that first stdout line is the
-`{"type":"session",...}` init event, which the CLI prints only after extension,
-plugin, MCP and skill loading has finished — the exact phase this gate exists to
-serialise. Progress notices such as `Still starting after 10s — phase:
-loadExtensions` go to **stderr** during that phase and deliberately do not
-release the gate. Measured on production run logs: fresh sessions reach the
-stdout `session` event 2.0–8.2 s after the CLI starts, and a slow MCP boot on
-2026-09-25 took 35.1 s (stderr "Still starting after 10s" at 00:42:04.766 and
-"after 29s" at 00:42:23.716, stdout `session` at 00:42:30.059).
+A run counts as *starting* from the moment it is claimed until its adapter
+declares the child booted. An adapter declares this with the optional
+`isStartupComplete(stdoutLine)` hook on its `ServerAdapterModule`; an adapter
+that does not implement it is counted as started on its child's first stdout
+chunk.
+
+`omp_local` implements it (`packages/adapters/omp-local/src/server/parse.ts`,
+`isOmpStartupComplete`) as the first JSON line whose `type` is an agent/turn/
+message/tool/result event — `agent_start` in practice. Its `{"type":"session"}`
+header only means the process is alive: measured on production runs it lands
+2.4–9.0 s after `adapter.invoke`, with `agent_start` a further 2.5–6.0 s later,
+so extension and MCP loading can still be in flight when the header prints.
+Progress notices such as `Still starting after 10s — phase: loadExtensions` go
+to **stderr** and never release the gate; on 2026-09-25 a slow MCP boot printed
+them at 00:42:04.766 and 00:42:23.716, with `session` at 00:42:30.059 and
+`agent_start` only at 00:42:35.617.
 
 Queued local runs are re-evaluated when a local run finishes, when a starting run
 reports its startup signal, and on a timer armed for the bypass deadline; the

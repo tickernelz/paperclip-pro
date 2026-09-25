@@ -14,12 +14,14 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { heartbeatService, markLocalCliRunStarting } from "../services/heartbeat.ts";
 import { runningProcesses } from "../adapters/index.ts";
+import { isOmpStartupComplete } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
 
 type AdapterLog = (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
 
 const adapterGate = vi.hoisted(() => ({
   waiters: [] as Array<() => void>,
   contexts: new Map<string, { onLog: (stream: string, chunk: string) => Promise<void> }>(),
+  startupPredicate: null as ((stdoutLine: string) => boolean) | null,
 }));
 
 const mockAdapterExecute = vi.hoisted(() =>
@@ -45,6 +47,9 @@ vi.mock("../adapters/index.ts", async () => {
     getServerAdapter: vi.fn(() => ({
       supportsLocalAgentJwt: false,
       execute: mockAdapterExecute,
+      ...(adapterGate.startupPredicate
+        ? { isStartupComplete: adapterGate.startupPredicate }
+        : {}),
     })),
   };
 });
@@ -162,6 +167,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await heartbeat.drainActiveRunExecutions();
     runningProcesses.clear();
     adapterGate.contexts.clear();
+    adapterGate.startupPredicate = null;
   }
 
   async function runningRunIds(companyId: string) {
@@ -186,6 +192,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(firstWave).toHaveLength(2);
     expect(await countRuns(companyId, "queued")).toBe(3);
 
+    expect(await waitForCondition(async () => adapterGate.waiters.length > 0)).toBe(true);
     adapterGate.waiters.shift()!();
     expect(await waitForCondition(async () => (await countRuns(companyId, "succeeded")) >= 1)).toBe(true);
 
@@ -406,6 +413,43 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
 
     markLocalCliRunStarting(stuckRunId, Date.now() - 601_000);
     await heartbeat.resumeQueuedRuns();
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("keeps an omp-local child starting until its first agent event", async () => {
+    adapterGate.startupPredicate = isOmpStartupComplete;
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 2);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    await settle();
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    const bootingRunId = (await runningRunIds(companyId))[0]!;
+    const log = await adapterLogFor(bootingRunId);
+    await log("stdout", '{"type":"session","version":3,"id":"01a0d6d4","cwd":"/tmp"}\n');
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(1);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await log("stdout", '{"type":"notice","level":"info","message":"xd://: unmounted ast_grep"}\n');
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(1);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await log("stdout", '{"type":"agent_start"}\n');
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
 
     await drainEverything(heartbeat);
