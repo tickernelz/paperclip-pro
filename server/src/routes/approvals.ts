@@ -308,10 +308,14 @@ export function approvalRoutes(
         ? approvalReviewPathContext(approval.id)
         : null;
 
+      const actor = getActorInfo(req);
       await logActivity(db, {
         companyId: approval.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "approval.approved",
         entityType: "approval",
         entityId: approval.id,
@@ -353,8 +357,11 @@ export function approvalRoutes(
 
           await logActivity(db, {
             companyId: approval.companyId,
-            actorType: "user",
-            actorId: req.actor.userId ?? "board",
+            actorType: actor.actorType,
+            actorId: actor.actorId,
+            agentId: actor.agentId,
+            runId: actor.runId,
+            agentApiKeyId: actor.agentApiKeyId,
             action: "approval.requester_wakeup_queued",
             entityType: "approval",
             entityId: approval.id,
@@ -375,8 +382,11 @@ export function approvalRoutes(
           );
           await logActivity(db, {
             companyId: approval.companyId,
-            actorType: "user",
-            actorId: req.actor.userId ?? "board",
+            actorType: actor.actorType,
+            actorId: actor.actorId,
+            agentId: actor.agentId,
+            runId: actor.runId,
+            agentApiKeyId: actor.agentApiKeyId,
             action: "approval.requester_wakeup_failed",
             entityType: "approval",
             entityId: approval.id,
@@ -418,10 +428,14 @@ export function approvalRoutes(
     if (applied) {
       const linkedIssues = await issueApprovalsSvc.listIssuesForApproval(approval.id);
       const lostReviewIssueIds = await lostReviewPathIssueIds(approval.companyId, linkedIssues);
+      const actor = getActorInfo(req);
       await logActivity(db, {
         companyId: approval.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "approval.rejected",
         entityType: "approval",
         entityId: approval.id,
@@ -453,10 +467,14 @@ export function approvalRoutes(
       const decidedByUserId = approvalDeciderId(req);
       const approval = await svc.requestRevision(id, decidedByUserId, req.body.decisionNote);
 
+      const actor = getActorInfo(req);
       await logActivity(db, {
         companyId: approval.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "approval.revision_requested",
         entityType: "approval",
         entityId: approval.id,

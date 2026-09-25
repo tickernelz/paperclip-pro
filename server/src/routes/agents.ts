@@ -4417,10 +4417,14 @@ export function agentRoutes(
         : null;
     const state = await heartbeat.resetRuntimeSession(id, { taskKey });
 
+    const actor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
       action: "agent.runtime_session_reset",
       entityType: "agent",
       entityId: id,
@@ -5459,10 +5463,14 @@ export function agentRoutes(
 
     await heartbeat.cancelActiveForAgent(id);
 
+    const actor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
       action: "agent.paused",
       entityType: "agent",
       entityId: agent.id,
@@ -5526,10 +5534,14 @@ export function agentRoutes(
       return;
     }
 
+    const actor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
       action: "agent.error_cleared",
       entityType: "agent",
       entityId: agent.id,
@@ -5579,10 +5591,14 @@ export function agentRoutes(
       return;
     }
 
+    const actor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
       action: "agent.approved",
       entityType: "agent",
       entityId: agent.id,
@@ -5677,10 +5693,14 @@ export function agentRoutes(
       return;
     }
 
+    const actor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
       action: "agent.deleted",
       entityType: "agent",
       entityId: agent.id,
@@ -6846,10 +6866,14 @@ export function agentRoutes(
     });
 
     if (run) {
+      const actor = getActorInfo(req);
       await logActivity(db, {
         companyId: run.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "heartbeat.cancelled",
         entityType: "heartbeat_run",
         entityId: run.id,
@@ -7034,10 +7058,14 @@ export function agentRoutes(
             resolution,
           });
         }
+        const actor = getActorInfo(req);
         await logActivity(db, {
           companyId: existing.companyId,
-          actorType: "user",
-          actorId: req.actor.userId ?? "board",
+          actorType: actor.actorType,
+          actorId: actor.actorId,
+          agentId: actor.agentId,
+          runId: actor.runId,
+          agentApiKeyId: actor.agentApiKeyId,
           action: "heartbeat.runtime_request_resolution_queued",
           entityType: "heartbeat_run",
           entityId: existing.id,
@@ -7168,10 +7196,14 @@ export function agentRoutes(
         agentId: run.agentId,
         projection: projectCodexWorkspaceDiffsFromTrace(entries),
       });
+      const actor = getActorInfo(req);
       await logActivity(db, {
         companyId: run.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "local-board",
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
         action: "provider_trace.workspace_diffs_reprojected",
         entityType: "heartbeat_run",
         entityId: run.id,

@@ -2,6 +2,7 @@ import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { AgentAuthorityCapability } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 
 vi.unmock("http");
 vi.unmock("node:http");
@@ -81,6 +82,7 @@ const mockBudgetService = vi.hoisted(() => ({
 
 const mockHeartbeatService = vi.hoisted(() => ({
   cancelActiveForAgent: vi.fn(),
+  cancelInvocationsForAgents: vi.fn(),
 }));
 
 const mockIssueApprovalService = vi.hoisted(() => ({
@@ -261,6 +263,10 @@ async function loadRouteModules() {
   return routeModules;
 }
 
+const dbStub = {
+  select: () => ({ from: () => ({ where: async () => [] }) }),
+} as unknown as Db;
+
 async function createApp(actor: Record<string, unknown>) {
   const [{ errorHandler }, { agentRoutes }] = await loadRouteModules();
   const app = express();
@@ -272,7 +278,7 @@ async function createApp(actor: Record<string, unknown>) {
     };
     next();
   });
-  app.use("/api", agentRoutes({} as any));
+  app.use("/api", agentRoutes(dbStub));
   app.use(errorHandler);
   return app;
 }
@@ -360,6 +366,11 @@ function resetMockDefaults() {
   mockAccessService.ensureMembership.mockImplementation(async () => undefined);
   mockAccessService.setPrincipalPermission.mockImplementation(async () => undefined);
   mockHeartbeatService.cancelActiveForAgent.mockImplementation(async () => undefined);
+  mockHeartbeatService.cancelInvocationsForAgents.mockImplementation(async () => ({
+    agentIds: [],
+    runsCancelled: 0,
+    wakeupsCancelled: 0,
+  }));
   mockLogActivity.mockImplementation(async () => undefined);
 }
 
@@ -478,7 +489,7 @@ describe.sequential("agent cross-tenant route authorization", () => {
     const ceoRes = await requestApp(ceoApp, (baseUrl) =>
       request(baseUrl).post(`/api/agents/${peerAgentId}/terminate`).send({}),
     );
-    expect(ceoRes.body.error).not.toContain("not authorized");
+    expect(ceoRes.status).toBe(200);
     expect(mockAgentService.terminate).toHaveBeenCalledWith(peerAgentId);
 
     mockAgentService.terminate.mockClear();
@@ -828,5 +839,111 @@ describe.sequential("agent cross-tenant route authorization", () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toBe("Only agents in error status can have their error cleared");
     expect(mockLogActivity).not.toHaveBeenCalled();
+  });
+});
+
+describe.sequential("agent lifecycle activity attribution", () => {
+  const ceoAgentId = "77777777-7777-4777-8777-777777777777";
+  const ceoRunId = "88888888-8888-4888-8888-888888888888";
+  const ceoKeyId = "99999999-9999-4999-8999-999999999999";
+  const targetAgentId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+  beforeEach(() => {
+    resetMockDefaults();
+    mockAgentService.getById.mockImplementation(async () => ({ ...baseAgent, id: targetAgentId }));
+    mockAgentService.pause.mockImplementation(async () => ({ ...baseAgent, id: targetAgentId, status: "paused" }));
+    mockAgentService.resume.mockImplementation(async () => ({ ...baseAgent, id: targetAgentId, status: "idle" }));
+    mockAgentService.terminate.mockImplementation(async () => ({ ...baseAgent, id: targetAgentId, status: "terminated" }));
+  });
+
+  function ceoApp() {
+    return createApp({
+      type: "agent",
+      agentId: ceoAgentId,
+      agentRole: "ceo",
+      companyId,
+      runId: ceoRunId,
+      keyId: ceoKeyId,
+      source: "agent_key",
+    });
+  }
+
+  const agentAttribution = {
+    companyId,
+    actorType: "agent",
+    actorId: ceoAgentId,
+    agentId: ceoAgentId,
+    runId: ceoRunId,
+  };
+
+  it("attributes a ceo agent pause to the acting agent", async () => {
+    const app = await ceoApp();
+    const res = await requestApp(app, (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${targetAgentId}/pause`).send({}),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockAgentService.pause).toHaveBeenCalledWith(targetAgentId);
+    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      ...agentAttribution,
+      agentApiKeyId: ceoKeyId,
+      action: "agent.paused",
+      entityId: targetAgentId,
+    }));
+  });
+
+  it("attributes a ceo agent resume and terminate to the acting agent", async () => {
+    mockAccessService.decide.mockResolvedValue({
+      allowed: true,
+      action: "agent_config:update",
+      reason: "allow_direct_change",
+      explanation: "Allowed by direct configuration grant.",
+      grant: { permissionKey: "agents:configure" },
+    });
+    const resumeRes = await requestApp(await ceoApp(), (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${targetAgentId}/resume`).send({}),
+    );
+    expect(resumeRes.status).toBe(200);
+    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      ...agentAttribution,
+      action: "agent.resumed",
+      entityId: targetAgentId,
+    }));
+
+    mockLogActivity.mockClear();
+    const terminateRes = await requestApp(await ceoApp(), (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${targetAgentId}/terminate`).send({}),
+    );
+    expect(terminateRes.status).toBe(200);
+    expect(mockAgentService.terminate).toHaveBeenCalledWith(targetAgentId);
+    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      ...agentAttribution,
+      action: "agent.terminated",
+      entityId: targetAgentId,
+    }));
+  });
+
+  it("keeps a board pause attributed to the operator user", async () => {
+    const app = await createApp({
+      type: "board",
+      userId: "board-user",
+      companyIds: [companyId],
+      source: "local_implicit",
+      isInstanceAdmin: true,
+    });
+
+    const res = await requestApp(app, (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${targetAgentId}/pause`).send({}),
+    );
+
+    expect(res.status).toBe(200);
+    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
+      companyId,
+      actorType: "user",
+      actorId: "board-user",
+      agentId: null,
+      action: "agent.paused",
+      entityId: targetAgentId,
+    }));
   });
 });

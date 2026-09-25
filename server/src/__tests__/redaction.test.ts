@@ -375,6 +375,22 @@ describe("redaction", () => {
     });
   });
 
+  it("preserves the agent authority reason while still redacting credential keys", () => {
+    expect(
+      redactEventPayload({
+        authorityReason: "agent_role_ceo",
+        capability: "company:agents",
+        agentRole: "ceo",
+        authToken: "pcp_live_secret",
+      }),
+    ).toEqual({
+      authorityReason: "agent_role_ceo",
+      capability: "company:agents",
+      agentRole: "ceo",
+      authToken: REDACTED_EVENT_VALUE,
+    });
+  });
+
   /**
    * A removal receipt (PAP-17119) has to show what it revoked, so a fixed set of
    * count keys is exempt from the secret-key guard — but only while the value is

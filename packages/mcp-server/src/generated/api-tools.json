@@ -321,7 +321,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -495,7 +496,8 @@
     },
     "guards": [
       "assertCanManageCompanyMember",
-      "assertCompanyPermission"
+      "assertCompanyPermission",
+      "getActorInfo"
     ],
     "permissions": [
       "users:manage_permissions"
@@ -1259,7 +1261,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -1599,7 +1602,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6150",
+    "boardGuard": "assertBoard@agents.ts:6170",
     "parameters": [
       {
         "name": "id",
@@ -1629,7 +1632,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -6158,7 +6162,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -11267,7 +11272,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -11808,7 +11814,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7267",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7299",
     "parameters": [
       {
         "name": "runId",
@@ -16454,7 +16460,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7104",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7132",
     "parameters": [
       {
         "name": "runId",
@@ -20601,7 +20607,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4751",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4775",
     "parameters": [
       {
         "name": "userId",
@@ -20635,7 +20641,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4678",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4702",
     "parameters": []
   },
   {
@@ -24188,7 +24194,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6683",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6703",
     "parameters": [
       {
         "name": "companyId",
@@ -26117,7 +26123,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -28108,7 +28115,8 @@
     },
     "guards": [
       "assertBoardCanManageAgentsForCompany",
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -28526,7 +28534,8 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
-      "assertNativeRuntimeRequestResolverAuthorized"
+      "assertNativeRuntimeRequestResolverAuthorized",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -29369,7 +29378,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7192",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7224",
     "parameters": [
       {
         "name": "frameId",
@@ -35473,7 +35482,8 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
-      "assertCompanyAccess"
+      "assertCompanyAccess",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -36816,7 +36826,8 @@
     },
     "guards": [
       "assertCanManageCompanyMember",
-      "assertCompanyPermission"
+      "assertCompanyPermission",
+      "getActorInfo"
     ],
     "permissions": [
       "users:manage_permissions"
@@ -36887,7 +36898,8 @@
     },
     "guards": [
       "assertCanManageCompanyMember",
-      "assertCompanyPermission"
+      "assertCompanyPermission",
+      "getActorInfo"
     ],
     "permissions": [
       "users:manage_permissions"
@@ -36984,7 +36996,8 @@
     },
     "guards": [
       "assertCanManageCompanyMember",
-      "assertCompanyPermission"
+      "assertCompanyPermission",
+      "getActorInfo"
     ],
     "permissions": [
       "users:manage_permissions"

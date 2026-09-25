@@ -98,7 +98,7 @@ import {
   collapseDuplicatePendingHumanJoinRequests,
   findReusableHumanJoinRequest,
 } from "../lib/join-request-dedupe.js";
-import { assertAuthenticated, assertCompanyAccess, recordAgentAuthority } from "./authz.js";
+import { assertAuthenticated, assertCompanyAccess, getActorInfo, recordAgentAuthority } from "./authz.js";
 import {
   AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
   agentRoleHasAuthority,
@@ -4330,10 +4330,14 @@ export function accessRoutes(
         .returning()
         .then((rows) => rows[0]);
 
+      const approveActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: approveActor.actorType,
+        actorId: approveActor.actorId,
+        agentId: approveActor.agentId,
+        runId: approveActor.runId,
+        agentApiKeyId: approveActor.agentApiKeyId,
         action: "join.approved",
         entityType: "join_request",
         entityId: requestId,
@@ -4388,10 +4392,14 @@ export function accessRoutes(
         .returning()
         .then((rows) => rows[0]);
 
+      const rejectActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: rejectActor.actorType,
+        actorId: rejectActor.actorId,
+        agentId: rejectActor.agentId,
+        runId: rejectActor.runId,
+        agentApiKeyId: rejectActor.agentApiKeyId,
         action: "join.rejected",
         entityType: "join_request",
         entityId: requestId,
@@ -4520,10 +4528,14 @@ export function accessRoutes(
       const updated = await access.updateMember(companyId, memberId, req.body);
       if (!updated) throw notFound("Member not found");
 
+      const updateActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: updateActor.actorType,
+        actorId: updateActor.actorId,
+        agentId: updateActor.agentId,
+        runId: updateActor.runId,
+        agentApiKeyId: updateActor.agentApiKeyId,
         action: "company_member.updated",
         entityType: "company_membership",
         entityId: memberId,
@@ -4564,10 +4576,14 @@ export function accessRoutes(
       );
       if (!updated) throw notFound("Member not found");
 
+      const accessActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: accessActor.actorType,
+        actorId: accessActor.actorId,
+        agentId: accessActor.agentId,
+        runId: accessActor.runId,
+        agentApiKeyId: accessActor.agentApiKeyId,
         action: "company_member.access_updated",
         entityType: "company_membership",
         entityId: memberId,
@@ -4602,10 +4618,14 @@ export function accessRoutes(
       });
       if (!result) throw notFound("Member not found");
 
+      const archiveActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: archiveActor.actorType,
+        actorId: archiveActor.actorId,
+        agentId: archiveActor.agentId,
+        runId: archiveActor.runId,
+        agentApiKeyId: archiveActor.agentApiKeyId,
         action: "company_member.archived",
         entityType: "company_membership",
         entityId: memberId,
@@ -4644,10 +4664,14 @@ export function accessRoutes(
         req.actor.userId ?? null
       );
       if (!updated) throw notFound("Member not found");
+      const permissionsActor = getActorInfo(req);
       await logActivity(db, {
         companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
+        actorType: permissionsActor.actorType,
+        actorId: permissionsActor.actorId,
+        agentId: permissionsActor.agentId,
+        runId: permissionsActor.runId,
+        agentApiKeyId: permissionsActor.agentApiKeyId,
         action: "company_member.permissions_updated",
         entityType: "company_membership",
         entityId: memberId,
