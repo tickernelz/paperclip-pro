@@ -395,14 +395,3 @@ test("the workflow budget fails closed after the last registry check", () => {
   assert.equal(result.calls.match(/^sleep /gm)?.length, budget.verifyAttempts - 1);
 });
 
-test("every publish job budgets for build time and four delayed packages", () => {
-  const { verifyAttempts, verifyDelaySeconds } = workflowVerifyBudget();
-  const pollingSeconds = (verifyAttempts - 1) * verifyDelaySeconds;
-  const requiredSeconds = 30 * 60 + 4 * pollingSeconds;
-
-  for (const job of ["publish_canary", "publish_nightly", "publish_beta", "publish_stable"]) {
-    const body = releaseWorkflow.split(`\n  ${job}:\n`)[1]?.split(/\n  [a-z_]+:\n/)[0] ?? "";
-    const timeoutMinutes = Number(body.match(/^    timeout-minutes: (\d+)$/m)?.[1]);
-    assert.ok(timeoutMinutes * 60 > requiredSeconds, `${job} must leave time beyond build and polling`);
-  }
-});
