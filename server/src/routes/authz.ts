@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
-import type { SecretBindingTargetType } from "@tickernelz/paperclip-pro-shared";
+import {
+  agentAuthorityReason,
+  agentRoleHasAuthority,
+  type AgentAuthorityCapability,
+  type SecretBindingTargetType,
+} from "@tickernelz/paperclip-pro-shared";
 import { forbidden, HttpError, unauthorized } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { responsibleUserAuthzShadowMode } from "../services/authorization.js";
@@ -62,6 +67,88 @@ export function assertBoardOrAgent(req: Request) {
     return;
   }
   throw forbidden("Board or agent access required");
+}
+
+function assertAgentAuthority(
+  req: Request,
+  capability: AgentAuthorityCapability,
+  companyId?: string | null,
+) {
+  const role = req.actor.agentRole ?? null;
+  const agentId = req.actor.agentId ?? null;
+  if (!agentId) {
+    throw forbidden("Agent authentication required");
+  }
+  if (!agentRoleHasAuthority(role, capability)) {
+    throw forbidden(`Agent role ${role ?? "unknown"} is not authorized for ${capability}`, {
+      code: "AGENT_AUTHORITY_DENIED",
+      capability,
+      agentRole: role,
+    });
+  }
+  const scope = companyId ?? req.actor.companyId ?? null;
+  if (!scope) {
+    throw forbidden("Agent authority requires a company scope");
+  }
+  assertCompanyAccess(req, scope);
+  req.agentAuthority = {
+    capability,
+    reason: agentAuthorityReason(role),
+    companyId: scope,
+    agentId,
+    runId: req.actor.runId ?? null,
+  };
+}
+
+export function assertBoardOrAgentAuthority(
+  req: Request,
+  capability: AgentAuthorityCapability,
+  companyId?: string | null,
+) {
+  assertAuthenticated(req);
+  if (req.actor.type === "agent") {
+    assertAgentAuthority(req, capability, companyId);
+    return;
+  }
+  assertBoard(req);
+  if (companyId) {
+    assertCompanyAccess(req, companyId);
+  }
+}
+
+export function assertBoardOrgOrAgentAuthority(
+  req: Request,
+  capability: AgentAuthorityCapability,
+  companyId?: string | null,
+) {
+  assertAuthenticated(req);
+  if (req.actor.type === "agent") {
+    assertAgentAuthority(req, capability, companyId);
+    return;
+  }
+  assertBoardOrgAccess(req);
+  if (companyId) {
+    assertCompanyAccess(req, companyId);
+  }
+}
+
+export function hasAgentAuthority(req: Request, capability: AgentAuthorityCapability): boolean {
+  return req.actor.type === "agent" && agentRoleHasAuthority(req.actor.agentRole ?? null, capability);
+}
+
+export function recordAgentAuthority(
+  req: Request,
+  capability: AgentAuthorityCapability,
+  companyId: string,
+) {
+  if (req.actor.type !== "agent" || !req.actor.agentId) return;
+  req.agentAuthority = {
+    capability,
+    reason: agentAuthorityReason(req.actor.agentRole ?? null),
+    companyId,
+    agentId: req.actor.agentId,
+    runId: req.actor.runId ?? null,
+  };
 }
 
 export function assertInstanceAdmin(req: Request) {

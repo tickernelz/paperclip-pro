@@ -50,7 +50,7 @@ import { logger } from "../middleware/logger.js";
 import { forbidden } from "../errors.js";
 import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
-import { assertBoardOrgAccess, assertInstanceAdmin } from "./authz.js";
+import { assertBoardOrgOrAgentAuthority, assertInstanceAdmin } from "./authz.js";
 import { BUILTIN_ADAPTER_TYPES } from "../adapters/builtin-adapter-types.js";
 
 const execFileAsync = promisify(execFile);
@@ -273,7 +273,7 @@ export function adapterRoutes(options: {
     // Adapter inventory is needed by ordinary board members when creating or
     // editing company agents. Mutating adapter management routes below remain
     // instance-admin only because they affect the whole server runtime.
-    assertBoardOrgAccess(_req);
+    assertBoardOrgOrAgentAuthority(_req, "work:read");
 
     const registeredAdapters = listServerAdapters();
     const externalRecords = new Map(
@@ -426,7 +426,7 @@ export function adapterRoutes(options: {
   });
 
   router.get("/adapters/:type", async (req, res) => {
-    assertBoardOrgAccess(req);
+    assertBoardOrgOrAgentAuthority(req, "work:read");
 
     const adapterType = req.params.type;
     const adapter = findServerAdapter(adapterType);
@@ -723,7 +723,7 @@ export function adapterRoutes(options: {
   router.get("/adapters/:type/config-schema", async (req, res) => {
     // Config schemas are read-only form metadata used when org members create
     // or edit agents; they do not install or execute new adapter code.
-    assertBoardOrgAccess(req);
+    assertBoardOrgOrAgentAuthority(req, "work:read");
     const { type } = req.params;
 
     const adapter = findActiveServerAdapter(type);
@@ -763,7 +763,7 @@ export function adapterRoutes(options: {
   router.get("/adapters/:type/ui-parser.js", (req, res) => {
     // UI parsers are read-only assets for displaying existing run output.
     // Runtime-changing adapter management routes above require instance admin.
-    assertBoardOrgAccess(req);
+    assertBoardOrgOrAgentAuthority(req, "work:read");
     const { type } = req.params;
     const source = getOrExtractUiParserSource(type, findServerAdapter(type)?.uiParserPath);
     if (!source) {

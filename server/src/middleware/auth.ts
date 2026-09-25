@@ -423,6 +423,8 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
       req.actor = {
         type: "agent",
         agentId: claims.sub,
+        agentRole: agentRecord.role ?? null,
+        agentPermissions: agentRecord.permissions ?? null,
         companyId: claims.company_id,
         keyId: undefined,
         keyScope: normalizeAgentApiKeyScope(claims.key_scope),
@@ -478,6 +480,8 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
     req.actor = {
       type: "agent",
       agentId: key.agentId,
+      agentRole: agentRecord.role ?? null,
+      agentPermissions: agentRecord.permissions ?? null,
       companyId: key.companyId,
       keyId: key.id,
       keyScope: normalizeAgentApiKeyScope(key.scopeConfig),

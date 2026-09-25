@@ -22,7 +22,7 @@ import {
   type AiProvider,
   type AiConnectionBinding,
 } from "@tickernelz/paperclip-pro-shared";
-import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { accessService } from "../services/access.js";
 import { logActivity } from "../services/activity-log.js";
@@ -207,8 +207,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
   });
   router.get("/companies/:companyId/ai-connections", async (req, res) => {
     const companyId = req.params.companyId as string;
-    assertBoard(req);
-    assertCompanyAccess(req, companyId);
+    assertBoardOrAgentAuthority(req, "work:read", companyId);
     const currentUserId = getActorInfo(req).actorId;
     res.setHeader("Cache-Control", "no-store");
     const agentId = req.query.agentId;
@@ -227,8 +226,7 @@ export function aiConnectionRoutes(db: Db, options: Parameters<typeof supportsLo
     "/companies/:companyId/ai-connections/:connectionId/active-runs",
     async (req, res) => {
       const companyId = req.params.companyId as string;
-      assertBoard(req);
-      assertCompanyAccess(req, companyId);
+      assertBoardOrAgentAuthority(req, "work:read", companyId);
       if (!z.string().uuid().safeParse(req.params.connectionId).success)
         throw unprocessable("Invalid connection ID");
       const [connection] = await db
