@@ -58,6 +58,7 @@ import {
 import { classifyOmpFailure } from "./failure.js";
 import { createOmpProgressReporter } from "./progress.js";
 import { ensureOmpSkills } from "./skills.js";
+import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 
 const CAPABILITY_MANIFEST = {
   bindings: [
@@ -203,6 +204,7 @@ function buildOmpArgs(input: {
   resumeSessionId: string | null;
   omitProfile: boolean;
   effectiveProfile: string | null;
+  settingsOverlayPath: string | null;
 }): string[] {
   const { config } = input;
   const args = ["--mode", "json", "-p"];
@@ -257,6 +259,7 @@ function buildOmpArgs(input: {
 
   const maxTime = asString(config.maxTime, "").trim() || (asNumber(config.maxTime, 0) > 0 ? String(asNumber(config.maxTime, 0)) : "");
   if (maxTime) args.push("--max-time", maxTime);
+  if (input.settingsOverlayPath) args.push("--config", input.settingsOverlayPath);
   for (const configFile of stringList(config.configFiles)) args.push("--config", configFile);
   for (const extension of stringList(config.extensions)) args.push("--extension", extension);
   for (const pluginDir of stringList(config.pluginDirs)) args.push("--plugin-dir", pluginDir);
@@ -387,6 +390,16 @@ async function buildPrompts(input: {
   };
 }
 
+export function applyOmpRuntimeToggleEnv(
+  env: Record<string, string | undefined>,
+  config: Record<string, unknown>,
+): void {
+  if (asBoolean(config.noPty, false)) env.PI_NO_PTY = "1";
+  else delete env.PI_NO_PTY;
+  if (asBoolean(config.noTitle, true)) env.PI_NO_TITLE = "1";
+  else delete env.PI_NO_TITLE;
+}
+
 export function applyRuntimeToolAccess(
   env: Record<string, string>,
   tools: AdapterExecutionContext["runtimeTools"],
@@ -460,6 +473,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const preparedConfig = await prepareOmpRuntimeConfig(config, { forceMaterialized: remote });
   let restoreWorkspace: (() => Promise<void>) | null = null;
   let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
+  let settingsOverlay: OmpSettingsOverlay | null = null;
   try {
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
@@ -503,6 +517,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       inheritedLocalEnv.OMP_PROFILE = "";
       inheritedLocalEnv.PI_PROFILE = "";
     }
+    applyOmpRuntimeToggleEnv(env, config);
+    applyOmpRuntimeToggleEnv(inheritedLocalEnv, config);
     const localRuntimeEnv = stringsOnly(ensurePathInEnv({ ...inheritedLocalEnv, ...env }));
     const targetEnv = remote ? stringsOnly(ensurePathInEnv(env)) : localRuntimeEnv;
     const command = resolveOmpCommand(config);
@@ -645,6 +661,18 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       });
     }
 
+    settingsOverlay = await writeOmpSettingsOverlay({
+      runId,
+      target: runtimeTarget,
+      remote,
+      config: executionConfig,
+      remoteRootDir: runtimeRootDir,
+      cwd: remote ? effectiveExecutionCwd : cwd,
+      env: invocationEnv,
+      timeoutSec,
+      graceSec,
+    });
+
     const prompts = await buildPrompts({
       config: executionConfig,
       context,
@@ -676,6 +704,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         resumeSessionId,
         omitProfile,
         effectiveProfile: preparedConfig.profile,
+        settingsOverlayPath: settingsOverlay?.path ?? null,
       });
       if (onMeta) {
         await onMeta({
@@ -912,6 +941,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         restoreWorkspace?.(),
       ]);
     } finally {
+      await settingsOverlay?.cleanup().catch(() => {});
       await preparedConfig.cleanup();
     }
   }
