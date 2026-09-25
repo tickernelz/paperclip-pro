@@ -107,7 +107,7 @@
     "svix": "1.76.1",
     "unified": "^11.0.5",
     "ws": "^8.21.3",
-    "zod": "^4.4.3"
+    "zod": "^4.6.5"
   },
   "bundleDependencies": [
     "@chat-adapter/discord",
