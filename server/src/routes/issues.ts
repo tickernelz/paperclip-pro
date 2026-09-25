@@ -2,7 +2,8 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
-import { extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { renderDocumentPdf } from "../services/document-pdf.js";
 import {
   validateExecutionReconciliation,
   markExecutionReconciliation,
@@ -9795,6 +9796,52 @@ export function issueRoutes(
         },
       );
     res.json({ ...doc, annotations });
+  });
+
+  router.get("/issues/:id/documents/:key/pdf", async (req, res) => {
+    const id = req.params.id as string;
+    const issue = await getAccessibleResource(
+      req,
+      res,
+      getIssueById(req, id),
+      "Issue not found",
+    );
+    if (!issue) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    const keyParsed = issueDocumentKeySchema.safeParse(
+      String(req.params.key ?? "")
+        .trim()
+        .toLowerCase(),
+    );
+    if (!keyParsed.success) {
+      res.status(400).json({
+        error: "Invalid document key",
+        details: keyParsed.error.issues,
+      });
+      return;
+    }
+    const doc = await documentsSvc.getIssueDocumentByKey(
+      issue.id,
+      keyParsed.data,
+    );
+    if (!doc) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+    const title = doc.title?.trim() || doc.key;
+    const pdf = await renderDocumentPdf({
+      title,
+      markdown: doc.body ?? "",
+      issueIdentifier: issue.identifier ?? String(issue.id ?? ""),
+      revisionNumber: doc.latestRevisionNumber ?? 1,
+    });
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="' + documentExportFileName(title, "pdf") + '"',
+    );
+    res.setHeader("Content-Length", String(pdf.byteLength));
+    res.end(pdf);
   });
 
   router.get("/issues/:id/documents/:key/annotations", async (req, res) => {

@@ -456,6 +456,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
             source: "document",
             mediaKind: "document",
             title: row.title ?? row.key,
+            documentKey: row.key,
             previewText: normalizePreviewText(row.latestBody),
             contentType: "text/markdown",
             contentPath: null,
@@ -596,6 +597,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
             source: "work_product",
             mediaKind: classifyMediaKind(contentType, attachmentMetadata ? "file" : "empty"),
             title: row.title,
+            documentKey: null,
             previewText: normalizePreviewText(row.summary),
             contentType,
             contentPath: attachmentMetadata?.contentPath ?? null,
@@ -696,6 +698,7 @@ export function companyArtifactsService(db: Db, storage?: StorageService) {
             source: "attachment",
             mediaKind,
             title: row.originalFilename ?? "Attachment",
+            documentKey: null,
             previewText: mediaKind === "text"
               ? await readTextAttachmentPreview(storage, {
                 companyId: row.companyId,

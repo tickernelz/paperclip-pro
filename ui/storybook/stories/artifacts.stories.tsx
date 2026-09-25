@@ -56,6 +56,7 @@ function makeArtifact(overrides: Partial<CompanyArtifact>): CompanyArtifact {
     source: "attachment",
     mediaKind: "image",
     title: "Artifact",
+    documentKey: null,
     previewText: null,
     contentType: null,
     contentPath: null,

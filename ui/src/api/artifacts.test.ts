@@ -16,6 +16,7 @@ function sampleArtifact(overrides: Partial<CompanyArtifact> = {}): CompanyArtifa
     source: "work_product",
     mediaKind: "video",
     title: "Primary cut",
+    documentKey: null,
     previewText: null,
     contentType: "video/mp4",
     contentPath: "/files/wp-1.mp4",
