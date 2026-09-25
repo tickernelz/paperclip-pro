@@ -1,8 +1,8 @@
 import { Router, type Request } from "express";
 import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
+import { agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
-  hasManagementAuthority,
   paperclipToolCatalog,
   parseToolsets,
   PaperclipApiClient,
@@ -82,7 +82,9 @@ export function paperclipMcpRoutes(db: Db) {
     const { definitions, listing } = paperclipToolCatalog(
       client,
       toolsets,
-      hasManagementAuthority(agent?.role),
+      agentAuthorityCapabilities(agent?.role).some((capability) =>
+        capability.startsWith("company:"),
+      ),
     );
 
     if (method === "tools/list") return send(listing);
