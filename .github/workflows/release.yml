@@ -60,7 +60,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Cache the runner crate build
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/registry/index
