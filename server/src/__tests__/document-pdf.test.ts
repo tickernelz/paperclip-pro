@@ -61,18 +61,31 @@ describe("document PDF markdown rendering", () => {
     expect(html).toContain('<input type="checkbox" checked disabled>');
   });
 
-  it("wraps the body in the GitHub markdown stylesheet with the title as an H1", () => {
+  it("starts the body with the rendered markdown and injects no title heading", () => {
     const html = buildDocumentPrintHtml({
       title: "Internal Status 2026-09-25",
-      markdown: "# Ignored inner heading\n\nBody.",
+      markdown: "Body paragraph.",
       issueIdentifier: "ZHA-9",
       revisionNumber: 2,
     });
 
-    expect(html).toContain('<article class="markdown-body">');
-    expect(html).toContain("<h1>Internal Status 2026-09-25</h1>");
+    expect(html).toContain('<article class="markdown-body">\n<p>Body paragraph.</p>');
+    expect(html).not.toContain("<h1>Internal Status 2026-09-25</h1>");
+    expect(html).toContain("<title>Internal Status 2026-09-25</title>");
     expect(html).toContain(".markdown-body");
     expect(html).toContain("color-scheme: light");
+  });
+
+  it("renders exactly one h1 when the markdown opens with its own heading", () => {
+    const html = buildDocumentPrintHtml({
+      title: "Internal Status 2026-09-25",
+      markdown: "# Curation Report\n\nBody.",
+      issueIdentifier: "ZHA-9",
+      revisionNumber: 2,
+    });
+
+    expect(html.match(/<h1\b/g)).toHaveLength(1);
+    expect(html).toContain('<h1 id="curation-report">Curation Report</h1>');
   });
 
   it("escapes HTML metacharacters in the document title", () => {
