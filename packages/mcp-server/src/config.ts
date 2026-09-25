@@ -18,6 +18,16 @@ export function hasManagementAuthority(role: string | null | undefined): boolean
 
 export const TOOLSET_NAMES: ToolsetName[] = ["core", "extended"];
 
+export function parseToolsets(requested: string | null | undefined): ToolsetName[] {
+  const requestedNames = (requested ?? "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  if (requestedNames.includes("all")) return [...TOOLSET_NAMES];
+  const selected = TOOLSET_NAMES.filter((name) => requestedNames.includes(name));
+  return selected.length > 0 ? selected : ["core"];
+}
+
 export function resolveToolsets(
   env: NodeJS.ProcessEnv = process.env,
   argv: string[] = process.argv.slice(2),
@@ -28,18 +38,12 @@ export function resolveToolsets(
     (flagIndex >= 0 ? argv[flagIndex + 1] : undefined) ??
     inline?.slice("--toolsets=".length) ??
     env.PAPERCLIP_MCP_TOOLSETS;
-  const requestedNames = (requested ?? "")
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-  if (requestedNames.includes("all")) return [...TOOLSET_NAMES];
-  const selected = TOOLSET_NAMES.filter((name) => requestedNames.includes(name));
-  for (const name of requestedNames) {
-    if (name !== "all" && !TOOLSET_NAMES.includes(name as ToolsetName)) {
+  for (const name of (requested ?? "").split(",").map((entry) => entry.trim().toLowerCase())) {
+    if (name && name !== "all" && !TOOLSET_NAMES.includes(name as ToolsetName)) {
       console.error(`Ignoring unknown Paperclip MCP toolset "${name}"`);
     }
   }
-  return selected.length > 0 ? selected : ["core"];
+  return parseToolsets(requested);
 }
 
 function nonEmpty(value: string | undefined): string | null {

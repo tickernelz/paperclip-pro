@@ -1,25 +1,9 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { z } from "zod";
+import { paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
-import { createGeneratedToolDefinitions } from "./generated-tools.js";
-import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
-import { createToolDefinitions, type ToolDefinition } from "./tools.js";
-
-export function leanToolListing(tools: ReadonlyArray<ToolDefinition>) {
-  return {
-    tools: tools.map((tool) => ({
-      name: tool.name,
-      description: tool.description,
-      inputSchema: leanJsonSchema(
-        z.toJSONSchema(tool.schema, { target: "draft-7", io: "input" }),
-      ) as JsonSchemaObject,
-      ...(tool.annotations ? { annotations: tool.annotations } : {}),
-    })),
-  };
-}
 
 export async function resolveManagementAuthority(
   client: PaperclipApiClient,
@@ -34,19 +18,6 @@ export async function resolveManagementAuthority(
   }
 }
 
-export function createPaperclipToolDefinitions(
-  client: PaperclipApiClient,
-  config: PaperclipMcpConfig,
-  management = false,
-): ToolDefinition[] {
-  const curated = createToolDefinitions(client);
-  const curatedNames = new Set(curated.map((tool) => tool.name));
-  const generated = createGeneratedToolDefinitions(client, config.toolsets, management).filter(
-    (tool) => !curatedNames.has(tool.name),
-  );
-  return [...curated, ...generated];
-}
-
 export function createPaperclipMcpServer(
   config: PaperclipMcpConfig = readConfigFromEnv(),
   management = false,
@@ -57,7 +28,7 @@ export function createPaperclipMcpServer(
   });
 
   const client = new PaperclipApiClient(config);
-  const tools = createPaperclipToolDefinitions(client, config, management);
+  const { definitions: tools, listing } = paperclipToolCatalog(client, config.toolsets, management);
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -69,7 +40,7 @@ export function createPaperclipMcpServer(
       tool.execute,
     );
   }
-  server.server.setRequestHandler(ListToolsRequestSchema, () => leanToolListing(tools));
+  server.server.setRequestHandler(ListToolsRequestSchema, () => listing);
 
   return {
     server,

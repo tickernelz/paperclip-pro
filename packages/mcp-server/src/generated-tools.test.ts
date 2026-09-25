@@ -3,7 +3,7 @@ import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, resolveToolsets } from "./config.js";
 import { createGeneratedToolDefinitions, generatedToolSpecs } from "./generated-tools.js";
 import { createToolDefinitions } from "./tools.js";
-import { createPaperclipToolDefinitions, leanToolListing } from "./index.js";
+import { paperclipToolCatalog } from "./catalog.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 
 function makeClient() {
@@ -221,17 +221,7 @@ describe("generated Paperclip API tools", () => {
   });
 
   it("lists core tools without JSON Schema validation metadata", () => {
-    const listing = leanToolListing(
-      createPaperclipToolDefinitions(makeClient(), {
-        apiUrl: "http://localhost:3100/api",
-        apiKey: "token-123",
-        companyId: null,
-        agentId: null,
-        runId: null,
-        toolsets: ["core"],
-        agentRole: null,
-      }),
-    );
+    const { listing } = paperclipToolCatalog(makeClient(), ["core"], false);
     const serialized = JSON.stringify(listing.tools);
     expect(serialized).not.toContain('"$schema":');
     expect(Buffer.byteLength(serialized)).toBeLessThan(48_000);

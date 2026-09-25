@@ -65,18 +65,25 @@ export function generatedToolSpecs(): GeneratedToolSpec[] {
   return cachedSpecs;
 }
 
-function selectedToolSpecs(
+export interface PreparedGeneratedTool {
+  spec: GeneratedToolSpec;
+  schema: z.ZodObject;
+}
+
+const preparedVariants = new Map<string, PreparedGeneratedTool[]>();
+
+export function prepareGeneratedTools(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
-): GeneratedToolSpec[] {
-  const selected = readGeneratedToolFile().filter((entry) => {
-    const spec = entry as { toolset?: unknown; authority?: unknown };
-    return (
-      toolsets.includes(spec.toolset as ToolsetName) &&
-      (management || spec.authority === "agent")
-    );
-  });
-  return generatedToolListSchema.parse(selected);
+): PreparedGeneratedTool[] {
+  const key = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}`;
+  const cached = preparedVariants.get(key);
+  if (cached) return cached;
+  const prepared = generatedToolSpecs()
+    .filter((spec) => toolsets.includes(spec.toolset) && (management || spec.authority === "agent"))
+    .map((spec) => ({ spec, schema: inputSchema(spec) }));
+  preparedVariants.set(key, prepared);
+  return prepared;
 }
 
 function inputSchema(spec: GeneratedToolSpec): z.ZodObject {
@@ -139,48 +146,51 @@ function requestPath(client: PaperclipApiClient, spec: GeneratedToolSpec, values
   return search.length > 0 ? `${path}?${search}` : path;
 }
 
+export function bindGeneratedTools(
+  prepared: ReadonlyArray<PreparedGeneratedTool>,
+  client: PaperclipApiClient,
+): ToolDefinition[] {
+  return prepared.map(({ spec, schema }) => ({
+    name: spec.name,
+    description: spec.description,
+    schema,
+    annotations: {
+      readOnlyHint: spec.annotations.readOnlyHint,
+      destructiveHint: spec.annotations.destructiveHint,
+      idempotentHint: spec.annotations.idempotentHint,
+    },
+    execute: async (input: Record<string, unknown>) => {
+      try {
+        const values: Record<string, unknown> = { ...schema.parse(input) };
+        const advanced = values.advanced as Record<string, unknown> | undefined;
+        delete values.advanced;
+        const path = requestPath(client, spec, values);
+        const requestBody =
+          spec.body?.mode === "nest"
+            ? values.body
+            : spec.body
+              ? values
+              : spec.method === "GET"
+                ? undefined
+                : {};
+        const body =
+          advanced && requestBody !== undefined && requestBody !== null
+            ? { ...(requestBody as Record<string, unknown>), ...advanced }
+            : requestBody;
+        return formatTextResponse(
+          await client.requestJson(spec.method, path, body === undefined ? {} : { body }),
+        );
+      } catch (error) {
+        return formatErrorResponse(error);
+      }
+    },
+  }));
+}
+
 export function createGeneratedToolDefinitions(
   client: PaperclipApiClient,
   toolsets: ReadonlyArray<ToolsetName>,
   management = false,
 ): ToolDefinition[] {
-  return selectedToolSpecs(toolsets, management)
-    .map((spec) => {
-      const schema = inputSchema(spec);
-      return {
-        name: spec.name,
-        description: spec.description,
-        schema,
-        annotations: {
-          readOnlyHint: spec.annotations.readOnlyHint,
-          destructiveHint: spec.annotations.destructiveHint,
-          idempotentHint: spec.annotations.idempotentHint,
-        },
-        execute: async (input: Record<string, unknown>) => {
-          try {
-            const values: Record<string, unknown> = { ...schema.parse(input) };
-            const advanced = values.advanced as Record<string, unknown> | undefined;
-            delete values.advanced;
-            const path = requestPath(client, spec, values);
-            const requestBody =
-              spec.body?.mode === "nest"
-                ? values.body
-                : spec.body
-                  ? values
-                  : spec.method === "GET"
-                    ? undefined
-                    : {};
-            const body =
-              advanced && requestBody !== undefined && requestBody !== null
-                ? { ...(requestBody as Record<string, unknown>), ...advanced }
-                : requestBody;
-            return formatTextResponse(
-              await client.requestJson(spec.method, path, body === undefined ? {} : { body }),
-            );
-          } catch (error) {
-            return formatErrorResponse(error);
-          }
-        },
-      };
-    });
+  return bindGeneratedTools(prepareGeneratedTools(toolsets, management), client);
 }
