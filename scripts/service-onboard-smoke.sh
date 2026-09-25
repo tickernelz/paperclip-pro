@@ -12,7 +12,6 @@ set -euo pipefail
 # Requirements: a Linux host with a user systemd session. In CI that means
 # `loginctl enable-linger` plus XDG_RUNTIME_DIR / DBUS_SESSION_BUS_ADDRESS
 # pointing at /run/user/<uid>; see the smoke_service job in
-# .github/workflows/release-smoke.yml.
 
 PAPERCLIPAI_VERSION="${PAPERCLIPAI_VERSION:-latest}"
 DATA_DIR="${DATA_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/paperclip-service-smoke.XXXXXX")}"

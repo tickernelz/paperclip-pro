@@ -116,9 +116,10 @@ process died, remove the stale lock and retry
 
 ## 4. Updating from this repository
 
-The fork publishes no npm package, so `paperclip-pro update --latest` and
-`--canary` resolve against a registry that has no such package. Update by
-reinstalling the git ref:
+The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so
+`paperclip-pro update --latest` resolves once a release has run; `--canary`
+still resolves nothing, because the fork publishes only `next` and `latest`.
+To install a ref that is not released yet, reinstall from git:
 
 ```bash
 paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
@@ -275,6 +276,63 @@ paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
 
 `--data-dir` isolates state from `~/.paperclip-pro` (`cli/src/index.ts:63`).
+
+## 9. Releasing to npm
+
+One workflow does the whole release: **Release**
+(`.github/workflows/release.yml`), `workflow_dispatch` only, one job, no
+tests — the PR/main CI owns those. It builds once, packs each package once,
+publishes the packed tarballs in dependency order under the `next` dist-tag,
+waits for npm to expose the whole set, moves `latest` onto it, then tags the
+release commit and opens a GitHub release with notes generated since the
+previous `v*` tag.
+
+Preview first, then publish:
+
+```bash
+gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+  -f dry_run=true -f auth=token -f version=
+
+gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+  -f dry_run=false -f auth=token -f version=
+```
+
+Inputs:
+
+- `version` — empty resolves the UTC date slot `YYYY.MDD` plus the next patch
+  not already published for `@tickernelz/paperclip-pro`, so a same-day rerun
+  never collides. Pass an explicit `YYYY.MDD.P` to pin it.
+- `dry_run` — `true` previews every step and contacts npm only for read-only
+  checks.
+- `auth` — `token` uses the `NPM_TOKEN` repository secret; `oidc` uses npm
+  trusted publishing. Keep `token` until every package has a trusted publisher
+  configured, and note that npm OIDC does not authenticate
+  `npm dist-tag add`, so the `latest` promotion always needs the token.
+
+The run is idempotent and resumable: a package version already on npm is
+skipped, a dist-tag already pointing at the version is left alone, and an
+existing tag or GitHub release is not recreated. Rerunning the same version
+after a partial failure finishes the set.
+
+The same script runs locally:
+
+```bash
+./scripts/release.sh --print-version
+./scripts/release.sh --dry-run
+```
+
+One-time owner setup before the first publish:
+
+1. Create an npm granular access token with read and write on the
+   `@tickernelz` scope, `All packages` (no package exists yet to select), and
+   bypass-2FA so CI can publish non-interactively.
+2. Store it as the `NPM_TOKEN` repository secret.
+3. After the first successful publish, configure a trusted publisher on each
+   package (GitHub Actions, `tickernelz/paperclip-pro`, workflow
+   `release.yml`, no environment). That step needs interactive 2FA.
+4. Afterwards `auth=oidc` covers the publishes; keep the token for the
+   `latest` promotion.
+
 
 ## Security: emptying allowedHostnames does not lock out the public host
 
