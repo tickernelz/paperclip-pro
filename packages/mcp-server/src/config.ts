@@ -1,9 +1,45 @@
+import type { ToolsetName } from "./tool-overrides.js";
+
 export interface PaperclipMcpConfig {
   apiUrl: string;
   apiKey: string;
   companyId: string | null;
   agentId: string | null;
   runId: string | null;
+  toolsets: ToolsetName[];
+  agentRole: string | null;
+}
+
+export const MANAGEMENT_ROLES: Record<string, true> = { ceo: true, board: true };
+
+export function hasManagementAuthority(role: string | null | undefined): boolean {
+  return typeof role === "string" && MANAGEMENT_ROLES[role.trim().toLowerCase()] === true;
+}
+
+export const TOOLSET_NAMES: ToolsetName[] = ["core", "extended"];
+
+export function resolveToolsets(
+  env: NodeJS.ProcessEnv = process.env,
+  argv: string[] = process.argv.slice(2),
+): ToolsetName[] {
+  const flagIndex = argv.indexOf("--toolsets");
+  const inline = argv.find((entry) => entry.startsWith("--toolsets="));
+  const requested =
+    (flagIndex >= 0 ? argv[flagIndex + 1] : undefined) ??
+    inline?.slice("--toolsets=".length) ??
+    env.PAPERCLIP_MCP_TOOLSETS;
+  const requestedNames = (requested ?? "")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean);
+  if (requestedNames.includes("all")) return [...TOOLSET_NAMES];
+  const selected = TOOLSET_NAMES.filter((name) => requestedNames.includes(name));
+  for (const name of requestedNames) {
+    if (name !== "all" && !TOOLSET_NAMES.includes(name as ToolsetName)) {
+      console.error(`Ignoring unknown Paperclip MCP toolset "${name}"`);
+    }
+  }
+  return selected.length > 0 ? selected : ["core"];
 }
 
 function nonEmpty(value: string | undefined): string | null {
@@ -35,5 +71,7 @@ export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): Papercl
     companyId: nonEmpty(env.PAPERCLIP_COMPANY_ID),
     agentId: nonEmpty(env.PAPERCLIP_AGENT_ID),
     runId: nonEmpty(env.PAPERCLIP_RUN_ID),
+    toolsets: resolveToolsets(env),
+    agentRole: nonEmpty(env.PAPERCLIP_AGENT_ROLE),
   };
 }

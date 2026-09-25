@@ -20,10 +20,17 @@ import {
 import { PaperclipApiClient } from "./client.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 
+export interface ToolAnnotations {
+  readOnlyHint?: boolean;
+  destructiveHint?: boolean;
+  idempotentHint?: boolean;
+}
+
 export interface ToolDefinition {
   name: string;
   description: string;
   schema: z.ZodObject;
+  annotations?: ToolAnnotations;
   execute: (input: Record<string, unknown>) => Promise<{
     content: Array<{ type: "text"; text: string }>;
   }>;
@@ -34,11 +41,13 @@ function makeTool<TSchema extends z.ZodRawShape>(
   description: string,
   schema: z.ZodObject<TSchema>,
   execute: (input: z.infer<typeof schema>) => Promise<unknown>,
+  annotations?: ToolAnnotations,
 ): ToolDefinition {
   return {
     name,
     description,
     schema,
+    ...(annotations ? { annotations } : {}),
     execute: async (input) => {
       try {
         const parsed = schema.parse(input);
@@ -267,8 +276,35 @@ async function getIssueWorkspaceRuntime(client: PaperclipApiClient, issueId: str
   };
 }
 
+const READ_ONLY_CURATED_TOOLS: Record<string, true> = {
+  paperclipMe: true,
+  paperclipInboxLite: true,
+  paperclipListAgents: true,
+  paperclipListSkills: true,
+  paperclipGetAgent: true,
+  paperclipListIssues: true,
+  paperclipGetIssue: true,
+  paperclipGetHeartbeatContext: true,
+  paperclipListComments: true,
+  paperclipGetComment: true,
+  paperclipListIssueApprovals: true,
+  paperclipListDocuments: true,
+  paperclipGetDocument: true,
+  paperclipListDocumentRevisions: true,
+  paperclipListProjects: true,
+  paperclipGetProject: true,
+  paperclipGetIssueWorkspaceRuntime: true,
+  paperclipWaitForIssueWorkspaceService: true,
+  paperclipListGoals: true,
+  paperclipGetGoal: true,
+  paperclipListApprovals: true,
+  paperclipGetApproval: true,
+  paperclipGetApprovalIssues: true,
+  paperclipListApprovalComments: true,
+};
+
 export function createToolDefinitions(client: PaperclipApiClient): ToolDefinition[] {
-  return [
+  const tools: ToolDefinition[] = [
     makeTool(
       "connections_search",
       CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
@@ -436,6 +472,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
           { body: target },
         );
       },
+      { destructiveHint: true },
     ),
     makeTool(
       "paperclipWaitForIssueWorkspaceService",
@@ -635,17 +672,18 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipUnlinkIssueApproval",
-      "Unlink an approval from an issue",
+      "Unlink an approval from an issue. The approval itself is kept; only the link is removed.",
       z.object({ issueId: issueIdSchema, approvalId: approvalIdSchema }),
       async ({ issueId, approvalId }) =>
         client.requestJson(
           "DELETE",
           `/issues/${encodeURIComponent(issueId)}/approvals/${encodeURIComponent(approvalId)}`,
         ),
+      { destructiveHint: true, idempotentHint: true },
     ),
     makeTool(
       "paperclipApprovalDecision",
-      "Approve, reject, request revision, or resubmit an approval",
+      "Approve, reject, request revision, or resubmit an approval. Agents may only use resubmit; approve, reject, and requestRevision require a board actor and return 403 for an agent key.",
       approvalDecisionSchema,
       async ({ approvalId, action, decisionNote, payloadJson }) => {
         const path =
@@ -664,6 +702,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
 
         return client.requestJson("POST", path, { body });
       },
+      { destructiveHint: true },
     ),
     makeTool(
       "paperclipAddApprovalComment",
@@ -688,4 +727,9 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
       },
     ),
   ];
+  return tools.map((tool) =>
+    READ_ONLY_CURATED_TOOLS[tool.name]
+      ? { ...tool, annotations: { readOnlyHint: true, idempotentHint: true, ...tool.annotations } }
+      : tool,
+  );
 }
