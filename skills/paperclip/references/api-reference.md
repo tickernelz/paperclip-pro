@@ -917,11 +917,11 @@ Choose the input control from the answer you need: use a **text field** for a na
 
 For an open-ended answer, render a text field using `payload.questionSet` with `answerMode: "text"`, no options, and no `customAnswer`. Paperclip still requires matching `payload.questions` entries for compatibility; their free-text option is a storage fallback, not the presentation. Keep question IDs and prompts identical in both fields. Do not omit `questionSet`: a lone "I'll describe it" option would otherwise appear as a one-option choice question.
 
-`resolverPolicy` is not an argument of `paperclipAskUserQuestions`, so use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
+`paperclipAskUserQuestions` takes `resolverPolicy` directly. Call it with these arguments:
 
 ```json
 {
-  "kind": "ask_user_questions",
+  "issueId": "{issueId}",
   "idempotencyKey": "questions:{issueId}:responsibility-text:v1",
   "title": "Hire responsibility",
   "resolverPolicy": "human_only",
@@ -952,11 +952,11 @@ For an open-ended answer, render a text field using `payload.questionSet` with `
 
 Use `ask_user_questions` for a short question card. Each `payload.questions` entry requires `id`, `prompt`, `selectionMode`, and options with `id` and `label`. Choice questions must offer at least two distinct, meaningful choices; use the canonical text presentation above for open-ended questions. Do not send `question`/`type: "text"` or an empty options array in a `payload.questions` entry. Set `resolverPolicy: "human_only"` when the answer must come from the user.
 
-Same transport: `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
+Same tool, `paperclipAskUserQuestions`:
 
 ```json
 {
-  "kind": "ask_user_questions",
+  "issueId": "{issueId}",
   "idempotencyKey": "questions:{issueId}:responsibility:v1",
   "title": "Hire responsibility",
   "resolverPolicy": "human_only",
@@ -1047,7 +1047,7 @@ Create a confirmation with `paperclipRequestConfirmation`:
 }
 ```
 
-The dedicated interaction tools (`paperclipSuggestTasks`, `paperclipAskUserQuestions`, `paperclipRequestConfirmation`, `paperclipRequestCheckboxConfirmation`) take `issueId`, `idempotencyKey`, `sourceCommentId`, `sourceRunId`, `title`, `summary`, `continuationPolicy`, and `payload`, and set `kind` themselves. `resolverPolicy` and `addresseeAgentId` are not tool arguments, and `request_item_verdicts` has no dedicated create tool. For any of those, use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and a `jsonBody` that includes `kind`.
+The dedicated interaction tools (`paperclipSuggestTasks`, `paperclipAskUserQuestions`, `paperclipRequestConfirmation`, `paperclipRequestCheckboxConfirmation`) take `issueId`, `idempotencyKey`, `sourceCommentId`, `sourceRunId`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `addresseeUserId`, `continuationPolicy`, and `payload`, and set `kind` themselves. `request_item_verdicts` has no dedicated create tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and a `jsonBody` that includes `kind`.
 
 Resolver governance:
 
@@ -1403,7 +1403,7 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Create an `ask_user_questions` interaction | `paperclipAskUserQuestions` | same envelope |
 | Create a `request_confirmation` interaction | `paperclipRequestConfirmation` | same envelope |
 | Create a `request_checkbox_confirmation` interaction | `paperclipRequestCheckboxConfirmation` | same envelope |
-| Create `request_item_verdicts`, or any interaction needing `resolverPolicy`/`addresseeAgentId` | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions"`, `jsonBody` including `kind` |
+| Create `request_item_verdicts` | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions"`, `jsonBody` including `kind` |
 | Accept suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/accept"`, `jsonBody` with `selectedClientKeys` for `suggest_tasks` or `selectedOptionIds` for `request_checkbox_confirmation` |
 | Reject suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/reject"` |
 | Respond to structured questions | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/respond"` |

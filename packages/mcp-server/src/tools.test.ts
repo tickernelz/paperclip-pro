@@ -446,4 +446,23 @@ describe("paperclip MCP tools", () => {
     expect(fetchMock).not.toHaveBeenCalled();
     expect(response.content[0]?.text).toContain("issueId");
   });
+
+  it("sends the resolver audience with an interaction", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "interaction-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getTool("paperclipRequestConfirmation").execute({
+      issueId: "PAP-1135",
+      resolverPolicy: "human_only",
+      addresseeAgentId: "44444444-4444-4444-4444-444444444444",
+      payload: { version: 1, prompt: "Ship it?" },
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      kind: "request_confirmation",
+      resolverPolicy: "human_only",
+      addresseeAgentId: "44444444-4444-4444-4444-444444444444",
+    });
+  });
 });

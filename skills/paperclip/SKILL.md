@@ -659,7 +659,7 @@ Again, rule #1 is: never ask a human to do what an agent could do. Try harder. T
 
 **Asking a free-text question.**
 
-For an open answer, use a text field, not invented choices. Call `paperclipAskUserQuestions` with `id` set to the issue and the following complete payload (replace `detail`, the prompt, and the idempotency key for your question). The tool sets `kind`. `questionSet` controls presentation; the matching `questions` entry is required storage compatibility and must not be sent alone.
+For an open answer, use a text field, not invented choices. Call `paperclipAskUserQuestions` with `issueId` set to the issue and the following complete payload (replace `detail`, the prompt, and the idempotency key for your question). The tool sets `kind`. `questionSet` controls presentation; the matching `questions` entry is required storage compatibility and must not be sent alone.
 
 ```json
 {

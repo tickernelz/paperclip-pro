@@ -14,6 +14,7 @@ import {
   checkoutIssueSchema,
   createIssueInputSchema,
   issueThreadInteractionContinuationPolicySchema,
+  issueThreadInteractionResolverPolicySchema,
   linkIssueApprovalSchema,
   requestCheckboxConfirmationPayloadSchema,
   requestConfirmationPayloadSchema,
@@ -223,46 +224,38 @@ const addCommentToolSchema = z.object({
   issueId: issueIdSchema,
 }).merge(addIssueCommentSchema);
 
-const createSuggestTasksToolSchema = z.object({
+const interactionToolFields = {
   issueId: issueIdSchema,
   idempotencyKey: z.string().trim().max(255).nullable().optional(),
   sourceCommentId: z.string().guid().nullable().optional(),
   sourceRunId: z.string().guid().nullable().optional(),
   title: z.string().trim().max(240).nullable().optional(),
   summary: z.string().trim().max(1000).nullable().optional(),
+  resolverPolicy: issueThreadInteractionResolverPolicySchema.optional(),
+  addresseeAgentId: z.string().guid().nullable().optional(),
+  addresseeUserId: z.string().trim().min(1).nullable().optional(),
+};
+
+const createSuggestTasksToolSchema = z.object({
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: suggestTasksPayloadSchema,
 });
 
 const createAskUserQuestionsToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: askUserQuestionsPayloadSchema,
 });
 
 const createRequestConfirmationToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("none"),
   payload: requestConfirmationPayloadSchema,
 });
 
 const createRequestCheckboxConfirmationToolSchema = z.object({
-  issueId: issueIdSchema,
-  idempotencyKey: z.string().trim().max(255).nullable().optional(),
-  sourceCommentId: z.string().guid().nullable().optional(),
-  sourceRunId: z.string().guid().nullable().optional(),
-  title: z.string().trim().max(240).nullable().optional(),
-  summary: z.string().trim().max(1000).nullable().optional(),
+  ...interactionToolFields,
   continuationPolicy: issueThreadInteractionContinuationPolicySchema.optional().default("wake_assignee"),
   payload: requestCheckboxConfirmationPayloadSchema,
 });
