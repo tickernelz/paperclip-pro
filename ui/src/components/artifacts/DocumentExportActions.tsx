@@ -2,11 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Copy, Download, FileDown } from "lucide-react";
 import { documentExportExtension, documentExportFileName } from "@tickernelz/paperclip-pro-shared";
 import { issuesApi } from "@/api/issues";
-import { copyTextToClipboard } from "@/lib/clipboard";
+import { useCopyAction } from "@/lib/use-copy-action";
 import { downloadBlob, downloadTextFile } from "@/lib/document-export";
 import { cn } from "@/lib/utils";
 
-type ExportAction = "copy" | "download" | "pdf";
+type ExportAction = "download" | "pdf";
 
 interface DocumentExportActionsProps {
   issueId: string;
@@ -30,9 +30,10 @@ export function DocumentExportActions({
   body,
   className,
 }: DocumentExportActionsProps) {
-  const [pending, setPending] = useState<ExportAction | null>(null);
+  const [pending, setPending] = useState<ExportAction | "copy" | null>(null);
   const [done, setDone] = useState<ExportAction | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { copy, copied, failed } = useCopyAction();
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => () => clearTimeout(timerRef.current), []);
@@ -64,7 +65,21 @@ export function DocumentExportActions({
     [body, documentKey, issueId],
   );
 
-  const copyLabel = error && done === null ? "Copy failed" : done === "copy" ? "Copied!" : "Copy full content";
+  const runCopy = useCallback(() => {
+    setPending("copy");
+    setError(null);
+    void (async () => {
+      try {
+        if ((await copy(await resolveBody())) === "failed") setError("Copy failed");
+      } catch (cause) {
+        setError(cause instanceof Error ? cause.message : "Copy failed");
+      } finally {
+        setPending(null);
+      }
+    })();
+  }, [copy, resolveBody]);
+
+  const copyLabel = failed || error === "Copy failed" ? "Copy failed" : copied ? "Copied!" : "Copy full content";
   const downloadLabel = done === "download" ? "Downloaded!" : "Download source";
   const pdfLabel = done === "pdf" ? "Downloaded!" : "Export to PDF";
 
@@ -80,12 +95,10 @@ export function DocumentExportActions({
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          void run("copy", async () => {
-            await copyTextToClipboard(await resolveBody());
-          });
+          runCopy();
         }}
       >
-        {done === "copy" ? (
+        {copied ? (
           <Check aria-hidden="true" className="h-3.5 w-3.5" />
         ) : (
           <Copy aria-hidden="true" className="h-3.5 w-3.5" />
@@ -134,7 +147,7 @@ export function DocumentExportActions({
         <FileDown aria-hidden="true" className="h-3.5 w-3.5" />
       </button>
       <span className="sr-only" role="status" aria-live="polite">
-        {error ?? (done === "copy" ? "Copied!" : done ? "Downloaded!" : "")}
+        {error ?? (copied ? "Copied!" : failed ? "Copy failed" : done ? "Downloaded!" : "")}
       </span>
     </div>
   );
