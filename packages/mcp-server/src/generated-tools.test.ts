@@ -3,7 +3,7 @@ import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, resolveToolsets } from "./config.js";
 import { createGeneratedToolDefinitions, generatedToolSpecs } from "./generated-tools.js";
 import { createToolDefinitions } from "./tools.js";
-import { createPaperclipToolDefinitions, leanToolListing } from "./index.js";
+import { createPaperclipToolDefinitions, leanToolListing, resolveManagementAuthority } from "./index.js";
 import { CURATED_OPERATIONS } from "./tool-overrides.js";
 
 function makeClient() {
@@ -164,6 +164,32 @@ describe("generated Paperclip API tools", () => {
     expect(hasManagementAuthority("CEO")).toBe(true);
     expect(hasManagementAuthority("engineer")).toBe(false);
     expect(hasManagementAuthority(null)).toBe(false);
+  });
+
+  it("reads management authority from the server capabilities, not the role name", async () => {
+    const client = makeClient();
+    const config = {
+      apiUrl: "http://localhost:3100/api",
+      apiKey: "token-123",
+      companyId: null,
+      agentId: null,
+      runId: null,
+      toolsets: ["core"] as const,
+      agentRole: "engineer",
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        mockJsonResponse({ role: "engineer", authorityCapabilities: ["work:read", "company:agents"] }),
+      ),
+    );
+    await expect(resolveManagementAuthority(client, { ...config, toolsets: ["core"] })).resolves.toBe(true);
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(mockJsonResponse({ role: "engineer", authorityCapabilities: ["work:read"] })),
+    );
+    await expect(resolveManagementAuthority(client, { ...config, toolsets: ["core"] })).resolves.toBe(false);
   });
 
   it("defaults to the core toolset and honours explicit selection", () => {

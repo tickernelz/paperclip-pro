@@ -25,12 +25,19 @@ export async function resolveManagementAuthority(
   client: PaperclipApiClient,
   config: PaperclipMcpConfig,
 ): Promise<boolean> {
-  if (config.agentRole) return hasManagementAuthority(config.agentRole);
   try {
-    const actor = await client.requestJson<{ role?: unknown }>("GET", "/agents/me");
+    const actor = await client.requestJson<{ role?: unknown; authorityCapabilities?: unknown }>(
+      "GET",
+      "/agents/me",
+    );
+    if (Array.isArray(actor?.authorityCapabilities)) {
+      return actor.authorityCapabilities.some(
+        (capability) => typeof capability === "string" && capability.startsWith("company:"),
+      );
+    }
     return hasManagementAuthority(typeof actor?.role === "string" ? actor.role : null);
   } catch {
-    return false;
+    return hasManagementAuthority(config.agentRole);
   }
 }
 

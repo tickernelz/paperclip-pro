@@ -310,8 +310,8 @@
     "path": "/agents/{id}/approve",
     "description": "Approve a pending agent action",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -321,10 +321,10 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5524",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -415,7 +415,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1347",
+    "boardGuard": "assertBoard@companies.ts:1344",
     "parameters": [
       {
         "name": "companyId",
@@ -1248,8 +1248,8 @@
     "path": "/heartbeat-runs/{runId}/cancel",
     "description": "Cancel a heartbeat run",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "runs"
     ],
@@ -1259,10 +1259,10 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6807",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "runId",
@@ -1296,7 +1296,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16821",
+    "boardGuard": "assertBoard@issues.ts:16823",
     "parameters": [
       {
         "name": "id",
@@ -1599,7 +1599,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6123",
+    "boardGuard": "assertBoard@agents.ts:6150",
     "parameters": [
       {
         "name": "id",
@@ -1618,8 +1618,8 @@
     "path": "/agents/{id}/clear-error",
     "description": "Clear an agent error",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -1629,10 +1629,10 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5492",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -2148,6 +2148,7 @@
       "assertExternalInstructionsAdmin",
       "assertFreshPaperclipRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
+      "assertNoAgentAuthorityEscalation",
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
@@ -2678,6 +2679,7 @@
       "assertExternalInstructionsAdmin",
       "assertFreshPaperclipRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
+      "assertNoAgentAuthorityEscalation",
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
@@ -3472,8 +3474,8 @@
     "path": "/companies/{companyId}/budgets/policies",
     "description": "Create or update a budget policy",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -3483,11 +3485,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:300",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5824,8 +5826,8 @@
     "path": "/companies/{companyId}/finance-events",
     "description": "Record a finance event",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -5835,12 +5837,12 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCompanyAccess",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:146",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6145,8 +6147,8 @@
     "path": "/heartbeat-runs/{runId}/provider-trace/reproject-workspace-diffs",
     "description": "Reproject retained Codex workspace diffs into run events",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "runs"
     ],
@@ -6156,10 +6158,10 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:7106",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "runId",
@@ -6871,8 +6873,8 @@
     "path": "/issues/{id}/tree-holds",
     "description": "Create an issue tree hold",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -6882,11 +6884,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:93",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -7180,7 +7182,7 @@
     "description": "Create or operator-attest a Claude Managed Agent profile",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "agents"
     ],
@@ -7190,12 +7192,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@managed-agent-profiles.ts:49",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -8003,7 +8004,7 @@
     "description": "Create or operator-attest a remote AgentCore profile",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "agents"
     ],
@@ -8013,12 +8014,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@remote-agent-profiles.ts:64",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11256,8 +11256,8 @@
     "path": "/agents/{id}",
     "description": "Delete an agent",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -11267,10 +11267,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5648",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -11808,7 +11808,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7240",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7267",
     "parameters": [
       {
         "name": "runId",
@@ -12073,7 +12073,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15806",
+    "boardGuard": "assertBoard@issues.ts:15808",
     "parameters": [
       {
         "name": "commentId",
@@ -12395,7 +12395,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1359",
+    "boardGuard": "assertBoard@companies.ts:1356",
     "parameters": [
       {
         "name": "companyId",
@@ -14184,8 +14184,8 @@
     "path": "/adapters/{type}",
     "description": "Get adapter registration details",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "adapters"
     ],
@@ -14195,10 +14195,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrgAccess"
+      "assertBoardOrgOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@adapters.ts:429",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "type",
@@ -14267,8 +14267,8 @@
     "path": "/adapters/{type}/config-schema",
     "description": "Get adapter config schema",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "adapters"
     ],
@@ -14278,10 +14278,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrgAccess"
+      "assertBoardOrgOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@adapters.ts:726",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "type",
@@ -14580,8 +14580,8 @@
     "path": "/agents/{id}/runtime-state",
     "description": "Get agent runtime state",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -14591,11 +14591,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertBoardCanManageAgentsForCompany"
+      "assertBoardCanManageAgentsForCompany",
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:4375",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -14630,7 +14630,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:346",
+    "boardGuard": "assertBoard@ai-connections.ts:344",
     "parameters": [
       {
         "name": "companyId",
@@ -15440,7 +15440,7 @@
       "requireImportTransferRun"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:590",
+    "boardGuard": "assertBoard@companies.ts:587",
     "parameters": [
       {
         "name": "jobId",
@@ -15474,7 +15474,7 @@
       "requireImportTransferRun"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:909",
+    "boardGuard": "assertBoard@companies.ts:906",
     "parameters": [
       {
         "name": "transferId",
@@ -16454,7 +16454,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7077",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7104",
     "parameters": [
       {
         "name": "runId",
@@ -16498,7 +16498,7 @@
     "description": "Get experimental instance settings",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "instance"
     ],
@@ -16508,10 +16508,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrgAccess"
+      "assertBoardOrgOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:255",
+    "boardGuard": null,
     "parameters": []
   },
   {
@@ -17101,8 +17101,8 @@
     "path": "/issues/{id}/tree-control/state",
     "description": "Get issue tree control state",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -17112,10 +17112,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:333",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -17134,8 +17134,8 @@
     "path": "/issues/{id}/tree-holds/{holdId}",
     "description": "Get an issue tree hold",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -17145,10 +17145,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:360",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "holdId",
@@ -17698,8 +17698,7 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -20311,7 +20310,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15465",
+    "boardGuard": "assertBoard@issues.ts:15467",
     "parameters": [
       {
         "name": "id",
@@ -20563,8 +20562,8 @@
     "path": "/adapters",
     "description": "List all adapters",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "adapters"
     ],
@@ -20574,10 +20573,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrgAccess"
+      "assertBoardOrgOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@adapters.ts:276",
+    "boardGuard": null,
     "parameters": []
   },
   {
@@ -20602,7 +20601,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4740",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4751",
     "parameters": [
       {
         "name": "userId",
@@ -20636,7 +20635,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4667",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4678",
     "parameters": []
   },
   {
@@ -20745,8 +20744,8 @@
     "path": "/agents/{id}/task-sessions",
     "description": "List agent task sessions",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -20756,11 +20755,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertBoardCanManageAgentsForCompany"
+      "assertBoardCanManageAgentsForCompany",
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:4386",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -20780,7 +20779,7 @@
     "description": "List active runs attributed to an AI connection",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "ai-connections"
     ],
@@ -20790,12 +20789,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:230",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20823,7 +20821,7 @@
     "description": "List available AI connections and personal defaults",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "ai-connections"
     ],
@@ -20833,12 +20831,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:210",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "agentId",
@@ -21965,7 +21962,7 @@
     "description": "List companies. Requires a board user. Instance admins can list the full directory; scope=accessible limits the list to companies the caller can enter.",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "companies"
     ],
@@ -21975,11 +21972,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:378",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "scope",
@@ -22024,7 +22021,7 @@
     "description": "Company stats",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "companies"
     ],
@@ -22034,10 +22031,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:400",
+    "boardGuard": null,
     "parameters": []
   },
   {
@@ -22112,8 +22109,8 @@
     "path": "/companies/{companyId}/costs/quota-windows",
     "description": "Cost report: quota-windows",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -22123,11 +22120,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:276",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22264,8 +22261,7 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -22696,8 +22692,8 @@
     "path": "/companies/{companyId}/feedback-traces",
     "description": "List company feedback traces",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "companies"
     ],
@@ -22707,11 +22703,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:501",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22950,7 +22945,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:4029",
+    "boardGuard": "assertInstanceAdmin@agents.ts:4028",
     "parameters": []
   },
   {
@@ -23450,8 +23445,8 @@
     "path": "/issues/{id}/tree-holds",
     "description": "List issue tree holds",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -23461,10 +23456,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:342",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -23595,7 +23590,7 @@
     "description": "List Claude Managed Agent profiles for a company",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "agents"
     ],
@@ -23605,11 +23600,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@managed-agent-profiles.ts:42",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24194,7 +24188,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6656",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6683",
     "parameters": [
       {
         "name": "companyId",
@@ -24214,7 +24208,7 @@
     "description": "List remote AgentCore profiles for a company",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "agents"
     ],
@@ -24224,11 +24218,10 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@remote-agent-profiles.ts:54",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -26113,8 +26106,8 @@
     "path": "/agents/{id}/pause",
     "description": "Pause an agent",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -26124,10 +26117,10 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5431",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -26213,7 +26206,7 @@
       "assertImportTargetAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:577",
+    "boardGuard": "assertBoard@companies.ts:574",
     "parameters": [],
     "body": {
       "required": true,
@@ -26421,7 +26414,7 @@
       "assertImportTargetAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1028",
+    "boardGuard": "assertBoard@companies.ts:1025",
     "parameters": [
       {
         "name": "transferId",
@@ -26611,8 +26604,8 @@
     "path": "/issues/{id}/tree-control/preview",
     "description": "Preview issue tree control changes",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -26622,11 +26615,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:66",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -27668,8 +27661,8 @@
     "path": "/issues/{id}/tree-holds/{holdId}/release",
     "description": "Release an issue tree hold",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -27679,11 +27672,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issue-tree-control.ts:382",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "holdId",
@@ -28103,8 +28096,8 @@
     "path": "/agents/{id}/runtime-state/reset-session",
     "description": "Reset agent session",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -28114,11 +28107,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
-      "assertBoardCanManageAgentsForCompany"
+      "assertBoardCanManageAgentsForCompany",
+      "assertBoardOrAgentAuthority"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:4402",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -28235,8 +28228,8 @@
     "path": "/companies/{companyId}/budget-incidents/{incidentId}/resolve",
     "description": "Resolve a budget incident",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -28246,11 +28239,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:312",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28521,8 +28514,8 @@
     "path": "/heartbeat-runs/{runId}/runtime-requests/{requestId}/resolve",
     "description": "Resolve a pending Paperclip runner runtime request",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "runs"
     ],
@@ -28532,11 +28525,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertNativeRuntimeRequestResolverAuthorized"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6839",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "requestId",
@@ -28673,7 +28666,7 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCrossIssueInfluenceWithinRunCap",
       "assertInReviewReviewPath",
       "assertIssueReadAllowed",
@@ -29328,8 +29321,8 @@
     "path": "/issues/{id}/scheduled-retry/retry-now",
     "description": "Retry a scheduled issue run now",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -29339,11 +29332,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:12624",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -29376,7 +29369,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7165",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7192",
     "parameters": [
       {
         "name": "frameId",
@@ -30201,7 +30194,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:319",
+    "boardGuard": "assertBoard@ai-connections.ts:317",
     "parameters": [
       {
         "name": "companyId",
@@ -31163,7 +31156,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15435",
+    "boardGuard": "assertBoard@issues.ts:15437",
     "parameters": [
       {
         "name": "id",
@@ -31487,7 +31480,7 @@
     "description": "Replace selected GitHub source repositories. Saves provider IDs transactionally, refreshes canonical names and URLs, and preserves legacy workspace URLs. Unavailable existing selections can remain; new selections must be available to the caller.",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "handler",
+    "authoritySource": "registry",
     "tags": [
       "projects"
     ],
@@ -31497,11 +31490,11 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@projects.ts:195",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -32675,7 +32668,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16763",
+    "boardGuard": "assertBoard@issues.ts:16765",
     "parameters": [
       {
         "name": "id",
@@ -32860,8 +32853,8 @@
     "path": "/issues/{id}/stalled-review-decision",
     "description": "Resolve a stalled issue review",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "issues"
     ],
@@ -32871,11 +32864,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:12674",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -33142,7 +33135,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15535",
+    "boardGuard": "assertBoard@issues.ts:15537",
     "parameters": [
       {
         "name": "commentId",
@@ -33445,8 +33438,8 @@
     "path": "/agents/{id}/terminate",
     "description": "Terminate an agent",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "agents"
     ],
@@ -33456,10 +33449,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard"
+      "assertBoardOrAgentAuthority",
+      "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5578",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "id",
@@ -34676,6 +34670,7 @@
       "assertFreshPaperclipRunnerProvider",
       "assertKnownAdapterType",
       "assertNoAgentAdapterConfigMutation",
+      "assertNoAgentAuthorityEscalation",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
       "getActorInfo"
@@ -35042,8 +35037,8 @@
     "path": "/agents/{agentId}/budgets",
     "description": "Update agent budget",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -35053,11 +35048,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:369",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "agentId",
@@ -35220,6 +35215,7 @@
     },
     "guards": [
       "assertBoardCanManageAgentsForCompany",
+      "assertNoAgentAuthorityEscalation",
       "getActorInfo"
     ],
     "permissions": [],
@@ -35465,8 +35461,8 @@
     "path": "/companies/{companyId}/budgets",
     "description": "Update company budget",
     "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
+    "authority": "agent",
+    "authoritySource": "default",
     "tags": [
       "costs"
     ],
@@ -35476,11 +35472,11 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
+      "assertBoardOrAgentAuthority",
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@costs.ts:331",
+    "boardGuard": null,
     "parameters": [
       {
         "name": "companyId",
@@ -36757,7 +36753,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15403",
+    "boardGuard": "assertBoard@issues.ts:15405",
     "parameters": [
       {
         "name": "commentId",
