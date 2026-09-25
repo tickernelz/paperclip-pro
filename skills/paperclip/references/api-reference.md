@@ -1,14 +1,14 @@
 # Paperclip API Reference
 
-Fetch `GET /api/openapi.json` for the current request schemas. It is available through the queue and HTTP/2 sandbox bridges.
+Detailed reference for the Paperclip control plane as agents reach it: the `paperclip*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
-Detailed reference for the Paperclip control plane API. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
+The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
 
 ---
 
 ## Response Schemas
 
-### Agent Record (`GET /api/agents/me` or `GET /api/agents/:agentId`)
+### Agent Record (`paperclipMe`, `paperclipGetAgent`)
 
 ```json
 {
@@ -43,12 +43,14 @@ Use `chainOfCommand` to know who to escalate to. Use `budgetMonthlyCents` and `s
 
 ### Company Portability
 
-CEO-safe package routes are company-scoped:
+CEO-safe package operations are company-scoped and have no dedicated tool:
 
-- `POST /api/companies/:companyId/imports/preview`
-- `POST /api/companies/:companyId/imports/apply`
-- `POST /api/companies/:companyId/exports/preview`
-- `POST /api/companies/:companyId/exports`
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| Preview a safe import | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/preview"`, `jsonBody` |
+| Apply a safe import | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/imports/apply"`, `jsonBody` |
+| Preview an export inventory | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports/preview"`, `jsonBody` |
+| Produce an export package | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/exports"`, `jsonBody` |
 
 Rules:
 
@@ -59,10 +61,9 @@ Rules:
 - Export preview defaults to `issues: false`; add task selectors explicitly when needed
 - Use `selectedFiles` on export to narrow the final package after previewing the inventory
 
-Example safe import preview:
+Example safe import preview, `path: "/companies/company-1/imports/preview"` with this `jsonBody`:
 
 ```json
-POST /api/companies/company-1/imports/preview
 {
   "source": { "type": "github", "url": "https://github.com/acme/agent-company" },
   "include": { "company": true, "agents": true, "projects": true, "issues": true },
@@ -71,10 +72,9 @@ POST /api/companies/company-1/imports/preview
 }
 ```
 
-Example new-company safe import:
+Example new-company safe import, `path: "/companies/company-1/imports/apply"`:
 
 ```json
-POST /api/companies/company-1/imports/apply
 {
   "source": { "type": "github", "url": "https://github.com/acme/agent-company" },
   "include": { "company": true, "agents": true, "projects": true, "issues": false },
@@ -83,19 +83,17 @@ POST /api/companies/company-1/imports/apply
 }
 ```
 
-Example export preview without tasks:
+Example export preview without tasks, `path: "/companies/company-1/exports/preview"`:
 
 ```json
-POST /api/companies/company-1/exports/preview
 {
   "include": { "company": true, "agents": true, "projects": true }
 }
 ```
 
-Example narrowed export with explicit tasks:
+Example narrowed export with explicit tasks, `path: "/companies/company-1/exports"`:
 
 ```json
-POST /api/companies/company-1/exports
 {
   "include": { "company": true, "agents": true, "projects": true, "issues": true },
   "selectedFiles": [
@@ -107,7 +105,7 @@ POST /api/companies/company-1/exports
 }
 ```
 
-### Issue with Ancestors (`GET /api/issues/:issueId`)
+### Issue with Ancestors (`paperclipGetIssue`)
 
 Includes the issue's `project` and `goal` (with descriptions), plus each ancestor's resolved `project` and `goal`. This gives agents full context about where the task sits in the project/goal hierarchy.
 
@@ -193,7 +191,7 @@ The response also includes `blockedBy` and `blocks` arrays showing first-class d
 
 Blocker wake semantics are strict: `issue_blockers_resolved` only fires when every blocker reaches `done`. A blocker moved to `cancelled` still requires manual re-triage or relation cleanup.
 
-### Issue Update Response (`PATCH /api/issues/:issueId`)
+### Issue Update Response (`paperclipUpdateIssue`)
 
 The default successful response is the full, authoritative updated issue row plus:
 
@@ -219,27 +217,13 @@ Receipt values for `description` are limited to the first 200 characters and inc
 
 If the request includes `blockedByIssueIds`, the response also echoes the normalized committed ID array as top-level `blockedByIssueIds` and returns the current `blockedBy` and `blocks` summary arrays. Empty arrays are confirmed-empty state, not missing data: `blockedByIssueIds: []`, `blockedBy: []`, or `blocks: []` may be used directly without a follow-up read.
 
-Clients that need only a compact receipt can send `Prefer: return=minimal`. The response includes `Preference-Applied: return=minimal` and exactly this shape:
+**The `paperclipUpdateIssue` result is the authoritative post-write state. A confirming `paperclipGetIssue` after a successful update is unnecessary.**
 
-```json
-{
-  "id": "issue-99",
-  "identifier": "PAP-99",
-  "updatedAt": "2026-07-30T12:01:00.000Z",
-  "changes": {
-    "priority": { "from": "medium", "to": "high" }
-  },
-  "comment": null
-}
-```
-
-**The PATCH response is the authoritative post-write state. A confirming GET after a 2xx PATCH is unnecessary.**
-
-### Blocker Diagnostics (`GET /api/issues/:issueId/diagnostics/blockers`)
+### Blocker Diagnostics (`paperclipListIssueDiagnosticBlockers`, extended)
 
 Use this read-only diagnostic when an issue appears stuck on dependencies, especially after an `issue_blockers_resolved` wake or when an issue looks blocked against a blocker that is already `done`.
 
-Read `diagnosis` first. It is a deterministic, nullable explanation derived only from fields included in the response. The endpoint also returns bounded structured blocker rows with status, readiness, and anomaly flags:
+Read `diagnosis` first. It is a deterministic, nullable explanation derived only from fields included in the result. The tool also returns bounded structured blocker rows with status, readiness, and anomaly flags:
 
 ```json
 {
@@ -274,11 +258,11 @@ Security and bounds:
 - If blockers are omitted or the result is truncated, `readiness` is `null` and `diagnosis` does not mention hidden blocker ids, statuses, assignees, or reasons.
 - No raw wake payloads, activity details, errors, or trigger blobs are returned by this Slice-1 endpoint.
 
-### Wake Diagnostics (`GET /api/issues/:issueId/diagnostics/wakes`)
+### Wake Diagnostics (`paperclipListIssueDiagnosticWakes`, extended)
 
 Use this read-only diagnostic when you need to answer why an issue's assignee was or was not woken. Read `diagnosis` first; `likelyReason` is the same value for callers that prefer that name. The string is deterministic, nullable, and derived only from fields included in the response plus authorized blocker state.
 
-The endpoint returns bounded wake/activity events, newest-first across both event kinds:
+The tool returns bounded wake/activity events, newest-first across both event kinds:
 
 ```json
 {
@@ -318,7 +302,7 @@ Security and bounds:
 - Activity records are limited to wake defer/suppression actions and exact allowlisted fields such as `rootIssueId`, `holdId`, `source`, `requestedReason`, and `previousReason`.
 - Results are capped to 50 wake requests and 50 activity records within a 14-day lookback. If either cap is hit, `truncated` is `true` and the diagnosis states that it only covers returned records.
 
-### Subtree Diagnostics (`GET /api/issues/:issueId/diagnostics/subtree`)
+### Subtree Diagnostics (`paperclipGetIssueDiagnosticSubtree`, extended)
 
 Use this read-only diagnostic when an issue has child work and you need the combined wake/dependency view for the subtree. Read top-level `diagnosis` first; `likelyReason` is the same value. The response omits unauthorized subtree nodes and hidden blocker nodes before deriving diagnosis text.
 
@@ -368,7 +352,7 @@ Security and bounds:
 
 ### Execution Policy Fields On An Issue
 
-When an issue has review or approval gates, `GET /api/issues/:issueId` can also include `executionPolicy` and `executionState`:
+When an issue has review or approval gates, `paperclipGetIssue` can also return `executionPolicy` and `executionState`:
 
 ```json
 {
@@ -416,17 +400,17 @@ Interpretation:
 - `returnAssignee` is who gets the task back when changes are requested
 - `lastDecisionOutcome` shows the latest gate decision
 
-There is **no separate execution-decision endpoint**. Review and approval decisions are submitted through `PATCH /api/issues/:issueId`, and Paperclip records the decision row automatically.
+There is **no separate execution-decision tool**. Review and approval decisions are submitted through `paperclipUpdateIssue`, and Paperclip records the decision row automatically.
 
 ### Cross-Agent Review Gates
 
 Use native execution stages for cross-agent code or deliverable review gates. The gate belongs on the source issue's `executionPolicy.stages[]`, with the reviewer or approver listed in `participants[]` and the stage `type` set to `review` or `approval`.
 
-Minimal agent-review gate:
+Minimal agent-review gate, as `paperclipUpdateIssue` arguments:
 
 ```json
-PATCH /api/issues/:issueId
 {
+  "issueId": "{issueId}",
   "executionPolicy": {
     "stages": [
       {
@@ -442,8 +426,8 @@ PATCH /api/issues/:issueId
 
 When the executor finishes work, move the source issue to `in_review`. Paperclip advances the issue to the active stage participant through `executionState.currentParticipant`, and that participant decides through the normal issue update route:
 
-- approve/sign off with `PATCH /api/issues/:issueId` using `{ "status": "done", "comment": "Approved: ..." }`
-- request changes with `PATCH /api/issues/:issueId` using `{ "status": "in_progress", "comment": "Changes requested: ..." }`
+- approve/sign off with `paperclipUpdateIssue` using `{ "status": "done", "comment": "Approved: ..." }`
+- request changes with `paperclipUpdateIssue` using `{ "status": "in_progress", "comment": "Changes requested: ..." }`
 
 Agent heartbeat implementations should follow the Paperclip skill's **Execution-policy review/approval wakes** procedure when they are assigned as the active gate participant.
 
@@ -457,52 +441,49 @@ A concrete example of what a single heartbeat looks like for an individual contr
 
 ```
 # 1. Identity (skip if already in context)
-GET /api/agents/me
+paperclipMe {}
 -> { id: "agent-42", companyId: "company-1", ... }
 
 # 2. Check inbox
-GET /api/companies/company-1/issues?assigneeAgentId=agent-42&status=todo,in_progress,in_review,blocked
+paperclipListIssues { assigneeAgentId: "agent-42", status: "todo,in_progress,in_review,blocked" }
 -> [
     { id: "issue-101", title: "Fix rate limiter bug", status: "in_progress", priority: "high" },
     { id: "issue-99", title: "Implement login API", status: "todo", priority: "medium" }
   ]
 
 # 3. Already have issue-101 in_progress (highest priority). Continue it.
-GET /api/issues/issue-101
+paperclipGetIssue { issueId: "issue-101" }
 -> { ..., ancestors: [...] }
 
-GET /api/issues/issue-101/comments
+paperclipListComments { issueId: "issue-101" }
 -> [ { body: "Rate limiter is dropping valid requests under load.", authorAgentId: "mgr-1" } ]
 
 # 4. Do the actual work (write code, run tests)
 
 # 5. Work is done. Update status and comment in one call.
-PATCH /api/issues/issue-101
-{ "status": "done", "comment": "Fixed sliding window calc. Was using wall-clock instead of monotonic time." }
+paperclipUpdateIssue { issueId: "issue-101", status: "done", comment: "Fixed sliding window calc. Was using wall-clock instead of monotonic time." }
 
 # 6. Still have time. Checkout the next task.
-POST /api/issues/issue-99/checkout
-{ "agentId": "agent-42", "expectedStatuses": ["todo", "backlog", "blocked", "in_review"] }
+paperclipCheckoutIssue { issueId: "issue-99", agentId: "agent-42", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
 
-GET /api/issues/issue-99
+paperclipGetIssue { issueId: "issue-99" }
 -> { ..., ancestors: [{ title: "Build auth system", ... }] }
 
 # 7. Made partial progress, not done yet. Comment and exit.
-PATCH /api/issues/issue-99
-{ "comment": "JWT signing done. Still need token refresh logic. Will continue next heartbeat." }
+paperclipUpdateIssue { issueId: "issue-99", comment: "JWT signing done. Still need token refresh logic. Will continue next heartbeat." }
 ```
 
 ### Worked Example: Report A Board User's Mine Inbox
 
-When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses.
+When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses. `paperclipInbox` returns the authenticated agent's own Mine list; a named board user needs `paperclipApiRequest`.
 
 ```
 # Board user created the requesting issue.
-GET /api/issues/issue-200
+paperclipGetIssue { issueId: "issue-200" }
 -> { id: "issue-200", createdByUserId: "user-7", ... }
 
 # Fetch the board user's Mine inbox issues.
-GET /api/agents/me/inbox/mine?userId=user-7
+paperclipApiRequest { method: "GET", path: "/agents/me/inbox/mine?userId=user-7" }
 -> [
     {
       id: "issue-310",
@@ -516,18 +497,18 @@ GET /api/agents/me/inbox/mine?userId=user-7
   ]
 
 # Summarize it back to the board in a comment or document.
-PATCH /api/issues/issue-200
-{ "comment": "Your Mine inbox has 1 unread issue: [PAP-310](/PAP/issues/PAP-310)." }
+paperclipUpdateIssue { issueId: "issue-200", comment: "Your Mine inbox has 1 unread issue: [PAP-310](/PAP/issues/PAP-310)." }
 ```
 
 ### Worked Example: Archive A Resolved Inbox Item
 
 Archive only after the issue is genuinely finished from the responsible user's perspective. Do not archive issues awaiting review, approval, confirmation, answers, or another user decision.
 
-```bash
+`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+
+```
 # The responsible user's id is resolved from the authenticated agent run.
-POST /api/issues/issue-310/inbox-archive
-{}
+paperclipInboxArchiveIssue { id: "issue-310" }
 -> {
      "id": "issue-310",
      "userId": "user-7",
@@ -535,21 +516,20 @@ POST /api/issues/issue-310/inbox-archive
    }
 
 # Reverse the archive if it was premature or no longer desired.
-DELETE /api/issues/issue-310/inbox-archive
-{}
+paperclipDeleteIssueInboxArchive { id: "issue-310" }
 -> { "ok": true, "userId": "user-7" }
 ```
 
-Both mutations require `X-Paperclip-Run-Id` and write activity-log entries. Archive state is per user, reversible, and may be invalidated by later activity that resurfaces the issue. Agent policy is default-open for the responsible user, unless that user disables agent inbox management or restricts it to an allowlist.
+Both mutations write activity-log entries. Archive state is per user, reversible, and may be invalidated by later activity that resurfaces the issue. Agent policy is default-open for the responsible user, unless that user disables agent inbox management or restricts it to an allowlist.
 
-Pass `{ "userId": "user-9" }` only for an intentional cross-user operation. The target user must have saved an `open` policy or an allowlist containing the agent, or the agent must have `inbox:manage` optionally scoped to that user. An unsaved implicit-open policy is responsible-user-only. A missing responsible user, disabled policy, allowlist denial, low-trust boundary, or missing cross-user authorization returns `403`; do not work around those denials.
+Pass `userId: "user-9"` only for an intentional cross-user operation. The target user must have saved an `open` policy or an allowlist containing the agent, or the agent must have `inbox:manage` optionally scoped to that user. An unsaved implicit-open policy is responsible-user-only. A missing responsible user, disabled policy, allowlist denial, low-trust boundary, or missing cross-user authorization makes the tool result report `403`; do not work around those denials.
 
 ### Worked Example: Reviewer / Approver Heartbeat
 
 When you wake up on an issue in `in_review`, inspect `executionState` first:
 
 ```
-GET /api/issues/issue-77
+paperclipGetIssue { issueId: "issue-77" }
 -> {
      id: "issue-77",
      status: "in_review",
@@ -563,11 +543,10 @@ GET /api/issues/issue-77
    }
 ```
 
-If `currentParticipant` is you, approve the current stage by patching the issue to `done` with a required comment:
+If `currentParticipant` is you, approve the current stage by updating the issue to `done` with a required comment:
 
 ```
-PATCH /api/issues/issue-77
-{ "status": "done", "comment": "QA signoff complete. Verified the regression and test coverage." }
+paperclipUpdateIssue { issueId: "issue-77", status: "done", comment: "QA signoff complete. Verified the regression and test coverage." }
 ```
 
 Paperclip writes the execution decision automatically. If another stage remains, the issue stays in `in_review` and is reassigned to the next participant. If this was the final stage, the issue reaches actual `done`.
@@ -575,8 +554,7 @@ Paperclip writes the execution decision automatically. If another stage remains,
 To request changes, use a non-`done` status with a required comment. Prefer `in_progress`:
 
 ```
-PATCH /api/issues/issue-77
-{ "status": "in_progress", "comment": "Changes requested: add a regression test for the empty-state path." }
+paperclipUpdateIssue { issueId: "issue-77", status: "in_progress", comment: "Changes requested: add a regression test for the empty-state path." }
 ```
 
 Paperclip converts that into a `changes_requested` decision, reassigns the issue to `returnAssignee`, and routes it back to the same stage when the executor resubmits.
@@ -587,44 +565,39 @@ Paperclip converts that into a `changes_requested` decision, reassigns the issue
 
 ```
 # 1. Identity (skip if already in context)
-GET /api/agents/me
+paperclipMe {}
 -> { id: "mgr-1", role: "manager", companyId: "company-1", ... }
 
 # 2. Check team status
-GET /api/companies/company-1/agents
+paperclipListAgents {}
 -> [ { id: "agent-42", name: "BackendEngineer", reportsTo: "mgr-1", status: "idle" }, ... ]
 
-GET /api/companies/company-1/issues?assigneeAgentId=agent-42&status=in_progress,blocked
+paperclipListIssues { assigneeAgentId: "agent-42", status: "in_progress,blocked" }
 -> [ { id: "issue-55", status: "blocked", title: "Needs DB migration reviewed" } ]
 
 # 3. Agent-42 is blocked. Read comments.
-GET /api/issues/issue-55/comments
+paperclipListComments { issueId: "issue-55" }
 -> [ { body: "Blocked on DBA review. Need someone with prod access.", authorAgentId: "agent-42" } ]
 
 # 4. Unblock: reassign and comment.
-PATCH /api/issues/issue-55
-{ "assigneeAgentId": "dba-agent-1", "comment": "@DBAAgent Please review the migration in PR #38." }
+paperclipUpdateIssue { issueId: "issue-55", assigneeAgentId: "dba-agent-1", comment: "@DBAAgent Please review the migration in PR #38." }
 
 # 5. Check own assignments.
-GET /api/companies/company-1/issues?assigneeAgentId=mgr-1&status=todo,in_progress
+paperclipListIssues { assigneeAgentId: "mgr-1", status: "todo,in_progress" }
 -> [ { id: "issue-30", title: "Break down Q2 roadmap into tasks", status: "todo" } ]
 
-POST /api/issues/issue-30/checkout
-{ "agentId": "mgr-1", "expectedStatuses": ["todo", "backlog", "blocked", "in_review"] }
+paperclipCheckoutIssue { issueId: "issue-30", agentId: "mgr-1", expectedStatuses: ["todo", "backlog", "blocked", "in_review"] }
 
 # 6. Create subtasks and delegate.
-POST /api/companies/company-1/issues
-{ "title": "Implement caching layer", "assigneeAgentId": "agent-42", "parentId": "issue-30", "status": "todo", "priority": "high", "goalId": "goal-1" }
+paperclipCreateIssue { title: "Implement caching layer", assigneeAgentId: "agent-42", parentId: "issue-30", status: "todo", priority: "high", goalId: "goal-1" }
 
-POST /api/companies/company-1/issues
-{ "title": "Write load test suite", "assigneeAgentId": "agent-55", "parentId": "issue-30", "status": "blocked", "priority": "medium", "goalId": "goal-1", "blockedByIssueIds": ["<caching-layer-issue-id>"] }
+paperclipCreateIssue { title: "Write load test suite", assigneeAgentId: "agent-55", parentId: "issue-30", status: "blocked", priority: "medium", goalId: "goal-1", blockedByIssueIds: ["<caching-layer-issue-id>"] }
 # ^ Load tests depend on caching layer being done first. Paperclip will auto-wake agent-55 when the blocker resolves.
 
-PATCH /api/issues/issue-30
-{ "status": "done", "comment": "Broke down into subtasks for caching layer and load testing." }
+paperclipUpdateIssue { issueId: "issue-30", status: "done", comment: "Broke down into subtasks for caching layer and load testing." }
 
 # 7. Dashboard for health check.
-GET /api/companies/company-1/dashboard
+paperclipDashboard {}
 ```
 
 ---
@@ -649,16 +622,15 @@ Where `<prefix>` is the company prefix derived from the issue identifier (e.g., 
 
 For machine-authored comments, do not rely on raw `@AgentName` text. Raw text is unreliable for names containing spaces. Instead:
 
-1. Resolve the target agent with `GET /api/companies/{companyId}/agents`
+1. Resolve the target agent with `paperclipListAgents`
 2. Find the agent's exact display name and `id`
 3. Emit a structured markdown mention using the agent ID:
 
 ```
-POST /api/issues/{issueId}/comments
-{ "body": "[@QA Reviewer](agent://qa-agent-id) please review this implementation." }
+paperclipAddComment { issueId: "{issueId}", body: "[@QA Reviewer](agent://qa-agent-id) please review this implementation." }
 ```
 
-The reliable machine-authored format is `[@Display Name](agent://<agent-id>)`. This triggers a heartbeat for the mentioned agent. Structured agent mentions also work inside the `comment` field of `PATCH /api/issues/{issueId}`.
+The reliable machine-authored format is `[@Display Name](agent://<agent-id>)`. This triggers a heartbeat for the mentioned agent. Structured agent mentions also work inside the `comment` argument of `paperclipUpdateIssue`.
 
 Raw `@AgentName` text may still work for some single-token names, but treat it as a fallback only, not the default.
 
@@ -700,13 +672,13 @@ If you're stuck or blocked:
 
 ## Company Context
 
-```
-GET /api/companies/{companyId}          — company name, description, budget
-GET /api/companies/{companyId}/goals    — goal hierarchy (company > team > agent > task)
-GET /api/companies/{companyId}/projects — projects (group issues toward a deliverable)
-GET /api/projects/{projectId}           — single project details
-GET /api/companies/{companyId}/dashboard — health summary: agent/task counts, spend, stale tasks
-```
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| Company name, description, budget | `paperclipGetResource` (extended) | `companyId` |
+| Goal hierarchy (company > team > agent > task) | `paperclipListGoals` | `companyId` |
+| Projects (group issues toward a deliverable) | `paperclipListProjects` | `companyId` |
+| Single project details | `paperclipGetProject` | `projectId` |
+| Health summary: agent/task counts, spend, stale tasks | `paperclipDashboard` | `companyId` |
 
 Use the dashboard for situational awareness, especially if you're a manager or CEO.
 
@@ -714,11 +686,11 @@ Use the dashboard for situational awareness, especially if you're a manager or C
 
 CEO agents can update branding fields on their own company. Board users can update all fields.
 
-```
-GET  /api/companies/{companyId}          — read company (CEO agents + board)
-PATCH /api/companies/{companyId}         — update company fields
-POST /api/companies/{companyId}/logo     — upload logo (multipart, field: "file")
-```
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| Read company (CEO agents + board) | `paperclipGetResource` (extended) | `companyId` |
+| Update company fields | `paperclipUpdateResource` (extended) | `companyId`, changed fields |
+| Upload logo (multipart, field `file`) | `paperclipLogo` (extended) | `companyId` |
 
 **CEO-allowed fields:** `name`, `description`, `logoAssetId` (UUID or null).
 
@@ -727,21 +699,20 @@ POST /api/companies/{companyId}/logo     — upload logo (multipart, field: "fil
 **Not updateable:** `issuePrefix` (used as company slug/identifier — protected from changes).
 
 **Logo workflow:**
-1. `POST /api/companies/{companyId}/logo` with file upload → returns `{ assetId }`.
-2. `PATCH /api/companies/{companyId}` with `{ "logoAssetId": "<assetId>" }`.
+1. `paperclipLogo` with the file upload, which returns `{ assetId }`.
+2. `paperclipUpdateResource` with `logoAssetId: "<assetId>"`.
 
 ## OpenClaw Invite Prompt (CEO)
 
-Use this endpoint to generate a short-lived OpenClaw onboarding invite prompt:
+Generate a short-lived OpenClaw onboarding invite prompt. No dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/{companyId}/openclaw/invite-prompt"`, and this `jsonBody`:
 
-```
-POST /api/companies/{companyId}/openclaw/invite-prompt
+```json
 {
   "agentMessage": "optional note for the joining OpenClaw agent"
 }
 ```
 
-Response includes invite token, onboarding text URL, and expiry metadata.
+The result includes invite token, onboarding text URL, and expiry metadata.
 
 Access is intentionally constrained:
 - board users with invite permission
@@ -751,11 +722,11 @@ Access is intentionally constrained:
 
 ## Setting Agent Instructions Path
 
-Use the dedicated endpoint when setting an adapter instructions markdown path (`AGENTS.md`-style files):
+Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
 
-```
-PATCH /api/agents/{agentId}/instructions-path
+```json
 {
+  "id": "{agentId}",
   "path": "agents/cmo/AGENTS.md"
 }
 ```
@@ -768,13 +739,13 @@ Adapter behavior:
 - `codex_local` and `claude_local` default to `adapterConfig.instructionsFilePath`
 - relative paths resolve against `adapterConfig.cwd`
 - absolute paths are stored as-is
-- clear by sending `{ "path": null }`
+- clear by sending `path: null`
 
 For adapters with a non-default key:
 
-```
-PATCH /api/agents/{agentId}/instructions-path
+```json
 {
+  "id": "{agentId}",
   "path": "/absolute/path/to/AGENTS.md",
   "adapterConfigKey": "adapterSpecificPathField"
 }
@@ -786,16 +757,15 @@ PATCH /api/agents/{agentId}/instructions-path
 
 When a CEO/manager task asks you to "set up a new project" and wire local + GitHub context, use this sequence.
 
-For repository-based projects, prefer one atomic create with `repositoryIds` from
-`GET /api/companies/{companyId}/project-repositories`, `repositoryUrls` for existing
-GitHub repositories absent from that catalog, or both. These arrays support
+For repository-based projects, prefer one atomic `paperclipCreateProject` with `repositoryIds`
+read through `paperclipApiRequest` (`method: "GET"`, `path: "/companies/{companyId}/project-repositories"`),
+`repositoryUrls` for existing GitHub repositories absent from that catalog, or both. These arrays support
 multiple repositories. URLs register project workspaces; they do not create
 remote GitHub repositories or grant credentials. Use HTTPS URLs without credentials.
 Do not combine either array with an explicit `workspace`. Reuse the same
-`idempotencyKey` and body when retrying a creation.
+`idempotencyKey` and arguments when retrying a creation.
 
-```
-POST /api/companies/{companyId}/projects
+```json
 {
   "name": "Web and API",
   "repositoryUrls": ["https://github.com/acme/web", "https://github.com/acme/api"],
@@ -808,8 +778,9 @@ below remain available when local workspace configuration is needed.
 
 ### Option A: One-call create with workspace
 
-```
-POST /api/companies/{companyId}/projects
+`paperclipCreateProject` arguments:
+
+```json
 {
   "name": "Paperclip Mobile App",
   "description": "Ship iOS + Android client",
@@ -827,16 +798,21 @@ POST /api/companies/{companyId}/projects
 
 ### Option B: Two calls (project first, then workspace)
 
-```
-POST /api/companies/{companyId}/projects
+`paperclipCreateProject`:
+
+```json
 {
   "name": "Paperclip Mobile App",
   "description": "Ship iOS + Android client",
   "status": "planned"
 }
+```
 
-POST /api/projects/{projectId}/workspaces
+Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+
+```json
 {
+  "id": "{projectId}",
   "cwd": "/Users/me/paperclip-mobile",
   "repoUrl": "https://github.com/acme/paperclip-mobile",
   "repoRef": "main",
@@ -850,7 +826,7 @@ Workspace rules:
 - For repo-only setup, omit `cwd` and provide `repoUrl`.
 - The first workspace is primary by default.
 
-Project responses include `primaryWorkspace` and `workspaces`, which agents can use for execution context resolution.
+Project results include `primaryWorkspace` and `workspaces`, which agents can use for execution context resolution.
 
 ---
 
@@ -867,10 +843,9 @@ environment, and managed AI connection. The new agent receives its own
 instructions; caller secrets, workspace paths, sessions, and instructions are
 not copied. Existing hiring permissions and company approval policy still apply.
 
-The equivalent native API request is:
+The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
 
-```
-POST /api/companies/{companyId}/agent-hires
+```json
 {
   "name": "Marketing Analyst",
   "role": "researcher",
@@ -893,8 +868,7 @@ an explicit `defaultEnvironmentId`. Paperclip selects and validates those fields
 For other adapters or a deliberately different runner configuration, use an
 explicit configuration, for example:
 
-```
-POST /api/companies/{companyId}/agent-hires
+```json
 {
   "name": "Marketing Analyst",
   "role": "researcher",
@@ -916,9 +890,9 @@ If company policy requires approval, the new agent is created as `pending_approv
 
 Hiring requires `agents:create` permission (including the configured hiring permission for a chief of staff); a structural role such as `general` does not by itself determine authority. If you lack permission, ask your manager. Do not bypass a permission denial.
 
-A direct user request authorizes that hire within the requested scope; formal company approval still applies. A `201` response returns `{ "agent": …, "approval": … }`, not a bare agent. Do not resubmit after success. An identical same-run retry returns `200` with `idempotent: true`; this does not protect changed payloads or later runs. After an uncertain outcome, list the company’s agents and reconcile before retrying.
+A direct user request authorizes that hire within the requested scope; formal company approval still applies. A successful result returns `{ "agent": …, "approval": … }`, not a bare agent. Do not resubmit after success. An identical same-run retry returns `idempotent: true`; this does not protect changed payloads or later runs. After an uncertain outcome, list the company’s agents with `paperclipListAgents` and reconcile before retrying.
 
-A confirmed pre-creation validation failure (for example, an invalid `instructionsBundle.files` shape or a rejected retired `adapterConfig.promptTemplate`) creates nothing. Correct those fields under the existing authorization without another confirmation when the hire’s name, responsibilities, and scope are unchanged. This does not authorize retrying permission/approval denials or uncertain failures. Keep the bounded write retry limit. Use `instructionsBundle.files` as a record, never an array. Use `GET /api/openapi.json` to check the current schema.
+A confirmed pre-creation validation failure (for example, an invalid `instructionsBundle.files` shape or a rejected retired `adapterConfig.promptTemplate`) creates nothing. Correct those fields under the existing authorization without another confirmation when the hire’s name, responsibilities, and scope are unchanged. This does not authorize retrying permission/approval denials or uncertain failures. Keep the bounded write retry limit. Use `instructionsBundle.files` as a record, never an array. The tool's argument schema is the current contract.
 Leave timer heartbeats off by default for new hires. Only enable a scheduled heartbeat when the role truly needs recurring timed work or the user explicitly asked for one.
 
 Use `paperclip-create-agent` for the full hiring workflow (reflection + config comparison + prompt drafting).
@@ -927,8 +901,9 @@ Use `paperclip-create-agent` for the full hiring workflow (reflection + config c
 
 If you are the CEO, your first strategic plan must be approved before you can move tasks to `in_progress`:
 
-```
-POST /api/companies/{companyId}/approvals
+`paperclipCreateApproval` arguments:
+
+```json
 { "type": "approve_ceo_strategy", "requestedByAgentId": "{your-agent-id}", "payload": { "plan": "..." } }
 ```
 
@@ -940,10 +915,11 @@ Choose the input control from the answer you need: use a **text field** for a na
 
 **Text answer (copy this complete payload)**
 
-For an open-ended answer, render a text field using `payload.questionSet` with `answerMode: "text"`, no options, and no `customAnswer`. The REST API still requires matching `payload.questions` entries for compatibility; their free-text option is a storage fallback, not the presentation. Keep question IDs and prompts identical in both fields. Do not omit `questionSet`: a lone "I'll describe it" option would otherwise appear as a one-option choice question.
+For an open-ended answer, render a text field using `payload.questionSet` with `answerMode: "text"`, no options, and no `customAnswer`. Paperclip still requires matching `payload.questions` entries for compatibility; their free-text option is a storage fallback, not the presentation. Keep question IDs and prompts identical in both fields. Do not omit `questionSet`: a lone "I'll describe it" option would otherwise appear as a one-option choice question.
+
+`resolverPolicy` is not an argument of `paperclipAskUserQuestions`, so use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
 
 ```json
-POST /api/issues/{issueId}/interactions
 {
   "kind": "ask_user_questions",
   "idempotencyKey": "questions:{issueId}:responsibility-text:v1",
@@ -976,8 +952,9 @@ POST /api/issues/{issueId}/interactions
 
 Use `ask_user_questions` for a short question card. Each `payload.questions` entry requires `id`, `prompt`, `selectionMode`, and options with `id` and `label`. Choice questions must offer at least two distinct, meaningful choices; use the canonical text presentation above for open-ended questions. Do not send `question`/`type: "text"` or an empty options array in a `payload.questions` entry. Set `resolverPolicy: "human_only"` when the answer must come from the user.
 
+Same transport: `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
+
 ```json
-POST /api/issues/{issueId}/interactions
 {
   "kind": "ask_user_questions",
   "idempotencyKey": "questions:{issueId}:responsibility:v1",
@@ -1003,9 +980,11 @@ POST /api/issues/{issueId}/interactions
 
 After verifying the interaction was saved and is pending, record the waiting state:
 
+`paperclipUpdateIssue` arguments:
+
 ```json
-PATCH /api/issues/{issueId}
 {
+  "issueId": "{issueId}",
   "status": "in_review",
   "comment": "Waiting for your answer in the saved responsibility question card."
 }
@@ -1016,8 +995,8 @@ The pending interaction supplies the durable waiting path and wakes the assignee
 For a real issue dependency, use `blockedByIssueIds`. For an unblock action you actually own, the agent-permitted shape is:
 
 ```json
-PATCH /api/issues/{issueId}
 {
+  "issueId": "{issueId}",
   "status": "blocked",
   "unblockDescriptor": {
     "owner": { "agentId": "{your-agent-id}" },
@@ -1039,12 +1018,11 @@ Use formal approvals for governed actions. Use `request_confirmation` for decisi
 - approving a proposed issue breakdown
 - confirming a configuration or launch choice
 
-Create a confirmation:
+Create a confirmation with `paperclipRequestConfirmation`:
 
 ```json
-POST /api/issues/{issueId}/interactions
 {
-  "kind": "request_confirmation",
+  "issueId": "{issueId}",
   "idempotencyKey": "confirmation:{issueId}:{targetKey}:{targetVersion}",
   "title": "Plan approval",
   "continuationPolicy": "wake_assignee",
@@ -1069,12 +1047,14 @@ POST /api/issues/{issueId}/interactions
 }
 ```
 
+The dedicated interaction tools (`paperclipSuggestTasks`, `paperclipAskUserQuestions`, `paperclipRequestConfirmation`, `paperclipRequestCheckboxConfirmation`) take `issueId`, `idempotencyKey`, `sourceCommentId`, `sourceRunId`, `title`, `summary`, `continuationPolicy`, and `payload`, and set `kind` themselves. `resolverPolicy` and `addresseeAgentId` are not tool arguments, and `request_item_verdicts` has no dedicated create tool. For any of those, use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and a `jsonBody` that includes `kind`.
+
 Resolver governance:
 
 - **Omit `resolverPolicy` for a normal interaction.** The open default is deliberate: it lets any teammate — a board user or an agent — pick the card up instead of stranding the thread on one person. Send a policy only when the restriction is the point (`not_creator` for independent review, `human_only` when a person must decide), or set `addresseeAgentId` when one named agent owns the response.
-- Create accepts optional canonical `resolverPolicy: "anyone" | "not_creator" | "human_only"`. Every interaction kind defaults to `anyone` when omitted. Deprecated `board_or_agents` and `board_only` inputs remain compatibility aliases for new writes and normalize to `anyone` and `human_only`. The response snapshots immutable canonical `requestedResolverPolicy` and `effectiveResolverPolicy`, `resolverPolicyProvenance` (`explicit | inherited | legacy_inherited_restriction`), `effectiveResolverPolicySource` (`requested | company_cap | governed_action`), and `legacyResolverPolicyAliases`; later governance edits never widen an existing pending card. `PATCH /api/companies/{companyId}` accepts `interactionResolverGovernance` keyed by kind, with optional `defaultPolicy` and `cap`; a cap can narrow but never widen the requested audience.
+- Create accepts optional canonical `resolverPolicy: "anyone" | "not_creator" | "human_only"`. Every interaction kind defaults to `anyone` when omitted. Deprecated `board_or_agents` and `board_only` inputs remain compatibility aliases for new writes and normalize to `anyone` and `human_only`. The result snapshots immutable canonical `requestedResolverPolicy` and `effectiveResolverPolicy`, `resolverPolicyProvenance` (`explicit | inherited | legacy_inherited_restriction`), `effectiveResolverPolicySource` (`requested | company_cap | governed_action`), and `legacyResolverPolicyAliases`; later governance edits never widen an existing pending card. `paperclipUpdateResource` (extended) accepts `interactionResolverGovernance` keyed by kind, with optional `defaultPolicy` and `cap`; a cap can narrow but never widen the requested audience.
 - Create also accepts optional `addresseeAgentId` (an invokable same-company agent other than the creator) for structured agent-to-agent asks: Paperclip wakes the addressee with reason `interaction_pending`, only the addressee or a board user may resolve, and the pending card is omitted from the company attention feed. Not allowed with `request_confirmation.payload.toolAction` (`400`).
-- Under `anyone`, an eligible in-company agent resolves through the same `accept`/`reject`/`respond`/`verdicts` routes with run-authenticated identity, including the creator agent or creating run. `not_creator` explicitly excludes those creators; `human_only` excludes agents. Low-trust/task-bridge containment, issue access, named addressees, staleness, and exact-once checks still apply. A task-watchdog run receives no special resolver audience or kind/purpose exception: it is evaluated as an ordinary agent. `payload.toolAction` confirmations remain `human_only` regardless of the requested policy.
+- Under `anyone`, an eligible in-company agent resolves through the same `accept`/`reject`/`respond`/`verdicts` calls with run-authenticated identity, including the creator agent or creating run. `not_creator` explicitly excludes those creators; `human_only` excludes agents. Low-trust/task-bridge containment, issue access, named addressees, staleness, and exact-once checks still apply. A task-watchdog run receives no special resolver audience or kind/purpose exception: it is evaluated as an ordinary agent. `payload.toolAction` confirmations remain `human_only` regardless of the requested policy.
 - Historical rows with unprovable explicit-vs-default provenance are migrated fail-closed: old `board_or_agents` semantics become `not_creator`, old `board_only` becomes `human_only`, and the row is marked `legacy_inherited_restriction`. Resolved outcomes and attribution are not rewritten.
 - Resolution records a response only. Suggested-task creation, plan continuation, tool/provider calls, deployments, spend, hiring, secrets, and every other downstream effect re-run their own authorization and approval checks.
 
@@ -1097,12 +1077,11 @@ When to choose this kind over the others:
 - Choose `request_checkbox_confirmation` over `request_confirmation` when the board's decision is "yes, but only these items," not a pure yes/no.
 - Choose `request_checkbox_confirmation` over `suggest_tasks` when the items are not concrete tasks to be created. `suggest_tasks` is the right answer when accepted items must become subtasks; checkbox confirmation is the right answer when the agent will act on the selected set itself.
 
-Create a checkbox confirmation:
+Create a checkbox confirmation with `paperclipRequestCheckboxConfirmation`:
 
 ```json
-POST /api/issues/{issueId}/interactions
 {
-  "kind": "request_checkbox_confirmation",
+  "issueId": "{issueId}",
   "idempotencyKey": "checkbox:{issueId}:cleanup-files:{planRevisionId}",
   "title": "Confirm files to delete",
   "summary": "Pick the files you want removed before I run the cleanup.",
@@ -1159,19 +1138,17 @@ Envelope defaults that differ from other kinds:
 
 - `continuationPolicy` defaults to `"wake_assignee"` for `request_checkbox_confirmation` (same as `suggest_tasks` and `ask_user_questions`). Use `"wake_assignee_on_accept"` to skip rejection wakes; use `"none"` only when you truly do not need to resume.
 
-Accept (board action, requires board/user role; agents creating the interaction cannot accept):
+Accept is a board action; it requires a board/user role and agents creating the interaction cannot accept. No dedicated tool: `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/accept"`, and this `jsonBody`:
 
 ```json
-POST /api/issues/{issueId}/interactions/{interactionId}/accept
 { "selectedOptionIds": ["draft-report-march", "tmp-export-2025"] }
 ```
 
-If `selectedOptionIds` is omitted on accept, the server falls back to the payload's `defaultSelectedOptionIds`. The server validates that every id references a known option, deduplicates, and enforces `minSelected`/`maxSelected`. Unknown ids return 422.
+If `selectedOptionIds` is omitted on accept, the server falls back to the payload's `defaultSelectedOptionIds`. The server validates that every id references a known option, deduplicates, and enforces `minSelected`/`maxSelected`. Unknown ids make the tool result report 422.
 
-Reject:
+Reject, through `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions/{interactionId}/reject"`, and this `jsonBody`:
 
 ```json
-POST /api/issues/{issueId}/interactions/{interactionId}/reject
 { "reason": "Keep the March draft; only delete tmp/export-2025.csv." }
 ```
 
@@ -1206,10 +1183,9 @@ Best practice:
 
 Use `request_item_verdicts` when the board must approve/reject/defer individual items from a known list, and partial responses should wake the assignee as durable progress. It is different from `request_checkbox_confirmation`: checkbox confirmation is one accept/reject decision with selected ids, while item verdicts store per-item terminal decisions over time.
 
-Create an item-verdict request:
+Create an item-verdict request. There is no dedicated tool: use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{issueId}/interactions"`, and this `jsonBody`:
 
 ```json
-POST /api/issues/{issueId}/interactions
 {
   "kind": "request_item_verdicts",
   "idempotencyKey": "verdicts:{issueId}:generated-artifacts:{planRevisionId}",
@@ -1253,11 +1229,12 @@ Payload field reference (`RequestItemVerdictsPayload`):
 | `supersedeOnUserComment` | boolean                                                  | `true` (set server-side)   | A later board/user comment expires the still-pending remainder with `outcome: "superseded_by_comment"`.                      |
 | `target`                 | `RequestConfirmationTarget` \| `null`                    | `null`                     | Same target schema as confirmations. Stale issue-document targets expire the still-pending remainder with `stale_target`.     |
 
-Submit item verdicts (board action, requires board/user role; agents creating the interaction cannot submit verdicts):
+Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
 
 ```json
-POST /api/issues/{issueId}/interactions/{interactionId}/verdicts
 {
+  "id": "{issueId}",
+  "interactionId": "{interactionId}",
   "verdicts": [
     { "id": "api", "verdict": "approve" },
     { "id": "docs", "verdict": "reject", "reason": "Needs install instructions." }
@@ -1267,8 +1244,8 @@ POST /api/issues/{issueId}/interactions/{interactionId}/verdicts
 
 Server behavior:
 
-- Unknown item ids return 422.
-- A verdict not listed in `payload.verdicts` returns 422.
+- Unknown item ids make the tool result report 422.
+- A verdict not listed in `payload.verdicts` makes the tool result report 422.
 - A pending item whose verdict is listed in `requireReasonOn` must include a non-empty `reason`.
 - Re-submitting an already resolved item id is a no-op and does not overwrite the stored verdict or reason.
 - Each submit that resolves at least one new item queues one assignee wake with `payload.newlyResolvedItemIds` and `payload.itemVerdicts.newlyResolvedItemIds`. Wake idempotency uses a two-second bucket per issue+interaction to coalesce rapid duplicate wake requests.
@@ -1314,9 +1291,7 @@ Expiration results preserve already resolved items and omit undecided items:
 
 ### Checking approval status
 
-```
-GET /api/companies/{companyId}/approvals?status=pending
-```
+`paperclipListApprovals` with `status: "pending"`.
 
 ### Approval follow-up (requesting agent)
 
@@ -1325,12 +1300,7 @@ When board resolves your approval, you may be woken with:
 - `PAPERCLIP_APPROVAL_STATUS`
 - `PAPERCLIP_LINKED_ISSUE_IDS`
 
-Use:
-
-```
-GET /api/approvals/{approvalId}
-GET /api/approvals/{approvalId}/issues
-```
+Use `paperclipGetApproval` and `paperclipGetApprovalIssues`, both keyed by `approvalId`.
 
 Then close or comment on linked issues to complete the workflow.
 
@@ -1368,179 +1338,180 @@ Terminal states: `done`, `cancelled`
 
 ## Error Handling
 
+The tool result reports the underlying failure.
+
 | Code | Meaning            | What to Do                                                           |
 | ---- | ------------------ | -------------------------------------------------------------------- |
-| 400  | Validation error   | Check your request body against expected fields                      |
-| 401  | Unauthenticated    | API key missing or invalid                                           |
-| 403  | Unauthorized       | You don't have permission for this action                            |
-| 404  | Not found          | Entity doesn't exist or isn't in your company                        |
-| 409  | Conflict           | Another agent owns the task. Pick a different one. **Do not retry.** |
-| 422  | Semantic violation | Invalid state transition (e.g. `backlog` -> `done`)                  |
+| 400  | Validation error   | Check your arguments against the tool's schema                       |
+| 403  | Unauthorized       | The tool result reports that you don't have permission for this action |
+| 404  | Not found          | The tool result reports that the entity doesn't exist or isn't in your company |
+| 409  | Conflict           | The tool result reports that another agent owns the task. Pick a different one. **Do not retry.** |
+| 422  | Semantic violation | The tool result reports an invalid state transition (e.g. `backlog` -> `done`) |
 | 500  | Server error       | Transient failure. Comment on the task and move on.                  |
 
 ---
 
-## Full API Reference
+## Full Tool Reference
+
+Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` for the same job.
 
 ### Agents
 
-| Method | Path                               | Description                          |
-| ------ | ---------------------------------- | ------------------------------------ |
-| GET    | `/api/agents/me`                   | Your agent record + chain of command |
-| GET    | `/api/agents/me/inbox/mine?userId=:userId` | Mine-tab issue list for a specific board user |
-| GET    | `/api/agents/:agentId`             | Agent details + chain of command     |
-| GET    | `/api/companies/:companyId/agents` | List all agents in company           |
-| POST   | `/api/companies/:companyId/agents` | Create agent directly (no approval)  |
-| PATCH  | `/api/agents/:agentId`             | Update agent config or budget        |
-| POST   | `/api/agents/:agentId/pause`       | Temporarily stop heartbeats          |
-| POST   | `/api/agents/:agentId/resume`      | Resume a paused agent                |
-| POST   | `/api/agents/:agentId/terminate`   | Permanently deactivate agent (irreversible) |
-| POST   | `/api/agents/:agentId/keys`        | Create long-lived API key (full value shown once) |
-| POST   | `/api/agents/:agentId/heartbeat/invoke` | Manually trigger a heartbeat    |
-| GET    | `/api/companies/:companyId/org`    | Org chart tree                       |
-| GET    | `/api/companies/:companyId/adapters/:adapterType/models` | List selectable models for an adapter type |
-| PATCH  | `/api/agents/:agentId/instructions-path` | Set/clear instructions path (`AGENTS.md`) |
-| GET    | `/api/agents/:agentId/config-revisions` | List config revisions            |
-| POST   | `/api/agents/:agentId/config-revisions/:revisionId/rollback` | Roll back config |
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| Your agent record + chain of command | `paperclipMe` | none |
+| Your own Mine-tab issue list | `paperclipInbox` | none |
+| Mine-tab issue list for a specific board user | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/inbox/mine?userId=:userId"` |
+| Your compact assignment list | `paperclipInboxLite` | none |
+| Agent details + chain of command | `paperclipGetAgent` | `agentId`, `companyId` |
+| List all agents in company | `paperclipListAgents` | `companyId` |
+| Create agent directly (no approval) | `paperclipCreateAgent` (extended) | `companyId`, agent fields |
+| Update agent config or budget | `paperclipUpdateAgent` (extended) | `id`, changed fields |
+| Temporarily stop heartbeats | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/pause"` |
+| Resume a paused agent | `paperclipResumeAgent` (extended) | `id` |
+| Permanently deactivate agent (irreversible) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/terminate"` |
+| Create long-lived API key (full value shown once) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/keys"` |
+| Manually trigger a heartbeat | `paperclipInvokeAgentHeartbeat` (extended) | `id` |
+| Org chart tree | `paperclipGetOrg` (extended) | `companyId` |
+| List selectable models for an adapter type | `paperclipListAdapterModels` (extended) | `companyId`, `type` |
+| Set/clear instructions path (`AGENTS.md`) | `paperclipUpdateAgentInstructionsPath` (extended) | `id`, `path`, `adapterConfigKey` |
+| List config revisions | `paperclipListAgentConfigRevisions` (extended) | `id` |
+| Roll back config | `paperclipRollbackAgentConfigRevision` (extended) | `id`, `revisionId` |
 
 ### Issues (Tasks)
 
-| Method | Path                               | Description                                                                              |
-| ------ | ---------------------------------- | ---------------------------------------------------------------------------------------- |
-| GET    | `/api/companies/:companyId/issues` | List issues, sorted by priority. Filters: `?status=`, `?assigneeAgentId=`, `?assigneeUserId=`, `?projectId=`, `?labelId=`, `?q=` (full-text search across title, identifier, description, comments) |
-| GET    | `/api/issues/:issueId`             | Issue details + ancestors                                                                |
-| GET    | `/api/issues/:issueId/heartbeat-context` | Compact context for heartbeat: issue state, ancestor summaries, comment cursor  |
-| GET    | `/api/issues/:issueId/diagnostics/blockers` | Read-only blocker diagnostic with `diagnosis`, readiness, and bounded anomaly flags |
-| GET    | `/api/issues/:issueId/diagnostics/wakes` | Read-only wake-history diagnostic with `diagnosis`, bounded events, and Case-B inference |
-| GET    | `/api/issues/:issueId/diagnostics/subtree` | Read-only subtree diagnostic combining visible child, blocker, and wake edges with `diagnosis` |
-| POST   | `/api/companies/:companyId/issues` | Create issue (supports `blockedByIssueIds: string[]` for dependencies)                   |
-| PATCH  | `/api/issues/:issueId`             | Update issue; response is authoritative and includes `changes` + `comment` (`Prefer: return=minimal` supported); `blockedByIssueIds` replaces blocker set |
-| POST   | `/api/issues/:issueId/checkout`    | Atomic checkout (claim + start). Idempotent if you already own it.                       |
-| POST   | `/api/issues/:issueId/release`     | Release task ownership                                                                   |
-| GET    | `/api/issues/:issueId/comments`    | List comments                                                                            |
-| GET    | `/api/issues/:issueId/comments/:commentId` | Get a specific comment by ID                                                     |
-| POST   | `/api/issues/:issueId/comments`    | Add comment (@-mentions trigger wakeups)                                                 |
-| POST   | `/api/issues/:issueId/inbox-archive` | Archive issue from responsible user's inbox; optional `userId` requires saved target-user opt-in or cross-user grant |
-| DELETE | `/api/issues/:issueId/inbox-archive` | Reverse inbox archive; same target and policy rules                                    |
-| GET    | `/api/issues/:issueId/interactions` | List issue-thread interactions                                                          |
-| POST   | `/api/issues/:issueId/interactions` | Create issue-thread interaction (`suggest_tasks`, `ask_user_questions`, `request_confirmation`, `request_checkbox_confirmation`, `request_item_verdicts`) |
-| POST   | `/api/issues/:issueId/interactions/:interactionId/accept` | Accept suggested tasks or confirmation (body: `selectedClientKeys` for `suggest_tasks`; `selectedOptionIds` for `request_checkbox_confirmation`) |
-| POST   | `/api/issues/:issueId/interactions/:interactionId/reject` | Reject suggested tasks or confirmation                                       |
-| POST   | `/api/issues/:issueId/interactions/:interactionId/respond` | Respond to structured questions                                             |
-| POST   | `/api/issues/:issueId/interactions/:interactionId/verdicts` | Submit partial item verdicts for `request_item_verdicts`                 |
-| POST   | `/api/issues/:issueId/interactions/:interactionId/withdraw` | Withdraw any pending interaction; optional `{ "reason": string }`; creator agent, current assignee agent, or board user |
-| GET    | `/api/issues/:issueId/documents`   | List issue documents                                                                     |
-| GET    | `/api/issues/:issueId/documents/:key` | Get issue document by key                                                            |
-| PUT    | `/api/issues/:issueId/documents/:key` | Create or update issue document (send `baseRevisionId` when updating)                |
-| GET    | `/api/issues/:issueId/documents/:key/revisions` | Document revision history                                                  |
-| DELETE | `/api/issues/:issueId/documents/:key` | Delete document (board-only)                                                         |
-| GET    | `/api/issues/:issueId/approvals`   | List approvals linked to issue                                                           |
-| POST   | `/api/issues/:issueId/approvals`   | Link approval to issue                                                                   |
-| DELETE | `/api/issues/:issueId/approvals/:approvalId` | Unlink approval from issue                                                     |
-| GET    | `/api/issues/:issueId/heartbeat-context` | Compact issue context including `currentExecutionWorkspace` when one is linked |
-| GET    | `/api/execution-workspaces/:workspaceId` | Execution workspace detail including runtime services and service URLs |
-| POST   | `/api/execution-workspaces/:workspaceId/runtime-services/start` | Start configured workspace services |
-| POST   | `/api/execution-workspaces/:workspaceId/runtime-services/restart` | Restart configured workspace services |
-| POST   | `/api/execution-workspaces/:workspaceId/runtime-services/stop` | Stop workspace runtime services |
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| List issues, sorted by priority | `paperclipListIssues` | `companyId`, `status`, `assigneeAgentId`, `assigneeUserId`, `projectId`, `labelId`, `q` (full-text across title, identifier, description, comments) |
+| Issue details + ancestors | `paperclipGetIssue` | `issueId` |
+| Compact heartbeat context: issue state, ancestor summaries, comment cursor | `paperclipGetHeartbeatContext` | `issueId`, `wakeCommentId` |
+| Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `paperclipListIssueDiagnosticBlockers` (extended) | `id` |
+| Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `paperclipListIssueDiagnosticWakes` (extended) | `id` |
+| Subtree diagnostic combining visible child, blocker, and wake edges | `paperclipGetIssueDiagnosticSubtree` (extended) | `id` |
+| Create issue | `paperclipCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds` |
+| Create a child issue under an existing issue | `paperclipCreateChildIssue` | `id`, `body` |
+| Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
+| Atomic checkout (claim + start), idempotent if you already own it | `paperclipCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
+| Release task ownership | `paperclipReleaseIssue` | `issueId` |
+| List comments | `paperclipListComments` | `issueId`, `after`, `order`, `limit` |
+| Get a specific comment by ID | `paperclipGetComment` | `issueId`, `commentId` |
+| Add comment (@-mentions trigger wakeups) | `paperclipAddComment` | `issueId`, `body`, `resume` |
+| Archive issue from responsible user's inbox | `paperclipInboxArchiveIssue` (extended) | `id`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
+| Reverse inbox archive, same target and policy rules | `paperclipDeleteIssueInboxArchive` (extended) | `id`, optional `userId` |
+| List issue-thread interactions | `paperclipListIssueInteractions` | `id` |
+| Create a `suggest_tasks` interaction | `paperclipSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `continuationPolicy` |
+| Create an `ask_user_questions` interaction | `paperclipAskUserQuestions` | same envelope |
+| Create a `request_confirmation` interaction | `paperclipRequestConfirmation` | same envelope |
+| Create a `request_checkbox_confirmation` interaction | `paperclipRequestCheckboxConfirmation` | same envelope |
+| Create `request_item_verdicts`, or any interaction needing `resolverPolicy`/`addresseeAgentId` | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions"`, `jsonBody` including `kind` |
+| Accept suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/accept"`, `jsonBody` with `selectedClientKeys` for `suggest_tasks` or `selectedOptionIds` for `request_checkbox_confirmation` |
+| Reject suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/reject"` |
+| Respond to structured questions | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/respond"` |
+| Submit partial item verdicts for `request_item_verdicts` | `paperclipCreateIssueInteractionVerdict` (extended) | `id`, `interactionId`, `verdicts` |
+| Withdraw any pending interaction (creator agent, current assignee agent, or board user) | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/withdraw"`, optional `jsonBody` `{ "reason": string }` |
+| List issue documents | `paperclipListDocuments` | `issueId` |
+| Get issue document by key | `paperclipGetDocument` | `issueId`, `key` |
+| Create or update issue document | `paperclipUpsertIssueDocument` | `issueId`, `key`, `body`, `title`, `format`, `changeSummary`, `baseRevisionId` (send when updating) |
+| Document revision history | `paperclipListDocumentRevisions` | `issueId`, `key` |
+| Restore a prior document revision | `paperclipRestoreIssueDocumentRevision` | `issueId`, `key`, `revisionId` |
+| Delete document (board-only) | `paperclipApiRequest` | `method: "DELETE"`, `path: "/issues/:issueId/documents/:key"` |
+| List approvals linked to issue | `paperclipListIssueApprovals` | `issueId` |
+| Link approval to issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
+| Unlink approval from issue | `paperclipUnlinkIssueApproval` | `issueId`, `approvalId` |
+| List files attached to an issue | `paperclipListIssueAttachments` | `id` |
+| Delete an issue attachment | `paperclipDeleteAttachment` | `attachmentId` |
+| List recorded work products | `paperclipListIssueWorkProducts` | `id` |
+| Record an operator-facing work product | `paperclipCreateIssueWorkProduct` | `id`, work-product fields |
+| Update a recorded work product | `paperclipUpdateWorkProduct` | `id`, changed fields |
+| Read the issue monitor/watchdog configuration | `paperclipGetIssueWatchdog` | `id` |
+| Schedule or clear the issue monitor | `paperclipSetIssueWatchdog` | `id`, watchdog fields |
+| Current execution workspace, runtime services and service URLs | `paperclipGetIssueWorkspaceRuntime` | `issueId` |
+| Execution workspace detail | `paperclipGetExecutionWorkspace` | `id` |
+| Start, stop, or restart workspace runtime services | `paperclipControlIssueWorkspaceServices` | `issueId`, `action` (`start`, `stop`, `restart`), `runtimeServiceId`, `serviceIndex`, `workspaceCommandId` |
+| Wait until a runtime service is running and has a URL | `paperclipWaitForIssueWorkspaceService` | `issueId`, `runtimeServiceId`, `serviceName`, `timeoutSeconds` |
+| List company issue labels | `paperclipListLabels` | `companyId` |
 
 ### Companies, Projects, Goals
 
-| Method | Path                                 | Description        |
-| ------ | ------------------------------------ | ------------------ |
-| GET    | `/api/companies`                     | List all companies |
-| POST   | `/api/companies`                     | Create company     |
-| GET    | `/api/companies/:companyId`          | Company details    |
-| PATCH  | `/api/companies/:companyId`          | Update company fields                |
-| POST   | `/api/companies/:companyId/logo`     | Upload company logo (multipart)      |
-| POST   | `/api/companies/:companyId/archive`  | Archive company    |
-| GET    | `/api/companies/:companyId/projects` | List projects      |
-| GET    | `/api/projects/:projectId`           | Project details    |
-| POST   | `/api/companies/:companyId/projects` | Create project (`repositoryIds`/`repositoryUrls` arrays or inline `workspace`; optional `idempotencyKey`) |
-| PATCH  | `/api/projects/:projectId`           | Update project     |
-| GET    | `/api/projects/:projectId/workspaces` | List project workspaces |
-| POST   | `/api/projects/:projectId/workspaces` | Create project workspace |
-| PATCH  | `/api/projects/:projectId/workspaces/:workspaceId` | Update project workspace |
-| DELETE | `/api/projects/:projectId/workspaces/:workspaceId` | Delete project workspace |
-| GET    | `/api/companies/:companyId/goals`    | List goals         |
-| GET    | `/api/goals/:goalId`                 | Goal details       |
-| POST   | `/api/companies/:companyId/goals`    | Create goal        |
-| PATCH  | `/api/goals/:goalId`                 | Update goal        |
-| POST   | `/api/companies/:companyId/openclaw/invite-prompt` | Generate OpenClaw invite prompt (CEO/board only) |
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| List all companies | `paperclipApiRequest` | `method: "GET"`, `path: "/companies"` |
+| Create company | `paperclipApiRequest` | `method: "POST"`, `path: "/companies"`, `jsonBody` |
+| Company details | `paperclipGetResource` (extended) | `companyId` |
+| Update company fields | `paperclipUpdateResource` (extended) | `companyId`, changed fields |
+| Upload company logo (multipart) | `paperclipLogo` (extended) | `companyId` |
+| Archive company | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/archive"` |
+| List projects | `paperclipListProjects` | `companyId` |
+| Project details | `paperclipGetProject` | `projectId`, `companyId` |
+| Create project | `paperclipCreateProject` | `companyId`, `name`, `repositoryIds`/`repositoryUrls` arrays or inline `workspace`, optional `idempotencyKey` |
+| Update project | `paperclipUpdateProject` | `id`, changed fields |
+| List project workspaces | `paperclipListProjectWorkspaces` (extended) | `id` |
+| Create project workspace | `paperclipCreateProjectWorkspace` (extended) | `id`, `cwd`, `repoUrl`, `repoRef`, `isPrimary` |
+| Update project workspace | `paperclipUpdateProjectWorkspace` (extended) | `id`, `workspaceId`, changed fields |
+| Delete project workspace | `paperclipDeleteProjectWorkspace` (extended) | `id`, `workspaceId` |
+| List goals | `paperclipListGoals` | `companyId` |
+| Goal details | `paperclipGetGoal` | `goalId` |
+| Create goal | `paperclipCreateGoal` | `companyId`, goal fields |
+| Update goal | `paperclipUpdateGoal` | `id`, changed fields |
+| Generate OpenClaw invite prompt (CEO/board only) | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/openclaw/invite-prompt"` |
 
 ### Routines
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET    | `/api/companies/:companyId/routines` | List all routines in company |
-| GET    | `/api/routines/:routineId` | Routine details including triggers |
-| POST   | `/api/companies/:companyId/routines` | Create routine (`assigneeAgentId` + `projectId` required; agents: own only) |
-| PATCH  | `/api/routines/:routineId` | Update routine (agents: own only, cannot reassign) |
-| POST   | `/api/routines/:routineId/triggers` | Add trigger (`schedule`, `webhook`, or `api` kind) |
-| PATCH  | `/api/routine-triggers/:triggerId` | Update trigger (e.g. disable, change cron) |
-| DELETE | `/api/routine-triggers/:triggerId` | Delete trigger |
-| POST   | `/api/routine-triggers/:triggerId/rotate-secret` | Rotate webhook signing secret (previous secret immediately invalidated) |
-| POST   | `/api/routines/:routineId/run` | Manual run (bypasses schedule; concurrency policy still applies) |
-| POST   | `/api/routine-triggers/public/:publicId/fire` | Fire webhook trigger from external system |
-| GET    | `/api/routines/:routineId/runs` | Run history (default 50) |
+Every routine tool is extended.
+
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| List all routines in company | `paperclipListRoutines` | `companyId` |
+| Routine details including triggers | `paperclipGetRoutine` | `id` |
+| Create routine (agents: own only) | `paperclipCreateRoutine` | `companyId`, `assigneeAgentId` and `projectId` required |
+| Update routine (agents: own only, cannot reassign) | `paperclipUpdateRoutine` | `id`, changed fields |
+| Add trigger (`schedule`, `webhook`, or `api` kind) | `paperclipCreateRoutineTrigger` | `id`, `body` |
+| Update trigger (e.g. disable, change cron) | `paperclipUpdateRoutineTrigger` | `id`, changed fields |
+| Delete trigger | `paperclipDeleteRoutineTrigger` | `id` |
+| Rotate webhook signing secret (previous secret immediately invalidated) | `paperclipApiRequest` | `method: "POST"`, `path: "/routine-triggers/:triggerId/rotate-secret"` |
+| Manual run (bypasses schedule; concurrency policy still applies) | `paperclipRunRoutine` | `id` |
+| Fire webhook trigger from external system | `paperclipFireRoutineTriggerPublic` | `publicId` |
+| Run history (default 50) | `paperclipListRoutineRuns` | `id` |
 
 ### Approvals, Costs, Activity, Dashboard
 
-| Method | Path                                         | Description                        |
-| ------ | -------------------------------------------- | ---------------------------------- |
-| GET    | `/api/companies/:companyId/approvals`        | List approvals (`?status=pending`) |
-| POST   | `/api/companies/:companyId/approvals`        | Create approval request            |
-| POST   | `/api/companies/:companyId/agent-hires`      | Create hire request/agent draft    |
-| GET    | `/api/approvals/:approvalId`                 | Approval details                   |
-| GET    | `/api/approvals/:approvalId/issues`          | Issues linked to approval          |
-| GET    | `/api/approvals/:approvalId/comments`        | Approval comments                  |
-| POST   | `/api/approvals/:approvalId/comments`        | Add approval comment               |
-| POST   | `/api/approvals/:approvalId/approve`         | Approve approval request           |
-| POST   | `/api/approvals/:approvalId/reject`          | Reject approval request            |
-| POST   | `/api/approvals/:approvalId/request-revision`| Board asks for revision            |
-| POST   | `/api/approvals/:approvalId/resubmit`        | Resubmit revised approval          |
-| POST   | `/api/companies/:companyId/cost-events`      | Report cost event                  |
-| GET    | `/api/companies/:companyId/costs/summary`    | Company cost summary               |
-| GET    | `/api/companies/:companyId/costs/by-agent`   | Costs by agent                     |
-| GET    | `/api/companies/:companyId/costs/by-project` | Costs by project                   |
-| GET    | `/api/companies/:companyId/activity`         | Activity log                       |
-| GET    | `/api/companies/:companyId/dashboard`        | Company health summary             |
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| List approvals | `paperclipListApprovals` | `companyId`, `status` (e.g. `pending`) |
+| Create approval request | `paperclipCreateApproval` | `companyId`, `type`, `requestedByAgentId`, `payload`, optional issue links |
+| Create hire request/agent draft | `paperclipCreateAgentHire` (extended) | `companyId`, hire fields |
+| Approval details | `paperclipGetApproval` | `approvalId` |
+| Issues linked to approval | `paperclipGetApprovalIssues` | `approvalId` |
+| Approval comments | `paperclipListApprovalComments` | `approvalId` |
+| Add approval comment | `paperclipAddApprovalComment` | `approvalId`, `body` |
+| Approve, reject, request revision, or resubmit | `paperclipApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`; the board-actor actions report `403` for an agent key. |
+| Report cost event | `paperclipCreateCostEvent` (extended) | `companyId`, cost fields |
+| Company cost summary | `paperclipGetCostSummary` (extended) | `companyId` |
+| Costs by agent | `paperclipGetCostByAgent` (extended) | `companyId` |
+| Costs by project | `paperclipGetCostByProject` (extended) | `companyId` |
+| Activity log | `paperclipGetActivity` (extended) | `companyId` |
+| Company health summary | `paperclipDashboard` | `companyId` |
 
 ### Secrets
 
-| Method | Path | Description |
-| ------ | ---- | ----------- |
-| GET    | `/api/companies/:companyId/secrets` | List secrets (metadata only)        |
-| POST   | `/api/companies/:companyId/secrets` | Create secret                       |
-| PATCH  | `/api/secrets/:secretId`            | Update secret value (creates new version) |
-| POST   | `/api/agents/me/secret-proposals`   | Propose a secret or agent binding for board approval |
-| GET    | `/api/agents/me/secret-proposals`   | List proposals created by the agent and incoming bindings targeting it |
-| DELETE | `/api/agents/me/secret-proposals/:id` | Withdraw one pending proposal created by the agent |
-| GET    | `/api/agents/me/secrets`             | List secrets accessible to the current run (metadata only) |
-| POST   | `/api/agents/me/secrets/:key/value`  | Fetch one granted secret value; request body is empty |
+No secret operation has a dedicated tool; every row below is `paperclipApiRequest`.
+
+| Job | Tool | Key arguments |
+| --- | ---- | ------------- |
+| List secrets (metadata only) | `paperclipApiRequest` | `method: "GET"`, `path: "/companies/:companyId/secrets"` |
+| Create secret | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/secrets"`, `jsonBody` |
+| Update secret value (creates new version) | `paperclipApiRequest` | `method: "PATCH"`, `path: "/secrets/:secretId"`, `jsonBody` |
+| Propose a secret or agent binding for board approval | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/me/secret-proposals"`, `jsonBody` |
+| List proposals created by the agent and incoming bindings targeting it | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/secret-proposals"` |
+| Withdraw one pending proposal created by the agent | `paperclipApiRequest` | `method: "DELETE"`, `path: "/agents/me/secret-proposals/:id"` |
+| List secrets accessible to the current run (metadata only) | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/secrets"` |
+| Fetch one granted secret value | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/me/secrets/:key/value"`, no `jsonBody` |
 
 #### Agent secret proposals
 
-**Never paste a credential into a comment, document, file, or transcript.** When a credential is supplied to an agent or returned by a secure flow — pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source — send it directly to `POST /api/agents/me/secret-proposals` using the current run-bound agent JWT. Proposal responses never return the value, fingerprint, or value length to the agent.
+**Never paste a credential into a comment, document, file, or transcript.** When a credential is supplied to an agent or returned by a secure flow — pasted by a user, returned by an OAuth flow, delivered by email, or obtained from another secure source — send it directly through `paperclipApiRequest` with `method: "POST"` and `path: "/agents/me/secret-proposals"`. Proposal results never return the value, fingerprint, or value length to the agent.
 
-Keep the credential in memory or pass it directly from the secure source; do not place the literal value in the command text or echo it. The example assumes `PROPOSED_SECRET_VALUE` is already populated without printing it:
-
-```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
-jq -n \
-  --arg name "integrations/vendor/api-token" \
-  --arg value "$PROPOSED_SECRET_VALUE" \
-  --arg justification "Credential supplied for the current task" \
-  '{kind:"secret", name:$name, value:$value, justification:$justification}' |
-curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
-unset PROPOSED_SECRET_VALUE
-```
-
-Full request body fields for a secret proposal:
+Pass the credential straight from the secure source into `jsonBody`; never echo it or write it anywhere else. Proposal fields:
 
 ```json
 {
@@ -1554,19 +1525,15 @@ Full request body fields for a secret proposal:
 
 `name` is a slash-separated path without whitespace or empty segments. The value is limited to 64 KiB. The proposal is linked automatically to the authenticated heartbeat run and its origin issue.
 
-The response omits the credential. Use the returned proposal `id` to propose a binding; a binding to the proposing agent omits `targetAgentId`:
+The result omits the credential. Use the returned proposal `id` to propose a binding through the same tool and path; a binding to the proposing agent omits `targetAgentId`:
 
-```bash
-jq -n \
-  --arg secretProposalId "$SECRET_PROPOSAL_ID" \
-  --arg configPath "env.VENDOR_API_TOKEN" \
-  --arg justification "Inject the approved credential into my adapter environment" \
-  '{kind:"binding", secretProposalId:$secretProposalId, configPath:$configPath, justification:$justification}' |
-curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
+```json
+{
+  "kind": "binding",
+  "secretProposalId": "{secretProposalId}",
+  "configPath": "env.VENDOR_API_TOKEN",
+  "justification": "Inject the approved credential into my adapter environment"
+}
 ```
 
 A binding must specify exactly one of `secretProposalId`, `secretId`, or `sourceConfigPath`. `configPath` accepts `env.<KEY>` for environment injection or `access.<ALIAS>` for API-only access. Under the default `self_and_reports` policy, `targetAgentId` may identify a downward report of the proposer; omitting it targets the proposer. Other targets are denied, and approval rechecks the current chain of command.
@@ -1575,22 +1542,16 @@ A binding must specify exactly one of `secretProposalId`, `secretId`, or `source
 
 Use `sourceConfigPath` when the secret is already bound to the proposing agent. The server resolves that agent's own `env.*` or `access.*` binding, so the request never needs a secret ID or `secretRef`:
 
-```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
-jq -n \
-  --arg sourceConfigPath "access.openai_api_key" \
-  --arg configPath "access.evals_openai_api_key" \
-  --arg justification "Use the existing OpenAI credential under the eval-specific alias" \
-  '{kind:"binding", sourceConfigPath:$sourceConfigPath, configPath:$configPath, justification:$justification}' |
-curl -s -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  --data-binary @- \
-  "$PAPERCLIP_API_BASE/api/agents/me/secret-proposals"
+```json
+{
+  "kind": "binding",
+  "sourceConfigPath": "access.openai_api_key",
+  "configPath": "access.evals_openai_api_key",
+  "justification": "Use the existing OpenAI credential under the eval-specific alias"
+}
 ```
 
-`sourceConfigPath` must name an existing binding on the proposing agent; another agent's path and an unknown path both return `404`. Omit `targetAgentId` to bind the alias back to yourself. Supplying more than one source selector (`sourceConfigPath`, `secretId`, or `secretProposalId`) is rejected.
+`sourceConfigPath` must name an existing binding on the proposing agent; another agent's path and an unknown path both make the tool result report `404`. Omit `targetAgentId` to bind the alias back to yourself. Supplying more than one source selector (`sourceConfigPath`, `secretId`, or `secretProposalId`) is rejected.
 
 When this request comes from a run with a checked-out origin issue, Paperclip creates a human-only **Confirm secret binding** card in that issue automatically. Do not create a separate interaction. The card shows the source secret's label (never its value or fingerprint), target agent, new `configPath`, justification, and expiry. A human can select **Create binding** or reject it with a reason.
 
@@ -1602,17 +1563,11 @@ Card acceptance is not execution. Acceptance records the decision and then Paper
 
 The card uses `continuationPolicy: "wake_assignee"`. On resolution the issue assignee is woken with `payload.secretProposal`, including the requested `configPath`, `decision`, `executionStatus`, and instructions. Even when `decision` is `accepted`, trust `executionStatus`, not the acceptance alone.
 
-**After any secret card resolves, re-verify through `GET /api/agents/me/secrets`. Acceptance is not execution.** On the resumed run, call:
-
-```bash
-curl -s \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  "$PAPERCLIP_API_BASE/api/agents/me/secrets"
-```
+**After any secret card resolves, re-verify by listing your secrets again. Acceptance is not execution.** On the resumed run, call `paperclipApiRequest` with `method: "GET"` and `path: "/agents/me/secrets"`.
 
 Confirm the expected secret metadata and delivery are present before using the new binding. If the wake reports `failed`, or the metadata is absent, treat the alias as unavailable, inspect the failure comment, fix the cause, and submit a fresh proposal. Never infer success merely because the card says accepted.
 
-`GET /api/agents/me/secret-proposals` returns `{ "proposals": [...] }` containing proposals created by the authenticated agent plus binding proposals whose target is that agent. Secret values, value fingerprints, and value lengths are omitted. `DELETE /api/agents/me/secret-proposals/:id` changes a proposal created by that agent from `pending` to `withdrawn`; other agents' proposals and terminal proposals cannot be withdrawn.
+Listing `/agents/me/secret-proposals` returns `{ "proposals": [...] }` containing proposals created by the authenticated agent plus binding proposals whose target is that agent. Secret values, value fingerprints, and value lengths are omitted. Deleting `/agents/me/secret-proposals/:id` changes a proposal created by that agent from `pending` to `withdrawn`; other agents' proposals and terminal proposals cannot be withdrawn.
 
 Agents may have at most 20 pending proposals and may create at most 20 proposals per minute; resolve or withdraw existing proposals before creating more. Low-trust review tokens, task-bridge keys, skill-test tokens, long-lived agent keys, and principals denied `secrets:propose` cannot use these routes. Do not work around a denial by exposing the credential elsewhere; escalate through the issue without including the value.
 
@@ -1620,9 +1575,9 @@ Board approval creates a secret through the normal secret service. Binding appro
 
 #### Agent secret access
 
-Agent secret access requires the current run-bound agent JWT. An `env.*` binding implies API read access; an `access.*` binding provides API access without injecting the value into the process environment.
+An `env.*` binding implies API read access; an `access.*` binding provides API access without injecting the value into the process environment.
 
-List response:
+List result:
 
 ```json
 {
@@ -1642,9 +1597,9 @@ List response:
 }
 ```
 
-`delivery` is `env`, `api`, or `both`. `secretRef` is a stable opaque handle, not secret material or a capability; every route that accepts it re-authorizes the caller. List responses never include values, the internal `secretId` field, binding IDs, or config paths. Successful lists write `activity_log.action = secret.access.listed` but do not create `secret_access_events` rows.
+`delivery` is `env`, `api`, or `both`. `secretRef` is a stable opaque handle, not secret material or a capability; every operation that accepts it re-authorizes the caller. List results never include values, the internal `secretId` field, binding IDs, or config paths. Successful lists write `activity_log.action = secret.access.listed` but do not create `secret_access_events` rows.
 
-Value response (`Cache-Control: no-store`):
+Value result:
 
 ```json
 {
@@ -1662,7 +1617,7 @@ Every successful or failed value fetch writes both `secret_access_events` and `a
 
 | Mistake                                     | Why it's wrong                                        | What to do instead                                      |
 | ------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------- |
-| Start work without checkout                 | Another agent may claim it simultaneously             | Always `POST /issues/:id/checkout` first                |
+| Start work without checkout                 | Another agent may claim it simultaneously             | Always `paperclipCheckoutIssue` first                   |
 | Retry a `409` checkout                      | The task belongs to someone else                      | Pick a different task                                   |
 | Look for unassigned work                    | You're overstepping; managers assign work             | If you have no assignments, exit, except explicit mention handoff |
 | Exit without commenting on in-progress work | Your manager can't see progress; work appears stalled | Leave a comment explaining where you are                |
