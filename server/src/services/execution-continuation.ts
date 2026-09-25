@@ -1,6 +1,7 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, or, sql } from "drizzle-orm";
 import { z } from "zod";
 import {
+  activityLog,
   agentWakeupRequests,
   heartbeatRuns,
   issueComments,
@@ -62,6 +63,63 @@ export function projectHumanInteractionResponse(row: {
     resolvedAt: row.resolvedAt.toISOString(), result: response };
 }
 
+const PENDING_QUEUED_WAKE_STATUSES = ["deferred_issue_execution", "queued"];
+
+const DISCARDED_QUEUED_COMMENT_ACTIONS = [
+  "issue.queued_comment_discarded",
+  "issue.comment_cancelled",
+];
+
+export async function pendingQueuedCommentIds(
+  db: Db,
+  companyId: string,
+  issueId: string,
+): Promise<Set<string>> {
+  const wakes = await db
+    .select({ payload: agentWakeupRequests.payload })
+    .from(agentWakeupRequests)
+    .where(
+      and(
+        eq(agentWakeupRequests.companyId, companyId),
+        inArray(agentWakeupRequests.status, PENDING_QUEUED_WAKE_STATUSES),
+        sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
+      ),
+    );
+  return new Set(
+    wakes.flatMap((wake) => queuedCommentIdsFromWakePayload(wake.payload)),
+  );
+}
+
+async function discardedQueuedCommentIds(
+  db: Db,
+  companyId: string,
+  issueId: string,
+  commentIds: string[],
+): Promise<Set<string>> {
+  if (commentIds.length === 0) return new Set();
+  const rows = await db
+    .select({ details: activityLog.details })
+    .from(activityLog)
+    .where(
+      and(
+        eq(activityLog.companyId, companyId),
+        eq(activityLog.entityType, "issue"),
+        eq(activityLog.entityId, issueId),
+        inArray(activityLog.action, DISCARDED_QUEUED_COMMENT_ACTIONS),
+        inArray(
+          sql<string>`${activityLog.details} ->> 'commentId'`,
+          commentIds,
+        ),
+      ),
+    );
+  return new Set(
+    rows.flatMap((row) => {
+      const id = string(object(row.details).commentId);
+      return id ? [id] : [];
+    }),
+  );
+}
+
 /** Also retain user direction delivered after the source run's initial wake. */
 export async function currentContinuationOrigins(
   db: Db,
@@ -69,7 +127,10 @@ export async function currentContinuationOrigins(
   issueId: string,
   context: unknown,
 ): Promise<string[]> {
-  const candidates = continuationOriginCommentIds(context);
+  const queued = await pendingQueuedCommentIds(db, companyId, issueId);
+  const candidates = continuationOriginCommentIds(context).filter(
+    (id) => !queued.has(id),
+  );
   // A run may create an interaction on another task. Its own comments do not
   // become authority on that task. Keep unknown references for dispatch to
   // reject, rather than silently claiming complete context.
@@ -99,7 +160,7 @@ export async function currentContinuationOrigins(
   return [
     ...new Set([
       ...candidates.filter(id => !foreignIds.has(id)),
-      ...(latest ? [latest.id] : []),
+      ...(latest && !queued.has(latest.id) ? [latest.id] : []),
     ]),
   ];
 }
@@ -193,7 +254,7 @@ export async function buildExecutionContinuation(input: {
       ))
     : [];
   const inheritedForeignIds = new Set(inheritedForeignComments.map(row => row.id));
-  const originCommentIds = [
+  const recordedOriginCommentIds = [
     ...new Set([
       ...continuationOriginCommentIds(input.context),
       ...continuationOriginCommentIds(sourceRun?.context),
@@ -203,9 +264,18 @@ export async function buildExecutionContinuation(input: {
         : []),
     ]),
   ];
+  const absentOriginIds = recordedOriginCommentIds.filter(
+    (id) => !rows.some((row) => row.id === id),
+  );
   // Missing source rows cannot silently become a claim of complete context.
-  if (originCommentIds.some((id) => !rows.some((row) => row.id === id)))
+  const discardedOriginIds = absentOriginIds.length
+    ? await discardedQueuedCommentIds(db, companyId, issueId, absentOriginIds)
+    : new Set<string>();
+  if (absentOriginIds.some((id) => !discardedOriginIds.has(id)))
     throw new Error("continuation_source_context_missing");
+  const originCommentIds = recordedOriginCommentIds.filter(
+    (id) => !discardedOriginIds.has(id),
+  );
   const messages = rows.map((row) => {
     const safe = input.exposeLowTrustRaw
       ? row

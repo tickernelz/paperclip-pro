@@ -8498,7 +8498,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     }
   });
 
-  it("routes paused assigned work to the board without waking available executives", async () => {
+  it("leaves paused assigned work schedulable without waking available executives", async () => {
     const { companyId, agentId, issueId } = await seedAssignedTodoNoRunFixture({
       agentStatus: "paused",
     });
@@ -8522,9 +8522,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(result.assignmentDispatched).toBe(0);
     expect(result.dispatchRequeued).toBe(0);
     expect(result.continuationRequeued).toBe(0);
-    expect(result.escalated).toBe(1);
-    expect(result.skipped).toBe(0);
-    expect(result.issueIds).toEqual([issueId]);
+    expect(result.escalated).toBe(0);
+    expect(result.assigneeNotSchedulableExempted).toBe(1);
+    expect(result.issueIds).toEqual([]);
 
     const issue = await db
       .select()
@@ -8532,20 +8532,15 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .where(eq(issues.id, issueId))
       .then((rows) => rows[0] ?? null);
     expect(issue).toMatchObject({
-      status: "blocked",
+      status: "todo",
       assigneeAgentId: agentId,
     });
-    const action = await db
-      .select()
-      .from(issueRecoveryActions)
-      .where(eq(issueRecoveryActions.sourceIssueId, issueId))
-      .then((rows) => rows[0] ?? null);
-    expect(action).toMatchObject({
-      ownerType: "board",
-      ownerAgentId: null,
-      returnOwnerAgentId: agentId,
-      wakePolicy: expect.objectContaining({ type: "board_escalation" }),
-    });
+    expect(
+      await db
+        .select()
+        .from(issueRecoveryActions)
+        .where(eq(issueRecoveryActions.sourceIssueId, issueId)),
+    ).toEqual([]);
     const runs = await db
       .select()
       .from(heartbeatRuns)
@@ -13657,6 +13652,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
           const result = await heartbeat.reconcileStrandedAssignedIssues();
           expect(result.escalated).toBe(0);
           expect(result.continuationRequeued).toBe(0);
+          expect(result.assigneeNotSchedulableExempted).toBe(0);
           expect(result.issueIds).not.toContain(f.issueId);
         }
         expect(
@@ -13709,7 +13705,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       "pending_interaction",
       "pending_approval",
     ] as const)(
-      "keeps ordinary escalation when a paused chat wait is not current (%s)",
+      "stops suppressing recovery when a paused chat wait is not current (%s)",
       async (mode) => {
         const f = await seedPassive("chat");
         if (mode === "uncommitted")
@@ -13817,12 +13813,19 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         }
         const result =
           await heartbeatService(db).reconcileStrandedAssignedIssues();
-        expect(result.escalated).toBe(1);
+        expect(result.escalated).toBe(0);
         expect(result.continuationRequeued).toBe(0);
+        expect(result.assigneeNotSchedulableExempted).toBe(1);
         expect(
           (await db.select().from(issues).where(eq(issues.id, f.issueId)))[0]
             ?.status,
-        ).toBe("blocked");
+        ).toBe("in_progress");
+        expect(
+          await db
+            .select()
+            .from(issueRecoveryActions)
+            .where(eq(issueRecoveryActions.sourceIssueId, f.issueId)),
+        ).toEqual([]);
         expect(
           await db
             .select({ id: heartbeatRuns.id })
@@ -13852,7 +13855,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
 
     it.each(["edited_source", "newer_request"] as const)(
-      "does not use an obsolete Board wait to suppress paused recovery (%s)",
+      "does not count an obsolete Board wait as a current paused wait (%s)",
       async (mode) => {
         const f = await seedPassive("board");
         if (mode === "edited_source")
@@ -13872,12 +13875,13 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             });
         const result =
           await heartbeatService(db).reconcileStrandedAssignedIssues();
-        expect(result.escalated).toBe(1);
+        expect(result.escalated).toBe(0);
         expect(result.continuationRequeued).toBe(0);
+        expect(result.assigneeNotSchedulableExempted).toBe(1);
         expect(
           (await db.select().from(issues).where(eq(issues.id, f.issueId)))[0]
             ?.status,
-        ).toBe("blocked");
+        ).toBe("in_progress");
         expect(mockAdapterExecute).not.toHaveBeenCalled();
         expect(mockExecutePaperclipNativeSession).not.toHaveBeenCalled();
       },
