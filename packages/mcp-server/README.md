@@ -50,6 +50,17 @@ pnpm --filter @tickernelz/paperclip-pro-mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 
+## Server-hosted endpoint
+
+The Paperclip server hosts the same tool surface at `POST /api/mcp/paperclip`, so a run does not have to spawn this package as a child process. It is stateless streamable HTTP: one endpoint, JSON responses, no `Mcp-Session-Id`, `GET` and `DELETE` answer `405`.
+
+- Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Paperclip-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
+- `companyId` and `agentId` come from the authenticated agent, never from a request header, and board-authority tools are exposed only when that agent's `agentAuthorityCapabilities` include company-level authority.
+- Toolsets come from `?toolsets=core,extended`; absent, empty or unknown values fall back to `core`.
+- Each `tools/call` re-enters the REST API over the server's own loopback address with the caller's bearer token, so every route guard, record rule and audit hook runs exactly as it does for a direct API call.
+
+Tool definitions are built once per process and per (toolset, authority) variant; the `tools/list` payload is memoized with them.
+
 ## Tool Surface
 
 Curated tools keep their names and behaviour: the run-scoped `connections_search` and `connection_request`, the issue/comment/document/approval/workspace helpers (`paperclipMe`, `paperclipInboxLite`, `paperclipListIssues`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipUpdateIssue`, `paperclipAddComment`, `paperclipUpsertIssueDocument`, `paperclipGetIssueWorkspaceRuntime`, `paperclipApprovalDecision`, and the rest), and the `paperclipApiRequest` escape hatch.
