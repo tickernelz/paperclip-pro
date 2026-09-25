@@ -27,6 +27,7 @@ const nonServerProjects = [
   "@tickernelz/paperclip-pro-adapter-claude-local",
   "@tickernelz/paperclip-pro-adapter-codex-local",
   "@tickernelz/paperclip-pro-adapter-grok-local",
+  "@tickernelz/paperclip-pro-adapter-omp-local",
   "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
   "@tickernelz/paperclip-pro-adapter-opencode-local",
   "@tickernelz/paperclip-pro-plugin-daytona",
@@ -73,22 +74,13 @@ const generalChatGroupName = "general-chat";
 const generalServerNativeRunnerGroupName = "general-server-native-runner";
 const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
 // This suite rebuilds the Runner release binaries with cargo in beforeAll.
-// Inside the PR workflow's plain server shards, which carry no Rust cache,
+// Inside the plain server shards, which carry no Rust cache,
 // that build was a ~4m30s cold compile of every third-party crate on each run
 // (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
 const nativeRunnerSuite =
   "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
-// In the PR workflow (pr.yml, the caller of pr-trusted.yml — reusable
-// workflows inherit the caller's GITHUB_WORKFLOW), the last Verify Paperclip
-// Runner vitest shard runs the native-runner group instead, because those
-// lanes restore the shared release-runner-v1 Rust cache (see
-// packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs). Every other
-// caller — local runs, release-verify.yml under the Release and Cloud
-// readiness workflows — keeps the suite in the server shards, so a renamed or
-// unknown workflow degrades to today's slower-but-covered behavior rather
-// than dropping the suite.
-const prWorkflowName = "PR";
-const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === prWorkflowName;
+const ciWorkflowName = "CI";
+const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
 const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
   ? [chatSuite, nativeRunnerSuite]
   : [chatSuite];
