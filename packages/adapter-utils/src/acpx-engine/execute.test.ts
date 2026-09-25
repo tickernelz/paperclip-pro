@@ -613,10 +613,10 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(prompt).toContain("## Paperclip Wake Payload");
     expect(prompt).toContain("TEST-1");
     expect(prompt).toContain("Paperclip API access note:");
-    expect(prompt).toContain('PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"; PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"');
-    expect(prompt).toContain("$PAPERCLIP_API_BASE/api/agents/me");
-    expect(prompt).toContain("$PAPERCLIP_API_BASE/api/issues/$PAPERCLIP_TASK_ID");
-    expect(prompt).toContain("X-Paperclip-Run-Id");
+    expect(prompt).toContain("paperclipMe");
+    expect(prompt).toContain('paperclipAddComment with id: "$PAPERCLIP_TASK_ID"');
+    expect(prompt).toContain("paperclipApiRequest");
+    expect(prompt).not.toContain("curl ");
     expect(prompt).not.toContain("$PAPERCLIP_API_URL/api/");
     expect(prompt).not.toContain("/api/issues/{id}");
     expect(prompt).not.toContain("-d '{...}'");

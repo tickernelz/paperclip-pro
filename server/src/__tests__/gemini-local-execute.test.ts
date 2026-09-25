@@ -210,7 +210,8 @@ describe("gemini execute", () => {
       expect(invocationPrompt).toContain("Paperclip runtime note:");
       expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
       expect(invocationPrompt).toContain("Paperclip API access note:");
-      expect(invocationPrompt).toContain("run_shell_command");
+      expect(invocationPrompt).toContain("paperclipMe");
+      expect(invocationPrompt).toContain("paperclipApiRequest");
       expect(result.question).toBeNull();
     } finally {
       if (previousHome === undefined) {

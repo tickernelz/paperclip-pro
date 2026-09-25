@@ -81,8 +81,8 @@ function renderApiAccessNote(env: Record<string, string>): string {
   if (!hasNonEmptyEnvValue(env, "PAPERCLIP_API_URL") || !hasNonEmptyEnvValue(env, "PAPERCLIP_API_KEY")) return "";
   return [
     "Paperclip API access note:",
-    "Use shell commands with curl to make Paperclip API requests when needed.",
-    "Include X-Paperclip-Run-Id on mutating requests.",
+    "Paperclip work goes through the Paperclip MCP tools, not shell commands.",
+    "For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.",
     "",
     "",
   ].join("\n");

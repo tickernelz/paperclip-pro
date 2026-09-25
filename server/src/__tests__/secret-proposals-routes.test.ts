@@ -470,7 +470,7 @@ describeEmbeddedPostgres("secret proposal routes", () => {
       expect.objectContaining({
         issueId: fixture.issueId,
         authorUserId: "board-user",
-        body: expect.stringContaining("GET /api/agents/me/secrets"),
+        body: expect.stringContaining('paperclipApiRequest with method: "GET" and path: "/agents/me/secrets"'),
       }),
     ]);
   });

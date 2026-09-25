@@ -1448,7 +1448,7 @@ describe.sequential("issue thread interaction routes", () => {
             proposalId,
             configPath: "access.NEW_ALIAS",
             executionStatus: "executed",
-            instructions: expect.stringContaining("GET /api/agents/me/secrets"),
+            instructions: expect.stringContaining('paperclipApiRequest with method: "GET" and path: "/agents/me/secrets"'),
           }),
         }),
       }),

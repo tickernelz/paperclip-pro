@@ -4767,7 +4767,7 @@ export function agentRoutes(
     }
     if (company.requireBoardApprovalForNewAgents) {
       throw conflict(
-        "Direct agent creation requires board approval. Use POST /api/companies/:companyId/agent-hires to create a pending hire approval.",
+        "Direct agent creation requires board approval. Use paperclipCreateAgentHire to create a pending hire approval.",
       );
     }
 
