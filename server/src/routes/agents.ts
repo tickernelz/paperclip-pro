@@ -5638,10 +5638,13 @@ export function agentRoutes(
       "Cancelled because the agent was terminated or became invalid-org-chain under a terminated manager",
     );
 
+    const terminateActor = getActorInfo(req);
     await logActivity(db, {
       companyId: agent.companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
+      actorType: terminateActor.actorType,
+      actorId: terminateActor.actorId,
+      agentId: terminateActor.agentId,
+      runId: terminateActor.runId,
       action: "agent.terminated",
       entityType: "agent",
       entityId: agent.id,

@@ -459,6 +459,67 @@ describe.sequential("agent cross-tenant route authorization", () => {
     expect(mockAgentService.clearError).not.toHaveBeenCalled();
   });
 
+  it("lets a ceo agent terminate a peer agent while an engineer agent is refused", async () => {
+    const peerAgentId = "33333333-3333-4333-8333-333333333333";
+    mockAgentService.getById.mockResolvedValue({ ...baseAgent, id: peerAgentId });
+    mockAgentService.terminate.mockResolvedValue({
+      ...baseAgent,
+      id: peerAgentId,
+      status: "terminated",
+    });
+
+    const ceoApp = await createApp({
+      type: "agent",
+      agentId,
+      agentRole: "ceo",
+      companyId,
+      runId: "run-1",
+    });
+    const ceoRes = await requestApp(ceoApp, (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${peerAgentId}/terminate`).send({}),
+    );
+    expect(ceoRes.body.error).not.toContain("not authorized");
+    expect(mockAgentService.terminate).toHaveBeenCalledWith(peerAgentId);
+
+    mockAgentService.terminate.mockClear();
+    const engineerApp = await createApp({
+      type: "agent",
+      agentId,
+      agentRole: "engineer",
+      companyId,
+      runId: "run-1",
+    });
+    const engineerRes = await requestApp(engineerApp, (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${peerAgentId}/terminate`).send({}),
+    );
+    expect(engineerRes.status).toBe(403);
+    expect(engineerRes.body.error).toContain("is not authorized for company:agents");
+    expect(mockAgentService.terminate).not.toHaveBeenCalled();
+  });
+
+  it("refuses a ceo agent terminating an agent in another company", async () => {
+    const foreignAgentId = "44444444-4444-4444-8444-444444444444";
+    mockAgentService.getById.mockResolvedValue({
+      ...baseAgent,
+      id: foreignAgentId,
+      companyId: "55555555-5555-4555-8555-555555555555",
+    });
+
+    const app = await createApp({
+      type: "agent",
+      agentId,
+      agentRole: "ceo",
+      companyId,
+      runId: "run-1",
+    });
+    const res = await requestApp(app, (baseUrl) =>
+      request(baseUrl).post(`/api/agents/${foreignAgentId}/terminate`).send({}),
+    );
+
+    expect(res.status).toBe(404);
+    expect(mockAgentService.terminate).not.toHaveBeenCalled();
+  });
+
   it("preserves board resume access", async () => {
     const pausedAgent = { ...baseAgent, status: "paused", pauseReason: "manual", pausedAt: new Date() };
     mockAgentService.getById.mockResolvedValue(pausedAgent);
