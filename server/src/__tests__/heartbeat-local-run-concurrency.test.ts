@@ -157,14 +157,36 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     }
   }
 
+  async function wakeAllConcurrently(
+    heartbeat: ReturnType<typeof heartbeatService>,
+    seeded: Array<{ agentId: string; issueId: string }>,
+  ) {
+    await Promise.all(
+      seeded.map(({ agentId, issueId }) =>
+        heartbeat.wakeup(agentId, {
+          source: "assignment",
+          triggerDetail: "system",
+          reason: "issue_assigned",
+          payload: { issueId },
+          contextSnapshot: { issueId, wakeReason: "issue_assigned" },
+        }),
+      ),
+    );
+  }
+
   async function drainEverything(heartbeat: ReturnType<typeof heartbeatService>) {
-    while (adapterGate.waiters.length > 0) adapterGate.waiters.shift()!();
-    await waitForCondition(async () => {
+    const releaseAdapters = setInterval(() => {
       while (adapterGate.waiters.length > 0) adapterGate.waiters.shift()!();
-      const rows = await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns);
-      return rows.every((row) => row.status !== "running" && row.status !== "queued");
-    }, 20_000);
-    await heartbeat.drainActiveRunExecutions();
+    }, 25);
+    try {
+      await waitForCondition(async () => {
+        const rows = await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns);
+        return rows.every((row) => row.status !== "running" && row.status !== "queued");
+      }, 20_000);
+      await heartbeat.drainActiveRunExecutions();
+    } finally {
+      clearInterval(releaseAdapters);
+    }
     runningProcesses.clear();
     adapterGate.contexts.clear();
     adapterGate.startupPredicate = null;
@@ -450,6 +472,54 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     expect(await countRuns(companyId, "queued")).toBe(1);
 
     await log("stdout", '{"type":"agent_start"}\n');
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("holds the total cap when two agents claim concurrently", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 2);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "10",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAllConcurrently(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(1);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+    expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(2);
+  }, 90_000);
+
+  it("holds the starting cap when two agents claim concurrently", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 2);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAllConcurrently(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(1);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await reportStartupSignal((await runningRunIds(companyId))[0]!);
     expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
 
     await drainEverything(heartbeat);

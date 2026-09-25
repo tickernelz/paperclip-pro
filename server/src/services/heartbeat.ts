@@ -1330,43 +1330,90 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
 // Routes and the scheduler construct separate heartbeatService instances, but
 // they must agree on in-process adapter executions when reaping stale runs.
 const activeRunExecutions = new Set<string>();
-const localCliStartingRuns = new Map<string, number>();
+const localCliRunStarts = new Map<string, { at: number; signalled: boolean }>();
+const localCliStdoutBuffers = new Map<string, string>();
+const LOCAL_CLI_HUNG_START_MS = 120_000;
+const LOCAL_CLI_STDOUT_BUFFER_MAX_CHARS = 65_536;
 
 export function markLocalCliRunStarting(runId: string, at = Date.now()) {
-  localCliStartingRuns.set(runId, at);
+  localCliRunStarts.set(runId, { at, signalled: false });
+}
+
+export function markLocalCliRunStarted(runId: string) {
+  const entry = localCliRunStarts.get(runId);
+  if (!entry || entry.signalled) return false;
+  entry.signalled = true;
+  return true;
 }
 
 export function clearLocalCliRunStarting(runId: string) {
-  return localCliStartingRuns.delete(runId);
+  localCliStdoutBuffers.delete(runId);
+  return localCliRunStarts.delete(runId);
 }
 
-export function countLocalCliRunsStarting(staleAfterMs: number, now = Date.now()) {
-  for (const [runId, startedAt] of localCliStartingRuns) {
-    if (now - startedAt >= staleAfterMs) localCliStartingRuns.delete(runId);
+export function countLocalCliRunsStarting(
+  inFlight: Map<string, number | null>,
+  now = Date.now(),
+) {
+  let starting = 0;
+  for (const [runId, startedAtMs] of inFlight) {
+    const entry = localCliRunStarts.get(runId);
+    if (entry?.signalled) continue;
+    const at = entry?.at ?? startedAtMs;
+    if (at !== null && now - at >= LOCAL_CLI_HUNG_START_MS) continue;
+    starting += 1;
   }
-  return localCliStartingRuns.size;
+  return starting;
+}
+
+export function mergeLocalCliStartReservations(
+  snapshot: Map<string, number | null>,
+  now = Date.now(),
+) {
+  const merged = new Map(snapshot);
+  for (const [runId, entry] of localCliRunStarts) {
+    if (!snapshot.has(runId) && now - entry.at >= LOCAL_CLI_HUNG_START_MS) {
+      continue;
+    }
+    merged.set(runId, entry.at);
+  }
+  return merged;
 }
 
 export function reportsStartupComplete(
   adapter: { isStartupComplete?: (stdoutLine: string) => boolean },
   chunk: string,
+  runId?: string,
 ) {
   const predicate = adapter.isStartupComplete;
   if (!predicate) return true;
-  for (const line of chunk.split("\n")) {
+  const buffered = runId ? (localCliStdoutBuffers.get(runId) ?? "") : "";
+  const lines = (buffered + chunk).split("\n");
+  const remainder = lines.pop() ?? "";
+  if (runId) {
+    localCliStdoutBuffers.set(
+      runId,
+      remainder.length > LOCAL_CLI_STDOUT_BUFFER_MAX_CHARS
+        ? remainder.slice(-LOCAL_CLI_STDOUT_BUFFER_MAX_CHARS)
+        : remainder,
+    );
+  }
+  for (const line of remainder ? [...lines, remainder] : lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
     try {
-      if (predicate(trimmed)) return true;
+      if (!predicate(trimmed)) continue;
     } catch {
-      return false;
+      continue;
     }
+    if (runId) localCliStdoutBuffers.delete(runId);
+    return true;
   }
   return false;
 }
 
 export function readLocalCliRunStartingAt(runId: string) {
-  return localCliStartingRuns.get(runId) ?? null;
+  return localCliRunStarts.get(runId)?.at ?? null;
 }
 // A legacy process adapter's signal exit can race the operator cancellation CAS while
 // its owned process group is still being joined. Keep that exit from becoming
@@ -17000,11 +17047,13 @@ export function heartbeatService(
     return Number(count ?? 0);
   }
 
-  async function countRunningLocalCliRuns() {
+  async function snapshotRunningLocalCliRuns() {
     const rows = await db
       .select({
         id: heartbeatRuns.id,
         processGroupId: heartbeatRuns.processGroupId,
+        controllerBootId: heartbeatRuns.controllerBootId,
+        startedAt: heartbeatRuns.startedAt,
       })
       .from(heartbeatRuns)
       .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
@@ -17014,12 +17063,23 @@ export function heartbeatService(
           inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
         ),
       );
-    return rows.filter(
-      (row) =>
+    const inFlight = new Map<string, number | null>();
+    for (const row of rows) {
+      const claimedByThisBoot =
+        row.controllerBootId === legacyControllerBootId;
+      const backedByLocalWork =
         runningProcesses.has(row.id) ||
         activeRunExecutions.has(row.id) ||
-        (!!row.processGroupId && isProcessGroupAlive(row.processGroupId)),
-    ).length;
+        (!!row.processGroupId && isProcessGroupAlive(row.processGroupId));
+      if (!claimedByThisBoot && !backedByLocalWork) continue;
+      inFlight.set(row.id, row.startedAt ? row.startedAt.getTime() : null);
+    }
+    return inFlight;
+  }
+
+  async function countRunningLocalCliRuns() {
+    return mergeLocalCliStartReservations(await snapshotRunningLocalCliRuns())
+      .size;
   }
 
   let localStartBypassTimer: ReturnType<typeof setTimeout> | null = null;
@@ -17068,7 +17128,7 @@ export function heartbeatService(
   }
 
   function markLocalCliRunStartupSignal(runId: string) {
-    if (!clearLocalCliRunStarting(runId)) return;
+    if (!markLocalCliRunStarted(runId)) return;
     if (localStartBypassTimer) {
       clearTimeout(localStartBypassTimer);
       localStartBypassTimer = null;
@@ -19957,11 +20017,14 @@ export function heartbeatService(
         policy.maxConcurrentRuns - runningCount,
       );
       const localCliAgent = isLocalCliAdapterType(agent.adapterType);
+      const maxLocalRuns = resolveMaxConcurrentLocalRuns(runtimeEnv);
+      let localCliInFlight: Map<string, number | null> | null = null;
       if (availableSlots > 0 && localCliAgent) {
+        localCliInFlight = await snapshotRunningLocalCliRuns();
         const localRunSlots = Math.max(
           0,
-          resolveMaxConcurrentLocalRuns(runtimeEnv) -
-            (await countRunningLocalCliRuns()),
+          maxLocalRuns -
+            mergeLocalCliStartReservations(localCliInFlight).size,
         );
         availableSlots = Math.min(availableSlots, localRunSlots);
       }
@@ -20060,21 +20123,27 @@ export function heartbeatService(
         if (claimedRuns.length >= availableSlots) break;
         if (localCliAgent) {
           const now = Date.now();
+          const inFlight = mergeLocalCliStartReservations(
+            localCliInFlight ?? new Map(),
+          );
+          if (inFlight.size >= maxLocalRuns) break;
           const waitedMs = now - queuedRun.createdAt.getTime();
           if (
             waitedMs < localStartWaitBypassMs &&
-            countLocalCliRunsStarting(localStartWaitBypassMs, now) >=
-              maxLocalStarts
+            countLocalCliRunsStarting(inFlight, now) >= maxLocalStarts
           ) {
             scheduleLocalStartBypassSweep(
               queuedRun.createdAt.getTime() + localStartWaitBypassMs,
             );
             continue;
           }
+          markLocalCliRunStarting(queuedRun.id, now);
         }
         const claimed = await claimQueuedRun(queuedRun, companyAgents);
-        if (!claimed) continue;
-        if (localCliAgent) markLocalCliRunStarting(claimed.id);
+        if (!claimed) {
+          if (localCliAgent) clearLocalCliRunStarting(queuedRun.id);
+          continue;
+        }
         claimedRuns.push(claimed);
       }
       if (claimedRuns.length === 0) return [];
@@ -20208,13 +20277,20 @@ export function heartbeatService(
           "failed to release run claimed just before task-drain suppression; the run row stays running, and the orphan reaper finalizes it and releases the issue lock on its next cycle",
         );
       }
+      clearLocalCliRunStarting(runId);
       return;
     }
 
     let legacyAdapterEntered = false;
     let run = await getRun(runId);
-    if (!run) return;
-    if (run.status !== "queued" && run.status !== "running") return;
+    if (!run) {
+      clearLocalCliRunStarting(runId);
+      return;
+    }
+    if (run.status !== "queued" && run.status !== "running") {
+      clearLocalCliRunStarting(runId);
+      return;
+    }
 
     if (run.status === "queued") {
       const claimed = await claimQueuedRun(run);
@@ -23179,7 +23255,10 @@ export function heartbeatService(
           stream: "stdout" | "stderr",
           chunk: string,
         ) => {
-          if (stream === "stdout" && reportsStartupComplete(adapter, chunk)) {
+          if (
+            stream === "stdout" &&
+            reportsStartupComplete(adapter, chunk, run.id)
+          ) {
             markLocalCliRunStartupSignal(run.id);
           }
           await onLog(stream, chunk);
