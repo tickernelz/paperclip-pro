@@ -17,29 +17,20 @@ Current implementation status:
 
 ## Dependency Lockfile Policy
 
-GitHub Actions owns `pnpm-lock.yaml`.
+Commit `pnpm-lock.yaml` with the manifest change that needs it. CI installs with
+`--frozen-lockfile` and falls back to an inline `--resolution-only` refresh when the
+checked-in lockfile is stale for the merge tree, and the `Policy` job validates
+dependency resolution on every run.
 
-- Do not commit `pnpm-lock.yaml` in pull requests.
-- Pull request CI validates dependency resolution when manifests change.
-- Pushes to `master` regenerate `pnpm-lock.yaml` with `pnpm install --lockfile-only --no-frozen-lockfile`, commit it back if needed, and then run verification with `--frozen-lockfile`.
+## CI
 
-## Trusted PR Workflow
-
-The PR caller uses `paperclipai/paperclip/.github/workflows/pr-trusted.yml@master`.
-The AWS runner group `paperclip-public-pr` must allow
-`paperclipai/paperclip/.github/workflows/pr-trusted.yml@refs/heads/master`.
-New workflow versions merged into master then receive runner access without a
-separate SHA allowlist update. Dependabot leaves this first-party reference on
-master.
-
-Keep the `.github/**` rule in `.github/CODEOWNERS` and the active master ruleset's
-code-owner review requirement enabled. This covers the caller, the trusted
-workflow, and CODEOWNERS itself. Existing administrator pull-request bypasses
-remain governed by the repository ruleset.
-
-When changing the workflow path or branch, authorize the new reference before
-updating the caller. Retain older authorized SHA references while queued runs or
-supported reruns still use them.
+`.github/workflows/ci.yml` is the only workflow on pull requests and pushes to
+`main`. It runs `Policy`, `Typecheck`, `Build`, `Verify Paperclip Runner`, the
+sharded `Tests` and `E2E` matrices, and a `verify` aggregate that fails when any
+lane does. Shared setup lives in `.github/actions/setup-workspace`; the pnpm store
+and the Runner Rust cache are written only by pushes to `main` and restored
+everywhere else. `.github/workflows/sentry-contract.yml` runs separately and only
+when the Sentry integration files change.
 
 ## Start Dev
 
@@ -124,79 +115,8 @@ Known limitation: Storybook visual baselines are Linux/Ubuntu-only. The manifest
 pins the capture environment to `ubuntu-24.04` and the Playwright suite uses
 pixel-exact comparison, so local runs on macOS, Windows, or other non-matching
 platforms can report false-positive diffs from font rasterization and subpixel
-rendering. Use the `Storybook Visual` GitHub Actions workflow on `ubuntu-latest`
-as the source of truth, or run locally in a matching Linux environment before
-accepting or updating baselines.
-
-PR visual checks are opt-in while the suite stabilizes. Add the
-`storybook-visual` label to a PR, or run the `Storybook Visual` GitHub Actions
-workflow manually, to produce downloadable Playwright report/test-result
-artifacts. Normal PR visual runs use read-only repository permissions and do not
-upload or mutate baseline objects.
-
-### Publish a branch Storybook
-
-CODEOWNERS can publish a repository branch through **Actions → Storybook Deploy →
-Run workflow**. Keep the workflow branch on `master` and enter the source branch
-in `branch`. The source branch does not need to contain the workflow. Leaving
-`branch` empty publishes the selected workflow branch's dispatched commit.
-
-```sh
-gh workflow run storybook-deploy.yml --ref master -f branch=your-branch
-```
-
-The existing **Storybook Visual** workflow also offers a `deploy_preview` checkbox,
-which publishes through the same workflow instead of running visual tests:
-
-```sh
-gh workflow run storybook-visual.yml --ref master -f deploy_preview=true -f branch=your-branch
-```
-
-Approve the `storybook-deploy` environment as a CODEOWNER. The workflow summary
-links the **stable branch URL** and **this build**. The run also uploads a
-`storybook-deployment-<run-id>-<attempt>` artifact containing
-`storybook-deployment.md` with both links and the source commit. Different branches have
-different URLs; publishing one never replaces another. Redeploying the same
-branch updates its stable URL only after all files for the new build are uploaded.
-Previous build links keep working. The branch entry preserves Storybook query
-parameters and fragments when redirecting to the completed build.
-
-Bookmark URLs use `storybook/branches/<branch>/`, for example
-`https://d1p6rlowie26tp.cloudfront.net/storybook/branches/master/`.
-Copy the **stable branch URL** from the run summary when saving a bookmark;
-opening it redirects to the latest published build. Branch names preserve case.
-Characters other than letters, digits, `_`, and `-` use `~HH` UTF-8 escapes, so
-`feature/foo` becomes `feature~2Ffoo` and stays distinct from `feature-foo`.
-Names ending in a hyphen and 16 lowercase hex digits escape that hyphen to
-reserve the existing build directories. Very long names use a hash suffix.
-Existing hashed branch URLs keep updating and remain valid. Build files remain
-under `storybook/branches/<readable-branch>-<hash>/builds/<run-id>-<attempt>/`.
-`deployment.json` in each build records its branch, source commit and URLs.
-Builds run independently; publication is serialized per branch. Retained builds
-are not automatically deleted and will accumulate until an operator prunes them.
-
-Publishing requires both the original actor and the current rerunner to be
-individual GitHub accounts named in `.github/CODEOWNERS` on the current default
-branch. Comments, teams and email entries do not grant access. Authorization runs
-before the build and again before deployment, including deployment-only reruns.
-GitHub also requires a CODEOWNER environment approval, so editing authorization
-code on a branch cannot grant AWS access without an authorized reviewer.
-
-The build downloads the public source archive with no GitHub token permissions,
-AWS credentials or repository secrets. Dependency caching and install lifecycle
-scripts are disabled. The separate publisher uses GitHub OIDC to assume a role limited to
-`storybook/branches/*`. It treats the build artifact as static files and runs only
-the publisher from the workflow checkout. It cannot delete objects, change AWS
-settings, or overwrite the runner dashboard. The Storybook site itself is public.
-Pushes and PR events never publish it.
-
-The existing S3 bucket and CloudFront distribution also serve runner reports in
-separate prefixes. GitHub Pages and its dashboard workflow are independent.
-See [Storybook deployment setup](STORYBOOK-DEPLOYMENT.md) for the environment,
-repository variables, AWS policies and one-time operator setup.
-
-GitHub requires a new dispatch workflow to exist on the default branch before
-it becomes a manual entry point.
+rendering. Run the suite in a matching Linux
+environment before accepting or updating baselines.
 
 ## UI Fonts And Screenshots
 
