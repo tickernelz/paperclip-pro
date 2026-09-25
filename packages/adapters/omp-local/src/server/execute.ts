@@ -59,6 +59,20 @@ import { classifyOmpFailure } from "./failure.js";
 import { createOmpProgressReporter } from "./progress.js";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
+import {
+  PAPERCLIP_MCP_BIN,
+  PAPERCLIP_MCP_CONNECT_FAILURE_RE,
+  PAPERCLIP_MCP_SERVER_NAME,
+  PAPERCLIP_MCP_TOOLSETS_ENV,
+  PAPERCLIP_MCP_UNAVAILABLE_CODE,
+  paperclipMcpGuidance,
+  paperclipMcpToolsets,
+  probePaperclipMcpServer,
+  resolvePaperclipMcpServerCommand,
+  writePaperclipMcpExtension,
+  type PaperclipMcpExtension,
+  type PaperclipMcpProbe,
+} from "./paperclip-mcp.js";
 
 const CAPABILITY_MANIFEST = {
   bindings: [
@@ -93,6 +107,7 @@ type ProcessAttempt = {
   pendingToolCount: number;
   sawProviderWork: boolean;
   reporterFailed: boolean;
+  mcpConnectFailed: boolean;
 };
 
 function stringList(value: unknown, commaSeparated = false): string[] {
@@ -205,6 +220,7 @@ function buildOmpArgs(input: {
   omitProfile: boolean;
   effectiveProfile: string | null;
   settingsOverlayPath: string | null;
+  mcpExtensionPath: string | null;
 }): string[] {
   const { config } = input;
   const args = ["--mode", "json", "-p"];
@@ -261,6 +277,7 @@ function buildOmpArgs(input: {
   if (maxTime) args.push("--max-time", maxTime);
   if (input.settingsOverlayPath) args.push("--config", input.settingsOverlayPath);
   for (const configFile of stringList(config.configFiles)) args.push("--config", configFile);
+  if (input.mcpExtensionPath) args.push("--extension", input.mcpExtensionPath);
   for (const extension of stringList(config.extensions)) args.push("--extension", extension);
   for (const pluginDir of stringList(config.pluginDirs)) args.push("--plugin-dir", pluginDir);
   for (const hook of stringList(config.hooks)) args.push("--hook", hook);
@@ -474,6 +491,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   let restoreWorkspace: (() => Promise<void>) | null = null;
   let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
   let settingsOverlay: OmpSettingsOverlay | null = null;
+  let mcpExtension: PaperclipMcpExtension | null = null;
   try {
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
@@ -673,6 +691,74 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       graceSec,
     });
 
+    const mcpToolsets = paperclipMcpToolsets(executionConfig);
+    const mcpEnabled = asBoolean(executionConfig.paperclipMcp, true);
+    const mcpCommand = remote
+      ? { command: PAPERCLIP_MCP_BIN, args: ["--toolsets", mcpToolsets], source: "path" as const }
+      : resolvePaperclipMcpServerCommand();
+    const mcpApiKey = asString(invocationEnv.PAPERCLIP_API_KEY, "").trim();
+    let mcpProbe: PaperclipMcpProbe | null = null;
+    if (mcpEnabled && mcpApiKey && !remote) {
+      mcpProbe = await probePaperclipMcpServer({
+        command: mcpCommand,
+        env: { ...invocationEnv, [PAPERCLIP_MCP_TOOLSETS_ENV]: mcpToolsets },
+      });
+      if (!mcpProbe.ok) {
+        const message = `Paperclip MCP server (${mcpCommand.command}) is unavailable: ${mcpProbe.detail}`;
+        await onLog("stderr", `[paperclip] ${message}\n`);
+        return {
+          exitCode: 1,
+          signal: null,
+          timedOut: false,
+          errorMessage: message,
+          errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+          usageBasis: "per_run",
+          sessionId: null,
+          sessionParams: null,
+          executionRecovery: { kind: "bootstrap", providerWorkStarted: false },
+          resultJson: {
+            capabilityManifest: CAPABILITY_MANIFEST,
+            paperclipMcp: {
+              command: mcpCommand.command,
+              args: mcpCommand.args,
+              source: mcpCommand.source,
+              toolsets: mcpToolsets,
+              detail: mcpProbe.detail,
+              durationMs: mcpProbe.durationMs,
+            },
+          },
+        };
+      }
+    }
+    if (mcpEnabled && !mcpApiKey) {
+      await onLog(
+        "stderr",
+        "[paperclip] Warning: this run carries no Paperclip API key, so the Paperclip MCP tools are not armed.\n",
+      );
+    }
+    if (!mcpEnabled) {
+      await onLog(
+        "stderr",
+        "[paperclip] Warning: paperclipMcp is off for this agent. The agent has no Paperclip tools this run and cannot read issues, comment, or update status.\n",
+      );
+    }
+    if (mcpApiKey) {
+      mcpExtension = await writePaperclipMcpExtension({
+        runId,
+        target: runtimeTarget,
+        remote,
+        enabled: mcpEnabled,
+        toolsets: mcpToolsets,
+        command: mcpCommand,
+        env: invocationEnv,
+        remoteRootDir: runtimeRootDir,
+        cwd: remote ? effectiveExecutionCwd : cwd,
+        timeoutSec,
+        graceSec,
+      });
+    }
+    const mcpArmed = mcpEnabled && mcpExtension !== null;
+
     const prompts = await buildPrompts({
       config: executionConfig,
       context,
@@ -682,8 +768,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       cwd,
       onLog,
     });
-    if (runtimeToolGuidance) {
-      prompts.systemPrompt = joinPromptSections([prompts.systemPrompt, runtimeToolGuidance]);
+    if (runtimeToolGuidance || mcpArmed) {
+      prompts.systemPrompt = joinPromptSections([
+        prompts.systemPrompt,
+        runtimeToolGuidance,
+        mcpArmed ? paperclipMcpGuidance(mcpToolsets, mcpProbe?.toolCount ?? null) : "",
+      ]);
       prompts.promptMetrics.systemPromptChars = prompts.systemPrompt.length;
     }
     const commandNotes = [
@@ -691,6 +781,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ...prompts.notes,
       canResume ? `Resuming OMP session ${savedSessionId}` : `Using fresh OMP session directory ${sessionDir}`,
       ...(remote ? ["Remote execution uses an ephemeral OMP session; remote runtime directories are per run."] : []),
+      mcpArmed
+        ? `Paperclip MCP server armed from ${mcpCommand.source === "path" ? PAPERCLIP_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
+        : mcpEnabled
+          ? "Paperclip MCP server not armed: this run has no Paperclip API key."
+          : "Paperclip MCP server disabled by adapter configuration; the agent has no Paperclip tools this run.",
     ];
 
     const runAttempt = async (resumeSessionId: string | null): Promise<ProcessAttempt> => {
@@ -705,6 +800,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         omitProfile,
         effectiveProfile: preparedConfig.profile,
         settingsOverlayPath: settingsOverlay?.path ?? null,
+        mcpExtensionPath: mcpExtension?.path ?? null,
       });
       if (onMeta) {
         await onMeta({
@@ -740,7 +836,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           reporterFailed = true;
         }
       };
+      let mcpConnectFailed = false;
       const bufferedOnLog = async (stream: "stdout" | "stderr", chunk: string): Promise<void> => {
+        if (mcpArmed && !mcpConnectFailed && PAPERCLIP_MCP_CONNECT_FAILURE_RE.test(chunk)) {
+          mcpConnectFailed = true;
+          await queueLog(
+            "stderr",
+            "[paperclip] The Paperclip MCP server did not connect, so the agent has no Paperclip tools. Stopping the run.\n",
+          );
+          triggerProcessAbort();
+        }
         if (stream === "stderr") {
           await queueLog(stream, chunk);
           return;
@@ -824,6 +929,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         pendingToolCount: reporter.pendingToolCount(),
         sawProviderWork: reporter.sawProviderWork(),
         reporterFailed,
+        mcpConnectFailed,
       };
     };
 
@@ -850,8 +956,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         : null;
       const provider = attempt.parsed.provider ?? configuredModelProvider(asString(executionConfig.model, "").trim());
       const model = attempt.parsed.model ?? (asString(executionConfig.model, "").trim() || null);
-      const fallbackError = parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
-      const failed = effectiveExitCode !== 0 || attempt.proc.timedOut;
+      const mcpFailure = attempt.mcpConnectFailed
+        ? `Paperclip MCP server "${PAPERCLIP_MCP_SERVER_NAME}" failed to connect; the agent had no Paperclip tools.`
+        : "";
+      const fallbackError = mcpFailure || parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
+      const failed = effectiveExitCode !== 0 || attempt.proc.timedOut || attempt.mcpConnectFailed;
       const classification = failed
         ? classifyOmpFailure({
             parsedError,
@@ -876,7 +985,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           : failed
             ? fallbackError
             : null,
-        ...(classification.errorCode ? { errorCode: classification.errorCode } : {}),
+        ...(attempt.mcpConnectFailed
+          ? { errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE }
+          : classification.errorCode
+            ? { errorCode: classification.errorCode }
+            : {}),
         ...(classification.errorFamily ? { errorFamily: classification.errorFamily } : {}),
         ...(classification.retryNotBefore ? { retryNotBefore: classification.retryNotBefore } : {}),
         ...(executionRecovery ? { executionRecovery } : {}),
@@ -942,6 +1055,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ]);
     } finally {
       await settingsOverlay?.cleanup().catch(() => {});
+      await mcpExtension?.cleanup().catch(() => {});
       await preparedConfig.cleanup();
     }
   }

@@ -371,6 +371,38 @@ reports its startup signal, and on a timer armed for the bypass deadline; the
 30-second heartbeat scheduler tick (`HEARTBEAT_SCHEDULER_INTERVAL_MS`) is the
 backstop.
 
+## 11. Paperclip MCP tools in `omp_local` runs
+
+Every `omp_local` run declares one extra MCP server, `paperclip`, through a
+per-run `--extension <tmpdir>` package holding a single `.mcp.json`
+(`packages/adapters/omp-local/src/server/paperclip-mcp.ts`). The extension is
+appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading,
+and the generated file references the run env (`${PAPERCLIP_API_KEY}` and
+friends) instead of embedding the values. The adapter config exposes
+`paperclipMcp` (default on) and `paperclipMcpToolsets` (default `core`).
+
+The server is the agents' only path to Paperclip, so the adapter completes an
+MCP handshake with the resolved binary before it spawns OMP. A server that
+cannot start fails the run with `errorCode: paperclip_mcp_unavailable` instead
+of letting the agent run tool-less, and the same code is raised when OMP itself
+reports `MCP server "paperclip" failed to connect`. Turning `paperclipMcp` off
+logs a warning on the run's stderr: that agent has no Paperclip tools.
+
+Measured on 2026-09-25 (WSL, Node 24.18.0, `core` toolset, 3 probes each):
+
+| Measurement | Without the server | With the server |
+| --- | --- | --- |
+| omp spawn to `agent_start` | 1842 / 1862 / 2002 ms | 2406 / 2458 / 2530 ms |
+| `paperclip-mcp-server` RSS at steady state | — | 191.5 / 192.8 / 193.3 MB |
+
+So the server costs about 0.6 s of run startup and ~190 MB of resident memory
+for the life of the run — nearly all of it the MCP SDK and Zod schema graph
+(a bare Node 24 process is 43 MB; importing the server's `dist/index.js` alone
+reaches 239 MB). Size local run concurrency with that in mind. OMP connects its
+MCP servers during startup, before `agent_start`, so the tools are in the tool
+list for the first model turn; the connect failure warning also lands before
+`agent_start`, which is why the adapter can stop the run before a turn is spent.
+
 ## Security: emptying allowedHostnames does not lock out the public host
 
 `auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.

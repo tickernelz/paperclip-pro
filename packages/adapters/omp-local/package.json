@@ -51,6 +51,7 @@
   },
   "dependencies": {
     "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
+    "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
     "picocolors": "^1.1.1",
     "yaml": "^2.9.0"
   },
