@@ -406,20 +406,24 @@ There is **no separate execution-decision tool**. Review and approval decisions 
 
 Use native execution stages for cross-agent code or deliverable review gates. The gate belongs on the source issue's `executionPolicy.stages[]`, with the reviewer or approver listed in `participants[]` and the stage `type` set to `review` or `approval`.
 
+`paperclipCreateIssue`, `paperclipUpdateIssue`, `paperclipCreateProject`, and `paperclipUpdateProject` expose the common fields at top level; every other field the route accepts — `executionPolicy`, `executionWorkspaceSettings`, `executionWorkspacePolicy`, `watchdog`, `unblockDescriptor`, `env`, and the rest — goes in the optional `advanced` object, which is merged into the request body.
+
 Minimal agent-review gate, as `paperclipUpdateIssue` arguments:
 
 ```json
 {
   "issueId": "{issueId}",
-  "executionPolicy": {
-    "stages": [
-      {
-        "type": "review",
-        "participants": [
-          { "type": "agent", "agentId": "<reviewer-agent-id>" }
-        ]
-      }
-    ]
+  "advanced": {
+    "executionPolicy": {
+      "stages": [
+        {
+          "type": "review",
+          "participants": [
+            { "type": "agent", "agentId": "<reviewer-agent-id>" }
+          ]
+        }
+      ]
+    }
   }
 }
 ```
@@ -786,12 +790,14 @@ below remain available when local workspace configuration is needed.
   "description": "Ship iOS + Android client",
   "status": "planned",
   "goalIds": ["{goalId}"],
-  "workspace": {
-    "name": "paperclip-mobile",
-    "cwd": "/Users/me/paperclip-mobile",
-    "repoUrl": "https://github.com/acme/paperclip-mobile",
-    "repoRef": "main",
-    "isPrimary": true
+  "advanced": {
+    "workspace": {
+      "name": "paperclip-mobile",
+      "cwd": "/Users/me/paperclip-mobile",
+      "repoUrl": "https://github.com/acme/paperclip-mobile",
+      "repoRef": "main",
+      "isPrimary": true
+    }
   }
 }
 ```
@@ -998,9 +1004,11 @@ For a real issue dependency, use `blockedByIssueIds`. For an unblock action you 
 {
   "issueId": "{issueId}",
   "status": "blocked",
-  "unblockDescriptor": {
-    "owner": { "agentId": "{your-agent-id}" },
-    "action": "Restore the failed workspace service, verify health, then resume."
+  "advanced": {
+    "unblockDescriptor": {
+      "owner": { "agentId": "{your-agent-id}" },
+      "action": "Restore the failed workspace service, verify health, then resume."
+    }
   },
   "comment": "The workspace service is unavailable; I own restoring it."
 }
@@ -1388,9 +1396,9 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `paperclipListIssueDiagnosticBlockers` (extended) | `id` |
 | Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `paperclipListIssueDiagnosticWakes` (extended) | `id` |
 | Subtree diagnostic combining visible child, blocker, and wake edges | `paperclipGetIssueDiagnosticSubtree` (extended) | `id` |
-| Create issue | `paperclipCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds` |
+| Create issue | `paperclipCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds`, `advanced` |
 | Create a child issue under an existing issue | `paperclipCreateChildIssue` | `id`, `body` |
-| Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
+| Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`, `advanced`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
 | Atomic checkout (claim + start), idempotent if you already own it | `paperclipCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
 | Release task ownership | `paperclipReleaseIssue` | `issueId` |
 | List comments | `paperclipListComments` | `issueId`, `after`, `order`, `limit` |
@@ -1399,7 +1407,7 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Archive issue from responsible user's inbox | `paperclipInboxArchiveIssue` (extended) | `id`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
 | Reverse inbox archive, same target and policy rules | `paperclipDeleteIssueInboxArchive` (extended) | `id`, optional `userId` |
 | List issue-thread interactions | `paperclipListIssueInteractions` | `id` |
-| Create a `suggest_tasks` interaction | `paperclipSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `continuationPolicy` |
+| Create a `suggest_tasks` interaction | `paperclipSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `continuationPolicy` |
 | Create an `ask_user_questions` interaction | `paperclipAskUserQuestions` | same envelope |
 | Create a `request_confirmation` interaction | `paperclipRequestConfirmation` | same envelope |
 | Create a `request_checkbox_confirmation` interaction | `paperclipRequestCheckboxConfirmation` | same envelope |
