@@ -41,6 +41,9 @@ const mockCompanyContext = vi.hoisted(() => ({
   companies: [{ id: "company-1", issuePrefix: "PAP" }] as Array<{ id: string; issuePrefix: string }>,
   selectedCompanyId: "company-1" as string | null,
 }));
+const mockParams = vi.hoisted(() => ({
+  value: { projectId: "project-1" } as { projectId: string; companyPrefix?: string },
+}));
 const mockUsePluginSlots = vi.hoisted(() => vi.fn(() => ({ slots: [] as unknown[], isLoading: false })));
 const mockPluginSlotMount = vi.hoisted(() => vi.fn());
 
@@ -59,7 +62,7 @@ vi.mock("@/lib/router", () => ({
   Navigate: ({ to }: { to: string }) => <div data-testid="navigate">{to}</div>,
   useLocation: () => ({ pathname: mockLocation.pathname, search: mockLocation.search, hash: "", state: null }),
   useNavigate: () => mockNavigate,
-  useParams: () => ({ projectId: "project-1" }),
+  useParams: () => mockParams.value,
 }));
 
 vi.mock("../context/CompanyContext", () => ({
@@ -183,6 +186,7 @@ describe("ProjectDetail", () => {
     mockLocation.search = "";
     mockCompanyContext.companies = [{ id: "company-1", issuePrefix: "PAP" }];
     mockCompanyContext.selectedCompanyId = "company-1";
+    mockParams.value = { projectId: "project-1" };
     mockUsePluginSlots.mockReturnValue({ slots: [], isLoading: false });
     mockProjectsApi.get.mockResolvedValue(project());
     mockProjectsApi.list.mockResolvedValue([project()]);
@@ -266,6 +270,38 @@ describe("ProjectDetail", () => {
     const props = mockIssuesList.mock.calls.at(-1)?.[0];
     expect(props).toEqual(expect.objectContaining({ projectId: "project-1" }));
     expect(props).not.toHaveProperty("projectTimelineHref");
+  });
+
+  it("keeps the loaded project on screen when the canonical ref replaces the requested one", async () => {
+    const projectUuid = "11111111-1111-4111-8111-111111111111";
+    mockParams.value = { companyPrefix: "PAP", projectId: projectUuid };
+    mockLocation.pathname = `/PAP/projects/${projectUuid}/overview`;
+    const pending = new Promise<Project>(() => {});
+    mockProjectsApi.get.mockResolvedValueOnce(project()).mockReturnValue(pending);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const render = async () => {
+      await act(async () => {
+        root!.render(
+          <QueryClientProvider client={queryClient}>
+            <ProjectDetail />
+          </QueryClientProvider>,
+        );
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    };
+
+    root = createRoot(container);
+    await render();
+    expect(mockNavigate).toHaveBeenCalledWith("/projects/project-1/configuration", { replace: true });
+
+    mockParams.value = { companyPrefix: "PAP", projectId: "project-1" };
+    mockLocation.pathname = "/PAP/projects/project-1/configuration";
+    await render();
+
+    expect(container.querySelector('[data-testid="project-properties"]')).not.toBeNull();
   });
 
   describe("plugin detail-tab deep links", () => {

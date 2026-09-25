@@ -495,6 +495,10 @@ export function ProjectDetail() {
   useEffect(() => {
     if (!project) return;
     if (routeProjectRef === canonicalProjectRef && !location.pathname.endsWith("/overview")) return;
+    queryClient.setQueryData(
+      [...queryKeys.projects.detail(canonicalProjectRef), lookupCompanyId ?? null],
+      project,
+    );
     if (isProjectPluginTab(activeTab)) {
       navigate(`/projects/${canonicalProjectRef}?tab=${encodeURIComponent(activeTab)}`, { replace: true });
       return;
@@ -524,7 +528,7 @@ export function ProjectDetail() {
       return;
     }
     navigate(`/projects/${canonicalProjectRef}`, { replace: true });
-  }, [project, routeProjectRef, canonicalProjectRef, activeTab, filter, navigate, location.pathname]);
+  }, [project, routeProjectRef, canonicalProjectRef, activeTab, filter, navigate, location.pathname, queryClient, lookupCompanyId]);
 
   useEffect(() => {
     closePanel();
