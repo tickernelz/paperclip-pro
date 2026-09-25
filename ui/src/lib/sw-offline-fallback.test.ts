@@ -57,7 +57,7 @@ async function respondTo(
 }
 
 describe("sw.js offline fallback", () => {
-  it("serves the Offline response for a failed navigation with an empty cache", async () => {
+  it("serves an uncached retry page for a failed navigation with an empty cache", async () => {
     const listener = loadServiceWorkerFetchListener({
       fetch: () => Promise.reject(new TypeError("network down")),
       cachesMatch: async () => undefined,
