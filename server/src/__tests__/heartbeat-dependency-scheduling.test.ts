@@ -1306,4 +1306,168 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       },
     });
   });
+
+  it("releases the issue execution lock when a dependency-blocked retry is refused", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const blockerId = randomUUID();
+    const blockedIssueId = randomUUID();
+    const runId = randomUUID();
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `B${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "BlockedRetryRunner",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
+      permissions: {},
+    });
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId,
+      agentId,
+      status: "cancelled",
+      invocationSource: "automation",
+      triggerDetail: "system",
+      runtimeMode: "legacy",
+      error: "workspace git scan timed out",
+      errorCode: "workspace_git_scan_timeout",
+      resultJson: { executionRecovery: { kind: "bootstrap", providerWorkStarted: false } },
+      startedAt: new Date(Date.now() - 60_000),
+      finishedAt: new Date(),
+      contextSnapshot: { issueId: blockedIssueId },
+      responsibleUserId: "responsible-user",
+    });
+    await db.insert(issues).values([
+      {
+        id: blockerId,
+        companyId,
+        title: "Blocker",
+        status: "in_progress",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        responsibleUserId: "responsible-user",
+      },
+      {
+        id: blockedIssueId,
+        companyId,
+        title: "Blocked follower",
+        status: "in_progress",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        responsibleUserId: "responsible-user",
+        executionRunId: runId,
+        executionLockedAt: new Date(),
+      },
+    ]);
+    await db.insert(issueRelations).values({
+      companyId,
+      issueId: blockerId,
+      relatedIssueId: blockedIssueId,
+      type: "blocks",
+    });
+
+    const outcome = await heartbeat.scheduleBoundedRetry(runId);
+    expect(outcome).toMatchObject({
+      outcome: "not_scheduled",
+      errorCode: "issue_dependencies_blocked",
+    });
+
+    const saved = await db
+      .select()
+      .from(issues)
+      .where(eq(issues.id, blockedIssueId))
+      .then((rows) => rows[0]!);
+    expect(saved.executionRunId).toBeNull();
+    expect(saved.executionLockedAt).toBeNull();
+    expect(saved.executionAgentNameKey).toBeNull();
+  });
+
+  it("keeps an execution path when the same retry is admitted with resolved dependencies", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const blockerId = randomUUID();
+    const blockedIssueId = randomUUID();
+    const runId = randomUUID();
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `A${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "AdmittedRetryRunner",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
+      permissions: {},
+    });
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId,
+      agentId,
+      status: "cancelled",
+      invocationSource: "automation",
+      triggerDetail: "system",
+      runtimeMode: "legacy",
+      error: "workspace git scan timed out",
+      errorCode: "workspace_git_scan_timeout",
+      resultJson: { executionRecovery: { kind: "bootstrap", providerWorkStarted: false } },
+      startedAt: new Date(Date.now() - 60_000),
+      finishedAt: new Date(),
+      contextSnapshot: { issueId: blockedIssueId },
+      responsibleUserId: "responsible-user",
+    });
+    await db.insert(issues).values([
+      {
+        id: blockerId,
+        companyId,
+        title: "Blocker",
+        status: "done",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        responsibleUserId: "responsible-user",
+      },
+      {
+        id: blockedIssueId,
+        companyId,
+        title: "Ready follower",
+        status: "in_progress",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        responsibleUserId: "responsible-user",
+        executionRunId: runId,
+        executionLockedAt: new Date(),
+      },
+    ]);
+    await db.insert(issueRelations).values({
+      companyId,
+      issueId: blockerId,
+      relatedIssueId: blockedIssueId,
+      type: "blocks",
+    });
+
+    const outcome = await heartbeat.scheduleBoundedRetry(runId);
+    expect(outcome.outcome).toBe("scheduled");
+    const saved = await db
+      .select()
+      .from(issues)
+      .where(eq(issues.id, blockedIssueId))
+      .then((rows) => rows[0]!);
+    expect(saved.executionRunId).not.toBeNull();
+  });
 });

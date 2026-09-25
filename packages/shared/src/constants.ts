@@ -76,6 +76,22 @@ export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
 };
 
 export const AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20;
+
+export const LOCAL_CLI_ADAPTER_TYPES = [
+  "claude_local",
+  "codex_local",
+  "gemini_local",
+  "grok_local",
+  "hermes_local",
+  "kimi_local",
+  "omp_local",
+  "opencode_local",
+  "pi_local",
+] as const;
+
+export const INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS = 4;
+export const INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN = 1;
+export const INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX = 64;
 export const WORKSPACE_BRANCH_ROUTINE_VARIABLE = "workspaceBranch";
 
 // Config keys owned by Paperclip/company state rather than one concrete adapter.
