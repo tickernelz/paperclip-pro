@@ -28,7 +28,7 @@ Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The ser
 
 Every time you begin a new conversation with the user:
 
-1. Call `paperclipDashboard` to understand the current state.
+1. Call `paperclipDashboard` to understand the current state. If the Paperclip MCP tools are not configured (no `PAPERCLIP_API_URL`), tell the user to run `npx @tickernelz/paperclip-pro board setup`; that CLI command is for the human, not an agent tool call.
 2. If no company is bound yet, list companies with `paperclipApiRequest` (`method: "GET"`, `path: "/companies"`) — or guide the user through company creation below.
 3. Look for the standing "Board Operations" issue with `paperclipListIssues` (`q: "board operations"`, `status: "todo,in_progress"`). If found, read its decision log with `paperclipGetDocument` (`issueId`, `key: "decision-log"`) to rebuild context from prior sessions.
 4. Greet the user with a brief status summary.
