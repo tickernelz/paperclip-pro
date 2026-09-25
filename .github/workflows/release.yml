@@ -59,6 +59,18 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Cache the runner crate build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry/index
+            ~/.cargo/registry/cache
+            ~/.cargo/git/db
+            packages/paperclip-runner/runner/target
+          key: release-cargo-${{ runner.os }}-${{ hashFiles('packages/paperclip-runner/runner/Cargo.lock') }}
+          restore-keys: |
+            release-cargo-${{ runner.os }}-
+
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}

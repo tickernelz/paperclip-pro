@@ -305,8 +305,7 @@ release_info ""
 if [ "$skip_build" = false ]; then
   release_info "==> Step 1/6: Building workspace artifacts..."
   cd "${REPO_ROOT}"
-  pnpm run preflight:workspace-links
-  pnpm -r --filter "!@tickernelz/paperclip-pro-paperclip-runner" build
+  pnpm build
   node "${REPO_ROOT}/scripts/build-standalone-public-packages.mjs"
 else
   release_info "==> Step 1/6: Reusing the existing workspace build (--skip-build)"
