@@ -98,7 +98,11 @@ import {
   collapseDuplicatePendingHumanJoinRequests,
   findReusableHumanJoinRequest,
 } from "../lib/join-request-dedupe.js";
-import { assertAuthenticated, assertCompanyAccess } from "./authz.js";
+import { assertAuthenticated, assertCompanyAccess, recordAgentAuthority } from "./authz.js";
+import {
+  AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
+  agentRoleHasAuthority,
+} from "@tickernelz/paperclip-pro-shared";
 import {
   claimBoardOwnership,
   inspectBoardClaimChallenge
@@ -3022,6 +3026,13 @@ export function accessRoutes(
     assertCompanyAccess(req, companyId);
     if (req.actor.type === "agent") {
       if (!req.actor.agentId) throw forbidden();
+      if (
+        AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS.includes(permissionKey)
+        && agentRoleHasAuthority(req.actor.agentRole ?? null, "company:members")
+      ) {
+        recordAgentAuthority(req, "company:members", companyId);
+        return;
+      }
       const allowed = await access.hasPermission(
         companyId,
         "agent",

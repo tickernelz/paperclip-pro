@@ -14,7 +14,7 @@ import {
 import { trackRoutineCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { validate, validateIssueMutationBody } from "../middleware/validate.js";
 import { accessService, documentAnnotationService, logActivity, routineService } from "../services/index.js";
-import { assertCompanyAccess, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { assertBoardOrAgentAuthority, assertCompanyAccess, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
 import { badRequest, forbidden, unauthorized, unsupportedMediaType } from "../errors.js";
 import { getTelemetryClient } from "../telemetry.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
@@ -100,9 +100,8 @@ export function routineRoutes(
     assertCompanyAccess(req, companyId);
     if (req.actor.type === "board") return;
     if (req.actor.type !== "agent" || !req.actor.agentId) throw unauthorized();
-    if (assigneeAgentId !== req.actor.agentId) {
-      throw forbidden("Agents can only manage routines assigned to themselves");
-    }
+    if (assigneeAgentId === req.actor.agentId) return;
+    assertBoardOrAgentAuthority(req, "work:routines", companyId);
   }
 
   async function assertCanManageExistingRoutine(req: Request, routineId: string) {
@@ -112,7 +111,7 @@ export function routineRoutes(
     if (req.actor.type === "board") return routine;
     if (req.actor.type !== "agent" || !req.actor.agentId) throw unauthorized();
     if (routine.assigneeAgentId !== req.actor.agentId) {
-      throw forbidden("Agents can only manage routines assigned to themselves");
+      assertBoardOrAgentAuthority(req, "work:routines", routine.companyId);
     }
     return routine;
   }

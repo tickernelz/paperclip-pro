@@ -1,6 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { AgentAuthorityCapability } from "@tickernelz/paperclip-pro-shared";
 
 vi.unmock("http");
 vi.unmock("node:http");
@@ -119,6 +120,7 @@ vi.mock("../telemetry.js", () => ({
 
 vi.mock("../routes/authz.js", async () => {
   const { forbidden, unauthorized } = await vi.importActual<typeof import("../errors.js")>("../errors.js");
+  const { agentRoleHasAuthority } = await vi.importActual<typeof import("@tickernelz/paperclip-pro-shared")>("@tickernelz/paperclip-pro-shared");
   function assertAuthenticated(req: Express.Request) {
     if (req.actor.type === "none") {
       throw unauthorized();
@@ -192,9 +194,27 @@ vi.mock("../routes/authz.js", async () => {
     };
   }
 
+  function assertBoardOrAgentAuthority(
+    req: Express.Request,
+    capability: string,
+    scopedCompanyId?: string | null,
+  ) {
+    assertAuthenticated(req);
+    if (req.actor.type !== "agent") {
+      assertBoard(req);
+      if (scopedCompanyId) assertCompanyAccess(req, scopedCompanyId);
+      return;
+    }
+    if (!agentRoleHasAuthority(req.actor.agentRole ?? null, capability as AgentAuthorityCapability)) {
+      throw forbidden(`Agent role ${req.actor.agentRole ?? "unknown"} is not authorized for ${capability}`);
+    }
+    assertCompanyAccess(req, scopedCompanyId ?? req.actor.companyId ?? "");
+  }
+
   return {
     assertAuthenticated,
     assertBoard,
+    assertBoardOrAgentAuthority,
     assertCompanyAccess,
     assertInstanceAdmin,
     getAccessibleResource,
@@ -422,7 +442,7 @@ describe.sequential("agent cross-tenant route authorization", () => {
     expect(mockAgentService.revokeKey).not.toHaveBeenCalled();
   });
 
-  it("requires board access before clearing an agent error", async () => {
+  it("requires company:agents authority before clearing an agent error", async () => {
     const app = await createApp({
       type: "agent",
       agentId,
@@ -435,7 +455,7 @@ describe.sequential("agent cross-tenant route authorization", () => {
     );
 
     expect(res.status).toBe(403);
-    expect(res.body.error).toContain("Board access required");
+    expect(res.body.error).toContain("is not authorized for company:agents");
     expect(mockAgentService.clearError).not.toHaveBeenCalled();
   });
 
