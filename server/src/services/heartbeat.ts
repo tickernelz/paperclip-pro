@@ -85,6 +85,10 @@ import {
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
+  INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
+  INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
+  INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
+  LOCAL_CLI_ADAPTER_TYPES,
   CHAT_PROVIDERS,
   CONNECTION_INTENT_AGENT_GUIDANCE,
   CONNECTION_RUNTIME_TOOL_NAMES,
@@ -650,6 +654,25 @@ export function redactSuccessfulRunHandoffEvidence(
 const MAX_RUN_EVENT_PAYLOAD_OBJECT_KEYS = 100;
 const MAX_RUN_EVENT_PAYLOAD_DEPTH = 6;
 const HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT = AGENT_DEFAULT_MAX_CONCURRENT_RUNS;
+
+const LOCAL_CLI_ADAPTER_TYPE_SET = new Set<string>(LOCAL_CLI_ADAPTER_TYPES);
+
+export function isLocalCliAdapterType(adapterType: string | null | undefined) {
+  return adapterType ? LOCAL_CLI_ADAPTER_TYPE_SET.has(adapterType) : false;
+}
+
+export function resolveMaxConcurrentLocalRuns(
+  env: Record<string, string | undefined>,
+) {
+  const raw = env.PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS?.trim();
+  if (!raw) return INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS;
+  const parsed = Math.floor(Number(raw));
+  if (!Number.isFinite(parsed)) return INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS;
+  return Math.max(
+    INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
+    Math.min(INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX, parsed),
+  );
+}
 const HEARTBEAT_MAX_CONCURRENT_RUNS_MIN = 1;
 const HEARTBEAT_MAX_CONCURRENT_RUNS_MAX = 50;
 const LIVENESS_BOOKKEEPING_ACTIVITY_ACTIONS = [
@@ -15375,6 +15398,9 @@ export function heartbeatService(
             ...gate.details,
           },
         });
+        if (gate.errorCode === "issue_dependencies_blocked" && gate.issueId) {
+          await releaseExecutionLockForBlockedDependencies(run, gate.issueId);
+        }
         return {
           outcome: "not_scheduled" as const,
           reason: gate.reason,
@@ -16895,6 +16921,20 @@ export function heartbeatService(
     return Number(count ?? 0);
   }
 
+  async function countRunningLocalCliRuns() {
+    const [{ count }] = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(heartbeatRuns)
+      .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
+      .where(
+        and(
+          eq(heartbeatRuns.status, "running"),
+          inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
+        ),
+      );
+    return Number(count ?? 0);
+  }
+
   async function withChatControlRecoveryGate(
     run: typeof heartbeatRuns.$inferSelect,
     stage: "claim" | "dispatch",
@@ -17790,6 +17830,28 @@ export function heartbeatService(
           );
       }
     });
+  }
+
+  async function releaseExecutionLockForBlockedDependencies(
+    run: typeof heartbeatRuns.$inferSelect,
+    issueId: string,
+  ) {
+    if (!isHeartbeatRunTerminalStatus(run.status)) return;
+    await db
+      .update(issues)
+      .set({
+        executionRunId: null,
+        executionAgentNameKey: null,
+        executionLockedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(issues.companyId, run.companyId),
+          eq(issues.id, issueId),
+          eq(issues.executionRunId, run.id),
+        ),
+      );
   }
 
   async function cancelQueuedRunForBlockedDependencies(
@@ -19738,10 +19800,18 @@ export function heartbeatService(
       }
       const policy = parseHeartbeatPolicy(agent);
       const runningCount = await countRunningRunsForAgent(agentId);
-      const availableSlots = Math.max(
+      let availableSlots = Math.max(
         0,
         policy.maxConcurrentRuns - runningCount,
       );
+      if (availableSlots > 0 && isLocalCliAdapterType(agent.adapterType)) {
+        const localRunSlots = Math.max(
+          0,
+          resolveMaxConcurrentLocalRuns(runtimeEnv) -
+            (await countRunningLocalCliRuns()),
+        );
+        availableSlots = Math.min(availableSlots, localRunSlots);
+      }
       if (availableSlots <= 0) return [];
 
       const queuedRuns = await db

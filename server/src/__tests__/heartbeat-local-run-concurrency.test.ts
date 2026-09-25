@@ -1,0 +1,196 @@
+import { randomUUID } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import {
+  agents,
+  companies,
+  createDb,
+  heartbeatRuns,
+  issues,
+} from "@tickernelz/paperclip-pro-db";
+import {
+  getEmbeddedPostgresTestSupport,
+  startEmbeddedPostgresTestDatabase,
+} from "./helpers/embedded-postgres.js";
+import { heartbeatService } from "../services/heartbeat.ts";
+import { runningProcesses } from "../adapters/index.ts";
+
+const adapterGate = vi.hoisted(() => ({ waiters: [] as Array<() => void> }));
+
+const mockAdapterExecute = vi.hoisted(() =>
+  vi.fn(async () => {
+    await new Promise<void>((resolve) => { adapterGate.waiters.push(resolve); });
+    return {
+      exitCode: 0,
+      signal: null,
+      timedOut: false,
+      errorMessage: null,
+      summary: "Local concurrency cap test run.",
+      provider: "test",
+      model: "test-model",
+    };
+  }),
+);
+
+vi.mock("../adapters/index.ts", async () => {
+  const actual = await vi.importActual<typeof import("../adapters/index.ts")>("../adapters/index.ts");
+  return {
+    ...actual,
+    getServerAdapter: vi.fn(() => ({
+      supportsLocalAgentJwt: false,
+      execute: mockAdapterExecute,
+    })),
+  };
+});
+
+const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
+const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
+
+async function waitForCondition(fn: () => Promise<boolean>, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    if (await fn()) return true;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  return fn();
+}
+
+describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
+  let db!: ReturnType<typeof createDb>;
+  let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
+
+  beforeAll(async () => {
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-local-run-cap-");
+    db = createDb(tempDb.connectionString);
+  }, 30_000);
+
+  afterAll(async () => {
+    await tempDb?.cleanup();
+  });
+
+  async function seedAgentsWithWork(companyId: string, count: number) {
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `L${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    const seeded: Array<{ agentId: string; issueId: string }> = [];
+    for (let index = 0; index < count; index += 1) {
+      const agentId = randomUUID();
+      const issueId = randomUUID();
+      await db.insert(agents).values({
+        id: agentId,
+        companyId,
+        name: `LocalRunner${index}`,
+        role: "engineer",
+        status: "active",
+        adapterType: "codex_local",
+        adapterConfig: {},
+        runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
+        permissions: {},
+      });
+      await db.insert(issues).values({
+        id: issueId,
+        companyId,
+        title: `Mission ${index}`,
+        status: "todo",
+        priority: "medium",
+        assigneeAgentId: agentId,
+        responsibleUserId: "responsible-user",
+      });
+      seeded.push({ agentId, issueId });
+    }
+    return seeded;
+  }
+
+  async function countRuns(companyId: string, status: string) {
+    const rows = await db
+      .select({ status: heartbeatRuns.status })
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.companyId, companyId));
+    return rows.filter((row) => row.status === status).length;
+  }
+
+  async function wakeAll(
+    heartbeat: ReturnType<typeof heartbeatService>,
+    seeded: Array<{ agentId: string; issueId: string }>,
+  ) {
+    for (const { agentId, issueId } of seeded) {
+      await heartbeat.wakeup(agentId, {
+        source: "assignment",
+        triggerDetail: "system",
+        reason: "issue_assigned",
+        payload: { issueId },
+        contextSnapshot: { issueId, wakeReason: "issue_assigned" },
+      });
+    }
+  }
+
+  async function drainEverything(heartbeat: ReturnType<typeof heartbeatService>) {
+    while (adapterGate.waiters.length > 0) adapterGate.waiters.shift()!();
+    await waitForCondition(async () => {
+      while (adapterGate.waiters.length > 0) adapterGate.waiters.shift()!();
+      const rows = await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns);
+      return rows.every((row) => row.status !== "running" && row.status !== "queued");
+    }, 20_000);
+    await heartbeat.drainActiveRunExecutions();
+    runningProcesses.clear();
+  }
+
+  async function runningRunIds(companyId: string) {
+    const rows = await db
+      .select({ id: heartbeatRuns.id, status: heartbeatRuns.status })
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.companyId, companyId));
+    return rows.filter((row) => row.status === "running").map((row) => row.id);
+  }
+
+  it("holds queued local runs at the instance cap and starts the next when one finishes", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 5);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "2" },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    const firstWave = await runningRunIds(companyId);
+    expect(firstWave).toHaveLength(2);
+    expect(await countRuns(companyId, "queued")).toBe(3);
+
+    adapterGate.waiters.shift()!();
+    expect(await waitForCondition(async () => (await countRuns(companyId, "succeeded")) >= 1)).toBe(true);
+
+    await heartbeat.resumeQueuedRuns();
+    expect(await waitForCondition(async () => {
+      const running = await runningRunIds(companyId);
+      return running.length === 2 && running.some((id) => !firstWave.includes(id));
+    })).toBe(true);
+    for (let probe = 0; probe < 10; probe += 1) {
+      expect((await runningRunIds(companyId)).length).toBeLessThanOrEqual(2);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+    expect(await countRuns(companyId, "cancelled")).toBe(0);
+    expect(await countRuns(companyId, "succeeded")).toBeGreaterThanOrEqual(5);
+  }, 60_000);
+
+  it("starts every queued local run when the instance cap allows it", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 5);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "5" },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
+    expect(await countRuns(companyId, "queued")).toBe(0);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 60_000);
+});
