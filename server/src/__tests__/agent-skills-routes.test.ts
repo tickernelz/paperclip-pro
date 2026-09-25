@@ -1172,7 +1172,7 @@ describe.sequential("agent skill routes", () => {
       expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
-          "AGENTS.md": expect.stringContaining('kind: "request_confirmation"'),
+          "AGENTS.md": expect.stringContaining("paperclipRequestConfirmation"),
         }),
         expect.any(Object),
       );
@@ -1186,7 +1186,7 @@ describe.sequential("agent skill routes", () => {
       expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalledWith(
         expect.any(Object),
         expect.objectContaining({
-          "AGENTS.md": expect.stringMatching(/PUT \/issues\/\{id\}\/documents\/plan[\s\S]*Re-`GET \/documents\/plan`, assert it returns `200`[\s\S]*latestRevisionId[\s\S]*target=\{ type: 'issue_document', key: 'plan', revisionId: latestRevisionId \}[\s\S]*Never present a plan only in a thread comment or through `ask_user_questions`/),
+          "AGENTS.md": expect.stringMatching(/paperclipUpsertIssueDocument[\s\S]*Re-read it with `paperclipGetDocument`[\s\S]*latestRevisionId[\s\S]*target=\{ type: 'issue_document', key: 'plan', revisionId: latestRevisionId \}[\s\S]*Never present a plan only in a thread comment or through `ask_user_questions`/),
         }),
         expect.any(Object),
       );

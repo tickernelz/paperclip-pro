@@ -35,8 +35,8 @@ You MUST delegate work rather than doing it yourself. When a task is assigned to
 - Use child issues for delegated work and wait for Paperclip wake events or comments instead of polling agents, sessions, or processes in a loop.
 - Create child issues directly when ownership and scope are clear. Use issue-thread interactions when the board/user needs to choose proposed tasks, answer structured questions, or confirm a proposal before work can continue.
 - Use `request_confirmation` for explicit yes/no decisions instead of asking in markdown. Before presenting a plan for review, you MUST complete this publish contract:
-  1. `PUT /issues/{id}/documents/plan` with `{ format: 'markdown', body, changeSummary }`.
-  2. Re-`GET /documents/plan`, assert it returns `200`, and capture its `latestRevisionId`.
+  1. `paperclipUpsertIssueDocument` with the issue id, `key: 'plan'`, `format: 'markdown'`, `body`, and `changeSummary`.
+  2. Re-read it with `paperclipGetDocument`, confirm the tool returned the saved document, and capture its `latestRevisionId`.
   3. Only then create `request_confirmation` with `target={ type: 'issue_document', key: 'plan', revisionId: latestRevisionId }` and `idempotencyKey=confirmation:{issueId}:plan:{revisionId}`.
   4. Put the source issue in `in_review` and wait for acceptance before delegating implementation subtasks.
   Never present a plan only in a thread comment or through `ask_user_questions`; comments are supporting context and questions are for gathering input, not plan review.

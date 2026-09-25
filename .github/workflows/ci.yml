@@ -41,6 +41,9 @@ jobs:
       - name: Validate feature module boundaries
         run: pnpm check:module-boundaries
 
+      - name: Validate generated MCP tool definitions
+        run: pnpm check:mcp-tools
+
       - name: Validate release package manifest
         run: node ./scripts/release-package-map.mjs check
 

@@ -29,38 +29,36 @@ configuration, instruction-template, icon, and `agent-hires` endpoints used belo
 Call the discovered operations with `call_api`; the server supplies company and
 authentication context. Read the returned schemas before drafting the hire.
 
-The shell examples below apply to adapters that receive `PAPERCLIP_API_URL` and
-`PAPERCLIP_API_KEY`. Paperclip Runner does not supply those variables. Do not
+The MCP tool examples below apply to adapters that reach Paperclip through the
+`paperclip*` MCP tools. Paperclip Runner does not expose those tools. Do not
 search workspace files for a server address or credentials to recreate that path.
 If `search_api` / `call_api` are unavailable, report that hiring requires the
 operator to enable runner API tools for this company. Preserve the proposed hire
 in the conversation; do not claim an agent was created or substitute a temporary
 subagent for the requested permanent hire.
 
+The hiring tools — `paperclipListAgentConfigurations`, `paperclipCreateAgentHire`
+— live in the `extended` toolset: they are available when the operator enables
+`PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise call the same operation through
+`paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON
+string). `companyId` arguments default to the session's company, so pass one only
+when hiring into a different company.
+
 ### 1. Confirm identity and company context
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/agents/me" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+Call `paperclipMe` with no arguments.
 
 ### 2. Discover adapter configuration for this Paperclip instance
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/llms/agent-configuration.txt" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
+The adapter documents are plain text, not JSON tools, so read them with
+`paperclipApiRequest`:
 
-# Then the specific adapter you plan to use, e.g. claude_local:
-curl -sS "$PAPERCLIP_API_URL/llms/agent-configuration/claude_local.txt" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+- all adapters: `method: "GET"`, `path: "/llms/agent-configuration.txt"`
+- the specific adapter you plan to use: `method: "GET"`, `path: "/llms/agent-configuration/claude_local.txt"`
 
 ### 3. Compare existing agent configurations
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/agent-configurations" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+Call `paperclipListAgentConfigurations` (`extended`).
 
 Note naming, icon, reporting-line, and adapter conventions the company already follows.
 
@@ -82,10 +80,8 @@ State which path you took in your hire-request comment so the board can see the 
 
 ### 5. Discover allowed agent icons
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/llms/agent-icons.txt" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+Read the icon list with `paperclipApiRequest` (`method: "GET"`,
+`path: "/llms/agent-icons.txt"`); it is a plain-text document.
 
 ### 6. Draft the new hire config
 
@@ -111,25 +107,25 @@ Before submitting, walk the draft-review checklist end-to-end and fix any item t
 
 ### 8. Submit hire request
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/agent-hires" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "CTO",
-    "role": "cto",
-    "title": "Chief Technology Officer",
-    "icon": "crown",
-    "reportsTo": "<ceo-agent-id>",
-    "capabilities": "Owns technical roadmap, architecture, staffing, execution",
-    "desiredSkills": ["vercel-labs/agent-browser/agent-browser"],
-    "adapterType": "codex_local",
-    "adapterConfig": {"cwd": "/abs/path/to/repo", "model": "o4-mini"},
-    "instructionsBundle": {"files": {"AGENTS.md": "You are the CTO..."}},
-    "runtimeConfig": {"heartbeat": {"enabled": false, "wakeOnDemand": true}},
-    "sourceIssueId": "<issue-id>"
-  }'
+Call `paperclipCreateAgentHire` (`extended`) with the drafted fields as arguments:
+
 ```
+name: "CTO"
+role: "cto"
+title: "Chief Technology Officer"
+icon: "crown"
+reportsTo: "<ceo-agent-id>"
+capabilities: "Owns technical roadmap, architecture, staffing, execution"
+desiredSkills: ["vercel-labs/agent-browser/agent-browser"]
+adapterType: "codex_local"
+adapterConfig: {"cwd": "/abs/path/to/repo", "model": "o4-mini"}
+instructionsBundle: {"files": {"AGENTS.md": "You are the CTO..."}}
+runtimeConfig: {"heartbeat": {"enabled": false, "wakeOnDemand": true}}
+sourceIssueId: "<issue-id>"
+```
+
+If the tool returns an error, the hire was not created: fix the reported field and
+call it again rather than reporting a pending hire.
 
 ### 9. Handle governance state
 
@@ -137,34 +133,21 @@ curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/agent-h
 - monitor and discuss on the approval thread
 - when the board approves, you will be woken with `PAPERCLIP_APPROVAL_ID`; read linked issues and close/comment follow-up
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/approvals/<approval-id>" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
+Read the approval with `paperclipGetApproval` (`approvalId`), and comment on the
+thread with `paperclipAddApprovalComment`:
 
-curl -sS -X POST "$PAPERCLIP_API_URL/api/approvals/<approval-id>/comments" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"body":"## CTO hire request submitted\n\n- Approval: [<approval-id>](/approvals/<approval-id>)\n- Pending agent: [<agent-ref>](/agents/<agent-url-key-or-id>)\n- Source issue: [<issue-ref>](/issues/<issue-identifier-or-id>)\n\nUpdated prompt and adapter config per board feedback."}'
+```
+approvalId: "<approval-id>"
+body: "## CTO hire request submitted\n\n- Approval: [<approval-id>](/approvals/<approval-id>)\n- Pending agent: [<agent-ref>](/agents/<agent-url-key-or-id>)\n- Source issue: [<issue-ref>](/issues/<issue-identifier-or-id>)\n\nUpdated prompt and adapter config per board feedback."
 ```
 
-If the approval already exists and needs manual linking to the issue:
+If the approval already exists and needs manual linking to the issue, call
+`paperclipLinkIssueApproval` (`issueId`, `approvalId`).
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/issues/<issue-id>/approvals" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"approvalId":"<approval-id>"}'
-```
-
-After approval is granted, run this follow-up loop:
-
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/approvals/$PAPERCLIP_APPROVAL_ID" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-
-curl -sS "$PAPERCLIP_API_URL/api/approvals/$PAPERCLIP_APPROVAL_ID/issues" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+After approval is granted, run this follow-up loop: `paperclipGetApproval`
+(`approvalId: PAPERCLIP_APPROVAL_ID`) for the decision, then
+`paperclipGetApprovalIssues` (`approvalId: PAPERCLIP_APPROVAL_ID`) for the linked
+issues.
 
 For each linked issue, either:
 - close it if the approval resolved the request, or

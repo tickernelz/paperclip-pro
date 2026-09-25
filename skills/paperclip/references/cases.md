@@ -6,8 +6,13 @@ They are company-scoped and live beside issues: issues coordinate work, while
 cases preserve the structured object an agent is producing.
 
 Cases are experimental and must be enabled with `experimental.enableCases`.
-If a route returns `403 Cases are disabled`, stop and report that the operator
+If a case tool reports `Cases are disabled`, stop and report that the operator
 must enable cases before the skill can use this surface.
+
+The case tools are in the `extended` toolset: they are available when the
+operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`. When they are not
+loaded, use `paperclipApiRequest` for the same operations. Every tool below
+takes `companyId` only where noted; it defaults to the agent's company.
 
 ## Core Model
 
@@ -23,14 +28,12 @@ A case has:
 - documents, attachments, issue links, labels, and events
 
 Use deterministic `caseType` + `key` when a skill may be retried. Repeating
-`POST /api/companies/:companyId/cases` with the same `caseType` and `key`
-upserts the same case instead of creating a duplicate.
+`paperclipCreateCase` with the same `caseType` and `key` upserts the same case
+instead of creating a duplicate.
 
 ## Upsert Semantics
 
-`POST /api/companies/:companyId/cases` creates or upserts a case.
-
-Request:
+`paperclipCreateCase` creates or upserts a case:
 
 ```json
 {
@@ -46,10 +49,9 @@ Request:
 }
 ```
 
-Response:
-
-- `201` when a new case was created
-- `200` when an existing `(caseType, key)` case was updated
+The result is the case record, whether it was newly created or an existing
+`(caseType, key)` case that was updated. Read `identifier` and `id` from it for
+the follow-up calls.
 
 Field behavior on upsert:
 
@@ -66,36 +68,37 @@ external id, source URL hash, or parent-derived request key.
 
 ## Read And Search
 
-Get a case by UUID or identifier:
+Get a case by UUID or identifier with `paperclipGetCase`:
 
-```http
-GET /api/cases/PAP-C42
+```json
+{ "caseId": "PAP-C42" }
 ```
 
-List cases for a company:
+List cases for a company with `paperclipListCases`:
 
-```http
-GET /api/companies/:companyId/cases?type=blog_post&status=active&q=launch
+```json
+{ "type": "blog_post", "status": "active", "q": "launch" }
 ```
 
-Useful filters:
+Useful arguments:
 
-- `type`: exact `caseType`
-- `status`: exact lifecycle status, or `active` for non-terminal cases
+- `type` / `types`: exact `caseType`
+- `status` / `statuses`: exact lifecycle status, or `active` for non-terminal cases
 - `projectId` / `project`: project UUID
 - `labelId` / `label`: label UUID
+- `parent`: parent case filter
 - `q`: identifier, title, summary, or key search
 - `limit`: 1-200, default 100
 
 ## Documents
 
 Use case documents for rich bodies such as drafts, briefs, reports, or plans.
+`paperclipSetCaseDocument` takes the case, the document `key`, and the body:
 
-```http
-PUT /api/cases/:caseIdOrIdentifier/documents/body
-Content-Type: application/json
-
+```json
 {
+  "caseId": "PAP-C42",
+  "key": "body",
   "title": "Launch announcement body",
   "format": "markdown",
   "body": "# Launch announcement\n\nDraft copy...",
@@ -107,13 +110,16 @@ Updating an existing case document requires `baseRevisionId`:
 
 ```json
 {
+  "caseId": "PAP-C42",
+  "key": "body",
   "baseRevisionId": "latest-revision-uuid",
   "body": "Updated body"
 }
 ```
 
-If you get `409 stale_base_revision`, refetch the case detail, read the latest
-document revision id, merge intentionally, and retry with that `baseRevisionId`.
+If the tool reports `stale_base_revision`, refetch the case detail, read the
+latest document revision id, merge intentionally, and retry with that
+`baseRevisionId`. A failed call wrote nothing — do not treat it as saved.
 
 ## Fields
 
@@ -130,13 +136,11 @@ Examples:
 }
 ```
 
-Patch fields or status with:
+Patch fields or status with `paperclipUpdateCase`:
 
-```http
-PATCH /api/cases/:caseIdOrIdentifier
-Content-Type: application/json
-
+```json
 {
+  "caseId": "PAP-C42",
   "status": "in_review",
   "fields": {
     "slug": "launch-announcement",
@@ -150,13 +154,11 @@ Remember: `fields` replaces the whole object when present.
 
 ## Issue Links
 
-Link cases to issues explicitly when needed:
+Link cases to issues explicitly when needed with `paperclipCreateCaseLink`:
 
-```http
-POST /api/cases/:caseIdOrIdentifier/links
-Content-Type: application/json
-
+```json
 {
+  "id": "PAP-C42",
   "issueId": "issue-uuid",
   "role": "reference"
 }
@@ -169,13 +171,14 @@ Roles:
 - `reference`: related issue context
 
 Agent run writes auto-link the run's issue when Paperclip can resolve it from
-the run JWT or `X-Paperclip-Run-Id`. Creation/upsert writes use `origin`; later
+the run context the tools carry. Creation/upsert writes use `origin`; later
 document, patch, and attachment writes use `work` when no link already exists.
 You do not need to manually link the current issue before writing the case.
 
 ## Child Cases
 
-Create child cases by setting `parentCaseId` to the parent case UUID.
+Create child cases with `paperclipCreateCase` by setting `parentCaseId` to the
+parent case UUID.
 
 ```json
 {
@@ -194,16 +197,11 @@ another agent can work on a bounded part without editing the parent case body.
 
 ## Attachments
 
-Attach generated files with multipart form data:
-
-```http
-POST /api/cases/:caseIdOrIdentifier/attachments
-Content-Type: multipart/form-data
-
-file=@hero.png
-```
-
-The server records an asset and adds an `attachment_added` case event.
+Case attachments are a multipart file upload, and multipart has no MCP tool.
+Upload generated files as issue attachments with the upload helper described in
+`artifacts.md`, then connect them to the case with `paperclipCreateCaseLink`
+using the issue that holds the files. The case then carries the link, and the
+issue carries the inspectable file.
 
 ## Lifecycle
 
@@ -221,12 +219,9 @@ Terminal statuses are `done` and `cancelled`; setting either records
 
 ## Worked Blog Post Example
 
-Create or upsert the parent blog post:
+Create or upsert the parent blog post with `paperclipCreateCase`:
 
-```http
-POST /api/companies/:companyId/cases
-Content-Type: application/json
-
+```json
 {
   "caseType": "blog_post",
   "key": "paperclip-cases-launch",
@@ -241,25 +236,21 @@ Content-Type: application/json
 }
 ```
 
-Write the body:
+Write the body with `paperclipSetCaseDocument`:
 
-```http
-PUT /api/cases/PAP-C42/documents/body
-Content-Type: application/json
-
+```json
 {
+  "caseId": "PAP-C42",
+  "key": "body",
   "title": "Introducing Paperclip Cases",
   "format": "markdown",
   "body": "# Introducing Paperclip Cases\n\n..."
 }
 ```
 
-Create the child image-assets case:
+Create the child image-assets case with `paperclipCreateCase`:
 
-```http
-POST /api/companies/:companyId/cases
-Content-Type: application/json
-
+```json
 {
   "caseType": "image_assets",
   "key": "paperclip-cases-launch:image-assets",
@@ -274,14 +265,12 @@ Content-Type: application/json
 }
 ```
 
-Attach generated assets to the child, then patch both cases as they move through
-review:
+Attach the generated assets to the child's linked issue, then patch both cases
+as they move through review with `paperclipUpdateCase`:
 
-```http
-PATCH /api/cases/PAP-C42
-Content-Type: application/json
-
+```json
 {
+  "caseId": "PAP-C42",
   "status": "in_review",
   "fields": {
     "slug": "paperclip-cases-launch",

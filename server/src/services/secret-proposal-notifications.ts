@@ -28,7 +28,7 @@ export async function notifySecretProposalResolution(input: {
       ? `secret proposal \`${input.proposal.proposedName ?? "unnamed"}\``
       : `binding proposal \`${input.proposal.configPath ?? "unknown"}\``;
     const configPath = input.proposal.kind === "binding"
-      ? `\n- New config path: \`${input.proposal.configPath ?? "unknown"}\`\n- Verify: \`GET /api/agents/me/secrets\``
+      ? `\n- New config path: \`${input.proposal.configPath ?? "unknown"}\`\n- Verify: \`paperclipApiRequest with method: "GET" and path: "/agents/me/secrets"\``
       : "";
     const reason = input.reason ? `\n\nReason: ${input.reason}` : "";
     try {

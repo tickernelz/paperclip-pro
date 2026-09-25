@@ -2337,9 +2337,9 @@ export function pipelineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeu
     return [
       "### Breakdown Mechanics",
       "",
-      `When the work should be split into ${input.config.pieceNoun}s, call POST /api/cases/${input.caseId}/breakdown.`,
+      `When the work should be split into ${input.config.pieceNoun}s, call paperclipBreakdownCase with caseId: "${input.caseId}". That tool is available when the operator enables PAPERCLIP_MCP_TOOLSETS=core,extended; otherwise call paperclipApiRequest with method: "POST" and path: "/cases/${input.caseId}/breakdown".`,
       "",
-      "Send this JSON body:",
+      "Send these arguments:",
       "",
       "```json",
       JSON.stringify({

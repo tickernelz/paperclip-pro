@@ -88,7 +88,7 @@ function updateDescription(input: {
   previousSummary: string | null;
   snapshot: CompanySearchIssueSummary[];
 }) {
-  const mechanical = `Return the completed Markdown through \`PUT /api/status-cards/${input.card.id}/summary\` with \`generationIssueId\`, a short non-empty \`changeSummary\`, and the model id. Do not call issue-list endpoints. Preserve the streaming STATUS and <<<SUMMARY-DRAFT>>> sentinels used by the Summarizer. Issues the Markdown references by identifier (e.g. ABC-123) or issue link automatically join the card's watched set, so reference an issue only when the board should keep tracking it.`;
+  const mechanical = `Return the completed Markdown through \`paperclipSetStatusCardSummary\` with \`id: "${input.card.id}"\`, \`generationIssueId\`, a short non-empty \`changeSummary\`, and the model id. That tool is available when the operator enables \`PAPERCLIP_MCP_TOOLSETS=core,extended\`; otherwise call \`paperclipApiRequest\` with \`method: "PUT"\` and \`path: "/status-cards/${input.card.id}/summary"\`. Do not call issue-list tools. Preserve the streaming STATUS and <<<SUMMARY-DRAFT>>> sentinels used by the Summarizer. Issues the Markdown references by identifier (e.g. ABC-123) or issue link automatically join the card's watched set, so reference an issue only when the board should keep tracking it.`;
   // The card prompt is the board's single standing request: it already says
   // what to watch and how the update should read, so it doubles as the
   // summary instructions — there is no separate default prompt to append to
@@ -126,8 +126,10 @@ ${untrustedPromptBlock("interest-prompt", card.interestPrompt)}
 
 ## Required write-back sequence
 
-1. \`PUT /api/status-cards/${card.id}/query\` with \`queries\`, an auto-title, a non-empty \`changeSummary\`, and \`generationIssueId\`.
-2. Execute the compiled scope and write the first full Markdown summary with \`PUT /api/status-cards/${card.id}/summary\` using the same \`generationIssueId\`. Do not create or wait for a second task.
+1. \`paperclipSetStatusCardQuery\` with \`id: "${card.id}"\`, \`queries\`, an auto-title, a non-empty \`changeSummary\`, and \`generationIssueId\`.
+2. Execute the compiled scope and write the first full Markdown summary with \`paperclipSetStatusCardSummary\` using the same \`id\` and \`generationIssueId\`. Do not create or wait for a second task.
+
+Both tools are available when the operator enables \`PAPERCLIP_MCP_TOOLSETS=core,extended\`; otherwise call \`paperclipApiRequest\` with \`method: "PUT"\` and \`path: "/status-cards/${card.id}/query"\` or \`"/status-cards/${card.id}/summary"\`.
 
 Both writes must happen from this assigned issue run.
 

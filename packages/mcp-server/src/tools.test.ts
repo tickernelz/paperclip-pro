@@ -9,6 +9,8 @@ function makeClient() {
     companyId: "11111111-1111-1111-1111-111111111111",
     agentId: "22222222-2222-2222-2222-222222222222",
     runId: "33333333-3333-3333-3333-333333333333",
+    toolsets: ["core"],
+    agentRole: null,
   });
 }
 
@@ -127,6 +129,7 @@ describe("paperclip MCP tools", () => {
       priority: "medium",
       assigneeAgentId: "22222222-2222-2222-2222-222222222222",
       requestDepth: 0,
+      allowDuplicate: false,
     });
   });
 
@@ -413,5 +416,53 @@ describe("paperclip MCP tools", () => {
     });
 
     expect(response.content[0]?.text).toContain("must not contain '..'");
+  });
+
+  it("sends curated fields and advanced fields in one issue update body", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateIssue");
+    await tool.execute({
+      issueId: "PAP-1135",
+      status: "done",
+      advanced: { executionPolicy: { monitor: { nextCheckAt: "2026-01-01T00:00:00.000Z" } } },
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toEqual({
+      status: "done",
+      executionPolicy: { monitor: { nextCheckAt: "2026-01-01T00:00:00.000Z" } },
+    });
+  });
+
+  it("still enforces the required issue id on an update", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipUpdateIssue");
+    const response = await tool.execute({ status: "done" });
+
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(response.content[0]?.text).toContain("issueId");
+  });
+
+  it("sends the resolver audience with an interaction", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "interaction-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getTool("paperclipRequestConfirmation").execute({
+      issueId: "PAP-1135",
+      resolverPolicy: "human_only",
+      addresseeAgentId: "44444444-4444-4444-4444-444444444444",
+      payload: { version: 1, prompt: "Ship it?" },
+    });
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(JSON.parse(String(init.body))).toMatchObject({
+      kind: "request_confirmation",
+      resolverPolicy: "human_only",
+      addresseeAgentId: "44444444-4444-4444-4444-444444444444",
+    });
   });
 });

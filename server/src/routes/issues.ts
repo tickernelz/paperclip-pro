@@ -2517,7 +2517,7 @@ function readSecretProposalContinuationContext(interaction: {
       decision: "accepted",
       executionStatus,
       ...(sourceSecretLabel ? { sourceSecretLabel } : {}),
-      instructions: `the binding was created at ${configPath}; verify it with GET /api/agents/me/secrets before using it.`,
+      instructions: `the binding was created at ${configPath}; verify it with paperclipApiRequest with method: "GET" and path: "/agents/me/secrets" before using it.`,
     };
   }
   return {
