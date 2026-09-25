@@ -11,14 +11,23 @@ export type StrandedScopeExemption =
   | "assignee_not_schedulable"
   | "unresolved_blockers"
   | "benign_run_cancellation"
-  | "user_retryable_setup_failure"
+  | "stale_continuation_context"
   | "queued_never_run";
 
 export type StrandedScopeRun = {
   status: string;
   errorCode: string | null;
+  error?: string | null;
   resultJson?: unknown;
 } | null;
+
+const STALE_CONTINUATION_CONTEXT_REASON = "continuation_source_context_missing";
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
 
 export function isAssigneeLifecycleBlocked(
   invokability: AgentInvokability | null | undefined,
@@ -36,19 +45,22 @@ export function isBenignRunCancellation(run: StrandedScopeRun): boolean {
   return BENIGN_RUN_CANCELLATION_ERROR_CODES.has(run.errorCode ?? "");
 }
 
-export function isProviderlessSetupFailure(run: StrandedScopeRun): boolean {
+export function isStaleContinuationContextSetupFailure(
+  run: StrandedScopeRun,
+): boolean {
   if (!run || run.status !== "failed" || run.errorCode !== "setup_failed") {
     return false;
   }
-  const result =
-    run.resultJson && typeof run.resultJson === "object"
-      ? (run.resultJson as Record<string, unknown>)
-      : {};
-  const evidence =
-    result.executionRecovery && typeof result.executionRecovery === "object"
-      ? (result.executionRecovery as Record<string, unknown>)
-      : {};
-  return evidence.kind === "bootstrap" && evidence.providerWorkStarted === false;
+  const result = asRecord(run.resultJson);
+  const evidence = asRecord(result.executionRecovery);
+  if (evidence.kind !== "bootstrap" || evidence.providerWorkStarted !== false) {
+    return false;
+  }
+  return [run.error, result.errorMessage, result.message].some(
+    (value) =>
+      typeof value === "string" &&
+      value.includes(STALE_CONTINUATION_CONTEXT_REASON),
+  );
 }
 
 export function classifyStrandedScopeExemption(input: {
@@ -65,8 +77,8 @@ export function classifyStrandedScopeExemption(input: {
   if (input.operatorCancelled || isBenignRunCancellation(input.latestRun)) {
     return "benign_run_cancellation";
   }
-  if (isProviderlessSetupFailure(input.latestRun)) {
-    return "user_retryable_setup_failure";
+  if (isStaleContinuationContextSetupFailure(input.latestRun)) {
+    return "stale_continuation_context";
   }
   if (!input.latestRun && input.hasQueuedWake) return "queued_never_run";
   return null;
