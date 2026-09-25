@@ -1444,7 +1444,7 @@ describe("renderPaperclipWakePrompt", () => {
       "Create child issues directly when you know what needs to be done",
     );
     expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
-      "POST /api/issues/$PAPERCLIP_TASK_ID/interactions",
+      "using `issueId: $PAPERCLIP_TASK_ID`",
     );
     // URL paths in prompt text carry real ids or env vars, never brace
     // placeholders: agents paste these lines verbatim, and a literal {issueId}
@@ -1456,7 +1456,7 @@ describe("renderPaperclipWakePrompt", () => {
       "/api/issues/{id}",
     );
     expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
-      "kind suggest_tasks, ask_user_questions, or request_confirmation",
+      "`paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation`",
     );
     expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
       "Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance",
