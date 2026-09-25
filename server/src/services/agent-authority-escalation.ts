@@ -62,7 +62,7 @@ export function assertNoAgentAuthorityEscalation(input: {
     }
   }
 
-  if (touchesReportsTo && !actorIsCompanyAuthority) {
+  if (touchesReportsTo && target && !actorIsCompanyAuthority) {
     throw forbidden("Only a board user or a CEO agent may change an agent's reporting chain", {
       code: "AGENT_REPORTING_ESCALATION_DENIED",
     });

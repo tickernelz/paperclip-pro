@@ -2355,7 +2355,7 @@ describeEmbeddedPostgres("issue recovery actions", () => {
     await request(app)
       .patch(`/api/issues/${sourceIssueId}`)
       .send({ status: "todo" })
-      .expect(403);
+      .expect(409);
 
     const [sourceIssue] = await db.select().from(issues).where(eq(issues.id, sourceIssueId));
     expect(sourceIssue?.status).toBe("blocked");
