@@ -13698,7 +13698,6 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       "newer_request",
       "edited_source",
       "failed_run",
-      "terminated_agent",
       "reassigned",
       "revoked_destination",
       "malformed_source",
@@ -13738,11 +13737,6 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
             .update(heartbeatRuns)
             .set({ status: "failed", errorCode: "adapter_failed" })
             .where(eq(heartbeatRuns.id, f.runId));
-        if (mode === "terminated_agent")
-          await db
-            .update(agents)
-            .set({ status: "terminated" })
-            .where(eq(agents.id, f.agentId));
         if (mode === "reassigned") {
           const next = randomUUID();
           await db
@@ -13835,6 +13829,19 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         expect(mockAdapterExecute).not.toHaveBeenCalled();
       },
     );
+
+    it("escalates a paused chat wait whose assignee was terminated", async () => {
+      const f = await seedPassive("chat");
+      await db
+        .update(agents)
+        .set({ status: "terminated" })
+        .where(eq(agents.id, f.agentId));
+
+      const result = await heartbeatService(db).reconcileStrandedAssignedIssues();
+
+      expect(result.assigneeNotSchedulableExempted).toBe(0);
+      expect(result.escalated).toBe(1);
+    });
 
     it("preserves existing error-agent passive wait behavior without treating it as paused", async () => {
       const f = await seedPassive("chat");

@@ -201,6 +201,19 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(enqueueWakeup).not.toHaveBeenCalled();
   });
 
+  it("escalates a terminated assignee's never-run todo issue", async () => {
+    const { companyId, issueId } = await seedCompany({ coderStatus: "terminated" });
+    const enqueueWakeup = vi.fn(async () => null);
+
+    const result = await recoveryService(db, { enqueueWakeup }).reconcileStrandedAssignedIssues();
+
+    expect(result.assigneeNotSchedulableExempted).toBe(0);
+    expect(result.escalated).toBe(1);
+    expect(await strandedEscalationRows(companyId)).toHaveLength(1);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(issue?.status).not.toBe("todo");
+  });
+
   it("dispatches the same issue once its assignee is resumed", async () => {
     const { companyId, coderId, issueId } = await seedCompany({ coderStatus: "paused" });
     const enqueueWakeup = vi.fn(async () => ({ id: randomUUID() }) as never);
