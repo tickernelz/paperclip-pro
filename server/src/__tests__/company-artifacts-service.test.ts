@@ -452,6 +452,8 @@ describeEmbeddedPostgres("companyArtifactsService", () => {
     ]);
     expect(result.artifacts.find((artifact) => artifact.title === "notes.txt")?.previewText)
       .toBe("Text file preview from an agent output.");
+    expect(result.artifacts.find((artifact) => artifact.title === "Review Notes")?.documentKey).toBe("review");
+    expect(result.artifacts.find((artifact) => artifact.title === "notes.txt")?.documentKey).toBeNull();
     expect(result.artifacts.some((artifact) => artifact.title === "primary-cut.mp4")).toBe(false);
     expect(result.artifacts.some((artifact) => artifact.title === "Continuation Summary")).toBe(false);
     expect(result.artifacts.some((artifact) => artifact.title === "operator-screenshot.png")).toBe(false);

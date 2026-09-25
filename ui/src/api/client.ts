@@ -164,12 +164,34 @@ export function __inflightGetCount(): number {
   return inflightGets.size;
 }
 
+async function requestBlob(path: string, options?: RequestOptions): Promise<Blob> {
+  const headers = new Headers(options?.headers ?? undefined);
+  applyObservabilityHeaders(headers);
+  const res = await fetch(`${BASE}${path}`, {
+    method: "GET",
+    headers,
+    credentials: "include",
+    ...(options?.signal ? { signal: options.signal } : {}),
+  });
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => null);
+    throw new ApiError(
+      (errorBody as { error?: string } | null)?.error ?? `Request failed: ${res.status}`,
+      res.status,
+      errorBody,
+    );
+  }
+  return res.blob();
+}
+
 function isRequestOptions(value: unknown): value is RequestOptions {
   return typeof value === "object" && value !== null && "signal" in value;
 }
 
 export const api = {
   get: <T>(path: string, options?: RequestOptions) => coalescedGet<T>(path, options),
+  /** Binary GET (e.g. a generated PDF); never coalesced, never JSON-parsed. */
+  getBlob: (path: string, options?: RequestOptions) => requestBlob(path, options),
   post: <T>(path: string, body: unknown, options?: RequestOptions) =>
     request<T>(path, {
       method: "POST",

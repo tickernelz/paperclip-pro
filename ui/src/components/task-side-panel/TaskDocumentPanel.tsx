@@ -5,6 +5,7 @@ import { FileQuestion, Loader2 } from "lucide-react";
 import { ApiError } from "@/api/client";
 import { issuesApi } from "@/api/issues";
 import { DocumentAnnotationsCountChip, IssueDocumentAnnotations } from "@/components/IssueDocumentAnnotations";
+import { DocumentExportActions } from "@/components/artifacts/DocumentExportActions";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { queryKeys } from "@/lib/queryKeys";
 import { documentDisplayTitle } from "@/lib/issue-artifacts";
@@ -67,7 +68,17 @@ export function TaskDocumentPanel({
   return (
     <article className="space-y-4">
       <header className="space-y-1">
-        <h2 className="text-lg font-semibold">{documentDisplayTitle(document)}</h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 className="min-w-0 flex-1 text-lg font-semibold">{documentDisplayTitle(document)}</h2>
+          <DocumentExportActions
+            className="shrink-0"
+            issueId={issueId}
+            documentKey={document.key}
+            title={documentDisplayTitle(document)}
+            format={document.format}
+            body={document.body}
+          />
+        </div>
         <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
           <span>{`Revision ${document.latestRevisionNumber ?? 1}`}</span>
           <span aria-hidden>·</span>

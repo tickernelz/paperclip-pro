@@ -25,6 +25,8 @@ export interface CompanyArtifact {
   source: CompanyArtifactSource;
   mediaKind: CompanyArtifactMediaKind;
   title: string;
+  /** Issue-document key when `source` is `document`; `null` for other sources. */
+  documentKey: string | null;
   previewText: string | null;
   contentType: string | null;
   contentPath: string | null;

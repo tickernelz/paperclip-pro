@@ -87,6 +87,7 @@ function sampleArtifact(overrides: Partial<CompanyArtifact> = {}): CompanyArtifa
     source: "document",
     mediaKind: "document",
     title: "Launch Brief",
+    documentKey: null,
     previewText: "launch brief preview",
     contentType: "text/markdown",
     contentPath: null,

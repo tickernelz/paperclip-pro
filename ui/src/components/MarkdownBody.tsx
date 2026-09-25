@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, WrapText } from "lucide-react";
 import Markdown, { defaultUrlTransform, type Components, type Options } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import rehypeSlug from "rehype-slug";
 import { cn } from "../lib/utils";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { Link, useCaseHref } from "@/lib/router";
@@ -15,6 +16,8 @@ import { parseIssueReferenceFromHref, remarkLinkIssueReferences } from "../lib/i
 import { remarkLinkCaseReferences } from "../lib/case-reference";
 
 const CASE_HREF_RE = /^\/cases\/([A-Z][A-Z0-9]*-C\d+)$/i;
+
+const REHYPE_PLUGINS: NonNullable<Options["rehypePlugins"]> = [rehypeSlug];
 
 /** Recover the case identifier from a `/cases/PAP-C7` href produced by the plugin. */
 function caseIdentifierFromHref(href: string | undefined): string | null {
@@ -943,6 +946,7 @@ function MarkdownBodyImpl({
     >
       <Markdown
         remarkPlugins={remarkPlugins}
+        rehypePlugins={REHYPE_PLUGINS}
         components={components}
         urlTransform={safeMarkdownUrlTransform}
       >

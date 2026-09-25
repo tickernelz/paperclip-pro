@@ -538,6 +538,10 @@ export const issuesApi = {
     api.get<IssueDocument>(
       `/issues/${id}/documents/${encodeURIComponent(key)}`,
     ),
+  getDocumentPdf: (id: string, key: string) =>
+    api.getBlob(
+      `/issues/${id}/documents/${encodeURIComponent(key)}/pdf`,
+    ),
   upsertDocument: (id: string, key: string, data: UpsertIssueDocument) =>
     api.put<IssueDocument>(
       `/issues/${id}/documents/${encodeURIComponent(key)}`,

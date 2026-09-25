@@ -1,6 +1,7 @@
 import { type SyntheticEvent, useEffect, useRef, useState } from "react";
 import { Download, ExternalLink, Paperclip, Play } from "lucide-react";
 import type { CompanyArtifact } from "@/api/artifacts";
+import { DocumentExportActions } from "@/components/artifacts/DocumentExportActions";
 import { Link } from "@/lib/router";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -213,6 +214,13 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
             {artifact.title}
           </h3>
           <div className="flex shrink-0 items-center gap-0.5 opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+            {artifact.source === "document" && artifact.documentKey ? (
+              <DocumentExportActions
+                issueId={artifact.issue.id}
+                documentKey={artifact.documentKey}
+                title={artifact.title}
+              />
+            ) : null}
             {artifact.openPath ? (
               <SecondaryAction href={artifact.openPath} title="Open file in new tab">
                 <ExternalLink className="h-3.5 w-3.5" />

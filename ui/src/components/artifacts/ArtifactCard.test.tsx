@@ -32,6 +32,7 @@ function makeArtifact(overrides: Partial<CompanyArtifact> = {}): CompanyArtifact
     source: "attachment",
     mediaKind: "image",
     title: "Hero shot",
+    documentKey: null,
     previewText: null,
     contentType: "image/png",
     contentPath: "/files/art-1.png",
