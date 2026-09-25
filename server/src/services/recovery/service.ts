@@ -8,6 +8,7 @@ import {
   asc,
   desc,
   eq,
+  exists,
   gt,
   gte,
   inArray,
@@ -17,6 +18,8 @@ import {
   or,
   sql,
 } from "drizzle-orm";
+import { executionBlockerPredicate } from "../execution-blocker.js";
+import { releaseDependencyGateRecoveryHold } from "../dependency-gate-recovery-hold.js";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   hasCommittedNativeBoardResponseWait,
@@ -1048,6 +1051,7 @@ export function recoveryService(
     companyId: string,
     issueId: string,
     agentId?: string | null,
+    options?: { ignoreStrandedExecutionWaitWakes?: boolean },
   ) {
     const [run, deferredWake, nativeRecovery] = await Promise.all([
       db
@@ -1074,6 +1078,23 @@ export function recoveryService(
             eq(agentWakeupRequests.status, "deferred_issue_execution"),
             sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
             agentId ? eq(agentWakeupRequests.agentId, agentId) : sql`true`,
+            options?.ignoreStrandedExecutionWaitWakes
+              ? or(
+                  sql`${agentWakeupRequests.payload} -> 'executionWait' is null`,
+                  exists(
+                    db
+                      .select({ id: issueRecoveryActions.id })
+                      .from(issueRecoveryActions)
+                      .where(
+                        and(
+                          eq(issueRecoveryActions.companyId, companyId),
+                          eq(issueRecoveryActions.sourceIssueId, issueId),
+                          executionBlockerPredicate(),
+                        ),
+                      ),
+                  ),
+                )
+              : undefined,
           ),
         )
         .limit(1)
@@ -5388,8 +5409,22 @@ export function recoveryService(
           continue;
         }
 
+        await releaseDependencyGateRecoveryHold(db, {
+          companyId,
+          issueId: candidate.id,
+          runId: opts?.runId ?? null,
+          actorId: requestedByActorId,
+        }).catch((err) =>
+          logger.warn(
+            { err, issueId: candidate.id },
+            "failed to release dependency recovery hold from issue graph liveness backstop",
+          ),
+        );
+
         if (
-          (await hasActiveExecutionPath(companyId, candidate.id, agentId)) ||
+          (await hasActiveExecutionPath(companyId, candidate.id, agentId, {
+            ignoreStrandedExecutionWaitWakes: true,
+          })) ||
           (await hasQueuedIssueWake(companyId, candidate.id, agentId))
         ) {
           result.livePathSkipped += 1;

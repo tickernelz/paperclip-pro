@@ -2,6 +2,7 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
+import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
 import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { renderDocumentPdf } from "../services/document-pdf.js";
 import {
@@ -14796,6 +14797,17 @@ export function issueRoutes(
         if (becameDone) {
           const dependents = await svc.listWakeableBlockedDependents(issue.id);
           for (const dependent of dependents) {
+            await releaseDependencyGateRecoveryHold(db, {
+              companyId: issue.companyId,
+              issueId: dependent.id,
+              runId: actor.runId,
+              actorId: "issue_blockers_resolved",
+            }).catch((err) =>
+              logger.warn(
+                { err, issueId: dependent.id },
+                "failed to release dependency recovery hold on resolved blockers",
+              ),
+            );
             await addDependencyResolvedWakeup({
               agentId: dependent.assigneeAgentId,
               dependentIssueId: dependent.id,
@@ -18224,6 +18236,17 @@ export function issueRoutes(
             currentIssue.id,
           );
           for (const dependent of dependents) {
+            await releaseDependencyGateRecoveryHold(db, {
+              companyId: currentIssue.companyId,
+              issueId: dependent.id,
+              runId: actor.runId,
+              actorId: "issue_blockers_resolved",
+            }).catch((err) =>
+              logger.warn(
+                { err, issueId: dependent.id },
+                "failed to release dependency recovery hold on resolved blockers",
+              ),
+            );
             await addDependencyResolvedWakeup({
               agentId: dependent.assigneeAgentId,
               dependentIssueId: dependent.id,
