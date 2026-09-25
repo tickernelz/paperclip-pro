@@ -1,5 +1,11 @@
 # @tickernelz/paperclip-pro-adapter-openclaw-gateway
 
+## Unreleased
+
+### Patch Changes
+
+- Teach the Paperclip REST API in the wake text: the gateway protocol carries no runtime configuration, so the agent never had the `paperclip*` tools the wake text used to name.
+
 ## 0.3.1
 
 ### Patch Changes

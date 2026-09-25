@@ -1,5 +1,11 @@
 # @tickernelz/paperclip-pro-adapter-pi-local
 
+## Unreleased
+
+### Patch Changes
+
+- Teach the Paperclip REST API in the run prompt: Pi ships no MCP client, so the agent never had the `paperclip*` tools the prompt used to name.
+
 ## 0.3.1
 
 ### Patch Changes

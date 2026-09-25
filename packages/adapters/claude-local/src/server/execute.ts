@@ -48,9 +48,15 @@ import {
   selectPaperclipTaskMarkdown,
   rewriteWorkspaceCwdEnvVarsForExecution,
   shapePaperclipWorkspaceEnvForExecution,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpToolsets,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import { paperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { buildSkillLibraryManifestMarkdown } from "@tickernelz/paperclip-pro-adapter-utils/skill-library-manifest";
 import {
   parseLocalProcessFilesystemScope,
@@ -422,12 +428,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
   const executionTargetIsSandbox = executionTarget?.kind === "remote" && executionTarget.transport === "sandbox";
 
-  const promptTemplate = asString(
-    config.promptTemplate,
-    context.conversationMode === true
-      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  );
   const effort = asString(config.effort, "");
   const chrome = asBoolean(config.chrome, false);
   const maxTurns = asNumber(config.maxTurnsPerRun, 0);
@@ -475,6 +475,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     graceSec,
     extraArgs,
   } = runtimeConfig;
+  const paperclipAccess = paperclipAccessMode(config, env);
+  const paperclipMcpArmed = paperclipAccess === "mcp";
+  const paperclipToolsets = paperclipMcpToolsets(config);
+  const promptTemplate = asString(
+    config.promptTemplate,
+    context.conversationMode === true
+      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+      : paperclipAgentPromptTemplate(paperclipAccess),
+  );
   Object.assign(env, claudeSandboxPermissionEnv({ dangerouslySkipPermissions, targetIsSandbox: executionTargetIsSandbox }));
   let loggedEnv = initialLoggedEnv;
   let effectiveExecutionCwd = adapterExecutionTargetRemoteCwd(executionTarget, cwd);
@@ -559,6 +568,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     stateDir: claudeRuntimeStateDir,
     runId,
     servers: runtimeMcpServers,
+    paperclip: paperclipMcpArmed
+      ? paperclipMcpHttpTarget({ env, toolsets: paperclipToolsets })
+      : null,
   });
   const localMcpConfigDir = path.dirname(localMcpConfigPath);
   const sharedClaudeConfigDir = config.managedAiConnection ? asString(configEnv.CLAUDE_CONFIG_DIR, "") : resolveSharedClaudeConfigDir(process.env);
@@ -848,14 +860,17 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     // The task-context markdown is the authoritative brief on this lane; keep
     // the wake prompt's description copy out so the prompt carries it once.
     suppressIssueDescription: taskContextNote.length > 0,
+    paperclipAccess,
   });
   const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
   const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
     ? ""
     : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+  const paperclipGuidance = paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets });
   const prompt = joinPromptSections([
     renderedBootstrapPrompt,
+    paperclipGuidance,
     wakePrompt,
     sessionHandoffNote,
     taskContextNote,
@@ -900,7 +915,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (attemptInstructionsFilePath && !resumeSessionId) {
       args.push("--append-system-prompt-file", attemptInstructionsFilePath);
     }
-    if (runtimeMcpServers.length > 0) {
+    if (runtimeMcpServers.length > 0 || paperclipMcpArmed) {
       args.push("--mcp-config", effectiveMcpConfigPath, "--strict-mcp-config");
     }
     args.push("--add-dir", effectivePromptBundleAddDir);
@@ -939,6 +954,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     if (attemptInstructionsFilePath && !resumeSessionId) {
       commandNotes.push(
         `Injected agent instructions via --append-system-prompt-file ${instructionsFilePath} (with path directive appended)`,
+      );
+    }
+    if (paperclipMcpArmed) {
+      commandNotes.push(
+        `Mounted the Paperclip MCP server (toolsets ${paperclipToolsets}) from strict config ${effectiveMcpConfigPath}.`,
       );
     }
     if (runtimeMcpServers.length > 0) {

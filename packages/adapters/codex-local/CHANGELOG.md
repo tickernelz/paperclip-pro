@@ -1,5 +1,11 @@
 # @tickernelz/paperclip-pro-adapter-codex-local
 
+## Unreleased
+
+### Patch Changes
+
+- Mount the Paperclip MCP server per run as an `[mcp_servers."paperclip"]` entry in the managed Codex config and add the `paperclipMcp` toggle; with the toggle off the prompt teaches the Paperclip REST API instead.
+
 ## 0.3.1
 
 ### Patch Changes

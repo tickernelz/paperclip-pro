@@ -412,19 +412,13 @@ describe("claude execute", () => {
       const zero = await run("run-zero", "agent-zero", []);
 
       expect(alpha.argv).toEqual(expect.arrayContaining(["--strict-mcp-config", "--mcp-config"]));
-      expect(JSON.parse(alpha.mcpConfigContents)).toEqual({
-        mcpServers: {
-          alpha: {
-            type: "http",
-            url: "https://paperclip.example/api/tool-gateway/gateways/alpha/mcp",
-            headers: { Authorization: "Bearer alpha-token" },
-          },
-        },
+      expect(JSON.parse(alpha.mcpConfigContents).mcpServers.alpha).toEqual({
+        type: "http",
+        url: "https://paperclip.example/api/tool-gateway/gateways/alpha/mcp",
+        headers: { Authorization: "Bearer alpha-token" },
       });
-      expect(zero.argv).not.toContain("--mcp-config");
-      expect(zero.argv).not.toContain("--strict-mcp-config");
-      expect(zero.mcpConfigPath).toBeNull();
-      expect(zero.mcpConfigContents).toBeNull();
+      const zeroServers = zero.mcpConfigContents ? JSON.parse(zero.mcpConfigContents).mcpServers : {};
+      expect(Object.keys(zeroServers)).not.toContain("alpha");
       expect(alpha.mcpConfigPath).toContain("/agents/agent-alpha/");
     } finally {
       restore();
@@ -566,7 +560,7 @@ describe("claude execute", () => {
         onLog: async () => {},
         onMeta: async (meta) => { capturedNotes = (meta.commandNotes as string[]) ?? []; },
       });
-      expect(capturedNotes).toHaveLength(0);
+      expect(capturedNotes.filter((note) => note.includes("--append-system-prompt-file"))).toHaveLength(0);
     } finally {
       restore();
       await fs.rm(root, { recursive: true, force: true });
@@ -627,7 +621,7 @@ describe("claude execute", () => {
         `./HEARTBEAT.md, ./SOUL.md, and ./TOOLS.md; do not resolve those from the parent agent directory.`,
       );
       expect(metaEvents).toHaveLength(2);
-      expect(metaEvents[0]?.commandNotes).toHaveLength(0);
+      expect(metaEvents[0]?.commandNotes.filter((note) => note.includes("--append-system-prompt-file"))).toHaveLength(0);
       expect(metaEvents[1]?.commandNotes.some((note) => note.includes("--append-system-prompt-file"))).toBe(true);
       expect(result.sessionId).toBe("22222222-2222-4222-8222-222222222222");
       expect(result.clearSession).toBe(false);

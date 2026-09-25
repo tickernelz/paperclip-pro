@@ -91,6 +91,8 @@ Core fields:
 - command (string, optional): defaults to "agent"
 - extraArgs (string[], optional): additional CLI args
 - env (object, optional): KEY=VALUE environment variables
+- paperclipMcp (boolean, optional): defaults to true. Mounts the Paperclip API as MCP tools for the run through \`<workspace>/.cursor/mcp.json\` plus --approve-mcps. Turn it off to make the agent use the REST API instead.
+- paperclipMcpToolsets (string, optional): comma-separated Paperclip MCP toolsets (core, extended, all). Defaults to core.
 
 Operational fields:
 - timeoutSec (number, optional): run timeout in seconds
@@ -103,4 +105,5 @@ Notes:
 - Paperclip auto-injects local skills into "~/.cursor/skills" when missing, so Cursor can discover "$paperclip" and related skills on local runs.
 - Paperclip auto-adds --yolo unless one of --trust/--yolo/-f is already present in extraArgs.
 - Remote sandbox runs prepend "~/.cursor/bin" and "~/.local/bin" to PATH and prefer the installed absolute entrypoint from one of those directories when the default Cursor command is requested, so installer-managed sandbox leases do not need hardcoded command paths.
+- The Paperclip MCP mount is skipped when the workspace already has its own \`.cursor/mcp.json\`; the run then falls back to REST guidance in the prompt.
 `;

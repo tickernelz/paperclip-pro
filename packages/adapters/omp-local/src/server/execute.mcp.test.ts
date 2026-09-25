@@ -190,7 +190,10 @@ describe("OMP local Paperclip MCP wiring", () => {
     const invocation = await run({ paperclipMcp: false });
     expect(invocation.mcpDir).toBeTruthy();
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
-    expect(invocation.systemPrompt).not.toContain("paperclipListIssues");
+    expect(invocation.systemPrompt).not.toMatch(/\bpaperclip[A-Z]\w*/);
+    expect(invocation.systemPrompt).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
+    expect(invocation.systemPrompt).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
+    expect(invocation.systemPrompt).toContain("POST /api/issues/$PAPERCLIP_TASK_ID/interactions");
     expect(probeMock).not.toHaveBeenCalled();
     expect(endpointProbeMock).not.toHaveBeenCalled();
     const logs: Array<{ stream: string; chunk: string }> = [];

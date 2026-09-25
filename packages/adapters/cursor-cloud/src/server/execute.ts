@@ -11,7 +11,7 @@ import {
 } from "@cursor/sdk";
 import type { AdapterExecutionContext, AdapterExecutionResult, AdapterInvocationMeta } from "@tickernelz/paperclip-pro-adapter-utils";
 import {
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   asBoolean,
   asString,
@@ -26,6 +26,7 @@ import {
   isPaperclipRecoveryWakePayload,
   renderTemplate,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { paperclipRestGuidance } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 
 type CursorCloudSession = {
   cursorAgentId: string;
@@ -218,11 +219,15 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
     .filter((key) => key.startsWith("PAPERCLIP_"))
     .sort();
   if (keys.length === 0) return "";
-  return [
+  const lines = [
     "Paperclip runtime note:",
     `The following PAPERCLIP_* environment variables are available in the cloud agent shell: ${keys.join(", ")}`,
     "Use them directly instead of assuming they are absent.",
-  ].join("\n");
+  ];
+  if (env.PAPERCLIP_API_URL && env.PAPERCLIP_API_KEY) {
+    lines.push("", "Paperclip API guidance:", paperclipRestGuidance({ shellHint: "the cloud agent shell" }));
+  }
+  return lines.join("\n");
 }
 
 function readSession(params: Record<string, unknown> | null): CursorCloudSession | null {
@@ -404,7 +409,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const canReuseSession = sessionMatches(session, envType, envName, repos);
   const promptTemplate = asString(config.promptTemplate, context.conversationMode === true
     ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-    : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE);
+    : paperclipAgentPromptTemplate("rest"));
   const bootstrapPromptTemplate = asString(config.bootstrapPromptTemplate, "");
   const templateData = {
     agentId: agent.id,
@@ -423,6 +428,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     conversationMode: context.conversationMode === true,
     resumedSession: canReuseSession,
     suppressIssueDescription: taskContextNote.length > 0,
+    paperclipAccess: "rest",
   });
   const renderedBootstrapPrompt =
     !canReuseSession && bootstrapPromptTemplate.trim().length > 0

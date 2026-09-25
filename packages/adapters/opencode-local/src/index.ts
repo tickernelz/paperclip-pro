@@ -93,6 +93,8 @@ Core fields:
 - model (string, required): OpenCode model id in provider/model format (for example anthropic/claude-sonnet-4-5)
 - variant (string, optional): provider-specific reasoning/profile variant passed as --variant (for example minimal|low|medium|high|xhigh|max)
 - dangerouslySkipPermissions (boolean, optional): inject a runtime OpenCode config with \`permission=allow\` for all tools and connections; defaults to true for unattended Paperclip runs
+- paperclipMcp (boolean, optional): mount the Paperclip API as MCP tools for the run; defaults to true
+- paperclipMcpToolsets (string, optional): comma-separated Paperclip MCP toolsets (core, extended, all); defaults to "core"
 - promptTemplate (string, optional): run prompt template
 - command (string, optional): defaults to "opencode"
 - extraArgs (string[], optional): additional CLI args
@@ -114,4 +116,7 @@ Notes:
 - When \`dangerouslySkipPermissions\` is enabled, Paperclip injects a temporary \
   runtime config with \`permission=allow\` so headless runs do \
   not stall on approval prompts.
+- With \`paperclipMcp\` enabled and run API credentials present, Paperclip writes a run-scoped \
+  config with the remote \`paperclip\` MCP server and points OPENCODE_CONFIG at it, so the agent \
+  reaches the board through paperclip* tools. Otherwise the prompt teaches the REST API instead.
 `;

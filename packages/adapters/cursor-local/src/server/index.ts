@@ -1,4 +1,5 @@
 export { execute, ensureCursorSkillsInjected } from "./execute.js";
+export { getConfigSchema } from "./config-schema.js";
 export { listCursorSkills, syncCursorSkills } from "./skills.js";
 export { testEnvironment } from "./test.js";
 export { parseCursorJsonl, isCursorUnknownSessionError } from "./parse.js";

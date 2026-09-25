@@ -50,10 +50,21 @@ import {
   selectPaperclipTaskMarkdown,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
+  paperclipAgentPromptTemplate,
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   runChildProcess,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import {
+  paperclipAccessGuidance,
+  paperclipAccessMode,
+  paperclipMcpToolsets,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import {
+  paperclipMcpHttpTarget,
+  renderPaperclipGeminiSettings,
+  writePaperclipMcpMount,
+  type PaperclipMcpMount,
+} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { DEFAULT_GEMINI_LOCAL_MODEL, SANDBOX_INSTALL_COMMAND } from "../index.js";
 import {
   describeGeminiFailure,
@@ -115,22 +126,6 @@ function renderPaperclipEnvNote(env: Record<string, string>): string {
     "Paperclip runtime note:",
     `The following PAPERCLIP_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
-    "",
-    "",
-  ].join("\n");
-}
-
-function renderApiAccessNote(env: Record<string, string>): string {
-  if (!hasNonEmptyEnvValue(env, "PAPERCLIP_API_URL") || !hasNonEmptyEnvValue(env, "PAPERCLIP_API_KEY")) return "";
-  return [
-    "Paperclip API access note:",
-    "Paperclip work goes through the Paperclip MCP tools, not run_shell_command.",
-    "Read example:",
-    "  paperclipMe",
-    "Write example:",
-    `  paperclipCheckoutIssue with id: "$PAPERCLIP_TASK_ID"`,
-    "For an operation with no dedicated tool, call paperclipApiRequest with method, path relative to /api, and jsonBody as a JSON string.",
-    "When PAPERCLIP_TASK_ID is not set, substitute a real issue id from the current context; never pass a placeholder like {id}.",
     "",
     "",
   ].join("\n");
@@ -231,12 +226,6 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   });
   const executionTargetIsRemote = adapterExecutionTargetIsRemote(executionTarget);
 
-  const promptTemplate = asString(
-    config.promptTemplate,
-    context.conversationMode === true
-      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
-      : DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  );
   const command = asString(config.command, "gemini");
   const model = asString(config.model, DEFAULT_GEMINI_LOCAL_MODEL).trim();
   const sandbox = asBoolean(config.sandbox, false);
@@ -359,6 +348,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   let localSkillsDir: string | null = null;
   let remoteRuntimeRootDir: string | null = null;
   let paperclipBridge: Awaited<ReturnType<typeof startAdapterExecutionTargetPaperclipBridge>> = null;
+  let paperclipMcpMount: PaperclipMcpMount | null = null;
 
   if (executionTargetIsRemote) {
     try {
@@ -484,6 +474,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     }
   }
 
+  const paperclipAccess = paperclipAccessMode(config, env);
+  const paperclipToolsets = paperclipMcpToolsets(config);
+  const promptTemplate = asString(
+    config.promptTemplate,
+    context.conversationMode === true
+      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+      : paperclipAgentPromptTemplate(paperclipAccess),
+  );
+
   const runtimeSessionParams = parseObject(runtime.sessionParams);
   const runtimeSessionId = asString(runtimeSessionParams.sessionId, runtime.sessionId ?? "");
   const runtimeSessionCwd = asString(runtimeSessionParams.cwd, "");
@@ -565,6 +564,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     conversationMode: context.conversationMode === true,
     resumedSession: Boolean(sessionId),
     suppressIssueDescription: taskContextNote.length > 0,
+    paperclipAccess,
   });
   const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
   const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
@@ -572,7 +572,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const paperclipEnvNote = renderPaperclipEnvNote(env);
-  const apiAccessNote = renderApiAccessNote(env);
+  const apiAccessNote =
+    hasNonEmptyEnvValue(env, "PAPERCLIP_API_URL") && hasNonEmptyEnvValue(env, "PAPERCLIP_API_KEY")
+      ? `${paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets, shellHint: "run_shell_command" })}\n\n`
+      : "";
   const basePrompt = joinPromptSections([
     instructionsPrefix,
     renderedBootstrapPrompt,
@@ -767,6 +770,25 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     };
   };
 
+  if (paperclipAccess === "mcp") {
+    paperclipMcpMount = await writePaperclipMcpMount({
+      runId,
+      target: runtimeExecutionTarget,
+      remote: executionTargetIsRemote,
+      content: renderPaperclipGeminiSettings(
+        paperclipMcpHttpTarget({ env, toolsets: paperclipToolsets }),
+      ),
+      fileName: "settings.json",
+      localPrefix: "paperclip-gemini-mcp-",
+      remoteDir: remoteRuntimeRootDir ? path.posix.join(remoteRuntimeRootDir, "mcp") : null,
+      cwd: effectiveExecutionCwd,
+      env,
+      timeoutSec,
+      graceSec,
+    });
+    env.GEMINI_CLI_SYSTEM_SETTINGS_PATH = paperclipMcpMount.filePath;
+  }
+
   try {
     const initial = await runAttempt(sessionId);
     if (
@@ -788,6 +810,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     await Promise.all([
       paperclipBridge?.stop(),
       restoreRemoteWorkspace?.(),
+      paperclipMcpMount?.cleanup() ?? Promise.resolve(),
       localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
     ]);
   }

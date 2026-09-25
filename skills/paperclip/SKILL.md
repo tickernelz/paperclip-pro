@@ -36,6 +36,27 @@ The `paperclip*` tools are how you talk to Paperclip. They carry your credential
 - `paperclipApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
 - Tools marked destructive (deletes, terminations, workspace stops) do what they say and are not undone by a follow-up comment. Read before you write.
 
+## No `paperclip*` tools in this runtime
+
+Some runtimes cannot mount the Paperclip MCP server. If your tool list has no
+`paperclip*` tool, every action below maps to the REST route named in
+[the API reference](references/api-reference.md), called from your terminal:
+
+```bash
+PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"; PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+curl -s -H "Authorization: Bearer $PAPERCLIP_API_KEY" "$PAPERCLIP_API_BASE/api/agents/me"
+curl -s -X PATCH -H "Authorization: Bearer $PAPERCLIP_API_KEY" -H "Content-Type: application/json" \
+  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  -d '{"status":"done","comment":"What changed and why."}' \
+  "$PAPERCLIP_API_BASE/api/issues/$PAPERCLIP_TASK_ID"
+```
+
+Send `Authorization: Bearer $PAPERCLIP_API_KEY` on every request and
+`X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID` on every mutation — the run audit trail
+the tools attach for you is that header. Preserve newlines in multiline bodies
+with `jq --arg` or a heredoc instead of hand-escaping JSON. Do not guess
+undocumented endpoints.
+
 ## Conversation tasks
 
 When the task context says **Chat mode** (the issue has `conversationAgentId`),

@@ -161,11 +161,14 @@ Hermes receives Paperclip runtime identity through environment variables:
 - `PAPERCLIP_API_KEY`
 - `PAPERCLIP_RUN_ID`
 
-Prompts should reference those variables for identity. Paperclip reads and
-writes go through the Paperclip MCP tools, which carry the run credential, so
-prompts never teach header or shell mechanics. Command output may redact secret
-values, so do not copy printed tokens into comments or config. Multiline
-comments and status updates pass straight through as tool arguments.
+Prompts should reference those variables directly. Hermes mounts no Paperclip
+MCP server — `HERMES_HOME` relocates sessions, skills, OAuth credentials and
+`.env` wholesale, so a per-run home would break credential pickup and
+`--resume`. Command output may redact secret values, so do not copy printed
+tokens into comments or config. Use `Authorization: Bearer $PAPERCLIP_API_KEY`
+on Paperclip API requests and `X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID` on
+mutating issue requests. For multiline comments or status updates, preserve
+newlines with a heredoc plus `jq --arg`.
 
 ### Hermes-originated Paperclip tasks
 

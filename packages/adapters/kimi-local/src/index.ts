@@ -82,6 +82,7 @@ Operational fields:
 Notes:
 - The adapter defaults to the ACP engine (\`kimi acp\`) and fails with a setup error when ACP prerequisites are unavailable. Set \`engine\` to \`acp\` or \`cli\` to require a specific lane.
 - CLI-lane runs use \`kimi -p\` with \`--output-format stream-json\` for non-interactive headless execution; the prompt is passed as an argument, not stdin.
+- CLI-lane runs mount no Paperclip MCP server: \`KIMI_CODE_HOME\` relocates OAuth credentials and sessions, and a project \`.kimi-code/mcp.json\` is gated by a workspace-trust prompt. The CLI-lane prompt therefore teaches Paperclip's REST API. The ACP lane mounts the Paperclip MCP server itself.
 - The adapter sets a headless-safe environment (CI=1, NO_COLOR=1, KIMI_CODE_NO_AUTO_UPDATE=1) so unattended runs never wait on interactive prompts or update preflight.
 - Sessions resume with \`-r <session_id>\` when the stored session cwd matches the current cwd; the session id is captured from the trailing session.resume_hint meta event.
 - Desired Paperclip skills are delivered to local runs via \`--skills-dir\` pointing at a per-run managed directory, so skills load reliably without polluting the user's \`~/.kimi-code/skills\` home. Remote runs sync skills into the remote skills home.

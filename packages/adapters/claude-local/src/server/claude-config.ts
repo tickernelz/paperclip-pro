@@ -15,6 +15,8 @@ import {
   type AdapterExecutionTarget,
   type AdapterExecutionTargetShellOptions,
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+import type { PaperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import { classifyThrownErrorClass, logSandboxProbeDiagnostic } from "./probe-diagnostics.js";
@@ -158,11 +160,20 @@ export async function writePaperclipClaudeMcpConfig(input: {
   stateDir: string;
   runId: string;
   servers: AdapterRuntimeMcpServer[];
+  paperclip?: PaperclipMcpHttpTarget | null;
 }): Promise<string> {
   const configDir = path.join(input.stateDir, "runs", input.runId, "mcp");
   const configPath = path.join(configDir, "mcp-config.json");
   const usedNames = new Set<string>();
   const mcpServers: Record<string, unknown> = {};
+  if (input.paperclip) {
+    usedNames.add(PAPERCLIP_MCP_SERVER_NAME);
+    mcpServers[PAPERCLIP_MCP_SERVER_NAME] = {
+      type: "http",
+      url: input.paperclip.url,
+      headers: input.paperclip.headers,
+    };
+  }
   for (const server of input.servers) {
     let name = server.name;
     if (usedNames.has(name)) name = `${name}-${server.connectionId.slice(0, 8)}`;

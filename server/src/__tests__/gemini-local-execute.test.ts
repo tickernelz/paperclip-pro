@@ -209,8 +209,7 @@ describe("gemini execute", () => {
       );
       expect(invocationPrompt).toContain("Paperclip runtime note:");
       expect(invocationPrompt).toContain("PAPERCLIP_API_URL");
-      expect(invocationPrompt).toContain("Paperclip API access note:");
-      expect(invocationPrompt).toContain("paperclipMe");
+      expect(invocationPrompt).toContain('mounted as MCP tools on the "paperclip" server');
       expect(invocationPrompt).toContain("paperclipApiRequest");
       expect(result.question).toBeNull();
     } finally {

@@ -61,6 +61,7 @@ export const sessionCodec: AdapterSessionCodec = {
 };
 
 export { execute } from "./execute.js";
+export { getConfigSchema } from "./config-schema.js";
 export { listGrokSkills, syncGrokSkills } from "./skills.js";
 export { testEnvironment } from "./test.js";
 export { parseGrokJsonl, isGrokUnknownSessionError } from "./parse.js";
