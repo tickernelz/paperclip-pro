@@ -75,7 +75,8 @@ export function buildPaperclipMcpServerEntry(input: {
   const env: Record<string, string> = {};
   for (const key of RUN_ENV_KEYS) {
     const value = input.env[key];
-    if (typeof value === "string" && value.trim()) env[key] = `\${${key}}`;
+    if (typeof value !== "string" || !value.trim()) continue;
+    env[key] = key === "PAPERCLIP_API_KEY" ? `\${${key}}` : value.trim();
   }
   env[PAPERCLIP_MCP_TOOLSETS_ENV] = input.toolsets;
   return {

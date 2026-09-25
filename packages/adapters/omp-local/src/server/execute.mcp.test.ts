@@ -150,11 +150,10 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({ type: "stdio", enabled: true });
     expect(invocation.mcpServer?.args).toEqual(expect.arrayContaining(["--toolsets", "core"]));
     expect(invocation.mcpServer?.env).toMatchObject({
-      PAPERCLIP_API_URL: "${PAPERCLIP_API_URL}",
       PAPERCLIP_API_KEY: "${PAPERCLIP_API_KEY}",
-      PAPERCLIP_AGENT_ID: "${PAPERCLIP_AGENT_ID}",
-      PAPERCLIP_COMPANY_ID: "${PAPERCLIP_COMPANY_ID}",
-      PAPERCLIP_RUN_ID: "${PAPERCLIP_RUN_ID}",
+      PAPERCLIP_AGENT_ID: "agent-1",
+      PAPERCLIP_COMPANY_ID: "company-1",
+      PAPERCLIP_RUN_ID: "run-mcp",
       PAPERCLIP_MCP_TOOLSETS: "core",
     });
     expect(invocation.env.PAPERCLIP_API_KEY).toBe("run-jwt");
@@ -298,7 +297,7 @@ describe("Paperclip MCP server entry", () => {
       env: { PAPERCLIP_API_URL: "http://localhost:3100", PAPERCLIP_API_KEY: "k", PAPERCLIP_RUN_ID: "  " },
     });
     expect(entry.env).toEqual({
-      PAPERCLIP_API_URL: "${PAPERCLIP_API_URL}",
+      PAPERCLIP_API_URL: "http://localhost:3100",
       PAPERCLIP_API_KEY: "${PAPERCLIP_API_KEY}",
       PAPERCLIP_MCP_TOOLSETS: "core",
     });
