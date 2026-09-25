@@ -27,6 +27,7 @@ const nonServerProjects = [
   "@tickernelz/paperclip-pro-adapter-claude-local",
   "@tickernelz/paperclip-pro-adapter-codex-local",
   "@tickernelz/paperclip-pro-adapter-grok-local",
+  "@tickernelz/paperclip-pro-adapter-omp-local",
   "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
   "@tickernelz/paperclip-pro-adapter-opencode-local",
   "@tickernelz/paperclip-pro-plugin-daytona",
