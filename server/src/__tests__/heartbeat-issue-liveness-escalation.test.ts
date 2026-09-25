@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
@@ -71,6 +71,8 @@ import { heartbeatService } from "../services/heartbeat.ts";
 import { attentionService } from "../services/attention.ts";
 import { issueService } from "../services/issues.ts";
 import { runningProcesses } from "../adapters/index.ts";
+import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.ts";
+import { withQueuedCommentIdsInWakePayload } from "../services/issue-queued-comment-queue.ts";
 import {
   buildIssueBlockersResolvedWakeStateKey,
   buildIssueBlockersResolvedWakeStateKeyWithoutCycle,
@@ -648,6 +650,176 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
     expect(resumed?.contextSnapshot?.wakeCommentIds).toEqual(commentIds);
     const receipts = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.companyId, companyId));
     expect(receipts.filter((row) => row.status === "coalesced")).toHaveLength(2);
+  });
+
+  async function seedDependencyGateRefusedHold(opts: { queuedComment?: boolean } = {}) {
+    const fixture = await seedResolvedDependencyBackstopFixture({ workspaceState: "none" });
+    const refusedRunId = randomUUID();
+    await db.insert(heartbeatRuns).values({
+      id: refusedRunId,
+      companyId: fixture.companyId,
+      agentId: fixture.agentId,
+      status: "cancelled",
+      runtimeMode: "legacy",
+      invocationSource: "automation",
+      triggerDetail: "system",
+      errorCode: "issue_dependencies_blocked",
+      error: "Scheduled retry suppressed because issue dependencies are still blocked",
+      scheduledRetryAttempt: 1,
+      scheduledRetryReason: "transient_failure",
+      contextSnapshot: { issueId: fixture.blockedIssueId },
+      finishedAt: new Date(Date.now() - 120_000),
+    });
+    const [action] = await db.insert(issueRecoveryActions).values({
+      companyId: fixture.companyId,
+      sourceIssueId: fixture.blockedIssueId,
+      kind: "active_run_watchdog",
+      ownerType: "board",
+      returnOwnerAgentId: fixture.agentId,
+      cause: "legacy_execution_requires_reconciliation",
+      status: "resolved",
+      outcome: "blocked",
+      resolvedAt: new Date(),
+      fingerprint: `legacy-execution:${refusedRunId}`,
+      evidence: {
+        runId: refusedRunId,
+        attempt: 2,
+        adapterRecovery: "unsupported_or_unknown",
+        originalFailureCode: "issue_dependencies_blocked",
+        automaticRecovery: {
+          policy: "preserve_without_replay_v1",
+          runId: refusedRunId,
+          replay: "blocked",
+          actionOutcome: "unknown",
+          recordedAt: new Date().toISOString(),
+        },
+      },
+      nextAction:
+        "Automatic recovery stopped. Recorded work is preserved; actions with unverified outcomes will not be repeated.",
+    }).returning();
+    let commentId: string | null = null;
+    if (opts.queuedComment) {
+      const [comment] = await db.insert(issueComments).values({
+        companyId: fixture.companyId,
+        issueId: fixture.blockedIssueId,
+        authorUserId: "board-user",
+        body: "The blocker is done, please continue.",
+      }).returning();
+      commentId = comment!.id;
+      await db.insert(agentWakeupRequests).values({
+        companyId: fixture.companyId,
+        agentId: fixture.agentId,
+        source: "on_demand",
+        triggerDetail: "manual",
+        reason: "issue_commented",
+        status: "deferred_issue_execution",
+        requestedByActorType: "user",
+        requestedByActorId: "board-user",
+        payload: withQueuedCommentIdsInWakePayload({
+          issueId: fixture.blockedIssueId,
+          executionWait: {
+            reason: "execution_recovery",
+            message: "Waiting for execution recovery. Your message is saved.",
+            recoveryActionId: action!.id,
+          },
+          _paperclipWakeContext: {
+            issueId: fixture.blockedIssueId,
+            taskId: fixture.blockedIssueId,
+            wakeReason: "issue_commented",
+            source: "issue.comment",
+          },
+        }, [commentId]),
+      });
+    }
+    return { ...fixture, action: action!, refusedRunId, commentId };
+  }
+
+  it("creates a run and clears blocked after a dependency-refused recovery hold", async () => {
+    const { companyId, agentId, blockedIssueId, action, refusedRunId } = await seedDependencyGateRefusedHold();
+    const heartbeat = heartbeatService(db);
+
+    expect((await heartbeat.reconcileResolvedDependencyWakes()).healed).toBe(1);
+    await heartbeat.drainActiveRunExecutions();
+
+    const created = await db.select().from(heartbeatRuns).where(and(
+      eq(heartbeatRuns.companyId, companyId),
+      ne(heartbeatRuns.id, refusedRunId),
+    ));
+    expect(created.length).toBeGreaterThanOrEqual(1);
+    expect(created.every((run) => run.agentId === agentId)).toBe(true);
+    expect(created.every((run) => run.contextSnapshot?.issueId === blockedIssueId)).toBe(true);
+
+    const [issue] = await db.select({ status: issues.status }).from(issues)
+      .where(eq(issues.id, blockedIssueId));
+    expect(issue?.status).not.toBe("blocked");
+
+    const [released] = await db.select({ evidence: issueRecoveryActions.evidence, outcome: issueRecoveryActions.outcome })
+      .from(issueRecoveryActions).where(eq(issueRecoveryActions.id, action.id));
+    expect(released).toMatchObject({
+      outcome: "cancelled",
+      evidence: expect.objectContaining({
+        automaticRecovery: expect.objectContaining({ replay: "released" }),
+      }),
+    });
+    const releases = await db.select().from(activityLog).where(and(
+      eq(activityLog.companyId, companyId),
+      eq(activityLog.action, "issue.dependency_recovery_hold_released"),
+    ));
+    expect(releases).toHaveLength(1);
+    expect(releases[0]).toMatchObject({
+      entityId: blockedIssueId,
+      details: expect.objectContaining({ previousStatus: "blocked", restoredStatus: "todo" }),
+    });
+  });
+
+  it("delivers the queued user comment on the run that follows a dependency-refused hold", async () => {
+    const { companyId, blockedIssueId, commentId, refusedRunId } =
+      await seedDependencyGateRefusedHold({ queuedComment: true });
+    const heartbeat = heartbeatService(db);
+
+    expect((await heartbeat.reconcileResolvedDependencyWakes()).healed).toBe(1);
+
+    const created = await db.select().from(heartbeatRuns).where(and(
+      eq(heartbeatRuns.companyId, companyId),
+      ne(heartbeatRuns.id, refusedRunId),
+    ));
+    expect(created).toHaveLength(1);
+    expect(created[0]!.contextSnapshot?.wakeCommentIds).toEqual([commentId]);
+    expect(created[0]!.contextSnapshot?.issueId).toBe(blockedIssueId);
+
+    const receipts = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.companyId, companyId));
+    expect(receipts.filter((row) => row.status === "deferred_issue_execution")).toHaveLength(0);
+  });
+
+  it("retires the dependency hold but keeps an operator-blocked issue blocked", async () => {
+    const { companyId, blockedIssueId, action } = await seedDependencyGateRefusedHold();
+    await db.update(issues)
+      .set({ unblockDescriptor: { owner: "board", action: "Confirm the rollout window" } })
+      .where(eq(issues.id, blockedIssueId));
+
+    expect(await releaseDependencyGateRecoveryHold(db, { companyId, issueId: blockedIssueId }))
+      .toMatchObject({ released: true, restoredStatus: null, recoveryActionIds: [action.id] });
+
+    const [issue] = await db.select({ status: issues.status }).from(issues)
+      .where(eq(issues.id, blockedIssueId));
+    expect(issue).toMatchObject({ status: "blocked" });
+  });
+
+  it("leaves a deliberately blocked issue with no dependency blockers untouched", async () => {
+    const { companyId, blockedIssueId } = await seedResolvedDependencyBackstopFixture({ workspaceState: "none" });
+    await db.delete(issueRelations).where(eq(issueRelations.relatedIssueId, blockedIssueId));
+    await db.update(issues)
+      .set({ unblockDescriptor: { owner: "board", action: "Approve the maintenance window" } })
+      .where(eq(issues.id, blockedIssueId));
+
+    expect(await releaseDependencyGateRecoveryHold(db, { companyId, issueId: blockedIssueId }))
+      .toMatchObject({ released: false, restoredStatus: null, recoveryActionIds: [] });
+
+    expect((await heartbeatService(db).reconcileResolvedDependencyWakes()).healed).toBe(0);
+    const [issue] = await db.select({ status: issues.status }).from(issues)
+      .where(eq(issues.id, blockedIssueId));
+    expect(issue).toMatchObject({ status: "blocked" });
+    expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, companyId))).toHaveLength(0);
   });
 
   it("retries a resolved dependency wake when the prior wake was skipped as stale", async () => {

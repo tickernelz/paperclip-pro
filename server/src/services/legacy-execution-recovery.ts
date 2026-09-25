@@ -7,6 +7,7 @@ import { issueRecoveryActionService } from "./issue-recovery-actions.js";
 import { parseIssueExecutionState } from "./issue-execution-policy.js";
 import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { isSupersededConversationRun } from "./agent-conversations.js";
+import { DEPENDENCY_GATE_FAILURE_CODE } from "./execution-blocker.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;
 export const LEGACY_RECOVERY_CAUSE = "legacy_execution_requires_reconciliation";
@@ -15,6 +16,13 @@ export function isGracefulShutdownInterruptedRun(
   run: Pick<Run, "status" | "errorCode">,
 ): boolean {
   return run.status === "interrupted" && run.errorCode === "server_shutdown_interrupted";
+}
+
+/** The dependency gate refuses admission before the provider is invoked. */
+export function isDependencyGateRefusedRun(
+  run: Pick<Run, "status" | "errorCode">,
+): boolean {
+  return run.status === "cancelled" && run.errorCode === DEPENDENCY_GATE_FAILURE_CODE;
 }
 
 /** Error families describe availability, not whether earlier actions happened. */
@@ -27,6 +35,7 @@ export function legacyExecutionNeedsReconciliation(
   )
     return false;
   if (isGracefulShutdownInterruptedRun(run)) return false;
+  if (isDependencyGateRefusedRun(run)) return false;
   // A fresh conversation turn lets the agent decide what remains. The retry
   // scheduler, not an action-outcome hold, owns the automatic attempt limit.
   if (hasConversationContinuationPolicy(run.resultJson)) return false;

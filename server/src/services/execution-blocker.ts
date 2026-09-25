@@ -4,10 +4,23 @@ import { z } from "zod";
 import { heartbeatRuns, issueComments, issues, issueRecoveryActions, type Db } from "@tickernelz/paperclip-pro-db";
 import { EXECUTION_RECONCILIATION_CAUSES, type ExecutionBlocker } from "@tickernelz/paperclip-pro-shared";
 
+export const DEPENDENCY_GATE_FAILURE_CODE = "issue_dependencies_blocked";
+
+/** Reconciliation bookkeeping recorded for a retry the dependency gate refused. */
+export function dependencyGateRecoveryHoldPredicate() {
+  return and(
+    inArray(issueRecoveryActions.cause, [...EXECUTION_RECONCILIATION_CAUSES]),
+    sql`coalesce(${issueRecoveryActions.evidence}->>'originalFailureCode', '') = ${DEPENDENCY_GATE_FAILURE_CODE}`,
+    or(inArray(issueRecoveryActions.status, ["active", "escalated"]),
+      sql`coalesce(${issueRecoveryActions.evidence}->'automaticRecovery'->>'replay', '') = 'blocked'`),
+  );
+}
+
 /** Resolved recovery bookkeeping can still carry an effective no-replay hold. */
 export function executionBlockerPredicate() {
   return and(
     not(conversationRecoveryActionPredicate()!),
+    not(dependencyGateRecoveryHoldPredicate()!),
     inArray(issueRecoveryActions.cause, [...EXECUTION_RECONCILIATION_CAUSES]),
     or(inArray(issueRecoveryActions.status, ["active", "escalated"]),
       sql`${issueRecoveryActions.evidence}->'automaticRecovery'->>'replay' = 'blocked'`),

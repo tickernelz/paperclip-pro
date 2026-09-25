@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
+import { isDependencyGateRefusedRun, legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
 
 const stopped = {
   runtimeMode: "legacy", status: "cancelled", errorCode: "cancelled",
@@ -80,3 +80,15 @@ it("retries a busy AI subscription only when no provider work started", () => {
    expect(legacyExecutionNeedsReconciliation({ ...waiting, resultJson: {} })).toBe(true);
    expect(legacyExecutionNeedsReconciliation({ ...waiting, resultJson: { executionRecovery: { kind: "ai_connection_wait", providerWorkStarted: true } } })).toBe(true);
  });
+
+it("never holds a retry the dependency gate refused before the provider ran", () => {
+  const refused = {
+    runtimeMode: "legacy", status: "cancelled", errorCode: "issue_dependencies_blocked",
+    scheduledRetryAttempt: 2, scheduledRetryReason: "transient_failure", resultJson: null,
+  };
+  expect(isDependencyGateRefusedRun(refused)).toBe(true);
+  expect(legacyExecutionNeedsReconciliation(refused)).toBe(false);
+  expect(legacyExecutionNeedsReconciliation({ ...refused, resultJson: {} })).toBe(false);
+  expect(legacyExecutionNeedsReconciliation({ ...refused, status: "failed" })).toBe(true);
+  expect(legacyExecutionNeedsReconciliation({ ...refused, errorCode: "adapter_failed" })).toBe(true);
+});
