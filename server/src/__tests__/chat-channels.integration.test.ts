@@ -7252,7 +7252,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
   it("reorders same-second GitHub callbacks by comment id before starting the task", async () => {
     const fixture = await seedCompany();
-    const deferred: Array<() => void> = [];
+    const deferred: Array<() => Promise<void>> = [];
     const { callbacks, endpoint, service, wakeup } =
       await configuredGitHubEndpoint(fixture, {
         deferWebhookProcessing: true,
@@ -7307,30 +7307,21 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     ).toBe(1);
     expect(deferred).toHaveLength(1);
 
-    deferred.shift()?.();
-    await vi.waitFor(async () => {
-      const rows = await db
-        .select()
-        .from(chatConversations)
-        .where(eq(chatConversations.endpointId, endpoint.id));
-      expect(rows).toHaveLength(1);
-    });
+    while (deferred.length > 0) await deferred.shift()?.();
     const [conversation] = await db
       .select()
       .from(chatConversations)
       .where(eq(chatConversations.endpointId, endpoint.id));
-    await vi.waitFor(async () => {
-      const rows = await db
-        .select({ body: issueComments.body })
-        .from(issueComments)
-        .where(eq(issueComments.issueId, conversation!.issueId))
-        .orderBy(asc(issueComments.createdAt), asc(issueComments.id));
-      expect(rows.map((row) => row.body)).toEqual([
-        "@maya start the GitHub task",
-        "unmentioned follow-up delivered first",
-      ]);
-      expect(wakeup).toHaveBeenCalledTimes(2);
-    });
+    const comments = await db
+      .select({ body: issueComments.body })
+      .from(issueComments)
+      .where(eq(issueComments.issueId, conversation!.issueId))
+      .orderBy(asc(issueComments.createdAt), asc(issueComments.id));
+    expect(comments.map((comment) => comment.body)).toEqual([
+      "@maya start the GitHub task",
+      "unmentioned follow-up delivered first",
+    ]);
+    expect(wakeup).toHaveBeenCalledTimes(2);
     await service.shutdown();
   });
 
@@ -15475,7 +15466,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("reorders rapid Slack callbacks by provider time before one conversation drain", async () => {
     const fixture = await seedCompany();
     const runtime = new FakeChatSdkRuntime();
-    const deferred: Array<() => void> = [];
+    const deferred: Array<() => Promise<void>> = [];
     const wakeup = vi.fn(async () => ({ accepted: true }));
     const service = chatChannelService(db, {
       deferWebhookProcessing: true,
@@ -15602,28 +15593,16 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       publicBaseUrl: "https://paperclip.example",
       runtime: new FakeChatSdkRuntime() as unknown as ChatSdkRuntime,
     });
-    deferred.shift()?.();
+    const drain = deferred.shift()?.();
     // Simulate another server process reconciling the same durable rows at
     // the same time as the webhook process's deferred drain.
     await competingService.processPendingDeliveries();
-    await vi.waitFor(async () => {
-      const rows = await db
-        .select()
-        .from(chatConversations)
-        .where(eq(chatConversations.endpointId, endpoint.id));
-      expect(rows).toHaveLength(1);
-    });
+    await drain;
+    while (deferred.length > 0) await deferred.shift()?.();
     const [conversation] = await db
       .select()
       .from(chatConversations)
       .where(eq(chatConversations.endpointId, endpoint.id));
-    await vi.waitFor(async () => {
-      const rows = await db
-        .select({ id: issueComments.id })
-        .from(issueComments)
-        .where(eq(issueComments.issueId, conversation.issueId));
-      expect(rows).toHaveLength(8);
-    });
     const comments = await db
       .select({ id: issueComments.id, body: issueComments.body })
       .from(issueComments)
@@ -16744,7 +16723,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   it("reorders reverse-arrival Telegram webhooks by provider sequence before waking the agent", async () => {
     const fixture = await seedCompany();
     const runtime = new FakeChatSdkRuntime();
-    const deferred: Array<() => void> = [];
+    const deferred: Array<() => Promise<void>> = [];
     const wakeup = vi.fn(async () => ({ accepted: true }));
     const service = chatChannelService(db, {
       deferWebhookProcessing: true,
@@ -16852,10 +16831,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(wakeup).not.toHaveBeenCalled();
     expect(deferred).toHaveLength(1);
 
-    deferred.shift()?.();
-    await vi.waitFor(() => expect(wakeup).toHaveBeenCalledTimes(2), {
-      timeout: 3_000,
-    });
+    while (deferred.length > 0) await deferred.shift()?.();
+    expect(wakeup).toHaveBeenCalledTimes(2);
     const [conversation] = await db
       .select()
       .from(chatConversations)
@@ -61226,7 +61203,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
 
   it("orders reversed GitHub edit and delete callbacks behind their durable root", async () => {
     const fixture = await seedCompany();
-    const deferred: Array<() => void | Promise<void>> = [];
+    const deferred: Array<() => Promise<void>> = [];
     const { callbacks, endpoint, service, wakeup, webhookSecret } =
       await configuredGitHubEndpoint(fixture, {
         deferWebhookProcessing: true,
@@ -61328,19 +61305,17 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     // request is queued. The duplicate delivery callback becomes a no-op.
     expect(deferred).toHaveLength(4);
     await drainDeferred();
-    await vi.waitFor(async () => {
-      const deliveries = await db
-        .select({
-          eventKind: chatDeliveries.eventKind,
-          state: chatDeliveries.state,
-        })
-        .from(chatDeliveries)
-        .where(eq(chatDeliveries.endpointId, endpoint.id));
-      expect(deliveries).toHaveLength(3);
-      expect(
-        deliveries.every((delivery) => delivery.state === "processed"),
-      ).toBe(true);
-    });
+    const deliveries = await db
+      .select({
+        eventKind: chatDeliveries.eventKind,
+        state: chatDeliveries.state,
+      })
+      .from(chatDeliveries)
+      .where(eq(chatDeliveries.endpointId, endpoint.id));
+    expect(deliveries).toHaveLength(3);
+    expect(
+      deliveries.every((delivery) => delivery.state === "processed"),
+    ).toBe(true);
 
     const [conversation] = await db
       .select()
@@ -61368,33 +61343,29 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     ).resolves.toMatchObject({ ok: true });
     expect(deferred).toHaveLength(1);
     await drainDeferred();
-    await vi.waitFor(() => expect(deferred).toHaveLength(1));
-    await drainDeferred();
-    await vi.waitFor(async () => {
-      await expect(
-        db
-          .select({
-            eventKind: chatDeliveries.eventKind,
-            redactedError: chatDeliveries.redactedError,
-            state: chatDeliveries.state,
-          })
-          .from(chatDeliveries)
-          .where(
-            and(
-              eq(chatDeliveries.endpointId, endpoint.id),
-              eq(chatDeliveries.eventKind, "message_updated"),
-              eq(chatDeliveries.state, "filtered"),
-            ),
+    await expect(
+      db
+        .select({
+          eventKind: chatDeliveries.eventKind,
+          redactedError: chatDeliveries.redactedError,
+          state: chatDeliveries.state,
+        })
+        .from(chatDeliveries)
+        .where(
+          and(
+            eq(chatDeliveries.endpointId, endpoint.id),
+            eq(chatDeliveries.eventKind, "message_updated"),
+            eq(chatDeliveries.state, "filtered"),
           ),
-      ).resolves.toEqual([
-        {
-          eventKind: "message_updated",
-          redactedError:
-            "Message edit arrived after the provider message was deleted",
-          state: "filtered",
-        },
-      ]);
-    });
+        ),
+    ).resolves.toEqual([
+      {
+        eventKind: "message_updated",
+        redactedError:
+          "Message edit arrived after the provider message was deleted",
+        state: "filtered",
+      },
+    ]);
     await expect(
       db
         .select({ body: issueComments.body })
