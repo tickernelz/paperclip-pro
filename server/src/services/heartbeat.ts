@@ -85,9 +85,15 @@ import {
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
+  INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
   INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
+  INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
+  INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
+  INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
   INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
   INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
+  INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
+  INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
   LOCAL_CLI_ADAPTER_TYPES,
   CHAT_PROVIDERS,
   CONNECTION_INTENT_AGENT_GUIDANCE,
@@ -661,16 +667,51 @@ export function isLocalCliAdapterType(adapterType: string | null | undefined) {
   return adapterType ? LOCAL_CLI_ADAPTER_TYPE_SET.has(adapterType) : false;
 }
 
+function resolveBoundedEnvInteger(
+  raw: string | undefined,
+  fallback: number,
+  min: number,
+  max: number,
+) {
+  const trimmed = raw?.trim();
+  if (!trimmed) return fallback;
+  const parsed = Math.floor(Number(trimmed));
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(min, Math.min(max, parsed));
+}
+
 export function resolveMaxConcurrentLocalRuns(
   env: Record<string, string | undefined>,
 ) {
-  const raw = env.PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS?.trim();
-  if (!raw) return INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS;
-  const parsed = Math.floor(Number(raw));
-  if (!Number.isFinite(parsed)) return INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS;
-  return Math.max(
+  return resolveBoundedEnvInteger(
+    env.PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS,
+    INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
     INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
-    Math.min(INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX, parsed),
+    INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
+  );
+}
+
+export function resolveMaxConcurrentLocalStarts(
+  env: Record<string, string | undefined>,
+) {
+  return resolveBoundedEnvInteger(
+    env.PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS,
+    INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
+    INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
+    INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
+  );
+}
+
+export function resolveLocalStartWaitBypassMs(
+  env: Record<string, string | undefined>,
+) {
+  return (
+    resolveBoundedEnvInteger(
+      env.PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC,
+      INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
+      INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
+      INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
+    ) * 1000
   );
 }
 const HEARTBEAT_MAX_CONCURRENT_RUNS_MIN = 1;
@@ -1289,6 +1330,26 @@ const SESSIONED_LOCAL_ADAPTERS = new Set([
 // Routes and the scheduler construct separate heartbeatService instances, but
 // they must agree on in-process adapter executions when reaping stale runs.
 const activeRunExecutions = new Set<string>();
+const localCliStartingRuns = new Map<string, number>();
+
+export function markLocalCliRunStarting(runId: string, at = Date.now()) {
+  localCliStartingRuns.set(runId, at);
+}
+
+export function clearLocalCliRunStarting(runId: string) {
+  return localCliStartingRuns.delete(runId);
+}
+
+export function countLocalCliRunsStarting(staleAfterMs: number, now = Date.now()) {
+  for (const [runId, startedAt] of localCliStartingRuns) {
+    if (now - startedAt >= staleAfterMs) localCliStartingRuns.delete(runId);
+  }
+  return localCliStartingRuns.size;
+}
+
+export function readLocalCliRunStartingAt(runId: string) {
+  return localCliStartingRuns.get(runId) ?? null;
+}
 // A legacy process adapter's signal exit can race the operator cancellation CAS while
 // its owned process group is still being joined. Keep that exit from becoming
 // a successful result (or a competing failure) before Stop settles. This is an
@@ -16943,9 +17004,10 @@ export function heartbeatService(
     ).length;
   }
 
-  async function startNextQueuedLocalCliRuns(finishedAgentId: string) {
-    const finished = await getAgent(finishedAgentId);
-    if (!isLocalCliAdapterType(finished?.adapterType)) return;
+  let localStartBypassTimer: ReturnType<typeof setTimeout> | null = null;
+  let localStartBypassDueAtMs = 0;
+
+  async function dispatchQueuedLocalCliRuns(excludeAgentId: string | null) {
     const slots =
       resolveMaxConcurrentLocalRuns(runtimeEnv) -
       (await countRunningLocalCliRuns());
@@ -16958,7 +17020,9 @@ export function heartbeatService(
       .where(
         and(
           eq(heartbeatRuns.status, "queued"),
-          ne(heartbeatRuns.agentId, finishedAgentId),
+          excludeAgentId
+            ? ne(heartbeatRuns.agentId, excludeAgentId)
+            : undefined,
           inArray(agents.adapterType, [...LOCAL_CLI_ADAPTER_TYPES]),
           cutoff ? gte(heartbeatRuns.createdAt, cutoff) : undefined,
         ),
@@ -16971,6 +17035,38 @@ export function heartbeatService(
       dispatched.add(row.agentId);
       await startNextQueuedRunForAgent(row.agentId);
     }
+  }
+
+  async function startNextQueuedLocalCliRuns(finishedAgentId: string) {
+    const finished = await getAgent(finishedAgentId);
+    if (!isLocalCliAdapterType(finished?.adapterType)) return;
+    await dispatchQueuedLocalCliRuns(finishedAgentId);
+  }
+
+  function sweepQueuedLocalCliRuns(reason: string) {
+    void dispatchQueuedLocalCliRuns(null).catch((err) => {
+      logger.warn({ err, reason }, "queued local CLI run sweep failed");
+    });
+  }
+
+  function markLocalCliRunStartupSignal(runId: string) {
+    if (!clearLocalCliRunStarting(runId)) return;
+    if (localStartBypassTimer) {
+      clearTimeout(localStartBypassTimer);
+      localStartBypassTimer = null;
+    }
+    sweepQueuedLocalCliRuns("startup_signal");
+  }
+
+  function scheduleLocalStartBypassSweep(dueAtMs: number) {
+    if (localStartBypassTimer && localStartBypassDueAtMs <= dueAtMs) return;
+    if (localStartBypassTimer) clearTimeout(localStartBypassTimer);
+    localStartBypassDueAtMs = dueAtMs;
+    localStartBypassTimer = setTimeout(() => {
+      localStartBypassTimer = null;
+      sweepQueuedLocalCliRuns("start_wait_bypass");
+    }, Math.max(25, dueAtMs - Date.now()));
+    localStartBypassTimer.unref?.();
   }
 
   async function withChatControlRecoveryGate(
@@ -19842,7 +19938,8 @@ export function heartbeatService(
         0,
         policy.maxConcurrentRuns - runningCount,
       );
-      if (availableSlots > 0 && isLocalCliAdapterType(agent.adapterType)) {
+      const localCliAgent = isLocalCliAdapterType(agent.adapterType);
+      if (availableSlots > 0 && localCliAgent) {
         const localRunSlots = Math.max(
           0,
           resolveMaxConcurrentLocalRuns(runtimeEnv) -
@@ -19851,6 +19948,8 @@ export function heartbeatService(
         availableSlots = Math.min(availableSlots, localRunSlots);
       }
       if (availableSlots <= 0) return [];
+      const maxLocalStarts = resolveMaxConcurrentLocalStarts(runtimeEnv);
+      const localStartWaitBypassMs = resolveLocalStartWaitBypassMs(runtimeEnv);
 
       const queuedRuns = await db
         .select()
@@ -19941,8 +20040,24 @@ export function heartbeatService(
       const claimedRuns: Array<typeof heartbeatRuns.$inferSelect> = [];
       for (const queuedRun of prioritizedRuns) {
         if (claimedRuns.length >= availableSlots) break;
+        if (localCliAgent) {
+          const now = Date.now();
+          const waitedMs = now - queuedRun.createdAt.getTime();
+          if (
+            waitedMs < localStartWaitBypassMs &&
+            countLocalCliRunsStarting(localStartWaitBypassMs, now) >=
+              maxLocalStarts
+          ) {
+            scheduleLocalStartBypassSweep(
+              queuedRun.createdAt.getTime() + localStartWaitBypassMs,
+            );
+            continue;
+          }
+        }
         const claimed = await claimQueuedRun(queuedRun, companyAgents);
-        if (claimed) claimedRuns.push(claimed);
+        if (!claimed) continue;
+        if (localCliAgent) markLocalCliRunStarting(claimed.id);
+        claimedRuns.push(claimed);
       }
       if (claimedRuns.length === 0) return [];
 
@@ -22926,6 +23041,13 @@ export function heartbeatService(
             },
           });
         };
+        const onAdapterChildLog = async (
+          stream: "stdout" | "stderr",
+          chunk: string,
+        ) => {
+          if (stream === "stdout") markLocalCliRunStartupSignal(run.id);
+          await onLog(stream, chunk);
+        };
         if (runScopedMentionedSkillKeys.length > 0) {
           await onLog(
             "stdout",
@@ -24199,7 +24321,7 @@ export function heartbeatService(
                       });
                       goalCheckpointSession.current = { params, displayId };
                     },
-                    onLog,
+                    onLog: onAdapterChildLog,
                     onEvent: onAdapterEvent,
                     preparationSpans: nativeRunnerPreparationSpans,
                     // Bootstrap with executable/home discovery while keeping
@@ -24383,7 +24505,7 @@ export function heartbeatService(
                       : undefined,
                     runtimeMcp,
                     runtimeTools,
-                    onLog,
+                    onLog: onAdapterChildLog,
                     onMeta: onAdapterMeta,
                     onEvent: onAdapterEvent,
                     startupTraceContext: getStartupTraceContext(),
@@ -26095,6 +26217,7 @@ export function heartbeatService(
       } finally {
         controllerLease.stop();
         activeRunExecutions.delete(run.id);
+        clearLocalCliRunStarting(run.id);
         // A failed owned Stop remains visible until this exact executor settles,
         // including a graceful exit result arriving after the cancellation error.
         // It is never retained beyond the active execution's cleanup.

@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   agents,
@@ -12,13 +12,19 @@ import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
-import { heartbeatService } from "../services/heartbeat.ts";
+import { heartbeatService, markLocalCliRunStarting } from "../services/heartbeat.ts";
 import { runningProcesses } from "../adapters/index.ts";
 
-const adapterGate = vi.hoisted(() => ({ waiters: [] as Array<() => void> }));
+type AdapterLog = (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
+
+const adapterGate = vi.hoisted(() => ({
+  waiters: [] as Array<() => void>,
+  contexts: new Map<string, { onLog: (stream: string, chunk: string) => Promise<void> }>(),
+}));
 
 const mockAdapterExecute = vi.hoisted(() =>
-  vi.fn(async () => {
+  vi.fn(async (ctx: { runId: string; onLog: (stream: string, chunk: string) => Promise<void> }) => {
+    adapterGate.contexts.set(ctx.runId, ctx);
     await new Promise<void>((resolve) => { adapterGate.waiters.push(resolve); });
     return {
       exitCode: 0,
@@ -68,6 +74,32 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await tempDb?.cleanup();
   });
 
+  async function seedAgentWithWork(companyId: string, index: number) {
+    const agentId = randomUUID();
+    const issueId = randomUUID();
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: `LocalRunner${index}`,
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
+      permissions: {},
+    });
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      title: `Mission ${index}`,
+      status: "todo",
+      priority: "medium",
+      assigneeAgentId: agentId,
+      responsibleUserId: "responsible-user",
+    });
+    return { agentId, issueId };
+  }
+
   async function seedAgentsWithWork(companyId: string, count: number) {
     await db.insert(companies).values({
       id: companyId,
@@ -77,31 +109,24 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     });
     const seeded: Array<{ agentId: string; issueId: string }> = [];
     for (let index = 0; index < count; index += 1) {
-      const agentId = randomUUID();
-      const issueId = randomUUID();
-      await db.insert(agents).values({
-        id: agentId,
-        companyId,
-        name: `LocalRunner${index}`,
-        role: "engineer",
-        status: "active",
-        adapterType: "codex_local",
-        adapterConfig: {},
-        runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
-        permissions: {},
-      });
-      await db.insert(issues).values({
-        id: issueId,
-        companyId,
-        title: `Mission ${index}`,
-        status: "todo",
-        priority: "medium",
-        assigneeAgentId: agentId,
-        responsibleUserId: "responsible-user",
-      });
-      seeded.push({ agentId, issueId });
+      seeded.push(await seedAgentWithWork(companyId, index));
     }
     return seeded;
+  }
+
+  async function adapterLogFor(runId: string): Promise<AdapterLog> {
+    expect(await waitForCondition(async () => adapterGate.contexts.has(runId))).toBe(true);
+    const ctx = adapterGate.contexts.get(runId)!;
+    return (stream, chunk) => ctx.onLog(stream, chunk);
+  }
+
+  async function reportStartupSignal(runId: string) {
+    const log = await adapterLogFor(runId);
+    await log("stdout", '{"type":"session","version":3,"id":"01a0d6d4","cwd":"/tmp"}\n');
+  }
+
+  async function settle(ms = 400) {
+    await new Promise((resolve) => setTimeout(resolve, ms));
   }
 
   async function countRuns(companyId: string, status: string) {
@@ -136,6 +161,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     }, 20_000);
     await heartbeat.drainActiveRunExecutions();
     runningProcesses.clear();
+    adapterGate.contexts.clear();
   }
 
   async function runningRunIds(companyId: string) {
@@ -228,7 +254,11 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 5);
     const heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "5" },
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "5",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "5",
+      },
     });
 
     await wakeAll(heartbeat, seeded);
@@ -238,4 +268,171 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     await drainEverything(heartbeat);
     expect(await countRuns(companyId, "failed")).toBe(0);
   }, 60_000);
+
+  it("holds the fifth start while four local runs are still starting, and releases it on the startup signal", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 5);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 4)).toBe(true);
+    await settle();
+    expect(await countRuns(companyId, "running")).toBe(4);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    const firstRunId = (await runningRunIds(companyId))[0]!;
+    const log = await adapterLogFor(firstRunId);
+    await log("stderr", "Still starting after 10s \u2014 phase: loadExtensions\n");
+    await settle();
+    expect(await countRuns(companyId, "running")).toBe(4);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await reportStartupSignal(firstRunId);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
+    expect(await countRuns(companyId, "queued")).toBe(0);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("holds the eleventh local run at the total cap even when nothing is starting", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 11);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "11",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 10, 20_000)).toBe(true);
+    for (const runId of await runningRunIds(companyId)) await reportStartupSignal(runId);
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(10);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 120_000);
+
+  it("lets a long-waiting queued run bypass the startup gate", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 5);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 4)).toBe(true);
+    await heartbeat.resumeQueuedRuns();
+    await settle();
+    expect(await countRuns(companyId, "running")).toBe(4);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await db
+      .update(heartbeatRuns)
+      .set({ createdAt: new Date(Date.now() - 700_000) })
+      .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "queued")));
+    await heartbeat.resumeQueuedRuns();
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 5)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("keeps a long-waiting queued run behind the total cap", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 5);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "4",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "4",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 4)).toBe(true);
+    await db
+      .update(heartbeatRuns)
+      .set({ createdAt: new Date(Date.now() - 700_000) })
+      .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "queued")));
+    await heartbeat.resumeQueuedRuns();
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(4);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("stops counting a start that never reported its signal", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 1);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "600",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    const stuckRunId = (await runningRunIds(companyId))[0]!;
+
+    const second = await seedAgentWithWork(companyId, 1);
+    await wakeAll(heartbeat, [second]);
+    await settle(600);
+    expect(await countRuns(companyId, "running")).toBe(1);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    markLocalCliRunStarting(stuckRunId, Date.now() - 601_000);
+    await heartbeat.resumeQueuedRuns();
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  it("re-evaluates a gated queued run without an external scheduler tick", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 1);
+    const heartbeat = heartbeatService(db, {
+      runtimeEnv: {
+        ...process.env,
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "10",
+        PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "1",
+        PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "2",
+      },
+    });
+
+    await wakeAll(heartbeat, seeded);
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+    const second = await seedAgentWithWork(companyId, 1);
+    await wakeAll(heartbeat, [second]);
+    expect(await countRuns(companyId, "queued")).toBe(1);
+
+    expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2, 15_000)).toBe(true);
+
+    await drainEverything(heartbeat);
+    expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
 });
