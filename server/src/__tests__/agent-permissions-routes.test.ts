@@ -1075,7 +1075,7 @@ describe.sequential("agent permission routes", () => {
       }));
 
     expect(res.status).toBe(409);
-    expect(res.body.error).toContain("/agent-hires");
+    expect(res.body.error).toContain("paperclipCreateAgentHire");
     expect(mockAgentService.create).not.toHaveBeenCalled();
     expect(mockApprovalService.create).not.toHaveBeenCalled();
     expect(mockLogActivity).not.toHaveBeenCalled();
