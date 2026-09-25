@@ -1,0 +1,57 @@
+name: Setup workspace
+description: Install Node, pnpm and the workspace dependencies against a shared pnpm store cache.
+
+inputs:
+  save-store:
+    description: Persist the pnpm store cache when running on the default branch.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: 24
+        package-manager-cache: false
+
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
+      env:
+        NPM_CONFIG_AUDIT: "false"
+        NPM_CONFIG_FUND: "false"
+        NPM_CONFIG_UPDATE_NOTIFIER: "false"
+      with:
+        version: 9.15.4
+        run_install: false
+
+    - name: Locate pnpm store
+      id: store
+      shell: bash
+      run: |
+        echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+        echo "arch=$(node -p 'process.arch')" >> "$GITHUB_OUTPUT"
+
+    - name: Restore pnpm store
+      uses: actions/cache/restore@v5
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: pnpm-${{ runner.os }}-${{ steps.store.outputs.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+        restore-keys: pnpm-${{ runner.os }}-${{ steps.store.outputs.arch }}-
+
+    - name: Install dependencies
+      shell: bash
+      run: |
+        if ! pnpm install --frozen-lockfile; then
+          echo '::notice title=Lockfile::checked-in lockfile is stale for this tree; resolving it inline'
+          pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile
+          pnpm install --frozen-lockfile
+        fi
+
+    - name: Save pnpm store
+      if: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+      uses: actions/cache/save@v5
+      with:
+        path: ${{ steps.store.outputs.path }}
+        key: pnpm-${{ runner.os }}-${{ steps.store.outputs.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
