@@ -393,15 +393,18 @@ Measured on 2026-09-25 (WSL, Node 24.18.0, `core` toolset, 3 probes each):
 | Measurement | Without the server | With the server |
 | --- | --- | --- |
 | omp spawn to `agent_start` | 1842 / 1862 / 2002 ms | 2406 / 2458 / 2530 ms |
-| `paperclip-mcp-server` RSS at steady state | — | 191.5 / 192.8 / 193.3 MB |
+| `paperclip-mcp-server` RSS at steady state | — | 127.4 / 127.4 / 127.3 MB |
 
-So the server costs about 0.6 s of run startup and ~190 MB of resident memory
-for the life of the run — nearly all of it the MCP SDK and Zod schema graph
-(a bare Node 24 process is 43 MB; importing the server's `dist/index.js` alone
-reaches 239 MB). Size local run concurrency with that in mind. OMP connects its
-MCP servers during startup, before `agent_start`, so the tools are in the tool
-list for the first model turn; the connect failure warning also lands before
-`agent_start`, which is why the adapter can stop the run before a turn is spent.
+So the server costs about 0.6 s of run startup and ~127 MB of resident memory
+for the life of the run (61 `core` tools, `tools/list` 35 kB) — most of it the
+floor under it: a bare Node 24 process is 43 MB and the MCP SDK with Zod adds
+about 35 MB before any Paperclip code. The same server measured 191–193 MB
+before its tool definitions were filtered per toolset, so keep an eye on this
+number when the tool surface grows, and size local run concurrency with it.
+OMP connects its MCP servers during startup, before `agent_start`, so the tools
+are in the tool list for the first model turn; the connect failure warning also
+lands before `agent_start`, which is why the adapter can stop the run before a
+turn is spent.
 
 ## Security: emptying allowedHostnames does not lock out the public host
 
