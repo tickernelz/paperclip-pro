@@ -4061,6 +4061,23 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: "get",
+  path: "/api/issues/{id}/documents/{key}/pdf",
+  tags: ["issues"],
+  summary: "Export an issue document as PDF",
+  request: { params: z.object({ id: z.string(), key: z.string() }) },
+  responses: {
+    200: {
+      description: "Rendered PDF document",
+      content: { "application/pdf": { schema: z.string() } },
+    },
+    400: r.badRequest,
+    401: r.unauthorized,
+    404: r.notFound,
+  },
+});
+
+registry.registerPath({
   method: "put",
   path: "/api/issues/{id}/documents/{key}",
   tags: ["issues"],

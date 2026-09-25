@@ -16,7 +16,7 @@ On macOS, Linux, or WSL2, with Node.js 24.11+, pnpm 9.15.4, `git`, `curl`,
 git clone https://github.com/tickernelz/paperclip-pro.git
 cd paperclip-pro
 pnpm install --frozen-lockfile
-pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo tickernelz/paperclip-pro --ref main --yes
 ```
 
 `install` resolves the ref through the GitHub API, downloads that exact commit
@@ -128,7 +128,7 @@ Without `--repo`, `--ref` installs from upstream `paperclipai/paperclip`
 (`cli/src/commands/install.ts:27`), which is a different product.
 
 Before the shim exists, run the same command from a source checkout with
-`pnpm paperclip-pro install ...`.
+`node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install ...`.
 
 Git-ref installs resolve the requested ref to an exact commit before building.
 Review and trust the repository and ref: installing a git ref executes that
@@ -237,7 +237,7 @@ pnpm dev
 Isolated manual trial that never installs a service:
 
 ```sh
-pnpm paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
 
 The managed `paperclip-pro update` command updates managed installs. For source
