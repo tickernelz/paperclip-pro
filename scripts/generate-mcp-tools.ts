@@ -5,6 +5,7 @@ import { buildOpenApiDocument } from "../server/src/routes/openapi.js";
 
 import {
   CURATED_OPERATIONS,
+  PROBE_BOARD_DENIED_OPERATIONS,
   EXCLUDED_OPERATIONS,
   TOOL_OVERRIDES,
   type ToolsetName,
@@ -54,7 +55,7 @@ export interface GeneratedTool {
   description: string;
   toolset: ToolsetName;
   authority: ToolAuthority;
-  authoritySource: "handler" | "registry" | "default";
+  authoritySource: "handler" | "registry" | "probe" | "default";
   tags: string[];
   annotations: {
     readOnlyHint: boolean;
@@ -459,13 +460,16 @@ export function generate(): GeneratorResult {
 
     const guardEvidence = evidence.get(candidate.key);
     const registryBoard = candidate.operation["x-paperclip-authorization"]?.actor === "board";
+    const probeDenial = PROBE_BOARD_DENIED_OPERATIONS[candidate.key];
     const authority: ToolAuthority =
-      guardEvidence?.boardGuard || registryBoard ? "board" : "agent";
-    const authoritySource: "handler" | "registry" | "default" = guardEvidence?.boardGuard
+      guardEvidence?.boardGuard || registryBoard || probeDenial ? "board" : "agent";
+    const authoritySource: "handler" | "registry" | "probe" | "default" = guardEvidence?.boardGuard
       ? "handler"
       : registryBoard
         ? "registry"
-        : "default";
+        : probeDenial
+          ? "probe"
+          : "default";
 
     tools.push({
       name,
@@ -487,7 +491,7 @@ export function generate(): GeneratorResult {
       },
       guards: guardEvidence?.guards ?? [],
       permissions: guardEvidence?.permissions ?? [],
-      boardGuard: guardEvidence?.boardGuard ?? null,
+      boardGuard: guardEvidence?.boardGuard ?? (probeDenial ? `probe:${probeDenial}` : null),
       parameters,
       ...(body
         ? { body: { required: body.required, documented: body.documented, mode, schema: body.schema } }

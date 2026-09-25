@@ -15,7 +15,7 @@ const generatedToolSchema = z.object({
   description: z.string(),
   toolset: z.enum(["core", "extended"]),
   authority: z.enum(["agent", "board"]),
-  authoritySource: z.enum(["handler", "registry", "default"]),
+  authoritySource: z.enum(["handler", "registry", "probe", "default"]),
   guards: z.array(z.string()),
   permissions: z.array(z.string()),
   boardGuard: z.string().nullable(),

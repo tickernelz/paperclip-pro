@@ -19471,8 +19471,8 @@
     "path": "/environments/{id}",
     "description": "Get an environment",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -19485,7 +19485,7 @@
       "assertCanReadInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "id",
@@ -19644,8 +19644,8 @@
     "path": "/companies/{companyId}/export/fidelity",
     "description": "Report company data that an export bundle does not include",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "companies"
     ],
@@ -19658,7 +19658,7 @@
       "assertSameCompanyCeoAgentOrBoard"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Only CEO agents can manage company export fidelity",
     "parameters": [
       {
         "name": "companyId",
@@ -21310,8 +21310,8 @@
     "path": "/companies/{companyId}/sidebar-preferences/me",
     "description": "Get sidebar preferences for company",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "sidebar"
     ],
@@ -21325,7 +21325,7 @@
       "requireBoardUserId"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "companyId",
@@ -21344,8 +21344,8 @@
     "path": "/sidebar-preferences/me",
     "description": "Read the caller's sidebar ordering preferences.",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "sidebar"
     ],
@@ -21358,7 +21358,7 @@
       "requireBoardUserId"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": []
   },
   {
@@ -22433,8 +22433,8 @@
     "path": "/tool-gateway/audit",
     "description": "List tool gateway audit events",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "tool-gateway"
     ],
@@ -22448,7 +22448,7 @@
       "assertBoardPermission"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "agent",
@@ -22710,8 +22710,8 @@
     "path": "/companies/{companyId}/users/me/inbox-agent-policy",
     "description": "Get the current user's inbox agent policy",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "companies"
     ],
@@ -22724,7 +22724,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board user context required",
     "parameters": [
       {
         "name": "companyId",
@@ -24142,8 +24142,8 @@
     "path": "/companies/{companyId}/agent-configurations",
     "description": "List agent configurations for a company",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "agents"
     ],
@@ -24156,7 +24156,7 @@
       "assertCanReadConfigurations"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:agent principal is not an active member",
     "parameters": [
       {
         "name": "companyId",
@@ -24465,8 +24465,8 @@
     "path": "/companies/{companyId}/audit/agent-actions",
     "description": "List agent action audit entries",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "activity"
     ],
@@ -24481,7 +24481,7 @@
       "assertCompanyScopeReadAllowed"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "action",
@@ -25418,8 +25418,8 @@
     "path": "/companies/{companyId}/claude-oauth-token-status",
     "description": "Read the stored Claude OAuth token status for the authenticated owner",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "companies"
     ],
@@ -25430,7 +25430,7 @@
     },
     "guards": [],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:A user must own a setup-token login session",
     "parameters": [
       {
         "name": "companyId",
@@ -25943,8 +25943,8 @@
     "path": "/companies/{companyId}/environments/capabilities",
     "description": "Get environment capabilities",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -25957,7 +25957,7 @@
       "assertCanReadInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "companyId",
@@ -25976,8 +25976,8 @@
     "path": "/environments/{id}/delete-blast-radius",
     "description": "Get environment delete blast radius",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -25990,7 +25990,7 @@
       "assertCanAccessInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Instance environment management is restricted to board operators",
     "parameters": [
       {
         "name": "id",
@@ -26009,8 +26009,8 @@
     "path": "/environments/{id}/leases",
     "description": "List leases for an environment",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -26023,7 +26023,7 @@
       "assertCanReadInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "id",
@@ -26042,8 +26042,8 @@
     "path": "/companies/{companyId}/environments",
     "description": "List environments for a company",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -26056,7 +26056,7 @@
       "assertCanReadInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "companyId",
@@ -26075,8 +26075,8 @@
     "path": "/environments/{id}/secret-refs",
     "description": "Describe an environment's config secret refs (name, status, owning company — never values)",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "environments"
     ],
@@ -26089,7 +26089,7 @@
       "assertCanAccessInstanceEnvironments"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Instance environment management is restricted to board operators",
     "parameters": [
       {
         "name": "id",
@@ -26395,8 +26395,8 @@
     "path": "/companies/{companyId}/inbox-dismissals",
     "description": "List inbox dismissals",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "inbox"
     ],
@@ -26410,7 +26410,7 @@
       "requireBoardUser"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board authentication required",
     "parameters": [
       {
         "name": "companyId",
@@ -26740,8 +26740,8 @@
     "path": "/issues/{id}/feedback-traces",
     "description": "List issue feedback traces",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "issues"
     ],
@@ -26752,7 +26752,7 @@
     },
     "guards": [],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Only board users can view feedback traces",
     "parameters": [
       {
         "name": "id",
@@ -26771,8 +26771,8 @@
     "path": "/issues/{id}/feedback-votes",
     "description": "List issue feedback votes",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "issues"
     ],
@@ -26783,7 +26783,7 @@
     },
     "guards": [],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Only board users can view feedback votes",
     "parameters": [
       {
         "name": "id",
@@ -28843,8 +28843,8 @@
     "path": "/tool-gateway/runtime-slots",
     "description": "List gateway runtime slots",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "tool-gateway"
     ],
@@ -28858,7 +28858,7 @@
       "assertBoardPermission"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Board access required",
     "parameters": [
       {
         "name": "companyId",
@@ -28910,8 +28910,8 @@
     "path": "/tool-gateway/tools",
     "description": "List tools available to a gateway session",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "probe",
     "tags": [
       "tool-gateway"
     ],
@@ -28922,7 +28922,7 @@
     },
     "guards": [],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "probe:Tool gateway session token is required",
     "parameters": []
   },
   {

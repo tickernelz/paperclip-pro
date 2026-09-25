@@ -73,6 +73,28 @@ export const EXCLUDED_OPERATIONS: Record<string, string> = {
   "POST /api/tool-gateway/runtime-slots/{slotId}/stop": "runtime_authority",
 };
 
+export const PROBE_BOARD_DENIED_OPERATIONS: Record<string, string> = {
+  "GET /api/companies/{companyId}/agent-configurations": "agent principal is not an active member",
+  "GET /api/companies/{companyId}/audit/agent-actions": "Board access required",
+  "GET /api/companies/{companyId}/claude-oauth-token-status": "A user must own a setup-token login session",
+  "GET /api/companies/{companyId}/environments": "Board access required",
+  "GET /api/companies/{companyId}/environments/capabilities": "Board access required",
+  "GET /api/companies/{companyId}/export/fidelity": "Only CEO agents can manage company export fidelity",
+  "GET /api/companies/{companyId}/inbox-dismissals": "Board authentication required",
+  "GET /api/companies/{companyId}/sidebar-preferences/me": "Board access required",
+  "GET /api/companies/{companyId}/users/me/inbox-agent-policy": "Board user context required",
+  "GET /api/environments/{id}": "Board access required",
+  "GET /api/environments/{id}/delete-blast-radius": "Instance environment management is restricted to board operators",
+  "GET /api/environments/{id}/leases": "Board access required",
+  "GET /api/environments/{id}/secret-refs": "Instance environment management is restricted to board operators",
+  "GET /api/issues/{id}/feedback-traces": "Only board users can view feedback traces",
+  "GET /api/issues/{id}/feedback-votes": "Only board users can view feedback votes",
+  "GET /api/sidebar-preferences/me": "Board access required",
+  "GET /api/tool-gateway/audit": "Board access required",
+  "GET /api/tool-gateway/runtime-slots": "Board access required",
+  "GET /api/tool-gateway/tools": "Tool gateway session token is required",
+};
+
 export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "GET /api/agents/me/inbox/mine": {
     name: "paperclipInbox",

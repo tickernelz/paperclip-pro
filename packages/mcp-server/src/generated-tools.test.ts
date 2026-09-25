@@ -151,7 +151,9 @@ describe("generated Paperclip API tools", () => {
     expect(withoutManagement.map((tool) => tool.name)).not.toContain(boardOnly[0].name);
     expect(
       boardOnly.every((spec) =>
-        spec.authoritySource === "handler" ? spec.boardGuard !== null : spec.authoritySource === "registry",
+        spec.authoritySource === "handler" || spec.authoritySource === "probe"
+          ? spec.boardGuard !== null
+          : spec.authoritySource === "registry",
       ),
     ).toBe(true);
   });
