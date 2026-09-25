@@ -127,4 +127,53 @@ describe("run-log chunk structure-aware redaction", () => {
     expect(compacted).not.toContain(SECRET);
     expect(compacted).toContain("plain tail line");
   });
+
+  it("keeps an oversized tool_execution_end line valid JSON so the transcript still pairs it", () => {
+    const agents = Array.from({ length: 40 }, (_, index) => ({
+      id: `agent-${index}`,
+      name: `Agent ${index}`,
+      instructionsPath: `/home/agents/agent-${index}/${"instructions".repeat(200)}.md`,
+    }));
+    const chunk = `${JSON.stringify({
+      type: "tool_execution_end",
+      toolCallId: "toolu_01EyHjw8gipigp44NGtydR2W",
+      toolName: "paperclipListAgents",
+      result: { content: [{ type: "text", text: JSON.stringify(agents, null, 2) }] },
+    })}\n`;
+
+    expect(chunk.length).toBeGreaterThan(70_000);
+
+    const compacted = compactRunLogChunk(chunk);
+    const [line, ...rest] = compacted.split("\n");
+
+    expect(rest).toEqual([""]);
+    expect(JSON.parse(line!)).toMatchObject({
+      type: "tool_execution_end",
+      toolCallId: "toolu_01EyHjw8gipigp44NGtydR2W",
+      toolName: "paperclipListAgents",
+      truncated: true,
+    });
+    expect(compacted.length).toBeLessThanOrEqual(64 * 1024);
+  });
+
+  it("never splits a JSON line when the whole chunk exceeds the persisted cap", () => {
+    const chunk = `${[
+      JSON.stringify({ type: "message_start", message: { role: "toolResult", toolCallId: "toolu_1" } }),
+      JSON.stringify({ type: "message_end", message: { role: "toolResult", text: "y".repeat(40_000) } }),
+      JSON.stringify({ type: "turn_end", message: { role: "assistant", text: "z".repeat(40_000) } }),
+      JSON.stringify({ type: "agent_end", messages: [{ role: "custom", text: "w".repeat(40_000) }] }),
+    ].join("\n")}\n`;
+
+    const compacted = compactRunLogChunk(chunk, 16_384);
+    const lines = compacted.split("\n");
+
+    expect(lines.at(-1)).toBe("");
+    expect(lines.slice(0, -1)).toHaveLength(4);
+    const types = lines.slice(0, -1).map((line) => {
+      const parsed: unknown = JSON.parse(line);
+      return parsed && typeof parsed === "object" && "type" in parsed ? parsed.type : null;
+    });
+    expect(types).toEqual(["message_start", "message_end", "turn_end", "agent_end"]);
+    expect(compacted.length).toBeLessThanOrEqual(16_384);
+  });
 });
