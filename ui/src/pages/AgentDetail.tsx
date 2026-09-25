@@ -811,6 +811,11 @@ export function AgentDetail() {
     queryKey: [...queryKeys.agents.detail(routeAgentRef), lookupCompanyId ?? null],
     queryFn: () => agentsApi.get(routeAgentRef, lookupCompanyId),
     enabled: canFetchAgent,
+    placeholderData: (previous: AgentDetailRecord | undefined) =>
+      previous &&
+      (previous.id === routeAgentRef || agentRouteRef(previous) === routeAgentRef)
+        ? previous
+        : undefined,
   });
   const resolvedCompanyId = agent?.companyId ?? selectedCompanyId;
   const canonicalAgentRef = agent ? agentRouteRef(agent) : routeAgentRef;
