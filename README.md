@@ -343,7 +343,7 @@ pnpm paperclip-pro --help
 `install` builds the given git ref into `~/.paperclip-pro/cli` and writes the `paperclip-pro` shim to `~/.local/bin`. `--ref` is mandatory for a git install and `--repo` defaults to the upstream repository (`cli/src/commands/install.ts:27`), so both flags are required here:
 
 ```bash
-pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo tickernelz/paperclip-pro --ref main --yes
 ```
 
 Pin an exact commit instead of a branch when you want a reproducible install; `--ref` accepts a branch, tag, or SHA (`cli/src/commands/install.ts:139`-`cli/src/commands/install.ts:147`). `--ref` cannot be combined with `--canary` or `--version`, both of which resolve against npm and therefore do not work for this fork.

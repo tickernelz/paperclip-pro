@@ -207,7 +207,7 @@ describe("RunTranscriptView", () => {
       </ThemeProvider>,
     );
 
-    expect(html).toContain("<h2>Summary</h2>");
+    expect(html).toMatch(/<h2[^>]*>Summary<\/h2>/);
     expect(html).toMatch(/<li[^>]*>fixed deploy config<\/li>/);
     expect(html).toMatch(/<li[^>]*>posted issue update<\/li>/);
     expect(html).not.toContain("result");

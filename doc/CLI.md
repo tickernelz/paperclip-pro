@@ -5,8 +5,10 @@
 > `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
 > `npx @tickernelz/paperclip-pro …` and `npm install -g paperclip-pro` example below is
 > inherited from upstream and will fail with a 404. Run the installed
-> `paperclip-pro` shim, or `pnpm paperclip-pro …` from a source checkout; both take the
-> same arguments and the same inert-`argv` guarantees `npx` provides. See
+> `paperclip-pro` shim, or the direct-exec form
+> `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` from a source
+> checkout; both take the same arguments and the same inert-`argv` guarantees
+> `npx` provides. See
 > [INSTALLING.md](INSTALLING.md) and [`../docs/fork/OPERATIONS.md`](../docs/fork/OPERATIONS.md).
 
 Paperclip CLI now supports both:
@@ -138,7 +140,7 @@ Recommended installation and interactive onboarding, from a source checkout:
 git clone https://github.com/tickernelz/paperclip-pro.git
 cd paperclip-pro
 pnpm install --frozen-lockfile
-pnpm paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo tickernelz/paperclip-pro --ref main --yes
 paperclip-pro onboard --yes
 ```
 
