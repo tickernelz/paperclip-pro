@@ -1056,15 +1056,17 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     }
   });
 
+  let seededCompanies = 0;
   async function seedCompany() {
     const companyId = randomUUID();
     fixtureCompanies.add(companyId);
     const assignedAgentId = randomUUID();
     const replacementAgentId = randomUUID();
+    seededCompanies += 1;
     await db.insert(companies).values({
       id: companyId,
       name: `Chat Test ${companyId.slice(0, 8)}`,
-      issuePrefix: `C${companyId.replaceAll("-", "").slice(0, 7).toUpperCase()}`,
+      issuePrefix: `C${seededCompanies.toString(36).toUpperCase().padStart(4, "0")}${companyId.replaceAll("-", "").slice(0, 7).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     const now = new Date();
@@ -29706,7 +29708,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           .where(eq(chatPublications.id, live.id)),
       ).toEqual([{ state: "published", attempts: 1 }]);
       expect(lanes[0]!.providerRuntime.posts).toHaveLength(1);
-      expect(vi.getTimerCount()).toBe(0);
+      expect(
+        await db
+          .select({ id: chatEndpointLeases.id })
+          .from(chatEndpointLeases)
+          .where(eq(chatEndpointLeases.leaseKey, `publication:${live.id}:1`)),
+      ).toEqual([]);
     } finally {
       release();
       await standby.service.shutdown();
