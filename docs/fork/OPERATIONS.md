@@ -396,21 +396,24 @@ raised again when OMP itself reports `MCP server "paperclip" failed to
 connect`. Turning `paperclipMcp` off logs a warning on the run's stderr: that
 agent has no Paperclip tools.
 
-Why the endpoint is the default: measured on 2026-09-25 (WSL, Node 24.18.0,
-`core` toolset, 3 probes each) the stdio fallback costs a whole process per run.
+Why the endpoint is the default, measured on 2026-09-25 (WSL, Node 24.18.0,
+`core` toolset). The run-time figures come from real sandboxed runs, timed from
+the run log's first line to `agent_start`:
 
-| Measurement | No MCP server | Bundled stdio server |
+| Measurement | Server-hosted endpoint | Bundled stdio server |
 | --- | --- | --- |
-| omp spawn to `agent_start` | 1842 / 1862 / 2002 ms | 2406 / 2458 / 2530 ms |
-| `paperclip-mcp-server` RSS at steady state | — | 127.4 / 127.4 / 127.3 MB |
+| run start to `agent_start` | 2123 / 1792 / 1732 ms | 2447 / 2169 ms |
+| extra processes per run | 0 | 1 |
+| `paperclip-mcp-server` RSS | — | 127.4 / 127.4 / 127.3 MB |
 
-That is about 0.6 s of run startup and ~127 MB resident for the life of the run
-(61 `core` tools, `tools/list` 35 kB) — most of it a floor: a bare Node 24
-process is 43 MB and the MCP SDK with Zod adds about 35 MB before any Paperclip
-code, and the same server measured 191–193 MB before its tool definitions were
-filtered per toolset. Ten concurrent local runs would therefore hold about
-1.3 GB in stdio servers alone, which is why the HTTP endpoint is the default and
-the stdio path is only a fallback.
+A separate no-MCP baseline, timed from process spawn, was 1842 / 1862 / 2002 ms,
+so the endpoint costs roughly nothing at startup while the stdio fallback costs
+about half a second and a whole process. That process holds ~127 MB for the life
+of the run (61 `core` tools, `tools/list` 35 kB), most of it a floor: a bare
+Node 24 process is 43 MB and the MCP SDK with Zod adds about 35 MB before any
+Paperclip code, and the same server measured 191–193 MB before its tool
+definitions were filtered per toolset. Ten concurrent local runs would hold
+about 1.3 GB in stdio servers alone, which is why HTTP is the default.
 
 OMP connects its MCP servers during startup, before `agent_start`, so the tools
 are in the tool list for the first model turn; the connect failure warning also
