@@ -2,6 +2,8 @@
 
 Use this reference when a board user, CEO, or manager asks you to find a skill, install it into the company library, or assign it to an agent.
 
+**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
+
 ## What Exists
 
 - App-shipped catalog: a curated set of company skills in `@tickernelz/paperclip-pro-skills-catalog`, browseable and installable without leaving Paperclip.
@@ -11,8 +13,8 @@ Use this reference when a board user, CEO, or manager asks you to find a skill, 
 
 The canonical model is:
 
-1. add the skill to the company library — either from the app catalog (`skills install`), an external source (`skills import`), or a managed local skill (`skills create`/`skills scan-projects`)
-2. attach the company skill to the agent (`skills agent sync`)
+1. add the skill to the company library — either from the app catalog (`paperclipInstallCatalogSkill`), an external source (`paperclipImportSkill`), or a managed local skill (`paperclipCreateSkill` / `paperclipCreateSkillScanProject`)
+2. attach the company skill to the agent (`paperclipSyncAgentSkill`)
 3. optionally do step 2 during hire/create with `desiredSkills`
 
 Catalog install ≠ agent attach. Installing a catalog skill only adds the row to
@@ -26,51 +28,42 @@ set.
 - Agent skill assignment: same permission model as updating that agent
 - Team installs continue to require `agents:create` because they import or create agents in addition to attaching skills.
 
-## Core Endpoints
+## Tools
 
 App-shipped catalog (read-only browse + company install):
 
-- `GET /api/skills/catalog`
-- `GET /api/skills/catalog/:catalogId`
-- `GET /api/skills/catalog/ref?ref=<id|key|slug>`
-- `GET /api/skills/catalog/:catalogId/files?path=SKILL.md`
-- `POST /api/companies/:companyId/skills/install-catalog`
+- `paperclipGetSkillCatalog` — browse catalog entries; each entry reports its `kind` (`bundled` or `optional`)
+- `paperclipGetSkillCatalogByCatalogId` — `{ "catalogId": "<catalog-id>" }`
+- resolving a catalog ref and reading catalog files have no dedicated tool: use `paperclipApiRequest` with `method: "GET"`, `path: "/skills/catalog/ref?ref=<id|key|slug>"` or `path: "/skills/catalog/<catalogId>/files?path=SKILL.md"`
+- `paperclipInstallCatalogSkill` — install a catalog skill into the company
 
 Company library:
 
-- `GET /api/companies/:companyId/skills`
-- `GET /api/companies/:companyId/skills/:skillId`
-- `GET /api/companies/:companyId/skills/:skillId/files?path=SKILL.md`
-- `POST /api/companies/:companyId/skills` (managed local create)
-- `POST /api/companies/:companyId/skills/import`
-- `POST /api/companies/:companyId/skills/scan-projects`
-- `GET /api/companies/:companyId/skills/:skillId/update-status`
-- `POST /api/companies/:companyId/skills/:skillId/install-update`
-- `POST /api/companies/:companyId/skills/:skillId/audit`
-- `POST /api/companies/:companyId/skills/:skillId/reset`
-- `DELETE /api/companies/:companyId/skills/:skillId`
+- `paperclipListSkills` — the installed company skill library
+- `paperclipGetSkill` — `{ "skillId": "<skill-id>" }`
+- reading a company skill file has no dedicated tool: use `paperclipApiRequest` with `method: "GET"`, `path: "/companies/<companyId>/skills/<skillId>/files?path=SKILL.md"`
+- `paperclipCreateSkill` — managed local create
+- `paperclipImportSkill` — import from an external source
+- `paperclipCreateSkillScanProject` — discover skills in the company project workspaces
+- `paperclipListSkillUpdateStatus` / `paperclipInstallUpdateSkill` — check and apply an update
+- `paperclipAuditSkill`, `paperclipResetSkill`, `paperclipDeleteSkill`
 
 Agent attach and hire/create composition:
 
-- `GET /api/agents/:agentId/skills`
-- `POST /api/agents/:agentId/skills/sync`
-- `POST /api/companies/:companyId/agent-hires`
-- `POST /api/companies/:companyId/agents`
-
-If a board user, CEO, or manager is driving locally, prefer the
-`paperclip-pro skills` CLI documented in `doc/CLI.md` — it wraps every endpoint
-above, accepts company skill or catalog refs by `id`/`key`/`slug`, and prints
-the same JSON these endpoints return when called with `--json`.
+- `paperclipListAgentSkills` — `{ "id": "<agent-id>" }`
+- `paperclipSyncAgentSkill` — attach or detach company skills on an agent
+- `paperclipCreateAgentHire` — hire with `desiredSkills`
+- `paperclipCreateAgent` — direct create with `desiredSkills`
 
 ## Install A Skill Into The Company
 
 Two paths cover the common cases:
 
 1. **App-shipped catalog** (preferred when the right skill exists in the
-   bundled/optional catalog) — browse it first, then install with the catalog
-   install endpoint. No external network fetch happens.
-2. **External source** (skills.sh, GitHub, local path, or URL) — use the
-   import endpoint below.
+   bundled/optional catalog) — browse it first, then install with
+   `paperclipInstallCatalogSkill`. No external network fetch happens.
+2. **External source** (skills.sh, GitHub, local path, or URL) — use
+   `paperclipImportSkill`.
 
 ### App-shipped catalog
 
@@ -78,22 +71,16 @@ Browse, inspect, and install catalog skills before reaching for an external
 source. Bundled skills are the curated defaults for any company; optional
 skills are role- or domain-specific.
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/skills/catalog?kind=bundled" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
+Browse with `paperclipGetSkillCatalog`, inspect one entry with
+`paperclipGetSkillCatalogByCatalogId`, then install:
 
-curl -sS "$PAPERCLIP_API_URL/api/skills/catalog/ref?ref=github-pr-workflow" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/install-catalog" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "catalogSkillId": "paperclipai:bundled:software-development:github-pr-workflow"
-  }'
+```json
+{
+  "catalogSkillId": "paperclipai:bundled:software-development:github-pr-workflow"
+}
 ```
 
-The install response records provenance (`catalogId`, `catalogKey`,
+The install result records provenance (`catalogId`, `catalogKey`,
 `packageVersion`, `originHash`) on the company skill so update/audit/reset
 flows know the pinned origin. `force: true` may replace a same-key
 catalog-managed skill but never bypasses hard-stop audit findings.
@@ -115,35 +102,22 @@ Import using a **skills.sh URL**, a key-style source string, a GitHub URL, or a 
 
 ### Example: skills.sh import (preferred)
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/import" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "https://skills.sh/google-labs-code/stitch-skills/design-md"
-  }'
+`paperclipImportSkill`:
+
+```json
+{ "source": "https://skills.sh/google-labs-code/stitch-skills/design-md" }
 ```
 
 Or equivalently using the key-style string:
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/import" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "google-labs-code/stitch-skills/design-md"
-  }'
+```json
+{ "source": "google-labs-code/stitch-skills/design-md" }
 ```
 
 ### Example: GitHub import
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/import" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "source": "https://github.com/vercel-labs/agent-browser"
-  }'
+```json
+{ "source": "https://github.com/vercel-labs/agent-browser" }
 ```
 
 You can also use source strings such as:
@@ -152,31 +126,13 @@ You can also use source strings such as:
 - `vercel-labs/agent-browser/agent-browser`
 - `npx skills add https://github.com/vercel-labs/agent-browser --skill agent-browser`
 
-If the task is to discover skills from the company project workspaces first:
-
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/scan-projects" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{}'
-```
+If the task is to discover skills from the company project workspaces first, call `paperclipCreateSkillScanProject` with no arguments beyond the optional `companyId`.
 
 ## Inspect What Was Installed
 
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
-
-Read the skill entry and its `SKILL.md`:
-
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/<skill-id>" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-
-curl -sS "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/<skill-id>/files?path=SKILL.md" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+Call `paperclipListSkills` for the library, then `paperclipGetSkill` with the
+`skillId` for one entry. To read its `SKILL.md`, use `paperclipApiRequest` with
+`method: "GET"`, `path: "/companies/<companyId>/skills/<skillId>/files?path=SKILL.md"`.
 
 ## Assign Skills To An Existing Agent
 
@@ -188,79 +144,43 @@ curl -sS "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/skills/<skill-i
 
 The server persists canonical company skill keys.
 
-The request must include a merge mode:
+`paperclipSyncAgentSkill` requires a merge mode:
 
 - `add` adds the named skills and keeps every other assignment.
 - `remove` removes only the named skills.
 - `replace` overwrites the complete desired skill set. Use it only after explicit confirmation.
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/agents/<agent-id>/skills/sync" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "mode": "add",
-    "desiredSkills": [
-      "vercel-labs/agent-browser/agent-browser"
-    ]
-  }'
+```json
+{
+  "id": "<agent-id>",
+  "mode": "add",
+  "desiredSkills": ["vercel-labs/agent-browser/agent-browser"]
+}
 ```
 
-If you need the current state first:
-
-```sh
-curl -sS "$PAPERCLIP_API_URL/api/agents/<agent-id>/skills" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY"
-```
+If you need the current state first, call `paperclipListAgentSkills` with
+`{ "id": "<agent-id>" }`.
 
 ## Include Skills During Hire Or Create
 
-Use the same company skill keys or references in `desiredSkills` when hiring or creating an agent:
+Use the same company skill keys or references in `desiredSkills` when hiring with `paperclipCreateAgentHire`:
 
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/agent-hires" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "QA Browser Agent",
-    "role": "qa",
-    "adapterType": "codex_local",
-    "adapterConfig": {
-      "cwd": "/abs/path/to/repo"
-    },
-    "desiredSkills": [
-      "agent-browser"
-    ]
-  }'
+```json
+{
+  "name": "QA Browser Agent",
+  "role": "qa",
+  "adapterType": "codex_local",
+  "adapterConfig": { "cwd": "/abs/path/to/repo" },
+  "desiredSkills": ["agent-browser"]
+}
 ```
 
-For direct create without approval:
-
-```sh
-curl -sS -X POST "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/agents" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "QA Browser Agent",
-    "role": "qa",
-    "adapterType": "codex_local",
-    "adapterConfig": {
-      "cwd": "/abs/path/to/repo"
-    },
-    "desiredSkills": [
-      "agent-browser"
-    ]
-  }'
-```
+For direct create without approval, pass the same arguments to `paperclipCreateAgent`.
 
 ## Notes
 
 - Built-in Paperclip runtime skills are still added automatically when required by the adapter.
-- If a reference is missing or ambiguous, the API returns `422`.
+- If a reference is missing or ambiguous, the tool returns a `422` error and nothing was installed or assigned.
 - Prefer linking back to the relevant issue, approval, and agent when you comment about skill changes.
-- Use company portability routes when you need whole-package import/export, not just a skill:
-  - `POST /api/companies/:companyId/imports/preview`
-  - `POST /api/companies/:companyId/imports/apply`
-  - `POST /api/companies/:companyId/exports/preview`
-  - `POST /api/companies/:companyId/exports`
+- Whole-package company import/export has no dedicated tool. Use `paperclipApiRequest` with `method: "POST"` and one of `path: "/companies/<companyId>/imports/preview"`, `path: "/companies/<companyId>/imports/apply"`, `path: "/companies/<companyId>/exports/preview"`, `path: "/companies/<companyId>/exports"`.
 - Use skill-only import when the task is specifically to add a skill to the company library without importing the surrounding company/team/package structure.
