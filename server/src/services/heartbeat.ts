@@ -477,6 +477,7 @@ import {
 } from "./execution-workspace-policy.js";
 import {
   instanceSettingsService,
+  WORKTREE_RUN_EXECUTION_READ_ERROR_KIND,
   resolveWorktreeRunExecutionActivation,
 } from "./instance-settings.js";
 import {
@@ -9680,9 +9681,15 @@ export function heartbeatService(
         cutoff: cutoff && !Number.isNaN(cutoff.getTime()) ? cutoff : null,
         at: now,
       };
-    } catch {
-      // Keep the prior (default-false) value so a settings read failure fails
-      // closed to the safe suppressed state.
+    } catch (error) {
+      logger.warn(
+        {
+          errorKind: WORKTREE_RUN_EXECUTION_READ_ERROR_KIND,
+          instanceId: runtimeEnv.PAPERCLIP_INSTANCE_ID?.trim() || null,
+          errorMessage: error instanceof Error ? error.message : String(error),
+        },
+        "worktree run execution setting read failed; this worktree instance keeps run scheduling suppressed, so parked runs are not explained by the flag alone",
+      );
     }
     return cachedWorktreeRunExecutionOverride;
   };

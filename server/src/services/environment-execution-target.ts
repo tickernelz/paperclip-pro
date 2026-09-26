@@ -16,11 +16,14 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
 import { parseObject } from "../adapters/utils.js";
 import { getStartupTracer } from "../instrumentation.js";
+import { logger } from "../middleware/logger.js";
 import { resolveEnvironmentDriverConfigForRuntime } from "./environment-config.js";
 import type { EnvironmentRuntimeService } from "./environment-runtime.js";
 import { getEnvironmentDriverTraits } from "./environment-driver-traits.js";
 
 export const DEFAULT_SANDBOX_REMOTE_CWD = "/tmp";
+
+export const DUPLEX_BRIDGE_READ_ERROR_KIND = "sandbox_duplex_bridge_read_error";
 
 /** The minimal span surface the provider-exec seam calls. A real injected OTel
  * span satisfies it; the no-op tracer's span satisfies it too. */
@@ -354,8 +357,17 @@ export async function resolveEnvironmentExecutionTarget(input: {
       try {
         const duplexBridgeInput = await input.environmentRuntime.readSandboxDuplexBridgeInput();
         enableSandboxDuplexBridge = duplexBridgeInput.enableDuplexBridge === true;
-      } catch {
+      } catch (error) {
         enableSandboxDuplexBridge = false;
+        logger.warn(
+          {
+            errorKind: DUPLEX_BRIDGE_READ_ERROR_KIND,
+            environmentId: input.environment.id,
+            providerLeaseId: input.lease?.id ?? null,
+            errorMessage: error instanceof Error ? error.message : String(error),
+          },
+          "sandbox duplex bridge setting read failed; this run keeps the file bridge, so a duplex transport that looks configured is not",
+        );
       }
     }
 

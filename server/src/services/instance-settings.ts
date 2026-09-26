@@ -33,6 +33,7 @@ import {
   stripOperatorGeneralEchoes,
 } from "@tickernelz/paperclip-pro-shared";
 import { eq } from "drizzle-orm";
+import { logger } from "../middleware/logger.js";
 import { getManagedInstanceConfig, type ManagedInstanceConfig } from "./managed-config.js";
 import { getOperatorSettingDefaults } from "./setting-defaults.js";
 
@@ -180,6 +181,8 @@ export function resolveWorktreeRunExecutionActivation(
   };
 }
 
+export const WORKTREE_RUN_EXECUTION_READ_ERROR_KIND = "worktree_run_execution_read_error";
+
 export async function resolveWorktreeRunExecutionActivationState(options: {
   getExperimental: () => Promise<InstanceExperimentalSettings>;
   runtimeEnv?: Record<string, string | undefined>;
@@ -193,7 +196,15 @@ export async function resolveWorktreeRunExecutionActivationState(options: {
       await options.getExperimental(),
       getRuntimeInstanceId(runtimeEnv),
     );
-  } catch {
+  } catch (error) {
+    logger.warn(
+      {
+        errorKind: WORKTREE_RUN_EXECUTION_READ_ERROR_KIND,
+        instanceId: getRuntimeInstanceId(runtimeEnv),
+        errorMessage: error instanceof Error ? error.message : String(error),
+      },
+      "worktree run execution setting read failed; this worktree instance keeps run scheduling suppressed, so parked runs are not explained by the flag alone",
+    );
     return suppressWorktreeRunExecution("settings_read_error");
   }
 }
