@@ -21,6 +21,8 @@ import { activityLog, agents as agentsTable, chatConversations, companies, heart
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
 import { sha256Digest } from "../services/feedback-redaction.js";
 import {
+  agentAdapterConfigBatchPreviewSchema,
+  agentAdapterConfigBatchUpdateSchema,
   agentSkillSyncSchema,
   agentMineInboxQuerySchema,
   ADAPTER_AGNOSTIC_KEYS,
@@ -64,6 +66,10 @@ import { trackAgentCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { inheritNativeRunnerAdapterConfig } from "../services/native-runtime/native-agent-runtime-inheritance.js";
 import { agentInstructionsBundleMode } from "../services/agent-instructions.js";
+import {
+  buildAgentAdapterConfigBatchPreview,
+  planAgentAdapterConfigBatch,
+} from "../services/agent-adapter-config-batch.js";
 import {
   agentService,
   agentInstructionsService,
@@ -5233,6 +5239,145 @@ export function agentRoutes(
 
     res.json(result.bundle);
   });
+
+  interface AgentBatchTarget {
+    id: string;
+    companyId: string;
+    name: string;
+    adapterType: string;
+    adapterConfig: unknown;
+  }
+
+  async function loadAgentBatchTargets(req: Request, res: Response, agentIds: string[]) {
+    const seen: Record<string, true> = {};
+    const loaded: AgentBatchTarget[] = [];
+    for (const agentId of agentIds) {
+      if (seen[agentId]) continue;
+      seen[agentId] = true;
+      const agent = await getAccessibleResource(req, res, svc.getById(agentId), "Agent not found");
+      if (!agent) return null;
+      loaded.push(agent);
+    }
+    const companyIds = new Set(loaded.map((agent) => agent.companyId));
+    if (companyIds.size > 1) {
+      throw forbidden("A batch cannot span companies");
+    }
+    const companyId = loaded[0]!.companyId;
+    assertBoardOrAgentAuthority(req, "company:agents", companyId);
+    return loaded;
+  }
+
+  router.post(
+    "/agents/batch/adapter-config/preview",
+    validate(agentAdapterConfigBatchPreviewSchema),
+    async (req, res) => {
+      const targets = await loadAgentBatchTargets(req, res, req.body.agentIds);
+      if (!targets) return;
+      for (const agent of targets) await assertCanReadAgent(req, agent);
+      res.json(
+        await buildAgentAdapterConfigBatchPreview(
+          targets.map((agent) => ({
+            id: agent.id,
+            name: agent.name,
+            adapterType: agent.adapterType,
+            adapterConfig: (asRecord(agent.adapterConfig) ?? {}) as Record<string, unknown>,
+          })),
+        ),
+      );
+    },
+  );
+
+  router.post(
+    "/agents/batch/adapter-config",
+    validate(agentAdapterConfigBatchUpdateSchema),
+    async (req, res) => {
+      const targets = await loadAgentBatchTargets(req, res, req.body.agentIds);
+      if (!targets) return;
+      const values = req.body.values as Record<string, string | null>;
+      assertNoAgentAdapterConfigMutation(req, values, "values");
+      for (const agent of targets) {
+        assertExternalInstructionsAdmin(req, agent);
+        await assertCanUpdateAgent(req, agent);
+      }
+      const plan = await planAgentAdapterConfigBatch(
+        targets.map((agent) => ({
+          id: agent.id,
+          name: agent.name,
+          adapterType: agent.adapterType,
+          adapterConfig: (asRecord(agent.adapterConfig) ?? {}) as Record<string, unknown>,
+        })),
+        values,
+      );
+      if (!plan.ok) {
+        res.status(422).json({
+          error: "No agent was changed: some values are invalid for their adapter.",
+          failures: plan.failures,
+        });
+        return;
+      }
+      const actor = getActorInfo(req);
+      const results = [];
+      for (const entry of plan.entries) {
+        if (entry.changedKeys.length === 0) {
+          results.push({
+            agentId: entry.agent.id,
+            name: entry.agent.name,
+            status: "unchanged" as const,
+            changedKeys: [],
+          });
+          continue;
+        }
+        const normalizedAdapterConfig = await normalizeMediatedAdapterConfigForPersistence({
+          companyId: targets[0]!.companyId,
+          adapterType: entry.agent.adapterType,
+          adapterConfig: entry.adapterConfig,
+        });
+        const updated = await svc.update(
+          entry.agent.id,
+          { adapterConfig: normalizedAdapterConfig },
+          {
+            recordRevision: {
+              createdByAgentId: actor.agentId,
+              createdByUserId: actor.actorType === "user" ? actor.actorId : null,
+              source: "adapter_config_batch",
+            },
+          },
+        );
+        if (!updated) {
+          res.status(404).json({ error: "Agent not found" });
+          return;
+        }
+        await logActivity(db, {
+          companyId: updated.companyId,
+          actorType: actor.actorType,
+          actorId: actor.actorId,
+          agentId: actor.agentId,
+          runId: actor.runId,
+          agentApiKeyId: actor.agentApiKeyId,
+          action: "agent.updated",
+          entityType: "agent",
+          entityId: updated.id,
+          details: {
+            changedTopLevelKeys: ["adapterConfig"],
+            changedAdapterConfigKeys: entry.changedKeys,
+            batch: true,
+            batchSize: plan.entries.length,
+          },
+        });
+        results.push({
+          agentId: entry.agent.id,
+          name: entry.agent.name,
+          status: "updated" as const,
+          changedKeys: entry.changedKeys,
+        });
+      }
+      res.json({
+        updated: results.filter((entry) => entry.status === "updated").length,
+        unchanged: results.filter((entry) => entry.status === "unchanged").length,
+        results,
+      });
+    },
+  );
 
   router.patch("/agents/:id", validate(updateAgentSchema), async (req, res) => {
     const id = req.params.id as string;

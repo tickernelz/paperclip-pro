@@ -289,3 +289,33 @@ export const updateAgentPermissionsSchema = z.object({
 });
 
 export type UpdateAgentPermissions = z.infer<typeof updateAgentPermissionsSchema>;
+
+export const AGENT_ADAPTER_CONFIG_BATCH_MAX_AGENTS = 100;
+
+const agentAdapterConfigBatchIds = z
+  .array(z.string().guid())
+  .min(1)
+  .max(AGENT_ADAPTER_CONFIG_BATCH_MAX_AGENTS);
+
+export const agentAdapterConfigBatchPreviewSchema = z
+  .object({ agentIds: agentAdapterConfigBatchIds })
+  .strict();
+
+export type AgentAdapterConfigBatchPreviewRequest = z.infer<
+  typeof agentAdapterConfigBatchPreviewSchema
+>;
+
+export const agentAdapterConfigBatchUpdateSchema = z
+  .object({
+    agentIds: agentAdapterConfigBatchIds,
+    values: z
+      .record(z.string().min(1).max(64), z.string().trim().max(200).nullable())
+      .refine((values) => Object.keys(values).length > 0, {
+        message: "Provide at least one adapter config value",
+      }),
+  })
+  .strict();
+
+export type AgentAdapterConfigBatchUpdateRequest = z.infer<
+  typeof agentAdapterConfigBatchUpdateSchema
+>;

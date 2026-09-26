@@ -48,6 +48,13 @@ function view(
         effective: overrides.thinking ?? "low",
       },
     ],
+    inheritance: {
+      inheritToSubtasks: true,
+      subtaskScope: "new",
+      inherited: false,
+      sourceIssueId: null,
+    },
+    propagation: null,
   };
 }
 
@@ -174,6 +181,13 @@ describe("per-task model override control", () => {
       supported: false,
       unsupportedReason: "This task has no agent assignee.",
       fields: [],
+      inheritance: {
+        inheritToSubtasks: true,
+        subtaskScope: "new",
+        inherited: false,
+        sourceIssueId: null,
+      },
+      propagation: null,
     });
     await render();
     await vi.waitFor(() => expect(issuesApi.getModelOverride).toHaveBeenCalled());

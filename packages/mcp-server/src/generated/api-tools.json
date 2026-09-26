@@ -247,6 +247,59 @@
     }
   },
   {
+    "name": "paperclipAdapterConfigAgentBatch",
+    "operationId": "POST /api/agents/batch/adapter-config",
+    "method": "POST",
+    "path": "/agents/batch/adapter-config",
+    "description": "Apply adapter config values to many agents at once",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCanUpdateAgent",
+      "assertExternalInstructionsAdmin",
+      "assertNoAgentAdapterConfigMutation",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "parameters": [],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "agentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "values": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "agentIds",
+          "values"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipAppChatEndpointGithub",
     "operationId": "POST /api/chat-endpoints/{endpointId}/github/app",
     "method": "POST",
@@ -1299,7 +1352,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16935",
+    "boardGuard": "assertBoard@issues.ts:17025",
     "parameters": [
       {
         "name": "id",
@@ -1602,7 +1655,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6170",
+    "boardGuard": "assertBoard@agents.ts:6315",
     "parameters": [
       {
         "name": "id",
@@ -11306,6 +11359,7 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertBoardOrAgentAuthority",
       "assertCanManageInstructionsPath",
       "assertExternalInstructionsAdmin",
       "getActorInfo"
@@ -11814,7 +11868,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7299",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7444",
     "parameters": [
       {
         "name": "runId",
@@ -12079,7 +12133,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15920",
+    "boardGuard": "assertBoard@issues.ts:16010",
     "parameters": [
       {
         "name": "commentId",
@@ -16460,7 +16514,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7132",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7277",
     "parameters": [
       {
         "name": "runId",
@@ -20349,7 +20403,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15579",
+    "boardGuard": "assertBoard@issues.ts:15669",
     "parameters": [
       {
         "name": "id",
@@ -22984,7 +23038,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:4028",
+    "boardGuard": "assertInstanceAdmin@agents.ts:4034",
     "parameters": []
   },
   {
@@ -24227,7 +24281,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6703",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6848",
     "parameters": [
       {
         "name": "companyId",
@@ -26220,6 +26274,49 @@
         },
         "required": [
           "phase"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipPreviewAgentBatchAdapterConfig",
+    "operationId": "POST /api/agents/batch/adapter-config/preview",
+    "method": "POST",
+    "path": "/agents/batch/adapter-config/preview",
+    "description": "List the adapter config fields a batch of agents shares",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCanReadAgent"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "parameters": [],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "agentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "agentIds"
         ]
       }
     }
@@ -29411,7 +29508,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7224",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7369",
     "parameters": [
       {
         "name": "frameId",
@@ -31198,7 +31295,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8597",
+    "boardGuard": "assertBoard@issues.ts:8641",
     "parameters": [
       {
         "name": "id",
@@ -31216,8 +31313,18 @@
       "schema": {
         "type": "object",
         "properties": {
+          "inheritToSubtasks": {
+            "type": "boolean"
+          },
           "model": {
             "type": "string"
+          },
+          "subtaskScope": {
+            "type": "string",
+            "enum": [
+              "new",
+              "new_and_existing"
+            ]
           },
           "thinking": {
             "type": "string"
@@ -31248,7 +31355,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15549",
+    "boardGuard": "assertBoard@issues.ts:15639",
     "parameters": [
       {
         "name": "id",
@@ -32760,7 +32867,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16877",
+    "boardGuard": "assertBoard@issues.ts:16967",
     "parameters": [
       {
         "name": "id",
@@ -33227,7 +33334,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15649",
+    "boardGuard": "assertBoard@issues.ts:15739",
     "parameters": [
       {
         "name": "commentId",
@@ -36846,7 +36953,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15517",
+    "boardGuard": "assertBoard@issues.ts:15607",
     "parameters": [
       {
         "name": "commentId",
