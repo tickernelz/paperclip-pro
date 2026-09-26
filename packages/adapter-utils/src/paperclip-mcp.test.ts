@@ -84,6 +84,18 @@ describe("paperclipAccessGuidance", () => {
     expect(rest).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
     expect(rest).toContain("run_shell_command");
   });
+
+  it("advertises the escape hatch only when the mounted surface is large", () => {
+    const escapeHatch = /escape hatch is cheaper than carrying the extended surface/;
+
+    expect(paperclipAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "extended" })).toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "all" })).toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "extended,core" })).toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "extended" })).toContain(
+      "paperclipApiRequest is always available",
+    );
+  });
 });
 
 describe("paperclip MCP endpoint", () => {

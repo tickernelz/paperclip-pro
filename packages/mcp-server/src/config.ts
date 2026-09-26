@@ -18,14 +18,19 @@ export function hasManagementAuthority(role: string | null | undefined): boolean
 
 export const TOOLSET_NAMES: ToolsetName[] = ["core", "extended"];
 
+export function expandToolsetUnion(selected: ReadonlyArray<ToolsetName>): ToolsetName[] {
+  return selected.includes("extended") ? [...TOOLSET_NAMES] : ["core"];
+}
+
 export function parseToolsets(requested: string | null | undefined): ToolsetName[] {
   const requestedNames = (requested ?? "")
     .split(",")
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
   if (requestedNames.includes("all")) return [...TOOLSET_NAMES];
-  const selected = TOOLSET_NAMES.filter((name) => requestedNames.includes(name));
-  return selected.length > 0 ? selected : ["core"];
+  return expandToolsetUnion(
+    TOOLSET_NAMES.filter((name) => requestedNames.includes(name)),
+  );
 }
 
 export function resolveToolsets(
