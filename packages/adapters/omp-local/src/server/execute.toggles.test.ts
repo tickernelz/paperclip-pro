@@ -10,7 +10,7 @@ vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (impor
 });
 
 import { execute } from "./execute.js";
-import { buildOmpSettingsOverlay } from "./settings-overlay.js";
+import { buildOmpSettingsOverlay, renderOmpSettingsOverlay } from "./settings-overlay.js";
 import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
@@ -94,6 +94,7 @@ describe("OMP local toggle overlay", () => {
       prewalk: { enabled: false },
       lsp: { enabled: true },
       skills: { enabled: true },
+      task: { maxRecursionDepth: 0 },
     });
     expect(invocation.args).not.toContain("--advisor");
   });
@@ -135,6 +136,24 @@ describe("OMP local toggle overlay", () => {
     expect(invocation.args[positions[1] + 1]).toBe(userOverlay);
   });
 
+  it("zeroes OMP task recursion in the overlay handed to the run regardless of adapter config", async () => {
+    for (const config of [{}, { task: { maxRecursionDepth: 5 } }, { tools: "read,bash" }]) {
+      const invocation = await run(config);
+      expect(invocation.overlayPath).toBeTruthy();
+      expect(invocation.overlay?.task).toEqual({ maxRecursionDepth: 0 });
+    }
+  });
+
+  it("renders task.maxRecursionDepth into the overlay yaml OMP actually parses", () => {
+    expect(parseYaml(renderOmpSettingsOverlay({}))).toEqual({
+      advisor: { enabled: false },
+      prewalk: { enabled: false },
+      lsp: { enabled: true },
+      skills: { enabled: true },
+      task: { maxRecursionDepth: 0 },
+    });
+  });
+
   it("removes the generated overlay once the run finishes", async () => {
     const invocation = await run({});
     await expect(fs.access(invocation.overlayPath as string)).rejects.toThrow();
@@ -162,12 +181,14 @@ describe("OMP local toggle overlay", () => {
       prewalk: { enabled: false },
       lsp: { enabled: true },
       skills: { enabled: true },
+      task: { maxRecursionDepth: 0 },
     });
     expect(buildOmpSettingsOverlay({ advisor: true, noLsp: true, noSkills: true, prewalk: true })).toEqual({
       advisor: { enabled: true },
       prewalk: { enabled: true },
       lsp: { enabled: false },
       skills: { enabled: false },
+      task: { maxRecursionDepth: 0 },
     });
   });
 });
