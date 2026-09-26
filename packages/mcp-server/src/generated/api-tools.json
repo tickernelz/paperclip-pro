@@ -1352,7 +1352,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17028",
+    "boardGuard": "assertBoard@issues.ts:17025",
     "parameters": [
       {
         "name": "id",
@@ -12133,7 +12133,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16013",
+    "boardGuard": "assertBoard@issues.ts:16010",
     "parameters": [
       {
         "name": "commentId",
@@ -20403,7 +20403,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15672",
+    "boardGuard": "assertBoard@issues.ts:15669",
     "parameters": [
       {
         "name": "id",
@@ -31295,7 +31295,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8644",
+    "boardGuard": "assertBoard@issues.ts:8641",
     "parameters": [
       {
         "name": "id",
@@ -31355,7 +31355,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15642",
+    "boardGuard": "assertBoard@issues.ts:15639",
     "parameters": [
       {
         "name": "id",
@@ -32867,7 +32867,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16970",
+    "boardGuard": "assertBoard@issues.ts:16967",
     "parameters": [
       {
         "name": "id",
@@ -33334,7 +33334,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15742",
+    "boardGuard": "assertBoard@issues.ts:15739",
     "parameters": [
       {
         "name": "commentId",
@@ -36953,7 +36953,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15610",
+    "boardGuard": "assertBoard@issues.ts:15607",
     "parameters": [
       {
         "name": "commentId",
