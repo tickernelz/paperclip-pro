@@ -3,12 +3,20 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
+import type {
+  AgentAdapterConfigBatchPreview,
+  IssueRunModelOverrideView,
+} from "@tickernelz/paperclip-pro-shared";
+import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { TaskModelOverrideControl } from "./TaskModelOverrideControl";
 
 vi.mock("@/api/issues", () => ({
   issuesApi: { getModelOverride: vi.fn(), setModelOverride: vi.fn() },
+}));
+
+vi.mock("@/api/agents", () => ({
+  agentsApi: { batchAdapterConfigPreview: vi.fn() },
 }));
 
 function view(
@@ -298,71 +306,155 @@ describe("per-task model override control", () => {
   });
 });
 
+const chatPreview: AgentAdapterConfigBatchPreview = {
+  fields: [
+    {
+      key: "model",
+      label: "Model",
+      hint: null,
+      freeText: true,
+      options: [
+        { value: "vendor/fast", label: "Fast" },
+        { value: "vendor/deep", label: "Deep" },
+      ],
+    },
+    {
+      key: "thinking",
+      label: "Thinking",
+      hint: null,
+      freeText: false,
+      options: [
+        { value: "low", label: "low" },
+        { value: "high", label: "high" },
+      ],
+    },
+  ],
+  agents: [
+    {
+      agentId: "agent-1",
+      name: "Arif",
+      adapterType: "omp_local",
+      eligible: true,
+      reason: null,
+      current: { model: "vendor/agent-default", thinking: "low" },
+    },
+  ],
+};
+
 describe("agent chat model override", () => {
-  async function renderConversation(resolveIssueId: () => Promise<string>) {
+  async function renderConversation(resolve: () => Promise<string>) {
+    vi.mocked(agentsApi.batchAdapterConfigPreview).mockResolvedValue(chatPreview);
     await act(async () => {
       root.render(
         <QueryClientProvider client={client}>
-          <TaskModelOverrideControl issueId="" resolveIssueId={resolveIssueId} />
+          <TaskModelOverrideControl
+            issueId=""
+            pendingIssue={{ companyId: "company-1", agentId: "agent-1", resolve }}
+          />
         </QueryClientProvider>,
       );
     });
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
   }
 
-  it("binds the picker to the conversation issue once it is resolved", async () => {
-    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
-    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
-    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view({ thinking: "high" }));
-    await renderConversation(resolveIssueId);
-    expect(issuesApi.getModelOverride).not.toHaveBeenCalled();
-
+  it("creates nothing when the picker is opened and dismissed", async () => {
+    const resolve = vi.fn().mockResolvedValue("chat-issue");
+    await renderConversation(resolve);
     await openPanel();
-    await vi.waitFor(() =>
-      expect(issuesApi.getModelOverride).toHaveBeenCalledWith("chat-issue"),
+    await vi.waitFor(() => node("task-model-override-option-thinking-high"));
+
+    expect(node("task-model-override-effective-model").textContent).toBe(
+      "vendor/agent-default",
     );
-    expect(resolveIssueId).toHaveBeenCalledTimes(1);
-    await vi.waitFor(() =>
-      expect(node("task-model-override-effective-thinking").textContent).toBe("low"),
-    );
+    expect(resolve).not.toHaveBeenCalled();
+    expect(issuesApi.getModelOverride).not.toHaveBeenCalled();
+    expect(issuesApi.setModelOverride).not.toHaveBeenCalled();
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-chat-composer-model-override").click();
+    });
+    expect(document.querySelector('[data-testid="task-model-override-panel"]')).toBeNull();
+    expect(resolve).not.toHaveBeenCalled();
+  });
+
+  it("creates the conversation issue on the first pick and reuses it afterwards", async () => {
+    const resolve = vi.fn().mockResolvedValue("chat-issue");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view({ thinking: "high" }));
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view({ thinking: "high" }));
+    await renderConversation(resolve);
+    await openPanel();
+    await vi.waitFor(() => node("task-model-override-option-thinking-high"));
 
     await act(async () => {
       node<HTMLButtonElement>("task-model-override-option-thinking-high").click();
     });
-    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
-      thinking: "high",
+    await vi.waitFor(() =>
+      expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
+        thinking: "high",
+      }),
+    );
+    expect(resolve).toHaveBeenCalledTimes(1);
+
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(
+      view({ thinking: "high", model: "vendor/deep" }),
+    );
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-option-model-vendor/deep").click();
     });
     await vi.waitFor(() =>
-      expect(
-        node("task-chat-composer-model-override").getAttribute("data-has-override"),
-      ).toBe("true"),
+      expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
+        model: "vendor/deep",
+      }),
     );
+    expect(resolve).toHaveBeenCalledTimes(1);
   });
 
-  it("clears the conversation override through the agent default option", async () => {
-    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
-    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view({ model: "vendor/deep" }));
-    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view());
-    await renderConversation(resolveIssueId);
+  it("keeps the agent default a no-op while no override and no issue exist", async () => {
+    const resolve = vi.fn().mockResolvedValue("chat-issue");
+    await renderConversation(resolve);
     await openPanel();
     await vi.waitFor(() => node("task-model-override-default-model"));
 
     await act(async () => {
       node<HTMLButtonElement>("task-model-override-default-model").click();
     });
-    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
-      model: null,
+    expect(resolve).not.toHaveBeenCalled();
+    expect(issuesApi.setModelOverride).not.toHaveBeenCalled();
+  });
+
+  it("resolves one issue for two picks fired before the first one lands", async () => {
+    let release: (id: string) => void = () => {};
+    const resolve = vi.fn().mockReturnValue(
+      new Promise<string>((resolvePromise) => {
+        release = resolvePromise;
+      }),
+    );
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view({ thinking: "high" }));
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view({ thinking: "high" }));
+    await renderConversation(resolve);
+    await openPanel();
+    await vi.waitFor(() => node("task-model-override-option-thinking-high"));
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-option-thinking-high").click();
+      node<HTMLButtonElement>("task-model-override-option-model-vendor/deep").click();
+    });
+    expect(resolve).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      release("chat-issue");
     });
     await vi.waitFor(() =>
-      expect(
-        node("task-chat-composer-model-override").getAttribute("data-has-override"),
-      ).toBe("false"),
+      expect(vi.mocked(issuesApi.setModelOverride).mock.calls.map((call) => call[0])).toEqual([
+        "chat-issue",
+        "chat-issue",
+      ]),
     );
+    expect(resolve).toHaveBeenCalledTimes(1);
   });
 
   it("keeps the subtask switches out of the conversation picker", async () => {
-    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
-    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
-    await renderConversation(resolveIssueId);
+    await renderConversation(vi.fn().mockResolvedValue("chat-issue"));
     await openPanel();
     await vi.waitFor(() => node("task-model-override-panel"));
     expect(
