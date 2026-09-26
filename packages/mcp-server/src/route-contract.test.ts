@@ -4,6 +4,11 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import * as sharedSchemas from "@tickernelz/paperclip-pro-shared";
 import { generatedToolSpecs, sharedToolNotes } from "./generated-tools.js";
+import {
+  canonicalOperationKey,
+  missingRequiredBodyFields,
+  routeBodySchemas,
+} from "./route-body-schemas.js";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const routesDir = join(repoRoot, "server/src/routes");
@@ -103,6 +108,53 @@ describe("generated tool input contracts", () => {
         );
       }
     }
+    expect(violations).toEqual([]);
+  });
+
+  it("enumerates the generated tools whose route requires a body field", async () => {
+    const { sites, unresolved } = await routeBodySchemas();
+    expect(unresolved).toEqual([]);
+    const generated = new Map(
+      generatedToolSpecs().map((spec) => [canonicalOperationKey(spec.method, spec.path), spec]),
+    );
+    const inspected = sites.filter((site) =>
+      generated.has(canonicalOperationKey(site.method, site.path)),
+    );
+    expect(inspected.length).toBeGreaterThan(200);
+    const requiring = inspected.filter((site) => site.required.length > 0);
+    expect(requiring.length).toBeGreaterThan(130);
+    for (const operation of [
+      "POST /api/companies/{companyId}/skills/{skillId}/comments",
+      "PATCH /api/companies/{companyId}/skills/{skillId}/comments/{commentId}",
+      "POST /api/companies/{companyId}/skills/install-catalog",
+      "POST /api/issues/{id}/children",
+      "PUT /api/tool-connections/{connectionId}/grants/{grantId}/members",
+    ]) {
+      const key = canonicalOperationKey(operation.split(" ")[0]!, operation.split(" ").slice(1).join(" "));
+      expect(generated.has(key)).toBe(true);
+      expect(requiring.some((site) => canonicalOperationKey(site.method, site.path) === key)).toBe(true);
+    }
+  });
+
+  it("exposes every body field the validated route requires", async () => {
+    const { sites } = await routeBodySchemas();
+    const byOperation = new Map(
+      generatedToolSpecs().map((spec) => [canonicalOperationKey(spec.method, spec.path), spec]),
+    );
+    const violations: string[] = [];
+    let inspected = 0;
+    for (const site of sites) {
+      const spec = byOperation.get(canonicalOperationKey(site.method, site.path));
+      if (!spec) continue;
+      inspected += 1;
+      const missing = missingRequiredBodyFields(spec, site.required);
+      if (missing.length > 0) {
+        violations.push(
+          `${spec.name} (${spec.operationId}) is missing ${missing.join(", ")} required by ${site.schemaName} at ${site.file}:${site.line}`,
+        );
+      }
+    }
+    expect(inspected).toBeGreaterThan(200);
     expect(violations).toEqual([]);
   });
 

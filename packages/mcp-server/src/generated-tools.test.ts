@@ -99,18 +99,19 @@ describe("generated Paperclip API tools", () => {
     );
   });
 
-  it("passes an undocumented body through the body property", async () => {
+  it("sends the required body fields of a route the registry left undocumented", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "child-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
     await getTool("paperclipCreateChildIssue").execute({
       issueId: "PAP-1135",
-      body: { title: "Child", assigneeAgentId: null },
+      title: "Child",
+      status: "todo",
     });
 
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe("http://localhost:3100/api/issues/PAP-1135/children");
-    expect(JSON.parse(String(init.body))).toEqual({ title: "Child", assigneeAgentId: null });
+    expect(JSON.parse(String(init.body))).toEqual({ title: "Child", status: "todo" });
   });
 
   it("reports a failed request instead of throwing", async () => {

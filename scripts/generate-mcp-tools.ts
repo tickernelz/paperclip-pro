@@ -5,6 +5,11 @@ import { fileURLToPath } from "node:url";
 import { buildOpenApiDocument } from "../server/src/routes/openapi.js";
 import { leanJsonSchema } from "../packages/mcp-server/src/lean-schema.js";
 import {
+  canonicalOperationKey,
+  routeBodySchemaIndex,
+  type RouteBodySite,
+} from "../packages/mcp-server/src/route-body-schemas.js";
+import {
   CURATED_OPERATIONS,
   PROBE_BOARD_DENIED_OPERATIONS,
   EXCLUDED_OPERATIONS,
@@ -376,6 +381,41 @@ function jsonBodySchema(
   return { required, documented: false, schema: { type: "object" } };
 }
 
+interface ResolvedBody {
+  required: boolean;
+  documented: boolean;
+  advanced?: boolean;
+  schema: Json;
+}
+
+function adoptRouteBody(site: RouteBodySite | undefined, body: ResolvedBody | null): ResolvedBody | null {
+  if (!site) return body;
+  const registryProperties = (body?.schema.properties ?? {}) as Json;
+  const registryNames = Object.keys(registryProperties);
+  if (registryNames.length === 0) {
+    return {
+      required: true,
+      documented: true,
+      schema: leanJsonSchema(site.schema) as Json,
+    };
+  }
+  const routeProperties = (site.schema.properties ?? {}) as Json;
+  const missing = site.required.filter((field) => !(field in registryProperties));
+  if (missing.length === 0) return body;
+  const added: Json = {};
+  for (const field of missing) added[field] = routeProperties[field] ?? {};
+  return {
+    ...(body as ResolvedBody),
+    schema: {
+      ...(body as ResolvedBody).schema,
+      properties: { ...registryProperties, ...added },
+      required: [
+        ...new Set([...((body as ResolvedBody).schema.required as string[] ?? []), ...missing]),
+      ].sort(),
+    },
+  };
+}
+
 const ROUTE_FILE_PREFIXES: Record<string, string> = {
   "companies.ts": "/api/companies",
   "cloud.ts": "/api/cloud",
@@ -481,8 +521,9 @@ function unregisteredRoutes(knownOperations: Set<string>): string[] {
   return mountedRoutes().filter((key) => !knownOperations.has(key)).sort();
 }
 
-export function generate(): GeneratorResult {
+export async function generate(): Promise<GeneratorResult> {
   const document = buildOpenApiDocument();
+  const routeBodies = await routeBodySchemaIndex();
   const excludedOperations: Record<string, string> = {};
   const excluded: Record<string, number> = {};
   const note = (key: string, reason: string) => {
@@ -594,7 +635,10 @@ export function generate(): GeneratorResult {
       }))
       .sort((a, b) => a.name.localeCompare(b.name));
 
-    const body = jsonBodySchema(candidate.operation, document);
+    const body = adoptRouteBody(
+      routeBodies.byOperation.get(canonicalOperationKey(candidate.method, candidate.path)),
+      jsonBodySchema(candidate.operation, document),
+    );
     if (body && override.bodyFields) {
       if (!body.documented || body.schema.type !== "object") {
         throw new Error(`bodyFields on ${candidate.key} needs a documented object body`);
@@ -723,8 +767,8 @@ export function serialize(value: unknown): string {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
-function main() {
-  const result = generate();
+async function main() {
+  const result = await generate();
   const artifacts: Array<[string, string]> = [
     [outputPath, serialize(result.tools)],
     [notesPath, serialize(result.sharedNotes)],
@@ -751,4 +795,4 @@ function main() {
   console.log(JSON.stringify(result.counts, null, 2));
 }
 
-if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) main();
+if (resolve(process.argv[1] ?? "") === fileURLToPath(import.meta.url)) await main();
