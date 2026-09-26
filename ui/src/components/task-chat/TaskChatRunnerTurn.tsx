@@ -224,6 +224,7 @@ export function TaskChatRunnerTurn({
   }
   const final = finalRef.current.item;
   const finalText = final?.text;
+  const phaseScope = useMemo(() => turnId ?? runId ?? 'turn', [turnId, runId]);
   const currentActivityItems = useMemo(
     () => currentActivityStatusItems(projection.timelineItems),
     [projection],
@@ -233,9 +234,9 @@ export function TaskChatRunnerTurn({
       buildTurnTimelineRows(
         omitProgressRepeatedByResponse(projection.timelineItems, finalText),
         !terminal,
-        turnId,
+        phaseScope,
       ),
-    [projection, finalText, terminal, turnId],
+    [projection, finalText, terminal, phaseScope],
   );
   // Identical elements let React skip the timeline subtree entirely on the many
   // renders that leave the rows alone; the scroll anchor and the expansion
