@@ -351,14 +351,15 @@
   --sz-turn-status-island: min(100%, 42rem);
   --sz-turn-status-popover: min(32rem, calc(100vw - 2rem));
 
-  /* Mobile pinned-composer bottom offset (PAP-495). Default clears just the
-     safe-area inset (+20px); Layout raises it to the bottom-nav height
-     (--sz-calc-14) while the auto-hiding mobile nav is on screen, so the
-     composer's action row never hides behind the nav. Desktop and the classic
-     thread never override it and fall through to the safe-area default. */
+  /* Mobile pinned-composer bottom offset; Layout pins it to the bottom-nav height. */
   --tc-composer-bottom: var(--sz-calc-8);
-  /* Together with the dock's pb-2, match the page's p-4 side gutters. */
-  --tc-composer-hidden-nav-offset: calc(var(--sz-safe-bottom) + var(--spacing) * 2);
+}
+
+/* Composed on the dock so it resolves against the --tc-composer-bottom Layout sets on <main>. */
+[data-testid="task-chat-composer-dock"] {
+  --tc-composer-dock-bottom: calc(
+    var(--tc-composer-bottom) + var(--mobile-viewport-inset-bottom, 0px)
+  );
 }
 
 .dark {
@@ -3001,47 +3002,78 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   .runner-activity-roll-out { display: none; }
 }
 
-/* Dock entity pickers to the bottom of the visible viewport on narrow screens.
-   Radix's popper wrapper carries a transform, which makes it the containing
-   block for any `position: fixed` descendant: docking the content itself
-   collapsed the sheet against a zero-width wrapper. Dock the wrapper and let
-   the content lay out inside it. iOS also keeps the layout viewport (and
-   100dvh) at full height while the software keyboard is up, so the offsets
-   come from the visual viewport — see useMobilePickerViewport. */
+/* Entity pickers become bottom sheets on narrow screens. Radix's popper wrapper
+   carries a transform, so it is the containing block for fixed descendants: dock
+   the wrapper, not the content. Offsets come from the visual viewport because iOS
+   keeps the layout viewport at full height while the keyboard is up. */
 @media (max-width: 40rem) {
   [data-radix-popper-content-wrapper]:has([data-mobile-entity-picker]) {
     position: fixed !important;
     transform: none !important;
-    inset: auto calc(var(--spacing) * 4)
-      calc(
-        var(--mobile-entity-picker-keyboard-inset, 0px) +
-          max(calc(var(--spacing) * 4), env(safe-area-inset-bottom))
-      )
-      !important;
+    inset: auto 0 var(--mobile-viewport-inset-bottom, 0px) 0 !important;
     width: auto !important;
     min-width: 0 !important;
-    z-index: 50;
+    z-index: 60;
+  }
+
+  [data-radix-popper-content-wrapper]:has([data-mobile-entity-picker])::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background: color-mix(in oklab, var(--background) 55%, transparent);
   }
 
   [data-mobile-entity-picker] {
     position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
     width: 100% !important;
     max-width: none !important;
-    max-height: calc(
-      var(--mobile-entity-picker-viewport-height, 100dvh) - calc(var(--spacing) * 8)
-    ) !important;
-    overflow-y: auto !important;
+    max-height: calc(var(--mobile-viewport-height, 100dvh) * 0.52) !important;
+    overflow: hidden !important;
     overscroll-behavior: contain;
+    padding-bottom: var(--sz-safe-bottom) !important;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
     transform: none !important;
     animation: none !important;
   }
 
+  [data-mobile-entity-picker] [data-mobile-sheet-controls] {
+    flex: 0 0 auto !important;
+  }
+
+  [data-mobile-entity-picker] > [data-slot="command"],
+  [data-mobile-entity-picker] [data-mobile-sheet-body] {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    flex-direction: column !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
   [data-mobile-entity-picker] [data-slot="command-list"],
   [data-mobile-entity-picker] [data-slot="entity-option-list"] {
-    max-height: min(
-      var(--sz-300px),
-      calc(var(--mobile-entity-picker-viewport-height, 100dvh) - calc(var(--spacing) * 24))
-    ) !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item],
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button,
+  [data-mobile-entity-picker] [data-slot="entity-option"] {
+    white-space: nowrap !important;
+  }
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,
+  [data-mobile-entity-picker] [data-slot="entity-option"] > span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
   }
 }
 :root {

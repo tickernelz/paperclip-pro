@@ -260,10 +260,34 @@ jobs:
             tests/e2e/test-results/
           retention-days: 7
 
+  mobile-shell:
+    name: Mobile shell (WebKit)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Install WebKit
+        run: pnpm exec playwright install --with-deps webkit
+
+      - name: Run mobile shell tests
+        run: pnpm exec playwright test --config tests/mobile-shell/playwright.config.ts
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: mobile-shell-test-results
+          path: tests/mobile-shell/test-results/
+          retention-days: 7
+
   verify:
     name: verify
     if: always()
-    needs: [policy, typecheck, build, runner, general, serialized, e2e]
+    needs: [policy, typecheck, build, runner, general, serialized, e2e, mobile-shell]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

@@ -11,7 +11,8 @@ import {
 } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { fuzzyTextMatchesQuery, normalizeSearchText, scoreFuzzyTextFields } from "@/lib/searchable-select";
-import { useMobilePickerViewport } from "@/hooks/useMobilePickerViewport";
+import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
+import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { cn } from "@/lib/utils";
 
 export interface SearchableSelectOption<TValue extends string = string> {
@@ -112,7 +113,7 @@ export function SearchableSelect<
 }: SearchableSelectProps<TValue, TOption>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  useMobilePickerViewport(open);
+  useMobileViewportInsets(open);
   const pointerFocusRef = useRef(false);
   const suppressNextTriggerFocusRef = useRef(false);
 
@@ -246,6 +247,11 @@ export function SearchableSelect<
           }
         }}
       >
+        <MobilePickerSheetHeader
+          title={placeholder}
+          value={selectedOption?.label ?? null}
+          onClose={() => closePopover({ suppressTriggerFocus: true })}
+        />
         <Command shouldFilter={false}>
           <CommandInput
             value={query}
