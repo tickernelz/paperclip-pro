@@ -6,6 +6,7 @@ type McpTextResponse = {
   isError?: boolean;
   _meta?: Record<string, unknown>;
 };
+
 export const HTTP_STATUS_META_KEY = "paperclip/httpStatus";
 
 export function formatTextResponse(value: unknown): McpTextResponse {
