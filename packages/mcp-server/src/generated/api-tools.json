@@ -4285,10 +4285,592 @@
     ],
     "body": {
       "required": true,
-      "documented": false,
-      "mode": "nest",
+      "documented": true,
+      "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "projectWorkspaceId": {
+            "type": "string"
+          },
+          "goalId": {
+            "type": "string"
+          },
+          "blockedByIssueIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "unblockDescriptor": {
+            "type": "object",
+            "properties": {
+              "owner": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "agentId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "agentId"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "userId": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "userId"
+                    ]
+                  },
+                  {
+                    "type": "string",
+                    "const": "board"
+                  }
+                ]
+              },
+              "action": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "owner",
+              "action"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "backlog",
+              "todo",
+              "in_progress",
+              "in_review",
+              "done",
+              "blocked",
+              "cancelled"
+            ]
+          },
+          "workMode": {
+            "type": "string",
+            "enum": [
+              "standard",
+              "ask",
+              "planning",
+              "skill_test"
+            ]
+          },
+          "harnessKind": {
+            "type": "string",
+            "enum": [
+              "skill_test"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "reviewPolicy": {
+            "type": "string",
+            "enum": [
+              "anyone",
+              "not_creator",
+              "human_only"
+            ]
+          },
+          "assigneeAgentId": {
+            "type": "string"
+          },
+          "assigneeUserId": {
+            "type": "string"
+          },
+          "requestDepth": {
+            "type": "integer"
+          },
+          "createdByUserId": {
+            "type": "string"
+          },
+          "responsibleUserId": {
+            "type": "string"
+          },
+          "billingCode": {
+            "type": "string"
+          },
+          "assigneeAdapterOverrides": {
+            "type": "object",
+            "properties": {
+              "adapterConfig": {
+                "type": "object"
+              },
+              "useProjectWorkspace": {
+                "type": "boolean"
+              },
+              "modelOverrideInheritance": {
+                "type": "object",
+                "properties": {
+                  "inheritToSubtasks": {
+                    "type": "boolean"
+                  },
+                  "subtaskScope": {
+                    "type": "string",
+                    "enum": [
+                      "new",
+                      "new_and_existing"
+                    ]
+                  },
+                  "inherited": {
+                    "type": "boolean"
+                  },
+                  "sourceIssueId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "inheritToSubtasks",
+                  "subtaskScope"
+                ]
+              }
+            }
+          },
+          "modelOverride": {
+            "type": "object",
+            "properties": {
+              "model": {
+                "type": "string"
+              },
+              "thinking": {
+                "type": "string"
+              },
+              "inheritToSubtasks": {
+                "type": "boolean"
+              },
+              "subtaskScope": {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "new_and_existing"
+                ]
+              }
+            }
+          },
+          "executionPolicy": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "normal",
+                  "auto"
+                ]
+              },
+              "commentRequired": {
+                "type": "boolean"
+              },
+              "stages": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "review",
+                        "approval"
+                      ]
+                    },
+                    "approvalsNeeded": {
+                      "type": "number",
+                      "const": 1
+                    },
+                    "participants": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "agent",
+                              "user"
+                            ]
+                          },
+                          "agentId": {
+                            "type": "string"
+                          },
+                          "userId": {
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type"
+                        ]
+                      }
+                    }
+                  },
+                  "required": [
+                    "type"
+                  ]
+                }
+              },
+              "monitor": {
+                "type": "object",
+                "properties": {
+                  "nextCheckAt": {
+                    "type": "string"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "scheduledBy": {
+                    "type": "string",
+                    "enum": [
+                      "assignee",
+                      "board"
+                    ]
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "external_service"
+                    ]
+                  },
+                  "serviceName": {
+                    "type": "string"
+                  },
+                  "externalRef": {
+                    "type": "string"
+                  },
+                  "timeoutAt": {
+                    "type": "string"
+                  },
+                  "maxAttempts": {
+                    "type": "integer"
+                  },
+                  "recoveryPolicy": {
+                    "type": "string",
+                    "enum": [
+                      "wake_owner",
+                      "create_recovery_issue",
+                      "escalate_to_board"
+                    ]
+                  }
+                },
+                "required": [
+                  "nextCheckAt"
+                ]
+              },
+              "reviewPreset": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "const": "low_trust_review"
+                  },
+                  "version": {
+                    "type": "number",
+                    "const": 1
+                  },
+                  "rawOutputDisposition": {
+                    "type": "string",
+                    "const": "quarantine"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version",
+                  "rawOutputDisposition"
+                ]
+              },
+              "authorizationPolicy": {
+                "type": "object",
+                "properties": {
+                  "trustPreset": {
+                    "type": "string",
+                    "enum": [
+                      "standard",
+                      "low_trust_review"
+                    ]
+                  },
+                  "reviewPreset": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "const": "low_trust_review"
+                      },
+                      "version": {
+                        "type": "number",
+                        "const": 1
+                      },
+                      "rawOutputDisposition": {
+                        "type": "string",
+                        "const": "quarantine"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "rawOutputDisposition"
+                    ]
+                  },
+                  "trustBoundary": {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "const": "low_trust_review"
+                      },
+                      "companyId": {
+                        "type": "string"
+                      },
+                      "projectIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "rootIssueId": {
+                        "type": "string"
+                      },
+                      "issueIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "allowedAgentIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "allowedSecretBindingIds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "allowedToolClasses": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "outputPromotionTarget": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "const": "issue"
+                          },
+                          "issueId": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "issueId"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "mode"
+                    ]
+                  },
+                  "assignmentPolicy": {
+                    "type": "object",
+                    "properties": {
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "company_default",
+                          "protected"
+                        ]
+                      },
+                      "protectedAgentRequiresApproval": {
+                        "type": "boolean"
+                      }
+                    }
+                  },
+                  "protectedAgent": {
+                    "type": "object",
+                    "properties": {
+                      "blockAssignment": {
+                        "type": "boolean"
+                      },
+                      "blockReason": {
+                        "type": "string"
+                      },
+                      "requiresApproval": {
+                        "type": "boolean"
+                      },
+                      "approvalReason": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              },
+              "maxReviewRounds": {
+                "type": "integer"
+              }
+            }
+          },
+          "executionWorkspaceId": {
+            "type": "string"
+          },
+          "executionWorkspacePreference": {
+            "type": "string",
+            "enum": [
+              "inherit",
+              "shared_workspace",
+              "isolated_workspace",
+              "operator_branch",
+              "reuse_existing",
+              "agent_default"
+            ]
+          },
+          "executionWorkspaceSettings": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "inherit",
+                  "shared_workspace",
+                  "isolated_workspace",
+                  "operator_branch",
+                  "reuse_existing",
+                  "agent_default"
+                ]
+              },
+              "sharedWorkspaceConcurrency": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "serialize",
+                  "allow"
+                ]
+              },
+              "environmentId": {
+                "type": "string"
+              },
+              "workspaceStrategy": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "project_primary",
+                      "git_worktree",
+                      "adapter_managed",
+                      "cloud_sandbox"
+                    ]
+                  },
+                  "baseRef": {
+                    "type": "string"
+                  },
+                  "branchTemplate": {
+                    "type": "string"
+                  },
+                  "existingBranch": {
+                    "type": "string"
+                  },
+                  "worktreeParentDir": {
+                    "type": "string"
+                  },
+                  "provisionCommand": {
+                    "type": "string"
+                  },
+                  "runtimeProvisionCommand": {
+                    "type": "string"
+                  },
+                  "teardownCommand": {
+                    "type": "string"
+                  }
+                }
+              },
+              "workspaceRuntime": {
+                "type": "object"
+              },
+              "networkEgress": {
+                "type": "object",
+                "properties": {
+                  "allowFqdns": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "allowCidrs": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "labelIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "watchdog": {
+            "type": "object",
+            "properties": {
+              "agentId": {
+                "type": "string"
+              },
+              "instructions": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "agentId"
+            ]
+          },
+          "acceptanceCriteria": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "blockParentUntilDone": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "status"
+        ]
       }
     }
   },
@@ -4542,17 +5124,17 @@
           {
             "type": "object",
             "properties": {
-              "attachmentIds": {
-                "type": "array",
-                "items": {
-                  "type": "string"
-                }
-              },
               "body": {
                 "type": "string"
               },
               "idempotencyKey": {
                 "type": "string"
+              },
+              "attachmentIds": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
               }
             },
             "required": [
@@ -8621,11 +9203,11 @@
       "documented": true,
       "mode": "nest",
       "schema": {
-        "anyOf": [
+        "oneOf": [
           {
             "type": "object",
             "properties": {
-              "cronExpression": {
+              "label": {
                 "type": "string"
               },
               "enabled": {
@@ -8633,11 +9215,9 @@
               },
               "kind": {
                 "type": "string",
-                "enum": [
-                  "schedule"
-                ]
+                "const": "schedule"
               },
-              "label": {
+              "cronExpression": {
                 "type": "string"
               },
               "timezone": {
@@ -8645,27 +9225,22 @@
               }
             },
             "required": [
-              "cronExpression",
-              "kind"
+              "kind",
+              "cronExpression"
             ]
           },
           {
             "type": "object",
             "properties": {
+              "label": {
+                "type": "string"
+              },
               "enabled": {
                 "type": "boolean"
               },
               "kind": {
                 "type": "string",
-                "enum": [
-                  "webhook"
-                ]
-              },
-              "label": {
-                "type": "string"
-              },
-              "replayWindowSec": {
-                "type": "integer"
+                "const": "webhook"
               },
               "setupPending": {
                 "type": "boolean"
@@ -8680,6 +9255,9 @@
                   "fireflies_hmac",
                   "none"
                 ]
+              },
+              "replayWindowSec": {
+                "type": "integer"
               }
             },
             "required": [
@@ -8689,17 +9267,15 @@
           {
             "type": "object",
             "properties": {
+              "label": {
+                "type": "string"
+              },
               "enabled": {
                 "type": "boolean"
               },
               "kind": {
                 "type": "string",
-                "enum": [
-                  "api"
-                ]
-              },
-              "label": {
-                "type": "string"
+                "const": "api"
               }
             },
             "required": [
@@ -8984,7 +9560,18 @@
       "documented": true,
       "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "parentCommentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ]
       }
     }
   },
@@ -9332,7 +9919,12 @@
       "documented": true,
       "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -13266,7 +13858,7 @@
     "operationId": "DELETE /api/tool-profiles/{profileId}",
     "method": "DELETE",
     "path": "/tool-profiles/{profileId}",
-    "description": "Delete a tool access profile. The request body fields are not published in the API registry; pass them as an object in `body`",
+    "description": "Delete a tool access profile",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -13296,10 +13888,18 @@
     ],
     "body": {
       "required": true,
-      "documented": false,
-      "mode": "nest",
+      "documented": true,
+      "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean"
+          },
+          "reassignToProfileId": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -14327,7 +14927,29 @@
       "documented": true,
       "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "sharingScope": {
+            "type": "string",
+            "enum": [
+              "private",
+              "company",
+              "public_link"
+            ]
+          },
+          "reassignAgentIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
       }
     }
   },
@@ -20666,7 +21288,21 @@
       "documented": true,
       "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "catalogSkillId": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "force": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "catalogSkillId"
+        ]
       }
     }
   },
@@ -20711,7 +21347,111 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "targetManagerAgentId": {
+            "type": "string"
+          },
+          "targetManagerSlug": {
+            "type": "string"
+          },
+          "include": {
+            "type": "object",
+            "properties": {
+              "agents": {
+                "type": "boolean"
+              },
+              "projects": {
+                "type": "boolean"
+              },
+              "issues": {
+                "type": "boolean"
+              },
+              "skills": {
+                "type": "boolean"
+              }
+            }
+          },
+          "agents": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "all"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "collisionStrategy": {
+            "type": "string",
+            "enum": [
+              "rename",
+              "skip",
+              "replace"
+            ]
+          },
+          "nameOverrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "selectedFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourcePolicy": {
+            "type": "object",
+            "properties": {
+              "allowExternalSources": {
+                "type": "boolean"
+              },
+              "allowUnpinnedOptionalSources": {
+                "type": "boolean"
+              },
+              "allowLocalPathSources": {
+                "type": "boolean"
+              }
+            }
+          },
+          "adapterOverrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "adapterType": {
+                  "type": "string"
+                },
+                "adapterConfig": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "adapterType"
+              ]
+            }
+          },
+          "secretValues": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipInstallToolExample",
@@ -20797,7 +21537,20 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipInterruptIssueQueuedComment",
@@ -20940,7 +21693,62 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "enum": [
+              "timer",
+              "assignment",
+              "on_demand",
+              "automation"
+            ]
+          },
+          "triggerDetail": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "ping",
+              "callback",
+              "system"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "failedRunId": {
+            "type": "string"
+          },
+          "payload": {
+            "type": "object"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "forceFreshSession": {
+            "type": "boolean"
+          },
+          "debug": {
+            "type": "object",
+            "properties": {
+              "providerTrace": {
+                "type": "string",
+                "const": "raw"
+              }
+            },
+            "required": [
+              "providerTrace"
+            ]
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipLinkIntentChatEndpointPrincipal",
@@ -27421,7 +28229,88 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "targetManagerAgentId": {
+            "type": "string"
+          },
+          "targetManagerSlug": {
+            "type": "string"
+          },
+          "include": {
+            "type": "object",
+            "properties": {
+              "agents": {
+                "type": "boolean"
+              },
+              "projects": {
+                "type": "boolean"
+              },
+              "issues": {
+                "type": "boolean"
+              },
+              "skills": {
+                "type": "boolean"
+              }
+            }
+          },
+          "agents": {
+            "anyOf": [
+              {
+                "type": "string",
+                "const": "all"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            ]
+          },
+          "collisionStrategy": {
+            "type": "string",
+            "enum": [
+              "rename",
+              "skip",
+              "replace"
+            ]
+          },
+          "nameOverrides": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            }
+          },
+          "selectedFiles": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sourcePolicy": {
+            "type": "object",
+            "properties": {
+              "allowExternalSources": {
+                "type": "boolean"
+              },
+              "allowUnpinnedOptionalSources": {
+                "type": "boolean"
+              },
+              "allowLocalPathSources": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipProbeConfigEnvironment",
@@ -27858,15 +28747,13 @@
       "documented": true,
       "mode": "nest",
       "schema": {
-        "anyOf": [
+        "oneOf": [
           {
             "type": "object",
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "forward"
-                ]
+                "const": "forward"
               },
               "reason": {
                 "type": "string"
@@ -27881,9 +28768,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "override"
-                ]
+                "const": "override"
               },
               "reason": {
                 "type": "string"
@@ -27899,9 +28784,7 @@
             "properties": {
               "mode": {
                 "type": "string",
-                "enum": [
-                  "quarantine_restore"
-                ]
+                "const": "quarantine_restore"
               },
               "reason": {
                 "type": "string"
@@ -28826,7 +29709,29 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "agent",
+                "instructions",
+                "skill",
+                "routine"
+              ]
+            }
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipResetSessionAgentRuntimeState",
@@ -28924,7 +29829,12 @@
       "documented": true,
       "mode": "merge",
       "schema": {
-        "type": "object"
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        }
       }
     }
   },
@@ -33198,7 +34108,26 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "memberUserIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "memberUserIds"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipSetToolConnectionInstall",
@@ -33650,15 +34579,13 @@
       "documented": true,
       "mode": "nest",
       "schema": {
-        "anyOf": [
+        "oneOf": [
           {
             "type": "object",
             "properties": {
               "action": {
                 "type": "string",
-                "enum": [
-                  "prepare"
-                ]
+                "const": "prepare"
               },
               "grantId": {
                 "type": "string"
@@ -33674,9 +34601,7 @@
             "properties": {
               "action": {
                 "type": "string",
-                "enum": [
-                  "enable"
-                ]
+                "const": "enable"
               },
               "grantId": {
                 "type": "string"
@@ -33696,9 +34621,7 @@
             "properties": {
               "action": {
                 "type": "string",
-                "enum": [
-                  "remove"
-                ]
+                "const": "remove"
               },
               "grantId": {
                 "type": "string"
@@ -39018,7 +39941,49 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "iconUrl": {
+            "type": "string"
+          },
+          "color": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "authorName": {
+            "type": "string"
+          },
+          "homepageUrl": {
+            "type": "string"
+          },
+          "categories": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "sharingScope": {
+            "type": "string",
+            "enum": [
+              "private",
+              "company",
+              "public_link"
+            ]
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipUpdateSkillComment",
@@ -39069,7 +40034,23 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "body"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipUpdateSkillTestInput",
