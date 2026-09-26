@@ -414,8 +414,8 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     makeTool(
       "paperclipListAgents",
       "List agents in a company",
-      z.object({ companyId: companyIdOptional }),
-      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/agents`),
+      z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional().describe("compact drops orgChainHealth, appearance and avatarUrl; full keeps them") }),
+      async ({ companyId, view }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/agents${view === "full" ? "" : "?view=compact"}`),
     ),
     makeTool(
       "paperclipListSkills",

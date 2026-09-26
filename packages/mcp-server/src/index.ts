@@ -41,7 +41,7 @@ export function createPaperclipMcpServer(
   );
 
   const client = new PaperclipApiClient(config);
-  const { definitions: tools, listing } = paperclipToolCatalog(client, config.toolsets, management);
+  const { definitions: tools } = paperclipToolCatalog(client, config.toolsets, management);
   for (const tool of tools) {
     server.registerTool(
       tool.name,
@@ -53,7 +53,10 @@ export function createPaperclipMcpServer(
       tool.execute,
     );
   }
-  server.server.setRequestHandler(ListToolsRequestSchema, () => listing);
+  server.server.setRequestHandler(ListToolsRequestSchema, (request) => {
+    const cursor = request.params?.cursor;
+    return paperclipToolCatalog(client, config.toolsets, management, { cursor }).listing;
+  });
 
   return {
     server,
