@@ -19,6 +19,7 @@ import type {
   IssueLabel,
   IssueRecoveryAction,
   IssueRetryNowResponse,
+  IssueRunModelOverrideUpdate,
   IssueRunModelOverrideView,
   StalledReviewDecision,
   StalledReviewDecisionResponse,
@@ -242,7 +243,7 @@ export const issuesApi = {
     api.get<IssueRunModelOverrideView>(`/issues/${id}/model-override`),
   setModelOverride: (
     id: string,
-    data: { model?: string | null; thinking?: string | null },
+    data: IssueRunModelOverrideUpdate,
   ) =>
     api.put<IssueRunModelOverrideView>(`/issues/${id}/model-override`, data),
   getWatchdog: (id: string) =>

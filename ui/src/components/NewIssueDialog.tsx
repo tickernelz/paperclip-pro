@@ -49,6 +49,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { TaskModelOverrideControl } from "@/components/task-chat/TaskModelOverrideControl";
+import { ModelOverrideSubtaskRows } from "@/components/task-chat/ModelOverrideSubtaskRows";
 import {
   Popover,
   PopoverContent,
@@ -330,14 +331,6 @@ const priorities = [
   { value: "high", label: "High", icon: ArrowUp, color: priorityColor.high ?? priorityColorDefault },
   { value: "medium", label: "Medium", icon: Minus, color: priorityColor.medium ?? priorityColorDefault },
   { value: "low", label: "Low", icon: ArrowDown, color: priorityColor.low ?? priorityColorDefault },
-];
-
-const MODEL_OVERRIDE_SCOPES: {
-  value: IssueRunModelOverrideSubtaskScope;
-  label: string;
-}[] = [
-  { value: "new", label: "New subtasks" },
-  { value: "new_and_existing", label: "New and existing" },
 ];
 
 const EXECUTION_WORKSPACE_MODES = [
@@ -2285,37 +2278,14 @@ export function NewIssueDialog() {
             }}
             disabled={createIssue.isPending}
             footerSlot={
-              <div className="flex flex-col gap-2 p-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-xs">Apply to subtasks</span>
-                  <ToggleSwitch
-                    checked={modelOverrideInherit}
-                    onCheckedChange={setModelOverrideInherit}
-                    data-testid="new-issue-model-override-inherit"
-                  />
-                </div>
-                {modelOverrideInherit ? (
-                  <div className="flex items-center gap-1" role="radiogroup">
-                    {MODEL_OVERRIDE_SCOPES.map((scope) => (
-                      <button
-                        key={scope.value}
-                        type="button"
-                        role="radio"
-                        aria-checked={modelOverrideSubtaskScope === scope.value}
-                        data-testid={`new-issue-model-override-scope-${scope.value}`}
-                        className={cn(
-                          "flex-1 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-accent/40",
-                          modelOverrideSubtaskScope === scope.value &&
-                            "bg-accent text-foreground",
-                        )}
-                        onClick={() => setModelOverrideSubtaskScope(scope.value)}
-                      >
-                        {scope.label}
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-              </div>
+              <ModelOverrideSubtaskRows
+                inheritToSubtasks={modelOverrideInherit}
+                subtaskScope={modelOverrideSubtaskScope}
+                onInheritChange={setModelOverrideInherit}
+                onScopeChange={setModelOverrideSubtaskScope}
+                testIdPrefix="new-issue-model-override"
+                disabled={createIssue.isPending}
+              />
             }
           />
 

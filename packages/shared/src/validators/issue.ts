@@ -330,6 +330,10 @@ export const issueRunModelOverrideUpdateSchema = z
   })
   .strict();
 
+export type IssueRunModelOverrideUpdate = z.infer<
+  typeof issueRunModelOverrideUpdateSchema
+>;
+
 const issueExecutionStagePrincipalBaseSchema = z.object({
   type: z.enum(["agent", "user"]),
   agentId: z.string().guid().optional().nullable(),

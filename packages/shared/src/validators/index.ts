@@ -436,6 +436,7 @@ export {
   stalledReviewDecisionSchema,
   issueExecutionPolicySchema,
   issueRunModelOverrideUpdateSchema,
+  type IssueRunModelOverrideUpdate,
   issueExecutionStateSchema,
   issueRecoveryActionReadModelSchema,
   resolveIssueRecoveryActionSchema,

@@ -1516,6 +1516,7 @@ export function TaskChatComposer({
               <TaskModelOverrideControl
                 issueId={issueId}
                 pendingIssue={pendingIssue}
+                subtaskRows={!conversationMode && Boolean(issueId)}
                 disabled={disabled}
                 mobile={mobile}
               />

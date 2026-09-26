@@ -317,6 +317,23 @@ test.describe("mobile task chat shell", () => {
     expect(footer.height).toBeGreaterThan(40);
     expect(footer.y + footer.height).toBeLessThanOrEqual(panel.y + panel.height + 1);
     expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
+
+    const inherit = page.locator('[data-testid="task-model-override-inherit"]');
+    await expect(inherit).toBeVisible();
+    await expect(inherit).toHaveAttribute("aria-checked", "true");
+    await expect(
+      page.locator('[data-testid="task-model-override-scope-new_and_existing"]'),
+    ).toBeVisible();
+
+    await inherit.tap();
+    await expect(inherit).toHaveAttribute("aria-checked", "false");
+    await expect(
+      page.locator('[data-testid="task-model-override-scope-new_and_existing"]'),
+    ).toHaveCount(0);
+
+    const afterToggle = (await page.locator('[data-testid="task-model-override-panel"]').boundingBox())!;
+    expect(afterToggle.height).toBeLessThanOrEqual(viewportHeight * 0.55);
+    expect(afterToggle.y + afterToggle.height).toBeLessThanOrEqual(viewportHeight + 1);
   });
 });
 
