@@ -360,8 +360,8 @@ jobs:
           skipped_heavy="$(jq -r '[to_entries[] | select(.key != "scope" and .key != "docs") | select(.value.result == "skipped")] | length' <<<"$RESULTS")"
           heavy_total="$(jq -r '[to_entries[] | select(.key != "scope" and .key != "docs")] | length' <<<"$RESULTS")"
 
-          if [ "$docs" = "success" ] && [ "$skipped_heavy" -gt 0 ]; then
-            echo "docs-only lane: $skipped_heavy of $heavy_total heavy lanes skipped, Docs green"
+          if [ "$docs" = "success" ] && [ "$skipped_heavy" -eq "$heavy_total" ]; then
+            echo "docs-only lane: all $heavy_total heavy lanes skipped, Docs green"
             exit 0
           fi
 
