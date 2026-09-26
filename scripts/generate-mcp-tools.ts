@@ -252,15 +252,40 @@ function disambiguatedName(base: string, path: string, method: string, taken: Se
 
 const NAME_TOKEN = /[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])/g;
 
+function scopedPathSegments(path: string): string[] {
+  const segments = path.replace(/^\/api\//, "").split("/").filter(Boolean);
+  return segments[0] === "companies" && segments[1]?.startsWith("{") ? segments.slice(2) : segments;
+}
+
+const NAME_QUALIFIER_MARKER = "By";
+
+function parentResourceTokens(path: string): string[] {
+  const statics = scopedPathSegments(path).filter((segment) => !segment.startsWith("{"));
+  return statics
+    .slice(0, -1)
+    .flatMap((segment) => singular(segment).match(NAME_TOKEN) ?? []);
+}
+
 export function cappedName(name: string, method: string, path: string, taken: Set<string>): string {
   if (name.length <= NAME_LENGTH_LIMIT && !taken.has(name)) return name;
   const tokens = name.slice(NAME_PREFIX.length).match(NAME_TOKEN) ?? [];
   const digest = createHash("sha256").update(`${method} ${path}`).digest("hex").slice(0, 6);
   if (tokens.length >= 3) {
     const interior = tokens.slice(1, -1);
-    for (let drop = 1; drop <= interior.length; drop += 1) {
-      const kept = interior.slice(0, interior.length - drop);
-      const candidate = `${NAME_PREFIX}${[tokens[0], ...kept, tokens[tokens.length - 1]].join("")}`;
+    const resource = new Set(parentResourceTokens(path));
+    const protectedTokens = new Set([...resource, NAME_QUALIFIER_MARKER]);
+    const order = interior
+      .map((_, index) => index)
+      .sort((a, b) =>
+        protectedTokens.has(interior[a]) === protectedTokens.has(interior[b])
+          ? b - a
+          : protectedTokens.has(interior[a])
+            ? 1
+            : -1,
+      );
+    for (let drop = 1; drop <= order.length; drop += 1) {
+      const dropped = new Set(order.slice(0, drop));
+      const candidate = `${NAME_PREFIX}${[tokens[0], ...interior.filter((_, index) => !dropped.has(index)), tokens[tokens.length - 1]].join("")}`;
       if (candidate.length <= NAME_LENGTH_LIMIT && !taken.has(candidate)) return candidate;
     }
   }

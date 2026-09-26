@@ -28656,7 +28656,59 @@
     ]
   },
   {
-    "name": "paperclipReconcileBranchWorkspace",
+    "name": "paperclipReconcileBuiltInAgent",
+    "operationId": "POST /api/companies/{companyId}/built-in-agents/{key}/reconcile",
+    "method": "POST",
+    "path": "/companies/{companyId}/built-in-agents/{builtInAgentKey}/reconcile",
+    "description": "Reconcile built-in agent managed resources",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBuiltInAgentsEnabled",
+      "assertCanProvisionBuiltInAgents"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "builtInAgentKey",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "name": "paperclipReconcileExecutionWorkspace",
     "operationId": "POST /api/execution-workspaces/{id}/reconcile-branch",
     "method": "POST",
     "path": "/execution-workspaces/{executionWorkspaceId}/reconcile-branch",
@@ -28743,58 +28795,6 @@
             ]
           }
         ]
-      }
-    }
-  },
-  {
-    "name": "paperclipReconcileBuiltInAgent",
-    "operationId": "POST /api/companies/{companyId}/built-in-agents/{key}/reconcile",
-    "method": "POST",
-    "path": "/companies/{companyId}/built-in-agents/{builtInAgentKey}/reconcile",
-    "description": "Reconcile built-in agent managed resources",
-    "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
-    "tags": [
-      "agents"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertBuiltInAgentsEnabled",
-      "assertCanProvisionBuiltInAgents"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "builtInAgentKey",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {}
       }
     }
   },
@@ -30943,7 +30943,7 @@
     }
   },
   {
-    "name": "paperclipRetryCaseAutomationByCaseIdId",
+    "name": "paperclipRetryCaseAutomationByCaseId",
     "operationId": "POST /api/cases/{caseId}/automations/{automationId}/retry",
     "method": "POST",
     "path": "/cases/{caseId}/automations/{automationId}/retry",
@@ -34747,7 +34747,7 @@
     }
   },
   {
-    "name": "paperclipStartAuthorizationConnection",
+    "name": "paperclipStartAgentMeConnection",
     "operationId": "POST /api/agents/me/connections/{connectionId}/start-authorization",
     "method": "POST",
     "path": "/agents/me/connections/{connectionId}/start-authorization",
@@ -34768,74 +34768,6 @@
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
-      {
-        "name": "connectionId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "returnTo": {
-            "type": "string"
-          },
-          "scopes": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "subjectUserId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "subjectUserId"
-        ]
-      }
-    }
-  },
-  {
-    "name": "paperclipStartConnection",
-    "operationId": "POST /api/companies/{companyId}/tools/connections/{connectionId}/start-authorization",
-    "method": "POST",
-    "path": "/companies/{companyId}/tools/connections/{connectionId}/start-authorization",
-    "description": "Start user authorization for a tool connection",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "registry",
-    "tags": [
-      "tool-access"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertToolConnectionAccess",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
       {
         "name": "connectionId",
         "in": "path",
@@ -34906,6 +34838,74 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipStartToolConnection",
+    "operationId": "POST /api/companies/{companyId}/tools/connections/{connectionId}/start-authorization",
+    "method": "POST",
+    "path": "/companies/{companyId}/tools/connections/{connectionId}/start-authorization",
+    "description": "Start user authorization for a tool connection",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertToolConnectionAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "returnTo": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "subjectUserId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subjectUserId"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipSteerIssueQueuedComment",
@@ -36180,7 +36180,7 @@
     }
   },
   {
-    "name": "paperclipUnarchivePrimaryLifecycle",
+    "name": "paperclipUnarchiveInstanceLifecycle",
     "operationId": "POST /api/instance/lifecycle/unarchive-primary",
     "method": "POST",
     "path": "/instance/lifecycle/unarchive-primary",

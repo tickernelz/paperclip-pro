@@ -18,7 +18,6 @@ function nameTokens(name: string): string[] {
 }
 
 function parentResourceToken(operationId: string): string | null {
-  const [method] = operationId.split(" ", 1);
   const segments = operationId
     .replace(/^[A-Z]+ /, "")
     .replace(/^\/api\//, "")
@@ -26,10 +25,7 @@ function parentResourceToken(operationId: string): string | null {
     .filter(Boolean);
   const scoped =
     segments[0] === "companies" && segments[1]?.startsWith("{") ? segments.slice(2) : segments;
-  const statics = scoped.filter((segment) => !segment.startsWith("{"));
-  const action = statics[statics.length - 1];
-  if (method === "POST" && action && /^[a-z-]+$/.test(action) && !action.endsWith("s")) return null;
-  const parent = statics[0];
+  const parent = scoped.filter((segment) => !segment.startsWith("{"))[0];
   return parent ? (singular(parent).match(NAME_TOKEN) ?? [])[0] ?? null : null;
 }
 
