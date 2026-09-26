@@ -228,6 +228,24 @@ describe("per-task model override control", () => {
     expect(node("task-model-override-option-thinking-high")).toBeTruthy();
   });
 
+  it("expands the first field when the adapter publishes no model field", async () => {
+    const thinkingOnly = view();
+    thinkingOnly.fields = thinkingOnly.fields.filter((field) => field.key === "thinking");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(thinkingOnly);
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="issue-1" mobile />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(node("task-model-override-section-thinking").getAttribute("data-expanded")).toBe("true");
+    expect(node("task-model-override-option-thinking-high")).toBeTruthy();
+  });
+
   it("keeps both fields expanded on desktop", async () => {
     vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
     await render();

@@ -187,9 +187,9 @@ export function TaskModelOverrideControl({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [expandedKey, setExpandedKey] = useState<IssueRunModelOverrideKey | null>(
-    "model",
-  );
+  const [expandedOverride, setExpandedOverride] = useState<
+    IssueRunModelOverrideKey | null | undefined
+  >(undefined);
   useMobileViewportInsets(open);
   const key = queryKeys.issues.modelOverride(issueId ?? "__none__");
   const query = useQuery({
@@ -218,6 +218,10 @@ export function TaskModelOverrideControl({
   if (!issueId || !view?.supported || view.fields.length === 0) return null;
 
   const hasOverride = view.fields.some((field) => field.override);
+  const expandedKey =
+    expandedOverride === undefined
+      ? (view.fields[0]?.key ?? null)
+      : expandedOverride;
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
@@ -262,9 +266,7 @@ export function TaskModelOverrideControl({
               collapsible={mobile}
               expanded={expandedKey === field.key}
               onToggle={() =>
-                setExpandedKey((current) =>
-                  current === field.key ? null : field.key,
-                )
+                setExpandedOverride(expandedKey === field.key ? null : field.key)
               }
               onSelect={(fieldKey, value) =>
                 mutation.mutate({ [fieldKey]: value })
