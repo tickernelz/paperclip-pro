@@ -169,3 +169,5 @@ OpenTelemetry tracing activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set; the S
 MIT. Upstream work is copyright Paperclip Labs, Inc ([paperclip.ing](https://paperclip.ing)); fork modifications are copyright the paperclip-pro maintainers. Both notices are in [`LICENSE`](LICENSE).
 
 Upstream project, for reference only — do not file fork bugs there: [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), [docs.paperclip.ing](https://docs.paperclip.ing).
+
+Mixed probe note.
