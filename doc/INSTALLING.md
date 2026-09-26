@@ -22,12 +22,10 @@ payload under `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests
 flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim
 (`cli/src/commands/install.ts`).
 
-Pin an exact published version with `--version`, or follow the pre-release
-dist-tag with `--canary`:
+Pin an exact published version with `--version`:
 
 ```sh
 paperclip-pro install --version 2026.926.1 --yes
-paperclip-pro install --canary --yes
 ```
 
 The install writes its own npm user config, so the payload never inherits the
@@ -128,14 +126,13 @@ the exact `export PATH` command instead of editing shell files silently.
 ## Install Sources
 
 `paperclip-pro install` with no source flag follows the `latest` dist-tag of
-`@tickernelz/paperclip-pro`. `--canary` follows the `canary` dist-tag and
-`--version <YYYY.MDD.P>` pins one published version; both resolve against
-`https://registry.npmjs.org`.
+`@tickernelz/paperclip-pro`, and `--version <YYYY.MDD.P>` pins one published
+version; both resolve against `https://registry.npmjs.org`. `--canary` follows
+the `canary` dist-tag, which the release workflow does not publish today.
 
 ```sh
 paperclip-pro install --yes
 paperclip-pro install --version 2026.926.1 --yes
-paperclip-pro install --canary --yes
 ```
 
 Install a git ref instead when you need an unreleased commit:

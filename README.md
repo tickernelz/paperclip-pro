@@ -36,12 +36,13 @@ paperclip-pro onboard --yes
 
 Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. Later releases handle both.
 
-Pin a version, or follow the pre-release tag:
+Pin a published version:
 
 ```sh
 paperclip-pro install --version 2026.926.1 --yes
-paperclip-pro install --canary --yes
 ```
+
+`--canary` follows the `canary` dist-tag, which the release workflow does not publish today; it uses `next` and `latest`.
 
 `onboard --yes` writes `~/.paperclip-pro/instances/default/config.json` for trusted local loopback and starts the server on `http://127.0.0.1:3100`. An embedded PostgreSQL is created automatically. For a reachable instance, pick a bind preset:
 
