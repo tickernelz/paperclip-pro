@@ -442,6 +442,21 @@ describe("Sidebar", () => {
     });
   });
 
+  it("gives up the Goals slot when the experimental settings read fails", async () => {
+    mockInstanceSettingsApi.getExperimental.mockRejectedValue(new Error("403 forbidden"));
+    const root = await renderSidebar();
+
+    expect([...container.querySelectorAll("nav a")].map((a) => a.textContent?.trim())).not.toContain("Goals");
+    expect(container.querySelector('[data-testid="sidebar-goals-placeholder"]')).toBeNull();
+
+    const navLabels = [...container.querySelectorAll("nav a")].map((a) => a.textContent?.trim());
+    expect(navLabels).toEqual(expect.arrayContaining(["Tasks", "Routines", "Artifacts"]));
+
+    flushSync(() => {
+      root.unmount();
+    });
+  });
+
   it("shows the Goals nav item when the experimental setting is enabled", async () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableIsolatedWorkspaces: false,

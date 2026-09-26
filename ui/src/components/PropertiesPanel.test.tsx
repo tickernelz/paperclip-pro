@@ -220,6 +220,29 @@ describe("PropertiesPanel", () => {
     });
   });
 
+  describe("experimental settings unknown", () => {
+    it("renders the default resizable pane while the settings read is in flight", async () => {
+      mockInstanceSettingsApi.getExperimental.mockImplementation(() => new Promise(() => {}));
+      await renderPanel({ taskDetailLayout: true });
+
+      const aside = container.querySelector("aside");
+      expect(aside).not.toBeNull();
+      expect(aside!.querySelector('[role="separator"][aria-label="Resize panel"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="Maximize side panel"]')).not.toBeNull();
+    });
+
+    it("keeps the default resizable pane when the settings read fails", async () => {
+      mockInstanceSettingsApi.getExperimental.mockRejectedValue(new Error("403 forbidden"));
+      await renderPanel({ taskDetailLayout: true });
+
+      const aside = container.querySelector("aside");
+      expect(aside).not.toBeNull();
+      expect(aside!.querySelector('[role="separator"][aria-label="Resize panel"]')).not.toBeNull();
+      expect(container.querySelector('[aria-label="Maximize side panel"]')).not.toBeNull();
+      expect(container.querySelector('[data-testid="panel-content"]')).not.toBeNull();
+    });
+  });
+
   describe("Streamlined UI off", () => {
     beforeEach(() => {
       mockInstanceSettingsApi.getExperimental.mockResolvedValue({
