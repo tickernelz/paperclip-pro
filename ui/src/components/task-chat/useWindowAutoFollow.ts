@@ -65,6 +65,28 @@ export function useWindowAutoFollow(contentKey: unknown, enabled: boolean): void
     return () => window.removeEventListener("scroll", onScroll);
   }, [enabled, navigation.key, navigation.hash, navigation.ready]);
 
+  useEffect(() => {
+    if (!enabled) return;
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    let frame = 0;
+    const onViewportChange = () => {
+      if (!pinnedRef.current) return;
+      scrollWindowToBottom();
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => {
+          if (pinnedRef.current) scrollWindowToBottom();
+        });
+      });
+    };
+    viewport.addEventListener("resize", onViewportChange);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      viewport.removeEventListener("resize", onViewportChange);
+    };
+  }, [enabled]);
+
   useLayoutEffect(() => {
     if (!enabled || typeof ResizeObserver === "undefined") return;
     const observed = document.body;

@@ -91,6 +91,9 @@ import {
 } from "@/components/task-chat/RunnerGoalWidget";
 import { TaskChatQueuedMessages } from "@/components/task-chat/TaskChatQueuedMessages";
 import { TaskChatWindowScroll } from "@/components/task-chat/useWindowAutoFollow";
+import { composerDockClassName } from "@/components/task-chat/composer-dock";
+import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
+import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { useSidebar } from "@/context/SidebarContext";
 import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
 import { cn } from "@/lib/utils";
@@ -2677,6 +2680,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   const expansionState = useRef(new Map<string, boolean>());
   const autoFollowContentKey = `${threadContentKey}:${composerTakeover?.id ?? "composer"}`;
 
+
   // Mobile (PAP-360): the app shell scrolls the DOCUMENT (Layout's main is
   // overflow-visible with auto height), so the desktop bounded h-dvh chain
   // collapses the absolute-inset transcript viewport to 0px. Render the thread
@@ -2684,6 +2688,9 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   // and track auto-follow against window scroll. Both paths include takeover
   // state so opening or closing composer input preserves bottom pinning.
   const { isMobile } = useSidebar();
+  const { dockRef: composerDockRef, reserve: composerReserve } =
+    useComposerDockReserve(isMobile && showComposer);
+  useMobileViewportInsets(isMobile);
   const initialCommentWindow = useRef<{
     oldestAt: number;
     ids: Set<string>;
@@ -2771,7 +2778,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     <TaskChatExpansionState.Provider value={expansionState.current}>
       <TaskChatScrollReady.Provider value={!historyPending}>
         <TaskChatWindowScroll
-          contentKey={isMobile ? autoFollowContentKey : 0}
+          contentKey={isMobile ? `${autoFollowContentKey}:${composerReserve}` : 0}
           enabled={isMobile && historyRevealed}
         />
         <TaskChatPresentationProvider
@@ -2972,27 +2979,15 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               </div>
             ) : null}
             {showComposer ? (
+              <>
               <div
+                ref={isMobile ? composerDockRef : undefined}
                 data-testid="task-chat-composer-dock"
-                className={cn(
-                  "sticky",
-                  // Mobile mirrors the flag-off thread's dock: lifted above the
-                  // safe-area inset and clear of the auto-hiding bottom nav, above
-                  // page content in the document-flow stacking context. The bottom
-                  // offset (--tc-composer-bottom) tracks the nav: Layout raises it to
-                  // the nav height while the nav is visible so the composer's action
-                  // row is never occluded, and drops it back to the safe-area dock
-                  // when the nav auto-hides (PAP-495). transition-[bottom] rides the
-                  // nav's own 200ms slide; the offset only changes on nav toggles, so
-                  // it never animates mid-scroll.
-                  isMobile
-                    ? "bottom-(--tc-composer-bottom) z-20 transition-[bottom] duration-200 ease-out"
-                    : "bottom-0 z-10",
-                  "mx-auto flex w-full max-w-(--tc-shell-max-w) flex-col gap-2 px-1 pb-1 md:px-4 md:pb-2",
-                  streamlinedUiEnabled && "md:px-0 md:pb-0",
-                  (!streamlinedUiEnabled || isMobile) &&
-                    "bg-background/80 pt-1 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-transparent dark:backdrop-blur-none dark:supports-[backdrop-filter]:bg-transparent",
-                )}
+                data-composer-reserve={isMobile ? composerReserve : undefined}
+                className={composerDockClassName({
+                  isMobile,
+                  streamlinedUiEnabled,
+                })}
               >
                 {composerAccessory}
                 {tailTurnStatus ? (
@@ -3096,6 +3091,15 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                 </div>
                 {footer}
               </div>
+                {isMobile ? (
+                  <div
+                    aria-hidden
+                    data-testid="task-chat-keyboard-spacer"
+                    className="shrink-0"
+                    style={{ height: "var(--mobile-viewport-inset-bottom, 0px)" }}
+                  />
+                ) : null}
+              </>
             ) : null}
           </div>
         </TaskChatPresentationProvider>

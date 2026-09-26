@@ -174,7 +174,7 @@ describe("InlineEntitySelector", () => {
     });
 
     const rootStyle = document.documentElement.style;
-    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("0px");
+    expect(rootStyle.getPropertyValue("--mobile-viewport-inset-bottom")).toBe("0px");
     expect(document.querySelector('[data-slot="entity-option-list"]')).not.toBeNull();
 
     visualViewport.height = 508;
@@ -182,14 +182,14 @@ describe("InlineEntitySelector", () => {
       visualViewport.dispatchEvent(new Event("resize"));
     });
 
-    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("336px");
-    expect(rootStyle.getPropertyValue("--mobile-entity-picker-viewport-height")).toBe("508px");
+    expect(rootStyle.getPropertyValue("--mobile-viewport-inset-bottom")).toBe("336px");
+    expect(rootStyle.getPropertyValue("--mobile-viewport-height")).toBe("508px");
 
     act(() => {
       root.unmount();
     });
 
-    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("");
+    expect(rootStyle.getPropertyValue("--mobile-viewport-inset-bottom")).toBe("");
     Reflect.deleteProperty(window, "visualViewport");
     if (innerHeightDescriptor) Object.defineProperty(window, "innerHeight", innerHeightDescriptor);
   });

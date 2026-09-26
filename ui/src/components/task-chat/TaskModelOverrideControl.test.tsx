@@ -211,6 +211,91 @@ describe("per-task model override control", () => {
       expect(node("task-model-override-error").textContent).toContain("must be one of"),
     );
   });
+
+  it("expands only one field at a time on mobile so the sheet stays compact", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="issue-1" mobile />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(node("task-model-override-section-model").getAttribute("data-expanded")).toBe("true");
+    expect(node("task-model-override-section-thinking").getAttribute("data-expanded")).toBe("false");
+    expect(
+      document.querySelector('[data-testid="task-model-override-option-thinking-high"]'),
+    ).toBeNull();
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-toggle-thinking").click();
+    });
+
+    expect(node("task-model-override-section-model").getAttribute("data-expanded")).toBe("false");
+    expect(node("task-model-override-section-thinking").getAttribute("data-expanded")).toBe("true");
+    expect(
+      document.querySelector('[data-testid="task-model-override-option-model-vendor/deep"]'),
+    ).toBeNull();
+    expect(node("task-model-override-option-thinking-high")).toBeTruthy();
+  });
+
+  it("expands the first field when the adapter publishes no model field", async () => {
+    const thinkingOnly = view();
+    thinkingOnly.fields = thinkingOnly.fields.filter((field) => field.key === "thinking");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(thinkingOnly);
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="issue-1" mobile />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(node("task-model-override-section-thinking").getAttribute("data-expanded")).toBe("true");
+    expect(node("task-model-override-option-thinking-high")).toBeTruthy();
+  });
+
+  it("keeps both fields expanded on desktop", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(node("task-model-override-section-model").getAttribute("data-expanded")).toBe("true");
+    expect(node("task-model-override-section-thinking").getAttribute("data-expanded")).toBe("true");
+    expect(
+      document.querySelector('[data-testid="task-model-override-toggle-model"]'),
+    ).toBeNull();
+  });
+
+  it("offers a dismiss affordance and the current value in the mobile sheet header", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view({ model: "vendor/deep" }));
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="issue-1" mobile />
+        </QueryClientProvider>,
+      );
+    });
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    const header = document.querySelector("[data-mobile-sheet-header]");
+    expect(header).not.toBeNull();
+    expect(header?.textContent).toContain("Task model");
+    expect(header?.textContent).toContain("deep");
+
+    await act(async () => {
+      header?.querySelector<HTMLButtonElement>("[data-mobile-sheet-close]")?.click();
+    });
+
+    expect(document.querySelector('[data-testid="task-model-override-panel"]')).toBeNull();
+  });
 });
 
 describe("agent chat model override", () => {

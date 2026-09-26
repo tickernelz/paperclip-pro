@@ -3313,7 +3313,7 @@ describe("TaskChatThread Paperclip Runner queue", () => {
 });
 
 describe("TaskChatThread mobile composer dock (PAP-495)", () => {
-  it("pins the composer to the nav-aware bottom offset so its action row clears the auto-hiding bottom nav", () => {
+  it("pins the composer to the keyboard-aware nav offset instead of the raw safe-area dock", () => {
     sidebarState.isMobile = true;
 
     render(
@@ -3329,11 +3329,9 @@ describe("TaskChatThread mobile composer dock (PAP-495)", () => {
       ?.closest("div.sticky") as HTMLElement | null;
 
     expect(dock).not.toBeNull();
-    // Bottom offset comes from --tc-composer-bottom (Layout raises it to the nav
-    // height while the nav is on screen) — NOT the raw safe-area dock, which is
-    // what let the nav occlude the action row before PAP-495.
-    expect(dock?.className).toContain("bottom-(--tc-composer-bottom)");
+    expect(dock?.className).toContain("bottom-(--tc-composer-dock-bottom)");
     expect(dock?.className).not.toContain("bottom-(--sz-calc-8)");
+    expect(dock?.className).not.toContain("transition-[bottom]");
   });
 });
 
