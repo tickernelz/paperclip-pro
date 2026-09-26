@@ -34,6 +34,8 @@ paperclip-pro onboard --yes
 
 `install` resolves the `latest` dist-tag of `@tickernelz/paperclip-pro` from `https://registry.npmjs.org`, installs the package set into `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests the payload, then atomically flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim. Measured on a WSL2 box: 44 s.
 
+Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. Later releases handle both.
+
 Pin a version, or follow the pre-release tag:
 
 ```sh
