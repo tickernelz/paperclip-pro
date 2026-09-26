@@ -1,4 +1,4 @@
-import type { ReactElement } from "react";
+import { useMemo, type ReactElement } from "react";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import type { TaskChatItem, TaskChatRuntimeRequestDecision, TaskChatRuntimeRequestItem } from "./task-chat-model";
 import { TaskChatToolCard } from "./TaskChatToolCard";
@@ -34,12 +34,17 @@ export function TaskChatLiveTail({
     decision: TaskChatRuntimeRequestDecision,
   ) => void | Promise<void>;
 }) {
-  const visibleItems = excludeFinal
-    ? items.filter((item) => item.kind !== "message" || item.interstitial)
-    : items;
-  const rows = buildTurnTimelineRows(visibleItems, true)
-    .map((item) => renderTailRow(item, onRuntimeRequestDecision))
-    .filter((row): row is ReactElement => row != null);
+  // The host re-renders this body on every poll even when the transcript is
+  // untouched. Returning the same row elements then lets React skip the whole
+  // subtree instead of rebuilding every tool card in the tail.
+  const rows = useMemo(() => {
+    const visibleItems = excludeFinal
+      ? items.filter((item) => item.kind !== "message" || item.interstitial)
+      : items;
+    return buildTurnTimelineRows(visibleItems, true)
+      .map((item) => renderTailRow(item, onRuntimeRequestDecision))
+      .filter((row): row is ReactElement => row != null);
+  }, [items, excludeFinal, onRuntimeRequestDecision]);
 
   if (rows.length === 0) {
     return emptyMessage ? (
