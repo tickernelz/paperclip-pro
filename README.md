@@ -19,7 +19,7 @@ Report bugs in [this repository](https://github.com/tickernelz/paperclip-pro/iss
 | **Mobile composer dock and bottom-sheet pickers.** The task and agent composers dock above the on-screen keyboard and reserve their own height, the bottom nav auto-hides while typing, and the model/thinking, agent and New Task pickers open as bottom sheets instead of being covered by the keyboard. | `ui/src/components/task-chat/composer-dock.ts`, `ui/src/components/ui/mobile-picker-sheet.tsx`, `ui/src/hooks/useMobileViewportInsets.ts` |
 | **`service restart --drain` and a live-run guard.** Restart and stop refuse while agent runs are executing unless you drain or force. A per-instance `service.env` the CLI never overwrites carries operator environment across unit rewrites. | `cli/src/commands/service.ts`, `cli/src/services/service-manager.ts` |
 | **Isolated home.** `PAPERCLIP_HOME` defaults to `~/.paperclip-pro`; config, embedded PostgreSQL, logs, storage and backups all resolve under `~/.paperclip-pro/instances/<id>`. | `packages/shared/src/home-paths.ts` |
-| **One lean CI and a tag-triggered release.** A single `ci.yml` (policy, typecheck, build, runner, sharded tests, E2E, mobile shell) and a `release.yml` that publishes the whole package set to npm when a `v*` tag is pushed. | `.github/workflows/` |
+| **One lean CI and a tag-triggered release.** A single `ci.yml` (policy, typecheck, build, runner, sharded tests, E2E, mobile shell) plus a documentation-only fast lane that runs the static gates and the docs-reading suites, and a `release.yml` that publishes the whole package set to npm when a `v*` tag is pushed. | `.github/workflows/` |
 
 Operators: read [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
 

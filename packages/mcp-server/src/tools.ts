@@ -38,6 +38,8 @@ export interface ToolDefinition {
   annotations?: ToolAnnotations;
   execute: (input: Record<string, unknown>) => Promise<{
     content: Array<{ type: "text"; text: string }>;
+    isError?: boolean;
+    _meta?: Record<string, unknown>;
   }>;
 }
 
@@ -122,7 +124,20 @@ const listIssuesSchema = z.object({
   originId: z.string().optional(),
   includeRoutineExecutions: z.boolean().optional(),
   includeLiveDescendantSummary: z.boolean().optional(),
+  includeConversations: z.boolean().optional(),
   q: z.string().optional(),
+  limit: z.number().int().positive().max(1000).default(25).describe(
+    "Maximum issues to return; defaults to 25 to keep the response small.",
+  ),
+  offset: z.number().int().nonnegative().optional(),
+  view: z.enum(["compact"]).optional().describe(
+    "Use compact for the smaller board row contract.",
+  ),
+  updatedSince: z.string().optional().describe(
+    "ISO 8601 timestamp; returns only issues updated strictly after it.",
+  ),
+  sortField: z.enum(["updated", "id"]).optional(),
+  sortDir: z.enum(["asc", "desc"]).optional(),
 });
 
 const listCommentsSchema = z.object({
@@ -419,7 +434,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipListIssues",
-      "List issues for a company with optional filters",
+      "List issues for a company with optional filters; returns at most `limit` issues (default 25) and supports `view=compact` for smaller rows",
       listIssuesSchema,
       async (input) => {
         const companyId = client.resolveCompanyId(input.companyId);

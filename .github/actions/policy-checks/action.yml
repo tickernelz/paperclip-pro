@@ -1,0 +1,60 @@
+name: Policy checks
+description: Run the cheap static gates that guard the repository.
+
+runs:
+  using: composite
+  steps:
+    - name: Validate migration ordering against the target branch
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: >-
+        node .github/scripts/check-pr-migration-order.mjs
+        "${{ github.event.pull_request.base.sha }}"
+        "${{ github.event.pull_request.head.sha }}"
+
+    - name: Validate Node version policy
+      shell: bash
+      run: pnpm check:node-version
+
+    - name: Reject git push in adapter/runtime code
+      shell: bash
+      run: node ./scripts/check-no-git-push.mjs
+
+    - name: Validate feature module boundaries
+      shell: bash
+      run: pnpm check:module-boundaries
+
+    - name: Validate generated MCP tool definitions
+      shell: bash
+      run: pnpm check:mcp-tools
+
+    - name: Validate release package manifest
+      shell: bash
+      run: node ./scripts/release-package-map.mjs check
+
+    - name: Test repository gate scripts
+      shell: bash
+      run: |
+        node --test ./scripts/check-no-git-push.test.mjs
+        node --test ./scripts/check-module-boundaries.test.mjs
+        node --test ./scripts/__tests__/run-vitest-stable-shard.test.mjs
+        node --test ./scripts/__tests__/e2e-shard.test.mjs
+        node --test ./scripts/__tests__/build-standalone-concurrency.test.mjs
+        node --test ./scripts/release-tag-gate.test.mjs
+        node --test ./scripts/__tests__/docs-lane-suites.test.mjs
+        node --test '.github/scripts/tests/*.test.mjs'
+
+    - name: Verify release package bootstrap for changed manifests
+      if: github.event_name == 'pull_request'
+      shell: bash
+      env:
+        BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      run: |
+        mapfile -t changed_paths < <(git diff --name-only "$BASE_SHA...$HEAD_SHA")
+        PAPERCLIP_RELEASE_BOOTSTRAP_BASE_SHA="$BASE_SHA" \
+          node ./scripts/check-release-package-bootstrap.mjs "${changed_paths[@]}"
+
+    - name: Validate dependency resolution
+      shell: bash
+      run: pnpm install --resolution-only --ignore-scripts --no-frozen-lockfile

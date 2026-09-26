@@ -83,9 +83,36 @@ describe("paperclip MCP tools", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url] = fetchMock.mock.calls[0] as [string];
     expect(String(url)).toBe(
-      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/issues",
+      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/issues?limit=25",
     );
     expect(response.content[0]?.text).toContain("issue-1");
+  });
+
+  it("forwards the list filters the route supports", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "issue-1" }]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await getTool("paperclipListIssues").execute({
+      limit: 1,
+      offset: 20,
+      view: "compact",
+      updatedSince: "2026-01-01T00:00:00.000Z",
+      sortField: "updated",
+      sortDir: "desc",
+      includeConversations: true,
+    });
+
+    const [url] = fetchMock.mock.calls[0] as [string];
+    const params = new URL(String(url)).searchParams;
+    expect(Object.fromEntries(params)).toEqual({
+      limit: "1",
+      offset: "20",
+      view: "compact",
+      updatedSince: "2026-01-01T00:00:00.000Z",
+      sortField: "updated",
+      sortDir: "desc",
+      includeConversations: "true",
+    });
   });
 
   it("uses default agent id for checkout requests", async () => {

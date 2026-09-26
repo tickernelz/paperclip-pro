@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { PaperclipApiClient } from "./client.js";
+import { expandToolsetUnion } from "./config.js";
 import { bindGeneratedTools, prepareGeneratedTools } from "./generated-tools.js";
 import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
 import type { ToolsetName } from "./tool-overrides.js";
@@ -27,13 +28,14 @@ export function paperclipToolCatalog(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
 ): { definitions: ToolDefinition[]; listing: ToolListing } {
+  const selected = expandToolsetUnion(toolsets);
   const curated = createToolDefinitions(client);
   const curatedNames = new Set(curated.map((tool) => tool.name));
-  const generated = bindGeneratedTools(prepareGeneratedTools(toolsets, management), client).filter(
+  const generated = bindGeneratedTools(prepareGeneratedTools(selected, management), client).filter(
     (tool) => !curatedNames.has(tool.name),
   );
   const definitions = [...curated, ...generated];
-  const key = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}`;
+  const key = `${[...selected].sort().join(",")}|${management ? "management" : "agent"}`;
   let listing = listings.get(key);
   if (!listing) {
     listing = {
