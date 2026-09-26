@@ -482,6 +482,36 @@ are in the tool list for the first model turn; the connect failure warning also
 lands before `agent_start`, which is why the adapter can stop the run before a
 turn is spent.
 
+## Per-task model and thinking override
+
+A task can run on a different model or thinking level than its assignee's
+stored configuration, without editing the agent. The composer's picker next to
+the agent selector writes the choice onto the issue; "Agent default" clears it.
+
+Storage reuses the existing per-issue adapter seam,
+`issues.assignee_adapter_overrides.adapterConfig`, so there is no new column and
+no migration. `buildIssueRunAdapterConfig`
+(`server/src/services/issue-run-model-override.ts`) layers that object over the
+agent's resolved adapter config when the run's execution config is assembled
+(`server/src/services/heartbeat.ts`), which is how `omp_local` ends up passing
+`--model` and `--thinking`. The override is also written to the run's context
+snapshot as `paperclipRunModelOverride` so a run log shows which task-level
+choice was in force. The agent's own `adapter_config` is never written.
+
+Allowed values come from the adapter, not from a list in the server:
+`GET /api/issues/:id/model-override` reads the assignee adapter's published
+config schema and returns, per field, its options, the agent default, the
+override and the effective value. `PUT /api/issues/:id/model-override` takes
+`{ model?, thinking? }`, where `null` clears one field. A `select` field is
+validated against the options the adapter publishes; a `text` or `combobox`
+field accepts free text and is only checked for being non-empty. For
+`omp_local` that means `thinking` is restricted to the adapter's levels
+(`auto`, `off`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max`) while
+`model` accepts any selector, because the adapter publishes it as a combobox so
+custom providers keep working. Adapters that publish no config schema, and
+tasks with no agent assignee, report `supported: false` and the picker
+disappears. Agents cannot set the override; it is a board-side control.
+
 ## Security: emptying allowedHostnames does not lock out the public host
 
 `auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.

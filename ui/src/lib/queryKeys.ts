@@ -381,6 +381,8 @@ export const queryKeys = {
     activeRun: (issueId: string) => ["issues", "active-run", issueId] as const,
     runnerGoal: (issueId: string, agentId?: string | null) =>
       ["issues", "runner-goal", issueId, agentId ?? "__effective__"] as const,
+    modelOverride: (issueId: string) =>
+      ["issues", "model-override", issueId] as const,
     workProducts: (issueId: string) =>
       ["issues", "work-products", issueId] as const,
     fileResources: (

@@ -56,6 +56,7 @@ import {
   upsertIssueFeedbackVoteSchema,
   upsertIssueWatchdogSchema,
   runnerGoalActionRequestSchema,
+  issueRunModelOverrideUpdateSchema,
   // Project
   createProjectSchema,
   updateProjectSchema,
@@ -3933,6 +3934,39 @@ registry.registerPath({
     403: r.forbidden,
     404: r.notFound,
     409: r.conflict,
+    422: r.unprocessable,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/issues/{id}/model-override",
+  tags: ["issues"],
+  summary: "Get the per-task adapter model and thinking override",
+  request: { params: z.object({ id: z.string() }) },
+  responses: {
+    200: r.ok(),
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/issues/{id}/model-override",
+  tags: ["issues"],
+  summary: "Set or clear the per-task adapter model and thinking override",
+  request: {
+    params: z.object({ id: z.string() }),
+    body: jsonBody(issueRunModelOverrideUpdateSchema),
+  },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
     422: r.unprocessable,
   },
 });
