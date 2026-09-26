@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import type {
@@ -11,7 +11,8 @@ import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
-import { useMobilePickerViewport } from "@/hooks/useMobilePickerViewport";
+import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
+import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const AGENT_DEFAULT_LABEL = "Agent default";
@@ -38,10 +39,16 @@ function FieldSection({
   field,
   pending,
   onSelect,
+  collapsible,
+  expanded,
+  onToggle,
 }: {
   field: IssueRunModelOverrideField;
   pending: boolean;
   onSelect: (key: IssueRunModelOverrideKey, value: string | null) => void;
+  collapsible: boolean;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
   const [search, setSearch] = useState("");
   const query = search.trim();
@@ -59,22 +66,47 @@ function FieldSection({
     field.freeText &&
     query.length > 0 &&
     !field.options.some((option) => option.value === query);
+  const open = !collapsible || expanded;
 
   return (
     <div
-      className="flex min-w-0 flex-col gap-1 border-b border-border/60 p-2 last:border-b-0"
+      className={cn(
+        "flex min-w-0 flex-col gap-1 border-b border-border/60 p-2 last:border-b-0",
+        open ? "min-h-0 flex-1" : "shrink-0",
+      )}
       data-testid={`task-model-override-section-${field.key}`}
+      data-expanded={open ? "true" : "false"}
     >
       <div className="flex items-baseline justify-between gap-2 px-1">
-        <span className="text-xs font-medium">{field.label}</span>
-        <span
-          className="max-w-32 truncate text-xs text-muted-foreground"
-          data-testid={`task-model-override-effective-${field.key}`}
-        >
-          {field.effective ?? AGENT_DEFAULT_LABEL}
-        </span>
+        {collapsible ? (
+          <button
+            type="button"
+            onClick={onToggle}
+            className="flex min-w-0 flex-1 items-baseline justify-between gap-2 text-left"
+            data-testid={`task-model-override-toggle-${field.key}`}
+            aria-expanded={open}
+          >
+            <span className="shrink-0 text-xs font-medium">{field.label}</span>
+            <span
+              className="min-w-0 truncate text-xs text-muted-foreground"
+              data-testid={`task-model-override-effective-${field.key}`}
+            >
+              {field.effective ?? AGENT_DEFAULT_LABEL}
+            </span>
+          </button>
+        ) : (
+          <>
+            <span className="text-xs font-medium">{field.label}</span>
+            <span
+              className="max-w-32 truncate text-xs text-muted-foreground"
+              data-testid={`task-model-override-effective-${field.key}`}
+            >
+              {field.effective ?? AGENT_DEFAULT_LABEL}
+            </span>
+          </>
+        )}
       </div>
-      {field.options.length > 6 || field.freeText ? (
+      {open && (field.options.length > 6 || field.freeText) ? (
         <input
           type="text"
           value={search}
@@ -86,13 +118,14 @@ function FieldSection({
           }}
           placeholder={field.freeText ? "Search or type a value…" : "Search…"}
           disabled={pending}
-          className="h-8 w-full rounded-md border border-input bg-transparent px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-8 w-full shrink-0 rounded-md border border-input bg-transparent px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
           data-testid={`task-model-override-search-${field.key}`}
         />
       ) : null}
+      {open ? (
       <div
         data-slot="entity-option-list"
-        className="max-h-48 overflow-y-auto overscroll-contain"
+        className="min-h-0 flex-1 overflow-y-auto overscroll-contain max-sm:max-h-none sm:max-h-48"
       >
         <button
           type="button"
@@ -136,6 +169,7 @@ function FieldSection({
           </button>
         ))}
       </div>
+      ) : null}
     </div>
   );
 }
@@ -176,18 +210,24 @@ function draftOverrideFields(
   return fields;
 }
 
+export interface TaskModelOverridePendingIssue {
+  companyId: string;
+  agentId: string | null;
+  resolve: () => Promise<string>;
+}
+
 /** Per-task model and thinking picker; writes to the issue, or to a draft before one exists. */
 export function TaskModelOverrideControl({
   issueId,
   draft,
-  resolveIssueId,
+  pendingIssue,
   footerSlot,
   disabled = false,
   mobile = false,
 }: {
   issueId?: string | null;
   draft?: TaskModelOverrideDraft;
-  resolveIssueId?: () => Promise<string>;
+  pendingIssue?: TaskModelOverridePendingIssue;
   footerSlot?: ReactNode;
   disabled?: boolean;
   mobile?: boolean;
@@ -195,10 +235,17 @@ export function TaskModelOverrideControl({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expandedOverride, setExpandedOverride] = useState<
+    IssueRunModelOverrideKey | null | undefined
+  >(undefined);
   const [resolvedIssueId, setResolvedIssueId] = useState<string | null>(null);
-  const [resolving, setResolving] = useState(false);
-  useMobilePickerViewport(open);
+  const [pendingValues, setPendingValues] = useState<
+    Partial<Record<IssueRunModelOverrideKey, string | null>>
+  >({});
+  const resolveInFlight = useRef<Promise<string> | null>(null);
+  useMobileViewportInsets(open);
   const activeIssueId = draft ? null : issueId || resolvedIssueId;
+  const previewAgent = draft ?? pendingIssue;
   const key = queryKeys.issues.modelOverride(activeIssueId ?? "__none__");
   const query = useQuery({
     queryKey: key,
@@ -208,18 +255,44 @@ export function TaskModelOverrideControl({
   });
   const preview = useQuery({
     queryKey: queryKeys.agents.adapterConfigBatch(
-      draft?.companyId ?? "__none__",
-      draft?.agentId ? [draft.agentId] : [],
+      previewAgent?.companyId ?? "__none__",
+      previewAgent?.agentId ? [previewAgent.agentId] : [],
     ),
-    queryFn: () => agentsApi.batchAdapterConfigPreview([draft!.agentId!]),
-    enabled: Boolean(draft?.agentId),
+    queryFn: () => agentsApi.batchAdapterConfigPreview([previewAgent!.agentId!]),
+    enabled: Boolean(previewAgent?.agentId) && !activeIssueId,
     staleTime: 60_000,
   });
   const mutation = useMutation({
-    mutationFn: (values: { model?: string | null; thinking?: string | null }) =>
-      issuesApi.setModelOverride(activeIssueId!, values),
-    onSuccess: (next: IssueRunModelOverrideView) => {
-      queryClient.setQueryData(key, next);
+    mutationFn: async (values: { model?: string | null; thinking?: string | null }) => {
+      let targetId = activeIssueId;
+      if (!targetId) {
+        if (!pendingIssue) throw new Error("This conversation could not be opened.");
+        if (!resolveInFlight.current) {
+          resolveInFlight.current = pendingIssue.resolve().then(
+            (resolved) => {
+              setResolvedIssueId(resolved);
+              return resolved;
+            },
+            (resolveError: unknown) => {
+              resolveInFlight.current = null;
+              throw resolveError instanceof Error
+                ? resolveError
+                : new Error("This conversation could not be opened.");
+            },
+          );
+        }
+        targetId = await resolveInFlight.current;
+      }
+      return { targetId, next: await issuesApi.setModelOverride(targetId, values) };
+    },
+    onSuccess: ({
+      targetId,
+      next,
+    }: {
+      targetId: string;
+      next: IssueRunModelOverrideView;
+    }) => {
+      queryClient.setQueryData(queryKeys.issues.modelOverride(targetId), next);
       setError(null);
     },
     onError: (mutationError: unknown) => {
@@ -234,45 +307,33 @@ export function TaskModelOverrideControl({
   const view = query.data;
   const draftValues = draft?.values;
   const previewData = preview.data;
+  const usePreviewFields = Boolean(previewAgent) && !view?.fields.length;
   const fields = useMemo(
     () =>
-      draft
-        ? draftOverrideFields(previewData, draftValues ?? {})
+      usePreviewFields
+        ? draftOverrideFields(previewData, draftValues ?? pendingValues)
         : (view?.fields ?? []),
-    [draft, previewData, draftValues, view],
+    [usePreviewFields, previewData, draftValues, pendingValues, view],
   );
   const noAgent = Boolean(draft) && !draft?.agentId;
   if (draft) {
     if (draft.agentId && preview.isFetched && fields.length === 0) return null;
   } else if (activeIssueId) {
     if (!open && (!view?.supported || view.fields.length === 0)) return null;
-  } else if (!resolveIssueId) {
+  } else if (!pendingIssue) {
     return null;
   }
 
-  const pending = mutation.isPending || resolving;
+  const pending = mutation.isPending;
   const hasOverride = fields.some((field) => field.override);
+  const expandedKey =
+    expandedOverride === undefined
+      ? (fields[0]?.key ?? null)
+      : expandedOverride;
   return (
     <Popover
       open={open}
-      onOpenChange={async (next) => {
-        if (next && !draft && !activeIssueId && resolveIssueId) {
-          setResolving(true);
-          try {
-            setResolvedIssueId(await resolveIssueId());
-            setError(null);
-          } catch (resolveError: unknown) {
-            setError(
-              resolveError instanceof Error
-                ? resolveError.message
-                : "This conversation could not be opened.",
-            );
-          } finally {
-            setResolving(false);
-          }
-        }
-        setOpen(next);
-      }}
+      onOpenChange={setOpen}
     >
       <PopoverTrigger asChild>
         <button
@@ -305,28 +366,44 @@ export function TaskModelOverrideControl({
         data-mobile-entity-picker=""
         data-testid="task-model-override-panel"
       >
-        {fields.map((field) => (
-          <FieldSection
-            key={field.key}
-            field={field}
-            pending={pending}
-            onSelect={(fieldKey, value) => {
-              if (draft) {
-                draft.onChange(fieldKey, value);
-                return;
+        <MobilePickerSheetHeader
+          title="Task model"
+          value={triggerLabel(fields)}
+          onClose={() => setOpen(false)}
+        />
+        <div data-mobile-sheet-body="" className="flex min-w-0 flex-col">
+          {fields.map((field) => (
+            <FieldSection
+              key={field.key}
+              field={field}
+              pending={pending}
+              collapsible={mobile}
+              expanded={expandedKey === field.key}
+              onToggle={() =>
+                setExpandedOverride(expandedKey === field.key ? null : field.key)
               }
-              mutation.mutate({ [fieldKey]: value });
-            }}
-          />
-        ))}
-        {fields.length === 0 ? (
-          <p
-            className="px-3 py-2 text-xs text-muted-foreground"
-            data-testid="task-model-override-empty"
-          >
-            {view?.unsupportedReason ?? "Loading model options…"}
-          </p>
-        ) : null}
+              onSelect={(fieldKey, value) => {
+                if (draft) {
+                  draft.onChange(fieldKey, value);
+                  return;
+                }
+                if (!activeIssueId) {
+                  if (value === null && !field.override) return;
+                  setPendingValues((current) => ({ ...current, [fieldKey]: value }));
+                }
+                mutation.mutate({ [fieldKey]: value });
+              }}
+            />
+          ))}
+          {fields.length === 0 ? (
+            <p
+              className="px-3 py-2 text-xs text-muted-foreground"
+              data-testid="task-model-override-empty"
+            >
+              {view?.unsupportedReason ?? "Loading model options…"}
+            </p>
+          ) : null}
+        </div>
         {footerSlot ? (
           <div
             data-mobile-sheet-controls=""
@@ -338,7 +415,7 @@ export function TaskModelOverrideControl({
         ) : null}
         {error ? (
           <p
-            className="px-3 py-2 text-xs text-destructive"
+            className="shrink-0 px-3 py-2 text-xs text-destructive"
             data-testid="task-model-override-error"
           >
             {error}

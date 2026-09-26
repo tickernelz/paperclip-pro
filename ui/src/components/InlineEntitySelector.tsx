@@ -2,8 +2,9 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState, type Rea
 import { Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { orderItemsBySelectedAndRecent } from "../lib/recent-selections";
-import { useMobilePickerViewport } from "../hooks/useMobilePickerViewport";
+import { useMobileViewportInsets } from "../hooks/useMobileViewportInsets";
 import { cn } from "../lib/utils";
+import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 
 export interface InlineEntityOption {
   id: string;
@@ -64,7 +65,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [highlightedIndex, setHighlightedIndex] = useState(0);
-    useMobilePickerViewport(open);
+    useMobileViewportInsets(open);
     const highlightedIndexRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const shouldPreventCloseAutoFocusRef = useRef(false);
@@ -160,9 +161,18 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
             shouldPreventCloseAutoFocusRef.current = false;
           }}
         >
+          <MobilePickerSheetHeader
+            title={placeholder}
+            value={currentOption?.label ?? noneLabel}
+            onClose={() => {
+              shouldPreventCloseAutoFocusRef.current = true;
+              setOpen(false);
+              setQuery("");
+            }}
+          />
           <input
             ref={inputRef}
-            className="w-full border-b border-border bg-transparent px-2 py-1.5 text-base outline-none placeholder:text-muted-foreground/60 md:text-sm"
+            className="w-full shrink-0 border-b border-border bg-transparent px-2 py-1.5 text-base outline-none placeholder:text-muted-foreground/60 md:text-sm"
             placeholder={searchPlaceholder}
             value={query}
             onChange={(event) => {

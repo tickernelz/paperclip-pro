@@ -66,7 +66,10 @@ import {
   InlineEntitySelector,
   type InlineEntityOption,
 } from "@/components/InlineEntitySelector";
-import { TaskModelOverrideControl } from "./TaskModelOverrideControl";
+import {
+  TaskModelOverrideControl,
+  type TaskModelOverridePendingIssue,
+} from "./TaskModelOverrideControl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import type { IssueAttachment, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
@@ -123,7 +126,7 @@ interface TaskChatComposerProps {
   mentions?: MentionOption[];
   enableReassign?: boolean;
   conversationMode?: boolean;
-  resolveIssueId?: () => Promise<string>;
+  pendingIssue?: TaskModelOverridePendingIssue;
   reassignOptions?: InlineEntityOption[];
   agentMap?: ReadonlyMap<string, import("../AgentAvatar").AvatarAgent & { icon?: string | null }>;
   userProfileMap?: ReadonlyMap<
@@ -396,7 +399,7 @@ export function TaskChatComposer({
   mentions,
   enableReassign = false,
   conversationMode = false,
-  resolveIssueId,
+  pendingIssue,
   reassignOptions,
   agentMap,
   userProfileMap,
@@ -1509,10 +1512,10 @@ export function TaskChatComposer({
 
             <div className="flex-1" />
 
-            {(issueId || resolveIssueId) && !queuedEdit ? (
+            {(issueId || pendingIssue) && !queuedEdit ? (
               <TaskModelOverrideControl
                 issueId={issueId}
-                resolveIssueId={resolveIssueId}
+                pendingIssue={pendingIssue}
                 disabled={disabled}
                 mobile={mobile}
               />

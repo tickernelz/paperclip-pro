@@ -39,6 +39,7 @@ import { useSidebar } from "../context/SidebarContext";
 import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { useCompanyPageMemory } from "../hooks/useCompanyPageMemory";
+import { useMobileNavAutoHide } from "../hooks/useMobileNavAutoHide";
 import { healthApi } from "../api/health";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { resolveArchivedCompanyBounce, shouldSyncCompanySelectionFromRoute } from "../lib/company-selection";
@@ -133,13 +134,11 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       ? companyPathSegments[2]
       : null;
   const onboardingTriggered = useRef(false);
-  const lastMainScrollTop = useRef(0);
-  const lastMainScrollHeight = useRef<number | null>(null);
   const previousPathname = useRef<string | null>(null);
   const mainContentRef = useRef<HTMLElement | null>(null);
   const scrollMemory = useRef(new NavigationScrollMemory());
   const activeScrollKey = useRef<string>(location.key);
-  const [mobileNavVisible, setMobileNavVisible] = useState(true);
+  const mobileNavVisible = useMobileNavAutoHide(location.pathname, companyPrefix, isMobile);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const matchedCompany = useMemo(() => {
     if (!companyPrefix) return null;
@@ -463,16 +462,6 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     onGoToInbox: () => navigate("/inbox"),
   });
 
-  useEffect(() => {
-    if (!isMobile) {
-      setMobileNavVisible(true);
-      return;
-    }
-    lastMainScrollTop.current = 0;
-    lastMainScrollHeight.current = null;
-    setMobileNavVisible(true);
-  }, [isMobile]);
-
   // Swipe gesture to open/close sidebar on mobile
   useEffect(() => {
     if (!isMobile) return;
@@ -517,45 +506,6 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       document.removeEventListener("touchend", onTouchEnd);
     };
   }, [isMobile, sidebarOpen, setSidebarOpen]);
-
-  const updateMobileNavVisibility = useCallback((currentTop: number) => {
-    const scrollHeight = (document.scrollingElement ?? document.documentElement).scrollHeight;
-    const previousScrollHeight = lastMainScrollHeight.current;
-    const delta = currentTop - lastMainScrollTop.current;
-
-    lastMainScrollTop.current = currentTop;
-    lastMainScrollHeight.current = scrollHeight;
-
-    if (previousScrollHeight !== null && previousScrollHeight !== scrollHeight) return;
-
-    if (currentTop <= 24) {
-      setMobileNavVisible(true);
-    } else if (delta > 8) {
-      setMobileNavVisible(false);
-    } else if (delta < -8) {
-      setMobileNavVisible(true);
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!isMobile) {
-      setMobileNavVisible(true);
-      lastMainScrollTop.current = 0;
-      lastMainScrollHeight.current = null;
-      return;
-    }
-
-    const onScroll = () => {
-      updateMobileNavVisibility(window.scrollY || document.documentElement.scrollTop || 0);
-    };
-
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [isMobile, updateMobileNavVisibility]);
 
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
@@ -742,18 +692,9 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
               id="main-content"
               ref={mainContentRef}
               tabIndex={-1}
-              // Publish the pinned-composer bottom offset to descendants
-              // (PAP-495): while the auto-hiding mobile nav is on screen, raise
-              // it to the nav height so a sticky composer clears the nav; drop
-              // it back to the safe-area dock when the nav hides. Desktop leaves
-              // the token at its :root default.
               style={
                 isMobile
-                  ? ({
-                      "--tc-composer-bottom": mobileNavVisible
-                        ? "var(--sz-calc-14)"
-                        : "var(--tc-composer-hidden-nav-offset)",
-                    } as CSSProperties)
+                  ? ({ "--tc-composer-bottom": "var(--sz-calc-14)" } as CSSProperties)
                   : undefined
               }
               className={cn(
@@ -766,9 +707,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
                 // changes (e.g. switching skill-detail tabs) don't widen/shift
                 // when the vertical scrollbar appears or disappears (PAP-10907).
                 isMobile
-                  ? isTaskDetailRoute && !mobileNavVisible
-                    ? "overflow-visible pb-(--tc-composer-hidden-nav-offset)"
-                    : "overflow-visible pb-(--sz-calc-14)"
+                  ? "overflow-visible pb-(--sz-calc-14)"
                   : "overflow-auto [scrollbar-gutter:stable]",
               )}
             >
