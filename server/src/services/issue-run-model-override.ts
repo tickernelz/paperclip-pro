@@ -6,14 +6,14 @@ import type {
 import type { AdapterConfigSchema, ConfigFieldSchema } from "../adapters/types.js";
 import { resolveAdapterConfigSchema } from "./adapter-config-schema.js";
 
-export const ISSUE_RUN_MODEL_OVERRIDE_KEYS: readonly IssueRunModelOverrideKey[] = [
+const ISSUE_RUN_MODEL_OVERRIDE_KEYS: readonly IssueRunModelOverrideKey[] = [
   "model",
   "thinking",
 ];
 
 const FREE_TEXT_FIELD_TYPES: Record<string, true> = { text: true, combobox: true };
 
-export type IssueRunModelOverrideValues = Partial<
+type IssueRunModelOverrideValues = Partial<
   Record<IssueRunModelOverrideKey, string | null>
 >;
 
@@ -36,7 +36,7 @@ function nonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-export function readIssueRunModelOverride(
+function readIssueRunModelOverride(
   assigneeAdapterOverrides: unknown,
 ): Record<IssueRunModelOverrideKey, string | null> {
   const adapterConfig = asRecord(asRecord(assigneeAdapterOverrides).adapterConfig);
@@ -91,7 +91,7 @@ function findField(
   return schema.fields.find((field) => field.key === key) ?? null;
 }
 
-export function validateIssueRunModelOverrideValue(
+function validateIssueRunModelOverrideValue(
   field: ConfigFieldSchema,
   value: string,
 ): string {
@@ -119,7 +119,7 @@ export function validateIssueRunModelOverrideValue(
 }
 
 /** Validates against the adapter's published config schema, not a server-side list. */
-export function validateIssueRunModelOverride(
+function validateIssueRunModelOverride(
   schema: AdapterConfigSchema,
   values: IssueRunModelOverrideValues,
 ): IssueRunModelOverrideValues {
