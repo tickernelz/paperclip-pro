@@ -34,14 +34,16 @@ paperclip-pro onboard --yes
 
 `install` resolves one exact version — the `latest` dist-tag of `@tickernelz/paperclip-pro`, or `--version` — then verifies that all 31 packages of the release exist at that exact version before it downloads anything. A half-published release is refused with the missing package names; versions are never mixed across packages. It then installs the set into `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests the payload, and only then atomically flips `~/.paperclip-pro/cli/current` and writes the `~/.local/bin/paperclip-pro` shim. Measured on a WSL2 box: 44 s, against 11 m 38 s for the same commit through the git path.
 
-`latest` currently points at **2026.926.1**. **Do not install 2026.926.0**: its release run left `@tickernelz/paperclip-pro-server` stuck in npm's staging queue, so that version was unusable — which is why the completeness check exists. npm's queue has since flushed, so the check no longer refuses it, but the release was never validated; use `2026.926.1` or newer.
+`latest` currently points at **2026.926.2**. Prefer it.
 
-Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. Later releases handle both.
+`2026.926.0` is an incomplete release: its run left `@tickernelz/paperclip-pro-server` in npm's staging queue, so `latest` was never moved and no GitHub release was created. npm has since published that package, so all 31 packages now exist at that version and the completeness check no longer refuses it — but the release was never validated end to end. Use `2026.926.2`.
+
+Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. `2026.926.2` and later handle both.
 
 Pin a published version:
 
 ```sh
-paperclip-pro install --version 2026.926.1 --yes
+paperclip-pro install --version 2026.926.2 --yes
 ```
 
 `--canary` follows the `canary` dist-tag, which the release workflow does not publish today; it uses `next` and `latest`.
