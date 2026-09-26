@@ -32,7 +32,9 @@ npx @tickernelz/paperclip-pro@latest install --yes
 paperclip-pro onboard --yes
 ```
 
-`install` resolves the `latest` dist-tag of `@tickernelz/paperclip-pro` from `https://registry.npmjs.org`, installs the package set into `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests the payload, then atomically flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim. Measured on a WSL2 box: 44 s.
+`install` resolves one exact version — the `latest` dist-tag of `@tickernelz/paperclip-pro`, or `--version` — then verifies that all 31 packages of the release exist at that exact version before it downloads anything. A half-published release is refused with the missing package names; versions are never mixed across packages. It then installs the set into `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests the payload, and only then atomically flips `~/.paperclip-pro/cli/current` and writes the `~/.local/bin/paperclip-pro` shim. Measured on a WSL2 box: 44 s, against 11 m 38 s for the same commit through the git path.
+
+`latest` currently points at **2026.926.1**. **Do not install 2026.926.0**: its release run left `@tickernelz/paperclip-pro-server` stuck in npm's staging queue, so that version was unusable — which is why the completeness check exists. npm's queue has since flushed, so the check no longer refuses it, but the release was never validated; use `2026.926.1` or newer.
 
 Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. Later releases handle both.
 
@@ -43,6 +45,20 @@ paperclip-pro install --version 2026.926.1 --yes
 ```
 
 `--canary` follows the `canary` dist-tag, which the release workflow does not publish today; it uses `next` and `latest`.
+
+### What an install replaces
+
+An install or update only ever writes inside `~/.paperclip-pro/cli/` and the shim:
+
+| Path | What happens |
+| --- | --- |
+| `~/.paperclip-pro/cli/installs/<npm\|git>/<id>/` | New payload directory; the two previous payloads are kept for rollback, older ones pruned |
+| `~/.paperclip-pro/cli/current` | Symlink flipped atomically to the new payload |
+| `~/.paperclip-pro/cli/install.json` | Install manifest, rewritten (previous records retained) |
+| `~/.local/bin/paperclip-pro` | Managed shim, rewritten with the validated Node executable |
+| `~/.bashrc` or `~/.zshrc` | A marked PATH block, only when `~/.local/bin` is not already on `PATH` |
+
+Nothing under `~/.paperclip-pro/instances/` is touched: the instance database, `config.json`, `service.env`, secrets, logs, storage, backups and workspaces survive a payload switch in either direction.
 
 `onboard --yes` writes `~/.paperclip-pro/instances/default/config.json` for trusted local loopback and starts the server on `http://127.0.0.1:3100`. An embedded PostgreSQL is created automatically. For a reachable instance, pick a bind preset:
 

@@ -4,6 +4,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   assertPayloadNativeAssets,
+  assertReleaseSetPublished,
   type CommandRunner,
   installCommand,
   installGitPayload,
@@ -15,6 +16,7 @@ import {
   runCommandWithDiagnostics,
   writeManagedNpmrc,
 } from "../commands/install.js";
+import { RELEASE_PACKAGE_NAMES } from "../release-packages.js";
 import { uninstallCommand } from "../commands/uninstall.js";
 import { resolvePaperclipInstanceId } from "../config/home.js";
 import {
@@ -117,6 +119,59 @@ describe("managed install commands", () => {
 
     fs.symlinkSync("libicuuc.so.60.2", path.join(nativeRoot, "lib", "libicuuc.so.60"));
     expect(() => assertPayloadNativeAssets(path.join(root, "payload"))).not.toThrow();
+  });
+
+  it("covers every package the release workflow publishes", () => {
+    const repoRoot = path.resolve(import.meta.dirname, "..", "..", "..");
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, "scripts", "release-package-manifest.json"), "utf8"),
+    ) as { name: string; publishFromCi?: boolean }[];
+    const published = manifest.filter((entry) => entry.publishFromCi).map(({ name }) => name).sort();
+    expect([...RELEASE_PACKAGE_NAMES].sort()).toEqual(published);
+  });
+
+  it("refuses a half-published release and names the packages that are missing", async () => {
+    const ABSENT: Record<string, true> = {
+      "@tickernelz/paperclip-pro-server": true,
+      "@tickernelz/paperclip-pro-ui": true,
+    };
+    const runCommand = vi.fn(async (_file: string, args: string[]) => {
+      const spec = args[1] ?? "";
+      const name = spec.slice(0, spec.lastIndexOf("@"));
+      if (ABSENT[name]) throw new Error(`npm ERR! 404 '${spec}' is not in this registry.`);
+      return { stdout: JSON.stringify("2026.926.0"), stderr: "" };
+    });
+
+    await expect(assertReleaseSetPublished("2026.926.0", runCommand)).rejects.toThrow(
+      /2 of 31 packages are not published.*paperclip-pro-server.*paperclip-pro-ui/s,
+    );
+    expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length);
+  });
+
+  it("accepts a release whose whole package set is published at the resolved version", async () => {
+    const runCommand = vi.fn(async () => ({ stdout: JSON.stringify("2026.926.1"), stderr: "" }));
+    await expect(assertReleaseSetPublished("2026.926.1", runCommand)).resolves.toBeUndefined();
+  });
+
+  it("checks the whole release set before it downloads anything", async () => {
+    const calls: string[] = [];
+    const runCommand = vi.fn(async (file: string, args: string[]) => {
+      calls.push(`${file} ${args[0]}`);
+      if (file === "npm" && args[0] === "view") {
+        const spec = args[1] ?? "";
+        if (spec.startsWith("@tickernelz/paperclip-pro-db@")) {
+          throw new Error(`npm ERR! 404 '${spec}' is not in this registry.`);
+        }
+        return { stdout: JSON.stringify("2026.926.0"), stderr: "" };
+      }
+      throw new Error(`Unexpected command: ${file} ${args.join(" ")}`);
+    });
+
+    await expect(installCommand({ version: "2026.926.0" }, { runCommand })).rejects.toThrow(
+      "paperclip-pro-db",
+    );
+    expect(calls.every((call) => call === "npm view")).toBe(true);
+    expect(fs.existsSync(resolveInstallStorePaths().shimPath)).toBe(false);
   });
 
   it("requires explicit non-interactive consent before resolving git refs", async () => {
@@ -401,7 +456,7 @@ describe("managed install commands", () => {
     const runCommand = vi.fn(async () => ({ stdout: JSON.stringify("2026.720.0"), stderr: "" }));
 
     await expect(installCommand({}, { runCommand })).rejects.toThrow("non-directory install-store path");
-    expect(runCommand).toHaveBeenCalledTimes(1);
+    expect(runCommand.mock.calls.every(([file, args]) => file === "npm" && args[0] === "view")).toBe(true);
     expect(fs.readdirSync(outside)).toEqual([]);
   });
 

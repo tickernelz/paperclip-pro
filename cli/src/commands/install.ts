@@ -21,6 +21,7 @@ import {
   type InstallChannel,
   type InstallRecord,
 } from "../install-store.js";
+import { RELEASE_PACKAGE_NAMES } from "../release-packages.js";
 
 const execFileAsync = promisify(execFile);
 export const PUBLIC_NPM_REGISTRY = "https://registry.npmjs.org";
@@ -148,6 +149,31 @@ export async function resolvePublishedVersion(spec: string, runCommand: CommandR
     { maxBuffer: 1024 * 1024 },
   );
   return parseResolvedVersion(result.stdout);
+}
+
+export async function assertReleaseSetPublished(version: string, runCommand: CommandRunner): Promise<void> {
+  const missing: string[] = [];
+  const queue = [...RELEASE_PACKAGE_NAMES];
+  const probe = async (): Promise<void> => {
+    for (let name = queue.pop(); name !== undefined; name = queue.pop()) {
+      try {
+        const result = await runCommand(
+          "npm",
+          ["view", `${name}@${version}`, "version", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
+          { maxBuffer: 1024 * 1024 },
+        );
+        if (parseResolvedVersion(result.stdout) !== version) missing.push(name);
+      } catch {
+        missing.push(name);
+      }
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(8, RELEASE_PACKAGE_NAMES.length) }, probe));
+  if (missing.length > 0) {
+    throw new Error(
+      `Release ${version} is incomplete on ${PUBLIC_NPM_REGISTRY}: ${missing.length} of ${RELEASE_PACKAGE_NAMES.length} packages are not published at that version (${missing.sort().join(", ")}). Installing it would mix versions across packages. Wait for the release to finish publishing, or pass --version with a complete release.`,
+    );
+  }
 }
 
 export function resolveGitInstallRequest(options: InstallOptions): { repo: string; ref: string; pinned: boolean } | null {
@@ -437,6 +463,8 @@ export async function installCommand(
   const request = resolveNpmInstallRequest(options);
   console.log(`Resolving @tickernelz/paperclip-pro@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
   const version = await resolvePublishedVersion(request.spec, runCommand);
+  console.log(`Verifying all ${RELEASE_PACKAGE_NAMES.length} packages of release ${version}...`);
+  await assertReleaseSetPublished(version, runCommand);
   console.log(`Installing @tickernelz/paperclip-pro@${version}...`);
 
   const paths = resolveInstallStorePaths();

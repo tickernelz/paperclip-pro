@@ -133,13 +133,26 @@ paperclip-pro install --version 2026.926.1 --yes
 paperclip-pro service restart --drain
 ```
 
-The npm install resolves the dist-tag with `npm view`, installs
+The npm install resolves one exact version with `npm view`, then verifies that
+every package in `cli/src/release-packages.ts` (31 packages, kept in step with
+`scripts/release-package-manifest.json` by a test) exists at that exact version
+before it downloads anything. A partially published release — 2026.926.0 left
+`@tickernelz/paperclip-pro-server` in npm's staging queue — is refused with the
+missing names rather than installed with mixed versions. It then installs
 `@tickernelz/paperclip-pro@<version>` into
 `~/.paperclip-pro/cli/installs/npm/<version>` under a private npm user config
 that allowlists the `@embedded-postgres/*` install scripts, smoke-tests
 `--version` and the payload's PostgreSQL shared-library links, and only then
 swaps the payload into place (`cli/src/commands/install.ts`). Measured on this
-host, that is ~45 s end to end.
+host, that is ~45 s end to end, against 11 m 38 s for the git path.
+
+Switching an existing instance between a git payload and an npm payload is
+non-destructive. An install writes only `~/.paperclip-pro/cli/installs/<source>/<id>`,
+the `~/.paperclip-pro/cli/current` symlink, `~/.paperclip-pro/cli/install.json`
+and `~/.local/bin/paperclip-pro`. Everything under
+`~/.paperclip-pro/instances/<id>` — database, `config.json`, `service.env`,
+secrets, logs, storage, backups, workspaces — is untouched, and the two previous
+payloads stay available for `paperclip-pro update --rollback`.
 
 To install a ref that is not released yet, reinstall from git:
 
