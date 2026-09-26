@@ -310,18 +310,23 @@ export function TaskChatThreadView({
   onOpenSkill,
 }: TaskChatThreadViewProps) {
   const streamlined = useStreamlinedTaskChatPresentation();
-  const retryableMarkerId =
-    onRetryFailedRun || onTryAgainNoLiveExecutionPath
-      ? [...items]
-          .reverse()
-          .find(
-            (item) =>
-              item.kind === "marker" &&
-              item.variant === "interrupted" &&
-              (item.label === "Run failed" ||
-                item.label === "Usage limit reached"),
-          )?.id
-      : undefined;
+  // Walked backwards in place: a live thread copies and reverses the whole
+  // item array on every render otherwise, which is O(items) per poll for a
+  // marker that almost always sits at the end.
+  let retryableMarkerId: string | undefined;
+  if (onRetryFailedRun || onTryAgainNoLiveExecutionPath) {
+    for (let index = items.length - 1; index >= 0; index -= 1) {
+      const item = items[index];
+      if (
+        item.kind === "marker" &&
+        item.variant === "interrupted" &&
+        (item.label === "Run failed" || item.label === "Usage limit reached")
+      ) {
+        retryableMarkerId = item.id;
+        break;
+      }
+    }
+  }
   // Streaming tail and header updates must not rebuild settled markdown/tool trees.
   const history = useMemo(() => {
     const renderedItems = streamlined
@@ -402,6 +407,7 @@ export function TaskChatThreadView({
                   onRetryFailedRun,
                   retryFailedRunId,
                   attachments,
+                  onOpenSkill,
                 )}
               </div>
             ))}
@@ -413,6 +419,9 @@ export function TaskChatThreadView({
     onTryAgainNoLiveExecutionPath, tryAgainNoLiveExecutionPathPending,
     retryableMarkerId, onRetryFailedRun, retryFailedRunId, attachments, onOpenSkill,
   ]);
+  // The auto-follow key walks the whole tree, so keep it off renders that
+  // did not change the items array.
+  const contentSignature = useMemo(() => taskChatContentKey(items), [items]);
   const body = (
     <div
       className={cn(
@@ -435,9 +444,8 @@ export function TaskChatThreadView({
   );
 
   if (!scroll) return body;
-
   return (
-    <TaskMessageScroller contentKey={contentKey ?? taskChatContentKey(items)}>
+    <TaskMessageScroller contentKey={contentKey ?? contentSignature}>
       {body}
     </TaskMessageScroller>
   );
