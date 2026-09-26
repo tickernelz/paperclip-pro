@@ -2,10 +2,12 @@ import { useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import type {
+  AgentAdapterConfigBatchPreview,
   IssueRunModelOverrideField,
   IssueRunModelOverrideKey,
   IssueRunModelOverrideView,
 } from "@tickernelz/paperclip-pro-shared";
+import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
@@ -172,17 +174,57 @@ function FieldSection({
   );
 }
 
-/** Per-task model and thinking picker; writes to the issue, not the agent config. */
+export interface TaskModelOverrideDraft {
+  companyId: string;
+  agentId: string | null;
+  values: Partial<Record<IssueRunModelOverrideKey, string | null>>;
+  onChange: (key: IssueRunModelOverrideKey, value: string | null) => void;
+  noAgentHint: string;
+}
+
+const DRAFT_FIELD_KEYS: readonly IssueRunModelOverrideKey[] = ["model", "thinking"];
+
+function draftOverrideFields(
+  preview: AgentAdapterConfigBatchPreview | undefined,
+  values: Partial<Record<IssueRunModelOverrideKey, string | null>>,
+): IssueRunModelOverrideField[] {
+  if (!preview) return [];
+  const current = preview.agents[0]?.current ?? {};
+  const fields: IssueRunModelOverrideField[] = [];
+  for (const key of DRAFT_FIELD_KEYS) {
+    const field = preview.fields.find((entry) => entry.key === key);
+    if (!field) continue;
+    const agentDefault = current[key] ?? null;
+    const override = values[key] ?? null;
+    fields.push({
+      key,
+      label: field.label,
+      hint: field.hint,
+      freeText: field.freeText,
+      options: field.options,
+      agentDefault,
+      override,
+      effective: override ?? agentDefault,
+    });
+  }
+  return fields;
+}
+
+/** Per-task model and thinking picker; writes to the issue, or to a draft before one exists. */
 export function TaskModelOverrideControl({
   issueId,
+  draft,
+  resolveIssueId,
+  footerSlot,
   disabled = false,
   mobile = false,
-  footerSlot,
 }: {
-  issueId: string | null | undefined;
+  issueId?: string | null;
+  draft?: TaskModelOverrideDraft;
+  resolveIssueId?: () => Promise<string>;
+  footerSlot?: ReactNode;
   disabled?: boolean;
   mobile?: boolean;
-  footerSlot?: ReactNode;
 }) {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
@@ -190,17 +232,29 @@ export function TaskModelOverrideControl({
   const [expandedOverride, setExpandedOverride] = useState<
     IssueRunModelOverrideKey | null | undefined
   >(undefined);
+  const [resolvedIssueId, setResolvedIssueId] = useState<string | null>(null);
+  const [resolving, setResolving] = useState(false);
   useMobileViewportInsets(open);
-  const key = queryKeys.issues.modelOverride(issueId ?? "__none__");
+  const activeIssueId = draft ? null : issueId || resolvedIssueId;
+  const key = queryKeys.issues.modelOverride(activeIssueId ?? "__none__");
   const query = useQuery({
     queryKey: key,
-    queryFn: () => issuesApi.getModelOverride(issueId!),
-    enabled: Boolean(issueId),
+    queryFn: () => issuesApi.getModelOverride(activeIssueId!),
+    enabled: Boolean(activeIssueId),
     staleTime: 30_000,
+  });
+  const preview = useQuery({
+    queryKey: queryKeys.agents.adapterConfigBatch(
+      draft?.companyId ?? "__none__",
+      draft?.agentId ? [draft.agentId] : [],
+    ),
+    queryFn: () => agentsApi.batchAdapterConfigPreview([draft!.agentId!]),
+    enabled: Boolean(draft?.agentId),
+    staleTime: 60_000,
   });
   const mutation = useMutation({
     mutationFn: (values: { model?: string | null; thinking?: string | null }) =>
-      issuesApi.setModelOverride(issueId!, values),
+      issuesApi.setModelOverride(activeIssueId!, values),
     onSuccess: (next: IssueRunModelOverrideView) => {
       queryClient.setQueryData(key, next);
       setError(null);
@@ -215,31 +269,71 @@ export function TaskModelOverrideControl({
   });
 
   const view = query.data;
-  if (!issueId || !view?.supported || view.fields.length === 0) return null;
+  const draftValues = draft?.values;
+  const previewData = preview.data;
+  const fields = useMemo(
+    () =>
+      draft
+        ? draftOverrideFields(previewData, draftValues ?? {})
+        : (view?.fields ?? []),
+    [draft, previewData, draftValues, view],
+  );
+  const noAgent = Boolean(draft) && !draft?.agentId;
+  if (draft) {
+    if (draft.agentId && preview.isFetched && fields.length === 0) return null;
+  } else if (activeIssueId) {
+    if (!open && (!view?.supported || view.fields.length === 0)) return null;
+  } else if (!resolveIssueId) {
+    return null;
+  }
 
-  const hasOverride = view.fields.some((field) => field.override);
+  const pending = mutation.isPending || resolving;
+  const hasOverride = fields.some((field) => field.override);
   const expandedKey =
     expandedOverride === undefined
-      ? (view.fields[0]?.key ?? null)
+      ? (fields[0]?.key ?? null)
       : expandedOverride;
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={async (next) => {
+        if (next && !draft && !activeIssueId && resolveIssueId) {
+          setResolving(true);
+          try {
+            setResolvedIssueId(await resolveIssueId());
+            setError(null);
+          } catch (resolveError: unknown) {
+            setError(
+              resolveError instanceof Error
+                ? resolveError.message
+                : "This conversation could not be opened.",
+            );
+          } finally {
+            setResolving(false);
+          }
+        }
+        setOpen(next);
+      }}
+    >
       <PopoverTrigger asChild>
         <button
           type="button"
-          disabled={disabled}
-          title="Model and thinking effort for this task"
+          disabled={disabled || noAgent}
+          title={
+            noAgent ? draft!.noAgentHint : "Model and thinking effort for this task"
+          }
           className={cn(
             "flex h-8 min-w-0 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50",
             hasOverride ? "text-foreground" : "text-muted-foreground",
           )}
           data-testid="task-chat-composer-model-override"
+          data-slot="model-override-trigger"
           data-has-override={hasOverride ? "true" : "false"}
         >
           <span className={cn("truncate", mobile ? "max-w-20" : "max-w-40")}>
-            {triggerLabel(view.fields)}
+            {noAgent ? AGENT_DEFAULT_LABEL : triggerLabel(fields)}
           </span>
-          {mutation.isPending ? (
+          {pending ? (
             <Loader2 className="h-3 w-3 shrink-0 animate-spin" aria-hidden />
           ) : (
             <ChevronDown className="h-3 w-3 shrink-0" aria-hidden />
@@ -254,25 +348,37 @@ export function TaskModelOverrideControl({
       >
         <MobilePickerSheetHeader
           title="Task model"
-          value={triggerLabel(view.fields)}
+          value={triggerLabel(fields)}
           onClose={() => setOpen(false)}
         />
         <div data-mobile-sheet-body="" className="flex min-w-0 flex-col">
-          {view.fields.map((field) => (
+          {fields.map((field) => (
             <FieldSection
               key={field.key}
               field={field}
-              pending={mutation.isPending}
+              pending={pending}
               collapsible={mobile}
               expanded={expandedKey === field.key}
               onToggle={() =>
                 setExpandedOverride(expandedKey === field.key ? null : field.key)
               }
-              onSelect={(fieldKey, value) =>
-                mutation.mutate({ [fieldKey]: value })
-              }
+              onSelect={(fieldKey, value) => {
+                if (draft) {
+                  draft.onChange(fieldKey, value);
+                  return;
+                }
+                mutation.mutate({ [fieldKey]: value });
+              }}
             />
           ))}
+          {fields.length === 0 ? (
+            <p
+              className="px-3 py-2 text-xs text-muted-foreground"
+              data-testid="task-model-override-empty"
+            >
+              {view?.unsupportedReason ?? "Loading model options…"}
+            </p>
+          ) : null}
         </div>
         {footerSlot ? (
           <div

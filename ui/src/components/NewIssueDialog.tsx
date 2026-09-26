@@ -3,7 +3,13 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { normalizeLegacyRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
 import { memo, useState, useEffect, useRef, useCallback, useMemo, type ChangeEvent, type CSSProperties, type DragEvent, type RefObject } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { AgentEnvConfig, EnvBinding, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type {
+  AgentEnvConfig,
+  EnvBinding,
+  IssueRunModelOverrideKey,
+  IssueRunModelOverrideSubtaskScope,
+  IssueWorkMode,
+} from "@tickernelz/paperclip-pro-shared";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { executionWorkspacesApi } from "../api/execution-workspaces";
@@ -42,6 +48,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
+import { TaskModelOverrideControl } from "@/components/task-chat/TaskModelOverrideControl";
 import {
   Popover,
   PopoverContent,
@@ -325,6 +332,14 @@ const priorities = [
   { value: "low", label: "Low", icon: ArrowDown, color: priorityColor.low ?? priorityColorDefault },
 ];
 
+const MODEL_OVERRIDE_SCOPES: {
+  value: IssueRunModelOverrideSubtaskScope;
+  label: string;
+}[] = [
+  { value: "new", label: "New subtasks" },
+  { value: "new_and_existing", label: "New and existing" },
+];
+
 const EXECUTION_WORKSPACE_MODES = [
   { value: "shared_workspace", label: "Project default" },
   { value: "isolated_workspace", label: "New isolated workspace" },
@@ -496,6 +511,12 @@ export function NewIssueDialog() {
   const [assigneeModelOverride, setAssigneeModelOverride] = useState("");
   const [assigneeThinkingEffort, setAssigneeThinkingEffort] = useState("");
   const [assigneeChrome, setAssigneeChrome] = useState(false);
+  const [modelOverrideDraft, setModelOverrideDraft] = useState<
+    Partial<Record<IssueRunModelOverrideKey, string | null>>
+  >({});
+  const [modelOverrideInherit, setModelOverrideInherit] = useState(true);
+  const [modelOverrideSubtaskScope, setModelOverrideSubtaskScope] =
+    useState<IssueRunModelOverrideSubtaskScope>("new");
   const [executionWorkspaceMode, setExecutionWorkspaceMode] = useState<string>("shared_workspace");
   const [selectedExecutionWorkspaceId, setSelectedExecutionWorkspaceId] = useState("");
   const [workMode, setWorkMode] = useState<IssueWorkMode>("standard");
@@ -954,6 +975,10 @@ export function NewIssueDialog() {
     assigneeThinkingEffort,
   ]);
 
+  useEffect(() => {
+    setModelOverrideDraft({});
+  }, [selectedAssigneeAgentId]);
+
   // Cleanup timer on unmount
   useEffect(() => {
     return () => {
@@ -980,6 +1005,9 @@ export function NewIssueDialog() {
     setAssigneeModelOverride("");
     setAssigneeThinkingEffort("");
     setAssigneeChrome(false);
+    setModelOverrideDraft({});
+    setModelOverrideInherit(true);
+    setModelOverrideSubtaskScope("new");
     setExecutionWorkspaceMode("shared_workspace");
     setSelectedExecutionWorkspaceId("");
     setWorkMode("standard");
@@ -1010,6 +1038,9 @@ export function NewIssueDialog() {
     setAssigneeModelOverride("");
     setAssigneeThinkingEffort("");
     setAssigneeChrome(false);
+    setModelOverrideDraft({});
+    setModelOverrideInherit(true);
+    setModelOverrideSubtaskScope("new");
     setExecutionWorkspaceMode("shared_workspace");
     setSelectedExecutionWorkspaceId("");
     setWorkMode("standard");
@@ -1032,6 +1063,17 @@ export function NewIssueDialog() {
       thinkingEffortOverride: assigneeThinkingEffort,
       chrome: assigneeChrome,
     });
+    const draftModel = modelOverrideDraft.model ?? null;
+    const draftThinking = modelOverrideDraft.thinking ?? null;
+    const modelOverride =
+      draftModel || draftThinking
+        ? {
+            ...(draftModel ? { model: draftModel } : {}),
+            ...(draftThinking ? { thinking: draftThinking } : {}),
+            inheritToSubtasks: modelOverrideInherit,
+            subtaskScope: modelOverrideSubtaskScope,
+          }
+        : null;
     const selectedProject = orderedProjects.find((project) => project.id === projectId);
     // Hidden selectors must not submit a restored draft over the managed default.
     const executionWorkspacePolicy =
@@ -1073,6 +1115,7 @@ export function NewIssueDialog() {
       ...(projectId ? { projectId } : {}),
       ...(projectWorkspaceId ? { projectWorkspaceId } : {}),
       ...(assigneeAdapterOverrides ? { assigneeAdapterOverrides } : {}),
+      ...(modelOverride ? { modelOverride } : {}),
       ...(executionWorkspacePolicy?.enabled ? { executionWorkspacePreference: executionWorkspaceMode } : {}),
       ...(workspaceIsolationControlsVisible && executionWorkspaceMode === "reuse_existing" && selectedExecutionWorkspaceId
         ? { executionWorkspaceId: selectedExecutionWorkspaceId }
@@ -2230,6 +2273,51 @@ export function NewIssueDialog() {
               })}
             </PopoverContent>
           </Popover>
+
+          <TaskModelOverrideControl
+            draft={{
+              companyId: effectiveCompanyId ?? "",
+              agentId: selectedAssigneeAgentId ?? null,
+              values: modelOverrideDraft,
+              onChange: (key, value) =>
+                setModelOverrideDraft((current) => ({ ...current, [key]: value })),
+              noAgentHint: "Pick an agent assignee first",
+            }}
+            disabled={createIssue.isPending}
+            footerSlot={
+              <div className="flex flex-col gap-2 p-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs">Apply to subtasks</span>
+                  <ToggleSwitch
+                    checked={modelOverrideInherit}
+                    onCheckedChange={setModelOverrideInherit}
+                    data-testid="new-issue-model-override-inherit"
+                  />
+                </div>
+                {modelOverrideInherit ? (
+                  <div className="flex items-center gap-1" role="radiogroup">
+                    {MODEL_OVERRIDE_SCOPES.map((scope) => (
+                      <button
+                        key={scope.value}
+                        type="button"
+                        role="radio"
+                        aria-checked={modelOverrideSubtaskScope === scope.value}
+                        data-testid={`new-issue-model-override-scope-${scope.value}`}
+                        className={cn(
+                          "flex-1 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-accent/40",
+                          modelOverrideSubtaskScope === scope.value &&
+                            "bg-accent text-foreground",
+                        )}
+                        onClick={() => setModelOverrideSubtaskScope(scope.value)}
+                      >
+                        {scope.label}
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            }
+          />
 
           {/* More */}
           <Popover open={moreOpen} onOpenChange={setMoreOpen}>

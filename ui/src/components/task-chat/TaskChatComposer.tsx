@@ -123,6 +123,7 @@ interface TaskChatComposerProps {
   mentions?: MentionOption[];
   enableReassign?: boolean;
   conversationMode?: boolean;
+  resolveIssueId?: () => Promise<string>;
   reassignOptions?: InlineEntityOption[];
   agentMap?: ReadonlyMap<string, import("../AgentAvatar").AvatarAgent & { icon?: string | null }>;
   userProfileMap?: ReadonlyMap<
@@ -395,6 +396,7 @@ export function TaskChatComposer({
   mentions,
   enableReassign = false,
   conversationMode = false,
+  resolveIssueId,
   reassignOptions,
   agentMap,
   userProfileMap,
@@ -1507,9 +1509,10 @@ export function TaskChatComposer({
 
             <div className="flex-1" />
 
-            {issueId && !queuedEdit ? (
+            {(issueId || resolveIssueId) && !queuedEdit ? (
               <TaskModelOverrideControl
                 issueId={issueId}
+                resolveIssueId={resolveIssueId}
                 disabled={disabled}
                 mobile={mobile}
               />
