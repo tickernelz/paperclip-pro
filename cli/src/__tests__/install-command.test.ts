@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  assertPayloadNativeAssets,
   type CommandRunner,
   installCommand,
   installGitPayload,
@@ -10,7 +11,9 @@ import {
   resolveGitInstallRequest,
   resolveGitInstallWorkspacePackages,
   resolveNpmInstallRequest,
+  resolvePublishedVersion,
   runCommandWithDiagnostics,
+  writeManagedNpmrc,
 } from "../commands/install.js";
 import { uninstallCommand } from "../commands/uninstall.js";
 import { resolvePaperclipInstanceId } from "../config/home.js";
@@ -76,10 +79,44 @@ describe("managed install commands", () => {
     ]);
   });
 
-  it("supports fork overrides and classifies SHA refs as pinned", () => {
+  it("supports fork overrides, defaults to this fork, and classifies SHA refs as pinned", () => {
     expect(resolveGitInstallRequest({ ref: "feature/test", repo: "HenkDz/paperclip" })).toEqual({ repo: "HenkDz/paperclip", ref: "feature/test", pinned: false });
-    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "paperclipai/paperclip", ref: "abcdef1", pinned: true });
+    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "tickernelz/paperclip-pro", ref: "abcdef1", pinned: true });
     expect(() => resolveGitInstallRequest({ repo: "HenkDz/paperclip" })).toThrow("requires --ref");
+  });
+
+  it("reads the version npm 12 reports as a single-element array and npm 11 reports as a string", async () => {
+    const reply = (stdout: string) => vi.fn(async () => ({ stdout, stderr: "" }));
+    await expect(resolvePublishedVersion("latest", reply('"2026.926.1"'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply('[\n  "2026.926.1"\n]'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply('["2026.9.0","2026.926.1"]'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply("[]"))).rejects.toThrow("unexpected version response");
+    await expect(resolvePublishedVersion("latest", reply("   "))).rejects.toThrow("empty version response");
+  });
+
+  it("lets the embedded PostgreSQL package run its install script under npm's script allowlist", () => {
+    const npmrcPath = path.join(root, "npmrc");
+    writeManagedNpmrc(npmrcPath);
+    const contents = fs.readFileSync(npmrcPath, "utf8");
+    expect(contents).toContain("registry=https://registry.npmjs.org");
+    expect(contents).toContain("allow-scripts[]=@embedded-postgres/linux-x64");
+    expect(contents).toContain("allow-scripts[]=@embedded-postgres/darwin-arm64");
+    expect(fs.statSync(npmrcPath).mode & 0o777).toBe(0o600);
+  });
+
+  it("rejects a payload whose embedded PostgreSQL shared-library links were never created", () => {
+    const nativeRoot = path.join(root, "payload", "node_modules", "@embedded-postgres", "linux-x64", "native");
+    fs.mkdirSync(path.join(nativeRoot, "lib"), { recursive: true });
+    fs.writeFileSync(path.join(nativeRoot, "lib", "libicuuc.so.60.2"), "");
+    fs.writeFileSync(
+      path.join(nativeRoot, "pg-symlinks.json"),
+      JSON.stringify([{ source: "native/lib/libicuuc.so.60.2", target: "native/lib/libicuuc.so.60" }]),
+    );
+
+    expect(() => assertPayloadNativeAssets(path.join(root, "payload"))).toThrow("native/lib/libicuuc.so.60");
+
+    fs.symlinkSync("libicuuc.so.60.2", path.join(nativeRoot, "lib", "libicuuc.so.60"));
+    expect(() => assertPayloadNativeAssets(path.join(root, "payload"))).not.toThrow();
   });
 
   it("requires explicit non-interactive consent before resolving git refs", async () => {

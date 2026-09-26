@@ -114,29 +114,51 @@ A restart is serialized by `<instanceRoot>/hot-restart.lock`; if a restart
 process died, remove the stale lock and retry
 (`cli/src/commands/service.ts:71`, `cli/src/commands/service.ts:106`).
 
-## 4. Updating from this repository
+## 4. Updating from npm, or from an unreleased commit
 
-The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so
-`paperclip-pro update --latest` resolves once a release has run; `--canary`
-still resolves nothing, because the fork publishes only `next` and `latest`.
-To install a ref that is not released yet, reinstall from git:
+The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so the
+normal update is:
 
 ```bash
-paperclip-pro install --repo tickernelz/paperclip-pro --ref main --yes
+paperclip-pro update --latest
+paperclip-pro update --check
+```
+
+`--canary` resolves nothing today, because the release workflow publishes only
+`next` and `latest`. A fresh managed install takes the same npm path:
+
+```bash
+paperclip-pro install --yes
+paperclip-pro install --version 2026.926.1 --yes
 paperclip-pro service restart --drain
 ```
 
-`--repo` is required because it otherwise defaults to the upstream repository
-(`cli/src/commands/install.ts:27`, `cli/src/commands/install.ts:143`), and
-`--ref` is mandatory for a git install (`cli/src/commands/install.ts:141`).
-Pass a commit SHA instead of `main` for a reproducible install; a 7-40 hex ref
-is treated as pinned (`cli/src/commands/install.ts:147`).
+The npm install resolves the dist-tag with `npm view`, installs
+`@tickernelz/paperclip-pro@<version>` into
+`~/.paperclip-pro/cli/installs/npm/<version>` under a private npm user config
+that allowlists the `@embedded-postgres/*` install scripts, smoke-tests
+`--version` and the payload's PostgreSQL shared-library links, and only then
+swaps the payload into place (`cli/src/commands/install.ts`). Measured on this
+host, that is ~45 s end to end.
 
-The install downloads `codeload.github.com/<repo>/tar.gz/<sha>`, runs
+To install a ref that is not released yet, reinstall from git:
+
+```bash
+paperclip-pro install --ref main --yes
+paperclip-pro service restart --drain
+```
+
+`--ref` is mandatory for a git install and `--repo` defaults to
+`tickernelz/paperclip-pro` (`cli/src/commands/install.ts`). Pass a commit SHA
+instead of `main` for a reproducible install; a 7-40 hex ref is treated as
+pinned.
+
+The git install downloads `codeload.github.com/<repo>/tar.gz/<sha>`, runs
 `pnpm install --frozen-lockfile`, builds, packs every workspace package, installs
 the tarballs into a payload directory, smoke-tests `--version`, and only then
-swaps the payload into place (`cli/src/commands/install.ts:255`). A payload for a
-SHA already built is reused.
+swaps the payload into place. A payload for a SHA already built is reused. It
+needs pnpm, corepack and the full build toolchain and takes minutes, not seconds.
+
 
 Roll back to the retained previous payload:
 

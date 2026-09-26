@@ -134,20 +134,17 @@ Use repo script in development:
 pnpm paperclip-pro --help
 ```
 
-Recommended installation and interactive onboarding, from a source checkout:
+Recommended installation and interactive onboarding:
 
 ```sh
-git clone https://github.com/tickernelz/paperclip-pro.git
-cd paperclip-pro
-pnpm install --frozen-lockfile
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo tickernelz/paperclip-pro --ref main --yes
+npx @tickernelz/paperclip-pro@latest install --yes
 paperclip-pro onboard --yes
 ```
 
-`--repo` is required because it otherwise defaults to the upstream repository
-(`cli/src/commands/install.ts:27`). `--ref` accepts a branch, tag, or commit SHA;
-use a SHA for a reproducible install. The upstream `paperclip.ing/install.sh`
-bootstrap installs upstream Paperclip, not this fork.
+`install` with no source flag installs the published `latest` release from npm.
+For an unreleased commit, pass `--ref <branch|tag|sha>`; `--repo` defaults to
+`tickernelz/paperclip-pro`. The upstream `paperclip.ing/install.sh` bootstrap
+installs upstream Paperclip, not this fork.
 
 
 First-time local bootstrap from a source checkout:

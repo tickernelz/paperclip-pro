@@ -24,7 +24,17 @@ import {
 
 const execFileAsync = promisify(execFile);
 export const PUBLIC_NPM_REGISTRY = "https://registry.npmjs.org";
-const DEFAULT_GITHUB_REPO = "paperclipai/paperclip";
+export const INSTALL_SCRIPT_ALLOWLIST = [
+  "@embedded-postgres/darwin-arm64",
+  "@embedded-postgres/darwin-x64",
+  "@embedded-postgres/linux-arm",
+  "@embedded-postgres/linux-arm64",
+  "@embedded-postgres/linux-ia32",
+  "@embedded-postgres/linux-ppc64",
+  "@embedded-postgres/linux-x64",
+  "@embedded-postgres/windows-x64",
+];
+const DEFAULT_GITHUB_REPO = "tickernelz/paperclip-pro";
 const EXACT_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 export type InstallOptions = { canary?: boolean; version?: string; ref?: string; repo?: string; yes?: boolean };
@@ -121,6 +131,10 @@ function parseResolvedVersion(stdout: string): string {
   try {
     const parsed = JSON.parse(trimmed) as unknown;
     if (typeof parsed === "string") return parsed;
+    if (Array.isArray(parsed)) {
+      const last = parsed.at(-1);
+      if (typeof last === "string" && EXACT_VERSION_PATTERN.test(last)) return last;
+    }
   } catch {
     if (EXACT_VERSION_PATTERN.test(trimmed)) return trimmed;
   }
@@ -175,6 +189,31 @@ export async function resolveGitHubRef(repo: string, ref: string, runCommand: Co
   return sha.toLowerCase();
 }
 
+export function writeManagedNpmrc(filePath: string): void {
+  const lines = [
+    `registry=${PUBLIC_NPM_REGISTRY}`,
+    `@tickernelz:registry=${PUBLIC_NPM_REGISTRY}`,
+    ...INSTALL_SCRIPT_ALLOWLIST.map((name) => `allow-scripts[]=${name}`),
+  ];
+  fs.writeFileSync(filePath, `${lines.join("\n")}\n`, { mode: 0o600 });
+}
+
+export function assertPayloadNativeAssets(payloadPath: string): void {
+  const embeddedRoot = path.join(payloadPath, "node_modules", "@embedded-postgres");
+  if (!fs.existsSync(embeddedRoot)) return;
+  for (const platform of fs.readdirSync(embeddedRoot)) {
+    const manifestPath = path.join(embeddedRoot, platform, "native", "pg-symlinks.json");
+    if (!fs.existsSync(manifestPath)) continue;
+    const links = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as { target: string }[];
+    const missing = links.filter(({ target }) => !fs.existsSync(path.join(embeddedRoot, platform, target)));
+    if (missing.length > 0) {
+      throw new Error(
+        `Embedded PostgreSQL in @embedded-postgres/${platform} is missing ${missing.length} shared-library link(s) such as ${missing[0]!.target}; the package install script did not run. Allow it with 'npm install-scripts approve @embedded-postgres/${platform}' or reinstall with a npm that honours the paperclip-pro allow-scripts list.`,
+      );
+    }
+  }
+}
+
 function payloadEntrypoint(payloadPath: string): string {
   return path.join(payloadPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
 }
@@ -182,6 +221,7 @@ function payloadEntrypoint(payloadPath: string): string {
 export async function smokePayload(payloadPath: string, expectedVersion: string, runCommand: CommandRunner): Promise<void> {
   const entrypoint = payloadEntrypoint(payloadPath);
   if (!fs.existsSync(entrypoint)) throw new Error(`Installed package is missing its CLI entrypoint: ${entrypoint}`);
+  assertPayloadNativeAssets(payloadPath);
   const result = await runCommand(process.execPath, [entrypoint, "--version"], { maxBuffer: 1024 * 1024 });
   const reportedVersion = result.stdout.trim().split(/\s+/)[0];
   if (reportedVersion !== expectedVersion) {
@@ -212,11 +252,7 @@ export async function installNpmPayload(
   const npmUserConfigPath = path.join(sourceRoot, `.npmrc-${process.pid}-${Date.now()}`);
   fs.rmSync(stagingPath, { recursive: true, force: true });
   try {
-    fs.writeFileSync(
-      npmUserConfigPath,
-      `registry=${PUBLIC_NPM_REGISTRY}\n@tickernelz:registry=${PUBLIC_NPM_REGISTRY}\n`,
-      { mode: 0o600 },
-    );
+    writeManagedNpmrc(npmUserConfigPath);
     await runCommand(
       "npm",
       [
@@ -314,7 +350,9 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     if (!cliTarball || workspaceTarballs.length !== workspacePackages.length) {
       throw new Error(`Git install packaging produced ${workspaceTarballs.length} workspace tarballs; expected ${workspacePackages.length}.`);
     }
-    await runCommand("npm", ["install", "--prefix", stagedPayload, path.join(stagingRoot, cliTarball), ...workspaceTarballs.map((entry) => path.join(stagingRoot, entry)), "--no-audit", "--no-fund"], { cwd: stagingRoot, maxBuffer: 32 * 1024 * 1024 });
+    const payloadNpmrcPath = path.join(stagingRoot, "payload.npmrc");
+    writeManagedNpmrc(payloadNpmrcPath);
+    await runCommand("npm", ["install", "--prefix", stagedPayload, path.join(stagingRoot, cliTarball), ...workspaceTarballs.map((entry) => path.join(stagingRoot, entry)), "--no-audit", "--no-fund"], { cwd: stagingRoot, env: { ...process.env, npm_config_userconfig: payloadNpmrcPath }, maxBuffer: 32 * 1024 * 1024 });
     await smokePayload(stagedPayload, metadata.version, runCommand);
     fs.renameSync(stagedPayload, payloadPath);
     return { payloadPath, reused: false, version: metadata.version };
