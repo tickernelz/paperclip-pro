@@ -9,6 +9,7 @@ import type {
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+import { useMobilePickerViewport } from "@/hooks/useMobilePickerViewport";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const AGENT_DEFAULT_LABEL = "Agent default";
@@ -87,7 +88,10 @@ function FieldSection({
           data-testid={`task-model-override-search-${field.key}`}
         />
       ) : null}
-      <div className="max-h-48 overflow-y-auto overscroll-contain">
+      <div
+        data-slot="entity-option-list"
+        className="max-h-48 overflow-y-auto overscroll-contain"
+      >
         <button
           type="button"
           disabled={pending}
@@ -147,6 +151,7 @@ export function TaskModelOverrideControl({
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  useMobilePickerViewport(open);
   const key = queryKeys.issues.modelOverride(issueId ?? "__none__");
   const query = useQuery({
     queryKey: key,
