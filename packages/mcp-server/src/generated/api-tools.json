@@ -6918,8 +6918,8 @@
     "path": "/heartbeat-runs/{runId}/provider-trace/reproject-workspace-diffs",
     "description": "Reproject retained Codex workspace diffs into run events",
     "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
+    "authority": "board",
+    "authoritySource": "handler",
     "tags": [
       "runs"
     ],
@@ -6929,12 +6929,12 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoardOrAgentAuthority",
+      "assertInstanceAdmin",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": "company:agents",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7320",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -9914,12 +9914,12 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
       "assertCompanyAccess",
+      "assertInstanceAdmin",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@smoke-lab.ts:165",
+    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:165",
     "authorityCapability": null,
     "parameters": [
       {
@@ -29856,12 +29856,12 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
       "assertCompanyAccess",
+      "assertInstanceAdmin",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@smoke-lab.ts:269",
+    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:269",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34821,12 +34821,12 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertBoard",
       "assertCompanyAccess",
+      "assertInstanceAdmin",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@smoke-lab.ts:123",
+    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:123",
     "authorityCapability": null,
     "parameters": [
       {
