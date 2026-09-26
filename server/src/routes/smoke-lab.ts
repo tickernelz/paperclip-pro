@@ -7,7 +7,7 @@ import {
   updateSmokeRunSchema,
 } from "@tickernelz/paperclip-pro-shared";
 import { validate } from "../middleware/validate.js";
-import { assertBoard, assertBoardOrAgent, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertBoardOrAgent, assertCompanyAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
 import { logActivity, smokeLabService } from "../services/index.js";
 
 function configuredPublicBaseUrl() {
@@ -120,7 +120,7 @@ export function smokeLabRoutes(db: Db, options: {
   });
 
   router.post("/companies/:companyId/smoke-lab/services/start", async (req, res) => {
-    assertBoard(req);
+    assertInstanceAdmin(req);
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     const result = await svc.startServices(companyId, smokeLabBaseUrl(req, companyId));
@@ -162,7 +162,7 @@ export function smokeLabRoutes(db: Db, options: {
   });
 
   router.post("/companies/:companyId/smoke-lab/install-fixtures", async (req, res) => {
-    assertBoard(req);
+    assertInstanceAdmin(req);
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     const result = await svc.installFixtures(companyId, getActorInfo(req));
@@ -266,7 +266,7 @@ export function smokeLabRoutes(db: Db, options: {
   });
 
   router.post("/companies/:companyId/smoke-lab/reset", async (req, res) => {
-    assertBoard(req);
+    assertInstanceAdmin(req);
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
     const result = await svc.reset(companyId);

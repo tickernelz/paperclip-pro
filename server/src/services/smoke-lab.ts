@@ -1244,11 +1244,37 @@ export function smokeLabService(db: Db, options: {
       accessTokens.clear();
       refreshTokens.clear();
       await db.delete(smokeRuns).where(eq(smokeRuns.companyId, companyId));
+      const fixtureApplicationIds = (await db
+        .select({ id: toolApplications.id })
+        .from(toolApplications)
+        .where(and(
+          eq(toolApplications.companyId, companyId),
+          inArray(toolApplications.applicationKey, [HTTP_APP_KEY, STDIO_APP_KEY]),
+        )))
+        .map((row) => row.id);
+      if (fixtureApplicationIds.length > 0) {
+        await db.delete(toolCatalogEntries).where(and(
+          eq(toolCatalogEntries.companyId, companyId),
+          inArray(toolCatalogEntries.applicationId, fixtureApplicationIds),
+        ));
+        await db.delete(toolProfileEntries).where(and(
+          eq(toolProfileEntries.companyId, companyId),
+          inArray(toolProfileEntries.applicationId, fixtureApplicationIds),
+        ));
+        await db.delete(toolConnections).where(and(
+          eq(toolConnections.companyId, companyId),
+          inArray(toolConnections.applicationId, fixtureApplicationIds),
+        ));
+      }
+      await db.delete(toolStdioCommandTemplates).where(and(
+        eq(toolStdioCommandTemplates.companyId, companyId),
+        eq(toolStdioCommandTemplates.templateKey, STDIO_TEMPLATE_KEY),
+      ));
+      await db.delete(toolProfiles).where(and(eq(toolProfiles.companyId, companyId), eq(toolProfiles.profileKey, PROFILE_KEY)));
       await db.delete(toolApplications).where(and(
         eq(toolApplications.companyId, companyId),
         inArray(toolApplications.applicationKey, [HTTP_APP_KEY, STDIO_APP_KEY]),
       ));
-      await db.delete(toolProfiles).where(and(eq(toolProfiles.companyId, companyId), eq(toolProfiles.profileKey, PROFILE_KEY)));
       return { reset: true };
     },
   };
