@@ -95,12 +95,12 @@ function permissionHeld(key: string, context: BoardSurfaceContext): boolean {
 export function boardToolAdvertised(
   spec: Pick<
     GeneratedToolSpec,
-    "authority" | "authorityCapability" | "guards" | "permissions" | "boardGuard"
+    "authority" | "authorityCapability" | "authoritySource" | "guards" | "permissions"
   >,
   context: BoardSurfaceContext,
 ): boolean {
   if (spec.authority !== "board") return true;
-  if (spec.boardGuard !== null) return false;
+  if (spec.authoritySource === "handler") return false;
   if (spec.guards.some((guard) => BOARD_ONLY_GUARDS[guard] === true)) return false;
   if (!spec.guards.some((guard) => AGENT_ADMITTING_GUARDS[guard] === true)) return false;
   const capability = spec.authorityCapability;

@@ -7850,7 +7850,10 @@ export function issueService(db: Db) {
       const includeConversations = filters?.includeConversations === true;
       if (includeConversations) {
         conditions.push(
-          conversationOwnerScope(filters?.conversationOwner) ?? isNull(issues.conversationAgentId),
+          or(
+            isNull(issues.conversationAgentId),
+            conversationOwnerScope(filters?.conversationOwner),
+          )!,
         );
       }
       if (!filters?.q?.trim()) {
