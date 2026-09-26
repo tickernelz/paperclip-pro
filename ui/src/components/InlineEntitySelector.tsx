@@ -2,6 +2,7 @@ import { forwardRef, useCallback, useEffect, useMemo, useRef, useState, type Rea
 import { Check } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { orderItemsBySelectedAndRecent } from "../lib/recent-selections";
+import { useMobilePickerViewport } from "../hooks/useMobilePickerViewport";
 import { cn } from "../lib/utils";
 
 export interface InlineEntityOption {
@@ -63,6 +64,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [highlightedIndex, setHighlightedIndex] = useState(0);
+    useMobilePickerViewport(open);
     const highlightedIndexRef = useRef(0);
     const inputRef = useRef<HTMLInputElement>(null);
     const shouldPreventCloseAutoFocusRef = useRef(false);
@@ -203,7 +205,10 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
               }
             }}
           />
-          <div className="max-h-56 overflow-y-auto overscroll-contain py-1 touch-pan-y">
+          <div
+            data-slot="entity-option-list"
+            className="max-h-56 overflow-y-auto overscroll-contain py-1 touch-pan-y"
+          >
             {filteredOptions.length === 0 ? (
               <p className="px-2 py-2 text-xs text-muted-foreground">{emptyMessage}</p>
             ) : (
