@@ -1299,7 +1299,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16823",
+    "boardGuard": "assertBoard@issues.ts:16935",
     "parameters": [
       {
         "name": "id",
@@ -11242,7 +11242,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:519",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:523",
     "parameters": [
       {
         "name": "type",
@@ -12079,7 +12079,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15808",
+    "boardGuard": "assertBoard@issues.ts:15920",
     "parameters": [
       {
         "name": "commentId",
@@ -17060,6 +17060,39 @@
     ]
   },
   {
+    "name": "paperclipGetIssueModelOverride",
+    "operationId": "GET /api/issues/{id}/model-override",
+    "method": "GET",
+    "path": "/issues/{id}/model-override",
+    "description": "Get the per-task adapter model and thinking override",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetIssueRunnerGoal",
     "operationId": "GET /api/issues/{id}/runner-goal",
     "method": "GET",
@@ -20100,7 +20133,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:304",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:308",
     "parameters": [],
     "body": {
       "required": true,
@@ -20316,7 +20349,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15467",
+    "boardGuard": "assertBoard@issues.ts:15579",
     "parameters": [
       {
         "name": "id",
@@ -27546,7 +27579,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:649",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:653",
     "parameters": [
       {
         "name": "type",
@@ -27811,7 +27844,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:596",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:600",
     "parameters": [
       {
         "name": "type",
@@ -31144,6 +31177,56 @@
     }
   },
   {
+    "name": "paperclipSetIssueModelOverride",
+    "operationId": "PUT /api/issues/{id}/model-override",
+    "method": "PUT",
+    "path": "/issues/{id}/model-override",
+    "description": "Set or clear the per-task adapter model and thinking override",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertIssueWriteInfluenceAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@issues.ts:8597",
+    "parameters": [
+      {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "model": {
+            "type": "string"
+          },
+          "thinking": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
     "name": "paperclipSetIssueQueuedCommentOrder",
     "operationId": "PUT /api/issues/{id}/queued-comments/order",
     "method": "PUT",
@@ -31165,7 +31248,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15437",
+    "boardGuard": "assertBoard@issues.ts:15549",
     "parameters": [
       {
         "name": "id",
@@ -32677,7 +32760,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16765",
+    "boardGuard": "assertBoard@issues.ts:16877",
     "parameters": [
       {
         "name": "id",
@@ -33144,7 +33227,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15537",
+    "boardGuard": "assertBoard@issues.ts:15649",
     "parameters": [
       {
         "name": "commentId",
@@ -34575,7 +34658,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:452",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:456",
     "parameters": [
       {
         "name": "type",
@@ -34625,7 +34708,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:489",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:493",
     "parameters": [
       {
         "name": "type",
@@ -36763,7 +36846,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15405",
+    "boardGuard": "assertBoard@issues.ts:15517",
     "parameters": [
       {
         "name": "commentId",

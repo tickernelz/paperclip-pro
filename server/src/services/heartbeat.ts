@@ -16,6 +16,7 @@ import { connectionIntentService } from "./connection-intents.js";
 import { managedAiSessionFingerprintConfig, prepareManagedAiRuntime, assertManagedAiProjectAuth, stripAiAuthBindings, isAiConnectionBusy, AI_AUTH_ENV_KEYS } from "./ai-connection-runtime.js";
 import { aiConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
 import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
+import { buildIssueRunAdapterConfig } from "./issue-run-model-override.js";
 import { CONVERSATION_CONTINUATION_POLICY, claimedAdapterType, runUsedConversationAdapter, hasConversationContinuationPolicy, isConversationAdapter } from "./conversation-continuation.js";
 import { recordExecutionWait } from "./execution-wait.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./native-runtime/native-review-participant.js";
@@ -21560,10 +21561,13 @@ export function heartbeatService(
         legacyUseProjectWorkspace:
           issueAssigneeOverrides?.useProjectWorkspace ?? null,
       });
-      const mergedConfig = {
-        ...workspaceManagedConfig,
-        ...(issueAssigneeOverrides?.adapterConfig ?? {}),
-      };
+      const { config: mergedConfig, modelOverride: runModelOverride } =
+        buildIssueRunAdapterConfig(workspaceManagedConfig, issueAssigneeOverrides);
+      if (runModelOverride.model || runModelOverride.thinking) {
+        context.paperclipRunModelOverride = runModelOverride;
+      } else {
+        delete context.paperclipRunModelOverride;
+      }
       const configSnapshot = buildExecutionWorkspaceConfigSnapshot(
         mergedConfig,
         selectedEnvironmentId,

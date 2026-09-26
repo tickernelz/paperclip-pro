@@ -300,6 +300,19 @@ export const issueAssigneeAdapterOverridesSchema = z
   })
   .strict();
 
+const runModelOverrideValue = z
+  .string()
+  .trim()
+  .max(200)
+  .nullable();
+
+export const issueRunModelOverrideUpdateSchema = z
+  .object({
+    model: runModelOverrideValue.optional(),
+    thinking: runModelOverrideValue.optional(),
+  })
+  .strict();
+
 const issueExecutionStagePrincipalBaseSchema = z.object({
   type: z.enum(["agent", "user"]),
   agentId: z.string().guid().optional().nullable(),

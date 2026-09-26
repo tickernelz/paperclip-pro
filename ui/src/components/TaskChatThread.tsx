@@ -3068,6 +3068,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                       currentAssigneeValue={currentAssigneeValue}
                       onPendingAssigneeChange={setPendingComposerAssignee}
                       issueStatus={issueStatus}
+                      issueId={issueId}
                       mobile={isMobile}
                       draftKey={draftKey}
                       queuedEdit={queuedEdit}
