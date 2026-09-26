@@ -35,3 +35,8 @@ profile, software keyboard via a `visualViewport` resize, standalone PWA via a
 full-height 390x844 viewport plus a `(display-mode: standalone)` media stub, and
 the home indicator via the `safeArea` parameter. A real device still owns rubber
 band overscroll and the dynamic URL bar.
+
+The scroll-to-bottom gesture is a frame-stepped `scrollBy`, not a trusted swipe:
+WebKit does not scroll from synthetic touch events and Playwright's touchscreen
+API only exposes `tap`. It drives the same scroll listeners, ResizeObservers and
+sticky layout as a finger would, but it cannot reproduce iOS momentum physics.
