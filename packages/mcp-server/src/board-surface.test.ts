@@ -1,6 +1,9 @@
 import { readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS } from "@tickernelz/paperclip-pro-shared";
+import {
+  AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
+  agentAuthorityCapabilities,
+} from "@tickernelz/paperclip-pro-shared";
 import {
   ACTOR_NEUTRAL_GUARDS,
   AGENT_ADMITTING_GUARDS,
@@ -9,7 +12,7 @@ import {
   classifiedGuards,
   type BoardSurfaceContext,
 } from "./board-surface.js";
-import { generatedToolSpecs } from "./generated-tools.js";
+import { generatedToolSpecs, type GeneratedToolSpec } from "./generated-tools.js";
 
 const GUARD_DIRS = [
   new URL("../../../server/src/routes/", import.meta.url),
@@ -25,19 +28,43 @@ function routeSource(): string {
 }
 
 const CEO: BoardSurfaceContext = {
-  capabilities: [
-    "work:read",
-    "work:issues",
-    "work:routines",
-    "company:issue_control",
-    "company:agents",
-    "company:projects",
-    "company:settings",
-    "company:members",
-    "company:approvals",
-  ],
+  capabilities: agentAuthorityCapabilities("ceo"),
   permissionKeys: new Set(),
 };
+
+function probeOnlyBoardSpecs() {
+  return generatedToolSpecs().filter(
+    (spec) => spec.authority === "board" && (spec.boardGuard ?? "").startsWith("probe:"),
+  );
+}
+
+function grantsAdmitActor(
+  spec: Pick<
+    GeneratedToolSpec,
+    "authorityCapability" | "guards" | "permissions"
+  >,
+  context: BoardSurfaceContext,
+): boolean {
+  if (spec.guards.some((guard) => BOARD_ONLY_GUARDS[guard] === true)) return false;
+  if (!spec.guards.some((guard) => AGENT_ADMITTING_GUARDS[guard] === true)) return false;
+  const capability = spec.authorityCapability;
+  if (capability != null && !context.capabilities.includes(capability)) return false;
+  return spec.permissions.every(
+    (key) =>
+      context.permissionKeys.has(key) ||
+      (AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS.includes(key) &&
+        context.capabilities.includes("company:members")),
+  );
+}
+
+function actorHoldingEverything(spec: Pick<GeneratedToolSpec, "authorityCapability" | "permissions">) {
+  return {
+    capabilities: spec.authorityCapability == null
+      ? CEO.capabilities
+      : [...CEO.capabilities, spec.authorityCapability],
+    permissionKeys: new Set(spec.permissions),
+  } satisfies BoardSurfaceContext;
+}
 
 describe("board surface classification", () => {
   it("classifies every guard that can decide whether a board tool is advertised", () => {
@@ -100,6 +127,7 @@ describe("boardToolAdvertised", () => {
       operationId: "GET /api/x",
       authority: "board",
       authorityCapability: null,
+      authoritySource: "default",
       guards: [],
       permissions: [],
       boardGuard: null,
@@ -114,16 +142,26 @@ describe("boardToolAdvertised", () => {
 
   it("withholds a board tool whose handler asserts a board-only guard", () => {
     expect(
-      boardToolAdvertised(spec({ guards: ["assertBoard"], boardGuard: "assertBoard@chat-channels.ts:1" }), CEO),
+      boardToolAdvertised(
+        spec({
+          authoritySource: "handler",
+          guards: ["assertBoard"],
+          boardGuard: "assertBoard@chat-channels.ts:1",
+        }),
+        CEO,
+      ),
     ).toBe(false);
   });
 
-  it("withholds a board tool whose only extra evidence is a recorded board guard", () => {
-    const guards = ["assertSameCompanyCeoAgentOrBoard"];
-    expect(boardToolAdvertised(spec({ guards }), CEO)).toBe(true);
+  it("withholds a board tool whose handler guards no agent past, even with a granting capability", () => {
     expect(
       boardToolAdvertised(
-        spec({ guards, boardGuard: "probe:Only board users can view feedback traces" }),
+        spec({
+          authoritySource: "handler",
+          guards: ["assertSameCompanyCeoAgentOrBoard"],
+          authorityCapability: "company:settings",
+          boardGuard: "assertSameCompanyCeoAgentOrBoard@export.ts:1",
+        }),
         CEO,
       ),
     ).toBe(false);
@@ -177,6 +215,55 @@ describe("boardToolAdvertised", () => {
   });
 });
 
+describe("probe-derived board evidence", () => {
+  it("records the probe reason as evidence about the probe actor, never as a board guard", () => {
+    for (const spec of probeOnlyBoardSpecs()) {
+      expect(spec.authoritySource).toBe("probe");
+      expect(spec.boardGuard).toMatch(/^probe:/);
+    }
+  });
+
+  it("advertises a ceo the export-fidelity tool a ceo agent really reaches", () => {
+    const spec = generatedToolSpecs().find(
+      (entry) => entry.name === "paperclipGetExportFidelity",
+    );
+    expect(spec).toBeDefined();
+    expect(spec!.guards).toContain("assertSameCompanyCeoAgentOrBoard");
+    expect(boardToolAdvertised(spec!, CEO)).toBe(true);
+  });
+
+  it("keeps a probe-only tool that no agent-admitting guard reaches hidden", () => {
+    const spec = generatedToolSpecs().find(
+      (entry) => entry.name === "paperclipListIssueFeedbackTraces",
+    );
+    expect(spec).toBeDefined();
+    expect(spec!.boardGuard).toMatch(/^probe:/);
+    expect(spec!.guards).toEqual([]);
+    expect(boardToolAdvertised(spec!, CEO)).toBe(false);
+  });
+
+  it("decides every probe-only board tool from its recorded guards alone", () => {
+    const specs = probeOnlyBoardSpecs();
+    expect(specs.length).toBe(19);
+    for (const spec of specs) {
+      const actor = actorHoldingEverything(spec);
+      expect(boardToolAdvertised(spec, actor), spec.name).toBe(grantsAdmitActor(spec, actor));
+    }
+  });
+
+  it("advertises exactly the probe-only board tools a ceo really reaches", () => {
+    const advertised = probeOnlyBoardSpecs()
+      .filter((spec) => boardToolAdvertised(spec, CEO))
+      .map((spec) => spec.name)
+      .sort();
+    expect(advertised).toEqual([
+      "paperclipGetExportFidelity",
+      "paperclipGetUserMeInboxAgentPolicy",
+      "paperclipListAgentConfigurations",
+    ]);
+  });
+});
+
 describe("board pruning effect", () => {
   it("drops the bulk of the board-authority surface for a ceo actor", () => {
     const board = generatedToolSpecs().filter((spec) => spec.authority === "board");
@@ -186,5 +273,19 @@ describe("board pruning effect", () => {
     const before = JSON.stringify(board).length;
     const after = JSON.stringify(advertised).length;
     expect(after / before).toBeLessThan(0.15);
+  });
+
+  it("grows the ceo listing by exactly the probe-only tools its own guards admit", () => {
+    const board = generatedToolSpecs().filter((spec) => spec.authority === "board");
+    const advertised = board.filter((spec) => boardToolAdvertised(spec, CEO));
+    const fromProbe = advertised.filter((spec) => (spec.boardGuard ?? "").startsWith("probe:"));
+    const fromRegistry = advertised.filter((spec) => spec.authoritySource === "registry");
+    expect(advertised.length).toBe(fromProbe.length + fromRegistry.length);
+    expect(fromProbe.map((spec) => spec.name).sort()).toEqual(
+      probeOnlyBoardSpecs()
+        .filter((spec) => grantsAdmitActor(spec, CEO))
+        .map((spec) => spec.name)
+        .sort(),
+    );
   });
 });
