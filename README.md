@@ -46,6 +46,13 @@ paperclip-pro install --version 2026.926.1 --yes
 
 `--canary` follows the `canary` dist-tag, which the release workflow does not publish today; it uses `next` and `latest`.
 
+`onboard --yes` writes `~/.paperclip-pro/instances/default/config.json` for trusted local loopback and starts the server on `http://127.0.0.1:3100`. An embedded PostgreSQL is created automatically. For a reachable instance, pick a bind preset:
+
+```sh
+paperclip-pro onboard --yes --bind lan
+paperclip-pro onboard --yes --bind tailnet
+```
+
 ### What an install replaces
 
 An install or update only ever writes inside `~/.paperclip-pro/cli/` and the shim:
@@ -59,13 +66,6 @@ An install or update only ever writes inside `~/.paperclip-pro/cli/` and the shi
 | `~/.bashrc` or `~/.zshrc` | A marked PATH block, only when `~/.local/bin` is not already on `PATH` |
 
 Nothing under `~/.paperclip-pro/instances/` is touched: the instance database, `config.json`, `service.env`, secrets, logs, storage, backups and workspaces survive a payload switch in either direction.
-
-`onboard --yes` writes `~/.paperclip-pro/instances/default/config.json` for trusted local loopback and starts the server on `http://127.0.0.1:3100`. An embedded PostgreSQL is created automatically. For a reachable instance, pick a bind preset:
-
-```sh
-paperclip-pro onboard --yes --bind lan
-paperclip-pro onboard --yes --bind tailnet
-```
 
 ### Installing an unreleased commit
 
