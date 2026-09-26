@@ -6933,7 +6933,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7320",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7326",
     "authorityCapability": null,
     "parameters": [
       {
