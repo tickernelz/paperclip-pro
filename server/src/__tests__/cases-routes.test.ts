@@ -33,11 +33,15 @@ import { errorHandler } from "../middleware/error-handler.js";
 import { actorMiddleware } from "../middleware/auth.js";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { buildCasePatchUpdateValues, caseRoutes } from "../routes/cases.js";
+import { pipelineRoutes } from "../routes/pipelines.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import type { StorageService } from "../storage/types.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe.sequential : describe.skip;
+
+type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
+const HTTP_METHODS = { get: true, post: true, put: true, patch: true, delete: true } as const;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -195,6 +199,127 @@ describeEmbeddedPostgres("cases routes", () => {
     await http.get(`/api/cases/${caseRow!.id}/events`).expect(403);
   });
 
+  /** Stand-in mirroring every path pipelines.ts registers. */
+  function pipelinesStandInRouter() {
+    const standIn = express.Router();
+    for (const [method, path] of routePaths(pipelineRoutes(db))) {
+      standIn[method](path, (_req, res) => res.json({ handledBy: "pipelines" }));
+    }
+    return standIn;
+  }
+
+  /** Method/path pairs of every route a router registers, param names preserved. */
+  function routePaths(router: express.Router): [HttpMethod, string][] {
+    return router.stack.flatMap((entry) => {
+      if (!entry.route) return [];
+      const path = entry.route.path as string;
+      return Object.keys(entry.route.methods)
+        .filter((method): method is HttpMethod => method in HTTP_METHODS)
+        .map((method) => [method, path]);
+    });
+  }
+
+  /** `/cases/:caseId/documents/:key` and `/cases/:id/documents/:key` are one path. */
+  function routeShape(path: string) {
+    return path.replace(/:[A-Za-z_][A-Za-z0-9_]*/g, ":x");
+  }
+
+  function sharedCasePaths(): [HttpMethod, string][] {
+    const pipelineShapes = new Set(routePaths(pipelinesStandInRouter()).map(([m, p]) => `${m} ${routeShape(p)}`));
+    return routePaths(caseRoutes(db, storage))
+      .map(([method, path]): [HttpMethod, string] => [method, routeShape(path)])
+      .filter(([method, shape]) => pipelineShapes.has(`${method} ${shape}`))
+      .sort(([a, b], [c, d]) => `${a} ${b}`.localeCompare(`${c} ${d}`));
+  }
+
+  it("rejects every cases route with a client error when enableCases is off", async () => {
+    await enableCases();
+    const company = await seedCompany("GATEALL");
+    const [caseRow] = await db.insert(cases).values({
+      companyId: company.id,
+      caseNumber: 1,
+      identifier: `${company.issuePrefix}-C1`,
+      caseType: "bug",
+      title: "Gated",
+    }).returning();
+    const [issueRow] = await db.insert(issues).values({
+      companyId: company.id,
+      identifier: `${company.issuePrefix}-1`,
+      number: 1,
+      title: "Gated issue",
+      status: "todo",
+    }).returning();
+    const [projectRow] = await db.insert(projects).values({
+      companyId: company.id,
+      name: "Gated project",
+      key: "gated-project",
+    }).returning();
+    const params: Record<string, string> = {
+      companyId: company.id,
+      id: caseRow!.id,
+      caseId: caseRow!.id,
+      issueId: issueRow!.id,
+      projectId: projectRow!.id,
+      key: "body",
+      threadId: randomUUID(),
+      revisionId: randomUUID(),
+      linkId: randomUUID(),
+      automationId: randomUUID(),
+      agentId: randomUUID(),
+    };
+    const http = request(app(boardActor));
+    await instanceSettingsService(db).updateExperimental({ enableCases: false });
+
+    for (const [method, path] of routePaths(caseRoutes(db, storage))) {
+      const concrete = path.replace(/:([A-Za-z_][A-Za-z0-9_]*)/g, (match, name: string) => params[name] ?? match);
+      const req = http[method](`/api${concrete}`);
+      if (method !== "get" && method !== "delete") req.send({});
+      const res = await req;
+      expect(
+        res.status,
+        `${method.toUpperCase()} ${path} must not succeed while enableCases is off`,
+      ).toBeGreaterThanOrEqual(400);
+      expect(
+        res.status,
+        `${method.toUpperCase()} ${path} must fail as a client error, not a server error`,
+      ).toBeLessThan(500);
+    }
+  });
+
+  it("falls through every /cases path shared with pipelines.ts to the later router", async () => {
+    const shared = sharedCasePaths();
+    expect(shared.map(([m, p]) => `${m.toUpperCase()} ${p}`).sort()).toEqual([
+      "GET /cases/:x",
+      "GET /cases/:x/documents/:x",
+      "GET /cases/:x/documents/:x/revisions",
+      "GET /cases/:x/events",
+      "PATCH /cases/:x",
+      "POST /cases/:x/documents/:x/revisions/:x/restore",
+      "PUT /cases/:x/documents/:x",
+    ]);
+
+    const instance = express();
+    instance.use(express.json());
+    instance.use((req, _res, next) => {
+      req.actor = boardActor;
+      next();
+    });
+    instance.use("/api", caseRoutes(db, storage));
+    instance.use("/api", pipelinesStandInRouter());
+    instance.use(errorHandler);
+    const http = request(instance);
+
+    const foreignId = randomUUID();
+    for (const [method, shape] of shared) {
+      const request = http[method](`/api${shape.replace(/:x/g, foreignId)}`);
+      if (method === "get" || method === "delete") void request;
+      else request.send({ stageKey: "review" });
+      const res = await request;
+      expect(res.status, `${method} ${shape} must reach the pipelines router`).toBe(200);
+      expect(res.body, `${method} ${shape} must reach the pipelines router`).toEqual({ handledBy: "pipelines" });
+    }
+  });
+
   it("falls through shared /cases paths to later routers when the id is not a Cases row", async () => {
     // Pipelines mounts its own /cases/:caseId routes after caseRoutes in app.ts;
     // pipeline case ids must reach that router regardless of the enableCases flag.
@@ -209,6 +334,8 @@ describeEmbeddedPostgres("cases routes", () => {
     pipelinesStandIn.get("/cases/:caseId", (_req, res) => res.json({ handledBy: "pipelines" }));
     pipelinesStandIn.patch("/cases/:caseId", (_req, res) => res.json({ handledBy: "pipelines" }));
     pipelinesStandIn.put("/cases/:caseId/documents/:key", (_req, res) => res.json({ handledBy: "pipelines" }));
+    pipelinesStandIn.post("/cases/:caseId/documents/:key/revisions/:revisionId/restore", (_req, res) => res.json({ handledBy: "pipelines" }));
+    pipelinesStandIn.get("/cases/:caseId/documents/:key", (_req, res) => res.json({ handledBy: "pipelines" }));
     pipelinesStandIn.get("/cases/:caseId/documents/:key/revisions", (_req, res) => res.json({ handledBy: "pipelines" }));
     pipelinesStandIn.get("/cases/:caseId/events", (_req, res) => res.json({ handledBy: "pipelines" }));
     instance.use("/api", pipelinesStandIn);
@@ -221,6 +348,8 @@ describeEmbeddedPostgres("cases routes", () => {
     // Body is not validated against Cases schemas before falling through.
     await http.patch(`/api/cases/${foreignId}`).send({ stageKey: "review" }).expect(200, { handledBy: "pipelines" });
     await http.put(`/api/cases/${foreignId}/documents/body`).send({ markdown: "x" }).expect(200, { handledBy: "pipelines" });
+    await http.post(`/api/cases/${foreignId}/documents/body/revisions/${randomUUID()}/restore`).send({}).expect(200, { handledBy: "pipelines" });
+    await http.get(`/api/cases/${foreignId}/documents/body`).expect(200, { handledBy: "pipelines" });
     await http.get(`/api/cases/${foreignId}/documents/body/revisions`).expect(200, { handledBy: "pipelines" });
     await http.get(`/api/cases/${foreignId}/events`).expect(200, { handledBy: "pipelines" });
 

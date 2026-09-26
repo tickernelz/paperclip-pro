@@ -121,6 +121,20 @@ describe("Cases list", () => {
     container.remove();
   });
 
+  it("surfaces the list error instead of the empty state when the cases query fails", async () => {
+    mockCasesApi.list.mockRejectedValue(new Error("Cases are disabled"));
+
+    const root = renderPage(container);
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Cases are disabled");
+      expect(container.querySelector("button")?.textContent).toBe("Retry");
+    });
+    expect(container.textContent).not.toContain("No cases yet");
+
+    act(() => root.unmount());
+  });
+
   it("loads cases by default and hides terminal cases client-side", async () => {
     mockCasesApi.list.mockResolvedValue([
       createCase({ id: "a", identifier: "PAP-C1", title: "Active post", status: "in_progress" }),
