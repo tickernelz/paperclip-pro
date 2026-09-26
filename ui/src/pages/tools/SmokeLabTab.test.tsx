@@ -13,9 +13,14 @@ const listRunsMock = vi.hoisted(() => vi.fn());
 const getRunMock = vi.hoisted(() => vi.fn());
 const createRunMock = vi.hoisted(() => vi.fn());
 const startServicesMock = vi.hoisted(() => vi.fn());
+const getBoardAccessMock = vi.hoisted(() => vi.fn());
 
 vi.mock("@/api/instanceSettings", () => ({
   instanceSettingsApi: { getExperimental: () => getExperimentalMock() },
+}));
+
+vi.mock("@/api/access", () => ({
+  accessApi: { getCurrentBoardAccess: () => getBoardAccessMock() },
 }));
 
 vi.mock("@/api/smokeLab", () => ({
@@ -108,6 +113,7 @@ describe("SmokeLabTab", () => {
     container = document.createElement("div");
     document.body.appendChild(container);
     getExperimentalMock.mockResolvedValue({ enableSmokeLab: true });
+    getBoardAccessMock.mockResolvedValue({ source: "session", isInstanceAdmin: true });
     listServicesMock.mockResolvedValue({
       services: [
         {
@@ -174,6 +180,26 @@ describe("SmokeLabTab", () => {
     expect(container.textContent).toContain("failing: P7");
     // Step drill-down shows the raw scenario step.
     expect(container.textContent).toContain("oauth-login");
+  });
+
+  it("hides the fixture writers from a non-admin company admin", async () => {
+    getBoardAccessMock.mockResolvedValue({ source: "session", isInstanceAdmin: false });
+    await render();
+
+    const labels = Array.from(container.querySelectorAll("button")).map((b) => b.textContent ?? "");
+    expect(labels).toContain("Stop");
+    expect(labels.some((label) => label.includes("Start services"))).toBe(false);
+    expect(labels.some((label) => label.includes("Install fixture apps"))).toBe(false);
+    expect(labels.some((label) => label.includes("Reset"))).toBe(false);
+  });
+
+  it("offers the fixture writers to an instance admin", async () => {
+    await render();
+
+    const labels = Array.from(container.querySelectorAll("button")).map((b) => b.textContent ?? "");
+    expect(labels.some((label) => label.includes("Start services"))).toBe(true);
+    expect(labels.some((label) => label.includes("Install fixture apps"))).toBe(true);
+    expect(labels.some((label) => label.includes("Reset"))).toBe(true);
   });
 
   it("starts a manual run when 'Run browser smoke now' is clicked", async () => {

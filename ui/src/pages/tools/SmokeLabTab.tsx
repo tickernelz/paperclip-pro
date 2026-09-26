@@ -14,6 +14,7 @@ import {
   X,
 } from "lucide-react";
 import type { SmokeRun, SmokeRunStep } from "@tickernelz/paperclip-pro-shared";
+import { accessApi } from "@/api/access";
 import { smokeLabApi } from "@/api/smokeLab";
 import { queryKeys } from "@/lib/queryKeys";
 import { useToast } from "@/context/ToastContext";
@@ -68,6 +69,13 @@ const HEALTH_STYLES: Record<string, string> = {
 
 export function SmokeLabTab({ companyId }: { companyId: string }) {
   const { enabled, loaded } = useSmokeLabEnabled();
+  const boardAccess = useQuery({
+    queryKey: queryKeys.access.currentBoardAccess,
+    queryFn: () => accessApi.getCurrentBoardAccess(),
+    retry: false,
+  });
+  const canWriteFixtures =
+    boardAccess.data?.source === "local_implicit" || boardAccess.data?.isInstanceAdmin === true;
   const qc = useQueryClient();
   const { pushToast } = useToast();
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -235,35 +243,38 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              onClick={() => startMutation.mutate()}
-              disabled={anyMutating}
-            >
-              <Power className="h-4 w-4" /> Start services
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
               onClick={() => stopMutation.mutate()}
               disabled={anyMutating}
             >
               Stop
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => installMutation.mutate()}
-              disabled={anyMutating}
-            >
-              Install fixture apps
-            </Button>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={() => resetMutation.mutate()}
-              disabled={anyMutating}
-            >
-              <RotateCcw className="h-4 w-4" /> Reset
-            </Button>
+            {canWriteFixtures ? (
+              <>
+                <Button
+                  size="sm"
+                  onClick={() => startMutation.mutate()}
+                  disabled={anyMutating}
+                >
+                  <Power className="h-4 w-4" /> Start services
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => installMutation.mutate()}
+                  disabled={anyMutating}
+                >
+                  Install fixture apps
+                </Button>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => resetMutation.mutate()}
+                  disabled={anyMutating}
+                >
+                  <RotateCcw className="h-4 w-4" /> Reset
+                </Button>
+              </>
+            ) : null}
           </div>
         </div>
 
