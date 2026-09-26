@@ -923,8 +923,7 @@ describe("buildActivityPhases provider summaries", () => {
           patchArtifactRef: null,
         },
       ],
-      false,
-    );
+      false, "turn");
     expect(phases[0]?.summary).toBe(
       "Used a tool, searched 3 times, ran a hook",
     );
@@ -947,8 +946,7 @@ describe("buildActivityPhases provider summaries", () => {
           children: [],
         },
       ],
-      false,
-    );
+      false, "turn");
     expect(phases[0]?.summary).toBe("Used a tool");
   });
 
@@ -989,7 +987,7 @@ describe("buildActivityPhases provider summaries", () => {
       providerTool("progress", "report_progress", "edit", "paperclip"),
       providerTool("block", "paperclip_block", "edit", "paperclip"),
     ];
-    expect(buildActivityPhases(items, false)[0]?.summary).toBe(
+    expect(buildActivityPhases(items, false, "turn")[0]?.summary).toBe(
       "Searched available tools 6 times, read from Paperclip 3 times, used Paperclip 3 times",
     );
   });
@@ -1069,7 +1067,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
       request("questions-2", "cancelled"),
     ];
 
-    const rows = buildTurnTimelineRows(input, false);
+    const rows = buildTurnTimelineRows(input, false, "turn");
     expect(
       rows.map((row) => {
         if (row.kind === "activity_phase") {
@@ -1093,8 +1091,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
   it("keeps a pending request composer-only while preserving its group boundary", () => {
     const rows = buildTurnTimelineRows(
       [tool("before"), request("pending", "pending"), tool("after")],
-      true,
-    );
+      true, "turn");
 
     expect(rows).toHaveLength(2);
     expect(rows.every((row) => row.kind === "activity_phase")).toBe(true);
@@ -1113,10 +1110,10 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
       commentary("commentary-only", "Still checking the edge case."),
       request("expired", "expired"),
     ];
-    expect(settledRunChildren(input)).toEqual(
-      buildTurnTimelineRows(input, false),
+    expect(settledRunChildren(input, "turn")).toEqual(
+      buildTurnTimelineRows(input, false, "turn"),
     );
-    expect(buildTurnTimelineRows(input, false).map((row) => row.kind)).toEqual([
+    expect(buildTurnTimelineRows(input, false, "turn").map((row) => row.kind)).toEqual([
       "activity_phase",
       "activity_phase",
       "protocol",
@@ -1137,8 +1134,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
   it("keeps aggregate workspace changes at the turn boundary outside activity", () => {
     const rows = buildTurnTimelineRows(
       paperclipRunnerTimelineItems([tool("before"), workspace, tool("after")]),
-      false,
-    );
+      false, "turn");
     expect(rows.map((row) => row.kind)).toEqual([
       "activity_phase",
       "protocol",
@@ -1230,8 +1226,7 @@ describe("buildTurnTimelineRows (DOT-217)", () => {
 
     const rows = buildTurnTimelineRows(
       paperclipRunnerTimelineItems(embedded),
-      false,
-    );
+      false, "turn");
     expect(
       rows.map((row) =>
         row.kind === "activity_phase"
@@ -1809,7 +1804,7 @@ describe("settledRunChildren (PAP-361)", () => {
   });
 
   it("groups tools under the historical assistant boundary and excludes the final reply", () => {
-    const children = settledRunChildren(parsed);
+    const children = settledRunChildren(parsed, "turn");
     expect(children.map((c) => c.kind)).toEqual(["activity_phase"]);
     const phase = children[0];
     expect(phase.kind === "activity_phase" && phase.interstitial?.text).toBe(
@@ -1845,7 +1840,7 @@ describe("settledRunChildren (PAP-361)", () => {
       { runId: "native-run", running: false },
     );
 
-    const children = settledRunChildren(finalThenUsage);
+    const children = settledRunChildren(finalThenUsage, "turn");
     expect(children).toHaveLength(1);
     const phase = children[0];
     expect(phase.kind).toBe("activity_phase");
@@ -1878,7 +1873,7 @@ describe("settledRunChildren (PAP-361)", () => {
       { runId: "legacy-run", running: false },
     );
 
-    const children = settledRunChildren(finalThenBookkeeping);
+    const children = settledRunChildren(finalThenBookkeeping, "turn");
     expect(children).toHaveLength(1);
     const phase = children[0];
     expect(phase.kind).toBe("activity_phase");
@@ -1912,7 +1907,7 @@ describe("settledRunChildren (PAP-361)", () => {
         totals: { files: 0, additions: 0, deletions: 0 },
         patchArtifactRef: null,
       },
-    ]);
+    ], "turn");
 
     expect(children).toHaveLength(1);
     expect(children[0]?.kind).toBe("protocol");
@@ -1950,7 +1945,7 @@ describe("settledRunChildren (PAP-361)", () => {
       { runId: "legacy-run", running: false },
     );
 
-    const children = settledRunChildren(commentaryThenToolAndUsage);
+    const children = settledRunChildren(commentaryThenToolAndUsage, "turn");
     expect(children).toHaveLength(1);
     const phase = children[0];
     expect(phase.kind).toBe("activity_phase");
@@ -1960,7 +1955,7 @@ describe("settledRunChildren (PAP-361)", () => {
   });
 
   it("matches the folded summary's tool count exactly (row-count parity)", () => {
-    const children = settledRunChildren(parsed);
+    const children = settledRunChildren(parsed, "turn");
     const summary = buildTurnSummary(transcript);
     const phaseToolCount = children.reduce(
       (count, child) =>
@@ -1983,9 +1978,9 @@ describe("settledRunChildren (PAP-361)", () => {
       ],
       { runId: "run-opening", running: false },
     );
-    const phases = settledRunChildren(opening);
+    const phases = settledRunChildren(opening, "turn");
     expect(phases).toHaveLength(2);
-    expect(phases[0].id).toContain(":phase:opening");
+    expect(phases[0].id).toBe("turn:phase:start");
     expect(phases[1].kind === "activity_phase" && phases[1].summary).toBe(
       "Edited a file",
     );
@@ -2167,7 +2162,7 @@ describe("paperclip runner semantic channels", () => {
     expect(parsed[1]).toMatchObject({ channel: "summary", streaming: false });
     expect(parsed[2]).toMatchObject({ channel: "detail", streaming: false });
     expect(parsed[3]).toMatchObject({ interstitial: false, channel: "final" });
-    const history = settledRunChildren(parsed);
+    const history = settledRunChildren(parsed, "turn");
     expect(JSON.stringify(history)).not.toContain("Done.");
   });
 
@@ -2834,5 +2829,112 @@ describe("prependIssueBrief (PAP-375)", () => {
     expect(prependIssueBrief([], true).map((i) => i.kind)).toEqual(["brief"]);
     const items = [entry("u1", 1_000).item];
     expect(prependIssueBrief(items, false)).toBe(items);
+  });
+});
+
+describe("activity phase identity", () => {
+  const TURN = "run-1:turn";
+  const tool = (id: string): TaskChatItem => ({
+    id,
+    kind: "tool",
+    name: "Read",
+    rawName: "read_file",
+    target: `${id}.ts`,
+    status: "completed",
+  });
+  const commentary = (id: string): TaskChatItem => ({
+    id,
+    kind: "message",
+    author: "agent",
+    text: `Note ${id}.`,
+    interstitial: true,
+    channel: "progress",
+  });
+  const phaseIds = (items: readonly TaskChatItem[], turnId = TURN) =>
+    buildTurnTimelineRows(items, true, turnId)
+      .filter((row) => row.kind === "activity_phase")
+      .map((row) => row.id);
+
+  it("keeps a phase id while the phase absorbs new activity", () => {
+    expect(phaseIds([tool("call_00_a")])).toEqual(["run-1:turn:phase:start"]);
+    expect(phaseIds([tool("call_00_a"), tool("call_01_b")])).toEqual([
+      "run-1:turn:phase:start",
+    ]);
+    expect(
+      phaseIds([tool("call_00_a"), tool("call_01_b"), tool("call_02_c")]),
+    ).toEqual(["run-1:turn:phase:start"]);
+  });
+
+  it("keeps a phase id when streaming reassigns the phase-first activity", () => {
+    const before = phaseIds([
+      { id: "run-1:tool:call_00_a", kind: "tool", name: "Read", status: "in_progress" },
+    ]);
+    const after = phaseIds([
+      {
+        id: "run-1:provider:compaction:0",
+        kind: "protocol",
+        surface: "provider_activity",
+        family: "context",
+        eventType: "compaction.started",
+        status: "completed",
+        title: "Compacting context",
+        details: [],
+        steps: [],
+        links: [],
+        children: [],
+      },
+      { id: "run-1:tool:call_00_a", kind: "tool", name: "Read", status: "in_progress" },
+    ]);
+    expect(before).toEqual(["run-1:turn:phase:start"]);
+    expect(after).toEqual(before);
+  });
+
+  it("splits a phase onto the inserted boundary without renumbering later ones", () => {
+    const boundary: TaskChatItem = {
+      id: "run-1:runtime-request:q1",
+      kind: "protocol",
+      surface: "runtime_request",
+      runId: "run-1",
+      requestId: "q1",
+      requestKind: "user_input",
+      turnId: "turn-1",
+      requestType: "input",
+      status: "resolved",
+      prompt: "Pick one",
+      choices: [],
+      fields: [],
+    };
+    const before = phaseIds([tool("a"), commentary("note-1"), tool("b")]);
+    const after = phaseIds([
+      tool("a"),
+      boundary,
+      tool("b"),
+      commentary("note-1"),
+      tool("c"),
+    ]);
+    expect(before).toEqual([
+      "run-1:turn:phase:start",
+      "run-1:turn:phase:note-1",
+    ]);
+    expect(after).toEqual([
+      "run-1:turn:phase:start",
+      "run-1:turn:phase:run-1:runtime-request:q1",
+      "run-1:turn:phase:note-1",
+    ]);
+  });
+
+  it("emits unique row ids across phases, rows, and turns of one run", () => {
+    const first = buildTurnTimelineRows(
+      [tool("a"), commentary("note-1"), tool("b")],
+      true,
+      "run-1:turn",
+    );
+    const second = buildTurnTimelineRows(
+      [tool("a"), commentary("note-1"), tool("b")],
+      true,
+      "run-1:turn:1",
+    );
+    const ids = [...first, ...second].map((row) => row.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });

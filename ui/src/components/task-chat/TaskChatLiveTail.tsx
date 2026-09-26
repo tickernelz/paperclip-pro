@@ -20,11 +20,13 @@ import { buildTurnTimelineRows } from "./transcript-adapter";
  */
 export function TaskChatLiveTail({
   items,
+  turnId = "turn",
   emptyMessage,
   excludeFinal = false,
   onRuntimeRequestDecision,
 }: {
   items: readonly TaskChatItem[];
+  turnId?: string;
   /** Shown when nothing renderable has streamed yet (queued / pre-first-token). */
   emptyMessage?: string;
   /** New-runner turn renders final-answer messages in its dedicated response slot. */
@@ -37,7 +39,7 @@ export function TaskChatLiveTail({
   const visibleItems = excludeFinal
     ? items.filter((item) => item.kind !== "message" || item.interstitial)
     : items;
-  const rows = buildTurnTimelineRows(visibleItems, true)
+  const rows = buildTurnTimelineRows(visibleItems, true, turnId)
     .map((item) => renderTailRow(item, onRuntimeRequestDecision))
     .filter((row): row is ReactElement => row != null);
 

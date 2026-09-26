@@ -116,6 +116,7 @@ function RunnerCurrentActivityTail({ status }: { status: string }) {
 
 export function TaskChatRunnerTurn({
   runId,
+  turnId = runId ?? "turn",
   agentName,
   agentIcon,
   agent,
@@ -130,6 +131,7 @@ export function TaskChatRunnerTurn({
 }: {
   /** Stable identity used to clear replay-latched final text for the next turn. */
   runId?: string | null;
+  turnId?: string | null;
   agentName?: string | null;
   agentIcon?: string | null;
   agent?: import("../AgentAvatar").AvatarAgent;
@@ -199,6 +201,7 @@ export function TaskChatRunnerTurn({
   const timelineRows = buildTurnTimelineRows(
     omitProgressRepeatedByResponse(timelineItems, final?.text),
     !terminal,
+    turnId ?? runId ?? "turn",
   );
 
   return (
