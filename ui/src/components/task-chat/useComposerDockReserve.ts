@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 const RESERVE_VAR = "--tc-composer-reserve";
 
@@ -7,14 +7,8 @@ export function useComposerDockReserve(enabled: boolean): {
   dockRef: (node: HTMLDivElement | null) => void;
   reserve: number;
 } {
-  const nodeRef = useRef<HTMLDivElement | null>(null);
   const [node, setNode] = useState<HTMLDivElement | null>(null);
   const [reserve, setReserve] = useState(0);
-
-  const dockRef = useCallback((next: HTMLDivElement | null) => {
-    nodeRef.current = next;
-    setNode(next);
-  }, []);
 
   useEffect(() => {
     if (!enabled || !node) {
@@ -40,5 +34,5 @@ export function useComposerDockReserve(enabled: boolean): {
     };
   }, [enabled, reserve]);
 
-  return { dockRef, reserve };
+  return { dockRef: setNode, reserve };
 }
