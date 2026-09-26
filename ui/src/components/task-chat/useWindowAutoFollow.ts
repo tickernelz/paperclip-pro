@@ -69,11 +69,22 @@ export function useWindowAutoFollow(contentKey: unknown, enabled: boolean): void
     if (!enabled) return;
     const viewport = window.visualViewport;
     if (!viewport) return;
+    let frame = 0;
     const onViewportChange = () => {
-      if (pinnedRef.current) scrollWindowToBottom();
+      if (!pinnedRef.current) return;
+      scrollWindowToBottom();
+      window.cancelAnimationFrame(frame);
+      frame = window.requestAnimationFrame(() => {
+        frame = window.requestAnimationFrame(() => {
+          if (pinnedRef.current) scrollWindowToBottom();
+        });
+      });
     };
     viewport.addEventListener("resize", onViewportChange);
-    return () => viewport.removeEventListener("resize", onViewportChange);
+    return () => {
+      window.cancelAnimationFrame(frame);
+      viewport.removeEventListener("resize", onViewportChange);
+    };
   }, [enabled]);
 
   useLayoutEffect(() => {

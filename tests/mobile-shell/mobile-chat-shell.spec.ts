@@ -184,8 +184,14 @@ test.describe("mobile task chat shell", () => {
     expect(Math.round(spacer.height)).toBe(KEYBOARD_PX);
 
     const dock = (await page.locator('[data-testid="task-chat-composer-dock"]').boundingBox())!;
+    const last = (await page.locator('[data-testid="thread-last-row"]').boundingBox())!;
+    const progress = (await page.locator('[data-testid="thread-progress-row"]').boundingBox())!;
     const visibleBottom = await page.evaluate(() => window.visualViewport!.height);
+
     expect(dock.y + dock.height).toBeLessThanOrEqual(visibleBottom + 1);
+    expect(last.y + last.height).toBeLessThanOrEqual(dock.y + 1);
+    expect(progress.y + progress.height).toBeLessThanOrEqual(dock.y + 1);
+    expect(last.y).toBeGreaterThanOrEqual(0);
 
     await page.screenshot({ path: `${EVIDENCE_DIR}/after-webkit-iphone13-keyboard-open.png` });
   });
@@ -362,6 +368,26 @@ test.describe("mobile task chat shell in an iOS standalone PWA", () => {
     expect(progress.y + progress.height).toBeLessThanOrEqual(dock.y + 1);
 
     await page.screenshot({ path: `${EVIDENCE_DIR}/after-webkit-iphone13-standalone-thread-bottom.png` });
+  });
+
+  test("the standalone composer rises above the keyboard without hiding the last rows", async ({
+    page,
+  }) => {
+    await page.goto(`${HARNESS}?safeArea=${SAFE_AREA}`);
+    await page.waitForSelector('[data-testid="task-chat-composer-dock"]');
+    await flickToBottom(page);
+    await openKeyboard(page);
+    await page.waitForTimeout(400);
+
+    const dock = (await page.locator('[data-testid="task-chat-composer-dock"]').boundingBox())!;
+    const last = (await page.locator('[data-testid="thread-last-row"]').boundingBox())!;
+    const visibleBottom = await page.evaluate(() => window.visualViewport!.height);
+
+    expect(dock.y + dock.height).toBeLessThanOrEqual(visibleBottom + 1);
+    expect(last.y + last.height).toBeLessThanOrEqual(dock.y + 1);
+    expect(last.y).toBeGreaterThanOrEqual(0);
+
+    await page.screenshot({ path: `${EVIDENCE_DIR}/after-webkit-iphone13-standalone-keyboard-open.png` });
   });
 
   test("the picker sheet clears the home indicator", async ({ page }) => {
