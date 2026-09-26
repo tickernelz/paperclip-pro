@@ -65,6 +65,19 @@ export function generatedToolSpecs(): GeneratedToolSpec[] {
   return cachedSpecs;
 }
 
+let cachedNotes: string[] | undefined;
+
+export function sharedToolNotes(): string[] {
+  cachedNotes ??= z
+    .array(z.string())
+    .parse(
+      JSON.parse(
+        readFileSync(new URL("./generated/shared-tool-notes.json", import.meta.url), "utf8"),
+      ),
+    );
+  return cachedNotes;
+}
+
 export interface PreparedGeneratedTool {
   spec: GeneratedToolSpec;
   schema: z.ZodObject;

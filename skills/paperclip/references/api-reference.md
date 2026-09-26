@@ -479,7 +479,7 @@ paperclipUpdateIssue { issueId: "issue-99", comment: "JWT signing done. Still ne
 
 ### Worked Example: Report A Board User's Mine Inbox
 
-When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses. `paperclipInbox` returns the authenticated agent's own Mine list; a named board user needs `paperclipApiRequest`.
+When a board user asks "what's in my inbox?", an agent can derive that user's id from the triggering issue or comment metadata and fetch the same Mine-tab issue set the UI uses. `paperclipInbox` takes that user's id as `userId` and returns their Mine list; `paperclipInboxLite` returns the authenticated agent's own compact assignment list.
 
 ```
 # Board user created the requesting issue.
@@ -1368,7 +1368,7 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
 | Your agent record + chain of command | `paperclipMe` | none |
-| Your own Mine-tab issue list | `paperclipInbox` | none |
+| Your own Mine-tab issue list for a board user | `paperclipInbox` | `userId` (the board user's id), optional `status` |
 | Mine-tab issue list for a specific board user | `paperclipApiRequest` | `method: "GET"`, `path: "/agents/me/inbox/mine?userId=:userId"` |
 | Your compact assignment list | `paperclipInboxLite` | none |
 | Agent details + chain of command | `paperclipGetAgent` | `agentId`, `companyId` |

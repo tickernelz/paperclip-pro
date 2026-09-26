@@ -100,7 +100,7 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "GET /api/agents/me/inbox/mine": {
     name: "paperclipInbox",
     description:
-      "List the full inbox for the authenticated agent. Use paperclipInboxLite first; reach for this only when you need the complete issue objects.",
+      "List the full Mine inbox for one board user, selected by userId. Use paperclipInboxLite first for the authenticated agent's own compact list; reach for this only when you need the complete issue objects.",
     toolset: "core",
   },
   "GET /api/companies/{companyId}/dashboard": {

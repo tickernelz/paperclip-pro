@@ -1,4 +1,5 @@
 import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { buildOpenApiDocument } from "../server/src/routes/openapi.js";
@@ -19,6 +20,10 @@ const routesDir = join(repoRoot, "server/src/routes");
 const exclusionsPath = join(
   repoRoot,
   "packages/mcp-server/src/generated/excluded-operations.json",
+);
+const notesPath = join(
+  repoRoot,
+  "packages/mcp-server/src/generated/shared-tool-notes.json",
 );
 
 const COMPANY_IMPORT_TRANSFERS_ROUTE_PATH =
@@ -77,6 +82,7 @@ export interface GeneratedTool {
 
 export interface GeneratorResult {
   tools: GeneratedTool[];
+  sharedNotes: string[];
   excludedOperations: Record<string, string>;
   counts: {
     totalOperations: number;
@@ -215,7 +221,11 @@ function derivedName(method: string, path: string): string {
   return verbish ? `${pascal(last)}${leading}` : `Create${leading}${singular(last)}`;
 }
 
-function uniqueName(base: string, path: string, method: string, taken: Set<string>): string {
+export const NAME_LENGTH_LIMIT = 40;
+
+const NAME_PREFIX = "paperclip";
+
+function disambiguatedName(base: string, path: string, method: string, taken: Set<string>): string {
   if (!taken.has(base)) return base;
   const qualifier = pascal(
     path
@@ -232,6 +242,121 @@ function uniqueName(base: string, path: string, method: string, taken: Set<strin
   let index = 2;
   while (taken.has(`${base}${index}`)) index += 1;
   return `${base}${index}`;
+}
+
+const NAME_TOKEN = /[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])/g;
+
+export function cappedName(name: string, method: string, path: string, taken: Set<string>): string {
+  if (name.length <= NAME_LENGTH_LIMIT && !taken.has(name)) return name;
+  const tokens = name.slice(NAME_PREFIX.length).match(NAME_TOKEN) ?? [];
+  const digest = createHash("sha256").update(`${method} ${path}`).digest("hex").slice(0, 6);
+  if (tokens.length >= 3) {
+    const interior = tokens.slice(1, -1);
+    for (let drop = 1; drop <= interior.length; drop += 1) {
+      const candidate = `${NAME_PREFIX}${[tokens[0], ...interior.slice(drop), tokens[tokens.length - 1]].join("")}`;
+      if (candidate.length <= NAME_LENGTH_LIMIT && !taken.has(candidate)) return candidate;
+    }
+  }
+  const suffix = `_${digest}`;
+  let stem = `${NAME_PREFIX}${tokens.join("")}`.slice(0, NAME_LENGTH_LIMIT - suffix.length);
+  while (taken.has(`${stem}${suffix}`) && stem.length > NAME_PREFIX.length) {
+    stem = stem.slice(0, -1);
+  }
+  return `${stem}${suffix}`;
+}
+
+const PLACEHOLDER_RESOURCES: Record<string, string> = {
+  "action-requests": "actionRequest",
+  agents: "agent",
+  announcements: "announcement",
+  cases: "case",
+  "decision-training": "decisionTraining",
+  decisions: "decision",
+  documents: "document",
+  environments: "environment",
+  examples: "example",
+  "execution-workspaces": "executionWorkspace",
+  goals: "goal",
+  issues: "issue",
+  projects: "project",
+  "routine-triggers": "routineTrigger",
+  routines: "routine",
+  "runtime-slots": "runtimeSlot",
+  "status-cards": "statusCard",
+  "work-products": "workProduct",
+};
+
+function semanticParameterNames(path: string): Map<string, string> {
+  const segments = path.split("/").filter(Boolean);
+  const names = new Map<string, string>();
+  for (const [index, segment] of segments.entries()) {
+    if (!/^\{[A-Za-z0-9_]+\}$/.test(segment)) continue;
+    const placeholder = segment.slice(1, -1);
+    if (placeholder !== "id" && placeholder !== "key") continue;
+    const resource = segments[index - 1];
+    if (!resource) continue;
+    const stem = PLACEHOLDER_RESOURCES[resource] ?? pascal(singular(resource)).replace(/^./, (c) => c.toLowerCase());
+    names.set(placeholder, `${stem}${placeholder === "key" ? "Key" : "Id"}`);
+  }
+  return names;
+}
+
+const DESCRIPTION_SENTENCE_SPLIT = /(?<=\.)\s+/;
+const SHARED_SENTENCE_MIN_OCCURRENCES = 10;
+
+function descriptionSentences(text: string): string[] {
+  return text
+    .split(DESCRIPTION_SENTENCE_SPLIT)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+}
+
+function hoistSharedSentences(tools: GeneratedTool[]): string[] {
+  const occurrences = new Map<string, Set<string>>();
+  const scopes = new Map<string, Set<string>>();
+  const firstSentences = new Set<string>();
+  for (const tool of tools) {
+    const sentences = descriptionSentences(tool.description);
+    if (sentences.length > 0) firstSentences.add(sentences[0]);
+    for (const [index, sentence] of sentences.entries()) {
+      if (index === 0) continue;
+      if (!occurrences.has(sentence)) {
+        occurrences.set(sentence, new Set());
+        scopes.set(sentence, new Set());
+      }
+      occurrences.get(sentence)!.add(tool.name);
+      for (const tag of tool.tags) scopes.get(sentence)!.add(tag);
+    }
+  }
+  const shared = new Set(
+    [...occurrences]
+      .filter(
+        ([sentence, names]) =>
+          names.size >= SHARED_SENTENCE_MIN_OCCURRENCES && !firstSentences.has(sentence),
+      )
+      .map(([sentence]) => sentence),
+  );
+  if (shared.size === 0) return [];
+  for (const tool of tools) {
+    const kept = descriptionSentences(tool.description).filter((sentence) => !shared.has(sentence));
+    if (kept.length === 0) continue;
+    tool.description = kept.join(" ");
+  }
+  return [...shared]
+    .map((sentence) => {
+      const scope = [...(scopes.get(sentence) ?? [])].sort().join(",");
+      return scope ? `[${scope}] ${sentence}` : sentence;
+    })
+    .sort();
+}
+
+function storedPath(path: string, placeholderNames: Map<string, string>): string {
+  const withoutPrefix = path.replace(/^\/api/, "");
+  if (placeholderNames.size === 0) return withoutPrefix;
+  return withoutPrefix.replace(/\{([A-Za-z0-9_]+)\}/g, (match, placeholder: string) => {
+    const renamed = placeholderNames.get(placeholder);
+    return renamed ? `{${renamed}}` : match;
+  });
 }
 
 function jsonBodySchema(
@@ -429,13 +554,27 @@ export function generate(): GeneratorResult {
     const override = TOOL_OVERRIDES[candidate.key] ?? {};
     const name =
       override.name ??
-      uniqueName(`paperclip${derivedName(candidate.method, candidate.path)}`, candidate.path, candidate.method, taken);
+      cappedName(
+        disambiguatedName(
+          `paperclip${derivedName(candidate.method, candidate.path)}`,
+          candidate.path,
+          candidate.method,
+          taken,
+        ),
+        candidate.method,
+        candidate.path,
+        taken,
+      );
     taken.add(name);
 
+    const placeholderNames = semanticParameterNames(candidate.path);
     const parameters: GeneratedParameter[] = ((candidate.operation.parameters ?? []) as Json[])
       .filter((parameter) => parameter.in === "path" || parameter.in === "query")
       .map((parameter) => ({
-        name: parameter.name as string,
+        name:
+          parameter.in === "path"
+            ? (placeholderNames.get(parameter.name as string) ?? (parameter.name as string))
+            : (parameter.name as string),
         in: parameter.in as "path" | "query",
         required: parameter.required === true,
         schema: leanJsonSchema(
@@ -501,7 +640,7 @@ export function generate(): GeneratorResult {
       name,
       operationId: candidate.key,
       method: candidate.method,
-      path: candidate.path.replace(/^\/api/, ""),
+      path: storedPath(candidate.path, placeholderNames),
       description: `${description}${override.requiredHint ? ` ${override.requiredHint}` : ""}`.trim(),
       toolset: override.toolset ?? "extended",
       authority,
@@ -536,8 +675,11 @@ export function generate(): GeneratorResult {
   const perToolset: Record<string, number> = {};
   for (const tool of tools) perToolset[tool.toolset] = (perToolset[tool.toolset] ?? 0) + 1;
 
+  const sharedNotes = hoistSharedSentences(tools);
+
   return {
     tools: tools.sort((a, b) => a.name.localeCompare(b.name)),
+    sharedNotes,
     excludedOperations: Object.fromEntries(
       Object.entries(excludedOperations).sort(([a], [b]) => a.localeCompare(b)),
     ),
@@ -573,6 +715,7 @@ function main() {
   const result = generate();
   const artifacts: Array<[string, string]> = [
     [outputPath, serialize(result.tools)],
+    [notesPath, serialize(result.sharedNotes)],
     [exclusionsPath, serialize(result.excludedOperations)],
   ];
   if (process.argv.includes("--check")) {
