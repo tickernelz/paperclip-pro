@@ -93,6 +93,34 @@ export interface IssueAssigneeAdapterOverrides {
   useProjectWorkspace?: boolean;
 }
 
+export type IssueRunModelOverrideKey = "model" | "thinking";
+
+export interface IssueRunModelOverrideOption {
+  value: string;
+  label: string;
+  group?: string;
+}
+
+export interface IssueRunModelOverrideField {
+  key: IssueRunModelOverrideKey;
+  label: string;
+  hint: string | null;
+  freeText: boolean;
+  options: IssueRunModelOverrideOption[];
+  agentDefault: string | null;
+  override: string | null;
+  effective: string | null;
+}
+
+export interface IssueRunModelOverrideView {
+  issueId: string;
+  agentId: string | null;
+  adapterType: string | null;
+  supported: boolean;
+  unsupportedReason: string | null;
+  fields: IssueRunModelOverrideField[];
+}
+
 export type DocumentFormat = "markdown";
 
 export interface IssueDocumentSummary {

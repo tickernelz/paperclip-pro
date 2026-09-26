@@ -40,7 +40,11 @@ import {
   setAdapterDisabled,
 } from "../services/adapter-plugin-store.js";
 import type { AdapterPluginRecord } from "../services/adapter-plugin-store.js";
-import type { ServerAdapterModule, AdapterConfigSchema } from "../adapters/types.js";
+import type { ServerAdapterModule } from "../adapters/types.js";
+import {
+  invalidateAdapterConfigSchema,
+  resolveAdapterConfigSchema,
+} from "../services/adapter-config-schema.js";
 import type {
   AdapterLoginPanelMode,
   AdapterLoginTimeoutPolicy,
@@ -617,7 +621,7 @@ export function adapterRoutes(options: {
       // Swap in the reloaded module
       unregisterServerAdapter(type);
       registerWithSessionManagement(newModule);
-      configSchemaCache.delete(type);
+      invalidateAdapterConfigSchema(type);
 
       // Sync store.version from package.json (store may be missing version for local installs).
       const record = getAdapterPluginByType(type);
@@ -687,7 +691,7 @@ export function adapterRoutes(options: {
 
       unregisterServerAdapter(type);
       registerWithSessionManagement(newModule);
-      configSchemaCache.delete(type);
+      invalidateAdapterConfigSchema(type);
 
       // Sync store version from disk
       let newVersion: string | undefined;
@@ -713,39 +717,23 @@ export function adapterRoutes(options: {
   // Serve a declarative config schema for an adapter's UI form fields.
   // The adapter's getConfigSchema() resolves all options (static and dynamic)
   // so the UI receives a fully hydrated schema in a single fetch.
-  const configSchemaCache = new Map<string, {
-    adapter: ServerAdapterModule;
-    schema: AdapterConfigSchema;
-    fetchedAt: number;
-  }>();
-  const CONFIG_SCHEMA_TTL_MS = 30_000;
-
   router.get("/adapters/:type/config-schema", async (req, res) => {
     // Config schemas are read-only form metadata used when org members create
     // or edit agents; they do not install or execute new adapter code.
     assertBoardOrgOrAgentAuthority(req, "work:read");
     const { type } = req.params;
 
-    const adapter = findActiveServerAdapter(type);
-    if (!adapter) {
-      res.status(404).json({ error: `Adapter "${type}" is not registered.` });
-      return;
-    }
-    if (!adapter.getConfigSchema) {
-      res.status(404).json({ error: `Adapter "${type}" does not provide a config schema.` });
-      return;
-    }
-
-    const cached = configSchemaCache.get(type);
-    if (cached && cached.adapter === adapter && Date.now() - cached.fetchedAt < CONFIG_SCHEMA_TTL_MS) {
-      res.json(cached.schema);
-      return;
-    }
-
     try {
-      const schema = await adapter.getConfigSchema();
-      configSchemaCache.set(type, { adapter, schema, fetchedAt: Date.now() });
-      res.json(schema);
+      const resolved = await resolveAdapterConfigSchema(type);
+      if (!resolved.ok) {
+        res.status(404).json({
+          error: resolved.reason === "not_registered"
+            ? `Adapter "${type}" is not registered.`
+            : `Adapter "${type}" does not provide a config schema.`,
+        });
+        return;
+      }
+      res.json(resolved.schema);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       logger.error({ err, type }, "Failed to resolve config schema");

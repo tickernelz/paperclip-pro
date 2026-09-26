@@ -66,6 +66,7 @@ import {
   InlineEntitySelector,
   type InlineEntityOption,
 } from "@/components/InlineEntitySelector";
+import { TaskModelOverrideControl } from "./TaskModelOverrideControl";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import type { IssueAttachment, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
@@ -131,6 +132,7 @@ interface TaskChatComposerProps {
   currentAssigneeValue?: string;
   onPendingAssigneeChange?: (value: string | null) => void;
   issueStatus?: string;
+  issueId?: string | null;
   /** Mobile document-flow host: 16px editor text so iOS doesn't zoom on focus. */
   mobile?: boolean;
   /** Storage key used to restore, persist, and clear this task's text draft. */
@@ -399,6 +401,7 @@ export function TaskChatComposer({
   currentAssigneeValue = "",
   onPendingAssigneeChange,
   issueStatus,
+  issueId = null,
   mobile = false,
   draftKey,
   onReviewConversation,
@@ -1503,6 +1506,14 @@ export function TaskChatComposer({
             )}
 
             <div className="flex-1" />
+
+            {issueId && !queuedEdit ? (
+              <TaskModelOverrideControl
+                issueId={issueId}
+                disabled={disabled}
+                mobile={mobile}
+              />
+            ) : null}
 
             {showAssignee && !queuedEdit ? (
               <InlineEntitySelector

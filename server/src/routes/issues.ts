@@ -2,6 +2,12 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
+import {
+  IssueRunModelOverrideError,
+  buildIssueRunModelOverrideView,
+  resolveIssueRunModelOverrideUpdate,
+  writeIssueRunModelOverride,
+} from "../services/issue-run-model-override.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
 import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { renderDocumentPdf } from "../services/document-pdf.js";
@@ -81,6 +87,7 @@ import {
   resolveCreateIssueStatusDefault,
   resolveIssueRecoveryActionSchema,
   runnerGoalActionRequestSchema,
+  issueRunModelOverrideUpdateSchema,
   feedbackTargetTypeSchema,
   feedbackTraceStatusSchema,
   feedbackVoteValueSchema,
@@ -8528,6 +8535,111 @@ export function issueRoutes(
         }
         throw error;
       }
+    },
+  );
+
+  const loadIssueRunModelOverrideAgent = async (
+    companyId: string,
+    assigneeAgentId: string | null | undefined,
+  ) => {
+    if (!assigneeAgentId) return null;
+    return db
+      .select({
+        id: agents.id,
+        adapterType: agents.adapterType,
+        adapterConfig: agents.adapterConfig,
+      })
+      .from(agents)
+      .where(and(eq(agents.id, assigneeAgentId), eq(agents.companyId, companyId)))
+      .then((rows) => rows[0] ?? null);
+  };
+
+  router.get("/issues/:id/model-override", async (req, res) => {
+    const id = req.params.id as string;
+    const issue = await getAccessibleResource(
+      req,
+      res,
+      getIssueById(req, id),
+      "Issue not found",
+    );
+    if (!issue) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    res.json(
+      await buildIssueRunModelOverrideView({
+        issueId: issue.id,
+        assigneeAgent: await loadIssueRunModelOverrideAgent(
+          issue.companyId,
+          issue.assigneeAgentId,
+        ),
+        assigneeAdapterOverrides: issue.assigneeAdapterOverrides,
+      }),
+    );
+  });
+
+  router.put(
+    "/issues/:id/model-override",
+    validate(issueRunModelOverrideUpdateSchema),
+    async (req, res) => {
+      const id = req.params.id as string;
+      const issue = await getAccessibleResource(
+        req,
+        res,
+        getIssueById(req, id),
+        "Issue not found",
+      );
+      if (!issue) return;
+      if (req.actor.type === "agent") {
+        res.status(403).json({
+          error: "Agents cannot change the per-task model override",
+        });
+        return;
+      }
+      assertBoard(req);
+      if (!(await assertIssueWriteInfluenceAllowed(req, res, issue))) return;
+      const agent = await loadIssueRunModelOverrideAgent(
+        issue.companyId,
+        issue.assigneeAgentId,
+      );
+      let values;
+      try {
+        values = await resolveIssueRunModelOverrideUpdate({
+          adapterType: agent?.adapterType ?? null,
+          values: req.body,
+        });
+      } catch (error) {
+        if (error instanceof IssueRunModelOverrideError) {
+          res.status(error.status).json({ error: error.message });
+          return;
+        }
+        throw error;
+      }
+      const assigneeAdapterOverrides = writeIssueRunModelOverride(
+        issue.assigneeAdapterOverrides,
+        values,
+      );
+      await svc.update(issue.id, {
+        assigneeAdapterOverrides,
+        companyGuard: issue.companyId,
+        actorAgentId: null,
+        actorUserId: req.actor.userId ?? null,
+      });
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: "user",
+        actorId: req.actor.userId ?? req.actor.source ?? "board",
+        action: "issue.run_model_override_updated",
+        entityType: "issue",
+        entityId: issue.id,
+        issueId: issue.id,
+        details: { values },
+      });
+      res.json(
+        await buildIssueRunModelOverrideView({
+          issueId: issue.id,
+          assigneeAgent: agent,
+          assigneeAdapterOverrides,
+        }),
+      );
     },
   );
 
