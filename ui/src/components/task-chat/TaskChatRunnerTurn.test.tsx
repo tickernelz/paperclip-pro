@@ -790,9 +790,13 @@ describe("TaskChatRunnerTurn", () => {
       const activity = container.querySelector(
         '[data-testid="task-chat-activity-viewport"]',
       );
-      expect(activity?.querySelector("[data-activity-family]")?.getAttribute("data-activity-family"), entry.family).toBe(
-        entry.family,
+      const families = Array.from(
+        activity?.querySelectorAll("[data-activity-family]") ?? [],
       );
+      expect(
+        families.at(-1)?.getAttribute("data-activity-family"),
+        entry.family,
+      ).toBe(entry.family);
       expect(activity?.textContent, entry.family).toContain(entry.expected);
     }
   });
@@ -1398,12 +1402,12 @@ describe("TaskChatRunnerTurn", () => {
     );
     expect(rows.map((row) => row.getAttribute("data-timeline-row-id"))).toEqual(
       [
-        "commentary-1:phase",
-        "commentary-2:phase",
+        "run-1:phase:commentary-1",
+        "run-1:phase:commentary-2",
         "questions-1",
-        "commentary-3:phase",
+        "run-1:phase:commentary-3",
         "questions-2",
-        "commentary-4:phase",
+        "run-1:phase:commentary-4",
       ],
     );
     expect(rows[0]?.textContent).toContain("Read file");

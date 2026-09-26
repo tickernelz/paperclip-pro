@@ -28,6 +28,8 @@ type Activity = {
 type Commentary = { kind: "commentary"; id: string; text: string };
 type Entry = Activity | Commentary;
 
+const PREVIEW_TURN = "preview-saved-turn";
+
 const entries: Entry[] = [
   {
     kind: "commentary",
@@ -233,7 +235,7 @@ export function RunnerActivityPreview({
     };
   });
   if (expanded)
-    for (const row of buildTurnTimelineRows(items, !finished)) {
+    for (const row of buildTurnTimelineRows(items, !finished, PREVIEW_TURN)) {
       if (row.kind === "activity_phase" && !memory.has(row.id))
         memory.set(row.id, true);
     }
@@ -241,13 +243,13 @@ export function RunnerActivityPreview({
     (item): item is TaskChatMessageItem => item.kind === "message" && item.channel === "final",
   );
   const savedTurn: TaskChatTurnItem = {
-    id: "preview-saved-turn",
+    id: PREVIEW_TURN,
     kind: "turn",
     settled: true,
     standaloneHeader: !legacy,
     agentName: "Engineer",
     agentIcon: "code",
-    items: buildTurnTimelineRows(items, false),
+    items: buildTurnTimelineRows(items, false, PREVIEW_TURN),
     summary: {
       durationLabel: "28s",
       toolCount: items.filter((item) => item.kind === "tool").length,

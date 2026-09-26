@@ -7,8 +7,10 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { MemoryRouter } from "@/lib/router";
 import { TaskChatRunnerActivityGroup } from "./TaskChatRunnerActivityGroup";
 import { TaskChatExpansionState } from "./expansion-state";
+import { buildTurnTimelineRows } from "./transcript-adapter";
 import type {
   TaskChatActivityPhaseItem,
+  TaskChatItem,
   TaskChatToolItem,
 } from "./task-chat-model";
 
@@ -209,6 +211,91 @@ describe("TaskChatRunnerActivityGroup", () => {
     expect(toggle().textContent).not.toMatch(/\d+ failed/);
   });
 
+  it("keeps an explicit expansion through the streamed churn that reassigns the phase-first row", () => {
+    const TURN = "run-1:turn";
+    const toolRow = (id: string): TaskChatItem => tool(id);
+    const leadRow = (id: string): TaskChatItem => ({
+      id,
+      kind: "protocol",
+      surface: "provider_activity",
+      family: "context",
+      eventType: "compaction.started",
+      status: "completed",
+      title: "Compacting context",
+      details: [],
+      steps: [],
+      links: [],
+      children: [],
+    });
+    const renderTurn = (items: TaskChatItem[], defaultExpanded = false) =>
+      act(() =>
+        root.render(
+          <TaskChatExpansionState.Provider value={memory}>
+            {buildTurnTimelineRows(items, true, TURN).map((row) =>
+              row.kind === "activity_phase" ? (
+                <TaskChatRunnerActivityGroup
+                  key={row.id}
+                  item={row}
+                  defaultExpanded={defaultExpanded}
+                />
+              ) : null,
+            )}
+          </TaskChatExpansionState.Provider>,
+        ),
+      );
+
+    renderTurn([toolRow("call_00_a")]);
+    act(() => toggle().click());
+    expect(toggle().getAttribute("aria-expanded")).toBe("true");
+    expect(container.querySelectorAll("li")).toHaveLength(1);
+
+    renderTurn([leadRow("call_00_a:provider:compaction:0"), toolRow("call_00_a")]);
+    expect(toggle().getAttribute("aria-expanded")).toBe("true");
+    expect(container.textContent).toContain("command-call_00_a");
+  });
+
+  it("keeps a collapsed phase collapsed through the same churn", () => {
+    const TURN = "run-1:turn";
+    const renderTurn = (items: TaskChatItem[], defaultExpanded = true) =>
+      act(() =>
+        root.render(
+          <TaskChatExpansionState.Provider value={memory}>
+            {buildTurnTimelineRows(items, true, TURN).map((row) =>
+              row.kind === "activity_phase" ? (
+                <TaskChatRunnerActivityGroup
+                  key={row.id}
+                  item={row}
+                  defaultExpanded={defaultExpanded}
+                />
+              ) : null,
+            )}
+          </TaskChatExpansionState.Provider>,
+        ),
+      );
+
+    renderTurn([tool("call_00_a")]);
+    expect(toggle().getAttribute("aria-expanded")).toBe("true");
+    act(() => toggle().click());
+    expect(toggle().getAttribute("aria-expanded")).toBe("false");
+
+    renderTurn([
+      {
+        id: "call_00_a:provider:compaction:0",
+        kind: "protocol",
+        surface: "provider_activity",
+        family: "context",
+        eventType: "compaction.started",
+        status: "completed",
+        title: "Compacting context",
+        details: [],
+        steps: [],
+        links: [],
+        children: [],
+      },
+      tool("call_00_a"),
+    ]);
+    expect(toggle().getAttribute("aria-expanded")).toBe("false");
+  });
   it("uses the compact runner group for a legacy persisted turn", () => {
     act(() =>
       root.render(

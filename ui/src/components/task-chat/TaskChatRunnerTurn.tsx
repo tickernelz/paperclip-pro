@@ -132,6 +132,7 @@ function RunnerCurrentActivityTail({ status }: { status: string }) {
 
 export function TaskChatRunnerTurn({
   runId,
+  turnId = runId ?? "turn",
   agentName,
   agentIcon,
   agent,
@@ -146,6 +147,7 @@ export function TaskChatRunnerTurn({
 }: {
   /** Stable identity used to clear replay-latched final text for the next turn. */
   runId?: string | null;
+  turnId?: string | null;
   agentName?: string | null;
   agentIcon?: string | null;
   agent?: import("../AgentAvatar").AvatarAgent;
@@ -231,8 +233,9 @@ export function TaskChatRunnerTurn({
       buildTurnTimelineRows(
         omitProgressRepeatedByResponse(projection.timelineItems, finalText),
         !terminal,
+        turnId,
       ),
-    [projection, finalText, terminal],
+    [projection, finalText, terminal, turnId],
   );
   // Identical elements let React skip the timeline subtree entirely on the many
   // renders that leave the rows alone; the scroll anchor and the expansion
@@ -274,6 +277,7 @@ export function TaskChatRunnerTurn({
         </div>
       ),
     [timelineRows, runId, onRuntimeRequestDecision],
+
   );
 
   return (

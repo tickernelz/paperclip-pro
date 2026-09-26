@@ -1055,8 +1055,9 @@ export function transcriptToTaskChatItems(
  */
 export function settledRunChildren(
   parsed: readonly TaskChatItem[],
+  turnId: string,
 ): TaskChatTurnChildItem[] {
-  return buildTurnTimelineRows(parsed, false);
+  return buildTurnTimelineRows(parsed, false, turnId);
 }
 
 /**
@@ -1632,6 +1633,8 @@ function phaseSummary(
     : "No tool activity";
 }
 
+const TURN_START_PHASE = "start";
+
 /**
  * Project one turn into its durable chronological rows.
  *
@@ -1640,13 +1643,23 @@ function phaseSummary(
  * updates are coalesced to their latest state but emitted at the first request
  * slot; pending requests stay composer-only while still breaking activity
  * grouping at that slot.
+ *
+ * A phase is identified by the row that opened it — never by the activity it
+ * holds. Streaming only appends to the open phase, so the anchor survives
+ * growth, backfill, and coalescing; a boundary inserted mid-turn splits the
+ * phase into a head that keeps the old anchor and a tail that takes the new
+ * one, and no later phase is renumbered. `turnId` namespaces the anchor so two
+ * turns of one run never emit the same row id.
  */
 export function buildTurnTimelineRows(
   parsed: readonly TaskChatItem[],
   running: boolean,
+  turnId: string,
 ): TaskChatTurnChildItem[] {
   const rows: TaskChatTurnChildItem[] = [];
   let current: TaskChatActivityPhaseItem | null = null;
+  let opening = TURN_START_PHASE;
+  const phaseId = (anchor: string) => `${turnId}:phase:${anchor}`;
   const latestRequestByKey = new Map<string, TaskChatProtocolItem>();
   for (const item of parsed) {
     if (item.kind !== "protocol" || item.surface !== "runtime_request")
@@ -1654,10 +1667,10 @@ export function buildTurnTimelineRows(
     latestRequestByKey.set(`${item.runId}:${item.requestId}`, item);
   }
   const seenRequests = new Set<string>();
-  const ensureOpening = (seed: string) => {
+  const ensureOpening = () => {
     if (!current) {
       current = {
-        id: `${seed}:phase:opening`,
+        id: phaseId(opening),
         kind: "activity_phase",
         items: [],
         summary: "",
@@ -1692,7 +1705,7 @@ export function buildTurnTimelineRows(
         item === legacyReplyBoundary;
       if (!running && (explicitFinal || legacyTrailingReply)) continue;
       current = {
-        id: `${item.id}:phase`,
+        id: phaseId(item.id),
         kind: "activity_phase",
         interstitial: item,
         items: [],
@@ -1700,6 +1713,7 @@ export function buildTurnTimelineRows(
         active: false,
       };
       rows.push(current);
+      opening = item.id;
     } else if (item.kind === "protocol" && item.surface === "runtime_request") {
       const key = `${item.runId}:${item.requestId}`;
       if (seenRequests.has(key)) continue;
@@ -1710,7 +1724,11 @@ export function buildTurnTimelineRows(
         latest?.surface === "runtime_request" &&
         latest.status !== "pending"
       ) {
-        rows.push(latest.id === item.id ? latest : { ...latest, id: item.id });
+        const receipt = latest.id === item.id ? latest : { ...latest, id: item.id };
+        rows.push(receipt);
+        opening = receipt.id;
+      } else {
+        opening = item.id;
       }
     } else if (
       item.kind === "protocol" &&
@@ -1718,9 +1736,11 @@ export function buildTurnTimelineRows(
     ) {
       current = null;
       rows.push(item);
+      opening = item.id;
     } else if (item.kind === "plan_document") {
       current = null;
       rows.push(item);
+      opening = item.id;
     } else if (
       item.kind === "tool" ||
       item.kind === "usage" ||
@@ -1728,7 +1748,7 @@ export function buildTurnTimelineRows(
       item.kind === "marker" ||
       item.kind === "protocol"
     ) {
-      ensureOpening(item.id).items.push(item);
+      ensureOpening().items.push(item);
     }
   }
   const meaningful = rows.filter(
@@ -1746,8 +1766,9 @@ export function buildTurnTimelineRows(
 export function buildActivityPhases(
   parsed: readonly TaskChatItem[],
   running: boolean,
+  turnId: string,
 ): TaskChatActivityPhaseItem[] {
-  return buildTurnTimelineRows(parsed, running).filter(
+  return buildTurnTimelineRows(parsed, running, turnId).filter(
     (item): item is TaskChatActivityPhaseItem => item.kind === "activity_phase",
   );
 }

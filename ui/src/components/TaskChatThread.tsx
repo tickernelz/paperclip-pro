@@ -1851,17 +1851,18 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                       : undefined,
                 })
             : undefined;
+        const segmented = timelineAnchors.length > 0;
+        const turnId = segmented
+          ? `${source.id}:turn:${segmentIndex}`
+          : `${source.id}:turn`;
         const children = settledRunChildren(
           timelineItemsBySegment[segmentIndex] ?? [],
+          turnId,
         );
         if (children.length === 0 && !finalResponse && !sourceIsPaperclipRunner)
           continue;
         settledRunIds.add(source.id);
         if (finalResponse) settledReplyRunIds.add(source.id);
-        const segmented = timelineAnchors.length > 0;
-        const turnId = segmented
-          ? `${source.id}:turn:${segmentIndex}`
-          : `${source.id}:turn`;
         const segmentFinishedMs = Number.isFinite(segment.endMs)
           ? segment.endMs
           : finished;
@@ -1943,13 +1944,14 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             liveRun.id === planDocumentSourceRunId && planTurnItem
               ? embedPlanDocumentAtWriteBoundary(parsedTranscript, planTurnItem)
               : parsedTranscript;
+          const turnId = `${liveRun.id}:turn:${segmentIndex}`;
           const children = settledRunChildren(
             isNativePaperclipRunnerRun(liveRun)
               ? paperclipRunnerTimelineItems(parsed)
               : parsed,
+            turnId,
           );
           if (children.length === 0) continue;
-          const turnId = `${liveRun.id}:turn:${segmentIndex}`;
           const segmentDurationMs =
             Number.isFinite(segment.startMs) && Number.isFinite(segment.endMs)
               ? Math.max(0, segment.endMs - segment.startMs)
@@ -2151,6 +2153,11 @@ export function TaskChatThread(props: TaskChatThreadProps) {
       ? (steeringAnchorsByRun.get(tailRunId) ?? [])
       : (legacyTimelineAnchorsByRun.get(tailRunId) ?? [])
     : [];
+  const tailTurnId = tailRunId
+    ? tailTimelineAnchors.length > 0
+      ? `${tailRunId}:turn:${tailTimelineAnchors.length}`
+      : `${tailRunId}:turn`
+    : null;
   const tailSegmentStartMs =
     tailTimelineAnchors.length > 0
       ? tailTimelineAnchors[tailTimelineAnchors.length - 1]
@@ -2898,6 +2905,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                               optimisticRunnerStartup ? (
                                 <TaskChatRunnerTurn
                                   runId={tailRunId}
+                                  turnId={tailTurnId}
                                   execution={
                                     liveRun?.id === tailRunId
                                       ? liveRun.execution
@@ -2941,6 +2949,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                                   />
                                   <TaskChatLiveTail
                                     items={tailItems}
+                                    turnId={tailTurnId ?? undefined}
                                     emptyMessage={
                                       tailStatus === "queued"
                                         ? "Waiting to start..."

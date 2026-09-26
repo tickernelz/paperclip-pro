@@ -44,6 +44,53 @@ describe("TaskChatActivityPhase", () => {
     flushSync(() => root.unmount());
   });
 
+  it("keeps an explicit toggle when the auto-open policy flips", () => {
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+    const memory = new Map<string, boolean>();
+    const item = (active: boolean) => ({
+      id: "phase-1",
+      kind: "activity_phase" as const,
+      active,
+      summary: "Read 1 file",
+      items: [
+        {
+          id: "tool-1",
+          kind: "tool" as const,
+          name: "Read",
+          status: active ? ("in_progress" as const) : ("completed" as const),
+          detail: "Source contents",
+        },
+      ],
+    });
+    const render = (active: boolean) =>
+      flushSync(() =>
+        root.render(
+          <TaskChatExpansionState.Provider value={memory}>
+            <TaskChatActivityPhase
+              item={item(active)}
+              renderChild={(child) => <div>{child.id}</div>}
+            />
+          </TaskChatExpansionState.Provider>,
+        ),
+      );
+    const summary = () =>
+      container.querySelector<HTMLButtonElement>(
+        '[data-testid="task-chat-phase-summary"]',
+      )!;
+
+    render(true);
+    expect(summary().getAttribute("aria-expanded")).toBe("true");
+    flushSync(() => summary().click());
+    expect(summary().getAttribute("aria-expanded")).toBe("false");
+
+    render(true);
+    expect(summary().getAttribute("aria-expanded")).toBe("false");
+
+    flushSync(() => root.unmount());
+  });
+
   afterEach(() => {
     document.body.innerHTML = "";
   });
