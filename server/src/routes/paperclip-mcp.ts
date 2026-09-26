@@ -3,11 +3,14 @@ import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
+  InvalidCursorError,
   paperclipToolCatalog,
   parseToolsets,
   PaperclipApiClient,
+  resolvePageSize,
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
 import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
+import { accessService } from "../services/access.js";
 import { forbidden, unauthorized } from "../errors.js";
 
 const PROTOCOL_VERSION = "2025-06-18";
@@ -27,6 +30,7 @@ function loopbackApiUrl(req: Request): string {
 /** Mounted after actor middleware; only run-scoped agent credentials authenticate here. */
 export function paperclipMcpRoutes(db: Db) {
   const router = Router();
+  const access = accessService(db);
 
   router.get("/mcp/paperclip", (_req, res) => {
     res.status(405).json({ error: "Method not allowed" });
@@ -47,7 +51,7 @@ export function paperclipMcpRoutes(db: Db) {
     const { id = null, method, params } = (req.body ?? {}) as {
       id?: string | number | null;
       method?: string;
-      params?: { name?: string; arguments?: Record<string, unknown> };
+      params?: { name?: string; arguments?: Record<string, unknown>; cursor?: unknown };
     };
     const send = (result: unknown) => res.json({ jsonrpc: "2.0", id, result });
 
@@ -82,13 +86,21 @@ export function paperclipMcpRoutes(db: Db) {
       toolsets,
       agentRole: agent?.role ?? null,
     });
-    const { definitions, listing } = paperclipToolCatalog(
-      client,
-      toolsets,
-      agentAuthorityCapabilities(agent?.role).some((capability) =>
-        capability.startsWith("company:"),
-      ),
-    );
+    const capabilities = agentAuthorityCapabilities(agent?.role);
+    const management = capabilities.some((capability) => capability.startsWith("company:"));
+    const grants = management ? await access.listPrincipalGrants(companyId, "agent", agentId) : [];
+    let definitions;
+    let listing;
+    try {
+      ({ definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
+        boardSurface: { capabilities, permissionKeys: new Set(grants.map((row) => row.permissionKey)) },
+        cursor: typeof params?.cursor === "string" ? params.cursor : null,
+        pageSize: resolvePageSize(),
+      }));
+    } catch (error) {
+      if (!(error instanceof InvalidCursorError)) throw error;
+      return res.json({ jsonrpc: "2.0", id, error: { code: -32602, message: error.message } });
+    }
 
     if (method === "tools/list") return send(listing);
 

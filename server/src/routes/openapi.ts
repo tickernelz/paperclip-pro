@@ -3137,8 +3137,13 @@ registry.registerPath({
   path: "/api/companies/{companyId}/agents",
   tags: ["agents"],
   summary: "List agents in a company",
-  request: { params: z.object({ companyId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
+  description:
+    "Pass `view=compact` to drop the per-row `orgChainHealth`, `appearance` and `avatarUrl` fields; `GET /api/agents/{id}` keeps the full shape.",
+  request: {
+    params: z.object({ companyId: z.string() }),
+    query: z.object({ view: z.enum(["compact"]).optional() }),
+  },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
@@ -3842,10 +3847,15 @@ registry.registerPath({
   tags: ["issues"],
   summary: "List issues in a company",
   description:
-    "Use `view=compact` for the board issue-list row contract. The default response remains the broad compatibility contract.",
+    "Use `view=compact` for the board issue-list row contract. The default response remains the broad compatibility contract. Pass `includeConversations=true` to also return the caller's own persistent conversation threads, which are hidden from every other board query; rows belonging to another agent or user are never included.",
   request: {
     params: z.object({ companyId: z.string() }),
-    query: z.object({ view: z.enum(["compact"]).optional() }).passthrough(),
+    query: z
+      .object({
+        view: z.enum(["compact"]).optional(),
+        includeConversations: z.enum(["true", "1"]).optional(),
+      })
+      .passthrough(),
   },
   responses: {
     200: r.ok(),

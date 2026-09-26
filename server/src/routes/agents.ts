@@ -3111,6 +3111,11 @@ export function agentRoutes(
     };
   }
 
+  function toCompactAgentListRow<T extends Record<string, unknown>>(agent: T) {
+    const { orgChainHealth: _orgChainHealth, appearance: _appearance, avatarUrl: _avatarUrl, ...rest } = agent;
+    return rest;
+  }
+
   // Single presenter for every response that emits a raw agent row. Restricted
   // views blank the config wholesale for authorization reasons; this runs for
   // config-reading (board) callers too, so plaintext `adapterConfig.env` values
@@ -4014,7 +4019,12 @@ export function agentRoutes(
   router.get("/companies/:companyId/agents", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
-    const unsupportedQueryParams = Object.keys(req.query).sort();
+    const view = req.query.view;
+    if (view !== undefined && view !== "compact") {
+      res.status(400).json({ error: "view must be 'compact' when provided" });
+      return;
+    }
+    const unsupportedQueryParams = Object.keys(req.query).filter((key) => key !== "view").sort();
     if (unsupportedQueryParams.length > 0) {
       res.status(400).json({
         error: `Unsupported query parameter${unsupportedQueryParams.length === 1 ? "" : "s"}: ${unsupportedQueryParams.join(", ")}`,
@@ -4023,11 +4033,14 @@ export function agentRoutes(
     }
     const result = await filterAgentsForActor(req, await svc.list(companyId));
     const canReadConfigs = await actorCanReadConfigurationsForCompany(req, companyId);
-    if (canReadConfigs) {
-      res.json(result.map((agent) => redactAgentRowForResponse(agent)));
+    const rows = canReadConfigs
+      ? result.map((agent) => redactAgentRowForResponse(agent))
+      : result.map((agent) => redactForRestrictedAgentView(agent));
+    if (view === "compact") {
+      res.json(rows.map((agent) => toCompactAgentListRow(agent)));
       return;
     }
-    res.json(result.map((agent) => redactForRestrictedAgentView(agent)));
+    res.json(rows);
   });
 
   router.get("/instance/scheduler-heartbeats", async (req, res) => {

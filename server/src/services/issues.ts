@@ -1824,6 +1824,18 @@ export interface IssueFilters {
   sortDir?: "asc" | "desc";
   /** ISO 8601 timestamp — only return issues with updatedAt strictly after this value. */
   updatedSince?: string;
+  includeConversations?: boolean;
+  conversationOwner?: { agentId: string | null; userId: string | null };
+}
+
+function conversationOwnerScope(
+  owner: { agentId: string | null; userId: string | null } | undefined,
+): SQL | undefined {
+  const agentId = owner?.agentId?.trim();
+  if (agentId) return eq(issues.conversationAgentId, agentId);
+  const userId = owner?.userId?.trim();
+  if (userId) return eq(issues.conversationUserId, userId);
+  return undefined;
 }
 
 type IssueRow = typeof issues.$inferSelect & { externalConversationState?: "active" | "waiting" | null };
@@ -7835,8 +7847,14 @@ export function issueService(db: Db) {
         eq(issues.companyId, companyId),
         visibleIssueCondition(),
       ];
+      const includeConversations = filters?.includeConversations === true;
+      if (includeConversations) {
+        conditions.push(
+          conversationOwnerScope(filters?.conversationOwner) ?? isNull(issues.conversationAgentId),
+        );
+      }
       if (!filters?.q?.trim()) {
-        conditions.push(isNull(issues.conversationAgentId));
+        if (!includeConversations) conditions.push(isNull(issues.conversationAgentId));
         if (!filters?.touchedByUserId && !filters?.unreadForUserId && !filters?.inboxArchivedByUserId) {
           conditions.push(nonIdleSlackIssueCondition());
         }

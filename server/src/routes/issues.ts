@@ -7958,6 +7958,12 @@ export function issueRoutes(
     const sortDir = req.query.sortDir as string | undefined;
     const view = req.query.view as string | undefined;
     const compactView = view === "compact";
+    const includeConversations =
+      req.query.includeConversations === "true" || req.query.includeConversations === "1";
+    const conversationOwner = {
+      agentId: req.actor.type === "agent" ? req.actor.agentId : null,
+      userId: req.actor.type === "board" ? (req.actor.userId ?? null) : null,
+    };
     const hasPlanDocument = parseOptionalBooleanQuery(
       req.query.hasPlanDocument,
     );
@@ -8136,6 +8142,8 @@ export function issueRoutes(
       afterId: req.query.afterId as string | undefined,
       sortDir: sortDir === "asc" || sortDir === "desc" ? sortDir : undefined,
       updatedSince: rawUpdatedSince,
+      includeConversations,
+      conversationOwner,
     };
     const requestKey = issueListRequestKey({
       req,

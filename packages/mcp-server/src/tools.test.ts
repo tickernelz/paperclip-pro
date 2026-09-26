@@ -88,6 +88,22 @@ describe("paperclip MCP tools", () => {
     expect(response.content[0]?.text).toContain("issue-1");
   });
 
+  it("asks for the compact agent list by default and the full shape on request", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "agent-1" }]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const tool = getTool("paperclipListAgents");
+    await tool.execute({});
+    expect(String((fetchMock.mock.calls[0] as [string])[0])).toBe(
+      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/agents?view=compact",
+    );
+
+    await tool.execute({ view: "full" });
+    expect(String((fetchMock.mock.calls[1] as [string])[0])).toBe(
+      "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/agents",
+    );
+  });
+
   it("forwards the list filters the route supports", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "issue-1" }]));
     vi.stubGlobal("fetch", fetchMock);
