@@ -9,6 +9,37 @@ import {
   missingRequiredBodyFields,
   routeBodySchemas,
 } from "./route-body-schemas.js";
+import { CURATED_OPERATIONS, TOOL_OVERRIDES } from "./tool-overrides.js";
+
+const NAME_TOKEN = /[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])/g;
+
+function nameTokens(name: string): string[] {
+  return name.slice("paperclip".length).match(NAME_TOKEN) ?? [];
+}
+
+function parentResourceToken(operationId: string): string | null {
+  const segments = operationId
+    .replace(/^[A-Z]+ /, "")
+    .replace(/^\/api\//, "")
+    .split("/")
+    .filter(Boolean);
+  const scoped =
+    segments[0] === "companies" && segments[1]?.startsWith("{") ? segments.slice(2) : segments;
+  const parent = scoped.filter((segment) => !segment.startsWith("{"))[0];
+  return parent ? (singular(parent).match(NAME_TOKEN) ?? [])[0] ?? null : null;
+}
+
+function singular(segment: string): string {
+  const word = segment
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((part) => part[0].toUpperCase() + part.slice(1))
+    .join("");
+  if (word.endsWith("ies")) return `${word.slice(0, -3)}y`;
+  if (word.endsWith("sses") || word.endsWith("uses")) return word.slice(0, -2);
+  if (word.endsWith("s") && !word.endsWith("ss")) return word.slice(0, -1);
+  return word;
+}
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const routesDir = join(repoRoot, "server/src/routes");
@@ -214,6 +245,42 @@ describe("generated tool input contracts", () => {
       .filter(([, count]) => count >= 10)
       .map(([sentence]) => sentence);
     expect(repeated).toEqual([]);
+  });
+
+  it("never publishes the mechanical method-and-path summary", () => {
+    const mechanical = generatedToolSpecs()
+      .filter((spec) => /^(GET|POST|PUT|PATCH|DELETE)\b/.test(spec.description))
+      .map((spec) => spec.name);
+    expect(mechanical).toEqual([]);
+  });
+
+  it("tells two tools in one tag apart when the description is short", () => {
+    const groups = new Map<string, string[]>();
+    for (const spec of generatedToolSpecs()) {
+      if (spec.description.trim().length >= 20) continue;
+      for (const tag of spec.tags.length > 0 ? spec.tags : [""]) {
+        const key = `${tag}\u0000${spec.description}`;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(spec.name);
+      }
+    }
+    const collisions = [...groups.values()].filter((names) => names.length > 1);
+    expect(collisions).toEqual([]);
+  });
+
+  it("keeps the parent resource token in every generated tool name", () => {
+    const lost: string[] = [];
+    for (const spec of generatedToolSpecs()) {
+      if (CURATED_OPERATIONS[spec.operationId]) continue;
+      if (TOOL_OVERRIDES[spec.operationId]?.name) continue;
+      if (/_[0-9a-f]{6}$/.test(spec.name)) continue;
+      const parent = parentResourceToken(spec.operationId);
+      if (!parent) continue;
+      const tokens = nameTokens(spec.name);
+      if (tokens.length < 3) continue;
+      if (!tokens.includes(parent)) lost.push(`${spec.name} lost ${parent} on ${spec.operationId}`);
+    }
+    expect(lost).toEqual([]);
   });
 
   it("publishes the hoisted statements once as shared notes", () => {
