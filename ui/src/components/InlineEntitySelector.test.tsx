@@ -138,6 +138,62 @@ describe("InlineEntitySelector", () => {
     });
   });
 
+  it("docks the open picker above the software keyboard", async () => {
+    const visualViewport = new EventTarget() as EventTarget & {
+      height: number;
+      offsetTop: number;
+    };
+    visualViewport.height = 844;
+    visualViewport.offsetTop = 0;
+    const innerHeightDescriptor = Object.getOwnPropertyDescriptor(window, "innerHeight");
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: visualViewport });
+    Object.defineProperty(window, "innerHeight", { configurable: true, value: 844 });
+
+    const root = createRoot(container);
+
+    act(() => {
+      root.render(
+        <InlineEntitySelector
+          value=""
+          options={[
+            { id: "agent:agent-1", label: "CodexCoder" },
+            { id: "agent:agent-2", label: "DesignBot" },
+          ]}
+          placeholder="Responsible"
+          noneLabel="No responsible"
+          searchPlaceholder="Search responsible..."
+          emptyMessage="No responsible found."
+          onChange={vi.fn()}
+        />,
+      );
+    });
+
+    const trigger = container.querySelector("button") as HTMLButtonElement | null;
+    await act(async () => {
+      trigger?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const rootStyle = document.documentElement.style;
+    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("0px");
+    expect(document.querySelector('[data-slot="entity-option-list"]')).not.toBeNull();
+
+    visualViewport.height = 508;
+    await act(async () => {
+      visualViewport.dispatchEvent(new Event("resize"));
+    });
+
+    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("336px");
+    expect(rootStyle.getPropertyValue("--mobile-entity-picker-viewport-height")).toBe("508px");
+
+    act(() => {
+      root.unmount();
+    });
+
+    expect(rootStyle.getPropertyValue("--mobile-entity-picker-keyboard-inset")).toBe("");
+    Reflect.deleteProperty(window, "visualViewport");
+    if (innerHeightDescriptor) Object.defineProperty(window, "innerHeight", innerHeightDescriptor);
+  });
+
   it("opens on programmatic focus without toggling an open popover closed", async () => {
     const root = createRoot(container);
 

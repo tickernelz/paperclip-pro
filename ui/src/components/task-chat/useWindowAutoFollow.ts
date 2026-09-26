@@ -17,6 +17,8 @@ function windowPinned(): boolean {
 function scrollWindowToBottom(): void {
   const el = scrollingElement();
   if (!el) return;
+  const bottom = Math.max(0, el.scrollHeight - window.innerHeight);
+  if (Math.abs(window.scrollY - bottom) < 1) return;
   window.scrollTo({ top: el.scrollHeight, left: 0, behavior: "auto" });
 }
 

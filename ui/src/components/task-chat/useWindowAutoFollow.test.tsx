@@ -122,12 +122,53 @@ describe("useWindowAutoFollow", () => {
   });
 
   it("follows content growth while pinned to the bottom", async () => {
+    const geometry = fakeWindowGeometry();
     render(0);
     await flushRaf();
-    await scrollWindowTo(1200); // pinned: 2000 - 1200 - 800 = 0
+    await scrollWindowTo(1200);
     scrollToCalls = [];
+    geometry.setScrollHeight(2300);
     render(1);
-    expect(scrollToCalls).toContain(2000);
+    expect(scrollToCalls).toContain(2300);
+    expect(window.scrollY).toBe(1500);
+  });
+
+  it("leaves the window alone when the user already rests at the bottom", async () => {
+    render(0);
+    await flushRaf();
+    await scrollWindowTo(1200);
+    scrollToCalls = [];
+
+    render(1);
+
+    expect(scrollToCalls).toEqual([]);
+    expect(window.scrollY).toBe(1200);
+  });
+
+  it("does not chase the bottom when a layout shift shrinks the document", async () => {
+    let triggerResize = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          triggerResize = () => callback([], this as unknown as ResizeObserver);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    const geometry = fakeWindowGeometry();
+    render(0);
+    await flushRaf();
+    await scrollWindowTo(1200);
+    scrollToCalls = [];
+
+    geometry.setScrollHeight(1954);
+    setWindowScrollY(1154);
+    triggerResize();
+
+    expect(scrollToCalls).toEqual([]);
+    expect(window.scrollY).toBe(1154);
   });
 
   it("holds position when the user has scrolled up", async () => {
