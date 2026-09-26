@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 
 const INSET_BOTTOM_VAR = "--mobile-viewport-inset-bottom";
-const OFFSET_TOP_VAR = "--mobile-viewport-offset-top";
 const HEIGHT_VAR = "--mobile-viewport-height";
 
 let subscribers = 0;
@@ -14,7 +13,6 @@ function publish(): void {
   const offsetTop = viewport?.offsetTop ?? 0;
   const inset = Math.max(0, Math.round(window.innerHeight - height - offsetTop));
   style.setProperty(INSET_BOTTOM_VAR, `${inset}px`);
-  style.setProperty(OFFSET_TOP_VAR, `${Math.round(offsetTop)}px`);
   style.setProperty(HEIGHT_VAR, `${Math.round(height)}px`);
 }
 
@@ -32,12 +30,11 @@ function attach(): () => void {
     window.removeEventListener("orientationchange", publish);
     const style = document.documentElement.style;
     style.removeProperty(INSET_BOTTOM_VAR);
-    style.removeProperty(OFFSET_TOP_VAR);
     style.removeProperty(HEIGHT_VAR);
   };
 }
 
-/** Publishes visual-viewport height, keyboard inset and layout offset as CSS variables while any consumer is active. */
+/** Publishes the visual-viewport height and software-keyboard inset as CSS variables while any consumer is active. */
 export function useMobileViewportInsets(active: boolean): void {
   useEffect(() => {
     if (!active || typeof window === "undefined") return;
