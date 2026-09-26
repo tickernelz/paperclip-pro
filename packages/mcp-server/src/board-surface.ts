@@ -95,7 +95,7 @@ function permissionHeld(key: string, context: BoardSurfaceContext): boolean {
 export function boardToolAdvertised(
   spec: Pick<
     GeneratedToolSpec,
-    "authority" | "authorityCapability" | "authoritySource" | "guards" | "permissions" | "boardGuard"
+    "authority" | "authorityCapability" | "authoritySource" | "guards" | "permissions"
   >,
   context: BoardSurfaceContext,
 ): boolean {
