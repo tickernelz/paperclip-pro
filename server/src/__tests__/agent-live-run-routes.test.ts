@@ -1751,7 +1751,7 @@ describe("agent live run routes", () => {
     );
   });
 
-  it("lets a board member reproject only retained workspace diffs", async () => {
+  it("lets an instance admin reproject only retained workspace diffs", async () => {
     mockProviderTraceStore.getByRun.mockResolvedValue({
       id: "trace-1",
       status: "complete",
@@ -1859,6 +1859,51 @@ describe("agent live run routes", () => {
     );
 
     expect(res.status).toBe(403);
+    expect(mockHeartbeatService.getRun).not.toHaveBeenCalled();
+    expect(mockWorkspaceDiffReprojection.persist).not.toHaveBeenCalled();
+  });
+
+  it("refuses workspace-diff reprojection from a company ceo agent", async () => {
+    const res = await requestApp(
+      await createApp({}, {
+        type: "agent",
+        agentId: "agent-1",
+        agentRole: "ceo",
+        companyId: "company-1",
+        runId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        source: "agent_key",
+      }),
+      (baseUrl) =>
+        request(baseUrl).post(
+          "/api/heartbeat-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/provider-trace/reproject-workspace-diffs",
+        ),
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(403);
+    expect(mockProviderTraceStore.getByRun).not.toHaveBeenCalled();
+    expect(mockProviderTraceStore.readExactEntries).not.toHaveBeenCalled();
+    expect(mockHeartbeatService.getRun).not.toHaveBeenCalled();
+    expect(mockWorkspaceDiffReprojection.persist).not.toHaveBeenCalled();
+  });
+
+  it("refuses workspace-diff reprojection from a non-admin board member", async () => {
+    const res = await requestApp(
+      await createApp({}, {
+        type: "board",
+        userId: "ordinary-member",
+        companyIds: ["company-1"],
+        source: "session",
+        isInstanceAdmin: false,
+      }),
+      (baseUrl) =>
+        request(baseUrl).post(
+          "/api/heartbeat-runs/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/provider-trace/reproject-workspace-diffs",
+        ),
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(403);
+    expect(mockProviderTraceStore.getByRun).not.toHaveBeenCalled();
+    expect(mockProviderTraceStore.readExactEntries).not.toHaveBeenCalled();
     expect(mockHeartbeatService.getRun).not.toHaveBeenCalled();
     expect(mockWorkspaceDiffReprojection.persist).not.toHaveBeenCalled();
   });
