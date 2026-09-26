@@ -8,15 +8,36 @@ describe("generated tool name capping", () => {
     );
   });
 
-  it("drops redundant interior path words before falling back to a digest", () => {
+  it("drops the trailing interior path words before falling back to a digest", () => {
     const name = cappedName(
       "paperclipListExecutionWorkspaceWorkspaceOperations",
       "GET",
       "/api/execution-workspaces/{id}/workspace-operations",
       new Set(),
     );
-    expect(name).toBe("paperclipListWorkspaceOperations");
+    expect(name).toBe("paperclipListExecutionOperations");
     expect(name).not.toContain("_");
+  });
+
+  it("keeps the parent resource and drops interior words from the right", () => {
+    const name = cappedName(
+      "paperclipCreateRoutineDescriptionAnnotationComment",
+      "POST",
+      "/api/routines/{id}/description/annotations/{threadId}/comments",
+      new Set(),
+    );
+    expect(name).toBe("paperclipCreateRoutineDescriptionComment");
+    expect(name.length).toBeLessThanOrEqual(NAME_LENGTH_LIMIT);
+  });
+
+  it("keeps the object's own modifiers while dropping the oldest interior word", () => {
+    const name = cappedName(
+      "paperclipGetEnvironmentCustomImageTemplate",
+      "GET",
+      "/api/environments/{environmentId}/custom-image-templates/{templateId}",
+      new Set(),
+    );
+    expect(name).toBe("paperclipGetEnvironmentCustomTemplate");
   });
 
   it("appends a deterministic path digest when shortening cannot reach the limit", () => {

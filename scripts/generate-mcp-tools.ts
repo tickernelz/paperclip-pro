@@ -259,7 +259,8 @@ export function cappedName(name: string, method: string, path: string, taken: Se
   if (tokens.length >= 3) {
     const interior = tokens.slice(1, -1);
     for (let drop = 1; drop <= interior.length; drop += 1) {
-      const candidate = `${NAME_PREFIX}${[tokens[0], ...interior.slice(drop), tokens[tokens.length - 1]].join("")}`;
+      const kept = interior.slice(0, interior.length - drop);
+      const candidate = `${NAME_PREFIX}${[tokens[0], ...kept, tokens[tokens.length - 1]].join("")}`;
       if (candidate.length <= NAME_LENGTH_LIMIT && !taken.has(candidate)) return candidate;
     }
   }
@@ -317,6 +318,102 @@ function descriptionSentences(text: string): string[] {
     .filter(Boolean);
 }
 
+interface SummaryCandidate {
+  key: string;
+  method: string;
+  path: string;
+  operation: Json;
+}
+
+function mechanicalSummary(method: string, path: string): string {
+  return `${method} ${path.replace(/\{[^}]+\}/g, "").replace(/\/api\//, "").replaceAll("/", " ")}`.trim();
+}
+
+function isPluralWord(word: string): boolean {
+  return word.endsWith("s") && !word.endsWith("ss");
+}
+
+function segmentWords(segment: string, singularize: boolean): string[] {
+  return segment
+    .split(/[^A-Za-z0-9]+/)
+    .filter(Boolean)
+    .map((word) => (singularize ? singular(word).toLowerCase() : word.toLowerCase()));
+}
+
+function nounArticle(chain: string[]): string {
+  if (chain.some(isPluralWord)) return "";
+  return /^[aeiou]/.test(chain[0] ?? "") ? "an" : "a";
+}
+
+function operationSummary(method: string, path: string): string {
+  const segments = path.replace(/^\/api\//, "").split("/").filter(Boolean);
+  const scoped =
+    segments[0] === "companies" && segments[1]?.startsWith("{") ? segments.slice(2) : segments;
+  const statics = scoped.filter((segment) => !segment.startsWith("{"));
+  const last = statics[statics.length - 1] ?? "resource";
+  const lastWord = segmentWords(last, false).at(-1) ?? "resource";
+  const trailingParam = scoped[scoped.length - 1]?.startsWith("{") === true;
+  const action =
+    method === "POST" && /^[a-z-]+$/.test(last) && !SINGULARS[last] && !isPluralWord(lastWord);
+  const collection = method === "GET" && statics.length > 0 && !trailingParam && isPluralWord(lastWord);
+  const scope = scoped[0] === "cases" && scoped[1] === "{caseId}" ? ["pipeline"] : [];
+  const parents = statics.slice(0, -1).flatMap((segment) => segmentWords(segment, true));
+  const head = segmentWords(last, action ? false : !collection);
+  const chain = action ? [...scope, ...parents] : [...scope, ...parents, ...head];
+  const object = `${nounArticle(chain)} ${chain.join(" ")}`.trim();
+  if (action) {
+    const phrase = head.join(" ");
+    return `${phrase[0].toUpperCase()}${phrase.slice(1)}${head.length > 1 ? " for" : ""} ${object}`;
+  }
+  const verb =
+    method === "GET"
+      ? collection
+        ? "List"
+        : "Get"
+      : method === "POST"
+        ? "Create"
+        : method === "PATCH"
+          ? "Update"
+          : method === "PUT"
+            ? "Set"
+            : "Delete";
+  return `${verb} ${object}`;
+}
+
+function pathPlaceholders(path: string): string[] {
+  return [...path.matchAll(/\{([^}]+)\}/g)].map((match) => match[1]);
+}
+
+function registrySummary(candidate: SummaryCandidate): string | undefined {
+  const summary = (candidate.operation.summary as string | undefined)?.trim();
+  if (!summary || summary === mechanicalSummary(candidate.method, candidate.path)) return undefined;
+  return summary;
+}
+
+function synthesizeSummary(candidate: SummaryCandidate, collisions: Set<string>): string {
+  const summary = operationSummary(candidate.method, candidate.path);
+  if (!collisions.has(candidate.key)) return summary;
+  const placeholders = pathPlaceholders(candidate.path);
+  return placeholders.length > 0 ? `${summary} by ${placeholders.join(" and ")}` : summary;
+}
+
+function collidingSummaries(candidates: SummaryCandidate[]): Set<string> {
+  const groups = new Map<string, Set<string>>();
+  for (const candidate of candidates) {
+    if (registrySummary(candidate)) continue;
+    const summary = operationSummary(candidate.method, candidate.path);
+    for (const tag of (candidate.operation.tags as string[] | undefined) ?? [""]) {
+      const key = `${tag}\u0000${summary}`;
+      if (!groups.has(key)) groups.set(key, new Set());
+      groups.get(key)!.add(candidate.key);
+    }
+  }
+  return new Set([...groups].filter(([, keys]) => keys.size > 1).flatMap(([, keys]) => [...keys]));
+}
+
+function operationSummaryFor(candidate: SummaryCandidate, collisions: Set<string>): string {
+  return registrySummary(candidate) ?? synthesizeSummary(candidate, collisions);
+}
 function hoistSharedSentences(tools: GeneratedTool[]): string[] {
   const occurrences = new Map<string, Set<string>>();
   const scopes = new Map<string, Set<string>>();
@@ -600,6 +697,7 @@ export async function generate(): Promise<GeneratorResult> {
     kept.push(candidate);
   }
 
+  const summaryCollisions = collidingSummaries(kept);
   const taken = new Set<string>(Object.values(CURATED_OPERATIONS));
   const tools: GeneratedTool[] = [];
   for (const candidate of [...kept].sort((a, b) => a.key.localeCompare(b.key))) {
@@ -666,7 +764,7 @@ export async function generate(): Promise<GeneratorResult> {
         ? "merge"
         : "nest";
 
-    const summary = (candidate.operation.summary as string | undefined)?.trim();
+    const summary = operationSummaryFor(candidate, summaryCollisions);
     const described = (candidate.operation.description as string | undefined)?.trim();
     const undocumentedBody =
       body && !body.documented
@@ -674,9 +772,7 @@ export async function generate(): Promise<GeneratorResult> {
         : "";
     const description =
       override.description ??
-      [summary || `${candidate.method} ${candidate.path}`, described, undocumentedBody]
-        .filter(Boolean)
-        .join(". ");
+      [summary, described, undocumentedBody].filter(Boolean).join(". ");
 
     const guardEvidence = evidence.get(candidate.key);
     const registryBoard = candidate.operation["x-paperclip-authorization"]?.actor === "board";
