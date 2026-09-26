@@ -212,3 +212,91 @@ describe("per-task model override control", () => {
     );
   });
 });
+
+describe("agent chat model override", () => {
+  async function renderConversation(resolveIssueId: () => Promise<string>) {
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="" resolveIssueId={resolveIssueId} />
+        </QueryClientProvider>,
+      );
+    });
+  }
+
+  it("binds the picker to the conversation issue once it is resolved", async () => {
+    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view({ thinking: "high" }));
+    await renderConversation(resolveIssueId);
+    expect(issuesApi.getModelOverride).not.toHaveBeenCalled();
+
+    await openPanel();
+    await vi.waitFor(() =>
+      expect(issuesApi.getModelOverride).toHaveBeenCalledWith("chat-issue"),
+    );
+    expect(resolveIssueId).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() =>
+      expect(node("task-model-override-effective-thinking").textContent).toBe("low"),
+    );
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-option-thinking-high").click();
+    });
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
+      thinking: "high",
+    });
+    await vi.waitFor(() =>
+      expect(
+        node("task-chat-composer-model-override").getAttribute("data-has-override"),
+      ).toBe("true"),
+    );
+  });
+
+  it("clears the conversation override through the agent default option", async () => {
+    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view({ model: "vendor/deep" }));
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(view());
+    await renderConversation(resolveIssueId);
+    await openPanel();
+    await vi.waitFor(() => node("task-model-override-default-model"));
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-default-model").click();
+    });
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("chat-issue", {
+      model: null,
+    });
+    await vi.waitFor(() =>
+      expect(
+        node("task-chat-composer-model-override").getAttribute("data-has-override"),
+      ).toBe("false"),
+    );
+  });
+
+  it("keeps the subtask switches out of the conversation picker", async () => {
+    const resolveIssueId = vi.fn().mockResolvedValue("chat-issue");
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    await renderConversation(resolveIssueId);
+    await openPanel();
+    await vi.waitFor(() => node("task-model-override-panel"));
+    expect(
+      document.querySelector('[data-testid="task-model-override-footer"]'),
+    ).toBeNull();
+  });
+
+  it("renders nothing for a task that has neither an id nor a conversation resolver", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <TaskModelOverrideControl issueId="" />
+        </QueryClientProvider>,
+      );
+    });
+    expect(
+      document.querySelector('[data-testid="task-chat-composer-model-override"]'),
+    ).toBeNull();
+    expect(issuesApi.getModelOverride).not.toHaveBeenCalled();
+  });
+});

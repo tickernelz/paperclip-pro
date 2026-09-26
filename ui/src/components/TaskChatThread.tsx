@@ -398,6 +398,7 @@ function resolvedWithoutUserFacingResponse(value: unknown): boolean {
 
 export type TaskChatThreadProps = ComponentProps<typeof IssueChatThread> & {
   conversationMode?: boolean;
+  resolveIssueId?: () => Promise<string>;
   creationActivity?: ActivityEvent[];
   initialHistoryPending?: boolean;
   initialHistoryError?: boolean;
@@ -506,6 +507,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     mentions,
     enableReassign,
     conversationMode,
+    resolveIssueId,
     reassignOptions,
     currentAssigneeValue,
     issueStatus,
@@ -3062,6 +3064,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                       mentions={mentions}
                       enableReassign={enableReassign}
                       conversationMode={conversationMode}
+                      resolveIssueId={resolveIssueId}
                       reassignOptions={reassignOptions}
                       agentMap={agentMap}
                       userProfileMap={userProfileMap}
