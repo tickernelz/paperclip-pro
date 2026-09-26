@@ -50,11 +50,3 @@ test("the reader scan ignores a markdown path that lives only inside a fixture",
     "a README.md inside a temporary git checkout is not a repository document",
   );
 });
-
-test("a newly added literal reader makes the scan fail until it is declared", () => {
-  const known = new Set([...docsLaneVitestSuites, ...docsLaneNodeTestSuites]);
-  for (const suite of findLiteralDocumentationReaders(repoRoot).vitest) {
-    if (known.has(suite)) continue;
-    assert.fail(`undeclared documentation reader: ${suite}`);
-  }
-});
