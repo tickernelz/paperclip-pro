@@ -70,6 +70,7 @@ export interface GeneratedTool {
   guards: string[];
   permissions: string[];
   boardGuard: string | null;
+  authorityCapability: string | null;
   parameters: GeneratedParameter[];
   body?: {
     required: boolean;
@@ -394,6 +395,7 @@ export interface RouteGuardEvidence {
   guards: string[];
   permissions: string[];
   boardGuard: string | null;
+  authorityCapability: string | null;
 }
 
 function routeSourceSlices(): RouteSlice[] {
@@ -457,7 +459,16 @@ export function routeGuardEvidence(): Map<string, RouteGuardEvidence> {
         ),
       ),
     ].sort();
-    evidence.set(`${slice.method} ${slice.path}`, { guards, permissions, boardGuard });
+    const authorityCapability =
+      /assert(?:BoardOrAgentAuthority|BoardOrgOrAgentAuthority|AgentAuthority)\(\s*_?req\s*,\s*"([a-z_]+:[a-z_]+)"/.exec(
+        slice.body,
+      )?.[1] ?? null;
+    evidence.set(`${slice.method} ${slice.path}`, {
+      guards,
+      permissions,
+      boardGuard,
+      authorityCapability,
+    });
   }
   return evidence;
 }
@@ -657,6 +668,7 @@ export function generate(): GeneratorResult {
       guards: guardEvidence?.guards ?? [],
       permissions: guardEvidence?.permissions ?? [],
       boardGuard: guardEvidence?.boardGuard ?? (probeDenial ? `probe:${probeDenial}` : null),
+      authorityCapability: guardEvidence?.authorityCapability ?? null,
       parameters,
       ...(body
         ? {

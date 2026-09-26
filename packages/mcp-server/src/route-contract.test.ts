@@ -170,4 +170,17 @@ describe("generated tool input contracts", () => {
     expect(notes).toContain("[Experimental] Existing route authorization applies.");
     expect(notes.some((note) => note.startsWith("[Email] "))).toBe(true);
   });
+
+  it("records the capability the route's authority guard asserts", () => {
+    const specs = generatedToolSpecs();
+    const withCapability = specs.filter((spec) => spec.authorityCapability);
+    expect(withCapability.length).toBeGreaterThan(0);
+    expect(withCapability.every((spec) => /^[a-z_]+:[a-z_]+$/.test(spec.authorityCapability!))).toBe(
+      true,
+    );
+    const connections = specs.find(
+      (spec) => spec.operationId === "GET /api/companies/{companyId}/ai-connections",
+    );
+    expect(connections?.authorityCapability).toBe("work:read");
+  });
 });

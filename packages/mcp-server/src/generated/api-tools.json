@@ -23,6 +23,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -89,6 +90,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -136,6 +138,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -192,6 +195,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@activity.ts:330",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -271,6 +275,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -321,6 +326,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -379,6 +385,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -414,6 +421,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionRequestId",
@@ -470,6 +478,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:1344",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -503,6 +512,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -556,6 +566,7 @@
       "users:manage_permissions"
     ],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -619,6 +630,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -670,6 +682,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -745,6 +758,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -839,6 +853,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -915,6 +930,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -985,6 +1001,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1041,6 +1058,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1135,6 +1153,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -1188,6 +1207,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1238,6 +1258,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "sessionId",
@@ -1285,6 +1306,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionId",
@@ -1319,6 +1341,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "runId",
@@ -1353,6 +1376,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:17025",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -1409,6 +1433,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1460,6 +1485,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1550,6 +1576,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -1581,6 +1608,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -1605,6 +1633,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -1656,6 +1685,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@agents.ts:6315",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -1690,6 +1720,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -1721,6 +1752,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -1772,6 +1804,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:2307",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -1825,6 +1858,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -1865,6 +1899,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -1907,6 +1942,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -2037,6 +2073,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -2096,6 +2133,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -2154,6 +2192,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -2272,6 +2311,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -2803,6 +2843,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3339,6 +3380,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3433,6 +3475,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3522,6 +3565,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -3590,6 +3634,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "announcementId",
@@ -3640,6 +3685,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3703,6 +3749,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3737,6 +3784,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:settings",
     "parameters": [
       {
         "name": "companyId",
@@ -3828,6 +3876,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -3905,6 +3954,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -4024,6 +4074,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -4085,6 +4136,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -4143,6 +4195,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -4219,6 +4272,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -4260,6 +4314,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -4318,6 +4373,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -4389,6 +4445,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1812",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -4446,6 +4503,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "conversationId",
@@ -4529,6 +4587,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -4640,6 +4699,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -4697,6 +4757,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5065,6 +5126,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5149,6 +5211,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5534,6 +5597,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionId",
@@ -5580,6 +5644,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5639,6 +5704,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5713,6 +5779,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -5821,6 +5888,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -5889,6 +5957,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -5956,6 +6025,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6036,6 +6106,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6217,6 +6288,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6271,6 +6343,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:settings",
     "parameters": [
       {
         "name": "companyId",
@@ -6444,6 +6517,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6514,6 +6588,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6592,6 +6667,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1760",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -6625,6 +6701,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -6667,6 +6744,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6729,6 +6807,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -6770,6 +6849,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -6888,6 +6968,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -6959,6 +7040,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -7040,6 +7122,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -7119,6 +7202,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -7197,6 +7281,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -7373,6 +7458,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -7427,6 +7513,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "companyId",
@@ -7543,6 +7630,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -7641,6 +7729,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -7724,6 +7813,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -7796,6 +7886,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionKey",
@@ -7851,6 +7942,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointKey",
@@ -7896,6 +7988,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -7994,6 +8087,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -8117,6 +8211,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "companyId",
@@ -8202,6 +8297,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "runId",
@@ -8237,6 +8333,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -8508,6 +8605,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -8632,6 +8730,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "action",
@@ -8698,6 +8797,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -8762,6 +8862,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -8859,6 +8960,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -8909,6 +9011,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -8993,6 +9096,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9056,6 +9160,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9145,6 +9250,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9202,6 +9308,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9253,6 +9360,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@smoke-lab.ts:165",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9288,6 +9396,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9344,6 +9453,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9435,6 +9545,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9541,6 +9652,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9629,6 +9741,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -9852,6 +9965,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2006",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -9907,6 +10021,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -10114,6 +10229,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -10482,6 +10598,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -10612,6 +10729,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -10703,6 +10821,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -10799,6 +10918,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "action",
@@ -10857,6 +10977,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "action",
@@ -10925,6 +11046,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -10959,6 +11081,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:1586",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "dataKey",
@@ -11017,6 +11140,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:1399",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -11070,6 +11194,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionId",
@@ -11130,6 +11255,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11193,6 +11319,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -11241,6 +11368,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionRequestId",
@@ -11296,6 +11424,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:523",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "type",
@@ -11330,6 +11459,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -11365,6 +11495,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@ai-connections.ts:202",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11408,6 +11539,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "attachmentId",
@@ -11439,6 +11571,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -11481,6 +11614,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -11522,6 +11656,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -11564,6 +11699,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1837",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -11614,6 +11750,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11667,6 +11804,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11740,6 +11878,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionTrainingId",
@@ -11775,6 +11914,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -11809,6 +11949,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11850,6 +11991,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "goalId",
@@ -11883,6 +12025,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@agents.ts:7444",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -11918,6 +12061,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -11960,6 +12104,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -11987,6 +12132,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -12021,6 +12167,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -12055,6 +12202,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -12096,6 +12244,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -12137,6 +12286,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -12184,6 +12334,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:16010",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -12245,6 +12396,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -12281,6 +12433,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -12314,6 +12467,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "labelId",
@@ -12348,6 +12502,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "moveCasesToStageId",
@@ -12398,6 +12553,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:1986",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -12431,6 +12587,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -12464,6 +12621,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -12506,6 +12664,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:1356",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12540,6 +12699,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineTriggerId",
@@ -12574,6 +12734,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12616,6 +12777,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -12666,6 +12828,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12700,6 +12863,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12742,6 +12906,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12793,6 +12958,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12843,6 +13009,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12884,6 +13051,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -12926,6 +13094,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -12959,6 +13128,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "applicationId",
@@ -12993,6 +13163,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -13028,6 +13199,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1787",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -13069,6 +13241,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13110,6 +13283,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -13151,6 +13325,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "entryId",
@@ -13186,6 +13361,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "workProductId",
@@ -13222,6 +13398,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -13281,6 +13458,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:2062",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -13314,6 +13492,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13368,6 +13547,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13422,6 +13602,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -13477,6 +13658,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -13536,6 +13718,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:2023",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -13570,6 +13753,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13617,6 +13801,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13713,6 +13898,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -13781,6 +13967,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -13900,6 +14087,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -13934,6 +14122,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "sessionId",
@@ -13981,6 +14170,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14078,6 +14268,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "publicId",
@@ -14112,6 +14303,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14163,6 +14355,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14226,6 +14419,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14259,6 +14453,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "type",
@@ -14293,6 +14488,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14342,6 +14538,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "type",
@@ -14380,6 +14577,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14422,6 +14620,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14472,6 +14671,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14513,6 +14713,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -14554,6 +14755,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -14588,6 +14790,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -14622,6 +14825,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -14656,6 +14860,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -14691,6 +14896,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@ai-connections.ts:344",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14730,6 +14936,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "announcementId",
@@ -14761,6 +14968,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -14783,6 +14991,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "announcementId",
@@ -14817,6 +15026,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@attention.ts:21",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "activitySince",
@@ -14939,6 +15149,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -14972,6 +15183,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15006,6 +15218,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15057,6 +15270,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15090,6 +15304,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15123,6 +15338,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15156,6 +15372,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15189,6 +15406,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15228,6 +15446,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15275,6 +15494,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15316,6 +15536,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -15349,6 +15570,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -15382,6 +15604,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "cursor",
@@ -15431,6 +15654,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "token",
@@ -15468,6 +15692,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:587",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "jobId",
@@ -15502,6 +15727,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:906",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "transferId",
@@ -15536,6 +15762,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15570,6 +15797,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15604,6 +15832,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15638,6 +15867,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15672,6 +15902,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15706,6 +15937,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15740,6 +15972,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15774,6 +16007,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15808,6 +16042,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15842,6 +16077,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15875,6 +16111,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "sessionId",
@@ -15908,6 +16145,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -15949,6 +16187,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionId",
@@ -15983,6 +16222,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@decision-training.ts:116",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "author",
@@ -16055,6 +16295,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@decision-training.ts:164",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionTrainingId",
@@ -16088,6 +16329,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -16137,6 +16379,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -16178,6 +16421,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -16219,6 +16463,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -16252,6 +16497,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -16285,6 +16531,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "leaseId",
@@ -16318,6 +16565,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -16351,6 +16599,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Only CEO agents can manage company export fidelity",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -16382,6 +16631,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "traceId",
@@ -16416,6 +16666,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "traceId",
@@ -16449,6 +16700,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -16482,6 +16734,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -16515,6 +16768,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@agents.ts:7277",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -16548,6 +16802,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -16572,6 +16827,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": []
   },
   {
@@ -16596,6 +16852,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@instance-settings.ts:192",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -16620,6 +16877,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@instance-settings.ts:300",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -16642,6 +16900,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16675,6 +16934,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16709,6 +16969,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@chat-channels.ts:493",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16742,6 +17003,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16775,6 +17037,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -16808,6 +17071,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16841,6 +17105,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -16888,6 +17153,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16921,6 +17187,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -16956,6 +17223,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -17065,6 +17333,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -17135,6 +17404,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -17168,6 +17438,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -17209,6 +17480,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -17242,6 +17514,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "holdId",
@@ -17283,6 +17556,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -17316,6 +17590,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17349,6 +17624,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -17382,6 +17658,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -17423,6 +17700,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -17456,6 +17734,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -17489,6 +17768,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17530,6 +17810,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:1956",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -17566,6 +17847,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:1768",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "channel",
@@ -17608,6 +17890,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2275",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17649,6 +17932,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2989",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -17682,6 +17966,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2104",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -17713,6 +17998,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -17746,6 +18032,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17795,6 +18082,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "companyId",
@@ -17828,6 +18116,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17859,6 +18148,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -17892,6 +18182,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -17933,6 +18224,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -17966,6 +18258,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18054,6 +18347,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@secrets.ts:369",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18088,6 +18382,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18121,6 +18416,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -18145,6 +18441,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18186,6 +18483,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -18210,6 +18508,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "skillName",
@@ -18243,6 +18542,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -18267,6 +18567,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "catalogId",
@@ -18300,6 +18601,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18341,6 +18643,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -18365,6 +18668,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18398,6 +18702,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18447,6 +18752,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18496,6 +18802,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18535,6 +18842,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "code",
@@ -18577,6 +18885,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18618,6 +18927,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -18651,6 +18961,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -18685,6 +18996,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18734,6 +19046,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -18758,6 +19071,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "catalogId",
@@ -18791,6 +19105,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18824,6 +19139,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18922,6 +19238,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1494",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18956,6 +19273,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:841",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -18997,6 +19315,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1667",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -19030,6 +19349,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2194",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -19063,6 +19383,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2187",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -19097,6 +19418,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2031",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionRequestId",
@@ -19138,6 +19460,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1866",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -19172,6 +19495,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:809",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19206,6 +19530,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agent",
@@ -19302,6 +19627,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2237",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -19344,6 +19670,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2449",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19381,6 +19708,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1216",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -19405,6 +19733,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19439,6 +19768,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19480,6 +19810,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board user context required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19513,6 +19844,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19554,6 +19886,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "operationId",
@@ -19588,6 +19921,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -19653,6 +19987,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -19686,6 +20021,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -19736,6 +20072,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "async",
@@ -19982,6 +20319,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20029,6 +20367,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "status",
@@ -20070,6 +20409,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -20116,6 +20456,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -20167,6 +20508,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20216,6 +20558,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20259,6 +20602,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:308",
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -20306,6 +20650,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20348,6 +20693,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "catalogId",
@@ -20390,6 +20736,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20432,6 +20779,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20475,6 +20823,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:15669",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -20532,6 +20881,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20580,6 +20930,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -20613,6 +20964,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -20665,6 +21017,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -20700,6 +21053,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20772,6 +21126,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": []
   },
   {
@@ -20797,6 +21152,7 @@
     ],
     "permissions": [],
     "boardGuard": "await assertInstanceAdmin@access.ts:4775",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "userId",
@@ -20831,6 +21187,7 @@
     ],
     "permissions": [],
     "boardGuard": "await assertInstanceAdmin@access.ts:4702",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -20855,6 +21212,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -20888,6 +21246,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:agent principal is not an active member",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -20921,6 +21280,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -20955,6 +21315,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -20989,6 +21350,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "companyId",
@@ -21031,6 +21393,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "agentId",
@@ -21070,6 +21433,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -21094,6 +21458,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -21204,6 +21569,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "action",
@@ -21332,6 +21698,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -21366,6 +21733,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -21405,6 +21773,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -21446,6 +21815,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -21487,6 +21857,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -21544,6 +21915,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -21577,6 +21949,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -21611,6 +21984,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -21798,6 +22172,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -21831,6 +22206,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -21864,6 +22240,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -21897,6 +22274,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -21931,6 +22309,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@chat-channels.ts:140",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -21964,6 +22343,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -21995,6 +22375,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": "probe:A user must own a setup-token login session",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22026,6 +22407,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -22051,6 +22433,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "scope",
@@ -22085,6 +22468,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -22111,6 +22495,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2861",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22160,6 +22545,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": []
   },
   {
@@ -22186,6 +22572,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1987",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -22228,6 +22615,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22262,6 +22650,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "companyId",
@@ -22295,6 +22684,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22336,6 +22726,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22369,6 +22760,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22402,6 +22794,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "bundleId",
@@ -22482,6 +22875,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22542,6 +22936,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Instance environment management is restricted to board operators",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -22575,6 +22970,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -22606,6 +23002,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -22647,6 +23044,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22680,6 +23078,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22713,6 +23112,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -22746,6 +23146,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22779,6 +23180,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Instance environment management is restricted to board operators",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -22813,6 +23215,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22846,6 +23249,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "work:read",
     "parameters": [
       {
         "name": "companyId",
@@ -22879,6 +23283,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -22924,6 +23329,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -22960,6 +23366,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -22994,6 +23401,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23028,6 +23436,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board authentication required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23061,6 +23470,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@instance-settings.ts:305",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -23085,6 +23495,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@agents.ts:4034",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -23109,6 +23520,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@instance-settings.ts:128",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -23131,6 +23543,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -23164,6 +23577,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23199,6 +23613,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23232,6 +23647,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23265,6 +23681,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23298,6 +23715,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -23339,6 +23757,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23370,6 +23789,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": "probe:Only board users can view feedback traces",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23401,6 +23821,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": "probe:Only board users can view feedback votes",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23434,6 +23855,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23465,6 +23887,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23499,6 +23922,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23533,6 +23957,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23566,6 +23991,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23599,6 +24025,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -23632,6 +24059,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -23676,6 +24104,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23710,6 +24139,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23743,6 +24173,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "companyId",
@@ -23778,6 +24209,7 @@
       "users:manage_permissions"
     ],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23811,6 +24243,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "includeRetired",
@@ -23892,6 +24325,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -23933,6 +24367,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -23967,6 +24402,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2830",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24008,6 +24444,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:878",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -24032,6 +24469,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2588",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "jobId",
@@ -24073,6 +24511,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2542",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -24106,6 +24545,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2172",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -24139,6 +24579,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:854",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -24163,6 +24604,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -24187,6 +24629,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:923",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -24211,6 +24654,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24242,6 +24686,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -24277,6 +24722,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@agents.ts:6848",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24310,6 +24756,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "conversationId",
@@ -24359,6 +24806,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "companyId",
@@ -24403,6 +24851,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24452,6 +24901,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -24483,6 +24933,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -24516,6 +24967,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24549,6 +25001,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "runId",
@@ -24583,6 +25036,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@secrets.ts:362",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24616,6 +25070,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24649,6 +25104,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24682,6 +25138,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24723,6 +25180,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24764,6 +25222,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24813,6 +25272,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24846,6 +25306,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24887,6 +25348,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24929,6 +25391,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@slack-tools.ts:66",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -24971,6 +25434,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25005,6 +25469,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@smoke-lab.ts:116",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25039,6 +25504,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25072,6 +25538,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -25105,6 +25572,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -25139,6 +25607,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25189,6 +25658,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1501",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25223,6 +25693,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1563",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25256,6 +25727,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1692",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -25289,6 +25761,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1875",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -25323,6 +25796,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1628",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25358,6 +25832,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1946",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -25392,6 +25867,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1487",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25426,6 +25902,7 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Board access required",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25459,6 +25936,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25490,6 +25968,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": "probe:Tool gateway session token is required",
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -25515,6 +25994,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2470",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25548,6 +26028,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2210",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -25582,6 +26063,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2203",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25616,6 +26098,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2456",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25657,6 +26140,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25690,6 +26174,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25724,6 +26209,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2463",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25757,6 +26243,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -25794,6 +26281,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -25829,6 +26317,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -25918,6 +26407,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -25959,6 +26449,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -26001,6 +26492,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@execution-workspaces.ts:187",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -26048,6 +26540,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -26081,6 +26574,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -26131,6 +26625,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -26192,6 +26687,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -26252,6 +26748,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -26286,6 +26783,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -26317,6 +26815,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -26371,6 +26870,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -26415,6 +26915,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:574",
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -26623,6 +27124,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@companies.ts:1025",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "transferId",
@@ -26765,6 +27267,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -26828,6 +27331,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -26899,6 +27403,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "catalogId",
@@ -26942,6 +27447,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -27116,6 +27622,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -27151,6 +27658,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -27211,6 +27719,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -27245,6 +27754,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -27279,6 +27789,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -27331,6 +27842,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@execution-workspaces.ts:1053",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -27423,6 +27935,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -27481,6 +27994,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -27533,6 +28047,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -27567,6 +28082,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -27617,6 +28133,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -27664,6 +28181,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -27697,6 +28215,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -27748,6 +28267,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:653",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "type",
@@ -27781,6 +28301,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -27835,6 +28356,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -27885,6 +28407,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "holdId",
@@ -27958,6 +28481,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28013,6 +28537,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:600",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "type",
@@ -28047,6 +28572,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28107,6 +28633,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28159,6 +28686,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "deliveryId",
@@ -28200,6 +28728,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -28244,6 +28773,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -28278,6 +28808,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -28321,6 +28852,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -28368,6 +28900,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28419,6 +28952,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@smoke-lab.ts:269",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28453,6 +28987,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:settings",
     "parameters": [
       {
         "name": "companyId",
@@ -28520,6 +29055,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionId",
@@ -28582,6 +29118,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -28674,6 +29211,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -28748,6 +29286,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -28852,6 +29391,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "requestId",
@@ -28992,6 +29532,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -29058,6 +29599,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -29137,6 +29679,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -29162,6 +29705,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -29203,6 +29747,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -29253,6 +29798,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -29303,6 +29849,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -29354,6 +29901,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "revisionId",
@@ -29396,6 +29944,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -29430,6 +29979,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "automationId",
@@ -29472,6 +30022,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -29547,6 +30098,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -29580,6 +30132,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@agents.ts:7369",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "frameId",
@@ -29621,6 +30174,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -29704,6 +30258,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -29746,6 +30301,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -29814,6 +30370,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -29863,6 +30420,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -29923,6 +30481,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -29965,6 +30524,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -30009,6 +30569,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "builtInAgentKey",
@@ -30069,6 +30630,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -30249,6 +30811,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -30347,6 +30910,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -30405,6 +30969,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@ai-connections.ts:317",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -30454,6 +31019,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -30507,6 +31073,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -30576,6 +31143,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -30645,6 +31213,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -30703,6 +31272,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -30767,6 +31337,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -30844,6 +31415,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -31367,6 +31939,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:8641",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -31427,6 +32000,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:15639",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -31490,6 +32064,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "issueId",
@@ -31543,6 +32118,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -31607,6 +32183,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -31680,6 +32257,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2917",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -31765,6 +32343,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:projects",
     "parameters": [
       {
         "name": "projectId",
@@ -31812,6 +32391,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -31873,6 +32453,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -31930,6 +32511,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -31993,6 +32575,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32045,6 +32628,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -32089,6 +32673,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32295,6 +32880,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32359,6 +32945,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -32441,6 +33028,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -32506,6 +33094,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32591,6 +33180,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1728",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -32635,6 +33225,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1885",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -32703,6 +33294,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -32810,6 +33402,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32878,6 +33471,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -32939,6 +33533,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:16967",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",
@@ -32995,6 +33590,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1534",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33038,6 +33634,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:1679",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -33139,6 +33736,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:issue_control",
     "parameters": [
       {
         "name": "issueId",
@@ -33197,6 +33795,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33244,6 +33843,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -33304,6 +33904,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@smoke-lab.ts:123",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33338,6 +33939,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33406,6 +34008,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:15739",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -33473,6 +34076,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@smoke-lab.ts:144",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33507,6 +34111,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -33548,6 +34153,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -33605,6 +34211,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -33686,6 +34293,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -33724,6 +34332,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -33757,6 +34366,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -33794,6 +34404,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -34016,6 +34627,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2440",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -34070,6 +34682,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@tool-access.ts:2706",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -34222,6 +34835,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -34287,6 +34901,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:2636",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "jobId",
@@ -34328,6 +34943,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "actionRequestId",
@@ -34663,6 +35279,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": []
   },
   {
@@ -34687,6 +35304,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -34754,6 +35372,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -34795,6 +35414,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -34837,6 +35457,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:456",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "type",
@@ -34887,6 +35508,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@adapters.ts:493",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "type",
@@ -34947,6 +35569,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -35323,6 +35946,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:agents",
     "parameters": [
       {
         "name": "agentId",
@@ -35375,6 +35999,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -35436,6 +36061,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -35490,6 +36116,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -35694,6 +36321,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -35748,6 +36376,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": "company:settings",
     "parameters": [
       {
         "name": "companyId",
@@ -35797,6 +36426,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -35864,6 +36494,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -35943,6 +36574,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "caseId",
@@ -36009,6 +36641,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -36083,6 +36716,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -36146,6 +36780,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -36214,6 +36849,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "decisionTrainingId",
@@ -36263,6 +36899,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -36324,6 +36961,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "environmentId",
@@ -36503,6 +37141,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "executionWorkspaceId",
@@ -36626,6 +37265,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -36689,6 +37329,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "goalId",
@@ -36764,6 +37405,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -36803,6 +37445,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -36872,6 +37515,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "documentKey",
@@ -36939,6 +37583,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoard@issues.ts:15607",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -37008,6 +37653,7 @@
       "users:manage_permissions"
     ],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -37080,6 +37726,7 @@
       "users:manage_permissions"
     ],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -37178,6 +37825,7 @@
       "users:manage_permissions"
     ],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -37287,6 +37935,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -37343,6 +37992,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -37418,6 +38068,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -37503,6 +38154,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "projectId",
@@ -37634,6 +38286,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -37850,6 +38503,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineId",
@@ -38121,6 +38775,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "routineTriggerId",
@@ -38201,6 +38856,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [],
     "body": {
       "required": true,
@@ -38344,6 +39000,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -38386,6 +39043,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "commentId",
@@ -38436,6 +39094,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -38502,6 +39161,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -38564,6 +39224,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -38631,6 +39292,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pipelineId",
@@ -38797,6 +39459,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "statusCardId",
@@ -38903,6 +39566,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "applicationId",
@@ -38986,6 +39650,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "connectionId",
@@ -39202,6 +39867,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "gatewayId",
@@ -39251,6 +39917,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -39623,6 +40290,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "profileId",
@@ -39749,6 +40417,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "entryId",
@@ -39838,6 +40507,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "workProductId",
@@ -40009,6 +40679,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertInstanceAdmin@plugins.ts:2225",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "pluginId",
@@ -40044,6 +40715,7 @@
     ],
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:2884",
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
@@ -40128,6 +40800,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "endpointId",
@@ -40159,6 +40832,7 @@
     "guards": [],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "agentId",
@@ -40252,6 +40926,7 @@
     ],
     "permissions": [],
     "boardGuard": null,
+    "authorityCapability": null,
     "parameters": [
       {
         "name": "interactionId",

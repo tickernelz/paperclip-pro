@@ -19,6 +19,7 @@ const generatedToolSchema = z.object({
   guards: z.array(z.string()),
   permissions: z.array(z.string()),
   boardGuard: z.string().nullable(),
+  authorityCapability: z.string().nullable().optional(),
   tags: z.array(z.string()),
   annotations: z.object({
     readOnlyHint: z.boolean(),
