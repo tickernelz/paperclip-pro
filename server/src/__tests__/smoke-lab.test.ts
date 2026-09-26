@@ -73,6 +73,23 @@ function boardActor(companyId?: string): Express.Request["actor"] {
   };
 }
 
+function sessionBoardActor(
+  companyId: string,
+  userId: string,
+  isInstanceAdmin: boolean,
+): Express.Request["actor"] {
+  return {
+    type: "board",
+    userId,
+    userName: "Board User",
+    userEmail: null,
+    isInstanceAdmin,
+    source: "session",
+    companyIds: [companyId],
+    memberships: [{ companyId, membershipRole: "member", status: "active" }],
+  };
+}
+
 function agentActor(companyId: string, agentId: string, runId: string): Express.Request["actor"] {
   return {
     type: "agent",
@@ -414,5 +431,69 @@ describeEmbeddedPostgres("smoke lab service pack and results API", () => {
       .post(`/api/companies/${company.id}/smoke-lab/runs/${runId}/steps`)
       .send({ path: "P1", scenarioStep: "late", status: "pass" })
       .expect(409);
+  });
+
+  it("keeps the fixture writers and the teardown off ordinary company members", async () => {
+    const company = await createCompany(db);
+    await enableSmokeLab(db);
+    const memberUserId = `smoke-member-${randomUUID()}`;
+    await db.insert(companyMemberships).values({
+      companyId: company.id,
+      principalType: "user",
+      principalId: memberUserId,
+      status: "active",
+      membershipRole: "member",
+    });
+
+    const memberApp = createRouteApp(db, sessionBoardActor(company.id, memberUserId, false));
+
+    await request(memberApp)
+      .post(`/api/companies/${company.id}/smoke-lab/install-fixtures`)
+      .expect(403);
+    await request(memberApp)
+      .post(`/api/companies/${company.id}/smoke-lab/services/start`)
+      .expect(403);
+    await request(memberApp)
+      .post(`/api/companies/${company.id}/smoke-lab/reset`)
+      .expect(403);
+
+    const written = await db.select().from(toolApplications).where(eq(toolApplications.companyId, company.id));
+    expect(written).toHaveLength(0);
+    expect(await db.select().from(toolConnections).where(eq(toolConnections.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(connectionGrants).where(eq(connectionGrants.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolCatalogEntries).where(eq(toolCatalogEntries.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolProfileBindings).where(eq(toolProfileBindings.companyId, company.id))).toHaveLength(0);
+
+    await request(memberApp)
+      .get(`/api/companies/${company.id}/smoke-lab/services`)
+      .expect(200);
+    await request(memberApp)
+      .post(`/api/companies/${company.id}/smoke-lab/services/stop`)
+      .expect(200);
+    await request(memberApp)
+      .get(`/api/companies/${company.id}/smoke-lab/runs`)
+      .expect(200);
+
+    const adminApp = createRouteApp(
+      db,
+      sessionBoardActor(company.id, `smoke-admin-${randomUUID()}`, true),
+    );
+    await request(adminApp)
+      .post(`/api/companies/${company.id}/smoke-lab/install-fixtures`)
+      .expect(201);
+    expect(await db.select().from(toolConnections).where(eq(toolConnections.companyId, company.id))).toHaveLength(2);
+    expect(await db.select().from(connectionGrants).where(eq(connectionGrants.companyId, company.id))).toHaveLength(2);
+
+    await request(adminApp)
+      .post(`/api/companies/${company.id}/smoke-lab/reset`)
+      .expect(200);
+
+    expect(await db.select().from(toolApplications).where(eq(toolApplications.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolConnections).where(eq(toolConnections.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(connectionGrants).where(eq(connectionGrants.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolCatalogEntries).where(eq(toolCatalogEntries.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolProfiles).where(eq(toolProfiles.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolProfileEntries).where(eq(toolProfileEntries.companyId, company.id))).toHaveLength(0);
+    expect(await db.select().from(toolProfileBindings).where(eq(toolProfileBindings.companyId, company.id))).toHaveLength(0);
   });
 });
