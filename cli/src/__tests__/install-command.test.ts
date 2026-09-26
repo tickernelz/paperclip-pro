@@ -3,6 +3,8 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  assertPayloadNativeAssets,
+  assertReleaseSetPublished,
   type CommandRunner,
   installCommand,
   installGitPayload,
@@ -10,8 +12,11 @@ import {
   resolveGitInstallRequest,
   resolveGitInstallWorkspacePackages,
   resolveNpmInstallRequest,
+  resolvePublishedVersion,
   runCommandWithDiagnostics,
+  writeManagedNpmrc,
 } from "../commands/install.js";
+import { RELEASE_PACKAGE_NAMES } from "../release-packages.js";
 import { uninstallCommand } from "../commands/uninstall.js";
 import { resolvePaperclipInstanceId } from "../config/home.js";
 import {
@@ -76,10 +81,97 @@ describe("managed install commands", () => {
     ]);
   });
 
-  it("supports fork overrides and classifies SHA refs as pinned", () => {
+  it("supports fork overrides, defaults to this fork, and classifies SHA refs as pinned", () => {
     expect(resolveGitInstallRequest({ ref: "feature/test", repo: "HenkDz/paperclip" })).toEqual({ repo: "HenkDz/paperclip", ref: "feature/test", pinned: false });
-    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "paperclipai/paperclip", ref: "abcdef1", pinned: true });
+    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "tickernelz/paperclip-pro", ref: "abcdef1", pinned: true });
     expect(() => resolveGitInstallRequest({ repo: "HenkDz/paperclip" })).toThrow("requires --ref");
+  });
+
+  it("reads the version npm 12 reports as a single-element array and npm 11 reports as a string", async () => {
+    const reply = (stdout: string) => vi.fn(async () => ({ stdout, stderr: "" }));
+    await expect(resolvePublishedVersion("latest", reply('"2026.926.1"'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply('[\n  "2026.926.1"\n]'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply('["2026.9.0","2026.926.1"]'))).resolves.toBe("2026.926.1");
+    await expect(resolvePublishedVersion("latest", reply("[]"))).rejects.toThrow("unexpected version response");
+    await expect(resolvePublishedVersion("latest", reply("   "))).rejects.toThrow("empty version response");
+  });
+
+  it("lets the embedded PostgreSQL package run its install script under npm's script allowlist", () => {
+    const npmrcPath = path.join(root, "npmrc");
+    writeManagedNpmrc(npmrcPath);
+    const contents = fs.readFileSync(npmrcPath, "utf8");
+    expect(contents).toContain("registry=https://registry.npmjs.org");
+    expect(contents).toContain("allow-scripts[]=@embedded-postgres/linux-x64");
+    expect(contents).toContain("allow-scripts[]=@embedded-postgres/darwin-arm64");
+    expect(fs.statSync(npmrcPath).mode & 0o777).toBe(0o600);
+  });
+
+  it("rejects a payload whose embedded PostgreSQL shared-library links were never created", () => {
+    const nativeRoot = path.join(root, "payload", "node_modules", "@embedded-postgres", "linux-x64", "native");
+    fs.mkdirSync(path.join(nativeRoot, "lib"), { recursive: true });
+    fs.writeFileSync(path.join(nativeRoot, "lib", "libicuuc.so.60.2"), "");
+    fs.writeFileSync(
+      path.join(nativeRoot, "pg-symlinks.json"),
+      JSON.stringify([{ source: "native/lib/libicuuc.so.60.2", target: "native/lib/libicuuc.so.60" }]),
+    );
+
+    expect(() => assertPayloadNativeAssets(path.join(root, "payload"))).toThrow("native/lib/libicuuc.so.60");
+
+    fs.symlinkSync("libicuuc.so.60.2", path.join(nativeRoot, "lib", "libicuuc.so.60"));
+    expect(() => assertPayloadNativeAssets(path.join(root, "payload"))).not.toThrow();
+  });
+
+  it("covers every package the release workflow publishes", () => {
+    const repoRoot = path.resolve(import.meta.dirname, "..", "..", "..");
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(repoRoot, "scripts", "release-package-manifest.json"), "utf8"),
+    ) as { name: string; publishFromCi?: boolean }[];
+    const published = manifest.filter((entry) => entry.publishFromCi).map(({ name }) => name).sort();
+    expect([...RELEASE_PACKAGE_NAMES].sort()).toEqual(published);
+  });
+
+  it("refuses a half-published release and names the packages that are missing", async () => {
+    const ABSENT: Record<string, true> = {
+      "@tickernelz/paperclip-pro-server": true,
+      "@tickernelz/paperclip-pro-ui": true,
+    };
+    const runCommand = vi.fn(async (_file: string, args: string[]) => {
+      const spec = args[1] ?? "";
+      const name = spec.slice(0, spec.lastIndexOf("@"));
+      if (ABSENT[name]) throw new Error(`npm ERR! 404 '${spec}' is not in this registry.`);
+      return { stdout: JSON.stringify("2026.926.0"), stderr: "" };
+    });
+
+    await expect(assertReleaseSetPublished("2026.926.0", runCommand)).rejects.toThrow(
+      /2 of 31 packages are not published.*paperclip-pro-server.*paperclip-pro-ui/s,
+    );
+    expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length);
+  });
+
+  it("accepts a release whose whole package set is published at the resolved version", async () => {
+    const runCommand = vi.fn(async () => ({ stdout: JSON.stringify("2026.926.1"), stderr: "" }));
+    await expect(assertReleaseSetPublished("2026.926.1", runCommand)).resolves.toBeUndefined();
+  });
+
+  it("checks the whole release set before it downloads anything", async () => {
+    const calls: string[] = [];
+    const runCommand = vi.fn(async (file: string, args: string[]) => {
+      calls.push(`${file} ${args[0]}`);
+      if (file === "npm" && args[0] === "view") {
+        const spec = args[1] ?? "";
+        if (spec.startsWith("@tickernelz/paperclip-pro-db@")) {
+          throw new Error(`npm ERR! 404 '${spec}' is not in this registry.`);
+        }
+        return { stdout: JSON.stringify("2026.926.0"), stderr: "" };
+      }
+      throw new Error(`Unexpected command: ${file} ${args.join(" ")}`);
+    });
+
+    await expect(installCommand({ version: "2026.926.0" }, { runCommand })).rejects.toThrow(
+      "paperclip-pro-db",
+    );
+    expect(calls.every((call) => call === "npm view")).toBe(true);
+    expect(fs.existsSync(resolveInstallStorePaths().shimPath)).toBe(false);
   });
 
   it("requires explicit non-interactive consent before resolving git refs", async () => {
@@ -361,10 +453,10 @@ describe("managed install commands", () => {
     fs.mkdirSync(paths.cliRoot, { recursive: true });
     fs.mkdirSync(outside);
     fs.symlinkSync(outside, paths.installsRoot, "dir");
-    const runCommand = vi.fn(async () => ({ stdout: JSON.stringify("2026.720.0"), stderr: "" }));
+    const runCommand = vi.fn(async (_file: string, _args: string[]) => ({ stdout: JSON.stringify("2026.720.0"), stderr: "" }));
 
     await expect(installCommand({}, { runCommand })).rejects.toThrow("non-directory install-store path");
-    expect(runCommand).toHaveBeenCalledTimes(1);
+    expect(runCommand.mock.calls.every(([file, args]) => file === "npm" && args[0] === "view")).toBe(true);
     expect(fs.readdirSync(outside)).toEqual([]);
   });
 

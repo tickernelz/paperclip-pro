@@ -1,515 +1,169 @@
-<p align="center">
-  <img src="doc/assets/banner.jpg" alt="Paperclip Pro" width="720" />
-</p>
-
-<p align="center">
-  <a href="#quickstart"><strong>Quickstart</strong></a> &middot;
-  <a href="docs/fork/OPERATIONS.md"><strong>Operations</strong></a> &middot;
-  <a href="https://github.com/tickernelz/paperclip-pro"><strong>This fork</strong></a> &middot;
-  <a href="https://github.com/paperclipai/paperclip"><strong>Upstream</strong></a> &middot;
-  <a href="https://docs.paperclip.ing"><strong>Upstream docs</strong></a> &middot;
-  <a href="https://paperclip.ing"><strong>Upstream website</strong></a>
-</p>
-
-<p align="center">
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License" /></a>
-  <img src="https://img.shields.io/badge/fork-hard%20fork-orange" alt="Hard fork" />
-  <img src="https://img.shields.io/badge/upstream-paperclipai%2Fpaperclip%407b7c4d417-lightgrey" alt="Upstream base" />
-</p>
-
-<br/>
-
-<div align="center">
-  <video src="https://github.com/user-attachments/assets/773bdfb2-6d1e-4e30-8c5f-3487d5b70c8f" width="600" controls></video>
-</div>
-
-<br/>
-
 # Paperclip Pro
 
-**Paperclip Pro is a hard fork of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417`. It is not an upstream release and is not endorsed by Paperclip Labs, Inc.**
+Paperclip Pro is a self-hosted control plane that runs a team of AI coding agents as an organisation: an org chart, tasks and approvals, scheduled heartbeats, budgets, and an audit trail, with a Node.js server, an embedded PostgreSQL, and a React board.
 
-It is maintained independently at [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro). All 32 workspace packages are renamed under the `@tickernelz/paperclip-pro` scope, the CLI binary is `paperclip-pro`, and instance state lives under `~/.paperclip-pro` instead of `~/.paperclip` — so this fork installs and runs beside an upstream instance instead of replacing it.
+It is a **hard fork** of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and since diverged. It is not an upstream release and is not endorsed by Paperclip Labs, Inc. All workspace packages are renamed under the `@tickernelz/paperclip-pro` scope, the CLI binary is `paperclip-pro`, and instance state lives under `~/.paperclip-pro` instead of `~/.paperclip`, so this fork installs and runs beside an upstream instance instead of replacing it.
 
-The fork tracks no upstream release cadence and publishes nothing to the npm registry. Install it from this git repository; see [Quickstart](#quickstart). Report fork bugs in this repository, never in the upstream tracker.
+Report bugs in [this repository](https://github.com/tickernelz/paperclip-pro/issues), never in the upstream tracker.
 
-## What this fork changes
+## What this fork adds
 
-Everything below is on `main` and absent from upstream `7b7c4d417`.
-
-| Change | Where |
+| Addition | Where |
 | --- | --- |
-| **First-party `omp_local` adapter.** Runs the local Oh My Pi (OMP) coding-agent CLI as a Paperclip agent runtime: server execution, CLI event formatting, model discovery through `omp models --json`, and a UI transcript parser. | [`packages/adapters/omp-local`](packages/adapters/omp-local); registered at `server/src/adapters/registry.ts:133` and `server/src/adapters/builtin-adapter-types.ts:16` |
-| **`uiParserPath` for statically registered adapters.** `GET /api/adapters/:type/ui-parser.js` used to answer 404 for every built-in adapter because the loader only consulted the external plugin store. | `packages/adapter-utils/src/types.ts:462`, `server/src/adapters/plugin-loader.ts:74`, `server/src/routes/adapters.ts:768` |
-| **Sandboxed transcript parser worker survives global lockdown.** Plain `self.fetch = undefined` assignments failed on read-only worker globals and took the worker down; denied globals are now installed through `Object.defineProperty` inside `try`/`catch`. | `ui/src/adapters/sandboxed-parser-worker.ts:46`–`ui/src/adapters/sandboxed-parser-worker.ts:55` |
-| **A clean shutdown no longer parks issues.** A graceful stop has a known provider outcome, so only genuine process loss still earns a reconciliation hold. | `server/src/services/legacy-execution-recovery.ts:14`, `server/src/services/legacy-execution-recovery.ts:29` |
-| **Runs this server interrupted during shutdown are rescheduled** instead of refused as process loss; native runtimes stay suspended. | `server/src/services/heartbeat.ts:14325`, `server/src/services/heartbeat.ts:14327` |
-| **Interrupt acknowledgement is read from the full result JSON.** The safe 64 KiB projection strips `executionCancellation`, so a successful adapter interrupt on an oversized run was reported to the UI as a termination conflict. | `server/src/services/heartbeat.ts:28820` |
-| **`service restart --drain` plus a live-run guard.** Restart and stop refuse while agent runs are executing unless you drain or force. | `cli/src/commands/service.ts:210`, `cli/src/commands/service.ts:282`–`cli/src/commands/service.ts:284`, `cli/src/services/instance-drain.ts:128` |
-| **Isolated home.** `PAPERCLIP_HOME` defaults to `~/.paperclip-pro`; config, embedded Postgres, logs, storage, and backups all resolve under `~/.paperclip-pro/instances/<id>`. | `packages/shared/src/home-paths.ts:16`–`packages/shared/src/home-paths.ts:19`, `packages/shared/src/config-schema.ts:27` |
-| **Per-instance `EnvironmentFile` in the systemd unit.** `ensureCurrent()` rewrites the unit on every install, start, and restart, so operator environment used to be lost; the unit now sources an optional `<instanceRoot>/service.env` the CLI never overwrites. | `cli/src/services/service-manager.ts:126`, `cli/src/services/service-manager.ts:149` |
+| **Built-in `omp_local` adapter.** Runs the local Oh My Pi (OMP) coding-agent CLI as a Paperclip agent runtime: server execution, CLI event formatting, model discovery through `omp models --json`, a UI transcript parser, and a startup-complete signal the run-concurrency gate reads. | [`packages/adapters/omp-local`](packages/adapters/omp-local), registered in `server/src/adapters/registry.ts` |
+| **Server-hosted Paperclip MCP.** `POST /api/mcp/paperclip` exposes the Paperclip API as MCP tools generated from the OpenAPI document — 675 operations today, 18 in the `core` toolset and the rest in `extended` — selected per run with `?toolsets=`. Adapters that can mount an MCP client get the endpoint; the others get a REST fallback prompt instead of tool names that do not exist. | `server/src/routes/paperclip-mcp.ts`, `packages/mcp-server/src/generated/api-tools.json` |
+| **Role-based agent authority.** An agent actor carries work authority (`work:read`, `work:issues`, `work:routines`); an agent whose role is `ceo` additionally carries company authority over agents, projects, settings, members and approvals. Every generated MCP tool is tagged `agent` or `board` and gated on the same model. | `packages/shared/src/agent-authority.ts`, `server/src/services/authorization.ts` |
+| **Per-task model and thinking overrides.** A task can run on a different model or thinking level than its assignee's stored configuration, validated against the adapter's own published config schema, with optional inheritance to new or existing subtasks. No new column and no migration: it reuses `issues.assignee_adapter_overrides`. | `server/src/services/issue-run-model-override.ts`, `server/src/services/issue-model-override-inheritance.ts` |
+| **Batch model/thinking changes.** Select agents in the Agents list and change the model-selection fields their adapters share. The batch is atomic: one invalid value rejects the call with 422 and writes nothing. Up to 100 agents per call. | `POST /api/agents/batch/adapter-config`, `.../preview` |
+| **Local CLI run concurrency caps.** Local adapters are memory-hungry while booting; the queued-run claim point caps total local runs and simultaneous startups, and shows held-back runs as "Waiting to start". | `server/src/services/heartbeat.ts` |
+| **Mobile composer dock and bottom-sheet pickers.** The task and agent composers dock above the on-screen keyboard and reserve their own height, the bottom nav auto-hides while typing, and the model/thinking, agent and New Task pickers open as bottom sheets instead of being covered by the keyboard. | `ui/src/components/task-chat/composer-dock.ts`, `ui/src/components/ui/mobile-picker-sheet.tsx`, `ui/src/hooks/useMobileViewportInsets.ts` |
+| **`service restart --drain` and a live-run guard.** Restart and stop refuse while agent runs are executing unless you drain or force. A per-instance `service.env` the CLI never overwrites carries operator environment across unit rewrites. | `cli/src/commands/service.ts`, `cli/src/services/service-manager.ts` |
+| **Isolated home.** `PAPERCLIP_HOME` defaults to `~/.paperclip-pro`; config, embedded PostgreSQL, logs, storage and backups all resolve under `~/.paperclip-pro/instances/<id>`. | `packages/shared/src/home-paths.ts` |
+| **One lean CI and a tag-triggered release.** A single `ci.yml` (policy, typecheck, build, runner, sharded tests, E2E, mobile shell) and a `release.yml` that publishes the whole package set to npm when a `v*` tag is pushed. | `.github/workflows/` |
 
 Operators: read [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
 
----
+## Install
 
-Open-source orchestration for teams of AI agents.
+Requirements: Node.js 24.11 or newer, `npm`, macOS/Linux/WSL2. Nothing else — the published packages ship prebuilt.
 
-**If OpenClaw is an _employee_, Paperclip is the _company_.**
-
-Paperclip is a Node.js server and React UI that orchestrates a team of AI agents to run a business. Bring your own agents, assign goals, and track work and costs from one dashboard.
-
-It looks like a task manager. Under the hood: org charts, budgets, governance, goal alignment, and agent coordination.
-
-**Manage business goals, not pull requests.**
-
-|        | Step            | Example                                                            |
-| ------ | --------------- | ------------------------------------------------------------------ |
-| **01** | Define the goal | _"Build the #1 AI note-taking app to $1M MRR."_                    |
-| **02** | Hire the team   | CEO, CTO, engineers, designers, marketers — any bot, any provider. |
-| **03** | Approve and run | Review strategy. Set budgets. Hit go. Monitor from the dashboard.  |
-
-<br/>
-
-<div align="center">
-<table>
-  <tr>
-    <td align="center"><strong>Works<br/>with</strong></td>
-    <td align="center"><img src="doc/assets/logos/openclaw.svg" width="32" alt="OpenClaw" /><br/><sub>OpenClaw</sub></td>
-    <td align="center"><img src="doc/assets/logos/claude.svg" width="32" alt="Claude" /><br/><sub>Claude Code</sub></td>
-    <td align="center"><img src="doc/assets/logos/codex.svg" width="32" alt="Codex" /><br/><sub>Codex</sub></td>
-    <td align="center"><img src="doc/assets/logos/cursor.svg" width="32" alt="Cursor" /><br/><sub>Cursor</sub></td>
-    <td align="center"><img src="doc/assets/logos/bash.svg" width="32" alt="Bash" /><br/><sub>Bash</sub></td>
-    <td align="center"><img src="doc/assets/logos/http.svg" width="32" alt="HTTP" /><br/><sub>HTTP</sub></td>
-  </tr>
-</table>
-
-<em>If it can receive a heartbeat, it's hired.</em>
-
-</div>
-
-<br/>
-
-## Paperclip is right for you if
-
-- ✅ You want to build **autonomous AI organizations**
-- ✅ You **coordinate many different agents** (OpenClaw, Codex, Claude, Cursor) toward a common goal
-- ✅ You have **20 simultaneous Claude Code terminals** open and lose track of what everyone is doing
-- ✅ You want agents running **autonomously 24/7**, but still want to audit work and chime in when needed
-- ✅ You want to **monitor costs** and enforce budgets
-- ✅ You want a process for managing agents that **feels like using a task manager**
-- ✅ You want to manage your autonomous businesses **from your phone**
-
-<br/>
-
-## The four pillars
-
-Four things have to work for an organization of AI agents to actually produce: the tasks, the org, the training, and the infrastructure. Paperclip is built around exactly those four pillars.
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-dark.png">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-light.png">
-  <img src="https://raw.githubusercontent.com/paperclipai/paperclip/1ec33ffd8b597f7e36aac3e2fbb4665b8c42dc3c/doc/assets/four-pillars-light.png" alt="The four pillars of Paperclip">
-</picture>
-
-| Pillar | Built for | What it covers |
-| --- | --- | --- |
-| **Agentic Task Manager** — Declare intent. Agents work. You verify the output. | Everyone, daily | Tasks, approvals & review gates · proactive agent coworkers · auditable routines & workflows · verify from diffs, screenshots & tests |
-| **Org Chart for Agents** — Roles, permissions & boundaries for humans and agents. | Managers | Mixed human + agent org chart · responsibilities, delegation, specialization · governance: who can do what · scoped secrets & company boundaries |
-| **Agent Employee Training** — Design, train & evaluate your AI employees. | Enablers | Skill Studio & shared org-wide skills · evals & saved test runs · active learning loops & quality metrics · performance reviews for agents |
-| **Agentic OS** — The infrastructure that makes the work run. | IT & platform | Cross-provider runtime: any model, any agent · sandboxing, integrations & MCP servers · SSO, GRC, RBAC & cost controls · data privacy, internal trace collection, compounding data value |
-
-<br/>
-
-## Features
-
-<table>
-<tr>
-<td align="center" width="33%">
-<h3>🔌 Bring Your Own Agent</h3>
-Any agent, any runtime, one org chart. If it can receive a heartbeat, it's hired.
-</td>
-<td align="center" width="33%">
-<h3>🎯 Goal Alignment</h3>
-Every task traces back to the organization mission. Agents know <em>what</em> to do and <em>why</em>.
-</td>
-<td align="center" width="33%">
-<h3>💓 Heartbeats</h3>
-Agents wake on a schedule, check work, and act. Delegation flows up and down the org chart.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>💰 Cost Control</h3>
-Monthly budgets per agent. When they hit the limit, they stop. No runaway costs.
-</td>
-<td align="center">
-<h3>🏢 Multi-Organization</h3>
-One deployment, many organizations. Complete data isolation. One control plane for your portfolio.
-</td>
-<td align="center">
-<h3>🎫 Ticket System</h3>
-Every conversation traced. Every decision explained. Full tool-call tracing and immutable audit log.
-</td>
-</tr>
-<tr>
-<td align="center">
-<h3>🛡️ Governance</h3>
-Approve hires, override strategy, pause or terminate any agent — at any time.
-</td>
-<td align="center">
-<h3>📊 Org Chart</h3>
-Hierarchies, roles, reporting lines. Your agents have a boss, a title, and a job description.
-</td>
-<td align="center">
-<h3>📱 Mobile Ready</h3>
-Monitor and manage your autonomous businesses from anywhere.
-</td>
-</tr>
-</table>
-
-<br/>
-
-## Problems Paperclip solves
-
-| Without Paperclip                                                                                                                     | With Paperclip                                                                                                                         |
-| ------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
-| ❌ You have 20 Claude Code tabs open and can't track which one does what. On reboot you lose everything.                              | ✅ Tasks are ticket-based, conversations are threaded, sessions persist across reboots.                                                |
-| ❌ You manually gather context from several places to remind your bot what you're actually doing.                                     | ✅ Context flows from the task up through the project and company goals — your agent always knows what to do and why.                  |
-| ❌ Folders of agent configs are disorganized and you're re-inventing task management, communication, and coordination between agents. | ✅ Paperclip gives you org charts, ticketing, delegation, and governance out of the box — so you run a company, not a pile of scripts. |
-| ❌ Runaway loops waste hundreds of dollars of tokens and max your quota before you even know what happened.                           | ✅ Cost tracking surfaces token budgets and throttles agents when they're out. Management prioritizes with budgets.                    |
-| ❌ You have recurring jobs (customer support, social, reports) and have to remember to manually kick them off.                        | ✅ Heartbeats handle regular work on a schedule. Management supervises.                                                                |
-| ❌ You have an idea, you have to find your repo, fire up Claude Code, keep a tab open, and babysit it.                                | ✅ Add a task in Paperclip. Your coding agent works on it until it's done. Management reviews their work.                              |
-
-<br/>
-
-## Why Paperclip is special
-
-Paperclip handles the hard orchestration details correctly.
-
-|                                   |                                                                                                               |
-| --------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Atomic execution.**             | Task checkout and budget enforcement are atomic, so no double-work and no runaway spend.                      |
-| **Persistent agent state.**       | Agents resume the same task context across heartbeats instead of restarting from scratch.                     |
-| **Runtime skill injection.**      | Agents can learn Paperclip workflows and project context at runtime, without retraining.                      |
-| **Governance with rollback.**     | Approval gates are enforced, config changes are revisioned, and bad changes can be rolled back safely.        |
-| **Goal-aware execution.**         | Tasks carry full goal ancestry so agents consistently see the "why," not just a title.                        |
-| **Portable company templates.**   | Export/import orgs, agents, and skills with secret scrubbing and collision handling.                          |
-| **True multi-organization isolation.** | Every entity is company-scoped, so one deployment can run many companies with separate data and audit trails. |
-
-<br/>
-
-## What's Under the Hood
-
-Paperclip is a full control plane, not a wrapper. Before you build any of this yourself, know that it already exists:
-
-```
-┌──────────────────────────────────────────────────────────────┐
-│                       PAPERCLIP SERVER                       │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │Identity & │  │  Work &   │  │ Heartbeat │  │Governance │  │
-│  │  Access   │  │   Tasks   │  │ Execution │  │& Approvals│  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │ Org Chart │  │Workspaces │  │  Plugins  │  │  Budget   │  │
-│  │ & Agents  │  │ & Runtime │  │           │  │ & Costs   │  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-│                                                              │
-│  ┌───────────┐  ┌───────────┐  ┌───────────┐  ┌───────────┐  │
-│  │ Routines  │  │ Secrets & │  │ Activity  │  │  Company  │  │
-│  │& Schedules│  │  Storage  │  │ & Events  │  │Portability│  │
-│  └───────────┘  └───────────┘  └───────────┘  └───────────┘  │
-└──────────────────────────────────────────────────────────────┘
-         ▲              ▲              ▲              ▲
-   ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐  ┌─────┴─────┐
-   │  Claude   │  │   Codex   │  │   CLI     │  │ HTTP/web  │
-   │   Code    │  │           │  │  agents   │  │   bots    │
-   └───────────┘  └───────────┘  └───────────┘  └───────────┘
-```
-
-### The Systems
-
-<table>
-<tr>
-<td width="50%">
-
-**Identity & Access** — Two deployment modes (trusted local or authenticated), board users, agent API keys, short-lived run JWTs, company memberships, invite flows, and OpenClaw onboarding. Every mutating request is traced to an actor.
-
-</td>
-<td width="50%">
-
-**Org Chart & Agents** — Agents have roles, titles, reporting lines, permissions, and budgets. Adapter examples match the diagram: Claude Code, Codex, CLI agents such as Cursor/Gemini/bash, HTTP/webhook bots such as OpenClaw, and external adapter plugins. If it can receive a heartbeat, it's hired.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Work & Task System** — Issues carry company/project/goal/parent links, atomic checkout with execution locks, first-class blocker dependencies, comments, documents, attachments, work products, labels, and inbox state. No double-work, no lost context.
-
-</td>
-<td>
-
-**Heartbeat Execution** — DB-backed wakeup queue with coalescing, budget checks, workspace resolution, secret injection, skill loading, and adapter invocation. Runs produce structured logs, cost events, session state, and audit trails. Recovery handles orphaned runs automatically.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Workspaces & Runtime** — Project workspaces, isolated execution workspaces (git worktrees, operator branches), and runtime services (dev servers, preview URLs). Agents work in the right directory with the right context every time.
-
-</td>
-<td>
-
-**Governance & Approvals** — Board approval workflows, execution policies with review/approval stages, decision tracking, budget hard-stops, agent pause/resume/terminate, and full audit logging. Nothing ships without your sign-off.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Budget & Cost Control** — Token and cost tracking by company, agent, project, goal, issue, provider, and model. Scoped budget policies with warning thresholds and hard stops. Overspend pauses agents and cancels queued work automatically.
-
-</td>
-<td>
-
-**Routines & Schedules** — Recurring tasks with cron, webhook, and API triggers. Concurrency and catch-up policies. Each routine execution creates a tracked issue and wakes the assigned agent — no manual kick-offs needed.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Plugins** — Instance-wide plugin system with out-of-process workers, capability-gated host services, job scheduling, tool exposure, and UI contributions. Extend Paperclip without forking it.
-
-</td>
-<td>
-
-**Secrets & Storage** — Instance and company secrets, encrypted local storage, provider-backed object storage, attachments, and work products. Sensitive values stay out of prompts unless a scoped run explicitly needs them.
-
-</td>
-</tr>
-<tr>
-<td>
-
-**Activity & Events** — Mutating actions, heartbeat state changes, cost events, approvals, comments, and work products are recorded as durable activity so operators can audit what happened and why.
-
-</td>
-<td>
-
-**Company Portability** — Export and import entire organizations — agents, skills, projects, routines, and issues — with secret scrubbing and collision handling. One deployment, many companies, complete data isolation.
-
-</td>
-</tr>
-</table>
-
-<br/>
-
-## What Paperclip is not
-
-|                              |                                                                                                                      |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------- |
-| **Not a chatbot.**           | Agents have jobs, not chat windows.                                                                                  |
-| **Not an agent framework.**  | We don't tell you how to build agents. We tell you how to run a company made of them.                                |
-| **Not a workflow builder.**  | No drag-and-drop pipelines. Paperclip models companies — with org charts, goals, budgets, and governance.            |
-| **Not a prompt manager.**    | Agents bring their own prompts, models, and runtimes. Paperclip manages the organization they work in.               |
-| **Not a single-agent tool.** | This is for teams. If you have one agent, you probably don't need Paperclip. If you have twenty — you definitely do. |
-| **Not a code review tool.**  | Paperclip orchestrates work, not pull requests. Bring your own review process.                                       |
-
-<br/>
-
-## Quickstart
-
-Open source. Self-hosted. No Paperclip account required.
-
-This fork is not published to npm: `npm view @tickernelz/paperclip-pro` returns 404, and `https://paperclip.ing/install.sh` installs **upstream**, not this fork. Install from git.
-
-**Requirements:** Node.js 24.11+ (`package.json` `engines`), pnpm 9.15.4 (`packageManager`), `git`, `curl`, `tar`, and `corepack`.
-
-### 1. Bootstrap the CLI from a source checkout
-
-```bash
-git clone https://github.com/tickernelz/paperclip-pro.git
-cd paperclip-pro
-pnpm install --frozen-lockfile
-pnpm paperclip-pro --help
-```
-
-### 2. Install a managed payload from this repository
-
-`install` builds the given git ref into `~/.paperclip-pro/cli` and writes the `paperclip-pro` shim to `~/.local/bin`. `--ref` is mandatory for a git install and `--repo` defaults to the upstream repository (`cli/src/commands/install.ts:27`), so both flags are required here:
-
-```bash
-node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo tickernelz/paperclip-pro --ref main --yes
-```
-
-Pin an exact commit instead of a branch when you want a reproducible install; `--ref` accepts a branch, tag, or SHA (`cli/src/commands/install.ts:139`-`cli/src/commands/install.ts:147`). `--ref` cannot be combined with `--canary` or `--version`, both of which resolve against npm and therefore do not work for this fork.
-
-### 3. Onboard
-
-```bash
+```sh
+npx @tickernelz/paperclip-pro@latest install --yes
 paperclip-pro onboard --yes
 ```
 
-`onboard` defaults to trusted local loopback. For authenticated/private mode choose a bind preset explicitly:
+`install` resolves one exact version — the `latest` dist-tag of `@tickernelz/paperclip-pro`, or `--version` — then verifies that all 31 packages of the release exist at that exact version before it downloads anything. A half-published release is refused with the missing package names; versions are never mixed across packages. It then installs the set into `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests the payload, and only then atomically flips `~/.paperclip-pro/cli/current` and writes the `~/.local/bin/paperclip-pro` shim. Measured on a WSL2 box: 44 s, against 11 m 38 s for the same commit through the git path.
 
-```bash
+`latest` currently points at **2026.926.1**. **Do not install 2026.926.0**: its release run left `@tickernelz/paperclip-pro-server` stuck in npm's staging queue, so that version was unusable — which is why the completeness check exists. npm's queue has since flushed, so the check no longer refuses it, but the release was never validated; use `2026.926.1` or newer.
+
+Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. Later releases handle both.
+
+Pin a published version:
+
+```sh
+paperclip-pro install --version 2026.926.1 --yes
+```
+
+`--canary` follows the `canary` dist-tag, which the release workflow does not publish today; it uses `next` and `latest`.
+
+`onboard --yes` writes `~/.paperclip-pro/instances/default/config.json` for trusted local loopback and starts the server on `http://127.0.0.1:3100`. An embedded PostgreSQL is created automatically. For a reachable instance, pick a bind preset:
+
+```sh
 paperclip-pro onboard --yes --bind lan
 paperclip-pro onboard --yes --bind tailnet
 ```
 
-Rerunning `onboard` keeps an existing config; use `paperclip-pro configure` to edit settings. To install the background service, use `paperclip-pro onboard --install-service` or `paperclip-pro service install`.
+### What an install replaces
 
-### Or run straight from the checkout
+An install or update only ever writes inside `~/.paperclip-pro/cli/` and the shim:
 
-```bash
-pnpm dev
+| Path | What happens |
+| --- | --- |
+| `~/.paperclip-pro/cli/installs/<npm\|git>/<id>/` | New payload directory; the two previous payloads are kept for rollback, older ones pruned |
+| `~/.paperclip-pro/cli/current` | Symlink flipped atomically to the new payload |
+| `~/.paperclip-pro/cli/install.json` | Install manifest, rewritten (previous records retained) |
+| `~/.local/bin/paperclip-pro` | Managed shim, rewritten with the validated Node executable |
+| `~/.bashrc` or `~/.zshrc` | A marked PATH block, only when `~/.local/bin` is not already on `PATH` |
+
+Nothing under `~/.paperclip-pro/instances/` is touched: the instance database, `config.json`, `service.env`, secrets, logs, storage, backups and workspaces survive a payload switch in either direction.
+
+### Installing an unreleased commit
+
+The git path builds a GitHub commit from source. It needs pnpm 9.15.4, `git`, `curl`, `tar` and `corepack`, and takes minutes rather than seconds. Use it for development only:
+
+```sh
+paperclip-pro install --ref main --yes
+paperclip-pro install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
 ```
 
-This starts the API server at `http://localhost:3100`. An embedded PostgreSQL database is created automatically — no setup required.
+`--repo` defaults to `tickernelz/paperclip-pro`. `--ref` cannot be combined with `--version` or `--canary`.
 
-Day-two operation of an installed instance (state layout, safe restarts, backups, new admins, sandboxed test runs) is documented in [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
+### Upgrade and rollback
 
-<br/>
+```sh
+paperclip-pro update --check
+paperclip-pro update --latest
+paperclip-pro update --rollback
+```
 
-## FAQ
+`update` backs up the database first, installs the new payload, restarts the active service and validates it; a failed validation rolls the payload back automatically. `--rollback` returns to the retained previous payload instantly — it does not reverse database migrations.
 
-**What does a typical setup look like?**
-Locally, a single Node.js process manages an embedded Postgres and local file storage. For production, point it at your own Postgres and deploy however you like. Configure projects, agents, and goals — the agents take care of the rest.
+## Configuration
 
-If you're a solo entrepreneur you can use Tailscale to access Paperclip on the go. Then later you can deploy to e.g. Vercel when you need it.
+Instance configuration lives in `~/.paperclip-pro/instances/default/config.json` and is edited with `paperclip-pro configure`, not by hand while the service runs. `paperclip-pro doctor` prints the resolved paths, and `paperclip-pro env` prints the effective environment.
 
-**Can I run multiple companies?**
-Yes. A single deployment can run an unlimited number of companies with complete data isolation.
+Operator environment — `PATH` entries for adapter binaries, provider API keys, proxy settings — belongs in `~/.paperclip-pro/instances/default/service.env`, one `KEY=value` per line. The systemd unit sources it with `EnvironmentFile=-`, and the CLI never rewrites it, while the unit file itself is re-rendered on every CLI-driven start.
 
-**How is Paperclip different from agents like OpenClaw or Claude Code?**
-Paperclip _uses_ those agents. It orchestrates them into a company — with org charts, budgets, goals, governance, and accountability.
+| Variable | Default | Bounds | Meaning |
+| --- | --- | --- | --- |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 10 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
+| `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase, so a hung boot cannot block the gate forever. |
+| `PAPERCLIP_PDF_CHROMIUM_PATH` | unset | — | Chromium-family executable used for PDF export. `PUPPETEER_EXECUTABLE_PATH` and `CHROME_PATH` are also consulted. |
+| `PORT` | 3100 | — | HTTP listen port; overrides `server.port`. |
+| `PAPERCLIP_HOME` | `~/.paperclip-pro` | — | Root of all instance state. |
+| `PAPERCLIP_INSTANCE_ID` | `default` | — | Selects the instance under `PAPERCLIP_HOME/instances/`. |
+| `PAPERCLIP_TELEMETRY_DISABLED` / `DO_NOT_TRACK` | unset | — | Disables anonymous usage telemetry, which is on by default and off automatically when `CI=true`. |
 
-**Why should I use Paperclip instead of just pointing my OpenClaw to Asana or Trello?**
-Agent orchestration has subtleties in how you coordinate who has work checked out, how to maintain sessions, monitoring costs, establishing governance - Paperclip does this for you.
+## Running as a service
 
-(Bring-your-own-ticket-system is on the Roadmap)
+```sh
+paperclip-pro service install
+paperclip-pro service status
+paperclip-pro service logs -f
+paperclip-pro service restart --drain
+```
 
-**Do agents run continuously?**
-By default, agents run on scheduled heartbeats and event-based triggers (task assignment, @-mentions). You can also hook in continuous agents like OpenClaw. You bring your agent and Paperclip coordinates.
+The unit is `paperclip-pro.service` for the `default` instance and `paperclip-pro-<id>.service` otherwise; on macOS the launchd label is `ing.paperclip.paperclip-pro`. `--drain` waits for executing agent runs; without it, `stop` and `restart` refuse while runs are in flight unless forced.
 
-<br/>
+Day-two operation — state layout, safe restarts, backups, admin bootstrap, public hostnames, release mechanics, sandboxed test runs — is in [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
 
 ## Development
 
-```bash
-pnpm dev              # Full dev (API + UI, watch mode)
-pnpm dev:once         # Full dev without file watching
-pnpm dev:server       # Server only
-pnpm dev:mobile       # Serve prebuilt UI on :3101 for phones/tablets (proxies /api → :3100)
-pnpm dev:both         # Run `pnpm dev` and `pnpm dev:mobile` together
-pnpm build            # Build all
-pnpm typecheck        # Type checking
-pnpm test             # Cheap default test run (Vitest only)
-pnpm test:watch       # Vitest watch mode
-pnpm test:e2e         # Playwright browser suite
-pnpm db:generate      # Generate DB migration
-pnpm db:migrate       # Apply migrations
+Node 24.18.0 and pnpm 9.15.4 (`packageManager` in `package.json`). Work in a git worktree per change; never point a development instance at `~/.paperclip-pro`.
+
+```sh
+git clone https://github.com/tickernelz/paperclip-pro.git
+cd paperclip-pro
+pnpm install --frozen-lockfile
+pnpm dev
 ```
 
-`pnpm test` does not run Playwright. Browser suites stay separate and are typically run only when working on those flows or in CI.
+| Command | What it does |
+| --- | --- |
+| `pnpm dev` | API and UI in watch mode on `:3100` |
+| `pnpm dev:mobile` | Serves the prebuilt UI on `:3101` and proxies `/api` to `:3100` |
+| `pnpm build` | Builds every package |
+| `pnpm typecheck` | Type-checks every package |
+| `pnpm test` | Vitest, the default gate (no Playwright) |
+| `pnpm test:e2e` | Playwright browser suite |
+| `pnpm db:generate` / `pnpm db:migrate` | Drizzle migrations |
 
-See [doc/DEVELOPING.md](doc/DEVELOPING.md) for the full development guide.
+Tests and manual trials must never touch a live instance. Use an isolated data directory:
 
-<br/>
+```sh
+node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir /tmp/pcpro-trial --no-browser
+```
 
-## Roadmap
+Section 8 of [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md) documents the sandbox rules for suite runs. The full development guide is [`doc/DEVELOPING.md`](doc/DEVELOPING.md); installation details are in [`doc/INSTALLING.md`](doc/INSTALLING.md) and the CLI reference in [`doc/CLI.md`](doc/CLI.md).
 
-- ✅ Plugin system (e.g. add a knowledge base, custom tracing, queues, etc)
-- ✅ Get OpenClaw / claw-style agent employees
-- ✅ companies.sh - import and export entire organizations
-- ✅ Easy AGENTS.md configurations
-- ✅ Skills Manager, Skill Studio & Skills Store
-- ✅ Scheduled Routines
-- ✅ Better Budgeting
-- ✅ Agent Reviews and Approvals
-- ✅ Multiple Human Users
-- ✅ Cloud / Sandbox agents (e2b, Cloudflare, Daytona, Modal, Novita, self-hosted Kubernetes)
-- ✅ Artifacts & Work Products
-- ✅ Deep Planning (planning mode, revisioned plans, plan approvals)
-- ✅ Enforced Outcomes (watchdogs, recovery actions, review gates)
-- ✅ MCP Tool Gateway & Apps (governed tool access)
-- ✅ Secrets Manager with per-agent access
-- ✅ Activity log & action attribution
-- ✅ Self-healing runs & automatic recovery
-- ✅ Agent evals & feedback
-- ⚪ Memory / Knowledge
-- ⚪ MAXIMIZER MODE
-- ⚪ Work Queues
-- ⚪ Self-Organization
-- ⚪ Automatic Organizational Learning
-- ⚪ CEO Chat
-- 🟡 Cloud deployments (multi-tenant isolation & company Import/Export shipped)
-- ⚪ Desktop App
-- ⚪ Bring-your-own-ticket-system (Asana / Linear / Jira as on-ramps)
-- ⚪ Connected Apps (one-click integrations, e.g. Vercel)
+## Release
 
-This is the short roadmap preview. See the full roadmap in [ROADMAP.md](ROADMAP.md).
+Pushing a `v<YYYY.MDD.P>` tag triggers `.github/workflows/release.yml`, which builds once, packs each package once, publishes the set under the `next` dist-tag in dependency order, waits for npm to expose all of it, moves `latest`, and opens a GitHub release.
 
-<br/>
+```sh
+./scripts/tag-release.sh --dry-run
+./scripts/tag-release.sh
+```
 
-## Community & Plugins
-
-Find Plugins and more at [awesome-paperclip](https://github.com/gsxdsm/awesome-paperclip)
+`scripts/tag-release.sh` resolves the next free version, refuses a version whose tag already exists, and refuses to tag a commit whose `ci.yml` run is not green. The release job re-checks both: the tagged commit must be reachable from `origin/main` and must have a successful CI run. Reruns are idempotent, so a partial publish can be resumed. Section 9 of [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md) has the dispatch inputs and the npm token setup.
 
 ## Observability
 
-Paperclip ships with opt-in OpenTelemetry auto-instrumentation for the server (traces only). It activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set and supports `grpc`, `http/protobuf`, and `http/json` via the standard `OTEL_EXPORTER_OTLP_PROTOCOL` env var. `@opentelemetry/api` is a normal server dependency; the SDK, auto-instrumentation, and exporter packages are optional peer dependencies — install them only if you want tracing. See [doc/observability.md](doc/observability.md) for install commands and the full env-var reference.
+OpenTelemetry tracing activates when `OTEL_EXPORTER_OTLP_ENDPOINT` is set; the SDK, auto-instrumentation and exporter packages are optional peer dependencies. Sentry activates with `SENTRY_DSN_BACKEND` and `SENTRY_DSN_FRONTEND`. See [`doc/observability.md`](doc/observability.md).
 
-Paperclip also ships with opt-in Sentry error monitoring for the server and the browser. Set `SENTRY_DSN_FRONTEND` to activate it for the browser and `SENTRY_DSN_BACKEND` to activate it for the server — each variable is optional, and the legacy `SENTRY_DSN` variable still works as a fallback for either component. The supported server SDK version is `@sentry/node@10.71.0`; it is an optional peer dependency for the server, so install it only if you want error monitoring. The browser SDK, `@sentry/browser`, is pinned to the same exact version. See [doc/observability.md](doc/observability.md#sentry-error-monitoring) for the install command, the privacy settings, and the full default capture set.
-
-## Telemetry
-
-Paperclip collects anonymous usage telemetry to help us understand how the product is used and improve it. No personal information, issue content, prompts, file paths, or secrets are ever collected. Private repository references are hashed with a per-install salt before being sent.
-
-Contributors changing emitted telemetry events should follow the [Telemetry Data Contract](packages/shared/src/telemetry/README.md).
-For proposed first-party events that are not in the generated contract yet, follow [Telemetry Workflow](doc/TELEMETRY_WORKFLOW.md).
-
-Telemetry is **enabled by default** and can be disabled with any of the following:
-
-| Method               | How                                                     |
-| -------------------- | ------------------------------------------------------- |
-| Environment variable | `PAPERCLIP_TELEMETRY_DISABLED=1`                        |
-| Standard convention  | `DO_NOT_TRACK=1`                                        |
-| CI environments      | Automatically disabled when `CI=true`                   |
-| Config file          | Set `telemetry.enabled: false` in your Paperclip config |
-
-## Contributing
-
-We welcome contributions. See the [contributing guide](CONTRIBUTING.md) for details.
-
-<br/>
-
-## Community
-
-This fork:
-
-- [GitHub Issues](https://github.com/tickernelz/paperclip-pro/issues) — bugs and feature requests **for this fork**
-
-Upstream project (do not file fork bugs there):
-
-- [Discord](https://discord.gg/m4HZY7xNG3) — upstream community
-- [Twitter / X](https://x.com/papercliping) — upstream updates
-- [GitHub](https://github.com/paperclipai/paperclip) — upstream issues and discussions
-
-<br/>
-
-## License
+## Licence and attribution
 
 MIT. Upstream work is copyright Paperclip Labs, Inc ([paperclip.ing](https://paperclip.ing)); fork modifications are copyright the paperclip-pro maintainers. Both notices are in [`LICENSE`](LICENSE).
 
-<br/>
-
----
-
-<p align="center">
-  <sub>Open source under MIT. Built for people who want to get work done, not babysit agents.</sub>
-</p>
+Upstream project, for reference only — do not file fork bugs there: [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), [docs.paperclip.ing](https://docs.paperclip.ing).

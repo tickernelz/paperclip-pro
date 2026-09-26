@@ -7,7 +7,7 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { assertManagedShimWritable, writeManagedShim, buildNextManifest, flipCurrentAtomic, isManagedExecutable, pruneInstallPayloads, readInstallManifest, resolveInstallStorePaths, withInstallStoreLock, writeInstallManifestAtomic, type InstallChannel, type InstallManifest, type InstallRecord, type InstallStorePaths } from "../install-store.js";
 import { dbBackupCommand } from "./db-backup.js";
-import { assertSupportedNodeVersion, installGitPayload, installNpmPayload, PUBLIC_NPM_REGISTRY, resolveGitHubRef, resolvePublishedVersion, type CommandRunner } from "./install.js";
+import { assertReleaseSetPublished, assertSupportedNodeVersion, installGitPayload, installNpmPayload, PUBLIC_NPM_REGISTRY, resolveGitHubRef, resolvePublishedVersion, writeManagedNpmrc, type CommandRunner } from "./install.js";
 import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
 import { resolveConfigPath } from "../config/store.js";
 import { detectServiceManager } from "../services/service-manager.js";
@@ -227,7 +227,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
       const npmConfigDir = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-npm-"));
       const npmUserConfigPath = path.join(npmConfigDir, "npmrc");
       try {
-        fs.writeFileSync(npmUserConfigPath, `registry=${PUBLIC_NPM_REGISTRY}\n@tickernelz:registry=${PUBLIC_NPM_REGISTRY}\n`, { mode: 0o600 });
+        writeManagedNpmrc(npmUserConfigPath);
         await runCommand("npm", args, {
           env: {
             ...process.env,
@@ -248,6 +248,7 @@ export async function updateCommand(options: UpdateOptions, overrides: Partial<D
   if (comparison === 0) { emit(options, { mode, currentVersion, targetVersion, changed: false }, `paperclip-pro ${targetVersion} is already active.`); return; }
   if (comparison < 0 && options.yes !== true) { const confirmed = await (overrides.confirm ?? defaultConfirm)(`Downgrade paperclip-pro from ${currentVersion} to ${targetVersion}?`); if (!confirmed) throw new Error("Downgrade cancelled. Re-run with --yes to confirm explicitly."); }
   if (options.dryRun) { emit(options, { mode, currentVersion, targetVersion, action: comparison < 0 ? "downgrade" : "update", backup: options.backup !== false, dryRun: true }, `Would ${comparison < 0 ? "downgrade" : "update"} paperclip-pro ${currentVersion} → ${targetVersion}${options.backup === false ? " without a backup" : " after a database backup"}.`); return; }
+  await assertReleaseSetPublished(targetVersion, runCommand);
   if (options.backup !== false) await runPreUpdateBackup(options, overrides.backup ?? (() => dbBackupCommand({})), overrides.hasInstanceData);
   const installed = await withInstallStoreLock(async () => {
     assertManagedShimWritable(paths);
