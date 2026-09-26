@@ -5,9 +5,11 @@ import { getExecutionBlocker } from "../services/execution-blocker.js";
 import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
+  readIssueRunModelOverrideInheritance,
   resolveIssueRunModelOverrideUpdate,
   writeIssueRunModelOverride,
 } from "../services/issue-run-model-override.js";
+import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
 import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { renderDocumentPdf } from "../services/document-pdf.js";
@@ -8554,6 +8556,48 @@ export function issueRoutes(
       .then((rows) => rows[0] ?? null);
   };
 
+  /** Folds a create-time model override into `assigneeAdapterOverrides`. */
+  const resolveCreateModelOverride = async (input: {
+    companyId: string;
+    assigneeAgentId: string | null | undefined;
+    assigneeAdapterOverrides: unknown;
+    modelOverride: {
+      model?: string | null;
+      thinking?: string | null;
+      inheritToSubtasks?: boolean;
+      subtaskScope?: "new" | "new_and_existing";
+    } | null | undefined;
+  }) => {
+    if (!input.modelOverride) return undefined;
+    const agent = await loadIssueRunModelOverrideAgent(
+      input.companyId,
+      input.assigneeAgentId,
+    );
+    let values;
+    try {
+      values = await resolveIssueRunModelOverrideUpdate({
+        adapterType: agent?.adapterType ?? null,
+        values: {
+          ...(input.modelOverride.model !== undefined
+            ? { model: input.modelOverride.model }
+            : {}),
+          ...(input.modelOverride.thinking !== undefined
+            ? { thinking: input.modelOverride.thinking }
+            : {}),
+        },
+      });
+    } catch (error) {
+      if (error instanceof IssueRunModelOverrideError) throw unprocessable(error.message);
+      throw error;
+    }
+    return writeIssueRunModelOverride(input.assigneeAdapterOverrides, values, {
+      inheritToSubtasks: input.modelOverride.inheritToSubtasks !== false,
+      subtaskScope: input.modelOverride.subtaskScope ?? "new",
+      inherited: false,
+      sourceIssueId: null,
+    });
+  };
+
   router.get("/issues/:id/model-override", async (req, res) => {
     const id = req.params.id as string;
     const issue = await getAccessibleResource(
@@ -8604,7 +8648,10 @@ export function issueRoutes(
       try {
         values = await resolveIssueRunModelOverrideUpdate({
           adapterType: agent?.adapterType ?? null,
-          values: req.body,
+          values: {
+            ...(hasOwn(req.body, "model") ? { model: req.body.model } : {}),
+            ...(hasOwn(req.body, "thinking") ? { thinking: req.body.thinking } : {}),
+          },
         });
       } catch (error) {
         if (error instanceof IssueRunModelOverrideError) {
@@ -8613,9 +8660,22 @@ export function issueRoutes(
         }
         throw error;
       }
+      const storedInheritance = readIssueRunModelOverrideInheritance(
+        issue.assigneeAdapterOverrides,
+      );
+      const inheritance = {
+        inheritToSubtasks:
+          typeof req.body.inheritToSubtasks === "boolean"
+            ? req.body.inheritToSubtasks
+            : storedInheritance.inheritToSubtasks,
+        subtaskScope: req.body.subtaskScope ?? storedInheritance.subtaskScope,
+        inherited: false,
+        sourceIssueId: null,
+      };
       const assigneeAdapterOverrides = writeIssueRunModelOverride(
         issue.assigneeAdapterOverrides,
         values,
+        inheritance,
       );
       await svc.update(issue.id, {
         assigneeAdapterOverrides,
@@ -8623,6 +8683,15 @@ export function issueRoutes(
         actorAgentId: null,
         actorUserId: req.actor.userId ?? null,
       });
+      const propagation =
+        inheritance.inheritToSubtasks && inheritance.subtaskScope === "new_and_existing"
+          ? await applyIssueRunModelOverrideToSubtree(db, {
+              companyId: issue.companyId,
+              rootIssueId: issue.id,
+              values,
+              subtaskScope: inheritance.subtaskScope,
+            })
+          : null;
       await logActivity(db, {
         companyId: issue.companyId,
         actorType: "user",
@@ -8631,13 +8700,14 @@ export function issueRoutes(
         entityType: "issue",
         entityId: issue.id,
         issueId: issue.id,
-        details: { values },
+        details: { values, inheritance, propagation },
       });
       res.json(
         await buildIssueRunModelOverrideView({
           issueId: issue.id,
           assigneeAgent: agent,
           assigneeAdapterOverrides,
+          propagation,
         }),
       );
     },
@@ -11971,8 +12041,18 @@ export function issueRoutes(
       );
       let deduplicationReason: "idempotency_key" | "recent_open_title" | null =
         null;
+      const { modelOverride: requestedModelOverride, ...createBodyColumns } = createBody;
+      const createModelOverride = await resolveCreateModelOverride({
+        companyId,
+        assigneeAgentId: createBody.assigneeAgentId ?? null,
+        assigneeAdapterOverrides: createBody.assigneeAdapterOverrides ?? null,
+        modelOverride: requestedModelOverride,
+      });
       const createInput = {
-        ...createBody,
+        ...createBodyColumns,
+        ...(createModelOverride !== undefined
+          ? { assigneeAdapterOverrides: createModelOverride }
+          : {}),
         ...(taskBridgeOriginForActor(req) ?? {}),
         id: issueId,
         originRunId: createBody.originRunId ?? actor.runId,
@@ -12316,8 +12396,18 @@ export function issueRoutes(
         },
         actor,
       );
+      const { modelOverride: requestedChildModelOverride, ...childBodyColumns } = createBody;
+      const childModelOverride = await resolveCreateModelOverride({
+        companyId: parent.companyId,
+        assigneeAgentId: createBody.assigneeAgentId ?? null,
+        assigneeAdapterOverrides: createBody.assigneeAdapterOverrides ?? null,
+        modelOverride: requestedChildModelOverride,
+      });
       const { issue, parentBlockerAdded } = await svc.createChild(parent.id, {
-        ...createBody,
+        ...childBodyColumns,
+        ...(childModelOverride !== undefined
+          ? { assigneeAdapterOverrides: childModelOverride }
+          : {}),
         ...(taskBridgeOriginForActor(req) ?? {}),
         id: issueId,
         executionPolicy,

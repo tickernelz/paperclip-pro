@@ -336,3 +336,51 @@ export type AdapterAuthSignal = "present" | "absent" | "unknown";
 export interface AdapterAuthSignalResponse {
   status: AdapterAuthSignal;
 }
+
+export interface AgentAdapterConfigBatchOption {
+  value: string;
+  label: string;
+  group?: string;
+}
+
+export interface AgentAdapterConfigBatchField {
+  key: string;
+  label: string;
+  hint: string | null;
+  freeText: boolean;
+  options: AgentAdapterConfigBatchOption[];
+}
+
+export interface AgentAdapterConfigBatchTarget {
+  agentId: string;
+  name: string;
+  adapterType: string;
+  eligible: boolean;
+  reason: string | null;
+  current: Record<string, string | null>;
+}
+
+export interface AgentAdapterConfigBatchPreview {
+  fields: AgentAdapterConfigBatchField[];
+  agents: AgentAdapterConfigBatchTarget[];
+}
+
+export interface AgentAdapterConfigBatchResultEntry {
+  agentId: string;
+  name: string;
+  status: "updated" | "unchanged";
+  changedKeys: string[];
+}
+
+export interface AgentAdapterConfigBatchResult {
+  updated: number;
+  unchanged: number;
+  results: AgentAdapterConfigBatchResultEntry[];
+}
+
+export interface AgentAdapterConfigBatchFailure {
+  agentId: string;
+  name: string;
+  key: string | null;
+  message: string;
+}

@@ -220,6 +220,8 @@ export const queryKeys = {
     keys: (agentId: string) => ["agents", "keys", agentId] as const,
     configRevisions: (agentId: string) =>
       ["agents", "config-revisions", agentId] as const,
+    adapterConfigBatch: (companyId: string, agentIds: string[]) =>
+      ["agents", companyId, "adapter-config-batch", [...agentIds].sort().join(",")] as const,
     adapterModels: (
       companyId: string,
       adapterType: string,

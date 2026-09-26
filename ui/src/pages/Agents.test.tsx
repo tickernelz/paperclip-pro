@@ -20,6 +20,8 @@ const mockRouterState = vi.hoisted(() => ({
 const mockAgentsApi = vi.hoisted(() => ({
   list: vi.fn(),
   org: vi.fn(),
+  batchAdapterConfigPreview: vi.fn(),
+  batchAdapterConfig: vi.fn(),
 }));
 
 const mockBuiltInAgentsApi = vi.hoisted(() => ({
@@ -1098,5 +1100,111 @@ describe("Agents", () => {
 
     expect(container.textContent).toContain("Alpha");
     expect(container.querySelector('[aria-label="Invalid reporting chain"]')).not.toBeNull();
+  });
+
+  async function renderAgentsList() {
+    root = createRoot(container);
+    await act(async () => {
+      root!.render(
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <Agents />
+          </ToastProvider>
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+    await flushReact();
+  }
+
+  const testId = (id: string) => container.querySelector<HTMLElement>(`[data-testid="${id}"]`);
+
+  it("applies a bulk model change to the selected agents", async () => {
+    mockAgentsApi.list.mockResolvedValue([
+      makeAgent({ id: "agent-1", name: "Alpha" }),
+      makeAgent({ id: "agent-2", name: "Beta", urlKey: "beta" }),
+    ]);
+    mockAgentsApi.batchAdapterConfigPreview.mockResolvedValue({
+      fields: [
+        {
+          key: "model",
+          label: "Model",
+          hint: null,
+          freeText: true,
+          options: [{ value: "vendor/deep", label: "Deep" }],
+        },
+      ],
+      agents: [
+        { agentId: "agent-1", name: "Alpha", adapterType: "codex_local", eligible: true, reason: null, current: {} },
+        { agentId: "agent-2", name: "Beta", adapterType: "codex_local", eligible: true, reason: null, current: {} },
+      ],
+    });
+    mockAgentsApi.batchAdapterConfig.mockResolvedValue({
+      updated: 2,
+      unchanged: 0,
+      results: [
+        { agentId: "agent-1", name: "Alpha", status: "updated", changedKeys: ["model"] },
+        { agentId: "agent-2", name: "Beta", status: "updated", changedKeys: ["model"] },
+      ],
+    });
+    await renderAgentsList();
+
+    await act(async () => {
+      testId("agent-select-agent-1")?.click();
+      testId("agent-select-agent-2")?.click();
+    });
+    await flushReact();
+    expect(testId("agents-bulk-model")?.textContent).toContain("(2)");
+
+    await act(async () => {
+      testId("agents-bulk-model")?.click();
+    });
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await flushReact();
+      if (document.querySelector('[data-testid="bulk-agent-config-field-model"]')) break;
+    }
+
+    const dialogCount = document.querySelector('[data-testid="bulk-agent-config-count"]');
+    expect(dialogCount?.textContent).toContain("2 of 2");
+
+    const select = document.querySelector<HTMLSelectElement>('[data-testid="bulk-agent-config-field-model"]')!;
+    await act(async () => {
+      select.value = "vendor/deep";
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await flushReact();
+
+    const submit = document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')!;
+    await act(async () => { submit.click(); });
+    await flushReact();
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')!.click();
+    });
+    await flushReact();
+    await flushReact();
+
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(
+      ["agent-1", "agent-2"],
+      { model: "vendor/deep" },
+    );
+    expect(
+      document.querySelector('[data-testid="bulk-agent-config-results"]')?.textContent,
+    ).toContain("Beta");
+  });
+
+  it("selects every filtered agent from the header checkbox", async () => {
+    mockAgentsApi.list.mockResolvedValue([
+      makeAgent({ id: "agent-1", name: "Alpha" }),
+      makeAgent({ id: "agent-2", name: "Beta", urlKey: "beta" }),
+    ]);
+    await renderAgentsList();
+
+    await act(async () => {
+      testId("agent-select-all")?.click();
+    });
+    await flushReact();
+
+    expect(testId("agents-bulk-toolbar")?.textContent).toContain("2 of 2 selected");
+    expect(testId("agents-bulk-model")?.textContent).toContain("(2)");
   });
 });

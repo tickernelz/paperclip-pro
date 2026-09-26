@@ -293,10 +293,25 @@ export const issueExecutionWorkspaceSettingsSchema = z
     }
   });
 
+export const issueRunModelOverrideSubtaskScopeSchema = z.enum([
+  "new",
+  "new_and_existing",
+]);
+
+export const issueRunModelOverrideInheritanceStateSchema = z
+  .object({
+    inheritToSubtasks: z.boolean(),
+    subtaskScope: issueRunModelOverrideSubtaskScopeSchema,
+    inherited: z.boolean().optional(),
+    sourceIssueId: z.string().optional().nullable(),
+  })
+  .strict();
+
 export const issueAssigneeAdapterOverridesSchema = z
   .object({
     adapterConfig: z.record(z.string(), z.unknown()).optional(),
     useProjectWorkspace: z.boolean().optional(),
+    modelOverrideInheritance: issueRunModelOverrideInheritanceStateSchema.optional(),
   })
   .strict();
 
@@ -310,6 +325,8 @@ export const issueRunModelOverrideUpdateSchema = z
   .object({
     model: runModelOverrideValue.optional(),
     thinking: runModelOverrideValue.optional(),
+    inheritToSubtasks: z.boolean().optional(),
+    subtaskScope: issueRunModelOverrideSubtaskScopeSchema.optional(),
   })
   .strict();
 
@@ -725,6 +742,7 @@ const createIssueBaseSchema = z.object({
   assigneeAdapterOverrides: issueAssigneeAdapterOverridesSchema
     .optional()
     .nullable(),
+  modelOverride: issueRunModelOverrideUpdateSchema.optional().nullable(),
   executionPolicy: issueExecutionPolicySchema.optional().nullable(),
   executionWorkspaceId: z.string().guid().optional().nullable(),
   executionWorkspacePreference: z

@@ -27,6 +27,8 @@ import { relativeTime, cn, agentRouteRef, agentUrl } from "../lib/utils";
 import { PageTabBar } from "../components/PageTabBar";
 import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { BulkAgentAdapterConfigDialog } from "../components/BulkAgentAdapterConfigDialog";
 import { AlertTriangle, Bot, Plus, List, Network } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent, type Environment, type EnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
@@ -239,6 +241,8 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
   }, [builtInAgents, builtInAgentsEnabled]);
   const builtInAgentIds = useMemo(() => new Set(builtInByAgentId.keys()), [builtInByAgentId]);
   const [configureState, setConfigureState] = useState<BuiltInAgentState | null>(null);
+  const [selectedAgentIds, setSelectedAgentIds] = useState<Record<string, true>>({});
+  const [bulkConfigOpen, setBulkConfigOpen] = useState(false);
 
   const { data: agents, isLoading, error } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -349,6 +353,19 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       ? loadingEnvironmentDescriptor
       : environmentByAgentId.get(agentId) ?? localEnvironmentDescriptor
   );
+  const selectedFilteredIds = filtered
+    .map((agent) => agent.id)
+    .filter((id) => selectedAgentIds[id]);
+  const allFilteredSelected =
+    filtered.length > 0 && selectedFilteredIds.length === filtered.length;
+  const toggleAgentSelected = (agentId: string, selected: boolean) => {
+    setSelectedAgentIds((current) => {
+      const next = { ...current };
+      if (selected) next[agentId] = true;
+      else delete next[agentId];
+      return next;
+    });
+  };
 
   const renderAgentRow = (agent: Agent) => {
     const hasInvalidOrgChain = agent.orgChainHealth?.status === "invalid_org_chain";
@@ -398,10 +415,27 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
           agent.pausedAt && tab !== "paused" ? "opacity-50" : "",
           resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-foreground/55" : "",
         )}
-        leading={hasInvalidOrgChain ? (
-          <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
-        ) : (
-          <AgentAvatar agent={agent} size={32} />
+        leading={(
+          <div className="flex items-center gap-2">
+            <span
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+              }}
+            >
+              <Checkbox
+                checked={Boolean(selectedAgentIds[agent.id])}
+                aria-label={`Select ${agent.name}`}
+                data-testid={`agent-select-${agent.id}`}
+                onCheckedChange={(next) => toggleAgentSelected(agent.id, next === true)}
+              />
+            </span>
+            {hasInvalidOrgChain ? (
+              <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
+            ) : (
+              <AgentAvatar agent={agent} size={32} />
+            )}
+          </div>
         )}
         secondaryRow={builtInCluster && (
           <div className="@5xl:hidden flex flex-wrap items-center gap-1.5">
@@ -525,7 +559,50 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         </div>
       </div>
 
-      {filtered.length > 0 && (
+      {effectiveView === "list" && filtered.length > 0 && (
+        <div
+          className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+          data-testid="agents-bulk-toolbar"
+        >
+          <label className="flex items-center gap-2">
+            <Checkbox
+              checked={allFilteredSelected}
+              aria-label="Select all filtered agents"
+              data-testid="agent-select-all"
+              onCheckedChange={(next) => {
+                if (next === true) {
+                  setSelectedAgentIds(
+                    Object.fromEntries(filtered.map((agent) => [agent.id, true as const])),
+                  );
+                  return;
+                }
+                setSelectedAgentIds({});
+              }}
+            />
+            <span>
+              {selectedFilteredIds.length > 0
+                ? `${selectedFilteredIds.length} of ${filtered.length} selected`
+                : `${filtered.length} agent${filtered.length !== 1 ? "s" : ""}`}
+            </span>
+          </label>
+          {selectedFilteredIds.length > 0 && (
+            <>
+              <Button
+                size="xs"
+                variant="outline"
+                data-testid="agents-bulk-model"
+                onClick={() => setBulkConfigOpen(true)}
+              >
+                Change model / thinking ({selectedFilteredIds.length})
+              </Button>
+              <Button size="xs" variant="ghost" onClick={() => setSelectedAgentIds({})}>
+                Clear
+              </Button>
+            </>
+          )}
+        </div>
+      )}
+      {effectiveView !== "list" && filtered.length > 0 && (
         <p className="text-xs text-muted-foreground">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
       )}
 
@@ -580,6 +657,14 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
             }}
           />
         </Suspense>
+      )}
+      {bulkConfigOpen && selectedCompanyId && (
+        <BulkAgentAdapterConfigDialog
+          companyId={selectedCompanyId}
+          agentIds={selectedFilteredIds}
+          open={bulkConfigOpen}
+          onOpenChange={setBulkConfigOpen}
+        />
       )}
     </div>
   );
