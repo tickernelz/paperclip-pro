@@ -453,7 +453,7 @@ describe("managed install commands", () => {
     fs.mkdirSync(paths.cliRoot, { recursive: true });
     fs.mkdirSync(outside);
     fs.symlinkSync(outside, paths.installsRoot, "dir");
-    const runCommand = vi.fn(async () => ({ stdout: JSON.stringify("2026.720.0"), stderr: "" }));
+    const runCommand = vi.fn(async (_file: string, _args: string[]) => ({ stdout: JSON.stringify("2026.720.0"), stderr: "" }));
 
     await expect(installCommand({}, { runCommand })).rejects.toThrow("non-directory install-store path");
     expect(runCommand.mock.calls.every(([file, args]) => file === "npm" && args[0] === "view")).toBe(true);
