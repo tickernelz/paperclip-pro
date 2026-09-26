@@ -3030,6 +3030,8 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     max-height: calc(
       var(--mobile-entity-picker-viewport-height, 100dvh) - calc(var(--spacing) * 8)
     ) !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
     transform: none !important;
     animation: none !important;
   }
