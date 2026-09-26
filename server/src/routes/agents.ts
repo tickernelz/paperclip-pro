@@ -3037,7 +3037,13 @@ export function agentRoutes(
       };
     }
 
-    if (requestedDesiredSkills.some((entry) => entry.versionId !== null)) {
+    const currentPreference = readPaperclipSkillSyncPreference(adapterConfig);
+    const retainedPins = new Map(
+      currentPreference.desiredSkillEntries.map((entry) => [entry.key, entry.versionId] as const),
+    );
+    if (requestedDesiredSkills.some(
+      (entry) => entry.versionId !== (retainedPins.get(entry.key) ?? null),
+    )) {
       const betaSkillsEnabled = (await instanceSettings.getExperimental()).enableBetaSkills === true;
       if (!betaSkillsEnabled) {
         throw badRequest("Beta skill version pins require the Beta skills experimental setting to be enabled.");
@@ -3055,7 +3061,6 @@ export function agentRoutes(
       (entry, index, entries) => entries.findIndex((candidate) => candidate.key === entry.key) === index,
     );
 
-    const currentPreference = readPaperclipSkillSyncPreference(adapterConfig);
     const { resolved: resolvedCurrentSkillEntries, unresolved: unresolvedCurrentSkillKeys } =
       currentPreference.desiredSkillEntries.length > 0
         ? await companySkills.resolveRequestedSkillEntries(
@@ -3091,6 +3096,7 @@ export function agentRoutes(
       materializeMissing: shouldMaterializeRuntimeSkillsForAdapter(adapterType),
       versionSelections: skillVersionSelectionMap(
         desiredSkillEntries.filter((entry) => resolvedKeys.has(entry.key)),
+        { versionPinsEnabled: await instanceSettings.getExperimental().then((settings) => settings.enableBetaSkills === true) },
       ),
     });
 

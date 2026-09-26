@@ -728,6 +728,73 @@ describe.sequential("agent skill routes", () => {
     expect(mockAgentService.update).not.toHaveBeenCalled();
   });
 
+  it("retains an existing version pin across a beta-skills rollback instead of deleting it", async () => {
+    mockInstanceSettingsService.getExperimental.mockResolvedValue({ enableBetaSkills: false });
+    const versionId = "22222222-2222-4222-8222-222222222222";
+    mockAgentService.getById.mockResolvedValue({
+      ...makeAgent("claude_local"),
+      adapterConfig: {
+        paperclipSkillSync: {
+          desiredSkills: [{ key: "paperclipai/paperclip/paperclip", versionId }],
+        },
+      },
+    });
+
+    const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
+      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
+      .send({
+        mode: "replace",
+        desiredSkills: [
+          { key: "paperclipai/paperclip/paperclip", versionId },
+          { key: "paperclipai/paperclip/other", versionId: null },
+        ],
+      }));
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(mockAgentService.update).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({
+        adapterConfig: expect.objectContaining({
+          paperclipSkillSync: expect.objectContaining({
+            desiredSkills: expect.arrayContaining([
+              { key: "paperclipai/paperclip/paperclip", versionId },
+            ]),
+          }),
+        }),
+      }),
+      expect.any(Object),
+    );
+  });
+
+  it("still rejects changing a version pin while beta skills are disabled", async () => {
+    mockInstanceSettingsService.getExperimental.mockResolvedValue({ enableBetaSkills: false });
+    mockAgentService.getById.mockResolvedValue({
+      ...makeAgent("claude_local"),
+      adapterConfig: {
+        paperclipSkillSync: {
+          desiredSkills: [{
+            key: "paperclipai/paperclip/paperclip",
+            versionId: "33333333-3333-4333-8333-333333333333",
+          }],
+        },
+      },
+    });
+
+    const res = await requestApp(await createApp(), (baseUrl) => request(baseUrl)
+      .post("/api/agents/11111111-1111-4111-8111-111111111111/skills/sync?companyId=company-1")
+      .send({
+        mode: "replace",
+        desiredSkills: [{
+          key: "paperclipai/paperclip/paperclip",
+          versionId: "22222222-2222-4222-8222-222222222222",
+        }],
+      }));
+
+    expect(res.status, JSON.stringify(res.body)).toBe(400);
+    expect(res.body.error).toContain("Beta skills experimental setting");
+    expect(mockAgentService.update).not.toHaveBeenCalled();
+  });
+
   it("accepts version pins while beta skills are enabled", async () => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({ enableBetaSkills: true });
     mockAgentService.getById.mockResolvedValue(makeAgent("claude_local"));
