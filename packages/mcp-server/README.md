@@ -56,7 +56,7 @@ The Paperclip server hosts the same tool surface at `POST /api/mcp/paperclip`, s
 
 - Authentication is the REST API's: `Authorization: Bearer <run agent key>` plus `X-Paperclip-Run-Id`. Only agent actors are accepted; a board actor gets `403`, a missing credential `401`.
 - `companyId` and `agentId` come from the authenticated agent, never from a request header, and board-authority tools are exposed only when that agent's `agentAuthorityCapabilities` include company-level authority.
-- Toolsets come from `?toolsets=core,extended`; absent, empty or unknown values fall back to `core`.
+- Toolsets come from `?toolsets=core,extended`; absent, empty or unknown values fall back to `core`, and `extended` implies `core` rather than replacing it.
 - Each `tools/call` re-enters the REST API over the server's own loopback address with the caller's bearer token, so every route guard, record rule and audit hook runs exactly as it does for a direct API call.
 
 Tool definitions are built once per process and per (toolset, authority) variant; the `tools/list` payload is memoized with them.
@@ -80,6 +80,8 @@ A `tools/call` that fails is still a JSON-RPC success with a `result`, but the r
 ## Tool Surface
 
 Curated tools keep their names and behaviour: the run-scoped `connections_search` and `connection_request`, the issue/comment/document/approval/workspace helpers (`paperclipMe`, `paperclipInboxLite`, `paperclipListIssues`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipUpdateIssue`, `paperclipAddComment`, `paperclipUpsertIssueDocument`, `paperclipGetIssueWorkspaceRuntime`, `paperclipApprovalDecision`, and the rest), and the `paperclipApiRequest` escape hatch.
+
+`paperclipListIssues` returns at most `limit` issues and defaults to **25**, not the route's 500, so one call cannot pull the whole board into context. It accepts `limit` (max 1000), `offset`, `view: "compact"`, `updatedSince`, `sortField`, `sortDir` and `includeConversations`, alongside the existing filters. Raise `limit` explicitly when a complete listing is genuinely needed.
 
 Everything else is generated from the OpenAPI registry into `src/generated/api-tools.json`, one tool per operation, with a zod input schema built from its path parameters, query parameters and JSON body, `companyId` filled from `PAPERCLIP_COMPANY_ID` when the route is company-scoped, and MCP annotations (`readOnlyHint`, `destructiveHint`, `idempotentHint`).
 
