@@ -8,7 +8,18 @@ vi.mock("../services/environment-config.js", () => ({
   resolveEnvironmentDriverConfigForRuntime: mockResolveEnvironmentDriverConfigForRuntime,
 }));
 
-import { resolveEnvironmentExecutionTarget } from "../services/environment-execution-target.js";
+const { mockLoggerWarn } = vi.hoisted(() => ({
+  mockLoggerWarn: vi.fn(),
+}));
+
+vi.mock("../middleware/logger.js", () => ({
+  logger: { warn: mockLoggerWarn },
+}));
+
+import {
+  DUPLEX_BRIDGE_READ_ERROR_KIND,
+  resolveEnvironmentExecutionTarget,
+} from "../services/environment-execution-target.js";
 import type { EnvironmentRuntimeService } from "../services/environment-runtime.js";
 
 // Build the host sandbox target for one duplex kill-switch state. The fake
@@ -60,6 +71,7 @@ async function buildSandboxTarget(input: {
 describe("resolveEnvironmentExecutionTarget duplex kill switch", () => {
   beforeEach(() => {
     mockResolveEnvironmentDriverConfigForRuntime.mockReset();
+    mockLoggerWarn.mockReset();
   });
 
   it("stamps the kill switch true when the instance setting is on", async () => {
@@ -80,6 +92,19 @@ describe("resolveEnvironmentExecutionTarget duplex kill switch", () => {
     expect(readSandboxDuplexBridgeInput).toHaveBeenCalledTimes(1);
     // The resolve did not throw, and the read error stamped no grant.
     expect(target.enableSandboxDuplexBridge).toBe(false);
+  });
+
+  it("logs the swallowed read failure so the file-bridge fallback is visible", async () => {
+    await buildSandboxTarget({ rejectRead: true });
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.objectContaining({ errorKind: DUPLEX_BRIDGE_READ_ERROR_KIND }),
+      "sandbox duplex bridge setting read failed; this run keeps the file bridge, so a duplex transport that looks configured is not",
+    );
+  });
+
+  it("stays quiet when the setting reads cleanly", async () => {
+    await buildSandboxTarget({ bridgeInput: { enableDuplexBridge: true } });
+    expect(mockLoggerWarn).not.toHaveBeenCalled();
   });
 
   it("stamps no grant when the runtime has no duplex read method", async () => {

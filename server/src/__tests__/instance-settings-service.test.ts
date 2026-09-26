@@ -1,12 +1,26 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const { mockLoggerWarn } = vi.hoisted(() => ({
+  mockLoggerWarn: vi.fn(),
+}));
+
+vi.mock("../middleware/logger.js", () => ({
+  logger: { warn: mockLoggerWarn },
+}));
+
 import type { InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
 import {
   applyExperimentalSettingsPatch,
   normalizeExperimentalSettings,
   resolveWorktreeRunExecutionActivationState,
+  WORKTREE_RUN_EXECUTION_READ_ERROR_KIND,
 } from "../services/instance-settings.js";
 
 describe("instance settings service", () => {
+  beforeEach(() => {
+    mockLoggerWarn.mockReset();
+  });
+
   it("keeps chat connectors opt-in across legacy storage and patches without disabling Apps", () => {
     for (const stored of [undefined, {}, { enableApps: true }, { enableConferenceRoomChat: true }]) {
       expect(normalizeExperimentalSettings(stored).enableChatConnectors).toBe(false);
@@ -421,6 +435,36 @@ describe("instance settings service", () => {
       reason: "not_worktree_runtime",
     });
     expect(getExperimental).not.toHaveBeenCalled();
+  });
+
+  it("logs a swallowed settings read failure so the suppression is not silent", async () => {
+    await resolveWorktreeRunExecutionActivationState({
+      getExperimental: async () => {
+        throw new Error("settings unavailable");
+      },
+      runtimeEnv: {
+        PAPERCLIP_IN_WORKTREE: "true",
+        PAPERCLIP_INSTANCE_ID: "worktree-instance",
+      },
+    });
+    expect(mockLoggerWarn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        errorKind: WORKTREE_RUN_EXECUTION_READ_ERROR_KIND,
+        instanceId: "worktree-instance",
+      }),
+      "worktree run execution setting read failed; this worktree instance keeps run scheduling suppressed, so parked runs are not explained by the flag alone",
+    );
+  });
+
+  it("logs nothing when the worktree runtime is not armed by a settings read", async () => {
+    await resolveWorktreeRunExecutionActivationState({
+      getExperimental: async () => normalizeExperimentalSettings({}),
+      runtimeEnv: {
+        PAPERCLIP_IN_WORKTREE: "false",
+        PAPERCLIP_INSTANCE_ID: "worktree-instance",
+      },
+    });
+    expect(mockLoggerWarn).not.toHaveBeenCalled();
   });
 
 });
