@@ -1186,6 +1186,18 @@ export function Cases() {
   }, [caseHref, keyboardNavItems, keyboardShortcutsEnabled, navigate, selectedIndex, viewState.treeView]);
 
   if (casesQuery.isLoading) return <PageSkeleton variant="list" />;
+  if (casesQuery.isError) {
+    return (
+      <div className="mx-auto max-w-md space-y-2 py-16 text-center">
+        <p className="text-sm text-destructive">
+          {casesQuery.error instanceof Error ? casesQuery.error.message : "Cases could not be loaded."}
+        </p>
+        <Button type="button" variant="outline" size="sm" onClick={() => void casesQuery.refetch()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
 
   const noCasesAtAll = allCases.length === 0 && activeFilters.length === 0;
   const hasActiveFilters = activeFilters.length > 0;

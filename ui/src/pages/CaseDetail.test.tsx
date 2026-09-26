@@ -358,6 +358,56 @@ describe("CaseDetail", () => {
     act(() => root.unmount());
   });
 
+  it("surfaces a children query failure instead of 'No child cases.'", async () => {
+    mockCasesApi.listChildren.mockRejectedValue(new Error("Cases are disabled"));
+
+    const root = renderPage(container);
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Properties");
+    });
+    const propertiesTab = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("Properties")
+    );
+    act(() => {
+      propertiesTab!.focus();
+      propertiesTab!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    await waitForAssertion(() => {
+      const text = container.textContent ?? "";
+      expect(text).toContain("Could not load child cases.");
+      expect(text).not.toContain("No child cases.");
+    });
+
+    act(() => root.unmount());
+  });
+
+  it("surfaces an activity query failure instead of 'No activity yet.'", async () => {
+    mockCasesApi.listEvents.mockRejectedValue(new Error("Cases are disabled"));
+
+    const root = renderPage(container);
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Activity");
+    });
+    const activityTab = Array.from(container.querySelectorAll("button")).find((button) =>
+      button.textContent?.includes("Activity")
+    );
+    act(() => {
+      activityTab!.focus();
+      activityTab!.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+
+    await waitForAssertion(() => {
+      const text = container.textContent ?? "";
+      expect(text).toContain("Could not load case activity.");
+      expect(text).not.toContain("No activity yet.");
+    });
+
+    act(() => root.unmount());
+  });
+
   it("renders primary fields and task references in the compact properties panel", async () => {
     const root = renderPage(container);
 

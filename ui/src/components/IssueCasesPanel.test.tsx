@@ -94,6 +94,16 @@ describe("IssueCasesPanel", () => {
     act(() => root.unmount());
   });
 
+  it("renders an error instead of nothing when the cases query fails", async () => {
+    mockInstanceApi.getExperimental.mockResolvedValue({ enableCases: true });
+    mockCasesApi.listForIssue.mockRejectedValue(new Error("Cases are disabled"));
+    const root = await render();
+    const text = container.textContent ?? "";
+    expect(text).toContain("Could not load linked cases.");
+    expect(text).not.toContain("Launch post");
+    act(() => root.unmount());
+  });
+
   it("renders nothing when enabled but no cases are linked", async () => {
     mockInstanceApi.getExperimental.mockResolvedValue({ enableCases: true });
     mockCasesApi.listForIssue.mockResolvedValue([]);

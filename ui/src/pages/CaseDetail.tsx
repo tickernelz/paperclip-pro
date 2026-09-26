@@ -331,6 +331,7 @@ function CaseLabelsPicker({
 function CasePropertiesContent({
   caseData,
   childCases,
+  childrenError,
   companyId,
   labelsPending,
   onLabelIdsChange,
@@ -338,6 +339,7 @@ function CasePropertiesContent({
 }: {
   caseData: CaseDetailData;
   childCases: CaseSummary[];
+  childrenError?: boolean;
   companyId: string | null | undefined;
   labelsPending?: boolean;
   onLabelIdsChange: (labelIds: string[]) => void;
@@ -429,7 +431,11 @@ function CasePropertiesContent({
       </PropertySection>
 
       <PropertySection title={`Children${childCases.length > 0 ? ` ${childCases.length}` : ""}`}>
-        <CaseChildrenTree children={childCases} />
+        {childrenError ? (
+          <p className="text-xs text-destructive">Could not load child cases.</p>
+        ) : (
+          <CaseChildrenTree children={childCases} />
+        )}
       </PropertySection>
 
       {caseData.attachments.length > 0 ? (
@@ -569,13 +575,14 @@ export function CaseDetail() {
       <CasePropertiesContent
         caseData={caseData}
         childCases={children}
+        childrenError={childrenQuery.isError}
         companyId={selectedCompanyId}
         labelsPending={patchMutation.isPending}
         onLabelIdsChange={handleLabelIdsChange}
         mode="compact"
       />
     );
-  }, [caseData, children, selectedCompanyId, patchMutation.isPending, handleLabelIdsChange]);
+  }, [caseData, children, childrenQuery.isError, selectedCompanyId, patchMutation.isPending, handleLabelIdsChange]);
 
   useEffect(() => {
     if (!panelContent) return;
@@ -703,6 +710,7 @@ export function CaseDetail() {
           <CasePropertiesContent
             caseData={caseData}
             childCases={children}
+            childrenError={childrenQuery.isError}
             companyId={selectedCompanyId}
             labelsPending={patchMutation.isPending}
             onLabelIdsChange={handleLabelIdsChange}
@@ -711,7 +719,11 @@ export function CaseDetail() {
         </TabsContent>
 
         <TabsContent value="activity">
+          {eventsQuery.isError ? (
+          <p className="py-6 text-center text-sm text-destructive">Could not load case activity.</p>
+        ) : (
           <CaseActivityFeed events={events} />
+        )}
         </TabsContent>
       </Tabs>
     </div>

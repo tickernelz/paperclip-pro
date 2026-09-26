@@ -32,8 +32,18 @@ export function IssueCasesPanel({ issueId }: { issueId: string }) {
     enabled: enabled && !!issueId,
   });
 
+  if (!enabled) return null;
+
   const links = casesQuery.data ?? [];
-  if (!enabled || links.length === 0) return null;
+  if (casesQuery.isError) {
+    return (
+      <section className="space-y-2">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cases</h3>
+        <p className="text-sm text-destructive">Could not load linked cases.</p>
+      </section>
+    );
+  }
+  if (links.length === 0) return null;
 
   return (
     <section className="space-y-2">
