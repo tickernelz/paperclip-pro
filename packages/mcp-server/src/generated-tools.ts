@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 import type { PaperclipApiClient } from "./client.js";
+import { expandToolsetUnion } from "./config.js";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 import type { ToolDefinition } from "./tools.js";
 import type { ToolsetName } from "./tool-overrides.js";
@@ -76,11 +77,12 @@ export function prepareGeneratedTools(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
 ): PreparedGeneratedTool[] {
-  const key = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}`;
+  const selected = expandToolsetUnion(toolsets);
+  const key = `${[...selected].sort().join(",")}|${management ? "management" : "agent"}`;
   const cached = preparedVariants.get(key);
   if (cached) return cached;
   const prepared = generatedToolSpecs()
-    .filter((spec) => toolsets.includes(spec.toolset) && (management || spec.authority === "agent"))
+    .filter((spec) => selected.includes(spec.toolset) && (management || spec.authority === "agent"))
     .map((spec) => ({ spec, schema: inputSchema(spec) }));
   preparedVariants.set(key, prepared);
   return prepared;

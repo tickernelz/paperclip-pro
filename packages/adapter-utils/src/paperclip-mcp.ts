@@ -147,12 +147,18 @@ export function renderPaperclipMcpConfig(input: PaperclipMcpServerEntryInput): s
 }
 
 export function paperclipMcpGuidance(toolsets: string, toolCount: number | null = null): string {
-  return [
+  const lines = [
     `Paperclip's API is mounted as MCP tools on the "${PAPERCLIP_MCP_SERVER_NAME}" server (toolsets: ${toolsets}${toolCount === null ? "" : `, ${toolCount} tools`}).`,
     'Every tool name starts with "paperclip", for example paperclipListIssues or paperclipAddComment.',
     "These tools are the only way to reach Paperclip; they already carry this run's identity, API key and run id.",
     `When no dedicated tool covers an endpoint, use the ${PAPERCLIP_MCP_SERVER_NAME} escape-hatch tool paperclipApiRequest instead of a shell HTTP client.`,
-  ].join("\n");
+  ];
+  if (/\b(extended|all)\b/i.test(toolsets)) {
+    lines.push(
+      `For a one-off call the escape hatch is cheaper than carrying the extended surface, and paperclipApiRequest is always available.`,
+    );
+  }
+  return lines.join("\n");
 }
 
 /** Guidance for runtimes without the Paperclip MCP: reach the board over REST with the run credentials in env. */

@@ -23,7 +23,7 @@ Inside an active heartbeat, Paperclip also injects `PAPERCLIP_RUNTIME_TOOLS_*` v
 
 The tool surface is generated from the server's OpenAPI registry, so it tracks the API. Two independent filters decide what a client sees:
 
-- **Toolset.** `core` is the default: the curated hand-written tools plus the everyday generated ones (61 tools, ~36 KB of `tools/list` JSON, ~9k tokens). `extended` adds the rest of the generated surface (core + extended: 442 tools, ~222 KB; an agent carrying company authority also sees the board-authority tools, 719 tools, ~358 KB). Select with `PAPERCLIP_MCP_TOOLSETS=core,extended` or `--toolsets core,extended`; the CLI flag wins, an empty or unknown value falls back to `core`.
+- **Toolset.** `core` is the default: the curated hand-written tools plus the everyday generated ones (61 tools, ~36 KB of `tools/list` JSON, ~9k tokens). `extended` is a **superset of `core`**, not a sibling: selecting it registers `core` plus the rest of the generated surface (442 tools, ~222 KB; an agent carrying company authority also sees the board-authority tools, 719 tools, ~358 KB). `all` is the same union of everything. Select with `PAPERCLIP_MCP_TOOLSETS=core,extended` or `--toolsets core,extended`; the CLI flag wins, an empty or unknown value falls back to `core`. Requesting `extended` alone therefore never drops a core-only tool such as `paperclipCreateChildIssue` or the watchdog pair.
 - **Authority.** Every generated tool carries `authority`: `agent` for routes an ordinary agent key can call, `board` for routes whose handler asserts board authority (the deciding guard and its `file:line` are recorded in `src/generated/api-tools.json`). Board-authority tools are registered only when the caller has a management role, taken from `PAPERCLIP_AGENT_ROLE` or, when that is unset, from `GET /api/agents/me` at startup.
 
 Instance-admin, auth/setup/cli-auth, protocol/websocket and credential-reveal routes are excluded for everyone; `src/generated/excluded-operations.json` records each excluded operation with its reason and guard evidence.
@@ -60,6 +60,22 @@ The Paperclip server hosts the same tool surface at `POST /api/mcp/paperclip`, s
 - Each `tools/call` re-enters the REST API over the server's own loopback address with the caller's bearer token, so every route guard, record rule and audit hook runs exactly as it does for a direct API call.
 
 Tool definitions are built once per process and per (toolset, authority) variant; the `tools/list` payload is memoized with them.
+
+## Error contract
+
+A `tools/call` that fails is still a JSON-RPC success with a `result`, but the result carries the MCP error flag so a host cannot mistake it for data:
+
+- **`isError: true`** on every failure path: an API rejection (`PaperclipApiError`), a bad argument (zod validation), and any other thrown value. A successful call omits the field.
+- **`_meta["paperclip/httpStatus"]`** carries the original HTTP status when the failure came from the API, so a host can tell a `403` from a `500` without parsing the text. It is absent for argument and unknown failures.
+- **Argument failures are flattened to one line per problem**, `issueId: expected string, received undefined`, instead of a stringified JSON array inside a JSON string. API failures keep the structured `{ error, status, method, path, body }` text payload.
+
+```json
+{
+  "content": [{ "type": "text", "text": "GET /issues/X failed with 403: Board access required" }],
+  "isError": true,
+  "_meta": { "paperclip/httpStatus": 403 }
+}
+```
 
 ## Tool Surface
 
