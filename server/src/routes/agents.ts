@@ -3111,7 +3111,8 @@ export function agentRoutes(
     };
   }
 
-  function toCompactAgentListRow<T extends Record<string, unknown>>(agent: T) {
+  function toCompactAgentListRow<T extends Record<string, unknown>>(agent: T | null): Omit<T, "orgChainHealth" | "appearance" | "avatarUrl"> | null {
+    if (!agent) return null;
     const { orgChainHealth: _orgChainHealth, appearance: _appearance, avatarUrl: _avatarUrl, ...rest } = agent;
     return rest;
   }

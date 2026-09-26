@@ -119,12 +119,14 @@ describe("boardToolAdvertised", () => {
   });
 
   it("withholds a board tool whose only extra evidence is a recorded board guard", () => {
-    const probeGuarded = spec({
-      guards: ["assertSameCompanyCeoAgentOrBoard"],
-      boardGuard: "probe:Only board users can view feedback traces",
-    });
-    expect(boardToolAdvertised({ ...probeGuarded, boardGuard: null }, CEO)).toBe(true);
-    expect(boardToolAdvertised(probeGuarded, CEO)).toBe(false);
+    const guards = ["assertSameCompanyCeoAgentOrBoard"];
+    expect(boardToolAdvertised(spec({ guards }), CEO)).toBe(true);
+    expect(
+      boardToolAdvertised(
+        spec({ guards, boardGuard: "probe:Only board users can view feedback traces" }),
+        CEO,
+      ),
+    ).toBe(false);
   });
 
   it("withholds a board tool that no agent-admitting guard reaches", () => {

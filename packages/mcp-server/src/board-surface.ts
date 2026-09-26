@@ -103,7 +103,8 @@ export function boardToolAdvertised(
   if (spec.boardGuard !== null) return false;
   if (spec.guards.some((guard) => BOARD_ONLY_GUARDS[guard] === true)) return false;
   if (!spec.guards.some((guard) => AGENT_ADMITTING_GUARDS[guard] === true)) return false;
-  if (spec.authorityCapability !== null && !context.capabilities.includes(spec.authorityCapability)) {
+  const capability = spec.authorityCapability;
+  if (capability !== null && capability !== undefined && !context.capabilities.includes(capability)) {
     return false;
   }
   return spec.permissions.every((key) => permissionHeld(key, context));

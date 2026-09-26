@@ -7961,7 +7961,7 @@ export function issueRoutes(
     const includeConversations =
       req.query.includeConversations === "true" || req.query.includeConversations === "1";
     const conversationOwner = {
-      agentId: req.actor.type === "agent" ? req.actor.agentId : null,
+      agentId: req.actor.type === "agent" ? (req.actor.agentId ?? null) : null,
       userId: req.actor.type === "board" ? (req.actor.userId ?? null) : null,
     };
     const hasPlanDocument = parseOptionalBooleanQuery(
