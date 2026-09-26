@@ -1256,7 +1256,7 @@ type IssueDetailChatTabProps = {
   suggestedAssigneeValue: string;
   mentions: MentionOption[];
   conversationMode?: boolean;
-  resolveIssueId?: () => Promise<string>;
+  pendingIssue?: import("@/components/task-chat/TaskModelOverrideControl").TaskModelOverridePendingIssue;
   composerPause?: TaskComposerPause | null;
   composerDisabledReason: string | null;
   composerHint: string | null;
@@ -1384,7 +1384,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   suggestedAssigneeValue,
   mentions,
   conversationMode,
-  resolveIssueId,
+  pendingIssue,
   composerPause,
   composerDisabledReason,
   composerHint,
@@ -2405,7 +2405,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             userProfileMap={userProfileMap}
             draftKey={draftKey}
             conversationMode={conversationMode}
-            resolveIssueId={resolveIssueId}
+            pendingIssue={pendingIssue}
             enableReassign={!conversationMode}
             reassignOptions={reassignOptions}
             currentAssigneeValue={currentAssigneeValue}
@@ -7833,7 +7833,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   suggestedAssigneeValue={suggestedAssigneeValue}
                   mentions={mentionOptions}
                   conversationMode={!!issue.conversationAgentId}
-                  resolveIssueId={conversation ? resolveWritableIssueId : undefined}
+                  pendingIssue={conversation ? { companyId: conversation.agent.companyId, agentId: conversation.agent.id, resolve: resolveWritableIssueId } : undefined}
                   composerPause={activePauseHold ? {
                     scope: activePauseHold.isRoot && childIssues.length === 0 ? "leaf" : "subtree",
                     pending: executeTreeControl.isPending && executeTreeControl.variables?.mode === "resume",

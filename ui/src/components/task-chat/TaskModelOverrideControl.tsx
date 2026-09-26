@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import type {
@@ -210,18 +210,24 @@ function draftOverrideFields(
   return fields;
 }
 
+export interface TaskModelOverridePendingIssue {
+  companyId: string;
+  agentId: string | null;
+  resolve: () => Promise<string>;
+}
+
 /** Per-task model and thinking picker; writes to the issue, or to a draft before one exists. */
 export function TaskModelOverrideControl({
   issueId,
   draft,
-  resolveIssueId,
+  pendingIssue,
   footerSlot,
   disabled = false,
   mobile = false,
 }: {
   issueId?: string | null;
   draft?: TaskModelOverrideDraft;
-  resolveIssueId?: () => Promise<string>;
+  pendingIssue?: TaskModelOverridePendingIssue;
   footerSlot?: ReactNode;
   disabled?: boolean;
   mobile?: boolean;
@@ -233,9 +239,13 @@ export function TaskModelOverrideControl({
     IssueRunModelOverrideKey | null | undefined
   >(undefined);
   const [resolvedIssueId, setResolvedIssueId] = useState<string | null>(null);
-  const [resolving, setResolving] = useState(false);
+  const [pendingValues, setPendingValues] = useState<
+    Partial<Record<IssueRunModelOverrideKey, string | null>>
+  >({});
+  const resolveInFlight = useRef<Promise<string> | null>(null);
   useMobileViewportInsets(open);
   const activeIssueId = draft ? null : issueId || resolvedIssueId;
+  const previewAgent = draft ?? pendingIssue;
   const key = queryKeys.issues.modelOverride(activeIssueId ?? "__none__");
   const query = useQuery({
     queryKey: key,
@@ -245,18 +255,44 @@ export function TaskModelOverrideControl({
   });
   const preview = useQuery({
     queryKey: queryKeys.agents.adapterConfigBatch(
-      draft?.companyId ?? "__none__",
-      draft?.agentId ? [draft.agentId] : [],
+      previewAgent?.companyId ?? "__none__",
+      previewAgent?.agentId ? [previewAgent.agentId] : [],
     ),
-    queryFn: () => agentsApi.batchAdapterConfigPreview([draft!.agentId!]),
-    enabled: Boolean(draft?.agentId),
+    queryFn: () => agentsApi.batchAdapterConfigPreview([previewAgent!.agentId!]),
+    enabled: Boolean(previewAgent?.agentId) && !activeIssueId,
     staleTime: 60_000,
   });
   const mutation = useMutation({
-    mutationFn: (values: { model?: string | null; thinking?: string | null }) =>
-      issuesApi.setModelOverride(activeIssueId!, values),
-    onSuccess: (next: IssueRunModelOverrideView) => {
-      queryClient.setQueryData(key, next);
+    mutationFn: async (values: { model?: string | null; thinking?: string | null }) => {
+      let targetId = activeIssueId;
+      if (!targetId) {
+        if (!pendingIssue) throw new Error("This conversation could not be opened.");
+        if (!resolveInFlight.current) {
+          resolveInFlight.current = pendingIssue.resolve().then(
+            (resolved) => {
+              setResolvedIssueId(resolved);
+              return resolved;
+            },
+            (resolveError: unknown) => {
+              resolveInFlight.current = null;
+              throw resolveError instanceof Error
+                ? resolveError
+                : new Error("This conversation could not be opened.");
+            },
+          );
+        }
+        targetId = await resolveInFlight.current;
+      }
+      return { targetId, next: await issuesApi.setModelOverride(targetId, values) };
+    },
+    onSuccess: ({
+      targetId,
+      next,
+    }: {
+      targetId: string;
+      next: IssueRunModelOverrideView;
+    }) => {
+      queryClient.setQueryData(queryKeys.issues.modelOverride(targetId), next);
       setError(null);
     },
     onError: (mutationError: unknown) => {
@@ -271,23 +307,24 @@ export function TaskModelOverrideControl({
   const view = query.data;
   const draftValues = draft?.values;
   const previewData = preview.data;
+  const usePreviewFields = Boolean(previewAgent) && !view?.fields.length;
   const fields = useMemo(
     () =>
-      draft
-        ? draftOverrideFields(previewData, draftValues ?? {})
+      usePreviewFields
+        ? draftOverrideFields(previewData, draftValues ?? pendingValues)
         : (view?.fields ?? []),
-    [draft, previewData, draftValues, view],
+    [usePreviewFields, previewData, draftValues, pendingValues, view],
   );
   const noAgent = Boolean(draft) && !draft?.agentId;
   if (draft) {
     if (draft.agentId && preview.isFetched && fields.length === 0) return null;
   } else if (activeIssueId) {
     if (!open && (!view?.supported || view.fields.length === 0)) return null;
-  } else if (!resolveIssueId) {
+  } else if (!pendingIssue) {
     return null;
   }
 
-  const pending = mutation.isPending || resolving;
+  const pending = mutation.isPending;
   const hasOverride = fields.some((field) => field.override);
   const expandedKey =
     expandedOverride === undefined
@@ -296,24 +333,7 @@ export function TaskModelOverrideControl({
   return (
     <Popover
       open={open}
-      onOpenChange={async (next) => {
-        if (next && !draft && !activeIssueId && resolveIssueId) {
-          setResolving(true);
-          try {
-            setResolvedIssueId(await resolveIssueId());
-            setError(null);
-          } catch (resolveError: unknown) {
-            setError(
-              resolveError instanceof Error
-                ? resolveError.message
-                : "This conversation could not be opened.",
-            );
-          } finally {
-            setResolving(false);
-          }
-        }
-        setOpen(next);
-      }}
+      onOpenChange={setOpen}
     >
       <PopoverTrigger asChild>
         <button
@@ -366,6 +386,10 @@ export function TaskModelOverrideControl({
                 if (draft) {
                   draft.onChange(fieldKey, value);
                   return;
+                }
+                if (!activeIssueId) {
+                  if (value === null && !field.override) return;
+                  setPendingValues((current) => ({ ...current, [fieldKey]: value }));
                 }
                 mutation.mutate({ [fieldKey]: value });
               }}
