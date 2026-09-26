@@ -24,6 +24,8 @@ import {
   createAgentHireSchema,
   updateAgentSchema,
   updateAgentPermissionsSchema,
+  agentAdapterConfigBatchPreviewSchema,
+  agentAdapterConfigBatchUpdateSchema,
   updateAgentInstructionsPathSchema,
   updateAgentInstructionsBundleSchema,
   upsertAgentInstructionsFileSchema,
@@ -3399,6 +3401,37 @@ registry.registerPath({
   summary: "Delete an agent",
   request: { params: z.object({ id: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/agents/batch/adapter-config/preview",
+  tags: ["agents"],
+  summary: "List the adapter config fields a batch of agents shares",
+  request: { body: jsonBody(agentAdapterConfigBatchPreviewSchema) },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/agents/batch/adapter-config",
+  tags: ["agents"],
+  summary: "Apply adapter config values to many agents at once",
+  request: { body: jsonBody(agentAdapterConfigBatchUpdateSchema) },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+  },
 });
 
 registry.registerPath({

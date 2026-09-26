@@ -512,6 +512,76 @@ custom providers keep working. Adapters that publish no config schema, and
 tasks with no agent assignee, report `supported: false` and the picker
 disappears. Agents cannot set the override; it is a board-side control.
 
+### Inheriting the override to subtasks
+
+The picker carries two switches, persisted next to the override in
+`issues.assignee_adapter_overrides.modelOverrideInheritance`:
+`inheritToSubtasks` (default `true`) and `subtaskScope`
+(`"new"` by default, or `"new_and_existing"`). `PUT /api/issues/:id/model-override`
+accepts them alongside `model` and `thinking`. Nothing is stored while both keep
+their defaults, so an issue with no inheritance row behaves as "inherit, new
+subtasks only".
+
+A child issue picks the override up when it is created — the create route, the
+children route and the agent tool path all go through `svc.create`, which calls
+`inheritIssueRunModelOverrideForChild`. The copy is marked
+`inherited: true` with `sourceIssueId`, which is what distinguishes it from an
+override an operator set on that child. A child that sets `model` or `thinking`
+itself (including through the create payload's `modelOverride`) keeps its own
+value, and a parent never rewrites it afterwards.
+
+`subtaskScope: "new_and_existing"` additionally rewrites the existing subtree at
+the moment of the write: `applyIssueRunModelOverrideToSubtree`
+(`server/src/services/issue-model-override-inheritance.ts`) walks
+`issues.parent_id` breadth-first inside the same company, at most 10 levels deep
+and at most 500 issues, with a visited set so a parent cycle terminates instead
+of looping. An issue that owns an explicit override is skipped together with its
+subtree, because that subtree follows the child, not the root. The response
+reports `propagation: { applied, skipped, visited, limitReached }`; `limitReached`
+means the walk stopped at a limit and deeper issues were left alone. Clearing the
+override ("Agent default") propagates the same way and under the same switches.
+
+A create request may carry the override in one round trip:
+`POST /api/companies/:id/issues` and `POST /api/issues/:id/children` accept
+`modelOverride: { model?, thinking?, inheritToSubtasks?, subtaskScope? }`,
+validated against the assignee's adapter schema exactly like the PUT and
+rejected with 422 when it does not fit.
+
+## Changing model or thinking for many agents at once
+
+The Agents list has a checkbox per row plus a select-all for the current filter
+tab; with a selection, "Change model / thinking" opens a batch dialog that shows
+how many agents are affected, asks for a confirmation and then reports a
+per-agent result.
+
+Two endpoints back it:
+
+- `POST /api/agents/batch/adapter-config/preview` with `{ agentIds }` returns the
+  fields the selection shares — the intersection of the batch-editable fields of
+  each agent's adapter schema, with the option lists intersected too — plus each
+  agent's eligibility, reason and current values.
+- `POST /api/agents/batch/adapter-config` with `{ agentIds, values }` applies
+  them. Up to 100 agents per call.
+
+Batch-editable keys are the model-selection keys an adapter publishes: `model`,
+`thinking`, `provider`, `smolModel`, `slowModel`, `planModel`, `modelCycle`, and
+only when the adapter publishes them as `select`, `text` or `combobox`. Anything
+else — credentials, paths, instructions bundles, and `provider` on a
+`paperclip_runner` agent, whose transition checks only the single-agent route
+runs — stays out and must go through `PATCH /api/agents/:id`.
+
+Validation is per agent against that agent's own adapter schema, with the same
+rules as the per-task override. **The batch is atomic:** one invalid value
+rejects the whole call with 422 and a `failures[]` array naming the agent, the
+key and the reason, and nothing is written. On success each changed agent gets
+one `agent.updated` activity row attributed with `getActorInfo`, carrying
+`changedAdapterConfigKeys` and `batch: true`; an agent whose values already match
+is reported as `unchanged` and is not audited. Authorization is the same as
+editing one agent: a board caller with company access and the `agents:create`
+decision, or an agent actor holding `company:agents` (a `ceo`); every agent id is
+resolved through the company guard first, so a cross-company id is a 404 and a
+batch may never span companies.
+
 ## Security: emptying allowedHostnames does not lock out the public host
 
 `auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.

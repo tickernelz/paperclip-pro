@@ -88,10 +88,20 @@ export interface IssueLabel {
   updatedAt: Date;
 }
 
+export interface IssueRunModelOverrideInheritanceState {
+  inheritToSubtasks: boolean;
+  subtaskScope: IssueRunModelOverrideSubtaskScope;
+  inherited?: boolean;
+  sourceIssueId?: string | null;
+}
+
 export interface IssueAssigneeAdapterOverrides {
   adapterConfig?: Record<string, unknown>;
   useProjectWorkspace?: boolean;
+  modelOverrideInheritance?: IssueRunModelOverrideInheritanceState;
 }
+
+export type IssueRunModelOverrideSubtaskScope = "new" | "new_and_existing";
 
 export type IssueRunModelOverrideKey = "model" | "thinking";
 
@@ -112,6 +122,20 @@ export interface IssueRunModelOverrideField {
   effective: string | null;
 }
 
+export interface IssueRunModelOverrideInheritance {
+  inheritToSubtasks: boolean;
+  subtaskScope: IssueRunModelOverrideSubtaskScope;
+  inherited: boolean;
+  sourceIssueId: string | null;
+}
+
+export interface IssueRunModelOverridePropagation {
+  applied: number;
+  skipped: number;
+  visited: number;
+  limitReached: boolean;
+}
+
 export interface IssueRunModelOverrideView {
   issueId: string;
   agentId: string | null;
@@ -119,6 +143,8 @@ export interface IssueRunModelOverrideView {
   supported: boolean;
   unsupportedReason: string | null;
   fields: IssueRunModelOverrideField[];
+  inheritance: IssueRunModelOverrideInheritance;
+  propagation: IssueRunModelOverridePropagation | null;
 }
 
 export type DocumentFormat = "markdown";

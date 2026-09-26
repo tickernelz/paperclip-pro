@@ -3,6 +3,7 @@ import { documentService } from "./documents.js";
 import { parseTaskSearch, taskSearchCtes, taskSearchScore } from "./task-search.js";
 import { createdFromIssueCondition } from "./issue-creation-origin.js";
 import { executionProjectionsForRuns } from "./execution-projection.js";
+import { inheritIssueRunModelOverrideForChild } from "./issue-run-model-override.js";
 import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
 import { Buffer } from "node:buffer";
 import { createHash, randomUUID } from "node:crypto";
@@ -10081,6 +10082,32 @@ export function issueService(db: Db) {
               trustExplicitResponsibleUserId === true,
           },
         );
+
+        if (issueData.parentId) {
+          const parent = await tx
+            .select({
+              assigneeAdapterOverrides: issues.assigneeAdapterOverrides,
+            })
+            .from(issues)
+            .where(
+              and(
+                eq(issues.id, issueData.parentId),
+                eq(issues.companyId, companyId),
+              ),
+            )
+            .then((rows) => rows[0] ?? null);
+          const inherited = parent
+            ? inheritIssueRunModelOverrideForChild({
+                parentIssueId: issueData.parentId,
+                parentOverrides: parent.assigneeAdapterOverrides,
+                childOverrides: issueData.assigneeAdapterOverrides ?? null,
+              })
+            : null;
+          if (inherited) {
+            issueData.assigneeAdapterOverrides =
+              inherited as typeof issueData.assigneeAdapterOverrides;
+          }
+        }
 
         const values = {
           ...issueData,

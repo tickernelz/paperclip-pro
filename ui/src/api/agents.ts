@@ -7,6 +7,8 @@ import type {
   AgentInstructionsBundle,
   AgentInstructionsFileDetail,
   AgentSkillSnapshot,
+  AgentAdapterConfigBatchPreview,
+  AgentAdapterConfigBatchResult,
   AdapterEnvironmentTestResult,
   AdapterAuthSignalResponse,
   AdapterAuthSessionResponse,
@@ -149,6 +151,15 @@ export const agentsApi = {
     api.patch<Agent>(agentPath(id, companyId), data),
   updatePermissions: (id: string, data: AgentPermissionUpdate, companyId?: string) =>
     api.patch<AgentDetail>(agentPath(id, companyId, "/permissions"), data),
+  batchAdapterConfigPreview: (agentIds: string[]) =>
+    api.post<AgentAdapterConfigBatchPreview>("/agents/batch/adapter-config/preview", {
+      agentIds,
+    }),
+  batchAdapterConfig: (agentIds: string[], values: Record<string, string | null>) =>
+    api.post<AgentAdapterConfigBatchResult>("/agents/batch/adapter-config", {
+      agentIds,
+      values,
+    }),
   instructionsBundle: (id: string, companyId?: string) =>
     api.get<AgentInstructionsBundle>(agentPath(id, companyId, "/instructions-bundle")),
   updateInstructionsBundle: (

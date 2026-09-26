@@ -367,6 +367,9 @@ export {
   testAdapterEnvironmentSchema,
   agentPermissionsSchema,
   updateAgentPermissionsSchema,
+  AGENT_ADAPTER_CONFIG_BATCH_MAX_AGENTS,
+  agentAdapterConfigBatchPreviewSchema,
+  agentAdapterConfigBatchUpdateSchema,
   type CreateAgent,
   type BuiltInAgentProvision,
   type BuiltInAgentReset,
@@ -384,6 +387,8 @@ export {
   type ResetAgentSession,
   type TestAdapterEnvironment,
   type UpdateAgentPermissions,
+  type AgentAdapterConfigBatchPreviewRequest,
+  type AgentAdapterConfigBatchUpdateRequest,
 } from "./agent.js";
 
 export {
