@@ -837,6 +837,13 @@ export function pipelineRoutes(db: Db, options: Parameters<typeof pipelineServic
         const details = httpError.details && typeof httpError.details === "object" && !Array.isArray(httpError.details)
           ? httpError.details as Record<string, unknown>
           : null;
+        if (!(error instanceof HttpError)) {
+          console.error("[pipelines/review-cases/bulk] unexpected per-item failure", {
+            companyId,
+            caseId: item.caseId,
+            error,
+          });
+        }
         results.push({
           caseId: item.caseId,
           ok: false,

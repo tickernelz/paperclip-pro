@@ -171,6 +171,10 @@ describeEmbeddedPostgres("pipeline routes", () => {
     isInstanceAdmin: true,
   };
 
+  function otherCompanyActor(): Express.Request["actor"] {
+    return { type: "agent", agentId: randomUUID(), companyId: randomUUID(), runId: randomUUID(), source: "agent_key" };
+  }
+
   it("exposes the pipeline and case route surface", async () => {
     const company = await seedCompany();
     const http = request(app(boardActor));
@@ -1272,5 +1276,193 @@ describeEmbeddedPostgres("pipeline routes", () => {
     expect(res.body.code).toBe("version_conflict");
     expect(res.body.details.version).toBe(2);
     expect(res.body.details.stage.key).toBe("intake");
+  });
+
+  it("serves the attention feed and rejects a non-positive limit", async () => {
+    const company = await seedCompany();
+    const http = request(app(boardActor));
+    const pipeline = await http
+      .post(`/api/companies/${company.id}/pipelines`)
+      .send({
+        key: "attention",
+        name: "Attention",
+        stages: [
+          { key: "intake", name: "Intake", kind: "open", position: 100 },
+          {
+            key: "review",
+            name: "Review",
+            kind: "review",
+            position: 200,
+            config: { approveToStageKey: "done", rejectToStageKey: "cancelled" },
+          },
+          { key: "done", name: "Done", kind: "done", position: 900 },
+          { key: "cancelled", name: "Cancelled", kind: "cancelled", position: 1000 },
+        ],
+      })
+      .expect(201);
+    const created = await http
+      .post(`/api/pipelines/${pipeline.body.id}/cases`)
+      .send({ caseKey: "attention-case", title: "Attention case" })
+      .expect(201);
+    await http.post(`/api/cases/${created.body.case.id}/transition`).send({ toStageKey: "review", expectedVersion: 1 }).expect(200);
+
+    const attention = await http.get(`/api/companies/${company.id}/pipelines-attention`).expect(200);
+    expect(attention.body.counts.reviews).toBe(1);
+    expect(attention.body.reviews[0].case.id).toBe(created.body.case.id);
+    expect(attention.body.reviews[0].review).toMatchObject({
+      approveToStageKey: "done",
+      rejectToStageKey: "cancelled",
+      reviewerKind: "human",
+    });
+    expect(attention.body.reviews[0].case.pipeline.key).toBe("attention");
+
+    const badLimit = await http.get(`/api/companies/${company.id}/pipelines-attention?limit=0`);
+    expect(badLimit.status).toBe(400);
+    const nonNumericLimit = await http.get(`/api/companies/${company.id}/pipelines-attention?limit=abc`);
+    expect(nonNumericLimit.status).toBe(400);
+
+    const wrongCompanyHttp = request(app(otherCompanyActor()));
+    expect((await wrongCompanyHttp.get(`/api/companies/${company.id}/pipelines-attention`)).status).toBe(404);
+  });
+
+  it("serves the company case-event feed with type filters, paging, and query validation", async () => {
+    const company = await seedCompany();
+    const http = request(app(boardActor));
+    const pipeline = await http
+      .post(`/api/companies/${company.id}/pipelines`)
+      .send({ key: "events", name: "Events" })
+      .expect(201);
+    const created = await http
+      .post(`/api/pipelines/${pipeline.body.id}/cases`)
+      .send({ caseKey: "event-case", title: "Event case" })
+      .expect(201);
+    await http.post(`/api/cases/${created.body.case.id}/transition`).send({ toStageKey: "done", expectedVersion: 1 }).expect(200);
+
+    const all = await http.get(`/api/companies/${company.id}/case-events`).expect(200);
+    expect(all.body.items.map((row: { type: string }) => row.type).sort()).toEqual(["ingested", "transitioned"]);
+    expect(all.body.pagination).toMatchObject({ offset: 0, hasMore: false, nextOffset: null });
+
+    const filtered = await http.get(`/api/companies/${company.id}/case-events?types=ingested`).expect(200);
+    expect(filtered.body.items).toHaveLength(1);
+    expect(filtered.body.items[0]).toMatchObject({
+      type: "ingested",
+      case: { id: created.body.case.id },
+      pipeline: { key: "events" },
+    });
+
+    const transitioned = await http.get(`/api/companies/${company.id}/case-events?types=transitioned`).expect(200);
+    expect(transitioned.body.items).toHaveLength(1);
+    expect(transitioned.body.items[0].toStage.key).toBe("done");
+
+    const paged = await http.get(`/api/companies/${company.id}/case-events?limit=1`).expect(200);
+    expect(paged.body.items).toHaveLength(1);
+    expect(paged.body.pagination).toMatchObject({ hasMore: true, nextOffset: 1 });
+
+    expect((await http.get(`/api/companies/${company.id}/case-events?limit=0`)).status).toBe(400);
+    expect((await http.get(`/api/companies/${company.id}/case-events?limit=abc`)).status).toBe(400);
+    expect((await http.get(`/api/companies/${company.id}/case-events?offset=-1`)).status).toBe(400);
+    const badType = await http.get(`/api/companies/${company.id}/case-events?types=Not-A-Type`);
+    expect(badType.status).toBe(400);
+
+    const wrongCompanyHttp = request(app(otherCompanyActor()));
+    expect((await wrongCompanyHttp.get(`/api/companies/${company.id}/case-events`)).status).toBe(404);
+  });
+
+  it("serves pipeline setup health, the case children tree, and case outputs", async () => {
+    const company = await seedCompany();
+    const http = request(app(boardActor));
+    const pipeline = await http
+      .post(`/api/companies/${company.id}/pipelines`)
+      .send({ key: "health", name: "Health" })
+      .expect(201);
+    const pipelineId = pipeline.body.id as string;
+    const parent = await http
+      .post(`/api/pipelines/${pipelineId}/cases`)
+      .send({ caseKey: "parent", title: "Parent" })
+      .expect(201);
+    const child = await http
+      .post(`/api/pipelines/${pipelineId}/cases`)
+      .send({ caseKey: "child", title: "Child", parentCaseId: parent.body.case.id })
+      .expect(201);
+    const parentCaseId = parent.body.case.id as string;
+    const childCaseId = child.body.case.id as string;
+    await http.post(`/api/cases/${childCaseId}/transition`).send({ toStageKey: "done", expectedVersion: 1 }).expect(200);
+
+    const health = await http.get(`/api/pipelines/${pipelineId}/health`).expect(200);
+    expect(health.body.pipelineId).toBe(pipelineId);
+    expect(Array.isArray(health.body.warnings)).toBe(true);
+    expect(typeof health.body.ok).toBe("boolean");
+
+    const tree = await http.get(`/api/cases/${parentCaseId}/children/tree`).expect(200);
+    expect(tree.body.case.id).toBe(parentCaseId);
+    expect(tree.body.rollup).toMatchObject({ total: 1, done: 1, dropped: 0, inMotion: 0 });
+    expect(tree.body.childGroups).toHaveLength(1);
+    expect(tree.body.childGroups[0].cases[0].id).toBe(childCaseId);
+
+    const outputs = await http.get(`/api/cases/${parentCaseId}/outputs`).expect(200);
+    expect(outputs.body).toBeTruthy();
+
+    const wrongCompanyHttp = request(app(otherCompanyActor()));
+    expect((await wrongCompanyHttp.get(`/api/pipelines/${pipelineId}/health`)).status).toBe(404);
+    expect((await wrongCompanyHttp.get(`/api/cases/${parentCaseId}/children/tree`)).status).toBe(404);
+    expect((await wrongCompanyHttp.get(`/api/cases/${parentCaseId}/outputs`)).status).toBe(404);
+    expect((await http.get(`/api/pipelines/${randomUUID()}/health`)).status).toBe(404);
+    expect((await http.get(`/api/cases/${randomUUID()}/outputs`)).status).toBe(404);
+  });
+
+  it("records why a gated auto-advance was suppressed instead of silently stranding the case", async () => {
+    const company = await seedCompany();
+    const http = request(app(boardActor));
+    const pipeline = await http
+      .post(`/api/companies/${company.id}/pipelines`)
+      .send({
+        key: "auto-advance",
+        name: "Auto advance",
+        stages: [
+          { key: "intake", name: "Intake", kind: "open", position: 100 },
+          {
+            key: "producing",
+            name: "Producing",
+            kind: "working",
+            position: 200,
+            config: { requireChildrenTerminal: true, autoAdvanceOnChildrenTerminal: "published" },
+          },
+          { key: "published", name: "Published", kind: "done", position: 900, config: { disabled: true } },
+          { key: "cancelled", name: "Cancelled", kind: "cancelled", position: 1000 },
+        ],
+      })
+      .expect(201);
+    const pipelineId = pipeline.body.id as string;
+    const parent = await http
+      .post(`/api/pipelines/${pipelineId}/cases`)
+      .send({ caseKey: "parent", title: "Parent" })
+      .expect(201);
+    const child = await http
+      .post(`/api/pipelines/${pipelineId}/cases`)
+      .send({ caseKey: "child", title: "Child", parentCaseId: parent.body.case.id })
+      .expect(201);
+    const parentCaseId = parent.body.case.id as string;
+    await http.post(`/api/cases/${child.body.case.id}/transition`).send({ toStageKey: "cancelled", expectedVersion: 1 }).expect(200);
+
+    await http.post(`/api/cases/${parentCaseId}/transition`).send({ toStageKey: "producing", expectedVersion: 1 }).expect(200);
+
+    const detail = await http.get(`/api/cases/${parentCaseId}`).expect(200);
+    expect(detail.body.stage.key).toBe("producing");
+
+    const events = await db
+      .select()
+      .from(pipelineCaseEvents)
+      .where(eq(pipelineCaseEvents.caseId, parentCaseId))
+      .orderBy(pipelineCaseEvents.createdAt);
+    const blocked = events.filter((row) => row.type === "auto_advance_blocked");
+    expect(blocked).toHaveLength(1);
+    expect(blocked[0]!.actorType).toBe("system");
+    expect(blocked[0]!.payload).toMatchObject({
+      trigger: "stage_entry",
+      toStageKey: "published",
+      status: 422,
+      code: "stage_disabled",
+    });
+    expect(typeof blocked[0]!.payload.message).toBe("string");
   });
 });
