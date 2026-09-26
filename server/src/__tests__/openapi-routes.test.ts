@@ -957,3 +957,27 @@ describe("heartbeat run ID OpenAPI contract", () => {
     expect(checked).toBe(12);
   });
 });
+
+describe("instance-admin smoke-lab operations", () => {
+  const spec = buildOpenApiSpec();
+  const operation = (path: string, method: string) =>
+    (spec.paths[path] as Record<string, Record<string, Record<string, unknown>>>)[method]
+      ["x-paperclip-authorization"] as { actor?: string; instanceAdmin?: boolean } | undefined;
+
+  it("publishes the destructive smoke-lab writers as instance-admin, not merely board", () => {
+    const paths = [
+      ["/api/companies/{companyId}/smoke-lab/install-fixtures", "post"],
+      ["/api/companies/{companyId}/smoke-lab/services/start", "post"],
+      ["/api/companies/{companyId}/smoke-lab/reset", "post"],
+    ] as const;
+    for (const [path, method] of paths) {
+      expect(operation(path, method), path).toEqual({ actor: "board", instanceAdmin: true });
+    }
+  });
+
+  it("keeps the sidecar stop at board level so a member can always halt it", () => {
+    expect(operation("/api/companies/{companyId}/smoke-lab/services/stop", "post")).toEqual({
+      actor: "board",
+    });
+  });
+});

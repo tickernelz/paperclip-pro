@@ -543,7 +543,7 @@ export const experimentalApiMetadata: Record<string, { successStatuses: number[]
     "successStatuses": [
       200
     ],
-    "boardOnly": true,
+    "boardOnly": false,
     "source": "server/src/routes/smoke-lab.ts"
   },
   "POST /api/companies/{companyId}/smoke-lab/services/stop": {
@@ -557,7 +557,7 @@ export const experimentalApiMetadata: Record<string, { successStatuses: number[]
     "successStatuses": [
       200
     ],
-    "boardOnly": true,
+    "boardOnly": false,
     "source": "server/src/routes/smoke-lab.ts"
   },
   "GET /api/companies/{companyId}/smoke-lab/runs": {
@@ -599,7 +599,7 @@ export const experimentalApiMetadata: Record<string, { successStatuses: number[]
     "successStatuses": [
       200
     ],
-    "boardOnly": true,
+    "boardOnly": false,
     "source": "server/src/routes/smoke-lab.ts"
   }
 };

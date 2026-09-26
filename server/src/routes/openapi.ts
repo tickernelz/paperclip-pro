@@ -1543,6 +1543,9 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "POST /api/admin/users/{userId}/promote-instance-admin",
   "POST /api/admin/users/{userId}/demote-instance-admin",
   "PUT /api/admin/users/{userId}/company-access",
+  "POST /api/companies/{companyId}/smoke-lab/services/start",
+  "POST /api/companies/{companyId}/smoke-lab/install-fixtures",
+  "POST /api/companies/{companyId}/smoke-lab/reset",
 ]);
 
 const CREATED_OPERATIONS = new Set([

@@ -9897,42 +9897,6 @@
     }
   },
   {
-    "name": "paperclipCreateSmokeLabInstallFixture",
-    "operationId": "POST /api/companies/{companyId}/smoke-lab/install-fixtures",
-    "method": "POST",
-    "path": "/companies/{companyId}/smoke-lab/install-fixtures",
-    "description": "Create a smoke lab install fixture.",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "Experimental"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertCompanyAccess",
-      "assertInstanceAdmin",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:165",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
     "name": "paperclipCreateSmokeLabRun",
     "operationId": "POST /api/companies/{companyId}/smoke-lab/runs",
     "method": "POST",
@@ -29845,42 +29809,6 @@
     }
   },
   {
-    "name": "paperclipResetSmokeLab",
-    "operationId": "POST /api/companies/{companyId}/smoke-lab/reset",
-    "method": "POST",
-    "path": "/companies/{companyId}/smoke-lab/reset",
-    "description": "Reset a smoke lab.",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "Experimental"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertCompanyAccess",
-      "assertInstanceAdmin",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:269",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
     "name": "paperclipResolveBudgetIncident",
     "operationId": "POST /api/companies/{companyId}/budget-incidents/{incidentId}/resolve",
     "method": "POST",
@@ -34808,42 +34736,6 @@
         ]
       }
     }
-  },
-  {
-    "name": "paperclipStartSmokeLabService",
-    "operationId": "POST /api/companies/{companyId}/smoke-lab/services/start",
-    "method": "POST",
-    "path": "/companies/{companyId}/smoke-lab/services/start",
-    "description": "Start a smoke lab service.",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "Experimental"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertCompanyAccess",
-      "assertInstanceAdmin",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertInstanceAdmin@smoke-lab.ts:123",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
   },
   {
     "name": "paperclipStartToolConnection",
