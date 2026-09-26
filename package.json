@@ -27,6 +27,7 @@
     "test:runner-acceptance:typecheck": "tsc -p tests/runner-acceptance/tsconfig.json",
     "test:run:general": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode general",
     "test:run:serialized": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode serialized",
+    "test:run:docs": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode docs",
     "db:generate": "pnpm --filter @tickernelz/paperclip-pro-db generate",
     "db:migrate": "pnpm --filter @tickernelz/paperclip-pro-db migrate",
     "issue-references:backfill": "pnpm run preflight:workspace-links && tsx scripts/backfill-issue-reference-mentions.ts",

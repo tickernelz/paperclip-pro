@@ -25,12 +25,21 @@ dependency resolution on every run.
 ## CI
 
 `.github/workflows/ci.yml` is the only workflow on pull requests and pushes to
-`main`. It runs `Policy`, `Typecheck`, `Build`, `Verify Paperclip Runner`, the
-sharded `Tests` and `E2E` matrices, and a `verify` aggregate that fails when any
-lane does. Shared setup lives in `.github/actions/setup-workspace`; the pnpm store
-and the Runner Rust cache are written only by pushes to `main` and restored
-everywhere else. `.github/workflows/sentry-contract.yml` runs separately and only
-when the Sentry integration files change.
+`main`. A `scope` job classifies the changed files first. When the change touches
+only documentation (`**/*.md`, `docs/**`, `doc/**`, `LICENSE`, the issue and pull
+request templates) the heavy lanes stay skipped and a `Docs` lane runs instead:
+the static gates plus the suites that read repository documentation, selected by
+`scripts/docs-lane-suites.mjs` and run with `pnpm test:run:docs`. Everything else
+runs `Policy`, `Typecheck`, `Build`, `Verify Paperclip Runner`, the sharded
+`Tests` and `E2E` matrices. The `verify` aggregate fails when any lane that ran
+did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
+are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
+release gate requires a completed `ci.yml` run on the exact tagged commit.
+Shared setup lives in `.github/actions/setup-workspace` and the static gates in
+`.github/actions/policy-checks`; the pnpm store and the Runner Rust cache are
+written only by pushes to `main` and restored everywhere else.
+`.github/workflows/sentry-contract.yml` runs separately and only when the Sentry
+integration files change.
 
 ## Start Dev
 
@@ -287,6 +296,18 @@ pnpm test:release-smoke
 ```
 
 These browser suites are intended for targeted local verification and CI, not the default agent/human test command.
+
+The documentation fast lane runs alone with:
+
+```sh
+pnpm test:run:docs
+```
+
+`pnpm test:run:docs` runs the suites whose assertions read repository
+documentation and repository skill markdown, listed in
+`scripts/docs-lane-suites.mjs`. CI's `Docs` lane uses it when a change touches
+documentation only. `node --test scripts/__tests__/docs-lane-suites.test.mjs`
+fails when a new documentation-reading suite is not listed.
 
 The default E2E configuration builds the UI into `server/ui-dist` before starting
 its throwaway instance and serves that build with

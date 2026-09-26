@@ -321,6 +321,23 @@ test("shard flags are rejected for the native-runner group", () => {
   assert.notEqual(result.status, 0, "the native-runner lane is a single suite and must not accept shard flags");
 });
 
+test("the docs mode reports the documentation-reading suites and nothing else", () => {
+  const docs = dryRunJson(["--mode", "docs"]);
+  assert.ok(docs.docsLaneVitestSuites.length > 0, "the docs mode must report its vitest suites");
+  assert.ok(docs.docsLaneNodeTestSuites.length > 0, "the docs mode must report its node:test suites");
+  assert.equal(docs.selectedGeneralServerSuites, null, "the docs mode must not select general-server suites");
+  assert.equal(docs.selectedSerializedSuites.length, docs.serializedSuiteCount,
+    "the docs mode must not select a serialized shard");
+
+  const other = dryRunJson([]);
+  assert.equal(other.docsLaneVitestSuites, null, "only the docs mode reports the docs lane suites");
+});
+
+test("the docs mode rejects shard flags and an unknown group", () => {
+  assert.notEqual(dryRun(["--mode", "docs", "--shard-index", "0", "--shard-count", "2"]).status, 0);
+  assert.notEqual(dryRun(["--mode", "docs", "--group", "general-chat"]).status, 0);
+});
+
 const laneWrapper = path.join(repoRoot, "packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs");
 
 function wrapperPlan(args, envOverrides = {}) {
