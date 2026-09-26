@@ -547,6 +547,25 @@ A create request may carry the override in one round trip:
 validated against the assignee's adapter schema exactly like the PUT and
 rejected with 422 when it does not fit.
 
+### Where the picker appears
+
+Three surfaces share one control
+(`ui/src/components/task-chat/TaskModelOverrideControl.tsx`):
+
+- The task chat composer of an existing task. It reads and writes the issue.
+- The New Task modal, next to the Auto mode chip. The task does not exist yet,
+  so the option lists come from
+  `POST /api/agents/batch/adapter-config/preview` for the chosen assignee,
+  filtered to `model` and `thinking`, and the choice travels in the create
+  request as `modelOverride`. Without an assignee the control is disabled. The
+  two inheritance switches sit in the picker's footer here, because a new task
+  is the only place where they apply before a run exists.
+- The agent chat composer. It is scoped to the conversation issue
+  (`issues.conversation_agent_id`), so the choice survives for that chat. A
+  chat whose issue does not exist yet resolves it when the picker opens, which
+  is the same write the first message performs. Chat-created tasks have no
+  parent, so the subtask switches stay hidden there.
+
 ## Changing model or thinking for many agents at once
 
 The Agents list has a checkbox per row plus a select-all for the current filter
