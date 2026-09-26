@@ -134,6 +134,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       : null;
   const onboardingTriggered = useRef(false);
   const lastMainScrollTop = useRef(0);
+  const lastMainScrollHeight = useRef<number | null>(null);
   const previousPathname = useRef<string | null>(null);
   const mainContentRef = useRef<HTMLElement | null>(null);
   const scrollMemory = useRef(new NavigationScrollMemory());
@@ -468,6 +469,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       return;
     }
     lastMainScrollTop.current = 0;
+    lastMainScrollHeight.current = null;
     setMobileNavVisible(true);
   }, [isMobile]);
 
@@ -517,7 +519,14 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
   }, [isMobile, sidebarOpen, setSidebarOpen]);
 
   const updateMobileNavVisibility = useCallback((currentTop: number) => {
+    const scrollHeight = (document.scrollingElement ?? document.documentElement).scrollHeight;
+    const previousScrollHeight = lastMainScrollHeight.current;
     const delta = currentTop - lastMainScrollTop.current;
+
+    lastMainScrollTop.current = currentTop;
+    lastMainScrollHeight.current = scrollHeight;
+
+    if (previousScrollHeight !== null && previousScrollHeight !== scrollHeight) return;
 
     if (currentTop <= 24) {
       setMobileNavVisible(true);
@@ -526,14 +535,13 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     } else if (delta < -8) {
       setMobileNavVisible(true);
     }
-
-    lastMainScrollTop.current = currentTop;
   }, []);
 
   useEffect(() => {
     if (!isMobile) {
       setMobileNavVisible(true);
       lastMainScrollTop.current = 0;
+      lastMainScrollHeight.current = null;
       return;
     }
 

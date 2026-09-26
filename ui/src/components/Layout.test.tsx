@@ -1374,4 +1374,43 @@ describe("Layout", () => {
       root.unmount();
     });
   });
+
+  it("keeps the mobile nav hidden when a dock reflow re-clamps the window scroll", async () => {
+    currentPathname = "/PAP/issues/PAP-1";
+    mockSidebarState.isMobile = true;
+    mockSidebarState.sidebarOpen = false;
+    let scrollHeight = 2000;
+    Object.defineProperty(document.documentElement, "scrollHeight", {
+      get: () => scrollHeight,
+      configurable: true,
+    });
+    const setScrollY = (value: number) => {
+      Object.defineProperty(window, "scrollY", { value, configurable: true });
+    };
+    setScrollY(0);
+
+    const { root, rootEl } = await renderLayoutRoot();
+    const main = rootEl.querySelector("main");
+
+    setScrollY(400);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+    expect(main?.className).toContain("pb-(--tc-composer-hidden-nav-offset)");
+
+    scrollHeight = 1954;
+    setScrollY(354);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+    });
+
+    expect(main?.className).toContain("pb-(--tc-composer-hidden-nav-offset)");
+    expect(main?.className).not.toContain("pb-(--sz-calc-14)");
+
+    await act(async () => {
+      root.unmount();
+    });
+    Reflect.deleteProperty(document.documentElement, "scrollHeight");
+    setScrollY(0);
+  });
 });
