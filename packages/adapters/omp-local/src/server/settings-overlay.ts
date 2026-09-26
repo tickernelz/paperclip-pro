@@ -20,6 +20,7 @@ export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record
     prewalk: { enabled: noPrewalk ? false : asBoolean(config.prewalk, false) },
     lsp: { enabled: !asBoolean(config.noLsp, false) },
     skills: { enabled: !asBoolean(config.noSkills, false) },
+    task: { maxRecursionDepth: 0 },
   };
 }
 
