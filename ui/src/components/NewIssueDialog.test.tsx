@@ -62,6 +62,7 @@ const mockProjectsApi = vi.hoisted(() => ({
 const mockAgentsApi = vi.hoisted(() => ({
   list: vi.fn(),
   adapterModels: vi.fn(),
+  batchAdapterConfigPreview: vi.fn(),
 }));
 
 const mockAuthApi = vi.hoisted(() => ({
@@ -231,8 +232,19 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/toggle-switch", () => ({
-  ToggleSwitch: ({ checked, onCheckedChange }: { checked: boolean; onCheckedChange: () => void }) => (
-    <button type="button" aria-pressed={checked} onClick={onCheckedChange}>toggle</button>
+  ToggleSwitch: ({
+    checked,
+    onCheckedChange,
+    ...props
+  }: { checked: boolean; onCheckedChange: (next: boolean) => void } & ComponentProps<"button">) => (
+    <button
+      type="button"
+      aria-pressed={checked}
+      onClick={() => onCheckedChange(!checked)}
+      {...props}
+    >
+      toggle
+    </button>
   ),
 }));
 
@@ -358,6 +370,11 @@ describe("NewIssueDialog", () => {
     ]);
     mockAgentsApi.list.mockResolvedValue([]);
     mockAgentsApi.adapterModels.mockResolvedValue([]);
+    mockAgentsApi.batchAdapterConfigPreview.mockReset();
+    mockAgentsApi.batchAdapterConfigPreview.mockResolvedValue({
+      fields: [],
+      agents: [],
+    });
     mockAuthApi.getSession.mockResolvedValue({ user: { id: "user-1" } });
     mockAssetsApi.uploadImage.mockResolvedValue({ contentPath: "/uploads/asset.png" });
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableIsolatedWorkspaces: false });
@@ -1573,6 +1590,190 @@ describe("NewIssueDialog", () => {
 
       expect(statusOptionIconClass("Todo", "Executable - assignee will be woken")).toContain("text-amber-600");
       expect(statusOptionIconClass("In Progress")).toContain("text-blue-600");
+
+      act(() => root.unmount());
+    });
+  });
+
+  describe("per-task model override", () => {
+    const preview = {
+      fields: [
+        {
+          key: "model",
+          label: "Model",
+          hint: null,
+          freeText: true,
+          options: [
+            { value: "vendor/fast", label: "Fast" },
+            { value: "vendor/deep", label: "Deep" },
+          ],
+        },
+        {
+          key: "thinking",
+          label: "Thinking",
+          hint: null,
+          freeText: false,
+          options: [
+            { value: "low", label: "low" },
+            { value: "high", label: "high" },
+          ],
+        },
+        {
+          key: "provider",
+          label: "Provider",
+          hint: null,
+          freeText: false,
+          options: [{ value: "vendor", label: "Vendor" }],
+        },
+      ],
+      agents: [
+        {
+          agentId: "agent-1",
+          name: "Arif",
+          adapterType: "omp_local",
+          eligible: true,
+          reason: null,
+          current: { model: "vendor/agent-default", thinking: "low" },
+        },
+      ],
+    };
+
+    function withAssignee() {
+      dialogState.newIssueDefaults = {
+        title: "Override task",
+        assigneeAgentId: "agent-1",
+      };
+      mockAgentsApi.list.mockResolvedValue([
+        {
+          id: "agent-1",
+          name: "Arif",
+          status: "active",
+          adapterType: "omp_local",
+          adapterConfig: { model: "vendor/agent-default" },
+          runtimeConfig: {},
+          permissions: {},
+        },
+      ]);
+      mockAgentsApi.batchAdapterConfigPreview.mockResolvedValue(preview);
+    }
+
+    function node(testId: string): HTMLElement | null {
+      return container.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+    }
+
+    async function submit() {
+      const submitButton = Array.from(container.querySelectorAll("button")).find(
+        (button) => button.textContent?.includes("Create Task"),
+      );
+      await act(async () => {
+        submitButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+      await flush();
+    }
+
+    async function click(testId: string) {
+      await act(async () => {
+        node(testId)!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+      await flush();
+    }
+
+    it("offers only the model and thinking options the assignee's adapter publishes", async () => {
+      withAssignee();
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        expect(node("task-model-override-option-model-vendor/deep")).not.toBeNull();
+      });
+
+      expect(node("task-model-override-option-thinking-high")).not.toBeNull();
+      expect(node("task-model-override-section-provider")).toBeNull();
+      expect(mockAgentsApi.batchAdapterConfigPreview).toHaveBeenCalledWith(["agent-1"]);
+      expect(node("task-model-override-effective-model")?.textContent).toBe(
+        "vendor/agent-default",
+      );
+
+      act(() => root.unmount());
+    });
+
+    it("sends the picked model, thinking and inheritance with the create request", async () => {
+      withAssignee();
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        expect(node("task-model-override-option-model-vendor/deep")).not.toBeNull();
+      });
+
+      await click("task-model-override-option-model-vendor/deep");
+      await click("task-model-override-option-thinking-high");
+      await click("new-issue-model-override-scope-new_and_existing");
+      await submit();
+
+      expect(mockIssuesApi.create).toHaveBeenCalledWith(
+        "company-1",
+        expect.objectContaining({
+          modelOverride: {
+            model: "vendor/deep",
+            thinking: "high",
+            inheritToSubtasks: true,
+            subtaskScope: "new_and_existing",
+          },
+        }),
+      );
+
+      act(() => root.unmount());
+    });
+
+    it("drops the subtask scope row and inherits nothing once the switch is off", async () => {
+      withAssignee();
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        expect(node("task-model-override-option-model-vendor/fast")).not.toBeNull();
+      });
+
+      await click("task-model-override-option-model-vendor/fast");
+      await click("new-issue-model-override-inherit");
+      expect(node("new-issue-model-override-scope-new")).toBeNull();
+      await submit();
+
+      expect(mockIssuesApi.create).toHaveBeenCalledWith(
+        "company-1",
+        expect.objectContaining({
+          modelOverride: {
+            model: "vendor/fast",
+            inheritToSubtasks: false,
+            subtaskScope: "new",
+          },
+        }),
+      );
+
+      act(() => root.unmount());
+    });
+
+    it("creates the task without a model override when the picker is untouched", async () => {
+      withAssignee();
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        expect(node("task-model-override-option-model-vendor/deep")).not.toBeNull();
+      });
+
+      await submit();
+
+      expect(mockIssuesApi.create).toHaveBeenCalledTimes(1);
+      expect(mockIssuesApi.create.mock.calls[0][1]).not.toHaveProperty("modelOverride");
+
+      act(() => root.unmount());
+    });
+
+    it("disables the picker until an agent assignee is chosen", async () => {
+      dialogState.newIssueDefaults = { title: "No assignee yet" };
+      const { root } = renderDialog(container);
+      await waitForAssertion(() => {
+        expect(node("task-chat-composer-model-override")).not.toBeNull();
+      });
+
+      const trigger = node("task-chat-composer-model-override") as HTMLButtonElement;
+      expect(trigger.disabled).toBe(true);
+      expect(trigger.title).toBe("Pick an agent assignee first");
+      expect(mockAgentsApi.batchAdapterConfigPreview).not.toHaveBeenCalled();
 
       act(() => root.unmount());
     });
