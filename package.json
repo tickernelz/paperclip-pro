@@ -90,8 +90,8 @@
     "connections:ingest-app-definitions": "node scripts/ingest-app-definitions.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "agentmail": "^0.5.14",
+    "@playwright/test": "^1.63.0",
+    "agentmail": "^0.5.27",
     "cross-env": "^10.1.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
