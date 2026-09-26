@@ -1975,6 +1975,13 @@
       "when": 1790018362070,
       "tag": "0283_jittery_psynapse",
       "breakpoints": true
+    },
+    {
+      "idx": 284,
+      "version": "7",
+      "when": 1790451475785,
+      "tag": "0284_fearless_stranger",
+      "breakpoints": true
     }
   ]
 }

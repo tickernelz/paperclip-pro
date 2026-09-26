@@ -1501,6 +1501,49 @@ async function writeCaseEvent(
   return event!;
 }
 
+async function recordSuppressedAutoAdvance(
+  db: PipelineDb,
+  input: {
+    companyId: string;
+    caseId: string;
+    fromStageId: string;
+    toStageKey: string;
+    trigger: string;
+    error: unknown;
+  },
+) {
+  const httpError = input.error instanceof HttpError ? input.error : null;
+  const details =
+    httpError?.details && typeof httpError.details === "object" && !Array.isArray(httpError.details)
+      ? (httpError.details as Record<string, unknown>)
+      : {};
+  try {
+    await writeCaseEvent(db, {
+      companyId: input.companyId,
+      caseId: input.caseId,
+      type: "auto_advance_blocked",
+      actor: { type: "system" },
+      fromStageId: input.fromStageId,
+      payload: {
+        trigger: input.trigger,
+        toStageKey: input.toStageKey,
+        status: httpError?.status ?? null,
+        code: typeof details.code === "string" ? details.code : null,
+        message: httpError?.message ?? String(input.error),
+      },
+    });
+  } catch (recordError) {
+    // Recording is observability, not business logic: it must never roll back
+    // the transition that already succeeded. Losing the record is logged.
+    console.error("[pipelines/auto-advance] could not record blocked auto-advance", {
+      companyId: input.companyId,
+      caseId: input.caseId,
+      toStageKey: input.toStageKey,
+      recordError,
+    });
+  }
+}
+
 async function getPipelineOrThrow(db: PipelineDb, companyId: string, pipelineId: string) {
   const row = await db
     .select()
@@ -3399,6 +3442,14 @@ export function pipelineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeu
       // Best-effort: an unsatisfied gate (drift, approval) on the chained
       // advance must not roll back the transition that entered this stage.
       if (!(error instanceof HttpError)) throw error;
+      await recordSuppressedAutoAdvance(tx, {
+        companyId: input.companyId,
+        caseId: input.caseRow.id,
+        fromStageId: input.stage.id,
+        toStageKey,
+        trigger: "stage_entry",
+        error,
+      });
     }
   }
 
@@ -3458,6 +3509,14 @@ export function pipelineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeu
         // Best-effort: an unsatisfied gate (drift, approval, blocker) on the
         // parent advance must not roll back the child transition that triggered it.
         if (!(error instanceof HttpError)) throw error;
+        await recordSuppressedAutoAdvance(tx, {
+          companyId,
+          caseId: ancestor.case.id,
+          fromStageId: ancestor.stage.id,
+          toStageKey,
+          trigger: "children_terminal",
+          error,
+        });
       }
     }
   }

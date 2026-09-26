@@ -1173,7 +1173,17 @@ describeEmbeddedPostgres("pipelineService", () => {
     expect(freshRoot!.terminalChildCount).toBe(1);
     expect(freshChild!.terminalKind).toBe("done");
     const rootEvents = await svc.listCaseEvents(company.id, root.case.id);
-    expect(rootEvents.map((event) => event.type)).toEqual(["ingested", "blockers_set", "children_terminal"]);
+    expect(rootEvents.map((event) => event.type)).toEqual([
+      "ingested",
+      "blockers_set",
+      "children_terminal",
+      "auto_advance_blocked",
+    ]);
+    const blockedEvent = rootEvents.find((event) => event.type === "auto_advance_blocked")!;
+    expect(blockedEvent.actorType).toBe("system");
+    expect(blockedEvent.payload).toMatchObject({ trigger: "children_terminal", toStageKey: "done" });
+    expect(typeof blockedEvent.payload.code).toBe("string");
+    expect(typeof blockedEvent.payload.message).toBe("string");
   });
 
   it("records suggestion supersede, accept, and dismiss lifecycles", async () => {

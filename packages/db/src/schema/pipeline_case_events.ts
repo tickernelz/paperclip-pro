@@ -49,6 +49,7 @@ export const pipelineCaseEvents = pgTable(
         'blockers_set',
         'blockers_resolved',
         'children_terminal',
+        'auto_advance_blocked',
         'upstream_drift',
         'drift_acknowledged'
       )`,
