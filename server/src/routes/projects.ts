@@ -22,7 +22,7 @@ import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } fr
 import { trackProjectCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { accessService, projectService, logActivity, workspaceOperationService } from "../services/index.js";
-import { conflict, forbidden, unprocessable } from "../errors.js";
+import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { externalObjectService } from "../services/external-objects.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
@@ -226,6 +226,10 @@ export function projectRoutes(db: Db) {
     const id = req.params.id as string;
     const project = await getAccessibleResource(req, res, svc.getById(id), "Project not found");
     if (!project) return;
+    if (!(await assertProjectReadAllowed(req, res, project))) return;
+    if (!(await instanceSettings.getExperimental()).enableExternalObjects) {
+      throw notFound("External objects are not enabled");
+    }
     const summary = await externalObjectsSvc.getProjectSummary(project.id);
     res.json(summary);
   });

@@ -9825,6 +9825,12 @@ export function issueRoutes(
     res.json(workProducts);
   });
 
+  async function assertExternalObjectsEnabled() {
+    if (!(await instanceSettings.getExperimental()).enableExternalObjects) {
+      throw notFound("External objects are not enabled");
+    }
+  }
+
   router.get("/issues/:id/external-objects", async (req, res) => {
     const id = req.params.id as string;
     const issue = await getAccessibleResource(
@@ -9835,6 +9841,7 @@ export function issueRoutes(
     );
     if (!issue) return;
     if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    await assertExternalObjectsEnabled();
     const objects = await externalObjectsSvc.listForIssue(issue.id);
     res.json(objects);
   });
@@ -9849,6 +9856,7 @@ export function issueRoutes(
     );
     if (!issue) return;
     if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    await assertExternalObjectsEnabled();
     const summary = await externalObjectsSvc.getIssueSummary(issue.id);
     res.json(summary);
   });
@@ -9904,6 +9912,7 @@ export function issueRoutes(
       );
       if (!issue) return;
       if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
+      await assertExternalObjectsEnabled();
       const actor = getActorInfo(req);
       const results = await externalObjectsSvc.refreshIssueObjects(issue.id, {
         companyId: issue.companyId,

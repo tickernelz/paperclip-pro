@@ -37,10 +37,9 @@ const PAPERCLIP_CORE_SKILL_KEY = "paperclipai/paperclip/paperclip";
 export function toDesiredSkillPayload(
   keys: string[],
   pins: Record<string, string>,
-  versionPinsEnabled = true,
 ): Array<string | AgentDesiredSkillEntry> {
   return keys.map((key) => (
-    versionPinsEnabled && pins[key] ? { key, versionId: pins[key]! } : key
+    pins[key] ? { key, versionId: pins[key]! } : key
   ));
 }
 
@@ -197,7 +196,6 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
         syncSkills.mutate(toDesiredSkillPayload(
           skillDraft,
           versionPinsRef.current,
-          betaSkillsEnabled,
         ));
       }
     }, 250);

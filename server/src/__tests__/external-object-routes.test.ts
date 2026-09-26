@@ -274,6 +274,44 @@ describe("external object routes", () => {
     expect(mockExternalObjectsService.getIssueSummaries).not.toHaveBeenCalled();
   });
 
+  it("fails external object routes with 404 while the feature is disabled", async () => {
+    mockInstanceSettingsService.getExperimental.mockResolvedValue({
+      enableExternalObjects: false,
+    });
+    const app = await createApp(boardActor());
+
+    const list = await request(app).get(`/api/issues/${issueId}/external-objects`);
+    expect(list.status).toBe(404);
+    expect(list.body.error).toBe("External objects are not enabled");
+    expect(mockExternalObjectsService.listForIssue).not.toHaveBeenCalled();
+
+    const summary = await request(app).get(`/api/issues/${issueId}/external-object-summary`);
+    expect(summary.status).toBe(404);
+    expect(mockExternalObjectsService.getIssueSummary).not.toHaveBeenCalled();
+
+    const bulk = await request(app)
+      .post(`/api/companies/${companyId}/issues/external-object-summaries`)
+      .send({ issueIds: [issueId] });
+    expect(bulk.status).toBe(200);
+  });
+
+  it("refuses a disabled manual refresh without writing an activity row", async () => {
+    mockInstanceSettingsService.getExperimental.mockResolvedValue({
+      enableExternalObjects: false,
+    });
+    const { logActivity } = await import("../services/index.js");
+    const app = await createApp(ownerActor());
+
+    const res = await request(app)
+      .post(`/api/issues/${issueId}/external-objects/refresh`)
+      .send({});
+
+    expect(res.status).toBe(404);
+    expect(res.body.error).toBe("External objects are not enabled");
+    expect(mockExternalObjectsService.refreshIssueObjects).not.toHaveBeenCalled();
+    expect(logActivity).not.toHaveBeenCalled();
+  });
+
   it("requires active checkout ownership for agent manual refresh", async () => {
     const app = await createApp(peerActor());
 
