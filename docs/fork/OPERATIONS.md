@@ -280,24 +280,49 @@ paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
 ## 9. Releasing to npm
 
 One workflow does the whole release: **Release**
-(`.github/workflows/release.yml`), `workflow_dispatch` only, one job, no
-tests — the PR/main CI owns those. It builds once, packs each package once,
-publishes the packed tarballs in dependency order under the `next` dist-tag,
-waits for npm to expose the whole set, moves `latest` onto it, then tags the
-release commit and opens a GitHub release with notes generated since the
-previous `v*` tag.
+(`.github/workflows/release.yml`), one job, no tests — the PR/main CI owns
+those. It builds once, packs each package once, publishes the packed tarballs
+in dependency order under the `next` dist-tag, waits for npm to expose the
+whole set, moves `latest` onto it, then tags the release commit and opens a
+GitHub release with notes generated since the previous `v*` tag.
 
-Preview first, then publish:
+A release is triggered by pushing a `v*` tag. A dispatch stays available for
+previews and for resuming a partial publish.
+
+```bash
+./scripts/tag-release.sh --dry-run
+./scripts/tag-release.sh
+```
+
+`scripts/tag-release.sh` resolves the next free version the same way the
+workflow does (`./scripts/release.sh --print-version`), refuses a version whose
+tag already exists, checks that `ci.yml` is green on `origin/main` HEAD, then
+creates the annotated tag on that commit and pushes it.
+
+On a tag push the workflow:
+
+- takes the version from the tag name, which must be `v<YYYY.MDD.P>`;
+- runs with `dry_run=false` and `auth=token`;
+- fails unless the tagged commit is reachable from `origin/main`;
+- fails unless `ci.yml` completed successfully for that exact commit. A queued
+  or running CI run is polled for about 30 minutes, a completed non-success
+  fails immediately, and a commit with no CI run never publishes.
+
+The workflow never moves or deletes the tag, and the tag it creates in dispatch
+mode is pushed with `GITHUB_TOKEN`, which GitHub does not let re-trigger a
+workflow. `concurrency: release` keeps two releases from overlapping.
+
+Preview or resume through a dispatch:
 
 ```bash
 gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
   -f dry_run=true -f auth=token -f version=
 
 gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
-  -f dry_run=false -f auth=token -f version=
+  -f dry_run=false -f auth=token -f version=2026.925.3
 ```
 
-Inputs:
+Dispatch inputs:
 
 - `version` — empty resolves the UTC date slot `YYYY.MDD` plus the next patch
   not already published for `@tickernelz/paperclip-pro`, so a same-day rerun
@@ -311,8 +336,9 @@ Inputs:
 
 The run is idempotent and resumable: a package version already on npm is
 skipped, a dist-tag already pointing at the version is left alone, and an
-existing tag or GitHub release is not recreated. Rerunning the same version
-after a partial failure finishes the set.
+existing tag or GitHub release is not recreated. After a tag push the tag
+already exists, so the release step only creates the missing GitHub release.
+Rerunning the same version after a partial failure finishes the set.
 
 The same script runs locally:
 

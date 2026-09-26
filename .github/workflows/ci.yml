@@ -54,6 +54,7 @@ jobs:
           node --test ./scripts/__tests__/run-vitest-stable-shard.test.mjs
           node --test ./scripts/__tests__/e2e-shard.test.mjs
           node --test ./scripts/__tests__/build-standalone-concurrency.test.mjs
+          node --test ./scripts/release-tag-gate.test.mjs
           node --test '.github/scripts/tests/*.test.mjs'
 
       - name: Verify release package bootstrap for changed manifests
