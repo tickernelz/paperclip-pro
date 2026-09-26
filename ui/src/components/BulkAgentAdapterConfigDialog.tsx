@@ -117,7 +117,7 @@ export function BulkAgentAdapterConfigDialog({
 
   return (
     <Dialog open={open} onOpenChange={close}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg" data-testid="bulk-agent-config-dialog">
+      <DialogContent className="max-h-(--sz-85vh) overflow-y-auto sm:max-w-lg" data-testid="bulk-agent-config-dialog">
         <DialogHeader>
           <DialogTitle>Change model / thinking</DialogTitle>
           <DialogDescription data-testid="bulk-agent-config-count">
