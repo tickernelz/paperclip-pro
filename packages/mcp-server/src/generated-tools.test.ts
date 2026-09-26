@@ -72,7 +72,7 @@ describe("generated Paperclip API tools", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await getTool("paperclipListIssueWorkProducts").execute({
-      id: "PAP-1135",
+      issueId: "PAP-1135",
       refreshPullRequests: "true",
     });
 
@@ -86,7 +86,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "goal-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipUpdateGoal").execute({ id: "55555555-5555-5555-5555-555555555555", title: "Ship it" });
+    await getTool("paperclipUpdateGoal").execute({ goalId: "55555555-5555-5555-5555-555555555555", title: "Ship it" });
 
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe(
@@ -104,7 +104,7 @@ describe("generated Paperclip API tools", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await getTool("paperclipCreateChildIssue").execute({
-      id: "PAP-1135",
+      issueId: "PAP-1135",
       body: { title: "Child", assigneeAgentId: null },
     });
 
@@ -235,7 +235,7 @@ describe("generated Paperclip API tools", () => {
     expect(Object.keys(tool.schema.shape)).not.toContain("executionWorkspacePolicy");
 
     await tool.execute({
-      id: "66666666-6666-6666-6666-666666666666",
+      projectId: "66666666-6666-6666-6666-666666666666",
       name: "Platform",
       advanced: { executionWorkspacePolicy: { mode: "shared" } },
     });

@@ -1,0 +1,14 @@
+[
+  "[Email] Agent sends require assigned inbox and task ownership, active run authority, and configured action policies.",
+  "[Email] Experimental AgentMail channel.",
+  "[Email] Internal comments never send email.",
+  "[Email] New conversations create an email child task; replies require conversationId and replyToMessageId.",
+  "[Email] Preserve the same idempotencyKey and payload across retries.",
+  "[Email] Reply-all is deliberate and never includes Bcc.",
+  "[Experimental] Cases resource (not a pipeline case).",
+  "[Experimental] Existing route authorization applies.",
+  "[Experimental] Experimental API; the corresponding instance feature must be enabled.",
+  "[Experimental] On overlapping /cases routes the server selects the handler by resource identity; use a pipeline case ID.",
+  "[Experimental] Overlapping /cases routes select their handler by resource identity.",
+  "[Experimental] Pipeline case resource."
+]

@@ -7,6 +7,7 @@ import {
   parseToolsets,
   PaperclipApiClient,
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
+import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
 import { forbidden, unauthorized } from "../errors.js";
 
 const PROTOCOL_VERSION = "2025-06-18";
@@ -51,10 +52,12 @@ export function paperclipMcpRoutes(db: Db) {
     const send = (result: unknown) => res.json({ jsonrpc: "2.0", id, result });
 
     if (method === "initialize") {
+      const notes = sharedToolNotes();
       return send({
         protocolVersion: PROTOCOL_VERSION,
         capabilities: { tools: { listChanged: false } },
         serverInfo: { name: "paperclip", version: "0.1.0" },
+        ...(notes.length > 0 ? { instructions: notes.join(" ") } : {}),
       });
     }
     if (typeof method === "string" && method.startsWith("notifications/")) {

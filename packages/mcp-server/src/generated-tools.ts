@@ -20,6 +20,7 @@ const generatedToolSchema = z.object({
   guards: z.array(z.string()),
   permissions: z.array(z.string()),
   boardGuard: z.string().nullable(),
+  authorityCapability: z.string().nullable().optional(),
   tags: z.array(z.string()),
   annotations: z.object({
     readOnlyHint: z.boolean(),
@@ -64,6 +65,19 @@ function readGeneratedToolFile(): unknown[] {
 export function generatedToolSpecs(): GeneratedToolSpec[] {
   cachedSpecs ??= generatedToolListSchema.parse(readGeneratedToolFile());
   return cachedSpecs;
+}
+
+let cachedNotes: string[] | undefined;
+
+export function sharedToolNotes(): string[] {
+  cachedNotes ??= z
+    .array(z.string())
+    .parse(
+      JSON.parse(
+        readFileSync(new URL("./generated/shared-tool-notes.json", import.meta.url), "utf8"),
+      ),
+    );
+  return cachedNotes;
 }
 
 export interface PreparedGeneratedTool {

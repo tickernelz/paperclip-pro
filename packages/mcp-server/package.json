@@ -17,7 +17,8 @@
   },
   "exports": {
     ".": "./src/index.ts",
-    "./catalog": "./src/catalog.ts"
+    "./catalog": "./src/catalog.ts",
+    "./generated-tools": "./src/generated-tools.ts"
   },
   "publishConfig": {
     "access": "public",
@@ -32,6 +33,10 @@
       "./catalog": {
         "types": "./dist/catalog.d.ts",
         "import": "./dist/catalog.js"
+      },
+      "./generated-tools": {
+        "types": "./dist/generated-tools.d.ts",
+        "import": "./dist/generated-tools.js"
       }
     },
     "main": "./dist/index.js",

@@ -4,6 +4,7 @@ import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
+import { sharedToolNotes } from "./generated-tools.js";
 
 export async function resolveManagementAuthority(
   client: PaperclipApiClient,
@@ -29,10 +30,15 @@ export function createPaperclipMcpServer(
   config: PaperclipMcpConfig = readConfigFromEnv(),
   management = false,
 ) {
-  const server = new McpServer({
-    name: "paperclip",
-    version: "0.1.0",
-  });
+  const server = new McpServer(
+    {
+      name: "paperclip",
+      version: "0.1.0",
+    },
+    {
+      instructions: sharedToolNotes().join(" "),
+    },
+  );
 
   const client = new PaperclipApiClient(config);
   const { definitions: tools, listing } = paperclipToolCatalog(client, config.toolsets, management);

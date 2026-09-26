@@ -43,6 +43,7 @@ import {
   resetAgentSessionSchema,
   agentSkillSyncSchema,
   testAdapterEnvironmentSchema,
+  agentMineInboxQuerySchema,
   // Issue
   createIssueSchema,
   updateIssueSchema,
@@ -70,6 +71,7 @@ import {
   updateCompanyBrandingSchema,
   companyArtifactsQuerySchema,
   companyArtifactsResponseSchema,
+  companySearchExtractQuerySchema,
   // Decisions
   addDecisionQueueItemSchema,
   createDecisionQueueSchema,
@@ -3365,7 +3367,8 @@ registry.registerPath({
   path: "/api/agents/me/inbox/mine",
   tags: ["agents"],
   summary: "Get current agent assigned inbox items",
-  responses: { 200: r.ok(), 401: r.unauthorized },
+  request: { query: agentMineInboxQuerySchema },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({
@@ -9562,16 +9565,18 @@ registry.registerPath({
 });
 
 for (const route of [
-  ["get", "/api/companies/{companyId}/search", "Search company data"],
+  ["get", "/api/companies/{companyId}/search", "Search company data", undefined],
   [
     "get",
     "/api/companies/{companyId}/search/extract",
     "Extract company search matches",
+    companySearchExtractQuerySchema,
   ],
   [
     "get",
     "/api/companies/{companyId}/issues/count",
     "Count issues in a company",
+    undefined,
   ],
 ] as const) {
   registerCurrentRoute({
@@ -9579,6 +9584,7 @@ for (const route of [
     path: route[1],
     tags: ["companies"],
     summary: route[2],
+    ...(route[3] ? { query: route[3] } : {}),
   });
 }
 
