@@ -21,6 +21,10 @@ vi.mock("@/api/agents", () => ({
 
 function view(
   overrides: { model?: string | null; thinking?: string | null } = {},
+  state: {
+    inheritance?: Partial<IssueRunModelOverrideView["inheritance"]>;
+    propagation?: IssueRunModelOverrideView["propagation"];
+  } = {},
 ): IssueRunModelOverrideView {
   return {
     issueId: "issue-1",
@@ -61,8 +65,9 @@ function view(
       subtaskScope: "new",
       inherited: false,
       sourceIssueId: null,
+      ...state.inheritance,
     },
-    propagation: null,
+    propagation: state.propagation ?? null,
   };
 }
 
@@ -81,6 +86,16 @@ async function render() {
     root.render(
       <QueryClientProvider client={client}>
         <TaskModelOverrideControl issueId="issue-1" />
+      </QueryClientProvider>,
+    );
+  });
+}
+
+async function renderWithSubtaskRows() {
+  await act(async () => {
+    root.render(
+      <QueryClientProvider client={client}>
+        <TaskModelOverrideControl issueId="issue-1" subtaskRows />
       </QueryClientProvider>,
     );
   });
@@ -462,6 +477,19 @@ describe("agent chat model override", () => {
     ).toBeNull();
   });
 
+  it("keeps the subtask switches out of a picker that was not asked for them", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+    expect(
+      document.querySelector('[data-testid="task-model-override-footer"]'),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-testid="task-model-override-inherit"]'),
+    ).toBeNull();
+  });
+
   it("renders nothing for a task that has neither an id nor a conversation resolver", async () => {
     vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
     await act(async () => {
@@ -475,5 +503,119 @@ describe("agent chat model override", () => {
       document.querySelector('[data-testid="task-chat-composer-model-override"]'),
     ).toBeNull();
     expect(issuesApi.getModelOverride).not.toHaveBeenCalled();
+  });
+});
+describe("existing task subtask switches", () => {
+  it("reflects the stored inheritance and writes the toggle through the issue endpoint", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(
+      view({}, { inheritance: { inheritToSubtasks: false, subtaskScope: "new" } }),
+    );
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(
+      view({}, { inheritance: { inheritToSubtasks: true, subtaskScope: "new" } }),
+    );
+    await renderWithSubtaskRows();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(
+      node("task-model-override-inherit").getAttribute("aria-checked"),
+    ).toBe("false");
+    expect(
+      document.querySelector('[data-testid="task-model-override-scope-new"]'),
+    ).toBeNull();
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-inherit").click();
+    });
+
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("issue-1", {
+      inheritToSubtasks: true,
+      subtaskScope: "new",
+    });
+    await vi.waitFor(() =>
+      expect(node("task-model-override-scope-new")).toBeTruthy(),
+    );
+  });
+
+  it("sends the scope switch so the server walks the existing subtree and reports the counts", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue(
+      view(
+        {},
+        {
+          inheritance: { inheritToSubtasks: true, subtaskScope: "new_and_existing" },
+          propagation: { applied: 2, skipped: 1, visited: 3, limitReached: false },
+        },
+      ),
+    );
+    await renderWithSubtaskRows();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(
+      node("task-model-override-scope-new").getAttribute("aria-checked"),
+    ).toBe("true");
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-scope-new_and_existing").click();
+    });
+
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("issue-1", {
+      inheritToSubtasks: true,
+      subtaskScope: "new_and_existing",
+    });
+    await vi.waitFor(() =>
+      expect(node("task-model-override-propagation").textContent).toContain(
+        "2 of 3 subtasks updated",
+      ),
+    );
+    expect(node("task-model-override-propagation").textContent).toContain(
+      "1 kept their own model",
+    );
+    expect(
+      document.querySelector('[data-testid="task-model-override-propagation-warning"]'),
+    ).toBeNull();
+  });
+
+  it("warns when the subtree walk stopped at the safety limit", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(
+      view(
+        {},
+        {
+          inheritance: { inheritToSubtasks: true, subtaskScope: "new_and_existing" },
+          propagation: { applied: 500, skipped: 0, visited: 500, limitReached: true },
+        },
+      ),
+    );
+    await renderWithSubtaskRows();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    expect(node("task-model-override-propagation-warning").textContent).toContain(
+      "safety limit",
+    );
+  });
+
+  it("surfaces a rejected subtask change and keeps the stored value", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(view());
+    vi.mocked(issuesApi.setModelOverride).mockRejectedValue(
+      new Error("Only the task owner can change this."),
+    );
+    await renderWithSubtaskRows();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+
+    await act(async () => {
+      node<HTMLButtonElement>("task-model-override-inherit").click();
+    });
+
+    await vi.waitFor(() =>
+      expect(node("task-model-override-error").textContent).toContain(
+        "task owner",
+      ),
+    );
+    expect(node("task-model-override-inherit").getAttribute("aria-checked")).toBe(
+      "true",
+    );
   });
 });

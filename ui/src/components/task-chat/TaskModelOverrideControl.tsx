@@ -5,6 +5,7 @@ import type {
   AgentAdapterConfigBatchPreview,
   IssueRunModelOverrideField,
   IssueRunModelOverrideKey,
+  IssueRunModelOverrideUpdate,
   IssueRunModelOverrideView,
 } from "@tickernelz/paperclip-pro-shared";
 import { agentsApi } from "@/api/agents";
@@ -14,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ModelOverrideSubtaskRows } from "./ModelOverrideSubtaskRows";
 
 const AGENT_DEFAULT_LABEL = "Agent default";
 
@@ -222,6 +224,7 @@ export function TaskModelOverrideControl({
   draft,
   pendingIssue,
   footerSlot,
+  subtaskRows = false,
   disabled = false,
   mobile = false,
 }: {
@@ -229,6 +232,7 @@ export function TaskModelOverrideControl({
   draft?: TaskModelOverrideDraft;
   pendingIssue?: TaskModelOverridePendingIssue;
   footerSlot?: ReactNode;
+  subtaskRows?: boolean;
   disabled?: boolean;
   mobile?: boolean;
 }) {
@@ -263,7 +267,7 @@ export function TaskModelOverrideControl({
     staleTime: 60_000,
   });
   const mutation = useMutation({
-    mutationFn: async (values: { model?: string | null; thinking?: string | null }) => {
+    mutationFn: async (values: IssueRunModelOverrideUpdate) => {
       let targetId = activeIssueId;
       if (!targetId) {
         if (!pendingIssue) throw new Error("This conversation could not be opened.");
@@ -411,6 +415,32 @@ export function TaskModelOverrideControl({
             className="shrink-0 border-t border-border/60"
           >
             {footerSlot}
+          </div>
+        ) : subtaskRows && view?.inheritance ? (
+          <div
+            data-mobile-sheet-controls=""
+            data-testid="task-model-override-footer"
+            className="shrink-0 border-t border-border/60"
+          >
+            <ModelOverrideSubtaskRows
+              inheritToSubtasks={view.inheritance.inheritToSubtasks}
+              subtaskScope={view.inheritance.subtaskScope}
+              disabled={disabled || pending}
+              testIdPrefix="task-model-override"
+              propagation={view.propagation}
+              onInheritChange={(inheritToSubtasks) =>
+                mutation.mutate({
+                  inheritToSubtasks,
+                  subtaskScope: view.inheritance.subtaskScope,
+                })
+              }
+              onScopeChange={(subtaskScope) =>
+                mutation.mutate({
+                  inheritToSubtasks: view.inheritance.inheritToSubtasks,
+                  subtaskScope,
+                })
+              }
+            />
           </div>
         ) : null}
         {error ? (

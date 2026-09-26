@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
+import type { IssueRunModelOverrideSubtaskScope } from "@tickernelz/paperclip-pro-shared";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { InlineEntitySelector } from "@/components/InlineEntitySelector";
+import { ModelOverrideSubtaskRows } from "@/components/task-chat/ModelOverrideSubtaskRows";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { composerDockClassName } from "@/components/task-chat/composer-dock";
@@ -117,6 +119,9 @@ function OverrideSheet({
   const [expanded, setExpanded] = useState<"model" | "thinking" | null>("model");
   const [model, setModel] = useState(MODEL_OPTIONS[0]!);
   const [thinking, setThinking] = useState(THINKING_OPTIONS[0]!);
+  const [inheritToSubtasks, setInheritToSubtasks] = useState(true);
+  const [subtaskScope, setSubtaskScope] =
+    useState<IssueRunModelOverrideSubtaskScope>("new");
   useMobileViewportInsets(open);
   if (!open) return null;
   const sections = [
@@ -211,14 +216,13 @@ function OverrideSheet({
             data-testid="task-model-override-footer"
             className="shrink-0 border-t border-border/60"
           >
-            <div className="flex items-center justify-between gap-2 px-3 py-2 text-xs">
-              <span>Apply to subtasks</span>
-              <span className="h-5 w-9 rounded-full bg-muted" />
-            </div>
-            <div className="flex items-center gap-2 px-3 pb-2 text-xs">
-              <span className="flex-1 rounded-md border border-border px-2 py-1 text-center">New subtasks</span>
-              <span className="flex-1 rounded-md border border-border px-2 py-1 text-center">New and existing</span>
-            </div>
+            <ModelOverrideSubtaskRows
+              inheritToSubtasks={inheritToSubtasks}
+              subtaskScope={subtaskScope}
+              onInheritChange={setInheritToSubtasks}
+              onScopeChange={setSubtaskScope}
+              testIdPrefix="task-model-override"
+            />
           </div>
         ) : null}
       </div>

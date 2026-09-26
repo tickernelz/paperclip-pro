@@ -23,7 +23,7 @@ Harness query parameters:
 | --- | --- |
 | `legacyNav=1` | Reproduces the pre-fix auto-hiding nav that retuned `<main>`'s bottom padding and the composer offset mid-scroll. |
 | `legacyPicker=1` | Reproduces the pre-fix picker that opened every field at once outside the bottom-sheet rules. |
-| `footerRows=1` | Renders two placeholder footer rows in the sheet to check the height budget still holds. |
+| `footerRows=1` | Renders the shipped subtask-inheritance rows (`ModelOverrideSubtaskRows`) in the sheet to check the height budget still holds. |
 | `safeArea=<px>` | Overrides `--sz-safe-bottom` and the derived dock tokens to emulate the iOS home indicator. |
 
 The two `legacy*` cases are in-suite negative controls: they assert the old

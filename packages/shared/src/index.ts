@@ -1995,6 +1995,7 @@ export {
   stalledReviewDecisionSchema,
   issueExecutionPolicySchema,
   issueRunModelOverrideUpdateSchema,
+  type IssueRunModelOverrideUpdate,
   issueExecutionStateSchema,
   resolveIssueRecoveryActionSchema,
   issueReviewRequestSchema,

@@ -10,6 +10,9 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import { parseRunnerGoalCommand, TaskChatComposer } from "./TaskChatComposer";
 import { QuestionForm } from "./QuestionForm";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
+import { issuesApi } from "@/api/issues";
 import { DRAFT_DEBOUNCE_MS } from "../../lib/composer-draft";
 import {
   loadDraftSubmission,
@@ -169,6 +172,18 @@ vi.mock("../../context/EditorAutocompleteContext", () => ({
     ],
   }),
 }));
+
+vi.mock("@/api/issues", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/api/issues")>();
+  return {
+    ...actual,
+    issuesApi: {
+      ...actual.issuesApi,
+      getModelOverride: vi.fn(),
+      setModelOverride: vi.fn(),
+    },
+  };
+});
 
 let container: HTMLDivElement;
 let root: Root | null = null;
@@ -2836,5 +2851,134 @@ describe("composer Stop", () => {
     await flushAsync();
     expect(stopButton()).toBeNull();
     expect(sendButton().disabled).toBe(failed);
+  });
+});
+
+describe("composer subtask switches", () => {
+  const issueView: IssueRunModelOverrideView = {
+    issueId: "issue-1",
+    agentId: "agent-1",
+    adapterType: "omp_local",
+    supported: true,
+    unsupportedReason: null,
+    fields: [
+      {
+        key: "model",
+        label: "Model",
+        hint: null,
+        freeText: true,
+        options: [{ value: "vendor/deep", label: "Deep" }],
+        agentDefault: "vendor/agent-default",
+        override: null,
+        effective: "vendor/agent-default",
+      },
+    ],
+    inheritance: {
+      inheritToSubtasks: true,
+      subtaskScope: "new",
+      inherited: false,
+      sourceIssueId: null,
+    },
+    propagation: null,
+  };
+
+  function renderInQueryClient(ui: ReactElement) {
+    const client = new QueryClient({
+      defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+    });
+    flushSync(() =>
+      root!.render(<QueryClientProvider client={client}>{ui}</QueryClientProvider>),
+    );
+    return client;
+  }
+
+  function panelNode(testId: string): HTMLElement | null {
+    return document.querySelector<HTMLElement>(`[data-testid="${testId}"]`);
+  }
+
+  async function openOverridePanel() {
+    await vi.waitFor(() =>
+      expect(
+        container.querySelector('[data-testid="task-chat-composer-model-override"]'),
+      ).not.toBeNull(),
+    );
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-composer-model-override"]',
+        )!
+        .click();
+    });
+    await vi.waitFor(() =>
+      expect(panelNode("task-model-override-panel")).not.toBeNull(),
+    );
+  }
+
+  beforeEach(() => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(issueView);
+  });
+
+  it("offers the subtask switches for an existing task", async () => {
+    renderInQueryClient(
+      <TaskChatComposer onAdd={vi.fn()} workMode="standard" issueId="issue-1" />,
+    );
+    await flushAsync();
+    await flushAsync();
+    await openOverridePanel();
+
+    expect(panelNode("task-model-override-inherit")).not.toBeNull();
+    expect(panelNode("task-model-override-scope-new_and_existing")).not.toBeNull();
+  });
+
+  it("keeps the subtask switches out of the agent chat composer", async () => {
+    renderInQueryClient(
+      <TaskChatComposer
+        onAdd={vi.fn()}
+        workMode="standard"
+        conversationMode
+        pendingIssue={{
+          companyId: "company-1",
+          agentId: "agent-1",
+          resolve: async () => "chat-issue",
+        }}
+      />,
+    );
+    await flushAsync();
+    await openOverridePanel();
+
+    expect(panelNode("task-model-override-footer")).toBeNull();
+    expect(panelNode("task-model-override-inherit")).toBeNull();
+  });
+
+  it("writes the subtask scope through the issue endpoint", async () => {
+    vi.mocked(issuesApi.setModelOverride).mockResolvedValue({
+      ...issueView,
+      inheritance: {
+        inheritToSubtasks: true,
+        subtaskScope: "new_and_existing",
+        inherited: false,
+        sourceIssueId: null,
+      },
+      propagation: { applied: 1, skipped: 0, visited: 1, limitReached: false },
+    });
+    renderInQueryClient(
+      <TaskChatComposer onAdd={vi.fn()} workMode="standard" issueId="issue-1" />,
+    );
+    await flushAsync();
+    await openOverridePanel();
+
+    await act(async () => {
+      panelNode("task-model-override-scope-new_and_existing")!.click();
+    });
+
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("issue-1", {
+      inheritToSubtasks: true,
+      subtaskScope: "new_and_existing",
+    });
+    await vi.waitFor(() =>
+      expect(panelNode("task-model-override-propagation")?.textContent).toContain(
+        "1 of 1 subtasks updated",
+      ),
+    );
   });
 });
