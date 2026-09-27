@@ -24,6 +24,7 @@ import type {
   AdapterSkillEntry,
   AdapterSkillSnapshot,
 } from "./types.js";
+import type { BoundLiveStdinChannel } from "./live-stdin-channel.js";
 
 export function buildRuntimeToolsEnv(
   access: AdapterRuntimeToolAccess | null | undefined,
@@ -4605,6 +4606,7 @@ export async function runChildProcess(
     }) => Promise<void>;
     terminalResultCleanup?: TerminalResultCleanupOptions;
     stdin?: string;
+    liveStdin?: BoundLiveStdinChannel | null;
     remoteExecution?: RemoteExecutionSpec | null;
     localProcessSandbox?: LocalProcessSandboxOptions | null;
   },
@@ -4652,8 +4654,13 @@ export async function runChildProcess(
           env: childEnv,
           detached: process.platform !== "win32",
           shell: false,
-          stdio: [opts.stdin != null ? "pipe" : "ignore", "pipe", "pipe"],
+          stdio: [
+            opts.stdin != null || opts.liveStdin ? "pipe" : "ignore",
+            "pipe",
+            "pipe",
+          ],
         }) as ChildProcessWithEvents;
+        opts.liveStdin?.bind(child.stdin);
         const startedAt = new Date().toISOString();
         const processGroupId = resolveProcessGroupId(child);
 
@@ -4817,6 +4824,7 @@ export async function runChildProcess(
         child.on("error", (err: Error) => {
           if (timeout) clearTimeout(timeout);
           clearTerminalCleanupTimers();
+          opts.liveStdin?.unbind();
           runningProcesses.delete(runId);
           void target.cleanup?.();
           const errno = (err as NodeJS.ErrnoException).code;
@@ -4837,6 +4845,7 @@ export async function runChildProcess(
           (code: number | null, signal: NodeJS.Signals | null) => {
             if (timeout) clearTimeout(timeout);
             clearTerminalCleanupTimers();
+            opts.liveStdin?.unbind();
             runningProcesses.delete(runId);
             void logChain.finally(() => {
               void Promise.resolve()

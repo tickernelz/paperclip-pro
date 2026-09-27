@@ -26,6 +26,7 @@ import type {
 } from "./sandbox-managed-runtime.js";
 import type { GitWorkspaceSnapshot } from "./git-workspace-sync.js";
 import type { DirectorySnapshot } from "./workspace-restore-merge.js";
+import type { BoundLiveStdinChannel } from "./live-stdin-channel.js";
 export { resolveReferencedSourceIgnore } from "./sandbox-managed-runtime.js";
 export type {
   AdditionalSourceStagingFailure,
@@ -274,6 +275,7 @@ export interface AdapterExecutionTargetProcessOptions {
   cwd: string;
   env: Record<string, string>;
   stdin?: string;
+  liveStdin?: BoundLiveStdinChannel | null;
   timeoutSec: number;
   graceSec: number;
   onLog: (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
@@ -456,6 +458,13 @@ export function adapterExecutionTargetIsRemote(
   target: AdapterExecutionTarget | null | undefined,
 ): boolean {
   return target?.kind === "remote";
+}
+
+/** Whether `runAdapterExecutionTargetProcess` can forward a live stdin channel to this target. */
+export function adapterExecutionTargetSupportsLiveStdin(
+  target: AdapterExecutionTarget | null | undefined,
+): boolean {
+  return !target || target.kind === "local" || target.transport === "ssh";
 }
 
 export function adapterExecutionTargetUsesManagedHome(
@@ -915,6 +924,7 @@ export async function runAdapterExecutionTargetProcess(
     cwd: options.cwd,
     env,
     stdin: options.stdin,
+    liveStdin: options.liveStdin,
     timeoutSec: options.timeoutSec,
     graceSec: options.graceSec,
     onLog: options.onLog,
