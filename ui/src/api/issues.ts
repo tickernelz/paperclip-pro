@@ -38,6 +38,7 @@ import type {
   UpsertIssueDocument,
 } from "@tickernelz/paperclip-pro-shared";
 import { api, ApiError, type RequestOptions } from "./client";
+import type { MessageDeliveryDisposition, MessageDeliveryMode } from "@/lib/message-delivery-command";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";
 
 function hasCommentReceipt(value: unknown): boolean {
@@ -70,7 +71,7 @@ async function confirmedCommentResponse<T>(
 }
 
 export type IssueUpdateResponse = Issue & {
-  comment?: IssueComment | null;
+  comment?: (IssueComment & MessageDeliveryDisposition) | null;
   changes: IssueChanges;
   blockedByIssueIds?: string[];
 };
@@ -524,15 +525,20 @@ export const issuesApi = {
     interrupt?: boolean,
     attachmentIds?: string[],
     clientRequestId?: string,
+    deliver?: MessageDeliveryMode,
   ) =>
     confirmedCommentResponse(
-      api.post<IssueComment>(`/issues/${id}/comments`, {
-        body,
-        ...(clientRequestId ? { clientRequestId } : {}),
-        ...(reopen === undefined ? {} : { reopen }),
-        ...(interrupt === undefined ? {} : { interrupt }),
-        ...(attachmentIds?.length ? { attachmentIds } : {}),
-      }),
+      api.post<IssueComment & MessageDeliveryDisposition>(
+        `/issues/${id}/comments`,
+        {
+          body,
+          ...(clientRequestId ? { clientRequestId } : {}),
+          ...(reopen === undefined ? {} : { reopen }),
+          ...(interrupt === undefined ? {} : { interrupt }),
+          ...(attachmentIds?.length ? { attachmentIds } : {}),
+          ...(deliver === undefined ? {} : { deliver }),
+        },
+      ),
       hasCommentReceipt,
     ),
   cancelComment: (id: string, commentId: string) =>

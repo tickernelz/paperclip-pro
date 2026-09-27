@@ -841,7 +841,7 @@ describe("TaskChatComposer", () => {
     await flushAsync();
     await flushAsync();
 
-    expect(onAdd).toHaveBeenCalledWith("hello there", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("hello there", undefined, undefined, undefined, expect.any(String), undefined);
     expect(editable().textContent).toBe("");
   });
 
@@ -853,7 +853,7 @@ describe("TaskChatComposer", () => {
     pressKey("Enter", { ctrlKey: true });
     await flushAsync();
 
-    expect(onAdd).toHaveBeenCalledWith("hello", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("hello", undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("does not submit on plain Enter or Shift+Enter (newline stays with the editor)", async () => {
@@ -895,7 +895,7 @@ describe("TaskChatComposer", () => {
     await flushAsync();
 
     expect(onWorkModeChange).toHaveBeenCalledWith("planning");
-    expect(onAdd).toHaveBeenCalledWith("do the plan", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("do the plan", undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("cycles Auto, Plan, and Ask modes with Cmd+Period while focused", () => {
@@ -989,7 +989,7 @@ describe("TaskChatComposer", () => {
     pressKey("Enter", { metaKey: true });
     await flushAsync();
 
-    expect(onAdd).toHaveBeenCalledWith("wake up", true, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("wake up", true, undefined, undefined, expect.any(String), undefined);
   });
 
   it("hides the attach button without an upload handler and shows it with one", () => {
@@ -1082,7 +1082,7 @@ describe("TaskChatComposer", () => {
     expect(send.disabled).toBe(false);
     flushSync(() => send.click());
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith("[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String), undefined);
     // Chips clear once the message posts.
     expect(
       container.querySelector('[data-testid="task-chat-composer-attachments"]'),
@@ -1112,7 +1112,7 @@ describe("TaskChatComposer", () => {
     )!;
     flushSync(() => send.click());
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith("Please review this.\n\n[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Please review this.\n\n[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("blocks send while a file upload is pending, then includes the file once it lands", async () => {
@@ -1155,7 +1155,7 @@ describe("TaskChatComposer", () => {
     expect(sendButton().disabled).toBe(false);
     flushSync(() => sendButton().click());
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith("Here is the file.\n\n[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Here is the file.\n\n[notes.txt](/attachments/notes.txt)", undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("blocks send while a failed attachment chip remains, then sends after it is removed", async () => {
@@ -1187,7 +1187,7 @@ describe("TaskChatComposer", () => {
     expect(sendButton().disabled).toBe(false);
     flushSync(() => sendButton().click());
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith("Here is the file.", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Here is the file.", undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("removes an attachment chip via its remove button", async () => {
@@ -1297,7 +1297,7 @@ describe("TaskChatComposer", () => {
 
     pressKey("Enter", { metaKey: true });
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith(expected.trim(), undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith(expected.trim(), undefined, undefined, undefined, expect.any(String), undefined);
   });
 
   it("inserts a /-command from the autocomplete menu", async () => {
@@ -1697,7 +1697,7 @@ describe("TaskChatComposer", () => {
       pressKey("Enter", { metaKey: true });
       await flushAsync();
 
-      expect(onAdd).toHaveBeenCalledWith("queued message", undefined, undefined, undefined, expect.any(String));
+      expect(onAdd).toHaveBeenCalledWith("queued message", undefined, undefined, undefined, expect.any(String), undefined);
       expect(editable().textContent).toBe("");
       expect(localStorage.getItem(draftKey)).toBe("queued message");
       expect(localStorage.getItem(`${draftKey}:submission:v1`)).toContain(
@@ -1728,7 +1728,7 @@ describe("TaskChatComposer", () => {
       await flushAsync();
       await flushAsync();
 
-      expect(onAdd).toHaveBeenCalledWith("first message", undefined, undefined, undefined, expect.any(String));
+      expect(onAdd).toHaveBeenCalledWith("first message", undefined, undefined, undefined, expect.any(String), undefined);
       expect(editable().textContent).toBe("next message");
       expect(localStorage.getItem(draftKey)).toBe("next message");
     });
@@ -1762,7 +1762,7 @@ describe("TaskChatComposer", () => {
       await flushAsync();
       await flushAsync();
 
-      expect(onAdd).toHaveBeenCalledWith("first message", undefined, undefined, undefined, expect.any(String));
+      expect(onAdd).toHaveBeenCalledWith("first message", undefined, undefined, undefined, expect.any(String), undefined);
       expect(
         container.querySelector(
           '[data-testid="task-chat-composer-attachments"]',
@@ -1833,7 +1833,7 @@ describe("TaskChatComposer", () => {
       typeText("/new");
       expect(sendButton().disabled).toBe(false);
       await act(async () => sendButton().click());
-      expect(onAdd).toHaveBeenCalledWith("/new", undefined, undefined, undefined, expect.any(String));
+      expect(onAdd).toHaveBeenCalledWith("/new", undefined, undefined, undefined, expect.any(String), undefined);
     });
 
     it("preserves a typed draft and blocks sending until resume completes", async () => {
@@ -1854,7 +1854,7 @@ describe("TaskChatComposer", () => {
       act(() => root!.render(<TaskChatComposer {...props} />));
       expect(editable().textContent).toBe("Please check mobile too.");
       await act(async () => sendButton().click());
-      expect(onAdd).toHaveBeenCalledWith("Please check mobile too.", undefined, undefined, undefined, expect.any(String));
+      expect(onAdd).toHaveBeenCalledWith("Please check mobile too.", undefined, undefined, undefined, expect.any(String), undefined);
     });
 
     it("takes precedence over pending questions and queued-message edits", () => {
@@ -2789,7 +2789,7 @@ describe("composer Stop", () => {
     expect(sendButton().disabled).toBe(false);
     flushSync(() => sendButton().click());
     await flushAsync();
-    expect(onAdd).toHaveBeenCalledWith("Check mobile too.", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Check mobile too.", undefined, undefined, undefined, expect.any(String), undefined);
     expect(onStop).not.toHaveBeenCalled();
     typeText(" \n ");
     expect(stopButton()?.disabled).toBe(false);

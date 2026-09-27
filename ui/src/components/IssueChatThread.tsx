@@ -166,6 +166,12 @@ import {
 } from "../lib/interrupt-handoff";
 import { restoreSubmittedCommentDraft } from "../lib/comment-submit-draft";
 import {
+  describeDeliveryDowngrade,
+  parseMessageDeliveryCommand,
+  type MessageDeliveryDisposition,
+  type MessageDeliveryMode,
+} from "../lib/message-delivery-command";
+import {
   captureComposerViewportSnapshot,
   restoreComposerViewportSnapshot,
   shouldPreserveComposerViewport,
@@ -503,6 +509,7 @@ export interface IssueChatComposerHandle {
 
 interface IssueChatComposerProps {
   onSend: IssueChatThreadProps["onAdd"];
+  defaultMessageDelivery?: MessageDeliveryMode;
   confirmedSubmissionIds: ReadonlySet<string>;
   onReviewConversation?: () => Promise<void>;
   onStop?: () => Promise<void>;
@@ -605,8 +612,11 @@ interface IssueChatThreadProps {
     reassignment?: CommentReassignment,
     attachmentIds?: string[],
     clientRequestId?: string,
-  ) => Promise<void>;
+    deliver?: MessageDeliveryMode,
+  ) => Promise<MessageDeliveryDisposition | void>;
   onReviewConversation?: () => Promise<void>;
+  /** Delivery mode for a message sent without an explicit /steer or /queue. */
+  defaultMessageDelivery?: MessageDeliveryMode;
   onCancelRun?: () => Promise<void>;
   stopPending?: boolean;
   stopScope?: "leaf" | "subtree";
@@ -4633,7 +4643,7 @@ function areIssueChatMessageRowPropsEqual(
   return true;
 }
 
-const IssueChatComposer = forwardRef<
+export const IssueChatComposer = forwardRef<
   IssueChatComposerHandle,
   IssueChatComposerProps
 >(function IssueChatComposer(
@@ -4641,6 +4651,7 @@ const IssueChatComposer = forwardRef<
     onSend,
     confirmedSubmissionIds,
     onReviewConversation,
+    defaultMessageDelivery,
     onStop,
     stopPending,
     stopScope = "leaf",
@@ -4671,6 +4682,9 @@ const IssueChatComposer = forwardRef<
   const [body, setBody] = useState(() => (draftKey ? loadDraft(draftKey) : ""));
   const [submitting, setSubmitting] = useState(false);
   const [reviewError, setReviewError] = useState(false);
+  const [deliveryError, setDeliveryError] = useState<string | null>(null);
+  const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
+  const resolvedDefaultDelivery = defaultMessageDelivery ?? "steer";
   const [uncertainSubmission, setUncertainSubmission] =
     useState<ComposerDraftSubmission | null>(() =>
       draftKey ? loadDraftSubmission(draftKey) : null,
@@ -4695,6 +4709,7 @@ const IssueChatComposer = forwardRef<
     const value = typeof update === "function" ? update(bodyRef.current) : update;
     bodyRef.current = value;
     setBody(value);
+    setDeliveryNotice(null);
     const pending = pendingDraftRef.current;
     if (!pending || pending.draftKey !== draftKey ||
         loadDraftSubmission(pending.draftKey)?.attemptId !== pending.attemptId) return;
@@ -4926,7 +4941,19 @@ const IssueChatComposer = forwardRef<
 
   async function submitComment() {
     if (composerPause) return;
-    const trimmed = body.trim();
+    const deliveryCommand = parseMessageDeliveryCommand(body);
+    if (deliveryCommand.matched && "error" in deliveryCommand) {
+      setDeliveryError(deliveryCommand.error);
+      return;
+    }
+    setDeliveryError(null);
+    const delivery = deliveryCommand.matched && "command" in deliveryCommand
+      ? deliveryCommand.command
+      : null;
+    const deliver = delivery?.mode;
+    const effectiveDelivery = deliver ?? resolvedDefaultDelivery;
+    const resolvedBody = delivery ? delivery.prompt : body;
+    const trimmed = resolvedBody.trim();
     if (
       (!trimmed && attachedFiles.length === 0) ||
       submitting ||
@@ -5002,15 +5029,16 @@ const IssueChatComposer = forwardRef<
       // mutation; it already owns optimistic echo and durable error handling.
       const sendPromise = onSend(
         submittedBody, reopen, reassignment,
-        attachmentIds.length ? attachmentIds : undefined, attemptId,
+        attachmentIds.length ? attachmentIds : undefined, attemptId, deliver,
       );
       queueViewportRestore(viewportSnapshot);
-      await sendPromise;
+      const disposition = await sendPromise;
       // Settle the captured task even if the user navigated away. The exact
       // attempt guard preserves any newer submission in this or another tab.
       if (draftKey) settleDraftSubmission(draftKey, attemptId,
         mountedTaskKey.current === draftKey ? bodyRef.current : undefined);
       if (mountedTaskKey.current !== draftKey) return;
+      setDeliveryNotice(describeDeliveryDowngrade(effectiveDelivery, disposition));
       setComposerAttachments((current) =>
         current.filter((item) => !submittedAttachmentKeys.has(item.id)),
       );
@@ -5443,6 +5471,26 @@ const IssueChatComposer = forwardRef<
         </div>
       ) : null}
 
+      {deliveryError ? (
+        <p
+          className="text-xs text-destructive"
+          role="alert"
+          data-testid="issue-chat-delivery-error"
+        >
+          {deliveryError}
+        </p>
+      ) : null}
+
+      {deliveryNotice ? (
+        <p
+          className="text-xs text-muted-foreground"
+          role="status"
+          data-testid="issue-chat-delivery-notice"
+        >
+          {deliveryNotice}
+        </p>
+      ) : null}
+
       {composerHint ? (
         <div className="inline-flex items-center rounded-full border border-border/70 bg-muted/30 px-2 py-1 text-(length:--text-micro) text-muted-foreground">
           {composerHint}
@@ -5772,6 +5820,7 @@ export function IssueChatThread({
   onVote,
   onAdd,
   onReviewConversation,
+  defaultMessageDelivery,
   onCancelRun,
   stopPending,
   stopScope,
@@ -6070,17 +6119,20 @@ export function IssueChatThread({
   }
 
   const sendComposerComment = useCallback<IssueChatThreadProps["onAdd"]>(
-    (body, reopen, reassignment, attachmentIds, clientRequestId) => {
+    (body, reopen, reassignment, attachmentIds, clientRequestId, deliver) => {
       pendingSubmitScrollRef.current = true;
-      return onAdd(body, reopen, reassignment, attachmentIds, clientRequestId);
+      return onAdd(
+        body, reopen, reassignment, attachmentIds, clientRequestId, deliver,
+      );
     },
     [onAdd],
   );
   const runtime = usePaperclipIssueRuntime({
     messages,
     isRunning,
-    onSend: ({ body, reopen, reassignment, attachmentIds }) =>
-      sendComposerComment(body, reopen, reassignment, attachmentIds),
+    onSend: async ({ body, reopen, reassignment, attachmentIds }) => {
+      await sendComposerComment(body, reopen, reassignment, attachmentIds);
+    },
     onCancel: onCancelRun,
   });
 
@@ -6735,6 +6787,7 @@ export function IssueChatThread({
                 ref={composerRef}
                 onSend={sendComposerComment}
                 onReviewConversation={onReviewConversation}
+                defaultMessageDelivery={defaultMessageDelivery}
                 onImageUpload={imageUploadHandler}
                 onAttachImage={onAttachImage}
                 draftKey={draftKey}

@@ -3573,7 +3573,7 @@ describe("IssueChatThread", () => {
     expect(send().disabled).toBe(false);
     await act(async () => send().click());
     const expectedBody = `Inspect the file\n\n[fresh.txt](/api/attachments/${id}/content)`;
-    expect(onAdd).toHaveBeenNthCalledWith(1, expectedBody, undefined, undefined, [id], expect.any(String));
+    expect(onAdd).toHaveBeenNthCalledWith(1, expectedBody, undefined, undefined, [id], expect.any(String), undefined);
     expect(appendMock).not.toHaveBeenCalled();
     await act(async () => root.unmount());
     root = createRoot(container);
@@ -3585,7 +3585,7 @@ describe("IssueChatThread", () => {
     ).toBe("Inspect the file");
     expect(container.textContent).toContain("fresh.txt");
     await act(async () => send().click());
-    expect(onAdd).toHaveBeenNthCalledWith(2, expectedBody, undefined, undefined, [id], expect.any(String));
+    expect(onAdd).toHaveBeenNthCalledWith(2, expectedBody, undefined, undefined, [id], expect.any(String), undefined);
     expect(onAttachImage).toHaveBeenCalledTimes(1);
     await act(async () => root.unmount());
   });
@@ -3762,7 +3762,7 @@ describe("IssueChatThread", () => {
     expect(onAdd).toHaveBeenCalledWith("Please review the result", undefined, {
       assigneeAgentId: null,
       assigneeUserId: "reviewer",
-    }, undefined, expect.any(String));
+    }, undefined, expect.any(String), undefined);
     expect(appendMock).not.toHaveBeenCalled();
     expect(container.textContent).toContain("Posting...");
     expect(localStorage.getItem("legacy-awaited-reassignment")).toBe(
@@ -4013,7 +4013,7 @@ describe("IssueChatThread", () => {
       submitButton?.click();
     });
 
-    expect(onAdd).toHaveBeenCalledWith("Please pick this back up", true, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Please pick this back up", true, undefined, undefined, expect.any(String), undefined);
 
     act(() => {
       root.unmount();
@@ -4086,7 +4086,7 @@ describe("IssueChatThread", () => {
     });
 
     expect(onAdd).toHaveBeenCalledTimes(1);
-    expect(onAdd).toHaveBeenCalledWith("Reply without assignee", undefined, undefined, undefined, expect.any(String));
+    expect(onAdd).toHaveBeenCalledWith("Reply without assignee", undefined, undefined, undefined, expect.any(String), undefined);
     expect(
       document.querySelector('[data-testid="issue-chat-no-assignee-dialog"]'),
     ).toBeNull();
