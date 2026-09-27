@@ -91,6 +91,28 @@ Against the live `omp` 18.3.5 binary: negotiation returns
 acknowledged; a steer written mid-tool-call is acknowledged in ~1 ms and the
 agent abandons its running loop to perform the steered instruction.
 
+MCP arming was checked the same way, because a cutover that silently strips the
+Paperclip tools from every agent would be worse than the bug it fixes. With the
+adapter's own `writePaperclipMcpExtension` mount and a working stdio server, the
+agent lists `paperclipApiRequest` and `papercliplistissues` under RPC exactly as
+it does under `--mode json -p`. The mount shape the adapter writes is what OMP
+18.x discovers: a plain directory holding `.mcp.json` classifies as
+`kind: "none"` in `legacyProviderAllowed` and is therefore allowed, while a
+directory carrying a `plugin.json` manifest is restricted to the `other`
+surface and its MCP subtree is dropped.
+
+Two consequences worth keeping:
+
+- `get_state.dumpTools` lists the 15 built-in tools and **not** the MCP-bridged
+  ones, so it cannot be used to detect a failed MCP connection.
+- `runRpcMode` has no MCP readiness reporting at all — the
+  `Warning: MCP server "…" failed to connect` line is produced inside
+  `runPrintMode` only. Under RPC the guard against a tool-less run is the
+  adapter's own pre-flight probe, which runs before OMP is spawned and fails the
+  run with `paperclip_mcp_unavailable`. The connect-failure pattern still
+  tolerates the escaped form so a notice would trip it too if OMP ever emits
+  one.
+
 ## Why steering was unreachable (three gates, all verified)
 
 1. **All runs are legacy.** Every historical `heartbeat_runs` row is
