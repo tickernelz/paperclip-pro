@@ -130,7 +130,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP error and paging contract", () =>
   it("flags a 403 from the REST API as an MCP error with the status in _meta", async () => {
     const result = await callTool(
       "paperclipGetIssueCount",
-      { companyId: seeded.otherCompanyId },
+      { companyId: seeded.otherCompanyId, attention: "blocked" },
       "extended",
     );
 
