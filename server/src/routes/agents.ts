@@ -92,6 +92,7 @@ import { ONBOARDING_FIRST_TASK_SKILL_KEY, PAPERCLIP_CORE_SKILL_KEYS } from "../s
 import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
 import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
 import { assertAuthenticated, assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { toCompactIssue } from "./issues.js";
 import { runAdapterLoginStartSpine } from "./adapter-login-route-spine.js";
 import { isLoginCommandSupportedAdapterType } from "../services/login-command.js";
 import {
@@ -4258,10 +4259,10 @@ export function agentRoutes(
       touchedByUserId: query.userId,
       inboxArchivedByUserId: query.userId,
       status: query.status,
-      limit: ISSUE_LIST_DEFAULT_LIMIT,
+      limit: query.limit,
     });
 
-    res.json(rows);
+    res.json(query.view === "compact" ? rows.map(toCompactIssue) : rows);
   });
 
   router.get("/agents/:id", async (req, res) => {

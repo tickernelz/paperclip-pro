@@ -1874,7 +1874,140 @@ describe.sequential("agent permission routes", () => {
       touchedByUserId: "board-user",
       inboxArchivedByUserId: "board-user",
       status: "backlog,todo,in_progress,in_review,blocked,done",
-      limit: 500,
+      limit: 25,
+    });
+  });
+
+  it("caps the inbox mine view with an explicit limit", async () => {
+    mockIssueService.list.mockResolvedValue([]);
+
+    const app = await createApp({
+      type: "agent",
+      agentId,
+      companyId,
+      runId: "run-1",
+      source: "agent_key",
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .get("/api/agents/me/inbox/mine")
+      .query({ userId: "board-user", limit: "3" }));
+
+    expect(res.status).toBe(200);
+    expect(mockIssueService.list).toHaveBeenCalledWith(
+      companyId,
+      expect.objectContaining({ limit: 3 }),
+    );
+  });
+
+  it("rejects a non-positive inbox mine limit", async () => {
+    const app = await createApp({
+      type: "agent",
+      agentId,
+      companyId,
+      runId: "run-1",
+      source: "agent_key",
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .get("/api/agents/me/inbox/mine")
+      .query({ userId: "board-user", limit: "0" }));
+
+    expect(res.status).toBe(400);
+    expect(mockIssueService.list).not.toHaveBeenCalled();
+  });
+
+  it("returns compact inbox rows without the nested attention objects when view=compact", async () => {
+    mockIssueService.list.mockResolvedValue([
+      {
+        id: "issue-1",
+        identifier: "PAP-910",
+        title: "Inbox follow-up",
+        status: "blocked",
+        blockerAttention: {
+          state: "none",
+          reason: null,
+          unresolvedBlockerCount: 0,
+          coveredBlockerCount: 0,
+          stalledBlockerCount: 0,
+          attentionBlockerCount: 0,
+          pendingFinalizeBlockerIssueIds: [],
+          sampleBlockerIdentifier: null,
+          sampleStalledBlockerIdentifier: null,
+        },
+        reviewAttention: { state: "stalled", paths: [], reason: "review waiting" },
+      },
+    ]);
+
+    const app = await createApp({
+      type: "agent",
+      agentId,
+      companyId,
+      runId: "run-1",
+      source: "agent_key",
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .get("/api/agents/me/inbox/mine")
+      .query({ userId: "board-user", view: "compact" }));
+
+    expect(res.status).toBe(200);
+    expect(res.body).toHaveLength(1);
+    expect(res.body[0].identifier).toBe("PAP-910");
+    expect(res.body[0]).not.toHaveProperty("reviewAttention");
+    expect(res.body[0]).not.toHaveProperty("blockerAttention");
+  });
+
+  it("keeps a non-trivial blocker state on compact inbox rows without the unused members", async () => {
+    mockIssueService.list.mockResolvedValue([
+      {
+        id: "issue-2",
+        identifier: "PAP-911",
+        title: "Inbox blocked",
+        status: "blocked",
+        blockerAttention: {
+          state: "covered",
+          reason: "active_child",
+          unresolvedBlockerCount: 1,
+          coveredBlockerCount: 1,
+          stalledBlockerCount: 0,
+          attentionBlockerCount: 0,
+          pendingFinalizeBlockerIssueIds: ["a-very-long-pending-finalize-blocker-issue-identifier"],
+          sampleBlockerIdentifier: "PAP-900",
+          sampleStalledBlockerIdentifier: null,
+          blockingTreeLive: true,
+          directBlockerIssueId: "issue-900",
+          terminalBlockerIssueId: "issue-901",
+          terminalBlocker: { id: "issue-901", identifier: "PAP-901", title: "Root" },
+        },
+      },
+    ]);
+
+    const app = await createApp({
+      type: "agent",
+      agentId,
+      companyId,
+      runId: "run-1",
+      source: "agent_key",
+    });
+
+    const res = await requestApp(app, (baseUrl) => request(baseUrl)
+      .get("/api/agents/me/inbox/mine")
+      .query({ userId: "board-user", view: "compact" }));
+
+    expect(res.status).toBe(200);
+    expect(res.body[0].blockerAttention).toEqual({
+      state: "covered",
+      reason: "active_child",
+      unresolvedBlockerCount: 1,
+      coveredBlockerCount: 1,
+      stalledBlockerCount: 0,
+      attentionBlockerCount: 0,
+      sampleBlockerIdentifier: "PAP-900",
+      sampleStalledBlockerIdentifier: null,
+      directBlockerIssueId: "issue-900",
+      terminalBlockerIssueId: "issue-901",
+      terminalBlocker: { id: "issue-901", identifier: "PAP-901", title: "Root" },
     });
   });
 
