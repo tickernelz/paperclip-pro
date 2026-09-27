@@ -385,7 +385,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     ).toHaveLength(1);
   });
 
-  it("degrades a board steer to queue and names the conversation issue", async () => {
+  it("queues a plain conversation message without claiming a steer was downgraded", async () => {
     const seeded = await seedActiveRun({ conversation: true });
     await setDefaultDelivery("steer", { enableAgentChat: true });
     keepRunAlive(seeded.runId);
@@ -393,6 +393,22 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     const posted = await request(app(seeded.companyId))
       .post(`/api/issues/${seeded.issueId}/comments`)
       .send({ body: "Steer the chat", clientRequestId: randomUUID() })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({
+      deliveredAs: "queued",
+      steeringUnavailable: "not_requested",
+    });
+  });
+
+  it("names the conversation issue when an explicit steer is downgraded", async () => {
+    const seeded = await seedActiveRun({ conversation: true });
+    await setDefaultDelivery("steer", { enableAgentChat: true });
+    keepRunAlive(seeded.runId);
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Steer the chat", deliver: "steer", clientRequestId: randomUUID() })
       .expect(201);
 
     expect(posted.body).toMatchObject({
