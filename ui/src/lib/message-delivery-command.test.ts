@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import {
   describeDeliveryDowngrade,
@@ -174,4 +175,12 @@ describe("describeDeliveryDowngrade", () => {
     });
     expect(notice).toContain("could not be steered");
   });
+});
+
+it("aliases both delivery contracts to the shared package instead of redeclaring them", async () => {
+  const source = await readFile(new URL("./message-delivery-command.ts", import.meta.url), "utf8");
+  expect(source).toMatch(/type MessageDeliveryMode\s*=\s*InstanceMessageDelivery;/);
+  expect(source).toMatch(/type SteeringUnavailableReason\s*=\s*IssueCommentDeliveryReason;/);
+  expect(source).not.toMatch(/type MessageDeliveryMode\s*=[^;]*\|/);
+  expect(source).not.toMatch(/type SteeringUnavailableReason\s*=[^;]*\|/);
 });
