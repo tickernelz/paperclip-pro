@@ -1,6 +1,7 @@
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
+import type { InstanceMessageDelivery } from "@tickernelz/paperclip-pro-shared";
 
-export type MessageDeliveryMode = "steer" | "queue";
+export type MessageDeliveryMode = InstanceMessageDelivery;
 
 export type MessageDeliveryCommand = {
   mode: MessageDeliveryMode;
