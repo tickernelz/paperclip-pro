@@ -72,7 +72,7 @@
     "typecheck:typescript": "pnpm run ensure:eval-build-deps && node --check scripts/protocol-contract.mjs && node --check scripts/generate-protocol-manifest.mjs && node --check scripts/generate-protocol-schema-module.mjs && node --check scripts/generate-acpx-sidecar-contract.mjs && node --check scripts/generate-replay-goldens.mjs && node --check scripts/generate-semantic-action-catalog.mjs && pnpm run check:protocol-types && node ./node_modules/typescript/bin/tsc --version && node ./node_modules/typescript/bin/tsc -p tsconfig.json --noEmit && node ./node_modules/typescript/bin/tsc -p tsconfig.surfaces.json --noEmit",
     "typecheck:rust": "cargo fmt --manifest-path runner/Cargo.toml --all -- --check && cargo check --manifest-path runner/Cargo.toml --locked --workspace",
     "typecheck:browser": "tsc -p tsconfig.browser.json --noEmit",
-    "test": "pnpm run test:typescript && pnpm run test:rust",
+    "test": "pnpm run test:typescript && pnpm run test:rust && pnpm run test:capability-inventory",
     "test:typescript": "pnpm run test:typescript:prep && vitest run",
     "test:typescript:prep": "pnpm run ensure:eval-build-deps && pnpm run build:rust && node --test test/protocol-contract.test.mjs test/acpx-sidecar-contract.test.mjs test/acpx-codex-package-contract.test.mjs scripts/aws-agentcore-provisioning.test.mjs scripts/build-verified-provider-entrypoints.test.mjs scripts/local-provider-smoke-environment.test.mjs scripts/materialize-opencode-binary.test.mjs",
     "test:typescript:vitest": "node ./scripts/run-pr-vitest-lane.mjs",
