@@ -96,6 +96,14 @@ describe("paperclipAccessGuidance", () => {
       "paperclipApiRequest is always available",
     );
   });
+
+  it("advertises the escape hatch for the canonical full toolset", () => {
+    const escapeHatch = /escape hatch is cheaper than carrying the extended surface/;
+
+    expect(paperclipAccessGuidance("mcp", { toolsets: "full" })).toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "full,core" })).toMatch(escapeHatch);
+    expect(paperclipAccessGuidance("mcp", { toolsets: "core" })).not.toMatch(escapeHatch);
+  });
 });
 
 describe("paperclip MCP endpoint", () => {
