@@ -194,7 +194,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
         method: "tools/call",
         params: {
           name: "paperclipGetIssueCount",
-          arguments: { companyId: seeded.otherCompanyId },
+          arguments: { companyId: seeded.otherCompanyId, attention: "blocked" },
         },
       },
       { toolsets: "core,extended" },

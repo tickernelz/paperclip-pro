@@ -1985,6 +1985,8 @@ export {
   createAcceptedPlanDecompositionSchema,
   resolveCreateIssueStatusDefault,
   createIssueLabelSchema,
+  issueCountQuerySchema,
+  type IssueCountQuery,
   upsertIssueWatchdogSchema,
   issueBlockedInboxAttentionSchema,
   issueBlockedInboxIssueRefSchema,
