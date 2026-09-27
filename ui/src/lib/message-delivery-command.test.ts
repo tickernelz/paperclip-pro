@@ -126,7 +126,7 @@ describe("parseMessageDeliveryCommand with the MDXEditor autolink shape", () => 
 describe("describeDeliveryDowngrade", () => {
   it("reports a downgraded steer with the reason the server gave", () => {
     expect(
-      describeDeliveryDowngrade("steer", {
+      describeDeliveryDowngrade({
         deliveredAs: "queued",
         steeringUnavailable: "board_only",
       }),
@@ -134,11 +134,11 @@ describe("describeDeliveryDowngrade", () => {
   });
 
   it("distinguishes a failed attempt from a missing live turn", () => {
-    const failed = describeDeliveryDowngrade("steer", {
+    const failed = describeDeliveryDowngrade({
       deliveredAs: "queued",
       steeringUnavailable: "steering_failed",
     });
-    const noRun = describeDeliveryDowngrade("steer", {
+    const noRun = describeDeliveryDowngrade({
       deliveredAs: "queued",
       steeringUnavailable: "no_active_run",
     });
@@ -149,13 +149,13 @@ describe("describeDeliveryDowngrade", () => {
 
   it("stays silent when the steer actually landed", () => {
     expect(
-      describeDeliveryDowngrade("steer", { deliveredAs: "steered" }),
+      describeDeliveryDowngrade({ deliveredAs: "steered" }),
     ).toBeNull();
   });
 
-  it("stays silent for an explicit /queue, which is never a downgrade", () => {
+  it("stays silent when the server reports no steer was requested", () => {
     expect(
-      describeDeliveryDowngrade("queue", {
+      describeDeliveryDowngrade({
         deliveredAs: "queued",
         steeringUnavailable: "not_requested",
       }),
@@ -163,12 +163,12 @@ describe("describeDeliveryDowngrade", () => {
   });
 
   it("stays silent for a steer that came back with no reason at all", () => {
-    expect(describeDeliveryDowngrade("steer", { deliveredAs: "queued" })).toBeNull();
-    expect(describeDeliveryDowngrade("steer", null)).toBeNull();
+    expect(describeDeliveryDowngrade({ deliveredAs: "queued" })).toBeNull();
+    expect(describeDeliveryDowngrade(null)).toBeNull();
   });
 
   it("falls back to calm copy for an unknown reason literal", () => {
-    const notice = describeDeliveryDowngrade("steer", {
+    const notice = describeDeliveryDowngrade({
       deliveredAs: "queued",
       steeringUnavailable: "something_new" as never,
     });

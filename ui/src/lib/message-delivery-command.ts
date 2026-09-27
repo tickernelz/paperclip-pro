@@ -158,10 +158,8 @@ const UNKNOWN_STEERING_REASON = "this task could not be steered mid-turn.";
  * explicit `/queue` never borrows the downgrade notice.
  */
 export function describeDeliveryDowngrade(
-  effectiveMode: MessageDeliveryMode,
   disposition: MessageDeliveryDisposition | void | null,
 ): string | null {
-  if (effectiveMode !== "steer") return null;
   if (!disposition) return null;
   if (disposition.deliveredAs === "steered") return null;
   const reason = disposition.steeringUnavailable ?? null;

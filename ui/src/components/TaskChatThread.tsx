@@ -490,7 +490,6 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     currentUserId,
     onAdd,
     onReviewConversation,
-    defaultMessageDelivery,
     onCancelRun,
     stopPending,
     stopScope,
@@ -3057,7 +3056,6 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         !("clientStatus" in comment && comment.clientStatus)
                       ).map((comment) => comment.clientRequestId!))}
                       onReviewConversation={onReviewConversation}
-                      defaultMessageDelivery={defaultMessageDelivery}
                       onStop={liveRun ? onCancelRun : undefined}
                       stopPending={stopPending}
                       stopScope={stopScope}

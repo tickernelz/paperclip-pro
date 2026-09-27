@@ -52,7 +52,6 @@ import {
   type MessageDeliveryDisposition,
   type MessageDeliveryMode,
 } from "../lib/message-delivery-command";
-import { useDefaultMessageDelivery } from "../hooks/useDefaultMessageDelivery";
 import { approvalsApi } from "../api/approvals";
 import { activityApi, type RunForIssue } from "../api/activity";
 import {
@@ -1281,7 +1280,6 @@ type IssueDetailChatTabProps = {
     deliver?: MessageDeliveryMode,
   ) => Promise<MessageDeliveryDisposition | void>;
   onReviewConversation: () => Promise<void>;
-  defaultMessageDelivery?: MessageDeliveryMode;
   onImageUpload: (file: File) => Promise<string>;
   onAttachImage: (file: File) => Promise<IssueAttachment | void>;
   onInterruptQueued: (runId: string | null) => Promise<void>;
@@ -1400,7 +1398,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   onVote,
   onAdd,
   onReviewConversation,
-  defaultMessageDelivery,
   onImageUpload,
   onAttachImage,
   onInterruptQueued,
@@ -2426,7 +2423,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             onVote={onVote}
             onAdd={onAdd}
             onReviewConversation={onReviewConversation}
-            defaultMessageDelivery={defaultMessageDelivery}
             imageUploadHandler={onImageUpload}
             onAttachImage={onAttachImage}
             onInterruptQueued={onInterruptQueued}
@@ -2897,7 +2893,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setMobileToolbar,
   } = useBreadcrumbs();
   const queryClient = useQueryClient();
-  const defaultMessageDelivery = useDefaultMessageDelivery();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const location = useLocation();
@@ -7868,7 +7863,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   queuedCommentReason={queuedCommentReason}
                   onVote={handleCommentVote}
                   onAdd={handleChatAdd}
-                  defaultMessageDelivery={defaultMessageDelivery}
                   onReviewConversation={async () => {
                     await Promise.all([
                       refetchComments({ throwOnError: true }),

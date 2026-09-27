@@ -509,7 +509,6 @@ export interface IssueChatComposerHandle {
 
 interface IssueChatComposerProps {
   onSend: IssueChatThreadProps["onAdd"];
-  defaultMessageDelivery?: MessageDeliveryMode;
   confirmedSubmissionIds: ReadonlySet<string>;
   onReviewConversation?: () => Promise<void>;
   onStop?: () => Promise<void>;
@@ -615,8 +614,6 @@ interface IssueChatThreadProps {
     deliver?: MessageDeliveryMode,
   ) => Promise<MessageDeliveryDisposition | void>;
   onReviewConversation?: () => Promise<void>;
-  /** Delivery mode for a message sent without an explicit /steer or /queue. */
-  defaultMessageDelivery?: MessageDeliveryMode;
   onCancelRun?: () => Promise<void>;
   stopPending?: boolean;
   stopScope?: "leaf" | "subtree";
@@ -4651,7 +4648,6 @@ export const IssueChatComposer = forwardRef<
     onSend,
     confirmedSubmissionIds,
     onReviewConversation,
-    defaultMessageDelivery,
     onStop,
     stopPending,
     stopScope = "leaf",
@@ -4684,7 +4680,6 @@ export const IssueChatComposer = forwardRef<
   const [reviewError, setReviewError] = useState(false);
   const [deliveryError, setDeliveryError] = useState<string | null>(null);
   const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
-  const resolvedDefaultDelivery = defaultMessageDelivery ?? "steer";
   const [uncertainSubmission, setUncertainSubmission] =
     useState<ComposerDraftSubmission | null>(() =>
       draftKey ? loadDraftSubmission(draftKey) : null,
@@ -4951,7 +4946,6 @@ export const IssueChatComposer = forwardRef<
       ? deliveryCommand.command
       : null;
     const deliver = delivery?.mode;
-    const effectiveDelivery = deliver ?? resolvedDefaultDelivery;
     const resolvedBody = delivery ? delivery.prompt : body;
     const trimmed = resolvedBody.trim();
     if (
@@ -5038,7 +5032,7 @@ export const IssueChatComposer = forwardRef<
       if (draftKey) settleDraftSubmission(draftKey, attemptId,
         mountedTaskKey.current === draftKey ? bodyRef.current : undefined);
       if (mountedTaskKey.current !== draftKey) return;
-      setDeliveryNotice(describeDeliveryDowngrade(effectiveDelivery, disposition));
+      setDeliveryNotice(describeDeliveryDowngrade(disposition));
       setComposerAttachments((current) =>
         current.filter((item) => !submittedAttachmentKeys.has(item.id)),
       );
@@ -5820,7 +5814,6 @@ export function IssueChatThread({
   onVote,
   onAdd,
   onReviewConversation,
-  defaultMessageDelivery,
   onCancelRun,
   stopPending,
   stopScope,
@@ -6787,7 +6780,6 @@ export function IssueChatThread({
                 ref={composerRef}
                 onSend={sendComposerComment}
                 onReviewConversation={onReviewConversation}
-                defaultMessageDelivery={defaultMessageDelivery}
                 onImageUpload={imageUploadHandler}
                 onAttachImage={onAttachImage}
                 draftKey={draftKey}
