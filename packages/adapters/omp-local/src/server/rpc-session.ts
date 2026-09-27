@@ -11,6 +11,43 @@ const STEER_ACK_TIMEOUT_MS = 10_000;
 const RPC_PROTOCOL_VERSION = 2;
 const RPC_CHUNK_PAYLOAD_BYTES = 256 * 1024;
 const RPC_MAX_REASSEMBLED_BYTES = 64 * 1024 * 1024;
+const MESSAGE_SNAPSHOT_TYPES = new Set(["message_start", "message_end", "turn_end"]);
+
+function stripProviderPayload(value: unknown): unknown {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const record = value as Record<string, unknown>;
+  if (!("providerPayload" in record)) return value;
+  const { providerPayload: _dropped, ...rest } = record;
+  return rest;
+}
+
+/** Mirrors print mode's event shaping: drop `message_update` snapshots and `providerPayload`. */
+export function shapeOmpRpcFrame(frame: Record<string, unknown>): Record<string, unknown> {
+  const type = typeof frame.type === "string" ? frame.type : "";
+  const { message: frameMessage, ...frameRest } = frame;
+  if (type === "message_update") {
+    const streamEvent = frame.assistantMessageEvent;
+    if (!streamEvent || typeof streamEvent !== "object" || Array.isArray(streamEvent)) {
+      return frameRest;
+    }
+    const stream = streamEvent as Record<string, unknown>;
+    if (stream.type === "done" || stream.type === "error") {
+      return { type, assistantMessageEvent: { type: stream.type, reason: stream.reason } };
+    }
+    const { partial: _partial, ...streamRest } = stream;
+    return { ...frameRest, assistantMessageEvent: streamRest };
+  }
+  if (type === "agent_end") {
+    return {
+      ...frame,
+      messages: Array.isArray(frame.messages) ? frame.messages.map(stripProviderPayload) : frame.messages,
+    };
+  }
+  if (MESSAGE_SNAPSHOT_TYPES.has(type)) {
+    return { ...frameRest, message: stripProviderPayload(frameMessage) };
+  }
+  return frame;
+}
 
 const PROTOCOL_FRAME_TYPES = new Set([
   "ready",
@@ -386,7 +423,6 @@ export async function runOmpRpcSession(
       return;
     }
     if (!frame) return;
-    const chunked = (parsed as Record<string, unknown>).type === "rpc_chunk";
     const type = typeof frame.type === "string" ? frame.type : "";
     await handleFrame(frame);
     if (type === "rpc_frame_error") {
@@ -403,7 +439,7 @@ export async function runOmpRpcSession(
       );
     }
     if (!PROTOCOL_FRAME_TYPES.has(type)) {
-      await input.onLog("stdout", chunked ? `${JSON.stringify(frame)}\n` : line);
+      await input.onLog("stdout", `${JSON.stringify(shapeOmpRpcFrame(frame))}\n`);
     }
   };
 

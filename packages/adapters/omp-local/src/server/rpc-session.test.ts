@@ -352,6 +352,53 @@ describe("OMP RPC session protocol", () => {
     expect(state.errors.join("")).toContain("RPC frame exceeded the transport limit");
   });
 
+  it("shapes message_update frames so the transcript does not grow quadratically", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-shape" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "message_update",
+      message: { role: "assistant", content: [{ type: "text", text: "the whole in-progress message" }], providerPayload: { big: "x".repeat(50) } },
+      assistantMessageEvent: {
+        type: "text_delta",
+        delta: "hello",
+        partial: { role: "assistant", content: [{ type: "text", text: "the whole in-progress message" }] },
+      },
+    });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    state.finish();
+    await running;
+
+    const emitted = state.logged.join("");
+    expect(emitted).toContain("hello");
+    expect(emitted).not.toContain("the whole in-progress message");
+    expect(emitted).not.toContain("providerPayload");
+  });
+
+  it("keeps the final assistant text while dropping providerPayload from message frames", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-final" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "message_end",
+      message: {
+        role: "assistant",
+        content: [{ type: "text", text: "final answer" }],
+        providerPayload: { opaque: "replay state" },
+      },
+    });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    state.finish();
+    await running;
+
+    const emitted = state.logged.join("");
+    expect(emitted).toContain("final answer");
+    expect(emitted).not.toContain("providerPayload");
+    expect(emitted).not.toContain("replay state");
+  });
+
   it("closes the run's stdin once the terminal agent_end arrives", async () => {
     const running = run();
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
