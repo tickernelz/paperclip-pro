@@ -202,6 +202,7 @@ function registerModuleMocks() {
         },
       })),
       listCompanyIds: vi.fn(async () => ["company-1"]),
+      getGeneral: vi.fn(async () => ({ defaultMessageDelivery: "queue" })),
     }),
     issueApprovalService: () => ({}),
     issueReferenceService: () => ({

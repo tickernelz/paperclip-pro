@@ -253,6 +253,7 @@ function registerRouteMocks() {
         },
       })),
       listCompanyIds: vi.fn(async () => [companyId]),
+      getGeneral: vi.fn(async () => ({ defaultMessageDelivery: "queue" })),
     }),
     issueApprovalService: () => mockIssueApprovalService,
     issueRecoveryActionService: () => mockIssueRecoveryActionService,
