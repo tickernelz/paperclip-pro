@@ -221,6 +221,7 @@ const updateIssueToolSchema = z
       requestDepth: true,
       comment: true,
       commentClientRequestId: true,
+      commentDeliver: true,
       attachmentIds: true,
       reviewInteractionId: true,
       reopen: true,

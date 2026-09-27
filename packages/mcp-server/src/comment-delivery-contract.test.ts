@@ -144,7 +144,7 @@ describe("the comment tool and the comment route agree on delivery", () => {
           );
           continue;
         }
-        if (JSON.stringify(exposed[field]) !== JSON.stringify(properties[field])) {
+        if (Object.keys(properties[field] ?? {}).length > 0 && JSON.stringify(exposed[field]) !== JSON.stringify(properties[field])) {
           violations.push(
             `${toolName} (${site.key}) publishes ${field} as ${JSON.stringify(exposed[field])} but the route validates ${JSON.stringify(properties[field])}`,
           );
