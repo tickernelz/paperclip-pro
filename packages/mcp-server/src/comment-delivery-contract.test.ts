@@ -124,6 +124,7 @@ describe("the comment tool and the comment route agree on delivery", () => {
     );
     const violations: string[] = [];
     let checked = 0;
+    let compared = 0;
     for (const site of sites) {
       const properties = (site.schema.properties ?? {}) as Record<string, Record<string, unknown>>;
       const validated = Object.keys(properties).filter(isDeliveryField);
@@ -144,7 +145,9 @@ describe("the comment tool and the comment route agree on delivery", () => {
           );
           continue;
         }
-        if (Object.keys(properties[field] ?? {}).length > 0 && JSON.stringify(exposed[field]) !== JSON.stringify(properties[field])) {
+        const shaped = Object.keys(properties[field] ?? {}).length > 0;
+        if (shaped) compared += 1;
+        if (shaped && JSON.stringify(exposed[field]) !== JSON.stringify(properties[field])) {
           violations.push(
             `${toolName} (${site.key}) publishes ${field} as ${JSON.stringify(exposed[field])} but the route validates ${JSON.stringify(properties[field])}`,
           );
@@ -152,6 +155,7 @@ describe("the comment tool and the comment route agree on delivery", () => {
       }
     }
     expect(checked).toBeGreaterThan(0);
+    expect(compared).toBeGreaterThan(0);
     expect(violations).toEqual([]);
   });
 
