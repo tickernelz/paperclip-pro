@@ -210,9 +210,20 @@ export const createAgentKeySchema = z.object({
 
 export type CreateAgentKey = z.infer<typeof createAgentKeySchema>;
 
+export const INBOX_MINE_ISSUE_DEFAULT_LIMIT = 25;
+export const INBOX_MINE_ISSUE_MAX_LIMIT = 1000;
+
 export const agentMineInboxQuerySchema = z.object({
   userId: z.string().trim().min(1),
   status: z.string().trim().min(1).optional().default(INBOX_MINE_ISSUE_STATUS_FILTER),
+  limit: z.coerce
+    .number()
+    .int()
+    .min(1)
+    .max(INBOX_MINE_ISSUE_MAX_LIMIT)
+    .optional()
+    .default(INBOX_MINE_ISSUE_DEFAULT_LIMIT),
+  view: z.enum(["compact", "full"]).optional().default("full"),
 });
 
 export type AgentMineInboxQuery = z.infer<typeof agentMineInboxQuerySchema>;

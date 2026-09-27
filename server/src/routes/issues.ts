@@ -121,6 +121,7 @@ import {
   type CompanySearchQuery,
   type CompanySearchResponse,
   type ExecutionWorkspace,
+  type IssueBlockerAttention,
   type IssueBlockerDiagnosticFlag,
   type IssueBlockerDiagnosticIssueSummary,
   type IssueBlockerDiagnosticNode,
@@ -2988,7 +2989,33 @@ class AutoApprovalIssueMissingError extends Error {
   }
 }
 
-function toCompactIssue(issue: any): CompactIssue {
+function toCompactBlockerAttention(
+  attention: IssueBlockerAttention,
+): IssueBlockerAttention | null {
+  if (attention.state === "none") return null;
+  return {
+    state: attention.state,
+    reason: attention.reason,
+    unresolvedBlockerCount: attention.unresolvedBlockerCount,
+    coveredBlockerCount: attention.coveredBlockerCount,
+    stalledBlockerCount: attention.stalledBlockerCount,
+    attentionBlockerCount: attention.attentionBlockerCount,
+    sampleBlockerIdentifier: attention.sampleBlockerIdentifier,
+    sampleStalledBlockerIdentifier: attention.sampleStalledBlockerIdentifier,
+    ...(attention.directBlockerIssueId
+      ? { directBlockerIssueId: attention.directBlockerIssueId }
+      : {}),
+    ...(attention.terminalBlockerIssueId
+      ? { terminalBlockerIssueId: attention.terminalBlockerIssueId }
+      : {}),
+    ...(attention.terminalBlocker ? { terminalBlocker: attention.terminalBlocker } : {}),
+  };
+}
+
+export function toCompactIssue(issue: any): CompactIssue {
+  const blockerAttention = issue.blockerAttention
+    ? toCompactBlockerAttention(issue.blockerAttention)
+    : null;
   return {
     externalConversationState: issue.externalConversationState ?? null,
     id: issue.id,
@@ -3027,12 +3054,7 @@ function toCompactIssue(issue: any): CompactIssue {
     ...(issue.labelIds ? { labelIds: issue.labelIds } : {}),
     ...(issue.labels ? { labels: issue.labels } : {}),
     ...(issue.blockedBy ? { blockedBy: issue.blockedBy } : {}),
-    ...(issue.blockerAttention
-      ? { blockerAttention: issue.blockerAttention }
-      : {}),
-    ...(issue.reviewAttention
-      ? { reviewAttention: issue.reviewAttention }
-      : {}),
+    ...(blockerAttention ? { blockerAttention } : {}),
     ...(issue.blockedInboxAttention !== undefined
       ? { blockedInboxAttention: issue.blockedInboxAttention }
       : {}),
