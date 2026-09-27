@@ -499,3 +499,49 @@ describe("generated tool input contracts", () => {
     expect(connections?.authorityCapability).toBe("work:read");
   });
 });
+
+
+function multipartUploadSites(): { operation: string; file: string; line: number }[] {
+  const out: { operation: string; file: string; line: number }[] = [];
+  for (const span of routeSpans()) {
+    if (!/run[A-Za-z]*Upload\s*\(/.test(span.body)) continue;
+    const mounted = span.path.startsWith("/api") ? span.path : `/api${span.path}`;
+    out.push({
+      operation: `${span.method} ${mounted.replace(/\/+/g, "/")}`,
+      file: span.file,
+      line: span.startLine,
+    });
+  }
+  return out;
+}
+
+describe("routes an MCP tool call cannot serve", () => {
+  it("never advertises a multipart upload route, because a tool cannot send a binary file", () => {
+    const advertised = new Set(generatedToolSpecs().map((spec) => spec.operationId));
+    const sites = multipartUploadSites();
+    expect(sites.length).toBeGreaterThan(0);
+    const offenders = sites
+      .filter((site) => advertised.has(site.operation))
+      .map((site) => `${site.operation} (${site.file}:${site.line})`);
+    expect(offenders).toEqual([]);
+  });
+
+  it("keeps every reason in the exclusion table a known reason", () => {
+    const known = new Set([
+      "credential_surface",
+      "company_transfer",
+      "instance_setup",
+      "non_json_request",
+      "route_stub",
+      "runner_lifecycle_authority",
+      "runtime_authority",
+      "sse_stream",
+      "trust_boundary",
+    ]);
+    expect(
+      Object.entries(EXCLUDED_OPERATIONS)
+        .filter(([, reason]) => !known.has(reason))
+        .map(([operation, reason]) => `${operation} -> ${reason}`),
+    ).toEqual([]);
+  });
+});

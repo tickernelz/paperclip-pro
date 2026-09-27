@@ -61,6 +61,7 @@ export const CURATED_OPERATIONS: Record<string, string> = {
 
 export const EXCLUDED_OPERATIONS: Record<string, string> = {
   "GET /api/issues": "route_stub",
+  "GET /api/plugins/{pluginId}/bridge/stream/{channel}": "sse_stream",
   "POST /api/companies/{companyId}/exports": "credential_surface",
   "POST /api/companies/{companyId}/exports/preview": "credential_surface",
   "POST /api/companies/{companyId}/imports/preview": "company_transfer",

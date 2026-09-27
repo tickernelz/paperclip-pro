@@ -7597,6 +7597,7 @@ registry.registerPath({
   tags: ["assets"],
   summary: "Upload an attachment to an issue",
   request: { params: z.object({ companyId: z.string(), issueId: z.string() }) },
+  requestBody: multipartFileRequestBody("file", "The attachment file."),
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -7630,6 +7631,7 @@ registry.registerPath({
   tags: ["assets"],
   summary: "Upload an image asset",
   request: { params: z.object({ companyId: z.string() }) },
+  requestBody: multipartFileRequestBody("file", "The image file."),
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 

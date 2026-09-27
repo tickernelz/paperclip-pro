@@ -3534,41 +3534,6 @@
     }
   },
   {
-    "name": "paperclipCreateAssetImage",
-    "operationId": "POST /api/companies/{companyId}/assets/images",
-    "method": "POST",
-    "path": "/companies/{companyId}/assets/images",
-    "description": "Upload an image asset",
-    "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
-    "tags": [
-      "assets"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertCompanyAccess",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
     "name": "paperclipCreateBudgetPolicy",
     "operationId": "POST /api/companies/{companyId}/budgets/policies",
     "method": "POST",
@@ -7007,51 +6972,6 @@
         ]
       }
     }
-  },
-  {
-    "name": "paperclipCreateIssueAttachment",
-    "operationId": "POST /api/companies/{companyId}/issues/{issueId}/attachments",
-    "method": "POST",
-    "path": "/companies/{companyId}/issues/{issueId}/attachments",
-    "description": "Upload an attachment to an issue",
-    "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
-    "tags": [
-      "assets"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertAgentIssueMutationAllowed",
-      "assertCompanyAccess",
-      "assertDeliverableMutationAllowedByRunContext",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "issueId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
   },
   {
     "name": "paperclipCreateIssueDecomposition",
@@ -18597,59 +18517,6 @@
     "boardGuard": "assertBoardOrgAccess@plugins.ts:1956",
     "authorityCapability": null,
     "parameters": [
-      {
-        "name": "pluginId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
-    "name": "paperclipGetPluginBridgeStream",
-    "operationId": "GET /api/plugins/{pluginId}/bridge/stream/{channel}",
-    "method": "GET",
-    "path": "/plugins/{pluginId}/bridge/stream/{channel}",
-    "description": "Subscribe to a plugin bridge SSE stream",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "plugins"
-    ],
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "idempotentHint": true
-    },
-    "guards": [
-      "assertBoardOrgAccess",
-      "assertCompanyAccess",
-      "assertScopedApiAuth",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@plugins.ts:1768",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "channel",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "companyId",
-        "in": "query",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
       {
         "name": "pluginId",
         "in": "path",
