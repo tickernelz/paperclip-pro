@@ -60,6 +60,7 @@ export const CURATED_OPERATIONS: Record<string, string> = {
 };
 
 export const EXCLUDED_OPERATIONS: Record<string, string> = {
+  "GET /api/issues": "route_stub",
   "POST /api/companies/{companyId}/exports": "credential_surface",
   "POST /api/companies/{companyId}/exports/preview": "credential_surface",
   "POST /api/companies/{companyId}/imports/preview": "company_transfer",
@@ -184,12 +185,6 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     description:
       "Create a child issue under an existing issue. Use for delegated or parallel follow-up work; the child inherits the parent execution workspace.",
     toolset: "core",
-  },
-  "GET /api/issues": {
-    name: "paperclipListAllIssues",
-    description:
-      "List issues across every company the caller can access. Prefer paperclipListIssues when you already know the company.",
-    toolset: "extended",
   },
   "GET /api/issues/{id}/work-products": {
     name: "paperclipListIssueWorkProducts",

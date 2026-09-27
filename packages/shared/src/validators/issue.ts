@@ -862,6 +862,40 @@ export type CreateAcceptedPlanDecomposition = z.infer<
   typeof createAcceptedPlanDecompositionSchema
 >;
 
+const issueCountFilterIdSchema = z.string().trim().min(1);
+
+const issueCountFlagQuerySchema = z.enum(["true", "1"]).optional();
+
+/**
+ * Every field `GET /api/companies/{companyId}/issues/count` reads. `limit`
+ * and `offset` stay out on purpose: the route rejects both with their own 400.
+ */
+export const issueCountQuerySchema = z.object({
+  attention: z.literal("blocked"),
+  hasPlanDocument: z.enum(["true", "1", "false", "0"]).optional(),
+  status: z.enum(ISSUE_STATUSES).optional(),
+  assigneeAgentId: issueCountFilterIdSchema.optional(),
+  participantAgentId: issueCountFilterIdSchema.optional(),
+  assigneeUserId: issueCountFilterIdSchema.optional(),
+  projectId: issueCountFilterIdSchema.optional(),
+  workspaceId: issueCountFilterIdSchema.optional(),
+  executionWorkspaceId: issueCountFilterIdSchema.optional(),
+  parentId: issueCountFilterIdSchema.optional(),
+  parentIssueId: issueCountFilterIdSchema.optional(),
+  descendantOf: issueCountFilterIdSchema.optional(),
+  createdFromIssueId: issueCountFilterIdSchema.optional(),
+  labelId: issueCountFilterIdSchema.optional(),
+  originKind: issueCountFilterIdSchema.optional(),
+  originKindPrefix: issueCountFilterIdSchema.optional(),
+  originId: issueCountFilterIdSchema.optional(),
+  includeRoutineExecutions: issueCountFlagQuerySchema,
+  excludeRoutineExecutions: issueCountFlagQuerySchema,
+  includePluginOperations: issueCountFlagQuerySchema,
+  q: z.string().trim().min(1).optional(),
+});
+
+export type IssueCountQuery = z.infer<typeof issueCountQuerySchema>;
+
 export const createIssueLabelSchema = z.object({
   name: z.string().trim().min(1).max(48),
   color: z

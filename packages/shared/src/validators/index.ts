@@ -427,6 +427,8 @@ export {
   createAcceptedPlanDecompositionSchema,
   resolveCreateIssueStatusDefault,
   createIssueLabelSchema,
+  issueCountQuerySchema,
+  type IssueCountQuery,
   issueBlockedInboxAttentionSchema,
   issueBlockedInboxIssueRefSchema,
   issueBlockedInboxReasonSchema,

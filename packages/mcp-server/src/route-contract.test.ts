@@ -9,7 +9,11 @@ import {
   missingRequiredBodyFields,
   routeBodySchemas,
 } from "./route-body-schemas.js";
-import { CURATED_OPERATIONS, TOOL_OVERRIDES } from "./tool-overrides.js";
+import {
+  CURATED_OPERATIONS,
+  EXCLUDED_OPERATIONS,
+  TOOL_OVERRIDES,
+} from "./tool-overrides.js";
 
 const NAME_TOKEN = /[A-Z]?[a-z0-9]+|[A-Z]+(?![a-z])/g;
 
@@ -53,6 +57,20 @@ const ROUTE_FILE_PREFIXES: Record<string, string> = {
 
 const ROUTE_PATTERN = /router\.(get|post|put|patch|delete)\(\s*["'`]([^"'`]+)["'`]/g;
 const QUERY_VALIDATION_PATTERN = /(\w+)\.(?:safeParse|parse)\(\s*req\.query/;
+const QUERY_READ_PATTERN = /req\.query\.([A-Za-z_][A-Za-z0-9_]*)/g;
+const QUERY_ASSIGNMENT_PATTERN =
+  /(?:const|let|var)\s+([A-Za-z_][A-Za-z0-9_]*)\s*=\s*([^;\n]{0,240}?);/g;
+const REJECTION_PATTERN = /(?:res\s*\.?\s*)?status\(400\)/g;
+const IF_PATTERN = /\bif\s*\(/g;
+const ABSENCE_TOLERANT_PATTERN = [
+  /!==\s*undefined/,
+  /!==\s*null/,
+  /!=\s*null/,
+  /===\s*undefined/,
+  /typeof\s+\w+\s*!==\s*["']string["']/,
+  /\?\?/,
+  /\|\|/,
+];
 
 interface RequiredQuerySite {
   file: string;
@@ -63,21 +81,170 @@ interface RequiredQuerySite {
   required: string[];
 }
 
+interface RouteSpan {
+  file: string;
+  method: string;
+  path: string;
+  body: string;
+  startLine: number;
+}
+
 type LooseSchema = { shape?: Record<string, { isOptional?: () => boolean }> };
 
 function normalizePath(path: string): string {
   return path.replace(/\{[A-Za-z0-9_]+\}/g, "{}").replace(/\/+/g, "/");
 }
 
-function requiredQuerySites(): RequiredQuerySite[] {
+function mountedRoutePath(file: string, routePath: string): string {
+  const prefix = ROUTE_FILE_PREFIXES[file] ?? "/api";
+  const templated = routePath
+    .replace(/\*([A-Za-z0-9_]+)/g, "{$1}")
+    .replace(/:([A-Za-z0-9_]+)/g, "{$1}");
+  const mounted = (
+    templated.startsWith("/api") ? templated : `${prefix}${templated === "/" ? "" : templated}`
+  ).replace(/\/+/g, "/");
+  return mounted.replace(/^\/api/, "");
+}
+
+function routeSpans(): RouteSpan[] {
+  const spans: RouteSpan[] = [];
+  for (const file of readdirSync(routesDir).filter((entry) => entry.endsWith(".ts"))) {
+    if (file.endsWith(".test.ts")) continue;
+    const source = readFileSync(join(routesDir, file), "utf8");
+    const matches = [...source.matchAll(new RegExp(ROUTE_PATTERN.source, "g"))];
+    for (const [index, match] of matches.entries()) {
+      const end = matches[index + 1]?.index ?? source.length;
+      spans.push({
+        file,
+        method: match[1]!.toUpperCase(),
+        path: mountedRoutePath(file, match[2]!),
+        body: source.slice(match.index, end),
+        startLine: source.slice(0, match.index).split("\n").length,
+      });
+    }
+  }
+  return spans;
+}
+
+interface GuardClause {
+  condition: string;
+  start: number;
+  end: number;
+}
+
+function guardClauses(body: string): GuardClause[] {
+  const guards: GuardClause[] = [];
+  for (const match of body.matchAll(new RegExp(IF_PATTERN.source, "g"))) {
+    const open = match.index + match[0].length - 1;
+    let depth = 0;
+    let cursor = open;
+    while (cursor < body.length) {
+      if (body[cursor] === "(") depth += 1;
+      else if (body[cursor] === ")") {
+        depth -= 1;
+        if (depth === 0) break;
+      }
+      cursor += 1;
+    }
+    if (depth !== 0) continue;
+    const condition = body.slice(open + 1, cursor);
+    let after = cursor + 1;
+    while (after < body.length && /\s/.test(body[after]!)) after += 1;
+    let end = after + 1;
+    if (body[after] === "{") {
+      let braces = 0;
+      let scan = after;
+      while (scan < body.length) {
+        if (body[scan] === "{") braces += 1;
+        else if (body[scan] === "}") {
+          braces -= 1;
+          if (braces === 0) break;
+        }
+        scan += 1;
+      }
+      if (braces !== 0) continue;
+      end = scan + 1;
+    } else {
+      end = body.indexOf(";", after);
+      if (end === -1) continue;
+    }
+    guards.push({ condition, start: after, end });
+  }
+  return guards;
+}
+
+function toleratesAbsence(condition: string): boolean {
+  return ABSENCE_TOLERANT_PATTERN.some((pattern) => pattern.test(condition));
+}
+
+function rejectsWhenMissing(condition: string, name: string): boolean {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return (
+    new RegExp(`!\\s*${escaped}\\b`).test(condition) ||
+    new RegExp(`${escaped}\\s*!==?\\s*["']`).test(condition)
+  );
+}
+
+/**
+ * Indexes routes that require a query value without validating one: `const
+ * attention = req.query.attention` then `if (attention !== "blocked")` rejects
+ * the request with 400 when the value is absent, and the generated tool had no
+ * way to send it. A 400 guard nested inside `if (field !== undefined) {` only
+ * rejects a bad value, which the tool cannot produce, so those do not count.
+ */
+function directRequiredQuerySites(spans: RouteSpan[]): RequiredQuerySite[] {
+  const sites: RequiredQuerySite[] = [];
+  for (const span of spans) {
+    const reads = new Set(
+      [...span.body.matchAll(new RegExp(QUERY_READ_PATTERN.source, "g"))].map((m) => m[1]!),
+    );
+    if (reads.size === 0) continue;
+    const rejections = [
+      ...span.body.matchAll(new RegExp(REJECTION_PATTERN.source, "g")),
+    ].map((match) => match.index!);
+    if (rejections.length === 0) continue;
+
+    const aliases = new Map<string, string>();
+    for (const match of span.body.matchAll(
+      new RegExp(QUERY_ASSIGNMENT_PATTERN.source, "g"),
+    )) {
+      for (const field of reads) {
+        if (match[2]!.includes(`req.query.${field}`)) aliases.set(match[1]!, field);
+      }
+    }
+    const guards = guardClauses(span.body);
+    const required = new Map<string, number>();
+    for (const rejection of rejections) {
+      const chain = guards.filter((guard) => guard.start <= rejection && rejection < guard.end);
+      const governing = chain.at(-1);
+      if (!governing) continue;
+      for (const [name, field] of [...aliases, ...[...reads].map((f) => [f, f] as const)]) {
+        if (!rejectsWhenMissing(governing.condition, name)) continue;
+        if (chain.some((guard) => toleratesAbsence(guard.condition))) continue;
+        if (!required.has(field)) required.set(field, governing.start);
+      }
+    }
+    if (required.size === 0) continue;
+    sites.push({
+      file: span.file,
+      line: span.startLine + span.body.slice(0, required.values().next().value!).split("\n").length - 1,
+      schema: "req.query",
+      method: span.method,
+      path: span.path,
+      required: [...required.keys()].sort(),
+    });
+  }
+  return sites;
+}
+
+function validatedQuerySites(): RequiredQuerySite[] {
   const sites: RequiredQuerySite[] = [];
   for (const file of readdirSync(routesDir).filter((entry) => entry.endsWith(".ts"))) {
     if (file.endsWith(".test.ts")) continue;
     const source = readFileSync(join(routesDir, file), "utf8");
     const routes = [...source.matchAll(new RegExp(ROUTE_PATTERN.source, "g"))];
-    const prefix = ROUTE_FILE_PREFIXES[file] ?? "/api";
     for (const match of source.matchAll(new RegExp(QUERY_VALIDATION_PATTERN.source, "g"))) {
-      const schemaName = match[1];
+      const schemaName = match[1]!;
       const schema = (sharedSchemas as unknown as Record<string, LooseSchema | undefined>)[
         schemaName
       ];
@@ -89,18 +256,12 @@ function requiredQuerySites(): RequiredQuerySite[] {
       if (required.length === 0) continue;
       const enclosing = routes.filter((entry) => (entry.index ?? 0) < (match.index ?? 0)).pop();
       if (!enclosing) continue;
-      const routePath = enclosing[2]
-        .replace(/\*([A-Za-z0-9_]+)/g, "{$1}")
-        .replace(/:([A-Za-z0-9_]+)/g, "{$1}");
-      const mounted = (
-        routePath.startsWith("/api") ? routePath : `${prefix}${routePath === "/" ? "" : routePath}`
-      ).replace(/\/+/g, "/");
       sites.push({
         file,
         line: source.slice(0, match.index ?? 0).split("\n").length,
         schema: schemaName,
-        method: enclosing[1].toUpperCase(),
-        path: mounted.replace(/^\/api/, ""),
+        method: enclosing[1]!.toUpperCase(),
+        path: mountedRoutePath(file, enclosing[2]!),
         required,
       });
     }
@@ -108,13 +269,47 @@ function requiredQuerySites(): RequiredQuerySite[] {
   return sites;
 }
 
+function requiredQuerySites(): RequiredQuerySite[] {
+  return [...validatedQuerySites(), ...directRequiredQuerySites(routeSpans())];
+}
+
 describe("generated tool input contracts", () => {
   it("enumerates the routes that require a query parameter", () => {
     const sites = requiredQuerySites();
-    expect(sites.map((site) => `${site.method} ${normalizePath(site.path)}`).sort()).toEqual([
-      "GET /agents/me/inbox/mine",
-      "GET /companies/{}/search/extract",
+    expect(
+      sites
+        .map((site) => `${site.method} ${normalizePath(site.path)} ${site.required.join(",")}`)
+        .sort(),
+    ).toEqual([
+      "GET /agents/me/inbox/mine userId",
+      "GET /companies/{}/issues/count attention",
+      "GET /companies/{}/search/extract contains",
+      "GET /plugins/{}/bridge/stream/{} companyId",
+      "GET /tool-gateway/audit companyId,cursor",
+      "GET /tool-gateway/runtime-slots companyId",
+      "POST /tool-gateway/action-requests/{}/approve companyId",
+      "POST /tool-gateway/action-requests/{}/decline companyId",
+      "POST /tool-gateway/runtime-slots/{}/restart companyId",
+      "POST /tool-gateway/runtime-slots/{}/stop companyId",
     ]);
+  });
+
+  it("leaves a route that needs no query out of the required list", () => {
+    for (const operation of [
+      "GET /companies/{companyId}/search",
+      "GET /companies/{companyId}/slack/endpoints/{endpointId}/search",
+      "POST /companies/{companyId}/slack/endpoints/{endpointId}/search/connect",
+      "PUT /companies/{companyId}/slack/endpoints/{endpointId}/search",
+      "DELETE /companies/{companyId}/slack/endpoints/{endpointId}/search",
+    ]) {
+      const [method, path] = operation.split(" ");
+      const sites = requiredQuerySites();
+      expect(
+        sites.filter(
+          (site) => site.method === method && normalizePath(site.path) === normalizePath(path!),
+        ),
+      ).toEqual([]);
+    }
   });
 
   it("exposes every query parameter the validated route requires", () => {
@@ -126,6 +321,7 @@ describe("generated tool input contracts", () => {
     for (const site of requiredQuerySites()) {
       const spec = byOperation.get(`${site.method} ${normalizePath(site.path)}`);
       if (!spec) {
+        if (EXCLUDED_OPERATIONS[`${site.method} /api${site.path}`]) continue;
         violations.push(`${site.method} ${site.path} has no generated tool (${site.file}:${site.line})`);
         continue;
       }

@@ -49,6 +49,7 @@ import {
   updateIssueSchema,
   stalledReviewDecisionSchema,
   createIssueLabelSchema,
+  issueCountQuerySchema,
   addIssueCommentSchema,
   checkoutIssueSchema,
   linkIssueApprovalSchema,
@@ -693,6 +694,24 @@ const responses = {
 
 const jsonBody = (schema: z.ZodTypeAny) => ({
   content: { "application/json": { schema } },
+  required: true as const,
+});
+
+// A multipart-only route must declare it: an undeclared requestBody reads as a
+// JSON route to supportsJsonRequest() in scripts/generate-mcp-tools.ts, which
+// then advertises a tool with no way to carry the file.
+const multipartFileRequestBody = (field: string, description: string) => ({
+  content: {
+    "multipart/form-data": {
+      schema: {
+        type: "object",
+        properties: {
+          [field]: { type: "string", format: "binary", description },
+        },
+        required: [field],
+      },
+    },
+  },
   required: true as const,
 });
 
@@ -7620,6 +7639,7 @@ registry.registerPath({
   tags: ["assets"],
   summary: "Upload company logo",
   request: { params: z.object({ companyId: z.string() }) },
+  requestBody: multipartFileRequestBody("file", "The company logo image."),
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
@@ -9470,7 +9490,10 @@ registry.registerPath({
   path: "/api/plugins/{pluginId}/bridge/stream/{channel}",
   tags: ["plugins"],
   summary: "Subscribe to a plugin bridge SSE stream",
-  request: { params: z.object({ pluginId: z.string(), channel: z.string() }) },
+  request: {
+    params: z.object({ pluginId: z.string(), channel: z.string() }),
+    query: z.object({ companyId: z.string() }),
+  },
   responses: {
     200: { description: "Server-sent event stream (text/event-stream)" },
     401: r.unauthorized,
@@ -9589,7 +9612,7 @@ for (const route of [
     "get",
     "/api/companies/{companyId}/issues/count",
     "Count issues in a company",
-    undefined,
+    issueCountQuerySchema,
   ],
 ] as const) {
   registerCurrentRoute({
