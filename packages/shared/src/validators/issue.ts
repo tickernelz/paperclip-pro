@@ -9,6 +9,7 @@ import {
   ISSUE_EXECUTION_STAGE_TYPES,
   ISSUE_EXECUTION_STATE_STATUSES,
   ISSUE_COMMENT_AUTHOR_TYPES,
+  ISSUE_COMMENT_DELIVERY_MODES,
   ISSUE_COMMENT_METADATA_ROW_TYPES,
   ISSUE_COMMENT_PRESENTATION_KINDS,
   ISSUE_COMMENT_PRESENTATION_TONES,
@@ -1098,7 +1099,7 @@ export const addIssueCommentSchema = z.object({
   reopen: z.boolean().optional(),
   resume: z.boolean().optional(),
   interrupt: z.boolean().optional(),
-  deliver: z.enum(["steer", "queue"]).optional(),
+  deliver: z.enum(ISSUE_COMMENT_DELIVERY_MODES).optional(),
 });
 
 export type AddIssueComment = z.infer<typeof addIssueCommentSchema>;
