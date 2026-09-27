@@ -1375,7 +1375,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17064",
+    "boardGuard": "assertBoard@issues.ts:17209",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12758,7 +12758,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16049",
+    "boardGuard": "assertBoard@issues.ts:16194",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21635,7 +21635,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15708",
+    "boardGuard": "assertBoard@issues.ts:15728",
     "authorityCapability": null,
     "parameters": [
       {
@@ -32817,7 +32817,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8671",
+    "boardGuard": "assertBoard@issues.ts:8673",
     "authorityCapability": null,
     "parameters": [
       {
@@ -32878,7 +32878,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15678",
+    "boardGuard": "assertBoard@issues.ts:15698",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34430,7 +34430,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17006",
+    "boardGuard": "assertBoard@issues.ts:17151",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34859,11 +34859,10 @@
     },
     "guards": [
       "assertBoard",
-      "assertQueueMutationTarget",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15778",
+    "boardGuard": "assertBoard@issues.ts:16144",
     "authorityCapability": null,
     "parameters": [
       {
@@ -38413,6 +38412,13 @@
           "censorUsernameInLogs": {
             "type": "boolean"
           },
+          "defaultMessageDelivery": {
+            "type": "string",
+            "enum": [
+              "steer",
+              "queue"
+            ]
+          },
           "executionMode": {
             "type": "string",
             "enum": [
@@ -38524,7 +38530,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:15646",
+    "boardGuard": "assertBoard@issues.ts:15666",
     "authorityCapability": null,
     "parameters": [
       {

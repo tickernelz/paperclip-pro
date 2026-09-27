@@ -14,6 +14,7 @@ export type InstanceSettingsWriteDb = Pick<
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_BACKUP_RETENTION,
+  DEFAULT_MESSAGE_DELIVERY,
   PAPERCLIP_CLOUD_MANAGED_BY,
   instanceGeneralSettingsSchema,
   type InstanceGeneralSettings,
@@ -218,6 +219,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
       feedbackDataSharingPreference:
         parsed.data.feedbackDataSharingPreference ?? DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
       backupRetention: parsed.data.backupRetention ?? DEFAULT_BACKUP_RETENTION,
+      defaultMessageDelivery: parsed.data.defaultMessageDelivery ?? DEFAULT_MESSAGE_DELIVERY,
       // Absent => unrestricted; only carry through an explicit policy.
       ...(parsed.data.executionMode ? { executionMode: parsed.data.executionMode } : {}),
     };
@@ -227,6 +229,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
     keyboardShortcuts: false,
     feedbackDataSharingPreference: DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
     backupRetention: DEFAULT_BACKUP_RETENTION,
+    defaultMessageDelivery: DEFAULT_MESSAGE_DELIVERY,
   };
 }
 

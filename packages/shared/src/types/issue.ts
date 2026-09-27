@@ -1030,6 +1030,39 @@ export type IssueQueuedCommentSteeringDisposition =
   | "unsupported"
   | "temporarily_unavailable";
 
+/**
+ * How a just-posted message was actually delivered, and why a steer did not
+ * happen when one was resolved.
+ *
+ * Every create-comment response carries this. A caller must never have to
+ * infer the outcome: "queued because you asked" and "you asked to steer and
+ * got a queue" are different facts about a message the agent has not read yet,
+ * and only the second one is worth telling the person about.
+ */
+export type IssueCommentDeliveryReason =
+  /** The effective mode was `"queue"`, so no steer was ever attempted. */
+  | "not_requested"
+  /** Only a board user can steer; an agent actor's request is queued as asked. */
+  | "board_only"
+  /** No live run target that could accept the message this turn. */
+  | "no_active_run"
+  /** The target runner's protocol does not support same-turn steering. */
+  | "legacy_protocol"
+  /** Agent Chat issues process their messages in order at turn boundaries. */
+  | "conversation_issue"
+  /** Steering was attempted after every precondition passed and still failed. */
+  | "steering_failed";
+
+export interface IssueCommentDelivery {
+  deliveredAs: "queued" | "steered";
+  /**
+   * Present exactly when `deliveredAs` is `"queued"`. Absent on a steer.
+   * A queued response without this field would be indistinguishable from a
+   * silent downgrade, which is the one outcome this type exists to prevent.
+   */
+  steeringUnavailable?: IssueCommentDeliveryReason;
+}
+
 export interface IssueQueuedCommentEntry {
   /** Immutable response projected from its durable interaction receipt. */
   source?: {

@@ -52,6 +52,14 @@ const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 
 function registerServiceMocks() {
   vi.doMock("../routes/authz.js", async () => vi.importActual("../routes/authz.js"));
+  vi.doMock("../services/instance-settings.js", () => ({
+    instanceSettingsService: () => ({
+      get: vi.fn(async () => ({ id: "instance-settings-1", general: {} })),
+      listCompanyIds: vi.fn(async () => ["company-1"]),
+      getGeneral: vi.fn(async () => ({ defaultMessageDelivery: "queue" })),
+      getExperimental: vi.fn(async () => ({ enableExternalObjects: false })),
+    }),
+  }));
 
   vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
@@ -125,6 +133,7 @@ function registerServiceMocks() {
         },
       })),
       listCompanyIds: vi.fn(async () => ["company-1"]),
+      getGeneral: vi.fn(async () => ({ defaultMessageDelivery: "queue" })),
     }),
     issueApprovalService: () => ({}),
     issueReferenceService: () => ({

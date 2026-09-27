@@ -40,6 +40,9 @@ export {
 export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
+  messageDeliverySchema,
+  type MessageDeliveryRequest,
+  MESSAGE_DELIVERY_LITERALS,
   patchInstanceGeneralSettingsSchema,
   type InstanceGeneralSettings,
   type PatchInstanceGeneralSettings,
