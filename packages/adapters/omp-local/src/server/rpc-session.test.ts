@@ -399,6 +399,27 @@ describe("OMP RPC session protocol", () => {
     expect(emitted).not.toContain("replay state");
   });
 
+  it("strips providerPayload from turn_end toolResults as print mode does", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-tools" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "turn_end",
+      message: { role: "assistant", content: [], providerPayload: { a: 1 } },
+      toolResults: [
+        { toolCallId: "t1", content: "tool output stays", providerPayload: { b: 2 } },
+      ],
+    });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    state.finish();
+    await running;
+
+    const emitted = state.logged.join("");
+    expect(emitted).toContain("tool output stays");
+    expect(emitted).not.toContain("providerPayload");
+  });
+
   it("closes the run's stdin once the terminal agent_end arrives", async () => {
     const running = run();
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });

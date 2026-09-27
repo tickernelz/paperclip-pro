@@ -44,7 +44,11 @@ export function shapeOmpRpcFrame(frame: Record<string, unknown>): Record<string,
     };
   }
   if (MESSAGE_SNAPSHOT_TYPES.has(type)) {
-    return { ...frameRest, message: stripProviderPayload(frameMessage) };
+    const shaped: Record<string, unknown> = { ...frameRest, message: stripProviderPayload(frameMessage) };
+    if (type === "turn_end" && Array.isArray(frame.toolResults)) {
+      shaped.toolResults = frame.toolResults.map(stripProviderPayload);
+    }
+    return shaped;
   }
   return frame;
 }

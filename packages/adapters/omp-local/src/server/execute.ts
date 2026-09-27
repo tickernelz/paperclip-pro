@@ -28,6 +28,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   paperclipAgentPromptTemplate,
+  appendWithCap,
   asBoolean,
   asNumber,
   asString,
@@ -84,6 +85,8 @@ import {
   type PaperclipMcpExtension,
   type PaperclipMcpProbe,
 } from "./paperclip-mcp.js";
+
+const RESULT_TRANSCRIPT_MAX_CHARS = 16 * 1024;
 
 const CAPABILITY_MANIFEST = {
   bindings: [
@@ -145,6 +148,7 @@ type ProcessAttempt = {
   rpcSessionId: string | null;
   rpcPromptError: string | null;
   rpcProtocolVersion: number | null;
+  stdoutTranscript: string;
 };
 
 function stringList(value: unknown, commaSeparated = false): string[] {
@@ -900,6 +904,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         }
       };
       let mcpConnectFailed = false;
+      let stdoutTranscript = "";
       const bufferedOnLog = async (stream: "stdout" | "stderr", chunk: string): Promise<void> => {
         if (mcpArmed && !mcpConnectFailed && PAPERCLIP_MCP_CONNECT_FAILURE_RE.test(chunk)) {
           mcpConnectFailed = true;
@@ -920,6 +925,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           stdoutBuffer = stdoutBuffer.slice(newline + 1);
           await queueLog("stdout", completeLine);
           await ingestLine(completeLine);
+          stdoutTranscript = appendWithCap(stdoutTranscript, completeLine, RESULT_TRANSCRIPT_MAX_CHARS);
           newline = stdoutBuffer.indexOf("\n");
         }
       };
@@ -1026,6 +1032,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         rpcSessionId,
         rpcPromptError,
         rpcProtocolVersion,
+        stdoutTranscript,
       };
     };
 
@@ -1109,7 +1116,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           ...(executionRecovery?.kind === "interrupted"
             ? { executionCancellation: { state: "acknowledged" } }
             : {}),
-          stdout: attempt.proc.stdout,
+          stdout: attempt.stdoutTranscript,
           stderr: attempt.proc.stderr,
           errors: rpcPromptError ? [...attempt.parsed.errors, rpcPromptError] : attempt.parsed.errors,
           toolCalls: attempt.parsed.toolCalls,
