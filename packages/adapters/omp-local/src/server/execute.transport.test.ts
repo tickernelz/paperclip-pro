@@ -138,4 +138,72 @@ describe("OMP local transport selection", () => {
     expect(Buffer.byteLength(JSON.stringify(result.resultJson ?? {}), "utf8")).toBeLessThan(64 * 1024);
   });
 
+  it("keeps a verbose RPC run inside the result budget and retains ompTransport", async () => {
+    const blob = "z".repeat(40_000);
+    const sink = {
+      on: () => {},
+      write: (_data: string, cb: (error?: Error | null) => void) => cb(),
+      end: () => {},
+    };
+
+    runProcessMock.mockImplementation((async (
+      _runId: string,
+      _target: unknown,
+      _command: string,
+      _args: string[],
+      options: {
+        liveStdin?: { bind: (stream: unknown) => void } | null;
+        onLog: (stream: string, chunk: string) => Promise<void>;
+      },
+    ) => {
+      options.liveStdin?.bind(sink);
+      const emit = (frame: unknown) => options.onLog("stdout", `${JSON.stringify(frame)}\n`);
+      await emit({
+        type: "ready",
+        protocolVersion: 1,
+        supportedProtocolVersions: [1, 2],
+        maxFrameBytes: 1048576,
+        maxReassembledFrameBytes: 67108864,
+      });
+      await emit({ id: "negotiate-1", type: "response", command: "negotiate_protocol", success: true });
+      await emit({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "s-1" } });
+      await emit({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      for (let index = 0; index < 40; index += 1) {
+        await emit({
+          type: "message_update",
+          message: { role: "assistant", content: [{ type: "text", text: blob }] },
+          assistantMessageEvent: { type: "text_delta", delta: blob, partial: { content: [{ type: "text", text: blob }] } },
+        });
+      }
+      await emit({ type: "message_end", message: { role: "assistant", content: [{ type: "text", text: "done" }] } });
+      await emit({ type: "agent_end", isTerminal: true, messages: [] });
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: blob.repeat(10),
+        stderr: "",
+        pid: 4321,
+        startedAt: new Date().toISOString(),
+      };
+    }) as never);
+
+    const result = await execute({
+      runId: "run-transport",
+      agent: { id: "agent-1", companyId: "company-1", name: "OMP", adapterType: "omp_local", adapterConfig: {} },
+      runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+      config: { command: commandPath, noSession: true, cwd: workspaceCwd },
+      context: {},
+      onLog: async () => {},
+    } as never);
+
+    const resultJson = (result.resultJson ?? {}) as Record<string, unknown>;
+    expect(resultJson.ompTransport).toEqual({ mode: "rpc", protocolVersion: 2 });
+    expect(String(resultJson.stdout ?? "").length).toBeLessThanOrEqual(16 * 1024);
+    expect(String(resultJson.stdout ?? "")).not.toContain("partial");
+    expect(resultJson.truncationReason).toBeUndefined();
+    expect(resultJson.originalSizeBytes).toBeUndefined();
+    expect(Buffer.byteLength(JSON.stringify(resultJson), "utf8")).toBeLessThan(64 * 1024);
+  });
+
 });
