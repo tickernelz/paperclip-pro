@@ -1040,7 +1040,10 @@ export type IssueQueuedCommentSteeringDisposition =
  * and only the second one is worth telling the person about.
  */
 export type IssueCommentDeliveryReason =
-  /** The effective mode was `"queue"`, so no steer was ever attempted. */
+  /**
+   * No steer was attempted: the effective mode was `"queue"`, or the target
+   * queues by design and steering it was never requested.
+   */
   | "not_requested"
   /** Only a board user can steer; an agent actor's request is queued as asked. */
   | "board_only"
