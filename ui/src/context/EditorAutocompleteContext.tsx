@@ -5,6 +5,7 @@ import { companySkillsApi } from "../api/companySkills";
 import { routinesApi } from "../api/routines";
 import { useCompany } from "./CompanyContext";
 import { queryKeys } from "../lib/queryKeys";
+import { MESSAGE_DELIVERY_COMMAND_OPTIONS } from "../lib/message-delivery-command";
 
 export interface SkillCommandOption {
   id: string;
@@ -68,6 +69,7 @@ export function EditorAutocompleteProvider({ children }: { children: ReactNode }
 
   const value = useMemo<EditorAutocompleteContextValue>(() => ({
     slashCommands: [
+      ...MESSAGE_DELIVERY_COMMAND_OPTIONS,
       ...companySkills.map((skill) => ({
         id: `skill:${skill.id}`,
         kind: "skill" as const,

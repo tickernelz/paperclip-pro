@@ -47,6 +47,12 @@ import {
 import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";
+import {
+  deliveryDispositionFromIssueUpdate,
+  type MessageDeliveryDisposition,
+  type MessageDeliveryMode,
+} from "../lib/message-delivery-command";
+import { useDefaultMessageDelivery } from "../hooks/useDefaultMessageDelivery";
 import { approvalsApi } from "../api/approvals";
 import { activityApi, type RunForIssue } from "../api/activity";
 import {
@@ -1272,8 +1278,10 @@ type IssueDetailChatTabProps = {
     reassignment?: CommentReassignment,
     attachmentIds?: string[],
     clientRequestId?: string,
-  ) => Promise<void>;
+    deliver?: MessageDeliveryMode,
+  ) => Promise<MessageDeliveryDisposition | void>;
   onReviewConversation: () => Promise<void>;
+  defaultMessageDelivery?: MessageDeliveryMode;
   onImageUpload: (file: File) => Promise<string>;
   onAttachImage: (file: File) => Promise<IssueAttachment | void>;
   onInterruptQueued: (runId: string | null) => Promise<void>;
@@ -1392,6 +1400,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   onVote,
   onAdd,
   onReviewConversation,
+  defaultMessageDelivery,
   onImageUpload,
   onAttachImage,
   onInterruptQueued,
@@ -2417,6 +2426,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             onVote={onVote}
             onAdd={onAdd}
             onReviewConversation={onReviewConversation}
+            defaultMessageDelivery={defaultMessageDelivery}
             imageUploadHandler={onImageUpload}
             onAttachImage={onAttachImage}
             onInterruptQueued={onInterruptQueued}
@@ -2887,6 +2897,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setMobileToolbar,
   } = useBreadcrumbs();
   const queryClient = useQueryClient();
+  const defaultMessageDelivery = useDefaultMessageDelivery();
   const navigate = useNavigate();
   const navigationType = useNavigationType();
   const location = useLocation();
@@ -4459,11 +4470,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   });
 
   const addComment = useMutation({
-    mutationFn: async ({ body, reopen, interrupt, attachmentIds, clientRequestId }: {
-      body: string; reopen?: boolean; interrupt?: boolean; attachmentIds?: string[]; clientRequestId?: string;
+    mutationFn: async ({ body, reopen, interrupt, attachmentIds, clientRequestId, deliver }: {
+      body: string; reopen?: boolean; interrupt?: boolean; attachmentIds?: string[]; clientRequestId?: string; deliver?: MessageDeliveryMode;
     }) => {
       if (issue?.conversationAgentId) clearLegacyChatMessageRequests(`${issue.companyId}:${currentUserId}:${issue.conversationAgentId}`);
-      return issuesApi.addComment(await resolveWritableIssueId(), body, reopen, interrupt, attachmentIds, clientRequestId ?? crypto.randomUUID());
+      return issuesApi.addComment(await resolveWritableIssueId(), body, reopen, interrupt, attachmentIds, clientRequestId ?? crypto.randomUUID(), deliver);
     },
     onMutate: async ({ body, reopen, interrupt }) => {
       // Start cache cancellation immediately but do not put it in front of the
@@ -4838,6 +4849,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       reassignment,
       attachmentIds,
       clientRequestId,
+      deliver,
     }: {
       body: string;
       reopen?: boolean;
@@ -4845,10 +4857,12 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       reassignment: CommentReassignment;
       attachmentIds?: string[];
       clientRequestId?: string;
+      deliver?: MessageDeliveryMode;
     }) =>
       issuesApi.update(issueId!, {
         comment: body,
         commentClientRequestId: clientRequestId,
+        ...(deliver === undefined ? {} : { commentDeliver: deliver }),
         ...(attachmentIds?.length ? { attachmentIds } : {}),
         assigneeAgentId: reassignment.assigneeAgentId,
         assigneeUserId: reassignment.assigneeUserId,
@@ -6197,18 +6211,22 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       reassignment?: CommentReassignment,
       attachmentIds?: string[],
       clientRequestId?: string,
+      deliver?: MessageDeliveryMode,
     ) => {
       if (reassignment) {
-        await addCommentAndReassign.mutateAsync({
+        const updated = await addCommentAndReassign.mutateAsync({
           body,
           reopen,
           reassignment,
           attachmentIds,
           clientRequestId,
+          deliver,
         });
-        return;
+        return deliveryDispositionFromIssueUpdate(updated);
       }
-      await addComment.mutateAsync({ body, reopen, attachmentIds, clientRequestId });
+      return addComment.mutateAsync({
+        body, reopen, attachmentIds, clientRequestId, deliver,
+      });
     },
     [addComment, addCommentAndReassign],
   );
@@ -7850,6 +7868,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   queuedCommentReason={queuedCommentReason}
                   onVote={handleCommentVote}
                   onAdd={handleChatAdd}
+                  defaultMessageDelivery={defaultMessageDelivery}
                   onReviewConversation={async () => {
                     await Promise.all([
                       refetchComments({ throwOnError: true }),

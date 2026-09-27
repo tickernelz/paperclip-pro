@@ -75,6 +75,13 @@ import type { MentionOption } from "@/components/MarkdownEditor";
 import type { IssueAttachment, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import type { RunnerGoalCapability } from "@tickernelz/paperclip-pro-shared";
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
+import {
+  describeDeliveryDowngrade,
+  normalizeComposerCommandText,
+  parseMessageDeliveryCommand,
+  type MessageDeliveryDisposition,
+  type MessageDeliveryMode,
+} from "@/lib/message-delivery-command";
 import { TaskChatComposerTakeoverActionsContext } from "./TaskChatComposerTakeoverContext";
 
 import { TaskChatPausedTakeover, type TaskComposerPause } from "./TaskChatPausedTakeover";
@@ -108,7 +115,8 @@ interface TaskChatComposerProps {
     reassignment?: CommentReassignment,
     attachmentIds?: string[],
     clientRequestId?: string,
-  ) => Promise<void> | void;
+    deliver?: MessageDeliveryMode,
+  ) => Promise<MessageDeliveryDisposition | void> | MessageDeliveryDisposition | void;
   confirmedSubmissionIds?: ReadonlySet<string>;
   onStop?: () => Promise<void>;
   stopPending?: boolean;
@@ -153,6 +161,8 @@ interface TaskChatComposerProps {
     label?: string;
     onOpen: () => void;
   } | null;
+  /** Delivery mode for a message sent without an explicit /steer or /queue. */
+  defaultMessageDelivery?: MessageDeliveryMode;
   runnerGoalCapability?: RunnerGoalCapability | null;
   onRunnerGoalCommand?: (
     command: RunnerGoalComposerCommand,
@@ -175,32 +185,8 @@ export type ParsedRunnerGoalCommand =
   | { matched: true; command: RunnerGoalComposerCommand }
   | { matched: true; error: string };
 
-function normalizeRunnerGoalCommandText(value: string): string {
-  const trimmed = value.trim();
-  // MDXEditor's link extension can reinterpret a selected action command plus
-  // its subsequently typed argument as one relative autolink. Accept only the
-  // exact whole-document shape it generates so the action still cannot fall
-  // through as a comment. Ordinary Markdown links remain ordinary comments.
-  const relativeAutolink = trimmed.match(
-    /^\[\/(?:go(?:al)?)?[ \t\u00a0]*\]\(<(\/goal(?:[ \t\u00a0].*)?)>\)$/s,
-  );
-  if (relativeAutolink) return relativeAutolink[1]!.replaceAll("\u00a0", " ");
-
-  const encodedAutolink = trimmed.match(
-    /^\[\/(?:go(?:al)?)?[ \t\u00a0]*\]\((\/goal(?:%20|%C2%A0).*)\)$/s,
-  );
-  if (encodedAutolink) {
-    try {
-      return decodeURIComponent(encodedAutolink[1]!).replaceAll("\u00a0", " ");
-    } catch {
-      return trimmed;
-    }
-  }
-  return trimmed.replaceAll("\u00a0", " ");
-}
-
 export function parseRunnerGoalCommand(value: string): ParsedRunnerGoalCommand {
-  const trimmed = normalizeRunnerGoalCommandText(value);
+  const trimmed = normalizeComposerCommandText(value);
   if (!trimmed) return { matched: false };
   const firstWhitespace = trimmed.search(/\s/);
   const firstToken =
@@ -417,6 +403,7 @@ export function TaskChatComposer({
   takeover = null,
   pendingTakeover = null,
   runnerGoalCapability = null,
+  defaultMessageDelivery,
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
@@ -437,6 +424,8 @@ export function TaskChatComposer({
       mountedTaskKey.current = undefined;
     };
   }, [draftKey]);
+  const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
+  const resolvedDefaultDelivery = defaultMessageDelivery ?? "steer";
   const [takeoverBusy, setTakeoverBusy] = useState(false);
   const [takeoverError, setTakeoverError] = useState<string | null>(null);
   const [takeoverHeaderClaimed, setTakeoverHeaderClaimed] = useState(false);
@@ -491,6 +480,7 @@ export function TaskChatComposer({
   function changeBody(value: string) {
     bodyRef.current = value;
     setBody(value);
+    setDeliveryNotice(null);
     const pending = pendingDraftRef.current;
     if (!pending || pending.draftKey !== draftKey ||
         loadDraftSubmission(pending.draftKey)?.attemptId !== pending.attemptId) return;
@@ -864,6 +854,19 @@ export function TaskChatComposer({
     const goalCommand = queuedEdit
       ? ({ matched: false } as const)
       : parseRunnerGoalCommand(submittedBody);
+    const deliveryCommand = queuedEdit
+      ? ({ matched: false } as const)
+      : parseMessageDeliveryCommand(submittedBody);
+    if (deliveryCommand.matched && "error" in deliveryCommand) {
+      setActionError(deliveryCommand.error);
+      return;
+    }
+    const delivery = deliveryCommand.matched && "command" in deliveryCommand
+      ? deliveryCommand.command
+      : null;
+    const deliver = delivery?.mode;
+    const effectiveDelivery = deliver ?? resolvedDefaultDelivery;
+    const messageBody = delivery ? delivery.prompt : submittedBody;
     if (goalCommand.matched && conversationMode) {
       setActionError("Create a separate task for work that needs an ongoing execution goal.");
       return;
@@ -937,10 +940,10 @@ export function TaskChatComposer({
       .map((item) => `[${escapeMarkdownLabel(item.name)}](${item.contentPath})`)
       .join("\n");
     // A queued edit must preserve the complete Markdown source. Normal sends
-    // keep the longstanding trimmed-body behavior.
+    // keep the longstanding trimmed-body behavior, minus any command prefix.
     const fullBody = queuedEdit
       ? submittedBody
-      : [trimmed, refLines].filter(Boolean).join("\n\n");
+      : [messageBody.trim(), refLines].filter(Boolean).join("\n\n");
     const hasReassignment =
       showAssignee && assigneeValue !== currentAssigneeValue;
     const reassignment = hasReassignment
@@ -1002,7 +1005,7 @@ export function TaskChatComposer({
                 item.attachmentId &&
                 (!item.inline ||
                   (item.contentPath &&
-                    submittedBody.includes(item.contentPath))),
+                    messageBody.includes(item.contentPath))),
             )
             .map((item) => item.attachmentId!),
         ),
@@ -1011,12 +1014,20 @@ export function TaskChatComposer({
         pendingDraftRef.current = { draftKey, attemptId, submittedBody, submittedAttachmentIds: attachmentIds };
         changeBody(bodyRef.current);
       }
-      await onAdd(fullBody, reopen, reassignment, attachmentIds.length ? attachmentIds : undefined, attemptId);
+      const disposition = await onAdd(
+        fullBody,
+        reopen,
+        reassignment,
+        attachmentIds.length ? attachmentIds : undefined,
+        attemptId,
+        deliver,
+      );
       // Navigation does not invalidate the server receipt. Settle the captured
       // task before checking whether this composer is still on screen.
       if (draftKey) settleDraftSubmission(draftKey, attemptId,
         mountedTaskKey.current === draftKey ? bodyRef.current : undefined);
       if (mountedTaskKey.current !== draftKey) return;
+      setDeliveryNotice(describeDeliveryDowngrade(effectiveDelivery, disposition));
       const submittedIds = new Set(submittedAttachments.map((item) => item.id));
       setAttachments((current) =>
         current.filter((item) => !submittedIds.has(item.id)),
@@ -1351,6 +1362,16 @@ export function TaskChatComposer({
               data-testid="task-chat-goal-error"
             >
               {actionError}
+            </p>
+          ) : null}
+
+          {deliveryNotice ? (
+            <p
+              className="px-1 text-xs text-muted-foreground"
+              role="status"
+              data-testid="task-chat-delivery-notice"
+            >
+              {deliveryNotice}
             </p>
           ) : null}
 

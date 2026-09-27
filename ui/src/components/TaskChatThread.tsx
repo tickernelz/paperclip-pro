@@ -490,6 +490,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     currentUserId,
     onAdd,
     onReviewConversation,
+    defaultMessageDelivery,
     onCancelRun,
     stopPending,
     stopScope,
@@ -2474,7 +2475,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     async (...args: Parameters<typeof onAdd>) => {
       if (assigneeUsesPaperclipRunner) setRunnerSubmissionPending(true);
       try {
-        await onAdd(...args);
+        return await onAdd(...args);
       } catch (error) {
         setRunnerSubmissionPending(false);
         throw error;
@@ -3056,6 +3057,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         !("clientStatus" in comment && comment.clientStatus)
                       ).map((comment) => comment.clientRequestId!))}
                       onReviewConversation={onReviewConversation}
+                      defaultMessageDelivery={defaultMessageDelivery}
                       onStop={liveRun ? onCancelRun : undefined}
                       stopPending={stopPending}
                       stopScope={stopScope}
