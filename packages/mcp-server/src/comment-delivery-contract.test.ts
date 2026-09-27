@@ -125,7 +125,8 @@ describe("the comment tool and the comment route agree on delivery", () => {
     const violations: string[] = [];
     let checked = 0;
     for (const site of sites) {
-      const validated = Object.keys(site.schema.properties ?? {}).filter(isDeliveryField);
+      const properties = (site.schema.properties ?? {}) as Record<string, Record<string, unknown>>;
+      const validated = Object.keys(properties).filter(isDeliveryField);
       if (validated.length === 0) continue;
       const toolName = CURATED_OPERATIONS[site.key];
       if (!toolName) continue;
@@ -143,9 +144,9 @@ describe("the comment tool and the comment route agree on delivery", () => {
           );
           continue;
         }
-        if (JSON.stringify(exposed[field]) !== JSON.stringify(site.schema.properties?.[field])) {
+        if (JSON.stringify(exposed[field]) !== JSON.stringify(properties[field])) {
           violations.push(
-            `${toolName} (${site.key}) publishes ${field} as ${JSON.stringify(exposed[field])} but the route validates ${JSON.stringify(site.schema.properties?.[field])}`,
+            `${toolName} (${site.key}) publishes ${field} as ${JSON.stringify(exposed[field])} but the route validates ${JSON.stringify(properties[field])}`,
           );
         }
       }
