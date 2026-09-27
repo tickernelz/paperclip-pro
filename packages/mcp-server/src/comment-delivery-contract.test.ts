@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { PaperclipApiClient } from "./client.js";
@@ -168,4 +169,17 @@ describe("the comment tool and the comment route agree on delivery", () => {
     expect(description).toContain("not_requested");
     expect(description).toContain("board_only");
   });
+  it("single-sources every delivery mode through the shared constant", async () => {
+    const source = await readFile(
+      new URL("../../shared/src/validators/issue.ts", import.meta.url),
+      "utf8",
+    );
+    const declarations = [...source.matchAll(/^\s*(\w*[Dd]eliver\w*):\s*(.+?),?$/gm)];
+    const literals = declarations
+      .filter(([, , schema]) => !schema.includes("ISSUE_COMMENT_DELIVERY_MODES"))
+      .map(([, field, schema]) => `${field} is declared as ${schema} instead of ISSUE_COMMENT_DELIVERY_MODES`);
+    expect(declarations.length).toBeGreaterThan(0);
+    expect(literals).toEqual([]);
+  });
+
 });
