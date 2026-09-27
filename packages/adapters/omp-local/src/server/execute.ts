@@ -11,6 +11,7 @@ import {
   adapterExecutionTargetIsRemote,
   adapterExecutionTargetSessionIdentity,
   adapterExecutionTargetSessionMatches,
+  adapterExecutionTargetSupportsLiveStdin,
   adapterExecutionTargetUsesManagedHome,
   adapterExecutionTargetUsesPaperclipBridge,
   describeAdapterExecutionTarget,
@@ -61,6 +62,8 @@ import {
 } from "./parse.js";
 import { classifyOmpFailure } from "./failure.js";
 import { createOmpProgressReporter } from "./progress.js";
+import { createOmpRpcSteerSession, runOmpRpcSession } from "./rpc-session.js";
+import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 import {
@@ -103,6 +106,29 @@ const CAPABILITY_MANIFEST = {
   ],
 } as const;
 
+const RPC_CAPABILITY_MANIFEST = {
+  bindings: [
+    "omp-jsonl",
+    "omp-rpc-transport",
+    "same-turn-steering",
+    "session-dir-resume",
+    "paperclip-workspace-env",
+    "paperclip-skills",
+    "local-execution",
+  ],
+  limits: [
+    "one-process-per-heartbeat",
+    "no-interactive-dialogs",
+    "schema-driven-ui-only",
+    "no-provider-quota-hook",
+    "no-remote-session-resume",
+  ],
+} as const;
+
+export function ompRpcSteeringEnabled(config: Record<string, unknown>): boolean {
+  return asBoolean(config.rpcSteering, true);
+}
+
 type ProcessAttempt = {
   proc: {
     exitCode: number | null;
@@ -116,6 +142,9 @@ type ProcessAttempt = {
   sawProviderWork: boolean;
   reporterFailed: boolean;
   mcpConnectFailed: boolean;
+  rpcSessionId: string | null;
+  rpcPromptError: string | null;
+  rpcProtocolVersion: number | null;
 };
 
 function stringList(value: unknown, commaSeparated = false): string[] {
@@ -229,9 +258,10 @@ function buildOmpArgs(input: {
   effectiveProfile: string | null;
   settingsOverlayPath: string | null;
   mcpExtensionPath: string | null;
+  rpc: boolean;
 }): string[] {
   const { config } = input;
-  const args = ["--mode", "json", "-p"];
+  const args = input.rpc ? ["--mode", "rpc"] : ["--mode", "json", "-p"];
   const baseSystemPrompt = asString(config.systemPrompt, "").trim();
   if (baseSystemPrompt) args.push("--system-prompt", baseSystemPrompt);
   args.push("--append-system-prompt", input.systemPrompt);
@@ -328,7 +358,7 @@ function buildOmpArgs(input: {
     }
   }
   args.push(...stringList(config.extraArgs));
-  args.push(input.userPrompt);
+  if (!input.rpc) args.push(input.userPrompt);
   return args;
 }
 
@@ -702,6 +732,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       graceSec,
     });
 
+    const rpcActive = ompRpcSteeringEnabled(executionConfig) && adapterExecutionTargetSupportsLiveStdin(runtimeTarget);
     const mcpToolsets = paperclipMcpToolsets(executionConfig);
     const mcpEnabled = asBoolean(executionConfig.paperclipMcp, true);
     const mcpTransport = paperclipMcpTransport(executionConfig);
@@ -741,7 +772,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           sessionParams: null,
           executionRecovery: { kind: "bootstrap", providerWorkStarted: false },
           resultJson: {
-            capabilityManifest: CAPABILITY_MANIFEST,
+            capabilityManifest: rpcActive ? RPC_CAPABILITY_MANIFEST : CAPABILITY_MANIFEST,
             paperclipMcp: {
               transport: mcpTransport,
               source,
@@ -807,6 +838,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       ...prompts.notes,
       canResume ? `Resuming OMP session ${savedSessionId}` : `Using fresh OMP session directory ${sessionDir}`,
       ...(remote ? ["Remote execution uses an ephemeral OMP session; remote runtime directories are per run."] : []),
+      rpcActive
+        ? "OMP runs in RPC mode: the prompt travels on stdin and same-turn steering is available for this run."
+        : "OMP runs in one-shot print mode; same-turn steering is unavailable for this run.",
       mcpArmed
         ? `Paperclip MCP server armed from ${mcpCommand.source === "path" ? PAPERCLIP_MCP_BIN : mcpCommand.command} with toolsets ${mcpToolsets}${mcpProbe ? ` (${mcpProbe.toolCount ?? 0} tools, handshake ${mcpProbe.durationMs}ms)` : ""}`
         : mcpEnabled
@@ -827,13 +861,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         effectiveProfile: preparedConfig.profile,
         settingsOverlayPath: settingsOverlay?.path ?? null,
         mcpExtensionPath: mcpExtension?.path ?? null,
+        rpc: rpcActive,
       });
       if (onMeta) {
         await onMeta({
           adapterType: "omp_local",
           command: resolvedCommand,
           cwd: effectiveExecutionCwd,
-          commandArgs: args.map((value, index) => index === args.length - 1 ? `<prompt ${prompts.userPrompt.length} chars>` : value),
+          commandArgs: rpcActive
+            ? args
+            : args.map((value, index) => index === args.length - 1 ? `<prompt ${prompts.userPrompt.length} chars>` : value),
           commandNotes,
           env: loggedEnv,
           prompt: prompts.userPrompt,
@@ -923,23 +960,53 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       await ctx.onCancellationReady?.();
 
       let proc;
+      let rpcSessionId: string | null = null;
+      let rpcPromptError: string | null = null;
+      let rpcProtocolVersion: number | null = null;
+      const steerSession = rpcActive ? createOmpRpcSteerSession() : null;
+      const releaseSteerTarget = steerSession
+        ? registerAdapterSteerTarget(runId, steerSession)
+        : null;
       try {
-        proc = await runAdapterExecutionTargetProcess(runId, runtimeTarget, command, args, {
-          cwd,
-          env: invocationEnv,
-          timeoutSec,
-          graceSec,
-          onSpawn: handleSpawn,
-          onRuntimeProgress: ctx.onRuntimeProgress,
-          onLog: bufferedOnLog,
-          runLogTail: paperclipBridge?.runLogTail,
-        });
+        if (rpcActive && steerSession) {
+          const rpcRun = await runOmpRpcSession({
+            runId,
+            command,
+            args,
+            cwd,
+            env: invocationEnv,
+            timeoutSec,
+            graceSec,
+            prompt: prompts.userPrompt,
+            runtimeTarget,
+            onLog: bufferedOnLog,
+            onSpawn: handleSpawn,
+            onRuntimeProgress: ctx.onRuntimeProgress,
+            session: steerSession,
+          });
+          proc = rpcRun.proc;
+          if (rpcRun.sessionId) rpcSessionId = rpcRun.sessionId;
+          rpcPromptError = rpcRun.promptError;
+          rpcProtocolVersion = rpcRun.protocolVersion;
+        } else {
+          proc = await runAdapterExecutionTargetProcess(runId, runtimeTarget, command, args, {
+            cwd,
+            env: invocationEnv,
+            timeoutSec,
+            graceSec,
+            onSpawn: handleSpawn,
+            onRuntimeProgress: ctx.onRuntimeProgress,
+            onLog: bufferedOnLog,
+            runLogTail: paperclipBridge?.runLogTail,
+          });
+        }
         if (stdoutBuffer) {
           await queueLog("stdout", stdoutBuffer);
           await ingestLine(stdoutBuffer);
         }
         await logQueue;
       } finally {
+        releaseSteerTarget?.();
         if (ctx.signal && abortHandler) {
           ctx.signal.removeEventListener("abort", abortHandler);
         }
@@ -956,6 +1023,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         sawProviderWork: reporter.sawProviderWork(),
         reporterFailed,
         mcpConnectFailed,
+        rpcSessionId,
+        rpcPromptError,
+        rpcProtocolVersion,
       };
     };
 
@@ -965,12 +1035,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       priorAttempt?: ProcessAttempt,
     ): AdapterExecutionResult => {
       const parsedError = attempt.parsed.errors.find((error) => error.trim()) ?? "";
+      const rpcPromptError = attempt.rpcPromptError ?? "";
       const stderrLine = firstNonEmptyLine(attempt.proc.stderr);
       const processExitCode = attempt.proc.exitCode ?? (attempt.proc.signal ? 1 : 0);
-      const effectiveExitCode = processExitCode === 0 && parsedError ? 1 : processExitCode;
+      const effectiveExitCode = processExitCode === 0 && (parsedError || rpcPromptError) ? 1 : processExitCode;
       const resolvedSessionId = ephemeralSession
         ? null
-        : attempt.parsed.sessionId ?? (!retriedFresh ? savedSessionId || null : null);
+        : attempt.rpcSessionId
+          ?? attempt.parsed.sessionId
+          ?? (!retriedFresh ? savedSessionId || null : null);
       const remoteExecution = remote ? adapterExecutionTargetSessionIdentity(runtimeTarget) : null;
       const sessionParams = resolvedSessionId
         ? {
@@ -985,11 +1058,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const mcpFailure = attempt.mcpConnectFailed
         ? `Paperclip MCP server "${PAPERCLIP_MCP_SERVER_NAME}" failed to connect; the agent had no Paperclip tools.`
         : "";
-      const fallbackError = mcpFailure || parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
+      const fallbackError = mcpFailure || rpcPromptError || parsedError || stderrLine || `OMP exited with code ${effectiveExitCode}.`;
       const failed = effectiveExitCode !== 0 || attempt.proc.timedOut || attempt.mcpConnectFailed;
       const classification = failed
         ? classifyOmpFailure({
-            parsedError,
+            parsedError: rpcPromptError || parsedError,
             stderr: attempt.proc.stderr,
             timedOut: attempt.proc.timedOut,
             exitCode: effectiveExitCode,
@@ -1038,11 +1111,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             : {}),
           stdout: attempt.proc.stdout,
           stderr: attempt.proc.stderr,
-          errors: attempt.parsed.errors,
+          errors: rpcPromptError ? [...attempt.parsed.errors, rpcPromptError] : attempt.parsed.errors,
           toolCalls: attempt.parsed.toolCalls,
           unknownLines: attempt.parsed.unknownLines,
           ...(attempt.reporterFailed ? { progressReporterFailed: true } : {}),
-          capabilityManifest: CAPABILITY_MANIFEST,
+          capabilityManifest: rpcActive ? RPC_CAPABILITY_MANIFEST : CAPABILITY_MANIFEST,
+          ...(rpcActive
+            ? { ompTransport: { mode: "rpc", protocolVersion: attempt.rpcProtocolVersion } }
+            : {}),
           ...(priorAttempt
             ? {
                 staleSessionAttempt: {

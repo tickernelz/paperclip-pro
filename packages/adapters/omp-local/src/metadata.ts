@@ -38,8 +38,10 @@ Model behavior:
 - Active ~/.omp/agent/models.yml, profile-specific config, runtime discovery, and extension providers are authoritative
 
 Operational behavior:
-- Each heartbeat runs omp --mode json -p under Paperclip process supervision
+- Each heartbeat runs omp --mode rpc under Paperclip process supervision: the prompt travels on stdin as a JSON frame and OMP streams JSONL frames back
+- The adapter negotiates RPC protocol v2 at startup, so a frame larger than the transport limit arrives as reassembled chunks instead of a degraded one
+- Local and ssh runs hold a live stdin channel, so a queued comment can steer the current turn; sandbox runs fall back to one-shot print mode and cannot steer
 - Local sessions use an adapter-owned --session-dir and exact --resume id; remote runs are deliberately ephemeral because Paperclip remote runtime directories are per run
-- Raw OMP JSONL is streamed unchanged; unknown events fall back to raw transcript output
+- Raw OMP JSONL is streamed unchanged; transport control frames (ready, response, available_commands_update) stay out of the transcript, and unknown events fall back to raw transcript output
 - Paperclip skills are linked into OMP's active agent skills directory without modifying the project workspace
 `;

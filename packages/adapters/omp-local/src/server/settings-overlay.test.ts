@@ -52,6 +52,7 @@ describe("OMP settings overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      omitThinking: false,
     });
   });
 

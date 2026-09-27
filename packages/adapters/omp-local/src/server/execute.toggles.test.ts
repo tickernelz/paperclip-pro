@@ -95,6 +95,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      omitThinking: false,
     });
     expect(invocation.args).not.toContain("--advisor");
   });
@@ -151,7 +152,13 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      omitThinking: false,
     });
+  });
+
+  it("mirrors the thinking toggle into the setting RPC mode actually honours", async () => {
+    expect((await run({})).overlay?.omitThinking).toBe(false);
+    expect((await run({ printThoughts: false })).overlay?.omitThinking).toBe(true);
   });
 
   it("removes the generated overlay once the run finishes", async () => {
@@ -182,6 +189,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      omitThinking: false,
     });
     expect(buildOmpSettingsOverlay({ advisor: true, noLsp: true, noSkills: true, prewalk: true })).toEqual({
       advisor: { enabled: true },
@@ -189,6 +197,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: false },
       skills: { enabled: false },
       task: { maxRecursionDepth: 0 },
+      omitThinking: false,
     });
   });
 });

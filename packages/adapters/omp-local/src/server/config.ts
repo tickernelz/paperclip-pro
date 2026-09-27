@@ -438,6 +438,14 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         group: "Capabilities",
       },
       { key: "advisor", label: "Enable advisor", type: "toggle", default: false, group: "Capabilities" },
+      {
+        key: "rpcSteering",
+        label: "Live session (RPC) transport",
+        type: "toggle",
+        default: true,
+        hint: "Run OMP in RPC mode so the prompt travels on stdin and a queued comment can steer the current turn. Turning this off returns the agent to one-shot print mode, where same-turn steering is unavailable.",
+        group: "Capabilities",
+      },
       { key: "noPrewalk", label: "Disable configured prewalk", type: "toggle", default: false, group: "Capabilities" },
       {
         key: "prewalk",

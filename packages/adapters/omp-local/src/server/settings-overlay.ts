@@ -21,6 +21,7 @@ export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record
     lsp: { enabled: !asBoolean(config.noLsp, false) },
     skills: { enabled: !asBoolean(config.noSkills, false) },
     task: { maxRecursionDepth: 0 },
+    omitThinking: !asBoolean(config.printThoughts, true),
   };
 }
 
