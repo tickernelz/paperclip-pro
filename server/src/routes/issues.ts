@@ -141,6 +141,8 @@ import {
   type IssueComment,
   type IssueCommentPresentation,
   type IssueQueuedCommentQueue,
+  type IssueCommentDelivery,
+  type IssueCommentDeliveryReason,
   type IssueWatchdogDiscoveryKind,
   type ProjectWorkspace,
   type SourceTrustMetadata,
@@ -14763,7 +14765,7 @@ export function issueRoutes(
       });
 
       // Merge all wakeups from this update into one enqueue per agent to avoid duplicate runs.
-      void (async () => {
+      const wakeDispatch = (async () => {
         type WakeupRequest = NonNullable<
           Parameters<typeof heartbeat.wakeup>[1]
         >;
@@ -15193,8 +15195,9 @@ export function issueRoutes(
           }
         }
 
-        for (const { agentId, wakeup } of wakeups.values()) {
-          heartbeat
+        await Promise.all(
+          [...wakeups.values()].map(async ({ agentId, wakeup }) => {
+          await heartbeat
             .wakeup(agentId, wakeup)
             .then((wakeRun) => {
               if (wakeup.reason !== ISSUE_BLOCKERS_RESOLVED_WAKE_REASON) return;
@@ -15236,11 +15239,28 @@ export function issueRoutes(
                 "failed to wake agent on issue update",
               ),
             );
-        }
-      })();
+          }),
+        );
+      })().catch((err) =>
+        logger.warn(
+          { err, issueId: issue.id },
+          "failed to dispatch the issue update wake",
+        ),
+      );
 
       await queueTaskWatchdogEvaluation(issue, actor.runId);
       const changes = issueResponse.changes ?? {};
+      const delivery = comment
+        ? await resolveMessageDeliveryDisposition({
+            issue,
+            commentId: comment.id,
+            actor,
+            requested: req.body.commentDeliver,
+            boardUserId: req.actor.type === "board" ? req.actor.userId ?? null : null,
+            wakeDispatch,
+          })
+        : null;
+      const commentResponse = comment && delivery ? { ...comment, ...delivery } : comment;
       if (prefersMinimalIssueUpdateResponse(req)) {
         res.setHeader("Preference-Applied", "return=minimal");
         res.json({
@@ -15248,11 +15268,11 @@ export function issueRoutes(
           identifier: issueResponse.identifier,
           updatedAt: issueResponse.updatedAt,
           changes,
-          comment,
+          comment: commentResponse,
         });
         return;
       }
-      res.json({ ...issueResponse, changes, comment });
+      res.json({ ...issueResponse, changes, comment: commentResponse });
     },
   );
 
@@ -15771,6 +15791,352 @@ export function issueRoutes(
     },
   );
 
+  async function steerQueuedCommentInTransaction(input: {
+    issue: { id: string; companyId: string; assigneeAgentId: string | null };
+    actor: ReturnType<typeof getActorInfo>;
+    commentId: string;
+    queueId: string;
+    targetRunId: string;
+    revision: string;
+  }) {
+    const { issue, actor, commentId } = input;
+    const responseWake = await db.select().from(agentWakeupRequests).where(and(
+      eq(agentWakeupRequests.id, input.queueId), eq(agentWakeupRequests.companyId, issue.companyId),
+    )).then(rows => rows[0]);
+    const response = responseWake
+      ? await readQueuedInteractionResponse(db, issue.companyId, issue.id, responseWake.payload)
+      : null;
+    const steeringIdentity = await reserveSteeredIdentity(db, {
+      companyId: issue.companyId,
+      runId: input.targetRunId,
+      issueId: issue.id,
+      messageId: commentId,
+      source: response?.comment.id === commentId ? "interaction" : "comment",
+    });
+    let steeringDeliveryAttempted = false;
+    let acknowledgedTurnId: string | null = null;
+    let duplicate = false;
+    let queue: IssueQueuedCommentQueue;
+    try {
+      queue = await db.transaction(async (tx) => {
+        await tx
+          .select({ id: issueRows.id })
+          .from(issueRows)
+          .where(
+            and(
+              eq(issueRows.id, issue.id),
+              eq(issueRows.companyId, issue.companyId),
+            ),
+          )
+          .for("update");
+        const retryWake = await tx
+          .select()
+          .from(agentWakeupRequests)
+          .where(
+            and(
+              eq(agentWakeupRequests.id, input.queueId),
+              eq(agentWakeupRequests.companyId, issue.companyId),
+              issue.assigneeAgentId
+                ? eq(agentWakeupRequests.agentId, issue.assigneeAgentId)
+                : undefined,
+            ),
+          )
+          .for("update")
+          .limit(1)
+          .then((rows) => rows[0] ?? null);
+        const retryRun =
+          retryWake && readObject(retryWake.payload).issueId === issue.id
+            ? await tx
+                .select()
+                .from(heartbeatRuns)
+                .where(
+                  and(
+                    eq(heartbeatRuns.id, input.targetRunId),
+                    eq(heartbeatRuns.companyId, issue.companyId),
+                    eq(heartbeatRuns.agentId, retryWake.agentId),
+                  ),
+                )
+                .for("update")
+                .limit(1)
+                .then((rows) => rows[0] ?? null)
+            : null;
+        const retryRunContext = readObject(retryRun?.contextSnapshot);
+        const retryRunResult = readObject(retryRun?.resultJson);
+        const retryAcknowledgements = readObject(
+          retryRunResult.queuedSteeringAcknowledgements,
+        );
+        const retryAcknowledgement = readObject(
+          retryAcknowledgements[commentId],
+        );
+        if (
+          retryRun &&
+          (retryRunContext.issueId === issue.id ||
+            retryRunContext.taskId === issue.id) &&
+          retryAcknowledgement.status === "acknowledged" &&
+          retryAcknowledgement.queueId === input.queueId
+        ) {
+          duplicate = true;
+          acknowledgedTurnId =
+            typeof retryAcknowledgement.turnId === "string"
+              ? retryAcknowledgement.turnId
+              : null;
+          return buildQueuedCommentQueue({
+            executor: tx,
+            issue,
+            activeRun: retryRun.status === "running" ? retryRun : null,
+            actor,
+          });
+        }
+
+        const locked = await lockQueuedCommentState({
+          tx,
+          issue,
+          actor,
+          queueId: input.queueId,
+          targetRunId: input.targetRunId,
+        });
+        if (!locked.activeRun) {
+          throw conflict("The queued message targets a stale run", {
+            code: "queued_comment_stale_target",
+          });
+        }
+        const runResult = readObject(locked.activeRun.resultJson);
+        const acknowledgements = readObject(
+          runResult.queuedSteeringAcknowledgements,
+        );
+        const priorAcknowledgement = readObject(acknowledgements[commentId]);
+        if (
+          priorAcknowledgement.status === "acknowledged" &&
+          priorAcknowledgement.queueId === input.queueId
+        ) {
+          duplicate = true;
+          acknowledgedTurnId =
+            typeof priorAcknowledgement.turnId === "string"
+              ? priorAcknowledgement.turnId
+              : null;
+          return buildQueuedCommentQueue({
+            executor: tx,
+            issue,
+            activeRun: locked.activeRun,
+            actor,
+            queueState: locked.queueState,
+          });
+        }
+        assertQueueMutationTarget({
+          queue: locked.queue,
+          queueId: input.queueId,
+          revision: input.revision,
+        });
+        if (locked.queue.protocol !== "paperclip_runner_v1") {
+          throw conflict("This runner does not support same-turn steering", {
+            code: "steering_unsupported",
+          });
+        }
+        const entry = locked.queue.entries.find(
+          (candidate) => candidate.comment.id === commentId,
+        );
+        if (!entry) {
+          throw conflict("The queued message is no longer pending", {
+            code: "queued_comment_not_pending",
+          });
+        }
+
+        if (entry.source?.requiresFreshSession) {
+          throw conflict("This approval needs a fresh turn. Interrupt or wait for the current turn to finish.", {
+            code: "queued_response_requires_fresh_session",
+          });
+        }
+        steeringDeliveryAttempted = true;
+        const acknowledgement =
+          (await storedSteeringAcknowledgement(tx, steeringIdentity ?? {
+            companyId: issue.companyId, runId: locked.activeRun.id, messageId: commentId,
+          })) ??
+          (await steerNativeSession({
+            runId: locked.activeRun.id,
+            message: entry.comment.body,
+            correlationId: commentId,
+            onAcknowledged: steeringIdentity
+              ? () => reconcileSteeredIdentity(db, steeringIdentity)
+              : undefined,
+          }));
+        if (steeringIdentity)
+          await acceptSteeredIdentity(tx, steeringIdentity);
+        acknowledgedTurnId = acknowledgement.turnId;
+        const remainingIds = locked.queue.entries
+          .map((candidate) => candidate.comment.id)
+          .filter((candidateId) => candidateId !== commentId);
+        const now = new Date();
+        const nextWake =
+          remainingIds.length === 0
+            ? await tx
+                .update(agentWakeupRequests)
+                .set({ status: "cancelled", finishedAt: now, updatedAt: now })
+                .where(eq(agentWakeupRequests.id, locked.wake.id))
+                .returning()
+                .then(() => null)
+            : await tx
+                .update(agentWakeupRequests)
+                .set({
+                  payload: withQueuedCommentIdsInWakePayload(
+                    locked.wake.payload,
+                    remainingIds,
+                  ),
+                  updatedAt: now,
+                })
+                .where(eq(agentWakeupRequests.id, locked.wake.id))
+                .returning()
+                .then((rows) => rows[0] ?? locked.wake);
+        await tx
+          .update(heartbeatRuns)
+          .set({
+            resultJson: {
+              ...runResult,
+              queuedSteeringAcknowledgements: {
+                ...acknowledgements,
+                [commentId]: {
+                  status: "acknowledged",
+                  queueId: input.queueId,
+                  turnId: acknowledgement.turnId,
+                  acknowledgedAt: now.toISOString(),
+                },
+              },
+            },
+            updatedAt: now,
+          })
+          .where(eq(heartbeatRuns.id, locked.activeRun.id));
+        return buildQueuedCommentQueue({
+          executor: tx,
+          issue,
+          activeRun: locked.activeRun,
+          actor,
+          queueState: nextWake
+            ? { wake: nextWake, state: "deferred", queueRun: null }
+            : null,
+        });
+      });
+    } catch (error) {
+      const uncertain =
+        steeringDeliveryAttempted &&
+        (!(error instanceof NativeSessionSteeringError) ||
+          error.code === "steering_timeout");
+      if (steeringIdentity && !uncertain)
+        await rejectSteeredIdentity(db, steeringIdentity);
+
+      if (error instanceof NativeSessionSteeringError) {
+        throw conflict(error.message, { code: error.code, retryable: true });
+      }
+      throw error;
+    }
+    return { queue, duplicate, acknowledgedTurnId };
+  }
+
+  function steeringUnavailableFromError(error: unknown): IssueCommentDeliveryReason {
+    const code =
+      error instanceof HttpError &&
+      error.details &&
+      typeof error.details === "object" &&
+      !Array.isArray(error.details) &&
+      typeof (error.details as { code?: unknown }).code === "string"
+        ? (error.details as { code: string }).code
+        : null;
+    if (code === "steering_unsupported") return "legacy_protocol";
+    if (
+      code === "queued_comment_stale_target" ||
+      code === "queued_comment_not_pending" ||
+      code === "queued_comment_already_dispatching" ||
+      code === "queued_comment_stale_queue" ||
+      code === "queued_comment_revision_conflict" ||
+      code === "queued_response_requires_fresh_session"
+    ) {
+      return "no_active_run";
+    }
+    return "steering_failed";
+  }
+
+  /**
+   * Resolve how a freshly posted message was actually delivered, and steer it
+   * when the resolved mode is `"steer"`.
+   *
+   * This never fails the write. Every path that cannot steer returns a queue
+   * disposition with the reason attached, so a caller can always tell "queued
+   * because you asked" from "you asked to steer and got a queue instead".
+   */
+  async function resolveMessageDeliveryDisposition(input: {
+    issue: { id: string; companyId: string; assigneeAgentId: string | null; conversationAgentId?: string | null };
+    commentId: string;
+    actor: ReturnType<typeof getActorInfo>;
+    requested: "steer" | "queue" | undefined;
+    boardUserId: string | null;
+    wakeDispatch: Promise<unknown>;
+  }): Promise<IssueCommentDelivery> {
+    const effective =
+      input.requested ??
+      (await instanceSettings.getGeneral()).defaultMessageDelivery;
+    if (effective === "queue") {
+      return { deliveredAs: "queued", steeringUnavailable: "not_requested" };
+    }
+    if (input.actor.actorType === "agent" || !input.boardUserId) {
+      return { deliveredAs: "queued", steeringUnavailable: "board_only" };
+    }
+    if (input.issue.conversationAgentId) {
+      return { deliveredAs: "queued", steeringUnavailable: "conversation_issue" };
+    }
+    try {
+      await input.wakeDispatch;
+    } catch (err) {
+      logger.warn(
+        { err, issueId: input.issue.id, commentId: input.commentId },
+        "failed to complete the comment wake dispatch before steering",
+      );
+    }
+    let target: { queueId: string; targetRunId: string; revision: string } | null = null;
+    try {
+      const issue = await svc.getById(input.issue.id);
+      const activeRun = issue ? await resolveActiveIssueRun(issue) : null;
+      const queue = await buildQueuedCommentQueue({
+        executor: db,
+        issue: issue ?? input.issue,
+        activeRun,
+        actor: input.actor,
+        steeringDisposition: "temporarily_unavailable",
+      });
+      const entry = queue.entries.find(
+        (candidate) => candidate.comment.id === input.commentId,
+      );
+      if (entry && queue.protocol !== "paperclip_runner_v1") {
+        return { deliveredAs: "queued", steeringUnavailable: "legacy_protocol" };
+      }
+      target =
+        entry && queue.queueId && queue.targetRunId
+          ? { queueId: queue.queueId, targetRunId: queue.targetRunId, revision: queue.revision }
+          : null;
+    } catch (err) {
+      logger.warn(
+        { err, issueId: input.issue.id, commentId: input.commentId },
+        "failed to resolve the steering target for a posted comment",
+      );
+    }
+    if (!target) {
+      return { deliveredAs: "queued", steeringUnavailable: "no_active_run" };
+    }
+    try {
+      await steerQueuedCommentInTransaction({
+        issue: input.issue,
+        actor: input.actor,
+        commentId: input.commentId,
+        queueId: target.queueId,
+        targetRunId: target.targetRunId,
+        revision: target.revision,
+      });
+    } catch (error) {
+      return {
+        deliveredAs: "queued",
+        steeringUnavailable: steeringUnavailableFromError(error),
+      };
+    }
+    return { deliveredAs: "steered" };
+  }
+
   router.post(
     "/issues/:id/queued-comments/:commentId/steer",
     validate(queuedCommentSteeringTargetSchema),
@@ -15790,235 +16156,14 @@ export function issueRoutes(
       const decision = await decideIssueAccess(req, issue, "issue:comment");
       if (!decision.allowed) throw forbidden(decision.explanation, authorizationDeniedDetails(decision));
       const actor = getActorInfo(req);
-      const responseWake = await db.select().from(agentWakeupRequests).where(and(
-        eq(agentWakeupRequests.id, req.body.queueId), eq(agentWakeupRequests.companyId, issue.companyId),
-      )).then(rows => rows[0]);
-      const response = responseWake ? await readQueuedInteractionResponse(db, issue.companyId, issue.id, responseWake.payload) : null;
-      const steeringIdentity = await reserveSteeredIdentity(db, {
-        companyId: issue.companyId,
-        runId: req.body.targetRunId,
-        issueId: issue.id,
-        messageId: commentId,
-        source: response?.comment.id === commentId ? "interaction" : "comment",
+      const { queue, duplicate, acknowledgedTurnId } = await steerQueuedCommentInTransaction({
+        issue,
+        actor,
+        commentId,
+        queueId: req.body.queueId,
+        targetRunId: req.body.targetRunId,
+        revision: req.body.revision,
       });
-      let steeringDeliveryAttempted = false;
-      let acknowledgedTurnId: string | null = null;
-      let duplicate = false;
-      let queue: IssueQueuedCommentQueue;
-      try {
-        queue = await db.transaction(async (tx) => {
-          // A client can lose the successful response after the final queued
-          // message cancels its wake. Lock the original queue and target run
-          // first so that the persisted acknowledgement remains a durable
-          // idempotency record even when no pending queue remains.
-          await tx
-            .select({ id: issueRows.id })
-            .from(issueRows)
-            .where(
-              and(
-                eq(issueRows.id, issue.id),
-                eq(issueRows.companyId, issue.companyId),
-              ),
-            )
-            .for("update");
-          const retryWake = await tx
-            .select()
-            .from(agentWakeupRequests)
-            .where(
-              and(
-                eq(agentWakeupRequests.id, req.body.queueId),
-                eq(agentWakeupRequests.companyId, issue.companyId),
-                issue.assigneeAgentId
-                  ? eq(agentWakeupRequests.agentId, issue.assigneeAgentId)
-                  : undefined,
-              ),
-            )
-            .for("update")
-            .limit(1)
-            .then((rows) => rows[0] ?? null);
-          const retryRun =
-            retryWake && readObject(retryWake.payload).issueId === issue.id
-              ? await tx
-                  .select()
-                  .from(heartbeatRuns)
-                  .where(
-                    and(
-                      eq(heartbeatRuns.id, req.body.targetRunId),
-                      eq(heartbeatRuns.companyId, issue.companyId),
-                      eq(heartbeatRuns.agentId, retryWake.agentId),
-                    ),
-                  )
-                  .for("update")
-                  .limit(1)
-                  .then((rows) => rows[0] ?? null)
-              : null;
-          const retryRunContext = readObject(retryRun?.contextSnapshot);
-          const retryRunResult = readObject(retryRun?.resultJson);
-          const retryAcknowledgements = readObject(
-            retryRunResult.queuedSteeringAcknowledgements,
-          );
-          const retryAcknowledgement = readObject(
-            retryAcknowledgements[commentId],
-          );
-          if (
-            retryRun &&
-            (retryRunContext.issueId === issue.id ||
-              retryRunContext.taskId === issue.id) &&
-            retryAcknowledgement.status === "acknowledged" &&
-            retryAcknowledgement.queueId === req.body.queueId
-          ) {
-            duplicate = true;
-            acknowledgedTurnId =
-              typeof retryAcknowledgement.turnId === "string"
-                ? retryAcknowledgement.turnId
-                : null;
-            return buildQueuedCommentQueue({
-              executor: tx,
-              issue,
-              activeRun: retryRun.status === "running" ? retryRun : null,
-              actor,
-            });
-          }
-
-          const locked = await lockQueuedCommentState({
-            tx,
-            issue,
-            actor,
-            queueId: req.body.queueId,
-            targetRunId: req.body.targetRunId,
-          });
-          if (!locked.activeRun) {
-            throw conflict("The queued message targets a stale run", {
-              code: "queued_comment_stale_target",
-            });
-          }
-          const runResult = readObject(locked.activeRun.resultJson);
-          const acknowledgements = readObject(
-            runResult.queuedSteeringAcknowledgements,
-          );
-          const priorAcknowledgement = readObject(acknowledgements[commentId]);
-          if (
-            priorAcknowledgement.status === "acknowledged" &&
-            priorAcknowledgement.queueId === req.body.queueId
-          ) {
-            duplicate = true;
-            acknowledgedTurnId =
-              typeof priorAcknowledgement.turnId === "string"
-                ? priorAcknowledgement.turnId
-                : null;
-            return buildQueuedCommentQueue({
-              executor: tx,
-              issue,
-              activeRun: locked.activeRun,
-              actor,
-              queueState: locked.queueState,
-            });
-          }
-          assertQueueMutationTarget({
-            queue: locked.queue,
-            queueId: req.body.queueId,
-            revision: req.body.revision,
-          });
-          if (locked.queue.protocol !== "paperclip_runner_v1") {
-            throw conflict("This runner does not support same-turn steering", {
-              code: "steering_unsupported",
-            });
-          }
-          const entry = locked.queue.entries.find(
-            (candidate) => candidate.comment.id === commentId,
-          );
-          if (!entry) {
-            throw conflict("The queued message is no longer pending", {
-              code: "queued_comment_not_pending",
-            });
-          }
-
-          if (entry.source?.requiresFreshSession) {
-            throw conflict("This approval needs a fresh turn. Interrupt or wait for the current turn to finish.", {
-              code: "queued_response_requires_fresh_session",
-            });
-          }
-          steeringDeliveryAttempted = true;
-          const acknowledgement =
-            (await storedSteeringAcknowledgement(tx, steeringIdentity ?? {
-              companyId: issue.companyId, runId: locked.activeRun.id, messageId: commentId,
-            })) ??
-            (await steerNativeSession({
-              runId: locked.activeRun.id,
-              message: entry.comment.body,
-              correlationId: commentId,
-              onAcknowledged: steeringIdentity
-                ? () => reconcileSteeredIdentity(db, steeringIdentity)
-                : undefined,
-            }));
-          if (steeringIdentity)
-            await acceptSteeredIdentity(tx, steeringIdentity);
-          acknowledgedTurnId = acknowledgement.turnId;
-          const remainingIds = locked.queue.entries
-            .map((candidate) => candidate.comment.id)
-            .filter((candidateId) => candidateId !== commentId);
-          const now = new Date();
-          const nextWake =
-            remainingIds.length === 0
-              ? await tx
-                  .update(agentWakeupRequests)
-                  .set({ status: "cancelled", finishedAt: now, updatedAt: now })
-                  .where(eq(agentWakeupRequests.id, locked.wake.id))
-                  .returning()
-                  .then(() => null)
-              : await tx
-                  .update(agentWakeupRequests)
-                  .set({
-                    payload: withQueuedCommentIdsInWakePayload(
-                      locked.wake.payload,
-                      remainingIds,
-                    ),
-                    updatedAt: now,
-                  })
-                  .where(eq(agentWakeupRequests.id, locked.wake.id))
-                  .returning()
-                  .then((rows) => rows[0] ?? locked.wake);
-          await tx
-            .update(heartbeatRuns)
-            .set({
-              resultJson: {
-                ...runResult,
-                queuedSteeringAcknowledgements: {
-                  ...acknowledgements,
-                  [commentId]: {
-                    status: "acknowledged",
-                    queueId: req.body.queueId,
-                    turnId: acknowledgement.turnId,
-                    acknowledgedAt: now.toISOString(),
-                  },
-                },
-              },
-              updatedAt: now,
-            })
-            .where(eq(heartbeatRuns.id, locked.activeRun.id));
-          return buildQueuedCommentQueue({
-            executor: tx,
-            issue,
-            activeRun: locked.activeRun,
-            actor,
-            queueState: nextWake
-              ? { wake: nextWake, state: "deferred", queueRun: null }
-              : null,
-          });
-        });
-      } catch (error) {
-        const uncertain =
-          steeringDeliveryAttempted &&
-          (!(error instanceof NativeSessionSteeringError) ||
-            error.code === "steering_timeout");
-        if (steeringIdentity && !uncertain)
-          await rejectSteeredIdentity(db, steeringIdentity);
-
-        if (error instanceof NativeSessionSteeringError) {
-          throw conflict(error.message, { code: error.code, retryable: true });
-        }
-        throw error;
-      }
       await logActivity(db, {
         companyId: issue.companyId,
         actorType: actor.actorType,
@@ -17562,7 +17707,17 @@ export function issueRoutes(
         for (const publication of publications) publishActivity(publication);
         await issueReferencesSvc.syncComment(comment.id);
         await deliverConversationComments(db, issue, heartbeat.wakeup);
-        res.status(201).json(comment);
+        res.status(201).json({
+          ...comment,
+          ...(await resolveMessageDeliveryDisposition({
+            issue,
+            commentId: comment.id,
+            actor,
+            requested: req.body.deliver,
+            boardUserId: req.actor.userId ?? null,
+            wakeDispatch: Promise.resolve(),
+          })),
+        });
         return;
       }
       if (req.actor.type === "agent" && req.body.onBehalfOfUserId != null) {
@@ -18240,7 +18395,7 @@ export function issueRoutes(
       });
 
       // Merge all wakeups from this comment into one enqueue per agent to avoid duplicate runs.
-      void (async () => {
+      const wakeDispatch = (async () => {
         type WakeupRequest = NonNullable<
           Parameters<typeof heartbeat.wakeup>[1]
         >;
@@ -18550,8 +18705,9 @@ export function issueRoutes(
           }
         }
 
-        for (const { agentId, wakeup } of wakeups.values()) {
-          heartbeat
+        await Promise.all(
+          [...wakeups.values()].map(async ({ agentId, wakeup }) => {
+          await heartbeat
             .wakeup(agentId, wakeup)
             .then((wakeRun) => {
               if (wakeup.reason !== ISSUE_BLOCKERS_RESOLVED_WAKE_REASON) return;
@@ -18593,11 +18749,25 @@ export function issueRoutes(
                 "failed to wake agent on issue comment",
               ),
             );
-        }
-      })();
+          }),
+        );
+      })().catch((err) =>
+        logger.warn(
+          { err, issueId: currentIssue.id },
+          "failed to dispatch the issue comment wake",
+        ),
+      );
 
       await queueTaskWatchdogEvaluation(currentIssue, actor.runId);
-      res.status(201).json(comment);
+      const delivery = await resolveMessageDeliveryDisposition({
+        issue: currentIssue,
+        commentId: comment.id,
+        actor,
+        requested: req.body.deliver,
+        boardUserId: req.actor.type === "board" ? req.actor.userId ?? null : null,
+        wakeDispatch,
+      });
+      res.status(201).json({ ...comment, ...delivery });
     },
   );
 

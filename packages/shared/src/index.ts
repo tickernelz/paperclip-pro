@@ -928,6 +928,7 @@ export type {
   InstanceExperimentalSettings,
   InstanceExperimentalSettingsWithManaged,
   InstanceGeneralSettings,
+  InstanceMessageDelivery,
   InstanceSettings,
   ManagedExperimentalFeatureKey,
   ManagedSettingMetadata,
@@ -1184,6 +1185,8 @@ export type {
   IssueQueuedCommentQueue,
   IssueQueuedCommentQueueState,
   IssueQueuedCommentSteeringDisposition,
+  IssueCommentDelivery,
+  IssueCommentDeliveryReason,
   IssueCommentDerivedAuthorSource,
   IssueCommentMetadata,
   IssueCommentMetadataSection,
@@ -1788,6 +1791,7 @@ export {
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
+  DEFAULT_MESSAGE_DELIVERY,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./types/instance.js";
 
@@ -1824,6 +1828,9 @@ export {
 export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
+  messageDeliverySchema,
+  type MessageDeliveryRequest,
+  MESSAGE_DELIVERY_LITERALS,
   patchInstanceGeneralSettingsSchema,
   type PatchInstanceGeneralSettings,
   instanceExperimentalSettingsSchema,

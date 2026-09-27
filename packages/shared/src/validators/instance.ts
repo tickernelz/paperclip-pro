@@ -5,9 +5,15 @@ import {
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
+  DEFAULT_MESSAGE_DELIVERY,
+  type InstanceMessageDelivery,
 } from "../types/instance.js";
 import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
 import { shapeWithoutDefaults } from "./partial.js";
+
+export const messageDeliverySchema = z.enum(["steer", "queue"]);
+export type MessageDeliveryRequest = z.infer<typeof messageDeliverySchema>;
+export const MESSAGE_DELIVERY_LITERALS: readonly InstanceMessageDelivery[] = ["steer", "queue"];
 
 function presetSchema<T extends readonly number[]>(presets: T, label: string) {
   return z.number().refine(
@@ -29,6 +35,7 @@ export const instanceGeneralSettingsSchema = z.object({
     DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   ),
   backupRetention: backupRetentionPolicySchema.default(DEFAULT_BACKUP_RETENTION),
+  defaultMessageDelivery: messageDeliverySchema.default(DEFAULT_MESSAGE_DELIVERY),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
   // Kubernetes sandbox provider and denies local/ssh execution (cloud_tenant).
   executionMode: z.enum(["kubernetes", "any"]).optional(),

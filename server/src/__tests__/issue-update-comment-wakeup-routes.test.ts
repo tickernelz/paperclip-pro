@@ -42,9 +42,20 @@ const mockIssueThreadInteractionService = vi.hoisted(() => ({
   expireRequestConfirmationsSupersededByComment: vi.fn(async () => []),
   expireStaleRequestConfirmationsForIssueDocument: vi.fn(async () => []),
 }));
+const mockInstanceSettingsService = vi.hoisted(() => ({
+  get: vi.fn(async () => ({ id: "instance-settings-1", general: {} })),
+  listCompanyIds: vi.fn(async () => ["company-1"]),
+  getGeneral: vi.fn(async () => ({ defaultMessageDelivery: "queue" as const })),
+  getExperimental: vi.fn(async () => ({ enableExternalObjects: false })),
+}));
+
 const mockRunnerGoalService = vi.hoisted(() => ({
   projection: vi.fn(async () => null),
   act: vi.fn(),
+}));
+
+vi.mock("../services/instance-settings.js", () => ({
+  instanceSettingsService: () => mockInstanceSettingsService,
 }));
 
 vi.mock("../services/native-runtime/native-question-bridge.js", () => ({
@@ -87,16 +98,6 @@ vi.mock("../services/index.js", () => ({
   }),
   goalService: () => ({}),
   heartbeatService: () => mockHeartbeatService,
-  instanceSettingsService: () => ({
-    get: vi.fn(async () => ({
-      id: "instance-settings-1",
-      general: {
-        censorUsernameInLogs: false,
-        feedbackDataSharingPreference: "prompt",
-      },
-    })),
-    listCompanyIds: vi.fn(async () => ["company-1"]),
-  }),
   issueApprovalService: () => ({}),
   issueReferenceService: () => ({
     deleteDocumentSource: async () => undefined,

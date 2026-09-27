@@ -925,6 +925,8 @@ export const updateIssueSchema = objectWithoutDefaults(
     assigneeAgentId: z.string().trim().min(1).optional().nullable(),
     comment: multilineTextSchema.pipe(z.string().min(1)).optional(),
     commentClientRequestId: z.string().uuid().optional(),
+    /** Only meaningful alongside `comment`; the server resolves an absent value. */
+    commentDeliver: z.enum(["steer", "queue"]).optional(),
     /** Only valid with a comment; the route binds these in the update transaction. */
     attachmentIds: issueCommentAttachmentIdsSchema.optional(),
     onBehalfOfUserId: z.string().trim().min(1).optional().nullable(),
@@ -1096,6 +1098,7 @@ export const addIssueCommentSchema = z.object({
   reopen: z.boolean().optional(),
   resume: z.boolean().optional(),
   interrupt: z.boolean().optional(),
+  deliver: z.enum(["steer", "queue"]).optional(),
 });
 
 export type AddIssueComment = z.infer<typeof addIssueCommentSchema>;

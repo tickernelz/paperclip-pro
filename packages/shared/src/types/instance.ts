@@ -28,6 +28,34 @@ export const DEFAULT_BACKUP_RETENTION: BackupRetentionPolicy = {
  */
 export type InstanceExecutionMode = "kubernetes" | "any";
 
+/**
+ * How a user message posted while an agent turn is running is delivered.
+ *
+ * `"steer"` injects the message into the live turn, so the agent reads it now
+ * instead of after the current turn ends. That is the right default for a
+ * correction or a changed decision, which is what a person most often types
+ * into a running issue: the cost is that the message lands mid-turn rather than
+ * at a boundary. `"queue"` keeps the historical behaviour of reading messages
+ * in order once the current turn finishes, which is what a bulk or multi-part
+ * instruction wants.
+ *
+ * `"steer"` is the default because a queued message is invisible to the agent
+ * for as long as the turn runs, and turns run for minutes. Silence reads as
+ * "the agent ignored me", so the safer default is the one that delivers sooner;
+ * a person who wants the old ordering has a per-message override and an
+ * instance-wide one, and flipping either back is a settings write rather than a
+ * data change.
+ *
+ * This is a default, never a policy. It does not grant steering authority: a
+ * message whose resolved mode is `"steer"` is still delivered as a queue entry
+ * whenever steering is impossible — no live run, a runner that cannot steer, a
+ * conversation issue, or an actor who is not allowed to steer — and the
+ * response reports that outcome rather than failing the write.
+ */
+export type InstanceMessageDelivery = "steer" | "queue";
+
+export const DEFAULT_MESSAGE_DELIVERY = "steer" as const satisfies InstanceMessageDelivery;
+
 export interface InstanceGeneralSettings {
   censorUsernameInLogs: boolean;
   keyboardShortcuts: boolean;
@@ -38,6 +66,7 @@ export interface InstanceGeneralSettings {
    * Kubernetes sandbox provider and denies local/ssh execution.
    */
   executionMode?: InstanceExecutionMode;
+  defaultMessageDelivery: InstanceMessageDelivery;
 }
 
 export interface InstanceExperimentalSettings {
