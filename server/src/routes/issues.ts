@@ -16079,7 +16079,10 @@ export function issueRoutes(
       return { deliveredAs: "queued", steeringUnavailable: "board_only" };
     }
     if (input.issue.conversationAgentId) {
-      return { deliveredAs: "queued", steeringUnavailable: "conversation_issue" };
+      return {
+        deliveredAs: "queued",
+        steeringUnavailable: input.requested === "steer" ? "conversation_issue" : "not_requested",
+      };
     }
     try {
       await input.wakeDispatch;
