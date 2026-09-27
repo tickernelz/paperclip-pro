@@ -420,14 +420,14 @@ chunk.
 
 `omp_local` implements it (`packages/adapters/omp-local/src/server/parse.ts`,
 `isOmpStartupComplete`) as the first JSON line whose `type` is an agent/turn/
-message/tool/result event — `agent_start` in practice. Its `{"type":"session"}`
-header only means the process is alive: measured on production runs it lands
-2.4–9.0 s after `adapter.invoke`, with `agent_start` a further 2.5–6.0 s later,
-so extension and MCP loading can still be in flight when the header prints.
-Progress notices such as `Still starting after 10s — phase: loadExtensions` go
-to **stderr** and never release the gate; on 2026-09-25 a slow MCP boot printed
-them at 00:42:04.766 and 00:42:23.716, with `session` at 00:42:30.059 and
-`agent_start` only at 00:42:35.617.
+message/tool/result event — `agent_start` in practice. Under the default RPC
+transport there is no `{"type":"session"}` header at all (that line is emitted
+by print mode only); the startup gate releases on the same event set, so the
+observable behaviour is unchanged, but the older "header means alive" reading
+no longer applies. Progress notices such as `Still starting after 10s — phase:
+loadExtensions` go to **stderr** and never release the gate; on 2026-09-25 a
+slow MCP boot printed them at 00:42:04.766 and 00:42:23.716, with `agent_start`
+at 00:42:35.617.
 
 Queued local runs are re-evaluated when a local run finishes, when a starting run
 reports its startup signal, and on a timer armed for the bypass deadline; the
