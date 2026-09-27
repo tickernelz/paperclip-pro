@@ -161,8 +161,6 @@ interface TaskChatComposerProps {
     label?: string;
     onOpen: () => void;
   } | null;
-  /** Delivery mode for a message sent without an explicit /steer or /queue. */
-  defaultMessageDelivery?: MessageDeliveryMode;
   runnerGoalCapability?: RunnerGoalCapability | null;
   onRunnerGoalCommand?: (
     command: RunnerGoalComposerCommand,
@@ -403,7 +401,6 @@ export function TaskChatComposer({
   takeover = null,
   pendingTakeover = null,
   runnerGoalCapability = null,
-  defaultMessageDelivery,
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
@@ -425,7 +422,6 @@ export function TaskChatComposer({
     };
   }, [draftKey]);
   const [deliveryNotice, setDeliveryNotice] = useState<string | null>(null);
-  const resolvedDefaultDelivery = defaultMessageDelivery ?? "steer";
   const [takeoverBusy, setTakeoverBusy] = useState(false);
   const [takeoverError, setTakeoverError] = useState<string | null>(null);
   const [takeoverHeaderClaimed, setTakeoverHeaderClaimed] = useState(false);
@@ -865,7 +861,6 @@ export function TaskChatComposer({
       ? deliveryCommand.command
       : null;
     const deliver = delivery?.mode;
-    const effectiveDelivery = deliver ?? resolvedDefaultDelivery;
     const messageBody = delivery ? delivery.prompt : submittedBody;
     if (goalCommand.matched && conversationMode) {
       setActionError("Create a separate task for work that needs an ongoing execution goal.");
@@ -1027,7 +1022,7 @@ export function TaskChatComposer({
       if (draftKey) settleDraftSubmission(draftKey, attemptId,
         mountedTaskKey.current === draftKey ? bodyRef.current : undefined);
       if (mountedTaskKey.current !== draftKey) return;
-      setDeliveryNotice(describeDeliveryDowngrade(effectiveDelivery, disposition));
+      setDeliveryNotice(describeDeliveryDowngrade(disposition));
       const submittedIds = new Set(submittedAttachments.map((item) => item.id));
       setAttachments((current) =>
         current.filter((item) => !submittedIds.has(item.id)),

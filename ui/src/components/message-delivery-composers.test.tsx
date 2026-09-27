@@ -129,7 +129,6 @@ type Harness = {
   name: string;
   render: (props: {
     onAdd: (body: string, ...rest: unknown[]) => Promise<MessageDeliveryDisposition | void>;
-    defaultMessageDelivery?: "steer" | "queue";
   }) => ReactElement;
   noticeTestId: string;
   errorTestId: string;
@@ -138,24 +137,16 @@ type Harness = {
 const HARNESSES: Harness[] = [
   {
     name: "TaskChatComposer",
-    render: ({ onAdd, defaultMessageDelivery }) => (
-      <TaskChatComposer
-        onAdd={onAdd as never}
-        workMode="standard"
-        defaultMessageDelivery={defaultMessageDelivery}
-      />
+    render: ({ onAdd }) => (
+      <TaskChatComposer onAdd={onAdd as never} workMode="standard" />
     ),
     noticeTestId: "task-chat-delivery-notice",
     errorTestId: "task-chat-goal-error",
   },
   {
     name: "IssueChatComposer",
-    render: ({ onAdd, defaultMessageDelivery }) => (
-      <IssueChatComposer
-        onSend={onAdd as never}
-        confirmedSubmissionIds={new Set()}
-        defaultMessageDelivery={defaultMessageDelivery}
-      />
+    render: ({ onAdd }) => (
+      <IssueChatComposer onSend={onAdd as never} confirmedSubmissionIds={new Set()} />
     ),
     noticeTestId: "issue-chat-delivery-notice",
     errorTestId: "issue-chat-delivery-error",
@@ -165,7 +156,7 @@ const HARNESSES: Harness[] = [
 describe.each(HARNESSES)("$name delivery commands", (harness) => {
   it("sends the bare prompt with no mode, so the server applies the global default", async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
-    render(harness.render({ onAdd, defaultMessageDelivery: "queue" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("look at the failing test");
     clickSend();
@@ -184,7 +175,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
 
   it("strips /steer and forces the steer mode", async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
-    render(harness.render({ onAdd, defaultMessageDelivery: "queue" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("/steer look at the failing test");
     clickSend();
@@ -203,7 +194,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
 
   it("strips /queue and forces the queue mode even when the default steers", async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("/queue write the summary");
     clickSend();
@@ -222,7 +213,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
 
   it("absorbs the MDXEditor autolink shape for /steer instead of posting a link", async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
-    render(harness.render({ onAdd, defaultMessageDelivery: "queue" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("[/steer](</steer look at the failing test>)");
     clickSend();
@@ -241,7 +232,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
 
   it("absorbs the MDXEditor autolink shape for /queue too", async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined);
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("[/queue](</queue write the summary>)");
     clickSend();
@@ -276,7 +267,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
     const onAdd = vi
       .fn()
       .mockResolvedValue({ deliveredAs: "queued", steeringUnavailable: "no_active_run" });
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("/steer look at the failing test");
     clickSend();
@@ -292,7 +283,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
 
   it("shows nothing when the steer actually landed", async () => {
     const onAdd = vi.fn().mockResolvedValue({ deliveredAs: "steered" });
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("look at the failing test");
     clickSend();
@@ -306,7 +297,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
     const onAdd = vi
       .fn()
       .mockResolvedValue({ deliveredAs: "queued", steeringUnavailable: "not_requested" });
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("/queue write the summary");
     clickSend();
@@ -320,7 +311,7 @@ describe.each(HARNESSES)("$name delivery commands", (harness) => {
     const onAdd = vi
       .fn()
       .mockResolvedValue({ deliveredAs: "queued", steeringUnavailable: "board_only" });
-    render(harness.render({ onAdd, defaultMessageDelivery: "steer" }));
+    render(harness.render({ onAdd }));
 
     typeIntoComposer("/steer look at the failing test");
     clickSend();
