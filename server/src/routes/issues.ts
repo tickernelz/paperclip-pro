@@ -7259,7 +7259,8 @@ export function issueRoutes(
       actor: input.actor,
       queueState,
       steeringDisposition:
-        activeRun?.runtimeMode === "native"
+        activeRun?.runtimeMode === "native" ||
+        (activeRun && hasLiveAdapterSteering(activeRun.id))
           ? "temporarily_unavailable"
           : "unsupported",
     });

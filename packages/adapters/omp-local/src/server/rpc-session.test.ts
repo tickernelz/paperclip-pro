@@ -223,6 +223,45 @@ describe("OMP RPC session protocol", () => {
     expect(result.promptError).toBe("OMP RPC mode ended before the run's prompt was dispatched.");
   });
 
+  it("fails the run when prompt_result reports an error", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-failed" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "prompt_result",
+      id: "prompt-1",
+      agentInvoked: true,
+      status: "error",
+      error: { message: "provider rejected the request", retryable: false },
+      sessionSettled: true,
+    });
+    state.finish();
+
+    const result = await running;
+    expect(result.promptError).toBe("provider rejected the request");
+    expect(state.ends()).toBe(1);
+  });
+
+  it("settles the run when prompt_result reports the agent was never invoked", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-local" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "prompt_result",
+      id: "prompt-1",
+      agentInvoked: false,
+      status: "completed",
+      sessionSettled: true,
+    });
+    state.finish();
+
+    const result = await running;
+    expect(result.promptError).toBeNull();
+    expect(state.ends()).toBe(1);
+  });
+
   it("reassembles chunked frames and logs the logical frame rather than the base64 chunk", async () => {
     const running = run();
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1, 2] });

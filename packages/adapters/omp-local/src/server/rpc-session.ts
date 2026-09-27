@@ -293,6 +293,24 @@ export async function runOmpRpcSession(
       }
       return;
     }
+    if (type === "prompt_result") {
+      const status = typeof frame.status === "string" ? frame.status : "";
+      const detail = frame.error;
+      const message =
+        detail && typeof detail === "object" && !Array.isArray(detail) &&
+        typeof (detail as Record<string, unknown>).message === "string"
+          ? String((detail as Record<string, unknown>).message).trim()
+          : "";
+      if (status === "error") {
+        promptError = message || "OMP reported the prompt failed.";
+        closeStdinOnce();
+        return;
+      }
+      if (frame.agentInvoked === false || frame.sessionSettled === true) {
+        closeStdinOnce();
+      }
+      return;
+    }
     if (type === "session_settled") {
       closeStdinOnce();
       return;

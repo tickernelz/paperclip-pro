@@ -113,20 +113,6 @@ Two consequences worth keeping:
   tolerates the escaped form so a notice would trip it too if OMP ever emits
   one.
 
-## Why steering was unreachable (three gates, all verified)
-
-1. **All runs are legacy.** Every historical `heartbeat_runs` row is
-   `runtime_mode: "legacy"`; all 36 agents are `adapter_type: "omp_local"`.
-2. **Legacy never enters the native path.** `resolveNativeRuntimeMode` returns
-   `{kind: "legacy", reason: "direct_adapter"}` unless
-   `agent.adapterType === "paperclip_runner"`. Only the native path registers
-   sessions in `activeNativeSessions`, and `steerNativeSession` required that
-   entry.
-3. **The queue protocol gate never promoted an `omp_local` run.** Even with a
-   live adapter session, `decideQueuedCommentQueueSteering` resolved `legacy`
-   from the persisted runtime mode, so both steer call sites bailed before the
-   seam was ever consulted.
-
 ## The contract this implements
 
 `steer?(input: {turnId, message, correlationId})` is an OPTIONAL method on
