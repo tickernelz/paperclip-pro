@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
-import { parseToolsets, resolveToolsets, TOOLSET_NAMES } from "./config.js";
+import { parseToolsets, resolveToolsets, FULL_TOOLSET, TOOLSET_NAMES } from "./config.js";
 
 function makeClient() {
   return new PaperclipApiClient({
@@ -31,6 +31,34 @@ describe("Paperclip MCP toolsets", () => {
     expect(parseToolsets("")).toEqual(["core"]);
     expect(parseToolsets(null)).toEqual(["core"]);
     expect(parseToolsets("nonsense")).toEqual(["core"]);
+  });
+
+  it("resolves full and its deprecated aliases to one identical union", () => {
+    expect(parseToolsets(FULL_TOOLSET)).toEqual([...TOOLSET_NAMES]);
+    expect(parseToolsets("all")).toEqual(parseToolsets(FULL_TOOLSET));
+    expect(parseToolsets("extended")).toEqual(parseToolsets(FULL_TOOLSET));
+    expect(parseToolsets("full,core")).toEqual([...TOOLSET_NAMES]);
+  });
+
+  it("warns once per deprecated alias and never for the canonical value", async () => {
+    vi.resetModules();
+    const fresh = await import("./config.js");
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      fresh.parseToolsets("all");
+      fresh.parseToolsets("all");
+      fresh.parseToolsets("extended");
+      expect(warn.mock.calls.map((call) => call[0])).toEqual([
+        expect.stringContaining('"all" is deprecated'),
+        expect.stringContaining('"extended" is deprecated'),
+      ]);
+      warn.mockClear();
+      fresh.parseToolsets(fresh.FULL_TOOLSET);
+      fresh.parseToolsets("core");
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+    }
   });
 
   it("never drops core from the selected union", () => {
@@ -74,5 +102,37 @@ describe("Paperclip MCP toolsets", () => {
     const extended = listingNames(["extended"], true);
 
     expect(core.filter((name) => !extended.includes(name))).toEqual([]);
+  });
+});
+
+describe("Paperclip MCP listing annotations", () => {
+  const client = makeClient();
+  const toolsets = parseToolsets(FULL_TOOLSET);
+
+  function annotatedEntries(annotations: boolean) {
+    return paperclipToolCatalog(client, toolsets, false, { annotations }).listing.tools.filter(
+      (tool) => "annotations" in tool,
+    );
+  }
+
+  it("omits annotations from the default listing", () => {
+    const listing = paperclipToolCatalog(client, toolsets, false).listing;
+    expect(listing.tools.length).toBeGreaterThan(0);
+    expect(listing.tools.filter((tool) => "annotations" in tool)).toEqual([]);
+  });
+
+  it("keeps them reachable for a caller that opts in", () => {
+    const annotated = annotatedEntries(true);
+    expect(annotated.length).toBeGreaterThan(0);
+    expect(annotated.every((tool) => "annotations" in tool)).toBe(true);
+  });
+
+  it("does not let one caller's choice poison the memoized listing for another", () => {
+    const lean = paperclipToolCatalog(client, toolsets, false, { annotations: false }).listing;
+    const annotated = paperclipToolCatalog(client, toolsets, false, { annotations: true }).listing;
+
+    expect(lean.tools.filter((tool) => "annotations" in tool)).toEqual([]);
+    expect(annotated.tools.filter((tool) => "annotations" in tool).length).toBeGreaterThan(0);
+    expect(lean.tools.map((tool) => tool.name)).toEqual(annotated.tools.map((tool) => tool.name));
   });
 });

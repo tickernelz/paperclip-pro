@@ -983,6 +983,9 @@ importers:
       '@tickernelz/paperclip-pro-skills-catalog':
         specifier: workspace:*
         version: link:../packages/skills-catalog
+      '@tickernelz/paperclip-pro-teams-catalog':
+        specifier: workspace:*
+        version: link:../packages/teams-catalog
       '@vercel/connect':
         specifier: 0.6.1
         version: 0.6.1(@chat-adapter/slack@4.39.0(patch_hash=226jj24akljccsfbw7bcxujz4u)(zod@4.4.3))(better-auth@1.7.2(@opentelemetry/api@1.9.1)(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@opentelemetry/api@1.9.1)(kysely@0.29.5)(pg@8.18.0)(postgres@3.4.9(patch_hash=sryle6qd5qfmnxvoebal4gashi)))(pg@8.18.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(vitest@4.1.11(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(esbuild@0.28.2)(jiti@2.7.0)(jsdom@30.0.1(@noble/hashes@2.4.0))(tsx@4.23.12)(yaml@2.9.1)))

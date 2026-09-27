@@ -27,51 +27,16 @@ export type ToolListing = {
     inputSchema: JsonSchemaObject;
     annotations?: ToolAnnotations;
   }>;
-  nextCursor?: string;
 };
 
-export const DEFAULT_PAGE_SIZE = 1000;
-
-export class InvalidCursorError extends Error {
-  constructor(cursor: string) {
-    super(`Invalid tools/list cursor: ${cursor}`);
-    this.name = "InvalidCursorError";
-  }
-}
-
-export function resolvePageSize(env: NodeJS.ProcessEnv = process.env): number {
-  const parsed = Number.parseInt(env.PAPERCLIP_MCP_PAGE_SIZE?.trim() ?? "", 10);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_PAGE_SIZE;
-}
-
-function encodeCursor(offset: number): string {
-  return Buffer.from(String(offset), "utf8").toString("base64url");
-}
-
-function decodeCursor(cursor: string): number {
-  const decoded = Buffer.from(cursor, "base64url").toString("utf8");
-  if (!/^\d+$/.test(decoded)) throw new InvalidCursorError(cursor);
-  return Number.parseInt(decoded, 10);
-}
-
-export function paginateListing(
-  listing: ToolListing,
-  cursor: string | null | undefined,
-  pageSize: number,
-): ToolListing {
-  const offset = cursor ? decodeCursor(cursor) : 0;
-  if (offset > listing.tools.length) throw new InvalidCursorError(cursor ?? "");
-  const tools = listing.tools.slice(offset, offset + pageSize);
-  const nextOffset = offset + tools.length;
-  return nextOffset < listing.tools.length
-    ? { tools, nextCursor: encodeCursor(nextOffset) }
-    : { tools };
+export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env): boolean {
+  const configured = env.PAPERCLIP_MCP_LIST_ANNOTATIONS?.trim().toLowerCase() ?? "";
+  return configured === "1" || configured === "true" || configured === "yes";
 }
 
 export type CatalogOptions = {
+  annotations?: boolean;
   boardSurface?: BoardSurfaceContext;
-  cursor?: string | null;
-  pageSize?: number;
 };
 
 const listings = new Map<string, ToolListing>();
@@ -80,20 +45,21 @@ function listingKey(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
   surface: BoardSurfaceContext | undefined,
+  annotations: boolean,
 ): string {
-  const base = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}`;
+  const base = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}|${annotations ? "annotated" : "lean"}`;
   if (!management || !surface) return base;
   return `${base}|${[...surface.capabilities].sort().join(",")}|${[...surface.permissionKeys].sort().join(",")}`;
 }
 
-function toListingEntries(definitions: ReadonlyArray<ToolDefinition>) {
+function toListingEntries(definitions: ReadonlyArray<ToolDefinition>, annotations: boolean) {
   return definitions.map((tool) => ({
     name: tool.name,
     description: tool.description,
     inputSchema: leanJsonSchema(
       z.toJSONSchema(tool.schema, { target: "draft-7", io: "input" }),
     ) as JsonSchemaObject,
-    ...(tool.annotations ? { annotations: tool.annotations } : {}),
+    ...(annotations && tool.annotations ? { annotations: tool.annotations } : {}),
   }));
 }
 
@@ -113,7 +79,8 @@ export function paperclipToolCatalog(
     ...bindGeneratedTools(prepared, client).filter((tool) => !curatedNames.has(tool.name)),
   ];
 
-  const key = listingKey(selected, management, options.boardSurface);
+  const annotations = options.annotations ?? resolveListingAnnotations();
+  const key = listingKey(selected, management, options.boardSurface, annotations);
   let listing = listings.get(key);
   if (!listing) {
     const surface = management ? options.boardSurface : undefined;
@@ -127,11 +94,8 @@ export function paperclipToolCatalog(
     const visible = advertisedNames
       ? definitions.filter((tool) => curatedNames.has(tool.name) || advertisedNames.has(tool.name))
       : definitions;
-    listing = { tools: toListingEntries(visible) };
+    listing = { tools: toListingEntries(visible, annotations) };
     listings.set(key, listing);
   }
-  return {
-    definitions,
-    listing: paginateListing(listing, options.cursor, options.pageSize ?? resolvePageSize()),
-  };
+  return { definitions, listing };
 }

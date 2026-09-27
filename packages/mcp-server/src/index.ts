@@ -53,10 +53,9 @@ export function createPaperclipMcpServer(
       tool.execute,
     );
   }
-  server.server.setRequestHandler(ListToolsRequestSchema, (request) => {
-    const cursor = request.params?.cursor;
-    return paperclipToolCatalog(client, config.toolsets, management, { cursor }).listing;
-  });
+  server.server.setRequestHandler(ListToolsRequestSchema, () =>
+    paperclipToolCatalog(client, config.toolsets, management).listing,
+  );
 
   return {
     server,

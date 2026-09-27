@@ -18,6 +18,25 @@ export function hasManagementAuthority(role: string | null | undefined): boolean
 
 export const TOOLSET_NAMES: ToolsetName[] = ["core", "extended"];
 
+export const FULL_TOOLSET = "full";
+
+const TOOLSET_SELECTIONS = new Set<string>([...TOOLSET_NAMES, FULL_TOOLSET]);
+
+const DEPRECATED_TOOLSET_SELECTIONS: Record<string, string> = {
+  all: FULL_TOOLSET,
+  extended: FULL_TOOLSET,
+};
+
+const warnedDeprecatedToolsets = new Set<string>();
+
+function warnDeprecatedToolset(name: string, canonical: string) {
+  if (warnedDeprecatedToolsets.has(name)) return;
+  warnedDeprecatedToolsets.add(name);
+  console.warn(
+    `Paperclip MCP toolset "${name}" is deprecated and now resolves to "${canonical}". Use "${canonical}".`,
+  );
+}
+
 export function expandToolsetUnion(selected: ReadonlyArray<ToolsetName>): ToolsetName[] {
   return selected.includes("extended") ? [...TOOLSET_NAMES] : ["core"];
 }
@@ -27,7 +46,14 @@ export function parseToolsets(requested: string | null | undefined): ToolsetName
     .split(",")
     .map((entry) => entry.trim().toLowerCase())
     .filter(Boolean);
-  if (requestedNames.includes("all")) return [...TOOLSET_NAMES];
+  let full = requestedNames.includes(FULL_TOOLSET);
+  for (const name of requestedNames) {
+    const canonical = DEPRECATED_TOOLSET_SELECTIONS[name];
+    if (!canonical) continue;
+    warnDeprecatedToolset(name, canonical);
+    full = true;
+  }
+  if (full) return [...TOOLSET_NAMES];
   return expandToolsetUnion(
     TOOLSET_NAMES.filter((name) => requestedNames.includes(name)),
   );
@@ -44,7 +70,7 @@ export function resolveToolsets(
     inline?.slice("--toolsets=".length) ??
     env.PAPERCLIP_MCP_TOOLSETS;
   for (const name of (requested ?? "").split(",").map((entry) => entry.trim().toLowerCase())) {
-    if (name && name !== "all" && !TOOLSET_NAMES.includes(name as ToolsetName)) {
+    if (name && !TOOLSET_SELECTIONS.has(name) && !DEPRECATED_TOOLSET_SELECTIONS[name]) {
       console.error(`Ignoring unknown Paperclip MCP toolset "${name}"`);
     }
   }
