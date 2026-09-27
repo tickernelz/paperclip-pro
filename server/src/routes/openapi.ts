@@ -4240,7 +4240,7 @@ registry.registerPath({
   tags: ["issues"],
   summary: "Add a comment to an issue",
   description:
-    "Set deliver to steer or queue to override the instance default message delivery for this one comment; omit it to use the global setting. Steering is board-only, so an agent that asks to steer is queued rather than refused and the comment is still accepted. The response reports the disposition: deliveredAs is queued or steered, and steeringUnavailable names why whenever deliveredAs is queued, with not_requested when queue was asked for and board_only when steering was requested or defaulted but only a board user can steer.",
+    "Set deliver to steer or queue to override the instance default message delivery for this one comment; omit it to use the global setting. Steering is board-only, so an agent that asks to steer is queued rather than refused and the comment is still accepted. The response reports the disposition: deliveredAs is queued or steered, and steeringUnavailable names why whenever deliveredAs is queued, with not_requested when no steer was attempted (queue was asked for, or the target queues by design), board_only when steering was requested or defaulted but only a board user can steer, and otherwise no_active_run, legacy_protocol, conversation_issue or steering_failed.",
   request: {
     params: z.object({ id: z.string() }),
     body: jsonBody(addIssueCommentSchema),
