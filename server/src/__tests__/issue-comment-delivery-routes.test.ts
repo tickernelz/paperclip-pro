@@ -67,7 +67,11 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     }
     testProcesses.clear();
     steerNativeSessionMock.mockReset();
-    await db.execute(sql`TRUNCATE TABLE companies CASCADE`);
+    // Best-effort cleanup. The heartbeat keeps working on this database after
+    // a response is sent, and a truncate can deadlock against it under CI
+    // load. Every case owns a uniquely prefixed company, so a row that
+    // outlives this cleanup cannot reach the next case.
+    await db.execute(sql`TRUNCATE TABLE companies CASCADE`).catch(() => undefined);
   });
 
   afterAll(async () => {
@@ -129,10 +133,13 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     const agentId = randomUUID();
     const issueId = randomUUID();
     const runId = randomUUID();
+    // The prefix carries a per-test suffix so a company row that outlives
+    // this file's TRUNCATE (the heartbeat keeps working after the response)
+    // can never block the next test's insert.
     await db.insert(companies).values({
       id: companyId,
       name: "Delivery Test Company",
-      issuePrefix: "DLV",
+      issuePrefix: `DLV-${companyId.slice(0, 8).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false,
     });
     await db.insert(companyMemberships).values({
@@ -169,7 +176,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     await db.insert(issues).values({
       id: issueId,
       companyId,
-      identifier: `DLV-${Math.floor(Math.random() * 9000 + 1000)}`,
+      identifier: `DLV-${companyId.slice(0, 8).toUpperCase()}-1`,
       title: "Message delivery",
       status: "in_progress",
       priority: "medium",
