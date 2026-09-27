@@ -662,7 +662,7 @@ export function createToolDefinitions(client: PaperclipApiClient): ToolDefinitio
     ),
     makeTool(
       "paperclipAddComment",
-      "Add a comment to an issue; include resume=true when intentionally requesting follow-up on resumable closed work",
+      "Add a comment to an issue; include resume=true when intentionally requesting follow-up on resumable closed work. Set deliver to steer or queue to override the instance default message delivery for this one comment. Steering is board-only, so an agent that asks for steer is queued rather than refused: the comment is always accepted. The response reports the disposition, with deliveredAs as queued or steered, and steeringUnavailable naming why whenever deliveredAs is queued: not_requested when queue was asked for, board_only when steering was requested or defaulted but only a board user can steer, and otherwise no_active_run, legacy_protocol, conversation_issue or steering_failed.",
       addCommentToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/comments`, { body }),

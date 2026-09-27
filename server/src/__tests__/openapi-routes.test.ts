@@ -958,6 +958,31 @@ describe("heartbeat run ID OpenAPI contract", () => {
   });
 });
 
+describe("issue comment delivery in the published spec", () => {
+  const spec = buildOpenApiSpec();
+  const commentBody = () => {
+    const post = (spec.paths["/api/issues/{id}/comments"] as Record<string, any>).post;
+    return post.requestBody.content["application/json"].schema as Record<string, any>;
+  };
+
+  it("publishes the deliver enum an unlisted parameter would have made uncallable", () => {
+    expect(commentBody().properties.deliver).toMatchObject({
+      type: "string",
+      enum: ["steer", "queue"],
+    });
+  });
+
+  it("keeps deliver out of required so the global default still resolves", () => {
+    expect(commentBody().required ?? []).not.toContain("deliver");
+  });
+
+  it("states that an agent asking to steer is queued rather than refused", () => {
+    const post = (spec.paths["/api/issues/{id}/comments"] as Record<string, any>).post;
+    expect(post.description).toMatch(/steer/i);
+    expect(post.description).toMatch(/queue/i);
+  });
+});
+
 describe("instance-admin smoke-lab operations", () => {
   const spec = buildOpenApiSpec();
   const operation = (path: string, method: string) =>
