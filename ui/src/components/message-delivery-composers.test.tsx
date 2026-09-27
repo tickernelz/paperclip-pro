@@ -153,6 +153,7 @@ const HARNESSES: Harness[] = [
     render: ({ onAdd, defaultMessageDelivery }) => (
       <IssueChatComposer
         onSend={onAdd as never}
+        confirmedSubmissionIds={new Set()}
         defaultMessageDelivery={defaultMessageDelivery}
       />
     ),

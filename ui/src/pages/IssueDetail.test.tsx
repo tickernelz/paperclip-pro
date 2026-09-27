@@ -1453,7 +1453,7 @@ describe("IssueDetail", () => {
     };
     if (kind === "message") {
       await act(async () => { await props.onAdd("Clarify this goal"); });
-      expect(mockIssuesApi.addComment).toHaveBeenCalledWith(canonical.id, "Clarify this goal", undefined, undefined, undefined, expect.any(String));
+      expect(mockIssuesApi.addComment).toHaveBeenCalledWith(canonical.id, "Clarify this goal", undefined, undefined, undefined, expect.any(String), undefined);
       expect(invalidate).toHaveBeenCalledWith({ queryKey: queryKeys.issues.comments(canonical.id) });
     } else {
       const file = new File(["image"], "first.png", { type: "image/png" });
@@ -1685,6 +1685,7 @@ describe("IssueDetail", () => {
           undefined,
           [id],
           expect.any(String),
+          undefined,
         );
         expect(mockIssuesApi.update).not.toHaveBeenCalled();
       }
@@ -5337,7 +5338,7 @@ describe("IssueDetail", () => {
         await composerProps().onAdd("Keep working");
       });
       expect(mockIssuesApi.addComment).toHaveBeenCalledWith(
-        "PAP-1", "Keep working", undefined, undefined, undefined, expect.any(String),
+        "PAP-1", "Keep working", undefined, undefined, undefined, expect.any(String), undefined,
       );
       expect(queryClient.getQueryState(treeControlKey)?.status).toBe("pending");
 
