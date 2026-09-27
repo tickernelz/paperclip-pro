@@ -134,6 +134,36 @@ therefore uses a new local `liveStdin` channel bound to the child's stdin in
 `runChildProcess`, which reaches local and ssh targets, and is gated off for
 sandbox by `adapterExecutionTargetSupportsLiveStdin`.
 
+## Transcript volume, and where the savings came from
+
+RPC hands over the raw session event where `--mode json -p` runs every event
+through `printableEvent` first. Two separate changes close that gap, and they
+should not be credited to each other.
+
+| Change | What it drops | Measured on the same run |
+|---|---|---|
+| Transport-frame filter | `available_commands_update` and friends never reach the transcript | 1,085,386 B |
+| Print-mode event shaping | `message_update` snapshots, `partial`, `providerPayload` | 12,660 B → 6,684 B |
+
+So the transport swap is a 99.4% reduction end to end, while the event shaping on
+its own accounts for 47.2% of event-frame bytes. An earlier note credited 99.3%
+to the shaping alone; that figure belonged to the combination. On production the
+combined effect is visible directly: runs carried 101-244 snapshot frames each
+and logged 500-815 KB, against zero `partial` occurrences and a 166 KB log for a
+10-minute run afterwards.
+
+### The result budget is a separate surface
+
+`resultJson.stdout` does not come from the transcript callback; it is
+`attempt.proc.stdout`, the process runner's own raw capture, collected
+independently. Bounding only the transcript left it at 500-800 KB, past the
+server's 64 KiB `HEARTBEAT_RUN_SAFE_RESULT_JSON_MAX_BYTES`, where the
+oversized-result projection replaces the object with a small whitelist — which
+is why `ompTransport` and `capabilityManifest` read back as missing on exactly
+the runs that were using RPC. The adapter now persists the transcript it emits,
+and bounds each stored tool-call result; a verbose run measures 45 KB with every
+diagnostic field intact.
+
 ## Rollback
 
 Setting `rpcSteering` false returns that agent to `--mode json -p` with no other

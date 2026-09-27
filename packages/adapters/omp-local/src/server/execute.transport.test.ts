@@ -94,4 +94,48 @@ describe("OMP local transport selection", () => {
     expect(invocation.args.at(-1)).toContain("Paperclip");
   });
 
+  it("keeps a verbose tool call from pushing resultJson past the safe-result budget", async () => {
+    const huge = "y".repeat(200_000);
+    runProcessMock.mockImplementation((async (
+      _runId: string,
+      _target: unknown,
+      _command: string,
+      _args: string[],
+      options: { onLog: (stream: string, chunk: string) => Promise<void> },
+    ) => {
+      await options.onLog(
+        "stdout",
+        `${JSON.stringify({ type: "tool_execution_start", toolCallId: "t1", toolName: "bash", args: { command: "echo hi" } })}\n`,
+      );
+      await options.onLog(
+        "stdout",
+        `${JSON.stringify({ type: "tool_execution_end", toolCallId: "t1", result: huge, isError: false })}\n`,
+      );
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: huge,
+        stderr: "",
+        pid: 4321,
+        startedAt: new Date().toISOString(),
+      };
+    }) as never);
+
+    const result = await execute({
+      runId: "run-transport",
+      agent: { id: "agent-1", companyId: "company-1", name: "OMP", adapterType: "omp_local", adapterConfig: {} },
+      runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+      config: { command: commandPath, noSession: true, cwd: workspaceCwd, rpcSteering: false },
+      context: {},
+      onLog: async () => {},
+    } as never);
+
+    const calls = (result.resultJson?.toolCalls ?? []) as Record<string, unknown>[];
+    expect(calls).toHaveLength(1);
+    expect(calls[0].toolName).toBe("bash");
+    expect(String(calls[0].result).length).toBeLessThanOrEqual(4096);
+    expect(Buffer.byteLength(JSON.stringify(result.resultJson ?? {}), "utf8")).toBeLessThan(64 * 1024);
+  });
+
 });

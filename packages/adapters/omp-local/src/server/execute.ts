@@ -87,6 +87,22 @@ import {
 } from "./paperclip-mcp.js";
 
 const RESULT_TRANSCRIPT_MAX_CHARS = 16 * 1024;
+const RESULT_TOOL_CALL_MAX_CHARS = 4 * 1024;
+
+/** Keeps a tool call's result to a diagnostic tail so a verbose run stays inside the result budget. */
+function boundToolCallForResult(
+  call: { result?: unknown; args?: unknown; toolName?: string; toolCallId?: string; isError?: boolean },
+): Record<string, unknown> {
+  const result = typeof call.result === "string" ? call.result : JSON.stringify(call.result ?? null);
+  const args = typeof call.args === "string" ? call.args : JSON.stringify(call.args ?? null);
+  return {
+    toolCallId: call.toolCallId ?? "",
+    toolName: call.toolName ?? "",
+    args: appendWithCap("", args, RESULT_TOOL_CALL_MAX_CHARS),
+    result: appendWithCap("", result, RESULT_TOOL_CALL_MAX_CHARS),
+    isError: call.isError === true,
+  };
+}
 
 const CAPABILITY_MANIFEST = {
   bindings: [
@@ -1119,7 +1135,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           stdout: attempt.stdoutTranscript,
           stderr: attempt.proc.stderr,
           errors: rpcPromptError ? [...attempt.parsed.errors, rpcPromptError] : attempt.parsed.errors,
-          toolCalls: attempt.parsed.toolCalls,
+          toolCalls: attempt.parsed.toolCalls.map(boundToolCallForResult),
           unknownLines: attempt.parsed.unknownLines,
           ...(attempt.reporterFailed ? { progressReporterFailed: true } : {}),
           capabilityManifest: rpcActive ? RPC_CAPABILITY_MANIFEST : CAPABILITY_MANIFEST,
