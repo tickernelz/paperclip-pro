@@ -34,6 +34,7 @@ import {
   type PrpEvent,
 } from "@tickernelz/paperclip-pro-paperclip-runner";
 import { createHash } from "node:crypto";
+import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import { DatabaseSync } from "node:sqlite";
 import { nativeSha256 } from "./canonical.js";
 import * as noLaunchProofModule from "./native-maintenance-no-launch.js";
@@ -298,6 +299,7 @@ import {
   sha256DirectoryTree,
   stageRemoteRunnerDirectory,
   steerNativeSession,
+  hasLiveAdapterSteering,
   syncRemoteRunnerDirectoryOut,
   verifyNativeHarnessBackup,
   shouldRestoreNativeHarnessBackupIntoSandbox,
@@ -5719,6 +5721,102 @@ describe("native session same-turn steering", () => {
 
     state.release?.();
     await running;
+  });
+
+  it("reaches an adapter-owned steering target when no native session is attached", async () => {
+    const adapterCapabilities = vi.fn().mockResolvedValue({ steering: true });
+    const adapterSnapshot = vi.fn().mockResolvedValue({ activeTurnId: "omp-rpc-turn:adapter" });
+    const adapterSteer = vi.fn().mockResolvedValue(undefined);
+    const unregister = registerAdapterSteerTarget("run-adapter-steer", {
+      capabilities: adapterCapabilities,
+      snapshot: adapterSnapshot,
+      steer: adapterSteer,
+    });
+
+    try {
+      expect(hasLiveAdapterSteering("run-adapter-steer")).toBe(true);
+      await expect(getNativeSessionSteeringState("run-adapter-steer")).resolves.toEqual({
+        disposition: "available",
+        activeTurnId: "omp-rpc-turn:adapter",
+      });
+      await expect(
+        steerNativeSession({
+          runId: "run-adapter-steer",
+          message: "Steer through the adapter",
+          correlationId: "adapter-comment-1",
+        }),
+      ).resolves.toEqual({ turnId: "omp-rpc-turn:adapter" });
+      expect(adapterSteer).toHaveBeenCalledWith({
+        turnId: "omp-rpc-turn:adapter",
+        message: { role: "user", text: "Steer through the adapter" },
+        correlationId: "adapter-comment-1",
+      });
+    } finally {
+      unregister();
+    }
+
+    expect(hasLiveAdapterSteering("run-adapter-steer")).toBe(false);
+    await expect(getNativeSessionSteeringState("run-adapter-steer")).resolves.toEqual({
+      disposition: "temporarily_unavailable",
+      activeTurnId: null,
+    });
+  });
+
+  it("reports an adapter target with no active turn as temporarily unavailable", async () => {
+    const unregister = registerAdapterSteerTarget("run-adapter-idle", {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: null }),
+      steer: vi.fn(),
+    });
+
+    try {
+      await expect(getNativeSessionSteeringState("run-adapter-idle")).resolves.toEqual({
+        disposition: "temporarily_unavailable",
+        activeTurnId: null,
+      });
+      const error = await steerNativeSession({
+        runId: "run-adapter-idle",
+        message: "Nothing is running",
+        correlationId: "adapter-comment-idle",
+      }).catch((value) => value);
+      expect(error).toBeInstanceOf(NativeSessionSteeringError);
+      expect(error.code).toBe("steering_stale_turn");
+    } finally {
+      unregister();
+    }
+  });
+
+  it("keeps the native session ahead of an adapter target for the same run", async () => {
+    const adapterSteer = vi.fn().mockResolvedValue(undefined);
+    const unregister = registerAdapterSteerTarget(execution.binding.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "adapter-turn" }),
+      steer: adapterSteer,
+    });
+
+    try {
+      const { running } = await startActiveSession();
+
+      await expect(
+        getNativeSessionSteeringState(execution.binding.runId),
+      ).resolves.toEqual({
+        disposition: "available",
+        activeTurnId: "provider-turn-1",
+      });
+      await expect(
+        steerNativeSession({
+          runId: execution.binding.runId,
+          message: "Prefer the native session",
+          correlationId: "native-priority",
+        }),
+      ).resolves.toEqual({ turnId: "provider-turn-1" });
+      expect(adapterSteer).not.toHaveBeenCalled();
+
+      state.release?.();
+      await running;
+    } finally {
+      unregister();
+    }
   });
 });
 

@@ -67,6 +67,45 @@ describe("decideQueuedCommentQueueSteering", () => {
 
     expect(decision).toEqual({ protocol: "paperclip_runner_v1", kind: "probe", steeringRunId: "run-1" });
   });
+
+  it("promotes a legacy-mode run whose adapter holds a live steering target", () => {
+    const decision = decideQueuedCommentQueueSteering({
+      state: "deferred",
+      queueRunRuntimeMode: null,
+      activeRun: { id: "run-1", runtimeMode: "legacy" },
+      assignedAgentAdapterType: "omp_local",
+      queuedCommentCount: 1,
+      liveSteeringTarget: true,
+    });
+
+    expect(decision).toEqual({ protocol: "paperclip_runner_v1", kind: "probe", steeringRunId: "run-1" });
+  });
+
+  it("keeps a legacy-mode run unsupported when no live steering target exists", () => {
+    const decision = decideQueuedCommentQueueSteering({
+      state: "deferred",
+      queueRunRuntimeMode: null,
+      activeRun: { id: "run-1", runtimeMode: "legacy" },
+      assignedAgentAdapterType: "omp_local",
+      queuedCommentCount: 1,
+      liveSteeringTarget: false,
+    });
+
+    expect(decision).toEqual({ protocol: "legacy", kind: "unsupported" });
+  });
+
+  it("ignores a live steering target on a queue with nothing pending", () => {
+    const decision = decideQueuedCommentQueueSteering({
+      state: "deferred",
+      queueRunRuntimeMode: null,
+      activeRun: { id: "run-1", runtimeMode: "legacy" },
+      assignedAgentAdapterType: "omp_local",
+      queuedCommentCount: 0,
+      liveSteeringTarget: true,
+    });
+
+    expect(decision).toEqual({ protocol: "paperclip_runner_v1", kind: "temporarily_unavailable" });
+  });
 });
 
 describe("buildQueuedCommentQueueSnapshot entry permissions", () => {

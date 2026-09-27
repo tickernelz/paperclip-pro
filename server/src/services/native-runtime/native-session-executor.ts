@@ -87,6 +87,7 @@ import {
   type NativeSessionGoalControl,
 } from "../../vendor/paperclip-runner/index.js";
 import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { getAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
 import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
 import {
@@ -6304,17 +6305,38 @@ export async function resolveNativeRuntimeRequest(input: {
   }
 }
 
+type SteeringSession = {
+  capabilities(): Promise<{ steering: boolean }>;
+  snapshot(): Promise<{ activeTurnId?: string | null }>;
+  steer?(input: {
+    turnId: string;
+    message: { role: "user"; text: string };
+    correlationId?: string;
+  }): Promise<void>;
+};
+
+function resolveSteeringSession(runId: string): SteeringSession | null {
+  const active = activeNativeSessions.get(runId);
+  if (active) return active.session;
+  return getAdapterSteerTarget(runId) ?? null;
+}
+
+/** Whether an adapter-owned same-turn steering target is live for this run. */
+export function hasLiveAdapterSteering(runId: string): boolean {
+  return getAdapterSteerTarget(runId) !== undefined;
+}
+
 export async function getNativeSessionSteeringState(
   runId: string,
 ): Promise<NativeSessionSteeringState> {
-  const active = activeNativeSessions.get(runId);
-  if (!active)
+  const session = resolveSteeringSession(runId);
+  if (!session)
     return { disposition: "temporarily_unavailable", activeTurnId: null };
-  const capabilities = await active.session.capabilities();
-  if (!capabilities.steering || !active.session.steer) {
+  const capabilities = await session.capabilities();
+  if (!capabilities.steering || !session.steer) {
     return { disposition: "unsupported", activeTurnId: null };
   }
-  const snapshot = await active.session.snapshot();
+  const snapshot = await session.snapshot();
   return {
     disposition: snapshot.activeTurnId
       ? "available"
@@ -6339,21 +6361,21 @@ export async function steerNativeSession(input: {
   timeoutMs?: number;
   onAcknowledged?: () => Promise<void>;
 }): Promise<{ turnId: string }> {
-  const active = activeNativeSessions.get(input.runId);
-  if (!active) {
+  const session = resolveSteeringSession(input.runId);
+  if (!session) {
     throw new NativeSessionSteeringError(
       "steering_temporarily_unavailable",
       "The active native session is not attached.",
     );
   }
-  const capabilities = await active.session.capabilities();
-  if (!capabilities.steering || !active.session.steer) {
+  const capabilities = await session.capabilities();
+  if (!capabilities.steering || !session.steer) {
     throw new NativeSessionSteeringError(
       "steering_unsupported",
       "This provider does not support same-turn steering.",
     );
   }
-  const snapshot = await active.session.snapshot();
+  const snapshot = await session.snapshot();
   const turnId = snapshot.activeTurnId ?? null;
   if (!turnId) {
     throw new NativeSessionSteeringError(
@@ -6365,7 +6387,7 @@ export async function steerNativeSession(input: {
   const deliveryKey = `${input.runId}:${input.correlationId}`;
   let delivery = steeringDeliveries.get(deliveryKey);
   if (!delivery) {
-    delivery = active.session
+    delivery = session
       .steer({
         turnId,
         message: { role: "user", text: input.message },

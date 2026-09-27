@@ -10,6 +10,7 @@ import {
   withQueuedCommentIdsInWakePayload,
 } from "../../../services/issue-queued-comment-queue.js";
 import { logActivity as persistActivityLogRow, type ActivityPublication } from "../../../services/activity-log.js";
+import { hasLiveAdapterSteering } from "../../../services/native-runtime/native-session-executor.js";
 import { decideQueuedCommentWakeLookup } from "../domain/policy.js";
 import { parseObject, readNonEmptyString } from "../domain/values.js";
 import { QueuedCommentMutationError } from "../application/queued-comment-use-cases.js";
@@ -152,6 +153,7 @@ function buildTransaction(tx: Db, companyId: string, deps: QueuedCommentQueuePos
         activeRun,
         assignedAgentAdapterType: assignedAgent?.adapterType ?? null,
         queuedCommentCount: comments.length,
+        liveSteeringTarget: activeRun ? hasLiveAdapterSteering(activeRun.id) : false,
       });
       const steeringDisposition: IssueQueuedCommentQueue["steeringDisposition"] =
         steering.kind === "probe" ? "temporarily_unavailable" : steering.kind;

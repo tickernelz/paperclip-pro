@@ -352,6 +352,7 @@ import {
 } from "../services/cross-issue-influence-limit.js";
 import {
   getNativeSessionSteeringState,
+  hasLiveAdapterSteering,
   NativeSessionSteeringError,
   steerNativeSession,
 } from "../services/native-runtime/native-session-executor.js";
@@ -7082,6 +7083,7 @@ export function issueRoutes(
       activeRun: input.activeRun,
       assignedAgentAdapterType: assignedAgent?.adapterType ?? null,
       queuedCommentCount: comments.length,
+      liveSteeringTarget: input.activeRun ? hasLiveAdapterSteering(input.activeRun.id) : false,
     });
     const steeringDisposition: IssueQueuedCommentQueue["steeringDisposition"] =
       input.issue.conversationAgentId ? "unsupported" : steering.kind !== "probe"

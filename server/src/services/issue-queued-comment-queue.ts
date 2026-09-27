@@ -128,6 +128,8 @@ export function decideQueuedCommentQueueSteering(facts: {
   activeRun: { id: string; runtimeMode: string | null } | null;
   assignedAgentAdapterType: string | null;
   queuedCommentCount: number;
+  /** Whether the caller observed a live same-turn steering target for `activeRun`. */
+  liveSteeringTarget?: boolean;
 }): QueuedCommentQueueSteeringDecision {
   const persistedRuntimeMode =
     facts.state === "queued"
@@ -139,6 +141,7 @@ export function decideQueuedCommentQueueSteering(facts: {
   const protocol: QueuedCommentQueueProtocol =
     persistedRuntimeMode === "native"
       || (persistedRuntimeMode === null && facts.assignedAgentAdapterType === "paperclip_runner")
+      || facts.liveSteeringTarget === true
       ? "paperclip_runner_v1"
       : "legacy";
 
