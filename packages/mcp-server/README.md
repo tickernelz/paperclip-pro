@@ -15,7 +15,6 @@ The server reads its configuration from environment variables:
 - `PAPERCLIP_AGENT_ID` - optional default agent for checkout helpers
 - `PAPERCLIP_RUN_ID` - optional run id forwarded on mutating requests
 - `PAPERCLIP_MCP_TOOLSETS` - comma-separated toolsets to register: `core` (default) or `full`; the deprecated `all` and `extended` still resolve to `full`
-- `PAPERCLIP_MCP_PAGE_SIZE` - `tools/list` page size; defaults to 200
 - `PAPERCLIP_MCP_LIST_ANNOTATIONS` - set to `1` to put MCP annotations back into the `tools/list` payload
 - `PAPERCLIP_AGENT_ROLE` - caller role; management roles (`ceo`, `board`) also see board-authority tools
 
@@ -69,7 +68,9 @@ Tool definitions are built once per process and per (toolset, authority) variant
 
 ### Pagination
 
-`tools/list` is paginated with the standard MCP cursor. The default page size is 200, which is smaller than the advertised surface, so a response that does not end the listing carries `nextCursor` and the client is expected to pass it back until it is absent. A client that follows the cursor still sees every tool; a client that stops at the first page sees only the first 200. Set `PAPERCLIP_MCP_PAGE_SIZE` to a value at least as large as the surface to get the old single-page response.
+`tools/list` is **not** paginated: one response carries every tool the caller may see, and no response ever carries `nextCursor`. The cursor mechanism (encode, decode, page size, invalid-cursor error) was removed rather than left inert.
+
+The surface is bounded by the OpenAPI registry - 441 tools for an agent, 716 for company authority - so the whole listing is a bounded ~190-300 KB and splitting it buys nothing. More importantly, a smaller page size is not a free change: a client that sends no cursor and does not follow one would silently lose tools, and this repo's own `paperclip-mcp-routes.test.ts` demonstrated exactly that, seeing 200 of 716 and missing four board tools. A response that is always complete is the contract worth keeping.
 
 ### Annotations
 

@@ -31,10 +31,10 @@
     {
       "id": "mcp:paperclipListAgents",
       "name": "paperclipListAgents",
-      "description": "List agents in a company",
+      "description": "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance and avatarUrl; pass view `full` for the complete shape.",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:414",
-      "expectedSemantics": "List agents in a company",
+      "expectedSemantics": "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance and avatarUrl; pass view `full` for the complete shape.",
       "foldedInto": "eval:rf-api-mgr-heartbeat-01",
       "evidenceId": "mcp:paperclipListAgents"
     },

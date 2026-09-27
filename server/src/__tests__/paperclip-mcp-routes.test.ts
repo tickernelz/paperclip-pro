@@ -289,50 +289,33 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     expect(names).toContain("paperclipListMembers");
   });
 
-  it("pages tools/list so the full set is reachable without one huge response", async () => {
+  it("returns the whole tool surface in one response and never a nextCursor", async () => {
     actor = agentActor(seeded.ceoAgentId);
-    const previousPageSize = process.env.PAPERCLIP_MCP_PAGE_SIZE;
-    process.env.PAPERCLIP_MCP_PAGE_SIZE = "10";
-    try {
-      const names: string[] = [];
-      let cursor: string | undefined;
-      let pages = 0;
-      for (let guard = 0; guard < 200; guard += 1) {
-        const { body } = await rpc(
-          { method: "tools/list", params: cursor ? { cursor } : {} },
-          { toolsets: "core,extended" },
-        );
-        const page = body.result!;
-        pages += 1;
-        names.push(...page.tools!.map((tool) => tool.name));
-        if (!page.nextCursor) break;
-        cursor = page.nextCursor;
-      }
-      delete process.env.PAPERCLIP_MCP_PAGE_SIZE;
-      const single = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
-      const full = single.body.result!.tools!.map((tool) => tool.name);
-      expect(pages).toBeGreaterThan(1);
-      expect(new Set(names).size).toBe(names.length);
-      expect([...names].sort()).toEqual([...full].sort());
-    } finally {
-      if (previousPageSize === undefined) delete process.env.PAPERCLIP_MCP_PAGE_SIZE;
-      else process.env.PAPERCLIP_MCP_PAGE_SIZE = previousPageSize;
-    }
+    const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
+    const page = body.result!;
+
+    expect(page.nextCursor).toBeUndefined();
+    expect(page.tools!.length).toBeGreaterThan(0);
+    expect(new Set(page.tools!.map((tool) => tool.name)).size).toBe(page.tools!.length);
   });
 
-  it("rejects a tools/list cursor that is not a page offset", async () => {
-    actor = agentActor(seeded.agentId);
-    const { body } = await rpc({ method: "tools/list", params: { cursor: "nonsense" } });
-    expect(body.error!.code).toBe(-32602);
-  });
+  it("returns the same complete listing whatever cursor a client sends", async () => {
+    actor = agentActor(seeded.ceoAgentId);
+    const plain = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
+    const withCursor = await rpc(
+      { method: "tools/list", params: { cursor: "nonsense" } },
+      { toolsets: "core,extended" },
+    );
+    const pastTheEnd = await rpc(
+      { method: "tools/list", params: { cursor: Buffer.from("99999", "utf8").toString("base64url") } },
+      { toolsets: "core,extended" },
+    );
 
-  it("rejects a tools/list cursor past the end of the listing", async () => {
-    actor = agentActor(seeded.agentId);
-    const { body } = await rpc({
-      method: "tools/list",
-      params: { cursor: Buffer.from("99999", "utf8").toString("base64url") },
-    });
-    expect(body.error!.code).toBe(-32602);
+    expect(withCursor.body.error).toBeUndefined();
+    expect(pastTheEnd.body.error).toBeUndefined();
+    const names = plain.body.result!.tools!.map((tool) => tool.name);
+    expect(withCursor.body.result!.tools!.map((tool) => tool.name)).toEqual(names);
+    expect(pastTheEnd.body.result!.tools!.map((tool) => tool.name)).toEqual(names);
   });
 
   it("hides another agent's conversations from the issue list", async () => {

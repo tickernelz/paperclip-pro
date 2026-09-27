@@ -3,11 +3,9 @@ import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
-  InvalidCursorError,
   paperclipToolCatalog,
   parseToolsets,
   PaperclipApiClient,
-  resolvePageSize,
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
 import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
 import { accessService } from "../services/access.js";
@@ -89,18 +87,9 @@ export function paperclipMcpRoutes(db: Db) {
     const capabilities = agentAuthorityCapabilities(agent?.role);
     const management = capabilities.some((capability) => capability.startsWith("company:"));
     const grants = management ? await access.listPrincipalGrants(companyId, "agent", agentId) : [];
-    let definitions;
-    let listing;
-    try {
-      ({ definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
-        boardSurface: { capabilities, permissionKeys: new Set(grants.map((row) => row.permissionKey)) },
-        cursor: typeof params?.cursor === "string" ? params.cursor : null,
-        pageSize: resolvePageSize(),
-      }));
-    } catch (error) {
-      if (!(error instanceof InvalidCursorError)) throw error;
-      return res.json({ jsonrpc: "2.0", id, error: { code: -32602, message: error.message } });
-    }
+    const { definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
+      boardSurface: { capabilities, permissionKeys: new Set(grants.map((row) => row.permissionKey)) },
+    });
 
     if (method === "tools/list") return send(listing);
 

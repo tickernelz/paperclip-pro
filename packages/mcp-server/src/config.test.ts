@@ -16,9 +16,9 @@ function makeClient() {
 }
 
 function listingNames(toolsets: Array<"core" | "extended">, management = false) {
-  return paperclipToolCatalog(makeClient(), toolsets, management, {
-    pageSize: Number.MAX_SAFE_INTEGER,
-  }).listing.tools.map((tool) => tool.name);
+  return paperclipToolCatalog(makeClient(), toolsets, management).listing.tools.map(
+    (tool) => tool.name,
+  );
 }
 
 describe("Paperclip MCP toolsets", () => {
@@ -110,16 +110,13 @@ describe("Paperclip MCP listing annotations", () => {
   const toolsets = parseToolsets(FULL_TOOLSET);
 
   function annotatedEntries(annotations: boolean) {
-    return paperclipToolCatalog(client, toolsets, false, {
-      pageSize: Number.MAX_SAFE_INTEGER,
-      annotations,
-    }).listing.tools.filter((tool) => "annotations" in tool);
+    return paperclipToolCatalog(client, toolsets, false, { annotations }).listing.tools.filter(
+      (tool) => "annotations" in tool,
+    );
   }
 
   it("omits annotations from the default listing", () => {
-    const listing = paperclipToolCatalog(client, toolsets, false, {
-      pageSize: Number.MAX_SAFE_INTEGER,
-    }).listing;
+    const listing = paperclipToolCatalog(client, toolsets, false).listing;
     expect(listing.tools.length).toBeGreaterThan(0);
     expect(listing.tools.filter((tool) => "annotations" in tool)).toEqual([]);
   });
@@ -131,14 +128,8 @@ describe("Paperclip MCP listing annotations", () => {
   });
 
   it("does not let one caller's choice poison the memoized listing for another", () => {
-    const lean = paperclipToolCatalog(client, toolsets, false, {
-      pageSize: Number.MAX_SAFE_INTEGER,
-      annotations: false,
-    }).listing;
-    const annotated = paperclipToolCatalog(client, toolsets, false, {
-      pageSize: Number.MAX_SAFE_INTEGER,
-      annotations: true,
-    }).listing;
+    const lean = paperclipToolCatalog(client, toolsets, false, { annotations: false }).listing;
+    const annotated = paperclipToolCatalog(client, toolsets, false, { annotations: true }).listing;
 
     expect(lean.tools.filter((tool) => "annotations" in tool)).toEqual([]);
     expect(annotated.tools.filter((tool) => "annotations" in tool).length).toBeGreaterThan(0);
