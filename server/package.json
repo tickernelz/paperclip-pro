@@ -70,6 +70,7 @@
     "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
     "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*",
     "@tickernelz/paperclip-pro-shared": "workspace:*",
+    "@tickernelz/paperclip-pro-teams-catalog": "workspace:*",
     "@tickernelz/paperclip-pro-skills-catalog": "workspace:*",
     "@photon-ai/advanced-imessage": "2.1.0",
     "@vercel/connect": "0.6.1",

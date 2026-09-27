@@ -30,7 +30,7 @@ export type ToolListing = {
   nextCursor?: string;
 };
 
-export const DEFAULT_PAGE_SIZE = 1000;
+export const DEFAULT_PAGE_SIZE = 200;
 
 export class InvalidCursorError extends Error {
   constructor(cursor: string) {
@@ -42,6 +42,11 @@ export class InvalidCursorError extends Error {
 export function resolvePageSize(env: NodeJS.ProcessEnv = process.env): number {
   const parsed = Number.parseInt(env.PAPERCLIP_MCP_PAGE_SIZE?.trim() ?? "", 10);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : DEFAULT_PAGE_SIZE;
+}
+
+export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env): boolean {
+  const configured = env.PAPERCLIP_MCP_LIST_ANNOTATIONS?.trim().toLowerCase() ?? "";
+  return configured === "1" || configured === "true" || configured === "yes";
 }
 
 function encodeCursor(offset: number): string {
@@ -69,6 +74,7 @@ export function paginateListing(
 }
 
 export type CatalogOptions = {
+  annotations?: boolean;
   boardSurface?: BoardSurfaceContext;
   cursor?: string | null;
   pageSize?: number;
@@ -80,20 +86,21 @@ function listingKey(
   toolsets: ReadonlyArray<ToolsetName>,
   management: boolean,
   surface: BoardSurfaceContext | undefined,
+  annotations: boolean,
 ): string {
-  const base = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}`;
+  const base = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}|${annotations ? "annotated" : "lean"}`;
   if (!management || !surface) return base;
   return `${base}|${[...surface.capabilities].sort().join(",")}|${[...surface.permissionKeys].sort().join(",")}`;
 }
 
-function toListingEntries(definitions: ReadonlyArray<ToolDefinition>) {
+function toListingEntries(definitions: ReadonlyArray<ToolDefinition>, annotations: boolean) {
   return definitions.map((tool) => ({
     name: tool.name,
     description: tool.description,
     inputSchema: leanJsonSchema(
       z.toJSONSchema(tool.schema, { target: "draft-7", io: "input" }),
     ) as JsonSchemaObject,
-    ...(tool.annotations ? { annotations: tool.annotations } : {}),
+    ...(annotations && tool.annotations ? { annotations: tool.annotations } : {}),
   }));
 }
 
@@ -113,7 +120,8 @@ export function paperclipToolCatalog(
     ...bindGeneratedTools(prepared, client).filter((tool) => !curatedNames.has(tool.name)),
   ];
 
-  const key = listingKey(selected, management, options.boardSurface);
+  const annotations = options.annotations ?? resolveListingAnnotations();
+  const key = listingKey(selected, management, options.boardSurface, annotations);
   let listing = listings.get(key);
   if (!listing) {
     const surface = management ? options.boardSurface : undefined;
@@ -127,7 +135,7 @@ export function paperclipToolCatalog(
     const visible = advertisedNames
       ? definitions.filter((tool) => curatedNames.has(tool.name) || advertisedNames.has(tool.name))
       : definitions;
-    listing = { tools: toListingEntries(visible) };
+    listing = { tools: toListingEntries(visible, annotations) };
     listings.set(key, listing);
   }
   return {

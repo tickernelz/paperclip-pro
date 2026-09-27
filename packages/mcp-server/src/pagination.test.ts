@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { DEFAULT_PAGE_SIZE, InvalidCursorError, paginateListing, resolvePageSize } from "./catalog.js";
+import { paperclipToolCatalog, DEFAULT_PAGE_SIZE, InvalidCursorError, paginateListing, resolvePageSize } from "./catalog.js";
+import { PaperclipApiClient } from "./client.js";
+import { parseToolsets } from "./config.js";
 
 const listing = {
   tools: Array.from({ length: 25 }, (_, index) => ({
@@ -64,5 +66,49 @@ describe("resolvePageSize", () => {
 
   it("honours a positive override", () => {
     expect(resolvePageSize({ PAPERCLIP_MCP_PAGE_SIZE: "25" })).toBe(25);
+  });
+});
+
+function makeClient() {
+  return new PaperclipApiClient({
+    apiUrl: "http://localhost:3100/api",
+    apiKey: "token-123",
+    companyId: "11111111-1111-1111-1111-111111111111",
+    agentId: "22222222-2222-2222-2222-222222222222",
+    runId: null,
+    toolsets: ["core"],
+    agentRole: null,
+  });
+}
+
+describe("default page size against the real catalog", () => {
+  const client = makeClient();
+  const toolsets = parseToolsets("full");
+
+  function drainFromDefaultPageSize(): string[] {
+    const names: string[] = [];
+    let cursor: string | null | undefined;
+    for (let guard = 0; guard < 100; guard += 1) {
+      const page = paperclipToolCatalog(client, toolsets, false, { cursor }).listing;
+      names.push(...page.tools.map((tool) => tool.name));
+      if (!page.nextCursor) return names;
+      cursor = page.nextCursor;
+    }
+    throw new Error("pagination did not terminate");
+  }
+
+  it("is smaller than the advertised surface, so the cursor is actually reachable", () => {
+    const first = paperclipToolCatalog(client, toolsets, false, {}).listing;
+    expect(first.tools.length).toBe(DEFAULT_PAGE_SIZE);
+    const whole = paperclipToolCatalog(client, toolsets, false, { pageSize: Number.MAX_SAFE_INTEGER }).listing;
+    expect(DEFAULT_PAGE_SIZE).toBeLessThan(whole.tools.length);
+    expect(first.nextCursor).toBeTruthy();
+  });
+
+  it("gives a client that sends no cursor every advertised tool exactly once", () => {
+    const names = drainFromDefaultPageSize();
+    const whole = paperclipToolCatalog(client, toolsets, false, { pageSize: Number.MAX_SAFE_INTEGER }).listing;
+    expect(names).toEqual(whole.tools.map((tool) => tool.name));
+    expect(new Set(names).size).toBe(whole.tools.length);
   });
 });

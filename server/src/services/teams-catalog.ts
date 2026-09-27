@@ -1,4 +1,5 @@
-import { promises as fs } from "node:fs";
+import { promises as fs, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Db } from "@tickernelz/paperclip-pro-db";
@@ -141,10 +142,38 @@ let cachedCatalogManifest: {
   size: number;
 } | null = null;
 
+const CATALOG_PACKAGE_NAME = "@tickernelz/paperclip-pro-teams-catalog";
+
+function readPackageName(dir: string): string | null {
+  try {
+    const parsed = JSON.parse(readFileSync(path.join(dir, "package.json"), "utf8")) as { name?: string };
+    return parsed.name ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export function resolveCatalogPackageRoot(from: string = import.meta.url): string | null {
+  let dir: string;
+  try {
+    dir = path.dirname(createRequire(from).resolve(`${CATALOG_PACKAGE_NAME}/catalog.json`));
+  } catch {
+    return null;
+  }
+  while (true) {
+    if (readPackageName(dir) === CATALOG_PACKAGE_NAME) return dir;
+    const parent = path.dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
 function buildCatalogPackageRootCandidates() {
   const configuredRoot = process.env.PAPERCLIP_TEAMS_CATALOG_DIR?.trim();
+  const installed = resolveCatalogPackageRoot();
   const candidates = [
     ...(configuredRoot ? [path.resolve(configuredRoot)] : []),
+    ...(installed ? [installed] : []),
     path.resolve(process.cwd(), "packages/teams-catalog"),
     path.resolve(serviceDir, "../../..", "packages/teams-catalog"),
   ];
