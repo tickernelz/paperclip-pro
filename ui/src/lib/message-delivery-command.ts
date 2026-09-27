@@ -1,5 +1,8 @@
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
-import type { InstanceMessageDelivery } from "@tickernelz/paperclip-pro-shared";
+import type {
+  InstanceMessageDelivery,
+  IssueCommentDeliveryReason,
+} from "@tickernelz/paperclip-pro-shared";
 
 export type MessageDeliveryMode = InstanceMessageDelivery;
 
@@ -125,13 +128,7 @@ export const MESSAGE_DELIVERY_COMMAND_OPTIONS: ActionCommandOption[] = [
   },
 ];
 
-export type SteeringUnavailableReason =
-  | "not_requested"
-  | "board_only"
-  | "no_active_run"
-  | "legacy_protocol"
-  | "conversation_issue"
-  | "steering_failed";
+export type SteeringUnavailableReason = IssueCommentDeliveryReason;
 
 export type MessageDeliveryDisposition = {
   deliveredAs?: "queued" | "steered" | null;
