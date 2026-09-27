@@ -25,7 +25,7 @@ export {
 } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 
 export const PAPERCLIP_MCP_UNAVAILABLE_CODE = "paperclip_mcp_unavailable";
-export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server "paperclip" failed to connect/;
+export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" failed to connect/;
 export const PAPERCLIP_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;

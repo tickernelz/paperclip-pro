@@ -22,7 +22,6 @@ const PROTOCOL_FRAME_TYPES = new Set([
   "command_output",
   "prompt_result",
   "extension_ui_request",
-  "notice",
   "subagent_lifecycle",
   "subagent_progress",
   "subagent_event",

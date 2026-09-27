@@ -285,6 +285,23 @@ describe("OMP RPC session protocol", () => {
     expect(transcript).toContain("agent_start");
   });
 
+  it("passes notice frames through to the transcript sink", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-notice" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({
+      type: "notice",
+      level: "warning",
+      message: 'Warning: MCP server "paperclip" failed to connect: spawn ENOENT; its tools are unavailable for this run.',
+    });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    state.finish();
+    await running;
+
+    expect(state.logged.join("")).toContain("failed to connect: spawn ENOENT");
+  });
+
   it("surfaces a transport-dropped frame on stderr instead of silently losing it", async () => {
     const running = run();
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });

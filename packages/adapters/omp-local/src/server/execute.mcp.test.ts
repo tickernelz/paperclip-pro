@@ -258,6 +258,37 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(result.errorMessage).toContain("failed to connect");
   });
 
+  it("fails the run when the connect failure arrives as an escaped RPC notice frame", async () => {
+    runProcessMock.mockImplementation((async (
+      _runId: string,
+      _target: unknown,
+      _command: string,
+      _args: string[],
+      options: { onLog: (stream: string, chunk: string) => Promise<void> },
+    ) => {
+      await options.onLog(
+        "stdout",
+        `${JSON.stringify({
+          type: "notice",
+          level: "warning",
+          message: 'Warning: MCP server "paperclip" failed to connect: MCP subprocess closed stdout before responding; its tools are unavailable for this run.',
+        })}\n`,
+      );
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: "",
+        stderr: "",
+        pid: 4321,
+        startedAt: new Date().toISOString(),
+      };
+    }) as never);
+    const result = await runResult({});
+    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorMessage).toContain("failed to connect");
+  });
+
   it("keeps configured extensions after the generated one", async () => {
     const userExtension = path.join(root, "user-extension");
     await fs.mkdir(userExtension, { recursive: true });
