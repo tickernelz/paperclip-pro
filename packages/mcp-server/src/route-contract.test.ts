@@ -273,6 +273,26 @@ function requiredQuerySites(): RequiredQuerySite[] {
   return [...validatedQuerySites(), ...directRequiredQuerySites(routeSpans())];
 }
 
+const QUERY_DESTRUCTURE_PATTERN = /(?:const|let)\s*\{([^}]+)\}\s*=\s*req\.query\b/g;
+
+function routeQueryReads(body: string): string[] {
+  const names = [...body.matchAll(new RegExp(QUERY_READ_PATTERN.source, "g"))].map((match) => match[1]!);
+  for (const match of body.matchAll(QUERY_DESTRUCTURE_PATTERN)) {
+    for (const entry of match[1]!.split(",")) {
+      const name = entry.split(":")[0]!.split("=")[0]!.trim();
+      if (/^[A-Za-z_][A-Za-z0-9_]*$/.test(name)) names.push(name);
+    }
+  }
+  return names;
+}
+
+const UNEXPOSED_QUERY_READS: Record<string, string> = {
+  "GET /companies/{}/issues/count limit": "read only to reject it with 400",
+  "GET /companies/{}/issues/count offset": "read only to reject it with 400",
+  "GET /tools/vercel-connect/callback error": "OAuth provider redirect, never called by an agent",
+  "GET /tools/vercel-connect/callback state": "OAuth provider redirect, never called by an agent",
+};
+
 describe("generated tool input contracts", () => {
   it("enumerates the routes that require a query parameter", () => {
     const sites = requiredQuerySites();
@@ -334,6 +354,25 @@ describe("generated tool input contracts", () => {
           `${spec.name} (${spec.operationId}) is missing ${missing.join(", ")} required by ${site.schema} at ${site.file}:${site.line}`,
         );
       }
+    }
+    expect(violations).toEqual([]);
+  });
+
+  it("exposes every query parameter a route handler reads", () => {
+    const specs = new Map(
+      generatedToolSpecs().map((spec) => [`${spec.method} ${normalizePath(spec.path)}`, spec]),
+    );
+    const violations: string[] = [];
+    for (const span of routeSpans()) {
+      const spec = specs.get(`${span.method} ${normalizePath(span.path)}`);
+      if (!spec) continue;
+      const exposed = new Set(
+        spec.parameters.filter((parameter) => parameter.in === "query").map((parameter) => parameter.name),
+      );
+      const read = [...new Set(routeQueryReads(span.body))].filter(
+        (name) => !exposed.has(name) && !UNEXPOSED_QUERY_READS[`${span.method} ${normalizePath(span.path)} ${name}`],
+      );
+      if (read.length > 0) violations.push(`${spec.name} (${span.method} ${span.path}) ignores ${read.sort().join(", ")}`);
     }
     expect(violations).toEqual([]);
   });

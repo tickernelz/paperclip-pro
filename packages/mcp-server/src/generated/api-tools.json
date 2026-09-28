@@ -11981,6 +11981,14 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "path",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
       }
     ]
   },
@@ -12324,6 +12332,14 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "destroyReusableSandboxLeases",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "environmentId",
         "in": "path",
         "required": true,
@@ -12643,6 +12659,18 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "mode",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "delete",
+            "cancel"
+          ]
         }
       }
     ]
@@ -12986,6 +13014,14 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "purge",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
         }
       }
     ]
@@ -14907,7 +14943,7 @@
     "operationId": "GET /api/companies/{companyId}/activity",
     "method": "GET",
     "path": "/companies/{companyId}/activity",
-    "description": "List company activity",
+    "description": "List company activity. Defaults: limit=50",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -14928,14 +14964,49 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "agentId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
         "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "entityId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "entityType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
       }
-    ]
+    ],
+    "queryDefaults": {
+      "limit": 50
+    }
   },
   {
     "name": "paperclipGetAdapter",
@@ -15336,6 +15407,14 @@
       {
         "name": "agentId",
         "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "path",
+        "in": "query",
         "required": true,
         "schema": {
           "type": "string"
@@ -17140,6 +17219,14 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "includePayload",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "traceId",
         "in": "path",
         "required": true,
@@ -17242,6 +17329,22 @@
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
+      {
+        "name": "limitBytes",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
       {
         "name": "runId",
         "in": "path",
@@ -17511,6 +17614,14 @@
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
+      {
+        "name": "excludeRoot",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
       {
         "name": "issueId",
         "in": "path",
@@ -19205,7 +19316,36 @@
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "category",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "bundled",
+            "optional"
+          ]
+        }
+      },
+      {
+        "name": "q",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipGetSkillCatalogByCatalogId",
@@ -19235,6 +19375,14 @@
         "name": "catalogId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ref",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -19709,7 +19857,36 @@
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "category",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "bundled",
+            "optional"
+          ]
+        }
+      },
+      {
+        "name": "q",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipGetTeamCatalogByCatalogId",
@@ -19739,6 +19916,14 @@
         "name": "catalogId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ref",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -19952,6 +20137,14 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "methodKey",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
       }
     ]
   },
@@ -20019,6 +20212,14 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
         }
       }
     ]
@@ -20131,6 +20332,18 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "range",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "7d",
+            "30d"
+          ]
+        }
       }
     ]
   },
@@ -20220,6 +20433,14 @@
       },
       {
         "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "gateway",
         "in": "query",
         "required": false,
         "schema": {
@@ -20550,6 +20771,22 @@
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
+      {
+        "name": "limitBytes",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
       {
         "name": "operationId",
         "in": "path",
@@ -21403,6 +21640,14 @@
         "name": "companyId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ref",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -22393,6 +22638,18 @@
         }
       },
       {
+        "name": "actorScope",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "agents",
+            "all"
+          ]
+        }
+      },
+      {
         "name": "actorType",
         "in": "query",
         "required": false,
@@ -22602,6 +22859,27 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "includeComments",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved",
+            "all"
+          ]
         }
       }
     ]
@@ -23920,6 +24198,22 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "active",
+            "released",
+            "expired",
+            "failed",
+            "retained",
+            "pending_cleanup"
+          ]
+        }
       }
     ]
   },
@@ -23953,6 +24247,32 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "driver",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "local",
+            "ssh",
+            "sandbox",
+            "plugin"
+          ]
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "active",
+            "archived"
+          ]
         }
       }
     ]
@@ -24095,6 +24415,54 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "issueId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectWorkspaceId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "reuseEligible",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "summary",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
       }
     ]
   },
@@ -24128,6 +24496,92 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "includePayload",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sharedOnly",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "local_only",
+            "pending",
+            "sent",
+            "failed"
+          ]
+        }
+      },
+      {
+        "name": "targetType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "issue_comment",
+            "issue_document_revision"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "vote",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down"
+          ]
         }
       }
     ]
@@ -24254,7 +24708,7 @@
     "operationId": "GET /api/companies/{companyId}/heartbeat-runs",
     "method": "GET",
     "path": "/companies/{companyId}/heartbeat-runs",
-    "description": "List heartbeat runs for a company",
+    "description": "List heartbeat runs for a company. Defaults: limit=50, summary=true",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -24275,14 +24729,42 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "agentId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
         "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "summary",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
       }
-    ]
+    ],
+    "queryDefaults": {
+      "limit": 50,
+      "summary": true
+    }
   },
   {
     "name": "paperclipListInboxDismissals",
@@ -24597,11 +25079,32 @@
         }
       },
       {
+        "name": "includeComments",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "issueId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved",
+            "all"
+          ]
         }
       }
     ]
@@ -24664,11 +25167,81 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "includePayload",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "issueId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "sharedOnly",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "local_only",
+            "pending",
+            "sent",
+            "failed"
+          ]
+        }
+      },
+      {
+        "name": "targetType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "issue_comment",
+            "issue_document_revision"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "vote",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "up",
+            "down"
+          ]
         }
       }
     ]
@@ -24900,11 +25473,45 @@
     "authorityCapability": "company:issue_control",
     "parameters": [
       {
+        "name": "includeMembers",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "issueId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "mode",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "pause",
+            "resume",
+            "cancel",
+            "restore"
+          ]
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "active",
+            "released"
+          ]
         }
       }
     ]
@@ -24994,7 +25601,7 @@
     "operationId": "GET /api/companies/{companyId}/live-runs",
     "method": "GET",
     "path": "/companies/{companyId}/live-runs",
-    "description": "List live runs for a company",
+    "description": "List live runs for a company. Defaults: limit=50",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -25021,8 +25628,27 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "minCount",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
       }
-    ]
+    ],
+    "queryDefaults": {
+      "limit": 50
+    }
   },
   {
     "name": "paperclipListManagedAgentProfiles",
@@ -25405,6 +26031,14 @@
         }
       },
       {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
         "name": "pluginId",
         "in": "path",
         "required": true,
@@ -25445,6 +26079,19 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "active",
+            "paused",
+            "failed"
+          ]
+        }
       }
     ]
   },
@@ -25473,9 +26120,33 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "level",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
         "name": "pluginId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "since",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -25505,7 +26176,24 @@
     "permissions": [],
     "boardGuard": "assertBoardOrgAccess@plugins.ts:854",
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "installed",
+            "ready",
+            "disabled",
+            "error",
+            "upgrade_pending",
+            "uninstalled"
+          ]
+        }
+      }
+    ]
   },
   {
     "name": "paperclipListPluginTools",
@@ -25530,7 +26218,16 @@
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "pluginId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipListPluginUiContributions",
@@ -25653,6 +26350,14 @@
         "name": "companyId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "runIds",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -25779,11 +26484,32 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "includeComments",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "boolean"
+        }
+      },
+      {
         "name": "routineId",
         "in": "path",
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "open",
+            "resolved",
+            "all"
+          ]
         }
       }
     ]
@@ -25827,7 +26553,7 @@
     "operationId": "GET /api/routines/{id}/runs",
     "method": "GET",
     "path": "/routines/{routineId}/runs",
-    "description": "List runs for a routine",
+    "description": "List runs for a routine. Defaults: limit=50",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -25845,6 +26571,14 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
         "name": "routineId",
         "in": "path",
         "required": true,
@@ -25852,7 +26586,10 @@
           "type": "string"
         }
       }
-    ]
+    ],
+    "queryDefaults": {
+      "limit": 50
+    }
   },
   {
     "name": "paperclipListRoutines",
@@ -25882,6 +26619,14 @@
         "name": "companyId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "projectId",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -26541,6 +27286,24 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "executing",
+            "rejected",
+            "expired",
+            "cancelled",
+            "executed",
+            "failed"
+          ]
         }
       }
     ]
@@ -28229,6 +28992,14 @@
         "name": "companyId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ref",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }

@@ -82,6 +82,32 @@ describe("generated Paperclip API tools", () => {
     );
   });
 
+  it("bounds an unfiltered run list and forwards the caller's own filters", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipListHeartbeatRuns");
+    await tool.execute({});
+    const bounded = new URL(String(fetchMock.mock.calls[0]![0]));
+    expect(bounded.searchParams.get("limit")).toBe("50");
+    expect(bounded.searchParams.get("summary")).toBe("true");
+
+    await tool.execute({ agentId: "agent-9", limit: 5, summary: false });
+    const filtered = new URL(String(fetchMock.mock.calls[1]![0]));
+    expect(filtered.searchParams.get("agentId")).toBe("agent-9");
+    expect(filtered.searchParams.get("limit")).toBe("5");
+    expect(filtered.searchParams.get("summary")).toBe("false");
+  });
+
+  it("sends the instructions file path the route requires", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ content: "x" }));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipGetAgentInstructionsBundleFile");
+    await tool.execute({ agentId: "agent-1", path: "AGENTS.md" });
+    const url = new URL(String(fetchMock.mock.calls[0]![0]));
+    expect(url.pathname.endsWith("/agents/agent-1/instructions-bundle/file")).toBe(true);
+    expect(url.searchParams.get("path")).toBe("AGENTS.md");
+  });
+
   it("merges documented body properties into the request body", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "goal-1" }));
     vi.stubGlobal("fetch", fetchMock);

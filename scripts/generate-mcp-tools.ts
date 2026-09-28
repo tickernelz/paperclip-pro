@@ -77,6 +77,7 @@ export interface GeneratedTool {
   boardGuard: string | null;
   authorityCapability: string | null;
   parameters: GeneratedParameter[];
+  queryDefaults?: Record<string, string | number | boolean>;
   body?: {
     required: boolean;
     documented: boolean;
@@ -795,9 +796,17 @@ export async function generate(): Promise<GeneratorResult> {
       body && !body.documented
         ? "The request body fields are not published in the API registry; pass them as an object in `body`"
         : "";
+    for (const name of Object.keys(override.queryDefaults ?? {})) {
+      if (!parameters.some((parameter) => parameter.in === "query" && parameter.name === name)) {
+        throw new Error(`queryDefaults on ${candidate.key} names ${name}, which is not a query parameter`);
+      }
+    }
+    const defaultsNote = override.queryDefaults
+      ? `Defaults: ${Object.entries(override.queryDefaults).map(([key, value]) => `${key}=${value}`).join(", ")}`
+      : "";
     const description =
       override.description ??
-      [summary, described, undocumentedBody].filter(Boolean).join(". ");
+      [summary, described, undocumentedBody, defaultsNote].filter(Boolean).join(". ");
 
     const guardEvidence = evidence.get(candidate.key);
     const registryBoard = candidate.operation["x-paperclip-authorization"]?.actor === "board";
@@ -835,6 +844,7 @@ export async function generate(): Promise<GeneratorResult> {
       boardGuard: guardEvidence?.boardGuard ?? (probeDenial ? `probe:${probeDenial}` : null),
       authorityCapability: guardEvidence?.authorityCapability ?? null,
       parameters,
+      ...(override.queryDefaults ? { queryDefaults: override.queryDefaults } : {}),
       ...(body
         ? {
             body: {

@@ -35,6 +35,7 @@ const generatedToolSchema = z.object({
       schema: jsonSchemaValue,
     }),
   ),
+  queryDefaults: z.record(z.string(), z.union([z.string(), z.number(), z.boolean()])).optional(),
   body: z
     .object({
       required: z.boolean(),
@@ -153,8 +154,9 @@ function requestPath(client: PaperclipApiClient, spec: GeneratedToolSpec, values
       path = path.replace(`{${parameter.name}}`, encodeURIComponent(String(resolved)));
       continue;
     }
-    if (supplied === undefined || supplied === null) continue;
-    for (const entry of Array.isArray(supplied) ? supplied : [supplied]) {
+    const effective = supplied ?? spec.queryDefaults?.[parameter.name];
+    if (effective === undefined || effective === null) continue;
+    for (const entry of Array.isArray(effective) ? effective : [effective]) {
       query.append(parameter.name, String(entry));
     }
   }

@@ -7,6 +7,17 @@ import { Router } from "express";
 import { z } from "zod";
 import {
   createAiConnectionSchema,
+  ENVIRONMENT_DRIVERS,
+  ENVIRONMENT_LEASE_STATUSES,
+  ENVIRONMENT_STATUSES,
+  FEEDBACK_TARGET_TYPES,
+  FEEDBACK_TRACE_STATUSES,
+  FEEDBACK_VOTE_VALUES,
+  PLUGIN_JOB_STATUSES,
+  PLUGIN_STATUSES,
+  TOOL_ACTION_REQUEST_STATUSES,
+  catalogSkillListQuerySchema,
+  catalogTeamListQuerySchema,
   aiConnectionLoginIntentSchema,
   localAiConnectionSchema,
   localAiLoginStartSchema,
@@ -593,6 +604,23 @@ class OpenAPIRegistry {
 
   registerPath(pathRegistration: OpenApiPathRegistration) {
     this.paths.push(pathRegistration);
+  }
+
+  declareQuery(method: string, path: string, query: z.ZodObject<z.ZodRawShape>) {
+    const matches = this.paths.filter((entry) => entry.method === method && entry.path === path);
+    if (matches.length !== 1) {
+      throw new Error(`declareQuery expected one ${method.toUpperCase()} ${path}, found ${matches.length}`);
+    }
+    const entry = matches[0]!;
+    const existing = entry.request?.query ? unwrapSchema(entry.request.query) : null;
+    const shape = existing && zodTypeName(existing) === "object"
+      ? (zodDef(existing).shape as z.ZodRawShape)
+      : {};
+    const overlap = Object.keys(query.shape).filter((name) => name in shape);
+    if (overlap.length > 0) {
+      throw new Error(`declareQuery ${method.toUpperCase()} ${path} redeclares ${overlap.join(", ")}`);
+    }
+    entry.request = { ...entry.request, query: z.object({ ...shape, ...query.shape }) };
   }
 
   buildPaths() {
@@ -10011,62 +10039,6 @@ registerCurrentRoute({
   body: updateDocumentAnnotationThreadSchema,
 });
 
-for (const route of [
-  [
-    "get",
-    "/api/routines/{id}/description/annotations",
-    "List routine description annotation threads",
-  ],
-  [
-    "get",
-    "/api/routines/{id}/description/annotations/{threadId}",
-    "Get a routine description annotation thread",
-  ],
-] as const) {
-  registerCurrentRoute({
-    method: route[0],
-    path: route[1],
-    tags: ["routines"],
-    summary: route[2],
-  });
-}
-
-registerCurrentRoute({
-  method: "post",
-  path: "/api/routines/{id}/description/annotations",
-  tags: ["routines"],
-  summary: "Create a routine description annotation thread",
-  body: createDocumentAnnotationThreadSchema,
-  responses: {
-    201: r.ok(),
-    400: r.badRequest,
-    401: r.unauthorized,
-    404: r.notFound,
-  },
-});
-
-registerCurrentRoute({
-  method: "post",
-  path: "/api/routines/{id}/description/annotations/{threadId}/comments",
-  tags: ["routines"],
-  summary: "Add a routine description annotation comment",
-  body: createDocumentAnnotationCommentSchema,
-  responses: {
-    201: r.ok(),
-    400: r.badRequest,
-    401: r.unauthorized,
-    404: r.notFound,
-  },
-});
-
-registerCurrentRoute({
-  method: "patch",
-  path: "/api/routines/{id}/description/annotations/{threadId}",
-  tags: ["routines"],
-  summary: "Update a routine description annotation thread",
-  body: updateDocumentAnnotationThreadSchema,
-});
-
 registerCurrentRoute({
   method: "get",
   path: "/api/issues/{id}/diagnostics/blockers",
@@ -11534,6 +11506,124 @@ for (const [method, path, body] of experimentalApiPaths) {
       404: responses.notFound,
     },
   });
+}
+
+const queryFlag = z.boolean();
+const annotationListQuery = z.object({
+  status: z.enum(["open", "resolved", "all"]).optional(),
+  includeComments: queryFlag.optional(),
+});
+const catalogRefQuery = z.object({
+  ref: z.string().optional(),
+});
+const feedbackTraceQuery = {
+  targetType: z.enum(FEEDBACK_TARGET_TYPES).optional(),
+  vote: z.enum(FEEDBACK_VOTE_VALUES).optional(),
+  status: z.enum(FEEDBACK_TRACE_STATUSES).optional(),
+  from: z.string().optional(),
+  to: z.string().optional(),
+  sharedOnly: queryFlag.optional(),
+  includePayload: queryFlag.optional(),
+};
+const runLogQuery = z.object({
+  offset: z.coerce.number().int().min(0).optional(),
+  limitBytes: z.coerce.number().int().min(1).max(1024 * 1024).optional(),
+});
+
+for (const [method, path, query] of [
+  ["get", "/api/companies/{companyId}/activity", z.object({
+    agentId: z.string().optional(),
+    entityType: z.string().optional(),
+    entityId: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(500).optional(),
+  })],
+  ["get", "/api/companies/{companyId}/audit/agent-actions", z.object({
+    actorScope: z.enum(["agents", "all"]).optional(),
+  })],
+  ["get", "/api/agents/{id}/instructions-bundle/file", z.object({ path: z.string().min(1) })],
+  ["delete", "/api/agents/{id}/instructions-bundle/file", z.object({ path: z.string().min(1) })],
+  ["get", "/api/companies/{companyId}/heartbeat-runs", z.object({
+    agentId: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(1000).optional(),
+    summary: queryFlag.optional(),
+  })],
+  ["get", "/api/companies/{companyId}/provider-traces", z.object({
+    runIds: z.string().optional(),
+  })],
+  ["get", "/api/companies/{companyId}/live-runs", z.object({
+    limit: z.coerce.number().int().min(1).max(50).optional(),
+    minCount: z.coerce.number().int().min(0).max(50).optional(),
+  })],
+  ["get", "/api/heartbeat-runs/{runId}/log", runLogQuery],
+  ["get", "/api/workspace-operations/{operationId}/log", runLogQuery],
+  ["get", "/api/cases/{id}/documents/{key}/annotations", annotationListQuery],
+  ["get", "/api/issues/{id}/documents/{key}/annotations", annotationListQuery],
+  ["get", "/api/routines/{id}/description/annotations", annotationListQuery],
+  ["get", "/api/companies/{companyId}/feedback-traces", z.object({
+    ...feedbackTraceQuery,
+    issueId: z.string().optional(),
+    projectId: z.string().optional(),
+  })],
+  ["get", "/api/issues/{id}/feedback-traces", z.object(feedbackTraceQuery)],
+  ["get", "/api/feedback-traces/{traceId}", z.object({
+    includePayload: queryFlag.optional(),
+  })],
+  ["get", "/api/skills/catalog", catalogSkillListQuerySchema],
+  ["get", "/api/skills/catalog/{catalogId}", catalogRefQuery],
+  ["get", "/api/teams/catalog", catalogTeamListQuerySchema],
+  ["get", "/api/teams/catalog/{catalogId}", catalogRefQuery],
+  ["post", "/api/companies/{companyId}/teams/catalog/{catalogId}/preview", catalogRefQuery],
+  ["post", "/api/companies/{companyId}/teams/catalog/{catalogId}/install", catalogRefQuery],
+  ["get", "/api/issues/{id}/cost-summary", z.object({ excludeRoot: queryFlag.optional() })],
+  ["get", "/api/companies/{companyId}/environments", z.object({
+    driver: z.enum(ENVIRONMENT_DRIVERS).optional(),
+    status: z.enum(ENVIRONMENT_STATUSES).optional(),
+  })],
+  ["get", "/api/environments/{id}/leases", z.object({ status: z.enum(ENVIRONMENT_LEASE_STATUSES).optional() })],
+  ["delete", "/api/environments/{id}", z.object({ destroyReusableSandboxLeases: queryFlag.optional() })],
+  ["get", "/api/companies/{companyId}/execution-workspaces", z.object({
+    projectId: z.string().optional(),
+    projectWorkspaceId: z.string().optional(),
+    issueId: z.string().optional(),
+    status: z.string().optional(),
+    reuseEligible: queryFlag.optional(),
+    summary: queryFlag.optional(),
+  })],
+  ["get", "/api/issues/{id}/tree-holds", z.object({
+    status: z.enum(["active", "released"]).optional(),
+    mode: z.enum(["pause", "resume", "cancel", "restore"]).optional(),
+    includeMembers: queryFlag.optional(),
+  })],
+  ["delete", "/api/issues/{id}/comments/{commentId}", z.object({
+    mode: z.enum(["delete", "cancel"]).optional(),
+  })],
+  ["get", "/api/plugins", z.object({ status: z.enum(PLUGIN_STATUSES).optional() })],
+  ["get", "/api/plugins/tools", z.object({ pluginId: z.string().optional() })],
+  ["delete", "/api/plugins/{pluginId}", z.object({ purge: queryFlag.optional() })],
+  ["get", "/api/plugins/{pluginId}/logs", z.object({
+    level: z.string().optional(),
+    since: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(500).optional(),
+  })],
+  ["get", "/api/plugins/{pluginId}/jobs", z.object({ status: z.enum(PLUGIN_JOB_STATUSES).optional() })],
+  ["get", "/api/plugins/{pluginId}/jobs/{jobId}/runs", z.object({
+    limit: z.coerce.number().int().min(1).max(500).optional(),
+  })],
+  ["get", "/api/companies/{companyId}/routines", z.object({ projectId: z.string().optional() })],
+  ["get", "/api/routines/{id}/runs", z.object({
+    limit: z.coerce.number().int().min(1).optional(),
+  })],
+  ["get", "/api/companies/{companyId}/tools/apps/{galleryKey}/preflight", z.object({ methodKey: z.string().optional() })],
+  ["get", "/api/companies/{companyId}/tools/action-requests", z.object({
+    status: z.enum(TOOL_ACTION_REQUEST_STATUSES).optional(),
+  })],
+  ["get", "/api/tool-connections/{connectionId}/usage", z.object({ range: z.enum(["7d", "30d"]).optional() })],
+  ["get", "/api/tool-connections/{connectionId}/activity", z.object({
+    limit: z.coerce.number().int().min(1).optional(),
+  })],
+  ["get", "/api/tool-gateway/audit", z.object({ gateway: z.string().optional() })],
+] as const) {
+  registry.declareQuery(method, path, query);
 }
 
 // ─── Spec builder ─────────────────────────────────────────────────────────────

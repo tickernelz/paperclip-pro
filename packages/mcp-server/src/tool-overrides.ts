@@ -13,6 +13,7 @@ export interface ToolOverride {
   annotations?: ToolAnnotationOverride;
   requiredHint?: string;
   bodyFields?: string[];
+  queryDefaults?: Record<string, string | number | boolean>;
 }
 
 export const CURATED_OPERATIONS: Record<string, string> = {
@@ -99,6 +100,10 @@ export const PROBE_BOARD_DENIED_OPERATIONS: Record<string, string> = {
 };
 
 export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
+  "GET /api/companies/{companyId}/heartbeat-runs": { queryDefaults: { limit: 50, summary: true } },
+  "GET /api/companies/{companyId}/activity": { queryDefaults: { limit: 50 } },
+  "GET /api/companies/{companyId}/live-runs": { queryDefaults: { limit: 50 } },
+  "GET /api/routines/{id}/runs": { queryDefaults: { limit: 50 } },
   "GET /api/agents/me/inbox/mine": {
     name: "paperclipInbox",
     description:
