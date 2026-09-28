@@ -124,6 +124,25 @@ describe("session goal dialogs", () => {
     await vi.waitFor(() => expect(document.querySelector('[role="dialog"]')).toBeNull());
   });
 
+  it("edits against the goal that arrived after the widget was already on screen", async () => {
+    await act(async () => {
+      client.setQueryData(queryKeys.issues.runnerGoal("issue-goal", "agent-goal"), {
+        ...projection,
+        goal: { ...projection.goal!, objective: "Objective from a later update" },
+        revision: 9,
+      });
+    });
+    await vi.waitFor(() => expect(document.querySelector('[data-testid="runner-goal-widget"]')?.textContent)
+      .toContain("Objective from a later update"));
+    await click("Edit goal");
+    expect(document.querySelector("textarea")?.value).toBe("Objective from a later update");
+    await objective("Objective edited from the latest snapshot");
+    await click("Save goal");
+    expect(issuesApi.actOnRunnerGoal).toHaveBeenCalledWith("issue-goal", expect.objectContaining({
+      action: "edit", objective: "Objective edited from the latest snapshot", expectedRevision: 9,
+    }));
+  });
+
   it("requires explicit replacement confirmation and lets cancellation preserve the goal", async () => {
     await click("Request replacement");
     expect(document.querySelector('[role="dialog"]')?.textContent).toContain("Replace session goal?");

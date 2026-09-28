@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Flag, Loader2, Pause, Play, Pencil, Trash2 } from "lucide-react";
 import type {
@@ -74,13 +74,16 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
     },
   });
 
+  const latest = useRef({ query, mutation });
+  latest.current = { query, mutation };
+
   useCompanyLiveEvent((event) => {
     if (event.type !== "agent.session.goal.changed") return;
     const next = event.payload as unknown as RunnerGoalProjection;
     if (next.issueId !== issueId || (agentId && next.agentId !== agentId)) return;
     const current = queryClient.getQueryData<RunnerGoalProjection>(key);
     if (current && next.revision > current.revision + 1) {
-      void query.refetch();
+      void latest.current.query.refetch();
       return;
     }
     if (!current || next.revision >= current.revision) queryClient.setQueryData(key, next);
@@ -92,14 +95,15 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
     confirmReplace = false,
     expectedRevision?: number,
   ) => {
+    const { query: currentQuery, mutation: currentMutation } = latest.current;
     setActionError(null);
     try {
-      const current = query.data ?? (await query.refetch()).data;
+      const current = currentQuery.data ?? (await currentQuery.refetch()).data;
       if (!current?.agentId) throw new Error(current?.capability.reason ?? "Select an agent to use /goal.");
       if (current.capability.availability !== "available") {
         throw new Error(current.capability.reason ?? "Session goals are unsupported by this agent.");
       }
-      await mutation.mutateAsync({
+      await currentMutation.mutateAsync({
         requestId: requestId(),
         agentId: current.agentId,
         expectedRevision: expectedRevision ?? current.revision,
@@ -111,20 +115,22 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
       setActionError(error instanceof Error ? error.message : "The goal action could not be applied.");
       throw error;
     }
-  }, [mutation, query]);
+  }, []);
 
   const edit = useCallback(async () => {
-    const current = query.data ?? (await query.refetch()).data;
+    const { query: currentQuery, mutation: currentMutation } = latest.current;
+    const current = currentQuery.data ?? (await currentQuery.refetch()).data;
     if (!current?.goal) throw new Error("There is no current session goal to edit.");
-    mutation.reset();
+    currentMutation.reset();
     setActionError(null);
     setExpanded(true);
     setDialog({ action: "edit", objective: current.goal.objective, revision: current.revision });
-  }, [query, mutation]);
+  }, []);
 
   const executeComposerCommand = useCallback(async (command: RunnerGoalComposerCommand) => {
+    const { query: currentQuery, mutation: currentMutation } = latest.current;
     if (command.action === "focus") {
-      const current = query.data ?? (await query.refetch()).data;
+      const current = currentQuery.data ?? (await currentQuery.refetch()).data;
       if (!current?.goal && !current?.pendingAction) {
         throw new Error("Add an objective after /goal to start a goal.");
       }
@@ -136,10 +142,10 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
       return;
     }
     if (command.action === "create") {
-      const current = query.data ?? (await query.refetch()).data;
+      const current = currentQuery.data ?? (await currentQuery.refetch()).data;
       const unfinished = current?.goal && current.goal.status !== "complete";
       if (unfinished) {
-        mutation.reset();
+        currentMutation.reset();
         setActionError(null);
         setExpanded(true);
         setDialog({ action: "replace", objective: command.objective, revision: current.revision });
@@ -149,10 +155,10 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
       return;
     }
     await executeAction(command.action);
-  }, [edit, executeAction, query, mutation]);
+  }, [edit, executeAction]);
 
-  const submitDialog = async () => {
-    if (!dialog || mutation.isPending) return;
+  const submitDialog = useCallback(async () => {
+    if (!dialog || latest.current.mutation.isPending) return;
     const objective = dialog.objective.trim();
     if (!objective || objective.length > 4_000) return;
     try {
@@ -161,26 +167,34 @@ export function useRunnerGoalControl(issueId: string | null, agentId: string | n
     } catch {
       // Keep the objective and the inline error available for correction.
     }
-  };
+  }, [dialog, executeAction]);
 
-  return {
-    ...query,
+  const projection = query.data;
+  const saving = mutation.isPending;
+  const mutationError = actionError ?? (mutation.error instanceof Error
+    ? mutation.error.message
+    : mutation.error
+      ? "The goal action could not be applied."
+      : null);
+
+  return useMemo(() => ({
+    data: projection,
     expanded,
     setExpanded,
     dialog,
     setDialog,
     submitDialog,
-    actionError,
-    mutation,
+    saving,
+    mutationError,
     executeAction,
     edit,
     executeComposerCommand,
-  };
+  }), [projection, expanded, dialog, submitDialog, saving, mutationError, executeAction, edit, executeComposerCommand]);
 }
 
 export type RunnerGoalControl = ReturnType<typeof useRunnerGoalControl>;
 
-export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
+function RunnerGoalWidgetBase({ control }: { control: RunnerGoalControl }) {
   const projection = control.data;
   const goal = projection?.goal ?? null;
   const capability = projection?.capability;
@@ -188,11 +202,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
     capability?.availability === "available" && capability.actions.includes(action);
   const resumable = goal && ["paused", "blocked", "limited", "usage_limited"].includes(goal.status);
   const pendingLabel = projection?.pendingAction ? PENDING_LABELS[projection.pendingAction] : null;
-  const mutationError = control.actionError ?? (control.mutation?.error instanceof Error
-    ? control.mutation.error.message
-    : control.mutation?.error
-      ? "The goal action could not be applied."
-      : null);
+  const mutationError = control.mutationError;
   // Expansion controls the objective's detail, not whether an empty card exists.
   // In particular, a cleared goal must disappear even after it was expanded.
   if (!goal && !projection?.pendingAction && !control.dialog && !mutationError) return null;
@@ -272,9 +282,9 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
         <p className="mt-1 text-xs text-destructive" role="alert">{mutationError}</p>
       ) : null}
       <Dialog open={Boolean(control.dialog)} onOpenChange={(open) => {
-        if (!open && !control.mutation?.isPending) control.setDialog(null);
+        if (!open && !control.saving) control.setDialog(null);
       }}>
-        <DialogContent showCloseButton={!control.mutation?.isPending}>
+        <DialogContent showCloseButton={!control.saving}>
           <form className="space-y-4" onSubmit={(event) => {
             event.preventDefault();
             void control.submitDialog();
@@ -293,7 +303,7 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
                 value={control.dialog?.objective ?? ""}
                 maxLength={4_000}
                 required
-                disabled={control.mutation?.isPending}
+                disabled={control.saving}
                 onChange={(event) => {
                   const objective = event.target.value;
                   control.setDialog((current) => current ? { ...current, objective } : null);
@@ -308,9 +318,9 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
             </label>
             {mutationError ? <p className="text-sm text-destructive" role="alert">{mutationError}</p> : null}
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={control.mutation?.isPending} onClick={() => control.setDialog(null)}>Cancel</Button>
-              <Button type="submit" disabled={!control.dialog?.objective.trim() || control.mutation?.isPending}>
-                {control.mutation?.isPending ? "Saving…" : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
+              <Button type="button" variant="outline" disabled={control.saving} onClick={() => control.setDialog(null)}>Cancel</Button>
+              <Button type="submit" disabled={!control.dialog?.objective.trim() || control.saving}>
+                {control.saving ? "Saving…" : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
               </Button>
             </DialogFooter>
           </form>
@@ -319,3 +329,5 @@ export function RunnerGoalWidget({ control }: { control: RunnerGoalControl }) {
     </section>
   );
 }
+
+export const RunnerGoalWidget = memo(RunnerGoalWidgetBase);
