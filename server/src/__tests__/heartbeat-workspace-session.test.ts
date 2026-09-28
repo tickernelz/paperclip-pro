@@ -444,6 +444,81 @@ describe("assertGitSensitiveAdapterWorkspaceValid", () => {
     );
   });
 
+  it("still rejects a local_path workspace whose adapter cwd has no git metadata", async () => {
+    const input = buildWorkspaceValidationInput();
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-local-path-no-git-"));
+
+    try {
+      await expectWorkspaceValidationFailure(
+        buildWorkspaceValidationInput({
+          projectWorkspaceSourceType: "local_path",
+          resolvedWorkspace: buildResolvedWorkspace({ cwd }),
+          executionWorkspace: {
+            ...input.executionWorkspace,
+            baseCwd: cwd,
+            cwd,
+          },
+          persistedExecutionWorkspace: {
+            ...input.persistedExecutionWorkspace!,
+            cwd,
+          },
+        }),
+        "missing_git_metadata",
+        "has no .git metadata",
+      );
+    } finally {
+      await fs.rm(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("accepts a non_git_path project workspace whose adapter cwd has no git metadata", async () => {
+    const input = buildWorkspaceValidationInput();
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-non-git-path-"));
+
+    try {
+      await expect(
+        assertGitSensitiveAdapterWorkspaceValid(
+          buildWorkspaceValidationInput({
+            projectWorkspaceSourceType: "non_git_path",
+            resolvedWorkspace: buildResolvedWorkspace({ cwd }),
+            executionWorkspace: {
+              ...input.executionWorkspace,
+              baseCwd: cwd,
+              cwd,
+            },
+            persistedExecutionWorkspace: {
+              ...input.persistedExecutionWorkspace!,
+              cwd,
+            },
+          }),
+        ),
+      ).resolves.toBeUndefined();
+    } finally {
+      await fs.rm(cwd, { recursive: true, force: true });
+    }
+  });
+
+  it("still rejects a non_git_path project workspace that would launch from the agent fallback cwd", async () => {
+    const input = buildWorkspaceValidationInput();
+    const fallbackCwd = resolveDefaultAgentWorkspaceDir("agent-1");
+
+    await expectWorkspaceValidationFailure(
+      buildWorkspaceValidationInput({
+        projectWorkspaceSourceType: "non_git_path",
+        executionWorkspace: {
+          ...input.executionWorkspace,
+          cwd: fallbackCwd,
+        },
+        persistedExecutionWorkspace: {
+          ...input.persistedExecutionWorkspace!,
+          cwd: fallbackCwd,
+        },
+      }),
+      "fallback_agent_home_cwd",
+      "would launch from agent fallback cwd",
+    );
+  });
+
   it("does not apply the git-sensitive workspace guard to non-local execution targets", async () => {
     const input = buildWorkspaceValidationInput();
 

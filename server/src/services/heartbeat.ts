@@ -939,6 +939,7 @@ const GIT_SENSITIVE_LOCAL_ADAPTER_TYPES = new Set([
   "opencode_local",
   "pi_local",
 ]);
+const NON_GIT_PROJECT_WORKSPACE_SOURCE_TYPE = "non_git_path";
 export { MAX_TURN_CONTINUATION_RETRY_REASON };
 export const MAX_TURN_CONTINUATION_WAKE_REASON = "max_turns_continuation_retry";
 const MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS = 2;
@@ -3250,6 +3251,7 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
     projectWorkspaceId: string | null;
   } | null;
   resolvedWorkspace: ResolvedWorkspaceForRun;
+  projectWorkspaceSourceType?: string | null;
   executionWorkspace: RealizedExecutionWorkspace;
   persistedExecutionWorkspace: ExecutionWorkspace | null;
   executionTarget: unknown;
@@ -3284,6 +3286,12 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
     Boolean(issue.projectWorkspaceId) ||
     Boolean(input.resolvedWorkspace.workspaceId) ||
     input.executionWorkspace.strategy === "git_worktree";
+  const projectWorkspaceSourceType = readNonEmptyString(
+    input.projectWorkspaceSourceType,
+  );
+  const gitMetadataExpectation =
+    workspaceExpectation &&
+    projectWorkspaceSourceType !== NON_GIT_PROJECT_WORKSPACE_SOURCE_TYPE;
 
   const fail = (
     reason: string,
@@ -3301,6 +3309,7 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
         resolvedWorkspaceSource: input.resolvedWorkspace.source,
         resolvedProjectId: input.resolvedWorkspace.projectId,
         resolvedProjectWorkspaceId: input.resolvedWorkspace.workspaceId,
+        projectWorkspaceSourceType: projectWorkspaceSourceType ?? null,
         resolvedWorkspaceCwd: input.resolvedWorkspace.cwd,
         executionWorkspaceCwd: effectiveCwd,
         executionWorkspaceStrategy: input.executionWorkspace.strategy,
@@ -3411,7 +3420,7 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
   }
 
   if (
-    workspaceExpectation &&
+    gitMetadataExpectation &&
     effectiveCwd &&
     !(await hasGitMetadata(effectiveCwd))
   ) {
@@ -3444,6 +3453,21 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
       );
     }
   }
+}
+
+export async function readGitSensitiveProjectWorkspaceSourceType(input: {
+  db: Db;
+  adapterType: string;
+  projectWorkspaceId: string | null;
+}): Promise<string | null> {
+  if (!input.projectWorkspaceId) return null;
+  if (!GIT_SENSITIVE_LOCAL_ADAPTER_TYPES.has(input.adapterType)) return null;
+  const [row] = await input.db
+    .select({ sourceType: projectWorkspaces.sourceType })
+    .from(projectWorkspaces)
+    .where(eq(projectWorkspaces.id, input.projectWorkspaceId))
+    .limit(1);
+  return readNonEmptyString(row?.sourceType);
 }
 
 const heartbeatRunProcessGroupIdColumn =
@@ -23251,6 +23275,8 @@ export function heartbeatService(
           const logEntry = formatRuntimeWorkspaceWarningLog(warning);
           await onLog(logEntry.stream, logEntry.chunk);
         }
+        const validatedProjectWorkspaceId =
+          issueRef?.projectWorkspaceId ?? resolvedWorkspace.workspaceId ?? null;
         await assertGitSensitiveAdapterWorkspaceValid({
           adapterType: agent.adapterType,
           agentId: agent.id,
@@ -23263,6 +23289,12 @@ export function heartbeatService(
               }
             : null,
           resolvedWorkspace,
+          projectWorkspaceSourceType:
+            await readGitSensitiveProjectWorkspaceSourceType({
+              db,
+              adapterType: agent.adapterType,
+              projectWorkspaceId: validatedProjectWorkspaceId,
+            }),
           executionWorkspace,
           persistedExecutionWorkspace,
           executionTarget,
