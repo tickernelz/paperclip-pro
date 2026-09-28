@@ -99,17 +99,20 @@ function appendParsedTranscriptLine(args: {
   }
 }
 
-export function buildTranscript(
-  chunks: RunLogChunk[],
-  parserSource: StdoutLineParser | TranscriptParserSource,
-  opts?: TranscriptBuildOptions,
-): TranscriptEntry[] {
-  const entries: TranscriptEntry[] = [];
-  let stdoutBuffer = "";
-  const redactionOptions = { enabled: opts?.censorUsernameInLogs ?? false };
-  const { parseLine, reset } = resolveStdoutParser(parserSource);
+function foldTranscriptChunks(args: {
+  entries: TranscriptEntry[];
+  chunks: RunLogChunk[];
+  from: number;
+  stdoutBuffer: string;
+  parseLine: (line: string, ts: string) => TranscriptEntry[];
+  reset: (() => void) | null;
+  redactionOptions: RedactionOptions;
+}): string {
+  const { entries, chunks, from, parseLine, reset, redactionOptions } = args;
+  let stdoutBuffer = args.stdoutBuffer;
 
-  for (const chunk of chunks) {
+  for (let index = from; index < chunks.length; index += 1) {
+    const chunk = chunks[index]!;
     if (chunk.stream === "stderr") {
       entries.push({ kind: "stderr", ts: chunk.ts, text: redactHomePathUserSegments(chunk.chunk, redactionOptions) });
       continue;
@@ -136,6 +139,27 @@ export function buildTranscript(
     }
   }
 
+  return stdoutBuffer;
+}
+
+export function buildTranscript(
+  chunks: RunLogChunk[],
+  parserSource: StdoutLineParser | TranscriptParserSource,
+  opts?: TranscriptBuildOptions,
+): TranscriptEntry[] {
+  const entries: TranscriptEntry[] = [];
+  const redactionOptions = { enabled: opts?.censorUsernameInLogs ?? false };
+  const { parseLine, reset } = resolveStdoutParser(parserSource);
+  const stdoutBuffer = foldTranscriptChunks({
+    entries,
+    chunks,
+    from: 0,
+    stdoutBuffer: "",
+    parseLine,
+    reset,
+    redactionOptions,
+  });
+
   const trailing = stdoutBuffer.trim();
   if (trailing) {
     const ts = chunks.length > 0 ? chunks[chunks.length - 1]!.ts : new Date().toISOString();
@@ -152,4 +176,78 @@ export function buildTranscript(
   reset?.();
 
   return entries;
+}
+
+const NO_CHUNKS: RunLogChunk[] = [];
+
+export interface IncrementalTranscript {
+  update(chunks: RunLogChunk[]): TranscriptEntry[];
+}
+
+export function createIncrementalTranscript(
+  parserSource: StdoutLineParser | TranscriptParserSource,
+  opts?: TranscriptBuildOptions,
+): IncrementalTranscript {
+  const redactionOptions = { enabled: opts?.censorUsernameInLogs ?? false };
+  const statefulParser =
+    typeof parserSource !== "function" && typeof parserSource.createStdoutParser === "function";
+  let parser = resolveStdoutParser(parserSource);
+  let entries: TranscriptEntry[] = [];
+  let stdoutBuffer = "";
+  let folded: RunLogChunk[] = NO_CHUNKS;
+  let latest: TranscriptEntry[] = [];
+
+  const restart = () => {
+    parser = resolveStdoutParser(parserSource);
+    entries = [];
+    stdoutBuffer = "";
+    folded = NO_CHUNKS;
+  };
+
+  const extendsFolded = (chunks: RunLogChunk[]) => {
+    if (chunks.length < folded.length) return false;
+    for (let index = 0; index < folded.length; index += 1) {
+      if (chunks[index] !== folded[index]) return false;
+    }
+    return true;
+  };
+
+  const publish = (chunks: RunLogChunk[]): TranscriptEntry[] => {
+    const trailing = stdoutBuffer.trim();
+    if (trailing && statefulParser) return buildTranscript(chunks, parserSource, opts);
+
+    const published = entries.slice();
+    const last = published.length - 1;
+    if (last >= 0) published[last] = { ...published[last]! };
+    if (trailing) {
+      appendParsedTranscriptLine({
+        entries: published,
+        line: trailing,
+        ts: chunks.length > 0 ? chunks[chunks.length - 1]!.ts : new Date().toISOString(),
+        parseLine: parser.parseLine,
+        reset: parser.reset,
+        redactionOptions,
+      });
+    }
+    return published;
+  };
+
+  return {
+    update(chunks: RunLogChunk[]): TranscriptEntry[] {
+      if (chunks === folded) return latest;
+      if (!extendsFolded(chunks)) restart();
+      stdoutBuffer = foldTranscriptChunks({
+        entries,
+        chunks,
+        from: folded.length,
+        stdoutBuffer,
+        parseLine: parser.parseLine,
+        reset: parser.reset,
+        redactionOptions,
+      });
+      folded = chunks;
+      latest = publish(chunks);
+      return latest;
+    },
+  };
 }

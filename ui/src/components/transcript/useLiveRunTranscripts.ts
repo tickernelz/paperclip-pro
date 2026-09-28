@@ -6,7 +6,14 @@ import type { LiveEvent } from "@tickernelz/paperclip-pro-shared";
 import { ApiError } from "../../api/client";
 import { instanceSettingsApi } from "../../api/instanceSettings";
 import { heartbeatsApi } from "../../api/heartbeats";
-import { buildTranscript, getUIAdapter, onAdapterChange, type RunLogChunk, type TranscriptEntry } from "../../adapters";
+import {
+  createIncrementalTranscript,
+  getUIAdapter,
+  onAdapterChange,
+  type IncrementalTranscript,
+  type RunLogChunk,
+  type TranscriptEntry,
+} from "../../adapters";
 import { queryKeys } from "../../lib/queryKeys";
 import { buildSameOriginWebSocketUrl } from "../../lib/websocket-url";
 import { tryCreateWebSocket } from "../../lib/websocket";
@@ -157,10 +164,9 @@ export function useLiveRunTranscripts({
   const [pruneTick, setPruneTick] = useState(0);
   const transcriptCacheRef = useRef(new Map<string, {
     adapterType: string;
-    chunks: RunLogChunk[];
     censorUsernameInLogs: boolean;
     parserTick: number;
-    transcript: TranscriptEntry[];
+    incremental: IncrementalTranscript;
   }>());
   // Tick counter to force transcript recomputation when dynamic parser loads
   const [parserTick, setParserTick] = useState(0);
@@ -173,35 +179,76 @@ export function useLiveRunTranscripts({
   });
 
   const runById = useMemo(() => new Map(normalizedRuns.map((run) => [run.id, run])), [normalizedRuns]);
+  const activeRunIdsKey = useMemo(
+    () =>
+      normalizedRuns
+        .filter((run) => run.status === "running")
+        .map((run) => run.id)
+        .sort((a, b) => a.localeCompare(b))
+        .join(","),
+    [normalizedRuns],
+  );
   const activeRunIds = useMemo(
     () => new Set(normalizedRuns.filter((run) => run.status === "running").map((run) => run.id)),
-    [normalizedRuns],
+    [activeRunIdsKey],
   );
   const runIdsKey = useMemo(
     () => normalizedRuns.map((run) => run.id).sort((a, b) => a.localeCompare(b)).join(","),
     [normalizedRuns],
   );
 
-  const appendChunks = (runId: string, chunks: Array<RunLogChunk & { dedupeKey: string }>) => {
-    if (chunks.length === 0) return;
+  const pendingAppendsRef = useRef(new Map<string, Array<RunLogChunk & { dedupeKey: string }>>());
+  const flushHandleRef = useRef<{ animationFrame: boolean; id: number } | null>(null);
+
+  const flushPendingAppends = useCallback(() => {
+    flushHandleRef.current = null;
+    const pending = pendingAppendsRef.current;
+    if (pending.size === 0) return;
+    const batch = [...pending];
+    pending.clear();
     setChunksByRun((prev) => {
-      const prevChunks = prev.get(runId) ?? [];
-      const { chunks: merged, changed } = mergeRunLogChunks(
-        runId,
-        prevChunks,
-        chunks,
-        {
-          seenChunkKeys: seenChunkKeysRef.current,
-          trimmedSeqFloorByRun: trimmedSeqFloorByRunRef.current,
-        },
-        retentionBudget,
-      );
-      if (!changed) return prev;
-      const next = new Map(prev);
-      next.set(runId, merged);
-      return next;
+      let next: Map<string, RunLogChunk[]> | null = null;
+      for (const [runId, incoming] of batch) {
+        const prevChunks = (next ?? prev).get(runId) ?? [];
+        const { chunks: merged, changed } = mergeRunLogChunks(
+          runId,
+          prevChunks,
+          incoming,
+          {
+            seenChunkKeys: seenChunkKeysRef.current,
+            trimmedSeqFloorByRun: trimmedSeqFloorByRunRef.current,
+          },
+          retentionBudget,
+        );
+        if (!changed) continue;
+        next = next ?? new Map(prev);
+        next.set(runId, merged);
+      }
+      return next ?? prev;
     });
-  };
+  }, [retentionBudget]);
+
+  const appendChunks = useCallback((runId: string, chunks: Array<RunLogChunk & { dedupeKey: string }>) => {
+    if (chunks.length === 0) return;
+    const queued = pendingAppendsRef.current.get(runId);
+    if (queued) {
+      for (const chunk of chunks) queued.push(chunk);
+    } else {
+      pendingAppendsRef.current.set(runId, [...chunks]);
+    }
+    if (flushHandleRef.current !== null) return;
+    flushHandleRef.current = typeof requestAnimationFrame === "function"
+      ? { animationFrame: true, id: requestAnimationFrame(() => flushPendingAppends()) }
+      : { animationFrame: false, id: window.setTimeout(flushPendingAppends, 0) };
+  }, [flushPendingAppends]);
+
+  useEffect(() => () => {
+    const handle = flushHandleRef.current;
+    if (handle === null) return;
+    flushHandleRef.current = null;
+    if (handle.animationFrame) cancelAnimationFrame(handle.id);
+    else window.clearTimeout(handle.id);
+  }, []);
 
   useEffect(() => {
     const knownRunIds = new Set(normalizedRuns.map((run) => run.id));
@@ -283,6 +330,11 @@ export function useLiveRunTranscripts({
     for (const runId of transcriptCacheRef.current.keys()) {
       if (!retainedRunIds.has(runId)) {
         transcriptCacheRef.current.delete(runId);
+      }
+    }
+    for (const runId of pendingAppendsRef.current.keys()) {
+      if (!retainedRunIds.has(runId)) {
+        pendingAppendsRef.current.delete(runId);
       }
     }
 
@@ -449,7 +501,6 @@ export function useLiveRunTranscripts({
         const payload = event.payload ?? {};
         const runId = readString(payload["runId"]);
         if (!runId || !activeRunIds.has(runId)) return;
-        if (!runById.has(runId)) return;
 
         if (event.type === "heartbeat.run.log") {
           const chunk = readString(payload["chunk"]);
@@ -525,7 +576,7 @@ export function useLiveRunTranscripts({
         }
       }
     };
-  }, [visible, activeRunIds, companyId, enableRealtimeUpdates, runById]);
+  }, [visible, activeRunIds, companyId, enableRealtimeUpdates, appendChunks]);
 
   const transcriptByRun = useMemo(() => {
     const next = new Map<string, TranscriptEntry[]>();
@@ -535,30 +586,22 @@ export function useLiveRunTranscripts({
     for (const run of normalizedRuns) {
       currentRunIds.add(run.id);
       const chunks = chunksByRun.get(run.id) ?? EMPTY_RUN_LOG_CHUNKS;
-      const cached = cache.get(run.id);
+      let cached = cache.get(run.id);
       if (
-        cached &&
-        cached.adapterType === run.adapterType &&
-        cached.chunks === chunks &&
-        cached.censorUsernameInLogs === censorUsernameInLogs &&
-        cached.parserTick === parserTick
+        !cached ||
+        cached.adapterType !== run.adapterType ||
+        cached.censorUsernameInLogs !== censorUsernameInLogs ||
+        cached.parserTick !== parserTick
       ) {
-        next.set(run.id, cached.transcript);
-        continue;
+        cached = {
+          adapterType: run.adapterType,
+          censorUsernameInLogs,
+          parserTick,
+          incremental: createIncrementalTranscript(getUIAdapter(run.adapterType), { censorUsernameInLogs }),
+        };
+        cache.set(run.id, cached);
       }
-
-      const adapter = getUIAdapter(run.adapterType);
-      const transcript = buildTranscript(chunks, adapter, {
-        censorUsernameInLogs,
-      });
-      cache.set(run.id, {
-        adapterType: run.adapterType,
-        chunks,
-        censorUsernameInLogs,
-        parserTick,
-        transcript,
-      });
-      next.set(run.id, transcript);
+      next.set(run.id, cached.incremental.update(chunks));
     }
     for (const runId of cache.keys()) {
       if (!currentRunIds.has(runId)) {

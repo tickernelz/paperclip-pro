@@ -10,8 +10,18 @@ import { TRANSCRIPT_REQUEST_TIMEOUT_MS } from "./read-transcript-request";
 const { useQueryMock, logMock, buildTranscriptMock } = vi.hoisted(() => ({
   useQueryMock: vi.fn(() => ({ data: { censorUsernameInLogs: false } })),
   logMock: vi.fn(async () => ({ runId: "run-1", store: "memory", logRef: "log-1", content: "", nextOffset: 0 })),
-  buildTranscriptMock: vi.fn((chunks: unknown[]) => chunks),
+  buildTranscriptMock: vi.fn((chunks: unknown[], _parserSource?: unknown, _opts?: unknown) => chunks),
 }));
+
+async function flushAppendFrame() {
+  await act(async () => {
+    if (vi.isFakeTimers()) {
+      await vi.advanceTimersByTimeAsync(32);
+      return;
+    }
+    await new Promise<void>((resolve) => setTimeout(resolve, 32));
+  });
+}
 
 vi.mock("@tanstack/react-query", () => ({
   useQuery: useQueryMock,
@@ -31,6 +41,18 @@ vi.mock("../../api/heartbeats", () => ({
 
 vi.mock("../../adapters", () => ({
   buildTranscript: buildTranscriptMock,
+  createIncrementalTranscript: (parserSource: unknown, opts: unknown) => {
+    let folded: unknown[] | null = null;
+    let latest: unknown[] = [];
+    return {
+      update: (chunks: unknown[]) => {
+        if (chunks === folded) return latest;
+        folded = chunks;
+        latest = buildTranscriptMock(chunks, parserSource, opts) as unknown[];
+        return latest;
+      },
+    };
+  },
   getUIAdapter: () => null,
   onAdapterChange: () => () => {},
 }));
@@ -370,6 +392,52 @@ describe("useLiveRunTranscripts", () => {
     container.remove();
   });
 
+  it("keeps the live event socket open while a streaming run's byte counters grow", async () => {
+    function Harness({ bytes }: { bytes: number }) {
+      useLiveRunTranscripts({
+        companyId: "company-1",
+        runs: [
+          {
+            id: "run-1",
+            status: "running",
+            adapterType: "codex_local",
+            logBytes: bytes,
+            lastOutputBytes: bytes,
+          },
+        ],
+      });
+      return null;
+    }
+
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(<Harness bytes={1_000} />);
+      await Promise.resolve();
+    });
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    const socket = FakeWebSocket.instances[0]!;
+    await act(async () => socket.triggerOpen());
+
+    for (const bytes of [2_000, 3_000, 4_000]) {
+      await act(async () => {
+        root.render(<Harness bytes={bytes} />);
+        await Promise.resolve();
+      });
+    }
+
+    expect(FakeWebSocket.instances).toHaveLength(1);
+    expect(socket.closeCalls).toHaveLength(0);
+    expect(socket.onmessage).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+    container.remove();
+  });
+
   it("starts persisted-log hydration from the newest bytes when the visible window is truncated", async () => {
     function Harness() {
       useLiveRunTranscripts({
@@ -427,6 +495,7 @@ describe("useLiveRunTranscripts", () => {
       root.render(<Harness />);
       await Promise.resolve();
     });
+    await flushAppendFrame();
 
     const lastCall = buildTranscriptMock.mock.calls.at(-1) as unknown[] | undefined;
     expect(lastCall?.[0]).toEqual([
@@ -473,6 +542,7 @@ describe("useLiveRunTranscripts", () => {
       root.render(<Harness />);
       await Promise.resolve();
     });
+    await flushAppendFrame();
 
     const lastCall = buildTranscriptMock.mock.calls.at(-1) as unknown[] | undefined;
     expect(lastCall?.[0]).toEqual([
@@ -543,6 +613,7 @@ describe("useLiveRunTranscripts", () => {
       sendLogEvent(3, "!\n");
       await Promise.resolve();
     });
+    await flushAppendFrame();
 
     const persistedRow = (seq: number, chunk: string) =>
       JSON.stringify({ ts: "2026-04-20T00:00:00.500Z", stream: "stdout", chunk, seq });
@@ -556,6 +627,7 @@ describe("useLiveRunTranscripts", () => {
       });
       await Promise.resolve();
     });
+    await flushAppendFrame();
 
     const lastCall = buildTranscriptMock.mock.calls.at(-1) as unknown[] | undefined;
     expect(lastCall?.[0]).toEqual([
@@ -614,6 +686,7 @@ describe("useLiveRunTranscripts", () => {
       );
       await Promise.resolve();
     });
+    await flushAppendFrame();
 
     expect(buildTranscriptMock).toHaveBeenCalledTimes(1);
     expect(buildTranscriptMock).toHaveBeenCalledWith(
@@ -657,6 +730,7 @@ describe("useLiveRunTranscripts", () => {
       root.render(<Harness runs={runList} />);
       await Promise.resolve();
     });
+    await flushAppendFrame();
     expect(captured.value?.transcriptByRun.get("run-1")).toHaveLength(1);
 
     // Transient empty poll: run momentarily absent from the list.
@@ -707,6 +781,7 @@ describe("useLiveRunTranscripts", () => {
         root.render(<Harness runs={runList} />);
         await Promise.resolve();
       });
+      await flushAppendFrame();
       expect(captured.value?.transcriptByRun.get("run-1")).toHaveLength(1);
 
       await act(async () => {
@@ -770,10 +845,15 @@ describe("useLiveRunTranscripts", () => {
   it("backs off exponentially when the live event socket keeps failing", async () => {
     vi.useFakeTimers();
     try {
-      function Harness({ lastOutputBytes }: { lastOutputBytes?: number }) {
+      function Harness({ extraRun = false }: { extraRun?: boolean }) {
         useLiveRunTranscripts({
           companyId: "company-1",
-          runs: [{ id: "run-1", status: "running", adapterType: "codex_local", lastOutputBytes }],
+          runs: extraRun
+            ? [
+                { id: "run-1", status: "running", adapterType: "codex_local" },
+                { id: "run-2", status: "running", adapterType: "codex_local" },
+              ]
+            : [{ id: "run-1", status: "running", adapterType: "codex_local" }],
         });
         return null;
       }
@@ -820,10 +900,8 @@ describe("useLiveRunTranscripts", () => {
       });
       expect(FakeWebSocket.instances).toHaveLength(4);
 
-      // Run-metadata changes restart the socket effect; the progressed delay
-      // must survive the restart instead of resetting to the base delay.
       await act(async () => {
-        root.render(<Harness lastOutputBytes={512} />);
+        root.render(<Harness extraRun />);
         await Promise.resolve();
       });
       expect(FakeWebSocket.instances).toHaveLength(5);
