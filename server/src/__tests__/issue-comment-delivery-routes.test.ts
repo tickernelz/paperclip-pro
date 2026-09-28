@@ -27,6 +27,7 @@ import { errorHandler } from "../middleware/index.js";
 import { instanceSettingsRoutes } from "../routes/instance-settings.js";
 import { issueRoutes } from "../routes/issues.js";
 import { NativeSessionSteeringError } from "../services/native-runtime/native-session-executor.js";
+import type * as Services from "../services/index.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -46,6 +47,25 @@ vi.mock("../services/native-runtime/native-session-executor.js", async (importOr
     ...actual,
     steerNativeSession: steerNativeSessionMock,
     getNativeSessionSteeringState: steeringState.mock,
+  };
+});
+
+type ServicesModule = typeof Services;
+const runLookup = vi.hoisted(() => ({ fail: false }));
+vi.mock("../services/index.js", async (importOriginal) => {
+  const actual = await importOriginal<ServicesModule>();
+  return {
+    ...actual,
+    heartbeatService: (...args: Parameters<ServicesModule["heartbeatService"]>) => {
+      const service = actual.heartbeatService(...args);
+      return {
+        ...service,
+        getRun: (...runArgs: Parameters<typeof service.getRun>) => {
+          if (runLookup.fail) throw new Error("run lookup unavailable");
+          return service.getRun(...runArgs);
+        },
+      };
+    },
   };
 });
 
@@ -83,6 +103,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     }
     testProcesses.clear();
     steerNativeSessionMock.mockReset();
+    runLookup.fail = false;
     steeringState.mock.mockReset();
     if (steeringState.real) steeringState.mock.mockImplementation(steeringState.real);
     // Best-effort cleanup. The heartbeat keeps working on this database after
@@ -629,6 +650,24 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(posted.body).toMatchObject({
       deliveredAs: "queued",
       steeringUnavailable: "not_requested",
+    });
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("names steering_failed when resolving the steering target breaks", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    runLookup.fail = true;
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Lookup breaks" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({
+      deliveredAs: "queued",
+      steeringUnavailable: "steering_failed",
     });
     expect(steerNativeSessionMock).not.toHaveBeenCalled();
   });

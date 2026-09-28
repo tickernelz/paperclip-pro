@@ -16159,6 +16159,7 @@ export function issueRoutes(
         { err, issueId: input.issue.id, commentId: input.commentId },
         "failed to resolve the steering target for a posted comment",
       );
+      return { deliveredAs: "queued", steeringUnavailable: "steering_failed" };
     }
     if (!target) {
       return {
