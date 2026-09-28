@@ -54,13 +54,13 @@
   },
   "dependencies": {
     "@agentclientprotocol/claude-agent-acp": "^0.73.0",
-    "@anthropic-ai/sdk": "0.121.0",
+    "@anthropic-ai/sdk": "0.128.0",
     "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
     "@tickernelz/paperclip-pro-shared": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
+    "@types/node": "^24.13.6",
     "typescript": "^7.0.2"
   },
   "engines": {

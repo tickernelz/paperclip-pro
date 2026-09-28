@@ -22,11 +22,11 @@
     "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^24.0.0",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.5",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8",
+    "@types/node": "^24.13.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "typescript": "^7.0.2"
   },
   "peerDependencies": {
