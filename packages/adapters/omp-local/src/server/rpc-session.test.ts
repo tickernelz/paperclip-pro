@@ -103,7 +103,11 @@ function harness(): Harness {
   };
 }
 
-function run(session = createOmpRpcSteerSession(), prompt = "Do the work") {
+function run(
+  session = createOmpRpcSteerSession(),
+  prompt = "Do the work",
+  continuationIdleMs?: number,
+) {
   return runOmpRpcSession({
     runId: "run-rpc",
     command: "omp",
@@ -119,6 +123,7 @@ function run(session = createOmpRpcSteerSession(), prompt = "Do the work") {
       else state.errors.push(chunk);
     },
     session,
+    continuationIdleMs,
   });
 }
 
@@ -491,6 +496,103 @@ describe("OMP RPC session protocol", () => {
     state.finish();
     await running;
     expect(state.ends()).toBe(1);
+  });
+
+  it("ends a run whose non-terminal pause starts no new turn, as print mode reaps leftover jobs", async () => {
+    vi.useFakeTimers();
+    try {
+      const running = run(undefined, undefined, 60_000);
+      await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+      await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-idle" } });
+      await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      await state.feed({ type: "agent_end", isTerminal: false, messages: [] });
+      await state.feed({ type: "extension_ui_request", id: "ui-1", method: "setStatus" });
+      await state.feed({ type: "prompt_result", status: "completed" });
+
+      await vi.advanceTimersByTimeAsync(2_500);
+      await state.feed({ type: "advisor_yielded" });
+      await vi.advanceTimersByTimeAsync(57_499);
+      expect(state.ends()).toBe(0);
+
+      await vi.advanceTimersByTimeAsync(1);
+      expect(state.ends()).toBe(1);
+      expect(state.errors.join("")).toContain("did no turn work for 60s");
+      state.finish();
+      expect((await running).promptError).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a paused run open when the background work resumes a turn before the idle bound", async () => {
+    vi.useFakeTimers();
+    try {
+      const running = run(undefined, undefined, 60_000);
+      await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+      await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-resume" } });
+      await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      await state.feed({ type: "agent_end", isTerminal: false, messages: [] });
+
+      await vi.advanceTimersByTimeAsync(30_000);
+      await state.feed({ type: "agent_start" });
+      await vi.advanceTimersByTimeAsync(120_000);
+      expect(state.ends()).toBe(0);
+
+      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      expect(state.ends()).toBe(1);
+      state.finish();
+      await running;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a paused run open through a deferred handoff compaction that outlasts the idle bound", async () => {
+    vi.useFakeTimers();
+    try {
+      const running = run(undefined, undefined, 60_000);
+      await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+      await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-compact" } });
+      await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      await state.feed({ type: "agent_end", isTerminal: false, messages: [] });
+      await state.feed({ type: "auto_compaction_start", reason: "threshold" });
+
+      await vi.advanceTimersByTimeAsync(180_000);
+      expect(state.ends()).toBe(0);
+
+      await state.feed({ type: "auto_compaction_end" });
+      await state.feed({ type: "agent_start" });
+      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      expect(state.ends()).toBe(1);
+      state.finish();
+      await running;
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("keeps a retried turn open when its agent_start arrived before the paused agent_end", async () => {
+    vi.useFakeTimers();
+    try {
+      const running = run(undefined, undefined, 60_000);
+      await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+      await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-ttsr" } });
+      await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      await state.feed({ type: "agent_start" });
+      await state.feed({ type: "turn_start" });
+      await state.feed({ type: "agent_end", isTerminal: false, messages: [] });
+
+      await vi.advanceTimersByTimeAsync(180_000);
+      expect(state.ends()).toBe(0);
+
+      await state.feed({ type: "turn_end" });
+      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      expect(state.ends()).toBe(1);
+      state.finish();
+      await running;
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

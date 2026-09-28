@@ -8,10 +8,26 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/live-stdin-channel";
 
 const STEER_ACK_TIMEOUT_MS = 10_000;
+const DEFAULT_CONTINUATION_IDLE_MS = 60_000;
 const RPC_PROTOCOL_VERSION = 2;
 const RPC_CHUNK_PAYLOAD_BYTES = 256 * 1024;
 const RPC_MAX_REASSEMBLED_BYTES = 64 * 1024 * 1024;
 const MESSAGE_SNAPSHOT_TYPES = new Set(["message_start", "message_end", "turn_end"]);
+const TURN_WORK_FRAME_TYPES = new Set([
+  "agent_start",
+  "turn_start",
+  "turn_end",
+  "message_start",
+  "message_update",
+  "message_end",
+  "tool_execution_start",
+  "tool_execution_update",
+  "tool_execution_end",
+  "auto_compaction_start",
+  "auto_compaction_end",
+  "auto_retry_start",
+  "auto_retry_end",
+]);
 
 function stripProviderPayload(value: unknown): unknown {
   if (!value || typeof value !== "object" || Array.isArray(value)) return value;
@@ -283,6 +299,7 @@ export interface OmpRpcRunInput {
     typeof runAdapterExecutionTargetProcess
   >[4]["onRuntimeProgress"];
   session: OmpRpcSteerSession;
+  continuationIdleMs?: number;
 }
 
 export interface OmpRpcRunResult {
@@ -307,11 +324,60 @@ export async function runOmpRpcSession(
   let negotiated: number | null = null;
   let settled = false;
   let sessionId: string | null = null;
+  let continuationIdleTimer: ReturnType<typeof setTimeout> | null = null;
+  let pausedForContinuation = false;
+  let compacting = false;
+  let turnOpen = false;
+  let lastTurnWorkAt = 0;
+  const continuationIdleMs = input.continuationIdleMs ?? DEFAULT_CONTINUATION_IDLE_MS;
+
+  const disarmContinuationIdle = () => {
+    if (!continuationIdleTimer) return;
+    clearTimeout(continuationIdleTimer);
+    continuationIdleTimer = null;
+  };
 
   const closeStdinOnce = () => {
+    disarmContinuationIdle();
+    pausedForContinuation = false;
     if (settled) return;
     settled = true;
     channel.close();
+  };
+
+  const scheduleContinuationIdle = () => {
+    disarmContinuationIdle();
+    if (!pausedForContinuation || compacting || turnOpen || settled) return;
+    const remaining = Math.max(0, lastTurnWorkAt + continuationIdleMs - Date.now());
+    continuationIdleTimer = setTimeout(() => {
+      continuationIdleTimer = null;
+      if (!pausedForContinuation || compacting || turnOpen || settled) return;
+      if (Date.now() - lastTurnWorkAt < continuationIdleMs) {
+        scheduleContinuationIdle();
+        return;
+      }
+      closeStdinOnce();
+      void input
+        .onLog(
+          "stderr",
+          `[paperclip] OMP paused for pending background work and did no turn work for ${Math.round(continuationIdleMs / 1000)}s; ending the run so leftover jobs are reaped, as print mode does.\n`,
+        )
+        .catch(() => undefined);
+    }, remaining);
+  };
+
+  const noteTurnWork = (type: string) => {
+    lastTurnWorkAt = Date.now();
+    if (type === "auto_compaction_start") compacting = true;
+    if (type === "auto_compaction_end") compacting = false;
+    if (type === "turn_start") turnOpen = true;
+    if (type === "turn_end") turnOpen = false;
+    if (type === "agent_start") {
+      pausedForContinuation = false;
+      disarmContinuationIdle();
+      return;
+    }
+    scheduleContinuationIdle();
   };
 
   const send = async (frame: Record<string, unknown>): Promise<void> => {
@@ -322,6 +388,7 @@ export async function runOmpRpcSession(
   const handleFrame = async (frame: Record<string, unknown>): Promise<void> => {
     session.observeFrame(frame);
     const type = typeof frame.type === "string" ? frame.type : "";
+    if (TURN_WORK_FRAME_TYPES.has(type)) noteTurnWork(type);
     if (type === "ready" && !promptSent) {
       const versions = Array.isArray(frame.supportedProtocolVersions)
         ? frame.supportedProtocolVersions
@@ -356,8 +423,12 @@ export async function runOmpRpcSession(
       closeStdinOnce();
       return;
     }
-    if (type === "agent_end" && frame.isTerminal !== false) {
-      closeStdinOnce();
+    if (type === "agent_end") {
+      if (frame.isTerminal === false) {
+        pausedForContinuation = true;
+        lastTurnWorkAt = Date.now();
+        scheduleContinuationIdle();
+      } else closeStdinOnce();
       return;
     }
     if (type !== "response") return;
@@ -487,6 +558,7 @@ export async function runOmpRpcSession(
       buffer = "";
     }
   } finally {
+    disarmContinuationIdle();
     session.setWriter(null);
     session.close();
   }
