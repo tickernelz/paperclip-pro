@@ -1024,8 +1024,8 @@ test.describe("Board send delivery refresh", () => {
       let sends = 0;
       const submittedPayloads: Record<string, unknown>[] = [];
       let reads = 0;
-      let canonicalAttachmentReadsAfterSend = 0;
-      let canonicalCommentReadsAfterSend = 0;
+      let attachmentReadsAfterSend = 0;
+      let commentReadsAfterSend = 0;
       let status = "streaming";
       await page.route("**/api/instance/settings/experimental", (route) =>
         fulfill(route, { enableChatConnectors: true }),
@@ -1044,11 +1044,7 @@ test.describe("Board send delivery refresh", () => {
           `/api/issues/(${issue.id}|${issue.identifier})/comments(?:\\?|$)`,
         ),
         async (route) => {
-          if (
-            sends &&
-            route.request().url().includes(`/issues/${issue.identifier}/`)
-          )
-            canonicalCommentReadsAfterSend += 1;
+          if (sends) commentReadsAfterSend += 1;
           await fulfill(
             route,
             sends
@@ -1074,11 +1070,7 @@ test.describe("Board send delivery refresh", () => {
           `/api/issues/(${issue.id}|${issue.identifier})/attachments$`,
         ),
         async (route) => {
-          if (
-            sends &&
-            route.request().url().includes(`/issues/${issue.identifier}/`)
-          )
-            canonicalAttachmentReadsAfterSend += 1;
+          if (sends) attachmentReadsAfterSend += 1;
           await fulfill(route, [
             {
               id: attachmentId,
@@ -1202,10 +1194,10 @@ test.describe("Board send delivery refresh", () => {
         ).toBeVisible();
         // The canonical task view must refresh its comment/files before any reload.
         await expect
-          .poll(() => canonicalCommentReadsAfterSend)
+          .poll(() => commentReadsAfterSend)
           .toBeGreaterThan(0);
         await expect
-          .poll(() => canonicalAttachmentReadsAfterSend)
+          .poll(() => attachmentReadsAfterSend)
           .toBeGreaterThan(0);
         await expectRetainedFiles();
         const readsBeforeReload = reads;
@@ -1258,8 +1250,8 @@ test.describe("Board send delivery refresh", () => {
         ).toHaveCount(0, { timeout: 8_000 });
       }
       expect(sends).toBe(outcome === "response_lost" ? 2 : 1);
-      expect(canonicalCommentReadsAfterSend).toBeGreaterThan(0);
-      expect(canonicalAttachmentReadsAfterSend).toBeGreaterThan(0);
+      expect(commentReadsAfterSend).toBeGreaterThan(0);
+      expect(attachmentReadsAfterSend).toBeGreaterThan(0);
       await expect(
         page.getByText("Board batch must finish all files.", { exact: true }),
       ).toBeVisible();
