@@ -29261,16 +29261,45 @@ export function heartbeatService(
             const stopped = await getRun(run.id, { unsafeFullResultJson: true });
             if (stopped && isHeartbeatRunTerminalStatus(stopped.status)) {
               if (
-                parseObject(stopped.resultJson?.executionCancellation).state !==
+                parseObject(stopped.resultJson?.executionCancellation).state ===
                 "acknowledged"
               ) {
+                return { run: stopped, updated: false };
+              }
+              const localProcessTerminated =
+                terminationSettled &&
+                !!running &&
+                ((Number.isInteger(running.child.pid) && (running.child.pid ?? 0) > 0) ||
+                  (Number.isInteger(running.processGroupId) && (running.processGroupId ?? 0) > 0));
+              const ranOnRemoteEnvironment = localProcessTerminated &&
+                (await db
+                  .select({ provider: environmentLeases.provider })
+                  .from(environmentLeases)
+                  .where(and(
+                    eq(environmentLeases.companyId, run.companyId),
+                    eq(environmentLeases.heartbeatRunId, run.id),
+                  ))).some((lease) => !!lease.provider && lease.provider !== "local");
+              if (!localProcessTerminated || ranOnRemoteEnvironment) {
                 throw conflict(
                   "Execution ended, but provider termination could not be verified. Inspect the stopped run before continuing.",
                 );
               }
-              // The owned adapter already finalized this run and its lifecycle.
-              // Do not replay the process cancellation side effects below.
-              return { run: stopped, updated: false };
+              const [acknowledged] = await db
+                .update(heartbeatRuns)
+                .set({
+                  resultJson: sql`coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) || ${JSON.stringify({
+                    executionCancellation: {
+                      ...parseObject(stopped.resultJson?.executionCancellation),
+                      state: "acknowledged",
+                      acknowledgedAt: new Date().toISOString(),
+                      proof: "local_process_terminated",
+                    },
+                  })}::jsonb`,
+                  updatedAt: new Date(),
+                })
+                .where(and(eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.status, stopped.status)))
+                .returning();
+              return { run: acknowledged ?? stopped, updated: false };
             }
           }
 

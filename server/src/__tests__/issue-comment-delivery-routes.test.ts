@@ -6,6 +6,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
+  environmentLeases,
   agents,
   companies,
   companyMemberships,
@@ -17,6 +18,10 @@ import {
   runIdentityContexts,
 } from "@tickernelz/paperclip-pro-db";
 import { runningProcesses } from "../adapters/index.js";
+import {
+  adapterExecutionControls,
+  createAdapterExecutionControl,
+} from "../services/adapter-execution-control.js";
 import { errorHandler } from "../middleware/index.js";
 import { instanceSettingsRoutes } from "../routes/instance-settings.js";
 import { issueRoutes } from "../routes/issues.js";
@@ -546,5 +551,75 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       .where(eq(runIdentityContexts.messageId, posted.body.id));
     expect(identities).toHaveLength(1);
     expect(identities[0].status).toBe("accepted");
+  });
+
+  it.each([
+    { lease: "local", handedOff: true },
+    { lease: "ssh", handedOff: false },
+  ])("hands an issue to its review stage from the assignee's own live run on a $lease lease", async ({ lease, handedOff }) => {
+    const seeded = await seedActiveRun({ legacy: true });
+    keepRunAlive(seeded.runId);
+    await db.insert(environmentLeases).values({
+      companyId: seeded.companyId,
+      heartbeatRunId: seeded.runId,
+      issueId: seeded.issueId,
+      provider: lease,
+    });
+    const control = createAdapterExecutionControl();
+    control.controller.signal.addEventListener("abort", () => {
+      void db
+        .update(heartbeatRuns)
+        .set({ status: "cancelled", finishedAt: new Date() })
+        .where(eq(heartbeatRuns.id, seeded.runId))
+        .then(() => control.finish());
+    });
+    adapterExecutionControls.set(seeded.runId, control);
+    const reviewerId = randomUUID();
+    await db.insert(agents).values({
+      id: reviewerId,
+      companyId: seeded.companyId,
+      name: "Delivery Reviewer",
+      role: "engineer",
+      status: "idle",
+      adapterType: "claude_local",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+    await db
+      .update(issues)
+      .set({ checkoutRunId: seeded.runId })
+      .where(eq(issues.id, seeded.issueId));
+    const agentApp = app(seeded.companyId, { agentId: seeded.agentId, runId: seeded.runId });
+
+    await request(agentApp)
+      .patch(`/api/issues/${seeded.issueId}`)
+      .send({
+        executionPolicy: {
+          mode: "normal",
+          commentRequired: true,
+          stages: [{ type: "review", participants: [{ type: "agent", agentId: reviewerId }] }],
+        },
+      })
+      .expect(200);
+
+    const handoff = await request(agentApp)
+      .patch(`/api/issues/${seeded.issueId}`)
+      .send({ status: "in_review", comment: "Ready for review" });
+
+    const [issue] = await db.select().from(issues).where(eq(issues.id, seeded.issueId));
+    const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId));
+    if (handedOff) {
+      expect(handoff.status, JSON.stringify(handoff.body)).toBe(200);
+      expect(issue).toMatchObject({ status: "in_review", assigneeAgentId: reviewerId });
+      expect(run?.resultJson).toMatchObject({
+        executionCancellation: { state: "acknowledged", proof: "local_process_terminated" },
+      });
+    } else {
+      expect(handoff.status).toBe(409);
+      expect(issue).toMatchObject({ status: "in_progress", assigneeAgentId: seeded.agentId });
+      expect(JSON.stringify(run?.resultJson ?? {})).not.toContain("local_process_terminated");
+    }
+    adapterExecutionControls.delete(seeded.runId);
   });
 });
