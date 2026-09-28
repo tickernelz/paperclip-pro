@@ -341,6 +341,7 @@ import {
   selectHeartbeatRunFinalAgentMessage,
   type RunPresentationDecision,
 } from "./heartbeat-run-summary.js";
+import { withRetainedSteeringAcknowledgements } from "./steering-acknowledgements.js";
 import {
   buildHeartbeatRunStopMetadata,
   mergeHeartbeatRunStopMetadata,
@@ -13022,7 +13023,7 @@ export function heartbeatService(
             .update(heartbeatRuns)
             .set({
               status,
-              ...patch,
+              ...withRetainedSteeringAcknowledgements(patch),
               executionStatusDeliveryId: randomUUID(),
               updatedAt: new Date(),
             })
@@ -13107,7 +13108,7 @@ export function heartbeatService(
             .update(heartbeatRuns)
             .set({
               status,
-              ...patch,
+              ...withRetainedSteeringAcknowledgements(patch),
               executionStatusDeliveryId: randomUUID(),
               updatedAt: new Date(),
             })
