@@ -1,5 +1,5 @@
 import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractionResponse } from "../services/queued-interaction-response.js";
-import { deliverConversationComments, isConversation } from "../services/agent-conversations.js";
+import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import {
@@ -7086,7 +7086,7 @@ export function issueRoutes(
       liveSteeringTarget: input.activeRun ? hasLiveAdapterSteering(input.activeRun.id) : false,
     });
     const steeringDisposition: IssueQueuedCommentQueue["steeringDisposition"] =
-      input.issue.conversationAgentId ? "unsupported" : steering.kind !== "probe"
+      steering.kind !== "probe"
         ? steering.kind
         : input.steeringDisposition
           ?? (await getNativeSessionSteeringState(steering.steeringRunId)
@@ -16062,6 +16062,34 @@ export function issueRoutes(
     return "steering_failed";
   }
 
+  async function conversationMessageMaySteer(
+    issue: { id: string; companyId: string },
+    commentId: string,
+  ): Promise<boolean> {
+    const [comment] = await db
+      .select({ body: issueComments.body, createdAt: issueComments.createdAt })
+      .from(issueComments)
+      .where(and(eq(issueComments.id, commentId), eq(issueComments.companyId, issue.companyId)));
+    if (!comment || isConversationReset(comment.body)) return false;
+    const [earlier] = await db
+      .select({ id: agentWakeupRequests.id })
+      .from(agentWakeupRequests)
+      .innerJoin(
+        issueComments,
+        sql`${agentWakeupRequests.idempotencyKey} = 'conversation-comment:' || ${issueComments.id}::text`,
+      )
+      .where(
+        and(
+          eq(agentWakeupRequests.companyId, issue.companyId),
+          eq(issueComments.issueId, issue.id),
+          inArray(agentWakeupRequests.status, ["deferred_issue_execution", "queued"]),
+          sql`(${issueComments.createdAt}, ${issueComments.id}) < (${comment.createdAt.toISOString()}::timestamptz, ${commentId}::uuid)`,
+        ),
+      )
+      .limit(1);
+    return !earlier;
+  }
+
   /**
    * Resolve how a freshly posted message was actually delivered, and steer it
    * when the resolved mode is `"steer"`.
@@ -16087,11 +16115,8 @@ export function issueRoutes(
     if (input.actor.actorType === "agent" || !input.boardUserId) {
       return { deliveredAs: "queued", steeringUnavailable: "board_only" };
     }
-    if (input.issue.conversationAgentId) {
-      return {
-        deliveredAs: "queued",
-        steeringUnavailable: input.requested === "steer" ? "conversation_issue" : "not_requested",
-      };
+    if (input.issue.conversationAgentId && !(await conversationMessageMaySteer(input.issue, input.commentId))) {
+      return { deliveredAs: "queued", steeringUnavailable: "conversation_order" };
     }
     try {
       await input.wakeDispatch;

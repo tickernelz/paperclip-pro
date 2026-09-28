@@ -141,8 +141,8 @@ const STEERING_UNAVAILABLE_REASONS: Record<SteeringUnavailableReason, string> = 
   no_active_run: "there was no active run to steer.",
   legacy_protocol:
     "this runner's session protocol cannot accept a mid-turn steer.",
-  conversation_issue:
-    "conversation messages are delivered in order at turn boundaries.",
+  conversation_order:
+    "an earlier chat message is still waiting, or this message resets the chat, so it keeps its place in line.",
   steering_failed:
     "the steer did not land, so the message is queued and will be read at the next turn.",
 };

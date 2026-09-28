@@ -7,6 +7,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import {
   activityLog,
   environmentLeases,
+  agentWakeupRequests,
   agents,
   companies,
   companyMemberships,
@@ -32,10 +33,20 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 const steerNativeSessionMock = vi.hoisted(() => vi.fn());
+const steeringState = vi.hoisted(() => ({
+  real: null as null | ((runId: string) => Promise<unknown>),
+  mock: vi.fn(),
+}));
 vi.mock("../services/native-runtime/native-session-executor.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/native-runtime/native-session-executor.js")>();
   steerNativeSessionMock.mockImplementation(actual.steerNativeSession);
-  return { ...actual, steerNativeSession: steerNativeSessionMock };
+  steeringState.real = actual.getNativeSessionSteeringState;
+  steeringState.mock.mockImplementation(actual.getNativeSessionSteeringState);
+  return {
+    ...actual,
+    steerNativeSession: steerNativeSessionMock,
+    getNativeSessionSteeringState: steeringState.mock,
+  };
 });
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -72,6 +83,8 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     }
     testProcesses.clear();
     steerNativeSessionMock.mockReset();
+    steeringState.mock.mockReset();
+    if (steeringState.real) steeringState.mock.mockImplementation(steeringState.real);
     // Best-effort cleanup. The heartbeat keeps working on this database after
     // a response is sent, and a truncate can deadlock against it under CI
     // load. Every case owns a uniquely prefixed company, so a row that
@@ -406,9 +419,11 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     ).toHaveLength(1);
   });
 
-  it("queues a plain conversation message without claiming a steer was downgraded", async () => {
+  it("steers a chat message into the running turn and drops its follow-up wake", async () => {
     const seeded = await seedActiveRun({ conversation: true });
+    await seedDispatchIdentity(seeded);
     await setDefaultDelivery("steer", { enableAgentChat: true });
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-chat" });
     keepRunAlive(seeded.runId);
 
     const posted = await request(app(seeded.companyId))
@@ -416,26 +431,79 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       .send({ body: "Steer the chat", clientRequestId: randomUUID() })
       .expect(201);
 
-    expect(posted.body).toMatchObject({
-      deliveredAs: "queued",
-      steeringUnavailable: "not_requested",
-    });
+    expect(posted.body).toMatchObject({ deliveredAs: "steered" });
+    expect(steerNativeSessionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: seeded.runId, message: "Steer the chat" }),
+    );
+    const pendingWakes = await db
+      .select({ status: agentWakeupRequests.status })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.idempotencyKey, `conversation-comment:${posted.body.id}`));
+    expect(pendingWakes.map((wake) => wake.status)).not.toContain("deferred_issue_execution");
   });
 
-  it("names the conversation issue when an explicit steer is downgraded", async () => {
+  it("queues a /new chat reset instead of steering it as text", async () => {
     const seeded = await seedActiveRun({ conversation: true });
+    await seedDispatchIdentity(seeded);
     await setDefaultDelivery("steer", { enableAgentChat: true });
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-chat" });
     keepRunAlive(seeded.runId);
 
     const posted = await request(app(seeded.companyId))
       .post(`/api/issues/${seeded.issueId}/comments`)
-      .send({ body: "Steer the chat", deliver: "steer", clientRequestId: randomUUID() })
+      .send({ body: "/new", clientRequestId: randomUUID() })
       .expect(201);
 
     expect(posted.body).toMatchObject({
       deliveredAs: "queued",
-      steeringUnavailable: "conversation_issue",
+      steeringUnavailable: "conversation_order",
     });
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("keeps a later chat message behind an earlier one that is still queued", async () => {
+    const seeded = await seedActiveRun({ conversation: true });
+    await seedDispatchIdentity(seeded);
+    await setDefaultDelivery("steer", { enableAgentChat: true });
+    keepRunAlive(seeded.runId);
+    const client = app(seeded.companyId);
+
+    const first = await request(client)
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "First, answer this", clientRequestId: randomUUID(), deliver: "queue" })
+      .expect(201);
+    expect(first.body.deliveredAs).toBe("queued");
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-chat" });
+
+    const second = await request(client)
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Then this", clientRequestId: randomUUID() })
+      .expect(201);
+
+    expect(second.body).toMatchObject({
+      deliveredAs: "queued",
+      steeringUnavailable: "conversation_order",
+    });
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("offers steering in the chat queue when the live run can take it", async () => {
+    const seeded = await seedActiveRun({ conversation: true });
+    await seedDispatchIdentity(seeded);
+    await setDefaultDelivery("steer", { enableAgentChat: true });
+    keepRunAlive(seeded.runId);
+    steeringState.mock.mockResolvedValue({ disposition: "available", activeTurnId: "turn-chat" });
+    const client = app(seeded.companyId);
+
+    await request(client)
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Queue me", clientRequestId: randomUUID(), deliver: "queue" })
+      .expect(201);
+    const queue = await request(client)
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+
+    expect(queue.body.steeringDisposition).toBe("available");
   });
 
   it("degrades a board steer to queue and names the failed attempt when the runner rejects it", async () => {
@@ -461,6 +529,29 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(
       await db.select().from(issueComments).where(eq(issueComments.id, posted.body.id)),
     ).toHaveLength(1);
+  });
+
+  it("keeps a message queued for the next turn when the steered turn already ended", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockRejectedValue(
+      new NativeSessionSteeringError("steering_stale_turn", "The target turn is no longer active."),
+    );
+    const client = app(seeded.companyId);
+
+    const posted = await request(client)
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Arrived as the turn finished" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "steering_failed" });
+    const queue = await request(client)
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+    expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(
+      posted.body.id,
+    );
   });
 
   it("degrades to no_active_run when nothing is running to steer", async () => {

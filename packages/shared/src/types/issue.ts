@@ -1040,10 +1040,7 @@ export type IssueQueuedCommentSteeringDisposition =
  * and only the second one is worth telling the person about.
  */
 export type IssueCommentDeliveryReason =
-  /**
-   * No steer was attempted: the effective mode was `"queue"`, or the target
-   * queues by design and steering it was never requested.
-   */
+  /** No steer was attempted: the effective mode was `"queue"`. */
   | "not_requested"
   /** Only a board user can steer; an agent actor's request is queued as asked. */
   | "board_only"
@@ -1051,8 +1048,8 @@ export type IssueCommentDeliveryReason =
   | "no_active_run"
   /** The target runner's protocol does not support same-turn steering. */
   | "legacy_protocol"
-  /** Agent Chat issues process their messages in order at turn boundaries. */
-  | "conversation_issue"
+  /** An Agent Chat message waits behind an earlier queued message or is a `/new` reset. */
+  | "conversation_order"
   /** Steering was attempted after every precondition passed and still failed. */
   | "steering_failed";
 
