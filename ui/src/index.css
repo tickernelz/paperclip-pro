@@ -866,8 +866,8 @@
   to { opacity: 1; transform: none; }
 }
 @keyframes tc-approval-pulse {
-  0%, 100% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--primary) 0%, transparent); }
-  50% { box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent); }
+  0%, 100% { opacity: 0; }
+  50% { opacity: 1; }
 }
 .tc-question-option { transition-duration: var(--motion-duration-instant); }
 .tc-question-page { animation: tc-fade-in var(--motion-question-page-enter) var(--motion-ease-standard) both; }
@@ -883,7 +883,17 @@
 .tc-enter-cot-line { animation: tc-fade-rise var(--motion-duration-fast) var(--motion-ease-standard) both; }
 .tc-notice-chevron { transition-duration: var(--motion-duration-fast); }
 .tc-reveal-diff { animation: tc-fade-in var(--motion-diff-reveal) var(--motion-ease-standard) both; }
-.tc-approval { animation: tc-approval-pulse var(--motion-approval-pulse) var(--motion-ease-standard) infinite; }
+.tc-approval { position: relative; }
+.tc-approval::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
+  opacity: 0;
+  animation: tc-approval-pulse var(--motion-approval-pulse) var(--motion-ease-standard) infinite;
+}
 .tc-cursor { animation: tc-cursor-blink var(--motion-streaming-cursor-blink) step-end infinite; }
 .tc-enter-plan-entry { animation: tc-fade-rise var(--motion-plan-check) var(--motion-ease-out-expo) both; }
 
@@ -1060,7 +1070,7 @@
   /* The pill keyframes carry the X-centering; with animation:none restore it. */
   .tc-scroll-pill-in,
   .tc-scroll-pill-out { transform: translate(-50%, 0); }
-  .tc-approval { animation: none; box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 18%, transparent); }
+  .tc-approval::after { animation: none; opacity: 1; box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 18%, transparent); }
   .tc-cursor { animation: none; opacity: 1; }
 }
 
@@ -1332,29 +1342,15 @@
   }
 }
 
-/* Shimmer text effect for active "Working" state — Cursor-style sweep */
-@keyframes shimmer-text-slide {
-  0% { background-position: 100% center; }
-  60% { background-position: 0% center; }
-  100% { background-position: 0% center; }
+@keyframes shimmer-text-fade {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
 .shimmer-text {
   --shimmer-base: var(--foreground);
-  --shimmer-highlight: color-mix(in oklch, var(--foreground) 35%, transparent);
-  background: linear-gradient(
-    90deg,
-    var(--shimmer-base) 0%,
-    var(--shimmer-base) 40%,
-    var(--shimmer-highlight) 50%,
-    var(--shimmer-base) 60%,
-    var(--shimmer-base) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer-text-slide 2.5s linear infinite;
+  color: var(--shimmer-base);
+  animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
 
 .paperclip-thinking-icon {
@@ -1393,12 +1389,8 @@
   animation: paperclip-thinking-draw 1s linear infinite;
 }
 
-/* Muted variant (task-chat v7 activity rows): the sweep runs over the
-   muted-foreground tier so live "Thinking…"/"Working…" labels stay subordinate
-   to real content. */
 .shimmer-text-muted {
   --shimmer-base: var(--muted-foreground);
-  --shimmer-highlight: color-mix(in oklch, var(--muted-foreground) 30%, transparent);
 }
 
 /* Utilities expected by shadcn base components (ui/attachment.tsx). Declared
@@ -1406,20 +1398,8 @@
    compile under Tailwind v4. */
 @utility shimmer {
   --shimmer-base: var(--foreground);
-  --shimmer-highlight: color-mix(in oklch, var(--foreground) 35%, transparent);
-  background: linear-gradient(
-    90deg,
-    var(--shimmer-base) 0%,
-    var(--shimmer-base) 40%,
-    var(--shimmer-highlight) 50%,
-    var(--shimmer-base) 60%,
-    var(--shimmer-base) 100%
-  );
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer-text-slide 2.5s linear infinite;
+  color: var(--shimmer-base);
+  animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
 
 @utility scrollbar-none {
@@ -1442,8 +1422,7 @@
 @media (prefers-reduced-motion: reduce) {
   .shimmer-text {
     animation: none;
-    -webkit-text-fill-color: unset;
-    background: none;
+    opacity: 1;
   }
 
   .paperclip-thinking-icon-path {
