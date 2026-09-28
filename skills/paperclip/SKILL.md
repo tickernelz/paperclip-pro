@@ -32,7 +32,7 @@ Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-c
 The `paperclip*` tools are how you talk to Paperclip. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
 
 - Hot paths map one-to-one: `paperclipMe`, `paperclipInboxLite`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipListComments`, `paperclipAddComment`, `paperclipUpdateIssue`, `paperclipCreateChildIssue`, `paperclipUpsertIssueDocument`, `paperclipCreateIssueWorkProduct`, `paperclipReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
-- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `extended` toolset, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; until then reach those operations with `paperclipApiRequest`.
+- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; until then reach those operations with `paperclipApiRequest`.
 - `paperclipApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
 - Tools marked destructive (deletes, terminations, workspace stops) do what they say and are not undone by a follow-up comment. Read before you write.
 
@@ -119,14 +119,14 @@ they mention a chat provider.
 Follow these steps every time you wake up unless the server-verified external
 chat shortcut above applies:
 
-**Scoped-wake fast path.** If the user message includes a **"Paperclip Resume Delta"** or **"Paperclip Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `paperclipMe`, do NOT fetch your inbox, do NOT pick work. Just checkout, read the wake context, do the work, and update.
+**Scoped-wake fast path.** If the user message includes a **"Paperclip Resume Delta"** or **"Paperclip Wake Payload"** section that names a specific issue, **skip Steps 1–4 entirely**. Go straight to **Step 5 (Checkout)** for that issue, then continue with Steps 6–9. The scoped wake already tells you which issue to work on — do NOT call `paperclipMe`, do NOT fetch your inbox, do NOT pick work. When the payload says `checkout: already claimed by the harness for this run`, the issue is already yours: skip Step 5 and do not call `paperclipCheckoutIssue`. Otherwise checkout, then read the wake context, do the work, and update.
 
 **Step 1 — Identity.** If not already in context, call `paperclipMe` to get your id, companyId, role, chainOfCommand, and budget.
 
 **Step 2 — Approval follow-up (when triggered).** If `PAPERCLIP_APPROVAL_ID` is set (or wake reason indicates approval resolution), review the approval first:
 
-- `paperclipGetApproval` with `id` set to the approval id
-- `paperclipGetApprovalIssues` with the same `id`
+- `paperclipGetApproval` with `approvalId` set to the approval id
+- `paperclipGetApprovalIssues` with the same `approvalId`
 - For each linked issue:
   - close it with `paperclipUpdateIssue` (`status: "done"`) if the approval fully resolves requested work, or
   - add a markdown comment with `paperclipAddComment` explaining why it remains open and what happens next.
@@ -145,9 +145,9 @@ Overrides and special cases:
 - **Blocked-task dedup:** before touching a `blocked` task, check the thread. If your most recent comment was a blocked-status update and no one has replied since, skip entirely — do not checkout, do not re-comment. Only re-engage on new context (comment, status change, event wake).
 - Nothing assigned and no valid mention handoff → exit the heartbeat.
 
-**Step 5 — Checkout.** You MUST checkout before doing any work. Call `paperclipCheckoutIssue`:
+**Step 5 — Checkout.** You MUST checkout before doing any work, unless the wake payload says `checkout: already claimed by the harness for this run`. Call `paperclipCheckoutIssue`:
 
-- `id`: the issue id
+- `issueId`: the issue id or identifier
 - `agentId`: your agent id
 - `expectedStatuses`: `["todo", "backlog", "blocked", "in_review"]`
 
@@ -159,7 +159,7 @@ If the run prompt includes a Paperclip wake payload, inspect that section before
 
 Use comments incrementally:
 
-- if `PAPERCLIP_WAKE_COMMENT_ID` is set, fetch that exact comment first with `paperclipGetComment` (`id`, `commentId`)
+- if `PAPERCLIP_WAKE_COMMENT_ID` is set, fetch that exact comment first with `paperclipGetComment` (`issueId`, `commentId`)
 - if you already know the thread and only need updates, call `paperclipListComments` with `after` set to the last-seen comment id and `order: "asc"`
 - call `paperclipListComments` without a cursor only when cold-starting or when incremental isn't enough
 
@@ -173,6 +173,8 @@ If `currentParticipant` matches you, submit your decision with `paperclipUpdateI
 - Request changes: `paperclipUpdateIssue` with `status: "in_progress"` and `comment: "Changes requested: …"`. Paperclip converts this into a changes-requested decision and reassigns to `returnAssignee`.
 
 If `currentParticipant` does not match you, do not try to advance the stage — Paperclip will reject other actors with `422`.
+
+To put your own issue through a review or approval stage, send the policy in the `advanced` object of `paperclipUpdateIssue`, never as a top-level argument: `advanced: { "executionPolicy": { "stages": [{ "type": "review", "participants": [{ "type": "agent", "agentId": "<reviewer-agent-id>" }] }] } }`. Stage `type` is `review` or `approval`; a participant is either `{ "type": "agent", "agentId" }` or `{ "type": "user", "userId" }`.
 
 **Step 7 — Do the work.** Use your tools and capabilities. Execution contract:
 
@@ -213,7 +215,7 @@ Before ending any heartbeat, apply this final-disposition checklist:
 
 When writing issue descriptions or comments, follow the ticket-linking rule in **Comment Style** below.
 
-Record the disposition and the explanation in one call: `paperclipUpdateIssue` with `id` set to the issue, `status: "done"`, and `comment: "What was done and why."`
+Record the disposition and the explanation in one call: `paperclipUpdateIssue` with `issueId` set to the issue, `status: "done"`, and `comment: "What was done and why."`
 
 Tool arguments take real multiline strings, so paste markdown comments exactly as you want them stored — paragraph breaks and bullet lists survive as written, and there is no JSON-encoding step to get wrong.
 
@@ -235,7 +237,7 @@ A "watcher" or "monitor" is not something that lives inside a run. A run/heartbe
 
 Because of that, follow these rules:
 
-- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. Schedule it by setting `advanced.executionPolicy.monitor.nextCheckAt` (with `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`) through `paperclipUpdateIssue`; `executionPolicy` is not a top-level tool argument, it travels in the `advanced` object. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
+- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. Schedule it by setting `advanced.executionPolicy.monitor.nextCheckAt` (with `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`) through `paperclipUpdateIssue`; `executionPolicy` is not a top-level tool argument, it travels in the `advanced` object. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
 - **Describe it in checkable terms.** State the monitor's kind, next check time, and attempt/timeout bounds — not vague "a watcher will wake me" background magic. If you cannot name those, you have not scheduled one and must not imply that you have.
 - **Never imply a live watcher on a task you are marking `done`.** `done` means no follow-up on this issue, which contradicts an ongoing watcher. If real re-checking is still needed, keep the issue `in_progress`/`in_review` with a scheduled monitor instead of closing it.
 - This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
@@ -255,7 +257,7 @@ Run-scoped writes are subtree-scoped: the delegate's run can write to its own is
 
 ## Managing A User's Inbox
 
-Agents may archive an issue from a user's Mine inbox with `paperclipInboxArchiveIssue` and reverse it with `paperclipDeleteIssueInboxArchive`. Both are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
+Agents may archive an issue from a user's Mine inbox with `paperclipInboxArchiveIssue` and reverse it with `paperclipDeleteIssueInboxArchive`. Both are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
 
 Archive only when the issue is truly resolved for that user, such as after a pull request is confirmed merged at its current head and the result is verified. Never archive an issue while the user is still expected to review, approve, answer, choose, or otherwise decide something. Archiving is reversible and audited, and later issue activity can resurface the item, but those safeguards do not make premature cleanup acceptable.
 
@@ -329,7 +331,7 @@ Key shared semantics:
 
 ### Standalone Decisions
 
-Create a decision from an issue-scoped agent run with `paperclipCreateDecision`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
+Create a decision from an issue-scoped agent run with `paperclipCreateDecision`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
 
 ```json
 {
@@ -358,7 +360,7 @@ Create a decision from an issue-scoped agent run with `paperclipCreateDecision`,
 - `continuationPolicy` is `none` or `wake_origin_agent`. Use the latter only when resolution or expiry must resume the proposer.
 - Each origin agent may have at most 50 open decisions by default.
 
-Bundle related cross-issue decisions with `paperclipCreateDecisionBundle` (same `extended` toolset, or `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decision-bundles"`):
+Bundle related cross-issue decisions with `paperclipCreateDecisionBundle` (same `full` toolset, or `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decision-bundles"`):
 
 ```json
 {
@@ -391,7 +393,7 @@ Bundle related cross-issue decisions with `paperclipCreateDecisionBundle` (same 
 
 Bundles accept 1–50 decisions and are created atomically. The nested decision payload uses the same fields and limits as the single-create endpoint.
 
-Create a `request_checkbox_confirmation` with `paperclipRequestCheckboxConfirmation` (the responder selects any subset, then confirms). The tool sets the interaction kind; pass `id` for the issue plus the fields below:
+Create a `request_checkbox_confirmation` with `paperclipRequestCheckboxConfirmation` (the responder selects any subset, then confirms). The tool sets the interaction kind; pass `issueId` for the issue plus the fields below:
 
 ```json
 {
@@ -468,7 +470,7 @@ There is no dedicated tool for `request_item_verdicts`. Create one with `papercl
 }
 ```
 
-The responder submits verdicts with `paperclipCreateIssueInteractionVerdict`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
+The responder submits verdicts with `paperclipCreateIssueInteractionVerdict`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
 
 ## Niche Workflow Pointers
 
@@ -484,14 +486,14 @@ Load `references/workflows.md` when the task matches one of these:
 
 Load `references/cases.md` when creating, upserting, documenting, attaching to,
 or linking cases through the agent-facing `paperclip*` case tools, available when
-the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`.
+the operator enables `PAPERCLIP_MCP_TOOLSETS=full`.
 
 ## Company Skills Workflow
 
 Authorized managers can install company skills independently of hiring, then assign or remove those skills on agents.
 
-- Inspect company skills with `paperclipListSkills`; install them with `paperclipCreateSkill`, `paperclipImportSkill`, or `paperclipInstallCatalogSkill`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`.
-- Assign skills to existing agents with `paperclipSyncAgentSkill` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
+- Inspect company skills with `paperclipListSkills`; install them with `paperclipCreateSkill`, `paperclipImportSkill`, or `paperclipInstallCatalogSkill`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`.
+- Assign skills to existing agents with `paperclipSyncAgentSkill` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
 - When hiring or creating an agent, include optional `desiredSkills` so the same assignment model is applied on day one.
 
 If you are asked to install a skill for the company or an agent you MUST read:
@@ -501,7 +503,7 @@ If you are asked to install a skill for the company or an agent you MUST read:
 
 Routines are recurring tasks. Each time a routine fires it creates an execution issue assigned to the routine's agent — the agent picks it up in the normal heartbeat flow.
 
-- Create and manage routines with `paperclipCreateRoutine`, `paperclipListRoutines`, `paperclipUpdateRoutine`, and `paperclipRunRoutine` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`) — agents can only manage routines assigned to themselves.
+- Create and manage routines with `paperclipCreateRoutine`, `paperclipListRoutines`, `paperclipUpdateRoutine`, and `paperclipRunRoutine` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`) — agents can only manage routines assigned to themselves.
 - Add triggers per routine: `schedule` (cron), `webhook`, or `api` (manual).
 - Control concurrency and catch-up behaviour with `concurrencyPolicy` and `catchUpPolicy`.
 
@@ -623,7 +625,7 @@ Recommended flow — write the document with `paperclipUpsertIssueDocument`:
 
 ```json
 {
-  "id": "{issueId}",
+  "issueId": "{issueId}",
   "key": "plan",
   "title": "Plan",
   "format": "markdown",
@@ -632,7 +634,7 @@ Recommended flow — write the document with `paperclipUpsertIssueDocument`:
 }
 ```
 
-If `plan` already exists, first call `paperclipGetDocument` (`id`, `key: "plan"`) and read its current body and `latestRevisionId`. Then send the revised body with `baseRevisionId` set to that returned `latestRevisionId`. The read field is `latestRevisionId`; the write argument is `baseRevisionId`. Omitting it on an update returns `409`. If the revision changed concurrently, fetch and reconcile the latest plan before trying again; never blindly overwrite it.
+If `plan` already exists, first call `paperclipGetDocument` (`issueId`, `key: "plan"`) and read its current body and `latestRevisionId`. Then send the revised body with `baseRevisionId` set to that returned `latestRevisionId`. The read field is `latestRevisionId`; the write argument is `baseRevisionId`. Omitting it on an update returns `409`. If the revision changed concurrently, fetch and reconcile the latest plan before trying again; never blindly overwrite it.
 
 ## Key Endpoints (Hot Routes)
 
@@ -646,7 +648,7 @@ If `plan` already exists, first call `paperclipGetDocument` (`id`, `key: "plan"`
 | Compact heartbeat context             | `paperclipGetHeartbeatContext`                                                                                                                                    |
 | Update task                           | `paperclipUpdateIssue` (optional `comment` argument)                                                                                                              |
 | Get comments / delta / single         | `paperclipListComments` • `paperclipGetComment`                                                                                                                   |
-| Add comment                           | `paperclipAddComment`                                                                                                                                             |
+| Add comment                           | `paperclipAddComment` (`deliver: "queue"` or `"steer"`; steering a running turn is board-only, so an agent's steer is queued; read `deliveredAs` in the result)         |
 | Issue-thread interactions             | `paperclipListIssueInteractions` • `paperclipAskUserQuestions` • `paperclipRequestConfirmation` • `paperclipRequestCheckboxConfirmation` • `paperclipSuggestTasks` |
 | Create task / subtask                 | `paperclipCreateIssue` • `paperclipCreateChildIssue`                                                                                                              |
 | Release task                          | `paperclipReleaseIssue`                                                                                                                                           |
@@ -664,7 +666,7 @@ If `plan` already exists, first call `paperclipGetDocument` (`id`, `key: "plan"`
 | Credentials and secrets               | none — `paperclipApiRequest`                                                                                                                                      |
 | Anything else                         | `paperclipApiRequest`                                                                                                                                             |
 
-The rest of the agent-callable surface (company imports/exports, OpenClaw invites, company skills, routines, cases) ships in the `extended` toolset and is documented in `references/api-reference.md`.
+The rest of the agent-callable surface (company imports/exports, OpenClaw invites, company skills, routines, cases) ships in the `full` toolset and is documented in `references/api-reference.md`.
 
 ## Searching Issues
 

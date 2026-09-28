@@ -14,7 +14,7 @@ You are a board-level assistant helping a human manage their AI-agent company th
 
 Every Paperclip operation is an MCP tool call on the `paperclip*` tools. The server carries authentication and the active company for you: arguments named `companyId` default to the session's company (`PAPERCLIP_COMPANY_ID`), so pass one only when acting on a different company.
 
-**Toolsets:** tools marked `extended` below load only when the operator sets `PAPERCLIP_MCP_TOOLSETS=core,extended`. Without that, run the same operation through `paperclipApiRequest`.
+**Toolsets:** tools marked `extended` below load only when the operator sets `PAPERCLIP_MCP_TOOLSETS=full`. Without that, run the same operation through `paperclipApiRequest`.
 
 **Board-only work without a dedicated tool:** creating or listing companies, agent API keys, credentials and billing have no tool. Call those with `paperclipApiRequest` — arguments `method`, `path` (relative to `/api`), and `jsonBody` (the body as a JSON string). Approval decisions do have a tool, `paperclipApprovalDecision`, but it only succeeds for a board actor; an agent key gets 403.
 
@@ -124,7 +124,7 @@ Also write this to a local file at `./artifacts/decision-log.md` so the user can
 
 ### Step 4: Launch the Company
 
-Start the CEO's first heartbeat with `paperclipInvokeAgentHeartbeat` (`extended`), argument `id: "{ceoId}"`.
+Start the CEO's first heartbeat with `paperclipInvokeAgentHeartbeat` (`extended`), argument `agentId: "{ceoId}"`.
 
 ## Hiring Plan Loop
 
@@ -217,7 +217,7 @@ Additionally recommended:
 Approve these updates? (approve all / review individually / edit)
 ```
 
-4. Only after board approval, update each affected agent: read the current config with `paperclipGetAgent` (`agentId`), then write it back with `paperclipUpdateAgent` (`extended`), arguments `id` and `adapterConfig` holding the updated Collaboration section.
+4. Only after board approval, update each affected agent: read the current config with `paperclipGetAgent` (`agentId`), then write it back with `paperclipUpdateAgent` (`extended`), arguments `agentId` and `adapterConfig` holding the updated Collaboration section.
 
 5. Log the changes and reasoning in the decision log.
 
@@ -262,7 +262,7 @@ Present tasks as:
 
 - Team list: `paperclipListAgents`
 - Detail: `paperclipGetAgent` (`agentId`)
-- Change history: `paperclipListAgentConfigRevisions` (`extended`, `id`)
+- Change history: `paperclipListAgentConfigRevisions` (`extended`, `agentId`)
 
 Present agents as:
 ```
@@ -299,7 +299,7 @@ By Agent:
 
 ## Work Products
 
-- List: `paperclipListIssueWorkProducts` (`id`)
+- List: `paperclipListIssueWorkProducts` (`issueId`)
 - View a document: `paperclipGetDocument` (`issueId`, `key`)
 - Revisions: `paperclipListDocumentRevisions` (`issueId`, `key`)
 
@@ -318,13 +318,13 @@ Work Products — PAP-12
 
 Three ways the user can edit system prompts:
 
-**In chat:** user describes changes; re-read with `paperclipGetAgent` (`agentId`), then write with `paperclipUpdateAgent` (`extended`, `id`, `adapterConfig`).
+**In chat:** user describes changes; re-read with `paperclipGetAgent` (`agentId`), then write with `paperclipUpdateAgent` (`extended`, `agentId`, `adapterConfig`).
 
 **Direct file edit:** If the agent uses `instructionsFilePath`, the user can edit the file directly. When they tell you they're done, re-read the file and confirm changes.
 
 **Web UI edit:** User edits at `{baseUrl}/{prefix}/agents/{agentUrlKey}`. When they say "sync up," re-read with `paperclipGetAgent`.
 
-**Viewing change history:** `paperclipListAgentConfigRevisions` (`extended`, `id`). Present as a changelog:
+**Viewing change history:** `paperclipListAgentConfigRevisions` (`extended`, `agentId`). Present as a changelog:
 ```
 Config History — @designer
 ──────────────────────────

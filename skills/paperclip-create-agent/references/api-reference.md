@@ -2,19 +2,19 @@
 
 ## Tools
 
-Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
+Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
 | Read the company adapter-configuration catalogue | `paperclipListAgentConfigurations` (extended) | `companyId` |
 | List the company skill library | `paperclipListSkills` | `companyId` |
 | Import a skill into the company library | `paperclipImportSkill` (extended) | `companyId`, import fields |
-| Read one agent's resolved configuration | `paperclipGetAgentConfiguration` (extended) | `id` |
-| Sync skills onto an agent | `paperclipSyncAgentSkill` (extended) | `id`, sync fields |
+| Read one agent's resolved configuration | `paperclipGetAgentConfiguration` (extended) | `agentId` |
+| Sync skills onto an agent | `paperclipSyncAgentSkill` (extended) | `agentId`, sync fields |
 | Submit a hire request (agent draft + approval) | `paperclipCreateAgentHire` (extended) | `companyId`, hire fields below |
 | Create an agent directly, no approval | `paperclipCreateAgent` (extended) | `companyId`, same shape as the hire fields |
-| List agent config revisions | `paperclipListAgentConfigRevisions` (extended) | `id` |
-| Roll back a config revision | `paperclipRollbackAgentConfigRevision` (extended) | `id`, `revisionId` |
+| List agent config revisions | `paperclipListAgentConfigRevisions` (extended) | `agentId` |
+| Roll back a config revision | `paperclipRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
 | Link an approval to an issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
 | List issues linked to an approval | `paperclipGetApprovalIssues` | `approvalId` |
 | Approval details | `paperclipGetApproval` | `approvalId` |

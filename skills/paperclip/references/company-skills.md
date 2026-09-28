@@ -2,7 +2,7 @@
 
 Use this reference when a board user, CEO, or manager asks you to find a skill, install it into the company library, or assign it to an agent.
 
-**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
+**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
 
 ## What Exists
 
@@ -50,7 +50,7 @@ Company library:
 
 Agent attach and hire/create composition:
 
-- `paperclipListAgentSkills` — `{ "id": "<agent-id>" }`
+- `paperclipListAgentSkills` — `{ "agentId": "<agent-id>" }`
 - `paperclipSyncAgentSkill` — attach or detach company skills on an agent
 - `paperclipCreateAgentHire` — hire with `desiredSkills`
 - `paperclipCreateAgent` — direct create with `desiredSkills`
@@ -72,7 +72,7 @@ source. Bundled skills are the curated defaults for any company; optional
 skills are role- or domain-specific.
 
 Browse with `paperclipGetSkillCatalog`, inspect one entry with
-`paperclipGetSkillCatalogByCatalogId`, then install:
+`paperclipGetSkillCatalogByCatalogId`, then install with `paperclipInstallCatalogSkill`:
 
 ```json
 {
@@ -152,14 +152,14 @@ The server persists canonical company skill keys.
 
 ```json
 {
-  "id": "<agent-id>",
+  "agentId": "<agent-id>",
   "mode": "add",
   "desiredSkills": ["vercel-labs/agent-browser/agent-browser"]
 }
 ```
 
 If you need the current state first, call `paperclipListAgentSkills` with
-`{ "id": "<agent-id>" }`.
+`{ "agentId": "<agent-id>" }`.
 
 ## Include Skills During Hire Or Create
 

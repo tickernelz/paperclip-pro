@@ -62,4 +62,4 @@ For QA/browser checks, use the service whose `status` is `running` and whose `he
 
 ## Workspace-Scoped Read
 
-When you already hold an execution workspace id — for example from another agent's comment — `paperclipGetExecutionWorkspace` with `{ "id": "<execution-workspace-id>" }` returns that workspace and its runtime services. Prefer the issue-scoped tools above when you start from an issue: they resolve the workspace id for you.
+When you already hold an execution workspace id — for example from another agent's comment — `paperclipGetExecutionWorkspace` with `{ "executionWorkspaceId": "<execution-workspace-id>" }` returns that workspace and its runtime services. Prefer the issue-scoped tools above when you start from an issue: they resolve the workspace id for you.

@@ -2,7 +2,7 @@
 
 Detailed reference for the Paperclip control plane as agents reach it: the `paperclip*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
-The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
+The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
 
 ---
 
@@ -508,7 +508,7 @@ paperclipUpdateIssue { issueId: "issue-200", comment: "Your Mine inbox has 1 unr
 
 Archive only after the issue is genuinely finished from the responsible user's perspective. Do not archive issues awaiting review, approval, confirmation, answers, or another user decision.
 
-`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```
 # The responsible user's id is resolved from the authenticated agent run.
@@ -726,7 +726,7 @@ Access is intentionally constrained:
 
 ## Setting Agent Instructions Path
 
-Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
@@ -814,11 +814,11 @@ below remain available when local workspace configuration is needed.
 }
 ```
 
-Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
-  "id": "{projectId}",
+  "projectId": "{projectId}",
   "cwd": "/Users/me/paperclip-mobile",
   "repoUrl": "https://github.com/acme/paperclip-mobile",
   "repoRef": "main",
@@ -849,7 +849,7 @@ environment, and managed AI connection. The new agent receives its own
 instructions; caller secrets, workspace paths, sessions, and instructions are
 not copied. Existing hiring permissions and company approval policy still apply.
 
-The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`.
+The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
@@ -1237,7 +1237,7 @@ Payload field reference (`RequestItemVerdictsPayload`):
 | `supersedeOnUserComment` | boolean                                                  | `true` (set server-side)   | A later board/user comment expires the still-pending remainder with `outcome: "superseded_by_comment"`.                      |
 | `target`                 | `RequestConfirmationTarget` \| `null`                    | `null`                     | Same target schema as confirmations. Stale issue-document targets expire the still-pending remainder with `stale_target`.     |
 
-Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
+Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
 
 ```json
 {
@@ -1361,7 +1361,7 @@ The tool result reports the underlying failure.
 
 ## Full Tool Reference
 
-Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` for the same job.
+Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same job.
 
 ### Agents
 
@@ -1374,17 +1374,17 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Agent details + chain of command | `paperclipGetAgent` | `agentId`, `companyId` |
 | List all agents in company | `paperclipListAgents` | `companyId` |
 | Create agent directly (no approval) | `paperclipCreateAgent` (extended) | `companyId`, agent fields |
-| Update agent config or budget | `paperclipUpdateAgent` (extended) | `id`, changed fields |
+| Update agent config or budget | `paperclipUpdateAgent` (extended) | `agentId`, changed fields |
 | Temporarily stop heartbeats | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/pause"` |
-| Resume a paused agent | `paperclipResumeAgent` (extended) | `id` |
+| Resume a paused agent | `paperclipResumeAgent` (extended) | `agentId` |
 | Permanently deactivate agent (irreversible) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/terminate"` |
 | Create long-lived API key (full value shown once) | `paperclipApiRequest` | `method: "POST"`, `path: "/agents/:agentId/keys"` |
-| Manually trigger a heartbeat | `paperclipInvokeAgentHeartbeat` (extended) | `id` |
+| Manually trigger a heartbeat | `paperclipInvokeAgentHeartbeat` (extended) | `agentId` |
 | Org chart tree | `paperclipGetOrg` (extended) | `companyId` |
 | List selectable models for an adapter type | `paperclipListAdapterModels` (extended) | `companyId`, `type` |
-| Set/clear instructions path (`AGENTS.md`) | `paperclipUpdateAgentInstructionsPath` (extended) | `id`, `path`, `adapterConfigKey` |
-| List config revisions | `paperclipListAgentConfigRevisions` (extended) | `id` |
-| Roll back config | `paperclipRollbackAgentConfigRevision` (extended) | `id`, `revisionId` |
+| Set/clear instructions path (`AGENTS.md`) | `paperclipUpdateAgentInstructionsPath` (extended) | `agentId`, `path`, `adapterConfigKey` |
+| List config revisions | `paperclipListAgentConfigRevisions` (extended) | `agentId` |
+| Roll back config | `paperclipRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
 
 ### Issues (Tasks)
 
@@ -1393,20 +1393,20 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | List issues, sorted by priority | `paperclipListIssues` | `companyId`, `status`, `assigneeAgentId`, `assigneeUserId`, `projectId`, `labelId`, `q` (full-text across title, identifier, description, comments) |
 | Issue details + ancestors | `paperclipGetIssue` | `issueId` |
 | Compact heartbeat context: issue state, ancestor summaries, comment cursor | `paperclipGetHeartbeatContext` | `issueId`, `wakeCommentId` |
-| Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `paperclipListIssueDiagnosticBlockers` (extended) | `id` |
-| Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `paperclipListIssueDiagnosticWakes` (extended) | `id` |
-| Subtree diagnostic combining visible child, blocker, and wake edges | `paperclipGetIssueDiagnosticSubtree` (extended) | `id` |
+| Blocker diagnostic with `diagnosis`, readiness, bounded anomaly flags | `paperclipListIssueDiagnosticBlockers` (extended) | `issueId` |
+| Wake-history diagnostic with `diagnosis`, bounded events, Case-B inference | `paperclipListIssueDiagnosticWakes` (extended) | `issueId` |
+| Subtree diagnostic combining visible child, blocker, and wake edges | `paperclipGetIssueDiagnosticSubtree` (extended) | `issueId` |
 | Create issue | `paperclipCreateIssue` | `companyId`, `title`, `parentId`, `assigneeAgentId`, `status`, `priority`, `goalId`, `blockedByIssueIds`, `advanced` |
-| Create a child issue under an existing issue | `paperclipCreateChildIssue` | `id`, `body` |
+| Create a child issue under an existing issue | `paperclipCreateChildIssue` | `issueId`, child issue fields |
 | Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`, `advanced`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
 | Atomic checkout (claim + start), idempotent if you already own it | `paperclipCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
 | Release task ownership | `paperclipReleaseIssue` | `issueId` |
 | List comments | `paperclipListComments` | `issueId`, `after`, `order`, `limit` |
 | Get a specific comment by ID | `paperclipGetComment` | `issueId`, `commentId` |
 | Add comment (@-mentions trigger wakeups) | `paperclipAddComment` | `issueId`, `body`, `resume` |
-| Archive issue from responsible user's inbox | `paperclipInboxArchiveIssue` (extended) | `id`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
-| Reverse inbox archive, same target and policy rules | `paperclipDeleteIssueInboxArchive` (extended) | `id`, optional `userId` |
-| List issue-thread interactions | `paperclipListIssueInteractions` | `id` |
+| Archive issue from responsible user's inbox | `paperclipInboxArchiveIssue` (extended) | `issueId`, optional `userId` (needs saved target-user opt-in or cross-user grant) |
+| Reverse inbox archive, same target and policy rules | `paperclipDeleteIssueInboxArchive` (extended) | `issueId`, optional `userId` |
+| List issue-thread interactions | `paperclipListIssueInteractions` | `issueId` |
 | Create a `suggest_tasks` interaction | `paperclipSuggestTasks` | `issueId`, `payload`, `idempotencyKey`, `title`, `summary`, `resolverPolicy`, `addresseeAgentId`, `continuationPolicy` |
 | Create an `ask_user_questions` interaction | `paperclipAskUserQuestions` | same envelope |
 | Create a `request_confirmation` interaction | `paperclipRequestConfirmation` | same envelope |
@@ -1415,7 +1415,7 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Accept suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/accept"`, `jsonBody` with `selectedClientKeys` for `suggest_tasks` or `selectedOptionIds` for `request_checkbox_confirmation` |
 | Reject suggested tasks or confirmation | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/reject"` |
 | Respond to structured questions | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/respond"` |
-| Submit partial item verdicts for `request_item_verdicts` | `paperclipCreateIssueInteractionVerdict` (extended) | `id`, `interactionId`, `verdicts` |
+| Submit partial item verdicts for `request_item_verdicts` | `paperclipCreateIssueInteractionVerdict` (extended) | `issueId`, `interactionId`, `verdicts` |
 | Withdraw any pending interaction (creator agent, current assignee agent, or board user) | `paperclipApiRequest` | `method: "POST"`, `path: "/issues/:issueId/interactions/:interactionId/withdraw"`, optional `jsonBody` `{ "reason": string }` |
 | List issue documents | `paperclipListDocuments` | `issueId` |
 | Get issue document by key | `paperclipGetDocument` | `issueId`, `key` |
@@ -1426,15 +1426,15 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | List approvals linked to issue | `paperclipListIssueApprovals` | `issueId` |
 | Link approval to issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
 | Unlink approval from issue | `paperclipUnlinkIssueApproval` | `issueId`, `approvalId` |
-| List files attached to an issue | `paperclipListIssueAttachments` | `id` |
+| List files attached to an issue | `paperclipListIssueAttachments` | `issueId` |
 | Delete an issue attachment | `paperclipDeleteAttachment` | `attachmentId` |
-| List recorded work products | `paperclipListIssueWorkProducts` | `id` |
-| Record an operator-facing work product | `paperclipCreateIssueWorkProduct` | `id`, work-product fields |
-| Update a recorded work product | `paperclipUpdateWorkProduct` | `id`, changed fields |
-| Read the issue monitor/watchdog configuration | `paperclipGetIssueWatchdog` | `id` |
-| Schedule or clear the issue monitor | `paperclipSetIssueWatchdog` | `id`, watchdog fields |
+| List recorded work products | `paperclipListIssueWorkProducts` | `issueId` |
+| Record an operator-facing work product | `paperclipCreateIssueWorkProduct` | `issueId`, work-product fields |
+| Update a recorded work product | `paperclipUpdateWorkProduct` | `workProductId`, changed fields |
+| Read the issue monitor/watchdog configuration | `paperclipGetIssueWatchdog` | `issueId` |
+| Schedule or clear the issue monitor | `paperclipSetIssueWatchdog` | `issueId`, watchdog fields |
 | Current execution workspace, runtime services and service URLs | `paperclipGetIssueWorkspaceRuntime` | `issueId` |
-| Execution workspace detail | `paperclipGetExecutionWorkspace` | `id` |
+| Execution workspace detail | `paperclipGetExecutionWorkspace` | `executionWorkspaceId` |
 | Start, stop, or restart workspace runtime services | `paperclipControlIssueWorkspaceServices` | `issueId`, `action` (`start`, `stop`, `restart`), `runtimeServiceId`, `serviceIndex`, `workspaceCommandId` |
 | Wait until a runtime service is running and has a URL | `paperclipWaitForIssueWorkspaceService` | `issueId`, `runtimeServiceId`, `serviceName`, `timeoutSeconds` |
 | List company issue labels | `paperclipListLabels` | `companyId` |
@@ -1451,16 +1451,16 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Archive company | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/archive"` |
 | List projects | `paperclipListProjects` | `companyId` |
 | Project details | `paperclipGetProject` | `projectId`, `companyId` |
-| Create project | `paperclipCreateProject` | `companyId`, `name`, `repositoryIds`/`repositoryUrls` arrays or inline `workspace`, optional `idempotencyKey` |
-| Update project | `paperclipUpdateProject` | `id`, changed fields |
-| List project workspaces | `paperclipListProjectWorkspaces` (extended) | `id` |
-| Create project workspace | `paperclipCreateProjectWorkspace` (extended) | `id`, `cwd`, `repoUrl`, `repoRef`, `isPrimary` |
-| Update project workspace | `paperclipUpdateProjectWorkspace` (extended) | `id`, `workspaceId`, changed fields |
-| Delete project workspace | `paperclipDeleteProjectWorkspace` (extended) | `id`, `workspaceId` |
+| Create project | `paperclipCreateProject` | `companyId`, `name`, `repositoryIds`/`repositoryUrls` arrays or `advanced.workspace`, optional `idempotencyKey` |
+| Update project | `paperclipUpdateProject` | `projectId`, changed fields |
+| List project workspaces | `paperclipListProjectWorkspaces` (extended) | `projectId` |
+| Create project workspace | `paperclipCreateProjectWorkspace` (extended) | `projectId`, `cwd`, `repoUrl`, `repoRef`, `isPrimary` |
+| Update project workspace | `paperclipUpdateProjectWorkspace` (extended) | `projectId`, `workspaceId`, changed fields |
+| Delete project workspace | `paperclipDeleteProjectWorkspace` (extended) | `projectId`, `workspaceId` |
 | List goals | `paperclipListGoals` | `companyId` |
 | Goal details | `paperclipGetGoal` | `goalId` |
 | Create goal | `paperclipCreateGoal` | `companyId`, goal fields |
-| Update goal | `paperclipUpdateGoal` | `id`, changed fields |
+| Update goal | `paperclipUpdateGoal` | `goalId`, changed fields |
 | Generate OpenClaw invite prompt (CEO/board only) | `paperclipApiRequest` | `method: "POST"`, `path: "/companies/:companyId/openclaw/invite-prompt"` |
 
 ### Routines
@@ -1470,16 +1470,16 @@ Every routine tool is extended.
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
 | List all routines in company | `paperclipListRoutines` | `companyId` |
-| Routine details including triggers | `paperclipGetRoutine` | `id` |
+| Routine details including triggers | `paperclipGetRoutine` | `routineId` |
 | Create routine (agents: own only) | `paperclipCreateRoutine` | `companyId`, `assigneeAgentId` and `projectId` required |
-| Update routine (agents: own only, cannot reassign) | `paperclipUpdateRoutine` | `id`, changed fields |
-| Add trigger (`schedule`, `webhook`, or `api` kind) | `paperclipCreateRoutineTrigger` | `id`, `body` |
-| Update trigger (e.g. disable, change cron) | `paperclipUpdateRoutineTrigger` | `id`, changed fields |
-| Delete trigger | `paperclipDeleteRoutineTrigger` | `id` |
+| Update routine (agents: own only, cannot reassign) | `paperclipUpdateRoutine` | `routineId`, changed fields |
+| Add trigger (`schedule`, `webhook`, or `api` kind) | `paperclipCreateRoutineTrigger` | `routineId`, `body` |
+| Update trigger (e.g. disable, change cron) | `paperclipUpdateRoutineTrigger` | `routineTriggerId`, changed fields |
+| Delete trigger | `paperclipDeleteRoutineTrigger` | `routineTriggerId` |
 | Rotate webhook signing secret (previous secret immediately invalidated) | `paperclipApiRequest` | `method: "POST"`, `path: "/routine-triggers/:triggerId/rotate-secret"` |
-| Manual run (bypasses schedule; concurrency policy still applies) | `paperclipRunRoutine` | `id` |
+| Manual run (bypasses schedule; concurrency policy still applies) | `paperclipRunRoutine` | `routineId` |
 | Fire webhook trigger from external system | `paperclipFireRoutineTriggerPublic` | `publicId` |
-| Run history (default 50) | `paperclipListRoutineRuns` | `id` |
+| Run history (default 50) | `paperclipListRoutineRuns` | `routineId` |
 
 ### Approvals, Costs, Activity, Dashboard
 

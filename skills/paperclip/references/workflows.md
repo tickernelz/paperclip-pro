@@ -2,7 +2,7 @@
 
 Reference material for niche workflows that are pointed to from `SKILL.md`. Load only when the task matches.
 
-Some playbooks below use `extended` toolset tools: they are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest`. Each step names the toolset when it matters.
+Some playbooks below use `extended` toolset tools: they are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. Each step names the toolset when it matters.
 
 ---
 
@@ -11,7 +11,7 @@ Some playbooks below use `extended` toolset tools: they are available when the o
 When asked to set up a new project with workspace config (local folder and/or GitHub repo):
 
 1. `paperclipCreateProject` (core) with the project fields. `companyId` is optional and defaults to your company.
-2. Optionally include `workspace` in that same create call, or call `paperclipCreateProjectWorkspace` (extended) right after create with `{ "id": "<project-id>", ... }`.
+2. Optionally include `advanced.workspace` in that same create call, or call `paperclipCreateProjectWorkspace` (extended) right after create with `{ "projectId": "<project-id>", ... }`.
 
 Workspace rules:
 
@@ -50,7 +50,7 @@ Use `paperclipUpdateAgentInstructionsPath` (extended) instead of the generic age
 
 ```json
 {
-  "id": "<agent-id>",
+  "agentId": "<agent-id>",
   "path": "agents/cmo/AGENTS.md"
 }
 ```
@@ -65,7 +65,7 @@ Rules:
 
 ```json
 {
-  "id": "<agent-id>",
+  "agentId": "<agent-id>",
   "path": "/absolute/path/to/AGENTS.md",
   "adapterConfigKey": "yourAdapterSpecificPathField"
 }
@@ -112,7 +112,7 @@ Use this when validating Paperclip itself (assignment flow, checkouts, run visib
 }
 ```
 
-2. Trigger a heartbeat for that assignee with `paperclipInvokeAgentHeartbeat` (extended): `{ "id": "<agent-id>" }`.
+2. Trigger a heartbeat for that assignee with `paperclipInvokeAgentHeartbeat` (extended): `{ "agentId": "<agent-id>" }`.
 
 3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted, with `paperclipGetIssue`: `{ "issueId": "<issue-id-or-identifier>" }`.
 

@@ -39,7 +39,7 @@ subagent for the requested permanent hire.
 
 The hiring tools — `paperclipListAgentConfigurations`, `paperclipCreateAgentHire`
 — live in the `extended` toolset: they are available when the operator enables
-`PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise call the same operation through
+`PAPERCLIP_MCP_TOOLSETS=full`; otherwise call the same operation through
 `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON
 string). `companyId` arguments default to the session's company, so pass one only
 when hiring into a different company.

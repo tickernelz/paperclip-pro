@@ -10,7 +10,7 @@ If a case tool reports `Cases are disabled`, stop and report that the operator
 must enable cases before the skill can use this surface.
 
 The case tools are in the `extended` toolset: they are available when the
-operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`. When they are not
+operator enables `PAPERCLIP_MCP_TOOLSETS=full`. When they are not
 loaded, use `paperclipApiRequest` for the same operations. Every tool below
 takes `companyId` only where noted; it defaults to the agent's company.
 
@@ -93,12 +93,12 @@ Useful arguments:
 ## Documents
 
 Use case documents for rich bodies such as drafts, briefs, reports, or plans.
-`paperclipSetCaseDocument` takes the case, the document `key`, and the body:
+`paperclipSetCaseDocument` takes the case, the document `documentKey`, and the body:
 
 ```json
 {
   "caseId": "PAP-C42",
-  "key": "body",
+  "documentKey": "body",
   "title": "Launch announcement body",
   "format": "markdown",
   "body": "# Launch announcement\n\nDraft copy...",
@@ -111,7 +111,7 @@ Updating an existing case document requires `baseRevisionId`:
 ```json
 {
   "caseId": "PAP-C42",
-  "key": "body",
+  "documentKey": "body",
   "baseRevisionId": "latest-revision-uuid",
   "body": "Updated body"
 }
@@ -136,7 +136,7 @@ Examples:
 }
 ```
 
-Patch fields or status with `paperclipUpdateCase`:
+Patch fields or status with `paperclipUpdateCaseById`:
 
 ```json
 {
@@ -158,7 +158,7 @@ Link cases to issues explicitly when needed with `paperclipCreateCaseLink`:
 
 ```json
 {
-  "id": "PAP-C42",
+  "caseId": "PAP-C42",
   "issueId": "issue-uuid",
   "role": "reference"
 }
@@ -241,7 +241,7 @@ Write the body with `paperclipSetCaseDocument`:
 ```json
 {
   "caseId": "PAP-C42",
-  "key": "body",
+  "documentKey": "body",
   "title": "Introducing Paperclip Cases",
   "format": "markdown",
   "body": "# Introducing Paperclip Cases\n\n..."
@@ -266,7 +266,7 @@ Create the child image-assets case with `paperclipCreateCase`:
 ```
 
 Attach the generated assets to the child's linked issue, then patch both cases
-as they move through review with `paperclipUpdateCase`:
+as they move through review with `paperclipUpdateCaseById`:
 
 ```json
 {

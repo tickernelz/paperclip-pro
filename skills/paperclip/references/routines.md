@@ -9,7 +9,7 @@ A routine has:
 - A catch-up policy (what to do with missed scheduled runs)
 - An activity gate policy (whether quiet scheduled ticks should be skipped)
 
-**Toolset:** the routine tools are in the `extended` toolset. They are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=core,extended`; otherwise use `paperclipApiRequest` for the same operations.
+**Toolset:** the routine tools are in the `extended` toolset. They are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same operations.
 
 **Authorization:** Agents can read all routines in their company but can only create or manage routines assigned to themselves. Board operators have full access, including reassignment.
 
@@ -132,13 +132,13 @@ Add a schedule trigger with `cronExpression: "0 * * * *"`. The first tick runs. 
 
 A routine can have multiple triggers of different kinds.
 
-`paperclipCreateRoutineTrigger` takes the routine as `id` and the trigger configuration nested under `body`. All trigger kinds accept an optional `label` field (max 120 chars), which is useful for distinguishing multiple triggers of the same kind on one routine.
+`paperclipCreateRoutineTrigger` takes the routine as `routineId` and the trigger configuration nested under `body`. All trigger kinds accept an optional `label` field (max 120 chars), which is useful for distinguishing multiple triggers of the same kind on one routine.
 
 ### Schedule (cron)
 
 ```json
 {
-  "id": "{routineId}",
+  "routineId": "{routineId}",
   "body": {
     "kind": "schedule",
     "cronExpression": "0 9 * * 1",
@@ -155,7 +155,7 @@ A routine can have multiple triggers of different kinds.
 
 ```json
 {
-  "id": "{routineId}",
+  "routineId": "{routineId}",
   "body": {
     "kind": "webhook",
     "signingMode": "hmac_sha256",
@@ -175,7 +175,7 @@ A routine can have multiple triggers of different kinds.
 
 ```json
 {
-  "id": "{routineId}",
+  "routineId": "{routineId}",
   "body": { "kind": "api" }
 }
 ```
@@ -186,16 +186,16 @@ No configuration. Fire it with the manual run tool below.
 
 ## Updating and Deleting Triggers
 
-`paperclipUpdateRoutineTrigger` takes the trigger as `id`:
+`paperclipUpdateRoutineTrigger` takes the trigger as `routineTriggerId`:
 
 ```json
-{ "id": "{triggerId}", "enabled": false, "cronExpression": "0 10 * * 1" }
+{ "routineTriggerId": "{triggerId}", "enabled": false, "cronExpression": "0 10 * * 1" }
 ```
 
-`paperclipDeleteRoutineTrigger` takes the trigger as `id`:
+`paperclipDeleteRoutineTrigger` takes the trigger as `routineTriggerId`:
 
 ```json
-{ "id": "{triggerId}" }
+{ "routineTriggerId": "{triggerId}" }
 ```
 
 Rotating a webhook secret has no dedicated tool. Use `paperclipApiRequest` with `method: "POST"`, `path: "/routine-triggers/{triggerId}/rotate-secret"`. The old secret is immediately invalidated.
@@ -208,7 +208,7 @@ Rotating a webhook secret has no dedicated tool. Use `paperclipApiRequest` with 
 
 ```json
 {
-  "id": "{routineId}",
+  "routineId": "{routineId}",
   "source": "manual",
   "triggerId": "{triggerId}",
   "payload": { "context": "..." },
@@ -225,7 +225,7 @@ Rotating a webhook secret has no dedicated tool. Use `paperclipApiRequest` with 
 All create fields are updatable with `paperclipUpdateRoutine`. Agents cannot reassign a routine to another agent.
 
 ```json
-{ "id": "{routineId}", "status": "paused", "title": "New title" }
+{ "routineId": "{routineId}", "status": "paused", "title": "New title" }
 ```
 
 ---
@@ -233,7 +233,7 @@ All create fields are updatable with `paperclipUpdateRoutine`. Agents cannot rea
 ## Reading Routines and Runs
 
 - `paperclipListRoutines` — routines in the company; `companyId` defaults to yours
-- `paperclipGetRoutine` — `{ "id": "{routineId}" }`
-- `paperclipListRoutineRuns` — `{ "id": "{routineId}" }`
+- `paperclipGetRoutine` — `{ "routineId": "{routineId}" }`
+- `paperclipListRoutineRuns` — `{ "routineId": "{routineId}" }`
 
 Use `paperclipApiRequest` when a routine operation has no dedicated tool. Use this file when you need routine-specific behaviour, payload shape, or policy details.

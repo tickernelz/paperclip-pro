@@ -16,8 +16,8 @@ The helper uses `PAPERCLIP_API_URL`, `PAPERCLIP_API_KEY`, `PAPERCLIP_COMPANY_ID`
 
 ## Inspect What Is Already On The Issue
 
-- `paperclipListIssueAttachments` with `{ "id": "<issue-id>" }` lists the files attached to the issue, including each `attachmentId`.
-- `paperclipListIssueWorkProducts` with `{ "id": "<issue-id>" }` lists the recorded work products. Add `"refreshPullRequests": "true"` when you need pull request state refreshed first.
+- `paperclipListIssueAttachments` with `{ "issueId": "<issue-id>" }` lists the files attached to the issue, including each `attachmentId`.
+- `paperclipListIssueWorkProducts` with `{ "issueId": "<issue-id>" }` lists the recorded work products. Add `"refreshPullRequests": "true"` when you need pull request state refreshed first.
 - `paperclipDeleteAttachment` with `{ "attachmentId": "<attachment-id>" }` removes an attachment you uploaded by mistake. It is destructive; do not delete attachments you did not create.
 
 ## Record The Work Product
@@ -26,7 +26,7 @@ When the uploaded file is the deliverable, record it with `paperclipCreateIssueW
 
 ```json
 {
-  "id": "<issue-id>",
+  "issueId": "<issue-id>",
   "type": "artifact",
   "provider": "paperclip",
   "title": "Walkthrough render",
@@ -42,7 +42,7 @@ Read the returned work product record before you report the deliverable. If the 
 When a recorded work product changes later, for example when its pull request merges, patch it with `paperclipUpdateWorkProduct` using the work product id:
 
 ```json
-{ "id": "<work-product-id>", "status": "done" }
+{ "workProductId": "<work-product-id>", "status": "done" }
 ```
 
 ## Workspace-Only File References
@@ -58,7 +58,7 @@ Annotate the work product with `metadata.resourceRef`, again through
 
 ```json
 {
-  "id": "<issue-id>",
+  "issueId": "<issue-id>",
   "type": "document",
   "provider": "workspace",
   "title": "Regression test plan",
