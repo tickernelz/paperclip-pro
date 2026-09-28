@@ -232,10 +232,7 @@ export type ExecutionWorkspaceServiceOptions = {
   // becomes terminal before it archives the workspace. A value of 0 disables
   // the cooldown. The default is 7 days.
   workspaceReaperCooldownDays?: number;
-  inspectGitCloseReadiness?: (workspace: ExecutionWorkspace) => Promise<{
-    git: ExecutionWorkspaceCloseGitReadiness | null;
-    warnings: string[];
-  }>;
+  inspectGitCloseReadiness?: (workspace: ExecutionWorkspace) => Promise<GitCloseReadinessInspection>;
 };
 
 function parseGitHubRepository(repoUrl: string | null) {
@@ -788,16 +785,22 @@ async function quarantineRestoreDirtyWorkspaceBranch(input: {
   }
 }
 
-async function inspectGitCloseReadiness(workspace: ExecutionWorkspace): Promise<{
+export type GitCloseReadinessInspection = {
   git: ExecutionWorkspaceCloseGitReadiness | null;
   warnings: string[];
   statusInspectionSucceeded: boolean;
-}> {
-  const warnings: string[] = [];
-  const workspacePath = readNullableString(workspace.providerRef) ?? readNullableString(workspace.cwd);
-  const createdByRuntime = workspace.providerType === "git_worktree"
+};
+
+function readWorkspaceCreatedByRuntime(workspace: ExecutionWorkspace): boolean {
+  return workspace.providerType === "git_worktree"
     ? isRuntimeOwnedGitBranch(workspace.metadata)
     : workspace.metadata?.createdByRuntime === true;
+}
+
+async function inspectGitCloseReadiness(workspace: ExecutionWorkspace): Promise<GitCloseReadinessInspection> {
+  const warnings: string[] = [];
+  const workspacePath = readNullableString(workspace.providerRef) ?? readNullableString(workspace.cwd);
+  const createdByRuntime = readWorkspaceCreatedByRuntime(workspace);
   const expectsGitInspection =
     workspace.providerType === "git_worktree" ||
     Boolean(workspace.repoUrl || workspace.baseRef || workspace.branchName || workspacePath);
@@ -1272,6 +1275,7 @@ type WorkspaceOverviewIssueRow = WorkspaceOverviewLinkedIssue & {
 const inspectGitForDisplay = createWorkspaceGitInspectionCache(inspectGitCloseReadiness);
 
 export function executionWorkspaceService(db: Db, opts: ExecutionWorkspaceServiceOptions = {}) {
+  const inspectGitForSweep = opts.inspectGitCloseReadiness ?? inspectGitCloseReadiness;
   const inspectDisplay = opts.inspectGitCloseReadiness
     ? createWorkspaceGitInspectionCache(opts.inspectGitCloseReadiness)
     : inspectGitForDisplay;
@@ -2609,10 +2613,26 @@ export function executionWorkspaceService(db: Db, opts: ExecutionWorkspaceServic
         skippedCooldown: 0,
         clearedStaleReopenPending: 0,
       };
+      const sweepGitInspections = new Map<string, Promise<GitCloseReadinessInspection>>();
+      const inspectGitOncePerPath = (workspace: ExecutionWorkspace) => {
+        const key = JSON.stringify([
+          readNullableString(workspace.providerRef) ?? readNullableString(workspace.cwd),
+          workspace.providerType,
+          workspace.repoUrl,
+          workspace.baseRef,
+          workspace.branchName,
+          readWorkspaceCreatedByRuntime(workspace),
+        ]);
+        const inspected = sweepGitInspections.get(key);
+        if (inspected) return inspected;
+        const inspection = inspectGitForSweep(workspace);
+        sweepGitInspections.set(key, inspection);
+        return inspection;
+      };
 
       for (const workspace of candidates) {
         const executionWorkspace = toExecutionWorkspace(workspace);
-        const { git, statusInspectionSucceeded } = await inspectGitCloseReadiness(executionWorkspace);
+        const { git, statusInspectionSucceeded } = await inspectGitOncePerPath(executionWorkspace);
         if (!statusInspectionSucceeded) {
           result.skippedUndelivered += 1;
           continue;
