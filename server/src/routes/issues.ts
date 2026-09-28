@@ -16161,7 +16161,10 @@ export function issueRoutes(
       );
     }
     if (!target) {
-      return { deliveredAs: "queued", steeringUnavailable: "no_active_run" };
+      return {
+        deliveredAs: "queued",
+        steeringUnavailable: input.requested === "steer" ? "no_active_run" : "not_requested",
+      };
     }
     let steered: QueuedCommentSteerReceipt;
     try {

@@ -587,7 +587,30 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     );
   });
 
-  it("degrades to no_active_run when nothing is running to steer", async () => {
+  it("names no_active_run when an explicit steer finds nothing running", async () => {
+    const seeded = await seedActiveRun();
+    await db
+      .update(heartbeatRuns)
+      .set({ status: "succeeded", finishedAt: new Date() })
+      .where(eq(heartbeatRuns.id, seeded.runId));
+    await db
+      .update(issues)
+      .set({ executionRunId: null })
+      .where(eq(issues.id, seeded.issueId));
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Nobody is running", deliver: "steer" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({
+      deliveredAs: "queued",
+      steeringUnavailable: "no_active_run",
+    });
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
+  });
+
+  it("reports no downgrade when the default steer finds nothing running and the message starts a turn", async () => {
     const seeded = await seedActiveRun();
     await db
       .update(heartbeatRuns)
@@ -605,7 +628,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
 
     expect(posted.body).toMatchObject({
       deliveredAs: "queued",
-      steeringUnavailable: "no_active_run",
+      steeringUnavailable: "not_requested",
     });
     expect(steerNativeSessionMock).not.toHaveBeenCalled();
   });

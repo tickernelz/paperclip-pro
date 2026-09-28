@@ -1040,11 +1040,11 @@ export type IssueQueuedCommentSteeringDisposition =
  * and only the second one is worth telling the person about.
  */
 export type IssueCommentDeliveryReason =
-  /** No steer was attempted: the effective mode was `"queue"`. */
+  /** No steer was needed: the mode was `"queue"`, or the default steer found no running turn and the message starts one. */
   | "not_requested"
   /** Only a board user can steer; an agent actor's request is queued as asked. */
   | "board_only"
-  /** No live run target that could accept the message this turn. */
+  /** An explicit steer found no live run target that could accept the message this turn. */
   | "no_active_run"
   /** The target runner's protocol does not support same-turn steering. */
   | "legacy_protocol"
