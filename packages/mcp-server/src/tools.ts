@@ -71,6 +71,11 @@ function parseOptionalJson(raw: string | undefined | null): unknown {
   return JSON.parse(raw);
 }
 
+export interface RuntimeConnectionTools {
+  search(input: { query: string }): Promise<unknown>;
+  request(input: { service: string }): Promise<unknown>;
+}
+
 async function callRuntimeConnectionTool(
   endpointEnv: "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL" | "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
   body: unknown,
@@ -99,6 +104,11 @@ async function callRuntimeConnectionTool(
   }
   return parsed;
 }
+
+const envRuntimeConnectionTools: RuntimeConnectionTools = {
+  search: (input) => callRuntimeConnectionTool("PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL", input),
+  request: (input) => callRuntimeConnectionTool("PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL", input),
+};
 
 const companyIdOptional = z.string().guid().optional().nullable();
 const agentIdOptional = z.string().guid().optional().nullable();
@@ -380,25 +390,22 @@ const READ_ONLY_CURATED_TOOLS: Record<string, true> = {
   paperclipListApprovalComments: true,
 };
 
-export function createToolDefinitions(client: PaperclipApiClient): ToolDefinition[] {
+export function createToolDefinitions(
+  client: PaperclipApiClient,
+  runtimeConnections: RuntimeConnectionTools = envRuntimeConnectionTools,
+): ToolDefinition[] {
   const tools: ToolDefinition[] = [
     makeTool(
       "connections_search",
       CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
       connectionsSearchInputSchema,
-      async (input) => callRuntimeConnectionTool(
-        "PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL",
-        input,
-      ),
+      async (input) => runtimeConnections.search(input),
     ),
     makeTool(
       "connection_request",
       CONNECTION_REQUEST_TOOL_DESCRIPTION,
       connectionRequestInputSchema,
-      async (input) => callRuntimeConnectionTool(
-        "PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL",
-        input,
-      ),
+      async (input) => runtimeConnections.request(input),
     ),
     makeTool(
       "paperclipMe",

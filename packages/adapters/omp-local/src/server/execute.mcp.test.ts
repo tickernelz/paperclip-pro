@@ -314,6 +314,52 @@ describe("OMP local Paperclip MCP wiring", () => {
     const invocation = await run({});
     await expect(fs.access(invocation.mcpDir as string)).rejects.toThrow();
   });
+
+  async function runWithRuntimeTools(): Promise<Invocation> {
+    await execute({
+      runId: "run-mcp",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "OMP",
+        adapterType: "omp_local",
+        adapterConfig: {},
+      },
+      runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
+      config: { command: commandPath, noSession: true, cwd: workspaceCwd },
+      context: {},
+      onLog: async () => {},
+      authToken: "run-jwt",
+      runtimeTools: {
+        version: 1,
+        guidance: "Connection tools:\n- call connections_search first.",
+        mcpEndpoint: "http://127.0.0.1:3100/mcp/runtime-tools",
+        rest: {
+          connectionsSearch: "http://127.0.0.1:3100/runtime-tools/connections/search",
+          connectionRequest: "http://127.0.0.1:3100/runtime-tools/connections/request",
+        },
+        bearerToken: "runtime-token",
+        expiresAt: "2026-09-28T12:00:00.000Z",
+        tools: ["connections_search", "connection_request"],
+      },
+    });
+    expect(captured).not.toBeNull();
+    return captured as Invocation;
+  }
+
+  it("hands the stdio server the connection endpoints under the names it reads", async () => {
+    const invocation = await runWithRuntimeTools();
+    expect(invocation.env).toMatchObject({
+      PAPERCLIP_RUNTIME_TOOLS_TOKEN: "runtime-token",
+      PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL: "http://127.0.0.1:3100/runtime-tools/connections/search",
+      PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL: "http://127.0.0.1:3100/runtime-tools/connections/request",
+    });
+  });
+
+  it("states the connection guidance once in the system prompt", async () => {
+    const invocation = await runWithRuntimeTools();
+    expect(invocation.systemPrompt.split("Connection tools:").length - 1).toBe(1);
+  });
 });
 
 describe("Paperclip MCP server resolution", () => {

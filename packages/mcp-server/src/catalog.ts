@@ -5,7 +5,12 @@ import { expandToolsetUnion } from "./config.js";
 import { bindGeneratedTools, prepareGeneratedTools } from "./generated-tools.js";
 import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
 import type { ToolsetName } from "./tool-overrides.js";
-import { createToolDefinitions, type ToolAnnotations, type ToolDefinition } from "./tools.js";
+import {
+  createToolDefinitions,
+  type RuntimeConnectionTools,
+  type ToolAnnotations,
+  type ToolDefinition,
+} from "./tools.js";
 
 export { PaperclipApiClient } from "./client.js";
 export { hasManagementAuthority, parseToolsets } from "./config.js";
@@ -18,7 +23,7 @@ export {
 } from "./board-surface.js";
 export type { BoardSurfaceContext } from "./board-surface.js";
 export type { ToolsetName } from "./tool-overrides.js";
-export type { ToolDefinition } from "./tools.js";
+export type { RuntimeConnectionTools, ToolDefinition } from "./tools.js";
 
 export type ToolListing = {
   tools: Array<{
@@ -37,6 +42,7 @@ export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env):
 export type CatalogOptions = {
   annotations?: boolean;
   boardSurface?: BoardSurfaceContext;
+  runtimeConnections?: RuntimeConnectionTools;
 };
 
 const listings = new Map<string, ToolListing>();
@@ -71,7 +77,7 @@ export function paperclipToolCatalog(
   options: CatalogOptions = {},
 ): { definitions: ToolDefinition[]; listing: ToolListing } {
   const selected = expandToolsetUnion(toolsets);
-  const curated = createToolDefinitions(client);
+  const curated = createToolDefinitions(client, options.runtimeConnections);
   const curatedNames = new Set(curated.map((tool) => tool.name));
   const prepared = prepareGeneratedTools(selected, management);
   const definitions = [

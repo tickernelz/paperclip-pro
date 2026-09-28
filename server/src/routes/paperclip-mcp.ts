@@ -9,6 +9,7 @@ import {
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
 import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
 import { accessService } from "../services/access.js";
+import { connectionIntentService } from "../services/connection-intents.js";
 import { forbidden, unauthorized } from "../errors.js";
 
 const PROTOCOL_VERSION = "2025-06-18";
@@ -29,6 +30,7 @@ function loopbackApiUrl(req: Request): string {
 export function paperclipMcpRoutes(db: Db) {
   const router = Router();
   const access = accessService(db);
+  const connections = connectionIntentService(db);
 
   router.get("/mcp/paperclip", (_req, res) => {
     res.status(405).json({ error: "Method not allowed" });
@@ -87,8 +89,19 @@ export function paperclipMcpRoutes(db: Db) {
     const capabilities = agentAuthorityCapabilities(agent?.role);
     const management = capabilities.some((capability) => capability.startsWith("company:"));
     const grants = management ? await access.listPrincipalGrants(companyId, "agent", agentId) : [];
+    const signedRunId = req.actor.source === "agent_jwt" ? req.actor.runId ?? null : null;
+    const responsibleUserId = req.actor.onBehalfOfUserId ?? null;
+    const runClaims = () => {
+      if (!signedRunId) throw forbidden("Connection tools require a heartbeat run credential");
+      if (!responsibleUserId) throw forbidden("This task needs a responsible user to connect a service");
+      return { sub: agentId, company_id: companyId, run_id: signedRunId, responsible_user_id: responsibleUserId };
+    };
     const { definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
       boardSurface: { capabilities, permissionKeys: new Set(grants.map((row) => row.permissionKey)) },
+      runtimeConnections: {
+        search: async (input) => connections.search(runClaims(), input.query),
+        request: async (input) => connections.request(runClaims(), input.service),
+      },
     });
 
     if (method === "tools/list") return send(listing);

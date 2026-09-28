@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import express from "express";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { agents, issues, principalPermissionGrants } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRuns, issues, principalPermissionGrants } from "@tickernelz/paperclip-pro-db";
 import { errorHandler } from "../middleware/index.js";
 import { accessRoutes } from "../routes/access.js";
 import { issueRoutes } from "../routes/issues.js";
@@ -26,6 +26,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     agentId: string;
     ceoAgentId: string;
     issueId: string;
+    userId: string;
   };
 
   beforeAll(async () => {
@@ -52,6 +53,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
       agentId,
       ceoAgentId,
       issueId,
+      userId: company.userId,
     };
 
     const app = express();
@@ -399,5 +401,74 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
         (issue) => !issue.conversationUserId || issue.conversationUserId === "board-user",
       ),
     ).toBe(true);
+  });
+
+  async function seedRunningRun() {
+    const runId = randomUUID();
+    await ctx.db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId: seeded.companyId,
+      agentId: seeded.agentId,
+      invocationSource: "assignment",
+      status: "running",
+      responsibleUserId: seeded.userId,
+      contextSnapshot: { issueId: seeded.issueId },
+    });
+    return runId;
+  }
+
+  it("answers connections_search from the signed run credential on the hosted endpoint", async () => {
+    const runId = await seedRunningRun();
+    actor = {
+      type: "agent",
+      source: "agent_jwt",
+      agentId: seeded.agentId,
+      companyId: seeded.companyId,
+      runId,
+      onBehalfOfUserId: seeded.userId,
+    };
+    const { body } = await rpc({
+      method: "tools/call",
+      params: { name: "connections_search", arguments: { query: "github" } },
+    });
+    expect(body.result!.isError).toBeFalsy();
+    const payload = JSON.parse(body.result!.content![0]!.text) as { version: number; query: string };
+    expect(payload).toMatchObject({ version: 1, query: "github" });
+  });
+
+  it("refuses connection tools for a caller whose run id is only a header claim", async () => {
+    const runId = await seedRunningRun();
+    actor = {
+      type: "agent",
+      source: "agent_key",
+      agentId: seeded.agentId,
+      companyId: seeded.companyId,
+      runId,
+      onBehalfOfUserId: seeded.userId,
+    };
+    const { body } = await rpc({
+      method: "tools/call",
+      params: { name: "connections_search", arguments: { query: "github" } },
+    });
+    expect(body.result!.isError).toBe(true);
+    expect(body.result!.content![0]!.text).toContain("heartbeat run credential");
+  });
+
+  it("tells a signed run with no responsible user why it cannot connect a service", async () => {
+    const runId = await seedRunningRun();
+    actor = {
+      type: "agent",
+      source: "agent_jwt",
+      agentId: seeded.agentId,
+      companyId: seeded.companyId,
+      runId,
+      onBehalfOfUserId: null,
+    };
+    const { body } = await rpc({
+      method: "tools/call",
+      params: { name: "connection_request", arguments: { service: "github" } },
+    });
+    expect(body.result!.isError).toBe(true);
+    expect(body.result!.content![0]!.text).toContain("needs a responsible user");
   });
 });

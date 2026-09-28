@@ -34,6 +34,7 @@ import {
   asString,
   buildInvocationEnvForLogs,
   buildPaperclipEnv,
+  buildRuntimeToolsEnv,
   ensureAbsoluteDirectory,
   ensurePathInEnv,
   joinPromptSections,
@@ -485,19 +486,14 @@ export function applyRuntimeToolAccess(
 ): string {
   const sections: string[] = [];
   if (tools) {
-    env.PAPERCLIP_RUNTIME_TOOLS_TOKEN = tools.bearerToken;
-    env.PAPERCLIP_RUNTIME_TOOLS_MCP_ENDPOINT = tools.mcpEndpoint;
-    env.PAPERCLIP_RUNTIME_TOOLS_EXPIRES_AT = tools.expiresAt;
-    env.PAPERCLIP_CONNECTIONS_SEARCH_URL = tools.rest.connectionsSearch;
-    env.PAPERCLIP_CONNECTION_REQUEST_URL = tools.rest.connectionRequest;
-    sections.push(tools.guidance);
+    Object.assign(env, buildRuntimeToolsEnv(tools));
     sections.push(
       [
         "Paperclip runtime tools are delivered through the environment of this run.",
         `Bearer token: $PAPERCLIP_RUNTIME_TOOLS_TOKEN (valid until ${tools.expiresAt}).`,
-        `Search connections: POST $PAPERCLIP_CONNECTIONS_SEARCH_URL`,
-        `Request a connection: POST $PAPERCLIP_CONNECTION_REQUEST_URL`,
-        `MCP endpoint: $PAPERCLIP_RUNTIME_TOOLS_MCP_ENDPOINT`,
+        `Search connections: POST $PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL`,
+        `Request a connection: POST $PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL`,
+        `MCP endpoint: $PAPERCLIP_RUNTIME_TOOLS_MCP_URL`,
         "Send the bearer token as the Authorization header. Never print the token.",
       ].join("\n"),
     );
