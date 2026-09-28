@@ -16115,8 +16115,15 @@ export function issueRoutes(
     if (input.actor.actorType === "agent" || !input.boardUserId) {
       return { deliveredAs: "queued", steeringUnavailable: "board_only" };
     }
-    if (input.issue.conversationAgentId && !(await conversationMessageMaySteer(input.issue, input.commentId))) {
-      return { deliveredAs: "queued", steeringUnavailable: "conversation_order" };
+    if (input.issue.conversationAgentId) {
+      const maySteer = await conversationMessageMaySteer(input.issue, input.commentId).catch((err) => {
+        logger.warn(
+          { err, issueId: input.issue.id, commentId: input.commentId },
+          "failed to check chat order before steering a posted comment",
+        );
+        return false;
+      });
+      if (!maySteer) return { deliveredAs: "queued", steeringUnavailable: "conversation_order" };
     }
     try {
       await input.wakeDispatch;
@@ -16232,7 +16239,11 @@ export function issueRoutes(
         "Issue not found",
       );
       if (!issue) return;
-      if (issue.conversationAgentId) throw conflict("Conversation messages are processed in order at turn boundaries");
+      if (issue.conversationAgentId && !(await conversationMessageMaySteer(issue, commentId))) {
+        throw conflict("An earlier chat message is still waiting, or this message resets the chat.", {
+          code: "conversation_order",
+        });
+      }
       const decision = await decideIssueAccess(req, issue, "issue:comment");
       if (!decision.allowed) throw forbidden(decision.explanation, authorizationDeniedDetails(decision));
       const actor = getActorInfo(req);

@@ -487,23 +487,56 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(steerNativeSessionMock).not.toHaveBeenCalled();
   });
 
-  it("offers steering in the chat queue when the live run can take it", async () => {
+  it("offers steering in the chat queue and delivers it when the Steer action is used", async () => {
     const seeded = await seedActiveRun({ conversation: true });
     await seedDispatchIdentity(seeded);
     await setDefaultDelivery("steer", { enableAgentChat: true });
     keepRunAlive(seeded.runId);
     steeringState.mock.mockResolvedValue({ disposition: "available", activeTurnId: "turn-chat" });
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-chat" });
     const client = app(seeded.companyId);
 
-    await request(client)
+    const posted = await request(client)
       .post(`/api/issues/${seeded.issueId}/comments`)
       .send({ body: "Queue me", clientRequestId: randomUUID(), deliver: "queue" })
       .expect(201);
     const queue = await request(client)
       .get(`/api/issues/${seeded.issueId}/queued-comments`)
       .expect(200);
-
     expect(queue.body.steeringDisposition).toBe("available");
+
+    const steered = await request(client)
+      .post(`/api/issues/${seeded.issueId}/queued-comments/${posted.body.id}/steer`)
+      .send({ queueId: queue.body.queueId, targetRunId: seeded.runId, revision: queue.body.revision });
+    expect(steered.status).toBe(200);
+    expect(steerNativeSessionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: seeded.runId, message: "Queue me" }),
+    );
+  });
+
+  it("refuses the Steer action for a queued /new chat reset", async () => {
+    const seeded = await seedActiveRun({ conversation: true });
+    await seedDispatchIdentity(seeded);
+    await setDefaultDelivery("steer", { enableAgentChat: true });
+    keepRunAlive(seeded.runId);
+    steeringState.mock.mockResolvedValue({ disposition: "available", activeTurnId: "turn-chat" });
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-chat" });
+    const client = app(seeded.companyId);
+
+    const posted = await request(client)
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "/new", clientRequestId: randomUUID() })
+      .expect(201);
+    const queue = await request(client)
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+    const steered = await request(client)
+      .post(`/api/issues/${seeded.issueId}/queued-comments/${posted.body.id}/steer`)
+      .send({ queueId: queue.body.queueId, targetRunId: seeded.runId, revision: queue.body.revision });
+
+    expect(steered.status).toBe(409);
+    expect(steered.body.details).toMatchObject({ code: "conversation_order" });
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
   });
 
   it("degrades a board steer to queue and names the failed attempt when the runner rejects it", async () => {
