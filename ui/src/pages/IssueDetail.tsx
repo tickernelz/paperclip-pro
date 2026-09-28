@@ -1461,7 +1461,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     queryKey: queryKeys.issues.liveRuns(issueId),
     queryFn: () => heartbeatsApi.liveRunsForIssue(issueId),
     enabled: !!issueId,
-    refetchInterval: 1000,
+    refetchInterval: false,
     placeholderData:
       keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(issueId),
   });
@@ -1478,7 +1478,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     queryKey: queryKeys.issues.activeRun(issueId),
     queryFn: () => heartbeatsApi.activeRunForIssue(issueId),
     enabled: activeRunQueryEnabled,
-    refetchInterval: liveRunCount > 0 ? false : 1000,
+    refetchInterval: false,
     placeholderData: keepPreviousDataForSameQueryTail<ActiveRunForIssue | null>(
       issueId,
     ),
@@ -1516,8 +1516,11 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         issueId,
       ),
     enabled: queuedCommentQueueEnabled,
-    refetchInterval: (query) => queuedCommentQueueEnabled &&
-      (liveRuntimeRun || query.state.data?.entries.length) ? 1000 : false,
+    refetchInterval: (query) => {
+      if (!queuedCommentQueueEnabled) return false;
+      if (query.state.data?.entries.length) return 1000;
+      return liveRuntimeRun ? 3000 : false;
+    },
   });
   const [consumedQueuedCommentIds, setConsumedQueuedCommentIds] = useState<
     ReadonlySet<string>
@@ -1549,7 +1552,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     queryFn: () => activityApi.runsForIssue(issueId),
     enabled: !!issueId,
     refetchInterval:
-      hasLiveRuns || issueStatus === "in_progress" ? 1000 : false,
+      hasLiveRuns || issueStatus === "in_progress" ? 5000 : false,
     placeholderData: keepPreviousDataForSameQueryTail<RunForIssue[]>(issueId),
   });
   const resolvedActivity = activity ?? [];
@@ -3050,6 +3053,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       issue.identifier?.toLowerCase() === issueId.toLowerCase())
       ? issue
       : null;
+  const canonicalIssueId =
+    issue &&
+    issueId &&
+    (issue.id.toLowerCase() === issueId.toLowerCase() ||
+      issue.identifier?.toLowerCase() === issueId.toLowerCase())
+      ? issue.id
+      : undefined;
+  const issueQueryId = canonicalIssueId ?? issueId;
   const loadedIssueCompany = loadedIssue
     ? companies.find((company) => company.id === loadedIssue.companyId)
     : undefined;
@@ -3082,20 +3093,20 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     fetchNextPage: fetchOlderComments,
     refetch: refetchComments,
   } = useInfiniteQuery({
-    queryKey: queryKeys.issues.comments(issueId!),
+    queryKey: queryKeys.issues.comments(issueQueryId!),
     queryFn: ({ pageParam }) =>
-      issuesApi.listComments(issueId!, {
+      issuesApi.listComments(canonicalIssueId!, {
         order: "desc",
         limit: ISSUE_COMMENT_PAGE_SIZE,
         ...(pageParam ? { after: pageParam } : {}),
       }),
-    enabled: !!issueId,
+    enabled: !!canonicalIssueId,
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) =>
       getNextIssueCommentPageParam(lastPage, ISSUE_COMMENT_PAGE_SIZE),
     placeholderData: keepPreviousDataForSameQueryTail<
       InfiniteData<IssueComment[], string | null>
-    >(issueId ?? "pending"),
+    >(canonicalIssueId ?? "pending"),
   });
   const comments = useMemo(
     () => flattenIssueCommentPages(commentPages?.pages),
@@ -3159,14 +3170,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     isError: interactionsError,
     refetch: refetchInteractions,
   } = useQuery({
-    queryKey: queryKeys.issues.interactions(issueId!),
-    queryFn: () => issuesApi.listInteractions(issueId!),
-    enabled: !!issueId,
+    queryKey: queryKeys.issues.interactions(issueQueryId!),
+    queryFn: () => issuesApi.listInteractions(canonicalIssueId!),
+    enabled: !!canonicalIssueId,
     // A review can be committed between the initial fetch and live-socket
     // subscription. Reconcile even after its originating run has ended.
     refetchInterval: 20_000,
     placeholderData: keepPreviousDataForSameQueryTail<IssueThreadInteraction[]>(
-      issueId ?? "pending",
+      canonicalIssueId ?? "pending",
     ),
   });
 
@@ -3176,11 +3187,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     isError: attachmentsError,
     refetch: refetchAttachments,
   } = useQuery({
-    queryKey: queryKeys.issues.attachments(issueId!),
-    queryFn: () => issuesApi.listAttachments(issueId!),
-    enabled: !!issueId,
+    queryKey: queryKeys.issues.attachments(issueQueryId!),
+    queryFn: () => issuesApi.listAttachments(canonicalIssueId!),
+    enabled: !!canonicalIssueId,
     placeholderData: keepPreviousDataForSameQueryTail<IssueAttachment[]>(
-      issueId ?? "pending",
+      canonicalIssueId ?? "pending",
     ),
   });
 
@@ -3190,19 +3201,19 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     isError: workProductsError,
     refetch: refetchWorkProducts,
   } = useQuery({
-    queryKey: queryKeys.issues.workProducts(issueId!),
+    queryKey: queryKeys.issues.workProducts(issueQueryId!),
     queryFn: () =>
-      issuesApi.listWorkProducts(issueId!, {
+      issuesApi.listWorkProducts(canonicalIssueId!, {
         // Initial geometry needs stored artifacts, not a network round-trip to
         // GitHub. Enrich PR status after the stored list has painted.
         refreshPullRequests:
-          queryClient.getQueryData(queryKeys.issues.workProducts(issueId!)) !==
+          queryClient.getQueryData(queryKeys.issues.workProducts(issueQueryId!)) !==
           undefined,
       }),
-    enabled: !!issueId,
+    enabled: !!canonicalIssueId,
     refetchOnMount: "always",
     placeholderData: keepPreviousDataForSameQueryTail<IssueWorkProduct[]>(
-      issueId ?? "pending",
+      canonicalIssueId ?? "pending",
     ),
   });
 
@@ -3220,13 +3231,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
   const { data: liveRunCount = 0 } = useQuery<LiveRunForIssue[], Error, number>(
     {
-      queryKey: queryKeys.issues.liveRuns(issueId!),
-      queryFn: () => heartbeatsApi.liveRunsForIssue(issueId!),
-      enabled: !!issueId,
-      refetchInterval: 3000,
+      queryKey: queryKeys.issues.liveRuns(issueQueryId!),
+      queryFn: () => heartbeatsApi.liveRunsForIssue(canonicalIssueId!),
+      enabled: !!canonicalIssueId,
+      refetchInterval: (query) =>
+        (query.state.data?.length ?? 0) > 0 || shouldTrackIssueActiveRun(issue)
+          ? 3000
+          : 10_000,
       select: (runs) => runs.length,
       placeholderData: keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(
-        issueId ?? "pending",
+        canonicalIssueId ?? "pending",
       ),
     },
   );
@@ -3236,14 +3250,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     Error,
     boolean
   >({
-    queryKey: queryKeys.issues.activeRun(issueId!),
-    queryFn: () => heartbeatsApi.activeRunForIssue(issueId!),
+    queryKey: queryKeys.issues.activeRun(issueQueryId!),
+    queryFn: () => heartbeatsApi.activeRunForIssue(canonicalIssueId!),
     enabled:
-      !!issueId && (!!issue?.executionRunId || issue?.status === "in_progress"),
+      !!canonicalIssueId && (!!issue?.executionRunId || issue?.status === "in_progress"),
     refetchInterval: liveRunCount > 0 ? false : 3000,
     select: (run) => !!run,
     placeholderData: keepPreviousDataForSameQueryTail<ActiveRunForIssue | null>(
-      issueId ?? "pending",
+      canonicalIssueId ?? "pending",
     ),
   });
   const resolvedHasActiveRun = issue
@@ -3406,9 +3420,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     boardAccess,
   );
   const { data: feedbackVotes } = useQuery({
-    queryKey: queryKeys.issues.feedbackVotes(issueId!),
-    queryFn: () => issuesApi.listFeedbackVotes(issueId!),
-    enabled: !!issueId && !!currentUserId,
+    queryKey: queryKeys.issues.feedbackVotes(issueQueryId!),
+    queryFn: () => issuesApi.listFeedbackVotes(canonicalIssueId!),
+    enabled: !!canonicalIssueId && !!currentUserId,
   });
   const { data: instanceGeneralSettings } = useQuery({
     queryKey: queryKeys.instance.generalSettings,
@@ -3829,15 +3843,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       queryKey: ["issues", "document-annotations", issueId!],
     });
     queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.documents(issueId!),
+      queryKey: queryKeys.issues.documents(issueQueryId!),
     });
-  }, [issueId, queryClient]);
+  }, [issueId, issueQueryId, queryClient]);
 
   const removeCommentFromCache = useCallback(
     (commentId: string) => {
       queryClient.setQueryData<
         InfiniteData<IssueComment[], string | null> | undefined
-      >(queryKeys.issues.comments(issueId!), (current) => {
+      >(queryKeys.issues.comments(issueQueryId!), (current) => {
         if (!current) return current;
         return {
           ...current,
@@ -3845,7 +3859,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         };
       });
     },
-    [issueId, queryClient],
+    [issueQueryId, queryClient],
   );
 
   const clearCommentHashIfCurrent = useCallback(
@@ -3942,7 +3956,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const upsertInteractionInCache = useCallback(
     (interaction: IssueThreadInteraction) => {
       queryClient.setQueryData<IssueThreadInteraction[] | undefined>(
-        queryKeys.issues.interactions(issueId!),
+        queryKeys.issues.interactions(issueQueryId!),
         (current) => {
           const existing = current ?? [];
           const next = existing.filter((entry) => entry.id !== interaction.id);
@@ -3959,7 +3973,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         },
       );
     },
-    [issueId, queryClient],
+    [issueQueryId, queryClient],
   );
 
   const applyOptimisticIssueCacheUpdate = useCallback(
@@ -4073,7 +4087,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         recordRecentTask(nextIssue, currentUserId);
       }
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.activity(issueId!),
+        queryKey: queryKeys.issues.activity(issueQueryId!),
       });
       invalidateIssueCollections();
     },
@@ -4118,7 +4132,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (nextIssue.identifier) issueRefs.add(nextIssue.identifier);
       mergeIssueResponseIntoCaches(issueRefs, nextIssue);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.activity(issueId!),
+        queryKey: queryKeys.issues.activity(issueQueryId!),
       });
       invalidateIssueCollections();
     },
@@ -4222,16 +4236,16 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           queryKey: queryKeys.issues.detail(issueId!),
         }),
         queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.activity(issueId!),
+          queryKey: queryKeys.issues.activity(issueQueryId!),
         }),
         queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.liveRuns(issueId!),
+          queryKey: queryKeys.issues.liveRuns(issueQueryId!),
         }),
         queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.activeRun(issueId!),
+          queryKey: queryKeys.issues.activeRun(issueQueryId!),
         }),
         queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.runs(issueId!),
+          queryKey: queryKeys.issues.runs(issueQueryId!),
         }),
         queryClient.invalidateQueries({
           queryKey: ["issues", "tree-control-state", issueId ?? "pending"],
@@ -4275,7 +4289,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onSettled: () => Promise.all([
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueId!) }),
-      queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueId!) }),
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueQueryId!) }),
     ]),
   });
   const stopAndFinalizeRun = useMutation({
@@ -4298,7 +4312,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       if (nextIssue.identifier) issueRefs.add(nextIssue.identifier);
       mergeIssueResponseIntoCaches(issueRefs, nextIssue);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.activity(issueId!),
+        queryKey: queryKeys.issues.activity(issueQueryId!),
       });
       invalidateIssueRunState();
       invalidateIssueCollections();
@@ -4462,7 +4476,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     onSuccess: (_approval, variables) => {
       invalidateIssueDetail();
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.approvals(issueId!),
+        queryKey: queryKeys.issues.approvals(issueQueryId!),
       });
       invalidateIssueCollections();
       queryClient.invalidateQueries({
@@ -4509,7 +4523,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       // same frame as send, even when an in-flight comments query is slow to
       // cancel.
       const cancelComments = queryClient.cancelQueries({
-        queryKey: queryKeys.issues.comments(issueId!),
+        queryKey: queryKeys.issues.comments(issueQueryId!),
       });
       const cancelIssue = queryClient.cancelQueries({
         queryKey: queryKeys.issues.detail(issueId!),
@@ -4519,7 +4533,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         queryKeys.issues.detail(issueId!),
       );
       const queuedComment = !interrupt
-        ? readIssueRunStateFromCache(queryClient, issueId!, issue)
+        ? readIssueRunStateFromCache(queryClient, issueQueryId!, issue)
             .interruptibleIssueRun
         : null;
       const optimisticComment = issue
@@ -4587,7 +4601,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         if (comment.deliveredAs === "steered") {
           recordSteeredPost(comment.id, context.queuedCommentTargetRunId);
           void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.activity(issueId ?? comment.issueId),
+            queryKey: queryKeys.issues.activity(issueQueryId ?? comment.issueId),
           });
         } else {
           setLocallyQueuedCommentRunIds((current) => {
@@ -4596,7 +4610,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             return next;
           });
           void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.queuedComments(issueId ?? comment.issueId),
+            queryKey: queryKeys.issues.queuedComments(issueQueryId ?? comment.issueId),
           });
         }
       }
@@ -4604,7 +4618,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         commentRenderKeys.current.set(comment.id, context.optimisticCommentId);
       }
       queryClient.setQueryData<InfiniteData<IssueComment[], string | null>>(
-        queryKeys.issues.comments(issueId ?? comment.issueId),
+        queryKeys.issues.comments(issueQueryId ?? comment.issueId),
         (current) =>
           current
             ? {
@@ -4908,7 +4922,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       // Start it now, but paint the optimistic echo before awaiting it so a
       // reassignment never clears the composer into an empty thread.
       const cancelComments = queryClient.cancelQueries({
-        queryKey: queryKeys.issues.comments(issueId!),
+        queryKey: queryKeys.issues.comments(issueQueryId!),
       });
       const cancelIssue = queryClient.cancelQueries({
         queryKey: queryKeys.issues.detail(issueId!),
@@ -4918,7 +4932,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         queryKeys.issues.detail(issueId!),
       );
       const queuedComment = !interrupt
-        ? readIssueRunStateFromCache(queryClient, issueId!, issue)
+        ? readIssueRunStateFromCache(queryClient, issueQueryId!, issue)
             .interruptibleIssueRun
         : null;
       const optimisticComment = issue
@@ -4992,7 +5006,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         if (comment.deliveredAs === "steered") {
           recordSteeredPost(comment.id, context.queuedCommentTargetRunId);
           void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.activity(issueId!),
+            queryKey: queryKeys.issues.activity(issueQueryId!),
           });
         } else {
           setLocallyQueuedCommentRunIds((current) => {
@@ -5001,7 +5015,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             return next;
           });
           void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues.queuedComments(issueId!),
+            queryKey: queryKeys.issues.queuedComments(issueQueryId!),
           });
         }
       }
@@ -5012,7 +5026,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             context.optimisticCommentId,
           );
         queryClient.setQueryData<InfiniteData<IssueComment[], string | null>>(
-          queryKeys.issues.comments(issueId!),
+          queryKeys.issues.comments(issueQueryId!),
           (current) =>
             current
               ? {
@@ -5201,13 +5215,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }),
     onMutate: async (variables) => {
       await queryClient.cancelQueries({
-        queryKey: queryKeys.issues.feedbackVotes(issueId!),
+        queryKey: queryKeys.issues.feedbackVotes(issueQueryId!),
       });
       const previousVotes = queryClient.getQueryData<FeedbackVote[]>(
-        queryKeys.issues.feedbackVotes(issueId!),
+        queryKeys.issues.feedbackVotes(issueQueryId!),
       );
       queryClient.setQueryData<FeedbackVote[]>(
-        queryKeys.issues.feedbackVotes(issueId!),
+        queryKeys.issues.feedbackVotes(issueQueryId!),
         mergeOptimisticFeedbackVote(
           previousVotes,
           {
@@ -5224,7 +5238,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
     onSuccess: (_savedVote, variables) => {
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.feedbackVotes(issueId!),
+        queryKey: queryKeys.issues.feedbackVotes(issueQueryId!),
       });
       queryClient.invalidateQueries({ queryKey: queryKeys.companies.all });
       queryClient.invalidateQueries({
@@ -5245,7 +5259,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     onError: (err, _variables, context) => {
       if (context?.previousVotes) {
         queryClient.setQueryData(
-          queryKeys.issues.feedbackVotes(issueId!),
+          queryKeys.issues.feedbackVotes(issueQueryId!),
           context.previousVotes,
         );
       }
@@ -5273,7 +5287,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     onSuccess: (result) => {
       setAttachmentError(null);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.attachments(issueId ?? result.issueId),
+        queryKey: queryKeys.issues.attachments(issueQueryId ?? result.issueId),
       });
       invalidateIssueDetail();
       if (!issueId) void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(result.issueId) });
@@ -5304,7 +5318,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       invalidateIssueDetail();
       if (!issueId) void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(result.issueId) });
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.documents(issueId ?? result.issueId),
+        queryKey: queryKeys.issues.documents(issueQueryId ?? result.issueId),
       });
     },
     onError: (err) => {
@@ -5320,7 +5334,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     onSuccess: () => {
       setAttachmentError(null);
       queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.attachments(issueId!),
+        queryKey: queryKeys.issues.attachments(issueQueryId!),
       });
       invalidateIssueDetail();
     },
@@ -6196,14 +6210,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       pageSize: ISSUE_COMMENT_PAGE_SIZE,
       maxPages: JUMP_TO_LATEST_MAX_COMMENT_PAGES,
       fetchPage: (afterCommentId) =>
-        issuesApi.listComments(issueId!, {
+        issuesApi.listComments(issueQueryId!, {
           order: "desc",
           limit: ISSUE_COMMENT_PAGE_SIZE,
           after: afterCommentId,
         }),
     });
     queryClient.setQueryData<InfiniteData<IssueComment[], string | null>>(
-      queryKeys.issues.comments(issueId!),
+      queryKeys.issues.comments(issueQueryId!),
       loaded,
     );
     await new Promise<void>((resolve) => {
@@ -6213,7 +6227,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }
       window.requestAnimationFrame(() => resolve());
     });
-  }, [issueId, queryClient, refetchComments]);
+  }, [issueQueryId, queryClient, refetchComments]);
   useEffect(() => {
     if (
       !shouldPrefetchOlderComments &&
@@ -7914,7 +7928,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     await Promise.all([
                       refetchComments({ throwOnError: true }),
                       queryClient.refetchQueries(
-                        { queryKey: queryKeys.issues.attachments(issueId!) },
+                        { queryKey: queryKeys.issues.attachments(issueQueryId!) },
                         { throwOnError: true },
                       ),
                     ]);

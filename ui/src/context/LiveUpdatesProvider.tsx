@@ -473,11 +473,15 @@ function shouldSuppressRunStatusToastForVisibleIssue(
   );
 }
 
+interface VisibleIssueRunInvalidationOptions extends VisibleRouteOptions {
+  liveStatusAlreadyPatched?: boolean;
+}
+
 function invalidateVisibleIssueRunQueries(
   queryClient: QueryClient,
   pathname: string,
   payload: Record<string, unknown>,
-  options?: VisibleRouteOptions,
+  options?: VisibleIssueRunInvalidationOptions,
 ): boolean {
   const context = resolveVisibleIssueRouteContext(
     queryClient,
@@ -521,13 +525,19 @@ function invalidateVisibleIssueRunQueries(
     }
   }
 
+  const terminal = !!status && TERMINAL_RUN_STATUSES.has(status);
+  const liveRunQueriesAlreadyFresh =
+    !terminal && (options?.liveStatusAlreadyPatched ?? false);
+
   for (const issueRef of context.issueRefs) {
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueRef) });
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.activity(issueRef) });
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueRef) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.issues.liveRuns(issueRef) });
-    queryClient.invalidateQueries({ queryKey: queryKeys.issues.activeRun(issueRef) });
-    if (status && TERMINAL_RUN_STATUSES.has(status)) {
+    if (!liveRunQueriesAlreadyFresh) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.liveRuns(issueRef) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.activeRun(issueRef) });
+    }
+    if (terminal) {
       // A final comment can race the last in-flight history fetch. Reconcile
       // persisted messages after the turn settles.
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(issueRef) });
@@ -637,6 +647,58 @@ function readRunLiveStatusPatchFromPayload(
   }
 
   return null;
+}
+
+const RUN_LOG_PATCH_INTERVAL_MS = 1000;
+
+type RunLiveStatusPatchApply = (patch: RunLiveStatusPatch) => void;
+
+interface RunLogPatchThrottle {
+  submit: (patch: RunLiveStatusPatch, apply: RunLiveStatusPatchApply) => void;
+  dispose: () => void;
+}
+
+function createRunLogPatchThrottle(
+  intervalMs: number = RUN_LOG_PATCH_INTERVAL_MS,
+): RunLogPatchThrottle {
+  const pending = new Map<
+    string,
+    { patch: RunLiveStatusPatch; apply: RunLiveStatusPatchApply }
+  >();
+  const timers = new Map<string, ReturnType<typeof setTimeout>>();
+
+  const release = (runId: string) => {
+    const buffered = pending.get(runId);
+    if (!buffered) {
+      timers.delete(runId);
+      return;
+    }
+    pending.delete(runId);
+    timers.set(
+      runId,
+      setTimeout(() => release(runId), intervalMs),
+    );
+    buffered.apply(buffered.patch);
+  };
+
+  return {
+    submit: (patch, apply) => {
+      if (timers.has(patch.runId)) {
+        pending.set(patch.runId, { patch, apply });
+        return;
+      }
+      timers.set(
+        patch.runId,
+        setTimeout(() => release(patch.runId), intervalMs),
+      );
+      apply(patch);
+    },
+    dispose: () => {
+      for (const timer of timers.values()) clearTimeout(timer);
+      timers.clear();
+      pending.clear();
+    },
+  };
 }
 
 function applyRunLiveStatusPatchToCaches(
@@ -818,26 +880,30 @@ async function hydrateVisibleIssueComment(
       context.routeIssueRef,
       commentId,
     );
-    queryClient.setQueryData<
-      InfiniteData<IssueComment[], string | null> | undefined
-    >(queryKeys.issues.comments(context.routeIssueRef), (current) => {
-      if (!current) {
-        return {
-          pages: [[comment]],
-          pageParams: [null],
-        };
-      }
+    for (const issueRef of context.issueRefs) {
+      queryClient.setQueryData<
+        InfiniteData<IssueComment[], string | null> | undefined
+      >(queryKeys.issues.comments(issueRef), (current) => {
+        if (!current) {
+          return {
+            pages: [[comment]],
+            pageParams: [null],
+          };
+        }
 
-      return {
-        ...current,
-        pages: upsertIssueCommentInPages(current.pages, comment),
-      };
-    });
+        return {
+          ...current,
+          pages: upsertIssueCommentInPages(current.pages, comment),
+        };
+      });
+    }
     return true;
   } catch {
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.comments(context.routeIssueRef),
-    });
+    for (const issueRef of context.issueRefs) {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.issues.comments(issueRef),
+      });
+    }
     return false;
   }
 }
@@ -1296,15 +1362,6 @@ function invalidateActivityQueries(
     queryClient.invalidateQueries({
       queryKey: queryKeys.issues.list(companyId),
     });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.listMineByMe(companyId),
-    });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.listTouchedByMe(companyId),
-    });
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.listUnreadTouchedByMe(companyId),
-    });
     if (entityId) {
       const selfCommentActivity =
         (action === "issue.comment_added" ||
@@ -1652,6 +1709,7 @@ function handleLiveEvent(
   pushToast: (toast: ToastInput) => string | null,
   gate: ToastGate,
   currentActor: { userId: string | null; agentId: string | null },
+  runLogPatchThrottle?: RunLogPatchThrottle,
 ) {
   if (event.companyId !== expectedCompanyId) return;
 
@@ -1668,13 +1726,21 @@ function handleLiveEvent(
     event.createdAt,
     event.type,
   );
+  let liveStatusPatched = false;
   if (liveStatusPatch) {
-    applyRunLiveStatusPatchToCaches(
-      queryClient,
-      expectedCompanyId,
-      pathname,
-      liveStatusPatch,
-    );
+    const applyPatch = (patch: RunLiveStatusPatch) => {
+      liveStatusPatched = applyRunLiveStatusPatchToCaches(
+        queryClient,
+        expectedCompanyId,
+        pathname,
+        patch,
+      );
+    };
+    if (event.type === "heartbeat.run.log" && runLogPatchThrottle) {
+      runLogPatchThrottle.submit(liveStatusPatch, applyPatch);
+    } else {
+      applyPatch(liveStatusPatch);
+    }
   }
   if (event.type === "heartbeat.run.log") {
     return;
@@ -1708,7 +1774,9 @@ function handleLiveEvent(
 
   if (event.type === "heartbeat.run.progress") {
     invalidateHeartbeatProgressQueries(queryClient, expectedCompanyId, payload);
-    invalidateVisibleIssueRunQueries(queryClient, pathname, payload);
+    invalidateVisibleIssueRunQueries(queryClient, pathname, payload, {
+      liveStatusAlreadyPatched: liveStatusPatched,
+    });
     return;
   }
 
@@ -1831,7 +1899,9 @@ export const __liveUpdatesTestUtils = {
   buildAgentStatusToast,
   buildRunStatusToast,
   closeSocketQuietly,
+  createRunLogPatchThrottle,
   dispatchLiveEventToSubscribers,
+  handleLiveEvent,
   LiveEventSubscriptionContext,
   applyRunLiveStatusPatchToCaches,
   hydrateVisibleIssueComment,
@@ -1903,7 +1973,13 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
     () => createCoalescingQueryClient(queryClient, invalidationBatcher),
     [queryClient, invalidationBatcher],
   );
-  useEffect(() => () => invalidationBatcher.dispose(), [invalidationBatcher]);
+  const runLogPatchThrottle = useMemo(() => createRunLogPatchThrottle(), []);
+  useEffect(() => {
+    return () => {
+      invalidationBatcher.dispose();
+      runLogPatchThrottle.dispose();
+    };
+  }, [invalidationBatcher, runLogPatchThrottle]);
 
   useEffect(() => {
     pathnameRef.current = location.pathname;
@@ -1920,6 +1996,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
     if (!visible) {
       wasHidden.current = true;
       invalidationBatcher.dispose();
+      runLogPatchThrottle.dispose();
       return;
     }
     if (!canConnectSocket || !liveCompanyId) return;
@@ -2016,6 +2093,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
               userId: currentActorRef.current.userId,
               agentId: currentActorRef.current.agentId,
             },
+            runLogPatchThrottle,
           );
           // Fan the raw event out to component subscribers after cache
           // handling so any reader sees fresh query data.
@@ -2060,6 +2138,7 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
   }, [
     visible,
     invalidationBatcher,
+    runLogPatchThrottle,
     queryClient,
     coalescingClient,
     liveCompanyId,

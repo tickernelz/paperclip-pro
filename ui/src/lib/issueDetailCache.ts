@@ -191,6 +191,6 @@ export function prefetchIssueDetailForNavigation(
 ) {
   return Promise.all([
     prefetchIssueDetail(queryClient, issueRef, options),
-    prefetchIssueComments(queryClient, issueRef),
+    prefetchIssueComments(queryClient, options?.issue?.id ?? issueRef),
   ]);
 }

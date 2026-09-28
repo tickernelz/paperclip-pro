@@ -2166,7 +2166,7 @@ describe("IssueDetail", () => {
       root.render(<QueryClientProvider client={queryClient}><IssueDetail /></QueryClientProvider>);
     });
     await waitForAssertion(() => {
-      expect(queryClient.getQueryData(queryKeys.issues.attachments("PAP-1"))).toEqual([]);
+      expect(queryClient.getQueryData(queryKeys.issues.attachments("issue-1"))).toEqual([]);
     });
     await flushReact();
     const panelProps = () => (isMobile
@@ -2176,7 +2176,7 @@ describe("IssueDetail", () => {
         onArtifactsOpened: (requestId: number) => void;
       };
     const file = createAttachment({ id: "new-output", createdByAgentId: "agent-1" });
-    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("PAP-1"), [file]); });
+    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("issue-1"), [file]); });
     await waitForAssertion(() => expect(panelProps()?.artifactsOpenRequestId).toBe(1));
     if (isMobile) {
       expect(document.querySelector('[data-testid="mobile-task-side-panel"]')).not.toBeNull();
@@ -2188,11 +2188,11 @@ describe("IssueDetail", () => {
 
     act(() => panelProps().onArtifactsOpened(1));
     await waitForAssertion(() => expect(panelProps().artifactsOpenRequestId).toBeUndefined());
-    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("PAP-1"), [{ ...file, originalFilename: "Renamed output" }]); });
+    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("issue-1"), [{ ...file, originalFilename: "Renamed output" }]); });
     await flushReact();
     expect(panelProps().artifactsOpenRequestId).toBeUndefined();
 
-    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("PAP-1"), [file,
+    act(() => { queryClient.setQueryData(queryKeys.issues.attachments("issue-1"), [file,
       createAttachment({ id: "next-output", createdByAgentId: "agent-1" }),
     ]); });
     await waitForAssertion(() => expect(panelProps().artifactsOpenRequestId).toBe(2));
@@ -6188,6 +6188,126 @@ describe("IssueDetail", () => {
         ttlMs: 15_000,
       }),
     );
+  });
+
+  it("requests per-task endpoints under the task id alone and keeps one live-run poller", async () => {
+    const liveRun = {
+      id: "run-active-1",
+      runId: "run-active-1",
+      agentId: "agent-1",
+      agentName: "Runner",
+      adapterType: "paperclip_runner",
+      issueId: "issue-1",
+      status: "running",
+      startedAt: new Date("2026-04-21T00:00:00.000Z").toISOString(),
+      createdAt: new Date("2026-04-21T00:00:00.000Z").toISOString(),
+    };
+    mockIssuesApi.get.mockResolvedValue(
+      createIssue({
+        status: "in_progress",
+        executionRunId: "run-active-1",
+        assigneeAgentId: "agent-1",
+      }),
+    );
+    mockAgentsApi.list.mockResolvedValue([
+      createAgent({ adapterType: "paperclip_runner" }),
+    ]);
+    mockHeartbeatsApi.liveRunsForIssue.mockClear().mockResolvedValue([liveRun]);
+    mockHeartbeatsApi.activeRunForIssue.mockClear().mockResolvedValue(liveRun);
+    mockActivityApi.forIssue.mockClear();
+    mockActivityApi.runsForIssue.mockClear();
+    mockIssuesApi.getQueuedComments.mockClear();
+    mockIssuesApi.listInteractions.mockClear();
+    mockIssuesApi.listAttachments.mockClear();
+    mockIssuesApi.listWorkProducts.mockClear();
+    mockIssuesApi.listComments.mockClear();
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <IssueDetail />
+        </QueryClientProvider>,
+      );
+    });
+    await waitForAssertion(() => {
+      expect(mockHeartbeatsApi.liveRunsForIssue).toHaveBeenCalled();
+      expect(mockActivityApi.runsForIssue).toHaveBeenCalled();
+      expect(mockIssuesApi.getQueuedComments).toHaveBeenCalled();
+      expect(mockIssuesApi.listAttachments).toHaveBeenCalled();
+      expect(mockIssuesApi.listWorkProducts).toHaveBeenCalled();
+      expect(mockIssuesApi.listInteractions).toHaveBeenCalled();
+      expect(mockIssuesApi.listComments).toHaveBeenCalled();
+    });
+
+    const perTaskApis = {
+      liveRuns: mockHeartbeatsApi.liveRunsForIssue,
+      activeRun: mockHeartbeatsApi.activeRunForIssue,
+      runs: mockActivityApi.runsForIssue,
+      activity: mockActivityApi.forIssue,
+      queuedComments: mockIssuesApi.getQueuedComments,
+      interactions: mockIssuesApi.listInteractions,
+      attachments: mockIssuesApi.listAttachments,
+      workProducts: mockIssuesApi.listWorkProducts,
+      comments: mockIssuesApi.listComments,
+    };
+    for (const [name, api] of Object.entries(perTaskApis)) {
+      const refs = Array.from(
+        new Set(api.mock.calls.map((call) => String(call[0]))),
+      );
+      expect(refs, `${name} was requested under more than the task id`).toEqual(
+        ["issue-1"],
+      );
+    }
+    expect(mockHeartbeatsApi.liveRunsForIssue).toHaveBeenCalledTimes(1);
+
+    const liveRunsAfterMount = mockHeartbeatsApi.liveRunsForIssue.mock.calls.length;
+    const queuedAfterMount = mockIssuesApi.getQueuedComments.mock.calls.length;
+    const runsAfterMount = mockActivityApi.runsForIssue.mock.calls.length;
+    const start = Date.now();
+    while (Date.now() - start < 5_200) await flushReact();
+
+    expect(
+      mockHeartbeatsApi.liveRunsForIssue.mock.calls.length - liveRunsAfterMount,
+    ).toBeLessThanOrEqual(3);
+    expect(
+      mockIssuesApi.getQueuedComments.mock.calls.length - queuedAfterMount,
+    ).toBeLessThanOrEqual(3);
+    expect(
+      mockActivityApi.runsForIssue.mock.calls.length - runsAfterMount,
+    ).toBeLessThanOrEqual(2);
+  }, 30_000);
+
+  it("still discovers a run on a task that is not tracked as running", async () => {
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval", "setTimeout", "clearTimeout", "Date"] });
+    try {
+      mockIssuesApi.get.mockResolvedValue(
+        createIssue({ status: "todo", executionRunId: null, assigneeAgentId: "agent-1" }),
+      );
+      mockHeartbeatsApi.liveRunsForIssue.mockClear().mockResolvedValue([]);
+      mockHeartbeatsApi.activeRunForIssue.mockClear().mockResolvedValue(null);
+
+      await act(async () => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <IssueDetail />
+          </QueryClientProvider>,
+        );
+      });
+      for (let i = 0; i < 20 && mockHeartbeatsApi.liveRunsForIssue.mock.calls.length === 0; i += 1) {
+        await act(async () => {
+          await vi.advanceTimersByTimeAsync(50);
+        });
+      }
+      const afterMount = mockHeartbeatsApi.liveRunsForIssue.mock.calls.length;
+      expect(afterMount).toBeGreaterThan(0);
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(21_000);
+      });
+      expect(mockHeartbeatsApi.liveRunsForIssue.mock.calls.length - afterMount).toBeGreaterThanOrEqual(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 

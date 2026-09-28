@@ -93,8 +93,9 @@ describe("prefetchIssueComments", () => {
     expect(queryClient.getQueryData(queryKeys.issues.detail(issue.id))).toEqual(issue);
 
     const cachedComments = queryClient.getQueryData<{ pages: IssueComment[][] }>(
-      queryKeys.issues.comments(issue.identifier!),
+      queryKeys.issues.comments(issue.id),
     );
     expect(cachedComments?.pages).toEqual([firstPage]);
+    expect(issuesApi.listComments).toHaveBeenCalledWith(issue.id, expect.anything());
   });
 });

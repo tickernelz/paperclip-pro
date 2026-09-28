@@ -6,7 +6,6 @@ import {
   Archive,
   Bot,
   CheckCircle2,
-  Clock3,
   FileCode2,
   FolderKanban,
   ListFilter,
@@ -27,7 +26,6 @@ import { CompanyPatternIcon } from "@/components/CompanyPatternIcon";
 import { EntityRow } from "@/components/EntityRow";
 import { FilterBar, type FilterValue } from "@/components/FilterBar";
 import { KanbanBoard } from "@/components/KanbanBoard";
-import { LiveRunWidget } from "@/components/LiveRunWidget";
 import { OnboardingWizard } from "@/components/OnboardingWizard";
 import {
   buildFileTree,
@@ -49,11 +47,9 @@ import {
   createIssue,
   storybookAgents,
   storybookIssues,
-  storybookLiveRuns,
 } from "../fixtures/paperclipData";
 
 const companyId = "company-storybook";
-const primaryIssueId = "issue-storybook-1";
 
 function StoryShell({ children }: { children: React.ReactNode }) {
   return (
@@ -282,43 +278,6 @@ function FilterBarDemo({ empty = false }: { empty?: boolean }) {
             </div>
           )}
         </div>
-      </Section>
-    </StoryShell>
-  );
-}
-
-function LiveRunWidgetStory({ empty = false, loading = false }: { empty?: boolean; loading?: boolean }) {
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    if (loading) return;
-    queryClient.setQueryData(queryKeys.issues.liveRuns(primaryIssueId), empty ? [] : storybookLiveRuns);
-    queryClient.setQueryData(queryKeys.issues.activeRun(primaryIssueId), empty ? null : storybookLiveRuns[0]);
-  }, [empty, loading, queryClient]);
-
-  if (loading) {
-    return (
-      <StoryShell>
-        <Section eyebrow="LiveRunWidget" title="Loading live run status">
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            <Loader2 className="h-4 w-4 animate-spin" />
-            Waiting for the first run poll.
-          </div>
-        </Section>
-      </StoryShell>
-    );
-  }
-
-  return (
-    <StoryShell>
-      <Section eyebrow="LiveRunWidget" title={empty ? "No active run" : "Streaming run indicator"}>
-        <LiveRunWidget issueId={primaryIssueId} />
-        {empty && (
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-background/70 p-4 text-sm text-muted-foreground">
-            <Clock3 className="h-4 w-4" />
-            The widget renders no panel when the issue has no live runs.
-          </div>
-        )}
       </Section>
     </StoryShell>
   );
@@ -683,21 +642,6 @@ export const FilterBarPopulated: Story = {
 export const FilterBarEmpty: Story = {
   name: "FilterBar / Empty",
   render: () => <FilterBarDemo empty />,
-};
-
-export const LiveRunWidgetPopulated: Story = {
-  name: "LiveRunWidget / Populated",
-  render: () => <LiveRunWidgetStory />,
-};
-
-export const LiveRunWidgetLoading: Story = {
-  name: "LiveRunWidget / Loading",
-  render: () => <LiveRunWidgetStory loading />,
-};
-
-export const LiveRunWidgetEmpty: Story = {
-  name: "LiveRunWidget / Empty",
-  render: () => <LiveRunWidgetStory empty />,
 };
 
 export const OnboardingWizardCompanyStep: Story = {

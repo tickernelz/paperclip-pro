@@ -10,7 +10,7 @@ vi.mock("../api/issues", () => ({
   },
 }));
 
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueryClient } from "@tanstack/react-query";
 import { __liveUpdatesTestUtils } from "./LiveUpdatesProvider";
 import { queryKeys } from "../lib/queryKeys";
@@ -100,15 +100,28 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       { userId: null, agentId: null },
     );
 
-    expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listMineByMe("company-1"),
-    });
-    expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listTouchedByMe("company-1"),
-    });
-    expect(invalidations).toContainEqual({
-      queryKey: queryKeys.issues.listUnreadTouchedByMe("company-1"),
-    });
+    const touchedInboxKeys = [
+      queryKeys.issues.listMineByMe("company-1"),
+      queryKeys.issues.listTouchedByMe("company-1"),
+      queryKeys.issues.listUnreadTouchedByMe("company-1"),
+    ];
+    const realClient = new QueryClient();
+    for (const key of touchedInboxKeys) realClient.setQueryData(key, []);
+    __liveUpdatesTestUtils.invalidateActivityQueries(
+      realClient,
+      "company-1",
+      {
+        entityType: "issue",
+        entityId: "issue-1",
+        action: "issue.updated",
+        details: null,
+      },
+      { userId: null, agentId: null },
+    );
+    for (const key of touchedInboxKeys) {
+      expect(realClient.getQueryState(key)?.isInvalidated).toBe(true);
+    }
+    realClient.clear();
     expect(invalidations).toContainEqual({
       queryKey: queryKeys.issues.detail("issue-1"),
     });
@@ -1009,7 +1022,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
 });
 
 describe("LiveUpdatesProvider visible issue comment hydration", () => {
-  it("hydrates the visible issue comments cache with only the new comment", async () => {
+  it("hydrates the new comment into the cache the task page observes by id", async () => {
     getCommentMock.mockResolvedValueOnce({
       id: "comment-2",
       companyId: "company-1",
@@ -1031,7 +1044,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
             assigneeAgentId: "agent-1",
           };
         }
-        if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.comments("PAP-759"))) {
+        if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.comments("issue-1"))) {
           return {
             pages: [[{
               id: "comment-1",
@@ -1071,9 +1084,10 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
     );
 
     expect(getCommentMock).toHaveBeenCalledWith("PAP-759", "comment-2");
-    expect(setCalls).toHaveLength(1);
-    expect(setCalls[0]?.key).toEqual(queryKeys.issues.comments("PAP-759"));
-    expect(setCalls[0]?.value).toEqual({
+    const byIdWrite = setCalls.find(
+      (call) => JSON.stringify(call.key) === JSON.stringify(queryKeys.issues.comments("issue-1")),
+    );
+    expect(byIdWrite?.value).toEqual({
       pages: [[
         {
           id: "comment-2",
@@ -1607,5 +1621,124 @@ describe("task subtree notification context", () => {
   });
   it("suppresses the run shown on its own run detail page", () => {
     expect(__liveUpdatesTestUtils.shouldSuppressRunStatusToastForVisibleIssue(queryClient as never, "/PAP/agents/alex/runs/child-run", { runId: "child-run" }, { isForegrounded: true })).toBe(true);
+  });
+});
+
+describe("run log cache patch throttling", () => {
+  const companyId = "company-1";
+  const issueId = "issue-1";
+  const runId = "run-1";
+  const pathname = "/PAP/issues/PAP-1";
+  const T = (seconds: string) => `2026-01-01T00:00:0${seconds}.000Z`;
+
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function seedClient() {
+    const client = new QueryClient();
+    const run = {
+      id: runId,
+      issueId,
+      agentId: "agent-1",
+      lastEventAt: T("0"),
+      currentStatusMessage: "start",
+    };
+    client.setQueryData(queryKeys.issues.detail(issueId), {
+      id: issueId,
+      companyId,
+      identifier: "PAP-1",
+    });
+    client.setQueryData(queryKeys.liveRuns(companyId), [run]);
+    client.setQueryData(queryKeys.issues.liveRuns(issueId), [run]);
+    return client;
+  }
+
+  function makeDispatch(client: QueryClient) {
+    const throttle = __liveUpdatesTestUtils.createRunLogPatchThrottle();
+    return (event: unknown) =>
+      __liveUpdatesTestUtils.handleLiveEvent(
+        client,
+        companyId,
+        pathname,
+        event as never,
+        () => null,
+        {
+          cooldownHits: new Map(),
+          suppressUntil: 0,
+          observedRunOutcomes: new Set<string>(),
+        },
+        { userId: null, agentId: null },
+        throttle,
+      );
+  }
+
+  const logEvent = (ts: string) => ({
+    id: 1,
+    companyId,
+    type: "heartbeat.run.log",
+    createdAt: ts,
+    payload: { runId, issueId, ts },
+  });
+
+  const liveRun = (client: QueryClient) =>
+    client.getQueryData<
+      Array<{ lastEventAt?: string; currentStatusMessage?: string | null }>
+    >(queryKeys.issues.liveRuns(issueId))?.[0];
+
+  it("shows the first log chunk at once, then only the newest one per second", () => {
+    const client = seedClient();
+    const dispatch = makeDispatch(client);
+
+    dispatch(logEvent(T("1")));
+    expect(liveRun(client)?.lastEventAt).toBe(T("1"));
+
+    dispatch(logEvent(T("2")));
+    dispatch(logEvent(T("3")));
+    expect(liveRun(client)?.lastEventAt).toBe(T("1"));
+
+    vi.advanceTimersByTime(1000);
+    expect(liveRun(client)?.lastEventAt).toBe(T("3"));
+
+    vi.advanceTimersByTime(5000);
+    expect(liveRun(client)?.lastEventAt).toBe(T("3"));
+    client.clear();
+  });
+
+  it("never delays a progress update queued behind log chunks", () => {
+    const client = seedClient();
+    const dispatch = makeDispatch(client);
+
+    dispatch(logEvent(T("1")));
+    dispatch(logEvent(T("2")));
+    dispatch({
+      id: 9,
+      companyId,
+      type: "heartbeat.run.progress",
+      createdAt: T("2"),
+      payload: {
+        runId,
+        issueId,
+        agentId: "agent-1",
+        status: "running",
+        message: "writing the patch",
+        updatedAt: T("2"),
+        lastEventAt: T("2"),
+      },
+    });
+
+    expect(liveRun(client)?.currentStatusMessage).toBe("writing the patch");
+    expect(liveRun(client)?.lastEventAt).toBe(T("2"));
+    client.clear();
+  });
+
+  it("keeps the last log timestamp after the stream stops", () => {
+    const client = seedClient();
+    const dispatch = makeDispatch(client);
+
+    for (let i = 1; i <= 9; i += 1) dispatch(logEvent(T(String(i))));
+    vi.advanceTimersByTime(3000);
+
+    expect(liveRun(client)?.lastEventAt).toBe(T("9"));
+    client.clear();
   });
 });
