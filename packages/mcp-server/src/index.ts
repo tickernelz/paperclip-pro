@@ -47,7 +47,7 @@ export function createPaperclipMcpServer(
       tool.name,
       {
         description: tool.description,
-        inputSchema: tool.schema.shape,
+        inputSchema: tool.schema.loose(),
         ...(tool.annotations ? { annotations: tool.annotations } : {}),
       },
       tool.execute,

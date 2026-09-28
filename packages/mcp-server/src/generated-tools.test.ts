@@ -274,6 +274,26 @@ describe("generated Paperclip API tools", () => {
     });
   });
 
+  it("rejects an unknown top-level field on a generated tool but keeps advanced open", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "project-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipUpdateProject");
+
+    const rejected = await tool.execute({
+      projectId: "66666666-6666-6666-6666-666666666666",
+      executionWorkspacePolicy: { mode: "shared" },
+    });
+    expect(rejected.isError).toBe(true);
+    expect(rejected.content[0]!.text).toContain('unknown argument "executionWorkspacePolicy"');
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const accepted = await tool.execute({
+      projectId: "66666666-6666-6666-6666-666666666666",
+      advanced: { executionWorkspacePolicy: { mode: "shared" }, anyFutureField: 1 },
+    });
+    expect(accepted.isError).toBeFalsy();
+  });
+
   it("lists core tools without JSON Schema validation metadata", () => {
     const { listing } = paperclipToolCatalog(makeClient(), ["core"], false);
     const serialized = JSON.stringify(listing.tools);

@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { z } from "zod";
 import type { PaperclipApiClient } from "./client.js";
 import { expandToolsetUnion } from "./config.js";
-import { formatErrorResponse, formatTextResponse } from "./format.js";
+import { assertKnownArguments, formatErrorResponse, formatTextResponse } from "./format.js";
 import type { ToolDefinition } from "./tools.js";
 import type { ToolsetName } from "./tool-overrides.js";
 
@@ -179,6 +179,7 @@ export function bindGeneratedTools(
     },
     execute: async (input: Record<string, unknown>) => {
       try {
+        assertKnownArguments(input, Object.keys(schema.shape));
         const values: Record<string, unknown> = { ...schema.parse(input) };
         const advanced = values.advanced as Record<string, unknown> | undefined;
         delete values.advanced;

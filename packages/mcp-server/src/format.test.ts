@@ -79,7 +79,7 @@ describe("paperclip MCP error responses", () => {
     const response = formatErrorResponse(new Error("boom"));
 
     expect(response.isError).toBe(true);
-    expect(response.content[0]?.text).toBe('{\n  "error": "boom"\n}');
+    expect(response.content[0]?.text).toBe('{"error":"boom"}');
     expect(response._meta).toBeUndefined();
   });
 
@@ -89,7 +89,7 @@ describe("paperclip MCP error responses", () => {
 
   it("keeps the success shape free of error metadata", () => {
     expect(formatTextResponse({ ok: true })).toEqual({
-      content: [{ type: "text", text: '{\n  "ok": true\n}' }],
+      content: [{ type: "text", text: '{"ok":true}' }],
     });
   });
 

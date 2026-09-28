@@ -1,4 +1,7 @@
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPaperclipMcpServer } from "./index.js";
 import { PaperclipApiClient } from "./client.js";
 import { createToolDefinitions } from "./tools.js";
 
@@ -25,6 +28,22 @@ function mockJsonResponse(body: unknown, status = 200) {
     status,
     headers: { "Content-Type": "application/json" },
   });
+}
+
+async function connectedClient() {
+  const { server } = createPaperclipMcpServer({
+    apiUrl: "http://localhost:3100/api",
+    apiKey: "token-123",
+    companyId: "11111111-1111-1111-1111-111111111111",
+    agentId: "22222222-2222-2222-2222-222222222222",
+    runId: "33333333-3333-3333-3333-333333333333",
+    toolsets: ["core"],
+    agentRole: null,
+  });
+  const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+  const client = new Client({ name: "test", version: "1" });
+  await Promise.all([server.connect(serverTransport), client.connect(clientTransport)]);
+  return client;
 }
 
 describe("paperclip MCP tools", () => {
@@ -104,6 +123,29 @@ describe("paperclip MCP tools", () => {
     );
   });
 
+  it("leaves the heavy fields out of compact list rows and keeps them in full", async () => {
+    const agent = { id: "agent-1", name: "Raka", adapterConfig: { model: "opus" } };
+    const project = { id: "project-1", primaryWorkspace: { id: "ws-1" }, workspaces: [{ id: "ws-1", isPrimary: true }] };
+    const issue = { id: "issue-1", title: "Ship", description: "long body" };
+    const fetchMock = vi.fn((url: string | URL) => {
+      const path = String(url);
+      return Promise.resolve(
+        mockJsonResponse(path.includes("/agents") ? [agent] : path.includes("/projects") ? [project] : [issue]),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const rows = async (name: string, input: Record<string, unknown>) =>
+      JSON.parse((await getTool(name).execute(input)).content[0]!.text) as Array<Record<string, unknown>>;
+
+    expect((await rows("paperclipListAgents", {}))[0]).not.toHaveProperty("adapterConfig");
+    expect((await rows("paperclipListAgents", { view: "full" }))[0]).toHaveProperty("adapterConfig");
+    expect((await rows("paperclipListProjects", {}))[0]).not.toHaveProperty("primaryWorkspace");
+    expect((await rows("paperclipListProjects", {}))[0]!.workspaces).toEqual([{ id: "ws-1", isPrimary: true }]);
+    expect((await rows("paperclipListProjects", { view: "full" }))[0]).toHaveProperty("primaryWorkspace");
+    expect((await rows("paperclipListIssues", { view: "compact" }))[0]).not.toHaveProperty("description");
+    expect((await rows("paperclipListIssues", {}))[0]).toHaveProperty("description", "long body");
+  });
+
   it("forwards the list filters the route supports", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "issue-1" }]));
     vi.stubGlobal("fetch", fetchMock);
@@ -129,6 +171,41 @@ describe("paperclip MCP tools", () => {
       sortDir: "desc",
       includeConversations: "true",
     });
+  });
+
+  it("rejects a misspelled argument instead of dropping it and suggests the real one", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await getTool("paperclipListIssues").execute({ stauts: "done", limit: 3 });
+
+    expect(result.isError).toBe(true);
+    expect(result.content[0]!.text).toContain('unknown argument "stauts"; did you mean "status"?');
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects an issue status the route does not know and accepts a valid list", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipListIssues");
+
+    const rejected = await tool.execute({ status: "finished" });
+    expect(rejected.isError).toBe(true);
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const accepted = await tool.execute({ status: "todo,in_progress" });
+    expect(accepted.isError).toBeFalsy();
+    expect(new URL(String(fetchMock.mock.calls[0]![0])).searchParams.get("status")).toBe("todo,in_progress");
+  });
+
+  it("still accepts the steering delivery argument on add comment", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "comment-1", deliveredAs: "steered" }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = await getTool("paperclipAddComment").execute({ issueId: "PAP-1", body: "go", deliver: "steer" });
+
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(String(fetchMock.mock.calls[0]![1]!.body))).toMatchObject({ deliver: "steer" });
   });
 
   it("uses default agent id for checkout requests", async () => {
@@ -459,6 +536,38 @@ describe("paperclip MCP tools", () => {
     });
 
     expect(response.content[0]?.text).toContain("must not contain '..'");
+  });
+
+  it("accepts a generic request path written with the /api prefix", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "agent-1" }));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipApiRequest");
+
+    await tool.execute({ method: "GET", path: "/api/agents/me" });
+    await tool.execute({ method: "GET", path: "/agents/me" });
+    await tool.execute({ method: "GET", path: "/apiary/items" });
+    await tool.execute({ method: "GET", path: "/api?view=compact" });
+
+    expect(String(fetchMock.mock.calls[0]![0])).toBe("http://localhost:3100/api/agents/me");
+    expect(String(fetchMock.mock.calls[1]![0])).toBe("http://localhost:3100/api/agents/me");
+    expect(String(fetchMock.mock.calls[2]![0])).toBe("http://localhost:3100/api/apiary/items");
+    expect(String(fetchMock.mock.calls[3]![0])).toBe("http://localhost:3100/api/?view=compact");
+  });
+
+  it("rejects a mistyped argument over the MCP protocol instead of dropping it", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = await connectedClient();
+
+    const typo = await client.callTool({ name: "paperclipListIssues", arguments: { stauts: "done", limit: 3 } });
+    expect(typo.isError).toBe(true);
+    expect(JSON.stringify(typo.content)).toContain("stauts");
+    expect(fetchMock).not.toHaveBeenCalled();
+
+    const valid = await client.callTool({ name: "paperclipListIssues", arguments: { status: "done", limit: 3 } });
+    expect(valid.isError).toBeFalsy();
+    expect(String(fetchMock.mock.calls[0]![0])).toContain("status=done");
+    await client.close();
   });
 
   it("sends curated fields and advanced fields in one issue update body", async () => {

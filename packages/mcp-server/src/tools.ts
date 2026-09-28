@@ -8,6 +8,7 @@ import {
   connectionRequestInputSchema,
   connectionsSearchInputSchema,
 } from "@tickernelz/paperclip-pro-shared/validators/connection-intent";
+import { ISSUE_STATUSES } from "@tickernelz/paperclip-pro-shared/constants";
 import {
   addIssueCommentSchema,
   askUserQuestionsPayloadSchema,
@@ -23,7 +24,7 @@ import {
   upsertIssueDocumentSchema,
 } from "@tickernelz/paperclip-pro-shared/validators/issue";
 import { PaperclipApiClient } from "./client.js";
-import { formatErrorResponse, formatTextResponse } from "./format.js";
+import { assertKnownArguments, formatErrorResponse, formatTextResponse } from "./format.js";
 
 export interface ToolAnnotations {
   readOnlyHint?: boolean;
@@ -57,6 +58,7 @@ function makeTool<TSchema extends z.ZodRawShape>(
     ...(annotations ? { annotations } : {}),
     execute: async (input) => {
       try {
+        assertKnownArguments(input, Object.keys(schema.shape));
         const parsed = schema.parse(input);
         return formatTextResponse(await execute(parsed));
       } catch (error) {
@@ -69,6 +71,14 @@ function makeTool<TSchema extends z.ZodRawShape>(
 function parseOptionalJson(raw: string | undefined | null): unknown {
   if (!raw || raw.trim().length === 0) return undefined;
   return JSON.parse(raw);
+}
+
+function omitFields(rows: unknown, fields: readonly string[]): unknown {
+  if (!Array.isArray(rows)) return rows;
+  return rows.map((row) => {
+    if (!row || typeof row !== "object" || Array.isArray(row)) return row;
+    return Object.fromEntries(Object.entries(row).filter(([key]) => !fields.includes(key)));
+  });
 }
 
 export interface RuntimeConnectionTools {
@@ -120,7 +130,13 @@ const documentKeySchema = z.string().trim().min(1).max(64);
 
 const listIssuesSchema = z.object({
   companyId: companyIdOptional,
-  status: z.string().optional(),
+  status: z
+    .string()
+    .refine(
+      (value) => value.split(",").every((entry) => (ISSUE_STATUSES as readonly string[]).includes(entry.trim())),
+      { message: `each comma-separated status must be one of ${ISSUE_STATUSES.join(", ")}` },
+    )
+    .optional(),
   projectId: z.string().guid().optional(),
   assigneeAgentId: z.string().guid().optional(),
   participantAgentId: z.string().guid().optional(),
@@ -421,9 +437,13 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipListAgents",
-      "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance and avatarUrl; pass view `full` for the complete shape.",
-      z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional().describe("compact drops orgChainHealth, appearance and avatarUrl; full keeps them") }),
-      async ({ companyId, view }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/agents${view === "full" ? "" : "?view=compact"}`),
+      "List agents in a company. Defaults to the compact row shape, which omits orgChainHealth, appearance, avatarUrl and adapterConfig; pass view `full` for the complete shape, or read one agent with paperclipGetAgent.",
+      z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional().describe("compact drops orgChainHealth, appearance, avatarUrl and adapterConfig; full keeps them") }),
+      async ({ companyId, view }) => {
+        const path = `/companies/${client.resolveCompanyId(companyId)}/agents`;
+        if (view === "full") return client.requestJson("GET", path);
+        return omitFields(await client.requestJson("GET", `${path}?view=compact`), ["adapterConfig"]);
+      },
     ),
     makeTool(
       "paperclipListSkills",
@@ -442,7 +462,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipListIssues",
-      "List issues for a company with optional filters; returns at most `limit` issues (default 25) and supports `view=compact` for smaller rows",
+      "List issues for a company with optional filters; returns at most `limit` issues (default 25) and supports `view=compact` for smaller rows without descriptions",
       listIssuesSchema,
       async (input) => {
         const companyId = client.resolveCompanyId(input.companyId);
@@ -452,7 +472,8 @@ export function createToolDefinitions(
           params.set(key, String(value));
         }
         const qs = params.toString();
-        return client.requestJson("GET", `/companies/${companyId}/issues${qs ? `?${qs}` : ""}`);
+        const issues = await client.requestJson("GET", `/companies/${companyId}/issues${qs ? `?${qs}` : ""}`);
+        return input.view === "compact" ? omitFields(issues, ["description"]) : issues;
       },
     ),
     makeTool(
@@ -521,9 +542,12 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipListProjects",
-      "List projects in a company",
-      z.object({ companyId: companyIdOptional }),
-      async ({ companyId }) => client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/projects`),
+      "List projects in a company. Defaults to the compact shape, which omits primaryWorkspace because the same workspace is in workspaces with isPrimary; pass view `full` for the complete shape.",
+      z.object({ companyId: companyIdOptional, view: z.enum(["compact", "full"]).optional() }),
+      async ({ companyId, view }) => {
+        const projects = await client.requestJson("GET", `/companies/${client.resolveCompanyId(companyId)}/projects`);
+        return view === "full" ? projects : omitFields(projects, ["primaryWorkspace"]);
+      },
     ),
     makeTool(
       "paperclipGetProject",
@@ -809,7 +833,9 @@ export function createToolDefinitions(
         if (!path.startsWith("/") || path.includes("..")) {
           throw new Error("path must start with / and be relative to /api, and must not contain '..'");
         }
-        return client.requestJson(method, path, {
+        const stripped = /^\/api(?=\/|\?|$)/.test(path) ? path.slice(4) : path;
+        const relative = stripped.startsWith("/") ? stripped : `/${stripped}`;
+        return client.requestJson(method, relative, {
           body: parseOptionalJson(jsonBody),
         });
       },
