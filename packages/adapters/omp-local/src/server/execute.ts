@@ -383,6 +383,9 @@ function buildOmpArgs(input: {
   return args;
 }
 
+const OMP_HEARTBEAT_PROMPT_TEMPLATE =
+  "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work under the execution contract in your system prompt.";
+
 async function buildPrompts(input: {
   config: Record<string, unknown>;
   context: Record<string, unknown>;
@@ -429,7 +432,7 @@ async function buildPrompts(input: {
   const contractTemplate = paperclipAgentPromptTemplate(input.paperclipAccess);
   const paperclipContract = renderTemplate(contractTemplate, templateData);
   const systemPrompt = joinPromptSections([instructions, paperclipContract]);
-  const promptTemplate = asString(input.config.promptTemplate, contractTemplate);
+  const promptTemplate = asString(input.config.promptTemplate, OMP_HEARTBEAT_PROMPT_TEMPLATE);
   const bootstrapTemplate = asString(input.config.bootstrapPromptTemplate, "");
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
     ? renderTemplate(bootstrapTemplate, templateData).trim()

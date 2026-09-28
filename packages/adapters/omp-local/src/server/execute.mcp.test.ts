@@ -39,6 +39,7 @@ interface Invocation {
   mcpDir: string | null;
   mcpServer: Record<string, unknown> | null;
   systemPrompt: string;
+  userPrompt: string;
 }
 
 describe("OMP local Paperclip MCP wiring", () => {
@@ -89,6 +90,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         mcpDir,
         mcpServer,
         systemPrompt: promptIndex >= 0 ? (args[promptIndex + 1] ?? "") : "",
+        userPrompt: args.at(-1) ?? "",
       };
       return {
         exitCode: 0,
@@ -326,7 +328,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         adapterConfig: {},
       },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
-      config: { command: commandPath, noSession: true, cwd: workspaceCwd },
+      config: { command: commandPath, noSession: true, cwd: workspaceCwd, rpcSteering: false },
       context: {},
       onLog: async () => {},
       authToken: "run-jwt",
@@ -356,9 +358,13 @@ describe("OMP local Paperclip MCP wiring", () => {
     });
   });
 
-  it("states the connection guidance once in the system prompt", async () => {
+  it("states the connection guidance and execution contract once across the whole prompt", async () => {
     const invocation = await runWithRuntimeTools();
-    expect(invocation.systemPrompt.split("Connection tools:").length - 1).toBe(1);
+    expect(invocation.userPrompt).not.toBe(invocation.systemPrompt);
+    const prompt = `${invocation.systemPrompt}\n${invocation.userPrompt}`;
+    expect(prompt.split("Connection tools:").length - 1).toBe(1);
+    expect(prompt.split("Execution contract:").length - 1).toBe(1);
+    expect(invocation.userPrompt).toContain("agent-1");
   });
 });
 
