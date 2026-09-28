@@ -4289,6 +4289,25 @@ function isSameBundledSkillFromAnotherInstall(linkedPath: string, source: string
   return linkedPath.slice(linkedAt) === source.slice(sourceAt);
 }
 
+export async function relinkPaperclipSkillsFromOtherInstalls(
+  skillsHome: string,
+  entries: ReadonlyArray<{ source: string; runtimeName: string }>,
+): Promise<string[]> {
+  const relinked: string[] = [];
+  for (const entry of entries) {
+    const target = path.join(skillsHome, entry.runtimeName);
+    const linkedPath = await fs.readlink(target).catch(() => null);
+    if (!linkedPath) continue;
+    const resolvedLinkedPath = path.resolve(skillsHome, linkedPath);
+    if (resolvedLinkedPath === entry.source) continue;
+    if (!isSameBundledSkillFromAnotherInstall(resolvedLinkedPath, entry.source)) continue;
+    await fs.unlink(target);
+    await fs.symlink(entry.source, target);
+    relinked.push(entry.runtimeName);
+  }
+  return relinked;
+}
+
 async function hashSkillDirectory(root: string): Promise<string> {
   const hash = createHash("sha256");
 

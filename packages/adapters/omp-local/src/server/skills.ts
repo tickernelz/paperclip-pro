@@ -11,6 +11,7 @@ import {
   ensurePaperclipSkillSymlink,
   readInstalledSkillTargets,
   readPaperclipRuntimeSkillEntries,
+  relinkPaperclipSkillsFromOtherInstalls,
   resolvePaperclipDesiredSkillNames,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { resolveOmpProfile } from "./profile.js";
@@ -124,10 +125,11 @@ export async function ensureOmpSkills(
   agentDirOverride?: string,
 ): Promise<void> {
   const availableEntries = await readPaperclipRuntimeSkillEntries(config, __moduleDir);
+  const skillsHome = path.join(resolveOmpAgentDir(config, agentDirOverride), "skills");
+  await relinkPaperclipSkillsFromOtherInstalls(skillsHome, availableEntries);
   const desiredSet = new Set(resolvePaperclipDesiredSkillNames(config, availableEntries));
   if (desiredSet.size === 0) return;
 
-  const skillsHome = path.join(resolveOmpAgentDir(config, agentDirOverride), "skills");
   await fs.mkdir(skillsHome, { recursive: true });
   for (const available of availableEntries) {
     if (!desiredSet.has(available.key)) continue;
