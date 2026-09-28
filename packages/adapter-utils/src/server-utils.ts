@@ -4271,13 +4271,22 @@ export async function ensurePaperclipSkillSymlink(
     .stat(resolvedLinkedPath)
     .then(() => true)
     .catch(() => false);
-  if (linkedPathExists) {
+  if (linkedPathExists && !isSameBundledSkillFromAnotherInstall(resolvedLinkedPath, source)) {
     return "skipped";
   }
 
   await fs.unlink(target);
   await linkSkill(source, target);
   return "repaired";
+}
+
+const BUNDLED_SKILL_ROOT = `${path.sep}node_modules${path.sep}@tickernelz${path.sep}paperclip-pro-server${path.sep}skills${path.sep}`;
+
+function isSameBundledSkillFromAnotherInstall(linkedPath: string, source: string): boolean {
+  const linkedAt = linkedPath.lastIndexOf(BUNDLED_SKILL_ROOT);
+  const sourceAt = source.lastIndexOf(BUNDLED_SKILL_ROOT);
+  if (linkedAt < 0 || sourceAt < 0) return false;
+  return linkedPath.slice(linkedAt) === source.slice(sourceAt);
 }
 
 async function hashSkillDirectory(root: string): Promise<string> {

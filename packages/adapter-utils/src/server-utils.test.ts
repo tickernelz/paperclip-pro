@@ -34,10 +34,40 @@ import {
   shapePaperclipWorkspaceEnvForExecution,
   rewriteWorkspaceCwdEnvVarsForExecution,
   stringifyPaperclipWakePayload,
+  ensurePaperclipSkillSymlink,
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
   WATCHDOG_DEFAULT_MANDATE,
 } from "./server-utils.js";
+
+describe("ensurePaperclipSkillSymlink", () => {
+  const bundled = (root: string, version: string, skill: string) =>
+    path.join(root, "installs", version, "node_modules", "@tickernelz", "paperclip-pro-server", "skills", skill);
+
+  it("moves a skill link from an older Paperclip install to the current one and leaves foreign links alone", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-link-"));
+    try {
+      const oldSource = bundled(root, "2026.928.5", "paperclip");
+      const newSource = bundled(root, "2026.928.7", "paperclip");
+      const foreignSource = path.join(root, "my-skills", "paperclip-board");
+      for (const dir of [oldSource, newSource, foreignSource]) await fs.mkdir(dir, { recursive: true });
+      const skillsHome = path.join(root, "skills");
+      await fs.mkdir(skillsHome);
+      await fs.symlink(oldSource, path.join(skillsHome, "paperclip"));
+      await fs.symlink(foreignSource, path.join(skillsHome, "paperclip-board"));
+
+      expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("repaired");
+      expect(await fs.readlink(path.join(skillsHome, "paperclip"))).toBe(newSource);
+      expect(await ensurePaperclipSkillSymlink(newSource, path.join(skillsHome, "paperclip"))).toBe("skipped");
+
+      const boardSource = bundled(root, "2026.928.7", "paperclip-board");
+      expect(await ensurePaperclipSkillSymlink(boardSource, path.join(skillsHome, "paperclip-board"))).toBe("skipped");
+      expect(await fs.readlink(path.join(skillsHome, "paperclip-board"))).toBe(foreignSource);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+});
 
 describe("runtime connection tool delivery", () => {
   const access = {
