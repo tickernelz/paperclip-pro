@@ -15794,6 +15794,12 @@ export function issueRoutes(
     },
   );
 
+  type QueuedCommentSteerReceipt = {
+    queue: IssueQueuedCommentQueue;
+    duplicate: boolean;
+    acknowledgedTurnId: string | null;
+  };
+
   async function steerQueuedCommentInTransaction(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
     actor: ReturnType<typeof getActorInfo>;
@@ -15801,7 +15807,7 @@ export function issueRoutes(
     queueId: string;
     targetRunId: string;
     revision: string;
-  }) {
+  }): Promise<QueuedCommentSteerReceipt> {
     const { issue, actor, commentId } = input;
     const responseWake = await db.select().from(agentWakeupRequests).where(and(
       eq(agentWakeupRequests.id, input.queueId), eq(agentWakeupRequests.companyId, issue.companyId),
@@ -16125,8 +16131,9 @@ export function issueRoutes(
     if (!target) {
       return { deliveredAs: "queued", steeringUnavailable: "no_active_run" };
     }
+    let steered: QueuedCommentSteerReceipt;
     try {
-      await steerQueuedCommentInTransaction({
+      steered = await steerQueuedCommentInTransaction({
         issue: input.issue,
         actor: input.actor,
         commentId: input.commentId,
@@ -16140,7 +16147,49 @@ export function issueRoutes(
         steeringUnavailable: steeringUnavailableFromError(error),
       };
     }
+    try {
+      await logQueuedCommentSteered({
+        issue: input.issue,
+        actor: input.actor,
+        commentId: input.commentId,
+        targetRunId: target.targetRunId,
+        turnId: steered.acknowledgedTurnId,
+        duplicate: steered.duplicate,
+      });
+    } catch (err) {
+      logger.warn(
+        { err, issueId: input.issue.id, commentId: input.commentId },
+        "failed to record the steering acknowledgement for a posted comment",
+      );
+    }
     return { deliveredAs: "steered" };
+  }
+
+  async function logQueuedCommentSteered(input: {
+    issue: { id: string; companyId: string };
+    actor: ReturnType<typeof getActorInfo>;
+    commentId: string;
+    targetRunId: string;
+    turnId: string | null;
+    duplicate: boolean;
+  }) {
+    await logActivity(db, {
+      companyId: input.issue.companyId,
+      actorType: input.actor.actorType,
+      actorId: input.actor.actorId,
+      agentId: input.actor.agentId,
+      runId: input.actor.runId,
+      agentApiKeyId: input.actor.agentApiKeyId,
+      action: "issue.queued_comment_steered",
+      entityType: "issue",
+      entityId: input.issue.id,
+      details: {
+        commentId: input.commentId,
+        targetRunId: input.targetRunId,
+        turnId: input.turnId,
+        duplicate: input.duplicate,
+      },
+    });
   }
 
   router.post(
@@ -16170,22 +16219,13 @@ export function issueRoutes(
         targetRunId: req.body.targetRunId,
         revision: req.body.revision,
       });
-      await logActivity(db, {
-        companyId: issue.companyId,
-        actorType: actor.actorType,
-        actorId: actor.actorId,
-        agentId: actor.agentId,
-        runId: actor.runId,
-        agentApiKeyId: actor.agentApiKeyId,
-        action: "issue.queued_comment_steered",
-        entityType: "issue",
-        entityId: issue.id,
-        details: {
-          commentId,
-          targetRunId: req.body.targetRunId,
-          turnId: acknowledgedTurnId,
-          duplicate,
-        },
+      await logQueuedCommentSteered({
+        issue,
+        actor,
+        commentId,
+        targetRunId: req.body.targetRunId,
+        turnId: acknowledgedTurnId,
+        duplicate,
       });
       res.json(
         await runRedactions.redactForIssue(issue.companyId, issue.id, queue),

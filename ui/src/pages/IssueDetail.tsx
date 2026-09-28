@@ -1221,6 +1221,7 @@ type IssueDetailChatTabProps = {
   initialHistoryError?: boolean;
   onRetryInitialHistory?: () => void;
   locallyQueuedCommentRunIds: ReadonlyMap<string, string>;
+  locallySteeredComments: ReadonlyMap<string, { targetRunId: string; anchorAt: string }>;
   interactions: IssueThreadInteraction[];
   documents: IssueDocumentSummary[];
   workProducts: IssueWorkProduct[];
@@ -1363,6 +1364,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   initialHistoryError = false,
   onRetryInitialHistory,
   locallyQueuedCommentRunIds,
+  locallySteeredComments,
   interactions,
   documents,
   workProducts,
@@ -1716,6 +1718,20 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         anchorMs: new Date(placement.anchorAt).getTime(),
         kind: "steer",
       });
+    }
+    for (const [commentId, placement] of locallySteeredComments) {
+      if (inputPlacementByCommentId.has(commentId)) continue;
+      inputPlacementByCommentId.set(commentId, {
+        runId: placement.targetRunId,
+        anchorAt: placement.anchorAt,
+        sequence: steeringSequenceByRunId.get(placement.targetRunId) ?? 0,
+        anchorMs: new Date(placement.anchorAt).getTime(),
+        kind: "steer",
+      });
+      steeringSequenceByRunId.set(
+        placement.targetRunId,
+        (steeringSequenceByRunId.get(placement.targetRunId) ?? 0) + 1,
+      );
     }
     for (const evt of resolvedActivity) {
       if (evt.action !== "issue.comment_added" || !evt.runId) continue;
@@ -2128,6 +2144,22 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     ],
   );
 
+  const placeLocalSteer = useCallback(
+    (commentId: string, targetRunId: string) => {
+      const anchorAt = new Date().toISOString();
+      setLocalSteeringPlacements((current) => {
+        const next = new Map(current);
+        const sequence = [...current.values()].filter(
+          (placement) => placement.targetRunId === targetRunId,
+        ).length;
+        next.set(commentId, { targetRunId, anchorAt, sequence });
+        return next;
+      });
+      setConsumedQueuedCommentIds((current) => new Set(current).add(commentId));
+    },
+    [],
+  );
+
   const steerQueuedComment = useCallback(
     async (commentId: string, revision: string) => {
       const queueId = effectiveQueuedCommentQueue?.queueId;
@@ -2148,16 +2180,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         );
         // Keep the queue component mounted until the server accepts steering:
         // its pending/error state must survive a rejected last-row action.
-        const anchorAt = new Date().toISOString();
-        setLocalSteeringPlacements((current) => {
-          const next = new Map(current);
-          const sequence = [...current.values()].filter(
-            (placement) => placement.targetRunId === targetRunId,
-          ).length;
-          next.set(commentId, { targetRunId, anchorAt, sequence });
-          return next;
-        });
-        setConsumedQueuedCommentIds((current) => new Set(current).add(commentId));
+        placeLocalSteer(commentId, targetRunId);
         // The local steering placement already promoted the message into the
         // active turn. Refresh its durable acknowledgement before publishing
         // the returned queue so the local and server anchors hand off without a
@@ -2189,6 +2212,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
       effectiveQueuedCommentQueue?.queueId,
       effectiveQueuedCommentQueue?.targetRunId,
       issueId,
+      placeLocalSteer,
       queryClient,
       refreshQueueAfterConflict,
       storeQueuedCommentQueue,
@@ -2941,6 +2965,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const [locallyQueuedCommentRunIds, setLocallyQueuedCommentRunIds] = useState<
     Map<string, string>
   >(() => new Map());
+  const [locallySteeredComments, setLocallySteeredComments] = useState<
+    Map<string, { targetRunId: string; anchorAt: string }>
+  >(() => new Map());
+  const recordSteeredPost = useCallback((commentId: string, targetRunId: string) => {
+    setLocallySteeredComments((current) =>
+      new Map(current).set(commentId, { targetRunId, anchorAt: new Date().toISOString() }),
+    );
+  }, []);
   const [pendingCommentComposerFocusKey, setPendingCommentComposerFocusKey] =
     useState(0);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -4552,14 +4584,21 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         }
       }
       if (context?.queuedCommentTargetRunId) {
-        setLocallyQueuedCommentRunIds((current) => {
-          const next = new Map(current);
-          next.set(comment.id, context.queuedCommentTargetRunId!);
-          return next;
-        });
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.queuedComments(issueId ?? comment.issueId),
-        });
+        if (comment.deliveredAs === "steered") {
+          recordSteeredPost(comment.id, context.queuedCommentTargetRunId);
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues.activity(issueId ?? comment.issueId),
+          });
+        } else {
+          setLocallyQueuedCommentRunIds((current) => {
+            const next = new Map(current);
+            next.set(comment.id, context.queuedCommentTargetRunId!);
+            return next;
+          });
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues.queuedComments(issueId ?? comment.issueId),
+          });
+        }
       }
       if (context?.optimisticCommentId) {
         commentRenderKeys.current.set(comment.id, context.optimisticCommentId);
@@ -4950,14 +4989,21 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         }
       }
       if (comment && context?.queuedCommentTargetRunId) {
-        setLocallyQueuedCommentRunIds((current) => {
-          const next = new Map(current);
-          next.set(comment.id, context.queuedCommentTargetRunId!);
-          return next;
-        });
-        void queryClient.invalidateQueries({
-          queryKey: queryKeys.issues.queuedComments(issueId!),
-        });
+        if (comment.deliveredAs === "steered") {
+          recordSteeredPost(comment.id, context.queuedCommentTargetRunId);
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues.activity(issueId!),
+          });
+        } else {
+          setLocallyQueuedCommentRunIds((current) => {
+            const next = new Map(current);
+            next.set(comment.id, context.queuedCommentTargetRunId!);
+            return next;
+          });
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues.queuedComments(issueId!),
+          });
+        }
       }
       if (comment) {
         if (context?.optimisticCommentId)
@@ -7807,6 +7853,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     void refetchWorkProducts();
                   }}
                   locallyQueuedCommentRunIds={locallyQueuedCommentRunIds}
+                  locallySteeredComments={locallySteeredComments}
                   interactions={interactions}
                   documents={issue.documentSummaries ?? []}
                   workProducts={workProducts ?? []}

@@ -3910,6 +3910,85 @@ describe("IssueDetail", () => {
     });
   });
 
+  it("does not leave a queued card behind for a post the server steered", async () => {
+    const postedComment = createDeferred<IssueComment & { deliveredAs: "steered" }>();
+    const activeRun = {
+      id: "run-omp",
+      runtimeMode: "legacy" as const,
+      status: "running",
+      invocationSource: "issue",
+      triggerDetail: null,
+      contextCommentId: null,
+      contextWakeCommentId: null,
+      startedAt: "2026-04-21T00:00:01.000Z",
+      finishedAt: null,
+      createdAt: "2026-04-21T00:00:01.000Z",
+      agentId: "agent-1",
+      agentName: "Runner",
+      adapterType: "omp_local",
+      issueId: "issue-1",
+    };
+    mockIssuesApi.get.mockResolvedValue(
+      createIssue({
+        status: "in_progress",
+        assigneeAgentId: "agent-1",
+        executionRunId: activeRun.id,
+      }),
+    );
+    mockAgentsApi.list.mockResolvedValue([createAgent({ adapterType: "omp_local" })]);
+    mockHeartbeatsApi.activeRunForIssue.mockResolvedValue(activeRun);
+    mockHeartbeatsApi.liveRunsForIssue.mockResolvedValue([activeRun]);
+    mockIssuesApi.getQueuedComments.mockResolvedValue(
+      createQueuedCommentQueue({
+        queueId: null,
+        state: null,
+        targetRunId: null,
+        entries: [],
+        steeringDisposition: "temporarily_unavailable",
+      }),
+    );
+    mockIssuesApi.addComment.mockReturnValue(postedComment.promise);
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <IssueDetail />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+    await flushReact();
+
+    const initialProps = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as {
+      onAdd: (body: string) => Promise<void>;
+    };
+    await act(async () => {
+      void initialProps.onAdd("Change direction now");
+      await Promise.resolve();
+    });
+    await flushReact();
+
+    await act(async () => {
+      postedComment.resolve({
+        ...createIssueComment({ id: "steered-post", body: "Change direction now" }),
+        deliveredAs: "steered",
+      });
+    });
+    await flushReact();
+    await flushReact();
+
+    const settled = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as {
+      queuedCommentQueue?: IssueQueuedCommentQueue | null;
+      comments?: Array<{ body: string; steeredIntoRunId?: string | null }>;
+    };
+    expect(
+      (settled.queuedCommentQueue?.entries ?? []).map((entry) => entry.comment.body),
+    ).not.toContain("Change direction now");
+    expect(
+      settled.comments?.find((comment) => comment.body === "Change direction now"),
+    ).toMatchObject({ steeredIntoRunId: "run-omp" });
+  });
+
   it("does not rebind a queued message when another run becomes live before its request settles", async () => {
     const postedComment = createDeferred<IssueComment>();
     mockIssuesApi.get.mockResolvedValue(

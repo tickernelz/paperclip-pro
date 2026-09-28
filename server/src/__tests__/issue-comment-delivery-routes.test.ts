@@ -2,10 +2,10 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
-import { eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import {
-
+  activityLog,
   agents,
   companies,
   companyMemberships,
@@ -258,6 +258,22 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(
       await db.select().from(issueComments).where(eq(issueComments.id, posted.body.id)),
     ).toHaveLength(1);
+    const steered = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(
+        and(
+          eq(activityLog.action, "issue.queued_comment_steered"),
+          eq(activityLog.entityId, seeded.issueId),
+        ),
+      );
+    expect(steered).toHaveLength(1);
+    expect(steered[0]?.details).toMatchObject({
+      commentId: posted.body.id,
+      targetRunId: seeded.runId,
+      turnId: "turn-delivery",
+      duplicate: false,
+    });
   });
 
   it("keeps the same board comment queued when deliver is queue", async () => {
