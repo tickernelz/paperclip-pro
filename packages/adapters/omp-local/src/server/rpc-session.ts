@@ -9,6 +9,8 @@ import {
 
 const STEER_ACK_TIMEOUT_MS = 10_000;
 const DEFAULT_CONTINUATION_IDLE_MS = 60_000;
+const DEFAULT_IDLE_RECHECK_MS = 250;
+const MAX_IDLE_CHECKS = 20;
 const RPC_PROTOCOL_VERSION = 2;
 const RPC_CHUNK_PAYLOAD_BYTES = 256 * 1024;
 const RPC_MAX_REASSEMBLED_BYTES = 64 * 1024 * 1024;
@@ -173,12 +175,14 @@ export interface OmpRpcSteerSession {
     message: { role: "user"; text: string };
     correlationId?: string;
   }): Promise<void>;
+  whenSteersSettled(): Promise<void>;
 }
 
 type PendingAck = {
   resolve: () => void;
   reject: (error: Error) => void;
   timer: NodeJS.Timeout;
+  settled: Promise<void>;
 };
 
 export function createOmpRpcSteerSession(): OmpRpcSteerSession {
@@ -251,17 +255,25 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
       if (closed || !writer) {
         throw new Error("omp_rpc_session_unavailable");
       }
-      if (activeTurnId !== null && input.turnId !== activeTurnId) {
+      if (activeTurnId === null || input.turnId !== activeTurnId) {
         throw new Error("stale active turn");
       }
       const id = input.correlationId?.trim() || `steer-${randomUUID()}`;
-      const ack = new Promise<void>((resolve, reject) => {
-        const timer = setTimeout(() => {
-          pending.delete(id);
-          reject(new Error("omp_rpc_steer_timeout"));
-        }, STEER_ACK_TIMEOUT_MS);
-        pending.set(id, { resolve, reject, timer });
+      let resolve!: () => void;
+      let reject!: (error: Error) => void;
+      const ack = new Promise<void>((onResolve, onReject) => {
+        resolve = onResolve;
+        reject = onReject;
       });
+      const settled = ack.then(
+        () => undefined,
+        () => undefined,
+      );
+      const timer = setTimeout(() => {
+        pending.delete(id);
+        reject(new Error("omp_rpc_steer_timeout"));
+      }, STEER_ACK_TIMEOUT_MS);
+      pending.set(id, { resolve, reject, timer, settled });
       try {
         await writer(
           `${JSON.stringify({ id, type: "steer", message: input.message.text })}\n`,
@@ -275,6 +287,11 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
         throw error instanceof Error ? error : new Error(String(error));
       }
       await ack;
+    },
+    async whenSteersSettled() {
+      while (pending.size > 0) {
+        await Promise.all([...pending.values()].map((entry) => entry.settled));
+      }
     },
   };
 }
@@ -300,6 +317,7 @@ export interface OmpRpcRunInput {
   >[4]["onRuntimeProgress"];
   session: OmpRpcSteerSession;
   continuationIdleMs?: number;
+  idleRecheckMs?: number;
 }
 
 export interface OmpRpcRunResult {
@@ -329,7 +347,13 @@ export async function runOmpRpcSession(
   let compacting = false;
   let turnOpen = false;
   let lastTurnWorkAt = 0;
+  let idleCheckSeq = 0;
+  let idleCheckRequestedAgain = false;
+  let idleCheckId: string | null = null;
+  let idleCheckAttempts = 0;
+  let idleRecheckTimer: ReturnType<typeof setTimeout> | null = null;
   const continuationIdleMs = input.continuationIdleMs ?? DEFAULT_CONTINUATION_IDLE_MS;
+  const idleRecheckMs = input.idleRecheckMs ?? DEFAULT_IDLE_RECHECK_MS;
 
   const disarmContinuationIdle = () => {
     if (!continuationIdleTimer) return;
@@ -339,6 +363,8 @@ export async function runOmpRpcSession(
 
   const closeStdinOnce = () => {
     disarmContinuationIdle();
+    clearTimeout(idleRecheckTimer ?? undefined);
+    idleRecheckTimer = null;
     pausedForContinuation = false;
     if (settled) return;
     settled = true;
@@ -385,6 +411,32 @@ export async function runOmpRpcSession(
     await channel.write(`${JSON.stringify(frame)}\n`);
   };
 
+  const requestIdleCheck = async (): Promise<void> => {
+    if (settled) return;
+    if (idleCheckId !== null) {
+      idleCheckRequestedAgain = true;
+      return;
+    }
+    await session.whenSteersSettled();
+    if (settled) return;
+    if (idleCheckId !== null) {
+      idleCheckRequestedAgain = true;
+      return;
+    }
+    idleCheckRequestedAgain = false;
+    idleCheckSeq += 1;
+    idleCheckId = `idle-${idleCheckSeq}`;
+    await send({ id: idleCheckId, type: "get_state" });
+  };
+
+  const scheduleIdleRecheck = () => {
+    clearTimeout(idleRecheckTimer ?? undefined);
+    idleRecheckTimer = setTimeout(() => {
+      idleRecheckTimer = null;
+      void requestIdleCheck();
+    }, idleRecheckMs);
+  };
+
   const handleFrame = async (frame: Record<string, unknown>): Promise<void> => {
     session.observeFrame(frame);
     const type = typeof frame.type === "string" ? frame.type : "";
@@ -414,21 +466,33 @@ export async function runOmpRpcSession(
         closeStdinOnce();
         return;
       }
-      if (frame.agentInvoked === false || frame.sessionSettled === true) {
+      if (frame.agentInvoked === false) {
         closeStdinOnce();
+      } else if (frame.sessionSettled === true) {
+        void requestIdleCheck();
       }
       return;
     }
     if (type === "session_settled") {
-      closeStdinOnce();
+      void requestIdleCheck();
       return;
+    }
+    if (type === "agent_start") {
+      idleCheckId = null;
+      idleCheckRequestedAgain = false;
+      idleCheckAttempts = 0;
+      clearTimeout(idleRecheckTimer ?? undefined);
+      idleRecheckTimer = null;
     }
     if (type === "agent_end") {
       if (frame.isTerminal === false) {
         pausedForContinuation = true;
         lastTurnWorkAt = Date.now();
         scheduleContinuationIdle();
-      } else closeStdinOnce();
+      } else {
+        idleCheckAttempts = 0;
+        void requestIdleCheck();
+      }
       return;
     }
     if (type !== "response") return;
@@ -446,12 +510,38 @@ export async function runOmpRpcSession(
       return;
     }
     if (command === "get_state") {
-      if (!promptSent) {
-        const data = frame.data;
-        if (data && typeof data === "object" && !Array.isArray(data)) {
-          const id = (data as Record<string, unknown>).sessionId;
-          if (typeof id === "string" && id.trim()) sessionId = id.trim();
+      const data =
+        frame.data && typeof frame.data === "object" && !Array.isArray(frame.data)
+          ? (frame.data as Record<string, unknown>)
+          : {};
+      if (frame.id !== undefined && frame.id === idleCheckId) {
+        idleCheckId = null;
+        if (idleCheckRequestedAgain) {
+          void requestIdleCheck();
+          return;
         }
+        const queued = typeof data.queuedMessageCount === "number" ? data.queuedMessageCount : 0;
+        if (!success || (queued === 0 && data.isStreaming !== true)) {
+          closeStdinOnce();
+          return;
+        }
+        if (data.isStreaming === true) return;
+        idleCheckAttempts += 1;
+        if (idleCheckAttempts >= MAX_IDLE_CHECKS) {
+          closeStdinOnce();
+          await input.onLog(
+            "stderr",
+            `[paperclip] OMP still reported ${queued} queued message(s) after the turn ended; ending the run so the queue is delivered on the next turn.\n`,
+          );
+          return;
+        }
+        scheduleIdleRecheck();
+        return;
+      }
+      if (typeof frame.id === "string" && frame.id.startsWith("idle-")) return;
+      if (!promptSent) {
+        const id = data.sessionId;
+        if (typeof id === "string" && id.trim()) sessionId = id.trim();
         promptSent = true;
         await send({ id: "prompt-1", type: "prompt", message: input.prompt });
       }
@@ -559,6 +649,7 @@ export async function runOmpRpcSession(
     }
   } finally {
     disarmContinuationIdle();
+    clearTimeout(idleRecheckTimer ?? undefined);
     session.setWriter(null);
     session.close();
   }

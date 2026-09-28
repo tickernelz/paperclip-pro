@@ -17,6 +17,8 @@ type Harness = {
   logged: string[];
   errors: string[];
   feed: (frame: Record<string, unknown> | string) => Promise<void>;
+  answerIdleCheck: (data: Record<string, unknown>) => Promise<void>;
+  endTurn: () => Promise<void>;
   finish: () => void;
   close: () => void;
   ends: () => number;
@@ -28,6 +30,7 @@ function harness(): Harness {
   const errors: string[] = [];
   let stdinText = "";
   let endCount = 0;
+  let answeredIdleChecks = 0;
   let logSink: ((stream: "stdout" | "stderr", chunk: string) => Promise<void>) | null = null;
   let channel: BoundLiveStdinChannel | null = null;
   let markBound = () => {};
@@ -92,6 +95,24 @@ function harness(): Harness {
       await bound;
       const line = typeof frame === "string" ? frame : `${JSON.stringify(frame)}\n`;
       await logSink?.("stdout", line);
+    },
+    async answerIdleCheck(data) {
+      const idleChecks = () =>
+        stdinFrames.filter(
+          (frame) => frame.type === "get_state" && String(frame.id).startsWith("idle-"),
+        );
+      for (;;) {
+        await vi.waitFor(() => expect(idleChecks().length).toBeGreaterThan(answeredIdleChecks));
+        const sent = idleChecks();
+        answeredIdleChecks = sent.length;
+        await this.feed({ id: sent.at(-1)!.id, type: "response", command: "get_state", success: true, data });
+        await Promise.resolve();
+        if (idleChecks().length === answeredIdleChecks) return;
+      }
+    },
+    async endTurn() {
+      await this.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await this.answerIdleCheck({ queuedMessageCount: 0, isStreaming: false });
     },
     finish() {
       releaseProcess();
@@ -158,7 +179,7 @@ describe("OMP RPC session protocol", () => {
     expect(state.stdinFrames[2]).toEqual({ id: "prompt-1", type: "prompt", message: "Do the work" });
 
     await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     const result = await running;
     expect(result.sessionId).toBe("session-42");
@@ -176,7 +197,7 @@ describe("OMP RPC session protocol", () => {
 
     await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-v1" } });
     await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     const result = await running;
     expect(result.protocolVersion).toBe(1);
@@ -305,7 +326,7 @@ describe("OMP RPC session protocol", () => {
     expect(state.logged.some((chunk) => chunk.includes("chunked reply"))).toBe(true);
     expect(state.logged.some((chunk) => chunk.includes("rpc_chunk"))).toBe(false);
 
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
   });
@@ -318,7 +339,7 @@ describe("OMP RPC session protocol", () => {
     await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-quiet" } });
     await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
     await state.feed({ type: "agent_start" });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -339,7 +360,7 @@ describe("OMP RPC session protocol", () => {
       level: "warning",
       message: 'Warning: MCP server "paperclip" failed to connect: spawn ENOENT; its tools are unavailable for this run.',
     });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -371,7 +392,7 @@ describe("OMP RPC session protocol", () => {
         partial: { role: "assistant", content: [{ type: "text", text: "the whole in-progress message" }] },
       },
     });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -394,7 +415,7 @@ describe("OMP RPC session protocol", () => {
         providerPayload: { opaque: "replay state" },
       },
     });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -416,7 +437,7 @@ describe("OMP RPC session protocol", () => {
         { toolCallId: "t1", content: "tool output stays", providerPayload: { b: 2 } },
       ],
     });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -430,14 +451,60 @@ describe("OMP RPC session protocol", () => {
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
     await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-end" } });
     await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
     expect(state.ends()).toBe(1);
   });
 
-  it("closes the run's stdin on session_settled too", async () => {
+  it("keeps stdin open after the turn ends while OMP still holds a queued steer", async () => {
+    const running = run();
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-late" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.answerIdleCheck({ queuedMessageCount: 1, isStreaming: false });
+    expect(state.ends()).toBe(0);
+
+    await state.feed({ type: "agent_start" });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: false });
+    expect(state.ends()).toBe(1);
+    state.finish();
+    expect((await running).promptError).toBeNull();
+  });
+
+  it("waits for an in-flight steer acknowledgement before checking whether OMP is idle", async () => {
+    const session = createOmpRpcSteerSession();
+    const running = run(session);
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-race" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({ type: "agent_start" });
+    const { activeTurnId } = await session.snapshot();
+    const steering = session.steer({
+      turnId: activeTurnId as string,
+      message: { role: "user", text: "One more thing" },
+      correlationId: "comment-late",
+    });
+    await vi.waitFor(() => expect(state.stdinFrames.some((frame) => frame.type === "steer")).toBe(true));
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    expect(state.stdinFrames.some((frame) => String(frame.id).startsWith("idle-"))).toBe(false);
+    expect(state.ends()).toBe(0);
+
+    await state.feed({ id: "comment-late", type: "response", command: "steer", success: true });
+    await steering;
+    await state.answerIdleCheck({ queuedMessageCount: 1, isStreaming: false });
+    expect(state.ends()).toBe(0);
+    await state.feed({ type: "agent_start" });
+    await state.endTurn();
+    expect(state.ends()).toBe(1);
+    state.finish();
+    await running;
+  });
+
+  it("closes the run's stdin on session_settled once OMP confirms it is idle", async () => {
     const running = run();
     await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
     await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-settled" } });
@@ -446,10 +513,84 @@ describe("OMP RPC session protocol", () => {
     expect(state.ends()).toBe(0);
 
     await state.feed({ type: "session_settled" });
+    await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: false });
     state.finish();
     await running;
 
     expect(state.ends()).toBe(1);
+  });
+
+  it("keeps stdin open when prompt_result says settled but a steer was accepted in the same instant", async () => {
+    const session = createOmpRpcSteerSession();
+    const running = run(session);
+    await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+    await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-race-settled" } });
+    await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+    await state.feed({ type: "agent_start" });
+    const { activeTurnId } = await session.snapshot();
+    const steering = session.steer({
+      turnId: activeTurnId as string,
+      message: { role: "user", text: "Now reply BRAVO" },
+      correlationId: "comment-race",
+    });
+    await vi.waitFor(() => expect(state.stdinFrames.some((frame) => frame.type === "steer")).toBe(true));
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.feed({ type: "prompt_result", id: "prompt-1", agentInvoked: true, status: "completed", sessionSettled: true });
+    expect(state.ends()).toBe(0);
+
+    await state.feed({ id: "comment-race", type: "response", command: "steer", success: true });
+    await steering;
+    await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: true });
+    expect(state.ends()).toBe(0);
+    await state.feed({ type: "agent_start" });
+    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.feed({ type: "session_settled" });
+    await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: false });
+    expect(state.ends()).toBe(1);
+    state.finish();
+    expect((await running).promptError).toBeNull();
+  });
+
+  it("keeps a steered turn open however long it streams after the settle signal", async () => {
+    vi.useFakeTimers();
+    try {
+      const running = runOmpRpcSession({
+        runId: "run-long-steer",
+        command: "omp",
+        args: ["--mode", "rpc"],
+        cwd: "/tmp",
+        env: {},
+        timeoutSec: 30,
+        graceSec: 5,
+        prompt: "Do the work",
+        runtimeTarget: null,
+        onLog: async () => {},
+        session: createOmpRpcSteerSession(),
+        idleRecheckMs: 250,
+      });
+      await state.feed({ type: "ready", protocolVersion: 1, supportedProtocolVersions: [1] });
+      await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-long" } });
+      await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
+      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await state.feed({ type: "prompt_result", id: "prompt-1", agentInvoked: true, status: "completed", sessionSettled: true });
+      for (let check = 0; check < 40; check += 1) {
+        await state.answerIdleCheck({ queuedMessageCount: 1, isStreaming: true });
+        await vi.advanceTimersByTimeAsync(250);
+        await state.feed({ type: "session_settled" });
+      }
+      expect(state.ends()).toBe(0);
+
+      await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: true });
+      await state.feed({ type: "agent_start" });
+      await vi.advanceTimersByTimeAsync(60_000);
+      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await state.answerIdleCheck({ queuedMessageCount: 0, isStreaming: false });
+      expect(state.ends()).toBe(1);
+      state.finish();
+      expect((await running).promptError).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("observes a frame before handing it to the transcript sink", async () => {
@@ -475,7 +616,7 @@ describe("OMP RPC session protocol", () => {
     await state.feed({ id: "state-1", type: "response", command: "get_state", success: true, data: { sessionId: "session-order" } });
     await state.feed({ id: "prompt-1", type: "response", command: "prompt", success: true });
     await state.feed({ type: "agent_start" });
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
 
@@ -492,7 +633,7 @@ describe("OMP RPC session protocol", () => {
 
     expect(state.ends()).toBe(0);
 
-    await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+    await state.endTurn();
     state.finish();
     await running;
     expect(state.ends()).toBe(1);
@@ -538,7 +679,7 @@ describe("OMP RPC session protocol", () => {
       await vi.advanceTimersByTimeAsync(120_000);
       expect(state.ends()).toBe(0);
 
-      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await state.endTurn();
       expect(state.ends()).toBe(1);
       state.finish();
       await running;
@@ -562,7 +703,7 @@ describe("OMP RPC session protocol", () => {
 
       await state.feed({ type: "auto_compaction_end" });
       await state.feed({ type: "agent_start" });
-      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await state.endTurn();
       expect(state.ends()).toBe(1);
       state.finish();
       await running;
@@ -586,7 +727,7 @@ describe("OMP RPC session protocol", () => {
       expect(state.ends()).toBe(0);
 
       await state.feed({ type: "turn_end" });
-      await state.feed({ type: "agent_end", isTerminal: true, messages: [] });
+      await state.endTurn();
       expect(state.ends()).toBe(1);
       state.finish();
       await running;
@@ -630,6 +771,26 @@ describe("OMP RPC steering session", () => {
       }),
     ).rejects.toThrow("stale active turn");
     expect(snapshot.activeTurnId).not.toBeNull();
+  });
+
+  it("reports a steer that arrives after the turn ended as stale so it stays queued", async () => {
+    const session = createOmpRpcSteerSession();
+    const written: string[] = [];
+    session.setWriter(async (data) => {
+      written.push(data);
+    });
+    session.observeFrame({ type: "agent_start" });
+    const { activeTurnId } = await session.snapshot();
+    session.observeFrame({ type: "agent_end", isTerminal: true });
+
+    await expect(
+      session.steer({
+        turnId: activeTurnId as string,
+        message: { role: "user", text: "too late" },
+        correlationId: "c-late",
+      }),
+    ).rejects.toThrow("stale active turn");
+    expect(written).toHaveLength(0);
   });
 
   it("resolves a steer only after the provider acknowledges it", async () => {
