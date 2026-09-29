@@ -784,6 +784,13 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     for (const run of linkedRuns ?? []) map.set(run.runId, run);
     return map;
   }, [linkedRuns]);
+  const retriedRunIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const run of linkedRuns ?? []) {
+      if (run.retryOfRunId) ids.add(run.retryOfRunId);
+    }
+    return ids;
+  }, [linkedRuns]);
 
   const verificationCaveatsByRunId = useMemo(() => {
     const map = new Map<
@@ -1640,7 +1647,8 @@ export function TaskChatThread(props: TaskChatThreadProps) {
       if (sourceHasLegacyStop) {
         settledRunIds.add(source.id);
         const code = meta?.errorCode ?? "native_runner_process_exited";
-        const retryDetail = meta?.scheduledRetryAt
+        const retryFollowsUp = Boolean(meta?.scheduledRetryAt) || retriedRunIds.has(source.id);
+        const retryDetail = retryFollowsUp
           ? "Retry scheduled automatically."
           : canRetryFailedRun
             ? "You can retry this message now."
@@ -2051,6 +2059,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     liveRun,
     transcriptByRun,
     linkedRunMetaById,
+    retriedRunIds,
     lastCommentIdByRun,
     comments,
     steeringAnchorsByRun,

@@ -60,6 +60,7 @@ export interface IssueChatLinkedRun {
   logBytes?: number | null;
   errorCode?: string | null;
   scheduledRetryAt?: string | null;
+  retryOfRunId?: string | null;
   nextAction?: string | null;
   resultJson?: Record<string, unknown> | null;
 }

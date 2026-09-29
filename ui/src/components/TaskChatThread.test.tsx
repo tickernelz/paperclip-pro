@@ -2248,6 +2248,39 @@ describe("TaskChatThread runtime transcript selection", () => {
     },
   );
 
+  it("says a retry was scheduled when a later run retries the failed one", () => {
+    const run = {
+      runtimeMode: "legacy" as const,
+      adapterType: "omp_local",
+      agentId: "agent-1",
+      agentName: "Jono",
+    };
+    const failed = {
+      ...run,
+      runId: "credit-failure",
+      status: "failed",
+      errorCode: "omp_exit_1",
+      createdAt: "2026-09-29T10:01:14.000Z",
+      startedAt: "2026-09-29T10:01:14.000Z",
+      finishedAt: "2026-09-29T10:02:08.000Z",
+    };
+    render(
+      <TaskChatThread
+        comments={[]}
+        onAdd={async () => {}}
+        issueStatus="in_progress"
+        linkedRuns={[
+          failed,
+          { ...run, runId: "automatic-retry", status: "succeeded", retryOfRunId: "credit-failure",
+            createdAt: "2026-09-29T10:02:08.000Z", startedAt: "2026-09-29T10:02:55.000Z",
+            finishedAt: "2026-09-29T10:06:27.000Z" },
+        ]}
+      />,
+    );
+    expect(container.textContent).toContain("The runner stopped before returning an answer (omp_exit_1). Retry scheduled automatically.");
+    expect(container.textContent).not.toContain("Your message is preserved.");
+  });
+
   it.each(["active execution", "pending decision", "recovery hold"].flatMap(
     (gate) => [false, true].map((hasTranscript) => ({ gate, hasTranscript })),
   ))(
