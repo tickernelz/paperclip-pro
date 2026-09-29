@@ -2837,3 +2837,5 @@ export { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "./retired
 
 export * from "./slack-tools.js";
 export * from "./openwa-tools.js";
+
+export { isHeartbeatRunVisibleInMine } from "./heartbeat-inbox.js";
