@@ -100,6 +100,16 @@ describe("CloudAccessGate", () => {
     vi.clearAllMocks();
   });
 
+  it("does not mistake a session service failure for a signed-out user", async () => {
+    mockAuthApi.getSession.mockRejectedValue(new Error("Session service unavailable"));
+    const root = renderGate(container);
+    await waitForText(container, "Unable to load Paperclip");
+    expect(container.querySelector("button")?.textContent).toBe("Try again");
+    expect(container.textContent).not.toContain("Outlet content");
+    expect(container.textContent).not.toContain("Navigate:/auth");
+    unmountRoot(root);
+  });
+
   it("shows a no-access message for signed-in users without org access", async () => {
     mockAuthApi.getSession.mockResolvedValue({
       session: { id: "session-1", userId: "user-1" },
@@ -152,7 +162,8 @@ describe("CloudAccessGate", () => {
     mockAuthApi.getSession.mockResolvedValue({ user: { id: "invitee" } });
     mockAccessApi.getCurrentBoardAccess.mockRejectedValueOnce(new Error("Access check unavailable"));
     const root = renderGate(container, true);
-    await waitForText(container, "Access check unavailable");
+    await waitForText(container, "Unable to load Paperclip");
+    expect(container.querySelector("button")?.textContent).toBe("Try again");
     expect(container.textContent).not.toContain("Outlet content");
     unmountRoot(root);
   });
