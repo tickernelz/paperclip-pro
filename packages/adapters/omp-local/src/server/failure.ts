@@ -8,7 +8,7 @@ export interface OmpFailureClassification {
   retryNotBefore: string | null;
 }
 
-const QUOTA_RE = /\b(rate[_ -]?limit|quota|too many requests|429|usage limit|insufficient[_ -]?quota|credit balance|out of credits)\b/i;
+const QUOTA_RE = /\b(rate[_ -]?limit|quota|too many requests|429|usage limit|insufficient[_ -]?quota|credit balance|out of credits|insufficient (?:credit|balance|funds)|credit insufficient)\b/i;
 const TRANSIENT_RE = /\b(overloaded|server error|internal error|service unavailable|bad gateway|gateway timeout|50[0234]|econnreset|etimedout|econnrefused|enotfound|socket hang up|stream (?:closed|error)|temporarily unavailable)\b/i;
 const REFUSAL_RE = /\b(refus(?:al|ed)|cannot assist|can't assist|content policy|safety (?:policy|filter)|blocked by (?:the )?provider)\b/i;
 const REFRESH_REUSED_RE = /\brefresh token (?:was )?(?:already used|reused|rotation)\b/i;
@@ -18,8 +18,11 @@ const REFRESH_INVALID_RE = /\brefresh token (?:is )?(?:invalid|revoked|invalidat
 const RETRY_AFTER_SECONDS_RE = /\bretry[- ]?after["':\s]+(\d+(?:\.\d+)?)\b/i;
 const RETRY_IN_RE = /\btry again in (\d+(?:\.\d+)?)\s*(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?)\b/i;
 const RETRY_AT_RE = /\bresets? at (\d{4}-\d{2}-\d{2}T[\d:.]+Z)\b/i;
+const REQUESTED_WAIT_RE = /\bprovider requested (\d+)\s*ms wait\b/i;
 
 function retryDelayMs(text: string): number | null {
+  const requested = REQUESTED_WAIT_RE.exec(text)?.[1];
+  if (requested) return Number(requested);
   const after = RETRY_AFTER_SECONDS_RE.exec(text)?.[1];
   if (after) return Number(after) * 1000;
   const relative = RETRY_IN_RE.exec(text);
