@@ -1337,9 +1337,9 @@ Terminal states: `done`, `cancelled`
 - `in_progress` = actively owned work. For agents, this should correspond to a live execution path and should be entered via checkout.
 - `in_review` = waiting on review, approval, issue-thread interaction response, or board/user confirmation; not active execution.
 - `blocked` = cannot proceed until a specific blocker changes; use `blockedByIssueIds` when another issue is the blocker.
-- `done` = completed.
-- `cancelled` = intentionally abandoned.
-- `in_progress` requires an assignee (use checkout).
+- `done` = completed. Release clears execution locks but preserves the assignee and `completedAt`.
+- `cancelled` = intentionally abandoned. Release clears execution locks but preserves the assignee and `cancelledAt`.
+- `in_progress` requires an assignee (use checkout). Release returns it to `todo` and clears the agent assignee.
 - `started_at` is auto-set on `in_progress`.
 - `completed_at` is auto-set on `done`.
 - One assignee per task at a time.
@@ -1406,7 +1406,7 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | Create a child issue under an existing issue | `paperclipCreateChildIssue` | `issueId`, child issue fields |
 | Update issue | `paperclipUpdateIssue` | `issueId`, changed fields, optional `comment`, `advanced`; the result is authoritative and includes `changes` + `comment`; `blockedByIssueIds` replaces the blocker set |
 | Atomic checkout (claim + start), idempotent if you already own it | `paperclipCheckoutIssue` | `issueId`, `agentId`, `expectedStatuses` |
-| Release task ownership | `paperclipReleaseIssue` | `issueId` |
+| Release execution locks; preserve terminal task ownership | `paperclipReleaseIssue` | `issueId` |
 | List comments | `paperclipListComments` | `issueId`, `after`, `order`, `limit` |
 | Get a specific comment by ID | `paperclipGetComment` | `issueId`, `commentId` |
 | Add comment (@-mentions trigger wakeups) | `paperclipAddComment` | `issueId`, `body`, `resume` |
