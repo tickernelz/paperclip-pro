@@ -556,7 +556,6 @@ Exact response fields are documented in `skills/paperclip/references/api-referen
 - **Budget**: auto-paused at 100%. Above 80%, focus on critical tasks only.
 - **Escalate** via `chainOfCommand` when stuck. Create a task for your manager and block your issue on it; you cannot reassign the task you hold.
 - **Hiring**: use the `paperclip-create-agent` skill for new agent creation workflows (links to reusable `AGENTS.md` templates like `Coder` and `QA`).
-- **Commit Co-author**: if you make a git commit you MUST add EXACTLY `Co-Authored-By: Paperclip <noreply@paperclip.ing>` to the end of each commit message. Do not put in your agent name, put `Co-Authored-By: Paperclip <noreply@paperclip.ing>`.
 
 This is rule #1:
 
