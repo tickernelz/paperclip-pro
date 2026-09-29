@@ -81,7 +81,7 @@ export function getConfigSchema(): AdapterConfigSchema {
         label: "Paperclip MCP toolsets",
         type: "text",
         default: "core",
-        hint: "Comma-separated toolsets exposed by the Paperclip MCP server: core, extended, or all.",
+        hint: "Toolsets exposed by the Paperclip MCP server: core (default) or full (every agent-callable tool). extended and all are deprecated aliases of full.",
         group: "Capabilities",
         meta: { visibleWhen: { key: "paperclipMcp", notValues: ["false"] } },
       },
