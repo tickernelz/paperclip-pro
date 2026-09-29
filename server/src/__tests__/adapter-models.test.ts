@@ -315,6 +315,17 @@ describe("adapter model listing", () => {
       ]);
     });
 
+    it("prefers declared env models over adapter refresh", async () => {
+      process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
+        opencode_local: [{ id: "tensorix/z-ai/glm-4.7", label: "GLM 4.7" }],
+      });
+      process.env.PAPERCLIP_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
+
+      const models = await refreshAdapterModels("opencode_local");
+
+      expect(models).toEqual([{ id: "tensorix/z-ai/glm-4.7", label: "GLM 4.7" }]);
+    });
+
     it("observes env changes between calls (memo keyed by raw env value)", async () => {
       process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
         opencode_local: [{ id: "model-a" }],

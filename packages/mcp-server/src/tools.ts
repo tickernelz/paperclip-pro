@@ -713,7 +713,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipAskUserQuestions",
-      "Create an ask_user_questions interaction on an issue",
+      "Create an ask_user_questions interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createAskUserQuestionsToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/interactions`, {
@@ -725,7 +725,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipRequestConfirmation",
-      "Create a request_confirmation interaction on an issue",
+      "Create a request_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createRequestConfirmationToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/interactions`, {
@@ -737,7 +737,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipRequestCheckboxConfirmation",
-      "Create a request_checkbox_confirmation interaction on an issue",
+      "Create a request_checkbox_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       createRequestCheckboxConfirmationToolSchema,
       async ({ issueId, ...body }) =>
         client.requestJson("POST", `/issues/${encodeURIComponent(issueId)}/interactions`, {
