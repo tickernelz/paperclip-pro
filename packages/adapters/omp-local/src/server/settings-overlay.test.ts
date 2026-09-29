@@ -10,6 +10,8 @@ vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (impor
 });
 
 import {
+  OMP_CONTEXT_MANAGEMENT_MIN_VERSION,
+  ompVersionAtLeast,
   buildOmpSettingsOverlay,
   renderOmpSettingsOverlay,
   writeOmpSettingsOverlay,
@@ -52,8 +54,25 @@ describe("OMP settings overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      compaction: { experimentalContextManagement: true },
       omitThinking: false,
     });
+  });
+
+  it("turns notes-backed context windows on by default and off when the agent disables them", () => {
+    const compaction = (config: Record<string, unknown>) =>
+      (parseYaml(renderOmpSettingsOverlay(config)) as { compaction: Record<string, unknown> }).compaction;
+    expect(compaction({})).toEqual({ experimentalContextManagement: true });
+    expect(compaction({ experimentalContextManagement: false })).toEqual({ experimentalContextManagement: false });
+  });
+
+  it("compares OMP versions against the context-management minimum", () => {
+    expect(ompVersionAtLeast("omp/18.4.2\n", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(true);
+    expect(ompVersionAtLeast("omp/18.1.16", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(true);
+    expect(ompVersionAtLeast("omp/18.1.15", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(false);
+    expect(ompVersionAtLeast("omp/17.9.30", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(false);
+    expect(ompVersionAtLeast("omp/19.0.0", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(true);
+    expect(ompVersionAtLeast("omp dev build", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBeNull();
   });
 
   it("writes the same overlay content to the remote execution target", async () => {

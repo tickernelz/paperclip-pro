@@ -14,6 +14,7 @@ import {
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { listOmpModels } from "./models.js";
 import { normalizeOmpProfile, resolveOmpProfile } from "./profile.js";
+import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION } from "./settings-overlay.js";
 
 const CONFIG_PROBE_TIMEOUT_SEC = 15;
 const CONFIG_BLOCK_ALLOWLIST: Record<string, true> = {
@@ -438,6 +439,14 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         group: "Capabilities",
       },
       { key: "advisor", label: "Enable advisor", type: "toggle", default: false, group: "Capabilities" },
+      {
+        key: "experimentalContextManagement",
+        label: "Notes-backed context windows (experimental)",
+        type: "toggle",
+        default: true,
+        hint: `Keep persistent notes and searchable raw history across context windows instead of summary compaction (OMP compaction.experimentalContextManagement). Needs OMP ${OMP_CONTEXT_MANAGEMENT_MIN_VERSION} or newer; older OMP ignores it.`,
+        group: "Capabilities",
+      },
       {
         key: "rpcSteering",
         label: "Live session (RPC) transport",

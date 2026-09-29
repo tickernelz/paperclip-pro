@@ -18,6 +18,7 @@ import {
   runAdapterExecutionTargetProcess,
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
+  asBoolean,
   asNumber,
   asString,
   ensurePathInEnv,
@@ -30,6 +31,7 @@ import {
   type PreparedOmpRuntimeConfig,
 } from "./config.js";
 import { parseOmpModelsOutput } from "./models.js";
+import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION, ompVersionAtLeast } from "./settings-overlay.js";
 import { rewriteRemoteConfigPaths } from "./execute.js";
 
 const AUTH_ERROR_RE = /(?:auth(?:entication|orization)?\s+(?:required|failed)|api[_ -]?key|invalid\s+(?:key|token)|not\s+logged\s+in|login\s+required|credentials?\s+(?:missing|not found)|unauthorized|\b401\b|\b403\b)/i;
@@ -360,6 +362,17 @@ export async function testEnvironment(
           level: "info",
           message: detail ? `OMP command is ready: ${detail}` : `OMP command is ready: ${command}`,
         });
+        if (
+          asBoolean(executionConfig.experimentalContextManagement, true) &&
+          ompVersionAtLeast(version.stdout, OMP_CONTEXT_MANAGEMENT_MIN_VERSION) === false
+        ) {
+          checks.push({
+            code: "omp_context_management_unsupported",
+            level: "warn",
+            message: `Notes-backed context windows need OMP ${OMP_CONTEXT_MANAGEMENT_MIN_VERSION} or newer; this OMP ignores the setting and keeps summary compaction.`,
+            hint: "Upgrade OMP, or turn off Notes-backed context windows for this agent.",
+          });
+        }
       }
     } catch (error) {
       checks.push({

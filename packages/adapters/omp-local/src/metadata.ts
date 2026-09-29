@@ -29,6 +29,7 @@ Core fields:
 - approvalMode: yolo, write, or always-ask; always passed to OMP, defaulting to yolo for headless runs
 - extensions / hooks / pluginDirs / configFiles: newline-separated OMP paths
 - advisor, prewalk/noPrewalk, planYolo, skills, rules, LSP, PTY, title, allowHome, and ephemeral-session controls map directly to OMP flags
+- experimentalContextManagement (default on) sets OMP compaction.experimentalContextManagement in the per-run settings overlay: persistent notes, history://current/full, and new_context rollover instead of summary compaction; requires OMP 18.1.16 or newer, older OMP ignores it
 - systemPrompt replaces OMP's base prompt while Paperclip's execution contract remains appended
 - timeoutSec / graceSec / maxTime: Paperclip process deadline, termination grace, and OMP in-session deadline
 

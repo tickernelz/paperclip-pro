@@ -13,6 +13,8 @@ export interface OmpSettingsOverlay {
   cleanup: () => Promise<void>;
 }
 
+export const OMP_CONTEXT_MANAGEMENT_MIN_VERSION = "18.1.16";
+
 export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record<string, unknown> {
   const noPrewalk = asBoolean(config.noPrewalk, false);
   return {
@@ -21,8 +23,20 @@ export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record
     lsp: { enabled: !asBoolean(config.noLsp, false) },
     skills: { enabled: !asBoolean(config.noSkills, false) },
     task: { maxRecursionDepth: 0 },
+    compaction: { experimentalContextManagement: asBoolean(config.experimentalContextManagement, true) },
     omitThinking: !asBoolean(config.printThoughts, true),
   };
+}
+
+export function ompVersionAtLeast(versionOutput: string, minimum: string): boolean | null {
+  const found = /(\d+)\.(\d+)\.(\d+)/.exec(versionOutput);
+  if (!found) return null;
+  const actual = found.slice(1, 4).map(Number);
+  const wanted = minimum.split(".").map(Number);
+  for (let index = 0; index < 3; index += 1) {
+    if (actual[index]! !== wanted[index]!) return actual[index]! > wanted[index]!;
+  }
+  return true;
 }
 
 export function renderOmpSettingsOverlay(config: Record<string, unknown>): string {

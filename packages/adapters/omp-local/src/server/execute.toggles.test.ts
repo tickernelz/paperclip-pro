@@ -95,6 +95,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      compaction: { experimentalContextManagement: true },
       omitThinking: false,
     });
     expect(invocation.args).not.toContain("--advisor");
@@ -122,6 +123,13 @@ describe("OMP local toggle overlay", () => {
     expect(disabled.overlay?.prewalk).toEqual({ enabled: false });
     expect(disabled.args).toContain("--no-prewalk");
     expect(disabled.args).not.toContain("--prewalk");
+  });
+
+  it("hands OMP notes-backed context windows on by default and off when the agent opts out", async () => {
+    expect((await run({})).overlay?.compaction).toEqual({ experimentalContextManagement: true });
+    expect((await run({ experimentalContextManagement: false })).overlay?.compaction).toEqual({
+      experimentalContextManagement: false,
+    });
   });
 
   it("keeps user config overlays ahead of the generated overlay", async () => {
@@ -152,6 +160,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      compaction: { experimentalContextManagement: true },
       omitThinking: false,
     });
   });
@@ -189,6 +198,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: true },
       skills: { enabled: true },
       task: { maxRecursionDepth: 0 },
+      compaction: { experimentalContextManagement: true },
       omitThinking: false,
     });
     expect(buildOmpSettingsOverlay({ advisor: true, noLsp: true, noSkills: true, prewalk: true })).toEqual({
@@ -197,6 +207,7 @@ describe("OMP local toggle overlay", () => {
       lsp: { enabled: false },
       skills: { enabled: false },
       task: { maxRecursionDepth: 0 },
+      compaction: { experimentalContextManagement: true },
       omitThinking: false,
     });
   });
