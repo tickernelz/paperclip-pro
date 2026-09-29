@@ -912,6 +912,16 @@ export function recoveryService(
     scheduleRecoveryRetry?: (
       runId: string,
     ) => Promise<typeof heartbeatRuns.$inferSelect | null>;
+    /**
+     * Whether a failed or interrupted run has consumed every bounded
+     * transient retry, so `scheduleRecoveryRetry` can no longer produce a
+     * successor for it. Lets the sweeper tell "no retry because the budget
+     * is spent" (escalate) from "no retry because something else owns the
+     * run" (leave alone).
+     */
+    transientRetryBudgetSpent?: (
+      run: typeof heartbeatRuns.$inferSelect,
+    ) => boolean;
     liveRunExecutions?: Readonly<{ has(id: string): boolean }>;
     beforeOrphanedRunTerminalWrite?: (runId: string) => Promise<void>;
   },
@@ -1904,6 +1914,13 @@ export function recoveryService(
     source: string;
     retryOfRunId?: string | null;
     extraContext?: Record<string, unknown>;
+    /**
+     * Out-parameter: set `retryExhausted` when no successor was queued
+     * because the failed predecessor has spent its bounded transient retry
+     * budget. A null return without it means another authority owns the
+     * run (native runtime, reconciliation) and the caller must leave it.
+     */
+    outcome?: { retryExhausted?: boolean };
   }) {
     if (input.retryOfRunId) {
       const [predecessor] = await db
@@ -1932,8 +1949,19 @@ export function recoveryService(
           });
           return null;
         }
-        if (deps.scheduleRecoveryRetry)
-          return deps.scheduleRecoveryRetry(predecessor.id);
+        if (deps.scheduleRecoveryRetry) {
+          const retry = await deps.scheduleRecoveryRetry(predecessor.id);
+          if (retry) return retry;
+          // A spent budget is the one "no retry" the sweeper must not wait
+          // out: nothing else will ever queue a successor for this run, so
+          // it reports the exhaustion instead of leaving the issue with no
+          // live path (2026-09-25: three deploy restarts in a row spent the
+          // budget and the issue sat in_progress with no run, unescalated).
+          if (input.outcome && deps.transientRetryBudgetSpent?.(predecessor)) {
+            input.outcome.retryExhausted = true;
+          }
+          return null;
+        }
         return null;
       }
     }
@@ -4941,6 +4969,7 @@ export function recoveryService(
           continue;
         }
 
+        const reviewOutcome: { retryExhausted?: boolean } = {};
         const queued = await enqueueStrandedIssueRecovery({
           issueId: issue.id,
           agentId: participantAgentId,
@@ -4954,10 +4983,35 @@ export function recoveryService(
             reviewRecoveryInstruction:
               "The previous reviewer run ended while this execution-review stage was still pending. Submit the review decision now, or mark the issue blocked with the exact unblock action.",
           },
+          outcome: reviewOutcome,
         });
         if (queued) {
           result.reviewParticipantRequeued += 1;
           result.issueIds.push(issue.id);
+        } else if (
+          reviewOutcome.retryExhausted &&
+          !(await hasActiveExecutionPath(issue.companyId, issue.id, null))
+        ) {
+          // Same exhaustion as the other lanes: the reviewer run's bounded
+          // retries are spent, so escalate as the review-recovery failure it
+          // is instead of skipping on every sweep with no live path. The
+          // live-path re-read guards the write against a run or wake that
+          // started after the loop's check — for ANY agent, not only the
+          // participant: `blocked` is issue-wide, so another agent still
+          // working the issue must never be blocked under.
+          const updated = await escalateStrandedAssignedIssue({
+            issue,
+            previousStatus: "in_review",
+            latestRun: participantLatestRun,
+            notice: buildExecutionReviewParticipantRecoveryNoticeSeed(),
+            recoveryCause: EXECUTION_REVIEW_PARTICIPANT_RECOVERY_REASON,
+          });
+          if (updated) {
+            result.escalated += 1;
+            result.issueIds.push(issue.id);
+          } else {
+            result.skipped += 1;
+          }
         } else {
           result.skipped += 1;
         }
@@ -5036,6 +5090,7 @@ export function recoveryService(
           continue;
         }
 
+        const dispatchOutcome: { retryExhausted?: boolean } = {};
         const queued = await enqueueStrandedIssueRecovery({
           issueId: issue.id,
           agentId,
@@ -5043,10 +5098,39 @@ export function recoveryService(
           retryReason: "assignment_recovery",
           source: "issue.assignment_recovery",
           retryOfRunId: latestRun.id,
+          outcome: dispatchOutcome,
         });
         if (queued) {
           result.dispatchRequeued += 1;
           result.issueIds.push(issue.id);
+        } else if (
+          dispatchOutcome.retryExhausted &&
+          !(await hasActiveExecutionPath(issue.companyId, issue.id, null))
+        ) {
+          // Same exhaustion as the in_progress lane: the lost dispatch's
+          // bounded retries are spent, so escalate instead of skipping on
+          // every sweep with no live path. The live-path re-read guards the
+          // `blocked` write against a run or wake that started after the
+          // loop's check.
+          const updated = await escalateStrandedAssignedIssue({
+            issue,
+            previousStatus: "todo",
+            latestRun,
+            notice: {
+              body:
+                "Paperclip automatically retried dispatch for this assigned `todo` issue after a lost wake/run, " +
+                "but the bounded retry budget is spent and it still has no live execution path. " +
+                "Moving it to `blocked` so it is visible for intervention.",
+              title: "No live execution path",
+              tone: "danger",
+            },
+          });
+          if (updated) {
+            result.escalated += 1;
+            result.issueIds.push(issue.id);
+          } else {
+            result.skipped += 1;
+          }
         } else {
           result.skipped += 1;
         }
@@ -5303,6 +5387,7 @@ export function recoveryService(
         continue;
       }
 
+      const recoveryOutcome: { retryExhausted?: boolean } = {};
       const queued = await enqueueStrandedIssueRecovery({
         issueId: issue.id,
         agentId,
@@ -5310,10 +5395,40 @@ export function recoveryService(
         retryReason: "issue_continuation_needed",
         source: "issue.continuation_recovery",
         retryOfRunId: latestRun?.id ?? issue.checkoutRunId ?? null,
+        outcome: recoveryOutcome,
       });
       if (queued) {
         result.continuationRequeued += 1;
         result.issueIds.push(issue.id);
+      } else if (
+        recoveryOutcome.retryExhausted &&
+        !(await hasActiveExecutionPath(issue.companyId, issue.id, null))
+      ) {
+        // The failed run's bounded transient retries are all spent, so no
+        // successor will ever be queued for it. Escalate rather than skip
+        // on every sweep forever: the issue would otherwise stay
+        // `in_progress` with no run and no path until a person noticed.
+        // The live-path re-read guards the `blocked` write against a run or
+        // wake that started after the loop's check.
+        const updated = await escalateStrandedAssignedIssue({
+          issue,
+          previousStatus: "in_progress",
+          latestRun,
+          notice: {
+            body:
+              "Paperclip retried this issue's run after it ended without finishing, but the bounded retry budget " +
+              "is spent and it still has no live execution path. " +
+              "Moving it to `blocked` so it is visible for intervention.",
+            title: "No live execution path",
+            tone: "danger",
+          },
+        });
+        if (updated) {
+          result.escalated += 1;
+          result.issueIds.push(issue.id);
+        } else {
+          result.skipped += 1;
+        }
       } else {
         result.skipped += 1;
       }
