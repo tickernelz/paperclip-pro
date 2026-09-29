@@ -182,7 +182,8 @@ export function createOmpOutputAccumulator(): OmpOutputAccumulator {
 
     const stopReason = string(message.stopReason).trim();
     if (stopReason === "error" || stopReason === "aborted") {
-      terminalError = string(message.errorMessage).trim() || `OMP request ${stopReason}.`;
+      const messageError = string(message.errorMessage).trim() || `OMP request ${stopReason}.`;
+      if (!terminalError || !terminalError.includes(messageError)) terminalError = messageError;
     } else if (stopReason && stopReason !== "unknown") {
       terminalError = null;
     }

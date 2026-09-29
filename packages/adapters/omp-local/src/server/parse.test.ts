@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { classifyOmpFailure } from "./failure.js";
 import { createOmpOutputAccumulator } from "./parse.js";
 
 const CAPTURED_TOOL_START = "{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_455341\",\"toolName\":\"bash\",\"args\":{\"command\":\"echo alpha\"},\"intent\":\"Echoing alpha string again\"}";
@@ -32,5 +33,49 @@ describe("createOmpOutputAccumulator redaction salvage", () => {
     const { toolCalls } = accumulator.result();
     expect(toolCalls).toHaveLength(1);
     expect(toolCalls[0]!.result).not.toBeNull();
+  });
+});
+
+describe("createOmpOutputAccumulator retry exhaustion", () => {
+  const providerError = "400 credit insufficient balance: balance=14655 required=14892 (request id: r1)";
+  const failedAssistant = {
+    role: "assistant",
+    content: [],
+    provider: "tiprouter",
+    model: "deepseek-v4.1-flash",
+    stopReason: "error",
+    errorMessage: providerError,
+  };
+  const finalError = `Provider requested 1800000ms wait, exceeds retry.maxDelayMs (300000ms). Original error: ${providerError}`;
+
+  it("keeps OMP's retry verdict when agent_end replays the failed message", () => {
+    const accumulator = createOmpOutputAccumulator();
+    accumulator.push(JSON.stringify({ type: "message_end", message: failedAssistant }));
+    accumulator.push(JSON.stringify({ type: "auto_retry_end", success: false, attempt: 1, finalError }));
+    accumulator.push(JSON.stringify({ type: "agent_end", messages: [failedAssistant] }));
+
+    const [parsedError] = accumulator.result().errors;
+    expect(parsedError).toBe(finalError);
+    const before = Date.now();
+    const classified = classifyOmpFailure({
+      parsedError: parsedError!,
+      stderr: "",
+      timedOut: false,
+      exitCode: 1,
+      signal: null,
+    });
+    expect(classified.errorFamily).toBe("provider_quota");
+    expect(Date.parse(classified.retryNotBefore ?? "") - before).toBeGreaterThanOrEqual(1_800_000 - 1_000);
+  });
+
+  it("reports a later, different failure instead of the earlier retry verdict", () => {
+    const accumulator = createOmpOutputAccumulator();
+    accumulator.push(JSON.stringify({ type: "auto_retry_end", success: false, attempt: 1, finalError }));
+    accumulator.push(JSON.stringify({
+      type: "message_end",
+      message: { ...failedAssistant, errorMessage: "tool crashed unexpectedly" },
+    }));
+
+    expect(accumulator.result().errors).toEqual(["tool crashed unexpectedly"]);
   });
 });
