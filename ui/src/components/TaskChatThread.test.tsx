@@ -3333,6 +3333,27 @@ describe("TaskChatThread mobile composer dock (PAP-495)", () => {
     expect(dock?.className).not.toContain("bottom-(--sz-calc-8)");
     expect(dock?.className).not.toContain("transition-[bottom]");
   });
+
+  it("exposes the measured dock height on mobile, so the thread reserves it", () => {
+    sidebarState.isMobile = true;
+
+    render(<TaskChatThread comments={[]} onAdd={async () => {}} />);
+
+    const dock = container.querySelector(
+      '[data-testid="task-chat-composer-dock"]',
+    );
+    expect(dock?.hasAttribute("data-composer-reserve")).toBe(true);
+  });
+
+  it("leaves the desktop dock unmeasured", () => {
+    render(<TaskChatThread comments={[]} onAdd={async () => {}} />);
+
+    const dock = container.querySelector(
+      '[data-testid="task-chat-composer-dock"]',
+    );
+    expect(dock).not.toBeNull();
+    expect(dock?.hasAttribute("data-composer-reserve")).toBe(false);
+  });
 });
 
 describe("TaskChatThread live transcript", () => {

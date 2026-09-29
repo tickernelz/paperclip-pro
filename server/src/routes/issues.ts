@@ -5,10 +5,13 @@ import { getExecutionBlocker } from "../services/execution-blocker.js";
 import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
+  readIssueRunModelOverride,
   readIssueRunModelOverrideInheritance,
   resolveIssueRunModelOverrideUpdate,
   writeIssueRunModelOverride,
 } from "../services/issue-run-model-override.js";
+import type { IssueRunModelOverrideValues } from "../services/issue-run-model-override.js";
+import type { IssueRunModelOverrideInheritance } from "@tickernelz/paperclip-pro-shared";
 import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
 import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
@@ -13115,8 +13118,18 @@ export function issueRoutes(
         deferWakeForGoal,
         hiddenAt: hiddenAtRaw,
         onBehalfOfUserId: _requestedOnBehalfOfUserId,
+        modelOverride: requestedModelOverride,
         ...updateFields
       } = req.body;
+      if (requestedModelOverride !== undefined) {
+        if (req.actor.type === "agent") {
+          res.status(403).json({
+            error: "Agents cannot change the per-task model override",
+          });
+          return;
+        }
+        assertBoard(req);
+      }
       if (existing.conversationAgentId && req.actor.type === "board" && commentBody) {
         throw unprocessable("Send conversation messages through the comments endpoint with a clientRequestId");
       }
@@ -13129,6 +13142,7 @@ export function issueRoutes(
                 "assigneeAgentId",
                 "assigneeUserId",
                 "deferWakeForGoal",
+                "modelOverride",
               ].includes(key),
           ))
       ) {
@@ -13656,6 +13670,94 @@ export function issueRoutes(
       const assigneeWillChange =
         nextAssigneeAgentId !== existing.assigneeAgentId ||
         nextAssigneeUserId !== existing.assigneeUserId;
+      const storedModelOverride = readIssueRunModelOverride(
+        existing.assigneeAdapterOverrides,
+      );
+      const staleModelOverridePossible =
+        nextAssigneeAgentId !== existing.assigneeAgentId &&
+        Boolean(storedModelOverride.model || storedModelOverride.thinking);
+      const [modelOverrideAgent, previousModelOverrideAgent] = await Promise.all([
+        requestedModelOverride !== undefined || staleModelOverridePossible
+          ? loadIssueRunModelOverrideAgent(existing.companyId, nextAssigneeAgentId)
+          : null,
+        staleModelOverridePossible
+          ? loadIssueRunModelOverrideAgent(existing.companyId, existing.assigneeAgentId)
+          : null,
+      ]);
+      let resolvedModelOverride: {
+        assigneeAdapterOverrides: Record<string, unknown> | null;
+        values: IssueRunModelOverrideValues;
+        inheritance: IssueRunModelOverrideInheritance;
+      } | null = null;
+      if (requestedModelOverride) {
+        let values: IssueRunModelOverrideValues;
+        try {
+          values = await resolveIssueRunModelOverrideUpdate({
+            adapterType: modelOverrideAgent?.adapterType ?? null,
+            values: {
+              ...(requestedModelOverride.model !== undefined
+                ? { model: requestedModelOverride.model }
+                : {}),
+              ...(requestedModelOverride.thinking !== undefined
+                ? { thinking: requestedModelOverride.thinking }
+                : {}),
+            },
+          });
+        } catch (error) {
+          if (error instanceof IssueRunModelOverrideError) {
+            throw unprocessable(error.message);
+          }
+          throw error;
+        }
+        const storedInheritance = readIssueRunModelOverrideInheritance(
+          existing.assigneeAdapterOverrides,
+        );
+        const inheritance = {
+          ...storedInheritance,
+          inheritToSubtasks:
+            typeof requestedModelOverride.inheritToSubtasks === "boolean"
+              ? requestedModelOverride.inheritToSubtasks
+              : storedInheritance.inheritToSubtasks,
+          subtaskScope:
+            requestedModelOverride.subtaskScope ?? storedInheritance.subtaskScope,
+          inherited: false,
+          sourceIssueId: null,
+        };
+        const crossesAdapters =
+          staleModelOverridePossible &&
+          modelOverrideAgent?.adapterType !== previousModelOverrideAgent?.adapterType;
+        const writtenValues: IssueRunModelOverrideValues = crossesAdapters
+          ? { model: null, thinking: null, ...values }
+          : values;
+        resolvedModelOverride = {
+          assigneeAdapterOverrides: writeIssueRunModelOverride(
+            existing.assigneeAdapterOverrides,
+            writtenValues,
+            inheritance,
+          ),
+          values: writtenValues,
+          inheritance,
+        };
+      } else if (
+        staleModelOverridePossible &&
+        modelOverrideAgent?.adapterType !== previousModelOverrideAgent?.adapterType
+      ) {
+        const inheritance = {
+          ...readIssueRunModelOverrideInheritance(existing.assigneeAdapterOverrides),
+          inherited: false,
+          sourceIssueId: null,
+        };
+        const values: IssueRunModelOverrideValues = { model: null, thinking: null };
+        resolvedModelOverride = {
+          assigneeAdapterOverrides: writeIssueRunModelOverride(
+            existing.assigneeAdapterOverrides,
+            values,
+            inheritance,
+          ),
+          values,
+          inheritance,
+        };
+      }
       const isAgentReturningIssueToCreator =
         req.actor.type === "agent" &&
         !!req.actor.agentId &&
@@ -13800,6 +13902,9 @@ export function issueRoutes(
       const postCommitIssueActions: IssuePostCommitAction[] = [];
       const issueUpdateData = {
         ...updateFields,
+        ...(resolvedModelOverride
+          ? { assigneeAdapterOverrides: resolvedModelOverride.assigneeAdapterOverrides }
+          : {}),
         actorAgentId: actor.agentId ?? null,
         actorUserId: actor.actorType === "user" ? actor.actorId : null,
       };
@@ -14046,6 +14151,35 @@ export function issueRoutes(
       for (const publication of postCommitActivityPublications)
         publishActivity(publication);
       await flushIssuePostCommitActions(postCommitIssueActions);
+      if (resolvedModelOverride) {
+        const propagation =
+          resolvedModelOverride.inheritance.inheritToSubtasks &&
+          resolvedModelOverride.inheritance.subtaskScope === "new_and_existing"
+            ? await applyIssueRunModelOverrideToSubtree(db, {
+                companyId: existing.companyId,
+                rootIssueId: existing.id,
+                values: resolvedModelOverride.values,
+                subtaskScope: resolvedModelOverride.inheritance.subtaskScope,
+              })
+            : null;
+        await logActivity(db, {
+          companyId: existing.companyId,
+          actorType: actor.actorType,
+          actorId: actor.actorId,
+          agentId: actor.agentId,
+          runId: actor.runId,
+          action: "issue.run_model_override_updated",
+          entityType: "issue",
+          entityId: existing.id,
+          issueId: existing.id,
+          details: {
+            values: resolvedModelOverride.values,
+            inheritance: resolvedModelOverride.inheritance,
+            propagation,
+            assigneeAgentId: nextAssigneeAgentId,
+          },
+        });
+      }
 
       if (enteringBlocked) {
         const blockedIssue = issue;

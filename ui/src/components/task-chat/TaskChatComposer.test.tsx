@@ -13,6 +13,7 @@ import { QuestionForm } from "./QuestionForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
 import { issuesApi } from "@/api/issues";
+import { agentsApi } from "@/api/agents";
 import { DRAFT_DEBOUNCE_MS } from "../../lib/composer-draft";
 import {
   loadDraftSubmission,
@@ -185,8 +186,20 @@ vi.mock("@/api/issues", async (importOriginal) => {
   };
 });
 
+vi.mock("@/api/agents", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/api/agents")>();
+  return {
+    ...actual,
+    agentsApi: {
+      ...actual.agentsApi,
+      batchAdapterConfigPreview: vi.fn().mockResolvedValue({ fields: [], agents: [] }),
+    },
+  };
+});
+
 let container: HTMLDivElement;
 let root: Root | null = null;
+let queryClient: QueryClient;
 let originalRangeRect: typeof Range.prototype.getBoundingClientRect;
 
 beforeEach(() => {
@@ -194,6 +207,9 @@ beforeEach(() => {
   container = document.createElement("div");
   document.body.appendChild(container);
   root = createRoot(container);
+  queryClient = new QueryClient({
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
+  });
   mdxEditorMockState.imagePluginOptions = null;
   // jsdom ranges have zero-size rects; the mention menu measures the caret.
   originalRangeRect = Range.prototype.getBoundingClientRect;
@@ -219,7 +235,9 @@ afterEach(() => {
 });
 
 function render(ui: ReactElement) {
-  flushSync(() => root!.render(ui));
+  flushSync(() =>
+    root!.render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+  );
 }
 
 async function flushAsync() {
@@ -236,6 +254,97 @@ function sendButton() {
   return container.querySelector<HTMLButtonElement>(
     '[data-testid="task-chat-composer-send"]',
   )!;
+}
+
+function modeChip() {
+  return container.querySelector<HTMLButtonElement>(
+    '[data-testid="task-chat-composer-mode"]',
+  );
+}
+
+const globalPointerEvent = globalThis as { PointerEvent?: typeof MouseEvent };
+if (!globalPointerEvent.PointerEvent) globalPointerEvent.PointerEvent = MouseEvent;
+if (typeof Element !== "undefined" && !Element.prototype.hasPointerCapture) {
+  Element.prototype.hasPointerCapture = () => false;
+  Element.prototype.releasePointerCapture = () => undefined;
+  Element.prototype.setPointerCapture = () => undefined;
+}
+
+async function openAddMenu() {
+  const trigger = container.querySelector<HTMLButtonElement>(
+    '[data-testid="task-chat-composer-add"]',
+  )!;
+  await act(async () => {
+    trigger.dispatchEvent(
+      new PointerEvent("pointerdown", { bubbles: true, button: 0 }),
+    );
+    trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
+  await flushAsync();
+}
+
+async function closeOverlays() {
+  await act(async () => {
+    document.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  });
+  await flushAsync();
+}
+
+async function clickMenuItem(testId: string) {
+  const item = document.querySelector<HTMLElement>(`[data-testid="${testId}"]`)!;
+  await act(async () => {
+    item.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, button: 0 }));
+    item.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, button: 0 }));
+    item.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+  });
+  await flushAsync();
+}
+
+function dragRangeTo(input: HTMLInputElement, value: number) {
+  const setter = Object.getOwnPropertyDescriptor(
+    HTMLInputElement.prototype,
+    "value",
+  )!.set!;
+  flushSync(() => {
+    setter.call(input, String(value));
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+function releaseRange(input: HTMLInputElement) {
+  flushSync(() => {
+    input.dispatchEvent(new PointerEvent("pointerup", { bubbles: true }));
+  });
+}
+
+async function openRunSettings() {
+  const trigger = container.querySelector<HTMLButtonElement>(
+    '[data-testid="task-chat-composer-assignee"]',
+  )!;
+  await act(async () => {
+    trigger.click();
+  });
+  await flushAsync();
+}
+
+async function pickAssignee(label: string) {
+  await openRunSettings();
+  const row = document.querySelector<HTMLButtonElement>(
+    '[data-testid="composer-run-settings-assignee-row"]',
+  )!;
+  await act(async () => {
+    row.click();
+  });
+  const option = [
+    ...document.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+  ].find((button) => button.textContent?.includes(label));
+  expect(option).toBeDefined();
+  await act(async () => {
+    option!.click();
+  });
+  await flushAsync();
 }
 
 /** Simulate typing: set the contenteditable's text and fire an input event. */
@@ -791,12 +900,8 @@ describe("TaskChatComposer", () => {
       />,
     );
 
-    const composer = container.firstElementChild as HTMLElement;
-    const mode = container.querySelector<HTMLElement>(
-      '[data-testid="task-chat-composer-mode"]',
-    )!;
-    const runner = container.querySelector<HTMLElement>(
-      '[data-testid="task-chat-composer-assignee"]',
+    const composer = container.querySelector<HTMLElement>(
+      ".paperclip-task-chat-composer",
     )!;
 
     expect(composer.classList).toContain("border");
@@ -807,19 +912,14 @@ describe("TaskChatComposer", () => {
     expect(composer.classList).toContain("dark:bg-muted");
     expect(composer.classList).toContain("dark:shadow-none");
     expect(composer.className).not.toContain("focus-within:ring");
-    expect(mode.classList).not.toContain("border");
-    expect(mode.className).not.toContain("ring-");
-    expect(runner.classList).toContain("border-0");
-    expect(runner.classList).not.toContain("border");
-    expect(runner.className).not.toContain("ring-2");
   });
 
   it("scopes the wrapping placeholder override to the task-chat composer", () => {
     render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" />);
 
-    expect(container.firstElementChild?.classList).toContain(
-      "paperclip-task-chat-composer",
-    );
+    expect(
+      container.querySelector(".paperclip-task-chat-composer"),
+    ).not.toBeNull();
   });
 
   it("uses a compact mobile editor that can grow with the message", () => {
@@ -880,15 +980,11 @@ describe("TaskChatComposer", () => {
       />,
     );
 
-    const chip = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-composer-mode"]',
-    )!;
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("standard");
-    expect(chip.textContent).toContain("Auto");
+    expect(modeChip()).toBeNull();
 
     pressKey("Tab", { shiftKey: true });
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("planning");
-    expect(chip.textContent).toContain("Plan");
+    expect(modeChip()!.getAttribute("data-pending-work-mode")).toBe("planning");
+    expect(modeChip()!.textContent).toContain("Plan");
 
     typeText("do the plan");
     pressKey("Enter", { metaKey: true });
@@ -908,13 +1004,13 @@ describe("TaskChatComposer", () => {
       />,
     );
 
-    const chip = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-composer-mode"]',
+    const addTrigger = container.querySelector<HTMLButtonElement>(
+      '[data-testid="task-chat-composer-add"]',
     )!;
     editable().focus();
 
-    expect(chip.getAttribute("aria-keyshortcuts")).toContain("Meta+Period");
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("standard");
+    expect(addTrigger.getAttribute("aria-keyshortcuts")).toContain("Meta+Period");
+    expect(modeChip()).toBeNull();
 
     const cycleMode = () => {
       const event = new KeyboardEvent("keydown", {
@@ -929,16 +1025,15 @@ describe("TaskChatComposer", () => {
     };
 
     cycleMode();
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("planning");
-    expect(chip.textContent).toContain("Plan");
+    expect(modeChip()!.getAttribute("data-pending-work-mode")).toBe("planning");
+    expect(modeChip()!.textContent).toContain("Plan");
 
     cycleMode();
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("ask");
-    expect(chip.textContent).toContain("Ask");
+    expect(modeChip()!.getAttribute("data-pending-work-mode")).toBe("ask");
+    expect(modeChip()!.textContent).toContain("Ask");
 
     cycleMode();
-    expect(chip.getAttribute("data-pending-work-mode")).toBe("standard");
-    expect(chip.textContent).toContain("Auto");
+    expect(modeChip()).toBeNull();
     expect(onWorkModeChange).not.toHaveBeenCalled();
   });
 
@@ -954,21 +1049,17 @@ describe("TaskChatComposer", () => {
       />,
     );
 
-    const mode = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-composer-mode"]',
-    )!;
     const assignee = container.querySelector<HTMLButtonElement>(
       '[data-testid="task-chat-composer-assignee"]',
     )!;
     const send = sendButton();
 
-    expect(mode.classList).not.toContain("border");
-    expect(mode.classList).toContain("border-0");
-    expect(mode.classList).toContain("status-chip");
-    expect(mode.style.getPropertyValue("--sc")).toBe("var(--tc-mode-agent)");
-    expect(assignee.classList).toContain("border-0");
-    expect(assignee.classList).toContain("shadow-none");
+    expect(modeChip()).toBeNull();
+    expect(assignee.className).not.toContain("border");
     expect(send.classList).toContain("rounded-full");
+    expect(send.classList).toContain("aspect-square");
+    expect(send.classList).toContain("shrink-0");
+    expect(send.classList).toContain("min-w-8");
     expect(send.classList).toContain("bg-foreground");
     expect(send.classList).toContain("text-background");
     expect(send.classList).toContain("disabled:opacity-100");
@@ -992,21 +1083,25 @@ describe("TaskChatComposer", () => {
     expect(onAdd).toHaveBeenCalledWith("wake up", true, undefined, undefined, expect.any(String), undefined);
   });
 
-  it("hides the attach button without an upload handler and shows it with one", () => {
-    render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" />);
-    expect(
-      container.querySelector('[data-testid="task-chat-composer-attach"]'),
-    ).toBeNull();
+  it("offers the Add menu file item only with an upload handler", async () => {
+    render(
+      <TaskChatComposer onAdd={vi.fn()} workMode="standard" onWorkModeChange={vi.fn()} />,
+    );
+    await openAddMenu();
+    expect(document.querySelector('[data-testid="composer-add-file"]')).toBeNull();
+    await closeOverlays();
 
     render(
       <TaskChatComposer
         onAdd={vi.fn()}
         workMode="standard"
+        onWorkModeChange={vi.fn()}
         onAttachImage={vi.fn().mockResolvedValue(undefined)}
       />,
     );
+    await openAddMenu();
     expect(
-      container.querySelector('[data-testid="task-chat-composer-attach"]'),
+      document.querySelector('[data-testid="composer-add-file"]'),
     ).not.toBeNull();
   });
 
@@ -1332,6 +1427,38 @@ describe("TaskChatComposer", () => {
       usageReporting: true,
     };
 
+    it("starts a Goal draft with the editor's command separator so typed text stays an argument", async () => {
+      const onRunnerGoalCommand = vi.fn().mockResolvedValue(undefined);
+      render(
+        <TaskChatComposer
+          onAdd={vi.fn()}
+          workMode="standard"
+          onWorkModeChange={vi.fn()}
+          runnerGoalCapability={capability}
+          onRunnerGoalCommand={onRunnerGoalCommand}
+        />,
+      );
+
+      await openAddMenu();
+      await clickMenuItem("composer-add-goal");
+
+      const started = editable().textContent!;
+      expect(started).toBe("/goal\u00a0");
+      typeText(`${started}ship the welcome note`);
+      expect(parseRunnerGoalCommand(editable().textContent!)).toEqual({
+        matched: true,
+        command: { action: "create", objective: "ship the welcome note" },
+      });
+
+      pressKey("Enter", { metaKey: true });
+      await flushAsync();
+
+      expect(onRunnerGoalCommand).toHaveBeenCalledWith({
+        action: "create",
+        objective: "ship the welcome note",
+      });
+    });
+
     it("matches only an exact first /goal token", () => {
       expect(parseRunnerGoalCommand(" /goal Ship the feature ")).toEqual({
         matched: true,
@@ -1435,17 +1562,7 @@ describe("TaskChatComposer", () => {
         />,
       );
 
-      const trigger = container.querySelector<HTMLButtonElement>(
-        '[data-testid="task-chat-composer-assignee"]',
-      )!;
-      flushSync(() => trigger.click());
-      await flushAsync();
-      const option = [
-        ...document.body.querySelectorAll<HTMLButtonElement>("button"),
-      ].find((button) => button.textContent?.trim() === "Clippy");
-      expect(option).toBeDefined();
-      flushSync(() => option!.click());
-      await flushAsync();
+      await pickAssignee("Clippy");
 
       typeText("/goal Ship the feature");
       pressKey("Enter", { metaKey: true });
@@ -1543,8 +1660,13 @@ describe("TaskChatComposer", () => {
       trigger.querySelector('[data-assignee-trigger-icon="rocket"]'),
     ).not.toBeNull();
 
-    flushSync(() => {
-      trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    await openRunSettings();
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-assignee-row"]',
+        )!
+        .click();
     });
     await flushAsync();
 
@@ -1582,20 +1704,7 @@ describe("TaskChatComposer", () => {
     const trigger = container.querySelector<HTMLButtonElement>(
       '[data-testid="task-chat-composer-assignee"]',
     )!;
-    flushSync(() => {
-      trigger.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushAsync();
-
-    const userOptionAvatar = document.querySelector(
-      '[data-assignee-option-avatar="user:u1"]',
-    );
-    expect(userOptionAvatar).not.toBeNull();
-    const userOption = userOptionAvatar?.closest("button");
-    flushSync(() => {
-      userOption?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushAsync();
+    await pickAssignee("Sam Rivera");
 
     expect(trigger.textContent).toContain("Sam Rivera");
     expect(
@@ -1977,7 +2086,7 @@ describe("TaskChatComposer", () => {
   });
 
   describe("composer takeovers", () => {
-    it("replaces the editor with one action surface and exposes Skip", async () => {
+    it("shows the action surface above a usable editor and exposes Skip", async () => {
       const onSkip = vi.fn().mockResolvedValue(undefined);
       render(
         <TaskChatComposer
@@ -1999,7 +2108,7 @@ describe("TaskChatComposer", () => {
         container.querySelector('[data-testid="task-chat-composer-takeover"]')
           ?.textContent,
       ).toContain("Which environment should receive this?");
-      expect(container.querySelector('[data-testid="mdx-editor"]')).toBeNull();
+      expect(container.querySelector('[data-testid="mdx-editor"]')).not.toBeNull();
       expect(container.textContent).not.toContain("Input needed");
       expect(container.textContent).not.toContain("Write instead");
       const skip = Array.from(
@@ -2980,5 +3089,471 @@ describe("composer subtask switches", () => {
         "1 of 1 subtasks updated",
       ),
     );
+  });
+});
+
+describe("composer add menu", () => {
+  it("turns Plan mode on from the menu and off from the chip", async () => {
+    const onWorkModeChange = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskChatComposer
+        onAdd={vi.fn()}
+        workMode="standard"
+        onWorkModeChange={onWorkModeChange}
+      />,
+    );
+
+    expect(modeChip()).toBeNull();
+    await openAddMenu();
+    await clickMenuItem("composer-add-plan");
+
+    expect(modeChip()!.getAttribute("data-pending-work-mode")).toBe("planning");
+    expect(modeChip()!.textContent).toContain("Plan");
+
+    await act(async () => {
+      modeChip()!.click();
+    });
+    await flushAsync();
+
+    expect(modeChip()).toBeNull();
+    expect(onWorkModeChange).not.toHaveBeenCalled();
+  });
+
+  it("turns Ask mode on and off from the same menu item", async () => {
+    render(
+      <TaskChatComposer onAdd={vi.fn()} workMode="standard" onWorkModeChange={vi.fn()} />,
+    );
+
+    await openAddMenu();
+    await clickMenuItem("composer-add-ask");
+    expect(modeChip()!.getAttribute("data-pending-work-mode")).toBe("ask");
+
+    await openAddMenu();
+    await clickMenuItem("composer-add-ask");
+    expect(modeChip()).toBeNull();
+  });
+
+  it("still parses /steer into the delivery mode with the Add menu present", async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskChatComposer onAdd={onAdd} workMode="standard" onWorkModeChange={vi.fn()} />,
+    );
+
+    expect(
+      container.querySelector('[data-testid="task-chat-composer-add"]'),
+    ).not.toBeNull();
+    typeText("/steer look at the failing test first");
+    pressKey("Enter", { metaKey: true });
+    await flushAsync();
+
+    expect(onAdd).toHaveBeenCalledWith(
+      "look at the failing test first",
+      undefined,
+      undefined,
+      undefined,
+      expect.any(String),
+      "steer",
+    );
+  });
+});
+
+describe("pending interaction card above the composer", () => {
+  it("keeps the card and the editor usable while an ordinary message is sent", async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    const onDismiss = vi.fn();
+    render(
+      <TaskChatComposer
+        onAdd={onAdd}
+        workMode="standard"
+        takeover={{
+          id: "question-1",
+          label: "Deployment target",
+          pendingCount: 1,
+          content: <p>Which environment should receive this?</p>,
+          onDismiss,
+          onSkip: vi.fn(),
+        }}
+      />,
+    );
+
+    const card = container.querySelector('[data-testid="task-chat-composer-takeover"]')!;
+    const composer = container.querySelector(".paperclip-task-chat-composer")!;
+    expect(card.compareDocumentPosition(composer)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+    expect(card.className).toContain("max-h-(--tc-interaction-card-max-h)");
+
+    typeText("let me clarify something first");
+    expect(sendButton().disabled).toBe(false);
+    pressKey("Enter", { metaKey: true });
+    await flushAsync();
+    await flushAsync();
+
+    expect(onAdd).toHaveBeenCalledWith(
+      "let me clarify something first",
+      undefined,
+      undefined,
+      undefined,
+      expect.any(String),
+      undefined,
+    );
+    expect(
+      container.querySelector('[data-testid="task-chat-composer-takeover"]'),
+    ).not.toBeNull();
+    expect(onDismiss).not.toHaveBeenCalled();
+    expect(
+      container.querySelector('[data-testid="task-chat-pending-input-indicator"]'),
+    ).toBeNull();
+  });
+});
+
+describe("composer run settings picker", () => {
+  const thinkingOptions = [
+    "auto",
+    "off",
+    "minimal",
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max",
+  ].map((value) => ({ value, label: value }));
+  const ompView: IssueRunModelOverrideView = {
+    issueId: "issue-9",
+    agentId: "a1",
+    adapterType: "omp_local",
+    supported: true,
+    unsupportedReason: null,
+    fields: [
+      {
+        key: "model",
+        label: "Model",
+        hint: null,
+        freeText: true,
+        options: [{ value: "anthropic/claude-opus-5", label: "Claude Opus 5" }],
+        agentDefault: "anthropic/claude-sonnet-4",
+        override: null,
+        effective: "anthropic/claude-sonnet-4",
+      },
+      {
+        key: "thinking",
+        label: "OMP thinking override",
+        hint: null,
+        freeText: false,
+        options: thinkingOptions,
+        agentDefault: null,
+        override: null,
+        effective: null,
+      },
+    ],
+    inheritance: {
+      inheritToSubtasks: true,
+      subtaskScope: "new",
+      inherited: false,
+      sourceIssueId: null,
+    },
+    propagation: null,
+  };
+
+  beforeEach(() => {
+    vi.mocked(issuesApi.getModelOverride).mockClear().mockResolvedValue(ompView);
+    vi.mocked(issuesApi.setModelOverride).mockClear().mockResolvedValue(ompView);
+    vi.mocked(agentsApi.batchAdapterConfigPreview).mockResolvedValue({
+      fields: [
+        {
+          key: "model",
+          label: "Model",
+          hint: null,
+          freeText: true,
+          options: [{ value: "openai/gpt-5", label: "GPT-5" }],
+        },
+      ],
+      agents: [
+        {
+          agentId: "a2",
+          name: "Scout",
+          adapterType: "omp_local",
+          eligible: true,
+          reason: null,
+          current: { model: "openai/gpt-4.1" },
+        },
+      ],
+    });
+  });
+
+  it("writes only the changed omp_local field through the model-override endpoint", async () => {
+    render(
+      <TaskChatComposer
+        onAdd={vi.fn()}
+        workMode="standard"
+        issueId="issue-9"
+        enableReassign
+        reassignOptions={[{ id: "agent:a1", label: "Clippy" }]}
+        currentAssigneeValue="agent:a1"
+      />,
+    );
+    await flushAsync();
+    await openRunSettings();
+
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[data-testid="composer-run-settings-model-value"]')
+          ?.textContent,
+      ).toBe("claude-sonnet-4"),
+    );
+    const thinkingRange = () =>
+      document.querySelector<HTMLInputElement>(
+        '[data-testid="composer-run-settings-range-thinking"]',
+      )!;
+    expect(thinkingRange().max).toBe(String(thinkingOptions.length));
+    expect(
+      document.querySelector('[data-testid="task-model-override-inherit"]'),
+    ).not.toBeNull();
+
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-model-row"]',
+        )!
+        .click();
+    });
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-model-option-anthropic/claude-opus-5"]',
+        )!
+        .click();
+    });
+    await flushAsync();
+
+    expect(issuesApi.setModelOverride).toHaveBeenCalledTimes(1);
+    expect(issuesApi.setModelOverride).toHaveBeenCalledWith("issue-9", {
+      model: "anthropic/claude-opus-5",
+    });
+
+    dragRangeTo(thinkingRange(), 3);
+    dragRangeTo(thinkingRange(), 5);
+    expect(thinkingRange().disabled).toBe(false);
+    expect(thinkingRange().value).toBe("5");
+    expect(issuesApi.setModelOverride).toHaveBeenCalledTimes(1);
+
+    releaseRange(thinkingRange());
+    await flushAsync();
+    expect(thinkingRange().value).toBe("5");
+
+    expect(issuesApi.setModelOverride).toHaveBeenLastCalledWith("issue-9", {
+      thinking: "medium",
+    });
+  });
+
+  it("shows the pending agent's defaults and applies the choice when the message lands", async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskChatComposer
+        onAdd={onAdd}
+        workMode="standard"
+        issueId="issue-9"
+        enableReassign
+        reassignOptions={[
+          { id: "agent:a1", label: "Clippy" },
+          { id: "agent:a2", label: "Scout" },
+        ]}
+        currentAssigneeValue="agent:a1"
+      />,
+    );
+    await flushAsync();
+    await pickAssignee("Scout");
+
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[data-testid="composer-run-settings-model-value"]')
+          ?.textContent,
+      ).toBe("gpt-4.1"),
+    );
+
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-model-row"]',
+        )!
+        .click();
+    });
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-model-option-openai/gpt-5"]',
+        )!
+        .click();
+    });
+    await flushAsync();
+
+    expect(issuesApi.setModelOverride).not.toHaveBeenCalled();
+
+    await closeOverlays();
+    typeText("take this over");
+    pressKey("Enter", { metaKey: true });
+    await flushAsync();
+    await flushAsync();
+
+    expect(onAdd).toHaveBeenCalledWith(
+      "take this over",
+      undefined,
+      {
+        assigneeAgentId: "a2",
+        assigneeUserId: null,
+        modelOverride: { model: "openai/gpt-5" },
+      },
+      undefined,
+      expect.any(String),
+      undefined,
+    );
+    expect(issuesApi.setModelOverride).not.toHaveBeenCalled();
+  });
+
+  it("hides run settings and sends no override when reassigning to a person", async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined);
+    render(
+      <TaskChatComposer
+        onAdd={onAdd}
+        workMode="standard"
+        issueId="issue-9"
+        enableReassign
+        reassignOptions={[
+          { id: "agent:a1", label: "Clippy" },
+          { id: "user:u2", label: "Dina" },
+        ]}
+        currentAssigneeValue="agent:a1"
+      />,
+    );
+    await flushAsync();
+    await pickAssignee("Dina");
+    await flushAsync();
+
+    expect(document.querySelector('[data-testid="composer-run-settings-model-row"]')).toBeNull();
+
+    await closeOverlays();
+    typeText("over to you");
+    pressKey("Enter", { metaKey: true });
+    await flushAsync();
+    await flushAsync();
+
+    expect(onAdd).toHaveBeenCalledWith(
+      "over to you",
+      undefined,
+      { assigneeAgentId: null, assigneeUserId: "u2" },
+      undefined,
+      expect.any(String),
+      undefined,
+    );
+  });
+
+  function renderReassignable(onAdd = vi.fn()) {
+    render(
+      <TaskChatComposer
+        onAdd={onAdd}
+        workMode="standard"
+        issueId="issue-9"
+        enableReassign
+        reassignOptions={[
+          { id: "agent:a1", label: "Clippy" },
+          { id: "agent:a2", label: "Scout" },
+        ]}
+        currentAssigneeValue="agent:a1"
+      />,
+    );
+  }
+
+  it("carries the task's stored override into a same-adapter reassign and keeps reset available", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue({
+      ...ompView,
+      fields: ompView.fields.map((field) =>
+        field.key === "model"
+          ? {
+              ...field,
+              override: "anthropic/claude-opus-5",
+              effective: "anthropic/claude-opus-5",
+            }
+          : field,
+      ),
+    });
+    renderReassignable();
+    await flushAsync();
+    await pickAssignee("Scout");
+
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[data-testid="composer-run-settings-model-value"]')
+          ?.textContent,
+      ).toBe("claude-opus-5"),
+    );
+    expect(
+      document.querySelector<HTMLButtonElement>(
+        '[data-testid="composer-run-settings-reset"]',
+      )!.disabled,
+    ).toBe(false);
+  });
+
+  it("shows the stored override cleared when the new assignee runs another adapter", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue({
+      ...ompView,
+      fields: ompView.fields.map((field) =>
+        field.key === "model"
+          ? {
+              ...field,
+              override: "anthropic/claude-opus-5",
+              effective: "anthropic/claude-opus-5",
+            }
+          : field,
+      ),
+    });
+    vi.mocked(agentsApi.batchAdapterConfigPreview).mockResolvedValue({
+      fields: [
+        {
+          key: "model",
+          label: "Model",
+          hint: null,
+          freeText: true,
+          options: [{ value: "openai/gpt-5", label: "GPT-5" }],
+        },
+      ],
+      agents: [
+        {
+          agentId: "a2",
+          name: "Scout",
+          adapterType: "codex_local",
+          eligible: true,
+          reason: null,
+          current: { model: "openai/gpt-4.1" },
+        },
+      ],
+    });
+    renderReassignable();
+    await flushAsync();
+    await pickAssignee("Scout");
+
+    await vi.waitFor(() =>
+      expect(
+        document.querySelector('[data-testid="composer-run-settings-model-value"]')
+          ?.textContent,
+      ).toBe("gpt-4.1"),
+    );
+  });
+
+  it("offers No assignee in the agents view", async () => {
+    renderReassignable();
+    await flushAsync();
+    await openRunSettings();
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="composer-run-settings-assignee-row"]',
+        )!
+        .click();
+    });
+
+    const options = [
+      ...document.querySelectorAll<HTMLButtonElement>('[role="option"]'),
+    ].map((option) => option.textContent);
+    expect(options.some((label) => label?.includes("No assignee"))).toBe(true);
   });
 });

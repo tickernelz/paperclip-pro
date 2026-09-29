@@ -1692,6 +1692,52 @@ describe("IssueDetail", () => {
     },
   );
 
+  it("sends the composer's run settings in the same update as the reassignment", async () => {
+    const issue = createIssue();
+    mockIssuesApi.get.mockResolvedValue(issue);
+    mockIssuesApi.addComment.mockClear().mockResolvedValue(createIssueComment());
+    mockIssuesApi.update
+      .mockClear()
+      .mockResolvedValue({ ...issue, comment: createIssueComment() });
+    await act(async () =>
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <IssueDetail />
+        </QueryClientProvider>,
+      ),
+    );
+    await waitForAssertion(() =>
+      expect(mockIssueChatThreadRender).toHaveBeenCalled(),
+    );
+    const props = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as {
+      onAdd(
+        body: string,
+        reopen?: boolean,
+        reassignment?: {
+          assigneeAgentId: string | null;
+          assigneeUserId: string | null;
+          modelOverride?: { model?: string | null; thinking?: string | null };
+        },
+      ): Promise<void>;
+    };
+
+    await act(async () =>
+      props.onAdd("Take this over", undefined, {
+        assigneeAgentId: "agent-2",
+        assigneeUserId: null,
+        modelOverride: { model: "openai/gpt-5" },
+      }),
+    );
+
+    expect(mockIssuesApi.update).toHaveBeenCalledWith(issue.identifier, {
+      comment: "Take this over",
+      commentClientRequestId: undefined,
+      assigneeAgentId: "agent-2",
+      assigneeUserId: null,
+      modelOverride: { model: "openai/gpt-5" },
+    });
+  });
+
   it("keeps hierarchy breadcrumbs and label chips out of the Streamlined task header", async () => {
     mockIssuesApi.get.mockResolvedValue(
       createIssue({

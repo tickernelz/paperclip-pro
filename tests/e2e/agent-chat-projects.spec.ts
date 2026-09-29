@@ -246,9 +246,9 @@ for (const mode of ["Ask", "Plan"])
     const f = await setup(request);
     try {
       await page.goto(f.route);
-      await page.getByTestId("task-chat-composer-mode").click();
+      await page.getByTestId("task-chat-composer-add").click();
       await page
-        .getByTestId("task-chat-composer-mode-menu")
+        .getByTestId("task-chat-composer-add-menu")
         .getByText(`${mode} mode`, { exact: true })
         .click();
       await send(page, { action: "project", name: "Forbidden mutation" });
@@ -387,9 +387,9 @@ test("plan approval hands the preserved revision to an assigned project task", a
   const f = await setup(request);
   try {
     await page.goto(f.route);
-    await page.getByTestId("task-chat-composer-mode").click();
+    await page.getByTestId("task-chat-composer-add").click();
     await page
-      .getByTestId("task-chat-composer-mode-menu")
+      .getByTestId("task-chat-composer-add-menu")
       .getByText("Plan mode", { exact: true })
       .click();
     await send(page, {

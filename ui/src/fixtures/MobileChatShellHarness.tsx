@@ -8,7 +8,7 @@ import { InlineEntitySelector } from "@/components/InlineEntitySelector";
 import { ModelOverrideSubtaskRows } from "@/components/task-chat/ModelOverrideSubtaskRows";
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
-import { composerDockClassName } from "@/components/task-chat/composer-dock";
+import { TaskChatComposerDock } from "@/components/task-chat/TaskChatComposerDock";
 import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
 import { useMobileNavAutoHide } from "@/hooks/useMobileNavAutoHide";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
@@ -301,12 +301,7 @@ function Harness() {
         </div>
         {showComposer ? (
           <>
-            <div
-              ref={dockRef}
-              data-testid="task-chat-composer-dock"
-              data-composer-reserve={reserve}
-              className={composerDockClassName({ isMobile: true, streamlinedUiEnabled: true })}
-            >
+            <TaskChatComposerDock ref={dockRef} mobile streamlined reserve={reserve}>
               <div className="relative isolate flex flex-col">
                 <textarea
                   data-testid="composer-input"
@@ -362,7 +357,7 @@ function Harness() {
                   />
                 </div>
               </div>
-            </div>
+            </TaskChatComposerDock>
             <div
               aria-hidden
               data-testid="task-chat-keyboard-spacer"

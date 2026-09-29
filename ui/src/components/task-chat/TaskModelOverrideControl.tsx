@@ -17,14 +17,14 @@ import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModelOverrideSubtaskRows } from "./ModelOverrideSubtaskRows";
 
-const AGENT_DEFAULT_LABEL = "Agent default";
+export const AGENT_DEFAULT_LABEL = "Agent default";
 
-function shortModelLabel(value: string): string {
+export function shortModelLabel(value: string): string {
   const slash = value.lastIndexOf("/");
   return slash >= 0 ? value.slice(slash + 1) : value;
 }
 
-function triggerLabel(fields: IssueRunModelOverrideField[]): string {
+export function triggerLabel(fields: IssueRunModelOverrideField[]): string {
   const parts = fields
     .filter((field) => field.override)
     .map((field) =>
@@ -186,7 +186,7 @@ export interface TaskModelOverrideDraft {
 
 const DRAFT_FIELD_KEYS: readonly IssueRunModelOverrideKey[] = ["model", "thinking"];
 
-function draftOverrideFields(
+export function draftOverrideFields(
   preview: AgentAdapterConfigBatchPreview | undefined,
   values: Partial<Record<IssueRunModelOverrideKey, string | null>>,
 ): IssueRunModelOverrideField[] {

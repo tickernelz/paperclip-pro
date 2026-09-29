@@ -27,7 +27,7 @@ async function dismissOpeningCard(page: import("@playwright/test").Page) {
   await expect(takeover.or(pendingStrip).first()).toBeVisible({ timeout: 30_000 });
   const cancel = takeover.getByRole("button", { name: "Cancel", exact: true });
   if (await cancel.count()) await cancel.first().click();
-  await expect(page.getByTestId("task-chat-composer-mode")).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByTestId("task-chat-composer-add")).toBeVisible({ timeout: 30_000 });
 }
 
 test("captures planning mode UI for desktop and mobile", async ({ page }) => {
@@ -176,8 +176,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   await page.goto(issuePath);
   await dismissOpeningCard(page);
   await page.getByTestId("task-chat-composer-mode").click();
-  await page.getByRole("menuitem", { name: /Auto mode/ }).click();
-  await expect(page.getByTestId("task-chat-composer-mode")).toHaveAttribute("data-pending-work-mode", "standard");
+  await expect(page.getByTestId("task-chat-composer-mode")).toHaveCount(0);
   await page.screenshot({
     path: `${screenshotDir}/desktop-standard-toggle-${timestamp}.png`,
     fullPage: true,

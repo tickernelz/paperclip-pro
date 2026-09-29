@@ -1,4 +1,8 @@
-import type { Issue, IssueComment } from "@tickernelz/paperclip-pro-shared";
+import type {
+  Issue,
+  IssueComment,
+  IssueRunModelOverrideUpdate,
+} from "@tickernelz/paperclip-pro-shared";
 
 /**
  * First-page size for the issue-detail comment feed. Single source of truth so
@@ -12,6 +16,8 @@ export const ISSUE_COMMENT_PAGE_SIZE = 50;
 export interface IssueCommentReassignment {
   assigneeAgentId: string | null;
   assigneeUserId: string | null;
+  /** Run settings for the incoming assignee; applied in the same issue update. */
+  modelOverride?: IssueRunModelOverrideUpdate;
 }
 
 export interface OptimisticIssueComment extends IssueComment {

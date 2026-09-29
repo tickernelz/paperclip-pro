@@ -276,12 +276,14 @@ test.describe("Board send delivery refresh", () => {
               ),
         };
         const chooserPromise = page.waitForEvent("filechooser");
-        await page
-          .getByRole("button", {
-            name: classic ? "Upload attachment" : "Attach file",
-            exact: true,
-          })
-          .click();
+        if (classic) {
+          await page
+            .getByRole("button", { name: "Upload attachment", exact: true })
+            .click();
+        } else {
+          await page.getByTestId("task-chat-composer-add").click();
+          await page.getByTestId("composer-add-file").click();
+        }
         const responsePromise = page.waitForResponse(
           (response) =>
             response.request().method() === "POST" &&

@@ -331,30 +331,30 @@
     {
       "id": "mcp:paperclipAskUserQuestions",
       "name": "paperclipAskUserQuestions",
-      "description": "Create an ask_user_questions interaction on an issue",
+      "description": "Create an ask_user_questions interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:714",
-      "expectedSemantics": "Create an ask_user_questions interaction on an issue",
+      "expectedSemantics": "Create an ask_user_questions interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "foldedInto": "eval:ix-questions-01",
       "evidenceId": "mcp:paperclipAskUserQuestions"
     },
     {
       "id": "mcp:paperclipRequestConfirmation",
       "name": "paperclipRequestConfirmation",
-      "description": "Create a request_confirmation interaction on an issue",
+      "description": "Create a request_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:726",
-      "expectedSemantics": "Create a request_confirmation interaction on an issue",
+      "expectedSemantics": "Create a request_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "foldedInto": "eval:ix-confirmation-plan-01",
       "evidenceId": "mcp:paperclipRequestConfirmation"
     },
     {
       "id": "mcp:paperclipRequestCheckboxConfirmation",
       "name": "paperclipRequestCheckboxConfirmation",
-      "description": "Create a request_checkbox_confirmation interaction on an issue",
+      "description": "Create a request_checkbox_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "sourceKind": "legacy_mcp_alias",
       "sourceAnchor": "packages/mcp-server/src/tools.ts:738",
-      "expectedSemantics": "Create a request_checkbox_confirmation interaction on an issue",
+      "expectedSemantics": "Create a request_checkbox_confirmation interaction on an issue. It stays pending when the user posts an ordinary comment; set payload.supersedeOnUserComment to true only when a new comment should replace it.",
       "foldedInto": "eval:ix-checkbox-01",
       "evidenceId": "mcp:paperclipRequestCheckboxConfirmation"
     },

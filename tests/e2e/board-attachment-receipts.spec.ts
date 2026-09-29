@@ -65,6 +65,7 @@ async function setup(page: Page, request: APIRequestContext, classic: boolean) {
     : page.getByTestId("task-chat-composer-send");
   await expect(editor).toBeVisible();
   return {
+    classic,
     company,
     issue,
     composer,
@@ -95,15 +96,27 @@ const files = [
   },
 ];
 
+async function pickFiles(
+  page: Page,
+  fixture: Awaited<ReturnType<typeof setup>>,
+) {
+  if (fixture.classic) {
+    await fixture.composer
+      .getByRole("button", { name: "Attach file", exact: true })
+      .click();
+    return;
+  }
+  await page.getByTestId("task-chat-composer-add").click();
+  await page.getByTestId("composer-add-file").click();
+}
+
 async function upload(
   page: Page,
   fixture: Awaited<ReturnType<typeof setup>>,
   file: (typeof files)[number],
 ) {
   const chooser = page.waitForEvent("filechooser");
-  await fixture.composer
-    .getByRole("button", { name: "Attach file", exact: true })
-    .click();
+  await pickFiles(page, fixture);
   const response = page.waitForResponse(
     (res) =>
       res.request().method() === "POST" &&
@@ -377,9 +390,7 @@ for (const classic of [false, true])
       },
     );
     const chooser = page.waitForEvent("filechooser");
-    await fixture.composer
-      .getByRole("button", { name: "Attach file", exact: true })
-      .click();
+    await pickFiles(page, fixture);
     await (await chooser).setFiles(files[1]!);
     await expect.poll(() => arrived).toBe(true);
     await expect(fixture.send).toBeDisabled();
@@ -431,9 +442,7 @@ test("legacy failed upload can be removed before sending the retained text", asy
       }),
   );
   const chooser = page.waitForEvent("filechooser");
-  await fixture.composer
-    .getByRole("button", { name: "Attach file", exact: true })
-    .click();
+  await pickFiles(page, fixture);
   await (await chooser).setFiles(files[0]!);
   await expect(
     fixture.composer.getByText("Fixture upload rejected", { exact: true }),

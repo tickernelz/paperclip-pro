@@ -353,6 +353,7 @@
 
   /* Mobile pinned-composer bottom offset; Layout pins it to the bottom-nav height. */
   --tc-composer-bottom: var(--sz-calc-8);
+  --tc-interaction-card-max-h: 50dvh;
 }
 
 /* Composed on the dock so it resolves against the --tc-composer-bottom Layout sets on <main>. */

@@ -21,6 +21,7 @@ import {
 } from "./helpers/route-test-harness.js";
 
 const ADAPTER_TYPE = "run_model_override_fake";
+const OTHER_ADAPTER_TYPE = "run_model_override_other_fake";
 
 const fakeAdapter = {
   type: ADAPTER_TYPE,
@@ -54,6 +55,30 @@ const fakeAdapter = {
   }),
 } as unknown as ServerAdapterModule;
 
+const otherFakeAdapter = {
+  type: OTHER_ADAPTER_TYPE,
+  execute: async () => {
+    throw new Error("not executed in this suite");
+  },
+  testEnvironment: async () => ({ status: "ok" as const, checks: [] }),
+  getConfigSchema: async () => ({
+    fields: [
+      {
+        key: "model",
+        label: "Model",
+        type: "select" as const,
+        options: [{ value: "other/only", label: "Only" }],
+      },
+      {
+        key: "thinking",
+        label: "Thinking",
+        type: "select" as const,
+        options: [{ value: "low", label: "low" }],
+      },
+    ],
+  }),
+} as unknown as ServerAdapterModule;
+
 interface Seeded extends SeededCompany {
   agentId: string;
   issueId: string;
@@ -71,11 +96,14 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
 
   beforeAll(() => {
     registerServerAdapter(fakeAdapter);
+    registerServerAdapter(otherFakeAdapter);
     invalidateAdapterConfigSchema(ADAPTER_TYPE);
+    invalidateAdapterConfigSchema(OTHER_ADAPTER_TYPE);
   });
 
   afterAll(() => {
     unregisterServerAdapter(ADAPTER_TYPE);
+    unregisterServerAdapter(OTHER_ADAPTER_TYPE);
   });
 
   async function seed(adapterConfig: Record<string, unknown> = {}): Promise<Seeded> {
@@ -104,6 +132,21 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
 
   const put = (seeded: Seeded, body: Record<string, unknown>) =>
     request(appFor(seeded)).put(`/api/issues/${seeded.issueId}/model-override`).send(body);
+
+  const patch = (seeded: Seeded, body: Record<string, unknown>) =>
+    request(appFor(seeded)).patch(`/api/issues/${seeded.issueId}`).send(body);
+
+  const seedAgent = async (seeded: Seeded, adapterType: string) => {
+    const agentId = randomUUID();
+    await ctx.db.insert(agents).values({
+      id: agentId,
+      companyId: seeded.companyId,
+      name: `Runner ${agentId}`,
+      adapterType,
+      adapterConfig: {},
+    });
+    return agentId;
+  };
 
   const storedOverrides = async (seeded: Seeded) =>
     ctx.db
@@ -230,5 +273,101 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
     const view = res.body as IssueRunModelOverrideView;
     expect(view.supported).toBe(false);
     expect(view.fields).toEqual([]);
+  });
+
+  it("stores the run settings for the next assignee in the reassignment update", async () => {
+    const seeded = await seed();
+    const nextAgentId = await seedAgent(seeded, OTHER_ADAPTER_TYPE);
+    await patch(seeded, {
+      assigneeAgentId: nextAgentId,
+      modelOverride: { model: "other/only", thinking: "low" },
+    }).expect(200);
+    expect(await storedOverrides(seeded)).toEqual({
+      adapterConfig: { model: "other/only", thinking: "low" },
+    });
+    const row = await ctx.db
+      .select({ assigneeAgentId: issues.assigneeAgentId })
+      .from(issues)
+      .where(eq(issues.id, seeded.issueId))
+      .then((rows) => rows[0]);
+    expect(row?.assigneeAgentId).toBe(nextAgentId);
+  });
+
+  it("rejects run settings the next assignee's adapter does not accept", async () => {
+    const seeded = await seed();
+    const nextAgentId = await seedAgent(seeded, OTHER_ADAPTER_TYPE);
+    await patch(seeded, {
+      assigneeAgentId: nextAgentId,
+      modelOverride: { thinking: "high" },
+    }).expect(422);
+    expect(await storedOverrides(seeded)).toBeNull();
+    const row = await ctx.db
+      .select({ assigneeAgentId: issues.assigneeAgentId })
+      .from(issues)
+      .where(eq(issues.id, seeded.issueId))
+      .then((rows) => rows[0]);
+    expect(row?.assigneeAgentId).toBe(seeded.agentId);
+  });
+
+  it("clears a stale model override when the reassignment crosses adapters", async () => {
+    const seeded = await seed();
+    await put(seeded, { model: "vendor/deep", inheritToSubtasks: false }).expect(200);
+    const nextAgentId = await seedAgent(seeded, OTHER_ADAPTER_TYPE);
+    await patch(seeded, { assigneeAgentId: nextAgentId }).expect(200);
+    expect(await storedOverrides(seeded)).toEqual({
+      modelOverrideInheritance: { inheritToSubtasks: false, subtaskScope: "new" },
+    });
+  });
+
+  it("keeps the model override when the reassignment stays on the same adapter", async () => {
+    const seeded = await seed();
+    await put(seeded, { model: "vendor/deep" }).expect(200);
+    const nextAgentId = await seedAgent(seeded, ADAPTER_TYPE);
+    await patch(seeded, { assigneeAgentId: nextAgentId }).expect(200);
+    expect(await storedOverrides(seeded)).toEqual({
+      adapterConfig: { model: "vendor/deep" },
+    });
+  });
+
+  it("drops the previous adapter's other key when a partial override crosses adapters", async () => {
+    const seeded = await seed();
+    await put(seeded, { model: "vendor/deep", thinking: "high" }).expect(200);
+    const nextAgentId = await seedAgent(seeded, OTHER_ADAPTER_TYPE);
+    await patch(seeded, {
+      assigneeAgentId: nextAgentId,
+      modelOverride: { model: "other/only" },
+    }).expect(200);
+    expect(await storedOverrides(seeded)).toMatchObject({
+      adapterConfig: { model: "other/only" },
+    });
+    expect((await storedOverrides(seeded))?.adapterConfig).not.toHaveProperty("thinking");
+  });
+
+  it("accepts run settings in a goal handoff that defers the wake", async () => {
+    const seeded = await seed();
+    const nextAgentId = await seedAgent(seeded, OTHER_ADAPTER_TYPE);
+    await patch(seeded, {
+      assigneeAgentId: nextAgentId,
+      deferWakeForGoal: true,
+      modelOverride: { thinking: "low" },
+    }).expect(200);
+    expect(await storedOverrides(seeded)).toEqual({
+      adapterConfig: { thinking: "low" },
+    });
+  });
+
+  it("rejects run settings sent by an agent actor", async () => {
+    const seeded = await seed();
+    const agentActor = {
+      type: "agent",
+      agentId: seeded.agentId,
+      companyId: seeded.companyId,
+      source: "agent_key",
+    } as unknown as typeof seeded.actor;
+    await request(routeApp(ctx.db, agentActor, issueRoutes))
+      .patch(`/api/issues/${seeded.issueId}`)
+      .send({ modelOverride: { model: "vendor/deep" } })
+      .expect(403);
+    expect(await storedOverrides(seeded)).toBeNull();
   });
 });

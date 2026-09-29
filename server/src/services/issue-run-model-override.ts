@@ -42,7 +42,7 @@ function nonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-function readIssueRunModelOverride(
+export function readIssueRunModelOverride(
   assigneeAdapterOverrides: unknown,
 ): Record<IssueRunModelOverrideKey, string | null> {
   const adapterConfig = asRecord(asRecord(assigneeAdapterOverrides).adapterConfig);

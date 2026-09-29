@@ -84,14 +84,17 @@ import {
   TaskChatThreadView,
   taskChatContentKey,
 } from "@/components/task-chat/TaskChatThreadView";
-import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
+import {
+  TaskChatComposer,
+  type CommentReassignment,
+} from "@/components/task-chat/TaskChatComposer";
 import {
   RunnerGoalWidget,
   useRunnerGoalControl,
 } from "@/components/task-chat/RunnerGoalWidget";
 import { TaskChatQueuedMessages } from "@/components/task-chat/TaskChatQueuedMessages";
 import { TaskChatWindowScroll } from "@/components/task-chat/useWindowAutoFollow";
-import { composerDockClassName } from "@/components/task-chat/composer-dock";
+import { TaskChatComposerDock } from "@/components/task-chat/TaskChatComposerDock";
 import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { useSidebar } from "@/context/SidebarContext";
@@ -599,10 +602,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   }, [currentAssigneeValue, issueId]);
 
   const reassignForRunnerGoal = useCallback(
-    async (reassignment: {
-      assigneeAgentId: string | null;
-      assigneeUserId: string | null;
-    }) => {
+    async (reassignment: CommentReassignment) => {
       if (!issueId)
         throw new Error("The task is not available for reassignment.");
       await issuesApi.update(issueId, {
@@ -2989,14 +2989,11 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             ) : null}
             {showComposer ? (
               <>
-              <div
+              <TaskChatComposerDock
                 ref={isMobile ? composerDockRef : undefined}
-                data-testid="task-chat-composer-dock"
-                data-composer-reserve={isMobile ? composerReserve : undefined}
-                className={composerDockClassName({
-                  isMobile,
-                  streamlinedUiEnabled,
-                })}
+                mobile={isMobile}
+                streamlined={streamlinedUiEnabled}
+                reserve={isMobile ? composerReserve : undefined}
               >
                 {composerAccessory}
                 {tailTurnStatus ? (
@@ -3099,7 +3096,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                   </div>
                 </div>
                 {footer}
-              </div>
+              </TaskChatComposerDock>
                 {isMobile ? (
                   <div
                     aria-hidden

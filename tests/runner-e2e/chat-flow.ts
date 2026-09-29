@@ -686,9 +686,9 @@ export async function runChatFlow(input: ChatFlowInput) {
           await idle(3);
         } else await turn(clarification, 3);
       } else if (caseId === "plan-handoff") {
-        await page.getByTestId("task-chat-composer-mode").click();
+        await page.getByTestId("task-chat-composer-add").click();
         await page
-          .getByTestId("task-chat-composer-mode-menu")
+          .getByTestId("task-chat-composer-add-menu")
           .getByText("Plan mode", { exact: true })
           .click();
         await turn(

@@ -4911,6 +4911,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         ...(attachmentIds?.length ? { attachmentIds } : {}),
         assigneeAgentId: reassignment.assigneeAgentId,
         assigneeUserId: reassignment.assigneeUserId,
+        ...(reassignment.modelOverride
+          ? { modelOverride: reassignment.modelOverride }
+          : {}),
         ...(reopen ? { status: "todo" } : {}),
         ...(interrupt ? { interrupt } : {}),
       }),
