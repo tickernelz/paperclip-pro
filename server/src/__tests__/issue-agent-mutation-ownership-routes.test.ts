@@ -352,7 +352,12 @@ function createRunContextDb(
   };
   const buildQuery = (selection: Record<string, unknown>, chatBindingQuery = false, settledRecoveryQuery = false) => {
     const whereResult = {
-      orderBy: vi.fn(async () => []),
+      orderBy: vi.fn(() => ({
+        limit: vi.fn(() => ({
+          then: async (resolve: (limitedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
+        })),
+        then: async (resolve: (orderedRows: unknown[]) => unknown) => resolve([]),
+      })),
       limit: vi.fn(() => ({
         then: async (resolve: (limitedRows: unknown[]) => unknown) => resolve(await rowsForSelection(selection, chatBindingQuery, settledRecoveryQuery)),
       })),
@@ -2484,7 +2489,7 @@ describe("agent issue mutation checkout ownership", () => {
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
 
-  it("uses the authorization decision path for assignment changes", async () => {
+  it("uses the authorization decision path for assignment changes on issues the agent does not hold", async () => {
     const decide = vi.fn(async () => ({
       allowed: false,
       action: "tasks:assign",
@@ -2501,7 +2506,7 @@ describe("agent issue mutation checkout ownership", () => {
           : "Target agent requires approval before task assignment.",
     }));
     (mockAccessService as any).decide = decide;
-    mockIssueService.getById.mockResolvedValue(makeIssue({ assigneeAgentId: ownerAgentId }));
+    mockIssueService.getById.mockResolvedValue(makeIssue({ assigneeAgentId: null }));
     mockAgentService.resolveByReference.mockResolvedValue({
       ambiguous: false,
       agent: makeAgent(peerAgentId),
@@ -2523,6 +2528,26 @@ describe("agent issue mutation checkout ownership", () => {
         assigneeAgentId: peerAgentId,
       }),
     }));
+    expect(mockIssueService.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects an agent moving the assignee of its own task instead of consulting tasks:assign", async () => {
+    mockIssueService.getById.mockResolvedValue(makeIssue({ assigneeAgentId: ownerAgentId }));
+    mockAgentService.resolveByReference.mockResolvedValue({
+      ambiguous: false,
+      agent: makeAgent(peerAgentId),
+    });
+
+    const app = await createApp(ownerActor());
+    const res = await request(app)
+      .patch(`/api/issues/${issueId}`)
+      .send({ assigneeAgentId: peerAgentId });
+
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body.details).toMatchObject({ code: "agent_reassign_requires_subtask" });
+    expect(mockAccessService.decide).not.toHaveBeenCalledWith(
+      expect.objectContaining({ action: "tasks:assign" }),
+    );
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
 

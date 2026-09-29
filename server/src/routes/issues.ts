@@ -38,6 +38,7 @@ import {
   eq,
   inArray,
   isNull,
+  or,
   notInArray,
   sql,
 } from "drizzle-orm";
@@ -2042,7 +2043,21 @@ const INVALID_AGENT_IN_REVIEW_DISPOSITION_MESSAGE =
   "This request would leave the issue in_review without anyone or anything owning the next action. " +
   "Keep working instead of moving to review, create a request_confirmation or ask_user_questions interaction, " +
   "link or request a pending approval, assign a human reviewer with assigneeUserId, set a typed executionState.currentParticipant through an execution policy, " +
+  "create a review subtask with paperclipCreateChildIssue assigned to the reviewer and list it in blockedByIssueIds, " +
   "or schedule an issue monitor for an external review/check. After creating one of those review paths, retry the status update.";
+
+const AGENT_REVIEW_SUBTASK_INSTRUCTION =
+  "Create a review subtask with paperclipCreateChildIssue assigned to the reviewer with a self-contained description " +
+  "(full instructions, acceptance criteria, and the material to review), add that subtask id to blockedByIssueIds on this issue, " +
+  "then set status to in_review. You stay the assignee and are woken when the review subtask is done.";
+
+const AGENT_REVIEW_HANDOFF_REQUIRES_SUBTASK_MESSAGE =
+  "agent_review_handoff_requires_subtask: Agents cannot hand this task to a reviewer through review or approval stages they authored themselves. " +
+  AGENT_REVIEW_SUBTASK_INSTRUCTION;
+
+const AGENT_REASSIGN_REQUIRES_SUBTASK_MESSAGE =
+  "agent_reassign_requires_subtask: Agents cannot move the assignee of the task they are working on to someone else. " +
+  AGENT_REVIEW_SUBTASK_INSTRUCTION;
 
 function executionPrincipalsEqual(
   left: ParsedExecutionState["currentParticipant"] | null,
@@ -2292,6 +2307,21 @@ function summarizeExecutionParticipants(
       agentId: participant.agentId ?? null,
       userId: participant.userId ?? null,
     })) ?? []
+  );
+}
+
+function executionStageShape(policy: NormalizedExecutionPolicy | null) {
+  return JSON.stringify(
+    (policy?.stages ?? []).map((stage) => [
+      stage.type,
+      stage.participants
+        .map((participant) =>
+          participant.type === "agent"
+            ? `agent:${participant.agentId ?? ""}`
+            : `user:${participant.userId ?? ""}`,
+        )
+        .sort(),
+    ]),
   );
 }
 
@@ -4651,6 +4681,96 @@ export function issueRoutes(
     );
   }
 
+  async function executionStageParticipantsAuthoredByAgent(input: {
+    companyId: string;
+    issueId: string;
+    createdByAgentId?: string | null;
+    policy: NormalizedExecutionPolicy | null;
+  }) {
+    const latestParticipantChange = await db
+      .select({ actorType: activityLog.actorType })
+      .from(activityLog)
+      .where(
+        and(
+          eq(activityLog.companyId, input.companyId),
+          eq(activityLog.entityType, "issue"),
+          eq(activityLog.entityId, input.issueId),
+          inArray(activityLog.action, [
+            "issue.reviewers_updated",
+            "issue.approvers_updated",
+          ]),
+        ),
+      )
+      .orderBy(desc(activityLog.createdAt))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+    if (latestParticipantChange) {
+      return latestParticipantChange.actorType === "agent";
+    }
+    return Boolean(input.createdByAgentId) && (input.policy?.stages.length ?? 0) > 0;
+  }
+
+  async function agentReleasedIssue(input: {
+    companyId: string;
+    issueId: string;
+    agentId: string;
+  }) {
+    const latestAssignmentEvent = await db
+      .select({ action: activityLog.action, agentId: activityLog.agentId })
+      .from(activityLog)
+      .where(
+        and(
+          eq(activityLog.companyId, input.companyId),
+          eq(activityLog.entityType, "issue"),
+          eq(activityLog.entityId, input.issueId),
+          or(
+            inArray(activityLog.action, [
+              "issue.released",
+              "issue.checked_out",
+              "issue.admin_force_release",
+            ]),
+            and(
+              eq(activityLog.action, "issue.updated"),
+              sql`(${activityLog.details} ? 'assigneeAgentId' or ${activityLog.details} ? 'assigneeUserId')`,
+            ),
+          ),
+        ),
+      )
+      .orderBy(desc(activityLog.createdAt))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+    return (
+      latestAssignmentEvent?.action === "issue.released" &&
+      latestAssignmentEvent.agentId === input.agentId
+    );
+  }
+
+  async function hasOpenBlockingIssue(input: {
+    companyId: string;
+    issueId: string;
+    requestedBlockerIssueIds: string[] | null;
+  }) {
+    if (input.requestedBlockerIssueIds) {
+      if (input.requestedBlockerIssueIds.length === 0) return false;
+      return await db
+        .select({ id: issueRows.id })
+        .from(issueRows)
+        .where(
+          and(
+            eq(issueRows.companyId, input.companyId),
+            inArray(issueRows.id, input.requestedBlockerIssueIds),
+            notInArray(issueRows.status, ["done", "cancelled"]),
+          ),
+        )
+        .limit(1)
+        .then((rows) => rows.length > 0);
+    }
+    const relations = await svc.getRelationSummaries(input.issueId);
+    return relations.blockedBy.some(
+      (blocker) => blocker.status !== "done" && blocker.status !== "cancelled",
+    );
+  }
+
   async function assertInReviewReviewPath(input: {
     existing: {
       conversationAgentId?: string | null;
@@ -4669,6 +4789,7 @@ export function issueRoutes(
     actorAgentId?: string | null;
     actorRunId?: string | null;
     reviewInteractionId?: string;
+    requestedBlockerIssueIds?: string[] | null;
   }) {
     const nextStatus = typeof input.updateFields.status === "string"
       ? input.updateFields.status
@@ -4775,6 +4896,15 @@ export function issueRoutes(
     )
       return null;
 
+    if (
+      await hasOpenBlockingIssue({
+        companyId: input.existing.companyId,
+        issueId: input.existing.id,
+        requestedBlockerIssueIds: input.requestedBlockerIssueIds ?? null,
+      })
+    )
+      return null;
+
     throw unprocessable(INVALID_AGENT_IN_REVIEW_DISPOSITION_MESSAGE, {
       code: "invalid_issue_disposition",
       missing: "review_path",
@@ -4784,6 +4914,7 @@ export function issueRoutes(
         "human_assignee_user_id",
         "typed_execution_state_current_participant",
         "scheduled_issue_monitor",
+        "open_blocking_issue",
       ],
     });
   }
@@ -13498,6 +13629,50 @@ export function issueRoutes(
       }
       Object.assign(updateFields, transition.patch);
 
+      if (actor.actorType === "agent" && transition.workflowControlledAssignment) {
+        const previousExecutionState = parseIssueExecutionState(
+          existing.executionState,
+        );
+        const stageWorkflowAlreadyRunning = Boolean(
+          previousExecutionState &&
+            (previousExecutionState.currentStageId ||
+              previousExecutionState.status === "pending" ||
+              previousExecutionState.status === "changes_requested" ||
+              (previousExecutionState.completedStageIds?.length ?? 0) > 0),
+        );
+        const handoffAssigneeAgentId =
+          updateFields.assigneeAgentId === undefined
+            ? existing.assigneeAgentId
+            : (updateFields.assigneeAgentId as string | null);
+        const handoffAssigneeUserId =
+          updateFields.assigneeUserId === undefined
+            ? existing.assigneeUserId
+            : (updateFields.assigneeUserId as string | null);
+        const stageHandoffChangesAssignee =
+          handoffAssigneeAgentId !== existing.assigneeAgentId ||
+          handoffAssigneeUserId !== existing.assigneeUserId;
+        const stagesAuthoredInRequest =
+          req.body.executionPolicy !== undefined &&
+          executionStageShape(previousExecutionPolicy) !==
+            executionStageShape(nextExecutionPolicy);
+        const agentAuthoredStageHandoff =
+          stageHandoffChangesAssignee &&
+          (stagesAuthoredInRequest ||
+            (!stageWorkflowAlreadyRunning &&
+              (await executionStageParticipantsAuthoredByAgent({
+                companyId: existing.companyId,
+                issueId: existing.id,
+                createdByAgentId: existing.createdByAgentId,
+                policy: nextExecutionPolicy,
+              }))));
+        if (agentAuthoredStageHandoff) {
+          throw unprocessable(AGENT_REVIEW_HANDOFF_REQUIRES_SUBTASK_MESSAGE, {
+            code: "agent_review_handoff_requires_subtask",
+            issueId: existing.id,
+          });
+        }
+      }
+
       const nextStatus = updateFields.status ?? existing.status;
       if (updateFields.unblockDescriptor && nextStatus !== "blocked") {
         throw unprocessable("unblockDescriptor requires blocked status");
@@ -13653,6 +13828,9 @@ export function issueRoutes(
         actorAgentId: actor.agentId,
         actorRunId: actor.runId,
         reviewInteractionId: requestedReviewInteractionId,
+        requestedBlockerIssueIds: Array.isArray(req.body.blockedByIssueIds)
+          ? [...new Set(req.body.blockedByIssueIds as string[])]
+          : null,
       });
       const enteringReviewRequested =
         existing.status !== "in_review" && updateFields.status === "in_review";
@@ -13772,6 +13950,43 @@ export function issueRoutes(
           await hasQueuedInteractionResponse(db, existing.companyId, existing.id, existing.assigneeAgentId)) {
         throw conflict("The user already responded. Keep the current assignee so the queued response can continue after this run.", {
           code: "interaction_response_queued",
+        });
+      }
+      const agentActsOnOwnTask =
+        actor.actorType === "agent" &&
+        !!actor.agentId &&
+        !transition.workflowControlledAssignment;
+      const requestedAssigneeAgentIdChanged =
+        normalizedAssigneeAgentId !== undefined &&
+        normalizedAssigneeAgentId !== existing.assigneeAgentId;
+      const requestedAssigneeUserIdChanged =
+        req.body.assigneeUserId !== undefined &&
+        req.body.assigneeUserId !== existing.assigneeUserId;
+      const agentRequestedOwnTaskAssigneeChange =
+        agentActsOnOwnTask &&
+        existing.assigneeAgentId === actor.agentId &&
+        (requestedAssigneeAgentIdChanged || requestedAssigneeUserIdChanged);
+      const agentRequestedHandoffOnIssueItReleased =
+        agentActsOnOwnTask &&
+        !existing.assigneeAgentId &&
+        !existing.assigneeUserId &&
+        ((typeof normalizedAssigneeAgentId === "string" &&
+          normalizedAssigneeAgentId !== actor.agentId) ||
+          (typeof req.body.assigneeUserId === "string" &&
+            req.body.assigneeUserId !== existing.createdByUserId)) &&
+        (await agentReleasedIssue({
+          companyId: existing.companyId,
+          issueId: existing.id,
+          agentId: actor.agentId!,
+        }));
+      if (
+        (agentRequestedOwnTaskAssigneeChange ||
+          agentRequestedHandoffOnIssueItReleased) &&
+        !isAgentReturningIssueToCreator
+      ) {
+        throw unprocessable(AGENT_REASSIGN_REQUIRES_SUBTASK_MESSAGE, {
+          code: "agent_reassign_requires_subtask",
+          issueId: existing.id,
         });
       }
       if (assigneeWillChange && !transition.workflowControlledAssignment) {

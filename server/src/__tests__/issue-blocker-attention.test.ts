@@ -808,6 +808,37 @@ describeEmbeddedPostgres("issue blocker attention", () => {
     });
   });
 
+  it("keeps an in_review parent off the blocked inbox while an open review subtask blocks it", async () => {
+    const { companyId, agentId } = await createCompany("BIE");
+    const parentId = await insertIssue({
+      companyId,
+      identifier: "BIE-1",
+      title: "Waiting on review subtask",
+      status: "in_review",
+      assigneeAgentId: agentId,
+    });
+    const reviewSubtaskId = await insertIssue({
+      companyId,
+      identifier: "BIE-2",
+      title: "Review BIE-1",
+      status: "todo",
+      parentId,
+      assigneeAgentId: agentId,
+    });
+    await block({ companyId, blockerIssueId: reviewSubtaskId, blockedIssueId: parentId });
+
+    const covered = await svc.list(companyId, { attention: "blocked" });
+    expect(covered.find((row) => row.id === parentId)).toBeUndefined();
+
+    await db.update(issues).set({ status: "done" }).where(eq(issues.id, reviewSubtaskId));
+
+    const stalled = await svc.list(companyId, { attention: "blocked" });
+    expect(stalled.find((row) => row.id === parentId)?.blockedInboxAttention).toMatchObject({
+      reason: "in_review_without_action_path",
+      action: { label: "Choose review path" },
+    });
+  });
+
   it("classifies recovery issues and missing successful-run dispositions", async () => {
     const { companyId, agentId } = await createCompany("BID");
     const sourceId = await insertIssue({ companyId, identifier: "BID-1", title: "Stopped source", status: "blocked" });

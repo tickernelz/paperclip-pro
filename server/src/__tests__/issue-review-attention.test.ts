@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { eq } from "drizzle-orm";
 import {
   agentWakeupRequests,
   agents,
@@ -10,6 +11,7 @@ import {
   issueApprovals,
   issueRecoveryActions,
   issueThreadInteractions,
+  issueRelations,
   issues,
 } from "@tickernelz/paperclip-pro-db";
 import {
@@ -44,6 +46,7 @@ describeEmbeddedPostgres("issue review attention", () => {
     await db.delete(approvals);
     await db.delete(issueRecoveryActions);
     await db.delete(heartbeatRuns);
+    await db.delete(issueRelations);
     await db.delete(agentWakeupRequests);
     await db.delete(issues);
     await db.delete(agents);
@@ -235,6 +238,40 @@ describeEmbeddedPostgres("issue review attention", () => {
     expect(byId.get(humanOnlyInteractionIssueId)?.paths).toEqual(expect.arrayContaining([
       expect.objectContaining({ kind: "interaction", responder: "Board" }),
     ]));
+  });
+
+  it("covers an in_review parent waiting on an open review subtask and stalls once it closes", async () => {
+    const { companyId, agentId } = await seed();
+    const parentId = await insertReview({ companyId, agentId, identifier: "RVA-9" });
+    const reviewSubtaskId = randomUUID();
+    await db.insert(issues).values({
+      id: reviewSubtaskId,
+      companyId,
+      identifier: "RVA-9R",
+      title: "Review RVA-9",
+      status: "todo",
+      priority: "medium",
+      parentId,
+      assigneeAgentId: agentId,
+    });
+    await db.insert(issueRelations).values({
+      companyId,
+      type: "blocks",
+      issueId: reviewSubtaskId,
+      relatedIssueId: parentId,
+    });
+
+    let row = (await svc.list(companyId, { status: "in_review" })).find((issue) => issue.id === parentId);
+    expect(row?.reviewAttention).toMatchObject({
+      state: "covered",
+      paths: expect.arrayContaining([expect.objectContaining({ kind: "open_blocker" })]),
+    });
+
+    await db.update(issues).set({ status: "done" }).where(eq(issues.id, reviewSubtaskId));
+
+    row = (await svc.list(companyId, { status: "in_review" })).find((issue) => issue.id === parentId);
+    expect(row?.reviewAttention?.state).toBe("stalled");
+    expect(row?.reviewAttention?.paths).toEqual([]);
   });
 
   it("does not let a transiently skipped recovery consume its fingerprint", async () => {

@@ -404,11 +404,11 @@ There is **no separate execution-decision tool**. Review and approval decisions 
 
 ### Cross-Agent Review Gates
 
-Use native execution stages for cross-agent code or deliverable review gates. The gate belongs on the source issue's `executionPolicy.stages[]`, with the reviewer or approver listed in `participants[]` and the stage `type` set to `review` or `approval`.
+Execution stages are the board-controlled gate for cross-agent code or deliverable review. The gate lives on the source issue's `executionPolicy.stages[]`, with the reviewer or approver listed in `participants[]` and the stage `type` set to `review` or `approval`. Only a board or user actor may author those participants: when an agent's update would start a handoff through stages the agent itself authored, the route answers `422 agent_review_handoff_requires_subtask`. An agent also cannot move the assignee of the task it holds (`422 agent_reassign_requires_subtask`); the only exception is returning the issue to its creator user.
 
 `paperclipCreateIssue`, `paperclipUpdateIssue`, `paperclipCreateProject`, and `paperclipUpdateProject` expose the common fields at top level; every other field the route accepts — `executionPolicy`, `executionWorkspaceSettings`, `executionWorkspacePolicy`, `watchdog`, `unblockDescriptor`, `env`, and the rest — goes in the optional `advanced` object, which is merged into the request body.
 
-Minimal agent-review gate, as `paperclipUpdateIssue` arguments:
+Minimal agent-review gate, as board `paperclipUpdateIssue` arguments:
 
 ```json
 {
@@ -428,14 +428,16 @@ Minimal agent-review gate, as `paperclipUpdateIssue` arguments:
 }
 ```
 
-When the executor finishes work, move the source issue to `in_review`. Paperclip advances the issue to the active stage participant through `executionState.currentParticipant`, and that participant decides through the normal issue update route:
+When the executor finishes work, it moves the source issue to `in_review` or `done`. Paperclip advances the issue to the active stage participant through `executionState.currentParticipant`, and that participant decides through the normal issue update route:
 
 - approve/sign off with `paperclipUpdateIssue` using `{ "status": "done", "comment": "Approved: ..." }`
 - request changes with `paperclipUpdateIssue` using `{ "status": "in_progress", "comment": "Changes requested: ..." }`
 
 Agent heartbeat implementations should follow the Paperclip skill's **Execution-policy review/approval wakes** procedure when they are assigned as the active gate participant.
 
-Do not model cross-agent review gates as bridge child issues, freeform comments, ad-hoc `request_confirmation` cards, responder fields, mention grants, or broadened comment/interaction authorization. Those workarounds either split the audit trail away from the source issue or loosen authorization around who may decide. The native execution-stage path keeps the gate, reviewer authority, return assignee, decision row, wake behavior, and audit history on the issue that is actually being reviewed.
+Do not model board-authored cross-agent review gates as freeform comments, ad-hoc `request_confirmation` cards, responder fields, mention grants, or broadened comment/interaction authorization. Those workarounds either split the audit trail away from the source issue or loosen authorization around who may decide. When a board or user configures the gate, the native execution-stage path keeps the gate, reviewer authority, return assignee, decision row, wake behavior, and audit history on the issue that is actually being reviewed.
+
+An agent that wants its own work reviewed does not touch stages or the assignee. It creates a review subtask with `paperclipCreateChildIssue` assigned to the reviewer, with a self-contained description, adds that subtask id to `blockedByIssueIds` on its own issue, and sets `status: "in_review"`. The issue stays with the original assignee, the open blocker is the review path the disposition guard accepts, and the `issue_blockers_resolved` wake delivers the verdict when the review subtask is `done`.
 
 ---
 
@@ -660,7 +662,7 @@ When you receive a task from outside your reporting line:
 
 1. **You can do it** — complete it directly.
 2. **You can't do it** — mark it `blocked` and comment why.
-3. **You question whether it should be done** — you **cannot cancel it yourself**. Reassign to your manager with a comment. Your manager decides.
+3. **You question whether it should be done** — you **cannot cancel it yourself**, and you cannot reassign the task you hold. Comment with your reasoning and create a task for your manager (block your issue on it when you must wait). Your manager decides.
 
 **Do NOT** cancel a task assigned to you by someone outside your team.
 
@@ -669,7 +671,7 @@ When you receive a task from outside your reporting line:
 If you're stuck or blocked:
 
 - Comment on the task explaining the blocker.
-- If you have a manager (check `chainOfCommand`), reassign to them or create a task for them.
+- If you have a manager (check `chainOfCommand`), create a task for them and block your issue on it. You cannot reassign the task you hold; the only assignee change an agent may make on its own issue is a return to the issue's `createdByUserId`.
 - Never silently sit on blocked work.
 
 ---
@@ -1630,7 +1632,7 @@ Every successful or failed value fetch writes both `secret_access_events` and `a
 | Look for unassigned work                    | You're overstepping; managers assign work             | If you have no assignments, exit, except explicit mention handoff |
 | Exit without commenting on in-progress work | Your manager can't see progress; work appears stalled | Leave a comment explaining where you are                |
 | Create tasks without `parentId`             | Breaks the task hierarchy; work becomes untraceable   | Link every subtask to its parent                        |
-| Cancel cross-team tasks                     | Only the assigning team's manager can cancel          | Reassign to your manager with a comment                 |
+| Cancel cross-team tasks                     | Only the assigning team's manager can cancel          | Create a task for your manager and comment              |
 | Ignore budget warnings                      | You'll be auto-paused at 100% mid-work                | Check spend at start; prioritize above 80%              |
 | @-mention agents for no reason              | Each mention triggers a budget-consuming heartbeat    | Only mention agents who need to act                     |
 | Sit silently on blocked work                | Nobody knows you're stuck; the task rots              | Comment the blocker and escalate immediately            |

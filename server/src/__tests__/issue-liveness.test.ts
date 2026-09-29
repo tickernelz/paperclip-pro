@@ -566,11 +566,10 @@ describe("issue graph liveness classifier", () => {
     });
   });
 
-  it("still flags a stalled in_review issue when its blocker has an active run", () => {
+  it("treats an open blocker as the review path and flags the issue once the blocker closes", () => {
     const reviewIssueId = "review-1";
-    const activeBlockerId = "active-blocker-1";
-
-    const findings = classifyIssueGraphLiveness({
+    const blockerId = "active-blocker-1";
+    const classify = (blockerStatus: string) => classifyIssueGraphLiveness({
       issues: [
         issue({
           id: reviewIssueId,
@@ -581,20 +580,23 @@ describe("issue graph liveness classifier", () => {
           executionState: null,
         }),
         issue({
-          id: activeBlockerId,
+          id: blockerId,
           identifier: "PAP-2280",
-          title: "Active blocker",
-          status: "in_progress",
+          title: "Review subtask",
+          status: blockerStatus,
           assigneeAgentId: coderId,
         }),
       ],
-      relations: [{ companyId, blockerIssueId: activeBlockerId, blockedIssueId: reviewIssueId }],
+      relations: [{ companyId, blockerIssueId: blockerId, blockedIssueId: reviewIssueId }],
       agents: [agent(), manager],
-      activeRuns: [{ companyId, issueId: activeBlockerId, agentId: coderId, status: "running" }],
+      activeRuns: [{ companyId, issueId: blockerId, agentId: coderId, status: "running" }],
     });
 
-    expect(findings).toHaveLength(1);
-    expect(findings[0]).toMatchObject({
+    expect(classify("in_progress")).toHaveLength(0);
+
+    const closedBlockerFindings = classify("done");
+    expect(closedBlockerFindings).toHaveLength(1);
+    expect(closedBlockerFindings[0]).toMatchObject({
       issueId: reviewIssueId,
       state: "in_review_without_action_path",
       recoveryIssueId: reviewIssueId,

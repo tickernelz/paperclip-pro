@@ -490,6 +490,7 @@ export type IssueReviewAttentionPathKind =
   | "human_reviewer"
   | "active_run"
   | "queued_wake"
+  | "open_blocker"
   | "recovery";
 
 export interface IssueReviewAttentionPath {

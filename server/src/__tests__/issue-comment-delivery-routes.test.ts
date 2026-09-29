@@ -778,7 +778,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       .where(eq(issues.id, seeded.issueId));
     const agentApp = app(seeded.companyId, { agentId: seeded.agentId, runId: seeded.runId });
 
-    await request(agentApp)
+    await request(app(seeded.companyId))
       .patch(`/api/issues/${seeded.issueId}`)
       .send({
         executionPolicy: {

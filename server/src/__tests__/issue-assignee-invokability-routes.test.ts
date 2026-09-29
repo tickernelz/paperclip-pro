@@ -247,7 +247,7 @@ describe("issue assignee invokability guard", () => {
   });
 
   it("still allows an agent to assign to an invokable agent", async () => {
-    const existing = makeIssue();
+    const existing = makeIssue({ assigneeAgentId: null });
     const updated = makeIssue({ assigneeAgentId: IDLE_AGENT_ID });
     mockIssueService.getById.mockResolvedValue(existing);
     mockIssueService.update.mockResolvedValue(updated);

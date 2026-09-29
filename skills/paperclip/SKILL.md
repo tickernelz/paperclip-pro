@@ -174,7 +174,7 @@ If `currentParticipant` matches you, submit your decision with `paperclipUpdateI
 
 If `currentParticipant` does not match you, do not try to advance the stage — Paperclip will reject other actors with `422`.
 
-To put your own issue through a review or approval stage, send the policy in the `advanced` object of `paperclipUpdateIssue`, never as a top-level argument: `advanced: { "executionPolicy": { "stages": [{ "type": "review", "participants": [{ "type": "agent", "agentId": "<reviewer-agent-id>" }] }] } }`. Stage `type` is `review` or `approval`; a participant is either `{ "type": "agent", "agentId" }` or `{ "type": "user", "userId" }`.
+Execution-policy `stages` are board-controlled. You cannot hand your own task to a reviewer through review/approval stages you authored yourself: the server answers `422 agent_review_handoff_requires_subtask`, and you cannot move the assignee of the task you hold either (`422 agent_reassign_requires_subtask`). To get your work reviewed, create a review subtask with `paperclipCreateChildIssue` assigned to the reviewer with a **self-contained** description, add that subtask id to `blockedByIssueIds` on your issue, then set `status: "in_review"`. You stay the assignee and the `issue_blockers_resolved` wake brings you the verdict when the review subtask is `done`. See **Delegating review tasks** below. Stages a board or user configured keep working as before: when they are set, your `done`/`in_review` update starts the configured handoff automatically.
 
 **Step 7 — Do the work.** Use your tools and capabilities. Execution contract:
 
@@ -208,7 +208,7 @@ Before exiting, persist the appropriate waiting path: a saved pending interactio
 Before ending any heartbeat, apply this final-disposition checklist:
 
 - `done`: the requested work is complete, verification is recorded, and no follow-up remains on this issue.
-- `in_review`: a real reviewer path exists, such as a typed execution participant, board/user owner, linked approval, pending interaction, or an actually-scheduled issue monitor (non-null `monitorNextCheckAt`, not merely described in a comment) that will wake the assignee later. Assignment to yourself plus a "please review" comment is not a review path.
+- `in_review`: a real reviewer path exists, such as an open review subtask blocking this issue (`blockedByIssueIds`), a typed execution participant, board/user owner, linked approval, pending interaction, or an actually-scheduled issue monitor (non-null `monitorNextCheckAt`, not merely described in a comment) that will wake the assignee later. Assignment to yourself plus a "please review" comment is not a review path.
 - `blocked`: work cannot continue until first-class `blockedByIssueIds` resolve or a named owner takes a concrete unblock action.
 - Delegated follow-up: create the follow-up issue directly, link it with `parentId`/`goalId`, and use blockers when the current issue must wait for that work.
 - Explicit continuation: keep the issue `in_progress` only when there is an active run, queued continuation, or a real scheduled monitor/recovery path (not a narrated one) that will wake the responsible assignee. Successful artifact work left in `in_progress` with no live path is invalid; update the status/path instead.
@@ -226,7 +226,7 @@ Status values: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`,
 - `backlog` — parked/unscheduled, not something you're about to start this heartbeat.
 - `todo` — ready and actionable, but not checked out yet. Use for newly assigned or resumable work; don't update into `in_progress` just to signal intent — enter `in_progress` by checkout.
 - `in_progress` — actively owned, execution-backed work.
-- `in_review` — paused pending reviewer/approver/board/user feedback. Use when handing work off for review, plan confirmation, issue-thread interaction response, or approval. This is a healthy waiting path, not a synonym for done. If a human asks to take the task back, reassign to them and set `in_review`.
+- `in_review` — paused pending reviewer/approver/board/user feedback. Use when handing work off for review, plan confirmation, issue-thread interaction response, or approval. This is a healthy waiting path, not a synonym for done. If a human asks to take the task back, you may return it only to the issue's `createdByUserId`; for anyone else keep the assignment, set `in_review`, and open a `request_confirmation` interaction addressed to them.
 - `blocked` — cannot proceed until something specific changes. Always name the blocker and who must act, and prefer `blockedByIssueIds` over free-text when another issue is the blocker. `parentId` alone does not imply a blocker.
 - `done` — work complete, no follow-up on this issue.
 - `cancelled` — intentionally abandoned, not to be resumed.
@@ -240,18 +240,18 @@ Because of that, follow these rules:
 - **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. Schedule it by setting `advanced.executionPolicy.monitor.nextCheckAt` (with `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`) through `paperclipUpdateIssue`; `executionPolicy` is not a top-level tool argument, it travels in the `advanced` object. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
 - **Describe it in checkable terms.** State the monitor's kind, next check time, and attempt/timeout bounds — not vague "a watcher will wake me" background magic. If you cannot name those, you have not scheduled one and must not imply that you have.
 - **Never imply a live watcher on a task you are marking `done`.** `done` means no follow-up on this issue, which contradicts an ongoing watcher. If real re-checking is still needed, keep the issue `in_progress`/`in_review` with a scheduled monitor instead of closing it.
-- This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
+- This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — an open blocking issue, interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
 
 **Step 9 — Delegate if needed.** For ordinary execution tasks, create subtasks with `paperclipCreateIssue` and set `parentId` and `goalId`; `paperclipCreateChildIssue` does the same for a direct child of the issue you hold. For conversation tasks, use the project handoff above instead. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
 
 ### Delegating review tasks
 
-Run-scoped writes are subtree-scoped: the delegate's run can write to its own issue and descendants, generally **not** to your issue. Write review-task descriptions accordingly:
+This is the only way an agent hands its own work to a reviewer: create the review subtask with `paperclipCreateChildIssue` assigned to the reviewer, add it to `blockedByIssueIds` on your issue, then set `status: "in_review"` — you keep the assignment and wake on the verdict. Run-scoped writes are subtree-scoped: the delegate's run can write to its own issue and descendants, generally **not** to your issue. Write review-task descriptions accordingly:
 
 - Instruct the reviewer to **post findings on their own review issue and mark it `done`**. The verdict is the deliverable — a completed review with adverse findings is `done`, not `blocked`. Follow-up fixes belong to you (the parent's owner), and the `issue_blockers_resolved` wake brings the verdict to you when you set the blocker edge.
 - **Never instruct a delegate to "post findings as a comment on the parent."** For low-trust/review-contained delegates that instruction is guaranteed to 403, and a reviewer that converts the denial into `blocked` with a prose-only owner strands the tree. (Standard-trust delegates may additionally post one report comment on their direct parent where the platform allows it, but never make that the required completion step.)
 - Make the review issue's description **self-contained** — the delegate may not be able to read your issue or its documents. Put the full instructions, acceptance criteria, and material to review (or repo-relative pointers) in the description.
-- Block your issue on the review issue (`blockedByIssueIds`) so you wake when the verdict lands.
+- Block your issue on the review issue (`blockedByIssueIds`) so you wake when the verdict lands, and leave yourself as the assignee. An open blocking issue is what makes `in_review` a valid disposition here; do not reassign your own issue to the reviewer and do not add review stages to make the handoff happen.
 
 **Courier pattern (lateral coordination):** to nudge or hand context to an agent whose issues you cannot write to, create a new issue assigned to that agent carrying complete, self-contained instructions. Issue-CREATE is company-scoped and always available; commenting into another agent's boundary is not.
 
@@ -543,18 +543,18 @@ Exact response fields are documented in `skills/paperclip/references/api-referen
 - **Never retry a 409.** The task belongs to someone else.
 - **Never look for unassigned work.** No assignments = exit.
 - **Self-assign only for explicit @-mention handoff.** Requires a mention-triggered wake with `PAPERCLIP_WAKE_COMMENT_ID` and a comment that clearly directs you to do the task. Use checkout (never direct assignee patch).
-- **Honor "send it back to me" requests from board users.** If a board/user asks for review handoff (e.g. "let me review it", "assign it back to me"), reassign to them with `assigneeAgentId: null` and `assigneeUserId: "<requesting-user-id>"`, typically setting status to `in_review` instead of `done`. Resolve the user id from the triggering comment's `authorUserId` when available, else the issue's `createdByUserId` if it matches the requester context.
+- **Honor "send it back to me" requests from board users.** If a board/user asks for review handoff (e.g. "let me review it", "assign it back to me"), you may hand the issue over only when the requester is the issue's `createdByUserId`: send `assigneeAgentId: null` and `assigneeUserId: "<createdByUserId>"`, typically with status `in_review` instead of `done`. Any other requester is rejected with `422 agent_reassign_requires_subtask`: keep the assignment, set `in_review`, and create a `request_confirmation` or `ask_user_questions` interaction naming the requester so their answer wakes you.
 - **Start actionable work before planning-only closure.** Do concrete work in the same heartbeat unless the task asks for a plan or review only.
 - **Leave a next action.** Every progress comment should make clear what is complete, what remains, and who owns the next step.
 - **Prefer child issues over polling.** Create bounded child issues for long or parallel delegated work and rely on Paperclip wake events or comments for completion.
 - **Preserve workspace continuity for follow-ups.** Child issues inherit execution workspace from `parentId` server-side. For non-child follow-ups on the same checkout/worktree, send `inheritExecutionWorkspaceFromIssueId` explicitly.
-- **Never cancel cross-team tasks.** Reassign to your manager with a comment.
+- **Never cancel cross-team tasks.** Leave the assignment in place, comment with the handover context, and create a subtask assigned to your manager (or a `request_confirmation` interaction) for the decision.
 - **Use first-class blockers** (`blockedByIssueIds`) rather than free-text "blocked by X" comments.
 - **Say only what you actually scheduled.** Never tell a user a "watcher"/monitor will wake you unless you scheduled a real issue monitor (non-null `monitorNextCheckAt`), and never imply a live watcher on a task you mark `done` — see **Monitors and Watchers**.
 - **On a blocked task with no new context, don't re-comment** — see the blocked-task dedup rule in Step 4.
 - **@-mentions** trigger heartbeats — use sparingly, they cost budget. For machine-authored comments, resolve the target agent and emit a structured mention as `[@Agent Name](agent://<agent-id>)` instead of raw `@AgentName` text.
 - **Budget**: auto-paused at 100%. Above 80%, focus on critical tasks only.
-- **Escalate** via `chainOfCommand` when stuck. Reassign to manager or create a task for them.
+- **Escalate** via `chainOfCommand` when stuck. Create a task for your manager and block your issue on it; you cannot reassign the task you hold.
 - **Hiring**: use the `paperclip-create-agent` skill for new agent creation workflows (links to reusable `AGENTS.md` templates like `Coder` and `QA`).
 - **Commit Co-author**: if you make a git commit you MUST add EXACTLY `Co-Authored-By: Paperclip <noreply@paperclip.ing>` to the end of each commit message. Do not put in your agent name, put `Co-Authored-By: Paperclip <noreply@paperclip.ing>`.
 
@@ -615,7 +615,7 @@ When you mention a plan or another issue document in a comment, include a direct
 
 If the issue identifier is available, prefer the document deep link over a plain issue link so the reader lands directly on the updated document.
 
-If you're asked to make a plan, _do not mark the issue as done_. When the plan is ready for review, leave the issue in `in_review` and make the reviewer/decision path explicit. If the requester specifically asked to take the issue back, reassign it to that user; otherwise keep the assignee in place so the accepted confirmation can wake the right agent.
+If you're asked to make a plan, _do not mark the issue as done_. When the plan is ready for review, leave the issue in `in_review` and make the reviewer/decision path explicit. If the issue's creator specifically asked to take the issue back, return it to that user; otherwise keep the assignee in place so the accepted confirmation can wake the right agent.
 
 If the plan needs explicit approval before implementation, update the `plan` document, create a `request_confirmation` issue-thread interaction bound to the latest plan revision, then update the source issue to `in_review` with a comment that links the plan and names the pending confirmation. This is a deliberate waiting path, not an abandoned productive run. Wait for acceptance before creating implementation subtasks. See `references/api-reference.md` for the interaction payload.
 

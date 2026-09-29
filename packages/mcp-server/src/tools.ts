@@ -667,7 +667,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipUpdateIssue",
-      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work",
+      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work. Agents cannot hand their own task to a reviewer: executionPolicy.stages in advanced is board-controlled, a handoff started by agent-authored stages is rejected with 422 agent_review_handoff_requires_subtask, and changing assigneeAgentId or assigneeUserId on the task you are assigned is rejected with 422 agent_reassign_requires_subtask (returning the issue to its creator user is still allowed). To get your work reviewed, create a review subtask with paperclipCreateChildIssue assigned to the reviewer with a self-contained description, add its id to blockedByIssueIds on your issue, then set status to in_review: you stay the assignee and the issue_blockers_resolved wake brings you the verdict.",
       updateIssueToolSchema,
       async ({ issueId, advanced, ...body }) =>
         client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, {

@@ -4440,6 +4440,8 @@ function reviewPathLabel(
       return detail
         ? `Queued ${detail.replaceAll("_", " ")} wake`
         : "Queued review wake";
+    case "open_blocker":
+      return "Open blocking issue";
     case "recovery":
       return "Open review recovery";
   }
@@ -4486,6 +4488,7 @@ async function listIssueReviewAttentionMap(
     approvalRows,
     recoveryActionRows,
     recoveryIssueRows,
+    openBlockerRows,
   ] = await Promise.all([
     dbOrTx
       .select({
@@ -4635,6 +4638,24 @@ async function listIssueReviewAttentionMap(
           notInArray(issues.status, ["done", "cancelled"]),
         ),
       ),
+    dbOrTx
+      .select({
+        id: issues.id,
+        companyId: issues.companyId,
+        issueId: issueRelations.relatedIssueId,
+        status: issues.status,
+        createdAt: issues.createdAt,
+      })
+      .from(issueRelations)
+      .innerJoin(issues, eq(issueRelations.issueId, issues.id))
+      .where(
+        and(
+          eq(issueRelations.companyId, companyId),
+          eq(issueRelations.type, "blocks"),
+          inArray(issueRelations.relatedIssueId, reviewIds),
+          notInArray(issues.status, ["done", "cancelled"]),
+        ),
+      ),
   ]);
 
   const recoveryPaths = [
@@ -4697,6 +4718,7 @@ async function listIssueReviewAttentionMap(
     pendingInteractions: interactionRows,
     pendingApprovals: approvalRows,
     openRecoveryIssues: recoveryPaths,
+    openBlockers: openBlockerRows,
     now: new Date(),
   };
   const findingsByIssueId = new Map(

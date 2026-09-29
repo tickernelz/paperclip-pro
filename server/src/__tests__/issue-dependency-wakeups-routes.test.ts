@@ -242,6 +242,54 @@ describe("issue dependency wakeups in issue routes", () => {
     });
   });
 
+  it("wakes the assignee of a parent parked in_review when its review subtask is done", async () => {
+    const parentIssueId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+    const reviewSubtaskId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+    const reviewSubtask = {
+      id: reviewSubtaskId,
+      companyId: "company-1",
+      identifier: "PAP-301",
+      title: "Review the parent work",
+      description: null,
+      status: "in_progress",
+      priority: "medium",
+      parentId: parentIssueId,
+      assigneeAgentId: "reviewer-agent",
+      assigneeUserId: null,
+      createdByAgentId: null,
+      createdByUserId: null,
+      executionWorkspaceId: null,
+      labels: [],
+      labelIds: [],
+    };
+    mockIssueService.getById.mockResolvedValue(reviewSubtask);
+    mockIssueService.update.mockResolvedValue({ ...reviewSubtask, status: "done" });
+    mockIssueService.listWakeableBlockedDependents.mockResolvedValue([
+      {
+        id: parentIssueId,
+        assigneeAgentId: "implementer-agent",
+        blockerIssueIds: [reviewSubtaskId],
+      },
+    ]);
+
+    const res = await request(await createApp())
+      .patch(`/api/issues/${reviewSubtaskId}`)
+      .send({ status: "done" });
+    expect(res.status).toBe(200);
+    await vi.waitFor(() => {
+      expect(mockWakeup).toHaveBeenCalledWith(
+        "implementer-agent",
+        expect.objectContaining({
+          reason: "issue_blockers_resolved",
+          payload: expect.objectContaining({
+            issueId: parentIssueId,
+            resolvedBlockerIssueId: reviewSubtaskId,
+          }),
+        }),
+      );
+    });
+  });
+
   it("wakes an assigned blocked issue when blockers are applied after the blocker is already done", async () => {
     const parentIssueId = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
     const childIssueId = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
