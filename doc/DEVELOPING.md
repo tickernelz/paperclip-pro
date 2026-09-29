@@ -645,6 +645,8 @@ Paperclip applies one process-wide scheduler to expensive host-side workspace Gi
 
 Workspace snapshots list ignored paths with `git ls-files --others --ignored --exclude-standard --directory -z` so ignored directory contents do not require a full status walk. Snapshot failures retain their typed cause instead of becoming a non-Git-folder result. During pre-provider setup, scan timeouts and queue saturation use the existing two automatic failure retries with a 30-second delay. Cancellation, output limits, and other Git errors stop with specific recovery guidance. See `doc/execution-semantics.md` for the ownership and retry-budget contract.
 
+Execution-workspace close-readiness and branch-reconciliation status checks allow up to 32 MiB of buffered output. This accommodates nested task worktrees while preserving exact untracked-file counts. Larger output fails the scan and blocks destructive cleanup. Other buffered scan bounds stay unchanged.
+
 The cache intentionally trades up to a few seconds of changed-file freshness for stable server latency. The file browser retains an explicit refresh action, does not start its query while the panel or browser tab is hidden, and presents overloads as retryable failures rather than an empty workspace. A full queue returns `503` with code `workspace_git_scan_saturated`; a scan exceeding its wall-clock limit returns `504` with code `workspace_git_scan_timeout`. Both responses include `Retry-After: 1`.
 
 Sandbox Git sync treats only the selected repository root as a clone source. A selected subfolder uses directory sync within that folder, applies the enclosing repository's ignore rules, and does not transfer parent files or Git history.
