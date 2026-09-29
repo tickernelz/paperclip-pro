@@ -147,7 +147,7 @@ test("the mobile task thread rests at the bottom and opens the agent picker abov
       contentType: "image/png",
       path: testInfo.outputPath("agent-picker-above-keyboard.png"),
     });
-
+    await sheet.getByRole("button", { name: "Choose assignee" }).click();
     const options = sheet.locator("button");
     await expect(options.filter({ hasText: "Alpha" })).toBeVisible();
     await expect(options.filter({ hasText: "Zeta" })).toBeAttached();
