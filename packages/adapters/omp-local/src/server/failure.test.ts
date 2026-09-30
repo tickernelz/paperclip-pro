@@ -26,6 +26,16 @@ describe("classifyOmpFailure", () => {
     expect(classify(message).errorFamily).toBe("provider_quota");
   });
 
+  it("retries a start that OMP aborted because the system prompt kept changing before dispatch", () => {
+    expect(
+      classify("System prompt changed repeatedly during before_agent_start; original input was not delivered."),
+    ).toEqual({
+      errorCode: "omp_agent_start_policy_changed",
+      errorFamily: "transient_upstream",
+      retryNotBefore: null,
+    });
+  });
+
   it("keeps an unrelated exit as a plain exit code", () => {
     expect(classify("tool crashed unexpectedly")).toEqual({
       errorCode: "omp_exit_1",

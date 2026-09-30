@@ -13,7 +13,7 @@ vi.mock("./paperclip-mcp.js", async (importOriginal) => {
   return { ...actual, probePaperclipMcpServer: vi.fn(), probePaperclipMcpEndpoint: vi.fn() };
 });
 
-import { execute } from "./execute.js";
+import { execute, OMP_ASYNC_BASH_GUIDANCE } from "./execute.js";
 import {
   PAPERCLIP_MCP_BIN,
   PAPERCLIP_MCP_PACKAGE,
@@ -173,6 +173,18 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer?.url).toBe(paperclipMcpEndpoint(invocation.env.PAPERCLIP_API_URL, "extended,core"));
     expect(invocation.mcpServer?.url).toContain("toolsets=extended%2Ccore");
     expect(invocation.systemPrompt).toContain("toolsets: extended,core");
+  });
+
+  it("tells the agent to set the async bash timeout field even with custom instructions", async () => {
+    const instructionsPath = path.join(os.tmpdir(), `paperclip-omp-instructions-${process.pid}.md`);
+    await fs.writeFile(instructionsPath, "Custom agent instructions.", "utf8");
+    try {
+      const invocation = await run({ instructionsFilePath: instructionsPath });
+      expect(invocation.systemPrompt).toContain("Custom agent instructions.");
+      expect(invocation.systemPrompt).toContain(OMP_ASYNC_BASH_GUIDANCE);
+    } finally {
+      await fs.rm(instructionsPath, { force: true });
+    }
   });
 
   it("falls back to the bundled stdio server when configured", async () => {

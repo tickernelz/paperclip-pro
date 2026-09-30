@@ -431,7 +431,7 @@ async function buildPrompts(input: {
 
   const contractTemplate = paperclipAgentPromptTemplate(input.paperclipAccess);
   const paperclipContract = renderTemplate(contractTemplate, templateData);
-  const systemPrompt = joinPromptSections([instructions, paperclipContract]);
+  const systemPrompt = joinPromptSections([instructions, paperclipContract, OMP_ASYNC_BASH_GUIDANCE]);
   const promptTemplate = asString(input.config.promptTemplate, OMP_HEARTBEAT_PROMPT_TEMPLATE);
   const bootstrapTemplate = asString(input.config.bootstrapPromptTemplate, "");
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
@@ -472,6 +472,12 @@ async function buildPrompts(input: {
   };
 }
 
+export const OMP_ASYNC_BASH_GUIDANCE = [
+  "Background bash: a job started with `async: true` still stops at its `timeout` field, which defaults to 300 seconds.",
+  "For a long async job, set the numeric `timeout` field in the tool arguments (for example `\"timeout\": 2400`); a duration written only in the intent text does not change it.",
+  "`ready` and `name` start a long-lived service; leave `ready` out of async jobs.",
+].join("\n");
+
 export function applyOmpRuntimeToggleEnv(
   env: Record<string, string | undefined>,
   config: Record<string, unknown>,
@@ -480,6 +486,7 @@ export function applyOmpRuntimeToggleEnv(
   else delete env.PI_NO_PTY;
   if (asBoolean(config.noTitle, true)) env.PI_NO_TITLE = "1";
   else delete env.PI_NO_TITLE;
+  env.OMP_MCP_STARTUP_TIMEOUT_MS = "0";
 }
 
 export function applyRuntimeToolAccess(

@@ -191,6 +191,15 @@ describe("OMP local toggle overlay", () => {
     }
   });
 
+  it("makes OMP wait for its MCP servers before the first prompt even when the host sets a window", async () => {
+    process.env.OMP_MCP_STARTUP_TIMEOUT_MS = "250";
+    try {
+      expect((await run({})).env.OMP_MCP_STARTUP_TIMEOUT_MS).toBe("0");
+    } finally {
+      delete process.env.OMP_MCP_STARTUP_TIMEOUT_MS;
+    }
+  });
+
   it("maps every toggle to an explicit boolean in the overlay payload", () => {
     expect(buildOmpSettingsOverlay({})).toEqual({
       advisor: { enabled: false },

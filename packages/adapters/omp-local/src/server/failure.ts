@@ -14,6 +14,7 @@ const REFUSAL_RE = /\b(refus(?:al|ed)|cannot assist|can't assist|content policy|
 const REFRESH_REUSED_RE = /\brefresh token (?:was )?(?:already used|reused|rotation)\b/i;
 const REFRESH_EXPIRED_RE = /\brefresh token (?:has )?expired\b/i;
 const REFRESH_INVALID_RE = /\brefresh token (?:is )?(?:invalid|revoked|invalidated)\b/i;
+const AGENT_START_POLICY_CHANGED_RE = /\bsystem prompt changed repeatedly during before_agent_start\b/i;
 
 const RETRY_AFTER_SECONDS_RE = /\bretry[- ]?after["':\s]+(\d+(?:\.\d+)?)\b/i;
 const RETRY_IN_RE = /\btry again in (\d+(?:\.\d+)?)\s*(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?)\b/i;
@@ -75,6 +76,9 @@ export function classifyOmpFailure(input: {
   }
   if (TRANSIENT_RE.test(text)) {
     return { errorCode: "omp_transient_upstream", errorFamily: "transient_upstream", retryNotBefore: retryNotBefore(text) };
+  }
+  if (AGENT_START_POLICY_CHANGED_RE.test(text)) {
+    return { errorCode: "omp_agent_start_policy_changed", errorFamily: "transient_upstream", retryNotBefore: null };
   }
   if (REFUSAL_RE.test(text)) {
     return { errorCode: "omp_model_refusal", errorFamily: "model_refusal", retryNotBefore: null };
