@@ -946,6 +946,38 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(steerNativeSessionMock).toHaveBeenCalledTimes(2);
   });
 
+  it("returns a revision conflict when a board Steer retry finds the message edited since it was loaded", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const peer = await seedPeerAgentRun(seeded, "delivery-owner");
+    const posted = await request(
+      app(seeded.companyId, { agentId: peer.agentId, runId: peer.runId }),
+    )
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "What the board saw", deliver: "queue" })
+      .expect(201);
+    const client = app(seeded.companyId);
+    const queue = await waitForQueuedComment(client, seeded.issueId, posted.body.id);
+    steerNativeSessionMock
+      .mockImplementationOnce(async () => {
+        await db
+          .update(issueComments)
+          .set({ body: "Edited after the board loaded it", updatedAt: new Date(Date.now() + 60_000) })
+          .where(eq(issueComments.id, posted.body.id));
+        throw new NativeSessionSteeringError("steering_stale_turn", "The target turn is no longer active.");
+      })
+      .mockResolvedValue({ turnId: "turn-unseen-body" });
+
+    const steered = await request(client)
+      .post(`/api/issues/${seeded.issueId}/queued-comments/${posted.body.id}/steer`)
+      .send({ queueId: queue.queueId, targetRunId: seeded.runId, revision: queue.revision });
+
+    expect(steered.status, JSON.stringify(steered.body)).toBe(409);
+    expect(steered.body.details).toMatchObject({ code: "queued_comment_revision_conflict" });
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(1);
+  });
+
   it("receives the provider acknowledgement while the run keeps persisting its own output", async () => {
     const seeded = await seedActiveRun();
     await seedDispatchIdentity(seeded);

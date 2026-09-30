@@ -16283,7 +16283,10 @@ export function issueRoutes(
           ),
         );
       for (const pending of pendingWakes) {
-        if (!queuedCommentIdsFromWakePayload(pending.payload).includes(input.commentId)) continue;
+        if (
+          !queuedCommentIdsFromWakePayload(pending.payload).includes(input.commentId) &&
+          queuedInteractionId(pending.payload) !== input.commentId
+        ) continue;
         const locked = await lockQueuedCommentState({
           tx,
           issue: input.issue,
@@ -16663,7 +16666,7 @@ export function issueRoutes(
         await sleep(delayMs);
         const next = await resolveQueuedSteeringTarget(input);
         if (next.kind !== "target" || next.target.targetRunId !== target.targetRunId) throw error;
-        target = next.target;
+        if (input.targetIsServerResolved) target = next.target;
       }
     }
   }

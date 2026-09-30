@@ -26,6 +26,7 @@ import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";
 import { initializeRunIdentity, reconcileSteeredIdentity } from "../services/run-identity.js";
+import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -361,6 +362,40 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     expect(steerNativeSessionMock.mock.calls).toHaveLength(callCount);
     expect((await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId)))[0].status).toBe("cancelled");
     expect(await db.select().from(issueComments)).toHaveLength(2); // no forged approval comment
+  });
+
+  it("withdraws a saved approval whose timed-out steer is acknowledged late", async () => {
+    const seeded = await seedResponseQueue(true);
+    await seedDispatchIdentity(seeded);
+    const lateAck = Promise.withResolvers<void>();
+    const adapterSteer = vi.fn(() => lateAck.promise);
+    const release = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:approval" }),
+      steer: adapterSteer,
+    });
+    try {
+      const client = app(seeded.companyId);
+      const queue = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
+      const steered = await request(client)
+        .post(`/api/issues/${seeded.issueId}/queued-comments/${seeded.interactionId}/steer`)
+        .send({ queueId: seeded.wakeId, targetRunId: seeded.runId, revision: queue.body.revision });
+      expect(steered.status).toBe(409);
+      expect(steered.body.details).toMatchObject({ code: "steering_timeout" });
+      expect((await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId)))[0].status)
+        .toBe("deferred_issue_execution");
+
+      lateAck.resolve();
+      await vi.waitFor(async () => {
+        expect((await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId)))[0].status)
+          .toBe("cancelled");
+      });
+      expect((await db.select().from(runIdentityContexts).where(eq(runIdentityContexts.messageId, seeded.interactionId)))[0])
+        .toMatchObject({ status: "accepted" });
+      expect(adapterSteer).toHaveBeenCalledTimes(1);
+    } finally {
+      release();
+    }
   });
 
   it.each([false, true])("lets the source run finish review after acceptance, before wake persistence: %s", async (beforeWake) => {
