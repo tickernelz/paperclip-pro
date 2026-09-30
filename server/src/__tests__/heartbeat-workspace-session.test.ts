@@ -422,7 +422,7 @@ describe("assertGitSensitiveAdapterWorkspaceValid", () => {
     }
   });
 
-  it("rejects a workspace-linked issue when adapter cwd has no git metadata", async () => {
+  it("rejects a git worktree execution workspace whose adapter cwd has no git metadata", async () => {
     const input = buildWorkspaceValidationInput();
     const cwd = "/tmp/paperclip-workspace-without-git-metadata";
 
@@ -431,6 +431,7 @@ describe("assertGitSensitiveAdapterWorkspaceValid", () => {
         resolvedWorkspace: buildResolvedWorkspace({ cwd }),
         executionWorkspace: {
           ...input.executionWorkspace,
+          strategy: "git_worktree",
           baseCwd: cwd,
           cwd,
         },
@@ -444,14 +445,14 @@ describe("assertGitSensitiveAdapterWorkspaceValid", () => {
     );
   });
 
-  it("still rejects a local_path workspace whose adapter cwd has no git metadata", async () => {
+  it("rejects a git_repo project workspace whose adapter cwd has no git metadata", async () => {
     const input = buildWorkspaceValidationInput();
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-local-path-no-git-"));
+    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-repo-no-git-"));
 
     try {
       await expectWorkspaceValidationFailure(
         buildWorkspaceValidationInput({
-          projectWorkspaceSourceType: "local_path",
+          projectWorkspaceSourceType: "git_repo",
           resolvedWorkspace: buildResolvedWorkspace({ cwd }),
           executionWorkspace: {
             ...input.executionWorkspace,
@@ -471,32 +472,35 @@ describe("assertGitSensitiveAdapterWorkspaceValid", () => {
     }
   });
 
-  it("accepts a non_git_path project workspace whose adapter cwd has no git metadata", async () => {
-    const input = buildWorkspaceValidationInput();
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-non-git-path-"));
+  it.each(["local_path", "non_git_path"])(
+    "accepts a %s project workspace whose adapter cwd has no git metadata",
+    async (projectWorkspaceSourceType) => {
+      const input = buildWorkspaceValidationInput();
+      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plain-folder-"));
 
-    try {
-      await expect(
-        assertGitSensitiveAdapterWorkspaceValid(
-          buildWorkspaceValidationInput({
-            projectWorkspaceSourceType: "non_git_path",
-            resolvedWorkspace: buildResolvedWorkspace({ cwd }),
-            executionWorkspace: {
-              ...input.executionWorkspace,
-              baseCwd: cwd,
-              cwd,
-            },
-            persistedExecutionWorkspace: {
-              ...input.persistedExecutionWorkspace!,
-              cwd,
-            },
-          }),
-        ),
-      ).resolves.toBeUndefined();
-    } finally {
-      await fs.rm(cwd, { recursive: true, force: true });
-    }
-  });
+      try {
+        await expect(
+          assertGitSensitiveAdapterWorkspaceValid(
+            buildWorkspaceValidationInput({
+              projectWorkspaceSourceType,
+              resolvedWorkspace: buildResolvedWorkspace({ cwd }),
+              executionWorkspace: {
+                ...input.executionWorkspace,
+                baseCwd: cwd,
+                cwd,
+              },
+              persistedExecutionWorkspace: {
+                ...input.persistedExecutionWorkspace!,
+                cwd,
+              },
+            }),
+          ),
+        ).resolves.toBeUndefined();
+      } finally {
+        await fs.rm(cwd, { recursive: true, force: true });
+      }
+    },
+  );
 
   it("still rejects a non_git_path project workspace that would launch from the agent fallback cwd", async () => {
     const input = buildWorkspaceValidationInput();

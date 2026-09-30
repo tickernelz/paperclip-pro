@@ -940,7 +940,8 @@ const GIT_SENSITIVE_LOCAL_ADAPTER_TYPES = new Set([
   "opencode_local",
   "pi_local",
 ]);
-const NON_GIT_PROJECT_WORKSPACE_SOURCE_TYPE = "non_git_path";
+const GIT_PROJECT_WORKSPACE_SOURCE_TYPE = "git_repo";
+const GIT_WORKTREE_STRATEGY = "git_worktree";
 export { MAX_TURN_CONTINUATION_RETRY_REASON };
 export const MAX_TURN_CONTINUATION_WAKE_REASON = "max_turns_continuation_retry";
 const MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS = 2;
@@ -3291,8 +3292,9 @@ export async function assertGitSensitiveAdapterWorkspaceValid(input: {
     input.projectWorkspaceSourceType,
   );
   const gitMetadataExpectation =
-    workspaceExpectation &&
-    projectWorkspaceSourceType !== NON_GIT_PROJECT_WORKSPACE_SOURCE_TYPE;
+    input.executionWorkspace.strategy === GIT_WORKTREE_STRATEGY ||
+    input.persistedExecutionWorkspace?.strategyType === GIT_WORKTREE_STRATEGY ||
+    projectWorkspaceSourceType === GIT_PROJECT_WORKSPACE_SOURCE_TYPE;
 
   const fail = (
     reason: string,

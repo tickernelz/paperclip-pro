@@ -97,7 +97,7 @@ import {
 } from "./auth-precedence.js";
 import { prepareCodexRuntimeConfig } from "./runtime-config.js";
 import { resolveCodexDesiredSkillNames } from "./skills.js";
-import { buildCodexExecArgs } from "./codex-args.js";
+import { buildCodexExecArgs, isInsideGitWorkTree } from "./codex-args.js";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 import {
   CODEX_OUTPUT_INACTIVITY_MONITOR_SIGTERM_GRACE_MS,
@@ -1212,9 +1212,15 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       }
       return notes;
     })();
+    const localCwdOutsideGit = !executionTargetIsRemote && !(await isInsideGitWorkTree(cwd));
+    const skipGitRepoCheck = executionTargetIsSandbox || localCwdOutsideGit;
     if (executionTargetIsSandbox) {
       commandNotes.push(
         "Added --skip-git-repo-check for sandbox execution because Codex requires an explicit trust bypass in headless remote workspaces.",
+      );
+    } else if (localCwdOutsideGit) {
+      commandNotes.push(
+        `Added --skip-git-repo-check because the workspace "${cwd}" is not a git repository.`,
       );
     }
     if (preparedRuntimeConfig.notes.length > 0) {
@@ -1249,7 +1255,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         forceSaferInvocation ? { ...config, fastMode: false } : config,
         {
           resumeSessionId,
-          skipGitRepoCheck: executionTargetIsSandbox,
+          skipGitRepoCheck,
           networkAccess: env.PAPERCLIP_RUNNER_NETWORK_ACCESS !== "disabled",
         },
       );

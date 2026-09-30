@@ -23,7 +23,7 @@ import os from "node:os";
 import { parseCodexJsonl } from "./parse.js";
 import { SANDBOX_INSTALL_COMMAND } from "../index.js";
 import { codexHomeDir, readCodexAuthInfo } from "./quota.js";
-import { buildCodexExecArgs } from "./codex-args.js";
+import { buildCodexExecArgs, isInsideGitWorkTree } from "./codex-args.js";
 import {
   isManagedCodexHomePath,
   prepareManagedCodexHome,
@@ -384,9 +384,10 @@ export async function testEnvironment(
         hint: "Use the `codex` CLI command to run the automatic login and installation probe.",
       });
     } else {
+      const probeCwdOutsideGit = !targetIsRemote && !(await isInsideGitWorkTree(cwd));
       const execArgs = buildCodexExecArgs(
         { ...config, fastMode: false },
-        { skipGitRepoCheck: targetIsSandbox },
+        { skipGitRepoCheck: targetIsSandbox || probeCwdOutsideGit },
       );
       // A connection test needs one small response, not plugin catalog sync,
       // repository instructions, or a durable session. Keep provider/model

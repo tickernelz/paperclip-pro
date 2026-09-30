@@ -1,3 +1,5 @@
+import fs from "node:fs/promises";
+import path from "node:path";
 import { asBoolean, asString, asStringArray } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
@@ -102,4 +104,15 @@ export function buildCodexExecArgs(
         ? `Configured fast mode is currently only supported on ${formatFastModeSupportedModels()}; Paperclip will ignore it for model ${model || "(default)"}.`
         : null,
   };
+}
+
+export async function isInsideGitWorkTree(cwd: string): Promise<boolean> {
+  let current = path.resolve(cwd);
+  for (;;) {
+    const found = await fs.lstat(path.join(current, ".git")).then(() => true, () => false);
+    if (found) return true;
+    const parent = path.dirname(current);
+    if (parent === current) return false;
+    current = parent;
+  }
 }

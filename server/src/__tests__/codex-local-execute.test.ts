@@ -396,6 +396,62 @@ describe("codex execute", () => {
     }
   });
 
+  it.each([
+    { label: "a plain folder", initGit: false, expectFlag: true },
+    { label: "a git checkout", initGit: true, expectFlag: false },
+  ])("sets --skip-git-repo-check=$expectFlag for $label local workspace", async ({ initGit, expectFlag }) => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-execute-git-check-"));
+    const workspace = path.join(root, "workspace");
+    const commandPath = path.join(root, "codex");
+    const capturePath = path.join(root, "capture.json");
+    await fs.mkdir(workspace, { recursive: true });
+    if (initGit) await fs.mkdir(path.join(workspace, ".git"));
+    await writeFakeCodexCommand(commandPath);
+
+    const previousHome = process.env.HOME;
+    process.env.HOME = root;
+    await seedSharedCodexAuth(root);
+
+    try {
+      const result = await execute({
+        runId: "run-git-check",
+        agent: {
+          id: "agent-1",
+          companyId: "company-1",
+          name: "Codex Coder",
+          adapterType: "codex_local",
+          adapterConfig: { engine: "cli" },
+        },
+        runtime: {
+          sessionId: null,
+          sessionParams: null,
+          sessionDisplayId: null,
+          taskKey: null,
+        },
+        config: {
+          engine: "cli",
+          command: commandPath,
+          cwd: workspace,
+          env: {
+            PAPERCLIP_TEST_CAPTURE_PATH: capturePath,
+          },
+          promptTemplate: "Follow the paperclip heartbeat.",
+        },
+        context: {},
+        authToken: "run-jwt-token",
+        onLog: async () => {},
+      });
+
+      expect(result.exitCode).toBe(0);
+      const capture = JSON.parse(await fs.readFile(capturePath, "utf8")) as CapturePayload;
+      expect(capture.argv.includes("--skip-git-repo-check")).toBe(expectFlag);
+    } finally {
+      if (previousHome === undefined) delete process.env.HOME;
+      else process.env.HOME = previousHome;
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
   it("logs HOME and the resolved executable path in invocation metadata", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-codex-execute-meta-"));
     const workspace = path.join(root, "workspace");
