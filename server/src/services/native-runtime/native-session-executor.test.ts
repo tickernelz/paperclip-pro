@@ -299,6 +299,7 @@ import {
   sha256DirectoryTree,
   stageRemoteRunnerDirectory,
   steerNativeSession,
+  STEERING_PROVIDER_ACK_GRACE_MS,
   hasLiveAdapterSteering,
   syncRemoteRunnerDirectoryOut,
   verifyNativeHarnessBackup,
@@ -5679,18 +5680,39 @@ describe("native session same-turn steering", () => {
       label: "unsupported provider",
       prepare: () => capabilities.mockResolvedValue({ steering: false }),
       code: "steering_unsupported",
+      detail: null,
     },
     {
       label: "stale turn",
       prepare: () => snapshot.mockResolvedValue({ activeTurnId: null }),
       code: "steering_stale_turn",
+      detail: null,
     },
     {
       label: "provider rejection",
       prepare: () => steer.mockRejectedValue(new Error("request rejected")),
       code: "steering_rejected",
+      detail: "request rejected",
     },
-  ])("keeps $label retryable with a stable code", async ({ prepare, code }) => {
+    {
+      label: "provider-side acknowledgement timeout",
+      prepare: () => steer.mockRejectedValue(new Error("omp_rpc_steer_timeout")),
+      code: "steering_timeout",
+      detail: "omp_rpc_steer_timeout",
+    },
+    {
+      label: "closed provider input",
+      prepare: () => steer.mockRejectedValue(new Error("live_stdin_channel_closed")),
+      code: "steering_temporarily_unavailable",
+      detail: "live_stdin_channel_closed",
+    },
+    {
+      label: "provider without a steer method",
+      prepare: () => steer.mockRejectedValue(new Error("steering is unavailable: method not found")),
+      code: "steering_unsupported",
+      detail: "steering is unavailable: method not found",
+    },
+  ])("keeps $label retryable with a stable code", async ({ prepare, code, detail }) => {
     prepare();
     const { running } = await startActiveSession();
 
@@ -5701,6 +5723,7 @@ describe("native session same-turn steering", () => {
     }).catch((value) => value);
     expect(error).toBeInstanceOf(NativeSessionSteeringError);
     expect(error.code).toBe(code);
+    expect(error.detail).toBe(detail);
 
     state.release?.();
     await running;
@@ -5750,6 +5773,7 @@ describe("native session same-turn steering", () => {
         turnId: "omp-rpc-turn:adapter",
         message: { role: "user", text: "Steer through the adapter" },
         correlationId: "adapter-comment-1",
+        ackTimeoutMs: 10_000 + STEERING_PROVIDER_ACK_GRACE_MS,
       });
     } finally {
       unregister();

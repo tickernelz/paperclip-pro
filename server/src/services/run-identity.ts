@@ -386,6 +386,7 @@ export async function reserveSteeredIdentity(
       else
         throw conflict(
           "A prior steering acknowledgement must be reconciled first",
+          { code: "steering_identity_pending" },
         );
     }
     const [existing] = await tx

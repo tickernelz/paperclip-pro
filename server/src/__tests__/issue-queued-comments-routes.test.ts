@@ -89,7 +89,9 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       };
       next();
     });
-    testApp.use("/api", issueRoutes(db, {} as any, {}));
+    testApp.use("/api", issueRoutes(db, {} as any, {
+      steeringRetry: { delaysMs: [20, 40], budgetMs: 1_500, minAttemptMs: 300 },
+    }));
     testApp.use(errorHandler);
     return testApp;
   }
@@ -1508,7 +1510,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
   it("sets the identity to rejected on a definite steering rejection", async () => {
     const seeded = await seedQueue();
     await seedDispatchIdentity(seeded);
-    steerNativeSessionMock.mockRejectedValueOnce(
+    steerNativeSessionMock.mockRejectedValue(
       new NativeSessionSteeringError("steering_rejected", "The provider rejected the steering message."),
     );
 

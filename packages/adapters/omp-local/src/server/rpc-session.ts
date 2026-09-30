@@ -7,7 +7,7 @@ import {
   type BoundLiveStdinChannel,
 } from "@tickernelz/paperclip-pro-adapter-utils/live-stdin-channel";
 
-const STEER_ACK_TIMEOUT_MS = 10_000;
+const STEER_ACK_TIMEOUT_MS = 12_000;
 const DEFAULT_CONTINUATION_IDLE_MS = 60_000;
 const DEFAULT_IDLE_RECHECK_MS = 250;
 const MAX_IDLE_CHECKS = 20;
@@ -174,6 +174,7 @@ export interface OmpRpcSteerSession {
     turnId: string;
     message: { role: "user"; text: string };
     correlationId?: string;
+    ackTimeoutMs?: number;
   }): Promise<void>;
   whenSteersSettled(): Promise<void>;
 }
@@ -272,7 +273,7 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
       const timer = setTimeout(() => {
         pending.delete(id);
         reject(new Error("omp_rpc_steer_timeout"));
-      }, STEER_ACK_TIMEOUT_MS);
+      }, input.ackTimeoutMs ?? STEER_ACK_TIMEOUT_MS);
       pending.set(id, { resolve, reject, timer, settled });
       try {
         await writer(

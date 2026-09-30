@@ -1,3 +1,4 @@
+import { logger } from "../../middleware/logger.js";
 import {
   isSupportedRemoteCodexVersion,
   parseCodexCliVersion,
@@ -6190,10 +6191,43 @@ export class NativeSessionSteeringError extends Error {
       | "steering_timeout"
       | "steering_rejected",
     message: string,
+    readonly detail: string | null = null,
   ) {
     super(message);
     this.name = "NativeSessionSteeringError";
   }
+}
+
+function classifyProviderSteeringFailure(detail: string): NativeSessionSteeringError {
+  if (/timeout|timed out/i.test(detail))
+    return new NativeSessionSteeringError(
+      "steering_timeout",
+      "The provider did not acknowledge steering in time.",
+      detail,
+    );
+  if (/stale|terminal|active turn/i.test(detail))
+    return new NativeSessionSteeringError(
+      "steering_stale_turn",
+      "The target turn is no longer active.",
+      detail,
+    );
+  if (/omp_rpc_session_closed|omp_rpc_session_unavailable|live_stdin_channel_closed/.test(detail))
+    return new NativeSessionSteeringError(
+      "steering_temporarily_unavailable",
+      "The active native session is not accepting steering right now.",
+      detail,
+    );
+  if (/unsupported|unavailable|capability/i.test(detail))
+    return new NativeSessionSteeringError(
+      "steering_unsupported",
+      "This provider does not support same-turn steering.",
+      detail,
+    );
+  return new NativeSessionSteeringError(
+    "steering_rejected",
+    "The provider rejected the steering message.",
+    detail,
+  );
 }
 
 export class NativeRuntimeRequestResolutionError extends Error {
@@ -6305,6 +6339,8 @@ export async function resolveNativeRuntimeRequest(input: {
   }
 }
 
+export const STEERING_PROVIDER_ACK_GRACE_MS = 2_000;
+
 type SteeringSession = {
   capabilities(): Promise<{ steering: boolean }>;
   snapshot(): Promise<{ activeTurnId?: string | null }>;
@@ -6312,6 +6348,7 @@ type SteeringSession = {
     turnId: string;
     message: { role: "user"; text: string };
     correlationId?: string;
+    ackTimeoutMs?: number;
   }): Promise<void>;
 };
 
@@ -6359,7 +6396,8 @@ export async function steerNativeSession(input: {
   message: string;
   correlationId: string;
   timeoutMs?: number;
-  onAcknowledged?: () => Promise<void>;
+  onAcknowledged?: (acknowledgement: { turnId: string }) => Promise<void>;
+  onUnacknowledged?: (error: unknown) => Promise<void>;
 }): Promise<{ turnId: string }> {
   const session = resolveSteeringSession(input.runId);
   if (!session) {
@@ -6385,6 +6423,7 @@ export async function steerNativeSession(input: {
   }
 
   const deliveryKey = `${input.runId}:${input.correlationId}`;
+  const timeoutMs = input.timeoutMs ?? 10_000;
   let delivery = steeringDeliveries.get(deliveryKey);
   if (!delivery) {
     delivery = session
@@ -6392,6 +6431,9 @@ export async function steerNativeSession(input: {
         turnId,
         message: { role: "user", text: input.message },
         correlationId: input.correlationId,
+        ...(activeNativeSessions.has(input.runId)
+          ? {}
+          : { ackTimeoutMs: timeoutMs + STEERING_PROVIDER_ACK_GRACE_MS }),
       })
       .then(() => ({ turnId }));
     steeringDeliveries.set(deliveryKey, delivery);
@@ -6399,8 +6441,6 @@ export async function steerNativeSession(input: {
       steeringDeliveries.delete(deliveryKey);
     });
   }
-  // Do not await the persistence callback here: the route holds the run lock
-  // until acknowledgement. After a timeout this callback can acquire that lock.
   if (input.onAcknowledged)
     void delivery.then(input.onAcknowledged).catch(() => undefined);
   let timeout: ReturnType<typeof setTimeout> | null = null;
@@ -6416,30 +6456,35 @@ export async function steerNativeSession(input: {
                 "The provider did not acknowledge steering in time.",
               ),
             ),
-          input.timeoutMs ?? 10_000,
+          timeoutMs,
         );
       }),
     ]);
     return acknowledged;
   } catch (error) {
-    if (error instanceof NativeSessionSteeringError) throw error;
-    const message = error instanceof Error ? error.message : String(error);
-    if (/stale|terminal|active turn/i.test(message)) {
-      throw new NativeSessionSteeringError(
-        "steering_stale_turn",
-        "The target turn is no longer active.",
-      );
-    }
-    if (/unsupported|unavailable|capability/i.test(message)) {
-      throw new NativeSessionSteeringError(
-        "steering_unsupported",
-        "This provider does not support same-turn steering.",
-      );
-    }
-    throw new NativeSessionSteeringError(
-      "steering_rejected",
-      "The provider rejected the steering message.",
+    const failure =
+      error instanceof NativeSessionSteeringError
+        ? error
+        : classifyProviderSteeringFailure(
+            error instanceof Error ? error.message : String(error),
+          );
+    logger.warn(
+      {
+        runId: input.runId,
+        correlationId: input.correlationId,
+        code: failure.code,
+        detail: failure.detail,
+      },
+      "native session steering was not acknowledged",
     );
+    if (failure.code === "steering_timeout" && input.onUnacknowledged) {
+      const onUnacknowledged = input.onUnacknowledged;
+      void delivery.then(
+        () => undefined,
+        (lateError) => onUnacknowledged(lateError).catch(() => undefined),
+      );
+    }
+    throw failure;
   } finally {
     if (timeout) clearTimeout(timeout);
   }

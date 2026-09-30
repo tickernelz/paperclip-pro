@@ -5,6 +5,7 @@ export interface AdapterSteerTarget {
     turnId: string;
     message: { role: "user"; text: string };
     correlationId?: string;
+    ackTimeoutMs?: number;
   }): Promise<void>;
 }
 

@@ -27,3 +27,13 @@ export function withRetainedSteeringAcknowledgements<
   if (resultJson === undefined) return rest;
   return { ...rest, resultJson: resultJsonRetainingSteeringAcknowledgements(resultJson) };
 }
+
+export function resultJsonWithSteeringAcknowledgement(
+  commentId: string,
+  acknowledgement: Record<string, unknown>,
+): SQL {
+  const key = sql`${ACKNOWLEDGEMENTS_KEY}::text`;
+  const current = sql`case when jsonb_typeof(${heartbeatRuns.resultJson}) = 'object' then ${heartbeatRuns.resultJson} else '{}'::jsonb end`;
+  const stored = sql`case when jsonb_typeof(${heartbeatRuns.resultJson} -> ${key}) = 'object' then ${heartbeatRuns.resultJson} -> ${key} else '{}'::jsonb end`;
+  return sql`(${current}) || jsonb_build_object(${key}, (${stored}) || jsonb_build_object(${commentId}::text, ${JSON.stringify(acknowledgement)}::jsonb))`;
+}

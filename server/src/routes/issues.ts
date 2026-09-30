@@ -26,6 +26,7 @@ import {
   reserveSteeredIdentity,
   acceptSteeredIdentity,
   rejectSteeredIdentity,
+  type RunIdentityContext,
 } from "../services/run-identity.js";
 import { createHash, randomUUID } from "node:crypto";
 import { Router, type Request, type Response } from "express";
@@ -364,10 +365,21 @@ import {
   buildQueuedCommentQueueSnapshot,
   decideQueuedCommentQueueSteering,
   queuedCommentIdsFromWakePayload,
+  withQueuedCommentIdsInRunContext,
   withQueuedCommentIdsInWakePayload,
 } from "../services/issue-queued-comment-queue.js";
+import { resultJsonWithSteeringAcknowledgement } from "../services/steering-acknowledgements.js";
+import { setTimeout as sleep } from "node:timers/promises";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
+export type SteeringRetryPolicy = { delaysMs: readonly number[]; budgetMs: number; minAttemptMs: number };
+const DEFAULT_STEERING_RETRY: SteeringRetryPolicy = { delaysMs: [1_000, 3_000], budgetMs: 10_000, minAttemptMs: 2_000 };
+const RETRYABLE_STEERING_CODES: Record<string, true> = {
+  steering_rejected: true,
+  steering_stale_turn: true,
+  steering_temporarily_unavailable: true,
+  steering_identity_pending: true,
+};
 const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
@@ -3576,6 +3588,7 @@ export function issueRoutes(
       proposalId: string;
       actor: { agentId?: string | null; userId?: string | null };
     }) => Promise<unknown>;
+    steeringRetry?: SteeringRetryPolicy;
   } = {},
 ) {
   const router = Router();
@@ -7277,6 +7290,7 @@ export function issueRoutes(
     queueId: string;
     targetRunId?: string;
     allowStoppedTarget?: boolean;
+    lockActiveRun?: boolean;
   }) {
     const [currentIssue] = await input.tx
       .select()
@@ -7358,8 +7372,8 @@ export function issueRoutes(
       state === "deferred"
         ? (input.targetRunId ?? input.issue.executionRunId ?? null)
         : null;
-    const activeRun = activeRunId
-      ? await input.tx
+    const activeRunQuery = activeRunId
+      ? input.tx
           .select()
           .from(heartbeatRuns)
           .where(
@@ -7369,8 +7383,10 @@ export function issueRoutes(
               input.allowStoppedTarget ? undefined : eq(heartbeatRuns.status, "running"),
             ),
           )
-          .for("update")
           .limit(1)
+      : null;
+    const activeRun = activeRunQuery
+      ? await (input.lockActiveRun === false ? activeRunQuery : activeRunQuery.for("update"))
           .then((rows) => rows[0] ?? null)
       : null;
     if (input.targetRunId) {
@@ -16149,6 +16165,155 @@ export function issueRoutes(
     acknowledgedTurnId: string | null;
   };
 
+  type QueuedSteeringTarget = { queueId: string; targetRunId: string; revision: string };
+  const steeringRetry = opts.steeringRetry ?? DEFAULT_STEERING_RETRY;
+
+  async function withdrawSteeredComment(input: {
+    tx: IssueQueueTx;
+    issueId: string;
+    queue: IssueQueuedCommentQueue;
+    wake: typeof agentWakeupRequests.$inferSelect;
+    queueRun: IssueQueueRun | null;
+    commentId: string;
+  }) {
+    const { tx, wake, queueRun, commentId } = input;
+    const remainingIds = input.queue.entries
+      .map((candidate) => candidate.comment.id)
+      .filter((candidateId) => candidateId !== commentId);
+    const now = new Date();
+    if (remainingIds.length === 0) {
+      await tx
+        .update(agentWakeupRequests)
+        .set({ status: "cancelled", finishedAt: now, updatedAt: now })
+        .where(eq(agentWakeupRequests.id, wake.id));
+      if (queueRun) {
+        await tx
+          .update(heartbeatRuns)
+          .set({
+            status: "cancelled",
+            finishedAt: now,
+            error: "Queued message was steered into the running turn",
+            errorCode: "queued_comment_steered",
+            updatedAt: now,
+          })
+          .where(and(eq(heartbeatRuns.id, queueRun.id), eq(heartbeatRuns.status, "queued")));
+        await tx
+          .update(issueRows)
+          .set({ executionRunId: null, executionAgentNameKey: null, executionLockedAt: null, updatedAt: now })
+          .where(and(eq(issueRows.id, input.issueId), eq(issueRows.executionRunId, queueRun.id)));
+      }
+      return null;
+    }
+    if (queueRun) {
+      await tx
+        .update(heartbeatRuns)
+        .set({
+          contextSnapshot: withQueuedCommentIdsInRunContext(queueRun.contextSnapshot, remainingIds),
+          updatedAt: now,
+        })
+        .where(and(eq(heartbeatRuns.id, queueRun.id), eq(heartbeatRuns.status, "queued")));
+    }
+    return tx
+      .update(agentWakeupRequests)
+      .set({
+        payload: withQueuedCommentIdsInWakePayload(wake.payload, remainingIds),
+        updatedAt: now,
+      })
+      .where(eq(agentWakeupRequests.id, wake.id))
+      .returning()
+      .then((rows) => rows[0] ?? wake);
+  }
+
+  async function recordSteeringAcknowledgement(input: {
+    tx: IssueQueueTx;
+    runId: string;
+    commentId: string;
+    queueId: string;
+    turnId: string;
+  }) {
+    const now = new Date();
+    await input.tx
+      .update(heartbeatRuns)
+      .set({
+        resultJson: resultJsonWithSteeringAcknowledgement(input.commentId, {
+          status: "acknowledged",
+          queueId: input.queueId,
+          turnId: input.turnId,
+          acknowledgedAt: now.toISOString(),
+        }),
+        updatedAt: now,
+      })
+      .where(eq(heartbeatRuns.id, input.runId));
+  }
+
+  async function settleLateSteeringAcknowledgement(input: {
+    issue: { id: string; companyId: string; assigneeAgentId: string | null };
+    actor: ReturnType<typeof getActorInfo>;
+    commentId: string;
+    queueId: string;
+    runId: string;
+    turnId: string;
+    identity: RunIdentityContext | null;
+  }) {
+    await db.transaction(async (tx) => {
+      await tx
+        .select({ id: issueRows.id })
+        .from(issueRows)
+        .where(and(eq(issueRows.id, input.issue.id), eq(issueRows.companyId, input.issue.companyId)))
+        .for("update");
+      const run = await tx
+        .select({ resultJson: heartbeatRuns.resultJson })
+        .from(heartbeatRuns)
+        .where(and(eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.issue.companyId)))
+        .then((rows) => rows[0] ?? null);
+      if (!run) return;
+      if (input.identity) await acceptSteeredIdentity(tx, input.identity);
+      const recorded = readObject(
+        readObject(readObject(run.resultJson).queuedSteeringAcknowledgements)[input.commentId],
+      );
+      if (recorded.status === "acknowledged") return;
+      const pendingWakes = await tx
+        .select({ id: agentWakeupRequests.id, payload: agentWakeupRequests.payload })
+        .from(agentWakeupRequests)
+        .where(
+          and(
+            eq(agentWakeupRequests.companyId, input.issue.companyId),
+            inArray(agentWakeupRequests.status, ["deferred_issue_execution", "queued"]),
+            sql`${agentWakeupRequests.payload}->>'issueId' = ${input.issue.id}`,
+          ),
+        );
+      for (const pending of pendingWakes) {
+        if (!queuedCommentIdsFromWakePayload(pending.payload).includes(input.commentId)) continue;
+        const locked = await lockQueuedCommentState({
+          tx,
+          issue: input.issue,
+          actor: input.actor,
+          queueId: pending.id,
+          lockActiveRun: false,
+        }).catch((error: unknown) => {
+          if (error instanceof HttpError) return null;
+          throw error;
+        });
+        if (!locked?.queue.entries.some((entry) => entry.comment.id === input.commentId)) continue;
+        await withdrawSteeredComment({
+          tx,
+          issueId: input.issue.id,
+          queue: locked.queue,
+          wake: locked.wake,
+          queueRun: locked.queueRun,
+          commentId: input.commentId,
+        });
+      }
+      await recordSteeringAcknowledgement({
+        tx,
+        runId: input.runId,
+        commentId: input.commentId,
+        queueId: input.queueId,
+        turnId: input.turnId,
+      });
+    });
+  }
+
   async function steerQueuedCommentInTransaction(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
     actor: ReturnType<typeof getActorInfo>;
@@ -16156,6 +16321,7 @@ export function issueRoutes(
     queueId: string;
     targetRunId: string;
     revision: string;
+    timeoutMs?: number;
   }): Promise<QueuedCommentSteerReceipt> {
     const { issue, actor, commentId } = input;
     const responseWake = await db.select().from(agentWakeupRequests).where(and(
@@ -16236,7 +16402,6 @@ export function issueRoutes(
                     eq(heartbeatRuns.agentId, retryWake.agentId),
                   ),
                 )
-                .for("update")
                 .limit(1)
                 .then((rows) => rows[0] ?? null)
             : null;
@@ -16274,6 +16439,7 @@ export function issueRoutes(
           actor,
           queueId: input.queueId,
           targetRunId: input.targetRunId,
+          lockActiveRun: false,
         });
         if (!locked.activeRun) {
           throw conflict("The queued message targets a stale run", {
@@ -16327,12 +16493,13 @@ export function issueRoutes(
           });
         }
         steeringDeliveryAttempted = true;
+        const activeRunId = locked.activeRun.id;
         const acknowledgement =
           (await storedSteeringAcknowledgement(tx, steeringIdentity ?? {
-            companyId: issue.companyId, runId: locked.activeRun.id, messageId: commentId,
+            companyId: issue.companyId, runId: activeRunId, messageId: commentId,
           })) ??
           (await steerNativeSession({
-            runId: locked.activeRun.id,
+            runId: activeRunId,
             message: steeringExposesLowTrustRaw
               ? entry.comment.body
               : sanitizeQuarantinedCommentForHigherTrust({
@@ -16340,55 +16507,39 @@ export function issueRoutes(
                   sourceTrust: entry.comment.sourceTrust ?? null,
                 }).body,
             correlationId: commentId,
-            onAcknowledged: steeringIdentity
-              ? () => reconcileSteeredIdentity(db, steeringIdentity)
-              : undefined,
+            timeoutMs: input.timeoutMs,
+            onAcknowledged: ({ turnId }) =>
+              settleLateSteeringAcknowledgement({
+                issue,
+                actor,
+                commentId,
+                queueId: input.queueId,
+                runId: activeRunId,
+                turnId,
+                identity: steeringIdentity,
+              }),
+            onUnacknowledged: async () => {
+              if (steeringIdentity) await rejectSteeredIdentity(db, steeringIdentity);
+            },
           }));
         if (steeringIdentity)
           await acceptSteeredIdentity(tx, steeringIdentity);
         acknowledgedTurnId = acknowledgement.turnId;
-        const remainingIds = locked.queue.entries
-          .map((candidate) => candidate.comment.id)
-          .filter((candidateId) => candidateId !== commentId);
-        const now = new Date();
-        const nextWake =
-          remainingIds.length === 0
-            ? await tx
-                .update(agentWakeupRequests)
-                .set({ status: "cancelled", finishedAt: now, updatedAt: now })
-                .where(eq(agentWakeupRequests.id, locked.wake.id))
-                .returning()
-                .then(() => null)
-            : await tx
-                .update(agentWakeupRequests)
-                .set({
-                  payload: withQueuedCommentIdsInWakePayload(
-                    locked.wake.payload,
-                    remainingIds,
-                  ),
-                  updatedAt: now,
-                })
-                .where(eq(agentWakeupRequests.id, locked.wake.id))
-                .returning()
-                .then((rows) => rows[0] ?? locked.wake);
-        await tx
-          .update(heartbeatRuns)
-          .set({
-            resultJson: {
-              ...runResult,
-              queuedSteeringAcknowledgements: {
-                ...acknowledgements,
-                [commentId]: {
-                  status: "acknowledged",
-                  queueId: input.queueId,
-                  turnId: acknowledgement.turnId,
-                  acknowledgedAt: now.toISOString(),
-                },
-              },
-            },
-            updatedAt: now,
-          })
-          .where(eq(heartbeatRuns.id, locked.activeRun.id));
+        const nextWake = await withdrawSteeredComment({
+          tx,
+          issueId: issue.id,
+          queue: locked.queue,
+          wake: locked.wake,
+          queueRun: null,
+          commentId,
+        });
+        await recordSteeringAcknowledgement({
+          tx,
+          runId: activeRunId,
+          commentId,
+          queueId: input.queueId,
+          turnId: acknowledgement.turnId,
+        });
         return buildQueuedCommentQueue({
           executor: tx,
           issue,
@@ -16408,22 +16559,117 @@ export function issueRoutes(
         await rejectSteeredIdentity(db, steeringIdentity);
 
       if (error instanceof NativeSessionSteeringError) {
-        throw conflict(error.message, { code: error.code, retryable: true });
+        throw conflict(error.message, {
+          code: error.code,
+          retryable: true,
+          ...(error.detail ? { detail: error.detail } : {}),
+        });
       }
       throw error;
     }
     return { queue, duplicate, acknowledgedTurnId };
   }
 
+  function steeringErrorCode(error: unknown): string | null {
+    if (!(error instanceof HttpError)) return null;
+    const details = readObject(error.details);
+    return typeof details.code === "string" ? details.code : null;
+  }
+
+  async function resolveQueuedSteeringTarget(input: {
+    issue: { id: string; companyId: string; assigneeAgentId: string | null };
+    commentId: string;
+    actor: ReturnType<typeof getActorInfo>;
+  }): Promise<
+    | { kind: "target"; target: QueuedSteeringTarget }
+    | { kind: "none" }
+    | { kind: "unavailable"; reason: "legacy_protocol" | "steering_failed" }
+  > {
+    try {
+      const issue = await svc.getById(input.issue.id);
+      const activeRun = issue ? await resolveActiveIssueRun(issue) : null;
+      const queue = await buildQueuedCommentQueue({
+        executor: db,
+        issue: issue ?? input.issue,
+        activeRun,
+        actor: input.actor,
+        steeringDisposition: "temporarily_unavailable",
+      });
+      const entry = queue.entries.find(
+        (candidate) => candidate.comment.id === input.commentId,
+      );
+      if (entry && queue.protocol !== "paperclip_runner_v1") {
+        return { kind: "unavailable", reason: "legacy_protocol" };
+      }
+      return entry && queue.queueId && queue.targetRunId
+        ? {
+            kind: "target",
+            target: { queueId: queue.queueId, targetRunId: queue.targetRunId, revision: queue.revision },
+          }
+        : { kind: "none" };
+    } catch (err) {
+      logger.warn(
+        { err, issueId: input.issue.id, commentId: input.commentId },
+        "failed to resolve the steering target for a posted comment",
+      );
+      return { kind: "unavailable", reason: "steering_failed" };
+    }
+  }
+
+  async function steerQueuedCommentWithRetry(input: {
+    issue: { id: string; companyId: string; assigneeAgentId: string | null };
+    actor: ReturnType<typeof getActorInfo>;
+    commentId: string;
+    target: QueuedSteeringTarget;
+    targetIsServerResolved: boolean;
+  }): Promise<QueuedCommentSteerReceipt> {
+    const deadline = Date.now() + steeringRetry.budgetMs;
+    let target = input.target;
+    for (let attempt = 0; ; attempt += 1) {
+      try {
+        return await steerQueuedCommentInTransaction({
+          issue: input.issue,
+          actor: input.actor,
+          commentId: input.commentId,
+          queueId: target.queueId,
+          targetRunId: target.targetRunId,
+          revision: target.revision,
+          timeoutMs: Math.max(steeringRetry.minAttemptMs, deadline - Date.now()),
+        });
+      } catch (error) {
+        const code = steeringErrorCode(error);
+        const delayMs = steeringRetry.delaysMs[attempt];
+        const retryable =
+          code !== null &&
+          (RETRYABLE_STEERING_CODES[code] === true ||
+            (input.targetIsServerResolved && code === "queued_comment_revision_conflict"));
+        if (
+          !retryable ||
+          delayMs === undefined ||
+          deadline - Date.now() - delayMs < steeringRetry.minAttemptMs
+        ) {
+          throw error;
+        }
+        logger.warn(
+          {
+            issueId: input.issue.id,
+            commentId: input.commentId,
+            targetRunId: target.targetRunId,
+            attempt: attempt + 1,
+            code,
+          },
+          "retrying a transiently refused steer",
+        );
+        await sleep(delayMs);
+        const next = await resolveQueuedSteeringTarget(input);
+        if (next.kind !== "target" || next.target.targetRunId !== target.targetRunId) throw error;
+        target = next.target;
+      }
+    }
+  }
+
   function steeringUnavailableFromError(error: unknown): IssueCommentDeliveryReason {
-    const code =
-      error instanceof HttpError &&
-      error.details &&
-      typeof error.details === "object" &&
-      !Array.isArray(error.details) &&
-      typeof (error.details as { code?: unknown }).code === "string"
-        ? (error.details as { code: string }).code
-        : null;
+    const code = steeringErrorCode(error);
     if (code === "steering_unsupported") return "legacy_protocol";
     if (code === "steering_identity_mismatch") return "identity_mismatch";
     if (
@@ -16539,34 +16785,11 @@ export function issueRoutes(
         "failed to complete the comment wake dispatch before steering",
       );
     }
-    let target: { queueId: string; targetRunId: string; revision: string } | null = null;
-    try {
-      const issue = await svc.getById(input.issue.id);
-      const activeRun = issue ? await resolveActiveIssueRun(issue) : null;
-      const queue = await buildQueuedCommentQueue({
-        executor: db,
-        issue: issue ?? input.issue,
-        activeRun,
-        actor: input.actor,
-        steeringDisposition: "temporarily_unavailable",
-      });
-      const entry = queue.entries.find(
-        (candidate) => candidate.comment.id === input.commentId,
-      );
-      if (entry && queue.protocol !== "paperclip_runner_v1") {
-        return { deliveredAs: "queued", steeringUnavailable: "legacy_protocol" };
-      }
-      target =
-        entry && queue.queueId && queue.targetRunId
-          ? { queueId: queue.queueId, targetRunId: queue.targetRunId, revision: queue.revision }
-          : null;
-    } catch (err) {
-      logger.warn(
-        { err, issueId: input.issue.id, commentId: input.commentId },
-        "failed to resolve the steering target for a posted comment",
-      );
-      return { deliveredAs: "queued", steeringUnavailable: "steering_failed" };
+    const resolved = await resolveQueuedSteeringTarget(input);
+    if (resolved.kind === "unavailable") {
+      return { deliveredAs: "queued", steeringUnavailable: resolved.reason };
     }
+    const target = resolved.kind === "target" ? resolved.target : null;
     if (!target) {
       return {
         deliveredAs: "queued",
@@ -16584,13 +16807,12 @@ export function issueRoutes(
     }
     let steered: QueuedCommentSteerReceipt;
     try {
-      steered = await steerQueuedCommentInTransaction({
+      steered = await steerQueuedCommentWithRetry({
         issue: input.issue,
         actor: input.actor,
         commentId: input.commentId,
-        queueId: target.queueId,
-        targetRunId: target.targetRunId,
-        revision: target.revision,
+        target,
+        targetIsServerResolved: true,
       });
     } catch (error) {
       return {
@@ -16666,13 +16888,16 @@ export function issueRoutes(
       const decision = await decideIssueAccess(req, issue, "issue:comment");
       if (!decision.allowed) throw forbidden(decision.explanation, authorizationDeniedDetails(decision));
       const actor = getActorInfo(req);
-      const { queue, duplicate, acknowledgedTurnId } = await steerQueuedCommentInTransaction({
+      const { queue, duplicate, acknowledgedTurnId } = await steerQueuedCommentWithRetry({
         issue,
         actor,
         commentId,
-        queueId: req.body.queueId,
-        targetRunId: req.body.targetRunId,
-        revision: req.body.revision,
+        target: {
+          queueId: req.body.queueId,
+          targetRunId: req.body.targetRunId,
+          revision: req.body.revision,
+        },
+        targetIsServerResolved: false,
       });
       await logQueuedCommentSteered({
         issue,

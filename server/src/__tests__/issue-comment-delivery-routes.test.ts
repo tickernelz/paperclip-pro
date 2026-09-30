@@ -27,9 +27,17 @@ import {
   createAdapterExecutionControl,
 } from "../services/adapter-execution-control.js";
 import { errorHandler } from "../middleware/index.js";
+import { logger } from "../middleware/logger.js";
 import { instanceSettingsRoutes } from "../routes/instance-settings.js";
-import { issueRoutes } from "../routes/issues.js";
-import { NativeSessionSteeringError } from "../services/native-runtime/native-session-executor.js";
+import { issueRoutes, type SteeringRetryPolicy } from "../routes/issues.js";
+import {
+  NativeSessionSteeringError,
+  STEERING_PROVIDER_ACK_GRACE_MS,
+} from "../services/native-runtime/native-session-executor.js";
+import type * as NativeSessionExecutor from "../services/native-runtime/native-session-executor.js";
+import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
+import { queuedCommentIdsFromWakePayload } from "../services/issue-queued-comment-queue.js";
+import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import type * as Services from "../services/index.js";
 import {
   getEmbeddedPostgresTestSupport,
@@ -37,6 +45,9 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 const steerNativeSessionMock = vi.hoisted(() => vi.fn());
+const executorActual = vi.hoisted(() => ({
+  steer: null as null | SteerNativeSession,
+}));
 const steeringState = vi.hoisted(() => ({
   real: null as null | ((runId: string) => Promise<unknown>),
   mock: vi.fn(),
@@ -44,6 +55,7 @@ const steeringState = vi.hoisted(() => ({
 vi.mock("../services/native-runtime/native-session-executor.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/native-runtime/native-session-executor.js")>();
   steerNativeSessionMock.mockImplementation(actual.steerNativeSession);
+  executorActual.steer = actual.steerNativeSession;
   steeringState.real = actual.getNativeSessionSteeringState;
   steeringState.mock.mockImplementation(actual.getNativeSessionSteeringState);
   return {
@@ -88,6 +100,10 @@ interface SeededActiveRun {
   runId: string;
 }
 
+type SteerNativeSession = typeof NativeSessionExecutor.steerNativeSession;
+
+const TEST_STEERING_RETRY = { delaysMs: [20, 40], budgetMs: 1_500, minAttemptMs: 300 };
+
 describeEmbeddedPostgres("issue comment message delivery", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
@@ -123,6 +139,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
   function app(
     companyId: string,
     actor: { userId?: string; agentId?: string; runId?: string } = {},
+    steeringRetry: SteeringRetryPolicy = TEST_STEERING_RETRY,
   ) {
     const agentActor = actor.agentId
       ? { agentId: actor.agentId, runId: actor.runId }
@@ -142,7 +159,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       next();
     });
     testApp.use("/api", instanceSettingsRoutes(db));
-    testApp.use("/api", issueRoutes(db, {} as never, {}));
+    testApp.use("/api", issueRoutes(db, {} as never, { steeringRetry }));
     testApp.use(errorHandler);
     return testApp;
   }
@@ -804,7 +821,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(steerNativeSessionMock).not.toHaveBeenCalled();
   });
 
-  it("degrades a board steer to queue and names the failed attempt when the runner rejects it", async () => {
+  it("gives up after three refused attempts and leaves the message queued with its reason", async () => {
     const seeded = await seedActiveRun();
     await seedDispatchIdentity(seeded);
     keepRunAlive(seeded.runId);
@@ -814,8 +831,9 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
         "The runner refused the injection.",
       ),
     );
+    const client = app(seeded.companyId);
 
-    const posted = await request(app(seeded.companyId))
+    const posted = await request(client)
       .post(`/api/issues/${seeded.issueId}/comments`)
       .send({ body: "Steer me anyway" })
       .expect(201);
@@ -824,9 +842,220 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       deliveredAs: "queued",
       steeringUnavailable: "steering_failed",
     });
-    expect(
-      await db.select().from(issueComments).where(eq(issueComments.id, posted.body.id)),
-    ).toHaveLength(1);
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(3);
+    const queue = await request(client)
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+    expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(
+      posted.body.id,
+    );
+    const identities = await db
+      .select({ status: runIdentityContexts.status })
+      .from(runIdentityContexts)
+      .where(eq(runIdentityContexts.messageId, posted.body.id));
+    expect(identities).toEqual([{ status: "rejected" }]);
+  });
+
+  it("steers a posted comment when the provider refuses only the first attempt", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock
+      .mockRejectedValueOnce(
+        new NativeSessionSteeringError("steering_rejected", "The provider rejected the steering message."),
+      )
+      .mockResolvedValue({ turnId: "turn-after-retry" });
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Second attempt lands" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "steered" });
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(2);
+    const identities = await db
+      .select({ status: runIdentityContexts.status })
+      .from(runIdentityContexts)
+      .where(eq(runIdentityContexts.messageId, posted.body.id));
+    expect(identities).toEqual([{ status: "accepted" }]);
+  });
+
+  it("does not retry a provider that cannot steer at all", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockRejectedValue(
+      new NativeSessionSteeringError("steering_unsupported", "This provider does not support same-turn steering."),
+    );
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "No steering here" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "legacy_protocol" });
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("never re-sends a steer whose delivery is uncertain", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockRejectedValue(
+      new NativeSessionSteeringError("steering_timeout", "The provider did not acknowledge steering in time."),
+    );
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Maybe already delivered" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "steering_failed" });
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(1);
+    const identities = await db
+      .select({ status: runIdentityContexts.status })
+      .from(runIdentityContexts)
+      .where(eq(runIdentityContexts.messageId, posted.body.id));
+    expect(identities).toEqual([{ status: "pending" }]);
+  });
+
+  it("retries the board Steer action past a transient stale turn", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const peer = await seedPeerAgentRun(seeded, "delivery-owner");
+    const posted = await request(
+      app(seeded.companyId, { agentId: peer.agentId, runId: peer.runId }),
+    )
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Board retries this", deliver: "queue" })
+      .expect(201);
+    const client = app(seeded.companyId);
+    const queue = await waitForQueuedComment(client, seeded.issueId, posted.body.id);
+    steerNativeSessionMock
+      .mockRejectedValueOnce(
+        new NativeSessionSteeringError("steering_stale_turn", "The target turn is no longer active."),
+      )
+      .mockResolvedValue({ turnId: "turn-board-retry" });
+
+    const steered = await request(client)
+      .post(`/api/issues/${seeded.issueId}/queued-comments/${posted.body.id}/steer`)
+      .send({ queueId: queue.queueId, targetRunId: seeded.runId, revision: queue.revision });
+
+    expect(steered.status, JSON.stringify(steered.body)).toBe(200);
+    expect(steerNativeSessionMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("receives the provider acknowledgement while the run keeps persisting its own output", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockImplementation((input) => executorActual.steer!(input));
+    const adapterSteer = vi.fn(async () => {
+      await appendHeartbeatRunEvent(db, {
+        companyId: seeded.companyId,
+        runId: seeded.runId,
+        agentId: seeded.agentId,
+        eventType: "omp.tool",
+        stream: "system",
+        message: "read ok while the steer is in flight",
+      });
+      await db
+        .update(heartbeatRuns)
+        .set({ lastOutputAt: new Date(), updatedAt: new Date() })
+        .where(eq(heartbeatRuns.id, seeded.runId));
+    });
+    const release = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:busy" }),
+      steer: adapterSteer,
+    });
+    try {
+      const posted = await request(app(seeded.companyId))
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Arrives while the run streams" })
+        .expect(201);
+
+      expect(posted.body).toMatchObject({ deliveredAs: "steered" });
+      expect(adapterSteer).toHaveBeenCalledTimes(1);
+      const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId));
+      expect(
+        (run?.resultJson as Record<string, Record<string, unknown>> | null)?.queuedSteeringAcknowledgements?.[posted.body.id],
+      ).toMatchObject({ status: "acknowledged", turnId: "omp-rpc-turn:busy" });
+    } finally {
+      release();
+    }
+  });
+
+  it("settles an unacknowledged steer once, without a second delivery, and frees the run for the next steer", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockImplementation((input) => executorActual.steer!(input));
+    let acknowledgeLate: (() => void) | null = null;
+    const adapterSteer = vi
+      .fn<() => Promise<void>>()
+      .mockImplementationOnce(() => new Promise<void>((resolve) => {
+        acknowledgeLate = resolve;
+      }))
+      .mockResolvedValue(undefined);
+    const release = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:slow" }),
+      steer: adapterSteer,
+    });
+    const client = app(seeded.companyId);
+    try {
+      const late = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Acknowledged after the wait" })
+        .expect(201);
+
+      expect(late.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "steering_failed" });
+      expect(steerNativeSessionMock).toHaveBeenCalledTimes(1);
+      expect(adapterSteer).toHaveBeenCalledTimes(1);
+      const identityOf = (messageId: string) =>
+        db
+          .select({ status: runIdentityContexts.status })
+          .from(runIdentityContexts)
+          .where(eq(runIdentityContexts.messageId, messageId));
+      expect(await identityOf(late.body.id)).toEqual([{ status: "pending" }]);
+
+      acknowledgeLate!();
+      await vi.waitFor(async () => {
+        expect(await identityOf(late.body.id)).toEqual([{ status: "accepted" }]);
+      });
+      await vi.waitFor(async () => {
+        const queue = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
+        expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id))
+          .not.toContain(late.body.id);
+      });
+      const wakes = await db
+        .select({ payload: agentWakeupRequests.payload, status: agentWakeupRequests.status })
+        .from(agentWakeupRequests)
+        .where(eq(agentWakeupRequests.companyId, seeded.companyId));
+      expect(
+        wakes.filter(
+          (wake) =>
+            ["deferred_issue_execution", "queued"].includes(wake.status) &&
+            queuedCommentIdsFromWakePayload(wake.payload).includes(late.body.id),
+        ),
+      ).toEqual([]);
+      const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId));
+      expect(
+        (run?.resultJson as Record<string, Record<string, unknown>> | null)?.queuedSteeringAcknowledgements?.[late.body.id],
+      ).toMatchObject({ status: "acknowledged", turnId: "omp-rpc-turn:slow" });
+
+      const next = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "The next steer is not blocked" })
+        .expect(201);
+      expect(next.body).toMatchObject({ deliveredAs: "steered" });
+      expect(await identityOf(next.body.id)).toEqual([{ status: "accepted" }]);
+      expect(adapterSteer).toHaveBeenCalledTimes(2);
+    } finally {
+      release();
+    }
   });
 
   it("keeps a message queued for the next turn when the steered turn already ended", async () => {
@@ -850,6 +1079,242 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(
       posted.body.id,
     );
+  });
+
+  function registerLiveSteerTarget(
+    runId: string,
+    steer: (input: { correlationId?: string; ackTimeoutMs?: number }) => Promise<void>,
+  ) {
+    steerNativeSessionMock.mockImplementation((input) => executorActual.steer!(input));
+    return registerAdapterSteerTarget(runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:live" }),
+      steer,
+    });
+  }
+
+  async function identityStatuses(messageId: string) {
+    return db
+      .select({ status: runIdentityContexts.status })
+      .from(runIdentityContexts)
+      .where(eq(runIdentityContexts.messageId, messageId));
+  }
+
+  async function pendingWakesListing(companyId: string, commentId: string) {
+    const wakes = await db
+      .select({ id: agentWakeupRequests.id, payload: agentWakeupRequests.payload, status: agentWakeupRequests.status })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.companyId, companyId));
+    return wakes.filter(
+      (wake) =>
+        ["deferred_issue_execution", "queued"].includes(wake.status) &&
+        queuedCommentIdsFromWakePayload(wake.payload).includes(commentId),
+    );
+  }
+
+  it("settles the identity of an unanswered steer shortly after the server stops waiting", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const adapterSteer = vi.fn(
+      (input: { ackTimeoutMs?: number }) =>
+        new Promise<void>((_resolve, reject) => {
+          setTimeout(() => reject(new Error("omp_rpc_steer_timeout")), input.ackTimeoutMs ?? 60_000);
+        }),
+    );
+    const release = registerLiveSteerTarget(seeded.runId, adapterSteer);
+    const client = app(seeded.companyId);
+    try {
+      const startedAt = Date.now();
+      const unanswered = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Nobody answers this" })
+        .expect(201);
+      expect(unanswered.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "steering_failed" });
+      expect(await identityStatuses(unanswered.body.id)).toEqual([{ status: "pending" }]);
+
+      await vi.waitFor(
+        async () => expect(await identityStatuses(unanswered.body.id)).toEqual([{ status: "rejected" }]),
+        { timeout: 6_000, interval: 50 },
+      );
+      expect(Date.now() - startedAt).toBeLessThan(TEST_STEERING_RETRY.budgetMs + STEERING_PROVIDER_ACK_GRACE_MS + 1_500);
+      expect(await pendingWakesListing(seeded.companyId, unanswered.body.id)).toHaveLength(1);
+
+      adapterSteer.mockImplementation(async () => undefined);
+      const next = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "The run accepts the next steer" })
+        .expect(201);
+      expect(next.body).toMatchObject({ deliveredAs: "steered" });
+      expect(await identityStatuses(next.body.id)).toEqual([{ status: "accepted" }]);
+    } finally {
+      release();
+    }
+  });
+
+  it("withdraws a late-acknowledged message from a wake that was already promoted to a queued run", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const lateAck = Promise.withResolvers<void>();
+    const release = registerLiveSteerTarget(seeded.runId, () => lateAck.promise);
+    try {
+      const posted = await request(app(seeded.companyId))
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Promoted before the ack" })
+        .expect(201);
+      expect(posted.body).toMatchObject({ deliveredAs: "queued" });
+      const [wake] = await pendingWakesListing(seeded.companyId, posted.body.id);
+      expect(wake?.status).toBe("deferred_issue_execution");
+
+      const successorRunId = randomUUID();
+      await db.insert(heartbeatRuns).values({
+        id: successorRunId,
+        companyId: seeded.companyId,
+        agentId: seeded.agentId,
+        invocationSource: "automation",
+        triggerDetail: "promoted queued comment",
+        status: "queued",
+        runtimeMode: "native",
+        wakeupRequestId: wake!.id,
+        contextSnapshot: { issueId: seeded.issueId, queuedCommentIds: [posted.body.id] },
+      });
+      await db
+        .update(agentWakeupRequests)
+        .set({ status: "queued", runId: successorRunId })
+        .where(eq(agentWakeupRequests.id, wake!.id));
+      await db
+        .update(issues)
+        .set({ executionRunId: successorRunId })
+        .where(eq(issues.id, seeded.issueId));
+
+      lateAck.resolve();
+      await vi.waitFor(async () => {
+        expect(await identityStatuses(posted.body.id)).toEqual([{ status: "accepted" }]);
+        const [successor] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, successorRunId));
+        expect(successor).toMatchObject({ status: "cancelled", errorCode: "queued_comment_steered" });
+      });
+      expect(await pendingWakesListing(seeded.companyId, posted.body.id)).toEqual([]);
+      const [issue] = await db.select().from(issues).where(eq(issues.id, seeded.issueId));
+      expect(issue?.executionRunId).toBeNull();
+    } finally {
+      release();
+    }
+  });
+
+  it("never leaves a steered message in a wake that run finalization could promote", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const finalizationBlocked = Promise.withResolvers<Promise<{ pendingIds: string[] }>>();
+    const release = registerLiveSteerTarget(seeded.runId, async () => {
+      await db
+        .update(heartbeatRuns)
+        .set({ status: "succeeded", finishedAt: new Date(), updatedAt: new Date() })
+        .where(eq(heartbeatRuns.id, seeded.runId));
+      const finalization = db.transaction(async (tx) => {
+        await tx.select({ id: issues.id }).from(issues).where(eq(issues.id, seeded.issueId)).for("update");
+        const wakes = await tx
+          .select({ payload: agentWakeupRequests.payload })
+          .from(agentWakeupRequests)
+          .where(
+            and(
+              eq(agentWakeupRequests.companyId, seeded.companyId),
+              eq(agentWakeupRequests.status, "deferred_issue_execution"),
+            ),
+          );
+        return { pendingIds: wakes.flatMap((wake) => queuedCommentIdsFromWakePayload(wake.payload)) };
+      });
+      await vi.waitFor(async () => {
+        const [waiting] = await db.execute<{ count: number }>(
+          sql`select count(*)::int as count from pg_locks where not granted and locktype in ('tuple', 'transactionid')`,
+        );
+        expect(waiting?.count).toBeGreaterThan(0);
+      }, { timeout: 5_000, interval: 20 });
+      finalizationBlocked.resolve(finalization);
+    });
+    try {
+      const posted = await request(app(seeded.companyId))
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Steered while the run finishes" })
+        .expect(201);
+      const finalization = await finalizationBlocked.promise;
+
+      expect(posted.body).toMatchObject({ deliveredAs: "steered" });
+      const seen = await finalization;
+      expect(seen.pendingIds).not.toContain(posted.body.id);
+    } finally {
+      release();
+    }
+  });
+
+  it("delivers two concurrent messages to one run exactly once each", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const adapterSteer = vi.fn(async (_input: { correlationId?: string }) => undefined);
+    const release = registerLiveSteerTarget(seeded.runId, adapterSteer);
+    const client = app(seeded.companyId, {}, { delaysMs: [50, 100], budgetMs: 3_000, minAttemptMs: 500 });
+    try {
+      const [first, second] = await Promise.all([
+        request(client).post(`/api/issues/${seeded.issueId}/comments`).send({ body: "First concurrent" }).expect(201),
+        request(client).post(`/api/issues/${seeded.issueId}/comments`).send({ body: "Second concurrent" }).expect(201),
+      ]);
+
+      expect([first.body.deliveredAs, second.body.deliveredAs]).toEqual(["steered", "steered"]);
+      expect(await identityStatuses(first.body.id)).toEqual([{ status: "accepted" }]);
+      expect(await identityStatuses(second.body.id)).toEqual([{ status: "accepted" }]);
+      const correlations = adapterSteer.mock.calls.map(([call]) => call.correlationId);
+      expect(correlations.sort()).toEqual([first.body.id, second.body.id].sort());
+      expect(await pendingWakesListing(seeded.companyId, first.body.id)).toEqual([]);
+      expect(await pendingWakesListing(seeded.companyId, second.body.id)).toEqual([]);
+    } finally {
+      release();
+    }
+  });
+
+  it("retries a message queued behind another message's unsettled steer once that steer settles", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const firstAck = Promise.withResolvers<void>();
+    const adapterSteer = vi
+      .fn<(input: { correlationId?: string }) => Promise<void>>()
+      .mockImplementationOnce(() => firstAck.promise)
+      .mockResolvedValue(undefined);
+    const release = registerLiveSteerTarget(seeded.runId, adapterSteer);
+    const warn = vi.spyOn(logger, "warn");
+    const client = app(seeded.companyId, {}, { delaysMs: [300, 600], budgetMs: 1_500, minAttemptMs: 300 });
+    try {
+      const first = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Unsettled first" })
+        .expect(201);
+      expect(first.body.deliveredAs).toBe("queued");
+      expect(await identityStatuses(first.body.id)).toEqual([{ status: "pending" }]);
+
+      const second = request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Arrives behind it" })
+        .then((response) => response);
+      await vi.waitFor(() =>
+        expect(warn).toHaveBeenCalledWith(
+          expect.objectContaining({ code: "steering_identity_pending" }),
+          "retrying a transiently refused steer",
+        ),
+      );
+      firstAck.resolve();
+
+      const secondPosted = await second;
+      expect(secondPosted.body.deliveredAs).toBe("steered");
+      expect(await identityStatuses(first.body.id)).toEqual([{ status: "accepted" }]);
+      expect(await identityStatuses(secondPosted.body.id)).toEqual([{ status: "accepted" }]);
+      expect(adapterSteer).toHaveBeenCalledTimes(2);
+      expect(await pendingWakesListing(seeded.companyId, first.body.id)).toEqual([]);
+    } finally {
+      warn.mockRestore();
+      release();
+    }
   });
 
   it("names no_active_run when an explicit steer finds nothing running", async () => {

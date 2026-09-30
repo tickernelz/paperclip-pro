@@ -793,6 +793,36 @@ describe("OMP RPC steering session", () => {
     expect(written).toHaveLength(0);
   });
 
+  it("gives up on an unanswered steer at the caller's acknowledgement deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      const session = createOmpRpcSteerSession();
+      session.setWriter(async () => {});
+      session.observeFrame({ type: "agent_start" });
+      const { activeTurnId } = await session.snapshot();
+
+      const steering = session.steer({
+        turnId: activeTurnId as string,
+        message: { role: "user", text: "unanswered" },
+        correlationId: "c-deadline",
+        ackTimeoutMs: 3_000,
+      });
+      let settledWith: string | null = null;
+      void steering.then(
+        () => { settledWith = "acknowledged"; },
+        (error: Error) => { settledWith = error.message; },
+      );
+      await vi.advanceTimersByTimeAsync(2_999);
+      expect(settledWith).toBeNull();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(settledWith).toBe("omp_rpc_steer_timeout");
+      await expect(steering).rejects.toThrow("omp_rpc_steer_timeout");
+      await session.whenSteersSettled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("resolves a steer only after the provider acknowledges it", async () => {
     const session = createOmpRpcSteerSession();
     const written: Record<string, unknown>[] = [];
