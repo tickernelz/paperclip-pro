@@ -1,5 +1,5 @@
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { createPostgresRunDispatchAdapter } from "./adapters/postgres.js";
+import { createPostgresRunDispatchAdapter, type RetryPromotedHook } from "./adapters/postgres.js";
 import {
   createCancelStaleQueuedRun,
   createDispatchResolvedInteractionIfCurrent,
@@ -47,6 +47,7 @@ export { RunDispatchApplicationError } from "./application/types.js";
 export type RunDispatchDeps = {
   /** Overrides the Postgres adapter; a test builds its module against a fake instead. */
   adapter?: ScheduledRetryReader & RunDispatchWriter;
+  onRetryPromoted?: RetryPromotedHook;
 };
 
 /**
@@ -56,7 +57,7 @@ export type RunDispatchDeps = {
  * the queued-run staleness gate to it.
  */
 export function createRunDispatch(db: Db, deps: RunDispatchDeps = {}) {
-  const adapter = deps.adapter ?? createPostgresRunDispatchAdapter(db);
+  const adapter = deps.adapter ?? createPostgresRunDispatchAdapter(db, { onRetryPromoted: deps.onRetryPromoted });
 
   const promoteScheduledRetry = createPromoteScheduledRetry({
     writer: adapter,

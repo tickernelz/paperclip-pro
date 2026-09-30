@@ -4,8 +4,11 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import {
   activityLog,
   agents,
+  agentTaskSessions,
+  agentWakeupRequests,
   companies,
   createDb,
+  environmentLeases,
   heartbeatRunEvents,
   heartbeatRuns,
   issueComments,
@@ -23,6 +26,7 @@ vi.mock("../telemetry.ts", () => ({ getTelemetryClient: () => mockTelemetryClien
 
 import { heartbeatService } from "../services/heartbeat.ts";
 import { recoveryService } from "../services/recovery/service.ts";
+import { instanceSettingsService } from "../services/instance-settings.ts";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -51,8 +55,11 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     await db.delete(issueRelations);
     await db.delete(activityLog);
     await db.delete(issues);
+    await db.delete(agentTaskSessions);
+    await db.delete(environmentLeases);
     await db.delete(heartbeatRunEvents);
     await db.delete(heartbeatRuns);
+    await db.delete(agentWakeupRequests);
     await db.delete(agents);
     await db.delete(companies);
   });
@@ -891,5 +898,235 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
       .from(heartbeatRunEvents)
       .where(eq(heartbeatRunEvents.runId, runningRunId));
     expect(events).toEqual([]);
+  });
+
+  describe("process-gone continuation", () => {
+    async function seedOrphanedOmpRun(input: {
+      issueStatus?: string;
+      assignee?: "run_agent" | "other_agent";
+      resultJson?: Record<string, unknown>;
+      runtimeMode?: "legacy" | "native";
+      scheduledRetryAttempt?: number;
+      conversation?: boolean;
+      taskSession?: boolean;
+    } = {}) {
+      const { companyId, agentId, runningRunId } = await seed();
+      await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, agentId));
+      const otherAgentId = randomUUID();
+      await db.insert(agents).values({
+        id: otherAgentId, companyId, name: "Reviewer", role: "engineer", status: "active",
+        adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+      });
+      const issueId = randomUUID();
+      const firstCommentId = randomUUID();
+      const deferredCommentId = randomUUID();
+      await db.insert(issues).values({
+        id: issueId, companyId, title: "Process gone mid-turn",
+        status: input.issueStatus ?? "in_progress", priority: "high",
+        assigneeAgentId: input.assignee === "other_agent" ? otherAgentId : agentId,
+        checkoutRunId: runningRunId, executionRunId: runningRunId, executionLockedAt: new Date(),
+        ...(input.conversation
+          ? { conversationAgentId: agentId, conversationUserId: "board", conversationState: "active" }
+          : {}),
+      });
+      await db.update(heartbeatRuns).set({
+        runtimeMode: input.runtimeMode ?? "legacy",
+        processPid: 2_000_000_000,
+        resultJson: input.resultJson ?? null,
+        scheduledRetryAttempt: input.scheduledRetryAttempt ?? 0,
+        scheduledRetryReason: input.scheduledRetryAttempt ? "transient_failure" : null,
+        responsibleUserId: "board",
+        sessionIdBefore: "omp-session-1",
+        sessionIdAfter: null,
+        runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
+        contextSnapshot: {
+          issueId, taskId: issueId, taskKey: issueId, wakeReason: "issue_commented",
+          wakeCommentIds: [firstCommentId], wakeCommentId: firstCommentId, commentId: firstCommentId,
+        },
+      }).where(eq(heartbeatRuns.id, runningRunId));
+      if (input.taskSession !== false) {
+        await db.insert(agentTaskSessions).values({
+          companyId, agentId, adapterType: "omp_local", taskKey: issueId,
+          sessionParamsJson: { sessionId: "omp-session-1", cwd: "/tmp" }, sessionDisplayId: "omp-session-1",
+          lastRunId: null,
+        });
+      }
+      const deferredWakeId = randomUUID();
+      await db.insert(agentWakeupRequests).values({
+        id: deferredWakeId, companyId, agentId, source: "automation", triggerDetail: "system",
+        reason: "issue_execution_deferred", status: "deferred_issue_execution",
+        requestedByActorType: "user", requestedByActorId: "board",
+        payload: {
+          issueId, commentId: deferredCommentId, mutation: "comment",
+          _paperclipWakeContext: {
+            issueId, wakeReason: "issue_commented", wakeCommentId: deferredCommentId,
+            wakeCommentIds: [deferredCommentId],
+          },
+        },
+      });
+      return { companyId, agentId, runningRunId, issueId, firstCommentId, deferredCommentId, deferredWakeId };
+    }
+
+    async function successorsOf(runId: string) {
+      return db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId));
+    }
+
+    async function makeDue(runId: string) {
+      await db.update(heartbeatRuns).set({ scheduledRetryAt: new Date(Date.now() - 1_000) })
+        .where(eq(heartbeatRuns.id, runId));
+    }
+
+    it("queues one same-session continuation and delivers deferred comments when it is promoted", async () => {
+      const f = await seedOrphanedOmpRun();
+
+      const heartbeat = heartbeatService(db);
+      const result = await heartbeat.sweepStaleIssueLocks();
+      expect(result.terminalizedRunIds).toEqual([f.runningRunId]);
+      await heartbeat.sweepStaleIssueLocks();
+
+      const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runningRunId));
+      expect(source).toMatchObject({ status: "interrupted", errorCode: "orphaned_running_run" });
+      const successors = await successorsOf(f.runningRunId);
+      expect(successors).toHaveLength(1);
+      const [successor] = successors;
+      expect(successor).toMatchObject({
+        agentId: f.agentId,
+        status: "scheduled_retry",
+        scheduledRetryReason: "transient_failure",
+        scheduledRetryAttempt: 1,
+        sessionIdBefore: "omp-session-1",
+      });
+      expect(successor.contextSnapshot).toMatchObject({
+        issueId: f.issueId,
+        taskKey: f.issueId,
+        retryOfRunId: f.runningRunId,
+        wakeReason: "process_lost_retry",
+        originalWakeReason: "issue_commented",
+        resumeFromRunId: f.runningRunId,
+        resumeSessionDisplayId: "omp-session-1",
+        resumeSessionParams: { sessionId: "omp-session-1", cwd: "/tmp" },
+        wakeCommentIds: [f.firstCommentId],
+      });
+      const [pendingWake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, f.deferredWakeId));
+      expect(pendingWake).toMatchObject({ status: "deferred_issue_execution", runId: null });
+      const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
+      expect(issue).toMatchObject({ executionRunId: successor.id, checkoutRunId: null });
+
+      await makeDue(successor.id);
+      expect(await heartbeat.promoteDueScheduledRetries()).toMatchObject({ promoted: 1 });
+
+      const [promoted] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, successor.id));
+      expect(promoted.status).toBe("queued");
+      expect(promoted.contextSnapshot).toMatchObject({
+        wakeCommentIds: [f.firstCommentId, f.deferredCommentId],
+        wakeCommentId: f.deferredCommentId,
+      });
+      const [adoptedWake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, f.deferredWakeId));
+      expect(adoptedWake).toMatchObject({ status: "coalesced", runId: successor.id });
+    });
+
+    it("keeps deferred comments deliverable when the continuation is cancelled before it starts", async () => {
+      const f = await seedOrphanedOmpRun();
+      const heartbeat = heartbeatService(db);
+      await heartbeat.sweepStaleIssueLocks();
+      const [successor] = await successorsOf(f.runningRunId);
+      const blockerId = randomUUID();
+      await db.insert(issues).values({
+        id: blockerId, companyId: f.companyId, title: "Blocker", status: "todo", priority: "high",
+      });
+      await db.insert(issueRelations).values({
+        companyId: f.companyId, issueId: blockerId, relatedIssueId: f.issueId, type: "blocks",
+      });
+
+      await makeDue(successor.id);
+      await heartbeat.promoteDueScheduledRetries();
+
+      const [cancelled] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, successor.id));
+      expect(cancelled).toMatchObject({ status: "cancelled", errorCode: "issue_dependencies_blocked" });
+      const [wake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, f.deferredWakeId));
+      expect(wake).toMatchObject({ status: "deferred_issue_execution", runId: null });
+      const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
+      expect(issue.executionRunId).toBeNull();
+    });
+
+    it("resumes the interrupted run's session when it never recorded session_id_after and no task session remains", async () => {
+      const f = await seedOrphanedOmpRun({ taskSession: false });
+
+      await heartbeatService(db).sweepStaleIssueLocks();
+
+      const [successor] = await successorsOf(f.runningRunId);
+      expect(successor.sessionIdBefore).toBe("omp-session-1");
+      expect(successor.contextSnapshot).toMatchObject({
+        resumeFromRunId: f.runningRunId,
+        resumeSessionDisplayId: "omp-session-1",
+        resumeSessionParams: { sessionId: "omp-session-1" },
+      });
+    });
+
+    it("leaves a conversation issue to its own recovery through the sweep and the stranded reconciler", async () => {
+      await instanceSettingsService(db).updateExperimental({ enableAgentChat: true });
+      try {
+        const f = await seedOrphanedOmpRun({ conversation: true });
+        const heartbeat = heartbeatService(db);
+        await heartbeat.sweepStaleIssueLocks();
+        const [source] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runningRunId));
+        expect(source.resultJson?.conversationContinuation).toBeUndefined();
+
+        await heartbeat.reconcileStrandedAssignedIssues();
+
+        expect(await successorsOf(f.runningRunId)).toEqual([]);
+      } finally {
+        await instanceSettingsService(db).updateExperimental({ enableAgentChat: false });
+      }
+    });
+
+    it.each([
+      ["done issue", { issueStatus: "done" }],
+      ["cancelled issue", { issueStatus: "cancelled" }],
+      ["reassigned issue", { assignee: "other_agent" as const }],
+      ["operator-cancelled run", { resultJson: { executionCancellation: { state: "requested" } } }],
+      ["native run", { runtimeMode: "native" as const }],
+      ["conversation issue", { conversation: true }],
+    ])("queues no continuation for a %s", async (_label, input) => {
+      const f = await seedOrphanedOmpRun(input);
+
+      await heartbeatService(db).sweepStaleIssueLocks();
+
+      expect(await successorsOf(f.runningRunId)).toEqual([]);
+      const [wake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, f.deferredWakeId));
+      expect(wake?.runId ?? null).toBeNull();
+    });
+
+    it("stops after the shared bounded retry budget is spent", async () => {
+      const f = await seedOrphanedOmpRun({ scheduledRetryAttempt: 2 });
+
+      const heartbeat = heartbeatService(db);
+      const result = await heartbeat.sweepStaleIssueLocks();
+
+      expect(result.terminalizedRunIds).toEqual([f.runningRunId]);
+      expect(await successorsOf(f.runningRunId)).toEqual([]);
+    });
+
+    it("caps a crash-looping chain at two consecutive continuations", async () => {
+      const f = await seedOrphanedOmpRun();
+      const heartbeat = heartbeatService(db);
+      const chain = [f.runningRunId];
+      for (let crash = 0; crash < 3; crash += 1) {
+        await heartbeat.sweepStaleIssueLocks();
+        const [next] = await successorsOf(chain.at(-1)!);
+        if (!next) break;
+        chain.push(next.id);
+        await db.update(heartbeatRuns).set({
+          status: "running", startedAt: new Date(), processPid: 2_000_000_000,
+          runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
+        }).where(eq(heartbeatRuns.id, next.id));
+        await db.update(issues).set({ checkoutRunId: next.id }).where(eq(issues.id, f.issueId));
+      }
+
+      expect(chain).toHaveLength(3);
+      const runs = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, f.companyId));
+      expect(runs.filter((run) => run.status === "interrupted").map((run) => run.id).sort()).toEqual([...chain].sort());
+      expect(runs.filter((run) => ["queued", "scheduled_retry", "running"].includes(run.status))).toEqual([]);
+    });
   });
 });

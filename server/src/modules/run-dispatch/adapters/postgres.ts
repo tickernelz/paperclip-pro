@@ -178,8 +178,11 @@ function statusEffect(run: HeartbeatRun, previousStatus: string | null): PostCom
   };
 }
 
+export type RetryPromotedHook = (tx: Db, run: typeof heartbeatRuns.$inferSelect) => Promise<void>;
+
 export function createPostgresRunDispatchAdapter(
   db: Db,
+  options: { onRetryPromoted?: RetryPromotedHook } = {},
 ): ScheduledRetryReader & RunDispatchWriter {
   const budgets = budgetService(db);
   const treeControlSvc = issueTreeControlService(db);
@@ -626,6 +629,7 @@ export function createPostgresRunDispatchAdapter(
       )
       .returning();
     if (!row) return { applied: false };
+    await options.onRetryPromoted?.(tx, row);
 
     await appendHeartbeatRunEvent(tx as unknown as Db, {
       companyId: row.companyId,

@@ -863,6 +863,7 @@ export const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_DELAYS_MS = [
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_JITTER_RATIO = 0;
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON = "transient_failure";
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_WAKE_REASON = "transient_failure_retry";
+const PROCESS_LOST_RETRY_WAKE_REASON = "process_lost_retry";
 function isTransientWorkspaceGitScanCode(code: string | null | undefined): boolean {
   return code === WORKSPACE_GIT_SCAN_ERROR_CODES.timeout || code === WORKSPACE_GIT_SCAN_ERROR_CODES.saturated;
 }
@@ -7449,6 +7450,20 @@ function hasInteractionContinuationWakeContext(
   );
 }
 
+function isAdoptableDeferredCommentWake(
+  wake: Pick<typeof agentWakeupRequests.$inferSelect, "idempotencyKey" | "payload" | "reason">,
+) {
+  const deferredPayload = parseObject(wake.payload);
+  const deferredContext = parseObject(deferredPayload[DEFERRED_WAKE_CONTEXT_KEY]);
+  return (
+    !wake.idempotencyKey?.startsWith("chat-inbound:") &&
+    !isInteractionResolutionWakePayload(deferredPayload) &&
+    !hasInteractionContinuationWakeContext(deferredContext) &&
+    ["issue_commented", "issue_reopened_via_comment"].includes(String(deferredContext.wakeReason ?? wake.reason)) &&
+    queuedCommentIdsFromWakePayload(wake.payload).length > 0
+  );
+}
+
 function normalizeInteractionContinuationWakeContext(
   contextSnapshot: Record<string, unknown>,
   payload: Record<string, unknown> | null | undefined,
@@ -8307,6 +8322,7 @@ export async function buildPaperclipWakePayload(input: {
     : [];
   const payload = {
     reason: readNonEmptyString(input.contextSnapshot.wakeReason),
+    originalReason: readNonEmptyString(input.contextSnapshot.originalWakeReason),
     executionContinuation: input.contextSnapshot.executionContinuation ?? null,
     attachmentOmissions,
     externalChatProvider,
@@ -9778,8 +9794,11 @@ export function heartbeatService(
     transientRetryBudgetSpent: (run) =>
       executionFailureRetryCount(run) >=
       BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+    continueProcessGoneRun,
   });
-  const runDispatch = createRunDispatch(db);
+  const runDispatch = createRunDispatch(db, {
+    onRetryPromoted: adoptDeferredCommentWakesIntoPromotedRetry,
+  });
 
   // Applies the post-commit effects a run-dispatch operation returns, on a
   // best-effort basis, exactly as this service publishes them for every
@@ -14607,6 +14626,7 @@ export function heartbeatService(
     run: typeof heartbeatRuns.$inferSelect,
     agent: typeof agents.$inferSelect,
     now: Date,
+    opts?: { wakeReason?: string },
   ) {
     // Native sessions have their own fenced same-run controller. Legacy
     // bootstrap recovery shares the durable delay and incident counter with
@@ -14617,8 +14637,63 @@ export function heartbeatService(
       legacyExecutionNeedsReconciliation(run)
     )
       return null;
-    const scheduled = await scheduleBoundedRetryForRun(run, agent, { now });
+    const scheduled = await scheduleBoundedRetryForRun(run, agent, { now, wakeReason: opts?.wakeReason });
     return scheduled.outcome === "scheduled" ? scheduled.run : null;
+  }
+
+  async function continueProcessGoneRun(run: typeof heartbeatRuns.$inferSelect) {
+    const agent = await getAgent(run.agentId);
+    if (!agent || agent.companyId !== run.companyId) return;
+    await releaseEnvironmentLeasesForRun({
+      runId: run.id,
+      companyId: run.companyId,
+      agentId: run.agentId,
+      status: run.status,
+      failureReason: run.error ?? undefined,
+    });
+    const retry = await enqueueProcessLossRetry(run, agent, new Date(), {
+      wakeReason: PROCESS_LOST_RETRY_WAKE_REASON,
+    });
+    if (!retry) await releaseIssueExecutionAndPromote(run);
+  }
+
+  async function adoptDeferredCommentWakesIntoPromotedRetry(
+    tx: Db,
+    promoted: typeof heartbeatRuns.$inferSelect,
+  ) {
+    const context = parseObject(promoted.contextSnapshot);
+    const issueId = readNonEmptyString(context.issueId);
+    if (readNonEmptyString(context.wakeReason) !== PROCESS_LOST_RETRY_WAKE_REASON || !issueId) return;
+    if (await getExecutionBlocker(tx, promoted.companyId, issueId)) return;
+    const pending = await tx
+      .select()
+      .from(agentWakeupRequests)
+      .where(and(
+        eq(agentWakeupRequests.companyId, promoted.companyId),
+        eq(agentWakeupRequests.agentId, promoted.agentId),
+        eq(agentWakeupRequests.status, "deferred_issue_execution"),
+        sql`${agentWakeupRequests.payload}->>'issueId' = ${issueId}`,
+      ))
+      .orderBy(asc(agentWakeupRequests.requestedAt))
+      .for("update");
+    const adopted = pending.filter(isAdoptableDeferredCommentWake);
+    if (adopted.length === 0) return;
+    const now = new Date();
+    const commentIds = [...new Set([
+      ...queuedCommentIdsFromRunContext(context),
+      ...adopted.flatMap((wake) => queuedCommentIdsFromWakePayload(wake.payload)),
+    ])];
+    await tx
+      .update(heartbeatRuns)
+      .set({ contextSnapshot: withQueuedCommentIdsInRunContext(context, commentIds), updatedAt: now })
+      .where(and(eq(heartbeatRuns.id, promoted.id), eq(heartbeatRuns.status, "queued")));
+    await tx
+      .update(agentWakeupRequests)
+      .set({ status: "coalesced", runId: promoted.id, finishedAt: now, updatedAt: now })
+      .where(and(
+        inArray(agentWakeupRequests.id, adopted.map((wake) => wake.id)),
+        eq(agentWakeupRequests.status, "deferred_issue_execution"),
+      ));
   }
 
   function toHotRestartIntentRun(input: {
@@ -15672,7 +15747,22 @@ export function heartbeatService(
       }
     }
     const taskKey = deriveTaskKeyWithHeartbeatFallback(contextSnapshot, null);
-    const sessionBefore = await resolveSessionBeforeForWakeup(agent, taskKey);
+    const processLossResume =
+      wakeReason === PROCESS_LOST_RETRY_WAKE_REASON
+        ? buildExplicitResumeSessionOverride({
+            adapterType: agent.adapterType,
+            resumeFromRunId: run.id,
+            resumeRunSessionIdBefore: run.sessionIdBefore,
+            resumeRunSessionIdAfter: run.sessionIdAfter,
+            taskSession: taskKey
+              ? await getTaskSession(agent.companyId, agent.id, agent.adapterType, taskKey)
+              : null,
+            sessionCodec: getAdapterSessionCodec(agent.adapterType),
+          })
+        : null;
+    const sessionBefore =
+      processLossResume?.sessionDisplayId ??
+      (await resolveSessionBeforeForWakeup(agent, taskKey));
     const interactionContinuationPayload =
       retryReason === INTERACTION_CONTINUATION_INFRA_RETRY_REASON
         ? {
@@ -15702,6 +15792,26 @@ export function heartbeatService(
         ...contextSnapshot,
         retryOfRunId: run.id,
         wakeReason,
+        ...(wakeReason === PROCESS_LOST_RETRY_WAKE_REASON
+          ? {
+              originalWakeReason:
+                readNonEmptyString(contextSnapshot.originalWakeReason) ??
+                readNonEmptyString(contextSnapshot.wakeReason),
+            }
+          : {}),
+        ...(processLossResume
+          ? {
+              resumeFromRunId: run.id,
+              resumeSessionDisplayId: processLossResume.sessionDisplayId,
+              resumeSessionParams: processLossResume.sessionParams,
+            }
+          : readNonEmptyString(contextSnapshot.wakeReason) === PROCESS_LOST_RETRY_WAKE_REASON
+            ? {
+                resumeFromRunId: undefined,
+                resumeSessionDisplayId: undefined,
+                resumeSessionParams: undefined,
+              }
+            : {}),
         retryReason,
         ...(retryReason === WORKSPACE_BUSY_RETRY_REASON
           ? {
@@ -28418,24 +28528,10 @@ export function heartbeatService(
                   )
                   .orderBy(asc(agentWakeupRequests.requestedAt))
               : [];
-          const adoptedComments = pendingComments.filter((wake) => {
-            if (wake.id === opts.queuedCommentInterruptId || wake.id === opts.queuedCommentRequestId) return true;
-            const deferredPayload = parseObject(wake.payload);
-            const deferredContext = parseObject(
-              deferredPayload[DEFERRED_WAKE_CONTEXT_KEY],
-            );
-            // Dedicated interaction wakes carry their own source and session
-            // contract. ID-only adoption must not erase that continuation.
-            return (
-              // Durable chat work must keep its receipt, actor, source, and
-              // session contract through normal promotion and authorization.
-              !wake.idempotencyKey?.startsWith("chat-inbound:") &&
-              !isInteractionResolutionWakePayload(deferredPayload) &&
-              !hasInteractionContinuationWakeContext(deferredContext) &&
-              ["issue_commented", "issue_reopened_via_comment"].includes(String(deferredContext.wakeReason ?? wake.reason)) &&
-              queuedCommentIdsFromWakePayload(wake.payload).length > 0
-            );
-          });
+          const adoptedComments = pendingComments.filter((wake) =>
+            wake.id === opts.queuedCommentInterruptId ||
+            wake.id === opts.queuedCommentRequestId ||
+            isAdoptableDeferredCommentWake(wake));
           let adoptedCommentIds = [
             ...new Set([
               ...adoptedComments.flatMap((wake) =>

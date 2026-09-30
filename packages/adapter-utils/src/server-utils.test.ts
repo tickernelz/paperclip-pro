@@ -967,6 +967,23 @@ describe("renderPaperclipWakePrompt", () => {
     }
   });
 
+  it("tells a resumed process-loss continuation why the lost run was woken", () => {
+    const payload = {
+      reason: "process_lost_retry",
+      originalReason: "issue_commented",
+      issue: { id: "issue-1", identifier: "ZHA-145", workMode: "standard", status: "in_progress" },
+      comments: [],
+      commentWindow: { requestedCount: 0, includedCount: 0, missingCount: 0 },
+      fallbackFetchNeeded: false,
+    };
+    for (const resumedSession of [false, true]) {
+      const prompt = renderPaperclipWakePrompt(payload, { resumedSession });
+      expect(prompt).toContain("- reason: process_lost_retry");
+      expect(prompt).toContain("- original wake reason: issue_commented");
+    }
+    expect(renderPaperclipWakePrompt({ ...payload, originalReason: null })).not.toContain("original wake reason");
+  });
+
   const ordinaryExternalChatWake = {
     reason: "External chat message received",
     externalChatProvider: " GitHub ",

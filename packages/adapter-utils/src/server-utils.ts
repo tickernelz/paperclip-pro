@@ -816,6 +816,7 @@ export type PaperclipExternalChatProvider =
 type PaperclipWakePayload = {
   executionContinuation: ExecutionContinuationEnvelope | null;
   reason: string | null;
+  originalReason: string | null;
   recovery: PaperclipWakeRecovery | null;
   issue: PaperclipWakeIssue | null;
   checkedOutByHarness: boolean;
@@ -1867,6 +1868,7 @@ export function normalizePaperclipWakePayload(
 
   return {
     reason: asString(payload.reason, "").trim() || null,
+    originalReason: asString(payload.originalReason, "").trim() || null,
     executionContinuation: parseObject(payload.executionContinuation).version === 1 ? payload.executionContinuation as ExecutionContinuationEnvelope : null,
     recovery,
     issue,
@@ -2373,6 +2375,9 @@ function renderPaperclipWakePromptBody(
         : [];
   const wakeSummaryLines = [
     `- reason: ${normalized.reason ?? "unknown"}`,
+    ...(normalized.originalReason
+      ? [`- original wake reason: ${normalized.originalReason}`]
+      : []),
     `- issue: ${normalized.issue?.identifier ?? normalized.issue?.id ?? "unknown"}${normalized.issue?.title ? ` ${normalized.issue.title}` : ""}`,
     ...(hasWakeCommentBatch
       ? [

@@ -1,3 +1,4 @@
+import { CONVERSATION_CONTINUATION_POLICY, runUsedConversationAdapter } from "../conversation-continuation.js";
 import { settleSlackConversation } from "../slack-conversation-lifecycle.js";
 import { externalConversationStateSql } from "../slack-conversation-state.js";
 import { hasLiveLegacyController } from "../legacy-controller-lease.js";
@@ -924,6 +925,9 @@ export function recoveryService(
     ) => boolean;
     liveRunExecutions?: Readonly<{ has(id: string): boolean }>;
     beforeOrphanedRunTerminalWrite?: (runId: string) => Promise<void>;
+    continueProcessGoneRun?: (
+      run: typeof heartbeatRuns.$inferSelect,
+    ) => Promise<void>;
   },
 ) {
   const issuesSvc = issueService(db);
@@ -5893,6 +5897,25 @@ export function recoveryService(
         ? "run terminalized by recovery backstop: issue reached a terminal status while heartbeat_runs.status stayed live"
         : "run terminalized by recovery backstop: process and sandbox gone while heartbeat_runs.status stayed live";
 
+    const runResult = parseObject(run.resultJson);
+    const continuationIssue =
+      authority === "process_gone" &&
+      run.runtimeMode === "legacy" &&
+      (!run.errorCode || run.errorCode === "process_detached") &&
+      runResult.executionCancellation === undefined &&
+      runResult.startupCancellation === undefined &&
+      issueId
+        ? await db
+            .select({ conversationAgentId: issues.conversationAgentId })
+            .from(issues)
+            .where(and(eq(issues.id, issueId), eq(issues.companyId, run.companyId)))
+            .then((rows) => rows[0] ?? null)
+        : null;
+    const conversationContinuation =
+      continuationIssue !== null &&
+      !continuationIssue.conversationAgentId &&
+      (await runUsedConversationAdapter(db, run));
+
     await deps.beforeOrphanedRunTerminalWrite?.(run.id);
     const now = new Date();
     const updated = await db
@@ -5904,6 +5927,13 @@ export function recoveryService(
         errorCode:
           run.errorCode ??
           (terminalStatus === "interrupted" ? errorCode : null),
+        ...(conversationContinuation
+          ? {
+              resultJson: sql`coalesce(${heartbeatRuns.resultJson}, '{}'::jsonb) || ${JSON.stringify({
+                conversationContinuation: CONVERSATION_CONTINUATION_POLICY,
+              })}::jsonb`,
+            }
+          : {}),
         updatedAt: now,
       })
       .where(
@@ -5981,6 +6011,16 @@ export function recoveryService(
       },
       "terminalized orphaned running heartbeat run in stale-lock sweep",
     );
+    if (conversationContinuation && deps.continueProcessGoneRun) {
+      try {
+        await deps.continueProcessGoneRun(updated);
+      } catch (error) {
+        logger.error(
+          { err: error, runId: run.id, issueId },
+          "failed to schedule a continuation for a process-gone run; the sweep still clears the lock",
+        );
+      }
+    }
     return { terminalized: true, status: updated.status };
   }
 
