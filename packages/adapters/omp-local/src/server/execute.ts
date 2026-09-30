@@ -68,13 +68,16 @@ import { createOmpRpcSteerSession, runOmpRpcSession } from "./rpc-session.js";
 import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
+import { writeOmpToolGuardExtension, type OmpToolGuardExtension } from "./tool-guard.js";
 import {
   PAPERCLIP_MCP_BIN,
   PAPERCLIP_MCP_CREDENTIAL_CODE,
   PAPERCLIP_MCP_CONNECT_FAILURE_RE,
+  PAPERCLIP_MCP_TRANSIENT_FAILURE_RE,
   PAPERCLIP_MCP_SERVER_NAME,
   PAPERCLIP_MCP_TOOLSETS_ENV,
   PAPERCLIP_MCP_UNAVAILABLE_CODE,
+  paperclipMcpUnavailableRecovery,
   paperclipMcpGuidance,
   paperclipMcpEndpoint,
   paperclipMcpTransport,
@@ -162,6 +165,7 @@ type ProcessAttempt = {
   sawProviderWork: boolean;
   reporterFailed: boolean;
   mcpConnectFailed: boolean;
+  mcpConnectTransient: boolean;
   rpcSessionId: string | null;
   rpcPromptError: string | null;
   rpcProtocolVersion: number | null;
@@ -279,6 +283,7 @@ function buildOmpArgs(input: {
   effectiveProfile: string | null;
   settingsOverlayPath: string | null;
   mcpExtensionPath: string | null;
+  toolGuardExtensionPath: string | null;
   rpc: boolean;
 }): string[] {
   const { config } = input;
@@ -337,6 +342,7 @@ function buildOmpArgs(input: {
   if (input.settingsOverlayPath) args.push("--config", input.settingsOverlayPath);
   for (const configFile of stringList(config.configFiles)) args.push("--config", configFile);
   if (input.mcpExtensionPath) args.push("--extension", input.mcpExtensionPath);
+  if (input.toolGuardExtensionPath) args.push("--extension", input.toolGuardExtensionPath);
   for (const extension of stringList(config.extensions)) args.push("--extension", extension);
   for (const pluginDir of stringList(config.pluginDirs)) args.push("--plugin-dir", pluginDir);
   for (const hook of stringList(config.hooks)) args.push("--hook", hook);
@@ -431,7 +437,7 @@ async function buildPrompts(input: {
 
   const contractTemplate = paperclipAgentPromptTemplate(input.paperclipAccess);
   const paperclipContract = renderTemplate(contractTemplate, templateData);
-  const systemPrompt = joinPromptSections([instructions, paperclipContract, OMP_ASYNC_BASH_GUIDANCE]);
+  const systemPrompt = joinPromptSections([instructions, paperclipContract]);
   const promptTemplate = asString(input.config.promptTemplate, OMP_HEARTBEAT_PROMPT_TEMPLATE);
   const bootstrapTemplate = asString(input.config.bootstrapPromptTemplate, "");
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
@@ -471,12 +477,6 @@ async function buildPrompts(input: {
     notes,
   };
 }
-
-export const OMP_ASYNC_BASH_GUIDANCE = [
-  "Background bash: a job started with `async: true` still stops at its `timeout` field, which defaults to 300 seconds.",
-  "For a long async job, set the numeric `timeout` field in the tool arguments (for example `\"timeout\": 2400`); a duration written only in the intent text does not change it.",
-  "`ready` and `name` start a long-lived service; leave `ready` out of async jobs.",
-].join("\n");
 
 export function applyOmpRuntimeToggleEnv(
   env: Record<string, string | undefined>,
@@ -559,6 +559,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
   let settingsOverlay: OmpSettingsOverlay | null = null;
   let mcpExtension: PaperclipMcpExtension | null = null;
+  let toolGuardExtension: OmpToolGuardExtension | null = null;
   try {
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
@@ -790,9 +791,12 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           signal: null,
           timedOut: false,
           errorMessage: message,
-          errorCode: mcpProbe.credentialRejected
-            ? PAPERCLIP_MCP_CREDENTIAL_CODE
-            : PAPERCLIP_MCP_UNAVAILABLE_CODE,
+          ...(mcpProbe.credentialRejected
+            ? { errorCode: PAPERCLIP_MCP_CREDENTIAL_CODE }
+            : {
+                errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+                ...(mcpProbe.transient ? paperclipMcpUnavailableRecovery() : {}),
+              }),
           usageBasis: "per_run",
           sessionId: null,
           sessionParams: null,
@@ -838,6 +842,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         graceSec,
       });
     }
+    toolGuardExtension = await writeOmpToolGuardExtension({
+      runId,
+      target: runtimeTarget,
+      remote,
+      env: invocationEnv,
+      remoteRootDir: runtimeRootDir,
+      cwd: remote ? effectiveExecutionCwd : cwd,
+      timeoutSec,
+      graceSec,
+    });
     const mcpArmed = mcpEnabled && mcpExtension !== null;
     const paperclipAccess: PaperclipAccessMode = mcpArmed ? "mcp" : "rest";
 
@@ -887,6 +901,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         effectiveProfile: preparedConfig.profile,
         settingsOverlayPath: settingsOverlay?.path ?? null,
         mcpExtensionPath: mcpExtension?.path ?? null,
+        toolGuardExtensionPath: toolGuardExtension?.path ?? null,
         rpc: rpcActive,
       });
       if (onMeta) {
@@ -926,10 +941,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         }
       };
       let mcpConnectFailed = false;
+      let mcpConnectTransient = false;
       let stdoutTranscript = "";
       const bufferedOnLog = async (stream: "stdout" | "stderr", chunk: string): Promise<void> => {
-        if (mcpArmed && !mcpConnectFailed && PAPERCLIP_MCP_CONNECT_FAILURE_RE.test(chunk)) {
+        const connectFailure = mcpArmed && !mcpConnectFailed ? PAPERCLIP_MCP_CONNECT_FAILURE_RE.exec(chunk) : null;
+        if (connectFailure) {
           mcpConnectFailed = true;
+          const lineEnd = chunk.indexOf("\n", connectFailure.index);
+          mcpConnectTransient = PAPERCLIP_MCP_TRANSIENT_FAILURE_RE.test(
+            chunk.slice(connectFailure.index, lineEnd < 0 ? undefined : lineEnd),
+          );
           await queueLog(
             "stderr",
             "[paperclip] The Paperclip MCP server did not connect, so the agent has no Paperclip tools. Stopping the run.\n",
@@ -1051,6 +1072,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         sawProviderWork: reporter.sawProviderWork(),
         reporterFailed,
         mcpConnectFailed,
+        mcpConnectTransient,
         rpcSessionId,
         rpcPromptError,
         rpcProtocolVersion,
@@ -1098,6 +1120,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             signal: attempt.proc.signal,
           })
         : { errorCode: null, errorFamily: null, retryNotBefore: null };
+      const failureContract = attempt.mcpConnectFailed
+        ? {
+            errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
+            errorFamily: null,
+            retryNotBefore: null,
+            ...(attempt.mcpConnectTransient ? paperclipMcpUnavailableRecovery() : {}),
+          }
+        : classification;
       const cancelled = ctx.signal?.aborted === true && (failed || attempt.proc.signal !== null);
       const executionRecovery = cancelled && resolvedSessionId && attempt.pendingToolCount === 0
         ? { kind: "interrupted", providerStopped: true, sessionPreserved: true, actionOutcomes: "settled" } as const
@@ -1113,13 +1143,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           : failed
             ? fallbackError
             : null,
-        ...(attempt.mcpConnectFailed
-          ? { errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE }
-          : classification.errorCode
-            ? { errorCode: classification.errorCode }
-            : {}),
-        ...(classification.errorFamily ? { errorFamily: classification.errorFamily } : {}),
-        ...(classification.retryNotBefore ? { retryNotBefore: classification.retryNotBefore } : {}),
+        ...(failureContract.errorCode ? { errorCode: failureContract.errorCode } : {}),
+        ...(failureContract.errorFamily ? { errorFamily: failureContract.errorFamily } : {}),
+        ...(failureContract.retryNotBefore ? { retryNotBefore: failureContract.retryNotBefore } : {}),
         ...(executionRecovery ? { executionRecovery } : {}),
         usage: attempt.parsed.usage,
         usageBasis: "per_run",
@@ -1187,6 +1213,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     } finally {
       await settingsOverlay?.cleanup().catch(() => {});
       await mcpExtension?.cleanup().catch(() => {});
+      await toolGuardExtension?.cleanup().catch(() => {});
       await preparedConfig.cleanup();
     }
   }

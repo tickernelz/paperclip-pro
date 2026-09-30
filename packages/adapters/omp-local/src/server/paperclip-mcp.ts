@@ -29,6 +29,38 @@ export const PAPERCLIP_MCP_CONNECT_FAILURE_RE = /MCP server \\?"paperclip\\?" fa
 export const PAPERCLIP_MCP_CREDENTIAL_CODE = "paperclip_mcp_credential_rejected";
 const PROBE_TIMEOUT_MS = 30_000;
 const HTTP_PROBE_TIMEOUT_MS = 5_000;
+export const PAPERCLIP_MCP_UNAVAILABLE_RETRY_DELAY_MS = 45_000;
+
+export function paperclipMcpUnavailableRecovery(now: number = Date.now()): {
+  errorFamily: "transient_upstream";
+  retryNotBefore: string;
+} {
+  return {
+    errorFamily: "transient_upstream",
+    retryNotBefore: new Date(now + PAPERCLIP_MCP_UNAVAILABLE_RETRY_DELAY_MS).toISOString(),
+  };
+}
+
+const TRANSIENT_NETWORK_CODES: Record<string, true> = {
+  ECONNREFUSED: true,
+  ECONNRESET: true,
+  ENOTFOUND: true,
+  EAI_AGAIN: true,
+  ETIMEDOUT: true,
+  UND_ERR_CONNECT_TIMEOUT: true,
+};
+export const PAPERCLIP_MCP_TRANSIENT_FAILURE_RE =
+  /\b(?:timed out|timeout|ECONNREFUSED|ECONNRESET|ENOTFOUND|EAI_AGAIN|ETIMEDOUT|fetch failed)\b|\b(?:HTTP|status)\s*(?:5\d\d|429)\b/i;
+
+function isTransientNetworkError(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; current && typeof current === "object" && depth < 4; depth += 1) {
+    if ("code" in current && typeof current.code === "string" && TRANSIENT_NETWORK_CODES[current.code]) return true;
+    if (current instanceof TypeError && current.message === "fetch failed") return true;
+    current = "cause" in current ? current.cause : null;
+  }
+  return false;
+}
 
 export interface PaperclipMcpExtension {
   path: string;
@@ -41,6 +73,7 @@ export interface PaperclipMcpProbe {
   toolCount: number | null;
   durationMs: number;
   credentialRejected?: boolean;
+  transient?: boolean;
 }
 
 /** POST `initialize` at the server-hosted endpoint; 401/403 is a credential fault, anything else is downtime. */
@@ -89,6 +122,7 @@ export async function probePaperclipMcpEndpoint(input: {
     if (!response.ok) {
       return {
         ok: false,
+        transient: response.status >= 500 || response.status === 429,
         detail: `HTTP ${response.status}: ${body.slice(0, 200)}`,
         toolCount: null,
         durationMs: Date.now() - startedAt,
@@ -118,6 +152,7 @@ export async function probePaperclipMcpEndpoint(input: {
     const reason = error instanceof Error ? error.message : String(error);
     return {
       ok: false,
+      transient: controller.signal.aborted || isTransientNetworkError(error),
       detail: controller.signal.aborted ? `no answer within ${input.timeoutMs ?? HTTP_PROBE_TIMEOUT_MS}ms` : reason,
       toolCount: null,
       durationMs: Date.now() - startedAt,
@@ -166,6 +201,7 @@ export async function probePaperclipMcpServer(input: {
   const timer = setTimeout(() => {
     finish({
       ok: false,
+      transient: true,
       detail: `no MCP handshake within ${input.timeoutMs ?? PROBE_TIMEOUT_MS}ms${stderr.trim() ? `: ${stderr.trim().slice(0, 400)}` : ""}`,
       toolCount: null,
     });
@@ -175,7 +211,7 @@ export async function probePaperclipMcpServer(input: {
     stderr += String(chunk);
   });
   child.on("error", (error) => {
-    finish({ ok: false, detail: error.message, toolCount: null });
+    finish({ ok: false, transient: isTransientNetworkError(error), detail: error.message, toolCount: null });
   });
   child.on("exit", (code, signal) => {
     finish({
