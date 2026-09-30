@@ -189,7 +189,7 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "POST /api/issues/{id}/children": {
     name: "paperclipCreateChildIssue",
     description:
-      "Create a child issue under an existing issue. Use for delegated or parallel follow-up work; the child inherits the parent execution workspace.",
+      "Create a child issue under an existing issue. This is the default for work arising from the issue you hold (follow-up, deploy, fix, review, delegated or parallel work): pass that issue as issueId. The child inherits the parent execution workspace.",
     toolset: "core",
   },
   "GET /api/issues/{id}/work-products": {

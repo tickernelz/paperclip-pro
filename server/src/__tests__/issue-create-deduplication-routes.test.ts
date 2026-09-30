@@ -57,13 +57,48 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
     await tempDb?.cleanup();
   });
 
-  function createApp() {
+  function createApp(actor?: Record<string, unknown>) {
     const app = express();
     app.use(express.json());
-    app.use(actorMiddleware(db, { deploymentMode: "local_trusted" }));
+    if (actor) {
+      app.use((req, _res, next) => {
+        Object.assign(req, { actor });
+        next();
+      });
+    } else {
+      app.use(actorMiddleware(db, { deploymentMode: "local_trusted" }));
+    }
     app.use("/api", issueRoutes(db, {} as any));
     app.use(errorHandler);
     return app;
+  }
+
+  async function seedAgentRun(companyId: string, contextSnapshot: Record<string, unknown>) {
+    const agentId = randomUUID();
+    const runId = randomUUID();
+    await db.insert(agents).values({
+      id: agentId,
+      companyId,
+      name: "Working agent",
+      role: "engineer",
+      status: "active",
+      adapterType: "codex_local",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId,
+      agentId,
+      status: "running",
+      contextSnapshot,
+    });
+    return {
+      agentId,
+      runId,
+      actor: { type: "agent", agentId, companyId, runId, source: "agent_jwt" },
+    };
   }
 
   async function seedCompany() {
@@ -321,5 +356,192 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
     expect(created.originKind).toBe("manual");
     expect(created.originRunId).toBe(runId);
+  });
+
+  describe("parent_missing warning", () => {
+    async function seedWorkingIssue(companyId: string, overrides: Partial<typeof issues.$inferInsert> = {}) {
+      const [issue] = await db.insert(issues).values({
+        companyId,
+        title: "Working issue",
+        status: "in_progress",
+        priority: "medium",
+        identifier: "PAR-7",
+        issueNumber: 7,
+        ...overrides,
+      }).returning();
+      return issue;
+    }
+
+    it("warns an agent that creates a parentless issue while its run works on another issue", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const { actor } = await seedAgentRun(companyId, { issueId: working.id });
+
+      const response = await request(createApp(actor))
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Deploy the fix" })
+        .expect(201);
+
+      expect(response.body.parentId).toBeNull();
+      expect(response.body.warnings).toEqual([
+        expect.objectContaining({
+          code: "parent_missing",
+          suggestedParentIssueId: working.id,
+          suggestedParentIdentifier: "PAR-7",
+          message: expect.stringContaining("paperclipCreateChildIssue"),
+        }),
+      ]);
+    });
+
+    it("reads the working issue from a taskId run context and keeps the warning on a deduplicated replay", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const { actor } = await seedAgentRun(companyId, { taskId: working.id });
+      const app = createApp(actor);
+
+      const first = await request(app)
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Review the change", idempotencyKey: "run:review" })
+        .expect(201);
+      const replay = await request(app)
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Review the change", idempotencyKey: "run:review" })
+        .expect(200);
+
+      expect(first.body.warnings?.[0]).toMatchObject({ code: "parent_missing", suggestedParentIssueId: working.id });
+      expect(replay.body).toMatchObject({ id: first.body.id, deduplicated: true });
+      expect(replay.body.warnings?.[0]).toMatchObject({ code: "parent_missing", suggestedParentIssueId: working.id });
+    });
+
+    it("does not warn when a title dedup returns a parentless issue someone else created", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const other = await seedAgentRun(companyId, {});
+      const [boardIssue] = await db.insert(issues).values({
+        companyId,
+        title: "Rotate the staging certificate",
+        status: "todo",
+        priority: "medium",
+        createdByUserId: "board-user",
+      }).returning();
+      const [otherAgentIssue] = await db.insert(issues).values({
+        companyId,
+        title: "Audit the billing export",
+        status: "todo",
+        priority: "medium",
+        createdByAgentId: other.agentId,
+        originRunId: other.runId,
+      }).returning();
+      const { actor } = await seedAgentRun(companyId, { issueId: working.id });
+      const app = createApp(actor);
+
+      const boardReplay = await request(app)
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "rotate the staging  certificate" })
+        .expect(200);
+      const otherAgentReplay = await request(app)
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Audit the billing export" })
+        .expect(200);
+
+      expect(boardReplay.body).toMatchObject({ id: boardIssue.id, deduplicationReason: "recent_open_title" });
+      expect(boardReplay.body).not.toHaveProperty("warnings");
+      expect(otherAgentReplay.body).toMatchObject({ id: otherAgentIssue.id, deduplicationReason: "recent_open_title" });
+      expect(otherAgentReplay.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn a deliberate sibling that inherits the working issue workspace", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const { actor } = await seedAgentRun(companyId, { issueId: working.id });
+
+      const response = await request(createApp(actor))
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Sibling follow-up", inheritExecutionWorkspaceFromIssueId: working.id })
+        .expect(201);
+
+      expect(response.body.parentId).toBeNull();
+      expect(response.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn when the agent sets parentId", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const { actor } = await seedAgentRun(companyId, { issueId: working.id });
+
+      const response = await request(createApp(actor))
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Deploy the fix", parentId: working.id })
+        .expect(201);
+
+      expect(response.body.parentId).toBe(working.id);
+      expect(response.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn a run without issue context", async () => {
+      const companyId = await seedCompany();
+      const { actor } = await seedAgentRun(companyId, {});
+
+      const response = await request(createApp(actor))
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Independent work" })
+        .expect(201);
+
+      expect(response.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn a conversation handoff", async () => {
+      const companyId = await seedCompany();
+      const { agentId, runId } = await seedAgentRun(companyId, {});
+      const conversation = await seedWorkingIssue(companyId, {
+        conversationAgentId: agentId,
+        conversationUserId: "board-user",
+        conversationState: "waiting",
+        assigneeAgentId: agentId,
+        status: "in_review",
+      });
+      await db.update(heartbeatRuns)
+        .set({ contextSnapshot: { issueId: conversation.id } })
+        .where(eq(heartbeatRuns.id, runId));
+
+      const response = await request(createApp({ type: "agent", agentId, companyId, runId, source: "agent_jwt" }))
+        .post(`/api/companies/${companyId}/issues`)
+        .send({ title: "Execute the handed-off plan" })
+        .expect(201);
+
+      expect(response.body.parentId).toBeNull();
+      expect(response.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn a board user even when the request names a run", async () => {
+      const companyId = await seedCompany();
+      const working = await seedWorkingIssue(companyId);
+      const { runId } = await seedAgentRun(companyId, { issueId: working.id });
+
+      const response = await request(createApp())
+        .post(`/api/companies/${companyId}/issues`)
+        .set("X-Paperclip-Run-Id", runId)
+        .send({ title: "Board-created work" })
+        .expect(201);
+
+      expect(response.body).not.toHaveProperty("warnings");
+    });
+
+    it("does not warn on child creation", async () => {
+      const companyId = await seedCompany();
+      const { agentId, runId, actor } = await seedAgentRun(companyId, {});
+      const working = await seedWorkingIssue(companyId, { assigneeAgentId: agentId });
+      await db.update(heartbeatRuns)
+        .set({ contextSnapshot: { issueId: working.id } })
+        .where(eq(heartbeatRuns.id, runId));
+
+      const response = await request(createApp(actor))
+        .post(`/api/issues/${working.id}/children`)
+        .send({ title: "Child follow-up" })
+        .expect(201);
+
+      expect(response.body.parentId).toBe(working.id);
+      expect(response.body).not.toHaveProperty("warnings");
+    });
   });
 });

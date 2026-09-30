@@ -658,7 +658,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipCreateIssue",
-      "Create a new issue",
+      "Create a new issue. An issue created because of the task you are working on (follow-up, deploy, fix, review) must set parentId to that task, or use paperclipCreateChildIssue; omit parentId only for independent work, a conversation handoff, or a deliberate non-child follow-up that sets inheritExecutionWorkspaceFromIssueId. If an agent run working on an issue creates one without parentId or inheritExecutionWorkspaceFromIssueId, the issue is still created and the response carries warnings[] with code parent_missing and suggestedParentIssueId; set parentId with paperclipUpdateIssue when the new issue belongs to that work.",
       createIssueToolSchema,
       async ({ companyId, advanced, ...body }) =>
         client.requestJson("POST", `/companies/${client.resolveCompanyId(companyId)}/issues`, {

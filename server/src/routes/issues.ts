@@ -141,6 +141,7 @@ import {
   type IssueWakeDiagnosticWakeRequest,
   type IssueWakeDiagnosticsResponse,
   type IssueRelationIssueSummary,
+  type IssueCreateWarning,
   type IssueReviewPolicy,
   type IssueThreadInteractionCanonicalResolverPolicy,
   type IssueComment,
@@ -4048,6 +4049,80 @@ export function issueRoutes(
       readNonEmptyString(context.issueId) ??
       readNonEmptyString(paperclipIssue?.id)
     );
+  }
+
+  async function resolveMissingParentCreateWarnings(
+    companyId: string,
+    actor: { actorType: "agent" | "user"; agentId: string | null; runId: string | null },
+    createdIssue: { id: string; parentId: string | null },
+  ): Promise<IssueCreateWarning[]> {
+    if (
+      actor.actorType !== "agent" ||
+      !actor.agentId ||
+      !actor.runId ||
+      createdIssue.parentId
+    )
+      return [];
+    const run = await db
+      .select({
+        agentId: heartbeatRuns.agentId,
+        contextSnapshot: heartbeatRuns.contextSnapshot,
+      })
+      .from(heartbeatRuns)
+      .where(
+        and(
+          eq(heartbeatRuns.id, actor.runId),
+          eq(heartbeatRuns.companyId, companyId),
+        ),
+      )
+      .then((rows) => rows[0] ?? null);
+    if (!run || run.agentId !== actor.agentId) return [];
+    const context =
+      run.contextSnapshot && typeof run.contextSnapshot === "object"
+        ? (run.contextSnapshot as Record<string, unknown>)
+        : null;
+    const paperclipIssue =
+      context?.paperclipIssue && typeof context.paperclipIssue === "object"
+        ? (context.paperclipIssue as Record<string, unknown>)
+        : null;
+    const workingIssueId =
+      readNonEmptyString(context?.issueId) ??
+      readNonEmptyString(context?.taskId) ??
+      readNonEmptyString(paperclipIssue?.id);
+    if (
+      !workingIssueId ||
+      !isUuidLike(workingIssueId) ||
+      workingIssueId === createdIssue.id
+    )
+      return [];
+    const workingIssue = await db
+      .select({
+        id: issueRows.id,
+        identifier: issueRows.identifier,
+        conversationAgentId: issueRows.conversationAgentId,
+      })
+      .from(issueRows)
+      .where(
+        and(
+          eq(issueRows.id, workingIssueId),
+          eq(issueRows.companyId, companyId),
+        ),
+      )
+      .then((rows) => rows[0] ?? null);
+    if (!workingIssue || workingIssue.conversationAgentId) return [];
+    const workingLabel = workingIssue.identifier ?? workingIssue.id;
+    return [
+      {
+        code: "parent_missing",
+        message:
+          `Created without parentId while your run is working on ${workingLabel}. ` +
+          `If this issue came out of ${workingLabel} (follow-up, deploy, fix, review), ` +
+          `set parentId to ${workingIssue.id} with paperclipUpdateIssue, and create such work ` +
+          `with paperclipCreateChildIssue next time. Ignore this only for independent work.`,
+        suggestedParentIssueId: workingIssue.id,
+        suggestedParentIdentifier: workingIssue.identifier,
+      },
+    ];
   }
 
   async function resolveAgentTrustForIssue(
@@ -12278,6 +12353,16 @@ export function issueRoutes(
           createInput;
         issue = await svc.create(companyId, ordinaryCreateInput);
       }
+      const dedupReplayOfForeignIssue =
+        deduplicationReason !== null &&
+        issue.originRunId !== actor.runId &&
+        issue.createdByAgentId !== actor.agentId;
+      const createWarnings =
+        watchdogProductBugFollowUp ||
+        rawCreateBody.inheritExecutionWorkspaceFromIssueId ||
+        dedupReplayOfForeignIssue
+          ? []
+          : await resolveMissingParentCreateWarnings(companyId, actor, issue);
       if (deduplicationReason) {
         const referenceSummary =
           await issueReferencesSvc.listIssueReferenceSummary(issue.id);
@@ -12289,6 +12374,7 @@ export function issueRoutes(
           referencedIssueIdentifiers: referenceSummary.outbound.map(
             (item) => item.issue.identifier ?? item.issue.id,
           ),
+          ...(createWarnings.length > 0 ? { warnings: createWarnings } : {}),
         });
         return;
       }
@@ -12471,6 +12557,7 @@ export function issueRoutes(
         referencedIssueIdentifiers: referenceSummary.outbound.map(
           (item) => item.issue.identifier ?? item.issue.id,
         ),
+        ...(createWarnings.length > 0 ? { warnings: createWarnings } : {}),
       });
     },
   );

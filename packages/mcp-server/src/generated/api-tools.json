@@ -1375,7 +1375,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17938",
+    "boardGuard": "assertBoard@issues.ts:18025",
     "authorityCapability": null,
     "parameters": [
       {
@@ -4209,7 +4209,7 @@
     "operationId": "POST /api/issues/{id}/children",
     "method": "POST",
     "path": "/issues/{issueId}/children",
-    "description": "Create a child issue under an existing issue. Use for delegated or parallel follow-up work; the child inherits the parent execution workspace.",
+    "description": "Create a child issue under an existing issue. This is the default for work arising from the issue you hold (follow-up, deploy, fix, review, delegated or parallel work): pass that issue as issueId. The child inherits the parent execution workspace.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -12786,7 +12786,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16923",
+    "boardGuard": "assertBoard@issues.ts:17010",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21880,7 +21880,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16096",
+    "boardGuard": "assertBoard@issues.ts:16183",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33588,7 +33588,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8826",
+    "boardGuard": "assertBoard@issues.ts:8901",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33649,7 +33649,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16066",
+    "boardGuard": "assertBoard@issues.ts:16153",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35201,7 +35201,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17880",
+    "boardGuard": "assertBoard@issues.ts:17967",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35633,7 +35633,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16875",
+    "boardGuard": "assertBoard@issues.ts:16962",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39301,7 +39301,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16034",
+    "boardGuard": "assertBoard@issues.ts:16121",
     "authorityCapability": null,
     "parameters": [
       {

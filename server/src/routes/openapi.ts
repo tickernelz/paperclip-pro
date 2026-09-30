@@ -3923,6 +3923,8 @@ registry.registerPath({
   path: "/api/companies/{companyId}/issues",
   tags: ["issues"],
   summary: "Create an issue",
+  description:
+    "When an agent run working on an issue creates an issue without parentId, the issue is still created and the response carries `warnings: [{ code: \"parent_missing\", message, suggestedParentIssueId, suggestedParentIdentifier }]`. Work that arises from the issue the run holds (follow-up, deploy, fix, review) belongs under it: pass parentId or use `POST /api/issues/{id}/children`. No warning is returned for board users, creates with parentId, runs without an issue, or handoffs from a conversation issue.",
   request: {
     params: z.object({ companyId: z.string() }),
     body: jsonBody(createIssueSchema),

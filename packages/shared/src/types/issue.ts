@@ -276,6 +276,15 @@ export interface IssueRelationIssueSummary {
   scheduledRetry?: IssueScheduledRetry | null;
 }
 
+export type IssueCreateWarningCode = "parent_missing";
+
+export interface IssueCreateWarning {
+  code: IssueCreateWarningCode;
+  message: string;
+  suggestedParentIssueId: string;
+  suggestedParentIdentifier: string | null;
+}
+
 export type IssueBlockerDiagnosticFlag =
   | "done_but_blocking"
   | "cancelled_blocker_in_set"

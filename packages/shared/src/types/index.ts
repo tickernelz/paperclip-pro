@@ -713,6 +713,8 @@ export type {
   IssueRelatedWorkSummary,
   IssueRelation,
   IssueRelationIssueSummary,
+  IssueCreateWarning,
+  IssueCreateWarningCode,
   IssueExecutionMonitorPolicy,
   IssueExecutionMonitorState,
   IssueExecutionPolicy,

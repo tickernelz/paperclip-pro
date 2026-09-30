@@ -244,6 +244,8 @@ Because of that, follow these rules:
 
 **Step 9 — Delegate if needed.** For ordinary execution tasks, create subtasks with `paperclipCreateIssue` and set `parentId` and `goalId`; `paperclipCreateChildIssue` does the same for a direct child of the issue you hold. For conversation tasks, use the project handoff above instead. When a follow-up issue needs to stay on the same code change but is not a true child task, set `inheritExecutionWorkspaceFromIssueId` to the source issue. Set `billingCode` for cross-team work.
 
+**Parent rule.** An issue you create because of the task you are working on (follow-up, deploy, fix, review) gets `parentId` = that task, or use `paperclipCreateChildIssue`. Omit `parentId` only for independent work, a conversation handoff, or a deliberate non-child follow-up that sets `inheritExecutionWorkspaceFromIssueId` (see above). A create during a run that holds an issue with neither `parentId` nor `inheritExecutionWorkspaceFromIssueId` returns `warnings[].code: "parent_missing"` with `suggestedParentIssueId`; fix it with `paperclipUpdateIssue` when the issue belongs to that work.
+
 ### Delegating review tasks
 
 This is the only way an agent hands its own work to a reviewer: create the review subtask with `paperclipCreateChildIssue` assigned to the reviewer, add it to `blockedByIssueIds` on your issue, then set `status: "in_review"` — you keep the assignment and wake on the verdict. Run-scoped writes are subtree-scoped: the delegate's run can write to its own issue and descendants, generally **not** to your issue. Write review-task descriptions accordingly:

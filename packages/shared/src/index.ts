@@ -1174,6 +1174,8 @@ export type {
   IssueExecutionMonitorState,
   IssueRelation,
   IssueRelationIssueSummary,
+  IssueCreateWarning,
+  IssueCreateWarningCode,
   IssueExecutionPolicy,
   IssueExecutionState,
   IssueExecutionStage,
