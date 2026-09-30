@@ -131,7 +131,18 @@ describe("describeDeliveryDowngrade", () => {
         deliveredAs: "queued",
         steeringUnavailable: "board_only",
       }),
-    ).toContain("board users");
+    ).toContain("own task");
+  });
+
+  it("names an identity mismatch separately from every other downgrade", () => {
+    const mismatch = describeDeliveryDowngrade({
+      deliveredAs: "queued",
+      steeringUnavailable: "identity_mismatch",
+    });
+    expect(mismatch).toContain("different user");
+    expect(mismatch).not.toBe(
+      describeDeliveryDowngrade({ deliveredAs: "queued", steeringUnavailable: "board_only" }),
+    );
   });
 
   it("distinguishes a failed attempt from a missing live turn", () => {

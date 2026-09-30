@@ -137,7 +137,10 @@ export type MessageDeliveryDisposition = {
 
 const STEERING_UNAVAILABLE_REASONS: Record<SteeringUnavailableReason, string> = {
   not_requested: "",
-  board_only: "steering is only available to board users.",
+  board_only:
+    "an agent cannot steer the turn running its own task, and board steering needs a signed-in board user.",
+  identity_mismatch:
+    "the message answers to a different user than the running turn does.",
   no_active_run: "there was no active run to steer.",
   legacy_protocol:
     "this runner's session protocol cannot accept a mid-turn steer.",

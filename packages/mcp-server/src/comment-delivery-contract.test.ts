@@ -160,14 +160,14 @@ describe("the comment tool and the comment route agree on delivery", () => {
     expect(violations).toEqual([]);
   });
 
-  it("tells the agent that a steer request is queued, not refused", () => {
+  it("tells the agent that a cross-task message steers by default and is never refused", () => {
     const description = curatedTool(ADD_COMMENT_TOOL).description;
-    expect(description).toContain("deliver to steer or queue");
-    expect(description).toContain("board-only");
-    expect(description).toContain("queued rather than refused");
+    expect(description).toContain("another agent's task steers into that agent's running turn by default");
+    expect(description).toContain("deliver to queue");
     expect(description).toContain("deliveredAs");
     expect(description).toContain("not_requested");
-    expect(description).toContain("board_only");
+    expect(description).toContain("identity_mismatch");
+    expect(description).not.toContain("board-only");
   });
   it("single-sources every delivery mode through the shared constant", async () => {
     const source = await readFile(

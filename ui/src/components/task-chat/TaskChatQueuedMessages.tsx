@@ -347,13 +347,15 @@ export function TaskChatQueuedMessages({
       setVisibleError(
         code === "queued_comment_already_dispatching"
           ? "Too late to discard: this message is already being sent."
-          : action === "steer"
-            ? "Couldn’t steer. Message is still queued."
-            : action === "interrupt"
-              ? "Couldn’t interrupt. Message is still queued."
-              : code === "queued_comment_revision_conflict"
-                ? "The queue changed in another session. Review it and try again."
-                : "Couldn’t discard. Message is still queued.",
+          : code === "steering_identity_mismatch"
+            ? "This message answers to a different user than the running turn. It stays queued for the next turn."
+            : action === "steer"
+              ? "Couldn’t steer. Message is still queued."
+              : action === "interrupt"
+                ? "Couldn’t interrupt. Message is still queued."
+                : code === "queued_comment_revision_conflict"
+                  ? "The queue changed in another session. Review it and try again."
+                  : "Couldn’t discard. Message is still queued.",
       );
     } finally {
       setPending(null);

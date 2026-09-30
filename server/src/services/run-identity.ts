@@ -287,6 +287,7 @@ export async function prepareSteeredIdentity(
     messageId: string;
     issueId: string;
     source?: "comment" | "interaction";
+    actorUserId?: string | null;
   },
 ) {
   const [run] = await executor
@@ -314,9 +315,24 @@ export async function prepareSteeredIdentity(
     eq(issueThreadInteractions.issueId, input.issueId),
     inArray(issueThreadInteractions.status, ["accepted", "answered", "rejected"]),
   )) : [];
-  const responsibleUserId = interaction?.resolvedByUserId ?? comment?.authorUserId;
+  const agentAuthored = Boolean(comment && !comment.authorUserId);
+  const runAnswersToMessage =
+    run?.responsibleUserId != null &&
+    (comment?.onBehalfOfUserId === run.responsibleUserId ||
+      input.actorUserId === run.responsibleUserId);
+  const responsibleUserId =
+    interaction?.resolvedByUserId ??
+    (agentAuthored
+      ? (runAnswersToMessage ? run?.responsibleUserId ?? null : null)
+      : comment?.authorUserId);
+  if (run && agentAuthored && !responsibleUserId) {
+    throw conflict(
+      "This message answers to a different user than the running turn does",
+      { code: "steering_identity_mismatch" },
+    );
+  }
   if (!run || !responsibleUserId)
-    throw forbidden("Steering requires an authenticated message author");
+    throw forbidden("Steering requires a message author the running turn already answers to");
   if (
     run.status !== "running" ||
     (run.contextSnapshot?.issueId !== input.issueId &&

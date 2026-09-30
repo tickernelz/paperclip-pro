@@ -609,6 +609,42 @@ describeEmbeddedPostgres("wake-queue postgres adapter", () => {
     expect(issueRow?.executionState).toBeNull();
   });
 
+  it("reports another agent's authorship only for comments still pending in the wake", async () => {
+    const companyId = await seedCompany();
+    const assigneeAgentId = await seedAgent({ companyId });
+    const otherAgentId = await seedAgent({ companyId, name: "Delegating Manager" });
+    const issueId = await seedIssue({ companyId, assigneeAgentId, status: "done" });
+    const runId = await seedRun({ companyId, agentId: assigneeAgentId, contextSnapshot: { issueId }, status: "succeeded" });
+    const [steeredOut, stillPending, selfAuthored] = await db
+      .insert(issueComments)
+      .values([
+        { companyId, issueId, authorAgentId: otherAgentId, body: "Already steered into the turn" },
+        { companyId, issueId, authorAgentId: otherAgentId, body: "Never read by anyone" },
+        { companyId, issueId, authorAgentId: assigneeAgentId, createdByRunId: runId, body: "Closing note" },
+      ])
+      .returning({ id: issueComments.id });
+
+    const adapter = createPostgresWakeQueueAdapter(db, stubDeps);
+    const captured: Record<string, { allSelfAuthored: boolean; hasOtherAgentAuthor: boolean }> = {};
+    await adapter.withIssueExecutionLock({ companyId, runId, now: new Date() }, async (_locked, ports) => {
+      const commentIds = [steeredOut.id, stillPending.id, selfAuthored.id];
+      captured.delivered = await ports.transaction.getCommentSelfAuthorship({
+        companyId, issueId, finishingRunId: runId, assigneeAgentId,
+        commentIds,
+        pendingCommentIds: [stillPending.id, selfAuthored.id],
+      });
+      captured.steeredOnly = await ports.transaction.getCommentSelfAuthorship({
+        companyId, issueId, finishingRunId: runId, assigneeAgentId,
+        commentIds,
+        pendingCommentIds: [selfAuthored.id],
+      });
+      return { outcome: { kind: "released" as const }, postCommitEffects: [] };
+    });
+
+    expect(captured.delivered).toEqual({ allSelfAuthored: false, hasOtherAgentAuthor: true });
+    expect(captured.steeredOnly).toEqual({ allSelfAuthored: false, hasOtherAgentAuthor: false });
+  });
+
   // Review test (c): a deferred-status compare-and-set that affects no row
   // claims nothing, and no other write in the promotion path ever runs.
   it("fails the promotion claim when the deferred-status compare-and-set loses the race, before any other write", async () => {

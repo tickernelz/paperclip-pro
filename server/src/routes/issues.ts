@@ -16164,12 +16164,34 @@ export function issueRoutes(
     const response = responseWake
       ? await readQueuedInteractionResponse(db, issue.companyId, issue.id, responseWake.payload)
       : null;
+    const steeringTargetRun = await db
+      .select({ id: heartbeatRuns.id, agentId: heartbeatRuns.agentId })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.id, input.targetRunId), eq(heartbeatRuns.companyId, issue.companyId)))
+      .then((rows) => rows[0] ?? null);
+    const steeringTargetIssue = await db
+      .select({
+        companyId: issueRows.companyId,
+        projectId: issueRows.projectId,
+        executionPolicy: issueRows.executionPolicy,
+      })
+      .from(issueRows)
+      .where(and(eq(issueRows.id, issue.id), eq(issueRows.companyId, issue.companyId)))
+      .then((rows) => rows[0] ?? null);
+    const steeringExposesLowTrustRaw =
+      steeringTargetRun !== null &&
+      (await resolveAgentTrustForIssue(
+        { agentId: steeringTargetRun.agentId, runId: steeringTargetRun.id },
+        issue.companyId,
+        steeringTargetIssue,
+      ))?.kind === "low_trust_review";
     const steeringIdentity = await reserveSteeredIdentity(db, {
       companyId: issue.companyId,
       runId: input.targetRunId,
       issueId: issue.id,
       messageId: commentId,
       source: response?.comment.id === commentId ? "interaction" : "comment",
+      actorUserId: actor.actorType === "user" ? actor.actorId : null,
     });
     let steeringDeliveryAttempted = false;
     let acknowledgedTurnId: string | null = null;
@@ -16311,7 +16333,12 @@ export function issueRoutes(
           })) ??
           (await steerNativeSession({
             runId: locked.activeRun.id,
-            message: entry.comment.body,
+            message: steeringExposesLowTrustRaw
+              ? entry.comment.body
+              : sanitizeQuarantinedCommentForHigherTrust({
+                  body: entry.comment.body,
+                  sourceTrust: entry.comment.sourceTrust ?? null,
+                }).body,
             correlationId: commentId,
             onAcknowledged: steeringIdentity
               ? () => reconcileSteeredIdentity(db, steeringIdentity)
@@ -16398,6 +16425,7 @@ export function issueRoutes(
         ? (error.details as { code: string }).code
         : null;
     if (code === "steering_unsupported") return "legacy_protocol";
+    if (code === "steering_identity_mismatch") return "identity_mismatch";
     if (
       code === "queued_comment_stale_target" ||
       code === "queued_comment_not_pending" ||
@@ -16439,6 +16467,29 @@ export function issueRoutes(
     return !earlier;
   }
 
+  async function agentSteeringBlock(input: {
+    companyId: string;
+    commentId: string;
+    actorAgentId: string | null;
+    targetRunId: string;
+  }): Promise<IssueCommentDeliveryReason | null> {
+    const [run] = await db
+      .select({ agentId: heartbeatRuns.agentId, responsibleUserId: heartbeatRuns.responsibleUserId })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.id, input.targetRunId), eq(heartbeatRuns.companyId, input.companyId)));
+    if (!run) return "no_active_run";
+    if (input.actorAgentId && run.agentId === input.actorAgentId) return "board_only";
+    const [comment] = await db
+      .select({ authorUserId: issueComments.authorUserId, onBehalfOfUserId: issueComments.onBehalfOfUserId })
+      .from(issueComments)
+      .where(and(eq(issueComments.id, input.commentId), eq(issueComments.companyId, input.companyId)));
+    if (!comment) return "steering_failed";
+    const matchesRunIdentity =
+      comment.authorUserId !== null ||
+      (comment.onBehalfOfUserId !== null && comment.onBehalfOfUserId === run.responsibleUserId);
+    return matchesRunIdentity ? null : "identity_mismatch";
+  }
+
   /**
    * Resolve how a freshly posted message was actually delivered, and steer it
    * when the resolved mode is `"steer"`.
@@ -16461,7 +16512,13 @@ export function issueRoutes(
     if (effective === "queue") {
       return { deliveredAs: "queued", steeringUnavailable: "not_requested" };
     }
-    if (input.actor.actorType === "agent" || !input.boardUserId) {
+    if (input.actor.actorType !== "agent" && !input.boardUserId) {
+      return { deliveredAs: "queued", steeringUnavailable: "board_only" };
+    }
+    if (
+      input.actor.actorType === "agent" &&
+      (!input.actor.agentId || input.actor.agentId === input.issue.assigneeAgentId)
+    ) {
       return { deliveredAs: "queued", steeringUnavailable: "board_only" };
     }
     if (input.issue.conversationAgentId) {
@@ -16515,6 +16572,15 @@ export function issueRoutes(
         deliveredAs: "queued",
         steeringUnavailable: input.requested === "steer" ? "no_active_run" : "not_requested",
       };
+    }
+    if (input.actor.actorType === "agent") {
+      const blocked = await agentSteeringBlock({
+        companyId: input.issue.companyId,
+        commentId: input.commentId,
+        actorAgentId: input.actor.agentId ?? null,
+        targetRunId: target.targetRunId,
+      });
+      if (blocked) return { deliveredAs: "queued", steeringUnavailable: blocked };
     }
     let steered: QueuedCommentSteerReceipt;
     try {

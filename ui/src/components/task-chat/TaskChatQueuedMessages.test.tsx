@@ -190,6 +190,27 @@ describe("TaskChatQueuedMessages", () => {
     );
   });
 
+  it("names the identity mismatch instead of the generic steer failure", async () => {
+    render({
+      onSteer: vi.fn().mockRejectedValue(
+        Object.assign(new Error("steering identity mismatch"), {
+          body: { details: { code: "steering_identity_mismatch" } },
+        }),
+      ),
+    });
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-queued-steer-comment-1"]',
+        )
+        ?.click();
+    });
+    expect(container.textContent).toContain(
+      "This message answers to a different user than the running turn.",
+    );
+    expect(container.textContent).not.toContain("Couldn’t steer.");
+  });
+
   it("disables steering when the provider does not advertise it", () => {
     render({ queue: { ...queue, steeringDisposition: "unsupported" } });
     expect(

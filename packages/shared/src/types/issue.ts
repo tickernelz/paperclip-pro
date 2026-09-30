@@ -1043,8 +1043,10 @@ export type IssueQueuedCommentSteeringDisposition =
 export type IssueCommentDeliveryReason =
   /** No steer was needed: the mode was `"queue"`, or the default steer found no running turn and the message starts one. */
   | "not_requested"
-  /** Only a board user can steer; an agent actor's request is queued as asked. */
+  /** The author cannot steer this run: an agent messaging its own task, or a request with no board identity. */
   | "board_only"
+  /** An agent's message carries a different responsible user than the running turn it would steer. */
+  | "identity_mismatch"
   /** An explicit steer found no live run target that could accept the message this turn. */
   | "no_active_run"
   /** The target runner's protocol does not support same-turn steering. */

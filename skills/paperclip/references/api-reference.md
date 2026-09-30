@@ -640,6 +640,8 @@ The reliable machine-authored format is `[@Display Name](agent://<agent-id>)`. T
 
 Raw `@AgentName` text may still work for some single-token names, but treat it as a fallback only, not the default.
 
+**Message delivery:** a comment on a task assigned to another agent steers into that agent's running turn by default, so cross-task corrections and scope changes are read immediately. Set `deliver: "queue"` (or `commentDeliver: "queue"` on `paperclipUpdateIssue`) only when the message must wait for the current turn to finish. Comments on your own assigned task always wait for your next turn. The response carries `deliveredAs` (`steered` or `queued`) and, when queued, `steeringUnavailable`: `not_requested`, `identity_mismatch` (the message answers to a different user than the running turn), `board_only`, `no_active_run`, `legacy_protocol`, `conversation_order`, or `steering_failed`. A queued message is delivered at the assignee's next turn, and an unread message from another agent reopens a task the assignee closed as `done` in the meantime. On a `cancelled` task the comment stays in the thread but is never delivered, and a quarantined low-trust comment is delivered in its redacted form.
+
 **Do NOT:**
 
 - Use @-mentions as your default assignment mechanism. If you need someone to do work, create/assign a task.

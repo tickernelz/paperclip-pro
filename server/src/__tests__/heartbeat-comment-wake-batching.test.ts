@@ -1201,7 +1201,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
   it.each([
     { caseName: "allows a non-assignee mention on completed work", targetAssignee: false, terminalStatus: "done", explicitResume: false },
     { caseName: "delivers explicit agent feedback after completion", targetAssignee: true, terminalStatus: "done", explicitResume: true },
-    { caseName: "cancels an assignee continuation without resume intent on completed work", targetAssignee: true, terminalStatus: "done", explicitResume: false },
+    { caseName: "delivers another agent's message left on completed work", targetAssignee: true, terminalStatus: "done", explicitResume: false },
     { caseName: "cancels an assignee continuation on cancelled work", targetAssignee: true, terminalStatus: "cancelled", explicitResume: true },
   ] as const)("$caseName", async ({ targetAssignee, terminalStatus, explicitResume }) => {
     const gateway = await createControlledGatewayServer();
@@ -1212,7 +1212,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
     const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     const heartbeat = heartbeatService(db);
     const targetAgentId = targetAssignee ? assigneeAgentId : mentionedAgentId;
-    const shouldReopen = targetAssignee && terminalStatus === "done" && explicitResume;
+    const shouldReopen = targetAssignee && terminalStatus === "done";
     const commentingAgentId = targetAssignee ? mentionedAgentId : assigneeAgentId;
     const wakeReason = targetAssignee ? "issue_commented" : "issue_comment_mentioned";
 

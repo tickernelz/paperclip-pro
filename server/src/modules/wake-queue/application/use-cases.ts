@@ -338,7 +338,9 @@ async function promoteDeferredWake(
       companyId: run.companyId,
       issueId: currentIssue.id,
       finishingRunId: run.id,
+      assigneeAgentId: currentIssue.assigneeAgentId,
       commentIds: workingCandidate.deferredCommentIds,
+      pendingCommentIds: workingCandidate.queuedCommentIds,
     });
     shouldReopen =
       !selfAuthorship.allSelfAuthored &&
@@ -346,9 +348,10 @@ async function promoteDeferredWake(
         workingCandidate.wakeReason === "issue_reopened_via_comment" ||
         (currentIssue.status === "done" &&
           workingCandidate.agentId === currentIssue.assigneeAgentId &&
-          workingCandidate.requestedByActorType === "agent" &&
-          workingCandidate.deferredContextSeed.resumeIntent === true &&
-          workingCandidate.queuedCommentIds.length > 0));
+          (selfAuthorship.hasOtherAgentAuthor ||
+            (workingCandidate.requestedByActorType === "agent" &&
+              workingCandidate.deferredContextSeed.resumeIntent === true &&
+              workingCandidate.queuedCommentIds.length > 0))));
   }
 
   // Agent continuations can outlive the work they addressed. Live,

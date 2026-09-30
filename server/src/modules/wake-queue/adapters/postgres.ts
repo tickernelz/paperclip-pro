@@ -367,12 +367,28 @@ function buildTransaction(tx: Db, deps: WakeQueuePostgresAdapterDeps, db: Db, ru
       };
     },
 
-    async getCommentSelfAuthorship({ companyId, issueId, finishingRunId, commentIds }) {
+    async getCommentSelfAuthorship({ companyId, issueId, finishingRunId, assigneeAgentId, commentIds, pendingCommentIds }) {
       const rows = await tx
-        .select({ createdByRunId: issueComments.createdByRunId })
+        .select({
+          id: issueComments.id,
+          createdByRunId: issueComments.createdByRunId,
+          authorAgentId: issueComments.authorAgentId,
+          deletedAt: issueComments.deletedAt,
+        })
         .from(issueComments)
         .where(and(eq(issueComments.companyId, companyId), eq(issueComments.issueId, issueId), inArray(issueComments.id, commentIds)));
-      return { allSelfAuthored: rows.length > 0 && rows.every((row) => row.createdByRunId === finishingRunId) };
+      const pending = new Set(pendingCommentIds);
+      return {
+        allSelfAuthored: rows.length > 0 && rows.every((row) => row.createdByRunId === finishingRunId),
+        hasOtherAgentAuthor: rows.some(
+          (row) =>
+            pending.has(row.id) &&
+            row.deletedAt === null &&
+            row.createdByRunId !== finishingRunId &&
+            row.authorAgentId !== null &&
+            row.authorAgentId !== assigneeAgentId,
+        ),
+      };
     },
 
     async isCompletedDelegationMention({ companyId, issueId, finishingRunId, wakeAgentId, commentIds }) {

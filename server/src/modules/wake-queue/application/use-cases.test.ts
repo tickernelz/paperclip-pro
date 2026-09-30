@@ -113,7 +113,7 @@ function createFakeTransaction(overrides: Partial<WakeQueueTransaction> = {}): W
       reason: null,
       releasePolicy: null,
     })),
-    getCommentSelfAuthorship: vi.fn(async () => ({ allSelfAuthored: false })),
+    getCommentSelfAuthorship: vi.fn(async () => ({ allSelfAuthored: false, hasOtherAgentAuthor: false })),
     isCompletedDelegationMention: vi.fn(async () => false),
     reopenIssue: vi.fn(async () => null),
     claimDeferredWakeForPromotion: vi.fn(async () => true),
@@ -533,6 +533,59 @@ describe("releaseIssueExecution", () => {
     expect(result.outcome.kind).toBe("promoted");
   });
 
+  it.each([
+    { scenario: "assignee wake on a done task", status: "done", assigneeWake: true },
+    { scenario: "assignee wake on a cancelled task", status: "cancelled", assigneeWake: true },
+    { scenario: "another agent's mention wake on a done task", status: "done", assigneeWake: false },
+  ])("routes another agent's unread message: $scenario", async ({ status, assigneeWake }) => {
+    const commentIds = ["parent-agent-message"];
+    const queue = [wakeCandidate({
+      agentId: assigneeWake ? ISSUE.assigneeAgentId! : "deferred-agent",
+      reason: assigneeWake ? "issue_commented" : "issue_comment_mentioned",
+      wakeReason: assigneeWake ? "issue_commented" : "issue_comment_mentioned",
+      requestedByActorType: "agent",
+      requestedByActorId: "parent-agent",
+      queuedCommentIds: commentIds,
+      deferredCommentIds: commentIds,
+    })];
+    const transaction = createFakeTransaction({
+      findNextDeferredWake: vi.fn(async () => queue.shift() ?? null),
+      getQueuedCommentLiveness: vi.fn(async () => ({ liveNonSelfCommentIds: commentIds, containedSelfAuthoredComment: false })),
+      getCommentSelfAuthorship: vi.fn(async () => ({ allSelfAuthored: false, hasOtherAgentAuthor: true })),
+      reopenIssue: vi.fn(async () => ({ ...ISSUE, status: "todo" })),
+    });
+    const release = createReleaseIssueExecution({
+      issueLock: createFakeIssueLock(createFakeHost(), transaction, { ...ISSUE, status }),
+      recovery: createFakeRecovery(),
+    });
+
+    const result = await release({ companyId: RUN.companyId, runId: RUN.id, now: new Date() });
+
+    expect(transaction.getCommentSelfAuthorship).toHaveBeenCalledWith(
+      expect.objectContaining({
+        assigneeAgentId: ISSUE.assigneeAgentId,
+        commentIds,
+        pendingCommentIds: commentIds,
+      }),
+    );
+    if (status === "done" && assigneeWake) {
+      expect(transaction.cancelDeferredWake).not.toHaveBeenCalled();
+      expect(transaction.reopenIssue).toHaveBeenCalledTimes(1);
+      expect(transaction.finalizePromotedWake).toHaveBeenCalledTimes(1);
+      expect(result.outcome.kind).toBe("promoted");
+    } else if (assigneeWake) {
+      expect(transaction.reopenIssue).not.toHaveBeenCalled();
+      expect(transaction.cancelDeferredWake).toHaveBeenCalledWith(expect.objectContaining({
+        reason: "Deferred execution wake no longer applies to a terminal task",
+      }));
+      expect(result.outcome.kind).toBe("released");
+    } else {
+      expect(transaction.reopenIssue).not.toHaveBeenCalled();
+      expect(transaction.finalizePromotedWake).toHaveBeenCalledTimes(1);
+      expect(result.outcome.kind).toBe("promoted");
+    }
+  });
+
   it.each(["done_live", "cancelled_live", "done_missing", "done_self", "done_no_resume", "done_untracked_comment"])("handles explicit agent feedback after completion: %s", async (scenario) => {
     const commentIds = ["accepted-agent-feedback"];
     const queue = [wakeCandidate({
@@ -550,7 +603,7 @@ describe("releaseIssueExecution", () => {
         liveNonSelfCommentIds: scenario === "done_missing" || scenario === "done_self" ? [] : commentIds,
         containedSelfAuthoredComment: scenario === "done_self",
       })),
-      getCommentSelfAuthorship: vi.fn(async () => ({ allSelfAuthored: scenario === "done_self" })),
+      getCommentSelfAuthorship: vi.fn(async () => ({ allSelfAuthored: scenario === "done_self", hasOtherAgentAuthor: false })),
       reopenIssue: vi.fn(async () => ({ ...ISSUE, status: "todo" })),
     });
     const release = createReleaseIssueExecution({
