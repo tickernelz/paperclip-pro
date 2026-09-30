@@ -12,4 +12,13 @@ describe("sanitizeInheritedPaperclipEnv", () => {
       PATH: "/usr/bin",
     });
   });
+
+  it("keeps agent processes from signalling the Paperclip systemd unit", () => {
+    expect(sanitizeInheritedPaperclipEnv({
+      NOTIFY_SOCKET: "/run/user/1000/systemd/notify",
+      WATCHDOG_USEC: "30000000",
+      WATCHDOG_PID: "1234",
+      PATH: "/usr/bin",
+    })).toEqual({ PATH: "/usr/bin" });
+  });
 });
