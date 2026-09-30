@@ -16,6 +16,7 @@ import {
   isNull,
   not,
   notInArray,
+  notExists,
   or,
   sql,
 } from "drizzle-orm";
@@ -2885,6 +2886,22 @@ export function recoveryService(
     );
   }
 
+  function childNotBlockedByParentCondition(parent: typeof issues.$inferSelect) {
+    return notExists(
+      db
+        .select({ id: issueRelations.id })
+        .from(issueRelations)
+        .where(
+          and(
+            eq(issueRelations.companyId, parent.companyId),
+            eq(issueRelations.issueId, parent.id),
+            eq(issueRelations.relatedIssueId, issues.id),
+            eq(issueRelations.type, "blocks"),
+          ),
+        ),
+    );
+  }
+
   async function openChildIssues(issue: typeof issues.$inferSelect) {
     return db
       .select({ id: issues.id, identifier: issues.identifier })
@@ -2895,6 +2912,7 @@ export function recoveryService(
           eq(issues.parentId, issue.id),
           visibleIssueCondition(),
           notInArray(issues.status, ["done", "cancelled"]),
+          childNotBlockedByParentCondition(issue),
         ),
       );
   }
@@ -2911,6 +2929,7 @@ export function recoveryService(
           ...(sameWorkspaceOnly ? [eq(issues.projectWorkspaceId, issue.projectWorkspaceId!)] : []),
           visibleIssueCondition(),
           notInArray(issues.status, ["done", "cancelled"]),
+          childNotBlockedByParentCondition(issue),
         ),
       );
     const openChildren = [] as Array<{ id: string; identifier: string | null }>;

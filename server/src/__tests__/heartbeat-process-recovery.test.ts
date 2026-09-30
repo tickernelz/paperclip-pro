@@ -6447,6 +6447,73 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     ).toBe(true);
   });
 
+  it("does not wait a parked continuation on a sub-task that is itself blocked by the parent", async () => {
+    const { companyId, agentId, issueId } = await seedStrandedIssueFixture({
+      status: "in_progress",
+      runStatus: "cancelled",
+      retryReason: "issue_continuation_needed",
+      runErrorCode: "issue_continuation_waiting_on_review",
+      runError: "Continuation parked: issue is waiting on review/approval",
+    });
+    const issuePrefix = `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    const reviewChildId = randomUUID();
+    const deployChildId = randomUUID();
+
+    await db.insert(issues).values([
+      {
+        id: reviewChildId,
+        companyId,
+        parentId: issueId,
+        title: "Review: the change",
+        status: "todo",
+        priority: "medium",
+        issueNumber: 30,
+        identifier: `${issuePrefix}-30`,
+      },
+      {
+        id: deployChildId,
+        companyId,
+        parentId: issueId,
+        title: "Deploy: the change",
+        status: "blocked",
+        priority: "medium",
+        issueNumber: 31,
+        identifier: `${issuePrefix}-31`,
+      },
+    ]);
+    await db.insert(issueRelations).values({
+      companyId,
+      issueId,
+      relatedIssueId: deployChildId,
+      type: "blocks",
+    });
+
+    const heartbeat = heartbeatService(db);
+    const result = await heartbeat.reconcileStrandedAssignedIssues();
+
+    expect(result.waitingOnReviewResolved).toBe(1);
+    expect(result.escalated).toBe(0);
+    expect(result.issueIds).toEqual([issueId]);
+
+    const parent = await db
+      .select()
+      .from(issues)
+      .where(eq(issues.id, issueId))
+      .then((rows) => rows[0] ?? null);
+    expect(parent?.status).toBe("blocked");
+    expect(parent?.assigneeAgentId).toBe(agentId);
+    expect(await sourceBlockerIssueIds(companyId, issueId)).toEqual([reviewChildId]);
+    expect(await sourceBlockerIssueIds(companyId, deployChildId)).toEqual([issueId]);
+
+    const comments = await db
+      .select()
+      .from(issueComments)
+      .where(eq(issueComments.issueId, issueId));
+    expect(comments).toHaveLength(1);
+    expect(comments[0]?.body).toContain(`${issuePrefix}-30`);
+    expect(comments[0]?.body).not.toContain(`${issuePrefix}-31`);
+  });
+
   it("converts a continuation parked for review into a dependency wait on its existing blockers", async () => {
     const { companyId, agentId, issueId } = await seedStrandedIssueFixture({
       status: "in_progress",
@@ -13198,6 +13265,25 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.update(issues).set({ status: "done" }).where(eq(issues.id, childId));
     expect((await heartbeat.reconcileStrandedAssignedIssues()).continuationRequeued).toBe(1);
     const next = (await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.agentId, agentId))).find((r) => r.id !== runId);
+    if (next) await waitForRunToSettle(heartbeat, next.id);
+  });
+
+  it("recovers a shared-workspace lead whose only open child is blocked by the lead", async () => {
+    const { companyId, agentId, issueId, runId } = await seedStrandedIssueFixture({ status: "in_progress", runStatus: "succeeded", livenessState: "advanced" });
+    await db.update(heartbeatRuns).set({ contextSnapshot: { issueId, paperclipWorkspace: { mode: "shared_workspace" } } }).where(eq(heartbeatRuns.id, runId));
+    const projectId = randomUUID(), workspaceId = randomUUID(), childId = randomUUID(), workerId = randomUUID();
+    await db.insert(projects).values({ id: projectId, companyId, name: "Shared project" });
+    await db.insert(projectWorkspaces).values({ id: workspaceId, companyId, projectId, name: "Primary", sourceType: "local_path", cwd: "/tmp/recovery-shared", isPrimary: true });
+    await db.update(issues).set({ projectId, projectWorkspaceId: workspaceId }).where(eq(issues.id, issueId));
+    await db.insert(agents).values({ id: workerId, companyId, name: "Worker", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {} });
+    await db.insert(issues).values({ id: childId, companyId, parentId: issueId, title: "Deploy the project", status: "blocked", assigneeAgentId: workerId, projectId, projectWorkspaceId: workspaceId });
+    await db.insert(issueRelations).values({ companyId, issueId, relatedIssueId: childId, type: "blocks" });
+    await db.insert(heartbeatRuns).values({ companyId, agentId: workerId, status: "scheduled_retry", scheduledRetryAt: new Date(Date.now() + 60_000), scheduledRetryReason: "workspace_busy", contextSnapshot: { issueId: childId } });
+    const heartbeat = heartbeatService(db);
+    const result = await heartbeat.reconcileStrandedAssignedIssues();
+    expect(result.continuationRequeued).toBe(1);
+    const next = (await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.agentId, agentId))).find((r) => r.id !== runId);
+    expect(next?.contextSnapshot).toMatchObject({ issueId, retryReason: "issue_continuation_needed" });
     if (next) await waitForRunToSettle(heartbeat, next.id);
   });
 
