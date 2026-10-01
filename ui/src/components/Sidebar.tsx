@@ -21,6 +21,7 @@ import {
   GanttChartSquare,
   LayoutGrid,
   Users,
+  Gamepad2,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -95,6 +96,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   const showWorkspacesLink = experimentalSettings?.enableIsolatedWorkspaces === true;
   const showPipelines = experimentalSettings?.enablePipelines === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
+  const showPixelsOffice = experimentalSettings?.enablePixelsOffice === true;
   const goalsLinkPending = !experimentalSettingsSettled;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
   // Decisions (attention home) is an experimental surface (PAP-13481): the nav
@@ -189,6 +191,9 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           ) : null}
           {showStatusCards ? (
             <SidebarNavItem to="/status" label="Status" icon={LayoutGrid} textBadge="beta" />
+          ) : null}
+          {showPixelsOffice ? (
+            <SidebarNavItem to="/pixels-office" label="Pixels Office" icon={Gamepad2} textBadge="beta" />
           ) : null}
           {conferenceRoomChatEnabled ? (
             <SidebarNavItem to="/board-chat" label="Conference Room" icon={MessagesSquare} />

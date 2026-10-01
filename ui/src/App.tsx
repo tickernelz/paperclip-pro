@@ -10,6 +10,7 @@ import { TaskChatLab } from "./pages/TaskChatLab";
 import { PipelinesExperimentalGate } from "./components/PipelinesExperimentalGate";
 import { CasesExperimentalGate } from "./components/CasesExperimentalGate";
 import { StatusCardsExperimentalGate } from "./components/StatusCardsExperimentalGate";
+import { PixelsOfficeExperimentalGate } from "./components/PixelsOfficeExperimentalGate";
 import { CloudManagedPageGate } from "./components/CloudManagedPageGate";
 import { HiddenSettingsPageGate } from "./components/HiddenSettingsPageGate";
 import { IsolatedWorkspacesRouteGate } from "./components/IsolatedWorkspacesRouteGate";
@@ -42,6 +43,7 @@ import { Routines } from "./pages/Routines";
 import { Learnings, PipelineItemDetail, PipelineItemLegacyRedirect, Pipelines, ReviewQueue } from "./pages/Pipelines";
 import { PipelineSettings } from "./pages/PipelineSettings";
 import { StatusCards } from "./pages/StatusCards";
+import { PixelsOffice } from "./pages/PixelsOffice";
 import { RoutineDetail } from "./pages/RoutineDetail";
 import { UserProfile } from "./pages/UserProfile";
 import { ExecutionWorkspaceDetail } from "./pages/ExecutionWorkspaceDetail";
@@ -317,6 +319,10 @@ function boardRoutes(streamlinedUiEnabled: boolean) {
       <Route
         path="cases/:caseIdentifier"
         element={<CasesExperimentalGate><CaseDetail /></CasesExperimentalGate>}
+      />
+      <Route
+        path="pixels-office"
+        element={<PixelsOfficeExperimentalGate><PixelsOffice /></PixelsOfficeExperimentalGate>}
       />
       <Route
         path="status"

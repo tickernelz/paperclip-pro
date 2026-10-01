@@ -305,6 +305,7 @@ import {
   resolveChatPublicationSchema,
   replaceChatEndpointResourcesSchema,
   updateChatEndpointSchema,
+  pixelsOfficeSeatAssignmentsSchema,
 } from "@tickernelz/paperclip-pro-shared";
 import {
   COMPANY_IMPORT_TRANSFERS_API_PATH,
@@ -3184,6 +3185,34 @@ registerCurrentRoute({
   tags: ["status-cards"],
   summary: "Write a generated status card summary",
   body: writeStatusCardSummarySchema,
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/companies/{companyId}/pixels-office",
+  tags: ["pixels-office"],
+  summary: "Read the Pixels Office snapshot for a company",
+  responses: {
+    200: r.ok(),
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+registerCurrentRoute({
+  method: "put",
+  path: "/api/companies/{companyId}/pixels-office/seats",
+  tags: ["pixels-office"],
+  summary: "Replace the Pixels Office character seat assignments",
+  body: pixelsOfficeSeatAssignmentsSchema,
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
 });
 
 registry.registerPath({

@@ -1,0 +1,51 @@
+import { z } from "zod";
+import { AGENT_STATUSES, ISSUE_STATUSES } from "../constants.js";
+
+export const pixelsOfficeTaskStatusSchema = z.enum(ISSUE_STATUSES);
+export type PixelsOfficeTaskStatus = z.infer<typeof pixelsOfficeTaskStatusSchema>;
+
+export const pixelsOfficeAgentStatusSchema = z.enum(AGENT_STATUSES);
+export type PixelsOfficeAgentStatus = z.infer<typeof pixelsOfficeAgentStatusSchema>;
+
+export interface PixelsOfficeTask {
+  issueId: string;
+  identifier: string;
+  title: string;
+  status: PixelsOfficeTaskStatus;
+  runId: string | null;
+  active: boolean;
+}
+
+export interface PixelsOfficeAgent {
+  id: string;
+  name: string;
+  title: string | null;
+  role: string;
+  status: PixelsOfficeAgentStatus;
+  urlKey: string | null;
+  activeRunId: string | null;
+  activeTaskCount: number;
+  maxConcurrentRuns: number;
+  tasks: PixelsOfficeTask[];
+}
+
+export interface PixelsOfficeSnapshot {
+  companyId: string;
+  agents: PixelsOfficeAgent[];
+  generatedAt: string;
+}
+
+export const pixelsOfficeSeatAssignmentSchema = z.object({
+  agentId: z.string().guid(),
+  characterIndex: z.number().int().min(0),
+  seatId: z.string().min(1).max(200),
+});
+
+export const pixelsOfficeSeatAssignmentsSchema = z
+  .object({
+    assignments: z.array(pixelsOfficeSeatAssignmentSchema).max(500),
+  })
+  .strict();
+
+export type PixelsOfficeSeatAssignment = z.infer<typeof pixelsOfficeSeatAssignmentSchema>;
+export type PixelsOfficeSeatAssignments = z.infer<typeof pixelsOfficeSeatAssignmentsSchema>;

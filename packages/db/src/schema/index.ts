@@ -121,6 +121,7 @@ export { documentRevisions } from "./document_revisions.js";
 export { issueDocuments } from "./issue_documents.js";
 export { summarySlots } from "./summary_slots.js";
 export { statusCards, statusCardUpdates } from "./status_cards.js";
+export { pixelsOfficeSeats } from "./pixels_office_seats.js";
 export { routineDocuments } from "./routine_documents.js";
 export { documentAnnotationThreads } from "./document_annotation_threads.js";
 export { documentAnnotationComments } from "./document_annotation_comments.js";

@@ -458,6 +458,17 @@ export function InstanceExperimentalSettings() {
         />
 
         <ExperimentalToggleCard
+          title="Pixels Office"
+          description="Show a live pixel-art office floor plan where each agent is a character and each character shows how many tasks that agent is holding."
+          checked={experimentalQuery.data?.enablePixelsOffice === true}
+          onCheckedChange={(checked) => toggleMutation.mutate({ enablePixelsOffice: checked })}
+          disabled={toggleMutation.isPending}
+          settingKey="enablePixelsOffice"
+          managed={managedKeys.enablePixelsOffice}
+          ariaLabel="Toggle Pixels Office experimental setting"
+        />
+
+        <ExperimentalToggleCard
           title="Simplified English Interactions"
           description="Instruct agents to write user interactions (plan confirmations, questions, suggested tasks, checkbox prompts) in ASD-STE100 Simplified Technical English, with brief context on what information the decision needs and what happens for each choice."
           checked={enableSimplifiedEnglishInteractions}
