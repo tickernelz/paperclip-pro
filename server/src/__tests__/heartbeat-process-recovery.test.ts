@@ -208,6 +208,7 @@ import {
   INTERACTION_CONTINUATION_INFRA_RETRY_REASON,
   INTERACTION_CONTINUATION_INFRA_WAKE_REASON,
   heartbeatService,
+  resetHeartbeatServerShutdownForTests,
   parseSandboxProviderPluginNotReadyFailureMessage,
   redactDetectedSuccessfulRunProgressSummaryForBoard,
   redactSuccessfulRunHandoffEvidence,
@@ -477,6 +478,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
 
   afterEach(async () => {
     vi.clearAllMocks();
+    resetHeartbeatServerShutdownForTests();
     // A recovery policy can stop before adapter dispatch; do not leak an
     // unused one-shot failure into the next test's otherwise healthy run.
     mockAdapterExecute.mockReset();
@@ -2882,6 +2884,60 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       });
     });
   });
+
+  it.skipIf(process.platform !== "linux")(
+    "drains instead of adopting live runs when systemd will stop the whole service cgroup",
+    async () => {
+      const child = spawnAliveProcess();
+      childProcesses.add(child);
+      const { runId } = await seedRunFixture({
+        agentStatus: "running",
+        processPid: child.pid ?? null,
+        processGroupId: null,
+      });
+      await withTempPaperclipHome(async () => {
+        await writeHotRestartIntent({
+          previousServerPid: process.pid,
+          previousServerVersion: "old-version",
+          requestedAt: new Date("2026-10-01T03:30:00.000Z"),
+          preflightActiveRunIds: [runId],
+        });
+        const heartbeat = heartbeatService(db, {
+          runtimeEnv: { ...process.env, PAPERCLIP_SERVICE_MANAGED: "1" },
+        });
+        const preparation = await heartbeat.prepareHotRestartShutdown(
+          "SIGTERM",
+          new Date("2026-10-01T03:30:57.000Z"),
+        );
+        expect(preparation).toMatchObject({
+          mode: "service_drain_required",
+          skipDrain: false,
+          drainRunIds: [runId],
+        });
+        await expect(readHotRestartIntent()).resolves.toMatchObject({
+          drainRequired: true,
+          drainReason: "service_stop_kills_children",
+          drainRunIds: [runId],
+        });
+        const drain = await heartbeat.drainRunningRunsForShutdown(
+          "SIGTERM",
+          new Date("2026-10-01T03:30:58.000Z"),
+          preparation.mode === "service_drain_required" ? preparation.drainRunIds : [],
+        );
+        expect(drain.interruptedRunIds).toEqual([runId]);
+        expect(drain.retryRunIds).toHaveLength(1);
+        expect(await heartbeat.getRun(runId)).toMatchObject({
+          status: "interrupted",
+          errorCode: "server_shutdown_interrupted",
+        });
+        expect(
+          await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId)),
+        ).toEqual([
+          expect.objectContaining({ status: "scheduled_retry", scheduledRetryReason: "process_lost" }),
+        ]);
+      });
+    },
+  );
 
   it("snapshots and drains a server-stdio ACP run before embedded database shutdown", async () => {
     const child = spawnAliveProcess();
@@ -8109,11 +8165,215 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
         expect(finished).toMatchObject({
           exitCode: null,
           signal: "SIGTERM",
-          errorCode: "adapter_failed",
+          errorCode: "process_lost",
         });
       }
     },
   );
+
+  it("hands an omp exit 143 that Paperclip did not request to the process-loss lane", async () => {
+    mockAdapterExecute.mockResolvedValueOnce({
+      exitCode: 143,
+      signal: null,
+      timedOut: false,
+      errorMessage: "OMP exited with code 143.",
+      errorCode: "omp_exit_143",
+      resultJson: { stopReason: "adapter_failed" },
+      provider: "test",
+      model: "test-model",
+    });
+    const { runId } = await seedRunFixture({
+      adapterType: "omp_local",
+      agentStatus: "idle",
+      runStatus: "queued",
+    });
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    expect(await waitForRunToSettle(heartbeat, runId, 5_000)).toMatchObject({
+      status: "failed",
+      errorCode: "process_lost",
+      exitCode: 143,
+    });
+    await heartbeat.drainActiveRunExecutions();
+    expect(
+      await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId)),
+    ).toEqual([
+      expect.objectContaining({
+        status: "scheduled_retry",
+        scheduledRetryReason: "process_lost",
+      }),
+    ]);
+  });
+
+  async function startOmpLikeProcessRun(
+    script: string,
+    options: {
+      graceSec?: number;
+      holdAfterExit?: Promise<void>;
+      shutdownExecutorSettleTimeoutMs?: number;
+    } = {},
+  ) {
+    const actualProcess = await vi.importActual<
+      typeof import("../adapters/process/execute.js")
+    >("../adapters/process/execute.js");
+    const ready = Promise.withResolvers<void>();
+    const fixture = await seedRunFixture({
+      adapterType: "omp_local",
+      agentStatus: "idle",
+      runStatus: "queued",
+    });
+    mockAdapterExecute.mockImplementationOnce((async (input: unknown) => {
+      const context = input as Parameters<typeof actualProcess.execute>[0];
+      const result = await actualProcess.execute({
+        ...context,
+        onLog: async (stream, text) => {
+          await context.onLog(stream, text);
+          if (text.includes("omp ready")) ready.resolve();
+        },
+      });
+      await options.holdAfterExit;
+      return result;
+    }) as typeof mockAdapterExecute);
+    await db
+      .update(agents)
+      .set({
+        adapterConfig: {
+          command: process.execPath,
+          args: ["-e", `${script} console.log('omp ready'); setInterval(() => {}, 1000)`],
+          graceSec: options.graceSec ?? 2,
+        },
+      })
+      .where(eq(agents.id, fixture.agentId));
+    const heartbeat = heartbeatService(db, {
+      shutdownExecutorSettleTimeoutMs: options.shutdownExecutorSettleTimeoutMs,
+    });
+    await heartbeat.resumeQueuedRuns();
+    await ready.promise;
+    return { ...fixture, heartbeat };
+  }
+
+  async function expectShutdownContinuation(runId: string) {
+    const heartbeat = heartbeatService(db);
+    await heartbeat.drainActiveRunExecutions();
+    expect(await heartbeat.getRun(runId)).toMatchObject({
+      status: "interrupted",
+      errorCode: "server_shutdown_interrupted",
+    });
+    expect(
+      await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId)),
+    ).toEqual([
+      expect.objectContaining({ status: "scheduled_retry", scheduledRetryReason: "process_lost" }),
+    ]);
+  }
+
+  it.each([
+    { mode: "ignores SIGTERM and is SIGKILLed", script: "process.on('SIGTERM', () => {});" },
+    { mode: "exits 1 on SIGTERM", script: "process.on('SIGTERM', () => process.exit(1));" },
+    { mode: "exits 0 on SIGTERM", script: "process.on('SIGTERM', () => process.exit(0));" },
+  ])("interrupts a drained omp process that $mode and continues it on the process-loss lane", async ({ script }) => {
+    const { runId, heartbeat } = await startOmpLikeProcessRun(script, { graceSec: 1 });
+    const drain = await heartbeat.drainRunningRunsForShutdown("SIGTERM");
+    expect(drain.interruptedRunIds).toEqual([runId]);
+    expect(drain.retryRunIds).toHaveLength(1);
+    await expectShutdownContinuation(runId);
+  });
+
+  it("waits for stuck executors against one shared deadline, not one per run", async () => {
+    const settleTimeoutMs = 2_000;
+    const release = Promise.withResolvers<void>();
+    const runIds: string[] = [];
+    let heartbeat = heartbeatService(db);
+    for (let index = 0; index < 3; index += 1) {
+      const started = await startOmpLikeProcessRun(
+        "process.on('SIGTERM', () => process.exit(143));",
+        { graceSec: 1, holdAfterExit: release.promise, shutdownExecutorSettleTimeoutMs: settleTimeoutMs },
+      );
+      runIds.push(started.runId);
+      heartbeat = started.heartbeat;
+    }
+    const drainStartedAt = Date.now();
+    const drain = await heartbeat
+      .drainRunningRunsForShutdown("SIGTERM")
+      .finally(() => release.resolve());
+    const drainMs = Date.now() - drainStartedAt;
+    expect(drainMs).toBeGreaterThanOrEqual(settleTimeoutMs);
+    expect(drainMs).toBeLessThan(settleTimeoutMs * 2);
+    expect([...drain.interruptedRunIds].sort()).toEqual([...runIds].sort());
+    expect(drain.retryRunIds).toHaveLength(3);
+    for (const runId of runIds) await expectShutdownContinuation(runId);
+  }, 30_000);
+
+  it("interrupts an omp process that exits 143 during server shutdown and continues it on the process-loss lane", async () => {
+    const { runId, heartbeat } = await startOmpLikeProcessRun(
+      "process.on('SIGTERM', () => process.exit(143));",
+    );
+    const drain = await heartbeat.drainRunningRunsForShutdown("SIGTERM");
+    expect(drain.interruptedRunIds).toEqual([runId]);
+    expect(await heartbeat.getRun(runId)).toMatchObject({
+      status: "interrupted",
+      errorCode: "server_shutdown_interrupted",
+      exitCode: 143,
+    });
+    const successors = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.retryOfRunId, runId));
+    expect(successors).toEqual([
+      expect.objectContaining({
+        status: "scheduled_retry",
+        scheduledRetryReason: "process_lost",
+      }),
+    ]);
+    expect(drain.retryRunIds).toEqual([successors[0]!.id]);
+  });
+
+  it("keeps a board Stop of an omp process that exits 143 cancelled without a continuation", async () => {
+    const { runId, heartbeat } = await startOmpLikeProcessRun(
+      "process.on('SIGTERM', () => process.exit(143));",
+    );
+    expect((await heartbeat.cancelRun(runId, "Stopped by board"))?.status).toBe("cancelled");
+    await heartbeat.drainActiveRunExecutions();
+    expect(await heartbeat.getRun(runId)).toMatchObject({ status: "cancelled" });
+    expect(
+      await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId)),
+    ).toEqual([]);
+  });
+
+  it("keeps an omp abort-signal Stop that exits 130 cancelled without a continuation", async () => {
+    const started = Promise.withResolvers<void>();
+    mockAdapterExecute.mockImplementationOnce(async (input?: unknown) => {
+      const context = input as { signal: AbortSignal; onCancellationReady?: () => Promise<void> };
+      await context.onCancellationReady?.();
+      const aborted = Promise.withResolvers<void>();
+      context.signal.addEventListener("abort", () => aborted.resolve(), { once: true });
+      started.resolve();
+      await aborted.promise;
+      return {
+        exitCode: 130,
+        signal: null,
+        timedOut: false,
+        errorMessage: "OMP exited with code 130.",
+        errorCode: "omp_exit_130",
+        resultJson: { executionCancellation: { state: "acknowledged" } },
+        provider: "test",
+        model: "test-model",
+      };
+    });
+    const { runId } = await seedRunFixture({
+      adapterType: "omp_local",
+      agentStatus: "idle",
+      runStatus: "queued",
+    });
+    const heartbeat = heartbeatService(db);
+    await heartbeat.resumeQueuedRuns();
+    await started.promise;
+    expect((await heartbeat.cancelRun(runId, "Stopped by board"))?.status).toBe("cancelled");
+    await heartbeat.drainActiveRunExecutions();
+    expect(await heartbeat.getRun(runId)).toMatchObject({ status: "cancelled", exitCode: 130 });
+    expect(
+      await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId)),
+    ).toEqual([]);
+  });
 
   it("retries a settled failed Stop while its exact active process remains alive", async () => {
     const actualProcess = await vi.importActual<
@@ -15448,11 +15708,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     try {
       await expect(
         heartbeatService(db).reconcileStrandedAssignedIssues(),
-      ).rejects.toMatchObject({
-        cause: expect.objectContaining({
-          message: "native_blocked_wait_fixture_fault",
-        }),
-      });
+      ).resolves.toMatchObject({ errored: 1, escalated: 0 });
     } finally {
       await db.execute(
         sql`drop trigger test_native_blocked_wait_fault on issue_comments`,

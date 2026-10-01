@@ -1136,6 +1136,7 @@ async function startServerWithDatabaseTeardown(
     skipDrain: boolean;
     drainRunIds?: string[];
   }>) | null = null;
+  let beginHeartbeatServerShutdown: ((signal: "SIGINT" | "SIGTERM") => void) | null = null;
   let heartbeatSchedulerStopped = false;
   let heartbeatSchedulerInterval: ReturnType<typeof setInterval> | null = null;
   const heartbeatSchedulerInFlight = new Set<Promise<void>>();
@@ -1303,6 +1304,7 @@ async function startServerWithDatabaseTeardown(
     drainHeartbeatExecutionFinalizers = () =>
       heartbeat.drainActiveRunExecutions();
     prepareHotRestartShutdown = heartbeat.prepareHotRestartShutdown;
+    beginHeartbeatServerShutdown = heartbeat.beginServerShutdown;
     const environmentCustomImages = environmentCustomImageService(db as any, { pluginWorkerManager });
     const routines = routineService(db as any, { pluginWorkerManager });
     const statusCards = statusCardService(db as any);
@@ -1916,6 +1918,7 @@ async function startServerWithDatabaseTeardown(
     signal: "SIGINT" | "SIGTERM",
     exitProcess: boolean,
   ) => {
+    beginHeartbeatServerShutdown?.(signal);
     await systemdNotify(["--stopping", `--status=Stopping after ${signal}`]);
     heartbeatSchedulerStopped = true;
     clearInterval(executionControlInterval);

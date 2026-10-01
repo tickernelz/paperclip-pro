@@ -67,6 +67,7 @@ import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash, randomUUID } from "node:crypto";
+import { setTimeout as delay } from "node:timers/promises";
 import {
   and,
   asc,
@@ -879,6 +880,11 @@ const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
 function isTransientWorkspaceGitScanCode(code: string | null | undefined): boolean {
   return code === WORKSPACE_GIT_SCAN_ERROR_CODES.timeout || code === WORKSPACE_GIT_SCAN_ERROR_CODES.saturated;
 }
+const ADAPTER_SELF_SIGNALLED_ERROR_CODES: Record<string, true> = {
+  codex_output_inactivity_monitor: true,
+  paperclip_mcp_unavailable: true,
+  hermes_gateway_cancelled: true,
+};
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS =
   BOUNDED_TRANSIENT_HEARTBEAT_RETRY_DELAYS_MS.length;
 export {
@@ -1480,6 +1486,17 @@ const nativeSessionResumeDispatchTimers = new Map<
 // resolveHeartbeatSchedulingSuppression() check and every heartbeatService()
 // instance see the same drain.
 let taskDrainState: { startedAt: Date; expiresAt: Date | null } | null = null;
+let serverShutdownSignal: "SIGINT" | "SIGTERM" | null = null;
+const shutdownTerminatedRunIds = new Set<string>();
+
+export function beginHeartbeatServerShutdown(signal: "SIGINT" | "SIGTERM") {
+  serverShutdownSignal ??= signal;
+}
+
+export function resetHeartbeatServerShutdownForTests() {
+  serverShutdownSignal = null;
+  shutdownTerminatedRunIds.clear();
+}
 
 function readTaskDrain(
   now: Date,
@@ -6055,6 +6072,8 @@ const SESSION_CONFIG_FINGERPRINT_VERSION_KEY =
 const SESSION_CONFIG_CATEGORIES_KEY = "__paperclipConfigCategories";
 const SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY =
   "__paperclipConfigCategoryFingerprints";
+const SESSION_CONFIG_RESUME_FINGERPRINT_KEY =
+  "__paperclipConfigResumeFingerprint";
 const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_AI_CREDENTIAL_IDENTITY_KEY,
   SESSION_CONFIGURED_MODEL_KEY,
@@ -6062,6 +6081,7 @@ const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_CONFIG_FINGERPRINT_VERSION_KEY,
   SESSION_CONFIG_CATEGORIES_KEY,
   SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY,
+  SESSION_CONFIG_RESUME_FINGERPRINT_KEY,
 ]);
 const WORKSPACE_CONFIG_FINGERPRINT_METADATA_KEY = "configFingerprint";
 const EFFECTIVE_RUN_SESSION_CONFIG_CATEGORIES = [
@@ -6098,8 +6118,26 @@ type EffectiveRunSessionConfigMetadata = {
   fingerprint: string;
   categories: EffectiveRunSessionConfigCategory[];
   categoryFingerprints: Record<EffectiveRunSessionConfigCategory, string>;
+  resumeFingerprint: string;
   fingerprints: EffectiveRunConfigFingerprints;
 };
+const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
+  "instructionsBundleMode",
+  "instructionsRootPath",
+  "instructionsEntryFile",
+  "instructionsFilePath",
+  "promptTemplate",
+  "bootstrapPromptTemplate",
+  "paperclipSkillSync",
+  "paperclipRuntimeSkills",
+  "paperclipConnectorSkillDigest",
+] as const;
+const PROCESS_LOSS_RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES: Partial<
+  Record<EffectiveRunSessionConfigCategory, true>
+> = { instructions: true, runtimeSkills: true };
+const PROCESS_LOSS_RESUME_TARGET_SESSION_CONFIG_CATEGORIES: Partial<
+  Record<EffectiveRunSessionConfigCategory, true>
+> = { adapter: true, adapterConfig: true };
 
 type TaskSessionConfigFreshnessDecision = {
   reset: boolean;
@@ -6417,6 +6455,9 @@ function readConfigFingerprintFromSessionParams(
     categories: readConfigCategoriesFromSessionParams(sessionParams),
     categoryFingerprints: parseStoredConfigCategoryFingerprints(
       sessionParams[SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY],
+    ),
+    resumeFingerprint: readNonEmptyString(
+      sessionParams[SESSION_CONFIG_RESUME_FINGERPRINT_KEY],
     ),
   };
 }
@@ -6783,9 +6824,13 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
   const instructions = await resolveInstructionsConfigFingerprintMetadata(
     input.effectiveAdapterConfig,
   );
+  const fingerprintAdapterConfig = managedAiSessionFingerprintConfig(
+    input.effectiveAdapterConfig,
+    input.managedAiHome,
+  );
   const categoryValues = buildSessionConfigCategoryValues({
     adapterType: input.adapterType,
-    effectiveAdapterConfig: managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome),
+    effectiveAdapterConfig: fingerprintAdapterConfig,
     agentRuntimeConfig: input.agentRuntimeConfig,
     instructions,
     issueOverrides: input.issueOverrides,
@@ -6808,11 +6853,26 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
     subcategories: EFFECTIVE_RUN_SESSION_CONFIG_CATEGORIES,
     secretManifest,
   });
+  const resumeAdapterConfig = { ...fingerprintAdapterConfig };
+  for (const key of RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS) delete resumeAdapterConfig[key];
+  const { resume: resumeFingerprint } =
+    createEffectiveRunConfigSubcategoryFingerprints({
+      category: "session",
+      value: {
+        resume: {
+          adapterType: input.adapterType,
+          adapterConfig: resumeAdapterConfig,
+        },
+      },
+      subcategories: ["resume"] as const,
+      secretManifest,
+    });
   return {
     version: EFFECTIVE_RUN_CONFIG_FINGERPRINT_VERSION,
     fingerprint: fingerprints.sessionFingerprint.fingerprint,
     categories: [...EFFECTIVE_RUN_SESSION_CONFIG_CATEGORIES],
     categoryFingerprints,
+    resumeFingerprint,
     fingerprints,
   };
 }
@@ -7079,6 +7139,8 @@ function attachPaperclipSessionMetadataToSessionParams(
     next[SESSION_CONFIG_CATEGORIES_KEY] = configMetadata.categories;
     next[SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY] =
       configMetadata.categoryFingerprints;
+    next[SESSION_CONFIG_RESUME_FINGERPRINT_KEY] =
+      configMetadata.resumeFingerprint;
   }
   return next;
 }
@@ -7119,6 +7181,32 @@ export function stripPaperclipSessionMetadataFromSessionParams(
   return next;
 }
 
+function isProcessLossContinuationRun(
+  run: { scheduledRetryReason: string | null },
+  contextSnapshot: Record<string, unknown> | null | undefined,
+) {
+  return (
+    run.scheduledRetryReason === PROCESS_LOSS_RETRY_REASON ||
+    readNonEmptyString(contextSnapshot?.wakeReason) ===
+      PROCESS_LOST_RETRY_WAKE_REASON
+  );
+}
+
+function processLossContinuationCanResumeAcross(input: {
+  changedCategories: readonly EffectiveRunSessionConfigCategory[];
+  storedResumeFingerprint: string | null;
+  nextResumeFingerprint: string;
+}) {
+  const resumeTargetUnchanged =
+    input.storedResumeFingerprint === input.nextResumeFingerprint;
+  return input.changedCategories.every(
+    (category) =>
+      PROCESS_LOSS_RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true ||
+      (resumeTargetUnchanged &&
+        PROCESS_LOSS_RESUME_TARGET_SESSION_CONFIG_CATEGORIES[category] === true),
+  );
+}
+
 export function resolveTaskSessionConfigFreshness(input: {
   hasTaskSession: boolean;
   configuredModel: string | null;
@@ -7126,6 +7214,7 @@ export function resolveTaskSessionConfigFreshness(input: {
   configMetadata: EffectiveRunSessionConfigMetadata | null;
   wakeResetReason?: string | null;
   preserveLegacySessionWithoutConfigMetadata?: boolean;
+  processLossContinuation?: boolean;
 }): TaskSessionConfigFreshnessDecision {
   if (!input.hasTaskSession) {
     return {
@@ -7177,9 +7266,18 @@ export function resolveTaskSessionConfigFreshness(input: {
         previous: storedConfig.categoryFingerprints,
         next: input.configMetadata.categoryFingerprints,
       });
-      reasons.push(
-        `effective run configuration changed: ${describeEffectiveRunConfigCategories(changedCategories)}`,
-      );
+      if (
+        !input.processLossContinuation ||
+        !processLossContinuationCanResumeAcross({
+          changedCategories,
+          storedResumeFingerprint: storedConfig.resumeFingerprint,
+          nextResumeFingerprint: input.configMetadata.resumeFingerprint,
+        })
+      ) {
+        reasons.push(
+          `effective run configuration changed: ${describeEffectiveRunConfigCategories(changedCategories)}`,
+        );
+      }
     }
   }
 
@@ -9570,6 +9668,7 @@ export interface HeartbeatServiceOptions {
     runId: string;
     issueId: string;
   }) => Promise<void>;
+  shutdownExecutorSettleTimeoutMs?: number;
 }
 
 export async function cancelHeartbeatNativeRun(input: {
@@ -9665,7 +9764,11 @@ export function resolveHeartbeatSchedulingSuppression(
 ): {
   suppressed: boolean;
   reason:
-    "worktree_instance" | "database_restore_in_progress" | "task_drain" | null;
+    | "worktree_instance"
+    | "database_restore_in_progress"
+    | "task_drain"
+    | "server_shutdown"
+    | null;
 } {
   if (
     isTruthyRuntimeEnvValue(env.PAPERCLIP_IN_WORKTREE) &&
@@ -9679,6 +9782,9 @@ export function resolveHeartbeatSchedulingSuppression(
   ) {
     return { suppressed: true, reason: "database_restore_in_progress" };
   }
+  if (serverShutdownSignal !== null) {
+    return { suppressed: true, reason: "server_shutdown" };
+  }
   if (readTaskDrain(new Date()) !== null) {
     return { suppressed: true, reason: "task_drain" };
   }
@@ -9689,12 +9795,11 @@ export function heartbeatService(
   db: Db,
   options: HeartbeatServiceOptions = {},
 ) {
-  let shutdownInProgress = false;
+  const runtimeEnv = options.runtimeEnv ?? process.env;
   const instanceSettings = instanceSettingsService(db);
   const getCurrentUserRedactionOptions = async () => ({
     enabled: (await instanceSettings.getGeneral()).censorUsernameInLogs,
   });
-  const runtimeEnv = options.runtimeEnv ?? process.env;
   const inWorktreeRuntime = isTruthyRuntimeEnvValue(
     runtimeEnv.PAPERCLIP_IN_WORKTREE,
   );
@@ -14770,7 +14875,7 @@ export function heartbeatService(
     signal: "SIGINT" | "SIGTERM",
     now = new Date(),
   ) {
-    shutdownInProgress = true;
+    beginHeartbeatServerShutdown(signal);
     const idleSessions = await closeIdleWarmNativeSessionsForRestart();
     if (idleSessions.failed > 0) {
       logger.warn({ idleSessions }, "idle native sessions could not checkpoint before controller shutdown");
@@ -14828,6 +14933,29 @@ export function heartbeatService(
       ...intent,
       previousServerVersion: intent.previousServerVersion ?? serverVersion,
     };
+
+    if (process.platform === "linux" && runtimeEnv.PAPERCLIP_SERVICE_MANAGED === "1") {
+      const drainRunIds = snapshotRuns.map((run) => run.runId);
+      await writeHotRestartShutdownSnapshot({
+        intent: intentWithVersion,
+        signal,
+        activeRuns: snapshotRuns,
+        drainReason: "service_stop_kills_children",
+        drainRunIds,
+        capturedAt: now,
+      });
+      logger.warn(
+        { signal, previousServerPid: intent.previousServerPid, drainRunIds },
+        "systemd stops every process left in the service cgroup; draining live runs into process-loss continuations instead of adopting them",
+      );
+      return {
+        mode: "service_drain_required" as const,
+        skipDrain: false as const,
+        activeRunIds: drainRunIds,
+        drainRunIds,
+        drainReason: "service_stop_kills_children" as const,
+      };
+    }
 
     const serverStdioRuns = activeRuns.filter(isServerStdioBoundHotRestartRun);
     if (serverStdioRuns.length > 0) {
@@ -15053,21 +15181,18 @@ export function heartbeatService(
         continue;
       }
 
-      const hasSelectiveAcpDrain =
-        intent.drainReason === "active_acp_run" &&
+      const hasSelectiveDrain =
+        (intent.drainReason === "active_acp_run" ||
+          intent.drainReason === "service_stop_kills_children") &&
         (intent.drainRunIds?.length ?? 0) > 0;
       if (
-        hasSelectiveAcpDrain &&
+        hasSelectiveDrain &&
         intent.drainRunIds?.includes(candidate.runId)
       ) {
-        // A selective ACP drain is expected to persist a terminal row before
-        // the new server starts. If the process was terminated but that write
-        // failed, surface the run as lost instead of hiding it as an expected
-        // drain skip.
         classify(candidate, "lost", "selective_drain_not_finalized", patch);
         continue;
       }
-      if (intent.drainRequired && !hasSelectiveAcpDrain) {
+      if (intent.drainRequired && !hasSelectiveDrain) {
         classify(candidate, "skipped", "drain_required", patch);
         continue;
       }
@@ -15368,6 +15493,7 @@ export function heartbeatService(
     now = new Date(),
     runIds: readonly string[] | null = null,
   ) {
+    beginHeartbeatServerShutdown(signal);
     const selectedRunIds = runIds ? [...new Set(runIds)] : null;
     if (selectedRunIds?.length === 0) {
       return {
@@ -15396,6 +15522,32 @@ export function heartbeatService(
     const interruptedRunIds: string[] = [];
     const retryRunIds: string[] = [];
     const restartSuspendedRunIds: string[] = [];
+
+    const legacyTerminations = new Map<string, Promise<unknown>>();
+    for (const { run } of activeRuns) {
+      const running = runningProcesses.get(run.id);
+      if (
+        run.runtimeMode === "native" ||
+        !running ||
+        (run.controllerBootId && run.controllerBootId !== legacyControllerBootId) ||
+        isNativeRunnerOwnershipHeld(run)
+      ) continue;
+      shutdownTerminatedRunIds.add(run.id);
+      legacyTerminations.set(run.id, terminateHeartbeatRunProcess({
+        pid: running.child.pid,
+        processGroupId: running.processGroupId,
+        graceMs: Math.max(1, running.graceSec) * 1000,
+      }).then(() => null, (error: unknown) => error ?? new Error("Run process termination failed")));
+    }
+    await Promise.all(legacyTerminations.values());
+    const executorDeadline =
+      Date.now() + (options.shutdownExecutorSettleTimeoutMs ?? 15_000);
+    while (
+      [...legacyTerminations.keys()].some((runId) => activeRunExecutions.has(runId)) &&
+      Date.now() < executorDeadline
+    ) {
+      await delay(50);
+    }
 
     for (const { run, agent } of activeRuns) {
       // Shutdown owns only this boot's legacy executions. Expired foreign
@@ -15476,7 +15628,10 @@ export function heartbeatService(
             runtimeMode: run.runtimeMode,
           });
         }
-        if (running) {
+        if (legacyTerminations.has(run.id)) {
+          const terminationError = await legacyTerminations.get(run.id);
+          if (terminationError) throw terminationError;
+        } else if (running) {
           await terminateHeartbeatRunProcess({
             pid: running.child.pid,
             processGroupId: running.processGroupId,
@@ -15510,7 +15665,21 @@ export function heartbeatService(
           }),
         },
       );
-      if (!interruptedStatus.updated || !interruptedStatus.run) continue;
+      if (!interruptedStatus.updated || !interruptedStatus.run) {
+        if (
+          interruptedStatus.run &&
+          isGracefulShutdownInterruptedRun(interruptedStatus.run)
+        ) {
+          interruptedRunIds.push(run.id);
+          const [executorRetry] = await db
+            .select({ id: heartbeatRuns.id })
+            .from(heartbeatRuns)
+            .where(eq(heartbeatRuns.retryOfRunId, run.id))
+            .limit(1);
+          if (executorRetry) retryRunIds.push(executorRetry.id);
+        }
+        continue;
+      }
       let interrupted = interruptedStatus.run;
       await setWakeupStatus(run.wakeupRequestId, "cancelled", {
         finishedAt: now,
@@ -22038,6 +22207,7 @@ export function heartbeatService(
           taskSession?.sessionParamsJson ?? taskSessionDecodedParams,
         configMetadata: sessionConfigMetadata,
         wakeResetReason: wakeSessionResetReason,
+        processLossContinuation: isProcessLossContinuationRun(run, context),
         preserveLegacySessionWithoutConfigMetadata:
           acceptedPlanContinuationWake && !acceptedPlanWakeRoutingDecision,
       });
@@ -25308,7 +25478,16 @@ export function heartbeatService(
           failedProcessRunCancellations.get(run.id);
         await processCancellation?.settled;
         let outcome: RunSessionOutcome;
+        let processLossErrorCode:
+          | "process_lost"
+          | "server_shutdown_interrupted"
+          | null = null;
         const latestRun = await getRun(run.id);
+        const latestResult = parseObject(latestRun?.resultJson);
+        const paperclipCancellationRecorded =
+          Boolean(processCancellation) ||
+          Boolean(latestResult.executionCancellation) ||
+          Boolean(latestResult.startupCancellation);
         if (isHeartbeatRunTerminalStatus(latestRun?.status)) {
           outcome = latestRun.status;
         } else if (executionControl.controller.signal.aborted) {
@@ -25322,6 +25501,12 @@ export function heartbeatService(
               : nativeTerminal === "cancelled"
                 ? "cancelled"
                 : "failed";
+        } else if (
+          shutdownTerminatedRunIds.has(run.id) &&
+          !paperclipCancellationRecorded
+        ) {
+          outcome = "interrupted";
+          processLossErrorCode = "server_shutdown_interrupted";
         } else if (adapterResult.timedOut) {
           outcome = "timed_out";
         } else if (
@@ -25333,6 +25518,21 @@ export function heartbeatService(
           outcome = "succeeded";
         } else {
           outcome = "failed";
+          if (
+            !paperclipCancellationRecorded &&
+            (adapterResult.signal === "SIGTERM" ||
+              adapterResult.signal === "SIGINT" ||
+              adapterResult.exitCode === 143 ||
+              adapterResult.exitCode === 130) &&
+            !ADAPTER_SELF_SIGNALLED_ERROR_CODES[adapterResult.errorCode ?? ""] &&
+            !hasUnmanagedBackgroundTaskEvidence(parseObject(adapterResult.resultJson))
+          ) {
+            processLossErrorCode =
+              serverShutdownSignal === null
+                ? "process_lost"
+                : "server_shutdown_interrupted";
+            if (serverShutdownSignal !== null) outcome = "interrupted";
+          }
         }
 
         const nextSessionState = resolveNextSessionState({
@@ -25359,15 +25559,18 @@ export function heartbeatService(
             ? (latestRun?.error ?? adapterResult.errorMessage ?? "Cancelled")
             : outcome === "succeeded"
               ? null
-              : redactCurrentUserText(
-                  adapterResult.errorMessage ??
-                    (outcome === "timed_out" ? "Timed out" : "Adapter failed"),
-                  currentUserRedactionOptions,
-                );
+              : outcome === "interrupted" && serverShutdownSignal !== null
+                ? `Interrupted by graceful server shutdown (${serverShutdownSignal})`
+                : redactCurrentUserText(
+                    adapterResult.errorMessage ??
+                      (outcome === "timed_out" ? "Timed out" : "Adapter failed"),
+                    currentUserRedactionOptions,
+                  );
         const recordedResponsibleUserDenialCode =
           normalizeResponsibleUserDenialCode(latestRun?.errorCode);
         const runErrorCode =
-          outcome === "timed_out"
+          processLossErrorCode ??
+          (outcome === "timed_out"
             ? "timeout"
             : outcome === "cancelled"
               ? (latestRun?.errorCode ?? "cancelled")
@@ -25375,7 +25578,7 @@ export function heartbeatService(
                 ? (adapterResult.errorCode ??
                   recordedResponsibleUserDenialCode ??
                   "adapter_failed")
-                : null;
+                : null);
 
         let logSummary: {
           bytes: number;
@@ -25410,7 +25613,9 @@ export function heartbeatService(
               ? "cancelled"
               : outcome === "timed_out"
                 ? "timed_out"
-                : "failed";
+                : outcome === "interrupted"
+                  ? "interrupted"
+                  : "failed";
 
         const cacheAdjustedCostUsd = resolveCacheAdjustedCostUsd(adapterResult);
         const usageJson =
@@ -25570,7 +25775,11 @@ export function heartbeatService(
 
         await setWakeupStatus(
           run.wakeupRequestId,
-          outcome === "succeeded" ? "completed" : status,
+          outcome === "succeeded"
+            ? "completed"
+            : outcome === "interrupted"
+              ? "cancelled"
+              : status,
           {
             finishedAt: new Date(),
             error: runErrorMessage,
@@ -25751,7 +25960,9 @@ export function heartbeatService(
               `[paperclip] Failed to resolve run presentation: ${err instanceof Error ? err.message : String(err)}\n`,
             );
           }
-          if (outcome === "failed" && isMaxTurnExhaustionRun(livenessRun)) {
+          if (processLossErrorCode) {
+            await enqueueProcessLossRetry(livenessRun, agent, new Date());
+          } else if (outcome === "failed" && isMaxTurnExhaustionRun(livenessRun)) {
             const policy = parseMaxTurnContinuationPolicy(agent);
             if (policy.enabled && policy.maxAttempts > 0) {
               await scheduleBoundedRetryForRun(livenessRun, agent, {
@@ -26669,6 +26880,7 @@ export function heartbeatService(
       } finally {
         controllerLease.stop();
         activeRunExecutions.delete(run.id);
+        shutdownTerminatedRunIds.delete(run.id);
         clearLocalCliRunStarting(run.id);
         // A failed owned Stop remains visible until this exact executor settles,
         // including a graceful exit result arriving after the cancellation error.
@@ -26696,7 +26908,7 @@ export function heartbeatService(
       if (
         !nativeSessionResumeScheduled &&
         !nativeWorkspaceFinalizeScheduled &&
-        !shutdownInProgress
+        serverShutdownSignal === null
       ) {
         if (latestRun) await resumeRemoteStopComments(latestRun).catch(err => {
           logger.warn({ err, runId: run.id }, "failed to resume user messages after remote Stop");
@@ -26984,7 +27196,8 @@ export function heartbeatService(
     // run and no path until a person noticed.
     if (
       schedulingSuppression.suppressed &&
-      schedulingSuppression.reason !== "task_drain"
+      schedulingSuppression.reason !== "task_drain" &&
+      schedulingSuppression.reason !== "server_shutdown"
     ) {
       await writeSkippedHeartbeatRequest("heartbeat.scheduling_suppressed", {
         reason: schedulingSuppression.reason,
@@ -30136,6 +30349,7 @@ export function heartbeatService(
 
     reportRunActivity: clearDetachedRunWarning,
 
+    beginServerShutdown: beginHeartbeatServerShutdown,
     prepareHotRestartShutdown,
     reconcileHotRestartAdoption,
     recoverNativeRunsAfterRestart,

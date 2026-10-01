@@ -26,6 +26,30 @@ async function temporaryDirectory(): Promise<string> {
   return directory;
 }
 
+function parseSystemdUnit(content: string): Map<string, Map<string, string[]>> {
+  const sections = new Map<string, Map<string, string[]>>();
+  let current: Map<string, string[]> | null = null;
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#") || line.startsWith(";")) continue;
+    const header = line.match(/^\[(.+)\]$/);
+    if (header) {
+      current = sections.get(header[1]) ?? new Map();
+      sections.set(header[1], current);
+      continue;
+    }
+    const separator = line.indexOf("=");
+    if (!current || separator < 1) throw new Error(`Unparseable unit line: ${rawLine}`);
+    const key = line.slice(0, separator);
+    current.set(key, [...(current.get(key) ?? []), line.slice(separator + 1)]);
+  }
+  return sections;
+}
+
+function serviceDirective(content: string, key: string): string[] {
+  return parseSystemdUnit(content).get("Service")?.get(key) ?? [];
+}
+
 describe("service definition generation", () => {
   it("generates a stable systemd notify unit without secrets", () => {
     const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
@@ -35,6 +59,12 @@ describe("service definition generation", () => {
     expect(unit).toContain("Restart=always");
     expect(unit).toContain("TimeoutStopSec=300");
     expect(unit).not.toContain("API_KEY");
+  });
+
+  it("signals only the main process on stop so the server can drain its agent children first", () => {
+    const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
+    expect(serviceDirective(unit, "KillMode")).toEqual(["mixed"]);
+    expect(serviceDirective(unit, "TimeoutStopSec")).toEqual(["300"]);
   });
 
   it("sources an optional per-instance environment file so operator environment survives unit rewrites", () => {
@@ -89,6 +119,39 @@ describe("systemd drift regeneration", () => {
     expect(result.changed).toBe(true);
     expect(await fs.readFile(manager.definitionPath, "utf8")).toBe(manager.renderDefinition());
     expect(calls).toContain("systemctl --user daemon-reload");
+  });
+
+  it.each(["restart", "stop"] as const)("reloads a unit with a stale kill mode before %s reaches systemd", async (operation) => {
+    const userHome = await temporaryDirectory();
+    const calls: string[] = [];
+    let killModeSeenBySystemd: string[] | null = null;
+    const manager = new SystemdServiceManager("default", async (command, args) => {
+      calls.push([command, ...args].join(" "));
+      if (args.includes("daemon-reload")) killModeSeenBySystemd = serviceDirective(await fs.readFile(manager.definitionPath, "utf8"), "KillMode");
+      return { stdout: "", stderr: "" };
+    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
+    await fs.writeFile(manager.definitionPath, manager.renderDefinition().replace("KillMode=mixed\n", ""), "utf8");
+
+    await manager[operation]();
+
+    expect(killModeSeenBySystemd).toEqual(["mixed"]);
+    expect(calls).toEqual(["systemctl --user daemon-reload", `systemctl --user ${operation} paperclip-pro.service`]);
+  });
+
+  it("does not reload an unchanged unit before restarting", async () => {
+    const userHome = await temporaryDirectory();
+    const calls: string[] = [];
+    const manager = new SystemdServiceManager("default", async (command, args) => {
+      calls.push([command, ...args].join(" "));
+      return { stdout: "", stderr: "" };
+    }, path.join(userHome, ".paperclip"), path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
+    await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
+
+    await manager.restart();
+
+    expect(calls).toEqual(["systemctl --user restart paperclip-pro.service"]);
   });
 
   it("keeps the unit installed when stopping an active service fails", async () => {

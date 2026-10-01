@@ -40,7 +40,7 @@ export type HotRestartIntent = {
   previousServerStartedAt?: string | null;
   previousServerVersion: string | null;
   drainRequired: boolean;
-  drainReason?: "requested" | "active_acp_run" | null;
+  drainReason?: HotRestartDrainReason | null;
   drainRunIds?: string[];
   requestedByRunId: string | null;
   preflightActiveRunIds: string[];
@@ -50,6 +50,8 @@ export type HotRestartIntent = {
     activeRuns: HotRestartIntentRun[];
   };
 };
+
+export type HotRestartDrainReason = "requested" | "active_acp_run" | "service_stop_kills_children";
 
 export type HotRestartReportRun = HotRestartIntentRun & {
   classification:
@@ -65,7 +67,7 @@ export type HotRestartReport = {
   requestedAt: string;
   completedAt: string;
   drainRequired: boolean;
-  drainReason: "requested" | "active_acp_run" | null;
+  drainReason: HotRestartDrainReason | null;
   previousServerPid: number;
   newServerPid: number;
   previousServerVersion: string | null;
@@ -132,7 +134,7 @@ function asBoolean(value: unknown): boolean {
 }
 
 function asDrainReason(value: unknown) {
-  return value === "requested" || value === "active_acp_run" ? value : null;
+  return value === "requested" || value === "active_acp_run" || value === "service_stop_kills_children" ? value : null;
 }
 
 function asDateString(value: unknown): string | null {
@@ -551,7 +553,7 @@ export async function writeHotRestartShutdownSnapshot(input: {
   intent: HotRestartIntent;
   signal: "SIGINT" | "SIGTERM";
   activeRuns: HotRestartIntentRun[];
-  drainReason?: "active_acp_run";
+  drainReason?: Exclude<HotRestartDrainReason, "requested">;
   drainRunIds?: string[];
   capturedAt?: Date;
   homeDir?: string;

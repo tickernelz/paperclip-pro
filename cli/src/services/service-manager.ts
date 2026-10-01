@@ -153,6 +153,7 @@ Environment="PAPERCLIP_HOME=${escapeSystemd(input.homeDir)}"
 WorkingDirectory=%h
 Restart=always
 RestartSec=5
+KillMode=mixed
 TimeoutStopSec=300
 
 [Install]
@@ -259,7 +260,7 @@ export class SystemdServiceManager implements ServiceManager {
   }
 
   async start(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "start", this.serviceName]); }
-  async stop(): Promise<void> { await this.runner("systemctl", ["--user", "stop", this.serviceName]); }
+  async stop(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "stop", this.serviceName]); }
   async restart(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "restart", this.serviceName]); }
 
   async status(): Promise<ServiceStatus> {
