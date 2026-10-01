@@ -2,10 +2,23 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { doctor } from "../commands/doctor.js";
 import { writeConfig } from "../config/store.js";
 import type { PaperclipConfig } from "../config/schema.js";
+import type * as ServiceManagerModule from "../services/service-manager.js";
+
+const detectServiceManager = vi.hoisted(() =>
+  vi.fn(async () => ({
+    supported: false as const,
+    reason: "Service management is stubbed in tests",
+  })),
+);
+
+vi.mock("../services/service-manager.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof ServiceManagerModule>()),
+  detectServiceManager,
+}));
 
 const ORIGINAL_ENV = { ...process.env };
 
@@ -100,6 +113,7 @@ describe("doctor", () => {
 
   it("re-runs repairable checks so repaired failures do not remain blocking", async () => {
     const configPath = createTempConfig(await availablePort());
+    process.env.HOME = path.dirname(path.dirname(configPath));
 
     const summary = await doctor({
       config: configPath,
@@ -110,5 +124,6 @@ describe("doctor", () => {
     expect(summary.failed).toBe(0);
     expect(summary.warned).toBe(0);
     expect(process.env.PAPERCLIP_AGENT_JWT_SECRET).toBeTruthy();
+    expect(detectServiceManager).toHaveBeenCalled();
   });
 });

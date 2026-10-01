@@ -34,6 +34,16 @@ import { systemdServiceName } from "../services/service-manager.js";
 
 const ORIGINAL_ENV = { ...process.env };
 
+function stubServiceManager() {
+  const manager = {
+    status: vi.fn(async () => ({ installed: true, active: true })),
+    stop: vi.fn(async () => undefined),
+    uninstall: vi.fn(async () => undefined),
+  };
+  const detectServiceManager = vi.fn(async () => ({ supported: true as const, manager: manager as never }));
+  return { manager, detectServiceManager };
+}
+
 describe("managed install commands", () => {
   let root: string;
 
@@ -393,6 +403,8 @@ describe("managed install commands", () => {
           uninstall: uninstallService,
         } as never,
       })),
+      platform: "linux",
+      userHomeDir: process.env.HOME!,
     });
 
     expect(uninstallService).toHaveBeenCalledOnce();
@@ -460,17 +472,21 @@ describe("managed install commands", () => {
     expect(fs.readdirSync(outside)).toEqual([]);
   });
 
-  it("refuses to uninstall an unverified cli directory", async () => {
+  it("refuses to uninstall an unverified cli directory without touching the service", async () => {
     const paths = resolveInstallStorePaths();
     const unrelatedFile = path.join(paths.cliRoot, "keep.txt");
     fs.mkdirSync(paths.cliRoot, { recursive: true });
     fs.writeFileSync(unrelatedFile, "keep");
+    const { manager, detectServiceManager } = stubServiceManager();
 
-    await expect(uninstallCommand()).rejects.toThrow("unverified install store");
+    await expect(uninstallCommand({ detectServiceManager, platform: "linux", userHomeDir: process.env.HOME! }))
+      .rejects.toThrow("unverified install store");
     expect(fs.readFileSync(unrelatedFile, "utf8")).toBe("keep");
+    expect(manager.uninstall).not.toHaveBeenCalled();
+    expect(manager.stop).not.toHaveBeenCalled();
   });
 
-  it("refuses to uninstall while another store mutation holds the lock", async () => {
+  it("refuses to uninstall while another store mutation holds the lock without touching the service", async () => {
     const paths = resolveInstallStorePaths();
     const payloadPath = payloadPathFor(paths, "npm", "2026.720.0");
     initializeInstallStore(paths);
@@ -485,14 +501,43 @@ describe("managed install commands", () => {
       installedAt: "2026-07-22T18:00:00.000Z",
       previous: [],
     }, paths);
+    const { manager, detectServiceManager } = stubServiceManager();
 
     await withInstallStoreLock(
       async () => {
-        await expect(uninstallCommand()).rejects.toThrow("already running");
+        await expect(uninstallCommand({ detectServiceManager, platform: "linux", userHomeDir: process.env.HOME! }))
+          .rejects.toThrow("already running");
       },
       paths,
     );
     expect(fs.existsSync(paths.lockPath)).toBe(false);
+    expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(payloadPath));
+    expect(manager.uninstall).not.toHaveBeenCalled();
+    expect(manager.stop).not.toHaveBeenCalled();
+  });
+
+  it("keeps the managed install when removing the service fails", async () => {
+    const paths = resolveInstallStorePaths();
+    const payloadPath = payloadPathFor(paths, "npm", "2026.720.0");
+    initializeInstallStore(paths);
+    fs.mkdirSync(payloadPath, { recursive: true });
+    flipCurrentAtomic(payloadPath, paths);
+    writeInstallManifestAtomic({
+      schemaVersion: INSTALL_MANIFEST_VERSION,
+      source: "npm",
+      version: "2026.720.0",
+      channel: "latest",
+      payloadPath,
+      installedAt: "2026-07-22T18:00:00.000Z",
+      previous: [],
+    }, paths);
+    const { manager, detectServiceManager } = stubServiceManager();
+    manager.uninstall.mockRejectedValueOnce(new Error("systemctl disable failed"));
+
+    await expect(uninstallCommand({ detectServiceManager, platform: "linux", userHomeDir: process.env.HOME! }))
+      .rejects.toThrow("systemctl disable failed");
+    expect(fs.existsSync(paths.lockPath)).toBe(false);
+    expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(payloadPath));
   });
 
   it("refuses a symlinked git payload root before downloading", async () => {

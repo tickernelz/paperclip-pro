@@ -62,16 +62,21 @@ export async function uninstallCommand(
       );
     }
   }
-  if (detection.supported) {
-    const status = await detection.manager.status();
-    if (status.installed || status.active) await detection.manager.uninstall();
-  }
 
   const paths = resolveInstallStorePaths();
   const hadStore = fs.existsSync(paths.cliRoot);
   if (hadStore) assertManagedInstallStore(paths);
   const shimRemoved = await withInstallStoreLock(async () => {
     if (hadStore) assertManagedInstallStore(paths);
+    try {
+      if (detection.supported) {
+        const status = await detection.manager.status();
+        if (status.installed || status.active) await detection.manager.uninstall();
+      }
+    } catch (error) {
+      if (!hadStore) fs.rmSync(paths.cliRoot, { recursive: true, force: true });
+      throw error;
+    }
     const removed = removeManagedShim(paths);
 
     const home = process.env.HOME;

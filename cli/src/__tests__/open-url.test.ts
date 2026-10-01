@@ -1,13 +1,16 @@
 import { EventEmitter } from "node:events";
+import type * as ChildProcess from "node:child_process";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type * as ServiceCommandGuard from "./helpers/service-command-guard.js";
 
 // Lets each test decide what the next spawned child does, while the
 // node:child_process mock below is hoisted above the board-auth import.
 const mocks = vi.hoisted(() => ({ spawn: vi.fn() }));
 
 vi.mock("node:child_process", async () => {
-  const actual = await vi.importActual<typeof import("node:child_process")>("node:child_process");
-  return { ...actual, spawn: mocks.spawn };
+  const actual = await vi.importActual<typeof ChildProcess>("node:child_process");
+  const { guardChildProcess } = await vi.importActual<typeof ServiceCommandGuard>("./helpers/service-command-guard.js");
+  return guardChildProcess({ ...actual, spawn: mocks.spawn as unknown as typeof actual.spawn });
 });
 
 import { openUrl } from "../client/board-auth.js";
