@@ -69,6 +69,7 @@ import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-ut
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 import { writeOmpToolGuardExtension, type OmpToolGuardExtension } from "./tool-guard.js";
+import { prependPythonPath, writeOmpPythonEnvBridge, type OmpPythonEnvBridge } from "./python-env.js";
 import {
   PAPERCLIP_MCP_BIN,
   PAPERCLIP_MCP_CREDENTIAL_CODE,
@@ -560,6 +561,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   let settingsOverlay: OmpSettingsOverlay | null = null;
   let mcpExtension: PaperclipMcpExtension | null = null;
   let toolGuardExtension: OmpToolGuardExtension | null = null;
+  let pythonEnvBridge: OmpPythonEnvBridge | null = null;
   try {
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
@@ -852,6 +854,20 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       timeoutSec,
       graceSec,
     });
+    pythonEnvBridge = await writeOmpPythonEnvBridge({
+      runId,
+      target: runtimeTarget,
+      remote,
+      env: invocationEnv,
+      remoteRootDir: runtimeRootDir,
+      cwd: remote ? effectiveExecutionCwd : cwd,
+      timeoutSec,
+      graceSec,
+    });
+    if (!remote) {
+      invocationEnv.PYTHONPATH = prependPythonPath(pythonEnvBridge.dir, invocationEnv.PYTHONPATH, path.delimiter);
+    }
+    const launchOmp = pythonEnvBridge.launch;
     const mcpArmed = mcpEnabled && mcpExtension !== null;
     const paperclipAccess: PaperclipAccessMode = mcpArmed ? "mcp" : "rest";
 
@@ -1016,12 +1032,13 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const releaseSteerTarget = steerSession
         ? registerAdapterSteerTarget(runId, steerSession)
         : null;
+      const launch = launchOmp(command, args);
       try {
         if (rpcActive && steerSession) {
           const rpcRun = await runOmpRpcSession({
             runId,
-            command,
-            args,
+            command: launch.command,
+            args: launch.args,
             cwd,
             env: invocationEnv,
             timeoutSec,
@@ -1038,7 +1055,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           rpcPromptError = rpcRun.promptError;
           rpcProtocolVersion = rpcRun.protocolVersion;
         } else {
-          proc = await runAdapterExecutionTargetProcess(runId, runtimeTarget, command, args, {
+          proc = await runAdapterExecutionTargetProcess(runId, runtimeTarget, launch.command, launch.args, {
             cwd,
             env: invocationEnv,
             timeoutSec,
@@ -1214,6 +1231,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       await settingsOverlay?.cleanup().catch(() => {});
       await mcpExtension?.cleanup().catch(() => {});
       await toolGuardExtension?.cleanup().catch(() => {});
+      await pythonEnvBridge?.cleanup().catch(() => {});
       await preparedConfig.cleanup();
     }
   }

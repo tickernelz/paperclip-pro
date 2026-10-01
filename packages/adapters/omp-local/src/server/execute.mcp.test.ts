@@ -15,6 +15,7 @@ vi.mock("./paperclip-mcp.js", async (importOriginal) => {
 
 import { execute } from "./execute.js";
 import { OMP_TOOL_GUARD_FILE_NAME } from "./tool-guard.js";
+import { OMP_PYTHON_ENV_FILE_NAME, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME } from "./python-env.js";
 import {
   PAPERCLIP_MCP_BIN,
   PAPERCLIP_MCP_PACKAGE,
@@ -40,6 +41,7 @@ interface Invocation {
   env: Record<string, string>;
   extensionDirs: string[];
   toolGuardPath: string | null;
+  pythonEnv: { dir: string; dataMode: number; data: Record<string, string>; hasSitecustomize: boolean } | null;
   mcpDir: string | null;
   mcpServer: Record<string, unknown> | null;
   systemPrompt: string;
@@ -88,6 +90,19 @@ describe("OMP local Paperclip MCP wiring", () => {
         mcpServer = (JSON.parse(raw) as { mcpServers: Record<string, Record<string, unknown>> })
           .mcpServers.paperclip ?? null;
       }
+      const pythonDir = (options.env.PYTHONPATH ?? "").split(path.delimiter)[0] ?? "";
+      const dataFile = path.join(pythonDir, OMP_PYTHON_ENV_FILE_NAME);
+      const dataStat = pythonDir ? await fs.stat(dataFile).catch(() => null) : null;
+      const pythonEnv = dataStat
+        ? {
+            dir: pythonDir,
+            dataMode: dataStat.mode & 0o777,
+            data: JSON.parse(await fs.readFile(dataFile, "utf8")) as Record<string, string>,
+            hasSitecustomize: await fs
+              .access(path.join(pythonDir, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME))
+              .then(() => true, () => false),
+          }
+        : null;
       const promptIndex = args.indexOf("--append-system-prompt");
       captured = {
         args,
@@ -96,6 +111,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         toolGuardPath,
         mcpDir,
         mcpServer,
+        pythonEnv,
         systemPrompt: promptIndex >= 0 ? (args[promptIndex + 1] ?? "") : "",
         userPrompt: args.at(-1) ?? "",
       };
@@ -186,6 +202,30 @@ describe("OMP local Paperclip MCP wiring", () => {
     const invocation = await run({});
     expect(invocation.toolGuardPath).toBeTruthy();
     await expect(fs.access(invocation.toolGuardPath as string)).rejects.toThrow();
+  });
+
+  it("hands the Python kernel the run's PAPERCLIP_* env through a private sitecustomize dir", async () => {
+    const previous = process.env.PYTHONPATH;
+    process.env.PYTHONPATH = "/opt/existing-site";
+    try {
+      const invocation = await run({});
+      const bridge = invocation.pythonEnv;
+      expect(bridge).not.toBeNull();
+      expect(invocation.env.PYTHONPATH).toBe([bridge!.dir, "/opt/existing-site"].join(path.delimiter));
+      expect(bridge!.hasSitecustomize).toBe(true);
+      expect(bridge!.dataMode).toBe(0o600);
+      const forwarded = Object.fromEntries(
+        Object.entries(invocation.env).filter(([key]) => key.startsWith("PAPERCLIP_")),
+      );
+      expect(bridge!.data).toEqual(forwarded);
+      expect(bridge!.data.PAPERCLIP_API_KEY).toBe("run-jwt");
+      expect(invocation.args.join("\n")).not.toContain("run-jwt");
+      expect(invocation.env.PYTHONPATH).not.toContain("run-jwt");
+      await expect(fs.access(bridge!.dir)).rejects.toThrow();
+    } finally {
+      if (previous === undefined) delete process.env.PYTHONPATH;
+      else process.env.PYTHONPATH = previous;
+    }
   });
 
   it("falls back to the bundled stdio server when configured", async () => {
