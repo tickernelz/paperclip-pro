@@ -32,6 +32,7 @@ import path from "node:path";
 import fs from "node:fs";
 import crypto from "node:crypto";
 import type { Db } from "@tickernelz/paperclip-pro-db";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { pluginRegistryService } from "../services/plugin-registry.js";
 import { logger } from "../middleware/logger.js";
 import { assertCompanyAccess } from "./authz.js";
@@ -243,18 +244,9 @@ export function pluginUiStaticRoutes(db: Db, options: PluginUiStaticRouteOptions
       return;
     }
 
-    // Step 1: Look up the plugin
     let plugin = null;
-    try {
+    if (isUuidLike(pluginId)) {
       plugin = await registry.getById(pluginId);
-    } catch (error) {
-      const maybeCode =
-        typeof error === "object" && error !== null && "code" in error
-          ? (error as { code?: unknown }).code
-          : undefined;
-      if (maybeCode !== "22P02") {
-        throw error;
-      }
     }
     if (!plugin) {
       plugin = await registry.getByKey(pluginId);
