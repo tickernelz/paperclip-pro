@@ -353,7 +353,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
       assigneeAgentId: agentId, executionRunId: runningRunId, checkoutRunId: runningRunId,
     });
     const result = await recoveryService(db, { enqueueWakeup: vi.fn() }).sweepStaleIssueLocks();
-    expect(result).toEqual({ cleared: 0, issueIds: [], terminalizedRunIds: [] });
+    expect(result).toEqual({ cleared: 0, issueIds: [], errored: 0, terminalizedRunIds: [] });
     expect(await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns)
       .where(eq(heartbeatRuns.id, runningRunId))).toEqual([{ status: "running" }]);
     expect(await db.select({ executionRunId: issues.executionRunId }).from(issues)
@@ -382,7 +382,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         }).where(eq(heartbeatRuns.id, runningRunId));
       },
     }).sweepStaleIssueLocks();
-    expect(result).toEqual({ cleared: 0, issueIds: [], terminalizedRunIds: [] });
+    expect(result).toEqual({ cleared: 0, issueIds: [], errored: 0, terminalizedRunIds: [] });
     expect(await db.select({ status: heartbeatRuns.status }).from(heartbeatRuns)
       .where(eq(heartbeatRuns.id, runningRunId))).toEqual([{ status: "running" }]);
     expect(mockTelemetryClient.track).not.toHaveBeenCalled();
@@ -422,7 +422,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
 
     const result = await heartbeatService(db).sweepStaleIssueLocks();
 
-    expect(result).toEqual({ cleared: 0, issueIds: [], terminalizedRunIds: [] });
+    expect(result).toEqual({ cleared: 0, issueIds: [], errored: 0, terminalizedRunIds: [] });
     await expect(db.select({ status: heartbeatRuns.status })
       .from(heartbeatRuns)
       .where(eq(heartbeatRuns.id, runningRunId)))
@@ -464,6 +464,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     expect(result).toEqual({
       cleared: 0,
       issueIds: [],
+      errored: 0,
       terminalizedRunIds: [],
     });
     await expect(db.select({ status: heartbeatRuns.status })
@@ -677,6 +678,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     await expect(sweep).resolves.toEqual({
       cleared: 0,
       issueIds: [],
+      errored: 0,
       terminalizedRunIds: [],
     });
     await expect(

@@ -449,6 +449,63 @@ function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
 }
 
+const DATABASE_SESSION_FAILURE_CODES: Record<string, true> = {
+  CONNECT_TIMEOUT: true,
+  CONNECTION_CLOSED: true,
+  CONNECTION_ENDED: true,
+  CONNECTION_DESTROYED: true,
+  ECONNREFUSED: true,
+  ECONNRESET: true,
+  ETIMEDOUT: true,
+  EPIPE: true,
+  EHOSTUNREACH: true,
+  ENETUNREACH: true,
+  ENOTFOUND: true,
+  EAI_AGAIN: true,
+};
+const DATABASE_SESSION_FAILURE_SQLSTATE_RE = /^(?:(?:08|25|53)[0-9A-Z]{3}|57P[0-9A-Z]{2})$/;
+
+function isDatabaseSessionFailure(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4 && current && typeof current === "object"; depth += 1) {
+    const code = "code" in current ? current.code : undefined;
+    if (
+      typeof code === "string" &&
+      (DATABASE_SESSION_FAILURE_CODES[code] || DATABASE_SESSION_FAILURE_SQLSTATE_RE.test(code))
+    ) {
+      return true;
+    }
+    current = "cause" in current ? current.cause : undefined;
+  }
+  return false;
+}
+
+function issueScope(issue: { id: string; companyId: string }) {
+  return { issueId: issue.id, companyId: issue.companyId };
+}
+
+async function reconcileEachCandidate<T>(
+  loop: string,
+  candidates: readonly T[],
+  scopeOf: (candidate: T) => Record<string, string>,
+  reconcile: (candidate: T) => Promise<void>,
+) {
+  let errored = 0;
+  for (const candidate of candidates) {
+    try {
+      await reconcile(candidate);
+    } catch (error) {
+      if (isDatabaseSessionFailure(error)) throw error;
+      errored += 1;
+      logger.error(
+        { err: error, loop, ...scopeOf(candidate) },
+        "recovery loop failed for one candidate; continuing with the next",
+      );
+    }
+  }
+  return errored;
+}
+
 function summarizeRunFailureForIssueComment(run: LatestIssueRun) {
   if (!run) return null;
 
@@ -2163,14 +2220,14 @@ export function recoveryService(
     const issueIds: string[] = [];
     const seen = new Set<string>();
 
-    for (const candidate of candidates) {
-      if (seen.has(candidate.id)) continue;
+    const errored = await reconcileEachCandidate("unassigned_blocking_issues", candidates, issueScope, async (candidate) => {
+      if (seen.has(candidate.id)) return;
       seen.add(candidate.id);
 
       const creatorAgentId = candidate.createdByAgentId;
       if (!creatorAgentId) {
         skipped += 1;
-        continue;
+        return;
       }
       const creatorAgent = await getAgent(creatorAgentId);
       if (
@@ -2179,7 +2236,7 @@ export function recoveryService(
         !(await isAgentInvokable(creatorAgent))
       ) {
         skipped += 1;
-        continue;
+        return;
       }
 
       const relations = await issuesSvc.getRelationSummaries(candidate.id);
@@ -2190,7 +2247,7 @@ export function recoveryService(
       });
       if (!updated) {
         skipped += 1;
-        continue;
+        return;
       }
 
       await issuesSvc.addComment(
@@ -2252,9 +2309,9 @@ export function recoveryService(
       } else {
         skipped += 1;
       }
-    }
+    });
 
-    return { assigned, skipped, issueIds };
+    return { assigned, skipped, errored, issueIds };
   }
 
   async function getCompanyIssuePrefix(companyId: string) {
@@ -3423,9 +3480,10 @@ export function recoveryService(
       escalated: 0,
       resolved: 0,
       skipped: 0,
+      errored: 0,
       issueIds: [] as string[],
     };
-    for (const { action, issue } of rows) {
+    result.errored = await reconcileEachCandidate("active_recovery_actions", rows, ({ issue }) => issueScope(issue), async ({ action, issue }) => {
       const wakePolicy = parseObject(action.wakePolicy);
       const wakePolicyType = readNonEmptyString(wakePolicy.type);
       if (
@@ -3433,7 +3491,7 @@ export function recoveryService(
         wakePolicyType !== "bounded_owner_disposition_repair" &&
         action.ownerType !== "board"
       ) {
-        continue;
+        return;
       }
 
       if (issue.status === "done" || issue.status === "cancelled") {
@@ -3449,14 +3507,14 @@ export function recoveryService(
           result.resolved += 1;
           result.issueIds.push(issue.id);
         }
-        continue;
+        return;
       }
 
       // A queued comment or healthy child cannot establish what the stopped
       // provider already did. Only execution reconciliation can clear this hold.
       if (requiresExecutionReconciliation(action.cause)) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       const [sourceState, healthyChildren, hasNewSourcePath] =
@@ -3503,7 +3561,7 @@ export function recoveryService(
           result.resolved += 1;
           result.issueIds.push(issue.id);
         }
-        continue;
+        return;
       }
 
       if (wakePolicyType === "bounded_owner_disposition_repair") {
@@ -3516,7 +3574,7 @@ export function recoveryService(
           )
         ) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         const latestRun = await latestRecoveryActionRun(action);
@@ -3539,15 +3597,15 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
 
-      if (action.ownerType === "board") continue;
+      if (action.ownerType === "board") return;
 
       // Legacy takeover actions remain readable and resolvable, but recovery no
       // longer schedules another agent-owned wake for them.
       result.skipped += 1;
-    }
+    });
     return result;
   }
 
@@ -4306,6 +4364,7 @@ export function recoveryService(
       assigneeNotSchedulableExempted: 0,
       onboardingFirstTaskExempted: 0,
       skipped: 0,
+      errored: 0,
       issueIds: [] as string[],
     };
 
@@ -4333,12 +4392,12 @@ export function recoveryService(
       }
     }
 
-    for (const issue of candidates) {
+    result.errored = await reconcileEachCandidate("stranded_assigned_issues", candidates, issueScope, async (issue) => {
       if (issue.originKind === "chat_channel") {
         await settleSlackConversation(db, issue.companyId, issue.id);
         const [current] = await db.select({ externalConversationState: externalConversationStateSql() })
           .from(issues).where(and(eq(issues.companyId, issue.companyId), eq(issues.id, issue.id)));
-        if (current?.externalConversationState === "waiting") { result.skipped += 1; continue; }
+        if (current?.externalConversationState === "waiting") { result.skipped += 1; return; }
       }
       if (issue.conversationAgentId) {
         const lastRun = await getLatestIssueRun(issue.companyId, issue.id);
@@ -4348,12 +4407,12 @@ export function recoveryService(
             if (current) Object.assign(issue, current);
           }
         }
-        if (!(await instanceSettingsService(db).getExperimental()).enableAgentChat) { result.skipped += 1; continue; }
+        if (!(await instanceSettingsService(db).getExperimental()).enableAgentChat) { result.skipped += 1; return; }
         {
           await deliverConversationComments(db, issue, deps.enqueueWakeup);
         }
       }
-      if (isWaitingConversation(issue)) { result.skipped += 1; continue; }
+      if (isWaitingConversation(issue)) { result.skipped += 1; return; }
       const executionState = issue.status === "in_review"
         ? parseIssueExecutionState(issue.executionState)
         : null;
@@ -4371,7 +4430,7 @@ export function recoveryService(
           : issue.assigneeAgentId;
       if (!agentId) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       // An unfinished durable session goal owns its continuation lifecycle.
@@ -4382,7 +4441,7 @@ export function recoveryService(
         unfinishedGoalBindings.has(`${issue.companyId}:${issue.id}:${agentId}`)
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       let latestRun = await getLatestIssueRun(issue.companyId, issue.id);
@@ -4396,7 +4455,7 @@ export function recoveryService(
         parseObject(latestRun.resultJson).finalizationReasonCode === "conversation_turn_finished"
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       const agent = await getAgent(agentId);
@@ -4411,7 +4470,7 @@ export function recoveryService(
         (await hasCurrentNativePassiveWait(issue, latestRun))
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
       if (issue.status !== "in_review" && !agentInvokable) {
         const classification = classifyContinuationFailure(latestRun);
@@ -4444,7 +4503,7 @@ export function recoveryService(
             result.skipped += 1;
           }
         }
-        continue;
+        return;
       }
 
       if (
@@ -4455,12 +4514,12 @@ export function recoveryService(
         )
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       if (await hasPendingWakeInteraction(issue.companyId, issue.id)) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       // A board-owned recovery action is already the durable, human-owned
@@ -4473,7 +4532,7 @@ export function recoveryService(
       );
       if (activeRecoveryAction?.ownerType === "board") {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       if (
@@ -4485,7 +4544,7 @@ export function recoveryService(
         )
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       const participantLatestRunForRecovery =
@@ -4512,11 +4571,11 @@ export function recoveryService(
         ).kind !== "clear"
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
       if (isOperatorCancelledRun(executionRecoverySource, agentId)) {
         result.operatorCancelExempted += 1;
-        continue;
+        return;
       }
       if (
         executionRecoverySource &&
@@ -4543,7 +4602,7 @@ export function recoveryService(
           });
           result.escalated += 1;
           result.issueIds.push(issue.id);
-          continue;
+          return;
         }
       }
       if (await isInvocationBudgetBlocked(issue, agentId)) {
@@ -4579,7 +4638,7 @@ export function recoveryService(
             result.skipped += 1;
           }
         }
-        continue;
+        return;
       }
       const nativeUnblockAction = await nativeBlockedUnblockAction(
         issue,
@@ -4602,14 +4661,14 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
       if (
         latestRun?.status === "succeeded" &&
         (await hasPersistedDurableWaitPath(issue, latestRun))
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
       const recoveryNow = new Date();
       const providerQuotaMonitorRun =
@@ -4624,7 +4683,7 @@ export function recoveryService(
         )
       ) {
         result.skipped += 1;
-        continue;
+        return;
       }
       if (
         isStrandedIssueRecoveryIssue(issue) &&
@@ -4641,7 +4700,7 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
 
       const adapterFailureClassification =
@@ -4654,7 +4713,7 @@ export function recoveryService(
         const targetAgentId = getAdapterFailureRecoveryTargetAgentId(issue);
         if (!targetAgentId || latestRun.agentId !== targetAgentId) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         if (adapterFailureClassification.kind === "provider_quota") {
@@ -4670,10 +4729,10 @@ export function recoveryService(
             );
             result.providerQuotaMonitored += 1;
             result.issueIds.push(issue.id);
-            continue;
+            return;
           }
           result.skipped += 1;
-          continue;
+          return;
         } else {
           const updated = await escalateStrandedAssignedIssue({
             issue,
@@ -4694,7 +4753,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
       }
 
@@ -4731,17 +4790,17 @@ export function recoveryService(
         if (!successfulRunSinceResolution) {
           if (!agentInvokable) {
             result.skipped += 1;
-            continue;
+            return;
           }
 
           if (await hasQueuedIssueWake(issue.companyId, issue.id, agentId)) {
             result.skipped += 1;
-            continue;
+            return;
           }
 
           if (await isInvocationBudgetBlocked(issue, agentId)) {
             result.skipped += 1;
-            continue;
+            return;
           }
 
           const latestPostResolutionRun = await getLatestIssueRunSince(
@@ -4758,7 +4817,7 @@ export function recoveryService(
             if (resolved) {
               result.waitingOnReviewResolved += 1;
               result.issueIds.push(issue.id);
-              continue;
+              return;
             }
             const outcome = await reconcileDispositionRepair(
               issue,
@@ -4777,7 +4836,7 @@ export function recoveryService(
             } else {
               result.skipped += 1;
             }
-            continue;
+            return;
           }
           const { consecutive } = legacyReviewParkAttempts;
           if (
@@ -4788,7 +4847,7 @@ export function recoveryService(
             if (resolved) {
               result.waitingOnReviewResolved += 1;
               result.issueIds.push(issue.id);
-              continue;
+              return;
             }
 
             const updated = await escalateStrandedAssignedIssue({
@@ -4806,7 +4865,7 @@ export function recoveryService(
             } else {
               result.skipped += 1;
             }
-            continue;
+            return;
           }
 
           const queued = await enqueueStrandedIssueRecovery({
@@ -4837,14 +4896,14 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
       }
 
       if (issue.status === "in_review") {
         if (!participantAgentId || !pendingExecutionState) {
           result.skipped += 1;
-          continue;
+          return;
         }
         const participantLatestRun = participantLatestRunForRecovery;
 
@@ -4854,7 +4913,7 @@ export function recoveryService(
         ) {
           if (!agentInvokable && isAssigneeLifecycleBlocked(agentInvokability)) {
             result.assigneeNotSchedulableExempted += 1;
-            continue;
+            return;
           }
           if (!agentInvokable) {
             const updated = await escalateStrandedAssignedIssue({
@@ -4873,7 +4932,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         const participantAdapterFailureClassification =
@@ -4901,7 +4960,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
         if (
           participantAdapterFailureClassification?.kind ===
@@ -4927,7 +4986,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (!agentInvokable) {
@@ -4944,7 +5003,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (
@@ -4966,7 +5025,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (
@@ -4977,12 +5036,12 @@ export function recoveryService(
           )
         ) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         if (await isInvocationBudgetBlocked(issue, participantAgentId)) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         const reviewOutcome: { retryExhausted?: boolean } = {};
@@ -5031,7 +5090,7 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
 
       if (issue.status === "todo") {
@@ -5044,17 +5103,17 @@ export function recoveryService(
           // as stranded).
           if (await isOnboardingFirstTaskAwaitingUser(issue)) {
             result.onboardingFirstTaskExempted += 1;
-            continue;
+            return;
           }
 
           if (await hasQueuedIssueWake(issue.companyId, issue.id)) {
             result.skipped += 1;
-            continue;
+            return;
           }
 
           if (await isInvocationBudgetBlocked(issue, agentId)) {
             result.skipped += 1;
-            continue;
+            return;
           }
 
           const queued = await enqueueInitialAssignedTodoDispatch(
@@ -5067,7 +5126,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (
@@ -5075,7 +5134,7 @@ export function recoveryService(
           !(await wasTodoHandedBackDuringOrAfterLatestRun(issue, latestRun))
         ) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         if (didAutomaticRecoveryFail(latestRun, "assignment_recovery")) {
@@ -5098,12 +5157,12 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (await isInvocationBudgetBlocked(issue, agentId)) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         const dispatchOutcome: { retryExhausted?: boolean } = {};
@@ -5150,12 +5209,12 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
 
       if (!latestRun && !issue.checkoutRunId && !issue.executionRunId) {
         result.skipped += 1;
-        continue;
+        return;
       }
       if (readDispositionRepairAttempt(latestRun)) {
         const outcome = await reconcileDispositionRepair(issue, latestRun);
@@ -5169,17 +5228,17 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
       const handoffEvidence = isExhaustedSuccessfulRunHandoff(latestRun);
       if (handoffEvidence) {
         if (isPluginManagedIssueLifecycle(issue)) {
           result.skipped += 1;
-          continue;
+          return;
         }
         if (!handoffEvidence.exhausted) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         // An interrupted corrective run is not evidence that the agent could
@@ -5198,7 +5257,7 @@ export function recoveryService(
         if (latestRun?.status === "interrupted") {
           if (await isInvocationBudgetBlocked(issue, agentId)) {
             result.skipped += 1;
-            continue;
+            return;
           }
           const retried = await enqueueStrandedIssueRecovery({
             issueId: issue.id,
@@ -5211,7 +5270,7 @@ export function recoveryService(
           if (retried) {
             result.successfulRunHandoffRetried += 1;
             result.issueIds.push(issue.id);
-            continue;
+            return;
           }
         }
 
@@ -5228,7 +5287,7 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
       if (isSuccessfulInProgressContinuationRun(latestRun)) {
         const successfulRun = latestRun;
@@ -5241,13 +5300,13 @@ export function recoveryService(
         if (workspace.mode === "shared_workspace" && (await healthyOpenChildIssues(issue, true)).length > 0) {
           result.productiveContinuationObserved += 1;
           result.skipped += 1;
-          continue;
+          return;
         }
 
         if (!isProductiveContinuationRun(successfulRun)) {
           result.successfulContinuationObserved += 1;
           result.skipped += 1;
-          continue;
+          return;
         }
 
         if (isRepeatedProductiveContinuationRecovery(successfulRun)) {
@@ -5276,14 +5335,14 @@ export function recoveryService(
             } else {
               result.skipped += 1;
             }
-            continue;
+            return;
           }
           result.recentProgressExempted += 1;
         }
 
         if (await isInvocationBudgetBlocked(issue, agentId)) {
           result.skipped += 1;
-          continue;
+          return;
         }
 
         const queued = await enqueueStrandedIssueRecovery({
@@ -5300,7 +5359,7 @@ export function recoveryService(
         } else {
           result.skipped += 1;
         }
-        continue;
+        return;
       }
       if (isUnsuccessfulTerminalIssueRun(latestRun)) {
         const classification = classifyContinuationFailure(latestRun);
@@ -5312,7 +5371,7 @@ export function recoveryService(
           if (resolved) {
             result.waitingOnReviewResolved += 1;
             result.issueIds.push(issue.id);
-            continue;
+            return;
           }
 
           const outcome = await reconcileDispositionRepair(issue, latestRun);
@@ -5326,7 +5385,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (classification.kind === "non_retryable") {
@@ -5349,7 +5408,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-          continue;
+          return;
         }
 
         if (didAutomaticRecoveryFail(latestRun, "issue_continuation_needed")) {
@@ -5382,7 +5441,7 @@ export function recoveryService(
             } else {
               result.skipped += 1;
             }
-            continue;
+            return;
           }
 
           if (classification.baseBackoffMs > 0 && latestFinishedAt) {
@@ -5392,7 +5451,7 @@ export function recoveryService(
               Math.pow(2, Math.max(0, consecutive - 1));
             if (elapsed < requiredDelay) {
               result.skipped += 1;
-              continue;
+              return;
             }
           }
         }
@@ -5400,7 +5459,7 @@ export function recoveryService(
 
       if (await isInvocationBudgetBlocked(issue, agentId)) {
         result.skipped += 1;
-        continue;
+        return;
       }
 
       const recoveryOutcome: { retryExhausted?: boolean } = {};
@@ -5448,17 +5507,19 @@ export function recoveryService(
       } else {
         result.skipped += 1;
       }
-    }
+    });
 
     const orphanBlockerRecovery = await reconcileUnassignedBlockingIssues();
     result.orphanBlockersAssigned = orphanBlockerRecovery.assigned;
     result.skipped += orphanBlockerRecovery.skipped;
+    result.errored += orphanBlockerRecovery.errored;
     result.issueIds.push(...orphanBlockerRecovery.issueIds);
 
     const activeRecovery = await reconcileActiveRecoveryActions();
     result.continuationRequeued += activeRecovery.requeued;
     result.escalated += activeRecovery.escalated;
     result.skipped += activeRecovery.skipped;
+    result.errored += activeRecovery.errored;
     result.issueIds.push(...activeRecovery.issueIds);
     result.issueIds = [...new Set(result.issueIds)];
 
@@ -5479,6 +5540,7 @@ export function recoveryService(
       candidateLimitSkipped: 0,
       deferredOrFailed: 0,
       enqueueFailed: 0,
+      errored: 0,
       issueIds: [] as string[],
     };
 
@@ -5601,9 +5663,9 @@ export function recoveryService(
         companyCandidates.map((candidate) => candidate.id),
       );
 
-      for (const candidate of companyCandidates) {
+      result.errored += await reconcileEachCandidate("resolved_dependency_wake_backstop", companyCandidates, issueScope, async (candidate) => {
         const agentId = candidate.assigneeAgentId;
-        if (!agentId) continue;
+        if (!agentId) return;
 
         const readiness = readinessMap.get(candidate.id);
         const resolvedBlockerIssueId = readiness?.blockerIssueIds[0] ?? null;
@@ -5614,7 +5676,7 @@ export function recoveryService(
           !resolvedBlockerIssueId
         ) {
           result.notReadySkipped += 1;
-          continue;
+          return;
         }
 
         // Level-triggered dedup: key on the full blocker set (the current ready
@@ -5636,7 +5698,7 @@ export function recoveryService(
           });
         if (existingWake) {
           result.existingWakeSkipped += 1;
-          continue;
+          return;
         }
 
         await releaseDependencyGateRecoveryHold(db, {
@@ -5658,12 +5720,12 @@ export function recoveryService(
           (await hasQueuedIssueWake(companyId, candidate.id, agentId))
         ) {
           result.livePathSkipped += 1;
-          continue;
+          return;
         }
 
         if (await hasPendingWakeInteraction(companyId, candidate.id)) {
           result.interactionSkipped += 1;
-          continue;
+          return;
         }
 
         if (
@@ -5675,7 +5737,7 @@ export function recoveryService(
           )
         ) {
           result.pauseHoldSkipped += 1;
-          continue;
+          return;
         }
 
         try {
@@ -5706,7 +5768,7 @@ export function recoveryService(
             // such as disabled wake-on-demand or concurrency gating. That is
             // not an enqueue error, but the backstop still did not heal now.
             result.deferredOrFailed += 1;
-            continue;
+            return;
           }
 
           result.healed += 1;
@@ -5737,7 +5799,7 @@ export function recoveryService(
             "failed to enqueue dependency wake from issue graph liveness backstop",
           );
         }
-      }
+      });
     }
 
     if (result.healed > 0) {
@@ -6048,6 +6110,7 @@ export function recoveryService(
     const result = {
       cleared: 0,
       issueIds: [] as string[],
+      errored: 0,
       terminalizedRunIds: [] as string[],
     };
 
@@ -6123,15 +6186,20 @@ export function recoveryService(
     // can no longer reach a terminal status on its own. This lets the sweep
     // clear the lock in the same pass instead of waiting for the run to reach a
     // terminal status by another route.
-    for (const row of runRows) {
-      const outcome = await terminalizeOrphanedRunningRun(row, {
-        referencingIssueTerminalStatus:
-          issueTerminalStatusByRunId.get(row.id) ?? null,
-        runReferencedByActiveIssue: runIdsReferencedByActiveIssue.has(row.id),
-      });
-      runStatusById.set(row.id, outcome.status);
-      if (outcome.terminalized) result.terminalizedRunIds.push(row.id);
-    }
+    result.errored += await reconcileEachCandidate(
+      "stale_issue_lock_run_terminalization",
+      runRows,
+      (row) => ({ runId: row.id, companyId: row.companyId }),
+      async (row) => {
+        const outcome = await terminalizeOrphanedRunningRun(row, {
+          referencingIssueTerminalStatus:
+            issueTerminalStatusByRunId.get(row.id) ?? null,
+          runReferencedByActiveIssue: runIdsReferencedByActiveIssue.has(row.id),
+        });
+        runStatusById.set(row.id, outcome.status);
+        if (outcome.terminalized) result.terminalizedRunIds.push(row.id);
+      },
+    );
 
     const isCleanable = (runId: string | null) => {
       if (!runId) return true;
@@ -6140,12 +6208,12 @@ export function recoveryService(
       return TERMINAL_HEARTBEAT_RUN_STATUSES.has(status);
     };
 
-    for (const issue of candidates) {
+    result.errored += await reconcileEachCandidate("stale_issue_lock_clear", candidates, issueScope, async (issue) => {
       if (
         !isCleanable(issue.checkoutRunId) ||
         !isCleanable(issue.executionRunId)
       ) {
-        continue;
+        return;
       }
 
       const updated = await db
@@ -6171,7 +6239,7 @@ export function recoveryService(
         .returning({ id: issues.id })
         .then((rows) => rows[0] ?? null);
 
-      if (!updated) continue;
+      if (!updated) return;
 
       result.cleared += 1;
       result.issueIds.push(updated.id);
@@ -6192,14 +6260,15 @@ export function recoveryService(
           referencedRunStatuses: Object.fromEntries(runStatusById),
         },
       });
-    }
+    });
 
-    if (result.cleared > 0 || result.terminalizedRunIds.length > 0) {
+    if (result.cleared > 0 || result.terminalizedRunIds.length > 0 || result.errored > 0) {
       logger.warn(
         {
           cleared: result.cleared,
           issueIds: result.issueIds,
           terminalizedRunIds: result.terminalizedRunIds,
+          errored: result.errored,
         },
         "swept stale issue lock columns",
       );
