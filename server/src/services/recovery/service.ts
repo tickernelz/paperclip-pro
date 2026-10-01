@@ -914,14 +914,7 @@ export function recoveryService(
     scheduleRecoveryRetry?: (
       runId: string,
     ) => Promise<typeof heartbeatRuns.$inferSelect | null>;
-    /**
-     * Whether a failed or interrupted run has consumed every bounded
-     * transient retry, so `scheduleRecoveryRetry` can no longer produce a
-     * successor for it. Lets the sweeper tell "no retry because the budget
-     * is spent" (escalate) from "no retry because something else owns the
-     * run" (leave alone).
-     */
-    transientRetryBudgetSpent?: (
+    retryBudgetSpent?: (
       run: typeof heartbeatRuns.$inferSelect,
     ) => boolean;
     liveRunExecutions?: Readonly<{ has(id: string): boolean }>;
@@ -1962,7 +1955,7 @@ export function recoveryService(
           // it reports the exhaustion instead of leaving the issue with no
           // live path (2026-09-25: three deploy restarts in a row spent the
           // budget and the issue sat in_progress with no run, unescalated).
-          if (input.outcome && deps.transientRetryBudgetSpent?.(predecessor)) {
+          if (input.outcome && deps.retryBudgetSpent?.(predecessor)) {
             input.outcome.retryExhausted = true;
           }
           return null;

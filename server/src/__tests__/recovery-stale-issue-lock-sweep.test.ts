@@ -992,7 +992,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
       expect(successor).toMatchObject({
         agentId: f.agentId,
         status: "scheduled_retry",
-        scheduledRetryReason: "transient_failure",
+        scheduledRetryReason: "process_lost",
         scheduledRetryAttempt: 1,
         sessionIdBefore: "omp-session-1",
       });
@@ -1097,18 +1097,44 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
       expect(wake?.runId ?? null).toBeNull();
     });
 
-    it("stops after the shared bounded retry budget is spent", async () => {
+    it("gives a process-gone run its own continuation after the transient retry budget is spent", async () => {
       const f = await seedOrphanedOmpRun({ scheduledRetryAttempt: 2 });
 
       const heartbeat = heartbeatService(db);
       const result = await heartbeat.sweepStaleIssueLocks();
-
       expect(result.terminalizedRunIds).toEqual([f.runningRunId]);
-      expect(await successorsOf(f.runningRunId)).toEqual([]);
+      await heartbeat.reconcileStrandedAssignedIssues();
+      await heartbeat.sweepStaleIssueLocks();
+      await heartbeat.reconcileStrandedAssignedIssues();
+
+      const successors = await successorsOf(f.runningRunId);
+      expect(successors).toHaveLength(1);
+      const [successor] = successors;
+      expect(successor).toMatchObject({
+        status: "scheduled_retry",
+        scheduledRetryReason: "process_lost",
+        scheduledRetryAttempt: 1,
+        sessionIdBefore: "omp-session-1",
+      });
+      expect(successor.contextSnapshot).toMatchObject({
+        wakeReason: "process_lost_retry",
+        originalWakeReason: "issue_commented",
+        resumeFromRunId: f.runningRunId,
+        resumeSessionDisplayId: "omp-session-1",
+        resumeSessionParams: { sessionId: "omp-session-1", cwd: "/tmp" },
+        failureRetriesBeforeProcessLoss: 2,
+        processLossContinuations: 1,
+      });
+      const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
+      expect(issue).toMatchObject({ status: "in_progress", executionRunId: successor.id });
+      expect(await db.select().from(issueComments).where(eq(issueComments.issueId, f.issueId))).toEqual([]);
     });
 
-    it("caps a crash-looping chain at two consecutive continuations", async () => {
-      const f = await seedOrphanedOmpRun();
+    it.each([
+      ["a fresh chain", 0],
+      ["a chain whose transient retry budget is spent", 2],
+    ])("caps a crash-looping chain at two consecutive continuations from %s", async (_label, scheduledRetryAttempt) => {
+      const f = await seedOrphanedOmpRun({ scheduledRetryAttempt });
       const heartbeat = heartbeatService(db);
       const chain = [f.runningRunId];
       for (let crash = 0; crash < 3; crash += 1) {
@@ -1127,6 +1153,74 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
       const runs = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, f.companyId));
       expect(runs.filter((run) => run.status === "interrupted").map((run) => run.id).sort()).toEqual([...chain].sort());
       expect(runs.filter((run) => ["queued", "scheduled_retry", "running"].includes(run.status))).toEqual([]);
+      const continuations = chain.slice(1).map((id) => runs.find((run) => run.id === id)!);
+      expect(continuations.map((run) => [run.scheduledRetryReason, run.scheduledRetryAttempt])).toEqual([
+        ["process_lost", 1],
+        ["process_lost", 2],
+      ]);
+      expect(continuations.map((run) => run.contextSnapshot?.failureRetriesBeforeProcessLoss)).toEqual([
+        scheduledRetryAttempt,
+        scheduledRetryAttempt,
+      ]);
+    });
+
+    it("caps a reaper-driven crash loop at two continuations with no successor of any reason afterwards", async () => {
+      const f = await seedOrphanedOmpRun();
+      const heartbeat = heartbeatService(db);
+      const chain = [f.runningRunId];
+      for (let crash = 0; crash < 4; crash += 1) {
+        await heartbeat.reapOrphanedRuns();
+        await heartbeat.reconcileStrandedAssignedIssues();
+        const [next] = await successorsOf(chain.at(-1)!);
+        if (!next) break;
+        chain.push(next.id);
+        await db.update(heartbeatRuns).set({
+          status: "running", startedAt: new Date(), processPid: 2_000_000_000,
+          runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
+        }).where(eq(heartbeatRuns.id, next.id));
+        await db.update(issues).set({ checkoutRunId: next.id, executionRunId: next.id }).where(eq(issues.id, f.issueId));
+      }
+
+      const runs = (await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, f.companyId)))
+        .filter((run) => run.contextSnapshot?.issueId === f.issueId);
+      expect(chain).toHaveLength(3);
+      expect(runs).toHaveLength(3);
+      expect(runs.find((run) => run.id === f.runningRunId)).toMatchObject({ status: "failed", errorCode: "process_lost" });
+      expect(chain.slice(1).map((id) => {
+        const run = runs.find((row) => row.id === id)!;
+        return [run.status, run.scheduledRetryReason, run.scheduledRetryAttempt];
+      })).toEqual([
+        ["failed", "process_lost", 1],
+        ["failed", "process_lost", 2],
+      ]);
+      expect(runs.filter((run) => ["queued", "scheduled_retry", "running"].includes(run.status))).toEqual([]);
+    });
+
+    it.each([
+      ["neither resets nor consumes a fresh transient budget", 0, { outcome: "scheduled", attempt: 1 }],
+      ["keeps a spent transient budget spent", 2, { outcome: "retry_exhausted" }],
+    ])("a transient failure after a process-loss continuation %s", async (_label, scheduledRetryAttempt, expected) => {
+      const f = await seedOrphanedOmpRun({ scheduledRetryAttempt });
+      const heartbeat = heartbeatService(db);
+      await heartbeat.sweepStaleIssueLocks();
+      const [continuation] = await successorsOf(f.runningRunId);
+      expect(continuation).toMatchObject({ scheduledRetryReason: "process_lost", scheduledRetryAttempt: 1 });
+      await db.update(heartbeatRuns).set({
+        status: "failed", startedAt: new Date(), finishedAt: new Date(), errorCode: "adapter_failed",
+        error: "upstream reset",
+        resultJson: { conversationContinuation: "continue_conversation_v1", errorFamily: "transient_upstream" },
+      }).where(eq(heartbeatRuns.id, continuation.id));
+
+      const scheduled = await heartbeat.scheduleBoundedRetry(continuation.id);
+
+      expect(scheduled).toMatchObject(expected);
+      const retries = await successorsOf(continuation.id);
+      if (expected.outcome === "scheduled") {
+        expect(retries).toHaveLength(1);
+        expect(retries[0]).toMatchObject({ scheduledRetryReason: "transient_failure", scheduledRetryAttempt: 1 });
+      } else {
+        expect(retries).toEqual([]);
+      }
     });
   });
 });

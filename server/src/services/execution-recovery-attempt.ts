@@ -15,6 +15,17 @@ export function executionFailureRetryCount(run: {
     const count = run.contextSnapshot?.failureRetriesBeforeWorkspaceWait;
     if (typeof count === "number" && Number.isInteger(count) && count >= 0) return count;
   }
+  if (run.scheduledRetryReason === "process_lost") {
+    const count = run.contextSnapshot?.failureRetriesBeforeProcessLoss;
+    if (typeof count === "number" && Number.isInteger(count) && count >= 0) return count;
+  }
   // Historical ambiguous counters remain conservative rather than resetting.
   return run.scheduledRetryAttempt ?? 0;
+}
+
+export function processLossContinuationCount(run: {
+  contextSnapshot?: Record<string, unknown> | null;
+}): number {
+  const count = run.contextSnapshot?.processLossContinuations;
+  return typeof count === "number" && Number.isInteger(count) && count >= 0 ? count : 0;
 }

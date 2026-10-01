@@ -34,7 +34,10 @@ import {
   registerAdapterExecutionControl,
   waitForAdapterStop,
 } from "./adapter-execution-control.js";
-import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
+import {
+  executionFailureRetryCount,
+  processLossContinuationCount,
+} from "./execution-recovery-attempt.js";
 import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation } from "./execution-continuation.js";
@@ -864,6 +867,15 @@ const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_JITTER_RATIO = 0;
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON = "transient_failure";
 const BOUNDED_TRANSIENT_HEARTBEAT_RETRY_WAKE_REASON = "transient_failure_retry";
 const PROCESS_LOST_RETRY_WAKE_REASON = "process_lost_retry";
+const PROCESS_LOSS_RETRY_REASON = "process_lost";
+const PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS = 2;
+const PROCESS_LOSS_CONTINUATION_DELAY_MS = 30_000;
+const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
+  orphaned_running_run: true,
+  server_shutdown_interrupted: true,
+  process_lost: true,
+  [DETACHED_PROCESS_ERROR_CODE]: true,
+};
 function isTransientWorkspaceGitScanCode(code: string | null | undefined): boolean {
   return code === WORKSPACE_GIT_SCAN_ERROR_CODES.timeout || code === WORKSPACE_GIT_SCAN_ERROR_CODES.saturated;
 }
@@ -9785,15 +9797,15 @@ export function heartbeatService(
       if (!run) return null;
       const agent = await getAgent(run.agentId);
       if (!agent || agent.companyId !== run.companyId) return null;
+      if (PROCESS_LOSS_ERROR_CODES[run.errorCode ?? ""])
+        return enqueueProcessLossRetry(run, agent, new Date());
       const result = await scheduleBoundedRetryForRun(run, agent);
       return result.outcome === "scheduled" ? result.run : null;
     },
-    // Mirrors scheduleBoundedRetryForRun's transient budget check: a failed
-    // or interrupted run that has already consumed every bounded transient
-    // attempt cannot be retried again through this lane.
-    transientRetryBudgetSpent: (run) =>
-      executionFailureRetryCount(run) >=
-      BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+    retryBudgetSpent: (run) =>
+      PROCESS_LOSS_ERROR_CODES[run.errorCode ?? ""]
+        ? processLossContinuationCount(run) >= PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS
+        : executionFailureRetryCount(run) >= BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
     continueProcessGoneRun,
   });
   const runDispatch = createRunDispatch(db, {
@@ -9997,10 +10009,14 @@ export function heartbeatService(
         ));
         const agent = source ? await getAgent(source.agentId) : null;
         if (source && agent && agent.companyId === source.companyId) {
-          await scheduleBoundedRetryForRun(source, agent, effect.reviewParticipant ? {
-            retryReason: EXECUTION_REVIEW_PARTICIPANT_RECOVERY_RETRY_REASON,
-            wakeReason: EXECUTION_REVIEW_PARTICIPANT_RECOVERY_WAKE_REASON,
-          } : undefined);
+          if (PROCESS_LOSS_ERROR_CODES[source.errorCode ?? ""]) {
+            await enqueueProcessLossRetry(source, agent, new Date());
+          } else {
+            await scheduleBoundedRetryForRun(source, agent, effect.reviewParticipant ? {
+              retryReason: EXECUTION_REVIEW_PARTICIPANT_RECOVERY_RETRY_REASON,
+              wakeReason: EXECUTION_REVIEW_PARTICIPANT_RECOVERY_WAKE_REASON,
+            } : undefined);
+          }
         }
       } else if (effect.kind === "run_queued") {
         publishLiveEvent({
@@ -14628,16 +14644,19 @@ export function heartbeatService(
     now: Date,
     opts?: { wakeReason?: string },
   ) {
-    // Native sessions have their own fenced same-run controller. Legacy
-    // bootstrap recovery shares the durable delay and incident counter with
-    // transient retries; process loss must not open a second retry budget.
     if (run.runtimeMode === "native") return null;
     if (
       !isGracefulShutdownInterruptedRun(run) &&
       legacyExecutionNeedsReconciliation(run)
     )
       return null;
-    const scheduled = await scheduleBoundedRetryForRun(run, agent, { now, wakeReason: opts?.wakeReason });
+    const scheduled = await scheduleBoundedRetryForRun(run, agent, {
+      now,
+      wakeReason: opts?.wakeReason,
+      retryReason: PROCESS_LOSS_RETRY_REASON,
+      maxAttempts: PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS,
+      delayMs: PROCESS_LOSS_CONTINUATION_DELAY_MS,
+    });
     return scheduled.outcome === "scheduled" ? scheduled.run : null;
   }
 
@@ -15581,11 +15600,13 @@ export function heartbeatService(
       ),
     );
     const nextAttempt =
-      (retryReason === WORKSPACE_BUSY_RETRY_REASON ||
-      retryReason === AI_CONNECTION_BUSY_RETRY_REASON ||
-      retryReason === MAX_TURN_CONTINUATION_RETRY_REASON
-        ? (run.scheduledRetryAttempt ?? 0)
-        : executionFailureRetryCount(run)) + 1;
+      retryReason === PROCESS_LOSS_RETRY_REASON
+        ? processLossContinuationCount(run) + 1
+        : (retryReason === WORKSPACE_BUSY_RETRY_REASON ||
+          retryReason === AI_CONNECTION_BUSY_RETRY_REASON ||
+          retryReason === MAX_TURN_CONTINUATION_RETRY_REASON
+            ? (run.scheduledRetryAttempt ?? 0)
+            : executionFailureRetryCount(run)) + 1;
     const computedBaseSchedule =
       opts?.delayMs != null
         ? nextAttempt <= maxAttempts
@@ -15623,16 +15644,20 @@ export function heartbeatService(
     const issueId = readNonEmptyString(contextSnapshot.issueId);
 
     if (!baseSchedule) {
+      const spentAttempts =
+        retryReason === PROCESS_LOSS_RETRY_REASON
+          ? nextAttempt - 1
+          : (run.scheduledRetryAttempt ?? 0);
       const exhaustion = {
         retryReason,
-        scheduledRetryAttempt: run.scheduledRetryAttempt ?? 0,
+        scheduledRetryAttempt: spentAttempts,
         maxAttempts,
       };
       await appendRunEvent(run, {
         eventType: "lifecycle",
         stream: "system",
         level: "warn",
-        message: `Bounded retry exhausted after ${run.scheduledRetryAttempt ?? 0} scheduled attempts; no further automatic retry will be queued`,
+        message: `Bounded retry exhausted after ${spentAttempts} scheduled attempts; no further automatic retry will be queued`,
         payload: exhaustion,
         retryExhaustion: exhaustion,
       });
@@ -15822,6 +15847,14 @@ export function heartbeatService(
         ...(retryReason === AI_CONNECTION_BUSY_RETRY_REASON
           ? { failureRetriesBeforeAiConnectionWait: executionFailureRetryCount(run) }
           : {}),
+        ...(retryReason === PROCESS_LOSS_RETRY_REASON
+          ? {
+              failureRetriesBeforeProcessLoss: executionFailureRetryCount(run),
+              processLossContinuations: nextAttempt,
+            }
+          : retryReason === MAX_TURN_CONTINUATION_RETRY_REASON
+            ? { processLossContinuations: undefined }
+            : {}),
         ...(shouldQuarantineWorkspaceForRetry
           ? {
               workspaceValidationRecovery: {

@@ -30,7 +30,8 @@ const executionRunColumns = {
   contextSnapshot: sql<Record<string, unknown>>`jsonb_build_object(
     'issueId', ${heartbeatRuns.contextSnapshot}->'issueId',
     'failureRetriesBeforeAiConnectionWait', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeAiConnectionWait',
-    'failureRetriesBeforeWorkspaceWait', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeWorkspaceWait')`,
+    'failureRetriesBeforeWorkspaceWait', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeWorkspaceWait',
+    'failureRetriesBeforeProcessLoss', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeProcessLoss')`,
 };
 type Run = Pick<typeof heartbeatRuns.$inferSelect, keyof typeof executionRunColumns>;
 type Coordinator = typeof nativeRunFinalizations.$inferSelect;
