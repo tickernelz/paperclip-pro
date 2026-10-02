@@ -20,6 +20,13 @@ export interface PixelsOfficeTask {
   active: boolean;
 }
 
+export interface PixelsOfficeAgentProgress {
+  runId: string;
+  message: string | null;
+  toolName: string | null;
+  updatedAt: string;
+}
+
 export interface PixelsOfficeAgent {
   id: string;
   name: string;
@@ -32,15 +39,75 @@ export interface PixelsOfficeAgent {
   activeTaskCount: number;
   queuedTaskCount: number;
   maxConcurrentRuns: number;
+  pendingInteractionCount: number;
+  awaitingBoardCount: number;
+  budgetPaused: boolean;
+  progress: PixelsOfficeAgentProgress | null;
   tasks: PixelsOfficeTask[];
+}
+
+export const pixelsOfficeCollaborationKindSchema = z.enum(["interaction", "delegation"]);
+export type PixelsOfficeCollaborationKind = z.infer<typeof pixelsOfficeCollaborationKindSchema>;
+
+export interface PixelsOfficeCollaborationEdge {
+  fromAgentId: string;
+  toAgentId: string;
+  kind: PixelsOfficeCollaborationKind;
+  issueId: string;
+  since: string;
 }
 
 export interface PixelsOfficeSnapshot {
   companyId: string;
   agents: PixelsOfficeAgent[];
   assignments: PixelsOfficeSeatAssignment[];
+  collaboration: PixelsOfficeCollaborationEdge[];
   generatedAt: string;
 }
+
+export const PIXELS_OFFICE_TIMELINE_MAX_WINDOW_MS = 24 * 60 * 60 * 1000;
+export const PIXELS_OFFICE_TIMELINE_PAGE_LIMIT = 5000;
+
+export const pixelsOfficeTimelineEventKindSchema = z.enum([
+  "run_started",
+  "run_finished",
+  "issue_status",
+  "interaction",
+  "approval",
+  "routine",
+  "budget",
+]);
+export type PixelsOfficeTimelineEventKind = z.infer<typeof pixelsOfficeTimelineEventKindSchema>;
+
+export interface PixelsOfficeTimelineEvent {
+  at: string;
+  agentId: string | null;
+  kind: PixelsOfficeTimelineEventKind;
+  issueId?: string;
+  runId?: string;
+  status?: string;
+  otherAgentId?: string;
+}
+
+export interface PixelsOfficeTimeline {
+  from: string;
+  to: string;
+  events: PixelsOfficeTimelineEvent[];
+  nextCursor: string | null;
+}
+
+export const pixelsOfficeTimelineQuerySchema = z
+  .object({
+    from: z.string().datetime(),
+    to: z.string().datetime(),
+    cursor: z.string().min(1).max(200).optional(),
+  })
+  .strict()
+  .refine((query) => Date.parse(query.to) > Date.parse(query.from), { message: "to must be after from" })
+  .refine((query) => Date.parse(query.to) - Date.parse(query.from) <= PIXELS_OFFICE_TIMELINE_MAX_WINDOW_MS, {
+    message: "Timeline window cannot exceed 24 hours",
+  });
+export type PixelsOfficeTimelineQuery = z.infer<typeof pixelsOfficeTimelineQuerySchema>;
 
 export const pixelsOfficeSeatAssignmentSchema = z.object({
   agentId: z.string().guid(),
