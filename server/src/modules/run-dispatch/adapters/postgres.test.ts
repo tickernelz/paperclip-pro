@@ -14,6 +14,7 @@ import {
   issueRelations,
   issueRecoveryActions,
   issueTreeHolds,
+  issueThreadInteractions,
   issues,
 } from "@tickernelz/paperclip-pro-db";
 import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/paperclip-pro-shared";
@@ -56,6 +57,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
     await db.delete(documentRevisions);
     await db.delete(documents);
     await db.delete(issueTreeHolds);
+    await db.delete(issueThreadInteractions);
     await db.delete(issueRelations);
     await db.delete(issues);
     await db.delete(heartbeatRunEvents);
@@ -518,6 +520,52 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
         errorCode: "issue_terminal_status",
       });
     });
+
+    it.each([
+      { label: "pending", interactionStatus: "pending", expected: { allowed: true } },
+      {
+        label: "already accepted",
+        interactionStatus: "accepted",
+        expected: { allowed: false, errorCode: "interaction_not_pending" },
+      },
+    ])("maps an addressee scheduled retry on a $label card into the gate decision", async ({ interactionStatus, expected }) => {
+      const { companyId, agentId: assigneeAgentId } = await seedCompanyAndAgent();
+      const addresseeAgentId = randomUUID();
+      await seedAgent({ id: addresseeAgentId, companyId, name: "AddresseeCoder" });
+      const issueId = randomUUID();
+      await seedIssue({ companyId, issueId, status: "in_progress", assigneeAgentId });
+      const interactionId = randomUUID();
+      await db.insert(issueThreadInteractions).values({
+        id: interactionId,
+        companyId,
+        issueId,
+        kind: "request_confirmation",
+        status: interactionStatus,
+        addresseeAgentId,
+        createdByAgentId: assigneeAgentId,
+        payload: { version: 1, prompt: "Ship the cutover?" },
+      });
+      const runId = await seedRun({
+        companyId,
+        agentId: addresseeAgentId,
+        status: "scheduled_retry",
+        contextSnapshot: {
+          issueId,
+          interactionId,
+          wakeReason: "interaction_pending",
+          source: "issue.interaction.created",
+        },
+      });
+
+      const result = await createPostgresRunDispatchAdapter(db).evaluateScheduledRetryGate({
+        runId,
+        companyId,
+        retryReasonOverride: "other",
+        now: new Date(),
+      });
+
+      expect(result).toMatchObject(expected);
+    });
   });
 
   describe("cancelStaleQueuedRun", () => {
@@ -605,6 +653,106 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
       });
 
       expect(result).toMatchObject({
+        outcome: "cancelled",
+        errorCode: "issue_assignee_changed",
+      });
+    });
+
+    async function seedPendingInteractionAddresseeFixture(status: string) {
+      const { companyId, agentId: assigneeAgentId } = await seedCompanyAndAgent();
+      const addresseeAgentId = randomUUID();
+      await seedAgent({ id: addresseeAgentId, companyId, name: "AddresseeCoder" });
+      const issueId = randomUUID();
+      await seedIssue({ companyId, issueId, status: "in_progress", assigneeAgentId });
+      const interactionId = randomUUID();
+      await db.insert(issueThreadInteractions).values({
+        id: interactionId,
+        companyId,
+        issueId,
+        kind: "request_confirmation",
+        status,
+        addresseeAgentId,
+        createdByAgentId: assigneeAgentId,
+        payload: { version: 1, prompt: "Ship the cutover?" },
+      });
+      return { companyId, assigneeAgentId, addresseeAgentId, issueId, interactionId };
+    }
+
+    it("does not cancel an interaction_pending wake for the addressee of a still-pending card", async () => {
+      const { companyId, addresseeAgentId, issueId, interactionId } =
+        await seedPendingInteractionAddresseeFixture("pending");
+      const runId = await seedRun({
+        companyId,
+        agentId: addresseeAgentId,
+        contextSnapshot: {
+          issueId,
+          interactionId,
+          wakeReason: "interaction_pending",
+          source: "issue.interaction.created",
+        },
+      });
+
+      const outcome = await createPostgresRunDispatchAdapter(db).cancelStaleQueuedRun({
+        runId,
+        companyId,
+        expectedStatus: "queued",
+        now: new Date(),
+      });
+
+      expect(outcome).toMatchObject({ outcome: "not_stale" });
+      const persisted = await db
+        .select({ status: heartbeatRuns.status })
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.id, runId))
+        .then((rows) => rows[0]);
+      expect(persisted?.status).toBe("queued");
+    });
+
+    it("cancels an interaction_pending wake whose card was already resolved without blaming reassignment", async () => {
+      const { companyId, addresseeAgentId, issueId, interactionId } =
+        await seedPendingInteractionAddresseeFixture("accepted");
+      const runId = await seedRun({
+        companyId,
+        agentId: addresseeAgentId,
+        contextSnapshot: {
+          issueId,
+          interactionId,
+          wakeReason: "interaction_pending",
+          source: "issue.interaction.created",
+        },
+      });
+
+      const outcome = await createPostgresRunDispatchAdapter(db).cancelStaleQueuedRun({
+        runId,
+        companyId,
+        expectedStatus: "queued",
+        now: new Date(),
+      });
+
+      expect(outcome).toMatchObject({
+        outcome: "cancelled",
+        errorCode: "interaction_not_pending",
+      });
+    });
+
+    it("still cancels a non-addressee, non-comment wake with issue_assignee_changed", async () => {
+      const { companyId, issueId } = await seedPendingInteractionAddresseeFixture("pending");
+      const outsiderAgentId = randomUUID();
+      await seedAgent({ id: outsiderAgentId, companyId, name: "OutsiderCoder" });
+      const runId = await seedRun({
+        companyId,
+        agentId: outsiderAgentId,
+        contextSnapshot: { issueId, wakeReason: "issue_assigned" },
+      });
+
+      const outcome = await createPostgresRunDispatchAdapter(db).cancelStaleQueuedRun({
+        runId,
+        companyId,
+        expectedStatus: "queued",
+        now: new Date(),
+      });
+
+      expect(outcome).toMatchObject({
         outcome: "cancelled",
         errorCode: "issue_assignee_changed",
       });

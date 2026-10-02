@@ -54,6 +54,7 @@ export type ScheduledRetryGateErrorCode =
   | "budget_blocked"
   | "issue_not_found"
   | "issue_reassigned"
+  | "interaction_not_pending"
   | "issue_cancelled"
   | "issue_terminal_status"
   | "issue_not_in_progress"
@@ -97,6 +98,8 @@ export type ScheduledRetryFacts = {
   issueCheckoutRunId?: string | null;
 
   isNonAssigneeWorkspaceBusyRetry: boolean;
+  interactionPendingWakeId: string | null;
+  isPendingInteractionAddressee: boolean;
   reviewParticipant: ReviewParticipantFacts;
   activePauseHold: PauseHoldFacts | null;
   dependenciesBlocked: DependencyBlockFacts | null;
@@ -112,6 +115,7 @@ export type QueuedRunStalenessErrorCode =
   | "issue_dependencies_blocked"
   | "issue_not_found"
   | "issue_assignee_changed"
+  | "interaction_not_pending"
   | "issue_terminal_status"
   | "issue_not_in_progress"
   | "issue_execution_lock_changed"
@@ -146,6 +150,8 @@ export type QueuedRunFacts = {
   /** A connection resolution or tool refresh can resume an agent waiting in review. */
   isConnectionContinuation?: boolean;
   isInteractionWake: boolean;
+  interactionPendingWakeId: string | null;
+  isPendingInteractionAddressee: boolean;
   isAuthorizedSourceScopedRecovery: boolean;
   isNonAssigneeWorkspaceBusyRetry: boolean;
 
@@ -168,6 +174,7 @@ type OwnershipFacts = {
   issueAssigneeAgentId: string | null;
   isNonAssigneeWorkspaceBusyRetry: boolean;
   isInteractionWake?: boolean;
+  isPendingInteractionAddressee?: boolean;
   isCurrentReviewParticipant?: boolean;
   isAuthorizedSourceScopedRecovery?: boolean;
 };
@@ -183,6 +190,7 @@ function decideIssueOwnership(facts: OwnershipFacts): OwnershipOutcome {
   if (facts.issueAssigneeAgentId === facts.runAgentId) return "current_owner";
   if (facts.isNonAssigneeWorkspaceBusyRetry) return "current_owner";
   if (facts.isInteractionWake) return "current_owner";
+  if (facts.isPendingInteractionAddressee) return "current_owner";
   if (facts.isCurrentReviewParticipant) return "current_owner";
   if (facts.isAuthorizedSourceScopedRecovery) return "current_owner";
   return "reassigned";
@@ -339,6 +347,7 @@ export function decideScheduledRetryGate(
     runAgentId: facts.runAgentId,
     issueAssigneeAgentId: facts.issueAssigneeAgentId,
     isNonAssigneeWorkspaceBusyRetry: facts.isNonAssigneeWorkspaceBusyRetry,
+    isPendingInteractionAddressee: facts.isPendingInteractionAddressee,
     isCurrentReviewParticipant:
       facts.reviewParticipant.isInReview &&
       facts.reviewParticipant.hasParticipant &&
@@ -346,6 +355,21 @@ export function decideScheduledRetryGate(
       facts.reviewParticipant.participantAgentId === facts.runAgentId,
   });
   if (ownership === "reassigned") {
+    if (facts.interactionPendingWakeId) {
+      return {
+        allowed: false,
+        reason:
+          "Scheduled retry suppressed because the interaction it was addressed to is no longer pending for this agent",
+        errorCode: "interaction_not_pending",
+        issueId: facts.issueId,
+        details: {
+          issueId: facts.issueId,
+          interactionId: facts.interactionPendingWakeId,
+          addresseeAgentId: facts.runAgentId,
+          currentAssigneeAgentId: facts.issueAssigneeAgentId,
+        },
+      };
+    }
     return {
       allowed: false,
       reason: "Scheduled retry suppressed because issue ownership changed",
@@ -353,7 +377,7 @@ export function decideScheduledRetryGate(
       issueId: facts.issueId,
       details: {
         issueId: facts.issueId,
-        previousAssigneeAgentId: facts.runAgentId,
+        runAgentId: facts.runAgentId,
         currentAssigneeAgentId: facts.issueAssigneeAgentId,
       },
     };
@@ -537,7 +561,7 @@ export function decideQueuedRunStaleness(
           "Cancelled because resolved-interaction continuation issue changed assignee before the queued run could start",
         details: {
           issueId: facts.issueId,
-          previousAssigneeAgentId: facts.runAgentId,
+          runAgentId: facts.runAgentId,
           currentAssigneeAgentId: facts.issueAssigneeAgentId,
         },
       };
@@ -564,6 +588,7 @@ export function decideQueuedRunStaleness(
     issueAssigneeAgentId: facts.issueAssigneeAgentId,
     isNonAssigneeWorkspaceBusyRetry: facts.isNonAssigneeWorkspaceBusyRetry,
     isInteractionWake: facts.isInteractionWake,
+    isPendingInteractionAddressee: facts.isPendingInteractionAddressee,
     isCurrentReviewParticipant:
       facts.reviewParticipant.isInReview &&
       facts.reviewParticipant.participantIsAgent &&
@@ -571,14 +596,28 @@ export function decideQueuedRunStaleness(
     isAuthorizedSourceScopedRecovery: facts.isAuthorizedSourceScopedRecovery,
   });
   if (ownership === "reassigned") {
+    if (facts.interactionPendingWakeId) {
+      return {
+        stale: true,
+        errorCode: "interaction_not_pending",
+        reason:
+          "Cancelled because the interaction this wake was addressed to is no longer pending for this agent before the queued run could start",
+        details: {
+          issueId: facts.issueId,
+          interactionId: facts.interactionPendingWakeId,
+          addresseeAgentId: facts.runAgentId,
+          currentAssigneeAgentId: facts.issueAssigneeAgentId,
+        },
+      };
+    }
     return {
       stale: true,
       errorCode: "issue_assignee_changed",
       reason:
-        "Cancelled because issue assignee changed before the queued run could start; the new owner will be woken instead",
+        "Cancelled because issue assignee changed before the queued run could start",
       details: {
         issueId: facts.issueId,
-        previousAssigneeAgentId: facts.runAgentId,
+        runAgentId: facts.runAgentId,
         currentAssigneeAgentId: facts.issueAssigneeAgentId,
       },
     };

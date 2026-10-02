@@ -35,6 +35,8 @@ function baseGateFacts(): ScheduledRetryFacts {
     issueAssigneeAgentId: "agent-1",
     issueExecutionRunId: "run-1",
     isNonAssigneeWorkspaceBusyRetry: false,
+    interactionPendingWakeId: null,
+    isPendingInteractionAddressee: false,
     reviewParticipant: NO_PARTICIPANT,
     activePauseHold: null,
     dependenciesBlocked: null,
@@ -54,6 +56,8 @@ function baseStalenessFacts(): QueuedRunFacts {
     issueExecutionRunId: "run-1",
     isResolvedInteractionContinuation: false,
     isInteractionWake: false,
+    interactionPendingWakeId: null,
+    isPendingInteractionAddressee: false,
     isAuthorizedSourceScopedRecovery: false,
     isNonAssigneeWorkspaceBusyRetry: false,
     resumeIntent: false,
@@ -79,6 +83,53 @@ describe("decideScheduledRetryGate", () => {
       .toMatchObject({ allowed: false, errorCode: "issue_reassigned" });
     expect(decideScheduledRetryGate({ ...facts, reviewParticipant: NO_PARTICIPANT }, NOW))
       .toMatchObject({ allowed: false, errorCode: "issue_reassigned" });
+  });
+
+  it("lets a verified pending-interaction addressee retry on an issue assigned to someone else", () => {
+    const facts: ScheduledRetryFacts = {
+      ...baseGateFacts(),
+      runAgentId: "agent-b",
+      issueAssigneeAgentId: "agent-a",
+      issueExecutionRunId: null,
+      interactionPendingWakeId: "interaction-1",
+      isPendingInteractionAddressee: true,
+    };
+    expect(decideScheduledRetryGate(facts, NOW)).toEqual({ allowed: true });
+  });
+
+  it("suppresses an addressee retry whose interaction is no longer pending without blaming reassignment", () => {
+    const facts: ScheduledRetryFacts = {
+      ...baseGateFacts(),
+      runAgentId: "agent-b",
+      issueAssigneeAgentId: "agent-a",
+      issueExecutionRunId: null,
+      interactionPendingWakeId: "interaction-1",
+      isPendingInteractionAddressee: false,
+    };
+    const decision = decideScheduledRetryGate(facts, NOW);
+    expect(decision).toMatchObject({
+      allowed: false,
+      errorCode: "interaction_not_pending",
+      details: {
+        issueId: "issue-1",
+        interactionId: "interaction-1",
+        addresseeAgentId: "agent-b",
+        currentAssigneeAgentId: "agent-a",
+      },
+    });
+  });
+
+  it("names the run agent instead of claiming it was the previous assignee", () => {
+    const decision = decideScheduledRetryGate(
+      { ...baseGateFacts(), runAgentId: "agent-c", issueAssigneeAgentId: "agent-a" },
+      NOW,
+    );
+    expect(decision).toMatchObject({
+      allowed: false,
+      errorCode: "issue_reassigned",
+      details: { runAgentId: "agent-c", currentAssigneeAgentId: "agent-a" },
+    });
+    expect(decision).not.toMatchObject({ details: { previousAssigneeAgentId: "agent-c" } });
   });
 
   it("allows a run with no issueId before any issue check runs", () => {
@@ -452,6 +503,55 @@ describe("decideQueuedRunStaleness", () => {
       isAuthorizedSourceScopedRecovery: true,
     };
     expect(decideQueuedRunStaleness(facts, NOW)).toEqual({ stale: false });
+  });
+
+  it("lets a verified pending-interaction addressee run on an issue assigned to someone else", () => {
+    const facts: QueuedRunFacts = {
+      ...baseStalenessFacts(),
+      runAgentId: "agent-b",
+      issueAssigneeAgentId: "agent-a",
+      wakeReason: "interaction_pending",
+      interactionPendingWakeId: "interaction-1",
+      isPendingInteractionAddressee: true,
+    };
+    expect(decideQueuedRunStaleness(facts, NOW)).toEqual({ stale: false });
+  });
+
+  it("cancels an interaction_pending wake whose interaction is no longer pending without blaming reassignment", () => {
+    const facts: QueuedRunFacts = {
+      ...baseStalenessFacts(),
+      runAgentId: "agent-b",
+      issueAssigneeAgentId: "agent-a",
+      wakeReason: "interaction_pending",
+      interactionPendingWakeId: "interaction-1",
+      isPendingInteractionAddressee: false,
+    };
+    const decision = decideQueuedRunStaleness(facts, NOW);
+    expect(decision).toMatchObject({
+      stale: true,
+      errorCode: "interaction_not_pending",
+      details: {
+        issueId: "issue-1",
+        interactionId: "interaction-1",
+        addresseeAgentId: "agent-b",
+        currentAssigneeAgentId: "agent-a",
+      },
+    });
+    expect(decision).not.toMatchObject({ details: { previousAssigneeAgentId: "agent-b" } });
+  });
+
+  it("still cancels a non-addressee, non-interaction wake as a reassignment", () => {
+    const facts: QueuedRunFacts = {
+      ...baseStalenessFacts(),
+      runAgentId: "agent-c",
+      issueAssigneeAgentId: "agent-a",
+      wakeReason: "issue_assigned",
+    };
+    expect(decideQueuedRunStaleness(facts, NOW)).toMatchObject({
+      stale: true,
+      errorCode: "issue_assignee_changed",
+      details: { runAgentId: "agent-c", currentAssigneeAgentId: "agent-a" },
+    });
   });
 });
 

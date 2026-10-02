@@ -367,6 +367,7 @@ describeEmbeddedPostgres("attention service", () => {
       },
     ]);
 
+    const reviewerAddressedInteractionId = randomUUID();
     await db.insert(issueThreadInteractions).values([
       {
         id: randomUUID(),
@@ -381,7 +382,7 @@ describeEmbeddedPostgres("attention service", () => {
         updatedAt: new Date("2026-07-09T12:03:00.000Z"),
       },
       {
-        id: randomUUID(),
+        id: reviewerAddressedInteractionId,
         companyId,
         issueId: interactionIssueId,
         kind: "ask_user_questions",
@@ -406,6 +407,20 @@ describeEmbeddedPostgres("attention service", () => {
         updatedAt: new Date("2026-07-09T12:03:30.000Z"),
       },
     ]);
+    await db.insert(heartbeatRuns).values({
+      id: randomUUID(),
+      companyId,
+      agentId: reviewerId,
+      invocationSource: "automation",
+      status: "queued",
+      contextSnapshot: {
+        issueId: interactionIssueId,
+        interactionId: reviewerAddressedInteractionId,
+        wakeReason: "interaction_pending",
+      },
+      createdAt: new Date("2026-07-09T12:03:16.000Z"),
+      updatedAt: new Date("2026-07-09T12:03:16.000Z"),
+    });
 
     const inviteId = randomUUID();
     await db.insert(invites).values({
@@ -803,6 +818,104 @@ describeEmbeddedPostgres("attention service", () => {
       "Terminated reviewer question",
     ]));
     expect(interactionTitles).not.toContain("Active reviewer question");
+  });
+
+  describe("addressee wake coverage", () => {
+    const STALE_CARD_CREATED_AT = new Date("2026-07-09T12:00:00.000Z");
+
+    async function seedAddressedCard(input: { prefix: string; createdAt: Date }) {
+      const { companyId, reviewerId } = await seedCompany(input.prefix);
+      const issueId = await insertIssue({
+        companyId,
+        identifier: `${input.prefix}-1`,
+        title: "Needs the reviewer",
+        status: "in_progress",
+      });
+      const interactionId = randomUUID();
+      await db.insert(issueThreadInteractions).values({
+        id: interactionId,
+        companyId,
+        issueId,
+        kind: "request_confirmation",
+        status: "pending",
+        continuationPolicy: "wake_assignee",
+        addresseeAgentId: reviewerId,
+        title: "Addressed to the reviewer",
+        payload: { version: 1, prompt: "Ship the cutover?" },
+        createdAt: input.createdAt,
+        updatedAt: input.createdAt,
+      });
+      return { companyId, reviewerId, issueId, interactionId };
+    }
+
+    async function seedWakeRun(input: {
+      companyId: string;
+      agentId: string;
+      issueId: string;
+      interactionId: string;
+      status: string;
+    }) {
+      await db.insert(heartbeatRuns).values({
+        id: randomUUID(),
+        companyId: input.companyId,
+        agentId: input.agentId,
+        invocationSource: "automation",
+        status: input.status,
+        contextSnapshot: {
+          issueId: input.issueId,
+          interactionId: input.interactionId,
+          wakeReason: "interaction_pending",
+          source: "issue.interaction.created",
+        },
+        createdAt: STALE_CARD_CREATED_AT,
+        updatedAt: STALE_CARD_CREATED_AT,
+      });
+    }
+
+    async function boardInteractionTitles(companyId: string) {
+      const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+      return feed.items
+        .filter((item) => item.sourceKind === "issue_thread_interaction")
+        .map((item) => item.subject.title);
+    }
+
+    it("keeps a card hidden while the addressee still has a queued wake for it", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWC", createdAt: STALE_CARD_CREATED_AT });
+      await seedWakeRun({
+        companyId: seeded.companyId,
+        agentId: seeded.reviewerId,
+        issueId: seeded.issueId,
+        interactionId: seeded.interactionId,
+        status: "queued",
+      });
+
+      expect(await boardInteractionTitles(seeded.companyId)).not.toContain("Addressed to the reviewer");
+    });
+
+    it("surfaces a card whose only addressee wake was cancelled", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWD", createdAt: STALE_CARD_CREATED_AT });
+      await seedWakeRun({
+        companyId: seeded.companyId,
+        agentId: seeded.reviewerId,
+        issueId: seeded.issueId,
+        interactionId: seeded.interactionId,
+        status: "cancelled",
+      });
+
+      expect(await boardInteractionTitles(seeded.companyId)).toContain("Addressed to the reviewer");
+    });
+
+    it("surfaces an aged card the addressee was never woken for", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWE", createdAt: STALE_CARD_CREATED_AT });
+
+      expect(await boardInteractionTitles(seeded.companyId)).toContain("Addressed to the reviewer");
+    });
+
+    it("holds a just-created card inside the wake grace window", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWF", createdAt: new Date() });
+
+      expect(await boardInteractionTitles(seeded.companyId)).not.toContain("Addressed to the reviewer");
+    });
   });
 
   // PAP-17287: a collapsed queue row offers Accept/Reject before anything fetches

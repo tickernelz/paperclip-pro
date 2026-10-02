@@ -5,6 +5,7 @@ export const BENIGN_RUN_CANCELLATION_ERROR_CODES = new Set<string>([
   "issue_paused",
   "issue_dependencies_blocked",
   "issue_assignee_changed",
+  "interaction_not_pending",
 ]);
 
 export type StrandedScopeExemption =
