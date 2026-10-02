@@ -30,9 +30,10 @@ export class Camera implements OfficeCameraState {
   constructor(
     readonly worldWidth: number,
     readonly worldHeight: number,
+    readonly worldTop = 0,
   ) {
     this.centerX = worldWidth / 2;
-    this.centerY = worldHeight / 2;
+    this.centerY = (worldTop + worldHeight) / 2;
     this.targetX = this.centerX;
     this.targetY = this.centerY;
     this.recompute();
@@ -153,9 +154,9 @@ export class Camera implements OfficeCameraState {
         ? this.worldWidth / 2
         : Math.min(this.worldWidth - halfW, Math.max(halfW, this.centerX));
     this.centerY =
-      halfH * 2 >= this.worldHeight
-        ? this.worldHeight / 2
-        : Math.min(this.worldHeight - halfH, Math.max(halfH, this.centerY));
+      halfH * 2 >= this.worldHeight - this.worldTop
+        ? (this.worldTop + this.worldHeight) / 2
+        : Math.min(this.worldHeight - halfH, Math.max(this.worldTop + halfH, this.centerY));
     this.offsetX = Math.round(this.viewportWidth / 2 - this.centerX * this.zoom);
     this.offsetY = Math.round(this.viewportHeight / 2 - this.centerY * this.zoom);
   }

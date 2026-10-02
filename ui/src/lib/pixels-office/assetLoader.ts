@@ -279,7 +279,7 @@ export function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLay
   const tiles = Array<OfficeLayout["tiles"][number]>(cols * rows).fill(255);
   const tileColors: NonNullable<OfficeLayout["tileColors"]> = Array(cols * rows).fill(null);
   const wallColor = { h: 214, s: 30, b: -100, c: -55 };
-  const hallColor = { h: 209, s: 0, b: -16, c: -8 };
+  const hallColor = { h: 32, s: 20, b: -6, c: -42 };
   const hallFloor = 9;
 
   for (const { layout, offsetCol, offsetRow } of placements) {
@@ -323,7 +323,7 @@ export function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLay
     }
   }
 
-  tileColors[spawnTile.row * cols + spawnTile.col] = { h: 204, s: 10, b: -42, c: -32 };
+  tileColors[spawnTile.row * cols + spawnTile.col] = { h: 32, s: 20, b: -14, c: -42 };
 
   const furniture = placements.flatMap(({ layout, offsetCol, offsetRow }, index) =>
     layout.furniture.map((item) => ({
