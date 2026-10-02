@@ -24,7 +24,7 @@ import { loadStoredPoses, PoseFlusher } from './persistence';
 import type { SceneView } from './renderer';
 import { SceneRenderer } from './renderer';
 import type { StaticLayer } from './staticLayer';
-import { buildStaticLayer, staticLayerTop } from './staticLayer';
+import { buildStaticLayer, drawablesTop } from './staticLayer';
 
 const VISIT_LINGER_SEC = 3;
 const VISIT_TRAVEL_TIMEOUT_SEC = 25;
@@ -113,7 +113,7 @@ export class OfficeControllerImpl implements OfficeController {
     this.cameraState = new Camera(
       this.worldWidth,
       this.worldHeight,
-      staticLayerTop(layout, this.state.tileMap, this.state.staticFurniture),
+      Math.min(drawablesTop(this.state.staticFurniture), drawablesTop(this.state.dynamicFurniture)),
     );
     this.collectObjects(layout);
     this.flusher = new PoseFlusher(companyId, () => this.state.characters.values());

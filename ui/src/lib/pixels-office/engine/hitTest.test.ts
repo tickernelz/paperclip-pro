@@ -19,6 +19,7 @@ function character(
     tileRow: row,
     path: [],
     moveProgress: 0,
+    blockedTimer: 0,
     currentTool: null,
     palette: 0,
     hueShift: 0,

@@ -1,4 +1,6 @@
 import {
+  BLOCKED_GIVE_UP_AFTER_SEC,
+  BLOCKED_REPATH_AFTER_SEC,
   TYPE_FRAME_DURATION_SEC,
   WALK_FRAME_DURATION_SEC,
   WALK_SPEED_PX_PER_SEC,
@@ -6,8 +8,10 @@ import {
   WANDER_MOVES_BEFORE_REST_MIN,
   WANDER_PAUSE_MAX_SEC,
   WANDER_PAUSE_MIN_SEC,
+  WANDER_TARGET_ATTEMPTS,
 } from '../constants';
 import type { NavGrid } from '../layout/tileMap';
+import type { TileClaims } from './tileClaims';
 import type { CharacterSprites } from '../sprites/spriteData';
 import type { Character, Seat, SpriteData } from '../types';
 import { CharacterState, Direction, TILE_SIZE } from '../types';
@@ -57,6 +61,7 @@ export function createCharacter(
     tileRow: row,
     path: [],
     moveProgress: 0,
+    blockedTimer: 0,
     currentTool: null,
     palette,
     hueShift,
@@ -89,6 +94,7 @@ export function updateCharacter(
   dt: number,
   nav: NavGrid,
   seats: Map<string, Seat>,
+  claims: TileClaims,
 ): void {
   ch.frameTimer += dt;
 
@@ -152,8 +158,15 @@ export function updateCharacter(
           ch.wanderLimit = randomInt(WANDER_MOVES_BEFORE_REST_MIN, WANDER_MOVES_BEFORE_REST_MAX);
         }
         const tiles = nav.walkableTiles;
-        if (tiles.length > 0) {
-          const target = tiles[Math.floor(Math.random() * tiles.length)];
+        let target = null;
+        for (let attempt = 0; attempt < WANDER_TARGET_ATTEMPTS && tiles.length > 0; attempt++) {
+          const candidate = tiles[Math.floor(Math.random() * tiles.length)];
+          if (claims.isFreeFor(ch.id, candidate.col, candidate.row)) {
+            target = candidate;
+            break;
+          }
+        }
+        if (target) {
           const path = nav.findPath(ch.tileCol, ch.tileRow, target.col, target.row);
           if (path.length > 0) {
             ch.path = path;
@@ -199,6 +212,30 @@ export function updateCharacter(
 
       const nextTile = ch.path[0];
       ch.dir = directionBetween(ch.tileCol, ch.tileRow, nextTile.col, nextTile.row);
+      if (ch.moveProgress === 0 && !claims.claim(ch.id, nextTile.col, nextTile.row)) {
+        ch.blockedTimer += dt;
+        ch.frame = 1;
+        if (ch.blockedTimer < BLOCKED_REPATH_AFTER_SEC) break;
+        const goal = ch.path[ch.path.length - 1];
+        const seat = ch.seatId ? seats.get(ch.seatId) : undefined;
+        const toOwnSeat = seat !== undefined && seat.seatCol === goal.col && seat.seatRow === goal.row;
+        const detour = claims.isFreeFor(ch.id, goal.col, goal.row)
+          ? nav.findPath(ch.tileCol, ch.tileRow, goal.col, goal.row, toOwnSeat, claims.blockedFor(ch.id))
+          : [];
+        if (detour.length > 0) {
+          ch.path = detour;
+          ch.blockedTimer = 0;
+        } else if (ch.blockedTimer >= BLOCKED_GIVE_UP_AFTER_SEC) {
+          ch.path = [];
+          ch.blockedTimer = 0;
+          ch.state = CharacterState.IDLE;
+          ch.wanderTimer = randomRange(0.5, 2);
+          ch.frame = 0;
+          ch.frameTimer = 0;
+        }
+        break;
+      }
+      ch.blockedTimer = 0;
       ch.moveProgress += (WALK_SPEED_PX_PER_SEC / TILE_SIZE) * dt;
 
       const fromX = ch.tileCol * TILE_SIZE + TILE_SIZE / 2;
@@ -210,6 +247,7 @@ export function updateCharacter(
       ch.y = fromY + (toY - fromY) * t;
 
       if (ch.moveProgress >= 1) {
+        claims.release(ch.id, ch.tileCol, ch.tileRow);
         ch.tileCol = nextTile.col;
         ch.tileRow = nextTile.row;
         ch.x = toX;

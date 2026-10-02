@@ -125,6 +125,8 @@ export interface Character {
 
   moveProgress: number;
 
+  blockedTimer: number;
+
   currentTool: string | null;
 
   palette: number;

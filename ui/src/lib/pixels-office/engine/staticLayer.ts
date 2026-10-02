@@ -14,7 +14,7 @@ import type {
   TileType as TileTypeVal,
 } from '../types';
 import { TILE_SIZE, TileType } from '../types';
-import { getWallInstances, hasWallSprites, wallColorToHex } from '../wallTiles';
+import { wallColorToHex } from '../wallTiles';
 
 const CHARACTER_SPRITE_W = 16;
 const CHARACTER_SPRITE_H = 32;
@@ -65,16 +65,7 @@ export function classifyOccluders(
   return flags;
 }
 
-function staticDrawables(
-  layout: OfficeLayout,
-  tileMap: TileTypeVal[][],
-  furniture: FurnitureInstance[],
-): FurnitureInstance[] {
-  const walls = hasWallSprites() ? getWallInstances(tileMap, layout.tileColors, layout.cols) : [];
-  return walls.length > 0 ? walls.concat(furniture) : furniture;
-}
-
-function drawablesTop(drawables: FurnitureInstance[]): number {
+export function drawablesTop(drawables: readonly FurnitureInstance[]): number {
   let top = 0;
   for (const instance of drawables) {
     if (instance.y < top) top = Math.floor(instance.y);
@@ -82,20 +73,11 @@ function drawablesTop(drawables: FurnitureInstance[]): number {
   return top;
 }
 
-export function staticLayerTop(
-  layout: OfficeLayout,
-  tileMap: TileTypeVal[][],
-  furniture: FurnitureInstance[],
-): number {
-  return drawablesTop(staticDrawables(layout, tileMap, furniture));
-}
-
 export function buildStaticLayer(
   layout: OfficeLayout,
   tileMap: TileTypeVal[][],
-  furniture: FurnitureInstance[],
+  drawables: FurnitureInstance[],
 ): StaticLayer {
-  const drawables = staticDrawables(layout, tileMap, furniture);
   const originY = drawablesTop(drawables);
 
   const width = layout.cols * TILE_SIZE;
