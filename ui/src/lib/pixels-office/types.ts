@@ -62,6 +62,8 @@ export interface FurnitureInstance {
   zY: number;
 
   mirrored?: boolean;
+
+  sourceIndex?: number;
 }
 
 export interface FurnitureCatalogEntry {
@@ -140,6 +142,12 @@ export interface Character {
   wanderLimit: number;
 
   isActive: boolean;
+
+  still: boolean;
+
+  pinned: boolean;
+
+  hop: number;
 
   seatId: string | null;
 

@@ -4,7 +4,7 @@ Tanggal: 2026-10-02
 Repo: `/home/zhafron/Projects/paperclip-pro` (main `d7ecc97d2`)
 Pendahulu: `doc/plans/2026-10-01-pixels-office.md` (v1, sudah rilis 2026.1002.1)
 
-Status: **MENUNGGU PERSETUJUAN**. Selain dokumen ini, belum ada file yang diubah.
+Status: **DIIMPLEMENTASIKAN** di branch `feat/pixels-office-v2`. Hasil pengukuran ada di §11.
 
 ---
 
@@ -246,3 +246,25 @@ Script, prompt, dan aset final masuk ke `scripts/pixels-assets/` dan `ui/public/
 - Editor layout oleh user.
 - Multi-lantai dengan navigasi antar gedung (cukup overflow room hingga ~50 agent).
 - Persistensi posisi di server (keputusan interview: cukup sesi browser).
+
+## 11. Hasil terukur
+
+Skenario sama dengan §5: instance throwaway, 30 agent (10 running), Chromium headless 1440×900 DPR 1, jendela 20 detik. v1 diukur 1 kali, v2 diukur 3 kali dengan beban live yang tidak identik.
+
+| Metrik | v1 | v2 |
+|---|---|---|
+| Script (ms per detik) | 91,4 | 43,1–46,0 |
+| Task (ms per detik) | 186,6 | 95,4–102,8 |
+| Frame engine yang dirender (per detik) | tidak diukur | 30–34 |
+| Heap JS (MB) | 50,9 | 38,6–59,4 |
+| Frame engine saat tab disembunyikan (10 detik, visibility di-override) | tidak diukur | 0 |
+
+Profil CPU v2 (sampling 15 detik): ~89% idle. Fungsi dengan self time terbesar adalah `stableFingerprint` di `ui/src/lib/cross-tab-poll.ts`, yaitu plumbing polling lintas tab, bukan engine. Biaya `createLucideIcon` belum diatribusikan ke komponen tertentu.
+
+Verifikasi live:
+- pindah menu lalu kembali: 30/30 pose di sessionStorage tidak bergeser (0 px); 1 pasang agent berbagi tile yang sama
+- full reload: belum terverifikasi terhadap pose engine yang hidup (perbandingan yang dijalankan membandingkan sessionStorage dengan dirinya sendiri)
+- klik karakter membuka panel samping
+- Pause mengubah status agent menjadi `paused`, Resume menjadi `idle`; Wake hanya diverifikasi sampai `POST /agents/:id/wakeup` terkirim
+- drag issue dari baki ke karakter meng-assign issue (dicek lewat API)
+- 0 error konsol dan 0 request gagal selama probe

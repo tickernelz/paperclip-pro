@@ -93,12 +93,14 @@ export interface OfficeController {
   select(agentId: string | null): void;
   readonly selectedAgentId: string | null;
   hover(hit: OfficeHit): void;
+  readonly hoveredAgentId: string | null;
   readonly camera: OfficeCameraState;
   panBy(dxScreen: number, dyScreen: number): void;
   zoomAt(screenX: number, screenY: number, steps: number): void;
   centerOn(worldX: number, worldY: number): void;
   follow(agentId: string | null): void;
   drawMinimap(ctx: CanvasRenderingContext2D, width: number, height: number): void;
+  readonly frameCount: number;
   attach(canvas: HTMLCanvasElement): void;
   detach(): void;
   wake(): void;

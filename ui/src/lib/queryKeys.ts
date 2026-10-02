@@ -286,6 +286,9 @@ export const queryKeys = {
   },
   pixelsOffice: {
     snapshot: (companyId: string) => ["pixels-office", companyId] as const,
+    timeline: (companyId: string, from: string, to: string) =>
+      ["pixels-office", "timeline", companyId, from, to] as const,
+    unassigned: (companyId: string) => ["pixels-office", "unassigned", companyId] as const,
   },
   issues: {
     list: (companyId: string) => ["issues", companyId] as const,

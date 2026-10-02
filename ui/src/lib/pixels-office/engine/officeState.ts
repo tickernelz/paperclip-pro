@@ -2,6 +2,7 @@ import {
   AUTO_ON_FACING_DEPTH,
   AUTO_ON_SIDE_DEPTH,
   FURNITURE_ANIM_INTERVAL_SEC,
+  HOP_DURATION_SEC,
   HUE_SHIFT_MIN_DEG,
   HUE_SHIFT_RANGE_DEG,
   WAITING_BUBBLE_DURATION_SEC,
@@ -14,7 +15,7 @@ import {
   layoutToSeats,
   layoutToTileMap,
 } from '../layout/layoutSerializer';
-import { findPath, getWalkableTiles, isWalkable } from '../layout/tileMap';
+import { NavGrid } from '../layout/tileMap';
 import { getLoadedCharacterCount } from '../sprites/spriteData';
 import type {
   Character,
@@ -25,70 +26,137 @@ import type {
   TileType as TileTypeVal,
 } from '../types';
 import { CharacterState, Direction, TILE_SIZE } from '../types';
-import { createCharacter, updateCharacter } from './characters';
+import { createCharacter, isCharacterAnimating, updateCharacter } from './characters';
+import { classifyOccluders } from './staticLayer';
+
+export interface RestoredPose {
+  tileCol: number;
+  tileRow: number;
+  x: number;
+  y: number;
+  dir: Direction;
+  state: CharacterState;
+  palette: number;
+  hueShift: number;
+  seatId: string | null;
+}
+
+export interface AddAgentOptions {
+  palette?: number;
+  hueShift?: number;
+  seatId?: string;
+  pose?: RestoredPose;
+}
+
+interface SwitchableFurniture {
+  off: FurnitureInstance;
+  on: FurnitureInstance[];
+  tiles: number[];
+}
 
 export class OfficeState {
   layout: OfficeLayout;
   tileMap: TileTypeVal[][];
   seats: Map<string, Seat>;
   blockedTiles: Set<string>;
-  furniture: FurnitureInstance[];
-  walkableTiles: Array<{ col: number; row: number }>;
+  nav: NavGrid;
+  staticFurniture: FurnitureInstance[] = [];
+  dynamicFurniture: FurnitureInstance[] = [];
+  switchable: SwitchableFurniture[] = [];
   characters: Map<string, Character> = new Map();
   furnitureAnimTimer = 0;
   selectedAgentId: string | null = null;
   hoveredAgentId: string | null = null;
-  hoveredTile: { col: number; row: number } | null = null;
+  private autoOnTiles = new Set<number>();
 
   constructor(layout?: OfficeLayout) {
     this.layout = layout || createDefaultLayout();
     this.tileMap = layoutToTileMap(this.layout);
     this.seats = layoutToSeats(this.layout.furniture);
     this.blockedTiles = getBlockedTiles(this.layout.furniture);
-    this.furniture = layoutToFurnitureInstances(this.layout.furniture);
-    this.walkableTiles = getWalkableTiles(this.tileMap, this.blockedTiles);
-  }
-
-  private getSpawnTile(): { col: number; row: number } {
-    const spawn = this.layout.spawnTile;
-    if (spawn && isWalkable(spawn.col, spawn.row, this.tileMap, this.blockedTiles)) {
-      return spawn;
-    }
-    return this.walkableTiles[0] ?? { col: 1, row: 1 };
-  }
-
-  private moveCharacterToSpawn(ch: Character): void {
-    const spawn = this.getSpawnTile();
-    ch.tileCol = spawn.col;
-    ch.tileRow = spawn.row;
-    ch.x = spawn.col * TILE_SIZE + TILE_SIZE / 2;
-    ch.y = spawn.row * TILE_SIZE + TILE_SIZE / 2;
-    ch.path = [];
-    ch.moveProgress = 0;
-    ch.state = CharacterState.IDLE;
-    ch.dir = Direction.DOWN;
-    ch.frame = 0;
-    ch.frameTimer = 0;
-    ch.wanderTimer = Math.random() * 3;
+    this.nav = new NavGrid(this.tileMap, this.blockedTiles);
+    this.buildFurniture();
   }
 
   getLayout(): OfficeLayout {
     return this.layout;
   }
 
-  private ownSeatKey(ch: Character): string | null {
-    if (!ch.seatId) return null;
-    const seat = this.seats.get(ch.seatId);
-    if (!seat) return null;
-    return `${seat.seatCol},${seat.seatRow}`;
+  private buildFurniture(): void {
+    const base = this.layout.furniture;
+    const variants: PlacedFurniture[] = [];
+    const variantRange: Array<{ start: number; count: number } | null> = [];
+
+    for (const item of base) {
+      const onType = getOnStateType(item.type);
+      if (onType === item.type) {
+        variantRange.push(null);
+        continue;
+      }
+      const frames = getAnimationFrames(onType) ?? [onType];
+      const start = variants.length;
+      for (const frameType of frames) {
+        variants.push({ ...item, uid: `${item.uid}:on:${frameType}`, type: frameType });
+      }
+      variantRange.push({ start, count: frames.length });
+    }
+
+    const instances = layoutToFurnitureInstances([...base, ...variants]);
+    const baseInstances: Array<FurnitureInstance | null> = new Array(base.length).fill(null);
+    const variantInstances: Array<FurnitureInstance | null> = new Array(variants.length).fill(null);
+    for (const instance of instances) {
+      const source = instance.sourceIndex ?? 0;
+      if (source < base.length) baseInstances[source] = instance;
+      else variantInstances[source - base.length] = instance;
+    }
+
+    const plain: FurnitureInstance[] = [];
+    this.switchable = [];
+    for (let i = 0; i < base.length; i++) {
+      const instance = baseInstances[i];
+      if (!instance) continue;
+      const range = variantRange[i];
+      if (!range) {
+        plain.push(instance);
+        continue;
+      }
+      const on: FurnitureInstance[] = [];
+      for (let f = 0; f < range.count; f++) {
+        const variant = variantInstances[range.start + f];
+        if (variant) on.push(variant);
+      }
+      this.switchable.push({
+        off: instance,
+        on: on.length > 0 ? on : [instance],
+        tiles: this.footprintTiles(base[i]),
+      });
+    }
+
+    const occluders = classifyOccluders(plain, this.nav, this.seats.values());
+    this.staticFurniture = [];
+    this.dynamicFurniture = [];
+    for (let i = 0; i < plain.length; i++) {
+      if (occluders[i] === 1) this.dynamicFurniture.push(plain[i]);
+      else this.staticFurniture.push(plain[i]);
+    }
   }
 
-  private withOwnSeatUnblocked<T>(ch: Character, fn: () => T): T {
-    const key = this.ownSeatKey(ch);
-    if (key) this.blockedTiles.delete(key);
-    const result = fn();
-    if (key) this.blockedTiles.add(key);
-    return result;
+  private footprintTiles(item: PlacedFurniture): number[] {
+    const entry = getCatalogEntry(item.type);
+    const tiles: number[] = [];
+    if (!entry) return tiles;
+    for (let dr = 0; dr < entry.footprintH; dr++) {
+      for (let dc = 0; dc < entry.footprintW; dc++) {
+        tiles.push((item.row + dr) * this.layout.cols + item.col + dc);
+      }
+    }
+    return tiles;
+  }
+
+  private getSpawnTile(): { col: number; row: number } {
+    const spawn = this.layout.spawnTile;
+    if (spawn && this.nav.isWalkable(spawn.col, spawn.row)) return spawn;
+    return this.nav.walkableTiles[0] ?? { col: 1, row: 1 };
   }
 
   private findFreeSeat(): string | null {
@@ -127,14 +195,12 @@ export class OfficeState {
             facesPC = true;
             break;
           }
-        } else {
-          if (
-            electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
-            electronicsTiles.has(`${tileCol + 1},${tileRow}`)
-          ) {
-            facesPC = true;
-            break;
-          }
+        } else if (
+          electronicsTiles.has(`${tileCol - 1},${tileRow}`) ||
+          electronicsTiles.has(`${tileCol + 1},${tileRow}`)
+        ) {
+          facesPC = true;
+          break;
         }
       }
       (facesPC ? pcSeats : otherSeats).push(uid);
@@ -164,45 +230,54 @@ export class OfficeState {
     return { palette, hueShift };
   }
 
-  addAgent(
-    id: string,
-    preferredPalette?: number,
-    preferredHueShift?: number,
-    preferredSeatId?: string,
-  ): void {
+  addAgent(id: string, options: AddAgentOptions = {}): void {
     if (this.characters.has(id)) return;
 
+    const pose = options.pose;
     let palette: number;
     let hueShift: number;
-    if (preferredPalette !== undefined) {
-      palette = preferredPalette;
-      hueShift = preferredHueShift ?? 0;
+    if (pose) {
+      palette = pose.palette;
+      hueShift = pose.hueShift;
+    } else if (options.palette !== undefined) {
+      palette = options.palette;
+      hueShift = options.hueShift ?? 0;
     } else {
       const pick = this.pickDiversePalette();
       palette = pick.palette;
       hueShift = pick.hueShift;
     }
 
+    const requestedSeat = pose?.seatId ?? options.seatId;
     let seatId: string | null = null;
-    if (preferredSeatId && this.seats.has(preferredSeatId)) {
-      const seat = this.seats.get(preferredSeatId)!;
-      if (!seat.assigned) {
-        seatId = preferredSeatId;
-      }
+    if (requestedSeat) {
+      const seat = this.seats.get(requestedSeat);
+      if (seat && !seat.assigned) seatId = requestedSeat;
     }
-    if (!seatId) {
-      seatId = this.findFreeSeat();
-    }
+    const seatWasRequested = seatId !== null;
+    if (!seatId) seatId = this.findFreeSeat();
 
-    let ch: Character;
-    if (seatId) {
-      const seat = this.seats.get(seatId)!;
-      seat.assigned = true;
-      ch = createCharacter(id, palette, seatId, seat, hueShift);
-    } else {
-      ch = createCharacter(id, palette, null, null, hueShift);
+    const seat = seatId ? this.seats.get(seatId)! : null;
+    if (seat) seat.assigned = true;
+    const ch = createCharacter(id, palette, seatId, seat, hueShift);
+
+    if (pose) {
+      ch.tileCol = pose.tileCol;
+      ch.tileRow = pose.tileRow;
+      ch.x = pose.x;
+      ch.y = pose.y;
+      ch.dir = pose.dir;
+      ch.state = pose.state === CharacterState.WALK ? CharacterState.IDLE : pose.state;
+    } else if (!seatWasRequested) {
+      const spawn = this.getSpawnTile();
+      ch.tileCol = spawn.col;
+      ch.tileRow = spawn.row;
+      ch.x = spawn.col * TILE_SIZE + TILE_SIZE / 2;
+      ch.y = spawn.row * TILE_SIZE + TILE_SIZE / 2;
+      ch.state = CharacterState.IDLE;
+      ch.dir = Direction.DOWN;
+      ch.wanderTimer = Math.random() * 3;
     }
-    this.moveCharacterToSpawn(ch);
 
     this.characters.set(id, ch);
   }
@@ -215,19 +290,18 @@ export class OfficeState {
       if (seat) seat.assigned = false;
     }
     if (this.selectedAgentId === id) this.selectedAgentId = null;
+    if (this.hoveredAgentId === id) this.hoveredAgentId = null;
     this.characters.delete(id);
+    this.rebuildAutoOnTiles();
   }
 
   walkToTile(agentId: string, col: number, row: number): boolean {
     const ch = this.characters.get(agentId);
     if (!ch) return false;
-    if (!isWalkable(col, row, this.tileMap, this.blockedTiles)) {
-      const key = this.ownSeatKey(ch);
-      if (!key || key !== `${col},${row}`) return false;
-    }
-    const path = this.withOwnSeatUnblocked(ch, () =>
-      findPath(ch.tileCol, ch.tileRow, col, row, this.tileMap, this.blockedTiles),
-    );
+    const seat = ch.seatId ? this.seats.get(ch.seatId) : undefined;
+    const ownSeatTarget = seat ? seat.seatCol === col && seat.seatRow === row : false;
+    if (!this.nav.isWalkable(col, row) && !ownSeatTarget) return false;
+    const path = this.nav.findPath(ch.tileCol, ch.tileRow, col, row, ownSeatTarget);
     if (path.length === 0) return false;
     ch.path = path;
     ch.moveProgress = 0;
@@ -239,80 +313,76 @@ export class OfficeState {
 
   setAgentActive(id: string, active: boolean): void {
     const ch = this.characters.get(id);
-    if (ch) {
-      ch.isActive = active;
-      if (!active) {
-        ch.seatTimer = -1;
-        ch.path = [];
-        ch.moveProgress = 0;
-      }
-      this.rebuildFurnitureInstances();
+    if (!ch || ch.isActive === active) return;
+    ch.isActive = active;
+    if (!active) {
+      ch.seatTimer = -1;
+      ch.path = [];
+      ch.moveProgress = 0;
     }
+    this.rebuildAutoOnTiles();
   }
 
-  private rebuildFurnitureInstances(): void {
-    const autoOnTiles = new Set<string>();
+  setAgentStill(id: string, still: boolean): void {
+    const ch = this.characters.get(id);
+    if (!ch || ch.still === still) return;
+    ch.still = still;
+    this.rebuildAutoOnTiles();
+  }
+
+  setAgentPinned(id: string, pinned: boolean): void {
+    const ch = this.characters.get(id);
+    if (ch) ch.pinned = pinned;
+  }
+
+  private rebuildAutoOnTiles(): void {
+    this.autoOnTiles.clear();
+    const cols = this.layout.cols;
     for (const ch of this.characters.values()) {
-      if (!ch.isActive || !ch.seatId) continue;
+      if (!ch.isActive || ch.still || !ch.seatId) continue;
       const seat = this.seats.get(ch.seatId);
       if (!seat) continue;
       const dCol =
         seat.facingDir === Direction.RIGHT ? 1 : seat.facingDir === Direction.LEFT ? -1 : 0;
       const dRow = seat.facingDir === Direction.DOWN ? 1 : seat.facingDir === Direction.UP ? -1 : 0;
       for (let d = 1; d <= AUTO_ON_FACING_DEPTH; d++) {
-        const tileCol = seat.seatCol + dCol * d;
-        const tileRow = seat.seatRow + dRow * d;
-        autoOnTiles.add(`${tileCol},${tileRow}`);
+        this.autoOnTiles.add((seat.seatRow + dRow * d) * cols + seat.seatCol + dCol * d);
       }
       for (let d = 1; d <= AUTO_ON_SIDE_DEPTH; d++) {
         const baseCol = seat.seatCol + dCol * d;
         const baseRow = seat.seatRow + dRow * d;
         if (dCol !== 0) {
-          autoOnTiles.add(`${baseCol},${baseRow - 1}`);
-          autoOnTiles.add(`${baseCol},${baseRow + 1}`);
+          this.autoOnTiles.add((baseRow - 1) * cols + baseCol);
+          this.autoOnTiles.add((baseRow + 1) * cols + baseCol);
         } else {
-          autoOnTiles.add(`${baseCol - 1},${baseRow}`);
-          autoOnTiles.add(`${baseCol + 1},${baseRow}`);
+          this.autoOnTiles.add(baseRow * cols + baseCol - 1);
+          this.autoOnTiles.add(baseRow * cols + baseCol + 1);
         }
       }
     }
+  }
 
-    if (autoOnTiles.size === 0) {
-      this.furniture = layoutToFurnitureInstances(this.layout.furniture);
-      return;
-    }
-
-    const animFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC);
-    const modifiedFurniture: PlacedFurniture[] = this.layout.furniture.map((item) => {
-      const entry = getCatalogEntry(item.type);
-      if (!entry) return item;
-      for (let dr = 0; dr < entry.footprintH; dr++) {
-        for (let dc = 0; dc < entry.footprintW; dc++) {
-          if (autoOnTiles.has(`${item.col + dc},${item.row + dr}`)) {
-            let onType = getOnStateType(item.type);
-            if (onType !== item.type) {
-              const frames = getAnimationFrames(onType);
-              if (frames && frames.length > 1) {
-                const frameIdx = animFrame % frames.length;
-                onType = frames[frameIdx];
-              }
-              return { ...item, type: onType };
-            }
-            return item;
-          }
-        }
+  resolveSwitchable(index: number): FurnitureInstance {
+    const entry = this.switchable[index];
+    let on = false;
+    for (const tile of entry.tiles) {
+      if (this.autoOnTiles.has(tile)) {
+        on = true;
+        break;
       }
-      return item;
-    });
+    }
+    if (!on) return entry.off;
+    const frame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC);
+    return entry.on[frame % entry.on.length];
+  }
 
-    this.furniture = layoutToFurnitureInstances(modifiedFurniture);
+  isSwitchableAnimating(): boolean {
+    return this.autoOnTiles.size > 0;
   }
 
   setAgentTool(id: string, tool: string | null): void {
     const ch = this.characters.get(id);
-    if (ch) {
-      ch.currentTool = tool;
-    }
+    if (ch) ch.currentTool = tool;
   }
 
   showWaitingBubble(id: string): void {
@@ -323,30 +393,45 @@ export class OfficeState {
     }
   }
 
-  update(dt: number): void {
-    const prevFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC);
+  startHop(id: string): void {
+    const ch = this.characters.get(id);
+    if (ch) ch.hop = HOP_DURATION_SEC;
+  }
+
+  update(dt: number): boolean {
     this.furnitureAnimTimer += dt;
-    const newFrame = Math.floor(this.furnitureAnimTimer / FURNITURE_ANIM_INTERVAL_SEC);
-    if (newFrame !== prevFrame) {
-      this.rebuildFurnitureInstances();
-    }
+    let busy = this.isSwitchableAnimating();
 
     for (const ch of this.characters.values()) {
-      this.withOwnSeatUnblocked(ch, () =>
-        updateCharacter(ch, dt, this.walkableTiles, this.seats, this.tileMap, this.blockedTiles),
-      );
+      updateCharacter(ch, dt, this.nav, this.seats);
+      if (isCharacterAnimating(ch)) busy = true;
+      if (ch.hop > 0) {
+        ch.hop = Math.max(0, ch.hop - dt);
+        busy = true;
+      }
 
       if (ch.bubbleType === 'waiting') {
         ch.bubbleTimer -= dt;
+        busy = true;
         if (ch.bubbleTimer <= 0) {
           ch.bubbleType = null;
           ch.bubbleTimer = 0;
         }
       }
     }
+    return busy;
   }
 
-  getCharacters(): Character[] {
-    return Array.from(this.characters.values());
+  nextWakeSeconds(): number {
+    let soonest = Number.POSITIVE_INFINITY;
+    for (const ch of this.characters.values()) {
+      if (ch.pinned) continue;
+      if (ch.state === CharacterState.IDLE && !ch.isActive) {
+        soonest = Math.min(soonest, Math.max(0, ch.wanderTimer));
+      } else if (ch.state === CharacterState.TYPE && !ch.isActive) {
+        soonest = Math.min(soonest, Math.max(0, ch.seatTimer));
+      }
+    }
+    return soonest;
   }
 }

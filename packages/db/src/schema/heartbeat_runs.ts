@@ -123,6 +123,14 @@ export const heartbeatRuns = pgTable(
       table.agentId,
       table.startedAt,
     ),
+    companyStartedAtIdx: index("heartbeat_runs_company_started_at_idx").on(
+      table.companyId,
+      table.startedAt,
+    ),
+    companyFinishedAtIdx: index("heartbeat_runs_company_finished_at_idx").on(
+      table.companyId,
+      table.finishedAt,
+    ),
     companyResponsibleUserIdx: index("heartbeat_runs_company_responsible_user_idx").on(
       table.companyId,
       table.responsibleUserId,

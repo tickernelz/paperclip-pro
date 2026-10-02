@@ -32,6 +32,9 @@ export const WALL_COLOR = '#3A3A5C';
 
 export const FURNITURE_ANIM_INTERVAL_SEC = 0.2;
 
+export const HOP_DURATION_SEC = 0.6;
+export const HOP_HEIGHT_PX = 7;
+
 export const MAX_DELTA_TIME_SEC = 0.1;
 export const WAITING_BUBBLE_DURATION_SEC = 2.0;
 

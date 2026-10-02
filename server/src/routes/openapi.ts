@@ -3201,6 +3201,25 @@ registerCurrentRoute({
 });
 
 registerCurrentRoute({
+  method: "get",
+  path: "/api/companies/{companyId}/pixels-office/timeline",
+  tags: ["pixels-office"],
+  summary: "Replay Pixels Office activity for a bounded window",
+  query: z.object({
+    from: z.string().datetime(),
+    to: z.string().datetime(),
+    cursor: z.string().min(1).max(200).optional(),
+  }),
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+registerCurrentRoute({
   method: "put",
   path: "/api/companies/{companyId}/pixels-office/seats",
   tags: ["pixels-office"],

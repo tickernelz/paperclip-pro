@@ -1,0 +1,32 @@
+{
+  "id": "ALARM_LIGHT",
+  "name": "Alarm Light",
+  "category": "wall",
+  "type": "group",
+  "groupType": "state",
+  "canPlaceOnWalls": true,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "members": [
+    {
+      "type": "asset",
+      "id": "ALARM_LIGHT",
+      "file": "ALARM_LIGHT.png",
+      "width": 16,
+      "height": 16,
+      "footprintW": 1,
+      "footprintH": 1,
+      "state": "off"
+    },
+    {
+      "type": "asset",
+      "id": "ALARM_LIGHT_ON",
+      "file": "ALARM_LIGHT_ON.png",
+      "width": 16,
+      "height": 16,
+      "footprintW": 1,
+      "footprintH": 1,
+      "state": "on"
+    }
+  ]
+}

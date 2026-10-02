@@ -11,11 +11,13 @@ import {
   heartbeatRuns,
   instanceSettings,
   issues,
+  issueThreadInteractions,
   pixelsOfficeSeats,
 } from "@tickernelz/paperclip-pro-db";
 import { errorHandler } from "../middleware/index.js";
 import { pixelsOfficeRoutes } from "../routes/pixels-office.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
+import { pixelsOfficeService } from "../services/pixels-office.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -77,6 +79,7 @@ describeEmbeddedPostgres("pixels office routes", () => {
   afterEach(async () => {
     await db.delete(pixelsOfficeSeats);
     await db.delete(activityLog);
+    await db.delete(issueThreadInteractions);
     await db.delete(issues);
     await db.delete(heartbeatRuns);
     await db.delete(instanceSettings);
@@ -128,6 +131,54 @@ describeEmbeddedPostgres("pixels office routes", () => {
         title: `Task ${identifier}`,
         status,
         assigneeAgentId,
+      })
+      .returning()
+      .then((rows) => rows[0]!);
+  }
+
+  async function seedChildIssue(
+    companyId: string,
+    parentId: string,
+    assigneeAgentId: string,
+    identifier: string,
+  ) {
+    return db
+      .insert(issues)
+      .values({
+        companyId,
+        identifier,
+        title: `Child ${identifier}`,
+        status: "todo",
+        assigneeAgentId,
+        parentId,
+      })
+      .returning()
+      .then((rows) => rows[0]!);
+  }
+
+  async function seedInteraction(
+    companyId: string,
+    issueId: string,
+    values: {
+      createdByAgentId?: string;
+      addresseeAgentId?: string;
+      addresseeUserId?: string;
+      status?: string;
+      effectiveResolverPolicy?: "anyone" | "not_creator" | "human_only";
+    } = {},
+  ) {
+    return db
+      .insert(issueThreadInteractions)
+      .values({
+        companyId,
+        issueId,
+        kind: "ask_user_questions",
+        status: values.status ?? "pending",
+        payload: {} as never,
+        createdByAgentId: values.createdByAgentId ?? null,
+        addresseeAgentId: values.addresseeAgentId ?? null,
+        addresseeUserId: values.addresseeUserId ?? null,
+        effectiveResolverPolicy: values.effectiveResolverPolicy ?? "anyone",
       })
       .returning()
       .then((rows) => rows[0]!);
@@ -395,5 +446,205 @@ describeEmbeddedPostgres("pixels office routes", () => {
     expect(res.body.agents[0].tasks.map((task: { identifier: string }) => task.identifier)).toEqual([
       "PX-20",
     ]);
+  });
+
+  it("counts pending interactions for the issue assignee and for the addressee", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const owner = await seedAgent(company.id, "Owner");
+    const helper = await seedAgent(company.id, "Helper");
+    const issue = await seedIssue(company.id, owner.id, "PX-30");
+    await seedInteraction(company.id, issue.id, {
+      createdByAgentId: owner.id,
+      addresseeAgentId: helper.id,
+    });
+    await seedInteraction(company.id, issue.id, {
+      createdByAgentId: helper.id,
+      status: "accepted",
+    });
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    const byName = new Map<string, { pendingInteractionCount: number; awaitingBoardCount: number }>(
+      res.body.agents.map((row: { name: string }) => [row.name, row]),
+    );
+    expect(byName.get("Owner")!.pendingInteractionCount).toBe(1);
+    expect(byName.get("Helper")!.pendingInteractionCount).toBe(1);
+  });
+
+  it("counts an interaction only a human can resolve against its creator", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const creator = await seedAgent(company.id, "Creator");
+    const peer = await seedAgent(company.id, "Peer");
+    const issue = await seedIssue(company.id, creator.id, "PX-31");
+    await seedInteraction(company.id, issue.id, {
+      createdByAgentId: creator.id,
+      effectiveResolverPolicy: "human_only",
+    });
+    await seedInteraction(company.id, issue.id, {
+      createdByAgentId: peer.id,
+      addresseeAgentId: creator.id,
+    });
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    const byName = new Map<string, { awaitingBoardCount: number }>(
+      res.body.agents.map((row: { name: string }) => [row.name, row]),
+    );
+    expect(byName.get("Creator")!.awaitingBoardCount).toBe(1);
+    expect(byName.get("Peer")!.awaitingBoardCount).toBe(0);
+  });
+
+  it("flags only the agent paused by a budget hard-stop", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const stopped = await seedAgent(company.id, "Stopped", undefined, "paused");
+    const resting = await seedAgent(company.id, "Resting", undefined, "paused");
+    await db.update(agents).set({ pauseReason: "budget" }).where(eq(agents.id, stopped.id));
+    await db.update(agents).set({ pauseReason: "manual" }).where(eq(agents.id, resting.id));
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    const byName = new Map<string, { budgetPaused: boolean }>(
+      res.body.agents.map((row: { name: string }) => [row.name, row]),
+    );
+    expect(byName.get("Stopped")!.budgetPaused).toBe(true);
+    expect(byName.get("Resting")!.budgetPaused).toBe(false);
+  });
+
+  it("draws collaboration edges for an addressed interaction and a fresh delegation", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const lead = await seedAgent(company.id, "Lead");
+    const worker = await seedAgent(company.id, "Worker");
+    const parent = await seedIssue(company.id, lead.id, "PX-40");
+    const child = await seedChildIssue(company.id, parent.id, worker.id, "PX-41");
+    const interactionIssue = await seedIssue(company.id, lead.id, "PX-42");
+    await seedInteraction(company.id, interactionIssue.id, {
+      createdByAgentId: lead.id,
+      addresseeAgentId: worker.id,
+    });
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body.collaboration).toEqual(
+      expect.arrayContaining([
+        {
+          fromAgentId: lead.id,
+          toAgentId: worker.id,
+          kind: "interaction",
+          issueId: interactionIssue.id,
+          since: expect.any(String),
+        },
+        {
+          fromAgentId: lead.id,
+          toAgentId: worker.id,
+          kind: "delegation",
+          issueId: child.id,
+          since: expect.any(String),
+        },
+      ]),
+    );
+  });
+
+  it("leaves out a delegation to the same agent and one older than a day", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const lead = await seedAgent(company.id, "Lead");
+    const worker = await seedAgent(company.id, "Worker");
+    const parent = await seedIssue(company.id, lead.id, "PX-50");
+    await seedChildIssue(company.id, parent.id, lead.id, "PX-51");
+    const stale = await seedChildIssue(company.id, parent.id, worker.id, "PX-52");
+    await db
+      .update(issues)
+      .set({ createdAt: new Date(Date.now() - 36 * 60 * 60 * 1000) })
+      .where(eq(issues.id, stale.id));
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    expect(res.body.collaboration).toEqual([]);
+  });
+
+  it("keeps interaction counts and collaboration inside the company", async () => {
+    const company = await seedCompany();
+    const otherCompany = await seedCompany();
+    await enablePixelsOffice();
+    const mine = await seedAgent(company.id, "Mine");
+    const theirLead = await seedAgent(otherCompany.id, "Their Lead");
+    const theirWorker = await seedAgent(otherCompany.id, "Their Worker");
+    const theirIssue = await seedIssue(otherCompany.id, theirLead.id, "OT-1");
+    const theirParent = await seedIssue(otherCompany.id, theirLead.id, "OT-2");
+    await seedChildIssue(otherCompany.id, theirParent.id, theirWorker.id, "OT-3");
+    await seedInteraction(otherCompany.id, theirIssue.id, {
+      createdByAgentId: theirLead.id,
+      addresseeAgentId: theirWorker.id,
+    });
+
+    const res = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+
+    expect(res.body.agents).toHaveLength(1);
+    expect(res.body.agents[0].id).toBe(mine.id);
+    expect(res.body.agents[0].pendingInteractionCount).toBe(0);
+    expect(res.body.collaboration).toEqual([]);
+  });
+
+  it("reads the whole snapshot in a fixed number of queries whatever the office holds", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const counts: number[] = [];
+
+    for (const agentCount of [2, 8]) {
+      await db.delete(issueThreadInteractions);
+      await db.delete(issues);
+      await db.delete(agents);
+      const seeded = [];
+      for (let index = 0; index < agentCount; index += 1) {
+        seeded.push(await seedAgent(company.id, `Agent ${index}`));
+      }
+      for (const [index, agent] of seeded.entries()) {
+        const issue = await seedIssue(company.id, agent.id, `QC-${index}`);
+        await seedInteraction(company.id, issue.id, {
+          createdByAgentId: agent.id,
+          addresseeAgentId: seeded[(index + 1) % seeded.length]!.id,
+        });
+      }
+
+      let selects = 0;
+      const countingDb = new Proxy(db, {
+        get(target, property) {
+          const value = Reflect.get(target, property);
+          if (typeof value !== "function") return value;
+          if (property === "select") {
+            return (...args: unknown[]) => {
+              selects += 1;
+              return (value as (...inner: unknown[]) => unknown).apply(target, args);
+            };
+          }
+          return value.bind(target);
+        },
+      }) as Db;
+
+      const snapshot = await pixelsOfficeService(countingDb).snapshot(company.id);
+      expect(snapshot.agents).toHaveLength(agentCount);
+      counts.push(selects);
+    }
+
+    expect(counts[0]).toBe(6);
+    expect(counts[1]).toBe(6);
   });
 });

@@ -1,0 +1,2 @@
+CREATE INDEX "heartbeat_runs_company_started_at_idx" ON "heartbeat_runs" USING btree ("company_id","started_at");--> statement-breakpoint
+CREATE INDEX "heartbeat_runs_company_finished_at_idx" ON "heartbeat_runs" USING btree ("company_id","finished_at");

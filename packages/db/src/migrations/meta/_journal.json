@@ -1989,6 +1989,13 @@
       "when": 1790868689318,
       "tag": "0285_safe_vampiro",
       "breakpoints": true
+    },
+    {
+      "idx": 286,
+      "version": "7",
+      "when": 1790925936339,
+      "tag": "0286_cheerful_toro",
+      "breakpoints": true
     }
   ]
 }
