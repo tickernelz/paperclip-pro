@@ -335,11 +335,29 @@ export function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLay
   );
   furniture.push(...placeAnchorFurniture(office));
 
-  const roomBounds = placements.map(({ layout, offsetCol, offsetRow }, index) =>
-    index === 1
-      ? { col: offsetCol, row: offsetRow - 1, cols: layout.cols, rows: layout.rows + 1 }
-      : { col: offsetCol, row: offsetRow, cols: layout.cols, rows: layout.rows },
-  );
+  const roomBounds = placements.map(({ layout, offsetCol, offsetRow }) => {
+    let top = layout.rows;
+    let bottom = -1;
+    let left = layout.cols;
+    let right = -1;
+    for (let row = 0; row < layout.rows; row++) {
+      for (let col = 0; col < layout.cols; col++) {
+        if (layout.tiles[row * layout.cols + col] === 255) continue;
+        if (row < top) top = row;
+        if (row > bottom) bottom = row;
+        if (col < left) left = col;
+        if (col > right) right = col;
+      }
+    }
+    if (bottom < 0) return { col: offsetCol, row: offsetRow, cols: layout.cols, rows: layout.rows };
+    const overhang = top > 0 ? 1 : 0;
+    return {
+      col: offsetCol + left,
+      row: offsetRow + top - overhang,
+      cols: right - left + 1,
+      rows: bottom - top + 1 + overhang,
+    };
+  });
 
   return {
     layout: {

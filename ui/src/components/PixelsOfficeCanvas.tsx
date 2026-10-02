@@ -14,6 +14,8 @@ import { relativeTime } from "@/lib/utils";
 import { ISSUE_DRAG_MIME } from "./pixels-office/constants";
 
 const DRAG_THRESHOLD_PX = 3;
+const TOUCH_DRAG_THRESHOLD_PX = 8;
+const PINCH_STEP_RATIO = 1.25;
 
 interface HoverTip {
   x: number;
@@ -47,7 +49,9 @@ export function PixelsOfficeCanvas({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const officeRef = useRef<OfficeController | null>(null);
   const syncedKeyRef = useRef("");
-  const dragRef = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const dragRef = useRef<{ x: number; y: number; moved: boolean; touch: boolean } | null>(null);
+  const pointersRef = useRef(new Map<number, { x: number; y: number }>());
+  const pinchRef = useRef<{ distance: number } | null>(null);
   const [office, setOffice] = useState<OfficeController | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [tip, setTip] = useState<HoverTip | null>(null);
@@ -123,22 +127,51 @@ export function PixelsOfficeCanvas({
   };
 
   return (
-    <div className="relative h-(--sz-calc-44) min-h-(--sz-520px) w-full">
+    <div className="relative h-(--sz-pixels-office-mobile-canvas) w-full xl:h-(--sz-calc-44) xl:min-h-(--sz-520px)">
       <canvas
         ref={canvasRef}
-        className={tip ? "size-full cursor-pointer" : "size-full"}
+        className={tip ? "size-full cursor-pointer touch-none" : "size-full touch-none"}
         onPointerDown={(domEvent) => {
-          dragRef.current = { x: domEvent.clientX, y: domEvent.clientY, moved: false };
+          pointersRef.current.set(domEvent.pointerId, { x: domEvent.clientX, y: domEvent.clientY });
           domEvent.currentTarget.setPointerCapture(domEvent.pointerId);
+          if (pointersRef.current.size === 2) {
+            const [a, b] = [...pointersRef.current.values()];
+            pinchRef.current = { distance: Math.hypot(a.x - b.x, a.y - b.y) };
+            dragRef.current = null;
+            setTip(null);
+            return;
+          }
+          dragRef.current = {
+            x: domEvent.clientX,
+            y: domEvent.clientY,
+            moved: false,
+            touch: domEvent.pointerType === "touch",
+          };
         }}
         onPointerMove={(domEvent) => {
           const controller = officeRef.current;
           if (!controller) return;
+          if (pointersRef.current.has(domEvent.pointerId)) {
+            pointersRef.current.set(domEvent.pointerId, { x: domEvent.clientX, y: domEvent.clientY });
+          }
+          const pinch = pinchRef.current;
+          if (pinch && pointersRef.current.size === 2) {
+            const [a, b] = [...pointersRef.current.values()];
+            const distance = Math.hypot(a.x - b.x, a.y - b.y);
+            const ratio = distance / pinch.distance;
+            if (ratio >= PINCH_STEP_RATIO || ratio <= 1 / PINCH_STEP_RATIO) {
+              const rect = domEvent.currentTarget.getBoundingClientRect();
+              controller.zoomAt((a.x + b.x) / 2 - rect.left, (a.y + b.y) / 2 - rect.top, ratio > 1 ? 1 : -1);
+              pinch.distance = distance;
+            }
+            return;
+          }
           const drag = dragRef.current;
           if (drag) {
             const dx = domEvent.clientX - drag.x;
             const dy = domEvent.clientY - drag.y;
-            if (drag.moved || Math.abs(dx) > DRAG_THRESHOLD_PX || Math.abs(dy) > DRAG_THRESHOLD_PX) {
+            const threshold = drag.touch ? TOUCH_DRAG_THRESHOLD_PX : DRAG_THRESHOLD_PX;
+            if (drag.moved || Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
               drag.moved = true;
               drag.x = domEvent.clientX;
               drag.y = domEvent.clientY;
@@ -146,6 +179,7 @@ export function PixelsOfficeCanvas({
             }
             return;
           }
+          if (domEvent.pointerType === "touch") return;
           const hit = hitAt(domEvent.clientX, domEvent.clientY);
           controller.hover(hit);
           if (!hit) {
@@ -178,9 +212,12 @@ export function PixelsOfficeCanvas({
         onPointerUp={(domEvent) => {
           const controller = officeRef.current;
           const drag = dragRef.current;
+          const wasPinching = pinchRef.current !== null;
+          pointersRef.current.delete(domEvent.pointerId);
+          if (pointersRef.current.size < 2) pinchRef.current = null;
           dragRef.current = null;
           domEvent.currentTarget.releasePointerCapture(domEvent.pointerId);
-          if (!controller || drag?.moved) return;
+          if (!controller || drag?.moved || wasPinching || !drag) return;
           const hit = hitAt(domEvent.clientX, domEvent.clientY);
           if (!hit) {
             controller.select(null);
@@ -193,7 +230,13 @@ export function PixelsOfficeCanvas({
           }
           onSelectObject(hit.object);
         }}
-        onPointerLeave={() => {
+        onPointerCancel={(domEvent) => {
+          pointersRef.current.delete(domEvent.pointerId);
+          pinchRef.current = null;
+          dragRef.current = null;
+        }}
+        onPointerLeave={(domEvent) => {
+          if (domEvent.pointerType === "touch") return;
           dragRef.current = null;
           officeRef.current?.hover(null);
           setTip(null);

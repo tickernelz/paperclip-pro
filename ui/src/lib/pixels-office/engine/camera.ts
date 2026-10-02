@@ -4,12 +4,18 @@ import { TILE_SIZE } from '../types';
 const MAX_ZOOM_FACTOR = 6;
 const TWEEN_RATE = 9;
 const TWEEN_EPSILON = 0.4;
+const FIT_CROP_TOLERANCE = 1.18;
 
 export interface CameraRoom {
   col: number;
   row: number;
   cols: number;
   rows: number;
+}
+
+function clampAxis(center: number, half: number, min: number, max: number): number {
+  if (half * 2 >= max - min) return Math.min(min + half, Math.max(max - half, center));
+  return Math.min(max - half, Math.max(min + half, center));
 }
 
 export class Camera implements OfficeCameraState {
@@ -60,11 +66,16 @@ export class Camera implements OfficeCameraState {
   }
 
   fitRoom(room: CameraRoom): void {
-    const fit = Math.min(
-      this.viewportWidth / (room.cols * TILE_SIZE),
-      this.viewportHeight / (room.rows * TILE_SIZE),
-    );
-    this.zoom = Math.min(this.maxZoom, Math.max(this.minZoom, Math.floor(fit)));
+    const roomWidth = room.cols * TILE_SIZE;
+    const roomHeight = room.rows * TILE_SIZE;
+    let zoom = Math.max(1, Math.floor(Math.min(this.viewportWidth / roomWidth, this.viewportHeight / roomHeight)));
+    while (
+      roomWidth * (zoom + 1) <= this.viewportWidth * FIT_CROP_TOLERANCE &&
+      roomHeight * (zoom + 1) <= this.viewportHeight * FIT_CROP_TOLERANCE
+    ) {
+      zoom += 1;
+    }
+    this.zoom = Math.min(this.maxZoom, Math.max(this.minZoom, zoom));
     this.centerX = (room.col + room.cols / 2) * TILE_SIZE;
     this.centerY = (room.row + room.rows / 2) * TILE_SIZE;
     this.targetX = this.centerX;
@@ -149,14 +160,8 @@ export class Camera implements OfficeCameraState {
   private recompute(): void {
     const halfW = this.viewportWidth / (2 * this.zoom);
     const halfH = this.viewportHeight / (2 * this.zoom);
-    this.centerX =
-      halfW * 2 >= this.worldWidth
-        ? this.worldWidth / 2
-        : Math.min(this.worldWidth - halfW, Math.max(halfW, this.centerX));
-    this.centerY =
-      halfH * 2 >= this.worldHeight - this.worldTop
-        ? (this.worldTop + this.worldHeight) / 2
-        : Math.min(this.worldHeight - halfH, Math.max(this.worldTop + halfH, this.centerY));
+    this.centerX = clampAxis(this.centerX, halfW, 0, this.worldWidth);
+    this.centerY = clampAxis(this.centerY, halfH, this.worldTop, this.worldHeight);
     this.offsetX = Math.round(this.viewportWidth / 2 - this.centerX * this.zoom);
     this.offsetY = Math.round(this.viewportHeight / 2 - this.centerY * this.zoom);
   }

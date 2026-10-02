@@ -21,6 +21,9 @@ interface OfficeHudProps {
   ambientEnabled: boolean;
   onToggleAmbient: (next: boolean) => void;
   onOpenObject: (object: OfficeObjectKind) => void;
+  compact?: boolean;
+  armedIssueId: string | null;
+  onArmIssue: (issueId: string | null) => void;
 }
 
 function Chip({
@@ -42,8 +45,8 @@ function Chip({
       onClick={onClick}
       className={
         tone === "alert"
-          ? "flex items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1 text-xs text-foreground transition-colors hover:bg-destructive/20"
-          : "flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-foreground transition-colors hover:bg-accent/40"
+          ? "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1 text-xs text-foreground transition-colors hover:bg-destructive/20"
+          : "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-foreground transition-colors hover:bg-accent/40"
       }
     >
       {icon}
@@ -60,6 +63,9 @@ export function OfficeHud({
   ambientEnabled,
   onToggleAmbient,
   onOpenObject,
+  compact = false,
+  armedIssueId,
+  onArmIssue,
 }: OfficeHudProps) {
   const visibility = usePageVisibility();
   const [clock, setClock] = useState(() => new Date());
@@ -86,8 +92,14 @@ export function OfficeHud({
   const budget = summary ? (summary.costs.monthBudgetCents / 100).toFixed(0) : "0";
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2">
+    <div className="flex min-w-0 flex-col gap-2">
+      <div
+        className={
+          compact
+            ? "-mx-3 flex items-center gap-2 overflow-x-auto px-3 pb-1"
+            : "flex flex-wrap items-center gap-2"
+        }
+      >
         <Chip
           icon={<KanbanSquare className="size-3.5" aria-hidden />}
           value={String(summary?.agents.running ?? 0)}
@@ -129,6 +141,7 @@ export function OfficeHud({
         <Button
           size="sm"
           variant="ghost"
+          className="shrink-0"
           aria-pressed={ambientEnabled}
           aria-label={ambientEnabled ? "Mute office sound" : "Unmute office sound"}
           onClick={() => onToggleAmbient(!ambientEnabled)}
@@ -141,11 +154,16 @@ export function OfficeHud({
         </Button>
       </div>
 
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <UnassignedTray companyId={companyId} canAssign={canAssign} />
+      <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-end md:justify-between md:gap-3">
+        <UnassignedTray
+          companyId={companyId}
+          canAssign={canAssign}
+          armedIssueId={armedIssueId}
+          onArmIssue={onArmIssue}
+        />
         <p
           aria-live="polite"
-          className="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground"
+          className="min-w-0 flex-1 truncate text-xs text-muted-foreground md:text-right"
         >
           {latest ? `${latest.text} · ${relativeTime(new Date(latest.atMs))}` : "No activity yet."}
         </p>

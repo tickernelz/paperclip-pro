@@ -296,21 +296,25 @@ export class OfficeControllerImpl implements OfficeController {
   }
 
   panBy(dxScreen: number, dyScreen: number): void {
+    this.fitted = true;
     this.cameraState.panBy(dxScreen, dyScreen);
     this.loop.wake();
   }
 
   zoomAt(screenX: number, screenY: number, steps: number): void {
+    this.fitted = true;
     this.cameraState.zoomAt(screenX, screenY, steps);
     this.loop.wake();
   }
 
   centerOn(worldX: number, worldY: number): void {
+    this.fitted = true;
     this.cameraState.centerOn(worldX, worldY);
     this.loop.wake();
   }
 
   follow(agentId: string | null): void {
+    this.fitted = true;
     this.cameraState.follow(agentId);
     this.loop.wake();
   }
@@ -382,10 +386,7 @@ export class OfficeControllerImpl implements OfficeController {
     if (canvas.height !== height) canvas.height = height;
     if (this.ctx) this.ctx.imageSmoothingEnabled = false;
     this.cameraState.setViewport(width, height, dpr);
-    if (!this.fitted) {
-      this.cameraState.fitRoom(this.officeRoom);
-      this.fitted = true;
-    }
+    if (!this.fitted) this.cameraState.fitRoom(this.officeRoom);
   }
 
   private startVisit(fromAgentId: string, toAgentId: string): void {

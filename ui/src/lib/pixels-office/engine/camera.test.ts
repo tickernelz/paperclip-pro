@@ -42,15 +42,40 @@ describe("Camera zoom", () => {
 });
 
 describe("Camera panning", () => {
-  it("clamps the viewport inside the world and centres axes smaller than the viewport", () => {
+  it("clamps the viewport inside the world and keeps an axis smaller than the viewport fully visible", () => {
     const instance = camera(1);
     instance.setZoom(1);
     instance.panBy(-10000, -10000);
     expect(instance.centerX).toBeCloseTo(2000 - 400);
-    expect(instance.centerY).toBeCloseTo(200);
+    expect(instance.offsetY).toBeGreaterThanOrEqual(0);
+    expect(instance.offsetY + 400 * instance.zoom).toBeLessThanOrEqual(instance.viewportHeight);
 
     instance.panBy(10000, 10000);
     expect(instance.centerX).toBeCloseTo(400);
+    expect(instance.offsetY).toBeGreaterThanOrEqual(0);
+    expect(instance.offsetY + 400 * instance.zoom).toBeLessThanOrEqual(instance.viewportHeight);
+  });
+
+  it("zooms one step further when that crops the room by at most a sixth", () => {
+    const instance = new Camera(2000, 2000);
+    instance.setViewport(860, 644, 2);
+    instance.fitRoom({ col: 0, row: 0, cols: 20, rows: 12 });
+    expect(instance.zoom).toBe(3);
+  });
+
+  it("keeps the whole room visible when the next zoom step would crop it noticeably", () => {
+    const instance = new Camera(2000, 2000);
+    instance.setViewport(800, 600, 1);
+    instance.fitRoom({ col: 0, row: 0, cols: 30, rows: 30 });
+    expect(instance.zoom).toBe(1);
+  });
+
+  it("centres a room even when the whole world height fits in the viewport", () => {
+    const instance = camera(1);
+    instance.fitRoom({ col: 0, row: 0, cols: 50, rows: 40 });
+    expect(instance.zoom).toBe(1);
+    expect(instance.centerY).toBeCloseTo(300);
+    expect(instance.offsetY).toBe(0);
   });
 
   it("stops following when the user pans", () => {

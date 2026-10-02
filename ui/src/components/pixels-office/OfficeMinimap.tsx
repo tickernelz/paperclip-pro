@@ -34,7 +34,7 @@ export function OfficeMinimap({ office }: { office: OfficeController | null }) {
     <canvas
       ref={canvasRef}
       aria-label="Office minimap"
-      className="h-(--sz-7rem) w-(--sz-160px) cursor-pointer rounded-md border border-border bg-card"
+      className="hidden h-(--sz-7rem) w-(--sz-160px) cursor-pointer rounded-md border border-border bg-card @2xl:block"
       onClick={(domEvent) => {
         if (!office) return;
         const rect = domEvent.currentTarget.getBoundingClientRect();

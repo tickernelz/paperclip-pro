@@ -20,11 +20,14 @@ import { TimelineScrubber } from "../components/pixels-office/TimelineScrubber";
 import { AMBIENT_SOUND_STORAGE_KEY } from "../components/pixels-office/constants";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
+import { useSidebar } from "../context/SidebarContext";
 import { getOfficeLiveStore, canBoardAssignIssues, type TickerEntry } from "@/lib/pixels-office/live";
 import type { AgentVisual, OfficeController, OfficeObjectKind } from "@/lib/pixels-office/officeModel";
 import { setAmbientEnabled } from "@/lib/pixels-office/audio";
 
 const SNAPSHOT_REFETCH_DEBOUNCE_MS = 2000;
+const WIDE_LAYOUT_QUERY = "(min-width: 1280px)";
 
 function seatKey(assignments: readonly PixelsOfficeSeatAssignment[]): string {
   return assignments
@@ -62,6 +65,14 @@ export function PixelsOffice() {
   const queryClient = useQueryClient();
 
   const [selection, setSelection] = useState<OfficeSelection>(null);
+  const { isMobile } = useSidebar();
+  const [wide, setWide] = useState(() => window.matchMedia(WIDE_LAYOUT_QUERY).matches);
+  useEffect(() => {
+    const media = window.matchMedia(WIDE_LAYOUT_QUERY);
+    const onChange = () => setWide(media.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
   const [visuals, setVisuals] = useState<readonly AgentVisual[]>([]);
   const [ticker, setTicker] = useState<readonly TickerEntry[]>([]);
   const [office, setOffice] = useState<OfficeController | null>(null);
@@ -222,9 +233,19 @@ export function PixelsOffice() {
     [assign, canAssign],
   );
 
-  const handleSelectAgent = useCallback((agentId: string) => {
-    setSelection({ kind: "agent", agentId });
-  }, []);
+  const [armedIssueId, setArmedIssueId] = useState<string | null>(null);
+
+  const handleSelectAgent = useCallback(
+    (agentId: string) => {
+      if (armedIssueId) {
+        handleAssignIssue(armedIssueId, agentId);
+        setArmedIssueId(null);
+        return;
+      }
+      setSelection({ kind: "agent", agentId });
+    },
+    [armedIssueId, handleAssignIssue],
+  );
 
   const handleSelectObject = useCallback((object: OfficeObjectKind) => {
     setSelection({ kind: "object", object });
@@ -286,21 +307,52 @@ export function PixelsOffice() {
     );
   }
 
+  const panel =
+    selection?.kind === "agent" && selectedAgent ? (
+      <AgentPanel
+        companyId={selectedCompanyId}
+        agent={selectedAgent}
+        visual={selectedVisual}
+        onClose={() => setSelection(null)}
+      />
+    ) : selection?.kind === "object" ? (
+      <ObjectPanel
+        companyId={selectedCompanyId}
+        object={selection.object}
+        onClose={() => setSelection(null)}
+      />
+    ) : null;
+
+  const hud = (
+    <OfficeHud
+      companyId={selectedCompanyId}
+      ticker={ticker}
+      canAssign={canAssign}
+      ambientEnabled={ambient}
+      onToggleAmbient={setAmbient}
+      onOpenObject={jumpToObject}
+      compact={isMobile}
+      armedIssueId={armedIssueId}
+      onArmIssue={setArmedIssueId}
+    />
+  );
+
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="flex flex-col gap-3 p-3 md:gap-4 md:p-6">
+      <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
         <div className="flex items-baseline gap-3">
           <h1 className="text-lg font-semibold text-foreground">Pixels Office</h1>
           <span className="text-xs text-muted-foreground">
             {visuals.length} agents{replaying ? " · replaying history" : ""}
           </span>
         </div>
-        <div className="flex flex-wrap items-center gap-1">
+        <div className="-mx-3 flex items-center gap-1 overflow-x-auto px-3 md:mx-0 md:flex-wrap md:overflow-visible md:px-0">
           {rooms.map((room) => (
             <Button
               key={room.id}
               size="sm"
               variant="ghost"
+              className="shrink-0"
               onClick={() => office?.centerOn(room.centerX, room.centerY)}
             >
               {room.label}
@@ -309,17 +361,18 @@ export function PixelsOffice() {
         </div>
       </div>
 
-      <OfficeHud
-        companyId={selectedCompanyId}
-        ticker={ticker}
-        canAssign={canAssign}
-        ambientEnabled={ambient}
-        onToggleAmbient={setAmbient}
-        onOpenObject={jumpToObject}
-      />
+      {isMobile ? null : hud}
 
       <div className="flex min-h-0 flex-col gap-4 xl:flex-row">
-        <Card className="relative min-w-0 flex-1 overflow-hidden p-0">
+        <Card className="@container relative min-w-0 flex-1 overflow-hidden p-0">
+          {armedIssueId ? (
+            <div className="absolute inset-x-2 top-2 z-10 flex items-center justify-between gap-2 rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+              <span>Tap an agent to assign the selected task.</span>
+              <Button size="sm" variant="ghost" onClick={() => setArmedIssueId(null)}>
+                Cancel
+              </Button>
+            </div>
+          ) : null}
           <PixelsOfficeCanvas
             companyId={selectedCompanyId}
             visuals={visuals}
@@ -335,26 +388,22 @@ export function PixelsOffice() {
           </div>
         </Card>
 
-        {selection ? (
-          <div className="w-full shrink-0 xl:w-(--sz-360px)">
-            {selection.kind === "agent" && selectedAgent ? (
-              <AgentPanel
-                companyId={selectedCompanyId}
-                agent={selectedAgent}
-                visual={selectedVisual}
-                onClose={() => setSelection(null)}
-              />
-            ) : null}
-            {selection.kind === "object" ? (
-              <ObjectPanel
-                companyId={selectedCompanyId}
-                object={selection.object}
-                onClose={() => setSelection(null)}
-              />
-            ) : null}
-          </div>
-        ) : null}
+        {panel && wide ? <div className="w-full shrink-0 xl:w-(--sz-360px)">{panel}</div> : null}
       </div>
+
+      {isMobile ? hud : null}
+
+      <Sheet open={panel !== null && !wide} onOpenChange={(open) => (open ? null : setSelection(null))}>
+        <SheetContent
+          side="bottom"
+          showCloseButton={false}
+          className="max-h-(--sz-80vh) gap-0 rounded-t-xl p-0 pb-(--sz-calc-safe-bottom)"
+        >
+          <SheetTitle className="sr-only">Office details</SheetTitle>
+          <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+          <div className="min-h-0 flex-1 overflow-y-auto p-2">{panel}</div>
+        </SheetContent>
+      </Sheet>
 
       <div className="flex flex-wrap items-center gap-2">
         <TimelineScrubber
