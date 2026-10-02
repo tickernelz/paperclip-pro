@@ -8,6 +8,7 @@ import type { Db } from "@tickernelz/paperclip-pro-db";
 import { healthRoutes } from "../routes/health.js";
 import * as devServerStatus from "../dev-server-status.js";
 import { resolveHotRestartIntentPath } from "../services/hot-restart.js";
+import { serverVersion } from "../version.js";
 
 const tempDirs: string[] = [];
 
@@ -104,6 +105,8 @@ describe("GET /health dev-server supervisor access", () => {
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
         status: "ok",
+        version: serverVersion,
+        serverVersion,
         deploymentMode: "authenticated",
         deploymentExposure: "private",
         localAiLoginSupported: true,
