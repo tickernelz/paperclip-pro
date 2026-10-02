@@ -939,7 +939,8 @@ async function startServerWithDatabaseTeardown(
     bindHost: runtimeListenHost,
     port: listenPort,
   });
-  const configuredApiUrl = process.env.PAPERCLIP_API_URL?.trim() || runtimeApiUrl;
+  const operatorApiUrl = process.env.PAPERCLIP_API_URL?.trim() || "";
+  const configuredApiUrl = operatorApiUrl || runtimeApiUrl;
   const runtimeApiCandidates = buildRuntimeApiCandidateUrls({
     preferredApiUrl: configuredApiUrl,
     authPublicBaseUrl: config.authPublicBaseUrl ?? null,
@@ -952,6 +953,8 @@ async function startServerWithDatabaseTeardown(
   process.env.PAPERCLIP_RUNTIME_API_URL = runtimeApiUrl;
   process.env.PAPERCLIP_RUNTIME_API_CANDIDATES_JSON = JSON.stringify(runtimeApiCandidates);
   process.env.PAPERCLIP_API_URL = configuredApiUrl;
+  if (operatorApiUrl) process.env.PAPERCLIP_API_URL_OVERRIDE = operatorApiUrl;
+  else delete process.env.PAPERCLIP_API_URL_OVERRIDE;
 
   let startupListenerBound = false;
   try {

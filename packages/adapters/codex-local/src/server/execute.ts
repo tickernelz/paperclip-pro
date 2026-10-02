@@ -594,8 +594,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const { runId, agent, runtime, config, context, onLog, onMeta, onEvent, onSpawn, authToken } = ctx;
 
+  const runOnThisHost = !adapterExecutionTargetIsRemote(
+    readAdapterExecutionTarget({
+      executionTarget: ctx.executionTarget,
+      legacyRemoteExecution: ctx.executionTransport?.remoteExecution,
+    }),
+  );
   const paperclipRunEnv = {
-    ...buildPaperclipEnv(agent),
+    ...buildPaperclipEnv(agent, { sameHost: runOnThisHost }),
     PAPERCLIP_RUN_ID: runId,
     ...(authToken ? { PAPERCLIP_API_KEY: authToken } : {}),
   };
@@ -766,7 +772,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     for (const note of preparedRuntimeConfig.notes) {
       await onLog("stdout", `[paperclip] ${note}\n`);
     }
-    const paperclipBaseEnv = buildPaperclipEnv(agent);
+    const paperclipBaseEnv = buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote });
     const runtimeMcpGateways = (ctx.runtimeMcp?.getServers() ?? []).map((server) => ({
       name: server.name,
       endpointPath: server.url,

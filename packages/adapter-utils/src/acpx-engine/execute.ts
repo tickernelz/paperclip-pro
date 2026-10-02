@@ -1944,7 +1944,7 @@ async function buildRuntime(input: {
     headers: [{ name: "Authorization", value: `Bearer ${server.token}` }],
   }));
   const paperclipEnvForAccess = {
-    ...buildPaperclipEnv(agent),
+    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
     PAPERCLIP_RUN_ID: runId,
     ...(authToken ? { PAPERCLIP_API_KEY: authToken } : {}),
   };
@@ -1974,7 +1974,10 @@ async function buildRuntime(input: {
   await fs.mkdir(stateDir, { recursive: true });
 
   const envConfig = parseObject(config.env);
-  const env: Record<string, string> = { ...buildPaperclipEnv(agent), PAPERCLIP_RUN_ID: runId };
+  const env: Record<string, string> = {
+    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
+    PAPERCLIP_RUN_ID: runId,
+  };
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim()) ||
     (typeof context.issueId === "string" && context.issueId.trim()) ||

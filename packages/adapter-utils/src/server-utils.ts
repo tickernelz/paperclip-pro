@@ -3128,10 +3128,13 @@ export function buildInvocationEnvForLogs(
   return redactEnvForLogs(merged);
 }
 
-export function buildPaperclipEnv(agent: {
-  id: string;
-  companyId: string;
-}): Record<string, string> {
+export function buildPaperclipEnv(
+  agent: {
+    id: string;
+    companyId: string;
+  },
+  options: { sameHost?: boolean } = {},
+): Record<string, string> {
   const resolveHostForUrl = (rawHost: string): string => {
     const host = rawHost.trim();
     if (!host || host === "0.0.0.0" || host === "::") return "localhost";
@@ -3151,10 +3154,15 @@ export function buildPaperclipEnv(agent: {
   // An explicit PAPERCLIP_API_URL override must win over the URL derived from
   // authPublicBaseUrl: the derived URL can be unreachable from inside the
   // runtime container (e.g. when the public base URL is VPN/tailnet-only).
+  const derivedApiUrl = `http://${runtimeHost}:${runtimePort}`;
+  const listenHost = (process.env.PAPERCLIP_LISTEN_HOST ?? "").trim();
+  const loopbackHost =
+    listenHost === "0.0.0.0" ? "127.0.0.1" : listenHost === "::" ? "[::1]" : resolveHostForUrl(listenHost);
   const apiUrl =
-    process.env.PAPERCLIP_API_URL ??
-    process.env.PAPERCLIP_RUNTIME_API_URL ??
-    `http://${runtimeHost}:${runtimePort}`;
+    options.sameHost && process.env.PAPERCLIP_LISTEN_PORT
+      ? process.env.PAPERCLIP_API_URL_OVERRIDE?.trim() ||
+        `http://${loopbackHost}:${process.env.PAPERCLIP_LISTEN_PORT}`
+      : process.env.PAPERCLIP_API_URL ?? process.env.PAPERCLIP_RUNTIME_API_URL ?? derivedApiUrl;
   vars.PAPERCLIP_API_URL = apiUrl;
   return vars;
 }

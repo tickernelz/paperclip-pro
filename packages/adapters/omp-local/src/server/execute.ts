@@ -566,7 +566,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
     const configuredEnv = parseObject(config.env);
-    const env: Record<string, string> = buildPaperclipEnv(agent);
+    const env: Record<string, string> = buildPaperclipEnv(agent, { sameHost: !remote });
     addWakeEnvironment(env, runId, context);
     const workspaceHints = Array.isArray(context.paperclipWorkspaces)
       ? context.paperclipWorkspaces.filter(
