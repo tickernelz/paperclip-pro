@@ -1,0 +1,12 @@
+[
+  { "id": "KANBAN_BOARD", "dir": "KANBAN_BOARD", "source": "obj_0.png", "width": 48, "height": 32 },
+  { "id": "COIN_STACK", "dir": "COIN_STACK", "source": "obj_1.png", "width": 16, "height": 16 },
+  { "id": "ALARM_LIGHT_ON", "dir": "ALARM_LIGHT", "source": "gen_alarm.png", "width": 16, "height": 16, "dim": { "factor": 1.3, "desaturate": 0.0 } },
+  { "id": "ALARM_LIGHT", "dir": "ALARM_LIGHT", "source": "gen_alarm.png", "width": 16, "height": 16, "dim": { "factor": 0.45, "desaturate": 0.7 } },
+  { "id": "MAILBOX", "dir": "MAILBOX", "source": "obj_5.png", "width": 16, "height": 32 },
+  { "id": "SMOKE_1", "dir": "SMOKE", "source": "obj_8.png", "width": 16, "height": 16, "maxColors": 8 },
+  { "id": "SMOKE_2", "dir": "SMOKE", "source": "obj_7.png", "width": 16, "height": 16, "maxColors": 8 },
+  { "id": "SMOKE_3", "dir": "SMOKE", "source": "obj_3.png", "width": 16, "height": 16, "maxColors": 8 },
+  { "id": "CONFETTI", "dir": "CONFETTI", "source": "obj_4.png", "width": 32, "height": 32 },
+  { "id": "DESK_LAMP", "dir": "DESK_LAMP", "source": "gen_lamp.png", "width": 16, "height": 32 }
+]

@@ -1,0 +1,42 @@
+{
+  "id": "SMOKE",
+  "name": "Smoke",
+  "category": "effect",
+  "type": "group",
+  "groupType": "animation",
+  "canPlaceOnWalls": false,
+  "canPlaceOnSurfaces": false,
+  "backgroundTiles": 0,
+  "members": [
+    {
+      "type": "asset",
+      "id": "SMOKE_1",
+      "file": "SMOKE_1.png",
+      "width": 16,
+      "height": 16,
+      "footprintW": 1,
+      "footprintH": 1,
+      "frame": 0
+    },
+    {
+      "type": "asset",
+      "id": "SMOKE_2",
+      "file": "SMOKE_2.png",
+      "width": 16,
+      "height": 16,
+      "footprintW": 1,
+      "footprintH": 1,
+      "frame": 1
+    },
+    {
+      "type": "asset",
+      "id": "SMOKE_3",
+      "file": "SMOKE_3.png",
+      "width": 16,
+      "height": 16,
+      "footprintW": 1,
+      "footprintH": 1,
+      "frame": 2
+    }
+  ]
+}

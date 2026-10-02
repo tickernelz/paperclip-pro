@@ -1,5 +1,7 @@
 import type { SpriteData } from '../types';
 
+const ZOOM_GENERATIONS = 2;
+
 const zoomCaches = new Map<number, WeakMap<SpriteData, HTMLCanvasElement>>();
 
 const outlineCache = new WeakMap<SpriteData, SpriteData>();
@@ -42,9 +44,16 @@ export function getOutlineSprite(sprite: SpriteData): SpriteData {
 
 export function getCachedSprite(sprite: SpriteData, zoom: number): HTMLCanvasElement {
   let cache = zoomCaches.get(zoom);
-  if (!cache) {
+  if (cache) {
+    zoomCaches.delete(zoom);
+  } else {
     cache = new WeakMap();
-    zoomCaches.set(zoom, cache);
+  }
+  zoomCaches.set(zoom, cache);
+  while (zoomCaches.size > ZOOM_GENERATIONS) {
+    const oldest = zoomCaches.keys().next();
+    if (oldest.done) break;
+    zoomCaches.delete(oldest.value);
   }
 
   const cached = cache.get(sprite);

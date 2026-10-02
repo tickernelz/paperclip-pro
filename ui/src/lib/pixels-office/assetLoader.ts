@@ -1,7 +1,8 @@
 import { setFloorSprites } from "./floorTiles";
-import { buildDynamicCatalog } from "./layout/furnitureCatalog";
+import { layoutToSeats } from "./layout/layoutSerializer";
+import { buildDynamicCatalog, getCatalogEntry } from "./layout/furnitureCatalog";
 import { setCharacterTemplates } from "./sprites/spriteData";
-import type { OfficeLayout, SpriteData } from "./types";
+import type { OfficeLayout, PlacedFurniture, SpriteData } from "./types";
 import { setWallSprites } from "./wallTiles";
 
 type CharacterDirectionSprites = {
@@ -55,17 +56,20 @@ export type CameraBounds = {
   rows: number;
 };
 
-type LoadedPixelAssets = {
+export type OfficeCameraBounds = {
+  office: CameraBounds;
+  boardroomKitchen: CameraBounds;
+  overflowOffice: CameraBounds;
+  rooms: CameraBounds[];
+};
+
+export type LoadedPixelAssets = {
   layouts: {
     office: OfficeLayout;
     boardroomKitchen: OfficeLayout;
     combined: OfficeLayout;
   };
-  cameraBounds: {
-    office: CameraBounds;
-    boardroomKitchen: CameraBounds;
-    overflowOffice: CameraBounds;
-  };
+  cameraBounds: OfficeCameraBounds;
 };
 
 const CHAR_FRAME_W = 16;
@@ -146,41 +150,156 @@ function recolorLayout(
   };
 }
 
-function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLayout): {
+export const TARGET_SEAT_CAPACITY = 50;
+
+const ROOM_GAP = 5;
+
+const OVERFLOW_PALETTE = [
+  { floor: { h: 145, s: 16, b: -8, c: -35 }, wall: { h: 270, s: 18, b: -20, c: -45 } },
+  { floor: { h: 60, s: 20, b: -6, c: -30 }, wall: { h: 310, s: 22, b: -24, c: -40 } },
+  { floor: { h: 200, s: 18, b: -10, c: -32 }, wall: { h: 20, s: 20, b: -22, c: -42 } },
+  { floor: { h: 95, s: 22, b: -12, c: -28 }, wall: { h: 240, s: 16, b: -18, c: -48 } },
+];
+
+function placeAnchorFurniture(office: OfficeLayout): PlacedFurniture[] {
+  const occupied = new Set<string>();
+  for (const item of office.furniture) {
+    const entry = getCatalogEntry(item.type);
+    if (!entry) continue;
+    for (let dr = 0; dr < entry.footprintH; dr++) {
+      for (let dc = 0; dc < entry.footprintW; dc++) {
+        occupied.add(`${item.col + dc},${item.row + dr}`);
+      }
+    }
+  }
+
+  const tileAt = (col: number, row: number) => office.tiles[row * office.cols + col];
+  let wallRow = -1;
+  for (let row = 0; row < office.rows - 1 && wallRow < 0; row++) {
+    for (let col = 0; col < office.cols; col++) {
+      const below = tileAt(col, row + 1);
+      if (tileAt(col, row) === 0 && below !== 0 && below !== 255) {
+        wallRow = row;
+        break;
+      }
+    }
+  }
+
+  const placed: PlacedFurniture[] = [];
+
+  function claim(type: string, col: number, row: number, width: number, height: number) {
+    for (let dr = 0; dr < height; dr++) {
+      for (let dc = 0; dc < width; dc++) occupied.add(`${col + dc},${row + dr}`);
+    }
+    placed.push({ uid: `anchor-${type}`, type, col, row });
+  }
+
+  function placeOnWall(type: string, fromRight: boolean): boolean {
+    const entry = getCatalogEntry(type);
+    if (wallRow < 1 || !entry) return false;
+    const width = entry.footprintW;
+    const columns = Array.from({ length: office.cols - width + 1 }, (_, index) => index);
+    if (fromRight) columns.reverse();
+    for (const col of columns) {
+      let free = true;
+      for (let dc = 0; dc < width && free; dc++) {
+        if (tileAt(col + dc, wallRow) !== 0) free = false;
+        if (occupied.has(`${col + dc},${wallRow}`)) free = false;
+        if (occupied.has(`${col + dc},${wallRow - 1}`)) free = false;
+      }
+      if (!free) continue;
+      claim(type, col, wallRow - 1, width, 2);
+      return true;
+    }
+    return false;
+  }
+
+  function placeOnFloor(type: string, fromRight: boolean): boolean {
+    const entry = getCatalogEntry(type);
+    if (!entry) return false;
+    const width = entry.footprintW;
+    const height = entry.footprintH;
+    for (let row = office.rows - height; row > wallRow; row--) {
+      const columns = Array.from({ length: office.cols - width + 1 }, (_, index) => index);
+      if (fromRight) columns.reverse();
+      for (const col of columns) {
+        let free = true;
+        for (let dr = 0; dr < height && free; dr++) {
+          for (let dc = 0; dc < width && free; dc++) {
+            const tile = tileAt(col + dc, row + dr);
+            if (tile === 0 || tile === 255) free = false;
+            if (occupied.has(`${col + dc},${row + dr}`)) free = false;
+          }
+        }
+        if (!free) continue;
+        claim(type, col, row, width, height);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  if (!placeOnWall("KANBAN_BOARD", false)) placeOnFloor("KANBAN_BOARD", false);
+  if (!placeOnWall("ALARM_LIGHT", true)) placeOnFloor("ALARM_LIGHT", true);
+  if (!placeOnFloor("MAILBOX", false)) placeOnWall("MAILBOX", false);
+  if (!placeOnFloor("COIN_STACK", true)) placeOnWall("COIN_STACK", true);
+  return placed;
+}
+
+export function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLayout): {
   layout: OfficeLayout;
-  cameraBounds: LoadedPixelAssets["cameraBounds"];
+  cameraBounds: OfficeCameraBounds;
 } {
-  const gap = 5;
-  const overflowOffice = recolorLayout(office, { h: 145, s: 16, b: -8, c: -35 }, { h: 270, s: 18, b: -20, c: -45 });
-  const boardOffsetCol = office.cols + gap;
-  const overflowOffsetCol = boardOffsetCol + boardroomKitchen.cols + gap;
-  const cols = office.cols + gap + boardroomKitchen.cols + gap + overflowOffice.cols;
-  const rows = Math.max(office.rows, boardroomKitchen.rows);
+  const officeSeats = layoutToSeats(office.furniture).size;
+  const boardroomSeats = layoutToSeats(boardroomKitchen.furniture).size;
+  const missingSeats = TARGET_SEAT_CAPACITY - officeSeats - boardroomSeats;
+  const overflowCount =
+    officeSeats > 0 && missingSeats > 0 ? Math.ceil(missingSeats / officeSeats) : 1;
+
+  const sources: OfficeLayout[] = [office, boardroomKitchen];
+  for (let i = 0; i < overflowCount; i++) {
+    const palette = OVERFLOW_PALETTE[i % OVERFLOW_PALETTE.length];
+    sources.push(recolorLayout(office, palette.floor, palette.wall));
+  }
+
+  const boardOffsetRow = Math.max(0, Math.floor((office.rows - boardroomKitchen.rows) / 2));
+  const placements = sources.map((layout, index) => ({
+    layout,
+    offsetCol: 0,
+    offsetRow: index === 1 ? boardOffsetRow : 0,
+  }));
+  let cols = 0;
+  for (const placement of placements) {
+    placement.offsetCol = cols;
+    cols += placement.layout.cols + ROOM_GAP;
+  }
+  cols -= ROOM_GAP;
+  const rows = Math.max(...placements.map((p) => p.offsetRow + p.layout.rows));
+
   const tiles = Array<OfficeLayout["tiles"][number]>(cols * rows).fill(255);
   const tileColors: NonNullable<OfficeLayout["tileColors"]> = Array(cols * rows).fill(null);
   const wallColor = { h: 214, s: 30, b: -100, c: -55 };
   const hallColor = { h: 209, s: 0, b: -16, c: -8 };
   const hallFloor = 9;
-  const boardOffsetRow = Math.max(0, Math.floor((office.rows - boardroomKitchen.rows) / 2));
 
-  function copyLayout(source: OfficeLayout, offsetCol: number, offsetRow: number) {
-    for (let row = 0; row < source.rows; row++) {
-      for (let col = 0; col < source.cols; col++) {
-        const sourceIndex = row * source.cols + col;
+  for (const { layout, offsetCol, offsetRow } of placements) {
+    for (let row = 0; row < layout.rows; row++) {
+      for (let col = 0; col < layout.cols; col++) {
+        const sourceIndex = row * layout.cols + col;
         const targetIndex = (row + offsetRow) * cols + col + offsetCol;
-        tiles[targetIndex] = source.tiles[sourceIndex];
-        tileColors[targetIndex] = source.tileColors?.[sourceIndex] ?? null;
+        tiles[targetIndex] = layout.tiles[sourceIndex];
+        tileColors[targetIndex] = layout.tileColors?.[sourceIndex] ?? null;
       }
     }
   }
 
-  copyLayout(office, 0, 0);
-  copyLayout(boardroomKitchen, boardOffsetCol, boardOffsetRow);
-  copyLayout(overflowOffice, overflowOffsetCol, 0);
-
   const hallRow = Math.floor(rows / 2);
   const spawnTile = { col: office.cols - 1, row: hallRow };
-  function drawHall(startCol: number, endCol: number) {
+
+  for (let i = 1; i < placements.length; i++) {
+    const previous = placements[i - 1];
+    const startCol = previous.offsetCol + previous.layout.cols - 2;
+    const endCol = placements[i].offsetCol + 1;
     for (let row = hallRow - 1; row <= hallRow + 1; row++) {
       for (let col = startCol; col <= endCol; col++) {
         const index = row * cols + col;
@@ -188,34 +307,39 @@ function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLayout): {
         tileColors[index] = hallColor;
       }
     }
-
     for (let row = hallRow - 2; row <= hallRow + 2; row++) {
       for (const col of [startCol + 1, startCol + 2, endCol - 1, endCol]) {
         const index = row * cols + col;
         tiles[index] = hallFloor;
         tileColors[index] = hallColor;
       }
-    }
-  }
-
-  drawHall(office.cols - 2, boardOffsetCol + 1);
-  drawHall(boardOffsetCol + boardroomKitchen.cols - 2, overflowOffsetCol + 1);
-  tileColors[spawnTile.row * cols + spawnTile.col] = { h: 204, s: 10, b: -42, c: -32 };
-
-  for (let row = hallRow - 2; row <= hallRow + 2; row++) {
-    for (const col of [
-      office.cols - 3,
-      boardOffsetCol + 2,
-      boardOffsetCol + boardroomKitchen.cols - 3,
-      overflowOffsetCol + 2,
-    ]) {
-      const index = row * cols + col;
-      if (tiles[index] === 255) {
-        tiles[index] = 0;
-        tileColors[index] = wallColor;
+      for (const col of [startCol - 1, endCol + 1]) {
+        const index = row * cols + col;
+        if (tiles[index] === 255) {
+          tiles[index] = 0;
+          tileColors[index] = wallColor;
+        }
       }
     }
   }
+
+  tileColors[spawnTile.row * cols + spawnTile.col] = { h: 204, s: 10, b: -42, c: -32 };
+
+  const furniture = placements.flatMap(({ layout, offsetCol, offsetRow }, index) =>
+    layout.furniture.map((item) => ({
+      ...item,
+      uid: `camera${index + 1}-${item.uid}`,
+      col: item.col + offsetCol,
+      row: item.row + offsetRow,
+    })),
+  );
+  furniture.push(...placeAnchorFurniture(office));
+
+  const roomBounds = placements.map(({ layout, offsetCol, offsetRow }, index) =>
+    index === 1
+      ? { col: offsetCol, row: offsetRow - 1, cols: layout.cols, rows: layout.rows + 1 }
+      : { col: offsetCol, row: offsetRow, cols: layout.cols, rows: layout.rows },
+  );
 
   return {
     layout: {
@@ -226,30 +350,13 @@ function combineLayouts(office: OfficeLayout, boardroomKitchen: OfficeLayout): {
       tiles,
       tileColors,
       spawnTile,
-      furniture: [
-        ...office.furniture.map((item) => ({ ...item, uid: `camera1-${item.uid}` })),
-        ...boardroomKitchen.furniture.map((item) => ({
-          ...item,
-          uid: `camera2-${item.uid}`,
-          col: item.col + boardOffsetCol,
-          row: item.row + boardOffsetRow,
-        })),
-        ...overflowOffice.furniture.map((item) => ({
-          ...item,
-          uid: `camera3-${item.uid}`,
-          col: item.col + overflowOffsetCol,
-        })),
-      ],
+      furniture,
     },
     cameraBounds: {
-      office: { col: 0, row: 0, cols: office.cols, rows: office.rows },
-      boardroomKitchen: {
-        col: boardOffsetCol,
-        row: boardOffsetRow - 1,
-        cols: boardroomKitchen.cols,
-        rows: boardroomKitchen.rows + 1,
-      },
-      overflowOffice: { col: overflowOffsetCol, row: 0, cols: overflowOffice.cols, rows: overflowOffice.rows },
+      office: roomBounds[0],
+      boardroomKitchen: roomBounds[1],
+      overflowOffice: roomBounds[2],
+      rooms: roomBounds,
     },
   };
 }

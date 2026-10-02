@@ -39,7 +39,8 @@ export function layoutToFurnitureInstances(furniture: PlacedFurniture[]): Furnit
   }
 
   const instances: FurnitureInstance[] = [];
-  for (const item of furniture) {
+  for (let sourceIndex = 0; sourceIndex < furniture.length; sourceIndex++) {
+    const item = furniture[sourceIndex];
     const entry = getCatalogEntry(item.type);
     if (!entry) continue;
     const x = item.col * TILE_SIZE;
@@ -84,7 +85,7 @@ export function layoutToFurnitureInstances(furniture: PlacedFurniture[]): Furnit
       }
     }
 
-    instances.push({ sprite, x, y, zY, ...(mirrored ? { mirrored: true } : {}) });
+    instances.push({ sprite, x, y, zY, sourceIndex, ...(mirrored ? { mirrored: true } : {}) });
   }
   return instances;
 }

@@ -18641,6 +18641,66 @@
     ]
   },
   {
+    "name": "paperclipGetPixelsOfficeTimeline",
+    "operationId": "GET /api/companies/{companyId}/pixels-office/timeline",
+    "method": "GET",
+    "path": "/companies/{companyId}/pixels-office/timeline",
+    "description": "Replay Pixels Office activity for a bounded window",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "pixels-office"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess",
+      "assertCompanyScopeReadAllowed",
+      "assertPixelsOfficeEnabled"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetPlugin",
     "operationId": "GET /api/plugins/{pluginId}",
     "method": "GET",
@@ -33942,7 +34002,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@pixels-office.ts:49",
+    "boardGuard": "assertBoard@pixels-office.ts:61",
     "authorityCapability": null,
     "parameters": [
       {

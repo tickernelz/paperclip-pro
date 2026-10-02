@@ -1,6 +1,9 @@
 import { Router, type Request, type Response } from "express";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { pixelsOfficeSeatAssignmentsSchema } from "@tickernelz/paperclip-pro-shared";
+import {
+  pixelsOfficeSeatAssignmentsSchema,
+  pixelsOfficeTimelineQuerySchema,
+} from "@tickernelz/paperclip-pro-shared";
 import { notFound } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {
@@ -39,6 +42,15 @@ export function pixelsOfficeRoutes(db: Db) {
     if (!(await assertCompanyScopeReadAllowed(req, res, companyId))) return;
     await assertPixelsOfficeEnabled();
     res.json(await service.snapshot(companyId));
+  });
+
+  router.get("/companies/:companyId/pixels-office/timeline", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    if (!(await assertCompanyScopeReadAllowed(req, res, companyId))) return;
+    await assertPixelsOfficeEnabled();
+    const query = pixelsOfficeTimelineQuerySchema.parse(req.query);
+    res.json(await service.timeline(companyId, query));
   });
 
   router.put(
