@@ -102,6 +102,14 @@ const SOURCE_RANK: Record<AttentionSourceKind, number> = {
 };
 
 const PENDING_INTERACTION_STATUSES = ["pending"] as const;
+const ADDRESSEE_WAKE_GRACE_MS = 2 * 60 * 1000;
+const ADDRESSEE_WAKE_COVERED_RUN_STATUSES = [
+  "queued",
+  "scheduled_retry",
+  "running",
+  "succeeded",
+  "interrupted",
+] as const;
 const OPEN_RECOVERY_STATUSES = ["active", "escalated"] as const;
 const HUMAN_RECOVERY_OWNER_TYPES = ["user", "board"] as const;
 const DETAIL_EXCERPT_LENGTH = 160;
@@ -1206,9 +1214,43 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
           .where(eq(agents.companyId, companyId))
         : [];
       const companyAgentMap = new Map(companyAgentRows.map((agent) => [agent.id, agent]));
+      const invokableAgentIds = new Set(
+        companyAgentRows
+          .filter((agent) => evaluateAgentInvokability(agent, companyAgentRows).invokable)
+          .map((agent) => agent.id),
+      );
+      const wakeGraceCutoff = new Date(Date.now() - ADDRESSEE_WAKE_GRACE_MS);
+      const addresseeWakeRows = interactionRows.filter((row) =>
+        row.addresseeAgentId !== null
+        && invokableAgentIds.has(row.addresseeAgentId)
+        && row.createdAt <= wakeGraceCutoff
+      );
+      const coveredWakeKeys = new Set<string>();
+      if (addresseeWakeRows.length > 0) {
+        const runInteractionId = sql<string>`${heartbeatRuns.contextSnapshot}->>'interactionId'`;
+        const wakeRunRows = await db
+          .select({ agentId: heartbeatRuns.agentId, interactionId: runInteractionId })
+          .from(heartbeatRuns)
+          .where(and(
+            eq(heartbeatRuns.companyId, companyId),
+            inArray(
+              heartbeatRuns.agentId,
+              [...new Set(addresseeWakeRows.map((row) => row.addresseeAgentId as string))],
+            ),
+            inArray(heartbeatRuns.status, [...ADDRESSEE_WAKE_COVERED_RUN_STATUSES]),
+            inArray(runInteractionId, addresseeWakeRows.map((row) => row.id)),
+          ));
+        for (const run of wakeRunRows) coveredWakeKeys.add(`${run.agentId}:${run.interactionId}`);
+      }
+      const unwokenInteractionIds = new Set(
+        addresseeWakeRows
+          .filter((row) => !coveredWakeKeys.has(`${row.addresseeAgentId}:${row.id}`))
+          .map((row) => row.id),
+      );
       const boardInteractionRows = interactionRows.filter((row) =>
-        (row.addresseeAgentId === null ||
-          !evaluateAgentInvokability(companyAgentMap.get(row.addresseeAgentId), companyAgentRows).invokable)
+        (row.addresseeAgentId === null
+          || !invokableAgentIds.has(row.addresseeAgentId)
+          || unwokenInteractionIds.has(row.id))
         && (row.addresseeUserId === null || row.addresseeUserId === options.userId)
       );
       const visibleInteractionRows = collapsePendingConfirmationsToNewest(boardInteractionRows);
