@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { PixelsOfficeAgent } from "@tickernelz/paperclip-pro-shared";
+import type { PixelsOfficeAgent, PixelsOfficeSeatAssignment } from "@tickernelz/paperclip-pro-shared";
 import { OfficeState } from "@/lib/pixels-office/engine/officeState";
 import { startGameLoop } from "@/lib/pixels-office/engine/gameLoop";
 import { renderFrame } from "@/lib/pixels-office/engine/renderer";
@@ -12,20 +12,29 @@ export type PixelsOfficeCamera = "office" | "boardroomKitchen" | "overflowOffice
 
 export type PixelsOfficeCanvasHandle = {
   showWaitingBubble: (agentId: string) => void;
+  readPlacements: () => PixelsOfficeSeatAssignment[];
 };
 
 type PixelsOfficeCanvasProps = {
   agents: PixelsOfficeAgent[];
   camera: PixelsOfficeCamera;
-  seatAssignments: Record<string, number>;
+  assignments: Record<string, PixelsOfficeSeatAssignment>;
   onReady?: (handle: PixelsOfficeCanvasHandle) => void;
+  onPlacementsChanged?: () => void;
 };
 
-export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }: PixelsOfficeCanvasProps) {
+export function PixelsOfficeCanvas({
+  agents,
+  camera,
+  assignments,
+  onReady,
+  onPlacementsChanged,
+}: PixelsOfficeCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
   const officeRef = useRef<OfficeState | null>(null);
   const cameraBoundsRef = useRef<Record<PixelsOfficeCamera, CameraBounds> | null>(null);
+  const pendingBubblesRef = useRef<Set<string>>(new Set());
   const [ready, setReady] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const visibility = usePageVisibility();
@@ -35,11 +44,43 @@ export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }:
       new Map(
         agents.map((agent) => [
           agent.id,
-          agent.activeTaskCount > 1 ? `${agent.name} (${agent.activeTaskCount})` : agent.name,
+          agent.tasks.length >= 1
+            ? `${agent.name} ${agent.activeTaskCount}/${agent.tasks.length}`
+            : agent.name,
         ]),
       ),
     [agents],
   );
+
+  const labelByIdRef = useRef(labelById);
+  useEffect(() => {
+    labelByIdRef.current = labelById;
+  }, [labelById]);
+
+  const handleRef = useRef<PixelsOfficeCanvasHandle>({
+    showWaitingBubble: (agentId: string) => {
+      const office = officeRef.current;
+      if (office?.characters.has(agentId)) {
+        office.showWaitingBubble(agentId);
+        return;
+      }
+      pendingBubblesRef.current.add(agentId);
+    },
+    readPlacements: () => {
+      const office = officeRef.current;
+      if (!office) return [];
+      const placements: PixelsOfficeSeatAssignment[] = [];
+      for (const [agentId, character] of office.characters) {
+        if (!character.seatId) continue;
+        placements.push({
+          agentId,
+          characterIndex: character.palette,
+          seatId: character.seatId,
+        });
+      }
+      return placements;
+    },
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -66,13 +107,14 @@ export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }:
     if (!office || !ready) return;
 
     const incoming = new Set(agents.map((agent) => agent.id));
+    let placedWithoutAssignment = false;
     for (const agent of agents) {
-      office.addAgent(agent.id, seatAssignments[agent.id] ?? undefined);
+      const assignment = assignments[agent.id];
+      if (!office.characters.has(agent.id) && !assignment) placedWithoutAssignment = true;
+      office.addAgent(agent.id, assignment?.characterIndex, undefined, assignment?.seatId);
       const character = office.characters.get(agent.id);
       if (!character) continue;
-      const palette = seatAssignments[agent.id];
-      if (palette !== undefined && character.palette !== palette) character.palette = palette;
-      if (character.hueShift !== 0) character.hueShift = 0;
+      if (pendingBubblesRef.current.delete(agent.id)) office.showWaitingBubble(agent.id);
       const isWorking = agent.activeRunId !== null;
       if (character.isActive !== isWorking) office.setAgentActive(agent.id, isWorking);
       const nextTool = isWorking ? "Edit" : null;
@@ -81,17 +123,12 @@ export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }:
     for (const id of Array.from(office.characters.keys())) {
       if (!incoming.has(id)) office.removeAgent(id);
     }
-  }, [agents, ready, seatAssignments]);
+    if (placedWithoutAssignment) onPlacementsChanged?.();
+  }, [agents, assignments, onPlacementsChanged, ready]);
 
   useEffect(() => {
-    const office = officeRef.current;
-    if (!office || !ready) return;
-    onReady?.({
-      showWaitingBubble: (agentId: string) => {
-        office.showWaitingBubble(agentId);
-      },
-    });
-  }, [onReady, ready]);
+    onReady?.(handleRef.current);
+  }, [onReady]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -152,13 +189,12 @@ export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }:
             seats: office.seats,
             characters: office.characters,
           },
-          undefined,
           layout.tileColors,
           layout.cols,
           layout.rows,
         );
 
-        drawAgentLabels(ctx, office.characters.values(), labelById, offsetX, offsetY, zoom);
+        drawAgentLabels(ctx, office.characters.values(), labelByIdRef.current, offsetX, offsetY, zoom);
       },
     });
 
@@ -166,7 +202,7 @@ export function PixelsOfficeCanvas({ agents, camera, seatAssignments, onReady }:
       observer.disconnect();
       stop();
     };
-  }, [camera, labelById, ready, visibility.visible]);
+  }, [camera, ready, visibility.visible]);
 
   return (
     <div ref={wrapRef} className="relative h-(--sz-calc-44) min-h-(--sz-520px) w-full">

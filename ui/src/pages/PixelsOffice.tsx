@@ -4,6 +4,7 @@ import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { pixelsOfficeApi } from "../api/pixelsOffice";
+import { ApiError } from "../api/client";
 import {
   PixelsOfficeCanvas,
   type PixelsOfficeCamera,
@@ -13,7 +14,10 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { LiveEventType, PixelsOfficeAgent } from "@tickernelz/paperclip-pro-shared";
+import type {
+  LiveEventType,
+  PixelsOfficeSeatAssignment,
+} from "@tickernelz/paperclip-pro-shared";
 import { useCompanyLiveEvent } from "../context/LiveUpdatesProvider";
 
 const CAMERAS: Array<{ id: PixelsOfficeCamera; label: string }> = [
@@ -29,12 +33,24 @@ const PIXELS_OFFICE_EVENT_TYPES: ReadonlySet<LiveEventType> = new Set<LiveEventT
   "activity.logged",
 ]);
 
+const REFETCH_DEBOUNCE_MS = 1500;
+
+function assignmentKey(assignments: PixelsOfficeSeatAssignment[]): string {
+  return assignments
+    .map((entry) => `${entry.agentId}:${entry.characterIndex}:${entry.seatId}`)
+    .sort()
+    .join("|");
+}
+
 export function PixelsOffice() {
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const [camera, setCamera] = useState<PixelsOfficeCamera>("office");
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(null);
+  const [seatError, setSeatError] = useState<string | null>(null);
   const canvasHandleRef = useRef<PixelsOfficeCanvasHandle | null>(null);
+  const lastPersistedRef = useRef<string | null>(null);
+  const refetchTimerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const handleCanvasReady = useCallback((handle: PixelsOfficeCanvasHandle) => {
     canvasHandleRef.current = handle;
@@ -50,22 +66,50 @@ export function PixelsOffice() {
     enabled: !!selectedCompanyId,
   });
 
+  const scheduleRefetch = useCallback(() => {
+    clearTimeout(refetchTimerRef.current);
+    refetchTimerRef.current = setTimeout(() => {
+      refetchTimerRef.current = undefined;
+      void refetch();
+    }, REFETCH_DEBOUNCE_MS);
+  }, [refetch]);
+
+  useEffect(() => () => clearTimeout(refetchTimerRef.current), []);
+
   useCompanyLiveEvent((event) => {
     if (!PIXELS_OFFICE_EVENT_TYPES.has(event.type)) return;
     if (event.type === "heartbeat.run.queued") {
       const agentId = event.payload.agentId;
       if (typeof agentId === "string") canvasHandleRef.current?.showWaitingBubble(agentId);
     }
-    void refetch();
+    scheduleRefetch();
   });
 
-  const seatAssignments = useMemo(() => {
-    const map: Record<string, number> = {};
-    for (const agent of data?.agents ?? []) {
-      map[agent.id] = agent.activeTaskCount;
-    }
+  const assignments = useMemo(() => {
+    const map: Record<string, PixelsOfficeSeatAssignment> = {};
+    for (const entry of data?.assignments ?? []) map[entry.agentId] = entry;
     return map;
   }, [data]);
+
+  const handlePlacementsChanged = useCallback(() => {
+    if (!selectedCompanyId) return;
+    const handle = canvasHandleRef.current;
+    if (!handle) return;
+    const placements = handle.readPlacements();
+    const next = assignmentKey(placements);
+    if (next === assignmentKey(data?.assignments ?? []) || next === lastPersistedRef.current) return;
+    lastPersistedRef.current = next;
+    void pixelsOfficeApi
+      .replaceSeats(selectedCompanyId, placements)
+      .then(() => {
+        setSeatError(null);
+        void refetch();
+      })
+      .catch((cause: unknown) => {
+        if (cause instanceof ApiError && cause.status === 403) return;
+        setSeatError(cause instanceof Error ? cause.message : String(cause));
+      });
+  }, [data, refetch, selectedCompanyId]);
 
   const selectedAgent = useMemo(
     () => data?.agents.find((agent) => agent.id === selectedAgentId) ?? null,
@@ -121,12 +165,15 @@ export function PixelsOffice() {
         </div>
       </div>
 
+      {seatError ? <p className="text-sm text-muted-foreground">{seatError}</p> : null}
+
       <Card className="overflow-hidden p-0">
         <PixelsOfficeCanvas
           agents={data?.agents ?? []}
           camera={camera}
-          seatAssignments={seatAssignments}
+          assignments={assignments}
           onReady={handleCanvasReady}
+          onPlacementsChanged={handlePlacementsChanged}
         />
       </Card>
 
@@ -148,7 +195,8 @@ export function PixelsOffice() {
               </Badge>
             </div>
             <div className="mt-2 text-xs text-muted-foreground">
-              {agent.activeTaskCount} active · {agent.tasks.length} open · cap {agent.maxConcurrentRuns}
+              {agent.activeTaskCount} active · {agent.queuedTaskCount} queued ·{" "}
+              {agent.tasks.length} open · cap {agent.maxConcurrentRuns}
             </div>
             {selectedAgent?.id === agent.id && agent.tasks.length > 0 ? (
               <ul className="mt-2 space-y-1">
@@ -156,7 +204,7 @@ export function PixelsOffice() {
                   <li key={task.issueId} className="flex items-center gap-2 text-xs">
                     <span className="font-mono text-muted-foreground">{task.identifier}</span>
                     <span className="truncate text-foreground">{task.title}</span>
-                    {task.active ? <Badge variant="secondary">live</Badge> : null}
+                    {task.runStatus ? <Badge variant="secondary">{task.runStatus}</Badge> : null}
                   </li>
                 ))}
               </ul>

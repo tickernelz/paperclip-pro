@@ -30,12 +30,26 @@ function localBoardActor(): Express.Request["actor"] {
   return { type: "board", userId: "board-user", source: "local_implicit", isInstanceAdmin: true };
 }
 
-function agentActor(companyId: string): Express.Request["actor"] {
+function agentActor(companyId: string, agentId = randomUUID()): Express.Request["actor"] {
   return {
     type: "agent",
-    agentId: randomUUID(),
+    agentId,
     companyId,
     source: "agent_key",
+  } as Express.Request["actor"];
+}
+
+function restrictedKeyAgentActor(
+  companyId: string,
+  agentId: string,
+  keyScope: Record<string, unknown>,
+): Express.Request["actor"] {
+  return {
+    type: "agent",
+    agentId,
+    companyId,
+    source: "agent_key",
+    keyScope,
   } as Express.Request["actor"];
 }
 
@@ -86,14 +100,19 @@ describeEmbeddedPostgres("pixels office routes", () => {
     await instanceSettingsService(db).updateExperimental({ enablePixelsOffice: true });
   }
 
-  async function seedAgent(companyId: string, name: string, maxConcurrentRuns?: number) {
+  async function seedAgent(
+    companyId: string,
+    name: string,
+    maxConcurrentRuns?: number,
+    status = "idle",
+  ) {
     return db
       .insert(agents)
       .values({
         companyId,
         name,
         role: "engineer",
-        status: "idle",
+        status,
         runtimeConfig: maxConcurrentRuns === undefined ? {} : { heartbeat: { maxConcurrentRuns } },
       })
       .returning()
@@ -204,7 +223,7 @@ describeEmbeddedPostgres("pixels office routes", () => {
     expect(logged.some((row) => row.action === "pixels_office.seats_updated")).toBe(true);
   });
 
-  it("replaces the whole seat map and drops agents from another company", async () => {
+  it("replaces the whole seat map and refuses agents from another company", async () => {
     const company = await seedCompany();
     const otherCompany = await seedCompany();
     await enablePixelsOffice();
@@ -216,7 +235,7 @@ describeEmbeddedPostgres("pixels office routes", () => {
       .put(`/api/companies/${company.id}/pixels-office/seats`)
       .send({ assignments: [{ agentId: mine.id, characterIndex: 1, seatId: "seat-one" }] });
 
-    const res = await request(app)
+    const rejected = await request(app)
       .put(`/api/companies/${company.id}/pixels-office/seats`)
       .send({
         assignments: [
@@ -225,13 +244,59 @@ describeEmbeddedPostgres("pixels office routes", () => {
         ],
       });
 
-    expect(res.status).toBe(200);
-    expect(res.body.assignments).toEqual([
+    expect(rejected.status).toBe(422);
+    const untouched = await db.select().from(pixelsOfficeSeats);
+    expect(untouched).toHaveLength(1);
+    expect(untouched[0]!.seatId).toBe("seat-one");
+
+    const accepted = await request(app)
+      .put(`/api/companies/${company.id}/pixels-office/seats`)
+      .send({ assignments: [{ agentId: mine.id, characterIndex: 2, seatId: "seat-two" }] });
+
+    expect(accepted.status).toBe(200);
+    expect(accepted.body.assignments).toEqual([
       { agentId: mine.id, characterIndex: 2, seatId: "seat-two" },
     ]);
     const stored = await db.select().from(pixelsOfficeSeats);
     expect(stored).toHaveLength(1);
     expect(stored[0]!.seatId).toBe("seat-two");
+  });
+
+  it("rejects two seat assignments for the same agent", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const agent = await seedAgent(company.id, "Twice");
+
+    const app = createApp(db, localBoardActor());
+    const res = await request(app)
+      .put(`/api/companies/${company.id}/pixels-office/seats`)
+      .send({
+        assignments: [
+          { agentId: agent.id, characterIndex: 1, seatId: "seat-one" },
+          { agentId: agent.id, characterIndex: 2, seatId: "seat-two" },
+        ],
+      });
+
+    expect(res.status).toBe(400);
+    expect(await db.select().from(pixelsOfficeSeats)).toHaveLength(0);
+  });
+
+  it("returns stored seat assignments with the snapshot", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const agent = await seedAgent(company.id, "Seated");
+
+    const app = createApp(db, localBoardActor());
+    await request(app)
+      .put(`/api/companies/${company.id}/pixels-office/seats`)
+      .send({ assignments: [{ agentId: agent.id, characterIndex: 4, seatId: "seat-nine" }] });
+
+    const res = await request(app).get(`/api/companies/${company.id}/pixels-office`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.assignments).toEqual([
+      { agentId: agent.id, characterIndex: 4, seatId: "seat-nine" },
+    ]);
   });
 
   it("deletes seat rows when their agent is deleted", async () => {
@@ -265,5 +330,70 @@ describeEmbeddedPostgres("pixels office routes", () => {
     const res = await request(app).get(`/api/companies/${company.id}/pixels-office`);
 
     expect(res.status).toBe(403);
+  });
+
+  it.each([
+    ["task_bridge", { kind: "task_bridge", parentIssueId: randomUUID() }],
+    ["skill_test", { kind: "skill_test", issueId: randomUUID() }],
+  ])("denies the company-wide snapshot to %s keys", async (_kind, keyScope) => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const agent = await seedAgent(company.id, "Scoped");
+
+    const app = createApp(
+      db,
+      restrictedKeyAgentActor(company.id, agent.id, keyScope as Record<string, unknown>),
+    );
+    const res = await request(app).get(`/api/companies/${company.id}/pixels-office`);
+
+    expect(res.status, JSON.stringify(res.body)).toBe(403);
+  });
+
+  it("serves the snapshot to a same-company agent and to the board", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const agent = await seedAgent(company.id, "Reader");
+
+    const agentRes = await request(createApp(db, agentActor(company.id, agent.id))).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+    expect(agentRes.status, JSON.stringify(agentRes.body)).toBe(200);
+
+    const boardRes = await request(createApp(db, localBoardActor())).get(
+      `/api/companies/${company.id}/pixels-office`,
+    );
+    expect(boardRes.status).toBe(200);
+  });
+
+  it("omits terminated agents from the snapshot", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    await seedAgent(company.id, "Alive");
+    await seedAgent(company.id, "Gone", undefined, "terminated");
+
+    const app = createApp(db, localBoardActor());
+    const res = await request(app).get(`/api/companies/${company.id}/pixels-office`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.agents.map((row: { name: string }) => row.name)).toEqual(["Alive"]);
+  });
+
+  it("omits hidden and harness issues from the open task list", async () => {
+    const company = await seedCompany();
+    await enablePixelsOffice();
+    const agent = await seedAgent(company.id, "Filtered");
+    await seedIssue(company.id, agent.id, "PX-20");
+    const hidden = await seedIssue(company.id, agent.id, "PX-21");
+    const harness = await seedIssue(company.id, agent.id, "PX-22");
+    await db.update(issues).set({ hiddenAt: new Date() }).where(eq(issues.id, hidden.id));
+    await db.update(issues).set({ harnessKind: "skill_test" }).where(eq(issues.id, harness.id));
+
+    const app = createApp(db, localBoardActor());
+    const res = await request(app).get(`/api/companies/${company.id}/pixels-office`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.agents[0].tasks.map((task: { identifier: string }) => task.identifier)).toEqual([
+      "PX-20",
+    ]);
   });
 });
