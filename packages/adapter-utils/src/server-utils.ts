@@ -4259,7 +4259,7 @@ export async function ensurePaperclipSkillSymlink(
 ): Promise<"created" | "repaired" | "skipped"> {
   const existing = await fs.lstat(target).catch(() => null);
   if (!existing) {
-    await linkSkill(source, target);
+    await placePaperclipSkillLink(source, target, linkSkill);
     return "created";
   }
 
@@ -4283,9 +4283,33 @@ export async function ensurePaperclipSkillSymlink(
     return "skipped";
   }
 
-  await fs.unlink(target);
-  await linkSkill(source, target);
+  await replacePaperclipSkillLink(source, target, linkSkill);
   return "repaired";
+}
+
+async function replacePaperclipSkillLink(
+  source: string,
+  target: string,
+  linkSkill: (source: string, target: string) => Promise<void>,
+): Promise<void> {
+  await fs.unlink(target).catch((error: NodeJS.ErrnoException) => {
+    if (error.code !== "ENOENT") throw error;
+  });
+  await placePaperclipSkillLink(source, target, linkSkill);
+}
+
+async function placePaperclipSkillLink(
+  source: string,
+  target: string,
+  linkSkill: (source: string, target: string) => Promise<void>,
+): Promise<void> {
+  try {
+    await linkSkill(source, target);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== "EEXIST") throw error;
+    const linkedPath = await fs.readlink(target).catch(() => null);
+    if (!linkedPath || path.resolve(path.dirname(target), linkedPath) !== source) throw error;
+  }
 }
 
 const BUNDLED_SKILL_ROOT = `${path.sep}node_modules${path.sep}@tickernelz${path.sep}paperclip-pro-server${path.sep}skills${path.sep}`;
@@ -4309,8 +4333,7 @@ export async function relinkPaperclipSkillsFromOtherInstalls(
     const resolvedLinkedPath = path.resolve(skillsHome, linkedPath);
     if (resolvedLinkedPath === entry.source) continue;
     if (!isSameBundledSkillFromAnotherInstall(resolvedLinkedPath, entry.source)) continue;
-    await fs.unlink(target);
-    await fs.symlink(entry.source, target);
+    await replacePaperclipSkillLink(entry.source, target, (linkSource, linkTarget) => fs.symlink(linkSource, linkTarget));
     relinked.push(entry.runtimeName);
   }
   return relinked;

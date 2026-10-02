@@ -35,6 +35,7 @@ import {
   rewriteWorkspaceCwdEnvVarsForExecution,
   stringifyPaperclipWakePayload,
   ensurePaperclipSkillSymlink,
+  relinkPaperclipSkillsFromOtherInstalls,
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
   WATCHDOG_DEFAULT_MANDATE,
@@ -63,6 +64,34 @@ describe("ensurePaperclipSkillSymlink", () => {
       const boardSource = bundled(root, "2026.928.7", "paperclip-board");
       expect(await ensurePaperclipSkillSymlink(boardSource, path.join(skillsHome, "paperclip-board"))).toBe("skipped");
       expect(await fs.readlink(path.join(skillsHome, "paperclip-board"))).toBe(foreignSource);
+    } finally {
+      await fs.rm(root, { recursive: true, force: true });
+    }
+  });
+
+  it("lets concurrent runs move the same skill link without failing", async () => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-link-"));
+    try {
+      const oldSource = bundled(root, "2026.1002.0", "paperclip");
+      const newSource = bundled(root, "2026.1002.1", "paperclip");
+      for (const dir of [oldSource, newSource]) await fs.mkdir(dir, { recursive: true });
+      const skillsHome = path.join(root, "skills");
+      await fs.mkdir(skillsHome);
+      const target = path.join(skillsHome, "paperclip");
+      const entries = [{ source: newSource, runtimeName: "paperclip" }];
+
+      await fs.symlink(oldSource, target);
+      await Promise.all(Array.from({ length: 4 }, () => relinkPaperclipSkillsFromOtherInstalls(skillsHome, entries)));
+      expect(await fs.readlink(target)).toBe(newSource);
+
+      await fs.unlink(target);
+      await fs.symlink(oldSource, target);
+      await Promise.all(Array.from({ length: 4 }, () => ensurePaperclipSkillSymlink(newSource, target)));
+      expect(await fs.readlink(target)).toBe(newSource);
+
+      await fs.unlink(target);
+      await Promise.all(Array.from({ length: 4 }, () => ensurePaperclipSkillSymlink(newSource, target)));
+      expect(await fs.readlink(target)).toBe(newSource);
     } finally {
       await fs.rm(root, { recursive: true, force: true });
     }

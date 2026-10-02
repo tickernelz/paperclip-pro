@@ -284,6 +284,8 @@ export function healthRoutes(
             }
           : {
               status: healthStatus,
+              version: serverVersion,
+              serverVersion,
               deploymentMode: opts.deploymentMode,
               commit,
               ...(cloud ? { cloud } : {}),
@@ -390,6 +392,8 @@ export function healthRoutes(
       const redactedWarnings = redactedDatabaseBackup?.warnings.length ? redactedDatabaseBackup.warnings : undefined;
       res.json({
         status: healthStatus,
+        version: serverVersion,
+        serverVersion,
         deploymentMode: opts.deploymentMode,
         deploymentExposure: opts.deploymentExposure,
         localAiLoginSupported: supportsLocalAiLogin(opts),
