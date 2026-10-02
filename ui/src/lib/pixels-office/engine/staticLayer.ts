@@ -14,7 +14,7 @@ import type {
   TileType as TileTypeVal,
 } from '../types';
 import { TILE_SIZE, TileType } from '../types';
-import { getWallInstances, hasWallSprites, wallColorToHex } from '../wallTiles';
+import { wallColorToHex } from '../wallTiles';
 
 const CHARACTER_SPRITE_W = 16;
 const CHARACTER_SPRITE_H = 32;
@@ -23,6 +23,7 @@ export interface StaticLayer {
   canvas: HTMLCanvasElement;
   width: number;
   height: number;
+  originY: number;
 }
 
 export function classifyOccluders(
@@ -64,23 +65,32 @@ export function classifyOccluders(
   return flags;
 }
 
+export function drawablesTop(drawables: readonly FurnitureInstance[]): number {
+  let top = 0;
+  for (const instance of drawables) {
+    if (instance.y < top) top = Math.floor(instance.y);
+  }
+  return top;
+}
+
 export function buildStaticLayer(
   layout: OfficeLayout,
   tileMap: TileTypeVal[][],
-  furniture: FurnitureInstance[],
+  drawables: FurnitureInstance[],
 ): StaticLayer {
+  const originY = drawablesTop(drawables);
+
   const width = layout.cols * TILE_SIZE;
-  const height = layout.rows * TILE_SIZE;
+  const height = layout.rows * TILE_SIZE - originY;
   const canvas = document.createElement('canvas');
   canvas.width = width;
   canvas.height = height;
   const ctx = canvas.getContext('2d')!;
   ctx.imageSmoothingEnabled = false;
+  ctx.translate(0, -originY);
 
   drawTiles(ctx, tileMap, layout.tileColors, layout.cols);
 
-  const walls = hasWallSprites() ? getWallInstances(tileMap, layout.tileColors, layout.cols) : [];
-  const drawables = walls.length > 0 ? walls.concat(furniture) : furniture;
   const order = drawables.map((_, index) => index);
   order.sort((a, b) => drawables[a].zY - drawables[b].zY);
   for (const index of order) {
@@ -97,7 +107,7 @@ export function buildStaticLayer(
     }
   }
 
-  return { canvas, width, height };
+  return { canvas, width, height, originY };
 }
 
 function drawTiles(

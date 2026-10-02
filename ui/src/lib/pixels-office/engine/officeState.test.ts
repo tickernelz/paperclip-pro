@@ -166,3 +166,45 @@ describe("OfficeState.update", () => {
     expect(state.nextWakeSeconds()).toBeCloseTo(29.9);
   });
 });
+
+describe("character overlap", () => {
+  it("spawns a second new agent on a free tile instead of on top of the first", () => {
+    vi.spyOn(Math, "random").mockReturnValue(0);
+    const state = new OfficeState(layoutWith([]));
+
+    state.addAgent("agent-1");
+    state.addAgent("agent-2");
+
+    const a = state.characters.get("agent-1")!;
+    const b = state.characters.get("agent-2")!;
+    expect([a.tileCol, a.tileRow]).not.toEqual([b.tileCol, b.tileRow]);
+  });
+
+  it("never lets two wandering agents share a tile", () => {
+    let seed = 7;
+    vi.spyOn(Math, "random").mockImplementation(() => {
+      seed = (seed * 16807) % 2147483647;
+      return seed / 2147483647;
+    });
+    const state = new OfficeState(layoutWith([], 4, 2));
+    for (let i = 0; i < 6; i++) {
+      state.addAgent(`agent-${i}`);
+      state.setAgentActive(`agent-${i}`, false);
+    }
+
+    for (let step = 0; step < 2000; step++) {
+      state.update(0.05);
+      const tiles = new Set<string>();
+      for (const ch of state.characters.values()) {
+        const key = `${ch.tileCol},${ch.tileRow}`;
+        expect(tiles.has(key)).toBe(false);
+        tiles.add(key);
+        if (ch.moveProgress > 0 && ch.path.length > 0) {
+          const next = `${ch.path[0].col},${ch.path[0].row}`;
+          expect(tiles.has(next)).toBe(false);
+          tiles.add(next);
+        }
+      }
+    }
+  });
+});

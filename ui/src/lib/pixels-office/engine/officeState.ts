@@ -17,6 +17,7 @@ import {
 } from '../layout/layoutSerializer';
 import { NavGrid } from '../layout/tileMap';
 import { getLoadedCharacterCount } from '../sprites/spriteData';
+import { getWallInstances, hasWallSprites } from '../wallTiles';
 import type {
   Character,
   FurnitureInstance,
@@ -28,6 +29,7 @@ import type {
 import { CharacterState, Direction, TILE_SIZE } from '../types';
 import { createCharacter, isCharacterAnimating, updateCharacter } from './characters';
 import { classifyOccluders } from './staticLayer';
+import { TileClaims } from './tileClaims';
 
 export interface RestoredPose {
   tileCol: number;
@@ -60,6 +62,7 @@ export class OfficeState {
   seats: Map<string, Seat>;
   blockedTiles: Set<string>;
   nav: NavGrid;
+  claims: TileClaims;
   staticFurniture: FurnitureInstance[] = [];
   dynamicFurniture: FurnitureInstance[] = [];
   switchable: SwitchableFurniture[] = [];
@@ -75,6 +78,7 @@ export class OfficeState {
     this.seats = layoutToSeats(this.layout.furniture);
     this.blockedTiles = getBlockedTiles(this.layout.furniture);
     this.nav = new NavGrid(this.tileMap, this.blockedTiles);
+    this.claims = new TileClaims(this.nav.cols, this.nav.rows);
     this.buildFurniture();
   }
 
@@ -132,6 +136,10 @@ export class OfficeState {
       });
     }
 
+    const walls = hasWallSprites()
+      ? getWallInstances(this.tileMap, this.layout.tileColors, this.layout.cols)
+      : [];
+    if (walls.length > 0) plain.push(...walls);
     const occluders = classifyOccluders(plain, this.nav, this.seats.values());
     this.staticFurniture = [];
     this.dynamicFurniture = [];
@@ -268,15 +276,24 @@ export class OfficeState {
       ch.y = pose.y;
       ch.dir = pose.dir;
       ch.state = pose.state === CharacterState.WALK ? CharacterState.IDLE : pose.state;
+      if (pose.state === CharacterState.WALK) this.snapToTile(ch, ch.tileCol, ch.tileRow);
     } else if (!seatWasRequested) {
       const spawn = this.getSpawnTile();
-      ch.tileCol = spawn.col;
-      ch.tileRow = spawn.row;
-      ch.x = spawn.col * TILE_SIZE + TILE_SIZE / 2;
-      ch.y = spawn.row * TILE_SIZE + TILE_SIZE / 2;
+      this.snapToTile(ch, spawn.col, spawn.row);
       ch.state = CharacterState.IDLE;
       ch.dir = Direction.DOWN;
       ch.wanderTimer = Math.random() * 3;
+    }
+
+    if (!this.claims.claim(id, ch.tileCol, ch.tileRow)) {
+      const free = this.nav.nearestOpen(ch.tileCol, ch.tileRow, (col, row) =>
+        this.claims.isFreeFor(id, col, row),
+      );
+      if (free) {
+        this.snapToTile(ch, free.col, free.row);
+        if (ch.state === CharacterState.TYPE) ch.state = CharacterState.IDLE;
+        this.claims.claim(id, free.col, free.row);
+      }
     }
 
     this.characters.set(id, ch);
@@ -291,6 +308,7 @@ export class OfficeState {
     }
     if (this.selectedAgentId === id) this.selectedAgentId = null;
     if (this.hoveredAgentId === id) this.hoveredAgentId = null;
+    this.claims.releaseAll(id);
     this.characters.delete(id);
     this.rebuildAutoOnTiles();
   }
@@ -301,8 +319,15 @@ export class OfficeState {
     const seat = ch.seatId ? this.seats.get(ch.seatId) : undefined;
     const ownSeatTarget = seat ? seat.seatCol === col && seat.seatRow === row : false;
     if (!this.nav.isWalkable(col, row) && !ownSeatTarget) return false;
-    const path = this.nav.findPath(ch.tileCol, ch.tileRow, col, row, ownSeatTarget);
+    let goal = { col, row };
+    if (!this.claims.isFreeFor(agentId, col, row)) {
+      const free = this.nav.nearestOpen(col, row, (c, r) => this.claims.isFreeFor(agentId, c, r));
+      if (!free) return false;
+      goal = free;
+    }
+    const path = this.nav.findPath(ch.tileCol, ch.tileRow, goal.col, goal.row, ownSeatTarget);
     if (path.length === 0) return false;
+    this.settleClaims(ch);
     ch.path = path;
     ch.moveProgress = 0;
     ch.state = CharacterState.WALK;
@@ -317,6 +342,7 @@ export class OfficeState {
     ch.isActive = active;
     if (!active) {
       ch.seatTimer = -1;
+      this.settleClaims(ch);
       ch.path = [];
       ch.moveProgress = 0;
     }
@@ -328,6 +354,23 @@ export class OfficeState {
     if (!ch || ch.still === still) return;
     ch.still = still;
     this.rebuildAutoOnTiles();
+  }
+
+  private snapToTile(ch: Character, col: number, row: number): void {
+    ch.tileCol = col;
+    ch.tileRow = row;
+    ch.x = col * TILE_SIZE + TILE_SIZE / 2;
+    ch.y = row * TILE_SIZE + TILE_SIZE / 2;
+  }
+
+  private settleClaims(ch: Character): void {
+    if (ch.moveProgress > 0 && ch.path.length > 0) {
+      const next = ch.path[0];
+      this.claims.release(ch.id, ch.tileCol, ch.tileRow);
+      this.snapToTile(ch, next.col, next.row);
+    }
+    this.claims.releaseAll(ch.id);
+    this.claims.claim(ch.id, ch.tileCol, ch.tileRow);
   }
 
   setAgentPinned(id: string, pinned: boolean): void {
@@ -403,7 +446,7 @@ export class OfficeState {
     let busy = this.isSwitchableAnimating();
 
     for (const ch of this.characters.values()) {
-      updateCharacter(ch, dt, this.nav, this.seats);
+      updateCharacter(ch, dt, this.nav, this.seats, this.claims);
       if (isCharacterAnimating(ch)) busy = true;
       if (ch.hop > 0) {
         ch.hop = Math.max(0, ch.hop - dt);

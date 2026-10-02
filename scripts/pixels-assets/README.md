@@ -46,7 +46,17 @@ cp -r /tmp/pxasset/final/* ui/public/pixels/furniture/
 python3 scripts/pixels-assets/preview.py /tmp/pxasset/final /tmp/pxasset/preview-6x.png
 ```
 
-## 6. Catalog
+## 6. Floors
+
+`floors.py` draws the stone tile (`floor_7.png`) and the herringbone parquet (`floor_8.png`) as
+16x16 greyscale patterns. Layouts colour them per tile through `tileColors`, so the files carry
+shading only.
+
+```sh
+python3 scripts/pixels-assets/floors.py ui/public/pixels/floors
+```
+
+## 7. Catalog
 
 Placeable sprites need an entry in `ui/public/pixels/pixels-office-assets.json` under `furniture`
 with `category`, `width`, `height`, `footprintW`, `footprintH` and `furniturePath`; wall-mounted

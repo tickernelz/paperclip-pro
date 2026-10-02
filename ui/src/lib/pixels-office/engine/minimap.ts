@@ -58,14 +58,14 @@ export class Minimap {
       ctx.fillStyle = ch.isActive && !ch.still ? DOT_ACTIVE_COLOR : DOT_COLOR;
       ctx.fillRect(
         originX + Math.round(ch.x * scale) - (dotSize >> 1),
-        originY + Math.round(ch.y * scale) - (dotSize >> 1),
+        originY + Math.round((ch.y - layer.originY) * scale) - (dotSize >> 1),
         dotSize,
         dotSize,
       );
     }
 
     const viewWorldX = -view.offsetX / view.zoom;
-    const viewWorldY = -view.offsetY / view.zoom;
+    const viewWorldY = -view.offsetY / view.zoom - layer.originY;
     const viewWorldW = view.width / view.zoom;
     const viewWorldH = view.height / view.zoom;
     ctx.strokeStyle = VIEWPORT_COLOR;

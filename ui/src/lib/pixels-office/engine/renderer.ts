@@ -178,10 +178,11 @@ function blitStaticLayer(
   layer: StaticLayer,
   view: SceneView,
 ): void {
+  const layerOffsetY = view.offsetY + layer.originY * view.zoom;
   const sourceX = Math.max(0, Math.floor(-view.offsetX / view.zoom));
-  const sourceY = Math.max(0, Math.floor(-view.offsetY / view.zoom));
+  const sourceY = Math.max(0, Math.floor(-layerOffsetY / view.zoom));
   const sourceRight = Math.min(layer.width, Math.ceil((view.width - view.offsetX) / view.zoom));
-  const sourceBottom = Math.min(layer.height, Math.ceil((view.height - view.offsetY) / view.zoom));
+  const sourceBottom = Math.min(layer.height, Math.ceil((view.height - layerOffsetY) / view.zoom));
   const sourceW = sourceRight - sourceX;
   const sourceH = sourceBottom - sourceY;
   if (sourceW <= 0 || sourceH <= 0) return;
@@ -193,7 +194,7 @@ function blitStaticLayer(
     sourceW,
     sourceH,
     view.offsetX + sourceX * view.zoom,
-    view.offsetY + sourceY * view.zoom,
+    layerOffsetY + sourceY * view.zoom,
     sourceW * view.zoom,
     sourceH * view.zoom,
   );

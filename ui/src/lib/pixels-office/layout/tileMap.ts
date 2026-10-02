@@ -64,6 +64,7 @@ export class NavGrid {
     endCol: number,
     endRow: number,
     allowBlockedGoal = false,
+    avoid: Uint8Array | null = null,
   ): TileRef[] {
     if (!this.inBounds(startCol, startRow) || !this.inBounds(endCol, endRow)) return [];
     const start = startRow * this.cols + startCol;
@@ -72,10 +73,12 @@ export class NavGrid {
     if (this.open[goal] !== 1 && !allowBlockedGoal) return [];
 
     const cacheKey = (start * this.open.length + goal) * 2 + (allowBlockedGoal ? 1 : 0);
-    const cached = this.cache.get(cacheKey);
-    if (cached) return this.materialise(cached);
+    if (avoid === null) {
+      const cached = this.cache.get(cacheKey);
+      if (cached) return this.materialise(cached);
+    }
 
-    const found = this.search(start, goal);
+    const found = this.search(start, goal, avoid);
     if (!found) return [];
 
     let length = 0;
@@ -87,12 +90,59 @@ export class NavGrid {
       cursor--;
     }
 
-    if (this.cache.size >= PATH_CACHE_LIMIT) this.cache.clear();
-    this.cache.set(cacheKey, steps);
+    if (avoid === null) {
+      if (this.cache.size >= PATH_CACHE_LIMIT) this.cache.clear();
+      this.cache.set(cacheKey, steps);
+    }
     return this.materialise(steps);
   }
 
-  private search(start: number, goal: number): boolean {
+  nearestOpen(
+    col: number,
+    row: number,
+    accept: (col: number, row: number) => boolean,
+  ): TileRef | null {
+    if (!this.inBounds(col, row)) return null;
+    this.stamp++;
+    const { open, visitedStamp, queue, cols } = this;
+    const size = open.length;
+    const start = row * cols + col;
+    visitedStamp[start] = this.stamp;
+    queue[0] = start;
+    let head = 0;
+    let tail = 1;
+    while (head < tail) {
+      const current = queue[head];
+      head++;
+      const currentCol = current % cols;
+      const currentRow = (current - currentCol) / cols;
+      if (open[current] === 1 && accept(currentCol, currentRow)) return { col: currentCol, row: currentRow };
+      for (let d = 0; d < 4; d++) {
+        let next: number;
+        if (d === 0) {
+          next = current - cols;
+          if (next < 0) continue;
+        } else if (d === 1) {
+          next = current + cols;
+          if (next >= size) continue;
+        } else if (d === 2) {
+          if (currentCol === 0) continue;
+          next = current - 1;
+        } else {
+          if (currentCol === cols - 1) continue;
+          next = current + 1;
+        }
+        if (visitedStamp[next] === this.stamp) continue;
+        if (open[next] !== 1) continue;
+        visitedStamp[next] = this.stamp;
+        queue[tail] = next;
+        tail++;
+      }
+    }
+    return null;
+  }
+
+  private search(start: number, goal: number, avoid: Uint8Array | null): boolean {
     this.stamp++;
     const { open, visitedStamp, parent, queue, cols } = this;
     const size = open.length;
@@ -124,6 +174,7 @@ export class NavGrid {
         }
         if (visitedStamp[next] === this.stamp) continue;
         if (open[next] !== 1 && next !== goal) continue;
+        if (avoid !== null && avoid[next] === 1 && next !== goal) continue;
         visitedStamp[next] = this.stamp;
         parent[next] = current;
         if (next === goal) return true;
