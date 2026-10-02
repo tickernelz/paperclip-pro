@@ -161,4 +161,31 @@ describe("plugin UI static route", () => {
       expect.objectContaining({ signal: expect.any(Object) }),
     );
   });
+
+  it("serves UI assets when the path segment is a plugin key rather than a UUID", async () => {
+    const packageRoot = createPluginPackage("export const marker = 'keyed-bundle';\n");
+    mockRegistry.getById.mockResolvedValue(null);
+    mockRegistry.getByKey.mockResolvedValue({
+      id: pluginId,
+      pluginKey: "paperclip.example",
+      packageName: "paperclip-plugin-example",
+      packagePath: packageRoot,
+      version: "1.0.0",
+      status: "ready",
+      manifestJson: {
+        id: "paperclip.example",
+        entrypoints: {
+          ui: "./dist/ui",
+        },
+      },
+    });
+    const app = await createApp({ type: "none", source: "none" });
+
+    const res = await request(app).get("/_plugins/paperclip.example/ui/index.js");
+
+    expect(res.status).toBe(200);
+    expect(res.text).toContain("keyed-bundle");
+    expect(mockRegistry.getById).not.toHaveBeenCalled();
+    expect(mockRegistry.getByKey).toHaveBeenCalledWith("paperclip.example");
+  });
 });

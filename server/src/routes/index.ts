@@ -7,6 +7,7 @@ export { builtInAgentRoutes } from "./built-in-agents.js";
 export { folderRoutes } from "./folders.js";
 export { summarySlotRoutes } from "./summary-slots.js";
 export { statusCardRoutes } from "./status-cards.js";
+export { pixelsOfficeRoutes } from "./pixels-office.js";
 export { teamsCatalogRoutes } from "./teams-catalog.js";
 export { agentRoutes } from "./agents.js";
 export { projectRoutes } from "./projects.js";

@@ -2605,6 +2605,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --sz-11_75rem: 11.75rem; /* SkillStudio.tsx file/input browser cap: five min-h-9 rows plus p-1 vertical padding. */
   --sz-calc-33: calc(100dvh - 6rem); /* Extracted from ui/src/pages/CompanySkills.tsx (h-[calc(100dvh-6rem)]). */
   --sz-calc-34: clamp(14rem,45vh,28rem); /* Extracted from ui/src/pages/CompanySkills.tsx (h-[clamp(14rem,45vh,28rem)]). */
+  --sz-calc-44: min(725px,calc(100vh - 185px)); /* PixelsOfficeCanvas camera viewport height. */
   --sz-400px: 400px; /* Extracted from ui/src/pages/CompanySkills.tsx (min-h-[400px]). */
   --sz-calc-35: min(34rem,55vw); /* Extracted from ui/src/pages/CompanySkills.tsx (max-w-[min(34rem,55vw)]). */
   --sz-640px: 640px; /* Extracted from ui/src/pages/DesignGuide.tsx (max-w-[640px]). */

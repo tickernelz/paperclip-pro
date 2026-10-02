@@ -327,6 +327,14 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
     cloudDefault: false,
     selfHostedDefault: false,
   },
+  enablePixelsOffice: {
+    title: "Pixels Office",
+    description:
+      "Show a live pixel-art office floor plan where each agent is a character and each character shows how many tasks that agent is holding.",
+    tier: "managed",
+    cloudDefault: false,
+    selfHostedDefault: false,
+  },
 };
 
 export const INSTANCE_FEATURE_KEYS = Object.keys(INSTANCE_FEATURE_CATALOG).sort() as InstanceFeatureKey[];

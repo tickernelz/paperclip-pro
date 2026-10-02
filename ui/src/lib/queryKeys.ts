@@ -284,6 +284,9 @@ export const queryKeys = {
       ["status-cards", "detail", id, "summary-revisions"] as const,
     dryRun: (id: string) => ["status-cards", "detail", id, "dry-run"] as const,
   },
+  pixelsOffice: {
+    snapshot: (companyId: string) => ["pixels-office", companyId] as const,
+  },
   issues: {
     list: (companyId: string) => ["issues", companyId] as const,
     mentionPool: (companyId: string) =>

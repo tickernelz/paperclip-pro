@@ -76,6 +76,7 @@ describe("instance settings service", () => {
       enablePaperclipDeveloperMode: true,
       enableSimplifiedEnglishInteractions: false,
       enableFirstTaskPlanProposal: false,
+      enablePixelsOffice: false,
       autoRestartDevServerWhenIdle: true,
       enableWorkspaceBranchReconcileForward: true,
       enableWorkspaceDirtyQuarantineRepair: false,

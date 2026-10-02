@@ -61,6 +61,7 @@ export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
   assertEnvironmentSelectionForCompany: true,
   assertLocalLoginAvailable: true,
   assertNoHiddenSettingChanges: true,
+  assertPixelsOfficeEnabled: true,
   assertPluginManagementVisible: true,
   assertQueueMutationTarget: true,
   assertRuntimeManageAllowed: true,
