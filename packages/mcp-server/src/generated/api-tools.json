@@ -18623,6 +18623,7 @@
     },
     "guards": [
       "assertCompanyAccess",
+      "assertCompanyScopeReadAllowed",
       "assertPixelsOfficeEnabled"
     ],
     "permissions": [],
@@ -33941,7 +33942,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@pixels-office.ts:31",
+    "boardGuard": "assertBoard@pixels-office.ts:49",
     "authorityCapability": null,
     "parameters": [
       {

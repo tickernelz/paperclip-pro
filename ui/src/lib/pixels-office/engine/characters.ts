@@ -14,16 +14,13 @@ import type { CharacterSprites } from '../sprites/spriteData';
 import type { Character, Seat, SpriteData, TileType as TileTypeVal } from '../types';
 import { CharacterState, Direction, TILE_SIZE } from '../types';
 
-/** Tools that show reading animation instead of typing */
 const READING_TOOLS = new Set(['Read', 'Grep', 'Glob', 'WebFetch', 'WebSearch']);
 
-/** @internal */
 export function isReadingTool(tool: string | null): boolean {
   if (!tool) return false;
   return READING_TOOLS.has(tool);
 }
 
-/** Pixel center of a tile */
 function tileCenter(col: number, row: number): { x: number; y: number } {
   return {
     x: col * TILE_SIZE + TILE_SIZE / 2,
@@ -31,7 +28,6 @@ function tileCenter(col: number, row: number): { x: number; y: number } {
   };
 }
 
-/** Direction from one tile to an adjacent tile */
 function directionBetween(
   fromCol: number,
   fromRow: number,
@@ -100,13 +96,13 @@ export function updateCharacter(
         ch.frameTimer -= TYPE_FRAME_DURATION_SEC;
         ch.frame = (ch.frame + 1) % 2;
       }
-      // If no longer active, stand up and start wandering (after seatTimer expires)
+
       if (!ch.isActive) {
         if (ch.seatTimer > 0) {
           ch.seatTimer -= dt;
           break;
         }
-        ch.seatTimer = 0; // clear sentinel
+        ch.seatTimer = 0;
         ch.state = CharacterState.IDLE;
         ch.frame = 0;
         ch.frameTimer = 0;
@@ -118,13 +114,13 @@ export function updateCharacter(
     }
 
     case CharacterState.IDLE: {
-      // No idle animation — static pose
+
       ch.frame = 0;
-      if (ch.seatTimer < 0) ch.seatTimer = 0; // clear turn-end sentinel
-      // If became active, pathfind to seat
+      if (ch.seatTimer < 0) ch.seatTimer = 0;
+
       if (ch.isActive) {
         if (!ch.seatId) {
-          // No seat assigned — type in place
+
           ch.state = CharacterState.TYPE;
           ch.frame = 0;
           ch.frameTimer = 0;
@@ -147,7 +143,7 @@ export function updateCharacter(
             ch.frame = 0;
             ch.frameTimer = 0;
           } else {
-            // Already at seat or no path — sit down
+
             ch.state = CharacterState.TYPE;
             ch.dir = seat.facingDir;
             ch.frame = 0;
@@ -156,7 +152,7 @@ export function updateCharacter(
         }
         break;
       }
-      // Countdown wander timer
+
       ch.wanderTimer -= dt;
       if (ch.wanderTimer <= 0) {
         if (ch.wanderCount >= ch.wanderLimit) {
@@ -188,21 +184,21 @@ export function updateCharacter(
     }
 
     case CharacterState.WALK: {
-      // Walk animation
+
       if (ch.frameTimer >= WALK_FRAME_DURATION_SEC) {
         ch.frameTimer -= WALK_FRAME_DURATION_SEC;
         ch.frame = (ch.frame + 1) % 4;
       }
 
       if (ch.path.length === 0) {
-        // Path complete — snap to tile center and transition
+
         const center = tileCenter(ch.tileCol, ch.tileRow);
         ch.x = center.x;
         ch.y = center.y;
 
         if (ch.isActive) {
           if (!ch.seatId) {
-            // No seat — type in place
+
             ch.state = CharacterState.TYPE;
           } else {
             const seat = seats.get(ch.seatId);
@@ -222,7 +218,6 @@ export function updateCharacter(
         break;
       }
 
-      // Move toward next tile in path
       const nextTile = ch.path[0];
       ch.dir = directionBetween(ch.tileCol, ch.tileRow, nextTile.col, nextTile.row);
 
@@ -235,7 +230,7 @@ export function updateCharacter(
       ch.y = fromCenter.y + (toCenter.y - fromCenter.y) * t;
 
       if (ch.moveProgress >= 1) {
-        // Arrived at next tile
+
         ch.tileCol = nextTile.col;
         ch.tileRow = nextTile.row;
         ch.x = toCenter.x;
@@ -244,7 +239,6 @@ export function updateCharacter(
         ch.moveProgress = 0;
       }
 
-      // If became active while wandering, repath to seat
       if (ch.isActive && ch.seatId) {
         const seat = seats.get(ch.seatId);
         if (seat) {
@@ -270,7 +264,6 @@ export function updateCharacter(
   }
 }
 
-/** Get the correct sprite frame for a character's current state and direction */
 export function getCharacterSprite(ch: Character, sprites: CharacterSprites): SpriteData {
   switch (ch.state) {
     case CharacterState.TYPE:

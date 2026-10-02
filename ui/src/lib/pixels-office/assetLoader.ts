@@ -55,7 +55,7 @@ export type CameraBounds = {
   rows: number;
 };
 
-export type LoadedPixelAssets = {
+type LoadedPixelAssets = {
   layouts: {
     office: OfficeLayout;
     boardroomKitchen: OfficeLayout;
@@ -333,9 +333,15 @@ async function decodeFurniture(index: AssetIndex): Promise<Record<string, Sprite
   return Object.fromEntries(entries);
 }
 
+async function fetchJson<T>(url: string): Promise<T> {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Failed to fetch ${url}`);
+  return (await res.json()) as T;
+}
+
 export function loadPixelAssets(): Promise<LoadedPixelAssets> {
   loadPromise ??= (async () => {
-    const index = (await fetch(`${ASSET_BASE_URL}pixels-office-assets.json`).then((res) => res.json())) as AssetIndex;
+    const index = await fetchJson<AssetIndex>(`${ASSET_BASE_URL}pixels-office-assets.json`);
 
     const layoutPaths = index.layouts ?? {
       office: index.defaultLayout,
@@ -347,12 +353,8 @@ export function loadPixelAssets(): Promise<LoadedPixelAssets> {
       decodeFloors(index),
       decodeWalls(index),
       decodeFurniture(index),
-      fetch(`${ASSET_BASE_URL}${layoutPaths.office}`)
-        .then((res) => res.json())
-        .then(trimLayoutToVisibleRoom) as Promise<OfficeLayout>,
-      fetch(`${ASSET_BASE_URL}${layoutPaths.boardroomKitchen}`)
-        .then((res) => res.json())
-        .then(trimLayoutToVisibleRoom) as Promise<OfficeLayout>,
+      fetchJson<OfficeLayout>(`${ASSET_BASE_URL}${layoutPaths.office}`).then(trimLayoutToVisibleRoom),
+      fetchJson<OfficeLayout>(`${ASSET_BASE_URL}${layoutPaths.boardroomKitchen}`).then(trimLayoutToVisibleRoom),
     ]);
 
     setCharacterTemplates(characters);
@@ -370,7 +372,10 @@ export function loadPixelAssets(): Promise<LoadedPixelAssets> {
       },
       cameraBounds: combined.cameraBounds,
     };
-  })();
+  })().catch((error: unknown) => {
+    loadPromise = null;
+    throw error;
+  });
 
   return loadPromise;
 }

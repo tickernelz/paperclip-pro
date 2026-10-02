@@ -76,6 +76,8 @@ export const AGENT_ROLE_LABELS: Record<AgentRole, string> = {
 };
 
 export const AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20;
+export const AGENT_MIN_MAX_CONCURRENT_RUNS = 1;
+export const AGENT_MAX_MAX_CONCURRENT_RUNS = 50;
 
 export const LOCAL_CLI_ADAPTER_TYPES = [
   "claude_local",
