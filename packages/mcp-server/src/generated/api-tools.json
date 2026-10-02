@@ -18605,6 +18605,41 @@
     ]
   },
   {
+    "name": "paperclipGetPixelsOffice",
+    "operationId": "GET /api/companies/{companyId}/pixels-office",
+    "method": "GET",
+    "path": "/companies/{companyId}/pixels-office",
+    "description": "Read the Pixels Office snapshot for a company",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "pixels-office"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess",
+      "assertPixelsOfficeEnabled"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetPlugin",
     "operationId": "GET /api/plugins/{pluginId}",
     "method": "GET",
@@ -33883,6 +33918,78 @@
     }
   },
   {
+    "name": "paperclipSetPixelsOfficeSeat",
+    "operationId": "PUT /api/companies/{companyId}/pixels-office/seats",
+    "method": "PUT",
+    "path": "/companies/{companyId}/pixels-office/seats",
+    "description": "Replace the Pixels Office character seat assignments",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "pixels-office"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "assertPixelsOfficeEnabled",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@pixels-office.ts:31",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "assignments": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "agentId": {
+                  "type": "string"
+                },
+                "characterIndex": {
+                  "type": "integer"
+                },
+                "seatId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "agentId",
+                "characterIndex",
+                "seatId"
+              ]
+            }
+          }
+        },
+        "required": [
+          "assignments"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetPluginCompanyLocalFolder",
     "operationId": "PUT /api/plugins/{pluginId}/companies/{companyId}/local-folders/{folderKey}",
     "method": "PUT",
@@ -39051,6 +39158,9 @@
             "type": "boolean"
           },
           "enablePipelines": {
+            "type": "boolean"
+          },
+          "enablePixelsOffice": {
             "type": "boolean"
           },
           "enableRunnerPreviewIngress": {

@@ -1,10 +1,10 @@
 import { Router } from "express";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { pixelsOfficeSeatAssignmentsSchema } from "@tickernelz/paperclip-pro-shared";
-import { forbidden, notFound } from "../errors.js";
+import { notFound } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { instanceSettingsService, logActivity, pixelsOfficeService } from "../services/index.js";
-import { assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 
 export function pixelsOfficeRoutes(db: Db) {
   const router = Router();
@@ -14,10 +14,6 @@ export function pixelsOfficeRoutes(db: Db) {
   async function assertPixelsOfficeEnabled() {
     const experimental = await settings.getExperimental();
     if (experimental.enablePixelsOffice !== true) throw notFound("Pixels Office is not enabled");
-  }
-
-  function assertBoardActor(req: Parameters<typeof assertCompanyAccess>[0]) {
-    if (req.actor.type !== "board") throw forbidden("Board access required");
   }
 
   router.get("/companies/:companyId/pixels-office", async (req, res) => {
@@ -32,9 +28,9 @@ export function pixelsOfficeRoutes(db: Db) {
     validate(pixelsOfficeSeatAssignmentsSchema),
     async (req, res) => {
       const companyId = req.params.companyId as string;
+      assertBoard(req);
       assertCompanyAccess(req, companyId);
       await assertPixelsOfficeEnabled();
-      assertBoardActor(req);
       const actor = getActorInfo(req);
       const assignments = await service.replaceSeatAssignments(companyId, req.body.assignments);
       await logActivity(db, {
