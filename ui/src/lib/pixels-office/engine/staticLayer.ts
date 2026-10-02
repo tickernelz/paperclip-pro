@@ -62,7 +62,32 @@ export function classifyOccluders(
       }
     }
   }
+  liftStackedItems(instances, flags);
   return flags;
+}
+
+function spriteOverlaps(a: FurnitureInstance, b: FurnitureInstance): boolean {
+  return (
+    a.x < b.x + b.sprite[0].length &&
+    b.x < a.x + a.sprite[0].length &&
+    a.y < b.y + b.sprite.length &&
+    b.y < a.y + a.sprite.length
+  );
+}
+
+function liftStackedItems(instances: FurnitureInstance[], flags: Uint8Array): void {
+  const dynamic: number[] = [];
+  for (let i = 0; i < instances.length; i++) if (flags[i] === 1) dynamic.push(i);
+  for (let cursor = 0; cursor < dynamic.length; cursor++) {
+    const below = instances[dynamic[cursor]];
+    for (let i = 0; i < instances.length; i++) {
+      if (flags[i] === 1) continue;
+      const above = instances[i];
+      if (above.zY <= below.zY || !spriteOverlaps(above, below)) continue;
+      flags[i] = 1;
+      dynamic.push(i);
+    }
+  }
 }
 
 export function drawablesTop(drawables: readonly FurnitureInstance[]): number {

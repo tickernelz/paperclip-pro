@@ -192,6 +192,7 @@ export function deriveAgentVisuals(state: LiveOfficeState): AgentVisual[] {
               updatedAtMs: agent.activityAtMs,
             },
       attention: status === "awaiting_board" || status === "pending_approval" || status === "error",
+      working: agent.activeRunId !== null || agent.status === "running",
     });
   }
   visuals.sort((a, b) => (a.agentId < b.agentId ? -1 : a.agentId > b.agentId ? 1 : 0));
@@ -201,7 +202,7 @@ export function deriveAgentVisuals(state: LiveOfficeState): AgentVisual[] {
 export function agentVisualsKey(visuals: readonly AgentVisual[]): string {
   let key = "";
   for (const visual of visuals) {
-    key += `${visual.agentId}|${visual.shortName}|${visual.status}|${visual.attention ? 1 : 0}|${
+    key += `${visual.agentId}|${visual.shortName}|${visual.status}|${visual.attention ? 1 : 0}|${visual.working ? 1 : 0}|${
       visual.activity ? `${visual.activity.icon}:${visual.activity.updatedAtMs}:${visual.activity.message ?? ""}` : ""
     }\n`;
   }

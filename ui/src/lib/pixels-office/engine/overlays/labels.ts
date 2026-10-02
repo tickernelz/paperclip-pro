@@ -89,7 +89,7 @@ export function createLabelsLayer(): OverlayLayer {
     const hovered = controller.hoveredAgentId;
     if (
       !detail &&
-      visual.status !== "running" &&
+      !visual.working &&
       pose.agentId !== controller.selectedAgentId &&
       pose.agentId !== hovered
     ) {

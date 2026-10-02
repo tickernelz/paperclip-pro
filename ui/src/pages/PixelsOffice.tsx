@@ -388,7 +388,11 @@ export function PixelsOffice() {
           </div>
         </Card>
 
-        {panel && wide ? <div className="w-full shrink-0 xl:w-(--sz-360px)">{panel}</div> : null}
+        {panel && wide ? (
+          <div className="relative w-full shrink-0 xl:w-(--sz-360px)">
+            <div className="absolute inset-0">{panel}</div>
+          </div>
+        ) : null}
       </div>
 
       {isMobile ? hud : null}

@@ -146,12 +146,21 @@ export class OfficeControllerImpl implements OfficeController {
   ): void {
     let key = '';
     for (const visual of visuals) {
-      key += `${visual.agentId}:${visual.status}:${visual.activity?.icon ?? '-'};`;
+      key += `${visual.agentId}:${visual.status}:${visual.working ? 1 : 0}:${visual.activity?.icon ?? '-'};`;
     }
     for (const assignment of assignments) {
       key += `${assignment.agentId}@${assignment.seatId};`;
     }
-    if (key === this.syncKey) return;
+    if (key === this.syncKey) {
+      let refreshed = false;
+      for (const visual of visuals) {
+        if (this.visuals.get(visual.agentId) === visual) continue;
+        this.visuals.set(visual.agentId, visual);
+        refreshed = true;
+      }
+      if (refreshed) this.loop.wake();
+      return;
+    }
     this.syncKey = key;
 
     const seatByAgent = new Map<string, PixelsOfficeSeatAssignment>();
@@ -186,8 +195,9 @@ export class OfficeControllerImpl implements OfficeController {
 
   private applyStatus(visual: AgentVisual): void {
     const status = visual.status;
-    const wandering = status === 'idle';
-    const still = status === 'paused' || status === 'budget_paused' || status === 'error';
+    const wandering = status === 'idle' && !visual.working;
+    const still =
+      !visual.working && (status === 'paused' || status === 'budget_paused' || status === 'error');
     this.state.setAgentActive(visual.agentId, !wandering);
     this.state.setAgentStill(visual.agentId, still);
     const reading = visual.activity?.icon === 'read' && !wandering && !still;

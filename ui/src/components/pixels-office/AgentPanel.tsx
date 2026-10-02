@@ -170,6 +170,24 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
 
           {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
 
+          {pendingInteractions.length > 0 ? (
+            <section className="space-y-2">
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                Waiting on a decision
+              </h3>
+              {pendingInteractions.map((item) => (
+                <AttentionInteractionResolver
+                  key={item.id}
+                  companyId={companyId}
+                  issueId={item.relatedIssue?.id ?? item.subject.id}
+                  interactionId={item.subject.id}
+                  agentMap={agentMap}
+                  onResolved={invalidate}
+                />
+              ))}
+            </section>
+          ) : null}
+
           <section className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
               Tasks · {agent.activeTaskCount} active / {agent.queuedTaskCount} queued
@@ -197,24 +215,6 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
               </ul>
             )}
           </section>
-
-          {pendingInteractions.length > 0 ? (
-            <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
-                Waiting on a decision
-              </h3>
-              {pendingInteractions.map((item) => (
-                <AttentionInteractionResolver
-                  key={item.id}
-                  companyId={companyId}
-                  issueId={item.relatedIssue?.id ?? item.subject.id}
-                  interactionId={item.subject.id}
-                  agentMap={agentMap}
-                  onResolved={invalidate}
-                />
-              ))}
-            </section>
-          ) : null}
         </div>
       </ScrollArea>
     </OfficePanelShell>

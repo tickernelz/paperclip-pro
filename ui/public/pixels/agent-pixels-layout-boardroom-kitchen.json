@@ -2345,6 +2345,42 @@
       "type": "CUSHIONED_CHAIR_SIDE:left",
       "col": 8,
       "row": 7
+    },
+    {
+      "uid": "board-pc-top",
+      "type": "PC_BACK",
+      "col": 6,
+      "row": 4
+    },
+    {
+      "uid": "board-pc-bottom",
+      "type": "PC_FRONT_OFF",
+      "col": 6,
+      "row": 7
+    },
+    {
+      "uid": "board-pc-left-1",
+      "type": "PC_SIDE",
+      "col": 5,
+      "row": 5
+    },
+    {
+      "uid": "board-pc-left-2",
+      "type": "PC_SIDE",
+      "col": 5,
+      "row": 7
+    },
+    {
+      "uid": "board-pc-right-1",
+      "type": "PC_SIDE:left",
+      "col": 7,
+      "row": 5
+    },
+    {
+      "uid": "board-pc-right-2",
+      "type": "PC_SIDE:left",
+      "col": 7,
+      "row": 7
     }
   ]
 }

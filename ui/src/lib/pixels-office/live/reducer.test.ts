@@ -100,6 +100,16 @@ describe("agent visual status precedence", () => {
     expect(deriveAgentVisuals(seeded([agent({ awaitingBoardCount: 1 })]))[0]?.attention).toBe(true);
     expect(deriveAgentVisuals(seeded([agent({ activeRunId: "run-1" })]))[0]?.attention).toBe(false);
   });
+
+  it("keeps an agent working while a decision is waiting on its run", () => {
+    const [visual] = deriveAgentVisuals(
+      seeded([agent({ activeRunId: "run-1", status: "running", awaitingBoardCount: 1 })]),
+    );
+    expect(visual?.status).toBe("awaiting_board");
+    expect(visual?.attention).toBe(true);
+    expect(visual?.working).toBe(true);
+    expect(deriveAgentVisuals(seeded([agent({ awaitingBoardCount: 1 })]))[0]?.working).toBe(false);
+  });
 });
 
 describe("run events", () => {

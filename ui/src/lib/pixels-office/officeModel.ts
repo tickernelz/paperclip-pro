@@ -24,6 +24,7 @@ export interface AgentVisual {
   status: AgentVisualStatus;
   activity: AgentActivity | null;
   attention: boolean;
+  working: boolean;
 }
 
 export type OfficeObjectKind = "kanban" | "mailbox" | "clock" | "coins" | "alarm";

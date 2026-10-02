@@ -40,6 +40,7 @@ function createOffice(agentIds: string[]): OfficeController {
             status: "running",
             activity: null,
             attention: false,
+            working: true,
           }
         : undefined,
     forEachPose: (visit: (pose: CharacterPose) => void) => {
