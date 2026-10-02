@@ -200,6 +200,11 @@ const VITE_DEV_STATIC_PATHS = new Set([
   "/favicon-32x32.png",
   "/favicon.ico",
   "/favicon.svg",
+  "/pwa-192x192.png",
+  "/pwa-512x512.png",
+  "/pwa-maskable-192x192.png",
+  "/pwa-maskable-512x512.png",
+  "/pwa-monochrome-512x512.png",
   "/site.webmanifest",
   "/sw.js",
 ]);

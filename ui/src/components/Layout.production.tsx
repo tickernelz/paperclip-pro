@@ -682,7 +682,7 @@ export function Layout() {
                   "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
               )}
             >
-              <StandaloneBrowserControls mobile={isMobile} />
+              <StandaloneBrowserControls mobile={isMobile} onNavigateHome={() => navigate("/dashboard")} />
               <BreadcrumbBar />
               {isMobile && isCompanySettingsRoute ? (
                 <div className="border-b border-border px-4 pb-3">

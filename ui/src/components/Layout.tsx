@@ -664,7 +664,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
               isMobile && "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
             )}
           >
-            <StandaloneBrowserControls mobile={isMobile} />
+            <StandaloneBrowserControls mobile={isMobile} onNavigateHome={() => navigate("/dashboard")} />
             <BreadcrumbBar />
             {isMobile && isCompanySettingsRoute ? (
               <div className="border-b border-border px-4 pb-3">
@@ -684,7 +684,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
             <div className={cn(!isMobile && useStreamlinedTaskDetailShell ? "flex min-w-0 flex-1 flex-col" : "contents")}>
               {!isMobile && useStreamlinedTaskDetailShell ? (
                 <>
-                  <StandaloneBrowserControls mobile={false} />
+                  <StandaloneBrowserControls mobile={false} onNavigateHome={() => navigate("/dashboard")} />
                   <BreadcrumbBar taskDetailLayout />
                 </>
               ) : null}

@@ -10,6 +10,41 @@ const CACHE_NAME = `paperclip-public-assets-${BUILD_ID}`;
 const privateRequests = new Set();
 const privateCacheControl = /(?:^|,)\s*(?:no-store|private)(?:\s*(?:,|=)|\s*$)/i;
 
+const OFFLINE_PAGE = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#18181b">
+<title>Paperclip is offline</title>
+<style>
+:root { color-scheme: dark light; }
+body { margin: 0; min-height: 100dvh; display: grid; place-items: center; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: #18181b; color: #e4e4e7; padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom); }
+@media (prefers-color-scheme: light) { body { background: #ffffff; color: #18181b; } button { background: #18181b; color: #ffffff; } }
+main { max-width: 320px; text-align: center; }
+h1 { font-size: 18px; margin: 16px 0 4px; }
+p { margin: 0 0 20px; opacity: 0.7; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 10px 20px; background: #e4e4e7; color: #18181b; }
+</style>
+</head>
+<body>
+<main>
+<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>
+<h1>You're offline</h1>
+<p>Paperclip needs a connection to your server. It will reload once you're back online.</p>
+<button type="button" onclick="location.reload()">Try again</button>
+</main>
+<script>addEventListener("online", () => location.reload());</script>
+</body>
+</html>`;
+
+function offlineNavigationResponse() {
+  return new Response(OFFLINE_PAGE, {
+    status: 503,
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}
+
 async function evictRequest(request) {
   await Promise.all((await caches.keys()).map(async (key) => {
     const cache = await caches.open(key);
@@ -72,7 +107,7 @@ self.addEventListener("fetch", (event) => {
       })
       .catch(async () => {
         if (privateRequests.has(request.url)) return Response.error();
-        if (!publicAsset) return request.mode === "navigate" ? new Response("Offline", { status: 503 }) : Response.error();
+        if (!publicAsset) return request.mode === "navigate" ? offlineNavigationResponse() : Response.error();
         // Restrict lookup to this policy's cache; old arbitrary-response caches
         // must not become fallback candidates if activation cleanup fails.
         try {

@@ -2,10 +2,10 @@
 
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "../context/ToastContext";
-import { StandaloneBrowserControls } from "./StandaloneBrowserControls";
+import { hasInAppHistory, StandaloneBrowserControls } from "./StandaloneBrowserControls";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
@@ -113,6 +113,69 @@ describe("StandaloneBrowserControls", () => {
     await act(async () => {
       root.unmount();
     });
+  });
+
+  it("shows the controls on a wide installed window too", async () => {
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <TooltipProvider>
+          <ToastProvider>
+            <StandaloneBrowserControls mobile={false} />
+          </ToastProvider>
+        </TooltipProvider>,
+      );
+    });
+    await flushReact();
+
+    expect(container.querySelector('[aria-label="Back"]')).not.toBeNull();
+    expect(container.querySelector('[aria-label="Refresh"]')).not.toBeNull();
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("goes home instead of leaving the app when there is no in-app history", async () => {
+    const onNavigateHome = vi.fn();
+    const back = vi.spyOn(window.history, "back").mockImplementation(() => undefined);
+    window.history.replaceState({ idx: 0 }, "");
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(
+        <TooltipProvider>
+          <ToastProvider>
+            <StandaloneBrowserControls mobile onNavigateHome={onNavigateHome} />
+          </ToastProvider>
+        </TooltipProvider>,
+      );
+    });
+    await flushReact();
+
+    const button = container.querySelector<HTMLButtonElement>('[aria-label="Back"]');
+    await act(() => {
+      button?.click();
+    });
+    expect(onNavigateHome).toHaveBeenCalledTimes(1);
+    expect(back).not.toHaveBeenCalled();
+
+    window.history.replaceState({ idx: 2 }, "");
+    await act(() => {
+      button?.click();
+    });
+    expect(back).toHaveBeenCalledTimes(1);
+    expect(onNavigateHome).toHaveBeenCalledTimes(1);
+
+    back.mockRestore();
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("reads the router history index to decide whether Back stays in the app", () => {
+    expect(hasInAppHistory({ idx: 3 })).toBe(true);
+    expect(hasInAppHistory({ idx: 0 })).toBe(false);
+    expect(hasInAppHistory(null)).toBe(false);
   });
 
   it("hides controls in normal mobile browser mode", async () => {

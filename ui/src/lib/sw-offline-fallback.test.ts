@@ -73,7 +73,9 @@ describe("sw.js offline fallback", () => {
     // fails the navigation with "Failed to convert value to 'Response'".
     expect(response).toBeInstanceOf(Response);
     expect(response!.status).toBe(503);
-    expect(await response!.text()).toBe("Offline");
+    expect(response!.headers.get("content-type")).toContain("text/html");
+    expect(response!.headers.get("cache-control")).toBe("no-store");
+    expect(await response!.text()).toContain("You're offline");
   });
 
   it("does not replay a legacy cached shell for a failed navigation", async () => {
@@ -90,7 +92,7 @@ describe("sw.js offline fallback", () => {
     });
 
     expect(response!.status).toBe(503);
-    expect(await response!.text()).toBe("Offline");
+    expect(await response!.text()).not.toContain("app shell");
   });
 
   it("returns a network-error Response for a failed asset with no cache entry", async () => {

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react";
-import { ExternalLink, RefreshCw, Share2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, RefreshCw, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import { useOptionalToastActions } from "../context/ToastContext";
 import { CHROMELESS_DISPLAY_MODES, isChromelessDisplayMode } from "../lib/pwa-display-mode";
 import { copyTextToClipboard } from "../lib/clipboard";
@@ -34,17 +35,18 @@ function ControlButton({
   );
 }
 
-export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
+export function hasInAppHistory(state: unknown = typeof window === "undefined" ? null : window.history.state): boolean {
+  const index = (state as { idx?: unknown } | null)?.idx;
+  return typeof index === "number" && index > 0;
+}
+
+function useChromeless(): boolean {
   const [chromeless, setChromeless] = useState(() =>
-    typeof window !== "undefined" && mobile ? isChromelessDisplayMode() : false,
+    typeof window !== "undefined" ? isChromelessDisplayMode() : false,
   );
-  const toastActions = useOptionalToastActions();
 
   useEffect(() => {
-    if (!mobile || typeof window === "undefined") {
-      setChromeless(false);
-      return;
-    }
+    if (typeof window === "undefined") return;
 
     const update = () => setChromeless(isChromelessDisplayMode());
 
@@ -59,7 +61,29 @@ export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
 
     mediaQueries.forEach((media) => media.addListener(update));
     return () => mediaQueries.forEach((media) => media.removeListener(update));
-  }, [mobile]);
+  }, []);
+
+  return chromeless;
+}
+
+export function StandaloneBrowserControls({
+  mobile,
+  onNavigateHome,
+}: {
+  mobile: boolean;
+  onNavigateHome?: () => void;
+}) {
+  const chromeless = useChromeless();
+  const toastActions = useOptionalToastActions();
+
+  const back = useCallback(() => {
+    if (hasInAppHistory()) {
+      window.history.back();
+      return;
+    }
+    if (onNavigateHome) onNavigateHome();
+    else window.location.assign("/dashboard");
+  }, [onNavigateHome]);
 
   const refresh = useCallback(() => {
     window.location.reload();
@@ -84,10 +108,21 @@ export function StandaloneBrowserControls({ mobile }: { mobile: boolean }) {
     window.open(window.location.href, "_blank", "noopener,noreferrer");
   }, []);
 
-  if (!mobile || !chromeless) return null;
+  if (!chromeless) return null;
 
   return (
-    <div className="flex h-10 items-center justify-end gap-1 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/85">
+    <div
+      className={cn(
+        "flex items-center gap-1",
+        mobile
+          ? "h-10 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/85"
+          : "h-9 border-b border-border px-2",
+      )}
+    >
+      <ControlButton label="Back" onClick={back}>
+        <ArrowLeft className="h-4 w-4" />
+      </ControlButton>
+      <div className="flex-1" />
       <ControlButton label="Refresh" onClick={refresh}>
         <RefreshCw className="h-4 w-4" />
       </ControlButton>
