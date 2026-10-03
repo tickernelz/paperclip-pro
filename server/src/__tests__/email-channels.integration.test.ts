@@ -941,6 +941,55 @@ describe("AgentMail durable email pipeline", () => {
     );
   });
 
+  it.each([
+    ["read_only", false],
+    ["full", true],
+  ] as const)("gates agentmail sends on the OpenWA run profile (%s)", async (profile, allowed) => {
+    const f = await fixture();
+    await f.receive(f.message());
+    const [conversation] = await db
+      .select()
+      .from(chatConversations)
+      .where(eq(chatConversations.companyId, f.companyId));
+    const runId = randomUUID();
+    await db.insert(heartbeatRuns).values({
+      id: runId,
+      companyId: f.companyId,
+      agentId: f.agentId,
+      status: "running",
+      runtimeMode: "native",
+      nativeIssueId: conversation.issueId,
+      contextSnapshot: { issueId: conversation.issueId, paperclipToolProfile: profile },
+    });
+    await db
+      .update(issues)
+      .set({ executionRunId: runId })
+      .where(eq(issues.id, conversation.issueId));
+    const binding = {
+      companyId: f.companyId,
+      agentId: f.agentId,
+      runId,
+      issueId: conversation.issueId,
+      workMode: "standard",
+    };
+    const request = emailSendSchema.parse({
+      endpointId: f.endpointId,
+      conversationId: conversation.id,
+      replyToMessageId: [...f.messages.keys()][0],
+      text: "Gated agent reply",
+      idempotencyKey: randomUUID(),
+    });
+    const authority = new PaperclipRunnerToolAuthority(db, {
+      ...binding, workMode: "standard", connectorAssignments: await resolveConnectorAssignments(db, binding),
+    });
+    const send = authority.execute({ tool: "agentmail_send", callId: randomUUID(), arguments: { request } });
+    if (allowed) await expect(send).resolves.toMatchObject({ outcome: "queued" });
+    else await expect(send).rejects.toMatchObject({ details: { code: "openwa_approval_required", category: "external_tools" } });
+    await expect(
+      authority.execute({ tool: "agentmail_read_thread", callId: randomUUID(), arguments: {} }),
+    ).resolves.toBeTruthy();
+  });
+
   it("enforces one inbox owner across companies and reconnects the same identity", async () => {
     const f = await fixture();
     const other = await fixture();

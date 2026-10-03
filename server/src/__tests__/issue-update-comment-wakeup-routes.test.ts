@@ -718,6 +718,49 @@ describe("issue update comment wakeups", () => {
     );
   });
 
+  it.each([
+    ["read_only", 0],
+    ["full", 1],
+  ] as const)("applies OpenWA mention-wake suppression for a %s run comment", async (profile, wakes) => {
+    const existing = makeIssue({
+      assigneeAgentId: ASSIGNEE_AGENT_ID,
+      assigneeUserId: null,
+      status: "in_progress",
+    });
+    mockIssueService.getById.mockResolvedValue(existing);
+    mockIssueService.addComment.mockResolvedValue({
+      id: `comment-openwa-${profile}`,
+      issueId: existing.id,
+      companyId: existing.companyId,
+      body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+      createdByRunId: SOURCE_RUN_ID,
+    });
+    mockIssueService.findMentionedAgents.mockResolvedValue([MENTIONED_AGENT_ID]);
+    mockHeartbeatService.getRun.mockResolvedValue({
+      id: SOURCE_RUN_ID,
+      companyId: existing.companyId,
+      agentId: ASSIGNEE_AGENT_ID,
+      status: "running",
+      contextSnapshot: { issueId: existing.id, paperclipToolProfile: profile },
+    });
+
+    const res = await request(await createApp())
+      .post(`/api/issues/${existing.id}/comments`)
+      .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
+      .send({
+        body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+      });
+
+    expect(res.status).toBe(201);
+    await vi.waitFor(() =>
+      expect(mockHeartbeatService.getRun.mock.calls.filter(([id]) => id === SOURCE_RUN_ID).length).toBeGreaterThanOrEqual(2),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(mockIssueService.addComment).toHaveBeenCalledTimes(1);
+    expect(mockIssueService.findMentionedAgents).toHaveBeenCalledTimes(wakes);
+    expect(mockHeartbeatService.wakeup).toHaveBeenCalledTimes(wakes);
+  });
+
   it.each((["post", "patch"] as const).flatMap((method) => [
     "active_delegation", "completed_delegation", "human_comment", "completed_human_comment", "unrelated_comment", "completed_child",
     "active_feedback", "ambiguous_delegation", "child_access_denied", "child_mutation_denied", "forwarding_failure",

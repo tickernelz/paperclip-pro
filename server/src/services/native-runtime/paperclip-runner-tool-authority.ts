@@ -52,6 +52,7 @@ import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type Nati
 import { childReviewOutcomes } from "./child-review-outcomes.js";
 import { persistActivity, publishActivity } from "../activity-log.js";
 import { captureRunIdentity } from "../run-identity.js";
+import { assertOpenwaRunMay } from "../openwa/authority.js";
 import { prepareNativeRunnerFileHandoff, type RemoteWorkspaceFileReader } from "./native-runner-file-handoff.js";
 import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
 import {
@@ -85,6 +86,13 @@ const IMPLEMENTED_OPERATIONS = new Set([
   "list_documents", "read_document", "list_document_revisions", "write_document",
   "list_agents", "get_agent", "list_approvals", "get_approval", "get_approval_context",
 ]);
+
+const OPENWA_GATED_MUTATIONS: Readonly<Record<string, "create_task" | "external_tools">> = {
+  create_task: "create_task",
+  reassign_task: "create_task",
+  set_dependencies: "create_task",
+  request_human_input: "external_tools",
+};
 
 const NATIVE_REVIEW_READ_TOOLS = new Set([
   "get_task_context", "get_task_history", "list_documents", "read_document", "list_document_revisions",
@@ -1003,6 +1011,7 @@ export class PaperclipRunnerToolAuthority {
     const prepared = await this.db.transaction(async (tx) => {
       const context = await this.#lockAuthorizedMutationContext(tx as unknown as Db);
       if (context.issue.workMode !== "standard") throw new Error("paperclip_runner_tool_mode_denied");
+      await assertOpenwaRunMay(tx as unknown as Db, context.run, "create_task", { consume: false });
       const target = await authorize(tx as unknown as Db, context.run);
       if (await priorReceipt(tx as unknown as Db)) return null;
       validate(target);
@@ -1454,6 +1463,8 @@ export class PaperclipRunnerToolAuthority {
           await options.beforeReceiptReplay?.(tx as unknown as Db, context);
           return describeResult(prior.result);
         }
+        const openwaCategory = OPENWA_GATED_MUTATIONS[operationId];
+        if (openwaCategory) await assertOpenwaRunMay(tx as unknown as Db, context.run, openwaCategory);
         const result = JSON.parse(
           JSON.stringify(
             describeResult(await effect(tx as unknown as Db, context)),
