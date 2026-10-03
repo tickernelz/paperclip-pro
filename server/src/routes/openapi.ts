@@ -2797,6 +2797,7 @@ const openwaApprovalResponseSchema = z
     summary: z.string(),
     proposedAction: z.string(),
     originChat: z.string(),
+    requester: z.string().nullable(),
     originConversationId: z.string().uuid().nullable(),
     interactionId: z.string().uuid().nullable(),
     reminderCount: z.number().int().min(0),

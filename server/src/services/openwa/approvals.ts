@@ -599,10 +599,18 @@ async function currentConversation(tx: DbOrTransaction, endpoint: EndpointRow, r
   return origin ?? null;
 }
 
-function resolvedCommentBody(request: RequestRow, approved: boolean, via: ChatOwnerApprovalChannel, conditions: string | null): string {
+function resolvedCommentBody(
+  request: RequestRow,
+  input: { approved: boolean; via: ChatOwnerApprovalChannel; conditions: string | null; ownerText: string | null },
+): string {
   return [
-    (approved ? "An endpoint owner approved" : "An endpoint owner rejected") + " the approval request via " + (via === "whatsapp" ? "WhatsApp" : "Paperclip") + ": " + request.summary,
-    ...(conditions ? ["Conditions: " + conditions] : []),
+    (input.approved ? "An endpoint owner approved" : "An endpoint owner rejected") +
+      " the approval request via " +
+      (input.via === "whatsapp" ? "WhatsApp" : "Paperclip") +
+      ": " +
+      request.summary,
+    ...(input.ownerText ? ["Owner note: " + input.ownerText] : []),
+    ...(input.conditions ? ["Conditions: " + input.conditions] : []),
   ].join("\n\n");
 }
 
@@ -706,6 +714,7 @@ export async function resolveOpenwaApproval(
       approved,
       via: input.via,
       conditions,
+      ownerText: input.ownerText,
     });
     await recordOpenwaAudit(tx, {
       companyId: input.companyId,
@@ -754,7 +763,7 @@ async function stageApprovalResolvedWake(
   tx: DbTransaction,
   endpoint: EndpointRow,
   request: RequestRow,
-  input: { approved: boolean; via: ChatOwnerApprovalChannel; conditions: string | null },
+  input: { approved: boolean; via: ChatOwnerApprovalChannel; conditions: string | null; ownerText: string | null },
 ): Promise<string | null> {
   const conversation = await currentConversation(tx, endpoint, request);
   if (!conversation) return null;
@@ -766,7 +775,7 @@ async function stageApprovalResolvedWake(
   if (!issue?.assigneeAgentId || issue.assigneeAgentId !== endpoint.assignedAgentId) return null;
   const comment = await issueService(tx as unknown as Db).addComment(
     issue.id,
-    resolvedCommentBody(request, input.approved, input.via, input.conditions),
+    resolvedCommentBody(request, input),
     {},
     { authorType: "system" },
     tx,
@@ -944,6 +953,7 @@ export interface OpenwaApprovalView {
   summary: string;
   proposedAction: string;
   originChat: string;
+  requester: string | null;
   originConversationId: string | null;
   interactionId: string | null;
   reminderCount: number;
@@ -989,9 +999,16 @@ export function openwaApprovalService(db: Db) {
 
   async function list(endpointId: string, input: { status?: ChatOwnerApprovalStatus; viewerUserId: string | null }): Promise<OpenwaApprovalView[]> {
     const endpoint = await endpointFor(endpointId);
-    const rows = await db
-      .select()
+    const joined = await db
+      .select({ request: chatOwnerApprovalRequests, requesterExternalId: chatExternalPrincipals.externalId })
       .from(chatOwnerApprovalRequests)
+      .leftJoin(
+        chatExternalPrincipals,
+        and(
+          eq(chatExternalPrincipals.companyId, chatOwnerApprovalRequests.companyId),
+          eq(chatExternalPrincipals.id, chatOwnerApprovalRequests.requestedByPrincipalId),
+        ),
+      )
       .where(
         and(
           eq(chatOwnerApprovalRequests.companyId, endpoint.companyId),
@@ -1001,6 +1018,8 @@ export function openwaApprovalService(db: Db) {
       )
       .orderBy(desc(chatOwnerApprovalRequests.createdAt))
       .limit(LIST_LIMIT);
+    const rows = joined.map((entry) => entry.request);
+    const requesters = new Map(joined.map((entry) => [entry.request.id, entry.requesterExternalId]));
     const grants = rows.length
       ? await db
           .select()
@@ -1016,6 +1035,7 @@ export function openwaApprovalService(db: Db) {
       summary: row.summary,
       proposedAction: row.proposedAction,
       originChat: maskedChat(row.originChatKey),
+      requester: requesters.get(row.id) ? maskOpenwaDigits(requesters.get(row.id)!) : null,
       originConversationId: row.originConversationId,
       interactionId: row.interactionId,
       reminderCount: row.reminderCount,

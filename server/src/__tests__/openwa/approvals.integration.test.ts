@@ -25,6 +25,7 @@ import {
   companySecretBindings,
   createDb,
   heartbeatRuns,
+  issueComments,
   issueThreadInteractions,
   toolConnections,
   type Db,
@@ -326,6 +327,13 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     return { action: action!, request: wakeRequest!, wake: t.wakes.get(action!.id)! };
   }
 
+  async function resolvedComment(action: { payload: unknown }) {
+    const commentId = (action.payload as { commentId?: string }).commentId;
+    expect(commentId).toBeTruthy();
+    const [comment] = await db.select({ body: issueComments.body }).from(issueComments).where(eq(issueComments.id, commentId!));
+    return comment!.body;
+  }
+
   function boardActor(companyId: string, userId: string) {
     return {
       type: "board",
@@ -473,6 +481,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
 
     const grantWake = await approvalWake(t, request.id);
     expect(grantWake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: request.id } });
+    expect(await resolvedComment(grantWake.action)).toContain("Owner note: " + ownerText);
     expect(grantWake.wake.contextSnapshot).toMatchObject({ issueId: memberRun.issueId });
     expect(grantWake.wake.allowRunCoalescing).toBe(false);
     const grantRun = await runStart(t, grantWake, {
@@ -556,6 +565,8 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const listed = await supertest(channelApp(t, t.userId)).get("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals?status=pending");
     expect(listed.status).toBe(200);
     expect(listed.body).toEqual([expect.objectContaining({ id: request.id, canResolve: true, status: "pending" })]);
+    expect(listed.body[0].requester).toContain(MEMBER_A.slice(-4));
+    expect(listed.body[0].requester).not.toContain(MEMBER_A);
 
     const accepted = await supertest(boardApp(t.companyId, t.userId)).post("/api/issues/" + runA.issueId + "/interactions/" + request.interactionId + "/accept").send({});
     expect(accepted.status).toBe(200);
@@ -578,6 +589,24 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     await t.service.openwa.removeOwner(t.endpointId, owner!.id, t.userId);
     expect((await grantsOf(request.id))[0]!.status).toBe("revoked");
     await expect(assertOpenwaRunMay(db, runA2.run, "external_tools")).rejects.toMatchObject({ status: 403 });
+  }, 120_000);
+
+  it("AC7: a Paperclip rejection reason reaches the agent's approval_resolved comment", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    const reason = "Jangan dulu, tunggu hari Senin";
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "reject", reason });
+    expect(resolved.status).toBe(200);
+    expect(resolved.body).toMatchObject({ status: "rejected", grantIds: [] });
+    const wake = await approvalWake(t, created.requestId);
+    expect(wake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "other" } });
+    const body = await resolvedComment(wake.action);
+    expect(body).toContain("rejected the approval request via Paperclip");
+    expect(body).toContain("Owner note: " + reason);
   }, 120_000);
 
   it("AC7: simultaneous WhatsApp and Paperclip resolution yields exactly one winner", async () => {
