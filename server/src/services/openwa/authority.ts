@@ -23,6 +23,7 @@ import {
 import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/paperclip-pro-adapter-utils";
 import { HttpError, forbidden } from "../../errors.js";
 import { openwaPrincipalAuthorization } from "./owners.js";
+import { logOpenwaActivity } from "./audit.js";
 
 export const OPENWA_RUN_CONTEXT_KEY = "paperclipOpenwa";
 export const OPENWA_APPROVAL_REQUIRED_CODE = "openwa_approval_required";
@@ -42,6 +43,7 @@ export interface OpenwaRunContext {
   grantedCategories: OpenwaApprovalCategory[];
   requesterPrincipalId: string | null;
   approvalRequestId: string | null;
+  triggerPrincipalId: string | null;
 }
 
 export class OpenwaApprovalRequiredError extends HttpError {
@@ -191,6 +193,7 @@ export function readOpenwaRunContext(contextSnapshot: unknown): OpenwaRunContext
     grantedCategories: approvalCategories(raw.grantedCategories),
     requesterPrincipalId: text(raw.requesterPrincipalId),
     approvalRequestId: text(raw.approvalRequestId),
+    triggerPrincipalId: text(raw.triggerPrincipalId),
   };
 }
 
@@ -330,6 +333,7 @@ export async function resolveOpenwaRunContext(
       grantedCategories: [],
       requesterPrincipalId: null,
       approvalRequestId: null,
+      triggerPrincipalId: null,
     };
   }
   const deliveryIds = wakeAction?.deliveryIds ?? [];
@@ -440,7 +444,16 @@ export async function resolveOpenwaRunContext(
           gt(chatOwnerGrants.expiresAt, now),
         ))
         .returning({ id: chatOwnerGrants.id });
-      if (consumed) runGranted.push("external_tools");
+      if (consumed) {
+        runGranted.push("external_tools");
+        await logOpenwaActivity(db, {
+          companyId: input.companyId,
+          endpointId: binding.endpointId,
+          action: "openwa.grant_consumed",
+          runId: input.runId,
+          details: { grantId: consumed.id, category: "external_tools", scope: "one_action" },
+        });
+      }
     }
   }
   const profile: OpenwaRunProfile = cls === "owner" ? "full" : "read_only";
@@ -457,6 +470,9 @@ export async function resolveOpenwaRunContext(
     grantedCategories: runGranted,
     requesterPrincipalId,
     approvalRequestId: approval?.id ?? null,
+    triggerPrincipalId: cls === "owner"
+      ? (deliveries.find((delivery) => delivery.id === deliveryIds[deliveryIds.length - 1])?.principalId ?? null)
+      : null,
   };
 }
 
@@ -561,6 +577,13 @@ export async function assertOpenwaRunMay(
       .returning({ id: chatOwnerGrants.id });
     if (consumed) {
       scoped?.add(consumed.id);
+      await logOpenwaActivity(db, {
+        companyId: run.companyId,
+        endpointId: openwa.endpointId,
+        action: "openwa.grant_consumed",
+        runId: run.id,
+        details: { grantId: consumed.id, category, scope: "one_action" },
+      });
       return consumed.id;
     }
   }

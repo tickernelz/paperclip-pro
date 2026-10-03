@@ -204,7 +204,7 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
 
   type Conversation = Awaited<ReturnType<typeof conversation>>;
 
-  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass, grantIds: string[] = []) {
+  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass, grantIds: string[] = [], triggerPrincipalId: string | null = null) {
     const runId = randomUUID();
     const profile = triggerClass === "owner" ? "full" : "read_only";
     await db.insert(heartbeatRuns).values({
@@ -226,6 +226,7 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
           grantIds,
           requesterPrincipalId: null,
           approvalRequestId: null,
+          triggerPrincipalId,
         },
       },
     });
@@ -274,7 +275,8 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
     const deliveriesBefore = await deliveryCount();
     const revisionBefore = (await endpointRow(t)).policyRevision;
 
-    const binding = await run(t, c, "owner");
+    const ownerPrincipalId = randomUUID();
+    const binding = await run(t, c, "owner", [], ownerPrincipalId);
     const result = await executeOpenwaTool(db, binding, "openwa_endpoint_config", {
       senders: { add: [{ list: "deny", number: "+" + TARGET_PHONE, label: "spam" }] },
     });
@@ -313,8 +315,15 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
       .select()
       .from(activityLog)
       .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.sender_rule_changed")));
-    expect(activity).toMatchObject({ actorType: "agent", actorId: t.agentId, agentId: t.agentId, runId: binding.runId });
-    expect(activity!.details).toMatchObject({ change: "added", list: "deny", numberMasked: "+62xxx...0111", via: "openwa_endpoint_config" });
+    expect(activity).toMatchObject({ actorType: "system", actorId: "chat:" + ownerPrincipalId, agentId: t.agentId, runId: binding.runId });
+    expect(activity!.details).toMatchObject({
+      change: "added",
+      list: "deny",
+      numberMasked: "+62xxx...0111",
+      via: "openwa_endpoint_config",
+      agentId: t.agentId,
+      runId: binding.runId,
+    });
     expect(JSON.stringify(activity!.details)).not.toContain(TARGET_PHONE);
 
     const removed = await executeOpenwaTool(db, binding, "openwa_endpoint_config", { senders: { remove: [{ list: "deny", number: TARGET_PHONE }] } });
@@ -343,13 +352,17 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
       expect(refused).toMatchObject({ status: 403, code: "owner_only" });
       const read = await rejection(executeOpenwaTool(db, binding, "openwa_endpoint_config", {}));
       expect(read).toMatchObject({ status: 403, code: "owner_only" });
+      const uiOnly = await rejection(executeOpenwaTool(db, binding, "openwa_endpoint_config", { numberMode: "owner_number" }));
+      expect(uiOnly).toMatchObject({ status: 403, code: "owner_only" });
+      const malformed = await rejection(executeOpenwaTool(db, binding, "openwa_endpoint_config", { approvals: { grantTtlHours: 1 } }));
+      expect(malformed).toMatchObject({ status: 403, code: "owner_only" });
     }
     expect(await snapshot(t)).toEqual(before);
     const called = await db
       .select()
       .from(chatAuditEntries)
       .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "tool_called")));
-    expect(called.map((entry) => (entry.metadata as { errorCode: string }).errorCode)).toEqual(["owner_only", "owner_only", "owner_only", "owner_only"]);
+    expect(called.map((entry) => (entry.metadata as { errorCode: string }).errorCode)).toEqual(Array(8).fill("owner_only"));
   }, 90_000);
 
   it("refuses Paperclip-UI-only settings with a typed error even for owner runs", async () => {
@@ -370,12 +383,20 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
     }
     await expect(executeOpenwaTool(db, binding, "openwa_endpoint_config", { approvals: { grantTtlHours: 1 } })).rejects.toMatchObject({ name: "ZodError" });
     expect(await snapshot(t)).toEqual(before);
+    const called = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "tool_called")))
+      .orderBy(asc(chatAuditEntries.occurredAt));
+    expect(called.map((entry) => (entry.metadata as { errorCode: string }).errorCode)).toEqual([...Array(6).fill("ui_only_setting"), "invalid_arguments"]);
+    expect(called.every((entry) => entry.runId === binding.runId)).toBe(true);
   }, 90_000);
 
   it("changes chat settings, approval toggles, reminders and custom instructions with before/after audit", async () => {
     const t = await setup({ customInstructions: "Be brief." });
     const c = await conversation(t, OWNER_DM);
-    const binding = await run(t, c, "owner");
+    const ownerPrincipalId = randomUUID();
+    const binding = await run(t, c, "owner", [], ownerPrincipalId);
     const revision = (await endpointRow(t)).policyRevision;
 
     const empty = await executeOpenwaTool(db, binding, "openwa_endpoint_config", {});
@@ -434,11 +455,12 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
     expect(audits[2]).toMatchObject({ content: { before: { replyPolicy: "ask_owner", note: "Supplier group." }, after: { activation: "on" } } });
     expect((audits[2]!.content as { after: Record<string, unknown> }).after).not.toHaveProperty("note");
     const activities = await db
-      .select({ action: activityLog.action, actorType: activityLog.actorType, details: activityLog.details })
+      .select({ action: activityLog.action, actorType: activityLog.actorType, actorId: activityLog.actorId, details: activityLog.details })
       .from(activityLog)
       .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.entityId, t.endpointId)));
     const configActivities = activities.filter((entry) => entry.action === "openwa.config_changed" || entry.action === "openwa.chat_activation_changed");
-    expect(configActivities.every((entry) => entry.actorType === "agent")).toBe(true);
+    expect(configActivities.length).toBeGreaterThan(0);
+    expect(configActivities.every((entry) => entry.actorType === "system" && entry.actorId === "chat:" + ownerPrincipalId)).toBe(true);
     expect(JSON.stringify(configActivities)).not.toContain("Bot Gamma");
     expect(JSON.stringify(configActivities)).not.toContain("Supplier group");
 

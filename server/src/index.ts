@@ -1631,7 +1631,7 @@ async function startServerWithDatabaseTeardown(
 
     const openwaAuditPurge = openwaAuditPurgeScheduler(db as any);
     const runOpenwaAuditPurge = () => openwaAuditPurge.runDue().then((result) => {
-      if (result && result.purged > 0) logger.info({ ...result }, "openwa audit content purged");
+      if (result && (result.purged > 0 || result.expiredGrants > 0)) logger.info({ ...result }, "openwa audit content purged");
     });
     await runOpenwaAuditPurge().catch((err: unknown) => {
       logger.error({ err }, "startup openwa audit content purge failed");

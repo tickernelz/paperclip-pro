@@ -313,6 +313,19 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
     expect(filtered.map((entry) => (entry.metadata as { reason: string }).reason)).toEqual(["outside_allowlist", "denylisted"]);
     expect(filtered.map((entry) => entry.chatKey)).toEqual([jid(STRANGER_PHONE), jid(ALLOWED_PHONE)]);
+    const admittedAudits = (await audits(t)).filter((entry) => entry.kind === "trigger_admitted");
+    expect(admittedAudits).toHaveLength(2);
+    const byDelivery = new Map(admittedAudits.map((entry) => [(entry.metadata as { deliveryId: string }).deliveryId, entry]));
+    expect(byDelivery.get(rows[0].id)).toMatchObject({
+      chatKey: jid(OWNER_PHONE),
+      actorKind: "chat_principal",
+      actorRef: jid(OWNER_PHONE),
+      conversationId: rows[0].conversationId,
+      metadata: { event: "message", triggerClass: "owner", principalRole: "owner", rules: ["direct_message"], chatKind: "dm", senderMasked: "+62xxx...0333" },
+      content: { text: "hello from the owner" },
+    });
+    expect(byDelivery.get(rows[0].id)!.contentPurgeAt).not.toBeNull();
+    expect(byDelivery.get(rows[1].id)).toMatchObject({ metadata: { triggerClass: "other", principalRole: "allowed" }, content: { text: "hello from an allowed sender" } });
   }, 90_000);
 
   it("drops a revoked owner's authority on the next message", async () => {
@@ -397,6 +410,26 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(row.answerState).toBeNull();
     expect((row.normalizedEvent as { openwa?: { event?: string } }).openwa?.event).toBe("group_added");
     expect((await audits(t)).map((entry) => entry.kind)).toContain("group_added");
+    expect((await audits(t)).map((entry) => entry.kind)).not.toContain("trigger_admitted");
+  }, 90_000);
+
+  it("drops and audits a denylisted sender matched only by a keyword rule", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const group = "120363000000000009@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Keywords", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "deny", e164: "+" + MEMBER_PHONE }, t.userId);
+    await goLive(t);
+    await send(t, { chatId: group, author: jid(MEMBER_PHONE), body: "warm up" });
+    await until(() => t.service.openwaAdmissionStats.discoveries >= 1);
+    await t.service.openwa.putChat(t.endpointId, { chatId: group, settings: { activation: "on", triggers: { keywords: ["invoice"] } } }, t.userId);
+    await send(t, { chatId: group, author: jid(MEMBER_PHONE), body: "where is the invoice?" });
+    expect(await deliveries(t)).toHaveLength(0);
+    const entries = await audits(t);
+    const filtered = entries.filter((entry) => entry.kind === "trigger_filtered");
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0]).toMatchObject({ chatKey: group, metadata: { reason: "denylisted", principalRole: "denylisted", rules: ["keywords"] }, content: { text: "where is the invoice?" } });
+    expect(entries.map((entry) => entry.kind)).not.toContain("trigger_admitted");
   }, 90_000);
 
   it("performs zero database queries for non-trigger traffic once the policy is warm", async () => {
@@ -415,7 +448,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(t.counted.counts.queries - queries).toBe(0);
     expect(t.counted.counts.transactions - transactions).toBeLessThanOrEqual(1);
     expect(await deliveries(t)).toHaveLength(0);
-    expect((await audits(t)).filter((entry) => entry.kind === "trigger_filtered")).toHaveLength(0);
+    expect((await audits(t)).filter((entry) => entry.kind === "trigger_filtered" || entry.kind === "trigger_admitted")).toHaveLength(0);
   }, 90_000);
 
   it("keeps non-trigger traffic query-free after the policy revalidation interval has elapsed", async () => {

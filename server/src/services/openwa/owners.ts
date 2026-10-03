@@ -349,6 +349,7 @@ export interface OpenwaOwnerServiceDeps {
 export interface OpenwaAgentConfigOrigin {
   agentId: string;
   runId: string;
+  principalId: string | null;
   chatKey: string;
   conversationId: string;
 }
@@ -393,13 +394,13 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
       tx as unknown as Db,
       {
         companyId: endpoint.companyId,
-        actorType: origin ? "agent" : actorUserId ? "user" : "system",
-        actorId: origin ? origin.agentId : actorUserId ?? "board",
+        actorType: origin?.principalId ? "system" : origin ? "agent" : actorUserId ? "user" : "system",
+        actorId: origin?.principalId ? "chat:" + origin.principalId : origin ? origin.agentId : actorUserId ?? "board",
         ...(origin ? { agentId: origin.agentId, runId: origin.runId } : {}),
         action,
         entityType: "chat_endpoint",
         entityId: endpoint.id,
-        details: { endpointId: endpoint.id, provider: "openwa", ...details, ...(origin ? { via: "openwa_endpoint_config" } : {}) },
+        details: { endpointId: endpoint.id, provider: "openwa", ...details, ...(origin ? { via: "openwa_endpoint_config", agentId: origin.agentId, runId: origin.runId } : {}) },
       },
       publications,
     );

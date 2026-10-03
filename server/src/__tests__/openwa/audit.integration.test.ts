@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import {
   activityLog,
@@ -13,6 +13,8 @@ import {
   chatEndpoints,
   chatExternalPrincipals,
   chatIdentityLinks,
+  chatOwnerApprovalRequests,
+  chatOwnerGrants,
   companies,
   companyMemberships,
   createDb,
@@ -22,6 +24,8 @@ import {
   toolConnections,
 } from "@tickernelz/paperclip-pro-db";
 import { CHAT_AUDIT_ENTRY_KINDS, type ChatAuditEntryKind } from "@tickernelz/paperclip-pro-shared";
+import { accessService } from "../../services/access.js";
+import { assertOpenwaRunMay } from "../../services/openwa/authority.js";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { describeEmbeddedPostgres } from "../helpers/route-test-harness.js";
 import { errorHandler } from "../../middleware/index.js";
@@ -30,12 +34,11 @@ import { chatChannelService, type ChatChannelService } from "../../services/chat
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { REDACTED_EVENT_VALUE } from "../../redaction.js";
 import {
-  OPENWA_ACTIVITY_ACTIONS,
   OPENWA_AUDIT_ARG_LIMIT_BYTES,
   OPENWA_AUDIT_CONTENT_LIMIT_BYTES,
   OPENWA_AUDIT_RESULT_LIMIT_BYTES,
+  expireOpenwaGrants,
   listOpenwaAudit,
-  logOpenwaActivity,
   openwaAuditPurgeScheduler,
   purgeOpenwaAuditContent,
   recordOpenwaAudit,
@@ -354,12 +357,12 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     for (let index = 0; index < 3; index++) await record(t, "tool_called", new Date(Date.UTC(2020, 0, 1, 0, 0, index)));
     let now = new Date("2020-02-01T00:00:00.000Z");
     const scheduler = openwaAuditPurgeScheduler(db, { intervalMs: DAY_MS, batchSize: 2, maxBatches: 1, now: () => now });
-    expect(await scheduler.runDue()).toEqual({ purged: 2, batches: 1 });
-    expect(await scheduler.runDue()).toEqual({ purged: 1, batches: 1 });
+    expect(await scheduler.runDue()).toEqual({ purged: 2, batches: 1, expiredGrants: 0 });
+    expect(await scheduler.runDue()).toEqual({ purged: 1, batches: 1, expiredGrants: 0 });
     await record(t, "tool_called", new Date("2020-01-02T00:00:00.000Z"));
     expect(await scheduler.runDue()).toBeNull();
     now = new Date(now.getTime() + DAY_MS);
-    expect(await scheduler.runDue()).toEqual({ purged: 1, batches: 1 });
+    expect(await scheduler.runDue()).toEqual({ purged: 1, batches: 1, expiredGrants: 0 });
   });
 
   it("redacts credentials and bounds content sizes", async () => {
@@ -386,32 +389,102 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     expect(String(content.resultSummary)).toContain("[truncated 5000 bytes]");
   });
 
-  it("records every layer-2 kind", async () => {
+  async function grantFixture(t: Fixture, input: { expiresAt: Date; scope?: "one_action" | "requester" }) {
+    const scope = input.scope ?? "one_action";
+    const [request] = await db.insert(chatOwnerApprovalRequests).values({
+      companyId: t.companyId, endpointId: t.endpointId, originChatKey: CHAT, categories: ["create_task"],
+      scope, summary: "Create a task", proposedAction: "create_task", status: "approved",
+    }).returning();
+    const [grant] = await db.insert(chatOwnerGrants).values({
+      companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: CHAT,
+      category: "create_task", scope, approvedVia: "paperclip", approvedByUserId: t.endpointOwner.userId,
+      expiresAt: input.expiresAt,
+    }).returning();
+    return grant!;
+  }
+
+  async function activity(t: Fixture, action: string) {
+    return db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, action)));
+  }
+
+  it("withholds content from an endpoint owner demoted to viewer through the access service", async () => {
     const t = await seed();
-    for (const kind of CHAT_AUDIT_ENTRY_KINDS) await record(t, kind, new Date());
-    const rows = await db.select({ kind: chatAuditEntries.kind }).from(chatAuditEntries).where(eq(chatAuditEntries.endpointId, t.endpointId));
-    expect(new Set(rows.map((row) => row.kind))).toEqual(new Set(CHAT_AUDIT_ENTRY_KINDS));
+    await record(t, "approval_requested", new Date("2026-10-01T10:00:00.000Z"), { text: "Please approve the refund" });
+    const view = () => listOpenwaAudit(db, {
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      viewer: { type: "board", userId: t.endpointOwner.userId, instanceAdmin: false },
+    });
+    expect((await view()).access).toBe("content");
+    const [membership] = await db.select().from(companyMemberships)
+      .where(and(eq(companyMemberships.companyId, t.companyId), eq(companyMemberships.principalId, t.endpointOwner.userId)));
+    await accessService(db).updateMember(t.companyId, membership!.id, { membershipRole: "viewer" });
+    const demoted = await view();
+    expect(demoted.access).toBe("metadata");
+    expect(demoted.items[0]!.content).toBeNull();
+    expect(JSON.stringify(demoted)).not.toContain("refund");
   });
 
-  it("logs every layer-1 action as metadata-only activity with the right actor", async () => {
+  it("logs openwa.endpoint_created and openwa.endpoint_updated from the endpoint service next to the generic rows", async () => {
     const t = await seed();
-    const principalId = randomUUID();
-    for (const [index, action] of OPENWA_ACTIVITY_ACTIONS.entries()) {
-      await logOpenwaActivity(db, {
-        companyId: t.companyId,
-        endpointId: t.endpointId,
-        action,
-        ...(index % 2 === 0 ? { actorUserId: t.companyOwner.userId } : { actorPrincipalId: principalId }),
-        details: { changedKeys: ["replyPolicy"], count: index },
-      });
-    }
-    const rows = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.entityId, t.endpointId)));
-    expect(new Set(rows.map((row) => row.action))).toEqual(new Set(OPENWA_ACTIVITY_ACTIONS));
-    for (const row of rows) {
-      expect(row.entityType).toBe("chat_endpoint");
-      expect(row.details).toMatchObject({ endpointId: t.endpointId, provider: "openwa", changedKeys: ["replyPolicy"] });
-      if (row.actorType === "user") expect(row.actorId).toBe(t.companyOwner.userId);
-      else expect(row).toMatchObject({ actorType: "system", actorId: "chat:" + principalId });
-    }
+    const service = chatChannelService(db, {
+      runtime: fakeRuntime(),
+      publicBaseUrl: "https://paperclip.example",
+      heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
+      scheduleDeferredWork: () => {},
+    });
+    services.push(service);
+    const created = await service.create(t.companyId, { provider: "openwa", assignedAgentId: t.agentId } as never, t.companyOwner.userId);
+    await service.update(created.id, { allowGroupChats: false }, t.companyOwner.userId);
+    const rows = await db.select().from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), inArray(activityLog.action, ["openwa.endpoint_created", "openwa.endpoint_updated", "chat_endpoint.created", "chat_endpoint.updated"])));
+    expect(rows.map((row) => row.action).sort()).toEqual(["chat_endpoint.created", "chat_endpoint.updated", "openwa.endpoint_created", "openwa.endpoint_updated"]);
+    const openwa = rows.filter((row) => row.action.startsWith("openwa."));
+    for (const row of openwa)
+      expect(row).toMatchObject({ actorType: "user", actorId: t.companyOwner.userId, entityType: "chat_endpoint", entityId: created.id, details: { endpointId: created.id, provider: "openwa" } });
+    expect(openwa.find((row) => row.action === "openwa.endpoint_updated")!.details).toMatchObject({ changedKeys: ["allowGroupChats"] });
+  });
+
+  it("logs openwa.grant_consumed when a grant run consumes a one_action grant", async () => {
+    const t = await seed();
+    const grant = await grantFixture(t, { expiresAt: new Date(Date.now() + DAY_MS) });
+    const runId = randomUUID();
+    const contextSnapshot = {
+      paperclipToolProfile: "read_only",
+      paperclipOpenwa: { endpointId: t.endpointId, chatKey: CHAT, triggerClass: "grant", profile: "read_only", grantIds: [grant.id] },
+    };
+    await db.insert(heartbeatRuns).values({ id: runId, companyId: t.companyId, agentId: t.agentId, status: "running", startedAt: new Date(), contextSnapshot });
+    const run = { id: runId, companyId: t.companyId, contextSnapshot };
+    expect(await assertOpenwaRunMay(db, run, "create_task")).toBe(grant.id);
+    const rows = await activity(t, "openwa.grant_consumed");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ actorType: "system", actorId: "openwa", runId, entityId: t.endpointId, details: { grantId: grant.id, category: "create_task", scope: "one_action" } });
+    await expect(assertOpenwaRunMay(db, run, "create_task")).rejects.toMatchObject({ status: 403 });
+    expect(await activity(t, "openwa.grant_consumed")).toHaveLength(1);
+  });
+
+  it("expires live grants past expires_at in the scheduled job and logs one openwa.grant_expired per endpoint", async () => {
+    const t = await seed();
+    const other = await seed();
+    const now = new Date();
+    const stale = [
+      await grantFixture(t, { expiresAt: new Date(now.getTime() - 1000) }),
+      await grantFixture(t, { expiresAt: new Date(now.getTime() - 2000), scope: "requester" }),
+    ];
+    const fresh = await grantFixture(t, { expiresAt: new Date(now.getTime() + DAY_MS) });
+    const elsewhere = await grantFixture(other, { expiresAt: new Date(now.getTime() - 1000) });
+    const scheduler = openwaAuditPurgeScheduler(db, { intervalMs: DAY_MS, now: () => now });
+    expect((await scheduler.runDue())!.expiredGrants).toBeGreaterThanOrEqual(3);
+    const ids = [...stale.map((grant) => grant.id), fresh.id, elsewhere.id];
+    const statuses = new Map((await db.select().from(chatOwnerGrants).where(inArray(chatOwnerGrants.id, ids))).map((grant) => [grant.id, grant.status]));
+    expect(stale.map((grant) => statuses.get(grant.id))).toEqual(["expired", "expired"]);
+    expect(statuses.get(fresh.id)).toBe("live");
+    expect(statuses.get(elsewhere.id)).toBe("expired");
+    const rows = await activity(t, "openwa.grant_expired");
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ actorType: "system", actorId: "openwa", entityId: t.endpointId, details: { count: 2, grantIds: stale.map((grant) => grant.id).sort() } });
+    expect(await activity(other, "openwa.grant_expired")).toHaveLength(1);
+    expect(await expireOpenwaGrants(db, { now })).toBe(0);
+    expect(await activity(t, "openwa.grant_expired")).toHaveLength(1);
   });
 });

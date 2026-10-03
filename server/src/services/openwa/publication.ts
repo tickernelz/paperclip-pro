@@ -23,7 +23,7 @@ import { formatOpenwaPublication } from "./format.js";
 import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";
 import { openwaChatKey, sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
 import type { OpenwaState } from "./state.js";
-import { recordOpenwaAudit } from "./audit.js";
+import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 type EndpointRow = typeof chatEndpoints.$inferSelect;
@@ -356,11 +356,21 @@ export async function decideOpenwaRunPublication(
       .update(chatDeliveries)
       .set({ answerState: "answered", updatedAt: now })
       .where(and(eq(chatDeliveries.endpointId, endpoint.id), inArray(chatDeliveries.id, triggerIds), eq(chatDeliveries.answerState, "pending")));
-    if (consumable.length)
-      await tx
+    if (consumable.length) {
+      const consumed = await tx
         .update(chatOwnerGrants)
         .set({ status: "consumed", consumedAt: now, consumedByRunId: run.runId, updatedAt: now })
-        .where(and(eq(chatOwnerGrants.endpointId, endpoint.id), inArray(chatOwnerGrants.id, consumable), eq(chatOwnerGrants.status, "live")));
+        .where(and(eq(chatOwnerGrants.endpointId, endpoint.id), inArray(chatOwnerGrants.id, consumable), eq(chatOwnerGrants.status, "live")))
+        .returning({ id: chatOwnerGrants.id, category: chatOwnerGrants.category });
+      for (const grant of consumed)
+        await logOpenwaActivity(tx, {
+          companyId: endpoint.companyId,
+          endpointId: endpoint.id,
+          action: "openwa.grant_consumed",
+          runId: run.runId,
+          details: { grantId: grant.id, category: grant.category, scope: "one_action", publicationId: publication.id },
+        });
+    }
     return { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds };
   });
 }
