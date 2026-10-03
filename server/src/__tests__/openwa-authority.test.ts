@@ -39,6 +39,8 @@ import { connectionIntentService } from "../services/connection-intents.js";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
+import { chatChannelService } from "../services/chat-channels.js";
+import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";
 import {
   OpenwaApprovalRequiredError,
   applyOpenwaRunContext,
@@ -709,10 +711,10 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
   });
 
   describe("persistent agent key seam", () => {
-    function app() {
+    function app(database: ReturnType<typeof createDb> = db) {
       const server = express();
       server.use(express.json());
-      server.use(actorMiddleware(db, { deploymentMode: "authenticated", resolveSession: async () => null }));
+      server.use(actorMiddleware(database, { deploymentMode: "authenticated", resolveSession: async () => null }));
       server.all("/api/{*rest}", (req, res) => res.json({ reached: true, actor: req.actor.type }));
       server.use(errorHandler);
       return server;
@@ -738,13 +740,39 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(read.status).toBe(200);
     });
 
-    it("never caches an unbound answer: a key turns read-only as soon as its agent gets an endpoint", async () => {
-      const seed = await seedCompany(db);
-      await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, seed.endpointId));
-      const token = await key(seed);
+    it("caches the unbound answer: a second mutation of an agent without OpenWA issues no chat_endpoints query", async () => {
+      const telegram = await seedCompany(db, { openwa: false });
+      const token = await key(telegram);
+      const counted = loggedDb();
+      const server = app(counted.db);
+      const endpointQueries = async () => {
+        const before = counted.queries.length;
+        const res = await request(server).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
+        expect(res.status).toBe(200);
+        return counted.queries.slice(before).filter((query) => query.includes('from "chat_endpoints"')).length;
+      };
+      expect(await endpointQueries()).toBe(1);
+      expect(await endpointQueries()).toBe(0);
+    });
+
+    it("turns a key read-only as soon as its agent gets an OpenWA endpoint through the service", async () => {
+      const telegram = await seedCompany(db, { openwa: false });
+      const token = await key(telegram);
       const before = await request(app()).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
       expect(before.status).toBe(200);
-      await db.update(chatEndpoints).set({ status: "active" }).where(eq(chatEndpoints.id, seed.endpointId));
+      const service = chatChannelService(db, {
+        runtime: new ChatSdkRuntime(),
+        publicBaseUrl: "https://paperclip.example",
+        heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
+        discordGatewayLeaseTtlMs: 120_000,
+        discordGatewayLeaseRenewalIntervalMs: 60_000,
+        discordGatewayLeaseWaitMs: 200,
+      });
+      try {
+        await service.create(telegram.companyId, { provider: "openwa", assignedAgentId: telegram.agentId } as never, BOARD_USER);
+      } finally {
+        await service.shutdown();
+      }
       const after = await request(app()).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
       expect(after.status).toBe(403);
       expect(after.body).toMatchObject({ code: "openwa_agent_key_read_only" });

@@ -50,6 +50,7 @@ import {
   syncOpenwaGroupActivation,
 } from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
+import { invalidateOpenwaAgentKey } from "./openwa/authority.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
@@ -6148,6 +6149,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         },
       });
     });
+    if (input.provider === "openwa") invalidateOpenwaAgentKey(companyId, agent.id);
     await logActivity(db, {
       companyId,
       actorType: "user",

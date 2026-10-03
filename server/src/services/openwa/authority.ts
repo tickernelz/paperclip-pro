@@ -74,8 +74,9 @@ const APPROVAL_TOGGLES: Record<OpenwaApprovalCategory, keyof OpenwaEndpointPolic
   wa_admin: "waAdmin",
   gateway_admin: "gatewayAdmin",
 };
-const bindingCache = new WeakMap<Db, Map<string, { bound: boolean; at: number }>>();
-const agentKeyCache = new WeakMap<Db, Map<string, { bound: boolean; at: number }>>();
+type BoundCache = { entries: Map<string, { bound: boolean; at: number }>; epoch: number };
+const bindingCache: BoundCache = { entries: new Map(), epoch: 0 };
+const agentKeyCache: BoundCache = { entries: new Map(), epoch: 0 };
 const grantScopes = new AsyncLocalStorage<GrantScope>();
 
 export function openwaRunAuthoritySnapshot() {
@@ -120,20 +121,26 @@ function approvalCategories(value: unknown): OpenwaApprovalCategory[] {
   return OPENWA_APPROVAL_CATEGORIES.filter((category) => value.includes(category));
 }
 
-function cacheGet(cache: WeakMap<Db, Map<string, { bound: boolean; at: number }>>, db: Db, key: string, ttl: number) {
-  const entry = cache.get(db)?.get(key);
+function cacheGet(cache: BoundCache, key: string, ttl: number) {
+  const entry = cache.entries.get(key);
   return entry && Date.now() - entry.at < ttl ? entry.bound : null;
 }
 
-function cacheSet(cache: WeakMap<Db, Map<string, { bound: boolean; at: number }>>, db: Db, key: string, bound: boolean, limit: number) {
-  let map = cache.get(db);
-  if (!map) {
-    map = new Map();
-    cache.set(db, map);
-  }
-  map.delete(key);
-  map.set(key, { bound, at: Date.now() });
-  if (map.size > limit) map.delete(map.keys().next().value!);
+function cacheSet(cache: BoundCache, key: string, bound: boolean, limit: number, epoch: number) {
+  if (epoch !== cache.epoch) return;
+  cache.entries.delete(key);
+  cache.entries.set(key, { bound, at: Date.now() });
+  if (cache.entries.size > limit) cache.entries.delete(cache.entries.keys().next().value!);
+}
+
+function cacheInvalidate(cache: BoundCache, key: string) {
+  cache.epoch += 1;
+  cache.entries.delete(key);
+}
+
+/** Forgets the cached agent-key answer of an agent; call after committing an OpenWA endpoint assigned to it. */
+export function invalidateOpenwaAgentKey(companyId: string, agentId: string) {
+  cacheInvalidate(agentKeyCache, `${companyId}:${agentId}`);
 }
 
 function normalizeChatKey(value: string): string {
@@ -223,10 +230,11 @@ async function openwaConversationBinding(db: Db, companyId: string, issueId: str
 /** True when the issue is bound by a chat conversation to an OpenWA endpoint of the same company. */
 export async function isOpenwaConversationIssue(db: Db, companyId: string, issueId: string): Promise<boolean> {
   const key = `${companyId}:${issueId}`;
-  const cached = cacheGet(bindingCache, db, key, BINDING_CACHE_TTL_MS);
+  const cached = cacheGet(bindingCache, key, BINDING_CACHE_TTL_MS);
   if (cached !== null) return cached;
+  const epoch = bindingCache.epoch;
   const bound = (await openwaConversationBinding(db, companyId, issueId)) !== null;
-  cacheSet(bindingCache, db, key, bound, BINDING_CACHE_LIMIT);
+  cacheSet(bindingCache, key, bound, BINDING_CACHE_LIMIT, epoch);
   return bound;
 }
 
@@ -287,8 +295,10 @@ export async function resolveOpenwaRunContext(
   db: Db,
   input: { companyId: string; issueId: string; runId: string; contextSnapshot: Record<string, unknown>; wakeupRequestId: string | null },
 ): Promise<OpenwaRunContext | null> {
+  const key = `${input.companyId}:${input.issueId}`;
+  const epoch = bindingCache.epoch;
   const binding = await openwaConversationBinding(db, input.companyId, input.issueId);
-  cacheSet(bindingCache, db, `${input.companyId}:${input.issueId}`, binding !== null, BINDING_CACHE_LIMIT);
+  cacheSet(bindingCache, key, binding !== null, BINDING_CACHE_LIMIT, epoch);
   if (!binding) return null;
   const chatKey = chatKeyFromConversation(binding.externalConversationId);
   const policy = parsePolicy(binding.policy);
@@ -715,8 +725,9 @@ export async function assertOpenwaAgentKeyMethodAllowed(
 ): Promise<void> {
   if (SAFE_METHODS.has(input.method.toUpperCase())) return;
   const key = `${input.companyId}:${input.agentId}`;
-  let bound = cacheGet(agentKeyCache, db, key, AGENT_KEY_CACHE_TTL_MS) === true;
-  if (!bound) {
+  let bound = cacheGet(agentKeyCache, key, AGENT_KEY_CACHE_TTL_MS);
+  if (bound === null) {
+    const epoch = agentKeyCache.epoch;
     const [row] = await db
       .select({ id: chatEndpoints.id })
       .from(chatEndpoints)
@@ -728,7 +739,7 @@ export async function assertOpenwaAgentKeyMethodAllowed(
       ))
       .limit(1);
     bound = Boolean(row);
-    if (bound) cacheSet(agentKeyCache, db, key, true, AGENT_KEY_CACHE_LIMIT);
+    cacheSet(agentKeyCache, key, bound, AGENT_KEY_CACHE_LIMIT, epoch);
   }
   if (bound) {
     throw forbidden("Persistent agent keys of an OpenWA agent are read-only; use run-bound credentials", {
