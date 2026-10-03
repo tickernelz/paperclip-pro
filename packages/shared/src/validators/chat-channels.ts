@@ -11,6 +11,15 @@ import {
   CHAT_PROVIDERS,
   CHAT_PUBLICATION_STATES,
   CHAT_RESOURCE_AVAILABILITIES,
+  CHAT_INFLIGHT_MODES,
+  OPENWA_CHAT_ACTIVATIONS,
+  OPENWA_GATEWAY_ADMIN_TOOL_LEVELS,
+  OPENWA_NUMBER_MODES,
+  OPENWA_REPLY_POLICIES,
+  OPENWA_SENDER_POLICY_MODES,
+  type OpenwaEndpointPolicy,
+  type OpenwaNumberMode,
+  type OpenwaTriggerRules,
 } from "../types/chat-channels.js";
 
 export const chatProviderSchema = z.enum(CHAT_PROVIDERS);
@@ -207,6 +216,135 @@ export const confirmChatIdentityLinkSchema = z
   .strict();
 
 export const replayChatDeliverySchema = z.object({}).strict();
+
+export const chatInflightModeSchema = z.enum(CHAT_INFLIGHT_MODES);
+export const openwaNumberModeSchema = z.enum(OPENWA_NUMBER_MODES);
+export const openwaSenderPolicyModeSchema = z.enum(OPENWA_SENDER_POLICY_MODES);
+export const openwaReplyPolicySchema = z.enum(OPENWA_REPLY_POLICIES);
+export const openwaChatActivationSchema = z.enum(OPENWA_CHAT_ACTIVATIONS);
+export const openwaGatewayAdminToolLevelSchema = z.enum(OPENWA_GATEWAY_ADMIN_TOOL_LEVELS);
+
+export const OPENWA_DEFAULT_COMMAND_PREFIX = "/ai";
+export const OPENWA_DEFAULT_OWNER_NUMBER_PREFIX = "\u{1F916} *Assistant:*";
+export const OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH = 8000;
+export const OPENWA_CHAT_NOTE_MAX_LENGTH = 2000;
+
+const openwaCommandPrefixSchema = z.string().trim().min(1).max(32).regex(/^\S+$/);
+const openwaKeywordsSchema = z.array(z.string().trim().min(1).max(100)).max(50);
+const openwaAbsenceSecondsSchema = z.number().int().min(10).max(86_400);
+
+export function openwaDefaultTriggerRules(numberMode: OpenwaNumberMode): OpenwaTriggerRules {
+  const agentNumber = numberMode === "agent_number";
+  return {
+    directMessage: agentNumber,
+    agentMentioned: agentNumber,
+    replyToAgent: true,
+    commandPrefix: { enabled: !agentNumber, prefix: OPENWA_DEFAULT_COMMAND_PREFIX },
+    selfChat: !agentNumber,
+    ownerMentionedAbsent: true,
+    keywords: [],
+    allMessages: false,
+  };
+}
+
+const openwaTriggerRulesInputSchema = z
+  .object({
+    directMessage: z.boolean().optional(),
+    agentMentioned: z.boolean().optional(),
+    replyToAgent: z.boolean().optional(),
+    commandPrefix: z
+      .object({
+        enabled: z.boolean().optional(),
+        prefix: openwaCommandPrefixSchema.optional(),
+      })
+      .strict()
+      .optional(),
+    selfChat: z.boolean().optional(),
+    ownerMentionedAbsent: z.boolean().optional(),
+    keywords: openwaKeywordsSchema.optional(),
+    allMessages: z.boolean().optional(),
+  })
+  .strict();
+
+export const openwaEndpointPolicySchema = z
+  .object({
+    numberMode: openwaNumberModeSchema.default("agent_number"),
+    senderPolicyMode: openwaSenderPolicyModeSchema.default("allowlist"),
+    replyPolicy: openwaReplyPolicySchema.default("allowed"),
+    triggers: openwaTriggerRulesInputSchema.optional(),
+    absenceSeconds: openwaAbsenceSecondsSchema.default(120),
+    approvals: z
+      .object({
+        createTask: z.boolean().default(true),
+        externalTools: z.boolean().default(true),
+        crossChatSend: z.boolean().default(true),
+        waAdmin: z.boolean().default(true),
+        gatewayAdmin: z.boolean().default(true),
+        reminderMinutes: z.number().int().min(1).max(1440).default(30),
+        maxReminders: z.number().int().min(0).max(10).default(3),
+        grantTtlHours: z.number().int().min(1).max(720).default(24),
+      })
+      .strict()
+      .prefault({}),
+    rotateAfterIdleHours: z.number().int().min(1).max(720).default(24),
+    progressNudgeSeconds: z.number().int().min(0).max(3600).default(60),
+    typingIndicator: z.boolean().default(true),
+    ownerNumberPrefix: z
+      .object({
+        enabled: z.boolean().default(true),
+        text: z.string().trim().min(1).max(64).default(OPENWA_DEFAULT_OWNER_NUMBER_PREFIX),
+      })
+      .strict()
+      .prefault({}),
+    gatewayAdminTools: openwaGatewayAdminToolLevelSchema.default("off"),
+    customInstructions: multilineTextSchema
+      .pipe(z.string().trim().max(OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH))
+      .default(""),
+    auditContentRetentionDays: z.number().int().min(1).max(3650).default(90),
+    attestations: z
+      .object({
+        pacing: z.boolean().default(false),
+        soleClient: z.boolean().default(false),
+      })
+      .strict()
+      .prefault({}),
+  })
+  .strict()
+  .transform((value): OpenwaEndpointPolicy => {
+    const defaults = openwaDefaultTriggerRules(value.numberMode);
+    const triggers = value.triggers ?? {};
+    return {
+      ...value,
+      triggers: {
+        directMessage: triggers.directMessage ?? defaults.directMessage,
+        agentMentioned: triggers.agentMentioned ?? defaults.agentMentioned,
+        replyToAgent: triggers.replyToAgent ?? defaults.replyToAgent,
+        commandPrefix: {
+          enabled: triggers.commandPrefix?.enabled ?? defaults.commandPrefix.enabled,
+          prefix: triggers.commandPrefix?.prefix ?? defaults.commandPrefix.prefix,
+        },
+        selfChat: triggers.selfChat ?? defaults.selfChat,
+        ownerMentionedAbsent: triggers.ownerMentionedAbsent ?? defaults.ownerMentionedAbsent,
+        keywords: triggers.keywords ?? defaults.keywords,
+        allMessages: triggers.allMessages ?? defaults.allMessages,
+      },
+    };
+  });
+
+export const openwaTriggerOverridesSchema = openwaTriggerRulesInputSchema;
+
+export const openwaChatSettingsSchema = z
+  .object({
+    activation: openwaChatActivationSchema.default("auto"),
+    triggers: openwaTriggerOverridesSchema.optional(),
+    absenceSeconds: openwaAbsenceSecondsSchema.optional(),
+    replyPolicy: openwaReplyPolicySchema.optional(),
+    note: multilineTextSchema.pipe(z.string().trim().max(OPENWA_CHAT_NOTE_MAX_LENGTH)).optional(),
+  })
+  .strict();
+
+export type OpenwaEndpointPolicyInput = z.input<typeof openwaEndpointPolicySchema>;
+export type OpenwaChatSettingsInput = z.input<typeof openwaChatSettingsSchema>;
 
 export const chatPublicEndpointIdSchema = z
   .string()

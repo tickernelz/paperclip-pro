@@ -4069,7 +4069,8 @@
               "discord",
               "microsoft-teams",
               "telegram",
-              "imessage-photon"
+              "imessage-photon",
+              "openwa"
             ]
           }
         },

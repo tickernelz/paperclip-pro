@@ -31,7 +31,7 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { openwaEndpointPolicySchema, photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
   createHash,
@@ -420,6 +420,7 @@ function publicationSummary(
 
 const PROVIDER_LABELS: Record<ChatProvider, string> = {
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
   agentmail: "AgentMail",
   slack: "Slack",
   github: "GitHub",
@@ -657,6 +658,7 @@ async function inspectSlackCallback(
 
 const CAPABILITIES: Record<ChatProvider, ChatAdapterCapabilities> = {
   "imessage-photon": { threads: false, directMessages: true, nativeStreaming: false, messageEdits: true, messageDeletes: false, reactions: false, files: true, cards: false, actions: true, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: false },
+  openwa: { threads: false, directMessages: true, nativeStreaming: false, messageEdits: true, messageDeletes: true, reactions: true, files: true, cards: false, actions: false, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: true },
   agentmail: { threads: true, directMessages: true, nativeStreaming: false, messageEdits: false, messageDeletes: false, reactions: false, files: true, cards: false, actions: false, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: true },
   slack: {
     threads: true,
@@ -751,6 +753,7 @@ const REQUIRED_CREDENTIALS: Record<
   readonly string[]
 > = {
   "imessage-photon": ["projectSecret"],
+  openwa: ["apiKey"],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   discord: ["botToken", "applicationId", "guildId"],
@@ -811,6 +814,7 @@ const SUPPORTED_GITHUB_WEBHOOK_EVENTS = new Set<string>([
 
 const SUPPLIED_CREDENTIAL_KEYS: Record<ChatProvider, readonly string[]> = {
   "imessage-photon": ["projectSecret"],
+  openwa: ["apiKey", "adminApiKey"],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   github: ["appId", "privateKey"],
@@ -850,7 +854,7 @@ const PUBLICATION_ENDPOINT_CONCURRENCY = 4;
 const CREDENTIAL_MUTATION_LEASE_WAIT_MS = 10_000;
 const CREDENTIAL_MUTATION_LEASE_POLL_MS = 25;
 const DISCORD_GATEWAY_LEASE_KEY = "discord_gateway_runtime";
-function leasedChatProvider(provider: string): boolean { return provider === "discord" || provider === "imessage-photon"; }
+function leasedChatProvider(provider: string): boolean { return provider === "discord" || provider === "imessage-photon" || provider === "openwa"; }
 const DISCORD_GATEWAY_LEASE_TTL_MS = 15_000;
 const DISCORD_GATEWAY_LEASE_WAIT_MS = 20_000;
 const DISCORD_GATEWAY_LEASE_POLL_MS = 100;
@@ -1554,7 +1558,7 @@ type DiscordGatewayOwnership = {
   context: RuntimeContext;
   endpointId: string;
   expiresAt: Date;
-  leaseKey: typeof DISCORD_GATEWAY_LEASE_KEY | "photon_receiver_runtime";
+  leaseKey: typeof DISCORD_GATEWAY_LEASE_KEY | "photon_receiver_runtime" | "openwa_receiver_runtime";
   renewTimer: ReturnType<typeof setInterval> | null;
   renewal: Promise<void> | null;
   stopPromise: Promise<void> | null;
@@ -1572,7 +1576,7 @@ function providerResourceType(
 ): string {
   if (surfaceKind === "direct_message") return "direct_message";
   if (provider === "github") return "repository";
-  if (provider === "imessage-photon") return "group_chat";
+  if (provider === "imessage-photon" || provider === "openwa") return "group_chat";
   if (provider === "discord") return "channel";
   if (provider === "microsoft-teams")
     return surfaceKind === "linear_group" ? "group_chat" : "channel";
@@ -1691,7 +1695,7 @@ function chatSurfaceKind(
   thread: Thread,
 ): ChatSurfaceKind {
   if (thread.isDM) return "direct_message";
-  if (provider === "imessage-photon") return "linear_group";
+  if (provider === "imessage-photon" || provider === "openwa") return "linear_group";
   if (provider === "telegram") {
     return /^telegram:[^:]+:[^:]+$/.test(thread.id)
       ? "native_thread"
@@ -2665,6 +2669,7 @@ function providerSetupState(
   const step = endpoint.status === "active" ? "complete" : endpoint.setup.step;
   switch (endpoint.provider) {
     case "imessage-photon": return { step, providerUrl: "https://photon.codes/", testStartedAt: endpoint.setup.testStartedAt } as const;
+    case "openwa": return { step, testStartedAt: endpoint.setup.testStartedAt } as const;
     case "agentmail": return endpoint.setup;
     case "slack": {
       const observations = (endpoint.setup as InternalSetupState)
@@ -3316,7 +3321,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     context: RuntimeContext,
     waitForOwnership: boolean,
   ): Promise<DiscordGatewayOwnership | null> {
-    const receiverLeaseKey = endpoint.provider === "imessage-photon" ? "photon_receiver_runtime" : DISCORD_GATEWAY_LEASE_KEY;
+    const receiverLeaseKey = endpoint.provider === "imessage-photon" ? "photon_receiver_runtime" : endpoint.provider === "openwa" ? "openwa_receiver_runtime" : DISCORD_GATEWAY_LEASE_KEY;
     const local = discordGatewayOwnerships.get(endpoint.id);
     if (
       local &&
@@ -5866,6 +5871,13 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       botAvatarUrl: endpoint.botAvatarUrl,
       communicationInstructions: endpoint.communicationInstructions,
       ...(endpoint.provider === "imessage-photon" && endpoint.botExternalId ? { photonAllocation: endpoint.botExternalId.startsWith("photon-project:") ? "shared" as const : "dedicated" as const } : {}),
+      ...(endpoint.provider === "openwa"
+        ? {
+            policy: openwaEndpointPolicySchema.parse(endpoint.policy),
+            policyRevision: endpoint.policyRevision,
+            inflightMode: endpoint.inflightMode,
+          }
+        : {}),
       allowDirectMessages: endpoint.allowDirectMessages,
       allowGroupChats: endpoint.allowGroupChats,
       allowUnlinkedPeople: endpoint.allowUnlinkedPeople,
@@ -6043,7 +6055,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         // enables that surface, even when this process is running against a
         // database created before the column default was hardened.
         allowGroupChats: input.provider !== "microsoft-teams",
-        allowUnlinkedPeople: !["slack", "imessage-photon"].includes(input.provider),
+        allowUnlinkedPeople: !["slack", "imessage-photon", "openwa"].includes(input.provider),
+        inflightMode: input.provider === "openwa" ? "steer" : "queue",
         capabilities: CAPABILITIES[input.provider],
         setup: {
           step: "provider_setup",
@@ -6170,6 +6183,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     provider: ChatProvider,
     credentials: Record<string, string>,
   ): Promise<VerifiedProviderIdentity> {
+    if (provider === "openwa")
+      throw unprocessable("OpenWA setup is not available in this build", {
+        code: "openwa_setup_unavailable",
+      });
     if (provider === "imessage-photon") {
       const inspection = await inspectPhotonCredentials(credentials.projectId, credentials.projectSecret);
       if (inspection.allocation !== (credentials.allocation ?? "dedicated")) throw unprocessable("Photon allocation changed; inspect the project again");
@@ -7593,6 +7610,21 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       intakeAfter: Date.parse(String((endpoint.setup as InternalSetupState).photonIntakeAfter ?? endpoint.setup.testStartedAt ?? endpoint.createdAt.toISOString())),
       credentials: { allocation: credentials.allocation === "shared" ? "shared" : "dedicated", projectId: credentials.projectId, lineId: credentials.lineId, projectSecret: credentials.projectSecret, phoneNumber: endpoint.botExternalId! },
     };
+    if (endpoint.provider === "openwa") {
+      const account = endpoint.providerAccountId ?? "";
+      const separator = account.lastIndexOf("#");
+      return {
+        provider: "openwa",
+        userName,
+        credentials: {
+          baseUrl: separator > 0 ? account.slice(0, separator) : "",
+          sessionId: separator > 0 ? account.slice(separator + 1) : "",
+          phoneNumber: endpoint.botExternalId ?? "",
+          apiKey: credentials.apiKey,
+          ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}),
+        },
+      };
+    }
     if (endpoint.provider === "slack")
       return {
         provider: "slack",
@@ -37319,7 +37351,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 publication,
                 endpoint,
               );
-              const replaceProviderMessageId = endpoint.provider !== "imessage-photon" && CAPABILITIES[endpoint.provider]
+              const replaceProviderMessageId = endpoint.provider !== "imessage-photon" && endpoint.provider !== "openwa" && CAPABILITIES[endpoint.provider]
                 .messageEdits
                 ? (closedProgress?.providerMessageId ??
                   (await interactionResolutionPublicationToReplace(

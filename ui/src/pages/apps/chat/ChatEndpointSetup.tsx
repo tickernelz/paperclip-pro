@@ -58,6 +58,7 @@ const providerNames: Record<ChatProvider, string> = {
   "microsoft-teams": "Microsoft Teams",
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
 };
 
 const knownProviders = new Set(Object.keys(providerNames));
