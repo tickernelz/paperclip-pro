@@ -12,6 +12,12 @@ describe("tool app gallery URL matching", () => {
     expect(getAppDefinitionForUrl("https://gmailmcp.googleapis.com/mcp/v1")?.slug).toBe("gmail");
   });
 
+  it("prefers the most specific matching pattern over list order", () => {
+    expect(getAppDefinitionForUrl("https://github.com/rmyndharis/OpenWA")?.slug).toBe("openwa");
+    expect(getAppDefinitionForUrl("https://github.com/rmyndharis/OpenWA/releases")?.slug).toBe("openwa");
+    expect(getAppDefinitionForUrl("https://github.com/rmyndharis/other-repo")?.slug).toBe("github");
+  });
+
   it("returns null for invalid or unknown links", () => {
     expect(getAppDefinitionForUrl("not a url")).toBeNull();
     expect(getAppDefinitionForUrl("https://example.com/mcp")).toBeNull();

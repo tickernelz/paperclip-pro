@@ -66,7 +66,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("openwa-guidance-");
     db = createDb(tempDb.connectionString);
-    paperclipHome = await fs.mkdtemp(path.join(os.homedir(), ".cache", "openwa-build", "tmp", "openwa-guidance-home-"));
+    paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "openwa-guidance-home-"));
     process.env.PAPERCLIP_HOME = paperclipHome;
     process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({
