@@ -48,7 +48,7 @@ const ADDRESSING_RULES: ReadonlySet<OpenwaTriggerRule> = new Set([
   "control",
 ]);
 
-const OWNER_ACTIVITY_TYPES: ReadonlySet<string> = new Set([
+export const OPENWA_OWNER_ACTIVITY_TYPES: ReadonlySet<string> = new Set([
   "text",
   "chat",
   "image",
@@ -344,7 +344,7 @@ export function classifyOpenwaEvent(
   const addressed = rules.some((rule) => ADDRESSING_RULES.has(rule));
   if (!rules.length || !active) {
     if (addressed && !active) return { kind: "filtered", reason: "chat_inactive", chatKey, principalRole: role, rules };
-    if (owner && OWNER_ACTIVITY_TYPES.has(event.type)) return { kind: "owner_activity", chatKey, owner };
+    if (owner && OPENWA_OWNER_ACTIVITY_TYPES.has(event.type)) return { kind: "owner_activity", chatKey, owner };
     if (
       !owner &&
       active &&
