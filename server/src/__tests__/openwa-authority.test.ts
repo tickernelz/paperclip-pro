@@ -108,6 +108,26 @@ describe("openwaReadOnlyRestDecision", () => {
     expect(openwaReadOnlyRestDecision({ method, path, ownIssueId: own, body })).toEqual({ allowed: false, category });
   });
 
+  it("matches paths case-insensitively like the Express router", () => {
+    const upperOwn = own.toUpperCase();
+    for (const [method, path, body] of [
+      ["POST", "/API/Companies/c/ISSUES", {}],
+      ["POST", `/Api/issues/${own}/children`, {}],
+      ["POST", `/API/ISSUES/${upperOwn}/CHILDREN/`, {}],
+      ["PATCH", `/API/Issues/${upperOwn}`, { assigneeAgentId: other }],
+    ] as const) {
+      expect(openwaReadOnlyRestDecision({ method, path, ownIssueId: own, body })).toEqual({ allowed: false, category: "create_task" });
+    }
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: `/API/Issues/${upperOwn}/Comments`, ownIssueId: own, body: {} }))
+      .toEqual({ allowed: true });
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: `/Api/Issues/${own}/Comments`, ownIssueId: upperOwn, body: {} }))
+      .toEqual({ allowed: true });
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: `/API/Issues/${other}/Comments`, ownIssueId: own, body: {} }))
+      .toEqual({ allowed: false, category: "external_tools" });
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: "/API/Companies/c/Routines", ownIssueId: own, body: {} }))
+      .toEqual({ allowed: false, category: "external_tools" });
+  });
+
   it("checks work products against the run's own issue", () => {
     const path = "/api/work-products/33333333-3333-4333-8333-333333333333";
     expect(openwaReadOnlyRestDecision({ method: "PATCH", path, ownIssueId: own })).toMatchObject({ allowed: "workProduct" });
