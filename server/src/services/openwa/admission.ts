@@ -84,6 +84,53 @@ export interface OpenwaAdmissionDecoration {
   readonly approval?: OpenwaApprovalReplyDecoration | null;
 }
 
+type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
+
+function auditContent(text: string | null | undefined, retentionDays: number, occurredAt: Date) {
+  return text
+    ? { content: { text: text.slice(0, AUDIT_TEXT_LIMIT) }, contentPurgeAt: new Date(occurredAt.getTime() + retentionDays * 86_400_000) }
+    : {};
+}
+
+/** Layer-2 trigger_admitted entry for an admitted trigger; written in the transaction that persists its delivery. */
+export async function recordOpenwaTriggerAdmitted(
+  database: DbOrTransaction,
+  input: {
+    companyId: string;
+    endpointId: string;
+    conversationId: string;
+    deliveryId: string;
+    decoration: OpenwaAdmissionDecoration;
+    text: string | null;
+    retentionDays: number;
+  },
+): Promise<void> {
+  const { decoration } = input;
+  const occurredAt = new Date();
+  await database.insert(chatAuditEntries).values({
+    companyId: input.companyId,
+    endpointId: input.endpointId,
+    conversationId: input.conversationId,
+    chatKey: decoration.chatKey,
+    kind: "trigger_admitted",
+    actorKind: "chat_principal",
+    actorRef: openwaPrincipalExternalId(decoration.sender.jid, decoration.sender.phone),
+    metadata: {
+      event: decoration.event,
+      triggerClass: decoration.triggerClass,
+      principalRole: decoration.principalRole,
+      rules: decoration.rules,
+      addressed: decoration.addressed,
+      chatKind: decoration.chatKind,
+      waMessageId: decoration.waMessageId,
+      deliveryId: input.deliveryId,
+      senderMasked: decoration.sender.phone ? maskOpenwaPhoneNumber(decoration.sender.phone) : null,
+    },
+    ...auditContent(input.text, input.retentionDays, occurredAt),
+    occurredAt,
+  });
+}
+
 export interface OpenwaWakePayload {
   event: OpenwaWakeEvent;
   triggerClass: OpenwaTriggerClass;
@@ -310,12 +357,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       actorKind: input.actorKind,
       actorRef: input.actorRef,
       metadata: input.metadata,
-      ...(input.text
-        ? {
-            content: { text: input.text.slice(0, AUDIT_TEXT_LIMIT) },
-            contentPurgeAt: new Date(occurredAt.getTime() + snapshot.policy.auditContentRetentionDays * 86_400_000),
-          }
-        : {}),
+      ...auditContent(input.text, snapshot.policy.auditContentRetentionDays, occurredAt),
       occurredAt,
     });
   }

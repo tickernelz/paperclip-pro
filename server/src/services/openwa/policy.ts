@@ -353,7 +353,7 @@ export function classifyOpenwaEvent(
       return { kind: "discard", armsAbsence: true };
     return { kind: "discard" };
   }
-  if (role === "denylisted") return addressed ? { kind: "filtered", reason: "denylisted", chatKey, principalRole: role, rules } : { kind: "discard" };
+  if (role === "denylisted") return { kind: "filtered", reason: "denylisted", chatKey, principalRole: role, rules };
   if (role === "outside_allowlist" && !isGroup)
     return addressed ? { kind: "filtered", reason: "outside_allowlist", chatKey, principalRole: role, rules } : { kind: "discard" };
   return {

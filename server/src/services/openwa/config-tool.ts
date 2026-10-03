@@ -33,7 +33,7 @@ export function refuseOpenwaUiOnlyConfig(value: unknown): void {
     });
 }
 
-function assertOwnerRun(ctx: ToolContext): void {
+export function assertOpenwaConfigOwnerRun(ctx: ToolContext): void {
   if (ctx.openwa?.triggerClass !== "owner" || ctx.openwa.endpointId !== ctx.endpoint.id)
     throw new OpenwaToolError(403, "owner_only", "Only owner-triggered runs may change this endpoint's configuration");
 }
@@ -89,7 +89,7 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
 }
 
 export async function openwaEndpointConfigTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
-  assertOwnerRun(ctx);
+  assertOpenwaConfigOwnerRun(ctx);
   const owners = openwaToolOwners(ctx.db);
   const senders = record(args.senders);
   const chatSettings = args.chatSettings === undefined ? null : record(args.chatSettings);
@@ -98,6 +98,7 @@ export async function openwaEndpointConfigTool(ctx: ToolContext, args: Args): Pr
   const origin: OpenwaAgentConfigOrigin = {
     agentId: ctx.binding.agentId,
     runId: ctx.run.id,
+    principalId: ctx.openwa?.triggerPrincipalId ?? null,
     chatKey: ctx.origin.chatKey,
     conversationId: ctx.conversation.id,
   };

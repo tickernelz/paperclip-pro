@@ -3,7 +3,7 @@ import { chatActions, issueThreadInteractions } from "@tickernelz/paperclip-pro-
 import { OPENWA_TOOL_RESULT_LIMIT_BYTES, type OpenwaApprovalCategory } from "@tickernelz/paperclip-pro-shared";
 import type { OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 import { HttpError } from "../../errors.js";
-import { listOpenwaAudit } from "./audit.js";
+import { listOpenwaAudit, logOpenwaActivity } from "./audit.js";
 import { OpenwaApprovalRequiredError, assertOpenwaRunMay, openwaHeldGrantValid, restoreOpenwaGrant } from "./authority.js";
 import {
   OPENWA_AUDIT_LIST_OPERATION,
@@ -415,12 +415,24 @@ async function paperclipAuditList(ctx: ToolContext, args: Args, cursor: string |
   return { ...envelope, items: fitted.page, nextCursor, ...(fitted.truncated ? { truncated: true } : {}) };
 }
 
-async function dispatch(resolved: ResolvedScope, effective: OpenwaEffectiveOperation, args: Args): Promise<OpenwaCallResult> {
+async function dispatch(ctx: ToolContext, resolved: ResolvedScope, effective: OpenwaEffectiveOperation, args: Args): Promise<OpenwaCallResult> {
+  let outcome = "ok";
   try {
     return await resolved.gateway.call(effective.operation.id, args, { useAdminKey: effective.useAdminKey });
   } catch (error) {
+    outcome = error instanceof OpenwaGatewayError ? error.code : "error";
     if (error instanceof OpenwaGatewayError && error.code === "unavailable_on_engine") learnOpenwaOperationUnavailable(resolved.scope, effective.operation.id);
     throw error;
+  } finally {
+    if (effective.category === "gateway_admin")
+      await logOpenwaActivity(ctx.db, {
+        companyId: ctx.endpoint.companyId,
+        endpointId: ctx.endpoint.id,
+        action: "openwa.gateway_admin_called",
+        agentId: ctx.binding.agentId,
+        runId: ctx.run.id,
+        details: { operationId: effective.operation.id, outcome, adminKey: effective.useAdminKey },
+      });
   }
 }
 
@@ -477,7 +489,7 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
           key: "call",
           body: str(sent[MESSAGE_BODY[operation.id] ?? ""]) ?? "",
           send: async () => {
-            const result = await dispatch(resolved, effective, sent);
+            const result = await dispatch(ctx, resolved, effective, sent);
             data = result.kind === "json" ? result.data : null;
             return messageIdOf(data);
           },
@@ -517,7 +529,7 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
         )
       : [];
     try {
-      value = resultValue(effective, ctx, await dispatch(resolved, effective, sent));
+      value = resultValue(effective, ctx, await dispatch(ctx, resolved, effective, sent));
     } catch (error) {
       const definite = error instanceof OpenwaGatewayError && error.code !== "uncertain";
       await Promise.all(
@@ -612,7 +624,7 @@ export async function openwaCallTool(ctx: ToolContext, input: Args): Promise<Rec
   const { grant } = await assertGate(ctx, effective, args, false, null);
   let result: OpenwaCallResult;
   try {
-    result = await dispatch(resolved, effective, args);
+    result = await dispatch(ctx, resolved, effective, args);
   } catch (error) {
     if (grant) await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: grant });
     throw toolErrorFromGateway(error, false);

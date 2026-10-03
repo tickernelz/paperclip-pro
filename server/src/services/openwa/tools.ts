@@ -32,7 +32,7 @@ import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projec
 import { instanceSettingsService } from "../instance-settings.js";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { openwaApprovalResolveTool, openwaRequestApprovalTool } from "./approvals.js";
-import { recordOpenwaAudit } from "./audit.js";
+import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import {
   OpenwaApprovalRequiredError,
   assertOpenwaRunMay,
@@ -52,7 +52,7 @@ import {
   type OpenwaStoredMessage,
 } from "./gateway.js";
 import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
-import { openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
+import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -828,12 +828,24 @@ async function precheckNumber(ctx: ToolContext, target: Target): Promise<Target>
 export async function consumeReplyGrants(ctx: ToolContext): Promise<void> {
   const grantIds = ctx.openwa?.grantIds ?? [];
   if (ctx.profile === "full" || !grantIds.length) return;
-  await ctx.db.execute(sql`
-    update chat_owner_grants set status = 'consumed', consumed_at = now(), consumed_by_run_id = ${ctx.run.id}, updated_at = now()
-    where company_id = ${ctx.endpoint.companyId} and endpoint_id = ${ctx.endpoint.id} and origin_chat_key = ${ctx.origin.chatKey}
-      and scope = 'one_action' and status = 'live' and category in ('reply', 'reply_outside_allowlist')
-      and id in (${sql.join(grantIds.map((id) => sql`${id}::uuid`), sql`, `)})
-  `);
+  await ctx.db.transaction(async (tx) => {
+    const consumed = (await tx.execute(sql`
+      update chat_owner_grants set status = 'consumed', consumed_at = now(), consumed_by_run_id = ${ctx.run.id}, updated_at = now()
+      where company_id = ${ctx.endpoint.companyId} and endpoint_id = ${ctx.endpoint.id} and origin_chat_key = ${ctx.origin.chatKey}
+        and scope = 'one_action' and status = 'live' and category in ('reply', 'reply_outside_allowlist')
+        and id in (${sql.join(grantIds.map((id) => sql`${id}::uuid`), sql`, `)})
+      returning id, category
+    `)) as unknown as Array<{ id: string; category: string }>;
+    for (const grant of consumed)
+      await logOpenwaActivity(tx, {
+        companyId: ctx.endpoint.companyId,
+        endpointId: ctx.endpoint.id,
+        action: "openwa.grant_consumed",
+        agentId: ctx.binding.agentId,
+        runId: ctx.run.id,
+        details: { grantId: grant.id, category: grant.category, scope: "one_action" },
+      });
+  });
 }
 
 async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
@@ -1256,11 +1268,16 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
   const tool = openwaTool(name);
   const execute = EXECUTORS[name];
   if (!tool || !execute) throw forbidden("Unknown OpenWA tool");
-  if (name === "openwa_endpoint_config") refuseOpenwaUiOnlyConfig(value);
-  const args = tool.schema.parse(value) as Args;
+  const config = name === "openwa_endpoint_config";
+  let args: Args = config ? record(value) : (tool.schema.parse(value) as Args);
   const ctx = await resolveContext(db, binding);
   const started = performance.now();
   try {
+    if (config) {
+      assertOpenwaConfigOwnerRun(ctx);
+      refuseOpenwaUiOnlyConfig(value);
+      args = tool.schema.parse(value) as Args;
+    }
     const output = await execute(ctx, args);
     const result = MANIFEST_ONLY_TOOLS.has(name) ? output : redactOpenwaSecrets(output);
     await auditSafely(ctx, {
@@ -1277,7 +1294,14 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
     return result;
   } catch (error) {
     const details = error instanceof HttpError ? record(error.details) : {};
-    const errorCode = typeof details.code === "string" ? details.code : error instanceof HttpError ? "http_" + error.status : "internal_error";
+    const errorCode =
+      typeof details.code === "string"
+        ? details.code
+        : error instanceof HttpError
+          ? "http_" + error.status
+          : (error as { name?: unknown } | null)?.name === "ZodError"
+            ? "invalid_arguments"
+            : "internal_error";
     await auditSafely(ctx, {
       kind: "tool_called",
       metadata: {

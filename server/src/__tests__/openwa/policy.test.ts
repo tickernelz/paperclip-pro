@@ -110,6 +110,15 @@ describe("classifyOpenwaEvent", () => {
     expect(classifyOpenwaEvent(event({ chatKey: DENIED + "@c.us" }), snapshot({ senderPolicyMode: "all" }))).toMatchObject({ kind: "filtered", reason: "denylisted" });
   });
 
+  it("filters denylisted senders matched only by keyword or all-messages rules", () => {
+    const denied = { senderJid: DENIED + "@c.us" };
+    const keywords = snapshot({}, [[GROUP, { ownerPresent: true, settings: { activation: "auto", triggers: { keywords: ["invoice"] } } }]]);
+    expect(classifyOpenwaEvent(event({ chatKey: GROUP, ...denied, body: "invoice?" }), keywords)).toMatchObject({ kind: "filtered", reason: "denylisted", principalRole: "denylisted", rules: ["keywords"] });
+    const all = snapshot({ triggers: { allMessages: true } }, [[GROUP, { ownerPresent: true }]]);
+    expect(classifyOpenwaEvent(event({ chatKey: GROUP, ...denied, body: "anything" }), all)).toMatchObject({ kind: "filtered", reason: "denylisted", rules: ["all_messages"] });
+    expect(classifyOpenwaEvent(event({ chatKey: GROUP, ...denied, body: "chatter" }), keywords)).toEqual({ kind: "discard" });
+  });
+
   it("activates groups only with an owner present and admits outside-allowlist members there", () => {
     const mention = { mentionedIds: [AGENT + "@c.us"], body: "@" + AGENT + " help" };
     const withOwner = snapshot({}, [[GROUP, { ownerPresent: true }]]);

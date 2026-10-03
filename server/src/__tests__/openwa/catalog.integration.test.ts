@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   authUsers,
   chatActions,
@@ -394,6 +395,16 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(denied.code).toBe("approval_required");
     expect(denied.details).toMatchObject({ category: "gateway_admin" });
     expect(t.gateway.requests.filter((request) => request.path === "/api/sessions")).toHaveLength(1);
+    const logged = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.gateway_admin_called")));
+    expect(logged).toHaveLength(1);
+    expect(logged[0]).toMatchObject({
+      entityType: "chat_endpoint",
+      entityId: t.endpointId,
+      agentId: t.agentId,
+      runId: owner.runId,
+      details: { operationId: "SessionController_findAll", outcome: "ok", adminKey: true, provider: "openwa" },
+    });
+    expect(JSON.stringify(logged[0]!.details)).not.toContain(FAKE_OPENWA_ADMIN_KEY);
   });
 
   it("lists only the endpoint's own session with the operator key below full or without an admin key", async () => {
@@ -403,6 +414,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     const own = await call(await run(plain, pc, "other"), { operation: "SessionController_findAll" });
     expect(own.result).toEqual([{ id: SESSION_ID }]);
     expect(plain.gateway.requests.filter((request) => request.path === "/api/sessions").map((request) => request.key)).toEqual(["operator"]);
+    expect(await db.select().from(activityLog).where(and(eq(activityLog.companyId, plain.companyId), eq(activityLog.action, "openwa.gateway_admin_called")))).toHaveLength(0);
     expect((await rejection(call(await run(plain, pc, "owner"), { operation: "PluginsController_findAll" }))).code).toBe("unavailable_without_admin_key");
   });
 

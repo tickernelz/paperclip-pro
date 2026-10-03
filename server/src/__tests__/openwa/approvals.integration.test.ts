@@ -495,6 +495,8 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(grantRun.openwa).toMatchObject({ triggerClass: "grant", profile: "read_only", grantIds: [grants[0]!.id] });
     expect(await assertOpenwaRunMay(db, grantRun.run, "create_task")).toBe(grants[0]!.id);
     await expect(assertOpenwaRunMay(db, grantRun.run, "create_task")).rejects.toMatchObject({ status: 403 });
+    const consumedLog = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.grant_consumed")));
+    expect(consumedLog).toEqual([expect.objectContaining({ runId: grantRun.runId, entityId: t.endpointId, details: expect.objectContaining({ grantId: grants[0]!.id, category: "create_task" }) })]);
     const informed = await executeOpenwaTool(db, grantRun.binding, "openwa_send", { text: "Task sudah dibuat", idempotencyKey: key() });
     expect(informed).toMatchObject({ state: "delivered" });
     expect(t.gateway.sends.at(-1)).toMatchObject({ chatId: jid(MEMBER_A), text: "Task sudah dibuat" });

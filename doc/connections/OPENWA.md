@@ -362,8 +362,9 @@ mode). Silence never approves.
   nothing. After the last reminder the request stays pending.
 - **Grants** are one row per approved category with scope `one_action` (one gated
   call, consumed atomically by the grant run) or `requester` (usable by that
-  requester's runs in that origin chat until expiry). A grant expires after
-  **Grant lifetime (hours)** (`grantTtlHours`, default 24, 1 to 720). Grants are
+  requester's runs in that origin chat until expiry). A `one_action` `external_tools` grant is consumed at run start and covers that single grant run, because runtime tool profiles are fixed at adapter launch and individual runtime dispatches cannot be metered. A grant expires after
+  **Grant lifetime (hours)** (`grantTtlHours`, default 24, 1 to 720); the daily audit
+  job marks it `expired` (`openwa.grant_expired`). Grants are
   keyed by request, origin chat and requester; another member never uses them,
   and they survive conversation rotation.
 - **Revocation**: removing an owner, or revoking or unlinking their identity link,

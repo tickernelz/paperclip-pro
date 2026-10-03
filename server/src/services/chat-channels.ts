@@ -30,8 +30,8 @@ import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication 
 import { openwaMediaService } from "./openwa/media.js";
 import { openwaLateTranscriptListener, type OpenwaLateTranscriptHook } from "./openwa/late-transcripts.js";
 import type { OpenwaInboundEvent } from "./openwa/receiver.js";
-import { listOpenwaAudit } from "./openwa/audit.js";
-import { createOpenwaAdmission, openwaAdmitInput, openwaInboundDecoration, parseOpenwaDecoration, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
+import { listOpenwaAudit, logOpenwaActivity, openwaAuditRetentionDays } from "./openwa/audit.js";
+import { createOpenwaAdmission, openwaAdmitInput, openwaInboundDecoration, parseOpenwaDecoration, recordOpenwaTriggerAdmitted, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
 import { createOpenwaPolicyCache, openwaSenderRole } from "./openwa/policy.js";
 import {
   activeOpenwaScheduledWakes,
@@ -6161,6 +6161,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         assignedAgentId: agent.id,
       },
     });
+    if (input.provider === "openwa")
+      await logOpenwaActivity(db, {
+        companyId,
+        endpointId,
+        action: "openwa.endpoint_created",
+        actorUserId: actorUserId ?? null,
+        details: { assignedAgentId: agent.id },
+      });
     return get(endpointId);
   }
 
@@ -6225,6 +6233,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             entityId: existing.endpoint.connectionId,
             details: { endpointId, fields: Object.keys(input) },
           });
+          if (existing.endpoint.provider === "openwa")
+            await logOpenwaActivity(tx, {
+              companyId: existing.endpoint.companyId,
+              endpointId,
+              action: "openwa.endpoint_updated",
+              actorUserId: actorUserId ?? null,
+              details: { changedKeys: Object.keys(input) },
+            });
           await credentialLease.assertOwned(tx);
         });
       },
@@ -16863,6 +16879,16 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             updatedAt: new Date(),
           })
           .where(eq(chatDeliveries.id, activeDelivery.id));
+        if (openwaDecoration && openwaDecoration.event !== "group_added")
+          await recordOpenwaTriggerAdmitted(taskTx, {
+            companyId: endpoint.companyId,
+            endpointId: endpoint.id,
+            conversationId: conversation!.id,
+            deliveryId: activeDelivery.id,
+            decoration: effectiveOpenwa()!,
+            text: message.text,
+            retentionDays: openwaAuditRetentionDays(taskEndpoint.policy),
+          });
         await taskTx
           .insert(chatMessageLinks)
           .values({

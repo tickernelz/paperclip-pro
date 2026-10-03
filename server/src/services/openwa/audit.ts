@@ -4,6 +4,7 @@ import {
   chatEndpointOwners,
   chatEndpoints,
   chatIdentityLinks,
+  chatOwnerGrants,
   companyMemberships,
   heartbeatRuns,
   type Db,
@@ -246,6 +247,7 @@ async function boardAccess(
         eq(companyMemberships.principalType, "user"),
         eq(companyMemberships.principalId, viewer.userId),
         eq(companyMemberships.status, "active"),
+        sql`coalesce(${companyMemberships.membershipRole}, '') <> 'viewer'`,
       ))
       .where(and(
         eq(chatEndpointOwners.companyId, companyId),
@@ -357,6 +359,37 @@ export interface OpenwaAuditPurgeResult {
   batches: number;
 }
 
+export interface OpenwaAuditMaintenanceResult extends OpenwaAuditPurgeResult {
+  expiredGrants: number;
+}
+
+/** Marks live grants past expires_at as expired and logs one openwa.grant_expired activity per endpoint. */
+export async function expireOpenwaGrants(db: Db, options: { now?: Date } = {}): Promise<number> {
+  const now = options.now ?? new Date();
+  return db.transaction(async (tx) => {
+    const expired = await tx
+      .update(chatOwnerGrants)
+      .set({ status: "expired", updatedAt: now })
+      .where(and(eq(chatOwnerGrants.status, "live"), lte(chatOwnerGrants.expiresAt, now)))
+      .returning({ id: chatOwnerGrants.id, companyId: chatOwnerGrants.companyId, endpointId: chatOwnerGrants.endpointId });
+    const byEndpoint = new Map<string, { companyId: string; endpointId: string; grantIds: string[] }>();
+    for (const grant of expired) {
+      const key = grant.companyId + ":" + grant.endpointId;
+      const entry = byEndpoint.get(key) ?? { companyId: grant.companyId, endpointId: grant.endpointId, grantIds: [] };
+      entry.grantIds.push(grant.id);
+      byEndpoint.set(key, entry);
+    }
+    for (const entry of byEndpoint.values())
+      await logOpenwaActivity(tx, {
+        companyId: entry.companyId,
+        endpointId: entry.endpointId,
+        action: "openwa.grant_expired",
+        details: { grantIds: entry.grantIds.sort(), count: entry.grantIds.length },
+      });
+    return expired.length;
+  });
+}
+
 /** Nulls audit content whose retention ended, in batches; metadata and content_purge_at stay. */
 export async function purgeOpenwaAuditContent(
   db: Db,
@@ -387,7 +420,7 @@ export async function purgeOpenwaAuditContent(
   return { purged, batches };
 }
 
-/** Runs the content purge at most once per interval; a run cut short by maxBatches stays due so the next tick continues. */
+/** Runs the content purge and grant expiry at most once per interval; a purge cut short by maxBatches stays due so the next tick continues. */
 export function openwaAuditPurgeScheduler(
   db: Db,
   options: { intervalMs?: number; maxBatches?: number; batchSize?: number; now?: () => Date } = {},
@@ -397,14 +430,15 @@ export function openwaAuditPurgeScheduler(
   const batchSize = options.batchSize ?? OPENWA_AUDIT_PURGE_BATCH_SIZE;
   const clock = options.now ?? (() => new Date());
   let lastCompletedAt: number | null = null;
-  let running: Promise<OpenwaAuditPurgeResult | null> | null = null;
+  let running: Promise<OpenwaAuditMaintenanceResult | null> | null = null;
   return {
-    runDue(): Promise<OpenwaAuditPurgeResult | null> {
+    runDue(): Promise<OpenwaAuditMaintenanceResult | null> {
       if (running) return running;
       const now = clock();
       if (lastCompletedAt !== null && now.getTime() - lastCompletedAt < intervalMs) return Promise.resolve(null);
-      running = purgeOpenwaAuditContent(db, { now, maxBatches, batchSize })
-        .then((result) => {
+      running = Promise.all([purgeOpenwaAuditContent(db, { now, maxBatches, batchSize }), expireOpenwaGrants(db, { now })])
+        .then(([purge, expiredGrants]) => {
+          const result = { ...purge, expiredGrants };
           if (result.batches < maxBatches || result.purged < result.batches * batchSize) lastCompletedAt = now.getTime();
           return result;
         })
