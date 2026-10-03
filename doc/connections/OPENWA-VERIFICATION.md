@@ -1,0 +1,91 @@
+# OpenWA verification — 2026-10-04
+
+Branch: `feat/openwa-connector` (PR #109). Base inspected for this skeleton:
+`c860a2ea9`. Gateway: rmyndharis/OpenWA `0.23.7`, engine `whatsapp-web.js`.
+
+**Status: experimental. Fixture evidence is recorded below; the live window has
+not run yet. Every "Live result" cell stays `pending live window` until the
+director records the observed result.**
+
+This record separates deterministic fixture evidence from live proof. Fixtures
+use the fake Socket.IO + REST gateway (`server/src/__tests__/openwa/fake-gateway.ts`) and the repository's
+embedded PostgreSQL helpers. They do not substitute for the real gateway, the
+real WhatsApp number, or a real agent run.
+
+## Environment
+
+- Live gateway: local OpenWA `0.23.7` at `http://localhost:2785`, one dedicated
+  operator key scoped to one session, no `allowedChats`. Keys, phone numbers and
+  session identifiers are not recorded here; numbers appear masked
+  (`+62xxx...1234`).
+- Gateway prerequisites (spec §16): `SEND_PACING_ENABLED=true`,
+  `RESOLVE_LID_TO_PHONE=true`. Status: pending live window.
+- Paperclip instance, agent adapter and test contacts: pending live window.
+
+## Acceptance criteria
+
+Fixture evidence is `file:line "test name"`. Paths under `server/src/__tests__/openwa/` are written as
+`openwa/...`. Line numbers are from `c860a2ea9`.
+
+| AC | Criterion | Fixture evidence | Live result |
+| --- | --- | --- | --- |
+| AC1 | Setup: run-JWT adapter gate, inspection, multi-session warning, `allowedChats` rejection, attestations, owner test DM, 422 wrong key, 503 gateway down | `openwa/setup.integration.test.ts:300` "rejects an agent whose adapter cannot sign run tokens"; `:253` "inspects a valid gateway read-only and returns no secrets"; `:274` "validates an optional admin key and warns about an unknown gateway version"; `:284` "warns when the key sees more than one session"; `:293` "rejects a key restricted to selected chats"; `:353` "requires both attestations before configuring"; `:363` "configures with vaulted keys, the session identity, and attestations, then waits in the test step"; `:311` "rejects a wrong or viewer key with 422"; `:322` "returns 503 telling the user not to replace credentials when the gateway is down"; `:443` "refuses a second endpoint on the same gateway session or number with 409"; `:457` "puts the endpoint in attention when its agent switches to an adapter without run tokens"; UI `ui/src/pages/apps/chat/OpenwaConnectStep.test.tsx:78` "inspects the gateway, shows the session, and requires both attestations before connecting". No fixture drives the owner test DM to setup completion. | pending live window |
+| AC2 | Owner full run; follow-up owner message steered mid-run, or handled next turn without steering | `openwa/authority-admission.integration.test.ts:196` "resolves owner DMs to full and allowlisted member DMs to read_only from server records"; `server/src/__tests__/openwa-authority.test.ts:367` "derives owner only from admitted owner deliveries whose principal is still an owner"; `:489` "allows full runs and denies read_only runs with a typed category"; `openwa/round-trip.integration.test.ts:328` "answers an owner DM end to end without quoting and marks the trigger answered". Steering and queue fallback: pending T13. Code edits by a real run: live only. | pending live window |
+| AC3 | Sender policy: unlisted DM filtered, denylist, outside-allowlist group role, `reply_denied` until granted | `openwa/admission.integration.test.ts:277` "admits owner and allowlisted DMs and filters outside-allowlist and denylisted senders (AC3)"; `:349` "activates groups by owner presence, admits outside-allowlist members, and never converts to low trust (AC4)"; `openwa/policy.test.ts:101` "applies the sender policy in direct messages, with owners bypassing the denylist"; `openwa/publication.integration.test.ts:556` "requires a reply_outside_allowlist grant for an outside-allowlist group sender"; `openwa/tools.integration.test.ts:380` "denies origin replies the reply policy holds back and the outside_allowlist rule" | pending live window |
+| AC4 | Groups: owner present active; no owner inactive plus `group_added`; invite-link join needs `wa_admin` | `openwa/admission.integration.test.ts:349` (above); `:387` "wakes the agent once when added to an inactive group"; `openwa/policy.test.ts:113` "activates groups only with an owner present and admits outside-allowlist members there"; `openwa/catalog.integration.test.ts:323` "refuses with typed reasons for an other-class run at read level without an admin key" (covers `wa_admin` refusal for group operations; no fixture names the invite-link join operation) | pending live window |
+| AC5 | Read-only knowledge run reads and answers; runtime write tools unavailable (OMP/Codex/Claude); `create_task`, `external_tools`, REST 403 | `openwa/authority-admission.integration.test.ts:196` (above); `server/src/__tests__/heartbeat-openwa-run-profile.test.ts:133` "writes read_only for a non-owner run on an OpenWA conversation issue before the adapter runs"; `openwa/tools.integration.test.ts:338` "lets a read_only run reply to its origin chat under the reply policy and gates other chats"; `packages/adapters/omp-local/src/server/tool-guard.test.ts:115` describe "OMP tool guard extension in a read_only run"; `packages/adapters/codex-local/src/server/codex-args.test.ts:305` "runs a read_only run in the read-only sandbox without approval pauses", `:329` "ignores the configured bypass in a read_only run"; `packages/adapters/claude-local/src/server/execute.paperclip-mcp.test.ts:113` "disallows Claude's file-writing tools only in a read_only run and keeps Bash"; `server/src/routes/adapters.test.ts:86` "projects the registered adapters' declared read-only enforcement and steering"; `server/src/__tests__/openwa-authority.test.ts:794` "denies create_task and reassign_task in a read_only run and allows create_task in a full run"; `:890` "denies write tools in a read_only run with openwa_approval_required"; `:579` "denies read_only mutations outside the allowlist and allows the run's own lifecycle writes" | pending live window |
+| AC6 | WhatsApp approval end to end with every negative control | `openwa/approvals.integration.test.ts:389` "AC6: WhatsApp approval end to end with every negative control"; `:527` "AC6: quoting another request's bubble resolves only that request"; `:549` "AC6/AC7: requester grants stay with their requester, Paperclip resolves through the generic route, owner loss revokes"; `:672` "rejects approval requests from owner-class runs"; `openwa/policy.test.ts:91` "detects approval-reply candidates only for owners quoting a message, regardless of activation"; `server/src/__tests__/openwa-authority.test.ts:509` "consumes a one_action grant exactly once under concurrency and keeps requester grants" | pending live window |
+| AC7 | Paperclip approval; simultaneous resolution has one winner; non-owner 403 | `openwa/approvals.integration.test.ts:549` (above); `:594` "AC7: a Paperclip rejection reason reaches the agent's approval_resolved comment"; `:612` "AC7: simultaneous WhatsApp and Paperclip resolution yields exactly one winner"; UI `ui/src/pages/apps/chat/OpenwaApprovalsList.test.tsx:125` "refreshes and says another owner won when the request was already resolved", `:144` "explains that only endpoint owners can resolve when the server refuses with 403" (UI mapping; no server fixture asserts the 403 status for a plain board user) | pending live window |
+| AC8 | Owner absent: 120 s wake; owner message at 60 s cancels; reaction does not; owner plus agent mention wakes immediately | `openwa/scheduled-wakes.integration.test.ts:424` "owner silent 120 s wakes owner_absent with every attached message; fireAt never moves (AC8)"; `:471` "owner message at 60 s cancels; an owner reaction or revoke alone does not (AC8)"; `:496` "a message mentioning the owner and the agent wakes immediately and arms no timer (AC8)"; `:172` "counts only owner content as activity; reactions, edits and revokes never cancel" | pending live window |
+| AC9 | Mixed principals: member trigger queued during owner run; owner message steered into `read_only` run without raising it; follow-up owner run; class-rule negative control | Pending T13. Landed partial evidence: `openwa/authority-admission.integration.test.ts:221` "keeps a forged agent wakeup claiming the owner class read_only on the OpenWA issue"; bench burst budget "windows with > 1 run for one (conversation, class)" in `openwa/ingest-bench.ts` | pending live window |
+| AC10 | Publication once; no duplicate after quoting tool reply; stay silent; `ask_owner` suppressed and audited | `openwa/publication.integration.test.ts:414` "publishes the final output exactly once, redacted, and marks the run-class triggers answered"; `:477` "does not publish again after a tool reply quoting the trigger (dedupe)"; `:511` "publishes nothing when the agent stayed silent"; `:522` "suppresses and audits an other-class reply under ask_owner until a reply grant exists"; `:591` "refuses server-composed publications for OpenWA conversations" | pending live window |
+| AC11 | Formatting and media: mentions, quotes, image, document, location, contact, voice note, transcript, `sttWaitSeconds` bound | `openwa/tools.integration.test.ts:289` "renders mentions as array plus @n tokens and quotes a trigger, marking it answered"; `openwa/round-trip.integration.test.ts:351` "quotes the trigger when replying to a group mention"; `openwa/media.integration.test.ts:204` "stores an image and a document as attachments on the inbound comment and records the result"; `:369` "parses location and contact-card messages into structured data without fetching a file"; `:277` "transcribes a voice note when speech-to-text is enabled and stores the transcript as a derivative"; `:336` "bounds the wake wait by sttWaitSeconds and delivers the late transcript through onTranscriptReady"; `:297` "keeps the audio and records transcript_unavailable when speech-to-text fails"; `openwa/round-trip.integration.test.ts:395` "carries a voice note transcript from the fake speech-to-text service into the wake payload" | pending live window |
+| AC12 | Tools: catalog lists 202 operations (OpenWA 0.23.7); admin hidden at `off`; owner lists sessions at `full`; other run needs `gateway_admin`; `unavailable_on_engine` without retry; pacing `retry_after` | `openwa/catalog.integration.test.ts:349` "AC12: catalogs 202 operations with category and availability; hides gateway admin at off"; `:379` "AC12: at full with an admin key an owner run lists every session; an other run needs gateway_admin approval"; `:404` "AC12: never sends an engine-unavailable operation and learns a 501 without retrying it"; `:425` "AC12: pacing 429 returns retry_after with seconds and audits the pacing flag"; `:556` "refuses secret-issuing operations before any gateway call, for owner runs at full with an admin key"; `packages/shared/src/openwa-operations.test.ts:8` "covers every operation of the pinned gateway document exactly once" | pending live window |
+| AC13 | WhatsApp config: owner denylists a number by chat, effective next event, audited; member gets `owner_only` | Pending T16B (`openwa_endpoint_config`). Adjacent landed evidence: `openwa/admission.integration.test.ts:331` "rechecks owner membership at admission even when the cached policy still lists the owner" | pending live window |
+| AC14 | Audit: every §11 entry; owners see content; plain board user metadata only; purge after retention | `openwa/audit.integration.test.ts:389` "records every layer-2 kind"; `:396` "logs every layer-1 action as metadata-only activity with the right actor"; `:179` "shows content to company and endpoint owners, metadata only to plain board users, and 404 to another company"; `:306` "purges content after the endpoint retention and keeps metadata"; UI `ui/src/pages/apps/chat/OpenwaAuditTab.test.tsx:83` "explains metadata-only access and never renders returned content" | pending live window |
+| AC15 | Owner-number mode: enabled chats only, `/ai`, prefix, self-chat approval, restart echo, crash before 201, approval without enabled chat | `openwa/policy.test.ts:138` "treats the agent number's own phone-typed messages by number mode"; `openwa/publication.integration.test.ts:465` "quotes the oldest pending trigger of the run class in groups and prefixes owner_number output once"; `openwa/approvals.integration.test.ts:642` "AC15: owner_number self-chat approval and replies from a chat that is not enabled"; `openwa/ingress.integration.test.ts:266` "ignores the echo of a registered send and classifies other own-number messages as phone-typed"; `:381` "hands the lease to a second runtime without duplicate processing and still recognizes pre-restart sends"; `:288` "reconciles a send that crashed before its 201 and never classifies it as phone-typed" | pending live window |
+| AC16 | Recovery: socket kill mid-burst exactly once; restart rebuilds timers within 2 s | `openwa/ingress.integration.test.ts:222` "delivers live and caught-up messages exactly once across a socket kill"; `openwa/receiver.test.ts:89` "processes every message exactly once across a mid-stream socket kill, including stored rows without a waMessageId"; `openwa/scheduled-wakes.integration.test.ts:548` "rebuilds after a restart and fires within 2 s of fireAt, including overdue rows on the rebuild pass (AC16)"; `:575` "fires exactly once when two lease holders overlap during failover" | pending live window |
+| AC17 | Performance: §15 budgets met with recorded numbers and the S0 negative control | Harness `scripts/bench/openwa-ingest.mjs` → `openwa/ingest-bench.ts`; zero-query assertions `openwa/ingress.integration.test.ts:243` "performs zero database queries while classifying non-trigger traffic", `openwa/admission.integration.test.ts:401` "performs zero database queries for non-trigger traffic once the policy is warm"; context budget `packages/shared/src/openwa-tools.test.ts:6` "keeps every tool schema within the context budget". Numbers: see [Benchmark](#benchmark). | pending live window |
+| AC18 | Isolation: another company cannot read audit, grants, chats or tools | `openwa/audit.integration.test.ts:179` (404 to another company), `:225` "scopes the service to the caller's company"; `server/src/__tests__/openwa-authority.test.ts:544` "never lets another company's run read or consume this endpoint's grants"; `openwa/media.integration.test.ts:419` "refuses to attach media to an issue in another company"; `openwa/tools.integration.test.ts:546` "exposes the tools over HTTP to the bound agent run only" (no fixture has a foreign company's run read this endpoint's chats) | pending live window |
+| AC19 | Fail-closed seams: `read_only` mention wakes no one; context-less runs `read_only`; persistent key cannot mutate; GitHub export denied | `server/src/__tests__/openwa-authority.test.ts:475` "suppresses mention wakes fail-closed by run profile"; `:343` "is read_only without a server-written wake record for agent, system, retry or missing wakes"; `:499` "fails closed for a run on an OpenWA issue whose context has no profile"; `:605` "fails closed for an OpenWA conversation run without OpenWA context"; `:709` "denies every non-safe method for an agent bound to a live OpenWA endpoint"; `:733` "allows keys of agents without a live OpenWA endpoint, including other companies"; `:753` "denies GitHub credential export in a read_only run and reaches the resolver in a full run" | pending live window |
+
+## Benchmark
+
+Run with `node scripts/bench/openwa-ingest.mjs` (fake gateway, default 20 ms per
+REST call) and once with `--negative-control`, which injects one DB query into
+the S0 path and must fail. Numbers are pending.
+
+| Seam | Interval | Budget (spec §15) | Result | Status |
+| --- | --- | --- | --- | --- |
+| S0 non-trigger | socket event without trigger features → discard | p99 < 1 ms, 0 DB queries | pending | pending |
+| S0b candidate check | quoted id outside the 7-day index, or pending-timer cancel | p95 <= 10 ms, at most 1 query | pending | pending |
+| S1 admission | socket event → admission transaction committed | p95 <= 50 ms and <= 1.2x Telegram baseline | pending | pending |
+| S2 dispatch | admission committed → run start requested | p95 <= 200 ms | pending | pending |
+| S3 tool overhead | tool call wall time minus fake gateway latency | p95 <= 30 ms | pending | pending |
+| S4 media | 1 MiB trigger image ingested, transfer excluded | p95 <= 300 ms | pending | pending |
+| S5 LID miss | resolution | <= 2 s timeout; hit ratio reported | pending | pending |
+| Burst | 50 msg/s for 60 s, 10% triggers | no loss or duplicate; wakes <= distinct (conversation, class) per window; RSS growth < 50 MB | pending | pending |
+| Reconnect | socket killed at 30 s for 10 s during burst | every trigger admitted exactly once | pending | pending |
+| Context | tool schemas; results | <= ~3k tokens; <= 16 KB | pending | pending |
+| Negative control | one DB query injected into S0 | benchmark fails | pending | pending |
+
+## Gates run
+
+| Gate | Commit | Result |
+| --- | --- | --- |
+| Documentation name check: every route, tool name, setting key and file:line in `OPENWA.md` resolved against the code (throwaway script, deleted) | T19 docs commit | recorded in the T19 report |
+| `go.sh -r typecheck` | pending | pending |
+| Targeted `go.sh vitest run server/src/__tests__/openwa ...` | pending | pending |
+| `go.sh check:token-gates` | pending | pending |
+| `go.sh --filter @tickernelz/paperclip-pro-db run check:migrations` | pending | pending |
+| GitHub CI on the PR head | pending | pending |
+| Broad suite against a `main` baseline (checkpoint E) | pending | pending |
+| Comment gate on the staged diff | pending | pending |
+
+## Live qualification
+
+Record the tested commit, gateway version, engine, adapter, masked numbers and
+UTC timestamps for each journey. Screenshots of Settings, Approvals, Audit and
+the health card belong here after the live window.
+
+- pending live window
