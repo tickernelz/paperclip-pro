@@ -631,6 +631,7 @@ import {
 import type { TrustPresetResolution } from "./trust-preset-resolver.js";
 import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
 import { applyOpenwaRunContext, resolveOpenwaRunContext } from "./openwa/authority.js";
+import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, joinOpenwaGuidance } from "./openwa/guidance.js";
 import {
   createEffectiveRunConfigFingerprints,
   createEffectiveRunConfigSubcategoryFingerprints,
@@ -21674,7 +21675,37 @@ export function heartbeatService(
       } else {
         delete context.paperclipTaskMarkdownCompact;
       }
+      delete context[OPENWA_WAKE_CONTEXT_KEY];
       if (issueRef) {
+        const openwaRunContext = await resolveOpenwaRunContext(db, {
+          companyId: agent.companyId,
+          issueId: issueRef.id,
+          contextSnapshot: context,
+          wakeupRequestId: run.wakeupRequestId,
+        });
+        const openwaGuidance = openwaRunContext
+          ? await buildOpenwaRunGuidance(db, {
+              companyId: agent.companyId,
+              issueId: issueRef.id,
+              runId: run.id,
+              wakeupRequestId: run.wakeupRequestId,
+              openwa: openwaRunContext,
+              contextSnapshot: context,
+            })
+          : null;
+        if (openwaGuidance) {
+          context.paperclipTaskMarkdown = joinOpenwaGuidance(
+            readNonEmptyString(context.paperclipTaskMarkdown) ?? undefined,
+            openwaGuidance.markdown,
+          );
+          if (typeof context.paperclipTaskMarkdownCompact === "string") {
+            context.paperclipTaskMarkdownCompact = joinOpenwaGuidance(
+              context.paperclipTaskMarkdownCompact,
+              openwaGuidance.markdown,
+            );
+          }
+          context[OPENWA_WAKE_CONTEXT_KEY] = openwaGuidance.wakeEvent;
+        }
         const redactedWakeContext = await createRunSecretRedactionRegistry(
           db,
         ).redactForIssue(agent.companyId, issueRef.id, {
@@ -21683,6 +21714,7 @@ export function heartbeatService(
           paperclipTaskCommunicationGuidance: context.paperclipTaskCommunicationGuidance,
           paperclipTaskMarkdown: context.paperclipTaskMarkdown,
           paperclipTaskMarkdownCompact: context.paperclipTaskMarkdownCompact,
+          [OPENWA_WAKE_CONTEXT_KEY]: context[OPENWA_WAKE_CONTEXT_KEY],
         });
         context.paperclipIssue = redactedWakeContext.paperclipIssue;
         context.paperclipTaskCommunicationGuidance = redactedWakeContext.paperclipTaskCommunicationGuidance;
@@ -21698,15 +21730,10 @@ export function heartbeatService(
           context.paperclipTaskMarkdownCompact =
             redactedWakeContext.paperclipTaskMarkdownCompact;
         }
-        applyOpenwaRunContext(
-          context,
-          await resolveOpenwaRunContext(db, {
-            companyId: agent.companyId,
-            issueId: issueRef.id,
-            contextSnapshot: context,
-            wakeupRequestId: run.wakeupRequestId,
-          }),
-        );
+        if (redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY]) {
+          context[OPENWA_WAKE_CONTEXT_KEY] = redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY];
+        }
+        applyOpenwaRunContext(context, openwaRunContext);
       }
       // A native run's execution input is immutable once persisted. Recovery must therefore
       // restore the workspace bound to that input rather than consulting the issue's current
