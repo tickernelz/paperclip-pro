@@ -497,6 +497,7 @@ export interface ConfigureChatEndpointInput {
   action: "configure" | "verify" | "pause" | "resume" | "reconnect" | "remove";
   credentials?: Record<string, string>;
   photon?: PhotonChannelConfiguration;
+  openwa?: OpenwaChannelConfiguration;
 }
 
 export interface NormalizedChatEvent {
@@ -545,6 +546,35 @@ export interface PhotonProjectInspection {
 export type PhotonChannelConfiguration =
   | { allocation?: "dedicated"; projectId: string; lineId: string }
   | { allocation: "shared"; projectId: string };
+
+/** Nonsecret OpenWA setup choices; the API keys travel as write-only credentials. */
+export interface OpenwaChannelConfiguration {
+  baseUrl: string;
+  sessionId: string;
+  numberMode?: OpenwaNumberMode;
+  attestations: { pacing: boolean; soleClient: boolean };
+}
+
+/** Read-only OpenWA gateway inspection; never carries keys or full phone numbers. */
+export interface OpenwaGatewayInspection {
+  baseUrl: string;
+  gatewayVersion: string | null;
+  pinnedVersion: string;
+  engine: string | null;
+  keyRole: "operator" | "admin" | "viewer";
+  adminKey: { role: "operator" | "admin" | "viewer" } | null;
+  warnings: string[];
+  eligible: boolean;
+  sessions: Array<{
+    sessionId: string;
+    name: string;
+    status: string;
+    maskedNumber: string | null;
+    pushName: string | null;
+    eligible: boolean;
+    unavailableReason?: string;
+  }>;
+}
 
 export const CHAT_INFLIGHT_MODES = ["steer", "queue"] as const;
 export type ChatInflightMode = (typeof CHAT_INFLIGHT_MODES)[number];

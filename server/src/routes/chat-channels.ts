@@ -11,6 +11,7 @@ import {
   CHAT_PROVIDERS,
   configureChatEndpointSchema,
   inspectPhotonProjectSchema,
+  inspectOpenwaGatewaySchema,
   confirmChatIdentityLinkSchema,
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
@@ -226,6 +227,11 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     if (!(await assertEndpointManagementAccess(req, res))) return;
     res.set("Cache-Control", "no-store");
     res.json(await service.inspectPhoton(endpointId(req), req.body));
+  });
+  router.post("/chat-endpoints/:endpointId/openwa/inspect", validate(inspectOpenwaGatewaySchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.inspectOpenwa(endpointId(req), req.body));
   });
 
   router.post(
