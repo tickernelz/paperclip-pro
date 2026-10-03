@@ -423,6 +423,7 @@ describe("openapi routes", () => {
       ["post", "/api/chat-endpoints/{endpointId}/setup-secret"],
       ["post", "/api/chat-endpoints/{endpointId}/test"],
       ["post", "/api/chat-endpoints/{endpointId}/photon/inspect"],
+      ["post", "/api/chat-endpoints/{endpointId}/openwa/inspect"],
       ["get", "/api/chat-endpoints/{endpointId}/resources"],
       ["put", "/api/chat-endpoints/{endpointId}/resources"],
       ["get", "/api/chat-endpoints/{endpointId}/principals"],
@@ -562,6 +563,13 @@ describe("openapi routes", () => {
     expect(photon.responses["429"]).toBeDefined();
     expect(photon.responses["502"]).toBeDefined();
     expect(photon.responses["503"]).toBeDefined();
+
+    const openwa = spec.paths["/api/chat-endpoints/{endpointId}/openwa/inspect"].post;
+    expect(openwa.requestBody.content["application/json"].schema.required).toEqual(["baseUrl", "apiKey"]);
+    const openwaResponse = openwa.responses["200"].content["application/json"].schema;
+    expect(openwaResponse.properties.sessions.items.additionalProperties).toBe(false);
+    expect(JSON.stringify(openwaResponse)).not.toMatch(/apiKey|adminApiKey|phone"/);
+    for (const status of ["422", "429", "502", "503"]) expect(openwa.responses[status]).toBeDefined();
 
     const setupSecret =
       spec.paths["/api/chat-endpoints/{endpointId}/setup-secret"].post;

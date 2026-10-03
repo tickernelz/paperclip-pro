@@ -4,6 +4,8 @@ import type {
   UpdateChatEndpointInput,
   PhotonProjectInspection,
   PhotonChannelConfiguration,
+  OpenwaChannelConfiguration,
+  OpenwaGatewayInspection,
   ChatPublicationBatchStatus,
   ChatPublicationState,
   ChatPublicationSummary,
@@ -111,6 +113,7 @@ export interface ChatEndpoint {
   botUsername?: string | null;
   botExternalId?: string | null;
   photonAllocation?: "dedicated" | "shared";
+  policy?: import("@tickernelz/paperclip-pro-shared").OpenwaEndpointPolicy;
   allowDirectMessages?: boolean;
   allowGroupChats?: boolean;
   allowUnlinkedPeople: boolean;
@@ -202,10 +205,13 @@ export const chatEndpointsApi = {
       action: ChatEndpointSetupAction;
       credentials?: Record<string, string>;
       photon?: PhotonChannelConfiguration;
+      openwa?: OpenwaChannelConfiguration;
     },
   ) => api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/setup`, input),
   inspectPhoton: (endpointId: string, input: { projectId: string; projectSecret: string }) =>
     api.post<PhotonProjectInspection>(`/chat-endpoints/${endpointId}/photon/inspect`, input),
+  inspectOpenwa: (endpointId: string, input: { baseUrl: string; apiKey: string; adminApiKey?: string }) =>
+    api.post<OpenwaGatewayInspection>(`/chat-endpoints/${endpointId}/openwa/inspect`, input),
   generateSetupSecret: (endpointId: string) =>
     api.post<ChatEndpointSetupSecret>(
       `/chat-endpoints/${endpointId}/setup-secret`,

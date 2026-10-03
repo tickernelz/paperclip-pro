@@ -55,6 +55,7 @@ import {
   readBuiltInAgentMarker,
 } from "./built-in-agent-metadata.js";
 import { issueThreadInteractionService } from "./issue-thread-interactions.js";
+import { markOpenwaEndpointsForAgentAdapter } from "./openwa/agent-adapter.js";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -802,6 +803,9 @@ export function agentService(db: Db) {
         || (updated.adapterType === "paperclip_runner" && ["provider", "acpxAgent", "model"].some(
           (key) => priorAdapterConfig[key] !== afterConfig[key],
         ));
+      if (updated.adapterType !== existing.adapterType) {
+        await markOpenwaEndpointsForAgentAdapter(txDb, updated);
+      }
       if (changedExecution) {
         await txDb.delete(agentTaskSessions).where(and(eq(agentTaskSessions.companyId, existing.companyId), eq(agentTaskSessions.agentId, id)));
         await txDb.update(agentRuntimeState).set({ adapterType: updated.adapterType, sessionId: null, stateJson: {}, updatedAt: new Date() })

@@ -17578,7 +17578,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:493",
+    "boardGuard": "assertBoard@chat-channels.ts:499",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21451,6 +21451,63 @@
     }
   },
   {
+    "name": "paperclipInspectChatEndpointOpenwa",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/inspect",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/inspect",
+    "description": "Inspect an OpenWA gateway and its sessions for channel setup. Requires a board user with connection-management access. The API keys are write-only input. Rejects agents whose adapter cannot authenticate runs with signed run tokens and keys restricted to selected chats. Returns the gateway version, engine, key role, visible sessions with masked numbers, and warnings; never keys or full phone numbers. Responses are not cached. Inspection alone does not activate the channel.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "adminApiKey": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "baseUrl"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipInspectChatEndpointPhoton",
     "operationId": "POST /api/chat-endpoints/{endpointId}/photon/inspect",
     "method": "POST",
@@ -23570,7 +23627,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:140",
+    "boardGuard": "assertBoard@chat-channels.ts:141",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35115,7 +35172,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/setup",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/setup",
-    "description": "Configure or change chat endpoint lifecycle state. Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
+    "description": "Configure or change chat endpoint lifecycle state. Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration; OpenWA: `apiKey` and optional `adminApiKey`, with nonsecret `openwa.baseUrl`, `openwa.sessionId`, `openwa.numberMode`, and required `openwa.attestations`). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -35166,6 +35223,44 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "openwa": {
+            "type": "object",
+            "properties": {
+              "attestations": {
+                "type": "object",
+                "properties": {
+                  "pacing": {
+                    "type": "boolean"
+                  },
+                  "soleClient": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "pacing",
+                  "soleClient"
+                ]
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "numberMode": {
+                "type": "string",
+                "enum": [
+                  "agent_number",
+                  "owner_number"
+                ]
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "attestations",
+              "baseUrl",
+              "sessionId"
+            ]
           },
           "photon": {
             "anyOf": [

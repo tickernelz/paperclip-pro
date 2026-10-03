@@ -115,6 +115,53 @@ export const inspectPhotonProjectSchema = z.object({
   projectSecret: z.string().min(1).max(4096),
 }).strict();
 
+export const openwaBaseUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(2048)
+  .transform((value, ctx) => {
+    let url: URL;
+    try {
+      url = new URL(value);
+    } catch {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter the OpenWA gateway URL, for example http://localhost:2785" });
+      return z.NEVER;
+    }
+    if (
+      (url.protocol !== "http:" && url.protocol !== "https:") ||
+      url.username ||
+      url.password ||
+      (url.pathname !== "/" && url.pathname !== "") ||
+      url.search ||
+      url.hash
+    ) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Use only the gateway origin: http(s)://host:port, without a path, query, or credentials" });
+      return z.NEVER;
+    }
+    return url.origin;
+  });
+export const openwaSessionIdSchema = z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/);
+const openwaApiKeyInputSchema = z.string().trim().min(1).max(4096);
+export const inspectOpenwaGatewaySchema = z.object({
+  baseUrl: openwaBaseUrlSchema,
+  apiKey: openwaApiKeyInputSchema,
+  adminApiKey: openwaApiKeyInputSchema.optional(),
+}).strict();
+export const openwaChannelConfigurationSchema = z.object({
+  baseUrl: openwaBaseUrlSchema,
+  sessionId: openwaSessionIdSchema,
+  numberMode: z.enum(OPENWA_NUMBER_MODES).default("agent_number"),
+  attestations: z.object({ pacing: z.boolean(), soleClient: z.boolean() }).strict(),
+}).strict();
+
+/** Masks an E.164 digit string as +62xxx...1234 for display. */
+export function maskOpenwaPhoneNumber(digits: string): string {
+  const clean = digits.replace(/\D/g, "");
+  if (clean.length < 7) return "+xxx";
+  return `+${clean.slice(0, 2)}xxx...${clean.slice(-4)}`;
+}
+
 export const configureChatEndpointSchema = z
   .object({
     action: z.enum([
@@ -127,11 +174,12 @@ export const configureChatEndpointSchema = z
     ]),
     credentials: chatEndpointCredentialsSchema.optional(),
     photon: photonChannelConfigurationSchema.optional(),
+    openwa: openwaChannelConfigurationSchema.optional(),
   })
   .strict()
   .superRefine((value, ctx) => {
     if (
-      (value.credentials || value.photon) &&
+      (value.credentials || value.photon || value.openwa) &&
       value.action !== "configure" &&
       value.action !== "reconnect"
     ) {

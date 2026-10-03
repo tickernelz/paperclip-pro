@@ -10,6 +10,7 @@ import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { SlackIdentityStep } from "./SlackIdentityStep";
 import { PhotonConnectStep } from "./PhotonConnectStep";
+import { OpenwaConnectStep } from "./OpenwaConnectStep";
 import { EmailEndpointSetup } from "./EmailEndpointSetup";
 import {
   useEffect,
@@ -43,7 +44,7 @@ import { useNavigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useCopyAction } from "@/lib/use-copy-action";
-import { isAgentStatusInvokable, slackAppConfigurationSchema, type SlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { isAgentStatusInvokable, maskOpenwaPhoneNumber, slackAppConfigurationSchema, type SlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import {
   createGitHubPrivateKeyReadGuard,
@@ -62,6 +63,25 @@ const providerNames: Record<ChatProvider, string> = {
 };
 
 const knownProviders = new Set(Object.keys(providerNames));
+
+export function openwaSetupInput(
+  action: ChatEndpointSetupAction,
+  values: Record<string, string> | undefined,
+) {
+  if (!values) return { action };
+  return {
+    action,
+    ...(values.apiKey
+      ? { credentials: { apiKey: values.apiKey, ...(values.adminApiKey ? { adminApiKey: values.adminApiKey } : {}) } }
+      : {}),
+    openwa: {
+      baseUrl: values.baseUrl,
+      sessionId: values.sessionId,
+      numberMode: values.numberMode === "owner_number" ? ("owner_number" as const) : ("agent_number" as const),
+      attestations: { pacing: values.pacing === "true", soleClient: values.soleClient === "true" },
+    },
+  };
+}
 
 function isProvider(value: string | null): value is ChatProvider {
   return value !== null && knownProviders.has(value);
@@ -282,7 +302,7 @@ function ChatSdkEndpointSetup() {
     onSuccess: (next) => {
       setViewedStep(null);
       syncEndpointSnapshot(next);
-      if (next.provider === "imessage-photon") {
+      if (next.provider === "imessage-photon" || next.provider === "openwa") {
         const resumed = new URLSearchParams(params);
         resumed.set("resume", next.id);
         setParams(resumed, { replace: true });
@@ -305,6 +325,7 @@ function ChatSdkEndpointSetup() {
     }) => {
       const endpointId = endpoint!.id;
       try {
+        if (provider === "openwa") return await chatEndpointsApi.setup(endpointId, openwaSetupInput(action, values));
         return await chatEndpointsApi.setup(endpointId, provider === "imessage-photon" ? {
       action,
       ...(values?.projectSecret ? { credentials: { projectSecret: values.projectSecret } } : {}),
@@ -329,7 +350,9 @@ function ChatSdkEndpointSetup() {
       if (next.setup?.step !== "test" && next.setup?.step !== "complete") setSlackIdentityReady(false);
     },
     onError: (error, variables) =>
-      setSetupError(sanitizedSetupErrorMessage(error, variables.values)),
+      setSetupError(sanitizedSetupErrorMessage(error, provider === "openwa"
+        ? { apiKey: variables.values?.apiKey ?? "", adminApiKey: variables.values?.adminApiKey ?? "" }
+        : variables.values)),
   });
   const generateSetupSecret = useMutation({
     mutationFn: () => chatEndpointsApi.generateSetupSecret(endpoint!.id),
@@ -598,6 +621,7 @@ function ChatSdkEndpointSetup() {
             agentName={selectedAgent?.name ?? endpoint.assignedAgentName}
             botLabel={endpoint.botLabel}
             botUsername={endpoint.botUsername}
+            botExternalId={endpoint.botExternalId}
             photonAllocation={endpoint.photonAllocation}
             providerUrl={endpoint.setup?.providerUrl}
             guestIsolationState={
@@ -616,7 +640,7 @@ function ChatSdkEndpointSetup() {
             onSaveExit={() => navigate("/apps")}
           />
         )}
-        {step !== 0 && !(isSlack && (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6)) && <div className="flex justify-start">
+        {step !== 0 && !(isSlack && (step === 1 || step === 2 || step === 3 || step === 4 || step === 5 || step === 6)) && !(provider === "openwa" && step === 1) && <div className="flex justify-start">
           <Button className="text-muted-foreground" variant="ghost" onClick={() => navigate("/apps")}>
             Save &amp; exit
           </Button>
@@ -931,6 +955,7 @@ settings:
     2,
   );
   if (provider === "imessage-photon") return <PhotonConnectStep endpoint={endpoint} agentName={agentName} repairing={repairing} pending={pending} onAction={onAction} />;
+  if (provider === "openwa") return <OpenwaConnectStep endpoint={endpoint} agentName={agentName} repairing={repairing} pending={pending} onAction={onAction} onSaveExit={() => navigate("/apps")} />;
   if (provider === "discord") {
     const applicationId = credentials.applicationId?.trim() ?? "";
     const guildId = credentials.guildId?.trim() ?? "";
@@ -1804,6 +1829,7 @@ function TryStep({
   agentName,
   botLabel,
   botUsername,
+  botExternalId,
   photonAllocation,
   providerUrl,
   guestIsolationState,
@@ -1817,6 +1843,7 @@ function TryStep({
   agentName: string;
   botLabel?: string | null;
   botUsername?: string | null;
+  botExternalId?: string | null;
   photonAllocation?: "dedicated" | "shared";
   providerUrl?: string | null;
   guestIsolationState: "loading" | "enabled" | "disabled" | "unknown";
@@ -1844,14 +1871,14 @@ function TryStep({
     (identity) => identity.status !== "linked",
   );
   const freshConversationInstruction =
-    provider === "imessage-photon" ? "send a fresh message to your Photon number" : provider === "telegram"
+    provider === "imessage-photon" ? "send a fresh message to your Photon number" : provider === "openwa" ? "send a fresh WhatsApp message to the connected number" : provider === "telegram"
       ? "start a fresh conversation with /new and send the test message again"
       : provider === "github"
         ? "start a new issue or pull request conversation and mention the agent again"
         : provider === "microsoft-teams"
           ? "start a new channel post and mention the agent again"
           : "send a new root mention to the agent";
-  const identityGuidance = provider === "slack" ? null : provider === "imessage-photon" && principalsQuery.isSuccess && (identities.length === 0 || unlinkedIdentities.length > 0)
+  const identityGuidance = provider === "slack" || provider === "openwa" ? null : provider === "imessage-photon" && principalsQuery.isSuccess && (identities.length === 0 || unlinkedIdentities.length > 0)
     ? { tone: "info" as const, title: "Link your Messages identity", body: "Send one message to discover your phone number or Apple account address, then link that exact identity in Access. Send a fresh request after linking; earlier messages do not start work." }
     : principalsQuery.isError
     ? {
@@ -1901,8 +1928,13 @@ function TryStep({
     ? `@${normalizedBotUsername}`
     : (botLabel ?? agentName);
   const slackTestMessage = `${botMention.startsWith("@") ? botMention : `@${botMention}`} you there?`;
+  const openwaNumber = botExternalId ? maskOpenwaPhoneNumber(botExternalId) : "the connected number";
   const instructions =
-    provider === "imessage-photon" ? [
+    provider === "openwa" ? [
+      "Owners are linked in Settings. Only an owner's message completes this test.",
+      `Send a WhatsApp message from an owner's phone to ${openwaNumber}.`,
+      "Wait for the agent’s actual reply. Setup completes after that reply is delivered.",
+    ] : provider === "imessage-photon" ? [
       photonAllocation === "shared" ? "In your Photon project, enroll your sender in Users and find its assigned number in Get started. Send a fresh message to that number from Apple Messages." : `Open Apple Messages and send a fresh message to ${botUsername ?? botLabel ?? "the dedicated number"}.`,
       "Link the discovered sender to a Paperclip person in Access, then send a fresh request.",
       "Wait for the agent’s actual reply. Setup completes after that reply is delivered.",

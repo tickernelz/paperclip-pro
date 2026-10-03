@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "slug": "openwa",
+  "name": "OpenWA",
+  "description": "Let the owner and people on a WhatsApp number work with one Paperclip agent through a self-hosted OpenWA gateway.",
+  "categories": [
+    "communication"
+  ],
+  "featured": false,
+  "branding": {
+    "logoUrl": "/brands/apps/openwa.svg"
+  },
+  "urlPatterns": [
+    "https://github.com/rmyndharis/OpenWA*"
+  ],
+  "methods": [
+    {
+      "key": "chat-agent",
+      "label": "Chat with an agent",
+      "purpose": "channel",
+      "provider": "openwa",
+      "transport": "chat_sdk",
+      "auth": "api_key",
+      "ownershipModes": [
+        "customer"
+      ],
+      "whenToUse": "Let people in OpenWA start and continue work with one Paperclip agent.",
+      "credentialFields": [
+        {
+          "key": "baseUrl",
+          "label": "Gateway URL",
+          "type": "text",
+          "required": true,
+          "placeholder": "http://localhost:2785",
+          "secret": false,
+          "helperMd": "The OpenWA gateway origin. Loopback addresses are allowed for self-hosted gateways."
+        },
+        {
+          "key": "apiKey",
+          "label": "Operator API key",
+          "type": "password",
+          "required": true,
+          "placeholder": "OpenWA operator key scoped to one session",
+          "secret": true,
+          "helperMd": "Create an operator key whose allowedSessions contains only the agent's session and no allowedChats."
+        },
+        {
+          "key": "adminApiKey",
+          "label": "Admin API key",
+          "type": "password",
+          "required": false,
+          "placeholder": "Optional unscoped admin key",
+          "secret": true,
+          "advanced": true,
+          "helperMd": "Only needed when gateway admin tools are enabled in Settings."
+        }
+      ],
+      "guidanceMd": "Connect a self-hosted OpenWA gateway session. Paperclip inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Paperclip is the only client sending as the session before an owner sends a test WhatsApp message.",
+      "consoleLinks": {
+        "register": "https://github.com/rmyndharis/OpenWA",
+        "docs": "https://github.com/rmyndharis/OpenWA"
+      },
+      "riskTier": "S3",
+      "requiredResourceFilters": [
+        "direct_message",
+        "group_chat"
+      ]
+    }
+  ]
+}

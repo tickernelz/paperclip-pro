@@ -298,6 +298,7 @@ import {
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
   inspectPhotonProjectSchema,
+  inspectOpenwaGatewaySchema,
   chatInflightModeSchema,
   openwaGatewayAdminToolLevelSchema,
   openwaNumberModeSchema,
@@ -1624,6 +1625,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "POST /api/chat-endpoints/{endpointId}/finish",
   "GET /api/chat-endpoints/{endpointId}/test-status",
   "POST /api/chat-endpoints/{endpointId}/photon/inspect",
+  "POST /api/chat-endpoints/{endpointId}/openwa/inspect",
   "GET /api/chat-endpoints/{endpointId}/resources",
   "PUT /api/chat-endpoints/{endpointId}/resources",
   "GET /api/chat-endpoints/{endpointId}/principals",
@@ -2431,7 +2433,7 @@ registry.registerPath({
   tags: ["chat-channels"],
   summary: "Configure or change chat endpoint lifecycle state",
   description:
-    "Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
+    "Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration; OpenWA: `apiKey` and optional `adminApiKey`, with nonsecret `openwa.baseUrl`, `openwa.sessionId`, `openwa.numberMode`, and required `openwa.attestations`). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
   request: {
     params: z.object({ endpointId: z.string().uuid() }),
     body: jsonBody(configureChatEndpointSchema),
@@ -2500,6 +2502,48 @@ registry.registerPath({
     429: { description: "Photon request limit reached; retry later" },
     502: { description: "Photon returned an invalid response; inspect provider health" },
     503: { description: "Photon temporarily unavailable; retry later" },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/inspect",
+  tags: ["chat-channels"],
+  summary: "Inspect an OpenWA gateway and its sessions for channel setup",
+  description:
+    "Requires a board user with connection-management access. The API keys are write-only input. Rejects agents whose adapter cannot authenticate runs with signed run tokens and keys restricted to selected chats. Returns the gateway version, engine, key role, visible sessions with masked numbers, and warnings; never keys or full phone numbers. Responses are not cached. Inspection alone does not activate the channel.",
+  request: {
+    params: z.object({ endpointId: z.string().uuid() }),
+    body: jsonBody(inspectOpenwaGatewaySchema),
+  },
+  responses: {
+    200: r.ok(z.object({
+      baseUrl: z.string(),
+      gatewayVersion: z.string().nullable(),
+      pinnedVersion: z.string(),
+      engine: z.string().nullable(),
+      keyRole: z.enum(["operator", "admin", "viewer"]),
+      adminKey: z.object({ role: z.enum(["operator", "admin", "viewer"]) }).strict().nullable(),
+      warnings: z.array(z.string()),
+      eligible: z.boolean(),
+      sessions: z.array(z.object({
+        sessionId: z.string(),
+        name: z.string(),
+        status: z.string(),
+        maskedNumber: z.string().nullable(),
+        pushName: z.string().nullable(),
+        eligible: z.boolean(),
+        unavailableReason: z.string().optional(),
+      }).strict()),
+    }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+    429: { description: "OpenWA gateway request limit reached; retry later" },
+    502: { description: "OpenWA gateway returned an invalid response; inspect gateway health" },
+    503: { description: "OpenWA gateway unreachable; do not replace credentials" },
   },
 });
 

@@ -31,7 +31,9 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { openwaEndpointPolicySchema, photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { inspectOpenwaGateway, openwaProviderAccountId, verifyOpenwaSession } from "./openwa/setup.js";
+import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
   createHash,
@@ -6183,10 +6185,21 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     provider: ChatProvider,
     credentials: Record<string, string>,
   ): Promise<VerifiedProviderIdentity> {
-    if (provider === "openwa")
-      throw unprocessable("OpenWA setup is not available in this build", {
-        code: "openwa_setup_unavailable",
-      });
+    if (provider === "openwa") {
+      if (!credentials.baseUrl || !credentials.sessionId)
+        throw unprocessable("Inspect the OpenWA gateway and choose a session first", { code: "openwa_session_required" });
+      const session = await verifyOpenwaSession(
+        { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId, apiKey: credentials.apiKey, ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}) },
+        { fetchImpl },
+      );
+      return {
+        providerAccountId: openwaProviderAccountId(session.baseUrl, session.sessionId),
+        providerAccountLabel: session.sessionName,
+        botExternalId: session.phoneNumber,
+        botUsername: session.pushName,
+        botLabel: session.pushName,
+      };
+    }
     if (provider === "imessage-photon") {
       const inspection = await inspectPhotonCredentials(credentials.projectId, credentials.projectSecret);
       if (inspection.allocation !== (credentials.allocation ?? "dedicated")) throw unprocessable("Photon allocation changed; inspect the project again");
@@ -6427,6 +6440,39 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     );
   }
 
+  async function assertOpenwaIdentityAvailable(endpoint: EndpointRow, identity: VerifiedProviderIdentity) {
+    if (!identity.providerAccountId || !identity.botExternalId)
+      throw unprocessable("OpenWA did not return a stable session identity");
+    const conflictEndpoint = await db
+      .select({ id: chatEndpoints.id, companyId: chatEndpoints.companyId, assignedAgentId: chatEndpoints.assignedAgentId })
+      .from(chatEndpoints)
+      .where(and(
+        eq(chatEndpoints.provider, "openwa"),
+        ne(chatEndpoints.id, endpoint.id),
+        ne(chatEndpoints.status, "archived"),
+        or(eq(chatEndpoints.providerAccountId, identity.providerAccountId), eq(chatEndpoints.botExternalId, identity.botExternalId)),
+      ))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+    if (conflictEndpoint)
+      throw conflict(
+        "This OpenWA session or WhatsApp number already belongs to another Paperclip channel",
+        conflictEndpoint.companyId === endpoint.companyId
+          ? { code: "chat_bot_identity_in_use", endpointId: conflictEndpoint.id, assignedAgentId: conflictEndpoint.assignedAgentId }
+          : { code: "chat_bot_identity_in_use" },
+      );
+  }
+
+  async function assignedAgentAdapterType(endpoint: EndpointRow): Promise<string> {
+    const agent = await db
+      .select({ adapterType: agents.adapterType })
+      .from(agents)
+      .where(and(eq(agents.companyId, endpoint.companyId), eq(agents.id, endpoint.assignedAgentId)))
+      .then((rows) => rows[0] ?? null);
+    if (!agent) throw notFound("Assigned agent not found");
+    return agent.adapterType;
+  }
+
   function nativeBotIdentityMatches(
     provider: ChatProvider,
     current: VerifiedProviderIdentity,
@@ -6457,6 +6503,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     endpoint: EndpointRow,
     identity: VerifiedProviderIdentity,
   ): Promise<void> {
+    if (endpoint.provider === "openwa") return assertOpenwaIdentityAvailable(endpoint, identity);
     const key = nativeBotIdentityKey(endpoint.provider, identity);
     if (!key) {
       throw unprocessable(
@@ -6520,6 +6567,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   function isNativeBotIdentityUniqueViolation(error: unknown): boolean {
     return (
       isUniqueViolation(error, "chat_endpoints_photon_number_uq") ||
+      isUniqueViolation(error, "chat_endpoints_openwa_account_uq") ||
+      isUniqueViolation(error, "chat_endpoints_openwa_number_uq") ||
       isUniqueViolation(error, "chat_endpoints_live_bot_external_uq") ||
       isUniqueViolation(error, "chat_endpoints_live_discord_bot_external_uq") ||
       isUniqueViolation(
@@ -6558,6 +6607,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     try {
       for (const [key, value] of Object.entries(credentials)) {
         if (endpoint.provider === "imessage-photon" && key !== "projectSecret") continue;
+        if (endpoint.provider === "openwa" && key !== "apiKey" && key !== "adminApiKey") continue;
         await credentialLease.assertOwned();
         const suffix = randomUUID();
         const secret = await secrets.create(
@@ -6767,6 +6817,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (endpoint.provider === "imessage-photon") {
       const configuration = photonChannelConfigurationSchema.parse(connection.config.photon);
       return { ...values, ...configuration, lineId: configuration.allocation === "shared" ? photonSharedScope(configuration.projectId) : configuration.lineId };
+    }
+    if (endpoint.provider === "openwa") {
+      const openwa = connection.config.openwa as { baseUrl?: unknown; sessionId?: unknown } | undefined;
+      if (typeof openwa?.baseUrl === "string" && typeof openwa.sessionId === "string")
+        return { ...values, baseUrl: openwa.baseUrl, sessionId: openwa.sessionId };
     }
     return values;
   }
@@ -8276,6 +8331,24 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   }
 
+  async function inspectOpenwa(
+    endpointId: string,
+    input: { baseUrl: string; apiKey: string; adminApiKey?: string },
+  ) {
+    const record = await endpointRecord(endpointId);
+    if (!record || record.endpoint.provider !== "openwa")
+      throw notFound("OpenWA endpoint not found");
+    assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(record.endpoint));
+    const reserved = await db
+      .select({ account: chatEndpoints.providerAccountId, number: chatEndpoints.botExternalId })
+      .from(chatEndpoints)
+      .where(and(eq(chatEndpoints.provider, "openwa"), ne(chatEndpoints.id, endpointId), ne(chatEndpoints.status, "archived")));
+    return inspectOpenwaGateway(input, {
+      accounts: new Set(reserved.flatMap((row) => (row.account ? [row.account] : []))),
+      numbers: new Set(reserved.flatMap((row) => (row.number ? [row.number] : []))),
+    }, { fetchImpl });
+  }
+
   async function inspectPhoton(
     endpointId: string,
     input: { projectId: string; projectSecret: string },
@@ -9139,6 +9212,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (!record) throw notFound("Chat endpoint not found");
     if (record.endpoint.provider === "agentmail") throw badRequest("Use the email inbox API for AgentMail");
     if (input.photon && record.endpoint.provider !== "imessage-photon") throw badRequest("Photon configuration is only valid for iMessage Photon");
+    if (input.openwa && record.endpoint.provider !== "openwa") throw badRequest("OpenWA configuration is only valid for OpenWA");
     const suppliedCredentialKeys = Object.keys(input.credentials ?? {});
     if (suppliedCredentialKeys.length > 0) {
       const credentialAction =
@@ -9182,6 +9256,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const record = await endpointRecord(endpointId);
     if (!record) throw notFound("Chat endpoint not found");
     const endpoint = record.endpoint;
+    if (endpoint.provider === "openwa" && ["configure", "reconnect", "resume"].includes(input.action))
+      assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(endpoint));
     if (input.action === "pause") {
       if (endpoint.status !== "active") {
         throw conflict("Only an active chat connection can be paused", {
@@ -9548,7 +9624,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ) {
       throw unprocessable("Unsupported chat endpoint setup action");
     }
-    if (!getWebhookPublicBaseUrl() && endpoint.provider !== "discord" && endpoint.provider !== "imessage-photon") {
+    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider)) {
       throw unprocessable(
         `A public HTTPS Paperclip URL is required before connecting ${PROVIDER_LABELS[endpoint.provider]}`,
       );
@@ -9666,6 +9742,28 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       if (endpoint.botExternalId && (configuration.projectId !== endpoint.providerAccountId || credentials.lineId && lineId !== credentials.lineId)) throw conflict("A different Photon identity requires a new channel");
       credentials = { ...credentials, ...configuration, lineId };
     }
+    let openwaPolicy: OpenwaEndpointPolicy | null = null;
+    if (endpoint.provider === "openwa") {
+      const storedPolicy = openwaEndpointPolicySchema.parse(endpoint.policy);
+      const configuration = input.openwa
+        ? openwaChannelConfigurationSchema.parse(input.openwa)
+        : credentials.baseUrl && credentials.sessionId
+          ? { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId, numberMode: storedPolicy.numberMode, attestations: storedPolicy.attestations }
+          : null;
+      if (!configuration)
+        throw unprocessable("Inspect the OpenWA gateway and choose a session first", { code: "openwa_session_required" });
+      if (!configuration.attestations.pacing || !configuration.attestations.soleClient)
+        throw unprocessable("Confirm both OpenWA attestations before connecting: send pacing is enabled on the gateway, and Paperclip is the only client sending as this session", { code: "openwa_attestations_required" });
+      if (endpoint.providerAccountId && endpoint.providerAccountId !== openwaProviderAccountId(configuration.baseUrl, configuration.sessionId))
+        throw conflict("A different OpenWA gateway or session requires a new channel", { code: "chat_bot_identity_changed" });
+      credentials = { ...credentials, baseUrl: configuration.baseUrl, sessionId: configuration.sessionId };
+      const { triggers: _triggers, ...withoutTriggers } = storedPolicy;
+      openwaPolicy = openwaEndpointPolicySchema.parse({
+        ...(storedPolicy.numberMode === configuration.numberMode ? storedPolicy : withoutTriggers),
+        numberMode: configuration.numberMode,
+        attestations: configuration.attestations,
+      });
+    }
     const identity = await verifyCredentials(endpoint.provider, credentials);
     // Once setup has claimed a provider bot identity, every credential repair
     // must prove that same identity before secrets can be replaced. A process
@@ -9748,6 +9846,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
       await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
     }
+    if (endpoint.provider === "openwa") {
+      await invalidateRuntime(endpoint.id);
+      await credentialLease.assertOwned();
+      await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+    }
     if (
       (input.credentials && Object.keys(input.credentials).length > 0) ||
       credentialsChangedByDiscovery
@@ -9790,6 +9893,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               identity.botLabel ??
               endpoint.botDisplayName ??
               record.assignedAgentName,
+            ...(openwaPolicy
+              ? { policy: openwaPolicy, policyRevision: sql`${chatEndpoints.policyRevision} + 1` }
+              : {}),
             healthMessage: waitingForSlackConfiguration
               ? "Finish provider webhook configuration"
               : "Waiting for a test conversation",
@@ -10055,6 +10161,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             code: "chat_endpoint_not_testing",
           });
         }
+        if (endpoint.provider === "openwa") {
+          const { attestations } = openwaEndpointPolicySchema.parse(endpoint.policy);
+          if (!attestations.pacing || !attestations.soleClient)
+            throw unprocessable("Confirm both OpenWA attestations before activating this channel", { code: "openwa_attestations_required" });
+          assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(endpoint));
+        }
         if (endpoint.provider === "github" && endpoint.setup.github) {
           const verified = await githubChatManagementService(db, fetchImpl).verification(endpoint.id);
           if (!verified.ready) throw conflict("Finish verifying the App, repositories, and assigned agent's tools before activating this bot", { checks: verified.checks });
@@ -10087,7 +10199,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             );
           }
           const requiredTrigger =
-            ["telegram", "imessage-photon"].includes(endpoint.provider)
+            ["telegram", "imessage-photon", "openwa"].includes(endpoint.provider)
               ? "direct_message"
               : "subscribed_message";
           const qualifyingDelivery = await db
@@ -10114,7 +10226,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             !qualifyingDelivery.processedAt
           ) {
             throw conflict(
-              ["telegram", "imessage-photon"].includes(endpoint.provider)
+              ["telegram", "imessage-photon", "openwa"].includes(endpoint.provider)
                 ? "Send the test direct message before completing setup"
                 : "Reply once without mentioning the agent before completing setup",
               { code: "chat_test_follow_up_missing" },
@@ -38258,6 +38370,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     generateSetupSecret,
     configure,
     inspectPhoton,
+    inspectOpenwa,
     test,
     finishSlackSetup: (endpointId: string, userId: string) => test(endpointId, { optionalSlackTestForUser: userId }),
     setupTestStatus,

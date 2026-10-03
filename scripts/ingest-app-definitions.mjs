@@ -69,6 +69,7 @@ const chatProviderName = (provider) =>
     slack: "Slack",
     telegram: "Telegram",
     "imessage-photon": "iMessage Photon",
+    openwa: "WhatsApp through OpenWA",
   })[provider];
 const channelMethod = (
   provider,
@@ -423,6 +424,18 @@ const apps = [
     channelMethod("imessage-photon", [field("projectSecret", "Project secret", "Photon project secret")], ["direct_message", "group_chat"],
       "Connect a Photon Cloud project. Pro shared lines support DMs after sender enrollment in Photon and identity linking in Paperclip. Dedicated lines also support individually enabled groups.",
       { register: "https://photon.codes/", docs: "https://photon.codes/docs/spectrum-ts/providers/imessage/connection-and-routing" }),
+  ],
+  [
+    "openwa", "OpenWA",
+    "Let the owner and people on a WhatsApp number work with one Paperclip agent through a self-hosted OpenWA gateway.",
+    "communication", "github.com", ["https://github.com/rmyndharis/OpenWA*"],
+    channelMethod("openwa", [
+      { key: "baseUrl", label: "Gateway URL", type: "text", required: true, placeholder: "http://localhost:2785", secret: false, helperMd: "The OpenWA gateway origin. Loopback addresses are allowed for self-hosted gateways." },
+      { ...field("apiKey", "Operator API key", "OpenWA operator key scoped to one session"), helperMd: "Create an operator key whose allowedSessions contains only the agent's session and no allowedChats." },
+      { ...field("adminApiKey", "Admin API key", "Optional unscoped admin key"), required: false, advanced: true, helperMd: "Only needed when gateway admin tools are enabled in Settings." },
+    ], ["direct_message", "group_chat"],
+      "Connect a self-hosted OpenWA gateway session. Paperclip inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Paperclip is the only client sending as the session before an owner sends a test WhatsApp message.",
+      { register: "https://github.com/rmyndharis/OpenWA", docs: "https://github.com/rmyndharis/OpenWA" }),
   ],
   [
     "telegram",
