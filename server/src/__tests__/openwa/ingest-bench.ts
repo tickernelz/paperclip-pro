@@ -38,6 +38,7 @@ import {
   type OpenwaEventSocket,
   type OpenwaIngressEvent,
 } from "../../services/openwa/receiver.js";
+import { activeOpenwaScheduledWakes } from "../../services/openwa/scheduled-wakes.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
@@ -575,16 +576,60 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
       }
       const latency = summarize(latencies);
       const maxQueries = Math.max(...queryCounts);
+      const wakes = activeOpenwaScheduledWakes(fixture.endpointId);
+      if (!wakes) throw new Error("S0b timer variant: the endpoint's scheduled-wake runtime is not active");
+      const cancelLatencies: number[] = [];
+      const cancelQueries: number[] = [];
+      const cancelOffenders: string[] = [];
+      const cancelledBefore = wakes.stats.cancelled;
+      for (let index = 0; index < options.s0bSamples; index++) {
+        const armed = emit({ chatId: ACTIVE_GROUP, author: jid(MEMBER_PHONE), body: "is the owner around " + index, extra: { mentionedIds: [jid(OWNER_PHONE)] } });
+        await until(decided(armed.waMessageId!), 10_000, "S0b timer arm");
+        await until(() => wakes.hasPendingAbsence(ACTIVE_GROUP), 10_000, "S0b absence timer armed");
+        const row = emit({ chatId: ACTIVE_GROUP, author: jid(OWNER_PHONE), body: "owner is here " + index });
+        await until(decided(row.waMessageId!), 10_000, "S0b timer cancel");
+        await until(() => !wakes.hasPendingAbsence(ACTIVE_GROUP), 10_000, "S0b absence timer cancelled");
+        const scope = instrumentation.scopes.get(row.waMessageId!)!;
+        if (scope.outcome !== "ownerActivity") throw new Error("S0b timer sample was not owner activity: " + scope.outcome);
+        cancelLatencies.push(scope.decided! - scope.arrival);
+        cancelQueries.push(scope.queries);
+        if (scope.queries > 1 && cancelOffenders.length < 5) cancelOffenders.push(...scope.sql);
+      }
+      const cancelLatency = summarize(cancelLatencies);
+      const cancelMax = Math.max(...cancelQueries);
+      const cancelled = wakes.stats.cancelled - cancelledBefore;
       results.s0b = {
         boundary: "client socket frame received -> discard, quote outside the in-memory outbound index (one stored lookup)",
         latencyMs: latency,
         queries: { max: maxQueries, min: Math.min(...queryCounts) },
         quoteLookups: service.openwaAdmissionStats.quoteLookups - lookupsBefore,
-        timerCancelVariant: "not available: the absence-timer hooks (T12) are not merged, so a pending-timer cancel has no code to measure",
+        timerCancelVariant: {
+          boundary: "client socket frame received -> admission stats.ownerActivity++ for an owner message in a chat with an armed owner_absent timer (cancel included)",
+          latencyMs: cancelLatency,
+          queries: { max: cancelMax, min: Math.min(...cancelQueries) },
+          cancelled,
+          offendingSql: cancelOffenders,
+        },
       };
       budgets.push(
         { seam: "S0b candidate check", metric: "p95 ms", value: latency.p95, budget: "<= 10", status: latency.p95 !== null && latency.p95 <= 10 ? "pass" : "fail" },
         { seam: "S0b candidate check", metric: "DB queries per event (max)", value: maxQueries, budget: "<= 1", status: maxQueries <= 1 ? "pass" : "fail" },
+        {
+          seam: "S0b pending-timer cancel",
+          metric: "p95 ms",
+          value: cancelLatency.p95,
+          budget: "<= 10",
+          status: cancelLatency.p95 !== null && cancelLatency.p95 <= 10 && cancelled === options.s0bSamples ? "pass" : "fail",
+          ...(cancelled === options.s0bSamples ? {} : { evidence: cancelled + " of " + options.s0bSamples + " timers cancelled" }),
+        },
+        {
+          seam: "S0b pending-timer cancel",
+          metric: "DB queries per event (max)",
+          value: cancelMax,
+          budget: "<= 1",
+          status: cancelMax <= 1 ? "pass" : "fail",
+          ...(cancelOffenders.length ? { evidence: cancelOffenders[0] } : {}),
+        },
       );
     }
 
@@ -796,7 +841,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
       const latency = summarize(ingest);
       results.s4 = {
         boundary:
-          "openwaMedia.ingestOpenwaTriggerMedia wall time minus gateway transfer (downloadMedia call -> stream end); admission does not call media ingest yet (FixA wiring), so the seam is measured at the media service",
+          "openwaMedia.ingestOpenwaTriggerMedia wall time minus gateway transfer (downloadMedia call -> stream end), measured at the media service that admission calls after the inbound comment commits",
         bytes: image.length,
         ingestExcludingTransferMs: latency,
         transferMs: summarize(transfer),
@@ -916,6 +961,11 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
 
   const failed = budgets.filter((row) => row.status === "fail");
   if (failed.length && exitCode === 0) exitCode = 1;
+  const partial = [
+    ...[...options.skip].map((seam) => "skipped: " + seam),
+    ...budgets.filter((row) => row.status === "not available").map((row) => "not available: " + row.seam + " " + row.metric),
+  ];
+  if (partial.length && exitCode === 0) exitCode = 3;
   const report = {
     benchmark: "openwa-ingest",
     startedAt,
@@ -926,6 +976,8 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     totalDbQueries: instrumentation.totalQueries,
     results,
     budgets,
+    partial: partial.length > 0,
+    partialReasons: partial,
     pass: exitCode === 0,
     profiling: "Re-run with node --cpu-prof scripts/bench/openwa-ingest.mjs --skip=<other seams> to profile a failing seam; offending SQL and idle gaps are listed per seam",
   };
@@ -936,7 +988,15 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
   await writeFile(outFile, JSON.stringify(report, null, 2) + "\n");
   printTable(budgets, results);
   console.log("\nJSON result: " + outFile);
-  console.log(exitCode === 0 ? "PASS" : exitCode === 1 ? "FAIL: " + failed.length + " budget(s) violated" : "ERROR: benchmark aborted");
+  console.log(
+    exitCode === 0
+      ? "PASS"
+      : exitCode === 1
+        ? "FAIL: " + failed.length + " budget(s) violated"
+        : exitCode === 3
+          ? "PARTIAL: not AC17 evidence (" + partial.join("; ") + ")"
+          : "ERROR: benchmark aborted",
+  );
   return exitCode;
 }
 

@@ -489,6 +489,8 @@ Harness `scripts/bench/openwa-ingest.mjs` with a fake Socket.IO + REST gateway w
 
 Negative control: injecting one DB query into the S0 path must fail the benchmark.
 
+A run with `--skip` or any `not available` row exits 3 and reports `partial: true`; only a full run counts as AC17 evidence.
+
 Techniques: policy snapshot keyed by revision; keep-alive HTTP pool; credentials decrypted once per lease; throttled cursor writes; deadline-driven timer heap; LRU caches with caps (outbound ids 50k, LID 10k, discovered groups 5k); streamed media; static capability matrix.
 
 ## 16. Gateway prerequisites (operator, separate approval)
