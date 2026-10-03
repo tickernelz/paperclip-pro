@@ -83,12 +83,15 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import { paperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
 import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+import { runToolProfile, type RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import {
   createAcpRuntime,
   createAgentRegistry,
   createRuntimeStore,
   isAcpRuntimeError,
   type AcpAgentRegistry,
+  type AcpPermissionDecision,
+  type AcpPermissionRequest,
   type AcpRuntime,
   type AcpRuntimeEvent,
   type AcpRuntimeHandle,
@@ -455,6 +458,7 @@ interface AcpxPreparedRuntime {
   stateDir: string;
   permissionMode: "approve-all" | "approve-reads" | "deny-all";
   nonInteractivePermissions: "deny" | "fail";
+  toolProfile: RunToolProfile;
   requestedModel: string;
   requestedThinkingEffort: string;
   fastMode: boolean;
@@ -1468,6 +1472,44 @@ function normalizePermissionMode(config: Record<string, unknown>): "approve-all"
   return "approve-all";
 }
 
+const READ_ONLY_ACP_DENIED_KINDS: ReadonlySet<string> = new Set(["edit", "delete", "move"]);
+const READ_ONLY_CODEX_ALLOWED_KINDS: ReadonlySet<string> = new Set(["read", "search", "fetch", "think"]);
+const READ_ONLY_CLAUDE_DENIED_TOOLS: ReadonlySet<string> = new Set(["Edit", "Write", "MultiEdit", "NotebookEdit"]);
+const READ_ONLY_ACP_SESSION_MODES: Readonly<Record<string, string>> = { claude: "default", codex: "read-only" };
+
+export function readOnlyAcpPermissionDecision(
+  acpxAgent: string,
+  request: AcpPermissionRequest,
+): AcpPermissionDecision | undefined {
+  const toolCall = request.raw.toolCall as { kind?: string | null; name?: unknown };
+  const kind = request.inferredKind ?? toolCall.kind ?? undefined;
+  if (kind && READ_ONLY_ACP_DENIED_KINDS.has(kind)) return { outcome: "reject_once" };
+  if (typeof toolCall.name === "string" && READ_ONLY_CLAUDE_DENIED_TOOLS.has(toolCall.name)) {
+    return { outcome: "reject_once" };
+  }
+  if (acpxAgent !== "codex" || (kind && READ_ONLY_CODEX_ALLOWED_KINDS.has(kind))) return undefined;
+  const meta = request.raw._meta as { is_mcp_tool_approval?: unknown } | null | undefined;
+  return meta?.is_mcp_tool_approval === true ? undefined : { outcome: "reject_once" };
+}
+
+async function applyReadOnlySessionMode(input: {
+  runtime: AcpRuntime;
+  handle: AcpRuntimeHandle;
+  prepared: AcpxPreparedRuntime;
+  onLog: AdapterExecutionContext["onLog"];
+}) {
+  if (input.prepared.toolProfile !== "read_only") return;
+  const mode = READ_ONLY_ACP_SESSION_MODES[input.prepared.acpxAgent];
+  if (!mode) return;
+  if (!input.runtime.setMode) {
+    const message = "ACPX runtime does not expose session mode controls, so the read_only tool profile cannot be applied.";
+    await input.onLog("stderr", `[paperclip] ${message}\n`);
+    throw new Error(message);
+  }
+  await input.runtime.setMode({ handle: input.handle, mode });
+  await input.onLog("stdout", `[paperclip] Applied read_only tool profile: ACPX ${input.prepared.acpxAgent} session mode ${mode}\n`);
+}
+
 function normalizeNonInteractivePermissions(config: Record<string, unknown>): "deny" | "fail" {
   return asString(config.nonInteractivePermissions, DEFAULT_ACP_ENGINE_NON_INTERACTIVE_PERMISSIONS) === "fail"
     ? "fail"
@@ -1928,6 +1970,7 @@ async function buildRuntime(input: {
   const mode = normalizeMode(config);
   const permissionMode = normalizePermissionMode(config);
   const nonInteractivePermissions = normalizeNonInteractivePermissions(config);
+  const toolProfile = runToolProfile(context);
   const requestedModel = asString(config.model, "").trim();
   const requestedThinkingEffort = normalizeRequestedThinkingEffort(config);
   const fastMode = acpxAgent === "codex" && config.fastMode === true;
@@ -2243,6 +2286,7 @@ async function buildRuntime(input: {
         }
       : null,
     mcpServers: mcpIdentity,
+    ...(toolProfile === "read_only" ? { toolProfile } : {}),
     secretManifestHash: shortHash(secretManifest),
     // Fold the resolved adapter env (all applied user-configured values —
     // plain, secret_ref, and stable PAPERCLIP_* config such as an explicit
@@ -2590,6 +2634,7 @@ async function buildRuntime(input: {
     stateDir,
     permissionMode,
     nonInteractivePermissions,
+    toolProfile,
     requestedModel,
     requestedThinkingEffort,
     fastMode,
@@ -4306,6 +4351,12 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
           agentRegistry: prepared.agentRegistry,
           permissionMode: prepared.permissionMode,
           nonInteractivePermissions: prepared.nonInteractivePermissions,
+          ...(prepared.toolProfile === "read_only"
+            ? {
+                onPermissionRequest: async (request: AcpPermissionRequest) =>
+                  readOnlyAcpPermissionDecision(prepared.acpxAgent, request),
+              }
+            : {}),
           mcpServers: prepared.mcpServers,
           timeoutMs: prepared.timeoutSec > 0 ? prepared.timeoutSec * 1000 : undefined,
           // Scope ACPX runtime verbose logs to the claude agent only. Codex
@@ -4656,6 +4707,12 @@ export function createAcpxEngineExecutor(deps: AcpxEngineExecutorOptions = {}) {
       const configureSessionStart = now();
       try {
         await applySessionConfigOptions({
+          runtime,
+          handle: sessionHandle,
+          prepared,
+          onLog: ctx.onLog,
+        });
+        await applyReadOnlySessionMode({
           runtime,
           handle: sessionHandle,
           prepared,

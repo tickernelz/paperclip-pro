@@ -453,6 +453,7 @@ export interface SessionFingerprintIdentity {
   readonly skillsIdentity: Record<string, unknown>;
   readonly skillPromptInstructions: string;
   readonly paperclipClaudeSettings: PaperclipClaudeSettingsIdentity | null;
+  readonly toolProfile?: "read_only";
   readonly mcpServers: readonly McpServerIdentity[];
   readonly secretManifestHash: string;
   readonly adapterEnvHash: string;

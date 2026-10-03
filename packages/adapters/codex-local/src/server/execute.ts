@@ -51,6 +51,7 @@ import {
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   joinPromptSections,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { runToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import {
   PAPERCLIP_MCP_RUN_ID_HEADER,
   PAPERCLIP_MCP_SERVER_NAME,
@@ -1263,6 +1264,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           resumeSessionId,
           skipGitRepoCheck,
           networkAccess: env.PAPERCLIP_RUNNER_NETWORK_ACCESS !== "disabled",
+          toolProfile: runToolProfile(context),
         },
       );
       const args = execArgs.args;

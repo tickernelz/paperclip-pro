@@ -9,6 +9,7 @@ export const processAdapter: ServerAdapterModule = {
   testEnvironment,
   models: [],
   supportsLocalAgentJwt: true,
+  readOnlyToolProfile: "instruction_only",
   agentConfigurationDoc: `# process agent configuration
 
 Adapter: process

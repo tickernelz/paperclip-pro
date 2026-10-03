@@ -101,6 +101,7 @@ export function createServerAdapter(): ServerAdapterModule {
     refreshModels,
     isStartupComplete: isOmpStartupComplete,
     supportsLocalAgentJwt: true,
+    readOnlyToolProfile: "enforced",
     runtimeToolDelivery: "environment",
     getQuotaWindows: getOmpQuotaWindows,
     supportsInstructionsBundle: true,

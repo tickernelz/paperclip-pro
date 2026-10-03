@@ -278,4 +278,100 @@ describe("buildCodexExecArgs", () => {
     expect(args).toEqual(["exec", "--json", "--dangerously-bypass-approvals-and-sandbox", "-"]);
   });
 
+  describe("tool profile", () => {
+    const readOnly = ["--sandbox", "read-only", "-c", 'approval_policy="never"'];
+    const cases: Array<[Record<string, unknown>, Parameters<typeof buildCodexExecArgs>[1]]> = [
+      [{}, {}],
+      [{ extraArgs: ["--sandbox", "workspace-write"] }, {}],
+      [{ dangerouslyBypassApprovalsAndSandbox: false }, { networkAccess: false }],
+      [{ model: "gpt-5.6", search: true }, { resumeSessionId: "s1", skipGitRepoCheck: true }],
+    ];
+
+    it.each(cases)("leaves full-profile args unchanged (%j, %j)", (config, options) => {
+      expect(buildCodexExecArgs(config, { ...options, toolProfile: "full" }).args).toEqual(
+        buildCodexExecArgs(config, options).args,
+      );
+    });
+
+    it("pins the default full-profile launch to the bypass flag", () => {
+      expect(buildCodexExecArgs({}, { toolProfile: "full" }).args).toEqual([
+        "exec",
+        "--json",
+        "--dangerously-bypass-approvals-and-sandbox",
+        "-",
+      ]);
+    });
+
+    it("runs a read_only run in the read-only sandbox without approval pauses", () => {
+      expect(buildCodexExecArgs({}, { toolProfile: "read_only" }).args).toEqual(["exec", "--json", ...readOnly, "-"]);
+    });
+
+    it("keeps resume, model and search flags in a read_only run", () => {
+      expect(
+        buildCodexExecArgs(
+          { model: "gpt-5.6", search: true },
+          { resumeSessionId: "s1", skipGitRepoCheck: true, toolProfile: "read_only" },
+        ).args,
+      ).toEqual([
+        "--search",
+        "exec",
+        "--json",
+        ...readOnly,
+        "--skip-git-repo-check",
+        "--model",
+        "gpt-5.6-sol",
+        "resume",
+        "s1",
+        "-",
+      ]);
+    });
+
+    it("ignores the configured bypass in a read_only run", () => {
+      for (const config of [{ dangerouslyBypassApprovalsAndSandbox: true }, { dangerouslyBypassSandbox: true }]) {
+        const { args } = buildCodexExecArgs(config, { toolProfile: "read_only" });
+        expect(args).not.toContain("--dangerously-bypass-approvals-and-sandbox");
+        expect(args).toEqual(["exec", "--json", ...readOnly, "-"]);
+      }
+    });
+
+    it("drops operator sandbox and approval overrides that would widen a read_only run", () => {
+      const { args } = buildCodexExecArgs(
+        {
+          extraArgs: [
+            "--sandbox",
+            "danger-full-access",
+            "-s",
+            "workspace-write",
+            "--sandbox=danger-full-access",
+            "-sdanger-full-access",
+            "--full-auto",
+            "--yolo",
+            "--dangerously-bypass-approvals-and-sandbox",
+            "-c",
+            'sandbox_mode="danger-full-access"',
+            "--config",
+            "approval_policy=on-request",
+            '-c=sandbox_mode="workspace-write"',
+            '--config=approval_policy="untrusted"',
+            "-c",
+            "model_verbosity=low",
+            "--profile",
+            "work",
+          ],
+        },
+        { toolProfile: "read_only" },
+      );
+      expect(args).toEqual(["exec", "--json", ...readOnly, "-c", "model_verbosity=low", "--profile", "work", "-"]);
+    });
+
+    it("does not re-add the workspace network flag in a read_only run without network", () => {
+      expect(buildCodexExecArgs({}, { networkAccess: false, toolProfile: "read_only" }).args).toEqual([
+        "exec",
+        "--json",
+        ...readOnly,
+        "-",
+      ]);
+    });
+  });
+
 });
