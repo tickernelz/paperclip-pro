@@ -362,6 +362,9 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(all.find((entry) => entry.operation === "SessionController_logout")).toMatchObject({ gate: "owner_confirmation" });
     const described = await executeOpenwaTool(db, owner, "openwa_describe", { operation: "MessageController_sendText" });
     expect(described).toMatchObject({ category: "write", gate: "reply_or_cross_chat_send", requiresIdempotencyKey: true, args: { required: ["chatId", "text"] } });
+    const webhook = (await executeOpenwaTool(db, owner, "openwa_describe", { operation: "WebhookController_create" })) as { args: { properties: Record<string, unknown> } };
+    expect(webhook.args.properties.headers).toEqual(OPENWA_OPERATIONS.find((op) => op.id === "WebhookController_create")!.args.properties!.headers);
+    expect(webhook.args.properties.secret).not.toBe(OPENWA_REDACTED);
 
     await db.update(chatEndpoints).set({ policy: { gatewayAdminTools: "off" } }).where(eq(chatEndpoints.id, t.endpointId));
     const hidden = await catalogAll(owner);

@@ -1249,6 +1249,8 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_call: (ctx, args) => openwaCallTool(ctx, args),
 };
 
+const MANIFEST_ONLY_TOOLS = new Set(["openwa_catalog", "openwa_describe"]);
+
 export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name: string, value: unknown): Promise<Record<string, unknown>> {
   const tool = openwaTool(name);
   const execute = EXECUTORS[name];
@@ -1258,7 +1260,8 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
   const ctx = await resolveContext(db, binding);
   const started = performance.now();
   try {
-    const result = redactOpenwaSecrets(await execute(ctx, args));
+    const output = await execute(ctx, args);
+    const result = MANIFEST_ONLY_TOOLS.has(name) ? output : redactOpenwaSecrets(output);
     await auditSafely(ctx, {
       kind: "tool_called",
       metadata: {
