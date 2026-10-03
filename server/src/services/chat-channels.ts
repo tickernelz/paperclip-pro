@@ -28965,7 +28965,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .returning({ endpointId: chatIdentityLinks.endpointId })
         .then((rows) => rows[0] ?? null);
-      if (confirmedLink) {
+      if (confirmedLink && endpointRecordForLink.endpoint.provider === "openwa") {
         await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
         await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
       }
@@ -29035,10 +29035,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .returning({ id: chatIdentityLinks.id })
         .then(async (rows) => {
-          if (rows[0]) {
+          if (rows[0] && link.provider === "openwa") {
             await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: endpointId });
             await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: endpointId });
-            if (link.provider === "openwa") await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
+            await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
           }
           return rows[0] ?? null;
         });
