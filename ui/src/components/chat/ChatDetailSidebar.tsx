@@ -7,6 +7,7 @@ import {
   MessageSquare,
   ScrollText,
   Settings,
+  ShieldCheck,
   Users,
 } from "lucide-react";
 import { SidebarNavItem } from "../SidebarNavItem";
@@ -67,6 +68,14 @@ export function ChatDetailSidebar({
             icon={Activity}
             end
           />
+          {endpoint.data?.provider === "openwa" && (
+            <NavItem
+              to={`/apps/chat/${endpointId}/approvals`}
+              label="Approvals"
+              icon={ShieldCheck}
+              end
+            />
+          )}
           {endpoint.data?.provider === "openwa" && (
             <NavItem
               to={`/apps/chat/${endpointId}/audit`}

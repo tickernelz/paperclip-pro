@@ -9,6 +9,7 @@ import { GitHubBotManagement, GitHubReviews } from "./GitHubBotManagement";
 import { EmailEndpointSettings } from "./EmailEndpointSetup";
 import { OpenwaSettings } from "./OpenwaSettings";
 import { OpenwaAuditTab } from "./OpenwaAuditTab";
+import { OpenwaApprovalsList } from "./OpenwaApprovalsList";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -55,7 +56,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Link, Navigate, useNavigate, useParams } from "@/lib/router";
 
-const tabs = ["settings", "access", "reviews", "conversations", "activity", "audit"] as const;
+const tabs = ["settings", "access", "reviews", "conversations", "activity", "approvals", "audit"] as const;
 type ChatTab = (typeof tabs)[number];
 const tabItems = tabs.map((value) => ({
   value,
@@ -287,7 +288,7 @@ export function ChatEndpointDetail() {
       </div>
     );
   if (endpoint.provider === "agentmail") return <EmailEndpointSettings endpointId={endpoint.id} companyId={endpoint.companyId} />;
-  if (activeTab === "audit" && endpoint.provider !== "openwa")
+  if ((activeTab === "audit" || activeTab === "approvals") && endpoint.provider !== "openwa")
     return <Navigate replace to={`/apps/chat/${endpoint.id}/settings`} />;
   const setupIncomplete =
     endpoint.setup?.step !== "complete" &&
@@ -352,6 +353,7 @@ export function ChatEndpointDetail() {
       {activeTab === "activity" && (
         <Activity endpointId={endpoint.id} endpoint={endpoint} />
       )}
+      {activeTab === "approvals" && endpoint.provider === "openwa" && <OpenwaApprovalsList endpointId={endpoint.id} />}
       {activeTab === "audit" && endpoint.provider === "openwa" && <OpenwaAuditTab endpointId={endpoint.id} />}
     </div>
   );
