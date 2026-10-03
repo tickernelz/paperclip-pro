@@ -45,7 +45,7 @@ Fixture evidence is `file:line "test name"`. Paths under `server/src/__tests__/o
 | AC14 | Audit: every §11 entry; owners see content; plain board user metadata only; purge after retention | `openwa/audit.integration.test.ts:389` "records every layer-2 kind"; `:396` "logs every layer-1 action as metadata-only activity with the right actor"; `:179` "shows content to company and endpoint owners, metadata only to plain board users, and 404 to another company"; `:306` "purges content after the endpoint retention and keeps metadata"; UI `ui/src/pages/apps/chat/OpenwaAuditTab.test.tsx:83` "explains metadata-only access and never renders returned content" | pending live window |
 | AC15 | Owner-number mode: enabled chats only, `/ai`, prefix, self-chat approval, restart echo, crash before 201, approval without enabled chat | `openwa/policy.test.ts:138` "treats the agent number's own phone-typed messages by number mode"; `openwa/publication.integration.test.ts:465` "quotes the oldest pending trigger of the run class in groups and prefixes owner_number output once"; `openwa/approvals.integration.test.ts:642` "AC15: owner_number self-chat approval and replies from a chat that is not enabled"; `openwa/ingress.integration.test.ts:266` "ignores the echo of a registered send and classifies other own-number messages as phone-typed"; `:381` "hands the lease to a second runtime without duplicate processing and still recognizes pre-restart sends"; `:288` "reconciles a send that crashed before its 201 and never classifies it as phone-typed" | pending live window |
 | AC16 | Recovery: socket kill mid-burst exactly once; restart rebuilds timers within 2 s | `openwa/ingress.integration.test.ts:222` "delivers live and caught-up messages exactly once across a socket kill"; `openwa/receiver.test.ts:89` "processes every message exactly once across a mid-stream socket kill, including stored rows without a waMessageId"; `openwa/scheduled-wakes.integration.test.ts:548` "rebuilds after a restart and fires within 2 s of fireAt, including overdue rows on the rebuild pass (AC16)"; `:575` "fires exactly once when two lease holders overlap during failover" | pending live window |
-| AC17 | Performance: §15 budgets met with recorded numbers and the S0 negative control | Harness `scripts/bench/openwa-ingest.mjs` → `openwa/ingest-bench.ts`; zero-query assertions `openwa/ingress.integration.test.ts:243` "performs zero database queries while classifying non-trigger traffic", `openwa/admission.integration.test.ts:401` "performs zero database queries for non-trigger traffic once the policy is warm"; context budget `packages/shared/src/openwa-tools.test.ts:6` "keeps every tool schema within the context budget". Numbers: see [Benchmark](#benchmark). | pending live window |
+| AC17 | Performance: §15 budgets met with recorded numbers and the S0 negative control | Harness `scripts/bench/openwa-ingest.mjs` → `openwa/ingest-bench.ts`; zero-query assertions `openwa/ingress.integration.test.ts:243` "performs zero database queries while classifying non-trigger traffic", `openwa/admission.integration.test.ts:401` "performs zero database queries for non-trigger traffic once the policy is warm"; context budget `packages/shared/src/openwa-tools.test.ts:6` "keeps every tool schema within the context budget". Numbers: see [Benchmark](#benchmark): every budget met, negative control fails as required. | fixture only (benchmark uses the fake gateway by design) |
 | AC18 | Isolation: another company cannot read audit, grants, chats or tools | `openwa/audit.integration.test.ts:179` (404 to another company), `:225` "scopes the service to the caller's company"; `server/src/__tests__/openwa-authority.test.ts:544` "never lets another company's run read or consume this endpoint's grants"; `openwa/media.integration.test.ts:419` "refuses to attach media to an issue in another company"; `openwa/tools.integration.test.ts:546` "exposes the tools over HTTP to the bound agent run only" (no fixture has a foreign company's run read this endpoint's chats) | pending live window |
 | AC19 | Fail-closed seams: `read_only` mention wakes no one; context-less runs `read_only`; persistent key cannot mutate; GitHub export denied | `server/src/__tests__/openwa-authority.test.ts:475` "suppresses mention wakes fail-closed by run profile"; `:343` "is read_only without a server-written wake record for agent, system, retry or missing wakes"; `:499` "fails closed for a run on an OpenWA issue whose context has no profile"; `:605` "fails closed for an OpenWA conversation run without OpenWA context"; `:709` "denies every non-safe method for an agent bound to a live OpenWA endpoint"; `:733` "allows keys of agents without a live OpenWA endpoint, including other companies"; `:753` "denies GitHub credential export in a read_only run and reaches the resolver in a full run" | pending live window |
 
@@ -53,21 +53,29 @@ Fixture evidence is `file:line "test name"`. Paths under `server/src/__tests__/o
 
 Run with `node scripts/bench/openwa-ingest.mjs` (fake gateway, default 20 ms per
 REST call) and once with `--negative-control`, which injects one DB query into
-the S0 path and must fail. Numbers are pending.
+the S0 path and must fail. Recorded 2026-10-03T22:42Z on commit `334d2ce5f`
+(the class-separation and queue-drain fix, merged into `cc6a8a8e9`), host load
+average below 2, `nice -n 19`, full run, no `--skip`: exit 0, `partial: false`.
 
 | Seam | Interval | Budget (spec §15) | Result | Status |
 | --- | --- | --- | --- | --- |
-| S0 non-trigger | socket event without trigger features → discard | p99 < 1 ms, 0 DB queries | pending | pending |
-| S0b candidate check | quoted id outside the 7-day index, or pending-timer cancel | p95 <= 10 ms, at most 1 query | pending | pending |
-| S1 admission | socket event → admission transaction committed | p95 <= 50 ms and <= 1.2x Telegram baseline | pending | pending |
-| S2 dispatch | admission committed → run start requested | p95 <= 200 ms | pending | pending |
-| S3 tool overhead | tool call wall time minus fake gateway latency | p95 <= 30 ms | pending | pending |
-| S4 media | 1 MiB trigger image ingested, transfer excluded | p95 <= 300 ms | pending | pending |
-| S5 LID miss | resolution | <= 2 s timeout; hit ratio reported | pending | pending |
-| Burst | 50 msg/s for 60 s, 10% triggers | no loss or duplicate; wakes <= distinct (conversation, class) per window; RSS growth < 50 MB | pending | pending |
-| Reconnect | socket killed at 30 s for 10 s during burst | every trigger admitted exactly once | pending | pending |
-| Context | tool schemas; results | <= ~3k tokens; <= 16 KB | pending | pending |
-| Negative control | one DB query injected into S0 | benchmark fails | pending | pending |
+| S0 non-trigger | socket event without trigger features → discard | p99 < 1 ms, 0 DB queries | p99 0.127 ms, 0 queries | pass |
+| S0b candidate check | quoted id outside the 7-day index | p95 <= 10 ms, at most 1 query | p95 0.997 ms, 1 query | pass |
+| S0b pending-timer cancel | owner message against an armed absence timer | p95 <= 10 ms, at most 1 query | p95 2.368 ms, 1 query | pass |
+| S1 admission | socket event → admission transaction committed | p95 <= 50 ms and <= 1.2x Telegram baseline | p95 44.841 ms; ratio 0.164 | pass |
+| S2 dispatch | admission committed → run start requested | p95 <= 200 ms | p95 27.374 ms | pass |
+| S3 tool overhead | tool call wall time minus fake gateway latency | p95 <= 30 ms | p95 11.695 ms | pass |
+| S4 media | 1 MiB trigger image ingested, transfer excluded | p95 <= 300 ms | p95 15.122 ms | pass |
+| S5 LID miss | resolution | <= 2 s timeout; hit ratio reported | max 6.369 ms; owner LID 20/20; unknown LID fail-closed 20/20 | pass |
+| Burst | 50 msg/s for 60 s, 10% triggers | no loss or duplicate; wakes <= distinct (conversation, class) per window; RSS growth < 50 MB | lost/dup 0 / 0; >1 run windows 0; starved pairs 0; RSS -106.5 MB; non-trigger with queries 0/3375 | pass |
+| Reconnect | socket killed at 30 s for 10 s during burst | every trigger admitted exactly once | not exactly once: 0 | pass |
+| Context | tool schemas; results | <= ~3k tokens; <= 16 KB | 2710 tokens; read_chat max 15416 bytes | pass |
+| Negative control | one DB query injected into S0 | benchmark fails | commit `cc6a8a8e9`, `--negative-control`: exit 1; S0 1 query (fail), S0b 2 and 3 queries (fail) | pass |
+
+Raw JSON is kept outside the repository (bench scratch directory); the table
+above is copied from it. Earlier runs on a loaded host (load average above 10)
+showed S1 p95 from 60 to 480 ms with no product cause in the traces; budgets were
+not loosened.
 
 ## Gates run
 

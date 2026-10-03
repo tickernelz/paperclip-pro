@@ -283,7 +283,7 @@ not, unless the category's approval toggle is off or a live grant covers it:
 | `gateway_admin` | Gateway admin actions | Session lifecycle, API keys, webhooks, plugins, settings, infrastructure |
 
 The REST seam denies non-allowlisted mutations of a `read_only` run with 403
-(allowlist at `server/src/services/openwa/authority.ts:612`). Comments written by a
+(allowlist `READ_ONLY_REST_ALLOW` at `server/src/services/openwa/authority.ts:708`). Comments written by a
 `read_only` run never trigger mention wakes. Persistent API keys of an agent bound
 to a live OpenWA endpoint cannot make non-safe requests at all.
 
@@ -395,8 +395,9 @@ Every call is audited as `tool_called`.
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
 | `openwa_describe` | read | Argument schema and gates of one operation. |
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
+| `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders and custom instructions; an empty call returns the current settings. |
 
-Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:33`.
+Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
 **Catalog.** The pinned manifest has 202 operations for OpenWA 0.23.7: 49
 `read`, 25 `write`, 49 `wa_admin`, 79 `gateway_admin`. The catalog adds one
@@ -424,8 +425,12 @@ from a current endpoint owner (`self_session_requires_confirmation`; other board
 members get 403); other runs get `owner_only`.
 
 **WhatsApp configuration.** `openwa_endpoint_config` lets owner-class runs change
-endpoint configuration from WhatsApp; other runs get `owner_only`. This tool is
-being added in a separate task; see the bundled skill for its arguments.
+sender lists, chat activation, per-chat triggers, absence, reply policy and note,
+approval toggles, reminders and custom instructions from WhatsApp; other runs get
+`owner_only`. Credentials, number mode, owners and the gateway admin level stay
+Paperclip-only (`ui_only_setting`). Every change bumps the policy revision and is
+audited with before and after values, attributed to the owner whose message
+started the run. Arguments are in the bundled skill.
 
 ## Gateway secrets (D38)
 

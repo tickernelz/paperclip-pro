@@ -48,9 +48,9 @@ act beyond the run's facts. Silence never approves anything.
 
 ## Chats and people
 
-- `chat` takes a `chatRef` (`openwa:<session>:<chat id>`, as shown in tool results
-  and the wake payload), a group id, or an E.164 number. Omit it to use the origin
-  chat of this conversation.
+- `chat` takes a `chatRef` (`openwa:<session>:<chat id>`, as returned by
+  `openwa_find` and `openwa_read_chat`), a group id, or an E.164 number. Omit it to
+  use the origin chat of this conversation.
 - Phone numbers in results are masked. Use the `chatRef` to address a person.
 - Before the first send to a new number, check it with `openwa_find({phone})`.
   `openwa_send` also checks and fails with `number_not_on_whatsapp`.
