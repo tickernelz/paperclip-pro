@@ -10,6 +10,7 @@ import vm from "node:vm";
 import { and, eq, gte, inArray, notInArray, sql } from "drizzle-orm";
 import {
   agents,
+  agentWakeupRequests,
   authUsers,
   chatDeliveries,
   chatEndpoints,
@@ -1228,6 +1229,43 @@ async function contextBudget(): Promise<{ result: unknown; budgets: BudgetRow[] 
   };
 }
 
+async function agentQueueBacklog(db: Db, agentId: string): Promise<{ wakes: number; runs: number }> {
+  const [wakes] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(agentWakeupRequests)
+    .where(and(eq(agentWakeupRequests.agentId, agentId), inArray(agentWakeupRequests.status, ["queued", "deferred_issue_execution"])));
+  const [runs] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(heartbeatRuns)
+    .where(and(eq(heartbeatRuns.agentId, agentId), inArray(heartbeatRuns.status, ["queued", "running", "scheduled_retry"])));
+  return { wakes: wakes?.count ?? 0, runs: runs?.count ?? 0 };
+}
+
+async function cancelLeftoverWakes(db: Db, agentId: string): Promise<number> {
+  const cancelled = await db
+    .update(agentWakeupRequests)
+    .set({ status: "cancelled", finishedAt: new Date(), error: "openwa bench: leftover from an earlier seam, cancelled before the burst" })
+    .where(and(eq(agentWakeupRequests.agentId, agentId), eq(agentWakeupRequests.status, "deferred_issue_execution")))
+    .returning({ id: agentWakeupRequests.id });
+  return cancelled.length;
+}
+
+async function drainAgentQueue(db: Db, agentId: string, timeoutMs: number): Promise<{ ms: number; error: string | null }> {
+  const started = clock();
+  let idleSince: number | null = null;
+  for (;;) {
+    const backlog = await agentQueueBacklog(db, agentId);
+    const now = clock();
+    if (backlog.wakes === 0 && backlog.runs === 0) {
+      idleSince ??= now;
+      if (now - idleSince >= 1_000) return { ms: Math.round(idleSince - started), error: null };
+    } else idleSince = null;
+    if (now - started > timeoutMs)
+      return { ms: Math.round(now - started), error: "queue not drained after " + timeoutMs + " ms: " + backlog.wakes + " pending wakes, " + backlog.runs + " live runs" };
+    await sleep(250);
+  }
+}
+
 async function runBurst(
   db: Db,
   gateway: FakeOpenwaGateway,
@@ -1237,6 +1275,9 @@ async function runBurst(
   nextToken: () => number,
   gc: () => void,
 ): Promise<{ result: unknown; budgets: BudgetRow[] }> {
+  const preBurstBacklog = await agentQueueBacklog(db, fixture.agentId);
+  const preBurstCancelled = await cancelLeftoverWakes(db, fixture.agentId);
+  const preBurstDrain = await drainAgentQueue(db, fixture.agentId, 60_000);
   gc();
   await sleep(200);
   gc();
@@ -1359,7 +1400,7 @@ async function runBurst(
     .map((entry) => instrumentation.scopes.get(entry.id))
     .filter((scope): scope is EventScope => Boolean(scope));
   const nonTriggerQueryEvents = nonTriggerScopes.filter((scope) => scope.queries > 0);
-  await sleep(options.runMs + 1000);
+  const postBurstDrain = await drainAgentQueue(db, fixture.agentId, 180_000);
   const runs = await db
     .select({
       contextSnapshot: heartbeatRuns.contextSnapshot,
@@ -1443,9 +1484,11 @@ async function runBurst(
     },
     admission: { triggersNotExactlyOnce: triggersNotOnce.length, sample: triggersNotOnce.slice(0, 5) },
     wakes: {
-      rule: "per burst window (= run duration): at most one run started per (conversation issue, trigger class); every pair with admitted triggers gets a run of its class",
+      rule: "per burst window (= run duration): at most one run started per (conversation issue, trigger class); every pair with admitted triggers gets a run of its class once the agent queue has drained; earlier seams' leftover wakes are cancelled before the burst",
       heartbeatWakeupCalls: burstWakes,
       openwaRuns,
+      queueBeforeBurst: { ...preBurstBacklog, cancelledLeftoverWakes: preBurstCancelled, drainMs: preBurstDrain.ms, error: preBurstDrain.error },
+      queueAfterBurst: { drainMs: postBurstDrain.ms, error: postBurstDrain.error },
       windowMs,
       pairs,
       violations: violations.slice(0, 10),
@@ -1484,8 +1527,13 @@ async function runBurst(
       metric: "(conversation, class) pairs with triggers but no run of that class",
       value: starved.length,
       budget: "0",
-      status: starved.length === 0 ? "pass" : "fail",
-      ...(starved.length ? { evidence: "spec 7.2: classes never share a wake" } : {}),
+      status: starved.length === 0 && !preBurstDrain.error && !postBurstDrain.error ? "pass" : "fail",
+      evidence: [
+        "before burst: " + preBurstCancelled + " leftover wakes cancelled, " + preBurstBacklog.runs + " runs drained in " + preBurstDrain.ms + " ms; after burst: queue drained in " + postBurstDrain.ms + " ms",
+        preBurstDrain.error,
+        postBurstDrain.error,
+        starved.length ? "spec 7.2: classes never share a wake" : null,
+      ].filter(Boolean).join("; "),
     },
     {
       seam: "Burst",
