@@ -97,7 +97,12 @@ import {
 import { resolveClaudeDesiredSkillNames } from "./skills.js";
 import { isBedrockModelId } from "./models.js";
 import { prepareClaudePromptBundle } from "./prompt-cache.js";
-import { buildClaudeExecutionPermissionArgs, claudeSandboxPermissionEnv } from "./permissions.js";
+import {
+  buildClaudeExecutionPermissionArgs,
+  buildClaudeToolProfileArgs,
+  claudeSandboxPermissionEnv,
+} from "./permissions.js";
+import { runToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import { resolveClaudeModel, SANDBOX_INSTALL_COMMAND } from "../index.js";
 import {
   createClaudeAcpExecutor,
@@ -432,6 +437,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   const chrome = asBoolean(config.chrome, false);
   const maxTurns = asNumber(config.maxTurnsPerRun, 0);
   const dangerouslySkipPermissions = asBoolean(config.dangerouslySkipPermissions, true);
+  const toolProfile = runToolProfile(context);
   const configEnv = parseObject(config.env);
   const workspaceContext = parseObject(context.paperclipWorkspace);
   const workspaceCwd = asString(workspaceContext.cwd, "");
@@ -900,6 +906,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       targetIsRemote: executionTargetIsRemote,
       localProcessUid: process.getuid?.() ?? null,
     }));
+    args.push(...buildClaudeToolProfileArgs(toolProfile));
     if (chrome) args.push("--chrome");
     // For Bedrock: only pass --model when the ID is a Bedrock-native identifier
     // (e.g. "us.anthropic.*" or ARN). Anthropic-style IDs like "claude-opus-4-6" are invalid

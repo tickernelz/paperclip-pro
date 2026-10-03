@@ -52,6 +52,7 @@ import {
   DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
   runChildProcess,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { runToolProfile, type RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import { paperclipRestGuidance } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
 import { isPiUnknownSessionError, parsePiJsonl } from "./parse.js";
@@ -228,8 +229,27 @@ async function readSavedSessionCwd(input: {
   }
 }
 
+const PI_FULL_TOOLS = "read,bash,edit,write,grep,find,ls";
+const PI_READ_ONLY_TOOLS = "read,bash,grep,find,ls";
+const PI_TOOL_SELECTION_FLAGS: ReadonlySet<string> = new Set(["--tools", "-t"]);
+
+export function piToolArgs(profile: RunToolProfile, extraArgs: readonly string[]): { tools: string; extraArgs: string[] } {
+  if (profile !== "read_only") return { tools: PI_FULL_TOOLS, extraArgs: [...extraArgs] };
+  const kept: string[] = [];
+  for (let index = 0; index < extraArgs.length; index += 1) {
+    const arg = extraArgs[index]!;
+    if (PI_TOOL_SELECTION_FLAGS.has(arg)) {
+      index += 1;
+      continue;
+    }
+    kept.push(arg);
+  }
+  return { tools: PI_READ_ONLY_TOOLS, extraArgs: kept };
+}
+
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
   const { runId, agent, runtime, config, context, onLog, onMeta, onSpawn, authToken } = ctx;
+  const toolProfile = runToolProfile(context);
   const executionTarget = readAdapterExecutionTarget({
     executionTarget: ctx.executionTarget,
     legacyRemoteExecution: ctx.executionTransport?.remoteExecution,
@@ -413,6 +433,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       if (fromExtraArgs.length > 0) return fromExtraArgs;
       return asStringArray(config.args);
     })();
+    const profiledTools = piToolArgs(toolProfile, extraArgs);
     let restoreRemoteWorkspace: (() => Promise<void>) | null = null;
     let remoteRuntimeRootDir: string | null = null;
     let localSkillsDir: string | null = null;
@@ -686,11 +707,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       if (modelId) args.push("--model", modelId);
       if (thinking) args.push("--thinking", thinking);
 
-      args.push("--tools", "read,bash,edit,write,grep,find,ls");
+      args.push("--tools", profiledTools.tools);
       args.push("--session", sessionFile);
       args.push("--skill", remoteSkillsDir ?? PI_AGENT_SKILLS_DIR);
 
-      if (extraArgs.length > 0) args.push(...extraArgs);
+      if (profiledTools.extraArgs.length > 0) args.push(...profiledTools.extraArgs);
 
       // Add the user prompt as the last argument
       args.push(userPrompt);

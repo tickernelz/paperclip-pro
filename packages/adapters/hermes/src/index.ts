@@ -163,6 +163,7 @@ export function createServerAdapter(): ServerAdapterModule {
     syncSkills,
     models,
     supportsLocalAgentJwt: true,
+    readOnlyToolProfile: "instruction_only",
     supportsInstructionsBundle: true,
     instructionsPathKey: "instructionsFilePath",
     requiresMaterializedRuntimeSkills: false,

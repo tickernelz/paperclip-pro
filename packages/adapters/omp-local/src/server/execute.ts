@@ -66,6 +66,7 @@ import { classifyOmpFailure } from "./failure.js";
 import { createOmpProgressReporter } from "./progress.js";
 import { createOmpRpcSteerSession, runOmpRpcSession } from "./rpc-session.js";
 import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { runToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 import { writeOmpToolGuardExtension, type OmpToolGuardExtension } from "./tool-guard.js";
@@ -853,6 +854,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       cwd: remote ? effectiveExecutionCwd : cwd,
       timeoutSec,
       graceSec,
+      profile: runToolProfile(context),
     });
     pythonEnvBridge = await writeOmpPythonEnvBridge({
       runId,

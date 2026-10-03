@@ -136,6 +136,8 @@ export type {
   RunnerIngressEndpoint,
   PaperclipRunnerTransport,
 } from "./runner-connectivity.js";
+export { RUN_TOOL_PROFILE_CONTEXT_KEY, runToolProfile } from "./tool-profile.js";
+export type { ReadOnlyToolProfileSupport, RunToolProfile } from "./tool-profile.js";
 export type {
   AcpxPermissionMode,
   CodexPermissionMode,
