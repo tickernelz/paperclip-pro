@@ -53,6 +53,7 @@ import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
+import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -28293,6 +28294,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           processPendingSlackTaskStarts(limit),
           processFailedChatRunRetries(limit),
           processPendingOpenwaApprovalWakes(db, limit),
+          processPendingOpenwaSessionHealthWakes(db, limit),
         ]);
     const reactionRecovery = processPendingReactionDeliveries(
       limit,

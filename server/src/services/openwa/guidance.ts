@@ -116,6 +116,28 @@ export interface OpenwaWakeEvent {
   pendingApprovals: Array<{ requestId: string; summary: string; status: string; categories: OpenwaGrantCategory[] }>;
   lateTranscripts?: OpenwaWakeLateTranscript[];
   lastOutputSuppressed?: true;
+  sessionHealth?: OpenwaWakeSessionHealth;
+}
+
+export interface OpenwaWakeSessionHealth {
+  kind: "status" | "restriction";
+  healthy: boolean;
+  status: string | null;
+  restriction: { active: boolean; kind: string | null; expiresAt: string | null } | null;
+}
+
+function wakeSessionHealth(value: unknown): OpenwaWakeSessionHealth | null {
+  const raw = record(value);
+  if ((raw.kind !== "status" && raw.kind !== "restriction") || typeof raw.healthy !== "boolean") return null;
+  const restriction = raw.restriction === null || raw.restriction === undefined ? null : record(raw.restriction);
+  return {
+    kind: raw.kind,
+    healthy: raw.healthy,
+    status: clip(str(raw.status), 64),
+    restriction: restriction
+      ? { active: restriction.active === true, kind: clip(str(restriction.kind), 64), expiresAt: clip(str(restriction.expiresAt), 64) }
+      : null,
+  };
 }
 
 export interface OpenwaGuidanceBuild {
@@ -461,6 +483,7 @@ export async function buildOpenwaRunGuidance(
   const event = wakeEventName(openwa.event ?? str(wakeOpenwa.event) ?? str(contextOpenwa.event));
   const approvalRequestId =
     openwa.approvalRequestId ?? str(wakeOpenwa.approvalRequestId) ?? str(contextOpenwa.approvalRequestId);
+  const sessionHealth = event === "session_health" ? wakeSessionHealth(wakeOpenwa.sessionHealth ?? contextOpenwa.sessionHealth) : null;
   const [resource, deliveryRows, lastOutputSuppressed, lateTranscripts] = await Promise.all([
     db
       .select({ settings: chatEndpointResources.settings, label: chatEndpointResources.label, metadata: chatEndpointResources.metadata })
@@ -609,6 +632,7 @@ export async function buildOpenwaRunGuidance(
         }
       : {}),
     ...(lastOutputSuppressed ? { lastOutputSuppressed: true as const } : {}),
+    ...(sessionHealth ? { sessionHealth } : {}),
   };
   const facts: OpenwaGuidanceFacts = {
     numberMode: policy.numberMode,
