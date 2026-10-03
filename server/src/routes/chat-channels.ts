@@ -14,6 +14,10 @@ import {
   configureChatEndpointSchema,
   inspectPhotonProjectSchema,
   inspectOpenwaGatewaySchema,
+  addOpenwaOwnerSchema,
+  createOpenwaSenderRuleSchema,
+  updateOpenwaChatSettingsSchema,
+  updateOpenwaEndpointPolicySchema,
   confirmChatIdentityLinkSchema,
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
@@ -309,6 +313,69 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
       );
     },
   );
+
+  router.get("/chat-endpoints/:endpointId/openwa/owners", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.listOwners(endpointId(req)));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/owners", validate(addOpenwaOwnerSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    const result = await service.openwa.addOwner(endpointId(req), req.body, actorUserId(req));
+    res.status(result.created ? 201 : 200).json(result);
+  });
+
+  router.delete("/chat-endpoints/:endpointId/openwa/owners/:ownerId", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.ownerId as string)) throw badRequest("A valid owner id is required");
+    await service.openwa.removeOwner(endpointId(req), req.params.ownerId as string, actorUserId(req));
+    res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/sender-rules", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.listSenderRules(endpointId(req)));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/sender-rules", validate(createOpenwaSenderRuleSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.status(201).json(await service.openwa.addSenderRule(endpointId(req), req.body, actorUserId(req)));
+  });
+
+  router.delete("/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.ruleId as string)) throw badRequest("A valid sender rule id is required");
+    await service.openwa.removeSenderRule(endpointId(req), req.params.ruleId as string, actorUserId(req));
+    res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/chats", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.json(await service.openwa.listChats(endpointId(req)));
+  });
+
+  router.put("/chat-endpoints/:endpointId/openwa/chats", validate(updateOpenwaChatSettingsSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.json(await service.openwa.putChat(endpointId(req), req.body, actorUserId(req)));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/gateway-chats", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    const limit = req.query.limit === undefined ? 100 : Number(req.query.limit);
+    const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500 || !Number.isInteger(offset) || offset < 0 || offset > 100_000)
+      throw badRequest("limit must be 1-500 and offset 0-100000");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.gatewayChats(endpointId(req), { limit, offset }));
+  });
+
+  router.patch("/chat-endpoints/:endpointId/openwa/policy", validate(updateOpenwaEndpointPolicySchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.json(await service.openwa.updatePolicy(endpointId(req), req.body, actorUserId(req)));
+  });
 
   router.get("/chat-endpoints/:endpointId/principals", async (req, res) => {
     if (!(await assertEndpointAccess(req, res, service))) return;

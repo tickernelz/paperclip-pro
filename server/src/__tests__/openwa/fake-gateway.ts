@@ -43,6 +43,8 @@ export class FakeOpenwaGateway {
   readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
   readonly media = new Map<string, FakeMedia>();
+  readonly groups = new Map<string, { id: string; name: string; participants: Array<{ id: string; isAdmin?: boolean }> }>();
+  readonly chats: Array<{ id: string; name?: string; timestamp?: number }> = [];
   private readonly sendFailures: FakeSendFailure[] = [];
   private http: HttpServer | null = null;
   private io: SocketServer | null = null;
@@ -249,6 +251,11 @@ export class FakeOpenwaGateway {
     const mediaPath = /^\/messages\/([^/]+)\/([^/]+)\/media$/.exec(url.pathname.slice(prefix.length));
     if (req.method === "GET" && url.pathname.startsWith(prefix + "/") && mediaPath)
       return this.serveMedia(decodeURIComponent(mediaPath[1]!), decodeURIComponent(mediaPath[2]!), reply, res);
+    if (req.method === "GET" && url.pathname.startsWith(prefix + "/groups/")) {
+      const group = this.groups.get(decodeURIComponent(url.pathname.slice((prefix + "/groups/").length)));
+      return group ? reply(200, group) : reply(404, { message: "Group not found" });
+    }
+    if (req.method === "GET" && url.pathname === prefix + "/chats") return reply(200, this.chats);
     reply(404, { message: "Not found" });
   }
 
