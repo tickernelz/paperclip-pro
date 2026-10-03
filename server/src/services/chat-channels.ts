@@ -25,6 +25,8 @@ import { writePhotonCheckpoint } from "./photon/receiver.js";
 import { PhotonState } from "./photon/state.js";
 import { createOpenwaIngressCallbacks, type OpenwaIngressHooks } from "./openwa/ingress.js";
 import { openwaOutboundRegistry } from "./openwa/outbound.js";
+import { OpenwaChatAdapter } from "./openwa/adapter.js";
+import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication } from "./openwa/publication.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -5293,6 +5295,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             // before provider I/O begins. The renewable credential lease keeps
             // runtime identity stable without holding database row locks.
             let sent: { id: string; threadId: string } | null = null;
+            if (claim.endpoint.provider === "openwa") {
+              throw Object.assign(
+                new Error("OpenWA never sends server-composed text"),
+                { code: "CHAT_PROVIDER_PRETRANSPORT_REJECTED" },
+              );
+            }
             if (payload.effect === "telegram_callback_notice") {
               sent = await (
                 await runtimeFor(claim.endpoint)
@@ -8420,7 +8428,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       },
       redact: (error) => redactError(error),
     });
-    return callbacks;
+    return {
+      ...callbacks,
+      onOpenwaTypingAllowed: (threadId: string, refresh: boolean) =>
+        openwaTypingAllowed(db, { companyId: endpoint.companyId, endpointId: endpoint.id, agentId: endpoint.assignedAgentId, threadId, requireActiveRun: refresh }),
+    };
   }
 
   async function handlePhotonFailure(
@@ -13698,6 +13710,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         and(
           eq(chatActions.kind, "failed_run_retry"),
           isNull(agentWakeupRequests.runId),
+          sql`not exists (select 1 from chat_endpoints openwa_endpoint where openwa_endpoint.id = ${chatActions.endpointId} and openwa_endpoint.provider = 'openwa')`,
           cursor
             ? sql`(${chatActions.createdAt}, ${chatActions.id}) > (${cursor.createdAt.toISOString()}::timestamptz, ${cursor.id}::uuid)`
             : undefined,
@@ -14092,6 +14105,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           eq(chatActions.kind, "inbound_wakeup"),
           inArray(chatActions.status, ["processed", "failed"]),
           eq(owner.companyId, chatActions.companyId),
+          sql`not exists (select 1 from chat_endpoints openwa_endpoint where openwa_endpoint.id = ${chatActions.endpointId} and openwa_endpoint.provider = 'openwa')`,
           or(
             and(
               isNull(owner.runId),
@@ -33237,6 +33251,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     payload: SafeChatPublicationPayload;
     replaceProviderMessageId?: string | null;
     telegramDraftControl?: TelegramDraftControl;
+    openwaPublication?: { runId: string; quotedMessageId: string | null } | null;
     beforePhotonWrite?(): Promise<void>;
     onSlackFileUploadAccepted?: (
       receipt: SlackFileUploadAcceptedReceipt,
@@ -33320,6 +33335,27 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           text = `${text}\n\n${attachmentFallback}`;
         }
       }
+    }
+    if (input.endpoint.provider === "openwa") {
+      const adapter = endpointRuntime.getProviderAdapter();
+      if (!(adapter instanceof OpenwaChatAdapter) || !input.openwaPublication)
+        throw Object.assign(new Error("OpenWA publication runtime unavailable"), { code: "CHAT_PROVIDER_PRETRANSPORT_REJECTED" });
+      const sent = await sendOpenwaPublication({
+        db,
+        registry: openwaOutbound,
+        gateway: adapter.gateway,
+        state: adapter.state,
+        endpoint: input.endpoint,
+        conversation: input.conversation,
+        publication: input.publication,
+        runId: input.openwaPublication.runId,
+        text,
+        files,
+        quotedMessageId: input.openwaPublication.quotedMessageId,
+        assertCurrent: () => input.beforePhotonWrite?.() ?? Promise.resolve(),
+      });
+      await adapter.endTyping(thread.id).catch(() => undefined);
+      return sent;
     }
     if (input.endpoint.provider === "imessage-photon") {
       const adapter = endpointRuntime.getProviderAdapter();
@@ -37574,6 +37610,44 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               // point. Provider I/O runs without a database transaction or
               // row lock. The renewable lease preserves credential/runtime
               // identity until conditional settlement.
+              let openwaPublication: { runId: string; quotedMessageId: string | null } | null = null;
+              if (authorizationClaim.endpoint.provider === "openwa") {
+                const decision = await decideOpenwaRunPublication(db, {
+                  endpoint: authorizationClaim.endpoint,
+                  conversation: authorizationClaim.conversation,
+                  publication,
+                });
+                if (decision.kind !== "publish") {
+                  await db.transaction(async (tx) => {
+                    await credentialLease.assertOwned(tx);
+                    await tx
+                      .update(chatPublications)
+                      .set({
+                        state: "cancelled",
+                        nextAttemptAt: null,
+                        redactedError:
+                          decision.kind === "blocked"
+                            ? "OpenWA publishes only the agent's own run output"
+                            : decision.kind === "empty"
+                              ? "The run output was empty"
+                              : `OpenWA publication suppressed: ${decision.reason}`,
+                        updatedAt: new Date(),
+                      })
+                      .where(
+                        and(
+                          eq(chatPublications.id, publication.id),
+                          eq(chatPublications.state, "streaming"),
+                          eq(chatPublications.attempts, publication.attempts + 1),
+                        ),
+                      );
+                  });
+                  const typing = runtime.get(authorizationClaim.endpoint.id)?.getProviderAdapter();
+                  if (typing instanceof OpenwaChatAdapter)
+                    await typing.endTyping(authorizationClaim.conversation.externalThreadId).catch(() => undefined);
+                  return;
+                }
+                openwaPublication = { runId: decision.runId, quotedMessageId: decision.quotedMessageId };
+              }
               if (authorizationClaim.preparedText !== null)
                 payload = { ...payload, text: authorizationClaim.preparedText };
               const telegramDraft =
@@ -37606,6 +37680,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 payload,
                 replaceProviderMessageId,
                 telegramDraftControl: telegramDraft?.control,
+                openwaPublication,
                 beforePhotonWrite: () => db.transaction(async (tx) => {
                   await credentialLease.assertOwned(tx);
                   if (!(await authorizeRetainedChatSourcePublication(tx, publication))) throw new PhotonError("rejected", "Publication source authorization changed");

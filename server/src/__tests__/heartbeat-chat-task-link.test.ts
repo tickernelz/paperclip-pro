@@ -52,3 +52,18 @@ describe("external chat task link context", () => {
     },
   );
 });
+
+describe("OpenWA external chat contract", () => {
+  it("keeps OpenWA out of the generic external-chat file-delivery instructions", () => {
+    for (const includeDescription of [true, false]) {
+      for (const nativeRunner of [true, false]) {
+        const openwa = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "openwa", nativeRunner, includeDescription }) ?? "";
+        expect(openwa).not.toContain("External chat file delivery");
+        expect(openwa).not.toContain("paperclip-upload-artifact.sh");
+        expect(openwa).not.toContain("register_deliverable");
+        const slack = buildPaperclipTaskMarkdown({ issue, externalChatProvider: "slack", nativeRunner, includeDescription }) ?? "";
+        expect(slack).toContain("External chat file delivery");
+      }
+    }
+  });
+});
