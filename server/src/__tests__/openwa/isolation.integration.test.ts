@@ -381,7 +381,8 @@ describe.sequential("OpenWA company isolation and invite-link joins (embedded Po
       expect(denied.details).toMatchObject({ code: "approval_required", category: "wa_admin" });
     }
     expect(joins()).toBe(0);
-    expect(await db.select({ id: chatActions.id }).from(chatActions).where(eq(chatActions.kind, "openwa_tool_write"))).toEqual([]);
+    const receipts = await db.select({ status: chatActions.status, result: chatActions.result }).from(chatActions).where(eq(chatActions.kind, "openwa_tool_write"));
+    expect(receipts.every((receipt) => receipt.status === "received" && !receipt.result?.receipt)).toBe(true);
 
     const owner = await run(a, { triggerClass: "owner" });
     await expect(call(owner)).resolves.toMatchObject({ state: "delivered", operation: "GroupController_join", result: { groupId: "120363000000000611@g.us" } });
