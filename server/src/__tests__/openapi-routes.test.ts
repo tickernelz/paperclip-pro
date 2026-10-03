@@ -30,6 +30,7 @@ const apiPrefixes: Record<string, string> = {
   "built-in-agents.ts": "/api",
   "chat-channels.ts": "/api",
   "slack-tools.ts": "/api",
+  "openwa-tools.ts": "/api",
   "email.ts": "/api",
   "cloud.ts": "/api/cloud",
   "companies.ts": "/api/companies",

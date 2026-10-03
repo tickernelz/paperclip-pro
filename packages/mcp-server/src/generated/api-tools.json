@@ -1375,7 +1375,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18025",
+    "boardGuard": "assertBoard@issues.ts:18037",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12787,7 +12787,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17010",
+    "boardGuard": "assertBoard@issues.ts:17022",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22034,7 +22034,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16183",
+    "boardGuard": "assertBoard@issues.ts:16195",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33742,7 +33742,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8901",
+    "boardGuard": "assertBoard@issues.ts:8911",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33803,7 +33803,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16153",
+    "boardGuard": "assertBoard@issues.ts:16165",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35465,7 +35465,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17967",
+    "boardGuard": "assertBoard@issues.ts:17979",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35897,7 +35897,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16962",
+    "boardGuard": "assertBoard@issues.ts:16974",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39474,6 +39474,29 @@
           },
           "keyboardShortcuts": {
             "type": "boolean"
+          },
+          "speechToText": {
+            "type": "object",
+            "properties": {
+              "apiKeyEnvVar": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "maxAudioSeconds": {
+                "type": "integer"
+              },
+              "model": {
+                "type": "string"
+              },
+              "sttWaitSeconds": {
+                "type": "integer"
+              }
+            }
           }
         }
       }
@@ -39568,7 +39591,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16121",
+    "boardGuard": "assertBoard@issues.ts:16133",
     "authorityCapability": null,
     "parameters": [
       {

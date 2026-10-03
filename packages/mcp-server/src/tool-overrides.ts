@@ -1,4 +1,4 @@
-export type ToolsetName = "core" | "extended";
+export type ToolsetName = "core" | "extended" | "openwa";
 
 export interface ToolAnnotationOverride {
   readOnlyHint?: boolean;

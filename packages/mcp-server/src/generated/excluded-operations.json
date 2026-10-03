@@ -141,6 +141,7 @@
   "POST /api/companies/{companyId}/me/user-secrets": "credential_surface",
   "POST /api/companies/{companyId}/me/user-secrets/{secretId}/rotate": "credential_surface",
   "POST /api/companies/{companyId}/onboarding-seed": "reviewed:instance_setup",
+  "POST /api/companies/{companyId}/openwa/tasks/{issueId}/tools": "actor:agent",
   "POST /api/companies/{companyId}/secret-proposals/{id}/approve": "credential_surface",
   "POST /api/companies/{companyId}/secret-proposals/{id}/reject": "credential_surface",
   "POST /api/companies/{companyId}/secret-provider-configs": "credential_surface",

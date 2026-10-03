@@ -20,7 +20,9 @@ export const TOOLSET_NAMES: ToolsetName[] = ["core", "extended"];
 
 export const FULL_TOOLSET = "full";
 
-const TOOLSET_SELECTIONS = new Set<string>([...TOOLSET_NAMES, FULL_TOOLSET]);
+export const OPENWA_TOOLSET = "openwa";
+
+const TOOLSET_SELECTIONS = new Set<string>([...TOOLSET_NAMES, OPENWA_TOOLSET, FULL_TOOLSET]);
 
 const DEPRECATED_TOOLSET_SELECTIONS: Record<string, string> = {
   all: FULL_TOOLSET,
@@ -38,7 +40,8 @@ function warnDeprecatedToolset(name: string, canonical: string) {
 }
 
 export function expandToolsetUnion(selected: ReadonlyArray<ToolsetName>): ToolsetName[] {
-  return selected.includes("extended") ? [...TOOLSET_NAMES] : ["core"];
+  const base: ToolsetName[] = selected.includes("extended") ? [...TOOLSET_NAMES] : ["core"];
+  return selected.includes(OPENWA_TOOLSET) ? [...base, OPENWA_TOOLSET] : base;
 }
 
 export function parseToolsets(requested: string | null | undefined): ToolsetName[] {
@@ -53,10 +56,12 @@ export function parseToolsets(requested: string | null | undefined): ToolsetName
     warnDeprecatedToolset(name, canonical);
     full = true;
   }
-  if (full) return [...TOOLSET_NAMES];
-  return expandToolsetUnion(
-    TOOLSET_NAMES.filter((name) => requestedNames.includes(name)),
-  );
+  const openwa: ToolsetName[] = requestedNames.includes(OPENWA_TOOLSET) ? [OPENWA_TOOLSET] : [];
+  if (full) return [...TOOLSET_NAMES, ...openwa];
+  return expandToolsetUnion([
+    ...TOOLSET_NAMES.filter((name) => requestedNames.includes(name)),
+    ...openwa,
+  ]);
 }
 
 export function resolveToolsets(
