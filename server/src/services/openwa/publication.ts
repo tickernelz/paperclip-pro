@@ -1,7 +1,6 @@
 import { and, asc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
 import {
   chatActions,
-  chatAuditEntries,
   chatConversations,
   chatDeliveries,
   chatEndpointResources,
@@ -15,7 +14,6 @@ import {
 import {
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
-  type OpenwaEndpointPolicy,
   type OpenwaGrantCategory,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
@@ -25,6 +23,7 @@ import { formatOpenwaPublication } from "./format.js";
 import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";
 import { openwaChatKey, sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
 import type { OpenwaState } from "./state.js";
+import { recordOpenwaAudit } from "./audit.js";
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 type EndpointRow = typeof chatEndpoints.$inferSelect;
@@ -33,7 +32,6 @@ type PublicationRow = typeof chatPublications.$inferSelect;
 
 export const OPENWA_PUBLICATION_ACTION_KIND = "openwa_publication";
 export const OPENWA_LAST_OUTPUT_ACTION_KIND = "openwa_last_output";
-const DAY_MS = 24 * 60 * 60_000;
 const PUBLICATION_KEY = /^(comment|attachment):[0-9a-f-]{36}:[0-9a-f-]{36}$/i;
 
 export type OpenwaSuppressionReason =
@@ -106,10 +104,6 @@ function runPublishedActionId(runId: string, conversationId: string): string {
 
 function lastOutputActionId(conversationId: string): string {
   return "openwa-last-output:" + conversationId;
-}
-
-function purgeAt(policy: OpenwaEndpointPolicy, now: Date): Date {
-  return new Date(now.getTime() + policy.auditContentRetentionDays * DAY_MS);
 }
 
 export function openwaChatTarget(conversation: Pick<ConversationRow, "externalThreadId">): { chatId: string; chatKey: string; isGroup: boolean } {
@@ -332,7 +326,7 @@ export async function decideOpenwaRunPublication(
       value: { runId: run.runId, suppressed: Boolean(reason), reason, decidedAt: now.toISOString() },
     });
     if (reason) {
-      await tx.insert(chatAuditEntries).values({
+      await recordOpenwaAudit(tx, {
         companyId: endpoint.companyId,
         endpointId: endpoint.id,
         conversationId: conversation.id,
@@ -342,7 +336,7 @@ export async function decideOpenwaRunPublication(
         runId: run.runId,
         metadata: { reason, publicationId: publication.id, triggerIds, runClass },
         content: { text: publication.payload.text },
-        contentPurgeAt: purgeAt(policy, now),
+        retentionDays: policy.auditContentRetentionDays,
         occurredAt: now,
       });
       return { kind: "suppressed", runId: run.runId, reason };
@@ -534,7 +528,7 @@ export async function sendOpenwaPublication(input: {
     messageIds.push(result.messageId);
   }
   const now = new Date();
-  await input.db.insert(chatAuditEntries).values({
+  await recordOpenwaAudit(input.db, {
     companyId: input.endpoint.companyId,
     endpointId: input.endpoint.id,
     conversationId: input.conversation.id,
@@ -550,7 +544,7 @@ export async function sendOpenwaPublication(input: {
       attachments: input.files.map((file) => file.filename),
     },
     content: sentText === null ? null : { text: sentText },
-    contentPurgeAt: sentText === null ? null : purgeAt(policy, now),
+    retentionDays: policy.auditContentRetentionDays,
     occurredAt: now,
   });
   return { id: messageIds[0]!, messageIds };
