@@ -401,6 +401,7 @@ export async function markTriggersAnswered(
     quotedMessageId: string | null;
     runClass: OpenwaTriggerClass;
     visibleBefore?: Date;
+    conversationId?: string;
   },
 ): Promise<string[]> {
   const chatKey = openwaChatKey(input.chatKey);
@@ -408,6 +409,7 @@ export async function markTriggersAnswered(
     eq(chatDeliveries.companyId, input.companyId),
     eq(chatDeliveries.endpointId, input.endpointId),
     eq(chatDeliveries.answerState, "pending"),
+    input.conversationId ? eq(chatDeliveries.conversationId, input.conversationId) : undefined,
     sql`${chatDeliveries.normalizedEvent}->'openwa'->>'chatKey' = ${chatKey}`,
   );
   const rows = await db

@@ -28,6 +28,8 @@ import { openwaOutboundRegistry } from "./openwa/outbound.js";
 import { OpenwaChatAdapter } from "./openwa/adapter.js";
 import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication } from "./openwa/publication.js";
 import { openwaMediaService } from "./openwa/media.js";
+import { openwaLateTranscriptListener, type OpenwaLateTranscriptHook } from "./openwa/late-transcripts.js";
+import type { OpenwaInboundEvent } from "./openwa/receiver.js";
 import { listOpenwaAudit } from "./openwa/audit.js";
 import { createOpenwaAdmission, parseOpenwaDecoration, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
 import { createOpenwaPolicyCache } from "./openwa/policy.js";
@@ -1515,6 +1517,7 @@ export interface ChatChannelServiceOptions {
   }) => Promise<void>;
   /** Test override for the conversation-delivery lease renewal cadence. */
   conversationLeaseRenewalIntervalMs?: number;
+  onOpenwaLateTranscript?: OpenwaLateTranscriptHook;
   /** Narrow fault-injection boundary for renewing a conversation lease. */
   renewConversationDeliveryLease?: (input: {
     endpointId: string;
@@ -3057,6 +3060,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   const persistence = createChatSdkStatePersistence(db);
   const openwaOutbound = openwaOutboundRegistry(db);
   const openwaMedia = openwaMediaService(db, { storage: options.storage });
+  openwaMedia.onTranscriptReady(openwaLateTranscriptListener(db, options.onOpenwaLateTranscript));
   const openwaPolicies = createOpenwaPolicyCache(db);
   const openwaAdmission = createOpenwaAdmission({
     db,
@@ -8433,6 +8437,36 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     inspection.eligible = inspection.allocation === "shared" ? inspection.eligible && !reserved.some((row) => row.number === photonSharedIdentity(inspection.projectId)) : inspection.lines.some((line) => line.eligible);
     return inspection;
+  }
+
+  async function ingestOpenwaTriggerMedia(input: {
+    endpoint: EndpointRow;
+    endpointRuntime: ChatSdkEndpointRuntime;
+    message: Message;
+    decoration: OpenwaAdmissionDecoration | null;
+    issueId: string;
+    commentId: string;
+    deliveryId: string;
+  }): Promise<void> {
+    if (input.endpoint.provider !== "openwa" || input.decoration?.event !== "message" || !input.decoration.waMessageId) return;
+    const event = input.message.raw as OpenwaInboundEvent;
+    const adapter = input.endpointRuntime.getProviderAdapter();
+    if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA adapter unavailable for media ingest");
+    try {
+      await openwaMedia.ingestOpenwaTriggerMedia({
+        endpoint: input.endpoint,
+        client: adapter.gateway,
+        issueId: input.issueId,
+        commentId: input.commentId,
+        deliveryId: input.deliveryId,
+        event,
+      });
+    } catch (error) {
+      logger.warn(
+        { endpointId: input.endpoint.id, issueId: input.issueId, error: error instanceof Error ? error.name : "unknown" },
+        "OpenWA trigger media was not ingested; the wake reports it as pending",
+      );
+    }
   }
 
   async function admitOpenwaMessage(endpointId: string, input: OpenwaAdmitInput, context: RuntimeContext) {
@@ -14859,7 +14893,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           inlineRecovery.set(attachment, descriptor);
           return [restored];
         })
-      : message.attachments;
+      : endpoint.provider === "openwa"
+        ? []
+        : message.attachments;
     const unavailableTeamsReferences = teamsNonPersonal
       ? Math.min(message.attachments.length, 20) -
         nativeInboundAttachments.length
@@ -15674,6 +15710,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           attachmentLimitOmissions: githubAttachmentLimitOmissions(message),
           unavailableReferenceCount: unavailableTeamsReferences,
           actorUserId: rebound.authorUserId,
+        });
+        await ingestOpenwaTriggerMedia({
+          endpoint,
+          endpointRuntime,
+          message,
+          decoration: openwaDecoration,
+          issueId: rebound.issueId,
+          commentId: inboundCommentId,
+          deliveryId: activeDelivery.id,
         });
         if (
           await settleTelegramAttachmentOnlyFailure({
@@ -16861,6 +16906,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attachmentLimitOmissions: githubAttachmentLimitOmissions(message),
         unavailableReferenceCount: unavailableTeamsReferences,
         actorUserId,
+      });
+      await ingestOpenwaTriggerMedia({
+        endpoint,
+        endpointRuntime,
+        message,
+        decoration: openwaDecoration,
+        issueId: conversation.issueId,
+        commentId: comment.id,
+        deliveryId: activeDelivery.id,
       });
       if (
         await settleTelegramAttachmentOnlyFailure({

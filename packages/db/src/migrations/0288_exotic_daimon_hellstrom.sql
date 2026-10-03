@@ -1,0 +1,1 @@
+CREATE INDEX "chat_deliveries_pending_answer_idx" ON "chat_deliveries" USING btree ("endpoint_id","conversation_id","received_at") WHERE "chat_deliveries"."answer_state" = 'pending';
