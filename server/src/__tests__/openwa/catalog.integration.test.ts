@@ -605,6 +605,87 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(input.nested[0]).toEqual({ verifyToken: "v", order: { orderId: "o1", token: "t" } });
   });
 
+  it("redacts header maps and compound credential names but keeps diagnostic codes and author fields", () => {
+    expect(
+      redactOpenwaSecrets({
+        headers: { Authorization: "Bearer x", "X-Api-Key": "y" },
+        requestHeaders: [{ name: "cookie" }],
+        webhookSecret: "s",
+        authToken: "t",
+        adminApiKey: "k",
+        Authorization: "Bearer z",
+        "x-api-key": "w",
+        pairing_code: "ABCD-1234",
+        qrString: "2@linking",
+        restriction: { code: "number_not_on_whatsapp", reason: "x" },
+        keyPrefix: "owa_k",
+        error: { code: "gateway_unavailable", message: "down" },
+        author: "628111@c.us",
+        authority: "owner",
+        sslRejectUnauthorized: true,
+        adminKey: true,
+      }),
+    ).toEqual({
+      headers: OPENWA_REDACTED,
+      requestHeaders: OPENWA_REDACTED,
+      webhookSecret: OPENWA_REDACTED,
+      authToken: OPENWA_REDACTED,
+      adminApiKey: OPENWA_REDACTED,
+      Authorization: OPENWA_REDACTED,
+      "x-api-key": OPENWA_REDACTED,
+      pairing_code: OPENWA_REDACTED,
+      qrString: OPENWA_REDACTED,
+      restriction: { code: "number_not_on_whatsapp", reason: "x" },
+      keyPrefix: "owa_k",
+      error: { code: "gateway_unavailable", message: "down" },
+      author: "628111@c.us",
+      authority: "owner",
+      sslRejectUnauthorized: true,
+      adminKey: true,
+    });
+  });
+
+  it("redacts webhook headers and compound credential keys in results, stored receipts and replays", async () => {
+    const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
+    const bearer = "Bearer plaintext-" + randomUUID();
+    const leaked = ["y-" + randomUUID(), "whsec-" + randomUUID(), "auth-" + randomUUID(), "adm-" + randomUUID()];
+    const webhook = {
+      id: "w1",
+      url: "https://hooks.example/openwa",
+      headers: { Authorization: bearer, "X-Api-Key": leaked[0] },
+      webhookSecret: leaked[1],
+      authToken: leaked[2],
+      adminApiKey: leaked[3],
+      events: ["message"],
+    };
+    const findOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "WebhookController_findBySession")!;
+    const updateOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "WebhookController_update")!;
+    const updateArgs = { ...(argsFor(updateOperation, MEMBER) as Record<string, unknown>), id: "w1" };
+    const updatePath = renderedPath(updateOperation, updateArgs);
+    t.gateway.overrides.push({ method: findOperation.method, path: renderedPath(findOperation, {}), status: 200, body: [webhook] });
+    t.gateway.overrides.push({ method: updateOperation.method, path: updatePath, status: 200, body: webhook });
+    const c = await conversation(t, MEMBER);
+    const owner = await run(t, c, "owner");
+    const plaintext = (value: unknown) => [bearer, ...leaked].filter((needle) => JSON.stringify(value).includes(needle));
+    const redacted = { id: "w1", url: webhook.url, headers: OPENWA_REDACTED, webhookSecret: OPENWA_REDACTED, authToken: OPENWA_REDACTED, adminApiKey: OPENWA_REDACTED, events: ["message"] };
+
+    const listed = await call(owner, { operation: findOperation.id });
+    expect(listed.result).toEqual([redacted]);
+    expect(plaintext(listed)).toEqual([]);
+
+    const key = randomUUID();
+    const updated = await call(owner, { operation: updateOperation.id, args: updateArgs, idempotencyKey: key });
+    expect(updated).toMatchObject({ state: "delivered", result: redacted });
+    expect(plaintext(updated)).toEqual([]);
+    const [action] = await db.select().from(chatActions).where(eq(chatActions.id, String(updated.actionId)));
+    expect(action!.status).toBe("processed");
+    expect(plaintext(action)).toEqual([]);
+    const replay = await call(owner, { operation: updateOperation.id, args: updateArgs, idempotencyKey: key });
+    expect(replay).toMatchObject({ actionId: updated.actionId, replayed: true, result: redacted });
+    expect(plaintext(replay)).toEqual([]);
+    expect(forwarded(t, updateOperation.method, updatePath)).toBe(1);
+  });
+
   it("refuses secret-issuing operations before any gateway call, for owner runs at full with an admin key", async () => {
     const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
     const c = await conversation(t, MEMBER);
