@@ -57,6 +57,16 @@ async function waitForRunToFinish(heartbeat: ReturnType<typeof heartbeatService>
   return heartbeat.getRun(runId);
 }
 
+async function waitForIssueLockRelease(db: ReturnType<typeof createDb>, issueId: string, timeoutMs = 10_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const [issue] = await db.select({ executionRunId: issues.executionRunId }).from(issues).where(eq(issues.id, issueId));
+    if (!issue?.executionRunId) return;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+  }
+  throw new Error("issue execution lock was not released");
+}
+
 describeEmbeddedPostgres("OpenWA guidance at run start", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
@@ -183,6 +193,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     await db.insert(issues).values({
       id: issueId, companyId, title: "WhatsApp chat", description: "Conversation with Member.",
       status: "todo", assigneeAgentId: agentId, responsibleUserId: "board-user",
+      originKind: "chat_channel", originId: "chat:" + endpointId + ":" + PEER + ":1",
     });
     const applicationId = randomUUID();
     const connectionId = randomUUID();
@@ -312,6 +323,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(queued).not.toBeNull();
     const finished = await waitForRunToFinish(heartbeat, queued!.id);
     expect(finished?.status).toBe("succeeded");
+    await waitForIssueLockRelease(db, seed.issueId);
     const context = captured.get(queued!.id) ?? {};
     const [row] = await db.select({ contextSnapshot: heartbeatRuns.contextSnapshot }).from(heartbeatRuns).where(eq(heartbeatRuns.id, queued!.id));
     return {
