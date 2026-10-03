@@ -43,6 +43,7 @@ import { secretService } from "../../services/secrets.js";
 import { OpenwaChatAdapter, openwaThreadId } from "../../services/openwa/adapter.js";
 import { createOpenwaGatewayClient } from "../../services/openwa/gateway.js";
 import { openwaChatKey, sendThroughRegistry } from "../../services/openwa/outbound.js";
+import { readOpenwaRunContext } from "../../services/openwa/authority.js";
 import { markTriggersAnswered, readOpenwaLastOutput } from "../../services/openwa/publication.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
@@ -291,6 +292,7 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
           profile: input.triggerClass === "owner" ? "full" : "read_only",
           event: input.event ?? "message",
           grantIds: input.grantIds ?? [],
+          deliveryIds: input.deliveryIds ?? [],
           requesterPrincipalId: null,
           approvalRequestId: null,
         },
@@ -493,7 +495,16 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
         }),
     });
     expect(
-      await markTriggersAnswered(db, { companyId: t.companyId, endpointId: t.endpointId, chatKey: MEMBER, quotedMessageId: owner.waMessageId, runClass: "owner" }),
+      await markTriggersAnswered(db, {
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        conversationId: c.id,
+        chatKey: MEMBER,
+        quotedMessageId: owner.waMessageId,
+        runClass: "owner",
+        visibleBefore: new Date(),
+        deliveryIds: [],
+      }),
     ).toEqual([owner.id]);
     const run = await runOutput(t, c, { triggerClass: "owner", body: "Final summary", deliveryIds: [owner.id] });
     await drain(t);
@@ -636,10 +647,61 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     const a = await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const b = await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
-    expect(await markTriggersAnswered(db, { companyId: t.companyId, endpointId: t.endpointId, chatKey: GROUP, quotedMessageId: b.waMessageId, runClass: "other" })).toEqual([b.id]);
+    const scope = { companyId: t.companyId, endpointId: t.endpointId, conversationId: c.id, chatKey: GROUP, visibleBefore: new Date(), deliveryIds: [] };
+    expect(await markTriggersAnswered(db, { ...scope, quotedMessageId: b.waMessageId, runClass: "other" })).toEqual([b.id]);
     expect(await answerStates([a.id, b.id, owner.id])).toEqual(["pending", "answered", "pending"]);
-    expect(await markTriggersAnswered(db, { companyId: t.companyId, endpointId: t.endpointId, chatKey: GROUP, quotedMessageId: null, runClass: "other" })).toEqual([a.id]);
+    expect(await markTriggersAnswered(db, { ...scope, quotedMessageId: null, runClass: "other" })).toEqual([a.id]);
     expect(await answerStates([a.id, b.id, owner.id])).toEqual(["answered", "answered", "pending"]);
+  }, 90_000);
+
+  it("marks steered triggers listed in the run's deliveryIds answered on an unquoted send, only in the run's conversation", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const first = await trigger(t, c, { triggerClass: "owner", role: "owner", receivedAt: new Date(Date.now() - 120_000) });
+    const steered = await trigger(t, c, { triggerClass: "owner", role: "owner", receivedAt: new Date(Date.now() + 5_000) });
+    const late = await trigger(t, c, { triggerClass: "owner", role: "owner", receivedAt: new Date(Date.now() + 6_000) });
+    const [rotated] = await db
+      .insert(chatConversations)
+      .values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        resourceId: c.resourceId,
+        issueId: (await db.insert(issues).values({ companyId: t.companyId, title: "WhatsApp rotated", status: "todo", assigneeAgentId: t.agentId }).returning())[0]!.id,
+        externalConversationId: c.threadId,
+        externalThreadId: c.threadId,
+        sessionGeneration: 0,
+        externalLabel: MEMBER,
+        isDirectMessage: true,
+        state: "completed",
+      })
+      .returning();
+    const oldGeneration = await trigger(t, { ...c, id: rotated!.id }, { triggerClass: "owner", role: "owner", receivedAt: new Date(Date.now() - 300_000) });
+    const run = await runOutput(t, c, { triggerClass: "owner", body: "Final summary", deliveryIds: [first.id], status: "running" });
+    const [row] = await db.select({ contextSnapshot: heartbeatRuns.contextSnapshot }).from(heartbeatRuns).where(eq(heartbeatRuns.id, run.runId));
+    const snapshot = row!.contextSnapshot as Record<string, Record<string, unknown>>;
+    await db
+      .update(heartbeatRuns)
+      .set({ contextSnapshot: { ...snapshot, paperclipOpenwa: { ...snapshot.paperclipOpenwa, deliveryIds: [first.id, steered.id] } } })
+      .where(eq(heartbeatRuns.id, run.runId));
+    const [refreshed] = await db.select({ contextSnapshot: heartbeatRuns.contextSnapshot }).from(heartbeatRuns).where(eq(heartbeatRuns.id, run.runId));
+    const answered = await markTriggersAnswered(db, {
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      conversationId: c.id,
+      chatKey: MEMBER,
+      quotedMessageId: null,
+      runClass: "owner",
+      visibleBefore: new Date(Date.now() - 30_000),
+      deliveryIds: readOpenwaRunContext(refreshed!.contextSnapshot)!.deliveryIds,
+    });
+    expect(answered.sort()).toEqual([first.id, steered.id].sort());
+    expect(await answerStates([first.id, steered.id, late.id, oldGeneration.id])).toEqual(["answered", "answered", "pending", "pending"]);
+    await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, run.runId));
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect(await publicationState(run.publicationId)).toMatchObject({ state: "cancelled" });
+    const [suppressed] = await audits(t, "publication_suppressed");
+    expect(suppressed).toMatchObject({ runId: run.runId, metadata: expect.objectContaining({ reason: "no_pending_trigger" }) });
   }, 90_000);
 
   it("shows typing only while a triggered run is active and stops when it ends", async () => {

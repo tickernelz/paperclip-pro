@@ -543,6 +543,71 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(JSON.stringify(found)).not.toContain("628666000999\"");
   });
 
+  it("pages oversized find results under 16 KB and truncates long media transcripts with a flag", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const wide = "名".repeat(200);
+    for (let index = 0; index < 20; index++) {
+      const digits = "6287770" + String(index).padStart(5, "0");
+      t.gateway.chats.push({ id: digits + "@c.us", name: "Zed " + wide + index });
+      t.gateway.contacts.push({ id: digits + "@c.us", name: "Zed " + wide + index, number: digits });
+    }
+    const chats: unknown[] = [];
+    const contacts: unknown[] = [];
+    let cursor: string | null = null;
+    let pages = 0;
+    do {
+      const page = await executeOpenwaTool(db, binding, "openwa_find", { query: "zed", ...(cursor ? { cursor } : {}) });
+      expect(Buffer.byteLength(JSON.stringify(page))).toBeLessThanOrEqual(16_384);
+      chats.push(...(page.chats as unknown[]));
+      contacts.push(...(page.contacts as unknown[]));
+      cursor = page.nextCursor as string | null;
+      pages++;
+    } while (cursor);
+    expect(pages).toBeGreaterThan(1);
+    expect(chats).toHaveLength(20);
+    expect(contacts).toHaveLength(20);
+    expect(new Set(chats.map((chat) => (chat as { chatRef: string }).chatRef)).size).toBe(20);
+    expect((await rejection(executeOpenwaTool(db, binding, "openwa_find", { query: "zed", cursor: "l:5" }))).code).toBe("invalid_cursor");
+
+    const row = t.gateway.inbound({ chatId: MEMBER, body: "", emit: false });
+    const transcript = "語".repeat(8_000);
+    await db.insert(chatActions).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      kind: "openwa_media",
+      providerActionId: "openwa_media:" + row.waMessageId,
+      status: "processed",
+      payload: {
+        version: 1,
+        issueId: c.issueId,
+        commentId: null,
+        chatId: MEMBER,
+        waMessageId: row.waMessageId,
+        items: [1, 2].map(() => ({
+          kind: "voice",
+          waMessageId: row.waMessageId,
+          status: "stored",
+          reason: null,
+          attachmentId: randomUUID(),
+          mime: "audio/ogg",
+          size: 4096,
+          filename: null,
+          transcriptStatus: "done",
+          transcript,
+        })),
+      },
+    });
+    const media = await executeOpenwaTool(db, binding, "openwa_get_media", { messageId: row.waMessageId });
+    expect(Buffer.byteLength(JSON.stringify(media))).toBeLessThanOrEqual(16_384);
+    const items = media.media as Array<{ transcript?: string; transcriptTruncated?: boolean }>;
+    expect(items).toHaveLength(2);
+    expect(items.every((item) => item.transcriptTruncated === true)).toBe(true);
+    expect(items[0]!.transcript!.length).toBeGreaterThan(1_000);
+    expect(items[0]!.transcript!.startsWith("語語語")).toBe(true);
+  });
+
   it("exposes the tools over HTTP to the bound agent run only", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

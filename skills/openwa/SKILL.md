@@ -105,11 +105,13 @@ of the person you answer.
   `transcriptPending`. A `pending` or `unavailable` item was not stored yet.
 - `openwa_get_media({chat?, messageId})` stores one message's media as a task
   attachment and returns its attachment id, mime, size and transcript when
-  speech-to-text is configured, never bytes. Read the attachment like any other.
+  speech-to-text is configured, never bytes. A long transcript is cut with
+  `transcriptTruncated: true`; read the transcript attachment for the full text.
 - A transcript that finishes later arrives in a following wake under
   `lateTranscripts` (keyed by message `id`) or is steered into this run.
 - `openwa_find({query} | {phone} | {lid})` searches contacts and chats, checks a
-  number, or resolves a LID. Give exactly one.
+  number, or resolves a LID. Give exactly one. A `nextCursor` on a query result
+  pages with `{query, cursor}`.
 
 ## Progress, silence and handoff
 

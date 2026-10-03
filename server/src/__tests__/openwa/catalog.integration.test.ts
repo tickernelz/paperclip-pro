@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import express from "express";
+import supertest from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import {
@@ -37,6 +39,8 @@ import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
 import { OPENWA_REDACTED, redactOpenwaSecrets } from "../../services/openwa/redact.js";
 import { executeOpenwaTool, OpenwaToolError } from "../../services/openwa/tools.js";
+import { issueRoutes } from "../../routes/issues.js";
+import { errorHandler } from "../../middleware/index.js";
 import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "44444444-5555-4666-8777-888888888888";
@@ -210,10 +214,29 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
       .where(eq(chatEndpoints.id, endpoint.id));
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
     await gateway.waitForSubscription();
-    return { gateway, companyId, agentId, userId, endpointId: endpoint.id };
+    return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service };
   }
 
   type Fixture = Awaited<ReturnType<typeof setup>>;
+
+  function boardApp(companyId: string, userId: string) {
+    const app = express();
+    app.use(express.json());
+    app.use((req, _res, next) => {
+      (req as unknown as { actor: unknown }).actor = {
+        type: "board",
+        source: "session",
+        userId,
+        companyIds: [companyId],
+        memberships: [{ companyId, status: "active", membershipRole: "operator" }],
+        isInstanceAdmin: false,
+      };
+      next();
+    });
+    app.use("/api", issueRoutes(db, {} as never, {}));
+    app.use(errorHandler);
+    return app;
+  }
 
   async function conversation(t: Fixture, chatId: string) {
     const threadId = openwaThreadId({ sessionId: SESSION_ID, chatId, isGroup: false });
@@ -544,11 +567,27 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(first.code).toBe("self_session_requires_confirmation");
     const interactionId = String((first.details as Record<string, unknown>).interactionId);
     const [interaction] = await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, interactionId));
-    expect(interaction).toMatchObject({ kind: "request_confirmation", status: "pending", issueId: c.issueId, effectiveResolverPolicy: "human_only", continuationPolicy: "none" });
+    expect(interaction).toMatchObject({ kind: "request_confirmation", status: "pending", issueId: c.issueId, effectiveResolverPolicy: "chat_endpoint_owner", continuationPolicy: "none" });
     const again = await rejection(call(owner, { operation: "SessionController_logout", idempotencyKey: key }));
     expect((again.details as Record<string, unknown>).interactionId).toBe(interactionId);
     expect(forwarded(t, "POST", logoutRoute)).toBe(0);
-    await db.update(issueThreadInteractions).set({ status: "accepted", resolvedAt: new Date() }).where(eq(issueThreadInteractions.id, interactionId));
+    const acceptPath = "/api/issues/" + c.issueId + "/interactions/" + interactionId + "/accept";
+    const outsider = randomUUID();
+    await db.insert(authUsers).values({ id: outsider, name: "Board member", email: outsider + "@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() });
+    await db.insert(companyMemberships).values({ companyId: t.companyId, principalType: "user", principalId: outsider, status: "active", membershipRole: "operator" });
+    const denied = await supertest(boardApp(t.companyId, outsider)).post(acceptPath).send({});
+    expect(denied.status).toBe(403);
+    expect(denied.body).toMatchObject({ details: { code: "interaction_chat_endpoint_owner_only" } });
+    const unlinked = await supertest(boardApp(t.companyId, t.userId)).post(acceptPath).send({});
+    expect(unlinked.status).toBe(403);
+    expect((await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, interactionId)))[0]!.status).toBe("pending");
+    expect((await rejection(call(owner, { operation: "SessionController_logout", idempotencyKey: key }))).code).toBe("self_session_requires_confirmation");
+    expect(forwarded(t, "POST", logoutRoute)).toBe(0);
+    const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+628333000666", expiresInSeconds: 1_800 }, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    const accepted = await supertest(boardApp(t.companyId, t.userId)).post(acceptPath).send({});
+    expect(accepted.status).toBe(200);
+    expect(accepted.body).toMatchObject({ id: interactionId, status: "accepted" });
     await expect(call(owner, { operation: "SessionController_logout", idempotencyKey: key })).resolves.toMatchObject({ state: "delivered" });
     expect(forwarded(t, "POST", logoutRoute)).toBe(1);
     const reused = await rejection(call(owner, { operation: "SessionController_logout", idempotencyKey: randomUUID() }));

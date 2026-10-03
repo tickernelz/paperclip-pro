@@ -74,7 +74,7 @@ const PREFIXED_TEXT: Readonly<Record<string, string>> = {
 };
 const MESSAGE_BODY: Readonly<Record<string, string>> = { ...PREFIXED_TEXT, MessageController_sendPoll: "name" };
 const SELF_SESSION_CONFIRMATION_PREFIX = "openwa-self-session:";
-const SELF_SESSION_RESOLVER_POLICY = "human_only";
+const SELF_SESSION_RESOLVER_POLICY = "chat_endpoint_owner";
 
 interface GatewayProbe {
   engine: OpenwaCatalogScope["engine"];
@@ -354,15 +354,22 @@ async function selfSessionConfirmation(ctx: ToolContext, operation: OpenwaOperat
   }
   let pendingId = latest?.status === "pending" ? latest.id : null;
   if (!pendingId) {
-    const { issueThreadInteractionService } = await import("../issue-thread-interactions.js");
-    const created = await issueThreadInteractionService(ctx.db).create(
-      { id: issueId, companyId: ctx.endpoint.companyId },
-      {
+    const idempotencyKey = prefix + actionId;
+    const [created] = await ctx.db
+      .insert(issueThreadInteractions)
+      .values({
+        companyId: ctx.endpoint.companyId,
+        issueId,
         kind: "request_confirmation",
-        idempotencyKey: prefix + actionId,
-        sourceRunId: ctx.run.id,
-        resolverPolicy: SELF_SESSION_RESOLVER_POLICY,
+        status: "pending",
         continuationPolicy: "none",
+        requestedResolverPolicy: SELF_SESSION_RESOLVER_POLICY,
+        effectiveResolverPolicy: SELF_SESSION_RESOLVER_POLICY,
+        resolverPolicyProvenance: "explicit",
+        effectiveResolverPolicySource: "requested",
+        idempotencyKey,
+        sourceRunId: ctx.run.id,
+        createdByAgentId: ctx.binding.agentId,
         title: "Confirm WhatsApp session action",
         payload: {
           version: 1,
@@ -372,11 +379,24 @@ async function selfSessionConfirmation(ctx: ToolContext, operation: OpenwaOperat
           rejectLabel: "Deny",
           allowDeclineReason: true,
         },
-      },
-      { agentId: ctx.binding.agentId, runId: ctx.run.id },
-      { supersedePendingSiblingInteractions: false },
-    );
-    pendingId = created.id;
+      })
+      .onConflictDoNothing()
+      .returning({ id: issueThreadInteractions.id });
+    pendingId =
+      created?.id ??
+      (
+        await ctx.db
+          .select({ id: issueThreadInteractions.id })
+          .from(issueThreadInteractions)
+          .where(
+            and(
+              eq(issueThreadInteractions.companyId, ctx.endpoint.companyId),
+              eq(issueThreadInteractions.issueId, issueId),
+              eq(issueThreadInteractions.idempotencyKey, idempotencyKey),
+            ),
+          )
+          .limit(1)
+      )[0]!.id;
   }
   throw refusal(403, "self_session_requires_confirmation", "An endpoint owner must allow this in Paperclip first; call again with the same idempotencyKey after it is accepted", {
     category: "gateway_admin",
@@ -536,10 +556,12 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
       ? await markTriggersAnswered(ctx.db, {
           companyId: ctx.endpoint.companyId,
           endpointId: ctx.endpoint.id,
+          conversationId: ctx.conversation.id,
           chatKey: ctx.origin.chatKey,
           quotedMessageId: str(args.quotedMessageId),
           runClass: ctx.runClass,
           visibleBefore: ctx.run.visibleBefore,
+          deliveryIds: ctx.openwa?.deliveryIds ?? [],
         })
       : [];
   if (toOrigin) await consumeReplyGrants(ctx);

@@ -111,6 +111,18 @@ export async function openwaApprovalOwnerUserIds(db: Db, input: { companyId: str
   return [...new Set((await openwaCurrentOwners(db, { companyId: input.companyId, id: request.endpointId })).map((owner) => owner.userId))];
 }
 
+/** Current owner user ids of the OpenWA endpoint whose conversation is this issue; empty off OpenWA issues. */
+export async function openwaIssueOwnerUserIds(db: Db, input: { companyId: string; issueId: string }): Promise<string[]> {
+  const [conversation] = await db
+    .select({ endpointId: chatConversations.endpointId })
+    .from(chatConversations)
+    .innerJoin(chatEndpoints, and(eq(chatEndpoints.companyId, chatConversations.companyId), eq(chatEndpoints.id, chatConversations.endpointId)))
+    .where(and(eq(chatConversations.companyId, input.companyId), eq(chatConversations.issueId, input.issueId), eq(chatEndpoints.provider, "openwa")))
+    .limit(1);
+  if (!conversation) return [];
+  return [...new Set((await openwaCurrentOwners(db, { companyId: input.companyId, id: conversation.endpointId })).map((owner) => owner.userId))];
+}
+
 export function openwaApprovalRequestIdOf(interaction: { kind: string; payload?: unknown }): string | null {
   if (interaction.kind !== "request_confirmation") return null;
   return str(record(interaction.payload).openwaApprovalRequestId);
