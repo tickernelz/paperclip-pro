@@ -138,6 +138,11 @@ function cacheInvalidate(cache: BoundCache, key: string) {
   cache.entries.delete(key);
 }
 
+/** Forgets the cached OpenWA binding of an issue; call after committing a conversation that binds it. */
+export function invalidateOpenwaIssueBinding(companyId: string, issueId: string) {
+  cacheInvalidate(bindingCache, `${companyId}:${issueId}`);
+}
+
 /** Forgets the cached agent-key answer of an agent; call after committing an OpenWA endpoint assigned to it. */
 export function invalidateOpenwaAgentKey(companyId: string, agentId: string) {
   cacheInvalidate(agentKeyCache, `${companyId}:${agentId}`);
@@ -296,6 +301,7 @@ export async function resolveOpenwaRunContext(
   input: { companyId: string; issueId: string; runId: string; contextSnapshot: Record<string, unknown>; wakeupRequestId: string | null },
 ): Promise<OpenwaRunContext | null> {
   const key = `${input.companyId}:${input.issueId}`;
+  if (cacheGet(bindingCache, key, BINDING_CACHE_TTL_MS) === false) return null;
   const epoch = bindingCache.epoch;
   const binding = await openwaConversationBinding(db, input.companyId, input.issueId);
   cacheSet(bindingCache, key, binding !== null, BINDING_CACHE_LIMIT, epoch);

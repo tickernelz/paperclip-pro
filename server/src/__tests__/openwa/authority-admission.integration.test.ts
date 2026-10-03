@@ -18,6 +18,8 @@ import {
   companySecretBindings,
   createDb,
   heartbeatRuns,
+  issueCreateIdempotencyKeys,
+  issues,
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -29,6 +31,7 @@ import { chatChannelService, type ChatChannelService } from "../../services/chat
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.ts";
 import { heartbeatService } from "../../services/heartbeat.ts";
 import { secretService } from "../../services/secrets.ts";
+import { resolveOpenwaRunContext } from "../../services/openwa/authority.ts";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -216,6 +219,26 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
     expect({ token: memberEnv.GH_TOKEN ?? "", mode: memberEnv.PAPERCLIP_GITHUB_AUTH_MODE }).toEqual({ token: "", mode: "managed" });
     expect(memberEnv.PAPERCLIP_GITHUB_HOST_HOME).toBeUndefined();
     expect(memberEnv.PAPERCLIP_RUNNER_NETWORK_ACCESS).toBe(ownerEnv.PAPERCLIP_RUNNER_NETWORK_ACCESS);
+  }, 120_000);
+
+  it("keeps a member run read_only when its conversation binds an issue cached as non-OpenWA", async () => {
+    const t = await setup();
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
+    await goLive(t);
+    const issueId = randomUUID();
+    await db.insert(issues).values({ id: issueId, companyId: t.companyId, title: "Earlier task", status: "todo", assigneeAgentId: t.agentId });
+    await db.insert(issueCreateIdempotencyKeys).values({
+      companyId: t.companyId, issueId, idempotencyKey: `chat:${t.endpointId}:openwa:${SESSION_ID}:${jid(MEMBER_PHONE)}:1`,
+    });
+    await expect(resolveOpenwaRunContext(db, {
+      companyId: t.companyId, issueId, runId: randomUUID(), contextSnapshot: {}, wakeupRequestId: null,
+    })).resolves.toBeNull();
+    t.gateway.inbound({ chatId: jid(MEMBER_PHONE), body: "why does error X happen?" });
+    const member = await runFor(t, jid(MEMBER_PHONE), 0);
+    const [conversation] = await db.select({ issueId: chatConversations.issueId }).from(chatConversations).where(eq(chatConversations.endpointId, t.endpointId));
+    expect(conversation!.issueId).toBe(issueId);
+    expect(member.context.paperclipToolProfile).toBe("read_only");
+    expect(member.context.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
   }, 120_000);
 
   it("keeps a forged agent wakeup claiming the owner class read_only on the OpenWA issue", async () => {

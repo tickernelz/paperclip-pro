@@ -494,6 +494,23 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(context).toEqual({ paperclipToolProfile: "full" });
     });
 
+    it("queries the binding of a non-OpenWA issue once across run starts and still resolves OpenWA issues", async () => {
+      const seed = await seedCompany(db);
+      const plainIssue = await seedPlainIssue(db, seed);
+      const counted = loggedDb();
+      const bindingQueries = async (issueId: string) => {
+        const before = counted.queries.length;
+        const resolved = await resolveOpenwaRunContext(counted.db, {
+          companyId: seed.companyId, issueId, runId: randomUUID(), contextSnapshot: {}, wakeupRequestId: null,
+        });
+        return { resolved, queries: counted.queries.slice(before).filter((query) => query.includes('from "chat_conversations"')).length };
+      };
+      expect(await bindingQueries(plainIssue)).toEqual({ resolved: null, queries: 1 });
+      expect(await bindingQueries(plainIssue)).toEqual({ resolved: null, queries: 0 });
+      const openwa = await bindingQueries(seed.issueId);
+      expect(openwa.resolved).toMatchObject({ endpointId: seed.endpointId, profile: "read_only" });
+    });
+
     it("suppresses mention wakes fail-closed by run profile", async () => {
       const seed = await seedCompany(db);
       const unmarked = await seedRun(db, seed, {});

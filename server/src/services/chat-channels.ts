@@ -50,7 +50,7 @@ import {
   syncOpenwaGroupActivation,
 } from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
-import { invalidateOpenwaAgentKey } from "./openwa/authority.js";
+import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa/authority.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
@@ -17079,6 +17079,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         );
       });
       if (!taskMutation) return;
+      if (endpoint.provider === "openwa" && taskMutation.conversation.id !== existingConversation?.id)
+        invalidateOpenwaIssueBinding(endpoint.companyId, taskMutation.conversation.issueId);
       // The open task can fetch the comment immediately, before attachments
       // finish preparing or the agent starts. Never publish an uncommitted row.
       for (const publication of inboundActivityPublications) {
