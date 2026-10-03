@@ -6,6 +6,7 @@ import {
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
+  SPEECH_TO_TEXT_DEFAULTS,
   type InstanceMessageDelivery,
 } from "../types/instance.js";
 import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
@@ -28,6 +29,47 @@ export const backupRetentionPolicySchema = z.object({
   monthlyMonths: presetSchema(MONTHLY_RETENTION_PRESETS, "monthlyMonths").default(DEFAULT_BACKUP_RETENTION.monthlyMonths),
 });
 
+function isSpeechToTextBaseUrl(value: string): boolean {
+  if (value === "") return true;
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    return false;
+  }
+  if (url.protocol !== "http:" && url.protocol !== "https:") return false;
+  if (url.username || url.password || url.search || url.hash) return false;
+  return ["/", "/v1", "/v1/"].includes(url.pathname);
+}
+
+export const speechToTextSettingsSchema = z
+  .object({
+    enabled: z.boolean().default(SPEECH_TO_TEXT_DEFAULTS.enabled),
+    baseUrl: z
+      .string()
+      .trim()
+      .max(2048)
+      .refine(isSpeechToTextBaseUrl, {
+        message: "Speech-to-text base URL must be an http(s) origin or end at /v1, without credentials, query or fragment",
+      })
+      .default(SPEECH_TO_TEXT_DEFAULTS.baseUrl),
+    model: z.string().trim().max(200).default(SPEECH_TO_TEXT_DEFAULTS.model),
+    apiKeyEnvVar: z
+      .string()
+      .trim()
+      .max(128)
+      .regex(/^(?:[A-Za-z_][A-Za-z0-9_]*)?$/, {
+        message: "Speech-to-text API key must name a server environment variable, not hold the key itself",
+      })
+      .default(SPEECH_TO_TEXT_DEFAULTS.apiKeyEnvVar),
+    maxAudioSeconds: z.number().int().min(1).max(7200).default(SPEECH_TO_TEXT_DEFAULTS.maxAudioSeconds),
+    sttWaitSeconds: z.number().int().min(1).max(120).default(SPEECH_TO_TEXT_DEFAULTS.sttWaitSeconds),
+  })
+  .strict()
+  .refine((value) => !value.enabled || (value.baseUrl !== "" && value.model !== "" && value.apiKeyEnvVar !== ""), {
+    message: "Speech-to-text needs a base URL, a model and an API key environment variable before it can be enabled",
+  });
+
 export const instanceGeneralSettingsSchema = z.object({
   censorUsernameInLogs: z.boolean().default(false),
   keyboardShortcuts: z.boolean().default(false),
@@ -36,6 +78,7 @@ export const instanceGeneralSettingsSchema = z.object({
   ),
   backupRetention: backupRetentionPolicySchema.default(DEFAULT_BACKUP_RETENTION),
   defaultMessageDelivery: messageDeliverySchema.default(DEFAULT_MESSAGE_DELIVERY),
+  speechToText: speechToTextSettingsSchema.default(SPEECH_TO_TEXT_DEFAULTS),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
   // Kubernetes sandbox provider and denies local/ssh execution (cloud_tenant).
   executionMode: z.enum(["kubernetes", "any"]).optional(),

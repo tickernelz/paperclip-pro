@@ -936,6 +936,7 @@ export type {
   ManagedExperimentalFeatureKey,
   ManagedSettingMetadata,
   BackupRetentionPolicy,
+  SpeechToTextSettings,
   Agent,
   AgentAccessState,
   AgentChainOfCommandEntry,
@@ -1797,6 +1798,7 @@ export {
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
+  SPEECH_TO_TEXT_DEFAULTS,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./types/instance.js";
 
@@ -1833,6 +1835,7 @@ export {
 export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
+  speechToTextSettingsSchema,
   messageDeliverySchema,
   type MessageDeliveryRequest,
   MESSAGE_DELIVERY_LITERALS,
