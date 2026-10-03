@@ -1417,7 +1417,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18087",
+    "boardGuard": "assertBoard@issues.ts:18152",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13027,7 +13027,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17037",
+    "boardGuard": "assertBoard@issues.ts:17102",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22412,7 +22412,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16210",
+    "boardGuard": "assertBoard@issues.ts:16212",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34506,7 +34506,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8926",
+    "boardGuard": "assertBoard@issues.ts:8928",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34567,7 +34567,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16180",
+    "boardGuard": "assertBoard@issues.ts:16182",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36229,7 +36229,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18027",
+    "boardGuard": "assertBoard@issues.ts:18092",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36661,7 +36661,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16989",
+    "boardGuard": "assertBoard@issues.ts:17054",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40406,7 +40406,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16148",
+    "boardGuard": "assertBoard@issues.ts:16150",
     "authorityCapability": null,
     "parameters": [
       {
