@@ -667,8 +667,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       await markGroupLeft(runtime, snapshot, event);
       return;
     }
-    const known = snapshot.chats.get(chatKey);
-    const added = event.event === "group.join" && (self || !known || !known.available);
+    const added = event.event === "group.join" && self;
     const gateway = runtime.adapter()?.gateway ?? null;
     if (!gateway) return;
     const discovered = await upsertGroup(runtime, snapshot, gateway, chatKey).catch(() => null);

@@ -394,6 +394,16 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(other.wake.messages[0]).toMatchObject({ triggerId: otherDelivery.id, id: otherDelivery.waMessageId, sender: { role: "allowed", name: "Member Budi" } });
   });
 
+  it("does not count the synthetic group_added delivery as an omitted message", async () => {
+    const seed = await seedOpenwa();
+    const synthetic = await seedDelivery(seed, { text: "" });
+    await db.update(chatDeliveries).set({ answerState: null }).where(eq(chatDeliveries.id, synthetic.id));
+    const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [synthetic.id], event: "group_added" });
+    expect(result.wake.event).toBe("group_added");
+    expect(result.wake.messages).toEqual([]);
+    expect(result.wake.omittedMessages).toBe(0);
+  });
+
   it("reports the reply requirement when the chat reply policy needs owner approval", async () => {
     const seed = await seedOpenwa({ policy: { replyPolicy: "ask_owner" } });
     const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hello" })).id] });
