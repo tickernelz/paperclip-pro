@@ -106,9 +106,18 @@ export function getAppDefinitionForUrl(
   } catch {
     return null;
   }
-  return definitions.find((app) =>
-    app.urlPatterns.some((pattern) => wildcardPatternToRegExp(pattern).test(normalized))
-  ) ?? null;
+  let best: AppDefinition | null = null;
+  let bestSpecificity = -1;
+  for (const app of definitions) {
+    for (const pattern of app.urlPatterns) {
+      const specificity = pattern.replace(/\*/g, "").length;
+      if (specificity > bestSpecificity && wildcardPatternToRegExp(pattern).test(normalized)) {
+        best = app;
+        bestSpecificity = specificity;
+      }
+    }
+  }
+  return best;
 }
 
 export function getAvailableConnectionMethods(app: AppDefinition): ConnectionMethodDef[] {
