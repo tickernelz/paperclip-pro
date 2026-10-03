@@ -32,7 +32,7 @@ const inspection = {
   warnings: ["This key can see 2 sessions, so it is not scoped to one session."],
   eligible: true,
   sessions: [
-    { sessionId: "session-a", name: "zhafron", status: "ready", maskedNumber: "+62xxx...7040", pushName: "Zhafron", eligible: true },
+    { sessionId: "session-a", name: "ops", status: "ready", maskedNumber: "+62xxx...5678", pushName: "Ops Desk", eligible: true },
     { sessionId: "session-b", name: "spare", status: "qr_ready", maskedNumber: null, pushName: null, eligible: false, unavailableReason: "The session is qr ready" },
   ],
 };
@@ -86,7 +86,7 @@ describe("OpenWA connect step", () => {
     expect(mocks.inspectOpenwa).toHaveBeenCalledWith("endpoint-1", { baseUrl: "http://localhost:2785", apiKey: "secret-operator-key" });
     expect(container.textContent).toContain("0.23.7");
     expect(container.textContent).toContain("operator");
-    expect(container.textContent).toContain("+62xxx...7040");
+    expect(container.textContent).toContain("+62xxx...5678");
     expect(container.textContent).toContain("not scoped to one session");
     const sessions = container.querySelectorAll<HTMLInputElement>('input[name="openwa-session"]');
     expect(sessions[0].checked).toBe(true);

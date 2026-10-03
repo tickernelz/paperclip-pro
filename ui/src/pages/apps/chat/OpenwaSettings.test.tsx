@@ -52,7 +52,7 @@ const health = {
   gatewayVersion: "0.23.7",
   pinnedVersion: "0.23.7",
   engine: "whatsapp-web.js",
-  session: { status: "ready", maskedNumber: "+62xxx...7040", restriction: null },
+  session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: null },
   pacing: { attested: true, observedAt: null },
   adminKeyConfigured: false,
   gatewayError: null,
@@ -68,7 +68,7 @@ describe("OpenWA settings", () => {
     vi.resetAllMocks();
     mocks.api.getOpenwaHealth.mockResolvedValue(health);
     mocks.api.listOpenwaOwners.mockResolvedValue([
-      { id: "owner-1", identityLinkId: "l", principalId: "p", numberMasked: "+62xxx...1111", displayName: "Zhafron", linkStatus: "linked", paperclipUserId: "u", effective: true, createdAt: "2026-10-03T00:00:00.000Z" },
+      { id: "owner-1", identityLinkId: "l", principalId: "p", numberMasked: "+62xxx...1111", displayName: "Ops Desk", linkStatus: "linked", paperclipUserId: "u", effective: true, createdAt: "2026-10-03T00:00:00.000Z" },
     ]);
     mocks.api.listOpenwaSenderRules.mockResolvedValue([
       { id: "rule-1", list: "allow", e164: "+628444000444", label: "Supplier", createdAt: "2026-10-03T00:00:00.000Z" },
@@ -137,7 +137,7 @@ describe("OpenWA settings", () => {
     await loaded();
     const card = section("Gateway health");
     expect(card.textContent).toContain("0.23.7");
-    expect(card.textContent).toContain("ready · +62xxx...7040");
+    expect(card.textContent).toContain("ready · +62xxx...5678");
     expect(card.textContent).toContain("Attested · not yet observed");
     await vi.waitFor(() => expect(container.querySelector('[aria-label="Capability warnings"]')).not.toBeNull());
     const warnings = container.querySelector('[aria-label="Capability warnings"]')!.textContent!;
@@ -151,7 +151,7 @@ describe("OpenWA settings", () => {
     render();
     await vi.waitFor(() => expect(section("Owners").textContent).toContain("+62xxx...1111"));
     const owners = section("Owners");
-    expect(owners.textContent).toContain("Linked to Zhafron");
+    expect(owners.textContent).toContain("Linked to Ops Desk");
     setValue(field<HTMLInputElement>("#openwa-owner-number"), "0812");
     click(button(owners, "Add owner"));
     expect(field("#openwa-owner-number-error").textContent).toContain("E.164");

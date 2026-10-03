@@ -99,7 +99,7 @@ describe("OpenWA health and capability warnings", () => {
     gatewayVersion: "0.23.7",
     pinnedVersion: "0.23.7",
     engine: "whatsapp-web.js",
-    session: { status: "ready", maskedNumber: "+62xxx...7040", restriction: null },
+    session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: null },
     pacing: { attested: true, observedAt: null },
     adminKeyConfigured: false,
     gatewayError: null,
@@ -109,7 +109,7 @@ describe("OpenWA health and capability warnings", () => {
   it("labels pacing as attested until a limit is observed", () => {
     const rows = Object.fromEntries(openwaHealthRows(health).map((row) => [row.label, row]));
     expect(rows.Pacing.value).toBe("Attested · not yet observed");
-    expect(rows.Session.value).toBe("ready · +62xxx...7040");
+    expect(rows.Session.value).toBe("ready · +62xxx...5678");
     expect(rows.Restriction.value).toBe("None");
     const observed = Object.fromEntries(
       openwaHealthRows({

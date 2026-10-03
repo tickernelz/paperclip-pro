@@ -32,9 +32,9 @@ const OPERATOR_KEY = "operator-key-0123456789";
 const ADMIN_KEY = "admin-key-0123456789";
 const CHAT_SCOPED_KEY = "chat-scoped-key-0123456789";
 const VIEWER_KEY = "viewer-key-0123456789";
-const SESSION_ID = "f97fb953-c17e-4d9a-a547-7b64de9fb79b";
+const SESSION_ID = "3b1f7c2e-5a8d-4e61-9c47-0d2a6b8e5f13";
 const SECOND_SESSION_ID = "0f1e2d3c-4b5a-4968-8776-655443322110";
-const PHONE = "6281234567040";
+const PHONE = "6281200005678";
 
 type FakeSession = { id: string; name: string; status: string; phone: string | null; pushName: string | null };
 
@@ -51,7 +51,7 @@ interface FakeGateway {
 async function startFakeGateway(): Promise<FakeGateway> {
   const state = {
     version: "0.23.7" as string | null,
-    sessions: [{ id: SESSION_ID, name: "zhafron", status: "ready", phone: PHONE, pushName: "Zhafron" }] as FakeSession[],
+    sessions: [{ id: SESSION_ID, name: "ops", status: "ready", phone: PHONE, pushName: "Ops Desk" }] as FakeSession[],
     sessionsStatus: 200,
     sessionsBody: undefined as unknown,
     requests: [] as string[],
@@ -264,7 +264,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       adminKey: null,
       warnings: [],
       eligible: true,
-      sessions: [{ sessionId: SESSION_ID, name: "zhafron", status: "ready", maskedNumber: "+62xxx...7040", pushName: "Zhafron", eligible: true }],
+      sessions: [{ sessionId: SESSION_ID, name: "ops", status: "ready", maskedNumber: "+62xxx...5678", pushName: "Ops Desk", eligible: true }],
     });
     expect(JSON.stringify(response.body)).not.toContain(OPERATOR_KEY);
     expect(JSON.stringify(response.body)).not.toContain(PHONE);
@@ -377,8 +377,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       status: "verifying",
       providerAccountId: `${live().baseUrl}#${SESSION_ID}`,
       botExternalId: PHONE,
-      botUsername: "Zhafron",
-      botLabel: "Zhafron",
+      botUsername: "Ops Desk",
+      botLabel: "Ops Desk",
       setup: { step: "test" },
       policy: { numberMode: "owner_number", attestations: { pacing: true, soleClient: true }, triggers: { selfChat: true } },
     });
@@ -406,7 +406,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       gatewayVersion: "0.23.7",
       pinnedVersion: "0.23.7",
       engine: "whatsapp-web.js",
-      session: { status: "ready", maskedNumber: "+62xxx...7040", restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" } },
+      session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" } },
       pacing: { attested: true, observedAt: null },
       adminKeyConfigured: true,
       gatewayError: null,
@@ -449,7 +449,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     const response = await configure(second.app, second.endpoint.id);
     expect(response.status).toBe(409);
     expect(response.body.details.code).toBe("chat_bot_identity_in_use");
-    live().sessions.splice(0, 1, { id: SECOND_SESSION_ID, name: "same number", status: "ready", phone: PHONE, pushName: "Zhafron" });
+    live().sessions.splice(0, 1, { id: SECOND_SESSION_ID, name: "same number", status: "ready", phone: PHONE, pushName: "Ops Desk" });
     const sameNumber = await configure(second.app, second.endpoint.id, { sessionId: SECOND_SESSION_ID });
     expect(sameNumber.status).toBe(409);
   });
