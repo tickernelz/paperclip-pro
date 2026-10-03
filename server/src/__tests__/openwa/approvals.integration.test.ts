@@ -38,7 +38,9 @@ import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { instanceSettingsService } from "../../services/instance-settings.js";
 import { secretService } from "../../services/secrets.js";
 import { HttpError } from "../../errors.js";
-import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, type OpenwaRunContext } from "../../services/openwa/authority.js";
+import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, restoreOpenwaGrant, type OpenwaRunContext } from "../../services/openwa/authority.js";
+import { accessService } from "../../services/access.js";
+import { openwaBodyHash } from "../../services/openwa/outbound.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -675,5 +677,87 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const ownerRun = await runStart(t, ownerWake);
     const ownerDenied = await failure(requestApproval(ownerRun.binding));
     expect(codeOf(ownerDenied)).toBe("approval_not_needed");
+  }, 120_000);
+
+  it("keeps a consumed grant revoked when its approver stops being an owner", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "buat task" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const [grant] = await grantsOf(created.requestId);
+    const request = await requestRow(created.requestId);
+    const grantRun = await runStart(t, await approvalWake(t, created.requestId), {
+      grantIds: [grant!.id],
+      requesterPrincipalId: request.requestedByPrincipalId,
+      approvalRequestId: request.id,
+    });
+    expect(await assertOpenwaRunMay(db, grantRun.run, "create_task")).toBe(grant!.id);
+    expect((await grantsOf(created.requestId))[0]).toMatchObject({ status: "consumed", consumedByRunId: grantRun.runId });
+
+    const [owner] = await t.service.openwa.listOwners(t.endpointId);
+    await t.service.openwa.removeOwner(t.endpointId, owner!.id, t.userId);
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await restoreOpenwaGrant(db, { companyId: t.companyId, runId: grantRun.runId, grantId: grant!.id });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await expect(assertOpenwaRunMay(db, grantRun.run, "create_task")).rejects.toMatchObject({ status: 403 });
+  }, 120_000);
+
+  it("sanitizes credential-shaped text in the approval bubble before it is sent or recorded", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "tolong buatkan akses" });
+    const runA = await runStart(t, wakeA);
+    const token = "ghp_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8";
+    const created = await requestApproval(runA.binding, { message: "Member wants access; they pasted " + token + " in the chat. Approve?" });
+    const [bubbleId] = await bubbleIds(created.requestId);
+    const sent = t.gateway.sends.find((send) => send.messageId === bubbleId)!;
+    expect(sent.chatId).toBe(jid(OWNER_PHONE));
+    expect(sent.text).toContain("Approve?");
+    expect(sent.text).not.toContain(token);
+    const outbound = await db
+      .select()
+      .from(chatOutboundMessages)
+      .where(and(eq(chatOutboundMessages.endpointId, t.endpointId), eq(chatOutboundMessages.providerMessageId, bubbleId!)));
+    expect(outbound).toHaveLength(1);
+    expect(JSON.stringify(outbound)).not.toContain(token);
+    expect(outbound[0]!.bodyHash).toBe(openwaBodyHash(sent.text));
+    expect(JSON.stringify(await requestRow(created.requestId))).not.toContain(token);
+
+    const empty = await failure(requestApproval(runA.binding, { message: "<thinking>secret plan</thinking>" }));
+    expect(codeOf(empty)).toBe("gateway_error");
+  }, 120_000);
+
+  it("revokes an owner's grants when company membership demotes them to viewer", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "kirim email" });
+    const runA = await runStart(t, wakeA, { requesterPrincipalId: wakeA.delivery.principalId });
+    const created = await requestApproval(runA.binding, { categories: ["external_tools"], scope: "requester" });
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const [grant] = await grantsOf(created.requestId);
+    expect(grant).toMatchObject({ status: "live", scope: "requester", approvedByUserId: t.userId });
+    const wakeA2 = await admitted(t, { chatId: jid(MEMBER_A), body: "satu lagi" });
+    const runA2 = await runStart(t, wakeA2, { requesterPrincipalId: wakeA2.delivery.principalId });
+    expect(runA2.openwa.grantIds).toEqual([grant!.id]);
+
+    const access = accessService(db);
+    const [membership] = await db
+      .select()
+      .from(companyMemberships)
+      .where(and(eq(companyMemberships.companyId, t.companyId), eq(companyMemberships.principalId, t.userId)));
+    await access.updateMember(t.companyId, membership!.id, { membershipRole: "admin" });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("live");
+    expect(await assertOpenwaRunMay(db, runA2.run, "external_tools")).toBeNull();
+
+    await access.updateMember(t.companyId, membership!.id, { membershipRole: "viewer" });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await expect(assertOpenwaRunMay(db, runA2.run, "external_tools")).rejects.toMatchObject({ status: 403 });
+    const wakeA3 = await admitted(t, { chatId: jid(MEMBER_A), body: "lagi" });
+    expect((await runStart(t, wakeA3, { requesterPrincipalId: wakeA3.delivery.principalId })).openwa.grantIds).toEqual([]);
   }, 120_000);
 });

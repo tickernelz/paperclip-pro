@@ -12,6 +12,8 @@ import {
   chatConversations,
   chatEndpointResources,
   chatEndpoints,
+  chatOwnerApprovalRequests,
+  chatOwnerGrants,
   companies,
   companyMemberships,
   companySecretBindings,
@@ -248,7 +250,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
 
   type Conversation = Awaited<ReturnType<typeof conversation>>;
 
-  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass) {
+  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass, grantIds: string[] = []) {
     const runId = randomUUID();
     const profile = triggerClass === "owner" ? "full" : "read_only";
     await db.insert(heartbeatRuns).values({
@@ -267,7 +269,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
           chatKey: openwaChatKey(c.chatId),
           triggerClass,
           profile,
-          grantIds: [],
+          grantIds,
           requesterPrincipalId: null,
           approvalRequestId: null,
         },
@@ -469,6 +471,56 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(badArgs.code).toBe("invalid_arguments");
   });
 
+  it("lets a grant run retry or replay a gated write whose one_action grant it already consumed", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const grantFor = async (category: "cross_chat_send" | "wa_admin") => {
+      const [request] = await db
+        .insert(chatOwnerApprovalRequests)
+        .values({ companyId: t.companyId, endpointId: t.endpointId, originChatKey: openwaChatKey(MEMBER), categories: [category], scope: "one_action", summary: category, proposedAction: category, status: "approved" })
+        .returning();
+      const [grant] = await db
+        .insert(chatOwnerGrants)
+        .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: openwaChatKey(MEMBER), category, scope: "one_action", approvedVia: "paperclip", expiresAt: new Date(Date.now() + 3_600_000) })
+        .returning();
+      return grant!.id;
+    };
+    const grantStatus = async (id: string) => (await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.id, id)))[0]!.status;
+    const crossGrant = await grantFor("cross_chat_send");
+    const pinGrant = await grantFor("wa_admin");
+    const binding = await run(t, c, "grant", [crossGrant, pinGrant]);
+
+    const cross = { operation: "MessageController_sendText", args: { chatId: "openwa:" + SESSION_ID + ":" + OTHER, text: "approved forward" }, idempotencyKey: randomUUID() };
+    t.gateway.failNextSend({ dropResponseAfterStore: true });
+    await expect(call(binding, cross)).resolves.toMatchObject({ state: "uncertain" });
+    expect(await grantStatus(crossGrant)).toBe("consumed");
+    const reconciled = await call(binding, cross);
+    expect(reconciled).toMatchObject({ actionId: expect.any(String), state: "delivered" });
+    expect(t.gateway.sends.filter((send) => send.text === "approved forward")).toHaveLength(1);
+    await expect(call(binding, cross)).resolves.toMatchObject({ actionId: reconciled.actionId, replayed: true });
+    const fresh = await rejection(call(binding, { ...cross, idempotencyKey: randomUUID() }));
+    expect(fresh.code).toBe("approval_required");
+    expect(fresh.details).toMatchObject({ category: "cross_chat_send" });
+
+    const pinOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "MessageController_pinMessage")!;
+    const pinArgs = { chatId: MEMBER, messageId: "m1" };
+    const pinRoute = renderedPath(pinOperation, pinArgs);
+    t.gateway.overrides.push({ method: pinOperation.method, path: pinRoute, status: 400, body: { message: "bad pin" } });
+    const failedKey = randomUUID();
+    expect((await rejection(call(binding, { operation: pinOperation.id, args: pinArgs, idempotencyKey: failedKey }))).code).not.toBe("approval_required");
+    expect(await grantStatus(pinGrant)).toBe("live");
+    const [failedAction] = await db.select().from(chatActions).where(sql`${chatActions.payload}->>'grantId' = ${pinGrant}`);
+    expect(failedAction).toBeUndefined();
+    t.gateway.overrides.splice(0);
+    const pin = { operation: pinOperation.id, args: pinArgs, idempotencyKey: randomUUID() };
+    const pinned = await call(binding, pin);
+    expect(pinned).toMatchObject({ state: "delivered" });
+    expect(await grantStatus(pinGrant)).toBe("consumed");
+    await expect(call(binding, pin)).resolves.toMatchObject({ actionId: pinned.actionId, replayed: true });
+    expect(forwarded(t, pinOperation.method, pinRoute)).toBe(2);
+    expect((await rejection(call(binding, { ...pin, idempotencyKey: randomUUID() }))).details).toMatchObject({ category: "wa_admin" });
+  });
+
   it("requires an owner run plus a Paperclip confirmation before touching the endpoint's own session", async () => {
     const t = await setup({ policy: { gatewayAdminTools: "full" } });
     const c = await conversation(t, MEMBER);
@@ -551,6 +603,87 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
       deep: { password: OPENWA_REDACTED, clientSecret: OPENWA_REDACTED },
     });
     expect(input.nested[0]).toEqual({ verifyToken: "v", order: { orderId: "o1", token: "t" } });
+  });
+
+  it("redacts header maps and compound credential names but keeps diagnostic codes and author fields", () => {
+    expect(
+      redactOpenwaSecrets({
+        headers: { Authorization: "Bearer x", "X-Api-Key": "y" },
+        requestHeaders: [{ name: "cookie" }],
+        webhookSecret: "s",
+        authToken: "t",
+        adminApiKey: "k",
+        Authorization: "Bearer z",
+        "x-api-key": "w",
+        pairing_code: "ABCD-1234",
+        qrString: "2@linking",
+        restriction: { code: "number_not_on_whatsapp", reason: "x" },
+        keyPrefix: "owa_k",
+        error: { code: "gateway_unavailable", message: "down" },
+        author: "628111@c.us",
+        authority: "owner",
+        sslRejectUnauthorized: true,
+        adminKey: true,
+      }),
+    ).toEqual({
+      headers: OPENWA_REDACTED,
+      requestHeaders: OPENWA_REDACTED,
+      webhookSecret: OPENWA_REDACTED,
+      authToken: OPENWA_REDACTED,
+      adminApiKey: OPENWA_REDACTED,
+      Authorization: OPENWA_REDACTED,
+      "x-api-key": OPENWA_REDACTED,
+      pairing_code: OPENWA_REDACTED,
+      qrString: OPENWA_REDACTED,
+      restriction: { code: "number_not_on_whatsapp", reason: "x" },
+      keyPrefix: "owa_k",
+      error: { code: "gateway_unavailable", message: "down" },
+      author: "628111@c.us",
+      authority: "owner",
+      sslRejectUnauthorized: true,
+      adminKey: true,
+    });
+  });
+
+  it("redacts webhook headers and compound credential keys in results, stored receipts and replays", async () => {
+    const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
+    const bearer = "Bearer plaintext-" + randomUUID();
+    const leaked = ["y-" + randomUUID(), "whsec-" + randomUUID(), "auth-" + randomUUID(), "adm-" + randomUUID()];
+    const webhook = {
+      id: "w1",
+      url: "https://hooks.example/openwa",
+      headers: { Authorization: bearer, "X-Api-Key": leaked[0] },
+      webhookSecret: leaked[1],
+      authToken: leaked[2],
+      adminApiKey: leaked[3],
+      events: ["message"],
+    };
+    const findOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "WebhookController_findBySession")!;
+    const updateOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "WebhookController_update")!;
+    const updateArgs = { ...(argsFor(updateOperation, MEMBER) as Record<string, unknown>), id: "w1" };
+    const updatePath = renderedPath(updateOperation, updateArgs);
+    t.gateway.overrides.push({ method: findOperation.method, path: renderedPath(findOperation, {}), status: 200, body: [webhook] });
+    t.gateway.overrides.push({ method: updateOperation.method, path: updatePath, status: 200, body: webhook });
+    const c = await conversation(t, MEMBER);
+    const owner = await run(t, c, "owner");
+    const plaintext = (value: unknown) => [bearer, ...leaked].filter((needle) => JSON.stringify(value).includes(needle));
+    const redacted = { id: "w1", url: webhook.url, headers: OPENWA_REDACTED, webhookSecret: OPENWA_REDACTED, authToken: OPENWA_REDACTED, adminApiKey: OPENWA_REDACTED, events: ["message"] };
+
+    const listed = await call(owner, { operation: findOperation.id });
+    expect(listed.result).toEqual([redacted]);
+    expect(plaintext(listed)).toEqual([]);
+
+    const key = randomUUID();
+    const updated = await call(owner, { operation: updateOperation.id, args: updateArgs, idempotencyKey: key });
+    expect(updated).toMatchObject({ state: "delivered", result: redacted });
+    expect(plaintext(updated)).toEqual([]);
+    const [action] = await db.select().from(chatActions).where(eq(chatActions.id, String(updated.actionId)));
+    expect(action!.status).toBe("processed");
+    expect(plaintext(action)).toEqual([]);
+    const replay = await call(owner, { operation: updateOperation.id, args: updateArgs, idempotencyKey: key });
+    expect(replay).toMatchObject({ actionId: updated.actionId, replayed: true, result: redacted });
+    expect(plaintext(replay)).toEqual([]);
+    expect(forwarded(t, updateOperation.method, updatePath)).toBe(1);
   });
 
   it("refuses secret-issuing operations before any gateway call, for owner runs at full with an admin key", async () => {

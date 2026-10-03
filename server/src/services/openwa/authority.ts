@@ -610,31 +610,31 @@ type RestRule = {
 };
 
 const READ_ONLY_REST_ALLOW: readonly RestRule[] = [
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/comments$/, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues\/([^/]+)\/attachments$/, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/work-products$/, ownIssue: 1 },
-  { method: "PATCH", path: /^\/api\/work-products\/([^/]+)$/, check: "workProduct" },
-  { method: "PUT", path: /^\/api\/issues\/([^/]+)\/documents\/[^/]+$/, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/checkout$/, ownIssue: 1 },
-  { method: "POST", path: /^\/api\/issues\/([^/]+)\/release$/, ownIssue: 1 },
-  { method: "PATCH", path: /^\/api\/issues\/([^/]+)$/, ownIssue: 1, check: "issuePatch" },
-  { method: "POST", path: /^\/api\/mcp\/paperclip$/ },
-  { method: "POST", path: /^\/api\/tool-gateway\/sessions$/ },
-  { method: "POST", path: /^\/api\/tool-gateway\/tools\/call$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/email\/send$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/openwa\/tasks\/[^/]+\/tools(?:\/.*)?$/ },
-  { method: "POST", path: /^\/api\/plugins\/tools\/execute$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/slack\/tasks\/[^/]+\/tools$/ },
-  { method: "PUT", path: /^\/api\/companies\/[^/]+\/slack\/endpoints\/[^/]+\/search$/ },
-  { method: "POST", path: /^\/api\/mcp\/project-tools$/ },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/comments$/i, ownIssue: 1 },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues\/([^/]+)\/attachments$/i, ownIssue: 1 },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/work-products$/i, ownIssue: 1 },
+  { method: "PATCH", path: /^\/api\/work-products\/([^/]+)$/i, check: "workProduct" },
+  { method: "PUT", path: /^\/api\/issues\/([^/]+)\/documents\/[^/]+$/i, ownIssue: 1 },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/checkout$/i, ownIssue: 1 },
+  { method: "POST", path: /^\/api\/issues\/([^/]+)\/release$/i, ownIssue: 1 },
+  { method: "PATCH", path: /^\/api\/issues\/([^/]+)$/i, ownIssue: 1, check: "issuePatch" },
+  { method: "POST", path: /^\/api\/mcp\/paperclip$/i },
+  { method: "POST", path: /^\/api\/tool-gateway\/sessions$/i },
+  { method: "POST", path: /^\/api\/tool-gateway\/tools\/call$/i },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/email\/send$/i },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/openwa\/tasks\/[^/]+\/tools(?:\/.*)?$/i },
+  { method: "POST", path: /^\/api\/plugins\/tools\/execute$/i },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/slack\/tasks\/[^/]+\/tools$/i },
+  { method: "PUT", path: /^\/api\/companies\/[^/]+\/slack\/endpoints\/[^/]+\/search$/i },
+  { method: "POST", path: /^\/api\/mcp\/project-tools$/i },
 ];
 
 const CREATE_TASK_REST: readonly { method: string; path: RegExp }[] = [
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues$/ },
-  { method: "POST", path: /^\/api\/issues\/[^/]+\/children$/ },
-  { method: "POST", path: /^\/api\/issues\/[^/]+\/accepted-plan-decompositions$/ },
-  { method: "POST", path: /^\/api\/companies\/[^/]+\/projects$/ },
-  { method: "PATCH", path: /^\/api\/issues\/[^/]+$/ },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/issues$/i },
+  { method: "POST", path: /^\/api\/issues\/[^/]+\/children$/i },
+  { method: "POST", path: /^\/api\/issues\/[^/]+\/accepted-plan-decompositions$/i },
+  { method: "POST", path: /^\/api\/companies\/[^/]+\/projects$/i },
+  { method: "PATCH", path: /^\/api\/issues\/[^/]+$/i },
 ];
 
 const ISSUE_DELEGATION_FIELDS = ["assigneeAgentId", "assigneeUserId", "parentId", "projectId", "blockedByIssueIds", "deferWakeForGoal"];
@@ -652,7 +652,8 @@ export function openwaReadOnlyRestDecision(input: {
 }): OpenwaRestDecision | { allowed: "workProduct"; workProductId: string } {
   const method = input.method.toUpperCase();
   if (SAFE_METHODS.has(method)) return { allowed: true };
-  const path = input.path.length > 1 ? input.path.replace(/\/+$/, "") : input.path;
+  const path = (input.path.length > 1 ? input.path.replace(/\/+$/, "") : input.path).toLowerCase();
+  const ownIssueId = input.ownIssueId?.toLowerCase() ?? null;
   const body = record(input.body);
   const delegates = ISSUE_DELEGATION_FIELDS.some((field) => body[field] !== undefined);
   const lifecycleOnly = Object.keys(body).every((field) => ISSUE_LIFECYCLE_PATCH_FIELDS.has(field));
@@ -660,11 +661,11 @@ export function openwaReadOnlyRestDecision(input: {
     if (rule.method !== method) continue;
     const match = rule.path.exec(path);
     if (!match) continue;
-    if (rule.ownIssue && (!input.ownIssueId || match[rule.ownIssue] !== input.ownIssueId)) continue;
+    if (rule.ownIssue && (!ownIssueId || match[rule.ownIssue] !== ownIssueId)) continue;
     if (rule.check === "issuePatch" && !lifecycleOnly) continue;
     if (rule.check === "workProduct") {
       if (input.workProductIssueId === undefined) return { allowed: "workProduct", workProductId: match[1]! };
-      if (!input.ownIssueId || input.workProductIssueId !== input.ownIssueId) continue;
+      if (!ownIssueId || input.workProductIssueId?.toLowerCase() !== ownIssueId) continue;
     }
     return { allowed: true };
   }

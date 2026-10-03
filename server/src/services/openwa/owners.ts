@@ -237,7 +237,7 @@ export async function revokeOpenwaGrantsOfFormerOwners(
       and(
         eq(chatOwnerGrants.companyId, endpoint.companyId),
         eq(chatOwnerGrants.endpointId, endpoint.id),
-        eq(chatOwnerGrants.status, "live"),
+        inArray(chatOwnerGrants.status, ["live", "consumed"]),
         current.length
           ? or(sql`${chatOwnerGrants.approvedByUserId} is null`, notInArray(chatOwnerGrants.approvedByUserId, current))
           : undefined,
@@ -256,6 +256,21 @@ export async function revokeOpenwaGrantsOfFormerOwners(
       details: { grantIds: ids, reason: "approver_no_longer_owner", endpointId: endpoint.id, provider: "openwa" },
     });
   return ids;
+}
+
+export async function revokeOpenwaGrantsOfFormerOwnersInCompanies(
+  tx: DbOrTransaction,
+  companyIds: readonly string[],
+  actorUserId: string | null,
+): Promise<string[]> {
+  if (!companyIds.length) return [];
+  const endpoints = await tx
+    .select({ companyId: chatEndpoints.companyId, id: chatEndpoints.id })
+    .from(chatEndpoints)
+    .where(and(inArray(chatEndpoints.companyId, [...new Set(companyIds)]), eq(chatEndpoints.provider, "openwa"), ne(chatEndpoints.status, "archived")));
+  const revoked: string[] = [];
+  for (const endpoint of endpoints) revoked.push(...(await revokeOpenwaGrantsOfFormerOwners(tx, endpoint, actorUserId)));
+  return revoked;
 }
 
 export async function bumpOpenwaPolicyRevision(tx: DbOrTransaction, endpoint: Pick<EndpointRow, "companyId" | "id">): Promise<void> {
