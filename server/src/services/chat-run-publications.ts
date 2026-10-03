@@ -241,6 +241,7 @@ async function enqueueSafeNativeChatProgress(
           eq(chatEndpoints.companyId, chatConversations.companyId),
           eq(chatEndpoints.id, chatConversations.endpointId),
           eq(chatEndpoints.publicationMode, "automatic"),
+          ne(chatEndpoints.provider, "openwa"),
           eq(chatEndpoints.assignedAgentId, heartbeatRuns.agentId),
         ),
       )
@@ -674,6 +675,7 @@ export async function enqueueChatRunMilestones(
           eq(chatEndpoints.companyId, chatConversations.companyId),
           eq(chatEndpoints.id, chatConversations.endpointId),
           eq(chatEndpoints.publicationMode, "automatic"),
+          ne(chatEndpoints.provider, "openwa"),
           eq(chatEndpoints.assignedAgentId, heartbeatRuns.agentId),
         ),
       )

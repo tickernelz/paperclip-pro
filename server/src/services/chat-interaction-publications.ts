@@ -288,6 +288,7 @@ export async function enqueueIssueInteractionChatPublications(
       : null;
   const inserted: Array<typeof chatPublications.$inferSelect> = [];
   for (const { conversation, endpoint } of bindings) {
+    if (endpoint.provider === "openwa") continue;
     if (endpoint.assignedAgentId !== interaction.createdByAgentId) continue;
     const formDraft =
       interaction.kind === "ask_user_questions" &&

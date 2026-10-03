@@ -58,8 +58,11 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
   readonly lockScope = "channel" as const;
   readonly botUserId: string;
   readonly ownJid: string;
-  typingGuard?: (activeThreadId?: string) => Promise<void>;
+  typingGuard?: (threadId: string, refresh: boolean) => Promise<void>;
+  typingRefreshMs = 20_000;
+  typingMaxRefreshes = 90;
   private closed = false;
+  private readonly typing = new Map<string, ReturnType<typeof setTimeout>>();
 
   constructor(
     readonly userName: string,
@@ -80,6 +83,8 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
 
   async disconnect(): Promise<void> {
     this.closed = true;
+    for (const timer of this.typing.values()) clearTimeout(timer);
+    this.typing.clear();
   }
 
   encodeThreadId(value: OpenwaThread): string {
@@ -208,13 +213,39 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
   }
 
   async startTyping(id: string): Promise<void> {
+    await this.refreshTyping(id, 0);
+  }
+
+  isTyping(id: string): boolean {
+    return this.typing.has(id);
+  }
+
+  private async refreshTyping(id: string, refreshes: number): Promise<void> {
     if (this.closed) return;
     const thread = this.decodeThreadId(id);
-    await this.typingGuard?.(id);
+    const previous = this.typing.get(id);
+    if (previous) clearTimeout(previous);
+    this.typing.delete(id);
+    try {
+      await this.typingGuard?.(id, refreshes > 0);
+    } catch (error) {
+      if (refreshes > 0) await this.gateway.typing({ chatId: thread.chatId, state: "paused" }).catch(() => undefined);
+      throw error;
+    }
     await this.gateway.typing({ chatId: thread.chatId, state: "typing" });
+    if (this.closed || refreshes >= this.typingMaxRefreshes || this.typing.has(id)) return;
+    const timer = setTimeout(() => {
+      this.typing.delete(id);
+      void this.refreshTyping(id, refreshes + 1).catch(() => undefined);
+    }, this.typingRefreshMs);
+    timer.unref();
+    this.typing.set(id, timer);
   }
 
   async endTyping(id: string): Promise<void> {
+    const timer = this.typing.get(id);
+    if (timer) clearTimeout(timer);
+    this.typing.delete(id);
     if (this.closed) return;
     const thread = this.decodeThreadId(id);
     await this.gateway.typing({ chatId: thread.chatId, state: "paused" }).catch(() => undefined);

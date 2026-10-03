@@ -481,6 +481,7 @@ export interface ChatSdkRuntimeCallbacks {
   onPhotonCheckpoint?(sequence: number): Promise<void>;
   onPhotonFailure?(error: unknown): Promise<void>;
   onOpenwaAssertOwned?(activeThreadId?: string): Promise<void>;
+  onOpenwaTypingAllowed?(threadId: string, refresh: boolean): Promise<boolean>;
   onOpenwaEvent?(event: OpenwaIngressEvent, dedupeKey: string | null): Promise<void>;
   onOpenwaCursor?(cursor: OpenwaIngestCursor): Promise<void>;
   onOpenwaBeforeCatchUp?(gateway: OpenwaGatewayClient): Promise<void>;
@@ -2322,7 +2323,11 @@ export class ChatSdkEndpointRuntime {
       const callbacks = options.callbacks;
       if (!callbacks.onOpenwaAssertOwned || !callbacks.onOpenwaEvent || !callbacks.onOpenwaCursor || !callbacks.onOpenwaFailure || !callbacks.onOpenwaBeforeCatchUp) throw new Error("OpenWA receiver requires durable admission callbacks");
       const adapter = this.adapter;
-      adapter.typingGuard = async (activeThreadId) => { this.assertNotRetired(); await callbacks.onOpenwaAssertOwned!(activeThreadId); };
+      adapter.typingGuard = async (threadId, refresh) => {
+        this.assertNotRetired();
+        await callbacks.onOpenwaAssertOwned!();
+        if (!callbacks.onOpenwaTypingAllowed || !(await callbacks.onOpenwaTypingAllowed(threadId, refresh))) throw new Error("OpenWA typing is not active for this conversation");
+      };
       this.openwaReceiver = new OpenwaReceiver({ gateway: adapter.gateway, socket: adapter.createEventSocket(), state: adapter.state,
         sessionId: config.credentials.sessionId, intakeAfter: config.intakeAfter,
         assertOwned: async () => { this.assertNotRetired(); await callbacks.onOpenwaAssertOwned!(); },

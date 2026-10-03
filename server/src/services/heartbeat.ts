@@ -9028,7 +9028,9 @@ export function buildPaperclipTaskMarkdown(input: {
           ]),
     );
   }
-  if (input.externalChatProvider && input.nativeRunner) {
+  const genericChatFileDelivery =
+    Boolean(input.externalChatProvider) && input.externalChatProvider !== "openwa";
+  if (genericChatFileDelivery && input.nativeRunner) {
     lines.push(
       "",
       "External chat file delivery:",
@@ -9036,7 +9038,7 @@ export function buildPaperclipTaskMarkdown(input: {
       "Use the supplied staged descriptors directly; batch independent reads/inspection with the appropriate available tools, then prepare and validate independent output files together. Compute exact sizes and SHA-256 hashes in the same preparation step, and batch independent per-file registrations into as few tool calls as practical. Keep one registration and a distinct stable idempotencyKey per file; wait for each receipt before the final-response protocol, and retry only a failed or ambiguous step with its original key. Batching never bypasses current source/generation authorization, exact-byte reuse, or approval gates; do not batch work that depends on an unread input, prior result, or unresolved approval. For a short routine media reply, skip a separate preamble and narration before each step. Keep useful wait, blocker, permission, and failure updates and any updates the user requested; do not suppress transport-managed progress.",
       "Use only the scoped native tool advertised for this run. Do not use the Paperclip skill, an upload shell helper, a control-plane API key, a separate provider connection, or `npx` for this handoff. A successful receipt already records the attachment, artifact, and final-response binding: do not upload it again or add a second handoff comment. Complete the required final-response protocol once. If the tool or execution target cannot hand off the file, state that limitation; never claim it was sent.",
     );
-  } else if (input.externalChatProvider) {
+  } else if (genericChatFileDelivery) {
     lines.push(
       "",
       "External chat file delivery:",

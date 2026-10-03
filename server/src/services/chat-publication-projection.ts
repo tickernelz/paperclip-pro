@@ -241,6 +241,10 @@ function truncateByCodePoint(input: string, limit: number): string {
  * dangerous or token-bearing links, and neutralizes provider-wide mentions.
  */
 export function projectSafeChatPublicationText(input: string): string {
+  return projectSafeChatPublicationTextOrNull(input) ?? "Update available in Paperclip.";
+}
+
+export function projectSafeChatPublicationTextOrNull(input: string): string | null {
   if (input.length > MAX_TEXT_INPUT_LENGTH) {
     throw new UnsafeChatPublicationError(
       "External chat text exceeds its processing limit",
@@ -261,7 +265,7 @@ export function projectSafeChatPublicationText(input: string): string {
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 
-  if (!output) return "Update available in Paperclip.";
+  if (!output) return null;
   if (output.length > MAX_TEXT_OUTPUT_LENGTH) {
     throw new UnsafeChatPublicationError(
       "External chat text exceeds its projected processing limit",

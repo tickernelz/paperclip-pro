@@ -28,7 +28,9 @@ export class FakeOpenwaGateway {
   readonly ownJid: string;
   restLatencyMs: number;
   readonly rows: FakeStoredRow[] = [];
-  readonly sends: Array<{ chatId: string; text: string; messageId: string | null }> = [];
+  readonly sends: Array<{ chatId: string; text: string; messageId: string | null; quotedMessageId?: string }> = [];
+  readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
+  readonly typing: Array<{ chatId: string; state: string }> = [];
   readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
   private readonly sendFailures: FakeSendFailure[] = [];
@@ -196,10 +198,35 @@ export class FakeOpenwaGateway {
     const prefix = "/api/sessions/" + this.sessionId;
     if (req.method === "GET" && url.pathname === prefix + "/messages") return this.listMessages(query, reply);
     if (req.method === "POST" && url.pathname === prefix + "/messages/send-text") {
-      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; text: string };
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; text: string; quotedMessageId?: string };
       return this.sendText(body, reply, res);
     }
-    if (req.method === "POST" && url.pathname === prefix + "/chats/typing") return reply(201, { success: true });
+    if (req.method === "POST" && url.pathname === prefix + "/messages/send-document") {
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as {
+        chatId: string;
+        base64: string;
+        filename: string;
+        mimetype: string;
+        caption?: string;
+        quotedMessageId?: string;
+      };
+      const row = this.inbound({ chatId: body.chatId, body: body.caption ?? "", fromMe: true });
+      this.documents.push({
+        chatId: body.chatId,
+        filename: body.filename,
+        mimetype: body.mimetype,
+        caption: body.caption ?? null,
+        content: Buffer.from(body.base64, "base64").toString("utf8"),
+        ...(body.quotedMessageId ? { quotedMessageId: body.quotedMessageId } : {}),
+        messageId: row.waMessageId!,
+      });
+      return reply(201, { messageId: row.waMessageId, timestamp: row.timestamp });
+    }
+    if (req.method === "POST" && url.pathname === prefix + "/chats/typing") {
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; state: string };
+      this.typing.push({ chatId: body.chatId, state: body.state });
+      return reply(201, { success: true });
+    }
     reply(404, { message: "Not found" });
   }
 
@@ -219,7 +246,7 @@ export class FakeOpenwaGateway {
   }
 
   private async sendText(
-    body: { chatId: string; text: string },
+    body: { chatId: string; text: string; quotedMessageId?: string },
     reply: (status: number, body: unknown) => void,
     res: ServerResponse,
   ): Promise<void> {
@@ -230,7 +257,12 @@ export class FakeOpenwaGateway {
       return reply(failure.status, failure.body ?? { message: "send failed" });
     }
     const row = this.inbound({ chatId: body.chatId, body: body.text, fromMe: true });
-    this.sends.push({ chatId: body.chatId, text: body.text, messageId: row.waMessageId ?? null });
+    this.sends.push({
+      chatId: body.chatId,
+      text: body.text,
+      messageId: row.waMessageId ?? null,
+      ...(body.quotedMessageId ? { quotedMessageId: body.quotedMessageId } : {}),
+    });
     if (failure?.dropResponseAfterStore) {
       res.socket?.destroy();
       return;
