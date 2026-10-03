@@ -353,6 +353,15 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     res.json(await service.openwaApprovals.resolve(endpointId(req), req.params.requestId as string, { ...req.body, userId }));
   });
 
+  router.post("/chat-endpoints/:endpointId/openwa/approvals/:requestId/cancel", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    if (!isUuidLike(req.params.requestId as string)) throw badRequest("A valid approval request id is required");
+    const userId = actorUserId(req);
+    if (!userId) throw forbidden("Only a current owner of the chat endpoint can cancel this approval");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.cancel(endpointId(req), req.params.requestId as string, { userId }));
+  });
+
   router.get("/chat-endpoints/:endpointId/openwa/sender-rules", async (req, res) => {
     if (!(await assertEndpointAccess(req, res, service))) return;
     res.set("Cache-Control", "no-store");

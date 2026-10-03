@@ -1236,6 +1236,48 @@
     ]
   },
   {
+    "name": "paperclipCancelChatEndpointApproval",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+    "description": "Cancel a pending OpenWA owner approval request. Only a board user linked as a current owner of the endpoint may cancel. Only a pending request can be cancelled: it becomes cancelled, its reminders stop and its approval card is withdrawn. No grant is written and the agent is not woken; later wakes no longer list it as pending. A request that is no longer pending returns 409 already_resolved with requestStatus. Records openwa.approval_cancelled.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipCancelDecision",
     "operationId": "POST /api/decisions/{id}/cancel",
     "method": "POST",
@@ -17914,7 +17956,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:621",
+    "boardGuard": "assertBoard@chat-channels.ts:630",
     "authorityCapability": null,
     "parameters": [
       {

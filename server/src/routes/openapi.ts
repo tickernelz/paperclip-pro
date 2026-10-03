@@ -1649,6 +1649,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
   "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
   "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+  "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
   "GET /api/chat-endpoints/{endpointId}/resources",
   "PUT /api/chat-endpoints/{endpointId}/resources",
   "GET /api/chat-endpoints/{endpointId}/principals",
@@ -2833,6 +2834,24 @@ registry.registerPath({
   request: { params: z.object({ endpointId: z.string().uuid(), requestId: z.string().uuid() }), body: jsonBody(resolveOpenwaApprovalSchema) },
   responses: {
     200: r.ok(z.object({ requestId: z.string().uuid(), status: z.enum(["approved", "rejected"]), grantIds: z.array(z.string().uuid()) }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+  tags: ["chat-channels"],
+  summary: "Cancel a pending OpenWA owner approval request",
+  description:
+    "Only a board user linked as a current owner of the endpoint may cancel. Only a pending request can be cancelled: it becomes cancelled, its reminders stop and its approval card is withdrawn. No grant is written and the agent is not woken; later wakes no longer list it as pending. A request that is no longer pending returns 409 already_resolved with requestStatus. Records openwa.approval_cancelled.",
+  request: { params: z.object({ endpointId: z.string().uuid(), requestId: z.string().uuid() }) },
+  responses: {
+    200: r.ok(z.object({ requestId: z.string().uuid(), status: z.literal("cancelled") }).strict()),
     400: r.badRequest,
     401: r.unauthorized,
     403: r.forbidden,

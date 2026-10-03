@@ -20,6 +20,11 @@ import {
   type OpenwaSessionHealth,
   type OpenwaSessionHealthHandler,
 } from "./receiver.js";
+import {
+  dispatchOpenwaSessionHealthWake,
+  stageOpenwaSessionHealthWake,
+  type OpenwaSessionHealthFacts,
+} from "./session-health.js";
 import { OpenwaState, writeOpenwaCursor, type OpenwaIngestCursor } from "./state.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -82,8 +87,10 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
     message: string;
     fatal?: boolean;
     metadata?: Record<string, unknown>;
+    wake?: OpenwaSessionHealthFacts;
   }): Promise<boolean> {
-    return db.transaction(async (tx) => {
+    let wakeActionId: string | null = null;
+    const changed = await db.transaction(async (tx) => {
       const endpoint = await deps.fence(tx, HEALTH_STATUSES);
       if (!endpoint) return false;
       const ownsAttention = endpoint.status === "attention" && (endpoint.lastError ?? "").startsWith(input.prefix);
@@ -109,16 +116,28 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
             .set({ enabled: false, healthStatus: "error", healthMessage: message, updatedAt: now })
             .where(and(eq(toolConnections.companyId, deps.companyId), eq(toolConnections.id, endpoint.connectionId)));
       }
+      const stage = input.wake
+        ? await stageOpenwaSessionHealthWake(tx, endpoint, { sessionId: deps.sessionId, selfChatKey: deps.ownJid, facts: input.wake })
+        : null;
+      if (stage?.staged) wakeActionId = stage.actionId;
       await recordOpenwaAudit(tx, {
         companyId: deps.companyId,
         endpointId: deps.endpointId,
         kind: "session_health",
         actorKind: "system",
-        metadata: { healthy: input.healthy, message: bounded(input.prefix + input.message), ...(input.metadata ?? {}) },
+        conversationId: stage?.staged ? stage.conversationId : null,
+        metadata: {
+          healthy: input.healthy,
+          message: bounded(input.prefix + input.message),
+          ...(input.metadata ?? {}),
+          ...(stage ? (stage.staged ? { wakeActionId: stage.actionId } : { wakeSkipped: stage.reason }) : {}),
+        },
         occurredAt: now,
       });
       return true;
     });
+    if (wakeActionId) await dispatchOpenwaSessionHealthWake(db, wakeActionId).catch(() => false);
+    return changed;
   }
 
   async function sessionHealth(health: OpenwaSessionHealth): Promise<void> {
@@ -128,6 +147,7 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
         prefix: OPENWA_SESSION_HEALTH_PREFIX,
         message: "session is " + health.status,
         metadata: { status: health.status },
+        wake: { kind: "status", healthy: health.healthy, status: health.status, restriction: null },
       });
     else
       await transition({
@@ -135,6 +155,12 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
         prefix: OPENWA_RESTRICTION_HEALTH_PREFIX,
         message: "WhatsApp restricted this account" + (health.restrictionKind ? " (" + health.restrictionKind + ")" : ""),
         metadata: { active: health.active, kind: health.restrictionKind, code: health.code, expiresAt: health.expiresAt },
+        wake: {
+          kind: "restriction",
+          healthy: health.healthy,
+          status: null,
+          restriction: { active: health.active, kind: health.restrictionKind, code: health.code, expiresAt: health.expiresAt },
+        },
       });
   }
 

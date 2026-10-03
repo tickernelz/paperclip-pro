@@ -342,6 +342,15 @@ mode). Silence never approves.
   request also appears as an interaction on the conversation issue with resolver
   policy `chat_endpoint_owner`. Only current owners may resolve; other board users
   get 403 and see the requests view-only.
+- **Cancel**: an owner can withdraw a pending request with **Cancel request** in
+  the Approvals tab (after a confirmation step), or through
+  `POST /api/chat-endpoints/:endpointId/openwa/approvals/:requestId/cancel`. The
+  request becomes `cancelled`, its reminders stop and its interaction card is
+  withdrawn. No grant is written and the agent is not woken; its next wake simply
+  no longer lists the request as pending, and a later WhatsApp quote of the bubble
+  reports it as resolved. Only current owners may cancel (others get 403); a request
+  that is no longer pending returns 409 `already_resolved` with `requestStatus`.
+  Recorded as audit `approval_cancelled` and activity `openwa.approval_cancelled`.
 - The first resolution wins on either surface; the loser gets 409
   `already_resolved` with the winning `requestStatus`.
 - Approved: the agent is woken with `approval_resolved` as a `grant` run in the origin
@@ -500,6 +509,16 @@ A session status other than `ready` sets the endpoint to Attention with
 "OpenWA session: session is …"; an active restriction sets it with "OpenWA
 restriction: WhatsApp restricted this account (…)". Both write a
 `session_health` audit entry and clear when the session is ready again.
+
+Every actual health change (unhealthy or recovered) also wakes the assigned agent
+once with event `session_health` (class `other`, profile `read_only`) on the owners'
+approval chat: the owner's self-chat in `owner_number` mode, otherwise the most
+recently active DM with a current owner. The wake event carries `sessionHealth`
+(`status`, `healthy`, and the restriction kind and expiry when present), and the
+agent decides whether owners need to be told. A repeated event that changes nothing
+writes no audit entry and wakes nobody. When no such owner conversation exists the
+wake is skipped and the `session_health` audit entry records
+`wakeSkipped: "no_owner_conversation"`.
 
 ## In-flight messages and progress
 

@@ -264,6 +264,11 @@ export interface OpenwaApprovalResolveResult {
   grantIds: string[];
 }
 
+export interface OpenwaApprovalCancelResult {
+  requestId: string;
+  status: "cancelled";
+}
+
 export interface OpenwaAuditFilters {
   kind?: ChatAuditEntryKind;
   chatKey?: string;
@@ -374,6 +379,8 @@ export const chatEndpointsApi = {
     api.get<OpenwaApproval[]>(`/chat-endpoints/${endpointId}/openwa/approvals${status ? "?status=" + status : ""}`, { cache: "no-store" }),
   resolveOpenwaApproval: (endpointId: string, requestId: string, input: OpenwaApprovalResolveInput) =>
     api.post<OpenwaApprovalResolveResult>(`/chat-endpoints/${endpointId}/openwa/approvals/${requestId}/resolve`, input),
+  cancelOpenwaApproval: (endpointId: string, requestId: string) =>
+    api.post<OpenwaApprovalCancelResult>(`/chat-endpoints/${endpointId}/openwa/approvals/${requestId}/cancel`, {}),
   listOpenwaAudit: (endpointId: string, filters: OpenwaAuditFilters, cursor?: string) =>
     api.get<OpenwaAuditPage>(`/chat-endpoints/${endpointId}/audit?${openwaAuditSearch(filters, cursor)}`, { cache: "no-store" }),
   generateSetupSecret: (endpointId: string) =>
