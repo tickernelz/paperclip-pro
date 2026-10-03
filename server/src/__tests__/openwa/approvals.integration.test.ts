@@ -39,6 +39,7 @@ import { instanceSettingsService } from "../../services/instance-settings.js";
 import { secretService } from "../../services/secrets.js";
 import { HttpError } from "../../errors.js";
 import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, restoreOpenwaGrant, type OpenwaRunContext } from "../../services/openwa/authority.js";
+import { accessService } from "../../services/access.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -702,5 +703,36 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     await restoreOpenwaGrant(db, { companyId: t.companyId, runId: grantRun.runId, grantId: grant!.id });
     expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
     await expect(assertOpenwaRunMay(db, grantRun.run, "create_task")).rejects.toMatchObject({ status: 403 });
+  }, 120_000);
+
+  it("revokes an owner's grants when company membership demotes them to viewer", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "kirim email" });
+    const runA = await runStart(t, wakeA, { requesterPrincipalId: wakeA.delivery.principalId });
+    const created = await requestApproval(runA.binding, { categories: ["external_tools"], scope: "requester" });
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const [grant] = await grantsOf(created.requestId);
+    expect(grant).toMatchObject({ status: "live", scope: "requester", approvedByUserId: t.userId });
+    const wakeA2 = await admitted(t, { chatId: jid(MEMBER_A), body: "satu lagi" });
+    const runA2 = await runStart(t, wakeA2, { requesterPrincipalId: wakeA2.delivery.principalId });
+    expect(runA2.openwa.grantIds).toEqual([grant!.id]);
+
+    const access = accessService(db);
+    const [membership] = await db
+      .select()
+      .from(companyMemberships)
+      .where(and(eq(companyMemberships.companyId, t.companyId), eq(companyMemberships.principalId, t.userId)));
+    await access.updateMember(t.companyId, membership!.id, { membershipRole: "admin" });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("live");
+    expect(await assertOpenwaRunMay(db, runA2.run, "external_tools")).toBeNull();
+
+    await access.updateMember(t.companyId, membership!.id, { membershipRole: "viewer" });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await expect(assertOpenwaRunMay(db, runA2.run, "external_tools")).rejects.toMatchObject({ status: 403 });
+    const wakeA3 = await admitted(t, { chatId: jid(MEMBER_A), body: "lagi" });
+    expect((await runStart(t, wakeA3, { requesterPrincipalId: wakeA3.delivery.principalId })).openwa.grantIds).toEqual([]);
   }, 120_000);
 });

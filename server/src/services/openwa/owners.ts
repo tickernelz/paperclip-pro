@@ -257,6 +257,21 @@ export async function revokeOpenwaGrantsOfFormerOwners(
   return ids;
 }
 
+export async function revokeOpenwaGrantsOfFormerOwnersInCompanies(
+  tx: DbOrTransaction,
+  companyIds: readonly string[],
+  actorUserId: string | null,
+): Promise<string[]> {
+  if (!companyIds.length) return [];
+  const endpoints = await tx
+    .select({ companyId: chatEndpoints.companyId, id: chatEndpoints.id })
+    .from(chatEndpoints)
+    .where(and(inArray(chatEndpoints.companyId, [...new Set(companyIds)]), eq(chatEndpoints.provider, "openwa"), ne(chatEndpoints.status, "archived")));
+  const revoked: string[] = [];
+  for (const endpoint of endpoints) revoked.push(...(await revokeOpenwaGrantsOfFormerOwners(tx, endpoint, actorUserId)));
+  return revoked;
+}
+
 export async function bumpOpenwaPolicyRevision(tx: DbOrTransaction, endpoint: Pick<EndpointRow, "companyId" | "id">): Promise<void> {
   await tx
     .update(chatEndpoints)
