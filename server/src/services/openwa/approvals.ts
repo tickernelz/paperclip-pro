@@ -979,7 +979,90 @@ export function openwaApprovalService(db: Db) {
     return { requestId, status: result.status, grantIds: result.grantIds };
   }
 
-  return { list, resolve };
+  async function cancel(endpointId: string, requestId: string, input: { userId: string }) {
+    const endpoint = await endpointFor(endpointId);
+    const result = await cancelOpenwaApproval(db, { companyId: endpoint.companyId, endpointId: endpoint.id, requestId, userId: input.userId });
+    return { requestId: result.requestId, status: result.status };
+  }
+
+  return { list, resolve, cancel };
 }
 
 export type OpenwaApprovalService = ReturnType<typeof openwaApprovalService>;
+
+export function openwaWakeRuntime(db: Db): OpenwaApprovalWakeRuntime | null {
+  return wakeRuntimes.get(db) ?? null;
+}
+
+export interface OpenwaApprovalCancellation {
+  requestId: string;
+  status: "cancelled";
+  interactionId: string | null;
+}
+
+/** Paperclip-only cancellation of a pending request by a current endpoint owner; issues no grants and wakes no agent. */
+export async function cancelOpenwaApproval(
+  db: Db,
+  input: { companyId: string; endpointId: string; requestId: string; userId: string },
+): Promise<OpenwaApprovalCancellation> {
+  const [endpoint] = await db
+    .select()
+    .from(chatEndpoints)
+    .where(and(eq(chatEndpoints.companyId, input.companyId), eq(chatEndpoints.id, input.endpointId), eq(chatEndpoints.provider, "openwa")))
+    .limit(1);
+  if (!endpoint) throw notFound("Chat endpoint not found");
+  return db.transaction(async (tx) => {
+    const [request] = await tx
+      .select()
+      .from(chatOwnerApprovalRequests)
+      .where(and(eq(chatOwnerApprovalRequests.companyId, input.companyId), eq(chatOwnerApprovalRequests.endpointId, input.endpointId), eq(chatOwnerApprovalRequests.id, input.requestId)))
+      .for("update");
+    if (!request) throw notFound("Approval request not found");
+    if (!(await openwaCurrentOwners(tx, endpoint)).some((owner) => owner.userId === input.userId))
+      throw forbidden("Only a current owner of the chat endpoint can cancel this approval");
+    if (request.status !== "pending") throw new OpenwaApprovalAlreadyResolvedError(request.status);
+    const now = new Date();
+    await tx
+      .update(chatOwnerApprovalRequests)
+      .set({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: input.userId, resolvedAt: now, updatedAt: now })
+      .where(eq(chatOwnerApprovalRequests.id, request.id));
+    if (request.interactionId)
+      await tx
+        .update(issueThreadInteractions)
+        .set({
+          status: "cancelled",
+          result: { version: 1, outcome: "withdrawn", reason: "Cancelled by an endpoint owner in Paperclip" },
+          resolvedByUserId: input.userId,
+          resolvedByAgentId: null,
+          resolvedByRunId: null,
+          resolvedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(issueThreadInteractions.id, request.interactionId),
+            eq(issueThreadInteractions.companyId, input.companyId),
+            eq(issueThreadInteractions.status, "pending"),
+          ),
+        );
+    await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
+    await recordOpenwaAudit(tx, {
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      kind: "approval_cancelled",
+      actorKind: "user",
+      actorRef: input.userId,
+      chatKey: request.originChatKey,
+      conversationId: request.originConversationId,
+      metadata: { requestId: request.id, via: "paperclip", interactionId: request.interactionId },
+    });
+    await logOpenwaActivity(tx, {
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      action: "openwa.approval_cancelled",
+      actorUserId: input.userId,
+      details: { requestId: request.id, via: "paperclip" },
+    });
+    return { requestId: request.id, status: "cancelled" as const, interactionId: request.interactionId };
+  });
+}

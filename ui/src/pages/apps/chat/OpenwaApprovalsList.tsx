@@ -69,8 +69,32 @@ function resolveErrorMessage(error: unknown): string {
 function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; approval: OpenwaApproval; onNotice: (notice: Notice) => void }) {
   const queryClient = useQueryClient();
   const [decision, setDecision] = useState<Decision | null>(null);
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const [note, setNote] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const refresh = () => void queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaApprovals(endpointId) });
+  const failed = (failure: unknown) => {
+    if (failure instanceof ApiError && failure.status === 409) {
+      setDecision(null);
+      setConfirmingCancel(false);
+      setError(null);
+      onNotice({ tone: "alert", text: alreadyResolvedMessage(failure) });
+      refresh();
+      return;
+    }
+    setError(resolveErrorMessage(failure));
+    if (failure instanceof ApiError && failure.status === 403) refresh();
+  };
+  const cancel = useMutation({
+    mutationFn: () => chatEndpointsApi.cancelOpenwaApproval(endpointId, approval.id),
+    onSuccess: () => {
+      setConfirmingCancel(false);
+      setError(null);
+      onNotice({ tone: "status", text: "Request cancelled. No permission was granted." });
+      refresh();
+    },
+    onError: failed,
+  });
   const resolve = useMutation({
     mutationFn: (input: { decision: Decision; reason?: string }) => chatEndpointsApi.resolveOpenwaApproval(endpointId, approval.id, input),
     onSuccess: (result) => {
@@ -78,19 +102,9 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
       setNote("");
       setError(null);
       onNotice({ tone: "status", text: result.status === "approved" ? "Request approved. The agent continues with the granted permission." : "Request rejected. The agent tells the requester." });
-      void queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaApprovals(endpointId) });
+      refresh();
     },
-    onError: (failure) => {
-      if (failure instanceof ApiError && failure.status === 409) {
-        setDecision(null);
-        setError(null);
-        onNotice({ tone: "alert", text: alreadyResolvedMessage(failure) });
-        void queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaApprovals(endpointId) });
-        return;
-      }
-      setError(resolveErrorMessage(failure));
-      if (failure instanceof ApiError && failure.status === 403) void queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaApprovals(endpointId) });
-    },
+    onError: failed,
   });
   const submit = () => {
     if (!decision) return;
@@ -190,10 +204,23 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
               </Button>
             </div>
           </div>
+        ) : confirmingCancel ? (
+          <div className="space-y-2 rounded-lg border border-border p-3">
+            <p className="text-sm">Cancel this request? The agent gets no permission and is not woken; it no longer sees the request as pending.</p>
+            <div className="flex items-center justify-end gap-2">
+              <Button size="sm" variant="ghost" disabled={cancel.isPending} onClick={() => { setConfirmingCancel(false); setError(null); }}>
+                Keep request
+              </Button>
+              <Button size="sm" variant="destructive" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
+                {cancel.isPending ? "Cancelling…" : "Confirm cancellation"}
+              </Button>
+            </div>
+          </div>
         ) : (
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => { setDecision("approve"); setError(null); }}>Approve</Button>
             <Button size="sm" variant="outline" onClick={() => { setDecision("reject"); setError(null); }}>Reject</Button>
+            <Button size="sm" variant="ghost" className="ml-auto" onClick={() => { setConfirmingCancel(true); setError(null); }}>Cancel request</Button>
           </div>
         )
       ) : null}

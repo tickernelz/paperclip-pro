@@ -7,7 +7,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
 import { OpenwaApprovalsList } from "./OpenwaApprovalsList";
 
-const mocks = vi.hoisted(() => ({ listOpenwaApprovals: vi.fn(), resolveOpenwaApproval: vi.fn() }));
+const mocks = vi.hoisted(() => ({ listOpenwaApprovals: vi.fn(), resolveOpenwaApproval: vi.fn(), cancelOpenwaApproval: vi.fn() }));
 vi.mock("@/api/chatEndpoints", () => ({ chatEndpointsApi: mocks }));
 
 const approval = (id: string, overrides: Record<string, unknown> = {}) => ({
@@ -166,11 +166,60 @@ describe("OpenWA approvals list", () => {
     expect(button("Confirm approval")).toBeDefined();
   });
 
+  it("cancels a pending request after confirmation and refreshes the list", async () => {
+    mocks.listOpenwaApprovals.mockResolvedValueOnce([approval("r1")]).mockResolvedValue([]);
+    mocks.cancelOpenwaApproval.mockResolvedValue({ requestId: "r1", status: "cancelled" });
+    render();
+    await vi.waitFor(() => expect(button("Cancel request")).toBeDefined());
+    click("Cancel request");
+    expect(mocks.cancelOpenwaApproval).not.toHaveBeenCalled();
+    click("Keep request");
+    expect(button("Confirm cancellation")).toBeUndefined();
+    click("Cancel request");
+    click("Confirm cancellation");
+    await vi.waitFor(() => expect(container.textContent).toContain("Request cancelled."));
+    expect(mocks.cancelOpenwaApproval).toHaveBeenCalledWith("endpoint-1", "r1");
+    expect(mocks.resolveOpenwaApproval).not.toHaveBeenCalled();
+    await vi.waitFor(() => expect(container.textContent).toContain("No requests are waiting."));
+    expect(mocks.listOpenwaApprovals).toHaveBeenCalledTimes(2);
+  });
+
+  it("refreshes and explains when a request was resolved before the cancellation", async () => {
+    mocks.listOpenwaApprovals.mockResolvedValueOnce([approval("r1")]).mockResolvedValue([]);
+    mocks.cancelOpenwaApproval.mockRejectedValue(
+      new ApiError("This approval request has already been resolved", 409, {
+        error: "This approval request has already been resolved",
+        code: "already_resolved",
+        details: { code: "already_resolved", requestStatus: "approved" },
+      }),
+    );
+    render();
+    await vi.waitFor(() => expect(button("Cancel request")).toBeDefined());
+    click("Cancel request");
+    click("Confirm cancellation");
+    await vi.waitFor(() => expect(container.querySelector("[role=alert]")?.textContent).toContain("Another owner already approved this request."));
+    await vi.waitFor(() => expect(mocks.listOpenwaApprovals).toHaveBeenCalledTimes(2));
+  });
+
+  it("explains that only endpoint owners can cancel when the server refuses with 403", async () => {
+    mocks.listOpenwaApprovals.mockResolvedValue([approval("r1")]);
+    mocks.cancelOpenwaApproval.mockRejectedValue(
+      new ApiError("Only a current owner of the chat endpoint can cancel this approval", 403, { error: "Only a current owner of the chat endpoint can cancel this approval" }),
+    );
+    render();
+    await vi.waitFor(() => expect(button("Cancel request")).toBeDefined());
+    click("Cancel request");
+    click("Confirm cancellation");
+    await vi.waitFor(() => expect(container.querySelector("[role=alert]")?.textContent).toContain("Only owners of this WhatsApp connection"));
+    expect(button("Confirm cancellation")).toBeDefined();
+  });
+
   it("shows view-only rows to non-owners without resolve actions", async () => {
     mocks.listOpenwaApprovals.mockResolvedValue([approval("r1", { canResolve: false })]);
     render();
     await vi.waitFor(() => expect(container.textContent).toContain("Create a task for Budi's refund"));
     expect(button("Approve")).toBeUndefined();
+    expect(button("Cancel request")).toBeUndefined();
     expect(container.querySelector("[role=note]")?.textContent).toContain("Only owners of this WhatsApp connection");
   });
 

@@ -7,6 +7,7 @@ import supertest from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   agentWakeupRequests,
   authUsers,
@@ -675,5 +676,63 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const ownerRun = await runStart(t, ownerWake);
     const ownerDenied = await failure(requestApproval(ownerRun.binding));
     expect(codeOf(ownerDenied)).toBe("approval_not_needed");
+  }, 120_000);
+
+  it("spec 6.9: an owner cancels a pending request in Paperclip; non-owners and resolved requests are refused", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin buat task" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    const request = await requestRow(created.requestId);
+    const [bubbleId] = await bubbleIds(request.id);
+    const scheduled = await reminderStates(request.id);
+    expect(scheduled.length).toBeGreaterThan(0);
+    const cancelPath = "/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + request.id + "/cancel";
+
+    const outsider = await linkUser(t.companyId, "Board member");
+    const denied = await supertest(channelApp(t, outsider)).post(cancelPath).send({});
+    expect(denied.status).toBe(403);
+    expect((await requestRow(request.id)).status).toBe("pending");
+    expect(await reminderStates(request.id)).toEqual(scheduled);
+
+    const wakesBefore = t.wakeup.mock.calls.length;
+    const cancelled = await supertest(channelApp(t, t.userId)).post(cancelPath).send({});
+    expect(cancelled.status).toBe(200);
+    expect(cancelled.body).toEqual({ requestId: request.id, status: "cancelled" });
+    expect(await requestRow(request.id)).toMatchObject({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: t.userId });
+    expect(await reminderStates(request.id)).toEqual(scheduled.map(() => "approval_reminder:cancelled"));
+    const [card] = await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, request.interactionId!));
+    expect(card).toMatchObject({ status: "cancelled", resolvedByUserId: t.userId, result: expect.objectContaining({ outcome: "withdrawn" }) });
+    expect(await grantsOf(request.id)).toEqual([]);
+    expect(t.wakeup.mock.calls.length).toBe(wakesBefore);
+    expect(await db.select().from(chatActions).where(eq(chatActions.providerActionId, "openwa-approval-resolved:" + request.id))).toEqual([]);
+    const audit = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_cancelled")));
+    expect(audit).toEqual([expect.objectContaining({ actorKind: "user", actorRef: t.userId, metadata: expect.objectContaining({ requestId: request.id, via: "paperclip" }) })]);
+    const activity = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.approval_cancelled")));
+    expect(activity).toEqual([expect.objectContaining({ actorType: "user", actorId: t.userId, entityId: t.endpointId })]);
+
+    const again = await supertest(channelApp(t, t.userId)).post(cancelPath).send({});
+    expect(again.status).toBe(409);
+    expect(again.body.details).toMatchObject({ code: "already_resolved", requestStatus: "cancelled" });
+
+    const late = await admitted(t, { chatId: jid(OWNER_PHONE), body: "boleh", extra: { quotedMessage: { id: bubbleId, body: "x" } } });
+    expect(late.request.payload).toMatchObject({ openwa: { event: "approval_reply", approvalRequestId: request.id, requestStatus: "resolved" } });
+    const lateRun = await runStart(t, late);
+    const lateResolve = await failure(executeOpenwaTool(db, lateRun.binding, "openwa_approval_resolve", { requestId: request.id, decision: "approve" }));
+    expect(codeOf(lateResolve)).toBe("already_resolved");
+    expect(await grantsOf(request.id)).toEqual([]);
+
+    const second = await requestApproval(runA.binding, { message: "Second request" });
+    const approved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + second.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(approved.status).toBe(200);
+    const cancelApproved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + second.requestId + "/cancel")
+      .send({});
+    expect(cancelApproved.status).toBe(409);
+    expect(cancelApproved.body.details).toMatchObject({ code: "already_resolved", requestStatus: "approved" });
+    expect((await requestRow(second.requestId)).status).toBe("approved");
+    expect(await grantsOf(second.requestId)).toHaveLength(1);
   }, 120_000);
 });
