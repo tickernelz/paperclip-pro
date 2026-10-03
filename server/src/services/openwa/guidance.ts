@@ -30,6 +30,7 @@ import {
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
 import type { OpenwaRunContext, OpenwaRunProfile } from "./authority.js";
+import { takeOpenwaLateTranscripts } from "./late-transcripts.js";
 
 export const OPENWA_GUIDANCE_VERSION = 1;
 export const OPENWA_WAKE_CONTEXT_KEY = "paperclipOpenwaWake";
@@ -72,6 +73,14 @@ export type OpenwaWakeMedia =
   | { kind: string; pending: true; mime: string | null; size: number | null }
   | { kind: string; unavailable: string; mime: string | null; size: number | null };
 
+export interface OpenwaWakeLateTranscript {
+  messageId: string;
+  attachmentId: string;
+  transcript?: string;
+  transcriptTruncated?: true;
+  unavailable?: string;
+}
+
 export interface OpenwaWakeMessage {
   id: string | null;
   triggerId: string;
@@ -105,6 +114,7 @@ export interface OpenwaWakeEvent {
     grants: Array<{ id: string; category: OpenwaGrantCategory; expiresAt: string }>;
   };
   pendingApprovals: Array<{ requestId: string; summary: string; status: string; categories: OpenwaGrantCategory[] }>;
+  lateTranscripts?: OpenwaWakeLateTranscript[];
   lastOutputSuppressed?: true;
 }
 
@@ -479,7 +489,7 @@ export async function buildOpenwaRunGuidance(
   const event = wakeEventName(str(wakeOpenwa.event) ?? str(contextOpenwa.event));
   const approvalRequestId =
     openwa.approvalRequestId ?? str(wakeOpenwa.approvalRequestId) ?? str(contextOpenwa.approvalRequestId);
-  const [resource, deliveryRows, lastOutputSuppressed] = await Promise.all([
+  const [resource, deliveryRows, lastOutputSuppressed, lateTranscripts] = await Promise.all([
     db
       .select({ settings: chatEndpointResources.settings, label: chatEndpointResources.label, metadata: chatEndpointResources.metadata })
       .from(chatEndpointResources)
@@ -516,6 +526,9 @@ export async function buildOpenwaRunGuidance(
           .limit(OPENWA_WAKE_MAX_MESSAGES)
       : Promise.resolve([] as DeliveryRow[]),
     readOpenwaLastOutputSuppressed(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id, runId: input.runId }),
+    input.runId
+      ? takeOpenwaLateTranscripts(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id, runId: input.runId })
+      : Promise.resolve([]),
   ]);
   const deliveries = (deliveryRows as DeliveryRow[]).filter(
     (delivery) => str(record(delivery.normalizedEvent.openwa).chatKey) === openwa.chatKey,
@@ -549,6 +562,10 @@ export async function buildOpenwaRunGuidance(
     const waId = str(record(delivery.normalizedEvent.openwa).waMessageId);
     return messageFrom(delivery, waId ? mediaByWaId.get(waId) : undefined);
   });
+  const transcribed = new Set(
+    messages.flatMap((message) => message.media.flatMap((media) => ("attachmentId" in media && media.transcript ? [media.attachmentId] : []))),
+  );
+  const freshTranscripts = lateTranscripts.filter((item) => !transcribed.has(item.attachmentId));
   const settings = parseSettings(resource?.settings);
   const chatTriggerOpenwa = record(deliveries.at(-1)?.normalizedEvent.openwa);
   const chatId = str(chatTriggerOpenwa.chatId) ?? openwa.chatKey;
@@ -603,6 +620,20 @@ export async function buildOpenwaRunGuidance(
         categories: request.categories,
       }),
     ),
+    ...(freshTranscripts.length > 0
+      ? {
+          lateTranscripts: freshTranscripts.slice(-MAX_MEDIA_PER_MESSAGE).map((item): OpenwaWakeLateTranscript =>
+            item.transcriptStatus === "done" && item.transcript
+              ? {
+                  messageId: item.waMessageId,
+                  attachmentId: item.attachmentId,
+                  transcript: truncate(item.transcript, OPENWA_WAKE_MAX_TEXT).text,
+                  ...(item.transcriptTruncated || item.transcript.length > OPENWA_WAKE_MAX_TEXT ? { transcriptTruncated: true as const } : {}),
+                }
+              : { messageId: item.waMessageId, attachmentId: item.attachmentId, unavailable: item.transcriptError ?? "transcript_unavailable" },
+          ),
+        }
+      : {}),
     ...(lastOutputSuppressed ? { lastOutputSuppressed: true as const } : {}),
   };
   const facts: OpenwaGuidanceFacts = {
@@ -675,6 +706,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     ...grantLines,
     "- " + replyLine,
     "- Pending approval requests for this chat: " + wake.pendingApprovals.length + ".",
+    ...(wake.lateTranscripts?.length ? ["- Voice transcripts that finished after an earlier wake: " + wake.lateTranscripts.length + " (wake event `lateTranscripts`, keyed by message `id`)."] : []),
     ...(wake.lastOutputSuppressed ? ["- Your previous final output in this chat was not published (it stayed internal)."] : []),
   ];
   const howLines = [

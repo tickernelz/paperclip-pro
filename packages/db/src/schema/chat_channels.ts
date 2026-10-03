@@ -541,6 +541,9 @@ export const chatDeliveries = pgTable(
       sql`${table.answerState} is null or ${table.answerState} in ('pending', 'answered', 'silenced', 'handed_off')`,
     ),
     index("chat_deliveries_work_idx").on(table.state, table.nextAttemptAt),
+    index("chat_deliveries_pending_answer_idx")
+      .on(table.endpointId, table.conversationId, table.receivedAt)
+      .where(sql`${table.answerState} = 'pending'`),
     unique("chat_deliveries_company_id_uq").on(table.companyId, table.id),
     uniqueIndex("chat_deliveries_event_uq").on(
       table.endpointId,
