@@ -25,6 +25,7 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import { HttpError, badRequest, forbidden, notFound } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
+import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";
 import type { IssueAssignmentWakeupDeps } from "../issue-assignment-wakeup.js";
 import { issueService } from "../issues.js";
@@ -204,7 +205,9 @@ function plannedBubbles(owners: OpenwaCurrentOwner[]): PlannedBubble[] {
 
 function bubbleText(ctx: ToolContext, markdown: string): string {
   const prefix = ctx.policy.numberMode === "owner_number" && ctx.policy.ownerNumberPrefix.enabled ? ctx.policy.ownerNumberPrefix.text : null;
-  const formatted = formatOpenwaPublication({ markdown, prefix });
+  const safe = projectSafeChatPublicationTextOrNull(markdown);
+  if (safe === null) throw new OpenwaToolError(422, "gateway_error", "messageToOwners is empty after removing hidden content");
+  const formatted = formatOpenwaPublication({ markdown: safe, prefix });
   if (formatted.kind !== "text" || formatted.parts.length !== 1)
     throw new OpenwaToolError(422, "message_too_long", "messageToOwners must fit in one WhatsApp message");
   return formatted.parts[0]!;

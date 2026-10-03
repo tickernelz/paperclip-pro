@@ -40,6 +40,7 @@ import { secretService } from "../../services/secrets.js";
 import { HttpError } from "../../errors.js";
 import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, restoreOpenwaGrant, type OpenwaRunContext } from "../../services/openwa/authority.js";
 import { accessService } from "../../services/access.js";
+import { openwaBodyHash } from "../../services/openwa/outbound.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -703,6 +704,30 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     await restoreOpenwaGrant(db, { companyId: t.companyId, runId: grantRun.runId, grantId: grant!.id });
     expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
     await expect(assertOpenwaRunMay(db, grantRun.run, "create_task")).rejects.toMatchObject({ status: 403 });
+  }, 120_000);
+
+  it("sanitizes credential-shaped text in the approval bubble before it is sent or recorded", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "tolong buatkan akses" });
+    const runA = await runStart(t, wakeA);
+    const token = "ghp_" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6Q7r8";
+    const created = await requestApproval(runA.binding, { message: "Member wants access; they pasted " + token + " in the chat. Approve?" });
+    const [bubbleId] = await bubbleIds(created.requestId);
+    const sent = t.gateway.sends.find((send) => send.messageId === bubbleId)!;
+    expect(sent.chatId).toBe(jid(OWNER_PHONE));
+    expect(sent.text).toContain("Approve?");
+    expect(sent.text).not.toContain(token);
+    const outbound = await db
+      .select()
+      .from(chatOutboundMessages)
+      .where(and(eq(chatOutboundMessages.endpointId, t.endpointId), eq(chatOutboundMessages.providerMessageId, bubbleId!)));
+    expect(outbound).toHaveLength(1);
+    expect(JSON.stringify(outbound)).not.toContain(token);
+    expect(outbound[0]!.bodyHash).toBe(openwaBodyHash(sent.text));
+    expect(JSON.stringify(await requestRow(created.requestId))).not.toContain(token);
+
+    const empty = await failure(requestApproval(runA.binding, { message: "<thinking>secret plan</thinking>" }));
+    expect(codeOf(empty)).toBe("gateway_error");
   }, 120_000);
 
   it("revokes an owner's grants when company membership demotes them to viewer", async () => {
