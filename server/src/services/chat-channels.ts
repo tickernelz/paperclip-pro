@@ -31,8 +31,17 @@ import { openwaMediaService } from "./openwa/media.js";
 import { openwaLateTranscriptListener, type OpenwaLateTranscriptHook } from "./openwa/late-transcripts.js";
 import type { OpenwaInboundEvent } from "./openwa/receiver.js";
 import { listOpenwaAudit } from "./openwa/audit.js";
-import { createOpenwaAdmission, parseOpenwaDecoration, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
-import { createOpenwaPolicyCache } from "./openwa/policy.js";
+import { createOpenwaAdmission, openwaAdmitInput, openwaInboundDecoration, parseOpenwaDecoration, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
+import { createOpenwaPolicyCache, openwaSenderRole } from "./openwa/policy.js";
+import {
+  activeOpenwaScheduledWakes,
+  createOpenwaScheduledWakes,
+  createOpenwaTimerHooks,
+  type OpenwaAbsenceIntent,
+  type OpenwaLateOwnerActivity,
+  type OpenwaScheduledWakeClock,
+  type OpenwaScheduledWakes,
+} from "./openwa/scheduled-wakes.js";
 import { bumpOpenwaPolicyRevision, openwaOwnerService, openwaPrincipalAuthorization, syncOpenwaGroupActivation } from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { issueReferenceService } from "./issue-references.js";
@@ -1528,6 +1537,8 @@ export interface ChatChannelServiceOptions {
   }) => Promise<boolean>;
   openwaIngressHooks?: OpenwaIngressHooks;
   openwaTimerHooks?: OpenwaTimerHooks;
+  openwaLateOwnerActivity?: (input: OpenwaLateOwnerActivity) => Promise<void>;
+  openwaScheduledWakeClock?: OpenwaScheduledWakeClock;
   /** Test override for Discord Gateway leader-lease expiry. */
   discordGatewayLeaseTtlMs?: number;
   /** Test override for Discord Gateway leader-lease renewal cadence. */
@@ -1579,6 +1590,7 @@ type DiscordGatewayOwnership = {
   expiresAt: Date;
   leaseKey: typeof DISCORD_GATEWAY_LEASE_KEY | "photon_receiver_runtime" | "openwa_receiver_runtime";
   renewTimer: ReturnType<typeof setInterval> | null;
+  scheduledWakes: OpenwaScheduledWakes | null;
   renewal: Promise<void> | null;
   stopPromise: Promise<void> | null;
   stopping: boolean;
@@ -3067,7 +3079,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     db,
     policies: openwaPolicies,
     outbound: openwaOutbound,
-    timers: options.openwaTimerHooks,
+    timers: options.openwaTimerHooks ?? createOpenwaTimerHooks({ lookup: activeOpenwaScheduledWakes, policies: openwaPolicies }),
   });
   const openwaMessages = new WeakMap<object, OpenwaAdmissionDecoration>();
   const fetchImpl = options.fetch ?? globalThis.fetch;
@@ -3151,7 +3163,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (discordGatewayOwnerships.get(ownership.endpointId) === ownership) {
       discordGatewayOwnerships.delete(ownership.endpointId);
     }
+    const scheduledWakesStopped = ownership.scheduledWakes?.stop();
     ownership.stopPromise = (async () => {
+      await scheduledWakesStopped;
       if (
         removeRuntime &&
         ownership.context.endpointRuntime &&
@@ -3430,10 +3444,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           leaseKey: receiverLeaseKey,
           renewal: null,
           renewTimer: null,
+          scheduledWakes: null,
           stopPromise: null,
           stopping: false,
           token,
         };
+        if (endpoint.provider === "openwa") ownership.scheduledWakes = createOpenwaScheduledWakesFor(endpoint, ownership);
         discordGatewayOwnerships.set(endpoint.id, ownership);
         startDiscordGatewayLeaseRenewal(ownership);
         return ownership;
@@ -8053,6 +8069,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         context.discordGatewayOwned = discordOwnership !== null;
         let instance: ChatSdkEndpointRuntime | null = null;
         try {
+          if (discordOwnership?.scheduledWakes) await discordOwnership.scheduledWakes.load();
           const stale = runtime.get(endpoint.id);
           if (stale) {
             runtimeVersions.delete(endpoint.id);
@@ -8195,6 +8212,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             throw discordGatewayNotOwnedError();
           }
           runtimeVersions.set(endpoint.id, context.version);
+          if (discordOwnership?.scheduledWakes) await discordOwnership.scheduledWakes.start();
           return instance;
         } catch (error) {
           if (instance && runtime.get(endpoint.id) === instance) {
@@ -8487,6 +8505,95 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       null,
       false,
     );
+  }
+
+  function createOpenwaScheduledWakesFor(endpoint: EndpointRow, ownership: DiscordGatewayOwnership) {
+    return createOpenwaScheduledWakes({
+      db,
+      companyId: endpoint.companyId,
+      endpointId: endpoint.id,
+      heartbeat: options.heartbeat,
+      clock: options.openwaScheduledWakeClock,
+      onLateOwnerActivity: options.openwaLateOwnerActivity,
+      deliverAbsence: (intent) => deliverOpenwaAbsence(intent, ownership),
+    });
+  }
+
+  function currentOpenwaRuntimeContext(endpointId: string, ownership: DiscordGatewayOwnership): RuntimeContext | null {
+    const instance = runtime.get(endpointId);
+    const context = instance ? runtimeContexts.get(instance as object) : undefined;
+    if (!context || ownership.stopping || discordGatewayOwnerships.get(endpointId) !== ownership) return null;
+    return discordGatewayRuntimeIsCurrent(endpointId, context) ? context : null;
+  }
+
+  async function deliverOpenwaAbsence(intent: OpenwaAbsenceIntent, ownership: DiscordGatewayOwnership) {
+    const context = currentOpenwaRuntimeContext(intent.endpointId, ownership);
+    const adapter = context?.endpointRuntime?.getProviderAdapter();
+    if (!context || !(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA runtime is unavailable for an owner_absent wake");
+    const snapshot = await openwaPolicies.get(intent.companyId, intent.endpointId);
+    if (!snapshot) throw new Error("OpenWA policy is unavailable for an owner_absent wake");
+    const sessionId = adapter.gateway.sessionId;
+    const dedupeKeys = intent.messages.map((event) => event.dedupeKey);
+    for (const [index, event] of intent.messages.entries()) {
+      const decoration = openwaInboundDecoration(event, {
+        event: "owner_absent",
+        triggerClass: "other",
+        principalRole: openwaSenderRole(snapshot, null, event.senderPhone),
+        rules: [],
+        addressed: false,
+        control: null,
+        quotedFromAgent: false,
+        absence: { wakeId: intent.wakeId, carrier: index === intent.messages.length - 1, dedupeKeys },
+      });
+      await admitOpenwaMessage(intent.endpointId, openwaAdmitInput({ sessionId }, adapter, event, decoration), context);
+    }
+  }
+
+  async function openwaAbsenceDeliveryIds(
+    tx: DbOrTransaction,
+    endpoint: EndpointRow,
+    decoration: OpenwaAdmissionDecoration,
+    conversationId: string,
+    carrierId: string,
+  ): Promise<string[]> {
+    const keys = decoration.absence?.dedupeKeys ?? [];
+    const rows = keys.length
+      ? await tx
+          .select({ id: chatDeliveries.id })
+          .from(chatDeliveries)
+          .where(
+            and(
+              eq(chatDeliveries.endpointId, endpoint.id),
+              inArray(chatDeliveries.deduplicationKey, keys),
+              eq(chatDeliveries.companyId, endpoint.companyId),
+              eq(chatDeliveries.conversationId, conversationId),
+              isNotNull(chatDeliveries.answerState),
+            ),
+          )
+          .orderBy(asc(chatDeliveries.receivedAt), asc(chatDeliveries.id))
+      : [];
+    const ids = rows.map((row) => row.id).filter((id) => id !== carrierId);
+    return [...ids, carrierId];
+  }
+
+  function openwaAbsenceCompanion(decoration: OpenwaAdmissionDecoration | null): boolean {
+    return decoration?.event === "owner_absent" && decoration.absence?.carrier === false;
+  }
+
+  async function acceptOpenwaAbsenceCompanion(
+    deliveryId: string,
+    attachmentResult: Awaited<ReturnType<typeof ingestAttachments>>,
+  ) {
+    await db
+      .update(chatDeliveries)
+      .set({
+        state: "processed",
+        processedAt: new Date(),
+        redactedError: attachmentOmissionDetail(attachmentResult),
+        nextAttemptAt: null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(chatDeliveries.id, deliveryId), eq(chatDeliveries.state, "processing")));
   }
 
   function gatewayForOpenwaEndpoint(endpoint: EndpointRow) {
@@ -11914,6 +12021,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       principalId: string;
       actorUserId: string | null;
       openwa?: Pick<OpenwaAdmissionDecoration, "event" | "triggerClass"> | null;
+      openwaDeliveryIds?: string[];
     },
   ) {
     await tx
@@ -11936,7 +12044,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           requestedByActorType: input.actorUserId ? "user" : "system",
           requestedByActorId: input.actorUserId ?? input.principalId,
           ...(input.openwa
-            ? { openwa: { event: input.openwa.event, triggerClass: input.openwa.triggerClass, deliveryIds: [input.deliveryId] } }
+            ? { openwa: { event: input.openwa.event, triggerClass: input.openwa.triggerClass, deliveryIds: input.openwaDeliveryIds ?? [input.deliveryId] } }
             : {}),
         },
       })
@@ -15685,18 +15793,23 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         if (!rebound) throw notFound("Bound task not found");
         if (!activeDelivery.principalId)
           throw new Error("chat_inbound_wakeup_principal_missing");
-        await stageInboundWakeup(db, {
-          endpoint,
-          deliveryId: activeDelivery.id,
-          conversation: rebound.conversation,
-          commentId: inboundCommentId,
-          principalId: activeDelivery.principalId,
-          actorUserId: rebound.authorUserId,
-          openwa:
-            openwaDecoration && activeDelivery.triggerClass
-              ? { event: openwaDecoration.event, triggerClass: activeDelivery.triggerClass }
-              : openwaDecoration,
-        });
+        if (!openwaAbsenceCompanion(openwaDecoration))
+          await stageInboundWakeup(db, {
+            endpoint,
+            deliveryId: activeDelivery.id,
+            conversation: rebound.conversation,
+            commentId: inboundCommentId,
+            principalId: activeDelivery.principalId,
+            actorUserId: rebound.authorUserId,
+            openwa:
+              openwaDecoration && activeDelivery.triggerClass
+                ? { event: openwaDecoration.event, triggerClass: activeDelivery.triggerClass }
+                : openwaDecoration,
+            openwaDeliveryIds:
+              openwaDecoration?.event === "owner_absent"
+                ? await openwaAbsenceDeliveryIds(db, endpoint, openwaDecoration, rebound.conversation.id, activeDelivery.id)
+                : undefined,
+          });
         // Attachment storage follows the atomic task/comment/link mutation.
         // If a later wakeup or provider subscription failed, retry from the
         // committed delivery link and fill in only files that are still
@@ -15741,6 +15854,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         // fails, keep the delivery retryable; the committed message link makes
         // the retry resume here without duplicating the task or comment.
         if (addressed && !thread.isDM) await thread.subscribe();
+        if (openwaAbsenceCompanion(openwaDecoration)) {
+          await acceptOpenwaAbsenceCompanion(activeDelivery.id, attachmentResult);
+          return;
+        }
         await acceptInboundWakeup(activeDelivery.id, attachmentResult);
         if (!(await processInboundWakeup(activeDelivery.id))) return;
         const acceptedWake = await db
@@ -16405,7 +16522,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         openwaDecoration && openwaMutationAuthorization
           ? {
               ...openwaDecoration,
-              triggerClass: openwaDecoration.event === "group_added" ? ("other" as const) : openwaMutationAuthorization.triggerClass,
+              triggerClass: openwaDecoration.event === "message" ? openwaMutationAuthorization.triggerClass : ("other" as const),
               principalRole: openwaMutationAuthorization.role,
             }
           : openwaDecoration;
@@ -16675,7 +16792,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               ? {
                   triggerClass: effectiveOpenwa()!.triggerClass,
                   principalRole: effectiveOpenwa()!.principalRole,
-                  answerState: openwaDecoration.event === "message" ? ("pending" as const) : null,
+                  answerState: openwaDecoration.event === "group_added" ? null : ("pending" as const),
                   normalizedEvent: sql`${chatDeliveries.normalizedEvent} || ${JSON.stringify({ openwa: effectiveOpenwa() })}::jsonb`,
                 }
               : {}),
@@ -16730,15 +16847,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             policySnapshot: githubAutomatic.policy, event: githubAutomatic.context, state: "queued",
           }).onConflictDoNothing();
         }
-        await stageInboundWakeup(taskTx, {
-          endpoint: taskEndpoint,
-          deliveryId: activeDelivery.id,
-          conversation,
-          commentId: comment.id,
-          principalId: principalResolution.principal.id,
-          actorUserId: taskUserId,
-          openwa: effectiveOpenwa(),
-        });
+        if (!openwaAbsenceCompanion(openwaDecoration))
+          await stageInboundWakeup(taskTx, {
+            endpoint: taskEndpoint,
+            deliveryId: activeDelivery.id,
+            conversation,
+            commentId: comment.id,
+            principalId: principalResolution.principal.id,
+            actorUserId: taskUserId,
+            openwa: effectiveOpenwa(),
+            openwaDeliveryIds:
+              openwaDecoration?.event === "owner_absent"
+                ? await openwaAbsenceDeliveryIds(taskTx, taskEndpoint, openwaDecoration, conversation!.id, activeDelivery.id)
+                : undefined,
+          });
         if (taskEndpoint.provider === "imessage-photon") {
           await logActivity(
             taskTx as Db,
@@ -16937,6 +17059,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       // processed. A retry reuses the committed message link above and tries
       // this idempotent subscription again before completing the delivery.
       if (addressed && !thread.isDM) await thread.subscribe();
+      if (openwaAbsenceCompanion(openwaDecoration)) {
+        await acceptOpenwaAbsenceCompanion(activeDelivery.id, attachmentResult);
+        return;
+      }
       await acceptInboundWakeup(activeDelivery.id, attachmentResult);
       if (!(await processInboundWakeup(activeDelivery.id))) return;
       const acceptedWake = await db
@@ -38853,6 +38979,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           ownership.renewTimer = null;
         }
       }
+      await Promise.allSettled(ownedDiscordGateways.map((ownership) => ownership.scheduledWakes?.stop()));
       discordGatewayOwnerships.clear();
       await Promise.allSettled(
         ownedDiscordGateways

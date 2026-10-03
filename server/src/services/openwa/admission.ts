@@ -44,7 +44,13 @@ const DISCOVERY_RETRY_MS = 60_000;
 const LEARNED_LID_CAP = 10_000;
 const AUDIT_TEXT_LIMIT = 4_096;
 
-export type OpenwaWakeEvent = "message" | "group_added";
+export type OpenwaWakeEvent = "message" | "group_added" | "owner_absent";
+
+export interface OpenwaAbsenceBatch {
+  readonly wakeId: string;
+  readonly carrier: boolean;
+  readonly dedupeKeys: string[];
+}
 
 export interface OpenwaAdmissionDecoration {
   readonly version: 1;
@@ -67,6 +73,7 @@ export interface OpenwaAdmissionDecoration {
   readonly contact: Record<string, unknown> | null;
   readonly media: { mimetype: string | null; filename: string | null; sizeBytes: number | null; omitted: boolean } | null;
   readonly group: { name: string | null; participantCount: number; actorMasked: string | null } | null;
+  readonly absence?: OpenwaAbsenceBatch | null;
 }
 
 export interface OpenwaWakePayload {
@@ -125,7 +132,7 @@ function record(value: unknown): Record<string, unknown> | null {
 export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration | null {
   const source = record(value);
   if (!source || source.version !== 1) return null;
-  const event = source.event === "group_added" ? "group_added" : source.event === "message" ? "message" : null;
+  const event = source.event === "group_added" || source.event === "message" || source.event === "owner_absent" ? source.event : null;
   const triggerClass = source.triggerClass === "owner" || source.triggerClass === "other" || source.triggerClass === "grant" ? source.triggerClass : null;
   const principalRole =
     source.principalRole === "owner" || source.principalRole === "allowed" || source.principalRole === "outside_allowlist" || source.principalRole === "denylisted"
@@ -139,6 +146,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
   const quoted = record(source.quoted);
   const media = record(source.media);
   const group = record(source.group);
+  const absence = record(source.absence);
   return {
     version: 1,
     event,
@@ -173,6 +181,14 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
           actorMasked: stringOf(group.actorMasked),
         }
       : null,
+    absence:
+      absence && typeof absence.wakeId === "string"
+        ? {
+            wakeId: absence.wakeId,
+            carrier: absence.carrier === true,
+            dedupeKeys: Array.isArray(absence.dedupeKeys) ? absence.dedupeKeys.filter((key): key is string => typeof key === "string") : [],
+          }
+        : null,
   };
 }
 
@@ -184,6 +200,55 @@ function senderName(event: OpenwaInboundEvent): string | null {
 function triggerFor(chatKind: "dm" | "group", addressed: boolean): ChatSdkMessageTrigger {
   if (chatKind === "dm") return "direct_message";
   return addressed ? "mention" : "unaddressed_message";
+}
+
+export function openwaInboundDecoration(
+  event: OpenwaInboundEvent,
+  input: {
+    event?: OpenwaWakeEvent;
+    triggerClass: OpenwaTriggerClass;
+    principalRole: OpenwaPrincipalRole;
+    rules: OpenwaTriggerRule[];
+    addressed: boolean;
+    control: "new" | "close" | null;
+    quotedFromAgent: boolean;
+    absence?: OpenwaAbsenceBatch | null;
+  },
+): OpenwaAdmissionDecoration {
+  return {
+    version: 1,
+    event: input.event ?? "message",
+    triggerClass: input.triggerClass,
+    principalRole: input.principalRole,
+    rules: input.rules,
+    addressed: input.addressed,
+    control: input.control,
+    chatKey: event.chatKey,
+    chatId: event.chatKey,
+    chatKind: event.chatKind,
+    waMessageId: event.waMessageId,
+    dedupeKey: event.dedupeKey,
+    phoneTyped: event.phoneTyped,
+    sender: { jid: event.senderJid, phone: event.senderPhone, name: senderName(event) },
+    quoted: event.quoted ? { id: event.quoted.id, body: event.quoted.body, fromAgent: input.quotedFromAgent } : null,
+    mentionedIds: [...event.mentionedIds],
+    location: event.location,
+    contact: event.contact,
+    media: event.media ? { ...event.media } : null,
+    group: null,
+    ...(input.absence ? { absence: input.absence } : {}),
+  };
+}
+
+export function openwaAdmitInput(
+  runtime: Pick<OpenwaAdmissionRuntime, "sessionId">,
+  adapter: OpenwaChatAdapter,
+  event: OpenwaInboundEvent,
+  decoration: OpenwaAdmissionDecoration,
+): OpenwaAdmitInput {
+  const threadId = openwaThreadId({ sessionId: runtime.sessionId, chatId: event.chatKey, isGroup: event.chatKind === "group" });
+  const message = adapter.parseMessage({ ...event, chatId: event.chatKey });
+  return { threadId, message, trigger: triggerFor(event.chatKind, decoration.addressed), decoration };
 }
 
 export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
@@ -431,32 +496,16 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     await learnLid(snapshot, event);
     const adapter = runtime.adapter();
     if (!adapter) throw new Error("OpenWA adapter unavailable for admission");
-    const decoration: OpenwaAdmissionDecoration = {
-      version: 1,
-      event: "message",
+    const decoration = openwaInboundDecoration(event, {
       triggerClass: classification.triggerClass,
       principalRole: classification.principalRole,
       rules: classification.rules,
       addressed: classification.addressed,
       control: classification.control,
-      chatKey: event.chatKey,
-      chatId: event.chatKey,
-      chatKind: event.chatKind,
-      waMessageId: event.waMessageId,
-      dedupeKey: event.dedupeKey,
-      phoneTyped: event.phoneTyped,
-      sender: { jid: event.senderJid, phone: event.senderPhone, name: senderName(event) },
-      quoted: event.quoted ? { id: event.quoted.id, body: event.quoted.body, fromAgent } : null,
-      mentionedIds: [...event.mentionedIds],
-      location: event.location,
-      contact: event.contact,
-      media: event.media ? { ...event.media } : null,
-      group: null,
-    };
-    const threadId = openwaThreadId({ sessionId: runtime.sessionId, chatId: event.chatKey, isGroup: event.chatKind === "group" });
-    const message = adapter.parseMessage({ ...event, chatId: event.chatKey });
+      quotedFromAgent: fromAgent,
+    });
     stats.admitted++;
-    await runtime.admit({ threadId, message, trigger: triggerFor(event.chatKind, classification.addressed), decoration });
+    await runtime.admit(openwaAdmitInput(runtime, adapter, event, decoration));
   }
 
   async function groupAddedWake(
