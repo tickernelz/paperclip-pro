@@ -51,9 +51,11 @@ import {
   type OpenwaStoredMessage,
 } from "./gateway.js";
 import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
+import { openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
+import type { OpenwaOwnerService } from "./owners.js";
 import { markTriggersAnswered } from "./publication.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
@@ -112,6 +114,8 @@ export type OpenwaToolErrorCode =
   | "gateway_admin_disabled"
   | "self_session_requires_confirmation"
   | "secret_issuing_operation"
+  | "ui_only_setting"
+  | "config_conflict"
   | "invalid_arguments";
 
 export class OpenwaToolError extends HttpError {
@@ -140,6 +144,7 @@ export interface OpenwaToolRuntimeHandle {
 
 export interface OpenwaToolRuntime {
   resolve(endpoint: EndpointRow): Promise<OpenwaToolRuntimeHandle>;
+  owners: OpenwaOwnerService;
 }
 
 const runtimes = new WeakMap<Db, OpenwaToolRuntime>();
@@ -149,6 +154,12 @@ export function registerOpenwaToolRuntime(db: Db, runtime: OpenwaToolRuntime): (
   return () => {
     if (runtimes.get(db) === runtime) runtimes.delete(db);
   };
+}
+
+export function openwaToolOwners(db: Db): OpenwaOwnerService {
+  const runtime = runtimes.get(db);
+  if (!runtime) throw new OpenwaToolError(503, "gateway_unavailable", "The OpenWA runtime is not available in this process");
+  return runtime.owners;
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -1233,6 +1244,7 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_stay_silent: openwaStaySilent,
   openwa_handoff: openwaHandoff,
   openwa_catalog: (ctx, args) => openwaCatalogTool(ctx, args),
+  openwa_endpoint_config: (ctx, args) => openwaEndpointConfigTool(ctx, args),
   openwa_describe: (ctx, args) => openwaDescribeTool(ctx, args),
   openwa_call: (ctx, args) => openwaCallTool(ctx, args),
 };
@@ -1241,6 +1253,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
   const tool = openwaTool(name);
   const execute = EXECUTORS[name];
   if (!tool || !execute) throw forbidden("Unknown OpenWA tool");
+  if (name === "openwa_endpoint_config") refuseOpenwaUiOnlyConfig(value);
   const args = tool.schema.parse(value) as Args;
   const ctx = await resolveContext(db, binding);
   const started = performance.now();

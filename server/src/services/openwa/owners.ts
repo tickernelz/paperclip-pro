@@ -29,6 +29,7 @@ import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
 import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
 import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+import { openwaAuditRetentionDays, recordOpenwaAudit } from "./audit.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -299,6 +300,13 @@ export interface OpenwaOwnerServiceDeps {
   invalidate(endpointId: string): void;
 }
 
+export interface OpenwaAgentConfigOrigin {
+  agentId: string;
+  runId: string;
+  chatKey: string;
+  conversationId: string;
+}
+
 function mergePolicy(stored: Record<string, unknown>, patch: Record<string, unknown>): Record<string, unknown> {
   const merged: Record<string, unknown> = { ...stored };
   for (const [key, value] of Object.entries(patch)) {
@@ -333,20 +341,44 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     action: string,
     details: Record<string, unknown>,
     publications: ActivityPublication[],
+    origin?: OpenwaAgentConfigOrigin,
   ) {
     await logActivity(
       tx as unknown as Db,
       {
         companyId: endpoint.companyId,
-        actorType: actorUserId ? "user" : "system",
-        actorId: actorUserId ?? "board",
+        actorType: origin ? "agent" : actorUserId ? "user" : "system",
+        actorId: origin ? origin.agentId : actorUserId ?? "board",
+        ...(origin ? { agentId: origin.agentId, runId: origin.runId } : {}),
         action,
         entityType: "chat_endpoint",
         entityId: endpoint.id,
-        details: { endpointId: endpoint.id, provider: "openwa", ...details },
+        details: { endpointId: endpoint.id, provider: "openwa", ...details, ...(origin ? { via: "openwa_endpoint_config" } : {}) },
       },
       publications,
     );
+  }
+
+  async function configAudit(
+    tx: DbTransaction,
+    endpoint: EndpointRow,
+    origin: OpenwaAgentConfigOrigin,
+    metadata: Record<string, unknown>,
+    content: { before: unknown; after: unknown },
+  ) {
+    await recordOpenwaAudit(tx, {
+      companyId: endpoint.companyId,
+      endpointId: endpoint.id,
+      kind: "config_changed",
+      actorKind: "agent",
+      actorRef: origin.agentId,
+      chatKey: origin.chatKey,
+      conversationId: origin.conversationId,
+      runId: origin.runId,
+      metadata: { tool: "openwa_endpoint_config", ...metadata },
+      content,
+      retentionDays: openwaAuditRetentionDays(endpoint.policy),
+    });
   }
 
   async function mutate<T>(endpoint: EndpointRow, run: (tx: DbTransaction, publications: ActivityPublication[]) => Promise<T>): Promise<T> {
@@ -563,6 +595,92 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     });
   }
 
+  async function applySenderRuleChanges(
+    endpointId: string,
+    input: {
+      add: ReadonlyArray<{ list: "allow" | "deny"; e164: string; label?: string }>;
+      remove: ReadonlyArray<{ list: "allow" | "deny"; e164: string }>;
+    },
+    origin: OpenwaAgentConfigOrigin,
+  ): Promise<{ added: number; removed: number; unchanged: number }> {
+    if (input.add.length + input.remove.length === 0) return { added: 0, removed: 0, unchanged: 0 };
+    const endpoint = await endpointFor(endpointId);
+    const view = (rule: { list: string; e164: string; label: string | null }) => ({ list: rule.list, e164: rule.e164, label: rule.label });
+    return mutate(endpoint, async (tx, publications) => {
+      const keys = [...input.remove, ...input.add].map((entry) => entry.list + ":" + entry.e164);
+      const existing = await tx
+        .select()
+        .from(chatSenderRules)
+        .where(
+          and(
+            eq(chatSenderRules.companyId, endpoint.companyId),
+            eq(chatSenderRules.endpointId, endpoint.id),
+            inArray(sql<string>`${chatSenderRules.list} || ':' || ${chatSenderRules.e164}`, keys),
+          ),
+        )
+        .for("update");
+      const current = new Map(existing.map((rule) => [rule.list + ":" + rule.e164, rule]));
+      const before: Array<ReturnType<typeof view>> = [];
+      const after: Array<ReturnType<typeof view>> = [];
+      let added = 0;
+      let removed = 0;
+      let unchanged = 0;
+      for (const entry of input.remove) {
+        const rule = current.get(entry.list + ":" + entry.e164);
+        if (!rule) {
+          unchanged++;
+          continue;
+        }
+        await tx.delete(chatSenderRules).where(and(eq(chatSenderRules.companyId, endpoint.companyId), eq(chatSenderRules.id, rule.id)));
+        current.delete(entry.list + ":" + entry.e164);
+        before.push(view(rule));
+        removed++;
+        await audit(
+          tx,
+          endpoint,
+          null,
+          "openwa.sender_rule_changed",
+          { change: "removed", ruleId: rule.id, list: rule.list, numberMasked: maskOpenwaPhoneNumber(rule.e164) },
+          publications,
+          origin,
+        );
+      }
+      for (const entry of input.add) {
+        const key = entry.list + ":" + entry.e164;
+        const previous = current.get(key);
+        const label = entry.label ?? previous?.label ?? null;
+        if (previous && previous.label === label) {
+          unchanged++;
+          continue;
+        }
+        const [saved] = await tx
+          .insert(chatSenderRules)
+          .values({ companyId: endpoint.companyId, endpointId: endpoint.id, list: entry.list, e164: entry.e164, label })
+          .onConflictDoUpdate({
+            target: [chatSenderRules.endpointId, chatSenderRules.list, chatSenderRules.e164],
+            set: { label, updatedAt: new Date() },
+          })
+          .returning();
+        current.set(key, saved);
+        if (previous) before.push(view(previous));
+        after.push(view(saved));
+        added++;
+        await audit(
+          tx,
+          endpoint,
+          null,
+          "openwa.sender_rule_changed",
+          { change: previous ? "relabelled" : "added", ruleId: saved.id, list: saved.list, numberMasked: maskOpenwaPhoneNumber(saved.e164) },
+          publications,
+          origin,
+        );
+      }
+      if (added + removed > 0)
+        await configAudit(tx, endpoint, origin, { scope: "sender_rules", added, removed }, { before, after });
+      return { added, removed, unchanged };
+    });
+  }
+
   function chatView(row: typeof chatEndpointResources.$inferSelect): OpenwaChatView | null {
     try {
       const thread = parseOpenwaThreadId(row.providerResourceId);
@@ -607,8 +725,9 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
 
   async function putChat(
     endpointId: string,
-    input: { chatId: string; label?: string; settings: OpenwaChatSettings },
+    input: { chatId: string; label?: string; settings: OpenwaChatSettings | ((current: OpenwaChatSettings | null) => OpenwaChatSettings) },
     actorUserId: string | null,
+    origin?: OpenwaAgentConfigOrigin,
   ): Promise<OpenwaChatView> {
     const endpoint = await endpointFor(endpointId);
     const sessionId = sessionOf(endpoint);
@@ -631,10 +750,11 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
         )
         .for("update");
       const before = existing ? openwaChatSettingsSchema.safeParse(existing.settings ?? {}) : null;
-      const beforeSettings = before?.success ? before.data : { activation: "auto" as const };
+      const beforeSettings: OpenwaChatSettings = before?.success ? before.data : { activation: "auto" };
+      const settings = typeof input.settings === "function" ? input.settings(existing ? beforeSettings : null) : input.settings;
       const enabled = isGroup
-        ? openwaGroupEnabled(policy, input.settings, existing?.metadata.ownerPresent === true)
-        : input.settings.activation !== "off";
+        ? openwaGroupEnabled(policy, settings, existing?.metadata.ownerPresent === true)
+        : settings.activation !== "off";
       const [saved] = await tx
         .insert(chatEndpointResources)
         .values({
@@ -645,31 +765,40 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
           label: input.label ?? existing?.label ?? input.chatId,
           availability: "available",
           enabled,
-          settings: input.settings,
+          settings,
           metadata: { chatKey: openwaChatKey(input.chatId) },
         })
         .onConflictDoUpdate({
           target: [chatEndpointResources.endpointId, chatEndpointResources.type, chatEndpointResources.providerResourceId],
           set: {
-            settings: input.settings,
+            settings,
             enabled,
             ...(input.label ? { label: input.label } : {}),
             updatedAt: new Date(),
           },
         })
         .returning();
-      const changed = changedKeys(beforeSettings as unknown as Record<string, unknown>, input.settings as unknown as Record<string, unknown>);
-      if (beforeSettings.activation !== input.settings.activation)
+      const changed = changedKeys(beforeSettings as unknown as Record<string, unknown>, settings as unknown as Record<string, unknown>);
+      if (beforeSettings.activation !== settings.activation)
         await audit(
           tx,
           endpoint,
           actorUserId,
           "openwa.chat_activation_changed",
-          { resourceId: saved.id, chatType: type, before: beforeSettings.activation, after: input.settings.activation },
+          { resourceId: saved.id, chatType: type, before: beforeSettings.activation, after: settings.activation },
           publications,
+          origin,
         );
       if (changed.some((key) => key !== "activation"))
-        await audit(tx, endpoint, actorUserId, "openwa.config_changed", { scope: "chat", resourceId: saved.id, changed }, publications);
+        await audit(tx, endpoint, actorUserId, "openwa.config_changed", { scope: "chat", resourceId: saved.id, changed }, publications, origin);
+      if (origin && changed.length)
+        await configAudit(
+          tx,
+          endpoint,
+          origin,
+          { scope: "chat", resourceId: saved.id, chatKey: openwaChatKey(input.chatId), changed },
+          { before: existing ? beforeSettings : null, after: settings },
+        );
       return saved;
     });
     return chatView(row)!;
@@ -705,7 +834,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     });
   }
 
-  async function updatePolicy(endpointId: string, patch: Record<string, unknown>, actorUserId: string | null) {
+  async function updatePolicy(endpointId: string, patch: Record<string, unknown>, actorUserId: string | null, origin?: OpenwaAgentConfigOrigin) {
     const endpoint = await endpointFor(endpointId);
     const stored = (endpoint.policy ?? {}) as Record<string, unknown>;
     const parsed = openwaEndpointPolicySchema.safeParse(mergePolicy(stored, patch));
@@ -725,7 +854,17 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
         .update(chatEndpoints)
         .set({ policy: parsed.data, updatedAt: new Date() })
         .where(and(eq(chatEndpoints.companyId, endpoint.companyId), eq(chatEndpoints.id, endpoint.id)));
-      await audit(tx, endpoint, actorUserId, "openwa.config_changed", { scope: "endpoint", changed }, publications);
+      await audit(tx, endpoint, actorUserId, "openwa.config_changed", { scope: "endpoint", changed }, publications, origin);
+      if (origin) {
+        const pick = (policy: Record<string, unknown>) => Object.fromEntries(changed.map((key) => [key, policy[key] ?? null]));
+        await configAudit(
+          tx,
+          endpoint,
+          origin,
+          { scope: "endpoint", changed },
+          { before: pick(before as unknown as Record<string, unknown>), after: pick(parsed.data as unknown as Record<string, unknown>) },
+        );
+      }
       return endpoint.policyRevision + 1;
     });
     return { policy: parsed.data, policyRevision: revision };
@@ -807,6 +946,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     listSenderRules,
     addSenderRule,
     removeSenderRule,
+    applySenderRuleChanges,
     listChats,
     putChat,
     gatewayChats,

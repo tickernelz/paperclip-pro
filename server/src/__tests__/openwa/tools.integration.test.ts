@@ -601,6 +601,7 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       "openwa_stay_silent",
       "openwa_handoff",
       "openwa_catalog",
+      "openwa_endpoint_config",
       "openwa_describe",
       "openwa_call",
     ]);
@@ -650,6 +651,7 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       "openwa_call",
       "openwa_catalog",
       "openwa_describe",
+      "openwa_endpoint_config",
       "openwa_find",
       "openwa_get_media",
       "openwa_handoff",
