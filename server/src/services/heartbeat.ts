@@ -630,7 +630,13 @@ import {
 } from "./low-trust-runtime-containment.js";
 import type { TrustPresetResolution } from "./trust-preset-resolver.js";
 import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
-import { applyOpenwaRunContext, resolveOpenwaRunContext } from "./openwa/authority.js";
+import {
+  applyOpenwaRunContext,
+  clearOpenwaRunContext,
+  openwaHostGitHubAllowed,
+  resolveOpenwaRunContext,
+  type OpenwaRunContext,
+} from "./openwa/authority.js";
 import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, joinOpenwaGuidance } from "./openwa/guidance.js";
 import {
   createEffectiveRunConfigFingerprints,
@@ -21676,10 +21682,12 @@ export function heartbeatService(
         delete context.paperclipTaskMarkdownCompact;
       }
       delete context[OPENWA_WAKE_CONTEXT_KEY];
+      let openwaRunContext: OpenwaRunContext | null = null;
       if (issueRef) {
-        const openwaRunContext = await resolveOpenwaRunContext(db, {
+        openwaRunContext = await resolveOpenwaRunContext(db, {
           companyId: agent.companyId,
           issueId: issueRef.id,
+          runId: run.id,
           contextSnapshot: context,
           wakeupRequestId: run.wakeupRequestId,
         });
@@ -21734,6 +21742,8 @@ export function heartbeatService(
           context[OPENWA_WAKE_CONTEXT_KEY] = redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY];
         }
         applyOpenwaRunContext(context, openwaRunContext);
+      } else {
+        clearOpenwaRunContext(context);
       }
       // A native run's execution input is immutable once persisted. Recovery must therefore
       // restore the workspace bound to that input rather than consulting the issue's current
@@ -22051,6 +22061,7 @@ export function heartbeatService(
         },
       );
       const useHostGitHub =
+        openwaHostGitHubAllowed(openwaRunContext) &&
         !githubSelection.configured &&
         trustPreset.kind === "standard" &&
         ["local", "ssh"].includes(

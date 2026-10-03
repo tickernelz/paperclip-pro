@@ -1,5 +1,5 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { Request, RequestHandler } from "express";
+import type { Request, RequestHandler, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
@@ -25,7 +25,12 @@ import { isUuidLike, normalizeAgentApiKeyScope, type DeploymentMode } from "@tic
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "./logger.js";
 import { captureRunIdentity } from "../services/run-identity.js";
-import { assertOpenwaAgentKeyMethodAllowed, assertOpenwaRestAllowed, restoreOpenwaGrant } from "../services/openwa/authority.js";
+import {
+  assertOpenwaAgentKeyMethodAllowed,
+  assertOpenwaRestAllowed,
+  openwaGrantScope,
+  restoreOpenwaGrant,
+} from "../services/openwa/authority.js";
 import { boardAuthService } from "../services/board-auth.js";
 
 const CLOUD_TENANT_WRITE_DEBOUNCE_MS = 5_000;
@@ -60,6 +65,18 @@ import { forbidden, unauthorized, unprocessable } from "../errors.js";
 
 export { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { cloudTenantPrimaryCompanyId } from "../services/cloud-instance.js";
+
+function restoreOpenwaGrantOnRejection(db: Db, res: Response, grant: { companyId: string; runId: string; grantId: string }) {
+  const end = res.end;
+  res.end = function (this: Response, ...args: unknown[]) {
+    res.end = end;
+    if (res.statusCode < 400 || res.statusCode >= 500) return end.apply(this, args as Parameters<Response["end"]>);
+    void restoreOpenwaGrant(db, grant)
+      .catch((err) => logger.warn({ err, runId: grant.runId }, "failed to restore OpenWA grant"))
+      .finally(() => end.apply(this, args as Parameters<Response["end"]>));
+    return this;
+  } as Response["end"];
+}
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -402,21 +419,16 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
         _res.status(403).json({ error: "This conversation turn was cancelled", code: "conversation_turn_cancelled" });
         return;
       }
+      let openwaGrantId: string | null = null;
       if (identityRun) {
         try {
-          const consumedGrantId = await assertOpenwaRestAllowed(db, {
+          openwaGrantId = await assertOpenwaRestAllowed(db, {
             run: { id: claims.run_id, companyId: claims.company_id, contextSnapshot: identityRun.contextSnapshot },
             method: req.method,
             path: req.path,
             body: req.body,
           });
-          if (consumedGrantId) {
-            _res.once("finish", () => {
-              if (_res.statusCode < 400) return;
-              void restoreOpenwaGrant(db, { companyId: claims.company_id, runId: claims.run_id, grantId: consumedGrantId })
-                .catch((err) => logger.warn({ err, runId: claims.run_id }, "failed to restore OpenWA grant"));
-            });
-          }
+          if (openwaGrantId) restoreOpenwaGrantOnRejection(db, _res, { companyId: claims.company_id, runId: claims.run_id, grantId: openwaGrantId });
         } catch (error) {
           next(error);
           return;
@@ -455,7 +467,8 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
         onBehalfOfMemberships,
         source: "agent_jwt",
       };
-      next();
+      if (openwaGrantId) openwaGrantScope({ companyId: claims.company_id, runId: claims.run_id, grantId: openwaGrantId }, next);
+      else next();
       return;
     }
 
