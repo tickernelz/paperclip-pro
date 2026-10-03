@@ -475,9 +475,7 @@ function requireConversationRun(ctx: ToolContext): OpenwaTriggerClass {
 }
 
 function visibleTriggerScope(ctx: ToolContext) {
-  const deliveryIds = Array.isArray(record(ctx.run.contextSnapshot.openwa).deliveryIds)
-    ? (record(ctx.run.contextSnapshot.openwa).deliveryIds as unknown[]).filter((id): id is string => typeof id === "string" && UUID.test(id))
-    : [];
+  const deliveryIds = ctx.openwa?.deliveryIds ?? [];
   return and(
     eq(chatDeliveries.companyId, ctx.endpoint.companyId),
     eq(chatDeliveries.endpointId, ctx.endpoint.id),
@@ -904,10 +902,12 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
       ? await markTriggersAnswered(ctx.db, {
           companyId: ctx.endpoint.companyId,
           endpointId: ctx.endpoint.id,
+          conversationId: ctx.conversation.id,
           chatKey: target.chatKey,
           quotedMessageId: quote,
           runClass: ctx.runClass,
           visibleBefore: ctx.run.visibleBefore,
+          deliveryIds: ctx.openwa?.deliveryIds ?? [],
         })
       : [];
   if (target.isOrigin) await consumeReplyGrants(ctx);
@@ -1089,7 +1089,32 @@ async function openwaGetMedia(ctx: ToolContext, args: Args): Promise<Record<stri
     chatId: target.chatId,
     messageId: messageId!,
   });
-  return { chatRef: chatRef(ctx, target.chatId), messageId, media: items.map(mediaView) };
+  const envelope = { chatRef: chatRef(ctx, target.chatId), messageId };
+  const fitted = fitMedia(envelope, items.map(mediaView));
+  return { ...envelope, media: fitted.media, ...(fitted.omitted ? { truncated: true, omittedMedia: fitted.omitted } : {}) };
+}
+
+function fitMedia(envelope: Record<string, unknown>, views: Array<ReturnType<typeof mediaView>>): { media: Array<ReturnType<typeof mediaView>>; omitted: number } {
+  const budget = OPENWA_TOOL_RESULT_LIMIT_BYTES - bytes(envelope) - RESULT_ENVELOPE_BYTES;
+  let used = 0;
+  const media: Array<ReturnType<typeof mediaView>> = [];
+  for (const [index, view] of views.entries()) {
+    const room = Math.floor((budget - used) / (views.length - index)) - 1;
+    let fitted = view;
+    if (bytes(fitted) > room && typeof fitted.transcript === "string") {
+      const chars = [...fitted.transcript];
+      do {
+        const over = bytes({ ...fitted, transcript: chars.join("") + "…", transcriptTruncated: true }) - room;
+        if (over <= 0) break;
+        chars.length = Math.max(0, chars.length - Math.max(1, Math.ceil(over / 4)));
+      } while (chars.length > 0);
+      fitted = { ...fitted, transcript: chars.join("") + "…", transcriptTruncated: true };
+    }
+    if (bytes(fitted) > room) return { media, omitted: views.length - index };
+    used += bytes(fitted) + 1;
+    media.push(fitted);
+  }
+  return { media, omitted: 0 };
 }
 
 function matches(query: string, ...values: unknown[]): boolean {
@@ -1119,6 +1144,10 @@ async function openwaFind(ctx: ToolContext, args: Args): Promise<Record<string, 
     };
   }
   const query = String(args.query);
+  const cursor = str(args.cursor);
+  const offset = cursor ? Number(cursor.slice(2)) : 0;
+  if (cursor && (!cursor.startsWith("f:") || !Number.isInteger(offset) || offset <= 0 || offset >= FIND_LIMIT * 2))
+    throw new OpenwaToolError(400, "invalid_cursor", "The cursor is malformed");
   const [contactsResult, chatsResult] = await gatewayCall(ctx, (gateway) =>
     Promise.all([gateway.call("ContactController_findAll", { limit: "1000" }), gateway.call("SessionController_getChats", { limit: "1000" })]),
   );
@@ -1145,7 +1174,15 @@ async function openwaFind(ctx: ToolContext, args: Args): Promise<Record<string, 
         phone: digits ? maskOpenwaPhoneNumber(digits) : null,
       };
     });
-  return { query, chats, contacts };
+  const remaining = [...chats.map((chat) => ({ chat })), ...contacts.map((contact) => ({ contact }))].slice(offset);
+  const fitted = fitPage({ query, nextCursor: "f:" + FIND_LIMIT * 2 }, remaining);
+  return {
+    query,
+    chats: fitted.page.flatMap((entry) => ("chat" in entry ? [entry.chat] : [])),
+    contacts: fitted.page.flatMap((entry) => ("contact" in entry ? [entry.contact] : [])),
+    nextCursor: fitted.truncated ? "f:" + (offset + fitted.page.length) : null,
+    ...(fitted.truncated ? { truncated: true } : {}),
+  };
 }
 
 async function openwaStaySilent(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {

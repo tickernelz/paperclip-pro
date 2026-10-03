@@ -24,6 +24,7 @@ import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";
 import { openwaChatKey, sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
 import type { OpenwaState } from "./state.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
+import { readOpenwaRunContext } from "./authority.js";
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 type EndpointRow = typeof chatEndpoints.$inferSelect;
@@ -142,11 +143,6 @@ async function sourceRun(db: DbOrTransaction, endpoint: EndpointRow, publication
   return row ?? null;
 }
 
-function runDeliveryIds(contextSnapshot: unknown): string[] {
-  const ids = record(record(contextSnapshot).openwa).deliveryIds;
-  return Array.isArray(ids) ? ids.filter((id): id is string => typeof id === "string" && /^[0-9a-f-]{36}$/i.test(id)) : [];
-}
-
 async function upsertLastOutput(tx: DbOrTransaction, input: { companyId: string; endpointId: string; conversationId: string; value: OpenwaLastOutput }) {
   await tx
     .insert(chatActions)
@@ -210,7 +206,7 @@ export async function decideOpenwaRunPublication(
         : { kind: "publish", runId: run.runId, quotedMessageId: null, triggerIds: [] };
     }
     const runClass = openwaRunTriggerClass(run.contextSnapshot);
-    const deliveryIds = runDeliveryIds(run.contextSnapshot);
+    const deliveryIds = readOpenwaRunContext(run.contextSnapshot)?.deliveryIds ?? [];
     const pending = runClass
       ? await tx
           .select({
@@ -400,25 +396,26 @@ export async function readOpenwaLastOutput(
   };
 }
 
-/** Spec 7.4: a quoted trigger becomes answered; without a quote every visible pending trigger of the run class does. */
+/** Spec 7.4: a quoted trigger becomes answered; without a quote every pending run-class trigger visible to the run does. */
 export async function markTriggersAnswered(
   db: DbOrTransaction,
   input: {
     companyId: string;
     endpointId: string;
+    conversationId: string;
     chatKey: string;
     quotedMessageId: string | null;
     runClass: OpenwaTriggerClass;
-    visibleBefore?: Date;
-    conversationId?: string;
+    visibleBefore: Date;
+    deliveryIds: readonly string[];
   },
 ): Promise<string[]> {
   const chatKey = openwaChatKey(input.chatKey);
   const scope = and(
     eq(chatDeliveries.companyId, input.companyId),
     eq(chatDeliveries.endpointId, input.endpointId),
+    eq(chatDeliveries.conversationId, input.conversationId),
     eq(chatDeliveries.answerState, "pending"),
-    input.conversationId ? eq(chatDeliveries.conversationId, input.conversationId) : undefined,
     sql`${chatDeliveries.normalizedEvent}->'openwa'->>'chatKey' = ${chatKey}`,
   );
   const rows = await db
@@ -430,7 +427,10 @@ export async function markTriggersAnswered(
         : and(
             scope,
             eq(chatDeliveries.triggerClass, input.runClass),
-            input.visibleBefore ? lte(chatDeliveries.receivedAt, input.visibleBefore) : undefined,
+            or(
+              lte(chatDeliveries.receivedAt, input.visibleBefore),
+              ...(input.deliveryIds.length ? [inArray(chatDeliveries.id, [...input.deliveryIds])] : []),
+            ),
           ),
     )
     .returning({ id: chatDeliveries.id });

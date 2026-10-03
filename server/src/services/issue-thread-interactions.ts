@@ -138,6 +138,7 @@ type InteractionActor = {
     | IssueThreadInteractionCanonicalResolverPolicy
     | IssueThreadInteractionResolverRestriction
     | null;
+  chatEndpointOwnerUserIds?: readonly string[] | null;
   suggestedTaskEffectsAuthorized?: boolean;
   resolutionDetails?: Record<string, unknown>;
 };
@@ -446,6 +447,7 @@ function assertInteractionResolutionAllowed(
     actor: resolverActor(actor),
     interaction: current,
     additionalRestriction: actor.resolverPolicyRestriction,
+    chatEndpointOwnerUserIds: actor.chatEndpointOwnerUserIds,
     governedAction:
       current.kind === "request_confirmation" &&
       current.payload !== null &&

@@ -386,8 +386,8 @@ Every call is audited as `tool_called`.
 | --- | --- | --- |
 | `openwa_send` | write | Send text, image, video, audio, voice note, document, sticker, location, contact or poll to a chat (default origin chat). Markdown text; media from a task attachment; `mentions`; `quoteMessageId`; required `idempotencyKey`. New numbers are checked first. |
 | `openwa_read_chat` | read | Page chat history, newest first, from the stored source (cursor) or live (`deep` reaches 2000 messages). |
-| `openwa_get_media` | read | Store one message's media as a task attachment; returns attachment id, mime, size and transcript when available. |
-| `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`). |
+| `openwa_get_media` | read | Store one message's media as a task attachment; returns attachment id, mime, size and transcript when available (cut to fit 16 KB with `transcriptTruncated`). |
+| `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`); query results page with `cursor`. |
 | `openwa_request_approval` | write | Ask the owners for categories; remind with `remindRequestId`. |
 | `openwa_approval_resolve` | write | Record the owner's decision; only in the run started by that owner's reply to the bubble. |
 | `openwa_stay_silent` | write | Mark the listed (default all visible pending) triggers silenced. |
@@ -419,8 +419,9 @@ Operations that need an unscoped admin key stay unavailable
 (`unavailable_without_admin_key`) until one is saved under **Admin API key**; saving
 re-verifies the session and returns the channel to its test step. Non-owner
 runs need `gateway_admin` approval. Stopping, logging out, deleting or force-killing
-the endpoint's own session needs an owner run plus an owner's confirmation in
-Paperclip (`self_session_requires_confirmation`); other runs get `owner_only`.
+the endpoint's own session needs an owner run plus a confirmation in Paperclip
+from a current endpoint owner (`self_session_requires_confirmation`; other board
+members get 403); other runs get `owner_only`.
 
 **WhatsApp configuration.** `openwa_endpoint_config` lets owner-class runs change
 endpoint configuration from WhatsApp; other runs get `owner_only`. This tool is

@@ -39,6 +39,7 @@ export interface OpenwaRunContext {
   toolProfile: OpenwaRunProfile;
   event: string | null;
   grantIds: string[];
+  deliveryIds: string[];
   runAllowedCategories: OpenwaApprovalCategory[];
   grantedCategories: OpenwaApprovalCategory[];
   requesterPrincipalId: string | null;
@@ -189,6 +190,7 @@ export function readOpenwaRunContext(contextSnapshot: unknown): OpenwaRunContext
     toolProfile: profile === "full" ? "full" : (runProfile(raw.toolProfile) ?? "read_only"),
     event: event && EVENT_PATTERN.test(event) ? event : null,
     grantIds: uuids(raw.grantIds),
+    deliveryIds: uuids(raw.deliveryIds),
     runAllowedCategories: approvalCategories(raw.runAllowedCategories),
     grantedCategories: approvalCategories(raw.grantedCategories),
     requesterPrincipalId: text(raw.requesterPrincipalId),
@@ -329,6 +331,7 @@ export async function resolveOpenwaRunContext(
       toolProfile: "full",
       event: null,
       grantIds: [],
+      deliveryIds: [],
       runAllowedCategories: openwaAllowedCategories(policy, "full", [], policy.gatewayAdminTools).allowed,
       grantedCategories: [],
       requesterPrincipalId: null,
@@ -466,6 +469,9 @@ export async function resolveOpenwaRunContext(
     toolProfile: profile === "full" || runAllowedCategories.includes("external_tools") || requesterExternalTools ? "full" : "read_only",
     event: wakeAction?.event ?? null,
     grantIds: grants.map((grant) => grant.id).sort(),
+    deliveryIds: deliveries
+      .filter((delivery) => delivery.chatKey && normalizeChatKey(delivery.chatKey) === chatKey)
+      .map((delivery) => delivery.id),
     runAllowedCategories,
     grantedCategories: runGranted,
     requesterPrincipalId,

@@ -1,4 +1,6 @@
 import { randomUUID } from "node:crypto";
+import { createServer, type Server } from "node:http";
+import type { AddressInfo } from "node:net";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -31,6 +33,7 @@ import {
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
+import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -42,6 +45,7 @@ import { HttpError } from "../../errors.js";
 import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, restoreOpenwaGrant, type OpenwaRunContext } from "../../services/openwa/authority.js";
 import { accessService } from "../../services/access.js";
 import { openwaBodyHash } from "../../services/openwa/outbound.js";
+import { buildOpenwaRunGuidance } from "../../services/openwa/guidance.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -388,6 +392,76 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
       : [];
     return rows.map((row) => sends.find((send) => send.id === row.outboundMessageId)!.providerMessageId!);
   }
+
+  it("ingests and transcribes an owner's voice-note approval reply before the approval_reply wake", async () => {
+    const sttEnv = "OPENWA_APPROVALS_STT_KEY";
+    process.env[sttEnv] = "sk-approvals-stt";
+    let sttCalls = 0;
+    const sttServer: Server = createServer(async (req, res) => {
+      for await (const _chunk of req);
+      sttCalls++;
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ text: "boleh, tapi jangan sebut harga" }));
+    });
+    await new Promise<void>((resolve) => sttServer.listen(0, "127.0.0.1", resolve));
+    try {
+      await instanceSettingsService(db).updateGeneral({
+        speechToText: {
+          enabled: true,
+          baseUrl: "http://127.0.0.1:" + (sttServer.address() as AddressInfo).port + "/v1",
+          model: "whisper-test",
+          apiKeyEnvVar: sttEnv,
+          maxAudioSeconds: 600,
+          sttWaitSeconds: 5,
+        },
+      });
+      const t = await setup();
+      const memberWake = await admitted(t, { chatId: jid(MEMBER_A), body: "tolong buatkan task untuk invoice 42" });
+      const memberRun = await runStart(t, memberWake);
+      const created = await requestApproval(memberRun.binding);
+      const ownerSend = t.gateway.sends.find((send) => send.chatId === jid(OWNER_PHONE))!;
+      const voice = Buffer.concat([Buffer.from("OggS"), Buffer.alloc(200, 3)]);
+      const waMessageId = t.gateway.nextWaMessageId(false, jid(OWNER_PHONE));
+      t.gateway.setMedia(jid(OWNER_PHONE), waMessageId, { body: voice, contentType: "audio/ogg" });
+      const reply = await admitted(t, {
+        chatId: jid(OWNER_PHONE),
+        waMessageId,
+        body: "",
+        extra: {
+          type: "ptt",
+          media: { mimetype: "audio/ogg; codecs=opus", sizeBytes: voice.length, omitted: true },
+          quotedMessage: { id: ownerSend.messageId, body: ownerSend.text },
+        },
+      });
+      expect(reply.request.payload).toMatchObject({ openwa: { event: "approval_reply", triggerClass: "owner", approvalRequestId: created.requestId } });
+      expect(sttCalls).toBe(1);
+      const [media] = await db
+        .select({ payload: chatActions.payload })
+        .from(chatActions)
+        .where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.providerActionId, "openwa_media:" + waMessageId)));
+      expect((media!.payload as { items: unknown[] }).items).toEqual([
+        expect.objectContaining({ kind: "voice", transcriptStatus: "done", transcript: "boleh, tapi jangan sebut harga" }),
+      ]);
+      const replyRun = await runStart(t, reply);
+      const guidance = await buildOpenwaRunGuidance(db, {
+        companyId: t.companyId,
+        issueId: replyRun.issueId,
+        runId: replyRun.runId,
+        wakeupRequestId: reply.request.id,
+        openwa: replyRun.openwa,
+        contextSnapshot: replyRun.run.contextSnapshot,
+      });
+      expect(guidance!.wakeEvent.event).toBe("approval_reply");
+      expect(guidance!.wakeEvent.messages[0]!.media).toEqual([
+        expect.objectContaining({ kind: "voice", transcript: "boleh, tapi jangan sebut harga" }),
+      ]);
+    } finally {
+      await instanceSettingsService(db).updateGeneral({ speechToText: { ...SPEECH_TO_TEXT_DEFAULTS } });
+      sttServer.closeAllConnections();
+      await new Promise<void>((resolve) => sttServer.close(() => resolve()));
+      delete process.env[sttEnv];
+    }
+  }, 120_000);
 
   it("AC6: WhatsApp approval end to end with every negative control", async () => {
     const t = await setup();

@@ -6,6 +6,7 @@ import { loadOpenwaRunAuthority, openwaRunSuppressesMentionWakes } from "../serv
 import {
   openwaApprovalOwnerUserIds,
   openwaApprovalRequestIdOf,
+  openwaIssueOwnerUserIds,
   resolveOpenwaApprovalInteraction,
 } from "../services/openwa/approvals.js";
 import {
@@ -5946,8 +5947,10 @@ export function issueRoutes(
     const actor = getActorInfo(req);
     const approvalRequestId = openwaApprovalRequestIdOf(interaction);
     const chatEndpointOwnerUserIds =
-      interaction.effectiveResolverPolicy === "chat_endpoint_owner" && approvalRequestId && actor.actorType === "user"
-        ? await openwaApprovalOwnerUserIds(db, { companyId: issue.companyId, requestId: approvalRequestId })
+      interaction.effectiveResolverPolicy === "chat_endpoint_owner" && actor.actorType === "user"
+        ? approvalRequestId
+          ? await openwaApprovalOwnerUserIds(db, { companyId: issue.companyId, requestId: approvalRequestId })
+          : await openwaIssueOwnerUserIds(db, { companyId: issue.companyId, issueId: issue.id })
         : null;
     const decision: IssueThreadInteractionResolverAudienceDecision =
       evaluateIssueThreadInteractionResolverAudience({
@@ -5995,7 +5998,7 @@ export function issueRoutes(
       ))
     )
       return false;
-    return { decision, resolverPolicyRestriction } as const;
+    return { decision, resolverPolicyRestriction, chatEndpointOwnerUserIds } as const;
   }
 
   async function getIssueThreadInteractionResolutionAuthorization(
@@ -17331,6 +17334,7 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
+          chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds,
           suggestedTaskEffectsAuthorized,
         });
       const toolAction =
@@ -17661,6 +17665,7 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
+          chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds,
         },
       );
 

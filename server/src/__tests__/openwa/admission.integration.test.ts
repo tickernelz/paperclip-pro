@@ -12,6 +12,7 @@ import {
   chatAuditEntries,
   chatConversations,
   chatDeliveries,
+  chatEndpointResources,
   chatEndpoints,
   chatExternalPrincipals,
   companies,
@@ -430,6 +431,21 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(filtered).toHaveLength(1);
     expect(filtered[0]).toMatchObject({ chatKey: group, metadata: { reason: "denylisted", principalRole: "denylisted", rules: ["keywords"] }, content: { text: "where is the invoice?" } });
     expect(entries.map((entry) => entry.kind)).not.toContain("trigger_admitted");
+  }, 90_000);
+
+  it("records an undiscovered group but does not wake when a third party joins it", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const group = "120363000000000013@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Third party", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_PHONE) }, { id: jid(STRANGER_PHONE) }] });
+    await goLive(t);
+    const joinedAt = Math.floor(Date.now() / 1000);
+    t.gateway.emit("group.join", { groupId: group, actorId: jid(MEMBER_PHONE), participantIds: [jid(STRANGER_PHONE)], timestamp: joinedAt });
+    await until(async () => (await db.select().from(chatEndpointResources).where(and(eq(chatEndpointResources.endpointId, t.endpointId), eq(chatEndpointResources.type, "group_chat")))).length === 1);
+    t.gateway.emit("group.join", { groupId: group, actorId: jid(MEMBER_PHONE), participantIds: [jid(OWN_PHONE)], timestamp: joinedAt + 1 });
+    const rows = await settledDeliveries(t, 1);
+    expect(rows.map((row) => row.deduplicationKey.endsWith(":" + (joinedAt + 1)))).toEqual([true]);
+    expect((await audits(t)).filter((entry) => entry.kind === "group_added")).toHaveLength(1);
   }, 90_000);
 
   it("performs zero database queries for non-trigger traffic once the policy is warm", async () => {

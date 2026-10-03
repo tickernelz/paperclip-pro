@@ -88,11 +88,12 @@ export const OPENWA_TOOLS = [
   tool(
     "find",
     "read",
-    "Find contacts and chats by name or number, check whether a number is on WhatsApp, or resolve a LID. Give exactly one of query, phone, lid.",
-    { query: z.string().min(1).max(100).optional(), phone: e164.optional(), lid: z.string().regex(/^\d{5,25}@lid$/).optional() },
+    "Find contacts and chats by name or number, check whether a number is on WhatsApp, or resolve a LID. Give exactly one of query, phone, lid; cursor pages a query.",
+    { query: z.string().min(1).max(100).optional(), phone: e164.optional(), lid: z.string().regex(/^\d{5,25}@lid$/).optional(), cursor },
     (value, ctx) => {
       if ([value.query, value.phone, value.lid].filter((entry) => entry !== undefined).length !== 1)
         ctx.addIssue({ code: "custom", message: "Give exactly one of query, phone, lid" });
+      if (value.cursor && !value.query) ctx.addIssue({ code: "custom", message: "cursor pages a query only" });
     },
   ),
   tool(

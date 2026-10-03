@@ -600,7 +600,7 @@ export async function buildOpenwaRunGuidance(
     },
     sender: messages.at(-1)?.sender ?? null,
     messages,
-    omittedMessages: Math.max(0, deliveryIds.length - messages.length),
+    omittedMessages: deliveryRows.length < OPENWA_WAKE_MAX_MESSAGES ? 0 : Math.max(0, deliveryIds.length - messages.length),
     policy: {
       replyAllowed: replyRequires.length === 0,
       replyRequires,

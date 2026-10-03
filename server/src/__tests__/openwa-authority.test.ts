@@ -236,7 +236,7 @@ function openwaContext(seed: Seed, input: Partial<OpenwaRunContext>): OpenwaRunC
   const profile = input.profile ?? "read_only";
   return {
     endpointId: seed.endpointId, chatKey: CHAT_KEY, triggerClass: "other", profile,
-    toolProfile: profile, event: null, grantIds: [],
+    toolProfile: profile, event: null, grantIds: [], deliveryIds: [],
     runAllowedCategories: profile === "full" ? ["create_task", "external_tools", "cross_chat_send", "wa_admin"] : [],
     grantedCategories: [], requesterPrincipalId: null, approvalRequestId: null, triggerPrincipalId: null, ...input,
   };
@@ -391,9 +391,13 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const ownerDelivery = await seedDelivery(db, seed, { principalId: owner.principalId, triggerClass: "owner" });
       const memberDelivery = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other" });
       const ownerWake = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "owner", deliveryIds: [ownerDelivery] } });
-      await expect(resolve(seed, ownerWake)).resolves.toEqual(openwaContext(seed, { triggerClass: "owner", profile: "full", event: "message", triggerPrincipalId: owner.principalId }));
+      await expect(resolve(seed, ownerWake)).resolves.toEqual(
+        openwaContext(seed, { triggerClass: "owner", profile: "full", event: "message", deliveryIds: [ownerDelivery], triggerPrincipalId: owner.principalId }),
+      );
       const mixed = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "owner", deliveryIds: [ownerDelivery, memberDelivery] } });
-      await expect(resolve(seed, mixed)).resolves.toMatchObject({ triggerClass: "other", profile: "read_only", requesterPrincipalId: null });
+      const mixedContext = await resolve(seed, mixed);
+      expect(mixedContext).toMatchObject({ triggerClass: "other", profile: "read_only", requesterPrincipalId: null });
+      expect(mixedContext!.deliveryIds.sort()).toEqual([ownerDelivery, memberDelivery].sort());
       await db.update(chatIdentityLinks).set({ status: "revoked" }).where(eq(chatIdentityLinks.id, owner.linkId));
       await expect(resolve(seed, ownerWake)).resolves.toMatchObject({ triggerClass: "other", profile: "read_only" });
     });
