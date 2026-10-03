@@ -50,6 +50,7 @@ import {
   syncOpenwaGroupActivation,
 } from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
+import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa/authority.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
@@ -6148,6 +6149,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         },
       });
     });
+    if (input.provider === "openwa") invalidateOpenwaAgentKey(companyId, agent.id);
     await logActivity(db, {
       companyId,
       actorType: "user",
@@ -8214,7 +8216,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           const stillRegistered = runtime.get(endpoint.id) === instance;
           const stillCurrent =
             latest !== null &&
-            (latest.endpoint.status === record.endpoint.status || (record.endpoint.provider === "imessage-photon" || record.endpoint.provider === "openwa") && ["active", "verifying", "attention"].includes(record.endpoint.status) && ["active", "verifying", "attention"].includes(latest.endpoint.status)) &&
+            (latest.endpoint.status === record.endpoint.status || record.endpoint.provider === "imessage-photon" && record.endpoint.status === "attention" && ["active", "verifying"].includes(latest.endpoint.status) || record.endpoint.provider === "openwa" && ["active", "verifying", "attention"].includes(record.endpoint.status) && ["active", "verifying", "attention"].includes(latest.endpoint.status)) &&
             runtimeContextForRecord(latest).version === context.version;
           if (!stillRegistered || !stillCurrent) {
             if (stillRegistered) {
@@ -17103,6 +17105,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         );
       });
       if (!taskMutation) return;
+      if (endpoint.provider === "openwa" && taskMutation.conversation.id !== existingConversation?.id)
+        invalidateOpenwaIssueBinding(endpoint.companyId, taskMutation.conversation.issueId);
       // The open task can fetch the comment immediately, before attachments
       // finish preparing or the agent starts. Never publish an uncommitted row.
       for (const publication of inboundActivityPublications) {
@@ -28991,7 +28995,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .returning({ endpointId: chatIdentityLinks.endpointId })
         .then((rows) => rows[0] ?? null);
-      if (confirmedLink) {
+      if (confirmedLink && endpointRecordForLink.endpoint.provider === "openwa") {
         await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
         await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
       }
@@ -29061,10 +29065,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .returning({ id: chatIdentityLinks.id })
         .then(async (rows) => {
-          if (rows[0]) {
+          if (rows[0] && link.provider === "openwa") {
             await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: endpointId });
             await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: endpointId });
-            if (link.provider === "openwa") await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
+            await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
           }
           return rows[0] ?? null;
         });

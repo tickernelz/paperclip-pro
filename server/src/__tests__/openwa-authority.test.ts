@@ -39,6 +39,8 @@ import { connectionIntentService } from "../services/connection-intents.js";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
+import { chatChannelService } from "../services/chat-channels.js";
+import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";
 import {
   OpenwaApprovalRequiredError,
   applyOpenwaRunContext,
@@ -496,6 +498,23 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(context).toEqual({ paperclipToolProfile: "full" });
     });
 
+    it("queries the binding of a non-OpenWA issue once across run starts and still resolves OpenWA issues", async () => {
+      const seed = await seedCompany(db);
+      const plainIssue = await seedPlainIssue(db, seed);
+      const counted = loggedDb();
+      const bindingQueries = async (issueId: string) => {
+        const before = counted.queries.length;
+        const resolved = await resolveOpenwaRunContext(counted.db, {
+          companyId: seed.companyId, issueId, runId: randomUUID(), contextSnapshot: {}, wakeupRequestId: null,
+        });
+        return { resolved, queries: counted.queries.slice(before).filter((query) => query.includes('from "chat_conversations"')).length };
+      };
+      expect(await bindingQueries(plainIssue)).toEqual({ resolved: null, queries: 1 });
+      expect(await bindingQueries(plainIssue)).toEqual({ resolved: null, queries: 0 });
+      const openwa = await bindingQueries(seed.issueId);
+      expect(openwa.resolved).toMatchObject({ endpointId: seed.endpointId, profile: "read_only" });
+    });
+
     it("suppresses mention wakes fail-closed by run profile", async () => {
       const seed = await seedCompany(db);
       const unmarked = await seedRun(db, seed, {});
@@ -713,10 +732,10 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
   });
 
   describe("persistent agent key seam", () => {
-    function app() {
+    function app(database: ReturnType<typeof createDb> = db) {
       const server = express();
       server.use(express.json());
-      server.use(actorMiddleware(db, { deploymentMode: "authenticated", resolveSession: async () => null }));
+      server.use(actorMiddleware(database, { deploymentMode: "authenticated", resolveSession: async () => null }));
       server.all("/api/{*rest}", (req, res) => res.json({ reached: true, actor: req.actor.type }));
       server.use(errorHandler);
       return server;
@@ -742,13 +761,39 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(read.status).toBe(200);
     });
 
-    it("never caches an unbound answer: a key turns read-only as soon as its agent gets an endpoint", async () => {
-      const seed = await seedCompany(db);
-      await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, seed.endpointId));
-      const token = await key(seed);
+    it("caches the unbound answer: a second mutation of an agent without OpenWA issues no chat_endpoints query", async () => {
+      const telegram = await seedCompany(db, { openwa: false });
+      const token = await key(telegram);
+      const counted = loggedDb();
+      const server = app(counted.db);
+      const endpointQueries = async () => {
+        const before = counted.queries.length;
+        const res = await request(server).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
+        expect(res.status).toBe(200);
+        return counted.queries.slice(before).filter((query) => query.includes('from "chat_endpoints"')).length;
+      };
+      expect(await endpointQueries()).toBe(1);
+      expect(await endpointQueries()).toBe(0);
+    });
+
+    it("turns a key read-only as soon as its agent gets an OpenWA endpoint through the service", async () => {
+      const telegram = await seedCompany(db, { openwa: false });
+      const token = await key(telegram);
       const before = await request(app()).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
       expect(before.status).toBe(200);
-      await db.update(chatEndpoints).set({ status: "active" }).where(eq(chatEndpoints.id, seed.endpointId));
+      const service = chatChannelService(db, {
+        runtime: new ChatSdkRuntime(),
+        publicBaseUrl: "https://paperclip.example",
+        heartbeat: { wakeup: async () => ({ accepted: true }) } as never,
+        discordGatewayLeaseTtlMs: 120_000,
+        discordGatewayLeaseRenewalIntervalMs: 60_000,
+        discordGatewayLeaseWaitMs: 200,
+      });
+      try {
+        await service.create(telegram.companyId, { provider: "openwa", assignedAgentId: telegram.agentId } as never, BOARD_USER);
+      } finally {
+        await service.shutdown();
+      }
       const after = await request(app()).post("/api/x").set("Authorization", `Bearer ${token}`).send({});
       expect(after.status).toBe(403);
       expect(after.body).toMatchObject({ code: "openwa_agent_key_read_only" });
@@ -790,6 +835,22 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       ).send({});
       expect(reached.body.code).not.toBe("openwa_approval_required");
       expect(reached.body.error).toBe("This run predates managed GitHub credentials");
+    });
+
+    it("adds no heartbeat_runs read of its own to a GitHub credential export", async () => {
+      const seed = await seedCompany(db);
+      const full = await seedRun(db, seed, { profile: "full", openwa: openwaContext(seed, { triggerClass: "owner", profile: "full" }) });
+      const counted = loggedDb();
+      const server = express();
+      server.use(express.json());
+      server.use(runtimeConnectionIntentRoutes(counted.db));
+      server.use(errorHandler);
+      const before = counted.queries.length;
+      await request(server).post("/runtime-tools/github/credentials").set(
+        "x-paperclip-github-capability",
+        createRuntimeToolsToken({ agentId: seed.agentId, companyId: seed.companyId, runId: full.runId, responsibleUserId: BOARD_USER, scope: "github_credentials" })!.token,
+      ).send({});
+      expect(counted.queries.slice(before).filter((query) => query.includes('from "heartbeat_runs"')).length).toBe(2);
     });
 
     it("denies connection_request in a read_only run and passes the gate in a full run", async () => {

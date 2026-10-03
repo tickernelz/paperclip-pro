@@ -90,6 +90,25 @@ describe("provider-owned interaction arbitration", () => {
     return { companyId, agentId, otherAgentId, issueId, runId, interactionId };
   }
 
+  it("adds no OpenWA conversation subquery for a non-OpenWA issue once its binding is cached", async () => {
+    const binding = await seed();
+    const queries: string[] = [];
+    const counted = createDb(temporary.connectionString);
+    const session = (counted as unknown as { session: { logger: unknown; options: { logger?: unknown } } }).session;
+    session.logger = { logQuery: (query: string) => { queries.push(query); } };
+    session.options.logger = session.logger;
+    await db
+      .update(issueThreadInteractions)
+      .set({ createdByAgentId: binding.agentId })
+      .where(eq(issueThreadInteractions.id, binding.interactionId));
+    expect(await hasChatRunOwnedProviderInteraction(counted, binding)).toBe(true);
+    const before = queries.length;
+    expect(await hasChatRunOwnedProviderInteraction(counted, binding)).toBe(true);
+    const repeated = queries.slice(before);
+    expect(repeated).toHaveLength(1);
+    expect(repeated[0]).not.toContain('"chat_conversations"');
+  });
+
   it("does not suppress a chat final for a system or board completion review", async () => {
     const binding = await seed();
     expect(await hasChatRunOwnedProviderInteraction(db, binding)).toBe(false);
