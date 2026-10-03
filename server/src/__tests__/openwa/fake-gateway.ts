@@ -31,6 +31,8 @@ export class FakeOpenwaGateway {
   readonly sends: Array<{ chatId: string; text: string; messageId: string | null }> = [];
   readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
+  readonly groups = new Map<string, { id: string; name: string; participants: Array<{ id: string; isAdmin?: boolean }> }>();
+  readonly chats: Array<{ id: string; name?: string; timestamp?: number }> = [];
   private readonly sendFailures: FakeSendFailure[] = [];
   private http: HttpServer | null = null;
   private io: SocketServer | null = null;
@@ -200,6 +202,11 @@ export class FakeOpenwaGateway {
       return this.sendText(body, reply, res);
     }
     if (req.method === "POST" && url.pathname === prefix + "/chats/typing") return reply(201, { success: true });
+    if (req.method === "GET" && url.pathname.startsWith(prefix + "/groups/")) {
+      const group = this.groups.get(decodeURIComponent(url.pathname.slice((prefix + "/groups/").length)));
+      return group ? reply(200, group) : reply(404, { message: "Group not found" });
+    }
+    if (req.method === "GET" && url.pathname === prefix + "/chats") return reply(200, this.chats);
     reply(404, { message: "Not found" });
   }
 

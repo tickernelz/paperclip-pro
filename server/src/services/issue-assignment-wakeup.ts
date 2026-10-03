@@ -37,6 +37,7 @@ export function queueIssueAssignmentWakeup(input: {
   /** Closed, server-derived omission counts for provider attachments on the
    * exact wake comment. These are prompt diagnostics, never authorization. */
   attachmentOmissionReasons?: Record<string, number> | null;
+  extraWakeContext?: Record<string, unknown>;
   rethrowOnError?: boolean;
   durableChatRequest?: DurableChatWakeupRequest;
 }) {
@@ -52,6 +53,7 @@ export function queueIssueAssignmentWakeup(input: {
         mutation: input.mutation,
         ...(input.taskKey ? { taskKey: input.taskKey } : {}),
         ...(input.wakeCommentId ? { wakeCommentId: input.wakeCommentId } : {}),
+        ...(input.extraWakeContext ?? {}),
       },
       requestedByActorType: input.requestedByActorType,
       requestedByActorId: input.requestedByActorId ?? null,
@@ -73,6 +75,7 @@ export function queueIssueAssignmentWakeup(input: {
               ],
             }
           : {}),
+        ...(input.extraWakeContext ?? {}),
       },
     })
     .catch((err) => {

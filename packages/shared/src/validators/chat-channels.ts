@@ -17,6 +17,7 @@ import {
   OPENWA_NUMBER_MODES,
   OPENWA_REPLY_POLICIES,
   OPENWA_SENDER_POLICY_MODES,
+  CHAT_SENDER_RULE_LISTS,
   type OpenwaEndpointPolicy,
   type OpenwaNumberMode,
   type OpenwaTriggerRules,
@@ -390,6 +391,33 @@ export const openwaChatSettingsSchema = z
     note: multilineTextSchema.pipe(z.string().trim().max(OPENWA_CHAT_NOTE_MAX_LENGTH)).optional(),
   })
   .strict();
+
+export const openwaE164Schema = z.string().trim().regex(/^\+[1-9][0-9]{6,14}$/, "Use an E.164 number such as +6281234567890");
+
+export const addOpenwaOwnerSchema = z
+  .object({
+    e164: openwaE164Schema,
+    expiresInSeconds: z.number().int().min(300).max(86_400).default(1_800),
+  })
+  .strict();
+
+export const createOpenwaSenderRuleSchema = z
+  .object({
+    list: z.enum(CHAT_SENDER_RULE_LISTS),
+    e164: openwaE164Schema,
+    label: z.string().trim().min(1).max(120).optional(),
+  })
+  .strict();
+
+export const updateOpenwaChatSettingsSchema = z
+  .object({
+    chatId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}@(c\.us|g\.us|lid)$/),
+    label: z.string().trim().min(1).max(512).optional(),
+    settings: openwaChatSettingsSchema,
+  })
+  .strict();
+
+export const updateOpenwaEndpointPolicySchema = z.record(z.string(), z.unknown());
 
 export type OpenwaEndpointPolicyInput = z.input<typeof openwaEndpointPolicySchema>;
 export type OpenwaChatSettingsInput = z.input<typeof openwaChatSettingsSchema>;

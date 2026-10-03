@@ -142,11 +142,11 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
       raw,
       attachments,
       author: {
-        userId: raw.senderJid,
+        userId: raw.senderPhone ? raw.senderPhone.replace(/\D/g, "") + "@c.us" : raw.senderJid.toLowerCase(),
         userName: raw.senderPhone ?? raw.senderJid,
         fullName: raw.senderPhone ?? raw.senderJid,
         isBot: false,
-        isMe: raw.fromMe,
+        isMe: raw.fromMe && !raw.phoneTyped,
       },
       metadata: { dateSent: new Date(raw.timestamp * 1000), edited: false },
     });
