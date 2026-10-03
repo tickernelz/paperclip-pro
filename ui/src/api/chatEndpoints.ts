@@ -15,6 +15,10 @@ import type {
   ChatAuditEntryKind,
   ChatAuditActorKind,
   ChatInflightMode,
+  ChatOwnerApprovalChannel,
+  ChatOwnerApprovalStatus,
+  ChatOwnerGrantScope,
+  OpenwaGrantCategory,
   ChatPublicationBatchStatus,
   ChatPublicationState,
   ChatPublicationSummary,
@@ -227,6 +231,38 @@ export interface OpenwaAuditPage {
   access: "content" | "metadata";
 }
 
+export interface OpenwaApproval {
+  id: string;
+  status: ChatOwnerApprovalStatus;
+  categories: OpenwaGrantCategory[];
+  scope: ChatOwnerGrantScope;
+  summary: string;
+  proposedAction: string;
+  originChat: string;
+  originConversationId: string | null;
+  interactionId: string | null;
+  reminderCount: number;
+  resolvedVia: ChatOwnerApprovalChannel | null;
+  resolvedByUserId: string | null;
+  ownerText: string | null;
+  agentConditions: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  grants: Array<{ id: string; category: OpenwaGrantCategory; status: string; expiresAt: string }>;
+  canResolve: boolean;
+}
+
+export interface OpenwaApprovalResolveInput {
+  decision: "approve" | "reject";
+  reason?: string;
+}
+
+export interface OpenwaApprovalResolveResult {
+  requestId: string;
+  status: "approved" | "rejected";
+  grantIds: string[];
+}
+
 export interface OpenwaAuditFilters {
   kind?: ChatAuditEntryKind;
   chatKey?: string;
@@ -333,6 +369,10 @@ export const chatEndpointsApi = {
     api.put<OpenwaChat>(`/chat-endpoints/${endpointId}/openwa/chats`, input),
   listOpenwaGatewayChats: (endpointId: string) =>
     api.get<OpenwaGatewayChat[]>(`/chat-endpoints/${endpointId}/openwa/gateway-chats?limit=200`, { cache: "no-store" }),
+  listOpenwaApprovals: (endpointId: string, status?: ChatOwnerApprovalStatus) =>
+    api.get<OpenwaApproval[]>(`/chat-endpoints/${endpointId}/openwa/approvals${status ? "?status=" + status : ""}`, { cache: "no-store" }),
+  resolveOpenwaApproval: (endpointId: string, requestId: string, input: OpenwaApprovalResolveInput) =>
+    api.post<OpenwaApprovalResolveResult>(`/chat-endpoints/${endpointId}/openwa/approvals/${requestId}/resolve`, input),
   listOpenwaAudit: (endpointId: string, filters: OpenwaAuditFilters, cursor?: string) =>
     api.get<OpenwaAuditPage>(`/chat-endpoints/${endpointId}/audit?${openwaAuditSearch(filters, cursor)}`, { cache: "no-store" }),
   generateSetupSecret: (endpointId: string) =>

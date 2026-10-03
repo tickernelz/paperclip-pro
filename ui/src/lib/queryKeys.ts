@@ -44,6 +44,7 @@ export const queryKeys = {
     openwaChats: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-chats"] as const,
     openwaGatewayChats: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-gateway-chats"] as const,
     audit: (endpointId: string) => ["chat-endpoints", endpointId, "audit"] as const,
+    openwaApprovals: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-approvals"] as const,
   },
   tools: {
     applications: (companyId: string) =>
