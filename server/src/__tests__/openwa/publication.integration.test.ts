@@ -289,6 +289,7 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
           chatKey: openwaChatKey(c.chatId),
           triggerClass: input.triggerClass,
           profile: input.triggerClass === "owner" ? "full" : "read_only",
+          event: input.event ?? "message",
           grantIds: input.grantIds ?? [],
           requesterPrincipalId: null,
           approvalRequestId: null,

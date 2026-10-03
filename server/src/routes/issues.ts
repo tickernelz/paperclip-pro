@@ -2,7 +2,7 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
-import { openwaRunSuppressesMentionWakes } from "../services/openwa/authority.js";
+import { loadOpenwaRunAuthority, openwaRunSuppressesMentionWakes } from "../services/openwa/authority.js";
 import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
@@ -15,7 +15,7 @@ import type { IssueRunModelOverrideValues } from "../services/issue-run-model-ov
 import type { IssueRunModelOverrideInheritance } from "@tickernelz/paperclip-pro-shared";
 import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
-import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { documentExportFileName, extractAgentMentionIds, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { renderDocumentPdf } from "../services/document-pdf.js";
 import {
   validateExecutionReconciliation,
@@ -3618,11 +3618,12 @@ export function issueRoutes(
   const commentMentionWakesSuppressed = async (
     comment: { companyId: string; createdByRunId?: string | null },
     actorRunId: string | null | undefined,
+    body: string,
   ) => {
     const runId = comment.createdByRunId ?? actorRunId;
-    if (!runId) return false;
-    const sourceRun = await heartbeat.getRun(runId);
-    return sourceRun?.companyId === comment.companyId && openwaRunSuppressesMentionWakes(sourceRun);
+    if (!runId || extractAgentMentionIds(body).length === 0) return false;
+    const sourceRun = await loadOpenwaRunAuthority(db, { companyId: comment.companyId, runId });
+    return sourceRun !== null && await openwaRunSuppressesMentionWakes(db, sourceRun);
   };
   const enqueueStalledReviewDecisionWakeup =
     opts.stalledReviewDecisionEnqueueWakeup ?? heartbeat.wakeup;
@@ -15460,7 +15461,7 @@ export function issueRoutes(
 
           let mentionedIds: string[] = [];
           try {
-            mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId))
+            mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId, commentBody))
               ? []
               : await svc.findMentionedAgents(
                   issue.companyId,
@@ -19413,7 +19414,7 @@ export function issueRoutes(
 
         let mentionedIds: string[] = [];
         try {
-          mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId))
+          mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId, req.body.body))
             ? []
             : await svc.findMentionedAgents(
                 issue.companyId,

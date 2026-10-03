@@ -17,7 +17,7 @@ import {
 import { secretService } from "./secrets.js";
 import { resolveCoreTrustPreset } from "./trust-preset-resolver.js";
 import { isLowTrustQuarantined } from "./source-trust.js";
-import { assertOpenwaRunIdMay } from "./openwa/authority.js";
+import { assertOpenwaRunIdMay, restoreOpenwaGrant } from "./openwa/authority.js";
 
 export type GitHubCredentialSummary = {
   status: "available" | "absent" | "unavailable";
@@ -199,6 +199,12 @@ export async function exportGitHubOperationCredentials(
   db: Db,
   input: { companyId: string; agentId: string; runId: string },
 ) {
-  await assertOpenwaRunIdMay(db, input, "external_tools", { consume: false });
-  return resolveGitHubOperationCredentials(db, input);
+  const grantId = await assertOpenwaRunIdMay(db, input, "external_tools");
+  if (!grantId) return resolveGitHubOperationCredentials(db, input);
+  try {
+    return await resolveGitHubOperationCredentials(db, input);
+  } catch (error) {
+    await restoreOpenwaGrant(db, { companyId: input.companyId, runId: input.runId, grantId });
+    throw error;
+  }
 }

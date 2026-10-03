@@ -21,6 +21,7 @@ import {
   companyMemberships,
   createDb,
   heartbeatRuns,
+  issueComments,
   issues,
   toolApplications,
   toolConnections,
@@ -34,6 +35,7 @@ import {
 import { buildPaperclipTaskMarkdown, heartbeatService } from "../../services/heartbeat.ts";
 import { registerServerAdapter, unregisterServerAdapter } from "../../adapters/index.ts";
 import { assertOpenwaRunMay } from "../../services/openwa/authority.ts";
+import { createDurableChatWakeupRequest } from "../../services/durable-chat-wakeup.ts";
 import {
   OPENWA_WAKE_CONTEXT_KEY,
   OPENWA_WAKE_MAX_MESSAGES,
@@ -275,16 +277,29 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
       ...(input.approvalRequestId ? { approvalRequestId: input.approvalRequestId } : {}),
     };
     const heartbeat = heartbeatService(db);
+    const [comment] = await db.insert(issueComments).values({
+      companyId: seed.companyId, issueId: seed.issueId, authorType: "system", body: "WhatsApp wake",
+    }).returning();
+    const [action] = await db.insert(chatActions).values({
+      companyId: seed.companyId, endpointId: seed.endpointId, conversationId: seed.conversationId, kind: "inbound_wakeup",
+      providerActionId: "guidance-wake:" + randomUUID(), status: "issued", payload: { version: 1, openwa },
+    }).returning();
     const queued = await heartbeat.wakeup(seed.agentId, {
-      source: "on_demand",
+      source: "assignment",
       triggerDetail: "system",
       reason: "openwa_guidance_probe",
-      payload: { issueId: seed.issueId, openwa },
+      payload: { issueId: seed.issueId, wakeCommentId: comment!.id, openwa },
       requestedByActorType: "system",
-      requestedByActorId: null,
+      requestedByActorId: seed.peerPrincipalId,
+      durableChatRequest: createDurableChatWakeupRequest({
+        id: action!.id, companyId: seed.companyId, agentId: seed.agentId, issueId: seed.issueId, commentId: comment!.id,
+        requestedByActorType: "system", requestedByActorId: seed.peerPrincipalId, requestedAt: new Date(), authorize: async () => {},
+      }),
       contextSnapshot: {
         issueId: seed.issueId,
         taskId: seed.issueId,
+        source: "chat:openwa",
+        wakeCommentId: comment!.id,
         openwa,
         paperclipOpenwa: {
           triggerClass: input.triggerClass,
@@ -409,6 +424,17 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
         }
       }
     }
+  });
+
+  it("lists a category whose approval toggle is off as allowed, matching the gate", async () => {
+    const seed = await seedOpenwa({ policy: { approvals: { createTask: false } } });
+    const run = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "please open a task" })).id] });
+    expect(run.wake.profile).toBe("read_only");
+    expect(run.wake.policy.allowedCategories).toEqual(["create_task"]);
+    expect(run.wake.policy.approvalRequired).toEqual(["external_tools", "cross_chat_send", "wa_admin"]);
+    expect(run.full).toContain("Allowed without approval in this run: `create_task`.");
+    await expect(gateAllows(run.runId, "create_task")).resolves.toBe(true);
+    await expect(gateAllows(run.runId, "external_tools")).resolves.toBe(false);
   });
 
   it("applies edited custom instructions and chat note on the next wake without new issues", async () => {

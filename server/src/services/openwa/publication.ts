@@ -73,8 +73,7 @@ function triggerClass(value: unknown): OpenwaTriggerClass | null {
 }
 
 export function openwaRunTriggerClass(contextSnapshot: unknown): OpenwaTriggerClass | null {
-  const context = record(contextSnapshot);
-  return triggerClass(record(context.paperclipOpenwa).triggerClass) ?? triggerClass(record(context.openwa).triggerClass);
+  return triggerClass(record(record(contextSnapshot).paperclipOpenwa).triggerClass);
 }
 
 function runGrantIds(contextSnapshot: unknown): Set<string> {
@@ -83,7 +82,7 @@ function runGrantIds(contextSnapshot: unknown): Set<string> {
 }
 
 function runEvent(contextSnapshot: unknown): string | null {
-  const event = record(record(contextSnapshot).openwa).event;
+  const event = record(record(contextSnapshot).paperclipOpenwa).event;
   return typeof event === "string" ? event : null;
 }
 

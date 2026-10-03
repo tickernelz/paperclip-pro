@@ -16,7 +16,6 @@ import {
   type Db,
 } from "@tickernelz/paperclip-pro-db";
 import {
-  OPENWA_APPROVAL_CATEGORIES,
   maskOpenwaPhoneNumber,
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
@@ -29,8 +28,9 @@ import {
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import type { OpenwaRunContext, OpenwaRunProfile } from "./authority.js";
+import { openwaAllowedCategories, type OpenwaRunContext, type OpenwaRunProfile } from "./authority.js";
 import { takeOpenwaLateTranscripts } from "./late-transcripts.js";
+import { readOpenwaLastOutput } from "./publication.js";
 
 export const OPENWA_GUIDANCE_VERSION = 1;
 export const OPENWA_WAKE_CONTEXT_KEY = "paperclipOpenwaWake";
@@ -203,20 +203,12 @@ function parseSettings(value: unknown): OpenwaChatSettings {
 
 /** Splits approval categories into allowed, approval-required and unavailable for a run, matching assertOpenwaRunMay. */
 export function openwaRunAllowedCategories(input: {
+  policy: Pick<OpenwaEndpointPolicy, "approvals"> | null;
   profile: OpenwaRunProfile;
   grantCategories: readonly OpenwaGrantCategory[];
   gatewayAdminTools: OpenwaEndpointPolicy["gatewayAdminTools"];
 }): { allowed: OpenwaApprovalCategory[]; approvalRequired: OpenwaApprovalCategory[]; unavailable: OpenwaApprovalCategory[] } {
-  const unavailable: OpenwaApprovalCategory[] = input.gatewayAdminTools === "off" ? ["gateway_admin"] : [];
-  const granted = new Set(input.grantCategories);
-  const allowed: OpenwaApprovalCategory[] = [];
-  const approvalRequired: OpenwaApprovalCategory[] = [];
-  for (const category of OPENWA_APPROVAL_CATEGORIES) {
-    if (unavailable.includes(category)) continue;
-    if (input.profile === "full" || granted.has(category)) allowed.push(category);
-    else approvalRequired.push(category);
-  }
-  return { allowed, approvalRequired, unavailable };
+  return openwaAllowedCategories(input.policy, input.profile, input.grantCategories, input.gatewayAdminTools);
 }
 
 type DeliveryRow = {
@@ -345,26 +337,6 @@ function replyRequirements(input: {
   return [...missing];
 }
 
-/** True when an earlier run's final output in this conversation stayed internal. */
-export async function readOpenwaLastOutputSuppressed(
-  db: Db,
-  input: { companyId: string; endpointId: string; conversationId: string; runId: string | null },
-): Promise<boolean> {
-  const [row] = await db
-    .select({ payload: chatActions.payload })
-    .from(chatActions)
-    .where(
-      and(
-        eq(chatActions.companyId, input.companyId),
-        eq(chatActions.endpointId, input.endpointId),
-        eq(chatActions.providerActionId, "openwa-last-output:" + input.conversationId),
-      ),
-    )
-    .limit(1);
-  const payload = record(row?.payload);
-  return payload.suppressed === true && payload.runId !== input.runId;
-}
-
 async function listOwnerNames(db: Db, companyId: string, endpointId: string): Promise<string[]> {
   const rows = await db
     .select({ userName: authUsers.name, principalName: chatExternalPrincipals.displayName })
@@ -486,7 +458,7 @@ export async function buildOpenwaRunGuidance(
   const wakeOpenwa = record(record(wakeRequest?.payload).openwa);
   const contextOpenwa = record(input.contextSnapshot.openwa);
   const deliveryIds = [...new Set([...uuidList(wakeOpenwa.deliveryIds), ...uuidList(contextOpenwa.deliveryIds)])].slice(0, MAX_DELIVERY_IDS);
-  const event = wakeEventName(str(wakeOpenwa.event) ?? str(contextOpenwa.event));
+  const event = wakeEventName(openwa.event ?? str(wakeOpenwa.event) ?? str(contextOpenwa.event));
   const approvalRequestId =
     openwa.approvalRequestId ?? str(wakeOpenwa.approvalRequestId) ?? str(contextOpenwa.approvalRequestId);
   const [resource, deliveryRows, lastOutputSuppressed, lateTranscripts] = await Promise.all([
@@ -525,7 +497,8 @@ export async function buildOpenwaRunGuidance(
           .orderBy(desc(chatDeliveries.receivedAt), desc(chatDeliveries.id))
           .limit(OPENWA_WAKE_MAX_MESSAGES)
       : Promise.resolve([] as DeliveryRow[]),
-    readOpenwaLastOutputSuppressed(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id, runId: input.runId }),
+    readOpenwaLastOutput(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id })
+      .then((last) => last?.suppressed === true && last.runId !== input.runId),
     input.runId
       ? takeOpenwaLateTranscripts(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id, runId: input.runId })
       : Promise.resolve([]),
@@ -578,8 +551,9 @@ export async function buildOpenwaRunGuidance(
   const chatName = str(record(resource?.metadata).groupName) ?? str(resource?.label) ?? str(conversation.externalLabel);
   const grantRows = grants as Array<{ id: string; category: OpenwaGrantCategory; requesterPrincipalId: string | null; expiresAt: Date }>;
   const categories = openwaRunAllowedCategories({
+    policy,
     profile: openwa.profile,
-    grantCategories: grantRows.map((grant) => grant.category),
+    grantCategories: [...grantRows.map((grant) => grant.category), ...openwa.grantedCategories],
     gatewayAdminTools: policy.gatewayAdminTools,
   });
   const replyRequires = replyRequirements({

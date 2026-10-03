@@ -52,7 +52,7 @@ import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type Nati
 import { childReviewOutcomes } from "./child-review-outcomes.js";
 import { persistActivity, publishActivity } from "../activity-log.js";
 import { captureRunIdentity } from "../run-identity.js";
-import { assertOpenwaRunMay } from "../openwa/authority.js";
+import { assertOpenwaRunMay, openwaGrantScope, restoreOpenwaGrant } from "../openwa/authority.js";
 import { prepareNativeRunnerFileHandoff, type RemoteWorkspaceFileReader } from "./native-runner-file-handoff.js";
 import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
 import {
@@ -1008,6 +1008,7 @@ export class PaperclipRunnerToolAuthority {
     };
     // Stop outside row locks: the runtime needs those locks to acknowledge cancellation.
     // A second locked check below prevents any intervening ownership/version change.
+    let openwaGrantId: string | null = null;
     const prepared = await this.db.transaction(async (tx) => {
       const context = await this.#lockAuthorizedMutationContext(tx as unknown as Db);
       if (context.issue.workMode !== "standard") throw new Error("paperclip_runner_tool_mode_denied");
@@ -1015,8 +1016,12 @@ export class PaperclipRunnerToolAuthority {
       const target = await authorize(tx as unknown as Db, context.run);
       if (await priorReceipt(tx as unknown as Db)) return null;
       validate(target);
+      openwaGrantId = await assertOpenwaRunMay(tx as unknown as Db, context.run, "create_task");
       return target;
     });
+    const restoreOpenwaGrantOnFailure = async () => {
+      if (openwaGrantId) await restoreOpenwaGrant(this.db, { companyId: this.binding.companyId, runId: this.binding.runId, grantId: openwaGrantId });
+    };
     // Cancellation and ownership commit cannot share locks. If the second
     // phase loses its preconditions, restore runnable work to the still-current
     // prior owner. The durable wake key deduplicates retries; the state guard
@@ -1051,18 +1056,21 @@ export class PaperclipRunnerToolAuthority {
     };
     if (prepared && prepared.assigneeAgentId && prepared.assigneeAgentId !== assigneeAgentId) {
       if (prepared.executionRunId && (!this.binding.stopTaskForReassignment || !this.binding.enqueueWakeup)) {
+        await restoreOpenwaGrantOnFailure();
         throw new Error("paperclip_runner_reassignment_stop_unavailable");
       }
       try {
         await this.binding.stopTaskForReassignment?.({ companyId: this.binding.companyId, issueId: taskId,
           agentId: prepared.assigneeAgentId, runId: prepared.executionRunId });
       } catch (error) {
+        await restoreOpenwaGrantOnFailure();
         await restoreInterruptedWork(error);
         throw error;
       }
     }
     let publication: Awaited<ReturnType<typeof persistActivity>>["publication"] | null = null;
-    const result = await this.#withMutationReceipt("reassign_task", key, input, async (tx, context) => {
+    const result = await openwaGrantScope({ companyId: this.binding.companyId, runId: this.binding.runId, grantId: openwaGrantId }, () =>
+      this.#withMutationReceipt("reassign_task", key, input, async (tx, context) => {
       if (context.issue.workMode !== "standard") throw new Error("paperclip_runner_tool_mode_denied");
       const target = await authorize(tx, context.run);
       const prior = await priorReceipt(tx);
@@ -1097,7 +1105,8 @@ export class PaperclipRunnerToolAuthority {
       });
       publication = activity.publication;
       return receipt;
-    }, { beforeReceiptReplay: async (tx, context) => { await authorize(tx, context.run); } }).catch(async (error: unknown) => {
+    }, { beforeReceiptReplay: async (tx, context) => { await authorize(tx, context.run); } })).catch(async (error: unknown) => {
+      await restoreOpenwaGrantOnFailure();
       await restoreInterruptedWork(error);
       throw error;
     }) as {

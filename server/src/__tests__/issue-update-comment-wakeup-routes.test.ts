@@ -54,6 +54,14 @@ const mockRunnerGoalService = vi.hoisted(() => ({
   act: vi.fn(),
 }));
 
+vi.mock("../services/openwa/authority.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/openwa/authority.js")>()),
+  loadOpenwaRunAuthority: async (_db: unknown, input: { runId: string }) => {
+    const run = await (mockHeartbeatService.getRun as (runId: string) => Promise<{ contextSnapshot?: Record<string, unknown> } | null>)(input.runId);
+    return run ? { ...run, contextSnapshot: { paperclipToolProfile: "full", ...run.contextSnapshot } } : null;
+  },
+}));
+
 vi.mock("../services/instance-settings.js", () => ({
   instanceSettingsService: () => mockInstanceSettingsService,
 }));
@@ -686,7 +694,7 @@ describe("issue update comment wakeups", () => {
       id: "comment-self-cross-mention",
       issueId: existing.id,
       companyId: existing.companyId,
-      body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+      body: "[@QA](agent://33333333-3333-4333-8333-333333333333) please verify.",
       createdByRunId: SOURCE_RUN_ID,
     });
     mockIssueService.findMentionedAgents.mockResolvedValue([
@@ -703,7 +711,7 @@ describe("issue update comment wakeups", () => {
       .post(`/api/issues/${existing.id}/comments`)
       .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
       .send({
-        body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+        body: "[@QA](agent://33333333-3333-4333-8333-333333333333) please verify.",
       });
 
     expect(res.status).toBe(201);
@@ -732,7 +740,7 @@ describe("issue update comment wakeups", () => {
       id: `comment-openwa-${profile}`,
       issueId: existing.id,
       companyId: existing.companyId,
-      body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+      body: "[@QA](agent://33333333-3333-4333-8333-333333333333) please verify.",
       createdByRunId: SOURCE_RUN_ID,
     });
     mockIssueService.findMentionedAgents.mockResolvedValue([MENTIONED_AGENT_ID]);
@@ -748,7 +756,7 @@ describe("issue update comment wakeups", () => {
       .post(`/api/issues/${existing.id}/comments`)
       .set("X-Paperclip-Run-Id", SOURCE_RUN_ID)
       .send({
-        body: "[@QA](/agents/33333333-3333-4333-8333-333333333333) please verify.",
+        body: "[@QA](agent://33333333-3333-4333-8333-333333333333) please verify.",
       });
 
     expect(res.status).toBe(201);
