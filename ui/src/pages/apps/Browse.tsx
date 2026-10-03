@@ -555,6 +555,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
           "microsoft-teams": "Microsoft Teams",
           telegram: "Telegram",
           "imessage-photon": "iMessage Photon",
+          openwa: "OpenWA",
   agentmail: "AgentMail",
         } as const;
         target = {

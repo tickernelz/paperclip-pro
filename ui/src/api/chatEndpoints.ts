@@ -16,7 +16,7 @@ export type {
 } from "@tickernelz/paperclip-pro-shared";
 
 export type ChatProvider =
-  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon";
+  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "openwa";
 export type ChatEndpointStatus =
   | "draft"
   | "verifying"

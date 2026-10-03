@@ -298,6 +298,11 @@ import {
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
   inspectPhotonProjectSchema,
+  chatInflightModeSchema,
+  openwaGatewayAdminToolLevelSchema,
+  openwaNumberModeSchema,
+  openwaReplyPolicySchema,
+  openwaSenderPolicyModeSchema,
   photonProjectIdSchema,
   photonLineIdSchema,
   publishChatPublicationSchema,
@@ -854,6 +859,53 @@ const chatEndpointSetupSecretResponseSchema = z
   .object({ webhookSecret: z.string().length(64) })
   .strict();
 
+const openwaEndpointPolicyResponseSchema = z
+  .object({
+    numberMode: openwaNumberModeSchema,
+    senderPolicyMode: openwaSenderPolicyModeSchema,
+    replyPolicy: openwaReplyPolicySchema,
+    triggers: z
+      .object({
+        directMessage: z.boolean(),
+        agentMentioned: z.boolean(),
+        replyToAgent: z.boolean(),
+        commandPrefix: z
+          .object({ enabled: z.boolean(), prefix: z.string() })
+          .strict(),
+        selfChat: z.boolean(),
+        ownerMentionedAbsent: z.boolean(),
+        keywords: z.array(z.string()),
+        allMessages: z.boolean(),
+      })
+      .strict(),
+    absenceSeconds: z.number().int(),
+    approvals: z
+      .object({
+        createTask: z.boolean(),
+        externalTools: z.boolean(),
+        crossChatSend: z.boolean(),
+        waAdmin: z.boolean(),
+        gatewayAdmin: z.boolean(),
+        reminderMinutes: z.number().int(),
+        maxReminders: z.number().int(),
+        grantTtlHours: z.number().int(),
+      })
+      .strict(),
+    rotateAfterIdleHours: z.number().int(),
+    progressNudgeSeconds: z.number().int(),
+    typingIndicator: z.boolean(),
+    ownerNumberPrefix: z
+      .object({ enabled: z.boolean(), text: z.string() })
+      .strict(),
+    gatewayAdminTools: openwaGatewayAdminToolLevelSchema,
+    customInstructions: z.string(),
+    auditContentRetentionDays: z.number().int(),
+    attestations: z
+      .object({ pacing: z.boolean(), soleClient: z.boolean() })
+      .strict(),
+  })
+  .strict();
+
 const chatEndpointResponseSchema = z
   .object({
     id: z.string().uuid(),
@@ -872,6 +924,9 @@ const chatEndpointResponseSchema = z
     providerAccountLabel: z.string().nullable(),
     botExternalId: z.string().nullable(),
     photonAllocation: z.enum(["dedicated", "shared"]).optional(),
+    policy: openwaEndpointPolicyResponseSchema.optional(),
+    policyRevision: z.number().int().min(0).optional(),
+    inflightMode: chatInflightModeSchema.optional(),
     botUsername: z.string().nullable(),
     botLabel: z.string().nullable(),
     botAvatarUrl: z.string().nullable(),

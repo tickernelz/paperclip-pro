@@ -67,6 +67,7 @@ const providerNames: Record<ChatProvider, string> = {
   "microsoft-teams": "Microsoft Teams",
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
 };
 
 const providerLifecycleGuidance: Record<
@@ -101,6 +102,10 @@ const providerLifecycleGuidance: Record<
   "imessage-photon": {
     reconnect: "Reconnect verifies the same Photon project and line allocation, then recovers eligible missed messages.",
     remove: "Disconnect archives this channel and removes its saved secret. Your Photon project, number, subscription, and Messages history remain in Photon.",
+  },
+  openwa: {
+    reconnect: "Reconnect verifies the same OpenWA gateway session and API key, then recovers missed messages.",
+    remove: "Disconnect archives this channel and removes its saved API keys. The OpenWA gateway session, its WhatsApp login, and chat history remain on the gateway.",
   },
   telegram: {
     reconnect:

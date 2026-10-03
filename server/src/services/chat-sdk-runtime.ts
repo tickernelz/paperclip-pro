@@ -136,8 +136,8 @@ const DISCORD_GATEWAY_HEALTHY_SESSION_MS = 60_000;
 
 /** Public Paperclip provider ids. The Teams SDK name remains an internal detail. */
 export type ChatSdkProvider =
-  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon";
-type ChatSdkAdapterKey = "slack" | "github" | "discord" | "teams" | "telegram" | "imessage-photon";
+  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon" | "openwa";
+type ChatSdkAdapterKey = "slack" | "github" | "discord" | "teams" | "telegram" | "imessage-photon" | "openwa";
 
 interface ProviderConfigBase {
   /** Agent-derived native bot display/mention name. */
@@ -211,8 +211,13 @@ export interface ResolvedPhotonChatConfig extends ProviderConfigBase {
   intakeAfter: number;
   credentials: { allocation?: "dedicated" | "shared"; projectId: string; projectSecret: string; lineId: string; phoneNumber: string };
 }
+export interface ResolvedOpenwaChatConfig extends ProviderConfigBase {
+  provider: "openwa";
+  credentials: { baseUrl: string; sessionId: string; phoneNumber: string; apiKey: string; adminApiKey?: string };
+}
 export type ResolvedChatSdkProviderConfig =
   | ResolvedPhotonChatConfig
+  | ResolvedOpenwaChatConfig
   | ResolvedSlackChatConfig
   | ResolvedGitHubChatConfig
   | ResolvedDiscordChatConfig
@@ -578,6 +583,16 @@ function isCanonicalTeamsConnectorPath(pathname: string): boolean {
   return (
     pathname === "/" || /^\/[a-z0-9][a-z0-9._-]{0,127}\/?$/i.test(pathname)
   );
+}
+
+export class OpenwaRuntimeUnavailableError extends Error {
+  readonly code = "openwa_runtime_unavailable";
+  readonly provider = "openwa";
+
+  constructor() {
+    super("The OpenWA chat runtime is not available in this build");
+    this.name = "OpenwaRuntimeUnavailableError";
+  }
 }
 
 export class TeamsServiceUrlValidationError extends Error {
@@ -1357,6 +1372,7 @@ function createProviderAdapter(
   const resolvedLogger = adapterLogger(logger);
   switch (config.provider) {
     case "imessage-photon": throw new Error("Photon adapter requires scoped persistence");
+    case "openwa": throw new OpenwaRuntimeUnavailableError();
     case "slack": {
       const adapterConfig: SlackAdapterConfig = {
         ...config.credentials,

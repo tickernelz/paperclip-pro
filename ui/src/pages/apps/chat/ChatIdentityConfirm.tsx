@@ -16,6 +16,7 @@ const providerNames: Record<ChatProvider, string> = {
   telegram: "Telegram",
   agentmail: "AgentMail",
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
 };
 
 export function ChatIdentityConfirm() {
