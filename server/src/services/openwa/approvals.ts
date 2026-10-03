@@ -1,17 +1,14 @@
-import { and, desc, eq, inArray, lt, notInArray, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
 import {
   chatActions,
   chatConversations,
   chatDeliveries,
-  chatEndpointOwners,
   chatEndpoints,
   chatExternalPrincipals,
-  chatIdentityLinks,
   chatOutboundMessages,
   chatOwnerApprovalBubbles,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
-  companyMemberships,
   heartbeatRuns,
   issueThreadInteractions,
   issues,
@@ -37,8 +34,7 @@ import { formatOpenwaPublication } from "./format.js";
 import { OpenwaGatewayError } from "./gateway.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
-import { openwaCurrentOwnerUserId } from "./owners.js";
-import { openwaDigits } from "./policy.js";
+import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner } from "./owners.js";
 import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
 import { OpenwaToolError, type ToolContext } from "./tools.js";
@@ -102,57 +98,6 @@ function sessionOf(endpoint: Pick<EndpointRow, "providerAccountId">): string {
 
 function maskedChat(chatKey: string): string {
   return chatKey.endsWith("@g.us") ? chatKey : maskOpenwaDigits(chatKey);
-}
-
-export interface OpenwaCurrentOwner {
-  ownerId: string;
-  principalId: string;
-  userId: string;
-  digits: string | null;
-}
-
-/** Current owners: linked identity and active, non-viewer company membership. */
-export async function openwaCurrentOwners(
-  database: DbOrTransaction,
-  endpoint: Pick<EndpointRow, "companyId" | "id">,
-): Promise<OpenwaCurrentOwner[]> {
-  const rows = await database
-    .select({
-      ownerId: chatEndpointOwners.id,
-      principalId: chatIdentityLinks.principalId,
-      userId: chatIdentityLinks.paperclipUserId,
-      externalId: chatExternalPrincipals.externalId,
-    })
-    .from(chatEndpointOwners)
-    .innerJoin(
-      chatIdentityLinks,
-      and(eq(chatIdentityLinks.companyId, chatEndpointOwners.companyId), eq(chatIdentityLinks.id, chatEndpointOwners.identityLinkId)),
-    )
-    .innerJoin(
-      chatExternalPrincipals,
-      and(eq(chatExternalPrincipals.companyId, chatIdentityLinks.companyId), eq(chatExternalPrincipals.id, chatIdentityLinks.principalId)),
-    )
-    .innerJoin(
-      companyMemberships,
-      and(
-        eq(companyMemberships.companyId, chatIdentityLinks.companyId),
-        eq(companyMemberships.principalType, "user"),
-        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
-      ),
-    )
-    .where(
-      and(
-        eq(chatEndpointOwners.companyId, endpoint.companyId),
-        eq(chatEndpointOwners.endpointId, endpoint.id),
-        eq(chatIdentityLinks.endpointId, endpoint.id),
-        eq(chatIdentityLinks.status, "linked"),
-        eq(companyMemberships.status, "active"),
-        sql`coalesce(${companyMemberships.membershipRole}, '') <> 'viewer'`,
-      ),
-    );
-  return rows
-    .filter((row): row is typeof row & { userId: string } => typeof row.userId === "string" && row.userId.length > 0)
-    .map((row) => ({ ownerId: row.ownerId, principalId: row.principalId, userId: row.userId, digits: openwaDigits(row.externalId) }));
 }
 
 export async function openwaApprovalOwnerUserIds(db: Db, input: { companyId: string; requestId: string }): Promise<string[]> {
@@ -911,38 +856,6 @@ export async function processPendingOpenwaApprovalWakes(db: Db, limit = 25): Pro
   let dispatched = 0;
   for (const row of rows) if (await dispatchOpenwaApprovalWake(db, row.id)) dispatched++;
   return dispatched;
-}
-
-export async function revokeOpenwaGrantsOfFormerOwners(
-  tx: DbOrTransaction,
-  endpoint: Pick<EndpointRow, "companyId" | "id">,
-  actorUserId: string | null,
-): Promise<string[]> {
-  const current = [...new Set((await openwaCurrentOwners(tx, endpoint)).map((owner) => owner.userId))];
-  const revoked = await tx
-    .update(chatOwnerGrants)
-    .set({ status: "revoked", updatedAt: new Date() })
-    .where(
-      and(
-        eq(chatOwnerGrants.companyId, endpoint.companyId),
-        eq(chatOwnerGrants.endpointId, endpoint.id),
-        eq(chatOwnerGrants.status, "live"),
-        current.length
-          ? or(sql`${chatOwnerGrants.approvedByUserId} is null`, notInArray(chatOwnerGrants.approvedByUserId, current))
-          : undefined,
-      ),
-    )
-    .returning({ id: chatOwnerGrants.id });
-  const ids = revoked.map((grant) => grant.id);
-  if (ids.length)
-    await logOpenwaActivity(tx, {
-      companyId: endpoint.companyId,
-      endpointId: endpoint.id,
-      action: "openwa.grant_revoked",
-      actorUserId,
-      details: { grantIds: ids, reason: "approver_no_longer_owner" },
-    });
-  return ids;
 }
 
 export interface OpenwaApprovalView {

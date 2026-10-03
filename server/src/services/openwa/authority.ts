@@ -78,11 +78,13 @@ const bindingCache = new WeakMap<Db, Map<string, { bound: boolean; at: number }>
 const agentKeyCache = new WeakMap<Db, Map<string, { bound: boolean; at: number }>>();
 const grantScopes = new AsyncLocalStorage<GrantScope>();
 
-export const openwaRunAuthoritySnapshot = sql<Record<string, unknown> | null>`jsonb_build_object(
+export function openwaRunAuthoritySnapshot() {
+  return sql<Record<string, unknown> | null>`jsonb_build_object(
   'paperclipOpenwa', ${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa',
   'paperclipToolProfile', ${heartbeatRuns.contextSnapshot} -> 'paperclipToolProfile',
   'issueId', ${heartbeatRuns.contextSnapshot} -> 'issueId',
   'taskId', ${heartbeatRuns.contextSnapshot} -> 'taskId')`;
+}
 
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -580,7 +582,7 @@ export async function restoreOpenwaGrant(db: Db, input: { companyId: string; run
 
 export async function loadOpenwaRunAuthority(db: Db, input: { companyId: string; runId: string }): Promise<RunLike | null> {
   const [run] = await db
-    .select({ id: heartbeatRuns.id, companyId: heartbeatRuns.companyId, contextSnapshot: openwaRunAuthoritySnapshot })
+    .select({ id: heartbeatRuns.id, companyId: heartbeatRuns.companyId, contextSnapshot: openwaRunAuthoritySnapshot() })
     .from(heartbeatRuns)
     .where(and(eq(heartbeatRuns.id, input.runId), eq(heartbeatRuns.companyId, input.companyId)))
     .limit(1);

@@ -65,7 +65,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
   beforeAll(async () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-authority-admission-");
     db = createDb(database.connectionString);
-    scratch = await mkdtemp(path.join(os.homedir(), ".cache", "openwa-build", "tmp", "openwa-authority-admission-"));
+    scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-authority-admission-"));
     process.env.PAPERCLIP_HOME = scratch;
     process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
     process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");

@@ -42,11 +42,17 @@ import {
   type OpenwaScheduledWakeClock,
   type OpenwaScheduledWakes,
 } from "./openwa/scheduled-wakes.js";
-import { bumpOpenwaPolicyRevision, openwaOwnerService, openwaPrincipalAuthorization, syncOpenwaGroupActivation } from "./openwa/owners.js";
+import {
+  bumpOpenwaPolicyRevision,
+  openwaOwnerService,
+  openwaPrincipalAuthorization,
+  revokeOpenwaGrantsOfFormerOwners,
+  syncOpenwaGroupActivation,
+} from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
-import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime, revokeOpenwaGrantsOfFormerOwners } from "./openwa/approvals.js";
+import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";

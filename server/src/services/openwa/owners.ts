@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, notInArray, or, sql } from "drizzle-orm";
 import {
   chatAuditEntries,
   chatEndpointOwners,
@@ -6,6 +6,7 @@ import {
   chatEndpoints,
   chatExternalPrincipals,
   chatIdentityLinks,
+  chatOwnerGrants,
   chatSenderRules,
   companyMemberships,
   toolConnections,
@@ -23,7 +24,6 @@ import {
 import { badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logActivity, publishActivity, type ActivityPublication } from "../activity-log.js";
 import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
-import { revokeOpenwaGrantsOfFormerOwners } from "./approvals.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
@@ -170,6 +170,91 @@ export async function openwaPrincipalAuthorization(
     !(context.isDirectMessage === true && role === "outside_allowlist") &&
     !(endpoint.status === "verifying" && role !== "owner");
   return { allowed, userId: owner.userId, role, triggerClass: role === "owner" ? "owner" : "other", ownerId: owner.ownerId };
+}
+
+export interface OpenwaCurrentOwner {
+  ownerId: string;
+  principalId: string;
+  userId: string;
+  digits: string | null;
+}
+
+/** Current owners: linked identity and active, non-viewer company membership. */
+export async function openwaCurrentOwners(
+  database: DbOrTransaction,
+  endpoint: Pick<EndpointRow, "companyId" | "id">,
+): Promise<OpenwaCurrentOwner[]> {
+  const rows = await database
+    .select({
+      ownerId: chatEndpointOwners.id,
+      principalId: chatIdentityLinks.principalId,
+      userId: chatIdentityLinks.paperclipUserId,
+      externalId: chatExternalPrincipals.externalId,
+    })
+    .from(chatEndpointOwners)
+    .innerJoin(
+      chatIdentityLinks,
+      and(eq(chatIdentityLinks.companyId, chatEndpointOwners.companyId), eq(chatIdentityLinks.id, chatEndpointOwners.identityLinkId)),
+    )
+    .innerJoin(
+      chatExternalPrincipals,
+      and(eq(chatExternalPrincipals.companyId, chatIdentityLinks.companyId), eq(chatExternalPrincipals.id, chatIdentityLinks.principalId)),
+    )
+    .innerJoin(
+      companyMemberships,
+      and(
+        eq(companyMemberships.companyId, chatIdentityLinks.companyId),
+        eq(companyMemberships.principalType, "user"),
+        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+      ),
+    )
+    .where(
+      and(
+        eq(chatEndpointOwners.companyId, endpoint.companyId),
+        eq(chatEndpointOwners.endpointId, endpoint.id),
+        eq(chatIdentityLinks.endpointId, endpoint.id),
+        eq(chatIdentityLinks.status, "linked"),
+        eq(companyMemberships.status, "active"),
+        sql`coalesce(${companyMemberships.membershipRole}, '') <> 'viewer'`,
+      ),
+    );
+  return rows
+    .filter((row): row is typeof row & { userId: string } => typeof row.userId === "string" && row.userId.length > 0)
+    .map((row) => ({ ownerId: row.ownerId, principalId: row.principalId, userId: row.userId, digits: openwaDigits(row.externalId) }));
+}
+
+export async function revokeOpenwaGrantsOfFormerOwners(
+  tx: DbOrTransaction,
+  endpoint: Pick<EndpointRow, "companyId" | "id">,
+  actorUserId: string | null,
+): Promise<string[]> {
+  const current = [...new Set((await openwaCurrentOwners(tx, endpoint)).map((owner) => owner.userId))];
+  const revoked = await tx
+    .update(chatOwnerGrants)
+    .set({ status: "revoked", updatedAt: new Date() })
+    .where(
+      and(
+        eq(chatOwnerGrants.companyId, endpoint.companyId),
+        eq(chatOwnerGrants.endpointId, endpoint.id),
+        eq(chatOwnerGrants.status, "live"),
+        current.length
+          ? or(sql`${chatOwnerGrants.approvedByUserId} is null`, notInArray(chatOwnerGrants.approvedByUserId, current))
+          : undefined,
+      ),
+    )
+    .returning({ id: chatOwnerGrants.id });
+  const ids = revoked.map((grant) => grant.id);
+  if (ids.length)
+    await logActivity(tx as unknown as Db, {
+      companyId: endpoint.companyId,
+      actorType: actorUserId ? "user" : "system",
+      actorId: actorUserId ?? "openwa",
+      action: "openwa.grant_revoked",
+      entityType: "chat_endpoint",
+      entityId: endpoint.id,
+      details: { grantIds: ids, reason: "approver_no_longer_owner", endpointId: endpoint.id, provider: "openwa" },
+    });
+  return ids;
 }
 
 export async function bumpOpenwaPolicyRevision(tx: DbOrTransaction, endpoint: Pick<EndpointRow, "companyId" | "id">): Promise<void> {

@@ -1901,7 +1901,7 @@ export function createToolGatewayService(
     const [run] = await db
       .select({
         activeIdentityContextId: heartbeatRuns.activeIdentityContextId,
-        openwaRunContext: openwaRunAuthoritySnapshot,
+        openwaRunContext: openwaRunAuthoritySnapshot(),
       })
       .from(heartbeatRuns)
       .where(
