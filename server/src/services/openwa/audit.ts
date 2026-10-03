@@ -151,10 +151,7 @@ async function endpointRetentionDays(db: OpenwaAuditDb, companyId: string, endpo
   return openwaAuditRetentionDays(row?.policy);
 }
 
-/**
- * Layer-2 content-bearing audit entry. Pass a transaction so the entry commits with the mutation it records.
- * Callers audit trigger candidates only: messages discarded by the S0 feature check are never recorded.
- */
+/** Records a Layer-2 content-bearing audit entry; pass a transaction so it commits with the mutation. */
 export async function recordOpenwaAudit(db: OpenwaAuditDb, write: OpenwaAuditWrite): Promise<void> {
   const occurredAt = write.occurredAt ?? new Date();
   const content = write.content ? boundOpenwaAuditContent(write.content) : null;
