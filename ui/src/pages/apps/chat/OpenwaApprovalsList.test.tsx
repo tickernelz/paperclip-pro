@@ -17,7 +17,8 @@ const approval = (id: string, overrides: Record<string, unknown> = {}) => ({
   scope: "one_action",
   summary: "Create a task for Budi's refund",
   proposedAction: "Open a task to refund order 812 and email the receipt",
-  originChat: "+62xxx...4444",
+  originChat: "120363000000000000@g.us",
+  requester: "+62xxx...4444",
   originConversationId: null,
   interactionId: null,
   reminderCount: 2,
@@ -83,7 +84,8 @@ describe("OpenWA approvals list", () => {
     expect(text).toContain("Create tasks");
     expect(text).toContain("External tools");
     expect(text).toContain("One action");
-    expect(text).toContain("+62xxx...4444");
+    expect(text).toContain("Requested by+62xxx...4444");
+    expect(text).toContain("120363000000000000@g.us");
     expect(text).toContain("Reminders sent2");
     expect(button("Approve")).toBeDefined();
     expect(button("Reject")).toBeDefined();

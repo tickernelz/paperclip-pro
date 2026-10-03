@@ -118,6 +118,12 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
           <dt className="text-xs text-muted-foreground">Origin chat</dt>
           <dd className="truncate font-mono" title={approval.originChat}>{approval.originChat}</dd>
         </div>
+        {approval.requester ? (
+          <div className="min-w-0">
+            <dt className="text-xs text-muted-foreground">Requested by</dt>
+            <dd className="truncate font-mono" title={approval.requester}>{approval.requester}</dd>
+          </div>
+        ) : null}
         <div className="min-w-0">
           <dt className="text-xs text-muted-foreground">Scope</dt>
           <dd>{scopeLabels[approval.scope]}</dd>

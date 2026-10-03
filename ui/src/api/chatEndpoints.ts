@@ -239,6 +239,7 @@ export interface OpenwaApproval {
   summary: string;
   proposedAction: string;
   originChat: string;
+  requester: string | null;
   originConversationId: string | null;
   interactionId: string | null;
   reminderCount: number;
