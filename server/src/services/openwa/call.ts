@@ -7,6 +7,7 @@ import { listOpenwaAudit } from "./audit.js";
 import { OpenwaApprovalRequiredError, assertOpenwaRunMay, restoreOpenwaGrant } from "./authority.js";
 import {
   OPENWA_AUDIT_LIST_OPERATION,
+  OPENWA_SECRET_ISSUING_OPERATIONS,
   learnOpenwaOperationUnavailable,
   openwaAuditListArgsSchema,
   openwaCatalog,
@@ -20,10 +21,12 @@ import {
   type OpenwaCatalogCategory,
   type OpenwaCatalogScope,
   type OpenwaEffectiveOperation,
+  type OpenwaUnavailableReason,
 } from "./catalog.js";
 import { OpenwaGatewayError, openwaOperationArgsError, type OpenwaCallResult, type OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { markTriggersAnswered } from "./publication.js";
+import { redactOpenwaSecrets } from "./redact.js";
 import {
   OpenwaToolError,
   assertReadable,
@@ -190,7 +193,7 @@ function resultValue(effective: OpenwaEffectiveOperation, ctx: ToolContext, resu
       hint: "Media is never returned inline; store message media with openwa_get_media.",
     };
   }
-  const data = scrubInlineMedia(result.data);
+  const data = redactOpenwaSecrets(scrubInlineMedia(result.data));
   if (effective.operation.sessionParam === "query") return ownSessionOnly(data, ctx.sessionId, "sessionId");
   if (effective.operation.id === "SessionController_findAll" && !effective.useAdminKey) return ownSessionOnly(data, ctx.sessionId, "id");
   return data;
@@ -253,7 +256,12 @@ function bulkBody(args: Args, index: number): string {
   return str(content.text) ?? str(content.caption) ?? "";
 }
 
-function unavailableError(reason: "unavailable_on_engine" | "unavailable_without_admin_key", operationId: string): OpenwaToolError {
+function secretIssuingError(operationId: string): OpenwaToolError {
+  return refusal(403, "secret_issuing_operation", "This operation issues a credential or device-linking code shown only once; do it in the OpenWA dashboard", { operationId });
+}
+
+function unavailableError(reason: OpenwaUnavailableReason, operationId: string): OpenwaToolError {
+  if (reason === "secret_issuing_operation") return secretIssuingError(operationId);
   return reason === "unavailable_on_engine"
     ? refusal(422, "unavailable_on_engine", "This operation is not supported by the gateway's WhatsApp engine", { operationId })
     : refusal(422, "unavailable_without_admin_key", "This operation needs an OpenWA admin key, which is not configured", { operationId });
@@ -476,7 +484,7 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
         instruction: "The outcome is not confirmed yet. Do not call again with a new key; retry later with the same idempotencyKey to reconcile.",
       };
     messageIds = outcome.messageIds;
-    value = data === null ? { messageId: messageIds[0] } : scrubInlineMedia(data);
+    value = data === null ? { messageId: messageIds[0] } : redactOpenwaSecrets(scrubInlineMedia(data));
   } else {
     const claimed = await claimOpenwaWrite(ctx.db, action);
     if (!claimed)
@@ -568,6 +576,7 @@ export async function openwaCallTool(ctx: ToolContext, input: Args): Promise<Rec
   if (operationId === OPENWA_AUDIT_LIST_OPERATION) return paperclipAuditList(ctx, rawArgs, str(input.cursor));
   const operation = openwaCatalogOperation(operationId);
   if (!operation) throw refusal(404, "not_found", "Unknown OpenWA operation; list operations with openwa_catalog", { operationId });
+  if (OPENWA_SECRET_ISSUING_OPERATIONS.has(operationId)) throw secretIssuingError(operationId);
   const resolved = await catalogScope(ctx);
   const effective = openwaEffectiveOperation(operation, resolved.scope);
   if (!openwaOperationVisible(effective, resolved.scope))

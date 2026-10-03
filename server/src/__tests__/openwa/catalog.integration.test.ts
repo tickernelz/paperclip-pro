@@ -33,6 +33,7 @@ import { secretService } from "../../services/secrets.js";
 import { instanceSettingsService } from "../../services/instance-settings.js";
 import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
+import { OPENWA_REDACTED, redactOpenwaSecrets } from "../../services/openwa/redact.js";
 import { executeOpenwaTool, OpenwaToolError } from "../../services/openwa/tools.js";
 import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
@@ -42,6 +43,13 @@ const MEMBER = "628222000444@c.us";
 const OTHER = "628444000333@c.us";
 const SELF_SESSION = new Set(["SessionController_logout", "SessionController_stop", "SessionController_delete", "SessionController_forceKill"]);
 const SAFE = new Set(["GET", "HEAD", "OPTIONS"]);
+const SECRET_ISSUING = [
+  "AuthController_create",
+  "IntegrationInstanceController_create",
+  "IntegrationInstanceController_regenerate",
+  "SessionController_requestPairingCode",
+  "SessionController_getQRCode",
+];
 
 async function rejection(promise: Promise<unknown>): Promise<OpenwaToolError> {
   try {
@@ -92,6 +100,7 @@ interface Config {
 }
 
 function expectedOutcome(operation: OpenwaOperation, config: Config): string {
+  if (SECRET_ISSUING.includes(operation.id)) return "secret_issuing_operation";
   const listsAll = operation.id === "SessionController_findAll" && config.level === "full" && config.adminKey;
   const category = listsAll ? "gateway_admin" : operation.category;
   if (category === "gateway_admin" && (config.level === "off" || (config.level === "read" && !SAFE.has(operation.method)))) return "gateway_admin_disabled";
@@ -300,7 +309,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(outcomes.filter((entry) => entry.actual !== entry.expected)).toEqual([]);
     expect(outcomes.filter((entry) => (entry.actual === "dispatch") !== (entry.forwarded === 1))).toEqual([]);
     const counts = outcomes.reduce<Record<string, number>>((acc, entry) => ({ ...acc, [entry.actual]: (acc[entry.actual] ?? 0) + 1 }), {});
-    expect(counts).toEqual({ dispatch: 185, unavailable_on_engine: 13, self_session_requires_confirmation: 4 });
+    expect(counts).toEqual({ dispatch: 180, unavailable_on_engine: 13, self_session_requires_confirmation: 4, secret_issuing_operation: 5 });
     const audited = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(chatAuditEntries)
@@ -319,7 +328,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(outcomes.filter((entry) => entry.actual !== entry.expected)).toEqual([]);
     expect(outcomes.filter((entry) => (entry.actual === "dispatch") !== (entry.forwarded === 1))).toEqual([]);
     expect(new Set(outcomes.map((entry) => entry.actual))).toEqual(
-      new Set(["dispatch", "approval_required", "gateway_admin_disabled", "unavailable_on_engine", "unavailable_without_admin_key"]),
+      new Set(["dispatch", "approval_required", "gateway_admin_disabled", "unavailable_on_engine", "unavailable_without_admin_key", "secret_issuing_operation"]),
     );
   }, 120_000);
 
@@ -522,5 +531,93 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
       cursor = page.nextCursor as string | null;
     } while (cursor);
     expect(seen).toEqual(contacts);
+  });
+
+  it("redacts credential keys, OpenWA keys and QR data URLs in any JSON value", () => {
+    const input = {
+      ApiKey: "a",
+      nested: [{ verifyToken: "v", order: { orderId: "o1", token: "t" } }, "owa_k1_leaked"],
+      qrImage: "data:image/png;base64,AAAA",
+      note: "data:image/png;base64,AAAA",
+      count: 3,
+      deep: { password: { any: "shape" }, clientSecret: null },
+    };
+    expect(redactOpenwaSecrets(input)).toEqual({
+      ApiKey: OPENWA_REDACTED,
+      nested: [{ verifyToken: OPENWA_REDACTED, order: { orderId: "o1", token: OPENWA_REDACTED } }, OPENWA_REDACTED],
+      qrImage: OPENWA_REDACTED,
+      note: "data:image/png;base64,AAAA",
+      count: 3,
+      deep: { password: OPENWA_REDACTED, clientSecret: OPENWA_REDACTED },
+    });
+    expect(input.nested[0]).toEqual({ verifyToken: "v", order: { orderId: "o1", token: "t" } });
+  });
+
+  it("refuses secret-issuing operations before any gateway call, for owner runs at full with an admin key", async () => {
+    const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
+    const c = await conversation(t, MEMBER);
+    const owner = await run(t, c, "owner");
+    const before = t.gateway.requests.length;
+    const created = await rejection(call(owner, { operation: "AuthController_create", args: { name: "agent" }, idempotencyKey: randomUUID() }));
+    expect(created.code).toBe("secret_issuing_operation");
+    expect(created.status).toBe(403);
+    const regenerated = await rejection(
+      call(owner, { operation: "IntegrationInstanceController_regenerate", args: { pluginId: "p1", instanceId: "i1" }, idempotencyKey: randomUUID() }),
+    );
+    expect(regenerated.code).toBe("secret_issuing_operation");
+    expect(t.gateway.requests.length).toBe(before);
+    const [audit] = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), sql`${chatAuditEntries.metadata}->>'operation' = 'AuthController_create'`));
+    expect(audit!.metadata).toMatchObject({ tool: "openwa_call", errorCode: "secret_issuing_operation" });
+
+    const listed = (await catalogAll(owner)).filter((entry) => SECRET_ISSUING.includes(String(entry.operation)));
+    expect(listed.map((entry) => entry.operation).sort()).toEqual([...SECRET_ISSUING].sort());
+    expect(listed.every((entry) => entry.available === false && entry.reason === "secret_issuing_operation")).toBe(true);
+    expect(await executeOpenwaTool(db, owner, "openwa_describe", { operation: "SessionController_getQRCode" })).toMatchObject({
+      available: false,
+      reason: "secret_issuing_operation",
+    });
+  });
+
+  it("redacts gateway credentials in results, stored receipts, replays and audit content", async () => {
+    const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
+    const secret = "hmac-plaintext-" + randomUUID();
+    const verifyToken = "verify-plaintext-" + randomUUID();
+    const orderToken = "order-plaintext-" + randomUUID();
+    const instancePath = "/api/integration/plugins/p1/instances/i1";
+    const instance = { id: "i1", pluginId: "p1", enabled: true, secret, verifyToken, config: null };
+    t.gateway.overrides.push({ method: "GET", path: instancePath, status: 200, body: instance });
+    t.gateway.overrides.push({ method: "PATCH", path: instancePath, status: 200, body: instance });
+    const historyPath = "/api/sessions/" + SESSION_ID + "/messages/" + encodeURIComponent(MEMBER) + "/history";
+    t.gateway.overrides.push({ method: "GET", path: historyPath, status: 200, body: [{ id: "m1", body: "order", order: { orderId: "o1", token: orderToken } }] });
+    const c = await conversation(t, MEMBER);
+    const owner = await run(t, c, "owner");
+    const plaintext = (value: unknown) => [secret, verifyToken, orderToken].filter((needle) => JSON.stringify(value).includes(needle));
+
+    const read = await call(owner, { operation: "IntegrationInstanceController_getOne", args: { pluginId: "p1", instanceId: "i1" } });
+    expect(read.result).toMatchObject({ id: "i1", secret: OPENWA_REDACTED, verifyToken: OPENWA_REDACTED });
+    expect(plaintext(read)).toEqual([]);
+
+    const key = randomUUID();
+    const args = { pluginId: "p1", instanceId: "i1", enabled: true };
+    const patched = await call(owner, { operation: "IntegrationInstanceController_patch", args, idempotencyKey: key });
+    expect(patched).toMatchObject({ state: "delivered", result: { secret: OPENWA_REDACTED, verifyToken: OPENWA_REDACTED } });
+    const replay = await call(owner, { operation: "IntegrationInstanceController_patch", args, idempotencyKey: key });
+    expect(replay).toMatchObject({ actionId: patched.actionId, replayed: true, result: { secret: OPENWA_REDACTED, verifyToken: OPENWA_REDACTED } });
+    expect(plaintext(replay)).toEqual([]);
+    expect(forwarded(t, "PATCH", instancePath)).toBe(1);
+    const [action] = await db.select().from(chatActions).where(eq(chatActions.id, String(patched.actionId)));
+    expect(action!.status).toBe("processed");
+    expect(plaintext(action)).toEqual([]);
+
+    const other = await run(t, c, "other");
+    const history = await call(other, { operation: "MessageController_getChatHistory", args: { chatId: MEMBER } });
+    expect(history.result).toEqual([{ id: "m1", body: "order", order: { orderId: "o1", token: OPENWA_REDACTED } }]);
+
+    const audits = await db.select().from(chatAuditEntries).where(eq(chatAuditEntries.endpointId, t.endpointId));
+    expect(audits.filter((entry) => entry.kind === "tool_called")).toHaveLength(4);
+    expect(plaintext(audits)).toEqual([]);
   });
 });
