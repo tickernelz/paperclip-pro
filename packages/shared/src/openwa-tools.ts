@@ -1,4 +1,11 @@
 import { z } from "zod";
+import {
+  OPENWA_CHAT_NOTE_MAX_LENGTH,
+  OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH,
+  openwaChatActivationSchema,
+  openwaReplyPolicySchema,
+  openwaTriggerOverridesSchema,
+} from "./validators/chat-channels.js";
 
 export const OPENWA_TOOL_SCHEMA_BUDGET_BYTES = 12_000;
 export const OPENWA_TOOL_RESULT_LIMIT_BYTES = 16_384;
@@ -16,6 +23,8 @@ const cursor = z.string().min(1).max(200).optional();
 const GRANT_CATEGORIES = ["create_task", "external_tools", "cross_chat_send", "wa_admin", "gateway_admin", "reply_outside_allowlist", "reply"] as const;
 export const OPENWA_APPROVAL_MESSAGE_MAX_LENGTH = 3500;
 const MEDIA_KINDS = new Set<OpenwaSendKind>(["image", "video", "audio", "voice", "document", "sticker"]);
+export const OPENWA_CONFIG_UI_ONLY_FIELDS = ["credentials", "apiKey", "adminApiKey", "baseUrl", "sessionId", "numberMode", "owners", "gatewayAdminTools"] as const;
+const senderRule = z.object({ list: z.enum(["allow", "deny"]), number: e164 }).strict();
 
 function tool<N extends string, S extends z.ZodRawShape>(
   name: N,
@@ -137,6 +146,44 @@ export const OPENWA_TOOLS = [
       category: z.enum(["read", "write", "wa_admin", "gateway_admin", "paperclip"]).optional(),
       query: z.string().min(1).max(100).optional(),
       cursor,
+    },
+  ),
+  tool(
+    "endpoint_config",
+    "write",
+    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears an override), approval toggles and reminders, or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin level stay in Paperclip.",
+    {
+      senders: z
+        .object({
+          add: z.array(senderRule.extend({ label: z.string().trim().min(1).max(120).optional() })).max(50).optional(),
+          remove: z.array(senderRule).max(50).optional(),
+        })
+        .strict()
+        .optional(),
+      chat,
+      chatSettings: z
+        .object({
+          activation: openwaChatActivationSchema.optional(),
+          triggers: openwaTriggerOverridesSchema.nullable().optional(),
+          absenceSeconds: z.number().int().min(10).max(86_400).nullable().optional(),
+          replyPolicy: openwaReplyPolicySchema.nullable().optional(),
+          note: z.string().max(OPENWA_CHAT_NOTE_MAX_LENGTH).nullable().optional(),
+        })
+        .strict()
+        .optional(),
+      approvals: z
+        .object({
+          createTask: z.boolean().optional(),
+          externalTools: z.boolean().optional(),
+          crossChatSend: z.boolean().optional(),
+          waAdmin: z.boolean().optional(),
+          gatewayAdmin: z.boolean().optional(),
+          reminderMinutes: z.number().int().min(1).max(1440).optional(),
+          maxReminders: z.number().int().min(0).max(10).optional(),
+        })
+        .strict()
+        .optional(),
+      customInstructions: z.string().max(OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
     },
   ),
   tool("describe", "read", "Argument schema and gates of one operation from openwa_catalog.", { operation }),

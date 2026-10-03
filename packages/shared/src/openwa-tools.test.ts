@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
-import { OPENWA_TOOLS, OPENWA_TOOL_SCHEMA_BUDGET_BYTES, openwaTool } from "./openwa-tools.js";
+import { OPENWA_CONFIG_UI_ONLY_FIELDS, OPENWA_TOOLS, OPENWA_TOOL_SCHEMA_BUDGET_BYTES, openwaTool } from "./openwa-tools.js";
 
 describe("OpenWA tool catalog", () => {
   it("keeps every tool schema within the context budget", () => {
@@ -20,6 +20,7 @@ describe("OpenWA tool catalog", () => {
       ["openwa_stay_silent", "write"],
       ["openwa_handoff", "write"],
       ["openwa_catalog", "read"],
+      ["openwa_endpoint_config", "write"],
       ["openwa_describe", "read"],
       ["openwa_call", "write"],
     ]);
@@ -64,5 +65,22 @@ describe("OpenWA tool catalog", () => {
     const resolve = openwaTool("openwa_approval_resolve")!.schema;
     expect(resolve.safeParse({ requestId: key, decision: "approve" }).success).toBe(true);
     expect(resolve.safeParse({ requestId: key, decision: "maybe" }).success).toBe(false);
+  });
+
+  it("validates endpoint config shapes and leaves Paperclip-only settings out of the schema", () => {
+    const config = openwaTool("openwa_endpoint_config")!;
+    expect(config.schema.safeParse({}).success).toBe(true);
+    expect(config.schema.safeParse({ senders: { add: [{ list: "deny", number: "+628111222333" }] } }).success).toBe(true);
+    expect(config.schema.safeParse({ senders: { add: [{ list: "block", number: "+628111222333" }] } }).success).toBe(false);
+    expect(config.schema.safeParse({ chatSettings: { activation: "on", replyPolicy: null, note: null, triggers: { keywords: ["invoice"] } } }).success).toBe(true);
+    expect(config.schema.safeParse({ chatSettings: { activation: "maybe" } }).success).toBe(false);
+    expect(config.schema.safeParse({ approvals: { createTask: false, reminderMinutes: 15 } }).success).toBe(true);
+    expect(config.schema.safeParse({ approvals: { grantTtlHours: 2 } }).success).toBe(false);
+    expect(config.schema.safeParse({ customInstructions: "x".repeat(8001) }).success).toBe(false);
+    const properties = Object.keys((config.inputSchema.properties ?? {}) as Record<string, unknown>);
+    for (const field of OPENWA_CONFIG_UI_ONLY_FIELDS) {
+      expect(properties).not.toContain(field);
+      expect(config.schema.safeParse({ [field]: "x" }).success).toBe(false);
+    }
   });
 });

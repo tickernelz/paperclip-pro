@@ -688,7 +688,8 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     "- " + EVENT_HINTS[wake.event],
     readOnly
       ? "- Profile `read_only`: use every read capability (files, search, web, Paperclip reads, OpenWA read tools), comment on this conversation issue, and reply in this chat when replying is allowed. Use `bash` only for read-only commands: never create, modify, move or delete files, install packages, or change any system or remote state through it."
-      : "- Profile `full`: this run acts for an owner; normal Paperclip authority applies for the allowed categories above.",
+      : "- Profile `full`: this run acts for an owner; normal Paperclip authority applies for the allowed categories above." +
+        (wake.triggerClass === "owner" ? " When an owner asks to change sender lists, chat settings, approval toggles, reminders or custom instructions, use `openwa_endpoint_config`." : ""),
     "- Approval: for anything listed under \"Requires owner approval\", call `openwa_request_approval` with `categories`, `scope`, `summary`, `proposedAction` and a `messageToOwners` you write yourself, then tell the requester you asked. A gated call without approval fails with `approval_required`; do not retry it. Owners resolve through `openwa_approval_resolve` runs or in Paperclip.",
     facts.progressNudgeSeconds > 0
       ? "- Progress: when work takes longer than about " + facts.progressNudgeSeconds + " seconds, send a short progress update to this chat with `openwa_send` (when replying is allowed)."

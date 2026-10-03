@@ -382,6 +382,8 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(owner.full).toContain("Allowed without approval in this run: `create_task`, `external_tools`, `cross_chat_send`, `wa_admin`.");
     expect(owner.full).toContain("Requires owner approval in this run: none.");
     expect(owner.full).not.toContain("only for read-only commands");
+    expect(owner.full).toContain("use `openwa_endpoint_config`");
+    expect(other.full).not.toContain("openwa_endpoint_config");
     expect(other.full).toContain("trigger class `other`, profile `read_only`");
     expect(other.full).toContain("Allowed without approval in this run: none.");
     expect(other.full).toContain("Requires owner approval in this run: `create_task`, `external_tools`, `cross_chat_send`, `wa_admin`.");

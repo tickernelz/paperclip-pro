@@ -38846,12 +38846,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
 
   const unregisterOpenwaApprovalWakes = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
 
+  const openwaOwners = openwaOwnerService(db, {
+    createLinkIntent,
+    gatewayFor: gatewayForOpenwaEndpoint,
+    invalidate: (endpointId) => openwaPolicies.invalidate(endpointId),
+  });
+
   const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
     async resolve(endpoint) {
       const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
       if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA runtime unavailable");
       return { gateway: adapter.gateway, registry: openwaOutbound, media: openwaMedia, storage: options.storage };
     },
+    owners: openwaOwners,
   });
 
   const unregisterSlackTaskAuthority = registerSlackTaskAuthority(db, async (binding) => {
@@ -38937,11 +38944,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     handleWebhook,
     listResources,
     replaceResources,
-    openwa: openwaOwnerService(db, {
-      createLinkIntent,
-      gatewayFor: gatewayForOpenwaEndpoint,
-      invalidate: (endpointId) => openwaPolicies.invalidate(endpointId),
-    }),
+    openwa: openwaOwners,
     openwaPolicies,
     openwaApprovals: openwaApprovalService(db),
     openwaAdmissionStats: openwaAdmission.stats,
