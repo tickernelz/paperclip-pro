@@ -44,7 +44,7 @@ Evidence sources: the live gateway OpenAPI document (`GET /api/docs-yaml`, versi
 | D33 | WhatsApp reads in non-owner runs | Every chat visible to the endpoint is readable (accepted risk) |
 | D34 | Steering vs profile | Owner messages are always steered into the active run without raising its profile; non-owner messages are steered only into read-only runs |
 | D35 | Adapter authentication | OpenWA endpoints require an agent adapter that authenticates runs with signed run-bound JWTs (`supportsLocalAgentJwt`); persistent agent keys of that agent are read-only |
-| D36 | Grant scope | A grant applies only to the approved request: its requester, origin chat and proposed action. Other members need their own approval |
+| D36 | Grant scope | A grant applies only to the approved request: its requester, origin chat and proposed action. Other members need their own approval. A `one_action` `external_tools` grant is consumed at run start and covers that single grant run, because runtime tool profiles are fixed at adapter launch and individual runtime dispatches cannot be metered. |
 | D37 | Approval chats | Owner replies to approval bubbles are detected in any chat regardless of activation; the self-chat is implicitly active for owner commands in `owner_number` mode |
 | D38 | Gateway secrets | Secret-issuing gateway operations are refused for agents; credential fields in gateway results are redacted |
 
@@ -275,7 +275,7 @@ Conditional permissions: `reply_outside_allowlist` (section 6.2) and `reply` whe
 
 Grant: `{requestId, category, originChat, requesterPrincipal, scope: one_action | requester, status, approvedByUserId, approvedVia: whatsapp | paperclip, expiresAt}` (D36).
 
-- `one_action`: usable only by the `grant` run created from that request (its context lists the grant id) and that run's steered turns; consumed atomically by the first authorized dispatch of a gated call in that category (row lock).
+- `one_action`: usable only by the `grant` run created from that request (its context lists the grant id) and that run's steered turns; consumed atomically by the first authorized dispatch of a gated call in that category (row lock). A `one_action` `external_tools` grant is consumed at run start and covers that single grant run, because runtime tool profiles are fixed at adapter launch and individual runtime dispatches cannot be metered.
 - `requester`: usable by runs triggered by the same requester in the same origin chat until `expiresAt` (default 24 h). Live grants are resolved once at run start into the run context; runs started earlier never pick them up.
 - Grants survive conversation rotation. They are keyed by request, chat and requester, never by issue; another member's run never uses them.
 
@@ -417,7 +417,7 @@ Two layers:
 
 Read access (`GET /chat-endpoints/:endpointId/audit`, cursor-paged): endpoint owners and company owners see content; other board users with endpoint access see metadata only. Owner-class runs can read it via `openwa_call` operation `paperclip.audit.list`.
 
-Retention: a daily job nulls `content` where `content_purge_at <= now()` in batches of 1000 (pattern of `server/src/services/decision-retention.ts`). Default 90 days, endpoint setting.
+Retention: a daily job nulls `content` where `content_purge_at <= now()` in batches of 1000 (pattern of `server/src/services/decision-retention.ts`). Default 90 days, endpoint setting. The same job marks `live` grants past `expires_at` as `expired` and logs one `openwa.grant_expired` entry per endpoint.
 
 Conversation issues follow normal issue visibility; in `owner_number` mode they contain the owner's chats (Settings warns).
 
