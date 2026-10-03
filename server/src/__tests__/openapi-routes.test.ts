@@ -438,6 +438,7 @@ describe("openapi routes", () => {
       ["get", "/api/chat-identity-links/preview"],
       ["post", "/api/chat-identity-links/confirm"],
       ["get", "/api/chat-endpoints/{endpointId}/conversations"],
+      ["get", "/api/chat-endpoints/{endpointId}/audit"],
       ["get", "/api/chat-endpoints/{endpointId}/activity"],
       [
         "post",

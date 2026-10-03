@@ -28,6 +28,7 @@ import { openwaOutboundRegistry } from "./openwa/outbound.js";
 import { OpenwaChatAdapter } from "./openwa/adapter.js";
 import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication } from "./openwa/publication.js";
 import { openwaMediaService } from "./openwa/media.js";
+import { listOpenwaAudit } from "./openwa/audit.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -29096,6 +29097,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       .slice(0, limit);
   }
 
+  async function listAudit(
+    endpointId: string,
+    input: Omit<Parameters<typeof listOpenwaAudit>[1], "companyId" | "endpointId">,
+  ) {
+    const [endpoint] = await db
+      .select({ companyId: chatEndpoints.companyId })
+      .from(chatEndpoints)
+      .where(eq(chatEndpoints.id, endpointId))
+      .limit(1);
+    if (!endpoint) throw notFound("Chat endpoint not found");
+    return listOpenwaAudit(db, { ...input, companyId: endpoint.companyId, endpointId });
+  }
+
   async function listActivityPage(endpointId: string, limit = 25, cursor?: string) {
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) throw badRequest("Activity limit must be between 1 and 100");
     let before: { createdAt: string; id: string } | undefined;
@@ -38503,6 +38517,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     listConversations,
     listActivity,
     listActivityPage,
+    listAudit,
     replayDelivery,
     replayPublication,
     resolveAction,

@@ -8,6 +8,8 @@ import { githubChatManagementService } from "../services/chat-github-management.
 import { updateGitHubChatConfigurationSchema } from "@tickernelz/paperclip-pro-shared";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
+  CHAT_AUDIT_ACTOR_KINDS,
+  CHAT_AUDIT_ENTRY_KINDS,
   CHAT_PROVIDERS,
   configureChatEndpointSchema,
   inspectPhotonProjectSchema,
@@ -56,6 +58,20 @@ type ChatChannelRouteOptions = ChatChannelServiceOptions & {
 type ChatWebhookRouteOptions = {
   rateLimiter?: InviteRateLimiter;
 };
+
+const chatAuditQuerySchema = z.object({
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  cursor: z.string().max(256).optional(),
+  kind: z.union([z.string(), z.array(z.string())])
+    .transform((value) => (Array.isArray(value) ? value : value.split(",")).map((item) => item.trim()).filter(Boolean))
+    .pipe(z.array(z.enum(CHAT_AUDIT_ENTRY_KINDS)).max(CHAT_AUDIT_ENTRY_KINDS.length))
+    .optional(),
+  chatKey: z.string().min(1).max(256).optional(),
+  actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS).optional(),
+  actorRef: z.string().min(1).max(256).optional(),
+  from: z.string().datetime({ offset: true }).transform((value) => new Date(value)).optional(),
+  to: z.string().datetime({ offset: true }).transform((value) => new Date(value)).optional(),
+}).strict();
 
 const CHAT_WEBHOOK_RATE_LIMIT_WINDOW_MS = 60_000;
 const CHAT_WEBHOOK_RATE_LIMIT_MAX_REQUESTS = 600;
@@ -375,6 +391,20 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     } else {
       res.json(await service.listActivity(endpointId(req)));
     }
+  });
+
+  router.get("/chat-endpoints/:endpointId/audit", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    const query = chatAuditQuerySchema.safeParse(req.query);
+    if (!query.success) throw badRequest("Invalid audit query parameters");
+    const { limit, cursor, kind, chatKey, actorKind, actorRef, from, to } = query.data;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.listAudit(endpointId(req), {
+      viewer: { type: "board", userId: actorUserId(req), instanceAdmin: req.actor.source === "local_implicit" || req.actor.isInstanceAdmin === true },
+      limit,
+      cursor,
+      filters: { kinds: kind, chatKey, actorKind, actorRef, from, to },
+    }));
   });
 
   router.post(

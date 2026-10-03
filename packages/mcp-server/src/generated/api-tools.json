@@ -1375,7 +1375,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18025",
+    "boardGuard": "assertBoard@issues.ts:18037",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12787,7 +12787,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17010",
+    "boardGuard": "assertBoard@issues.ts:17022",
     "authorityCapability": null,
     "parameters": [
       {
@@ -16219,6 +16219,110 @@
     ]
   },
   {
+    "name": "paperclipGetChatEndpointAudit",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/audit",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/audit",
+    "description": "List the OpenWA endpoint audit trail. Returns the endpoint's audit entries newest first with cursor paging (limit 1–100, default 25; follow nextCursor). Filters: kind (comma-separated or repeated), chatKey, actorKind, actorRef, from and to (ISO timestamps, inclusive). Endpoint owners and company owners receive content (message text, owner text, redacted tool arguments); other board users with endpoint access receive metadata only and `access` is `metadata`. Content is purged after the endpoint's retention period; purged entries keep their metadata and report contentPurged.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "actorKind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "user",
+            "agent",
+            "chat_principal",
+            "system"
+          ]
+        }
+      },
+      {
+        "name": "actorRef",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "chatKey",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetChatEndpointConfiguration",
     "operationId": "GET /api/chat-endpoints/{endpointId}/github/configuration",
     "method": "GET",
@@ -17578,7 +17682,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:499",
+    "boardGuard": "assertBoard@chat-channels.ts:529",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22034,7 +22138,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16183",
+    "boardGuard": "assertBoard@issues.ts:16195",
     "authorityCapability": null,
     "parameters": [
       {
@@ -23627,7 +23731,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:141",
+    "boardGuard": "assertBoard@chat-channels.ts:157",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33742,7 +33846,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8901",
+    "boardGuard": "assertBoard@issues.ts:8911",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33803,7 +33907,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16153",
+    "boardGuard": "assertBoard@issues.ts:16165",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35465,7 +35569,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17967",
+    "boardGuard": "assertBoard@issues.ts:17979",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35897,7 +36001,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16962",
+    "boardGuard": "assertBoard@issues.ts:16974",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39474,6 +39578,29 @@
           },
           "keyboardShortcuts": {
             "type": "boolean"
+          },
+          "speechToText": {
+            "type": "object",
+            "properties": {
+              "apiKeyEnvVar": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "maxAudioSeconds": {
+                "type": "integer"
+              },
+              "model": {
+                "type": "string"
+              },
+              "sttWaitSeconds": {
+                "type": "integer"
+              }
+            }
           }
         }
       }
@@ -39568,7 +39695,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16121",
+    "boardGuard": "assertBoard@issues.ts:16133",
     "authorityCapability": null,
     "parameters": [
       {

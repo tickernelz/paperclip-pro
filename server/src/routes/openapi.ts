@@ -299,6 +299,8 @@ import {
   createChatIdentityLinkIntentSchema,
   inspectPhotonProjectSchema,
   inspectOpenwaGatewaySchema,
+  CHAT_AUDIT_ACTOR_KINDS,
+  CHAT_AUDIT_ENTRY_KINDS,
   chatInflightModeSchema,
   openwaGatewayAdminToolLevelSchema,
   openwaNumberModeSchema,
@@ -1636,6 +1638,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "POST /api/chat-identity-links/request-access",
   "GET /api/chat-endpoints/{endpointId}/conversations",
   "GET /api/chat-endpoints/{endpointId}/activity",
+  "GET /api/chat-endpoints/{endpointId}/audit",
   "POST /api/chat-endpoints/{endpointId}/deliveries/{deliveryId}/replay",
   "POST /api/chat-endpoints/{endpointId}/publications/{publicationId}/replay",
   "POST /api/chat-endpoints/{endpointId}/publications/{publicationId}/resolve",
@@ -2748,6 +2751,53 @@ registry.registerPath({
   request: { params: z.object({ endpointId: z.string().uuid() }), query: z.object({ limit: z.coerce.number().int().min(1).max(100).optional(), cursor: z.string().max(256).optional() }) },
   responses: {
     200: r.ok(z.union([z.array(chatActivityResponseSchema), z.object({ items: z.array(chatActivityResponseSchema), nextCursor: z.string().nullable() })])),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+const chatAuditEntryResponseSchema = z.object({
+  id: z.string().uuid(),
+  kind: z.enum(CHAT_AUDIT_ENTRY_KINDS),
+  actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS),
+  actorRef: z.string().nullable(),
+  chatKey: z.string().nullable(),
+  conversationId: z.string().uuid().nullable(),
+  runId: z.string().uuid().nullable(),
+  metadata: z.record(z.string(), z.unknown()),
+  content: z.record(z.string(), z.unknown()).nullable(),
+  contentPurged: z.boolean(),
+  occurredAt: z.string(),
+}).strict();
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/audit",
+  tags: ["chat-channels"],
+  summary: "List the OpenWA endpoint audit trail",
+  description:
+    "Returns the endpoint's audit entries newest first with cursor paging (limit 1–100, default 25; follow nextCursor). Filters: kind (comma-separated or repeated), chatKey, actorKind, actorRef, from and to (ISO timestamps, inclusive). Endpoint owners and company owners receive content (message text, owner text, redacted tool arguments); other board users with endpoint access receive metadata only and `access` is `metadata`. Content is purged after the endpoint's retention period; purged entries keep their metadata and report contentPurged.",
+  request: {
+    params: z.object({ endpointId: z.string().uuid() }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(100).optional(),
+      cursor: z.string().max(256).optional(),
+      kind: z.string().optional(),
+      chatKey: z.string().max(256).optional(),
+      actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS).optional(),
+      actorRef: z.string().max(256).optional(),
+      from: z.string().datetime({ offset: true }).optional(),
+      to: z.string().datetime({ offset: true }).optional(),
+    }),
+  },
+  responses: {
+    200: r.ok(z.object({
+      items: z.array(chatAuditEntryResponseSchema),
+      nextCursor: z.string().nullable(),
+      access: z.enum(["content", "metadata"]),
+    }).strict()),
     400: r.badRequest,
     401: r.unauthorized,
     403: r.forbidden,

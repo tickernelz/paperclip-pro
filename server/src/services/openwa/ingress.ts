@@ -1,6 +1,5 @@
 import { and, eq } from "drizzle-orm";
 import {
-  chatAuditEntries,
   chatEndpointLeases,
   chatEndpoints,
   toolConnections,
@@ -9,6 +8,7 @@ import {
 import type { ChatSdkStatePersistence } from "../chat-sdk-state.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaOutboundRegistry } from "./outbound.js";
+import { recordOpenwaAudit } from "./audit.js";
 import {
   createOpenwaDispatcher,
   isFatalOpenwaReceiverError,
@@ -109,7 +109,7 @@ export function createOpenwaIngressCallbacks(deps: OpenwaIngressDeps): OpenwaIng
             .set({ enabled: false, healthStatus: "error", healthMessage: message, updatedAt: now })
             .where(and(eq(toolConnections.companyId, deps.companyId), eq(toolConnections.id, endpoint.connectionId)));
       }
-      await tx.insert(chatAuditEntries).values({
+      await recordOpenwaAudit(tx, {
         companyId: deps.companyId,
         endpointId: deps.endpointId,
         kind: "session_health",
