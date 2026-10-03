@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, lt, or } from "drizzle-orm";
+import { and, eq, inArray, lt, or, sql } from "drizzle-orm";
 import { chatActions, chatOutboundMessages, type Db } from "@tickernelz/paperclip-pro-db";
 import { OpenwaGatewayError, type OpenwaGatewayClient, type OpenwaSendResult } from "./gateway.js";
 import { sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -202,6 +202,18 @@ export async function runOpenwaWrite(
     }
   }
   return { state: "delivered", messageIds };
+}
+
+export async function setOpenwaWriteGrant(db: Db, actionId: string, grantId: string | null) {
+  await db
+    .update(chatActions)
+    .set({
+      payload: grantId
+        ? sql`${chatActions.payload} || ${JSON.stringify({ grantId })}::jsonb`
+        : sql`${chatActions.payload} - 'grantId'`,
+      updatedAt: new Date(),
+    })
+    .where(eq(chatActions.id, actionId));
 }
 
 export async function finishOpenwaWrite(db: Db, action: ActionRow, receipt: Record<string, unknown>) {

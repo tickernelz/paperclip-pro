@@ -60,6 +60,7 @@ import {
   openwaWriteHashMatches,
   openwaWriteReplay,
   runOpenwaWrite,
+  setOpenwaWriteGrant,
   type OpenwaPlannedSend,
   type OpenwaWriteScope,
 } from "./tool-writes.js";
@@ -553,10 +554,11 @@ async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: Op
   return null;
 }
 
-async function assertSendAllowed(ctx: ToolContext, target: Target, retry: boolean): Promise<string | null> {
+async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
   if (!target.isOrigin) {
+    if (heldGrant) return null;
     try {
-      return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send", retry ? { consume: false } : {});
+      return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send");
     } catch (error) {
       if (error instanceof OpenwaApprovalRequiredError)
         throw new OpenwaToolError(403, "approval_required", "Sending to a chat other than the origin chat needs owner approval", {
@@ -830,20 +832,26 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
   if (replay) return replay;
   target = await precheckNumber(ctx, target);
   ctx.audit.chatKey = target.chatKey;
-  const consumedGrant = await assertSendAllowed(ctx, target, action.status === "uncertain" || action.status === "processing");
+  const heldGrant = typeof action.payload.grantId === "string" ? action.payload.grantId : null;
+  const consumedGrant = await assertSendAllowed(ctx, target, heldGrant);
+  if (consumedGrant) await setOpenwaWriteGrant(ctx.db, action.id, consumedGrant);
+  const releaseGrant = async () => {
+    if (!consumedGrant) return;
+    await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: consumedGrant });
+    await setOpenwaWriteGrant(ctx.db, action.id, null);
+  };
   const quote = await resolveQuote(ctx, target, args.quoteMessageId);
   let planned: Awaited<ReturnType<typeof planSends>>;
   try {
     planned = await planSends(ctx, args, target, quote);
   } catch (error) {
-    if (consumedGrant) await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: consumedGrant });
+    await releaseGrant();
     throw error;
   }
   const { gateway, registry } = await ctx.runtime();
   const outcome = await runOpenwaWrite(ctx.db, { action, registry, gateway, chatId: target.chatId, runId: ctx.run.id, sends: planned.sends });
   if (outcome.state === "failed") {
-    if (consumedGrant && outcome.delivered === 0)
-      await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: consumedGrant });
+    if (outcome.delivered === 0) await releaseGrant();
     const mapped = toolErrorFromGateway(outcome.error, Boolean(quote));
     if (mapped instanceof HttpError) mapped.details = { ...record(mapped.details), actionId: action.id, state: "failed" };
     throw mapped;
