@@ -25,6 +25,7 @@ import { isUuidLike, normalizeAgentApiKeyScope, type DeploymentMode } from "@tic
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "./logger.js";
 import { captureRunIdentity } from "../services/run-identity.js";
+import { assertOpenwaAgentKeyMethodAllowed, assertOpenwaRestAllowed, restoreOpenwaGrant } from "../services/openwa/authority.js";
 import { boardAuthService } from "../services/board-auth.js";
 
 const CLOUD_TENANT_WRITE_DEBOUNCE_MS = 5_000;
@@ -401,6 +402,26 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
         _res.status(403).json({ error: "This conversation turn was cancelled", code: "conversation_turn_cancelled" });
         return;
       }
+      if (identityRun) {
+        try {
+          const consumedGrantId = await assertOpenwaRestAllowed(db, {
+            run: { id: claims.run_id, companyId: claims.company_id, contextSnapshot: identityRun.contextSnapshot },
+            method: req.method,
+            path: req.path,
+            body: req.body,
+          });
+          if (consumedGrantId) {
+            _res.once("finish", () => {
+              if (_res.statusCode < 400) return;
+              void restoreOpenwaGrant(db, { companyId: claims.company_id, runId: claims.run_id, grantId: consumedGrantId })
+                .catch((err) => logger.warn({ err, runId: claims.run_id }, "failed to restore OpenWA grant"));
+            });
+          }
+        } catch (error) {
+          next(error);
+          return;
+        }
+      }
       if (identityRun?.activeIdentityContextId && identityRun.status === "running") {
         const captured = await captureRunIdentity(db, { companyId: claims.company_id, agentId: claims.sub, runId: claims.run_id });
         identityRun.activeIdentityContextId = captured.context?.id ?? null;
@@ -459,6 +480,13 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
     }
     if (agentRecord.status === "pending_approval") {
       next(unauthorized("Agent is pending approval and cannot authenticate"));
+      return;
+    }
+
+    try {
+      await assertOpenwaAgentKeyMethodAllowed(db, { companyId: key.companyId, agentId: key.agentId, method: req.method });
+    } catch (error) {
+      next(error);
       return;
     }
 

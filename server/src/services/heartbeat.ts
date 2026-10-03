@@ -630,6 +630,7 @@ import {
 } from "./low-trust-runtime-containment.js";
 import type { TrustPresetResolution } from "./trust-preset-resolver.js";
 import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
+import { applyOpenwaRunContext, resolveOpenwaRunContext } from "./openwa/authority.js";
 import {
   createEffectiveRunConfigFingerprints,
   createEffectiveRunConfigSubcategoryFingerprints,
@@ -21695,6 +21696,15 @@ export function heartbeatService(
           context.paperclipTaskMarkdownCompact =
             redactedWakeContext.paperclipTaskMarkdownCompact;
         }
+        applyOpenwaRunContext(
+          context,
+          await resolveOpenwaRunContext(db, {
+            companyId: agent.companyId,
+            issueId: issueRef.id,
+            contextSnapshot: context,
+            wakeupRequestId: run.wakeupRequestId,
+          }),
+        );
       }
       // A native run's execution input is immutable once persisted. Recovery must therefore
       // restore the workspace bound to that input rather than consulting the issue's current

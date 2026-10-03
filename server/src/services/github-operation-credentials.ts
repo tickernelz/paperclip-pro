@@ -17,6 +17,7 @@ import {
 import { secretService } from "./secrets.js";
 import { resolveCoreTrustPreset } from "./trust-preset-resolver.js";
 import { isLowTrustQuarantined } from "./source-trust.js";
+import { assertOpenwaRunIdMay } from "./openwa/authority.js";
 
 export type GitHubCredentialSummary = {
   status: "available" | "absent" | "unavailable";
@@ -191,4 +192,13 @@ export async function resolveGitHubOperationCredentials(
     ...summary,
     env,
   };
+}
+
+/** Credential export to an agent process; read_only OpenWA runs need an external_tools grant. */
+export async function exportGitHubOperationCredentials(
+  db: Db,
+  input: { companyId: string; agentId: string; runId: string },
+) {
+  await assertOpenwaRunIdMay(db, input, "external_tools", { consume: false });
+  return resolveGitHubOperationCredentials(db, input);
 }

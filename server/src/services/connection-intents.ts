@@ -32,6 +32,7 @@ import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { issueThreadInteractionService } from "./issue-thread-interactions.js";
 import { toolAccessService } from "./tool-access.js";
 import { captureRunIdentity } from "./run-identity.js";
+import { assertOpenwaRunMay } from "./openwa/authority.js";
 import { resolveManagedGitHubIdentitySelection } from "./git-credentials.js";
 
 type ConnectionRunClaims = Pick<RuntimeToolsTokenClaims, "sub" | "company_id" | "run_id" | "responsible_user_id">;
@@ -390,6 +391,7 @@ export function connectionIntentService(db: Db) {
     options: { purpose?: "ai" } = {},
   ): Promise<ConnectionRequestResult> {
     const context = await loadRunContext(claims);
+    if (options.purpose !== "ai") await assertOpenwaRunMay(db, context.run, "external_tools", { consume: false });
     const app = await resolveService(serviceSlug, context.run.companyId, context.run.responsibleUserId!, context.agent.id, options.purpose);
     if (!app.available || app.methods.length === 0) {
       throw unprocessable(`Connection service ${serviceSlug} is not available`);
