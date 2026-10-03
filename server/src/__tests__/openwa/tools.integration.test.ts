@@ -365,7 +365,14 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: requestRow!.id, originChatKey: openwaChatKey(MEMBER), category: "cross_chat_send", scope: "one_action", approvedVia: "paperclip", expiresAt: new Date(Date.now() + 3_600_000) })
       .returning();
     const binding = await run(t, c, { triggerClass: "grant", grantIds: [grant!.id] });
-    await expect(executeOpenwaTool(db, binding, "openwa_send", { chat: "+628444000222", text: "approved", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    t.gateway.failNextSend({ dropResponseAfterStore: true });
+    const approved = { chat: "+628444000222", text: "approved", idempotencyKey: randomUUID() };
+    await expect(executeOpenwaTool(db, binding, "openwa_send", approved)).resolves.toMatchObject({ state: "uncertain" });
+    const [consumed] = await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.id, grant!.id));
+    expect(consumed).toMatchObject({ status: "consumed", consumedByRunId: binding.runId });
+    await db.update(chatOwnerGrants).set({ consumedByRunId: null }).where(eq(chatOwnerGrants.id, grant!.id));
+    await expect(executeOpenwaTool(db, binding, "openwa_send", approved)).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.sends.filter((send) => send.text === "approved")).toHaveLength(1);
     const again = await rejection(executeOpenwaTool(db, binding, "openwa_send", { chat: "+628444000222", text: "again", idempotencyKey: randomUUID() }));
     expect(again.code).toBe("approval_required");
   });
