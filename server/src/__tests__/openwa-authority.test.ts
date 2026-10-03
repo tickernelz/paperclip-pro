@@ -41,6 +41,7 @@ import { PaperclipRunnerToolAuthority } from "../services/native-runtime/papercl
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { chatChannelService } from "../services/chat-channels.js";
 import { ChatSdkRuntime } from "../services/chat-sdk-runtime.js";
+import { scheduleOpenwaFollowupForRun } from "../services/openwa/followups.js";
 import {
   OpenwaApprovalRequiredError,
   applyOpenwaRunContext,
@@ -759,6 +760,16 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       }
       const read = await request(app()).get(`/api/issues/${seed.issueId}`).set("Authorization", `Bearer ${token}`);
       expect(read.status).toBe(200);
+    });
+
+    it("ends a run without OpenWA context with one run lookup and no chat_actions scan", async () => {
+      const telegram = await seedCompany(db, { openwa: false });
+      const { runId } = await seedRun(db, telegram, {});
+      await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, runId));
+      const counted = loggedDb();
+      await expect(scheduleOpenwaFollowupForRun(counted.db, { companyId: telegram.companyId, runId })).resolves.toEqual([]);
+      expect(counted.queries).toHaveLength(1);
+      expect(counted.queries.some((query) => query.includes('from "chat_actions"'))).toBe(false);
     });
 
     it("caches the unbound answer: a second mutation of an agent without OpenWA issues no chat_endpoints query", async () => {
