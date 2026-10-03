@@ -1,17 +1,19 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PatchInstanceGeneralSettings, BackupRetentionPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { BackupRetentionPolicy, SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
 import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
+  SPEECH_TO_TEXT_DEFAULTS,
 } from "@tickernelz/paperclip-pro-shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { ModeBadge } from "@/components/access/ModeBadge";
 import { Button } from "../components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { queryKeys } from "../lib/queryKeys";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
@@ -85,12 +87,15 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   const showKeyboardShortcuts = !hiddenSettings.has("instance.general.keyboardShortcuts");
   const showBackupRetention = !hiddenSettings.has("instance.general.backupRetention");
   const showFeedbackDataSharing = !hiddenSettings.has("instance.general.feedbackDataSharingPreference");
+  const showSpeechToText = !hiddenSettings.has("instance.general.speechToText");
+  const speechToText: SpeechToTextSettings = generalQuery.data?.speechToText ?? SPEECH_TO_TEXT_DEFAULTS;
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
   const visibleTopics = [
     ...(showCensorUsernameInLogs ? ["log display"] : []),
     ...(showKeyboardShortcuts ? ["keyboard shortcuts"] : []),
     ...(showBackupRetention ? ["backup retention"] : []),
     ...(showFeedbackDataSharing ? ["data sharing"] : []),
+    ...(showSpeechToText ? ["speech-to-text"] : []),
   ];
   const topicSummary = visibleTopics.length > 2
     ? `${visibleTopics.slice(0, -1).join(", ")}, and ${visibleTopics[visibleTopics.length - 1]}`
@@ -302,6 +307,15 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       </section>
       )}
 
+      {showSpeechToText && (
+        <SpeechToTextSection
+          key={JSON.stringify(speechToText)}
+          value={speechToText}
+          disabled={updateGeneralMutation.isPending || signOutMutation.isPending}
+          onSave={(next) => updateGeneralMutation.mutate({ speechToText: next })}
+        />
+      )}
+
       {showFeedbackDataSharing && (
       <section>
         <div className="space-y-4">
@@ -406,6 +420,116 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       </section>
       )}
     </div>
+  );
+}
+
+function SpeechToTextSection({
+  value,
+  disabled,
+  onSave,
+}: {
+  value: SpeechToTextSettings;
+  disabled: boolean;
+  onSave: (next: SpeechToTextSettings) => void;
+}) {
+  const [draft, setDraft] = useState<SpeechToTextSettings>(value);
+  const complete = draft.baseUrl.trim() !== "" && draft.model.trim() !== "" && draft.apiKeyEnvVar.trim() !== "";
+  const dirty = JSON.stringify(draft) !== JSON.stringify(value);
+  const update = (patch: Partial<SpeechToTextSettings>) => setDraft((current) => ({ ...current, ...patch }));
+  const numeric = (raw: string, fallback: number) => {
+    const parsed = Number.parseInt(raw, 10);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+
+  return (
+    <section>
+      <div className="space-y-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="space-y-1.5">
+            <h2 className="text-sm font-semibold">Speech-to-text</h2>
+            <p className="max-w-2xl text-sm text-muted-foreground">
+              Transcribe voice notes and audio that chat connectors receive, using any OpenAI-compatible
+              /audio/transcriptions endpoint. The API key is read from the named server environment variable at call
+              time and is never stored by Paperclip. This is off by default.
+            </p>
+          </div>
+          <ToggleSwitch
+            checked={draft.enabled}
+            onCheckedChange={() => update({ enabled: !draft.enabled })}
+            disabled={disabled || (!draft.enabled && !complete)}
+            aria-label="Toggle speech-to-text"
+          />
+        </div>
+        <div className="grid gap-3 md:grid-cols-2">
+          <label className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Base URL</span>
+            <Input
+              value={draft.baseUrl}
+              placeholder="https://api.openai.com/v1"
+              disabled={disabled}
+              onChange={(event) => update({ baseUrl: event.target.value })}
+            />
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Model</span>
+            <Input
+              value={draft.model}
+              placeholder="whisper-1"
+              disabled={disabled}
+              onChange={(event) => update({ model: event.target.value })}
+            />
+          </label>
+          <label className="space-y-1.5">
+            <span className="text-xs font-medium text-muted-foreground">API key environment variable</span>
+            <Input
+              value={draft.apiKeyEnvVar}
+              placeholder="OPENAI_API_KEY"
+              autoComplete="off"
+              spellCheck={false}
+              disabled={disabled}
+              onChange={(event) => update({ apiKeyEnvVar: event.target.value })}
+            />
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Max audio (seconds)</span>
+              <Input
+                type="number"
+                min={1}
+                max={7200}
+                value={draft.maxAudioSeconds}
+                disabled={disabled}
+                onChange={(event) => update({ maxAudioSeconds: numeric(event.target.value, draft.maxAudioSeconds) })}
+              />
+            </label>
+            <label className="space-y-1.5">
+              <span className="text-xs font-medium text-muted-foreground">Wake wait (seconds)</span>
+              <Input
+                type="number"
+                min={1}
+                max={120}
+                value={draft.sttWaitSeconds}
+                disabled={disabled}
+                onChange={(event) => update({ sttWaitSeconds: numeric(event.target.value, draft.sttWaitSeconds) })}
+              />
+            </label>
+          </div>
+        </div>
+        {!complete ? (
+          <p className="text-xs text-muted-foreground">
+            Enter a base URL, a model and an environment variable name to enable transcription.
+          </p>
+        ) : null}
+        <div className="flex gap-2">
+          <Button size="sm" disabled={disabled || !dirty} onClick={() => onSave(draft)}>
+            Save speech-to-text
+          </Button>
+          <Button variant="outline" size="sm" disabled={disabled || !dirty} onClick={() => setDraft(value)}>
+            Reset
+          </Button>
+        </div>
+      </div>
+    </section>
   );
 }
 

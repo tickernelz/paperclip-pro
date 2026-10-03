@@ -13,6 +13,15 @@ export interface FakeSendFailure {
   delayMs?: number;
 }
 
+export interface FakeMedia {
+  body: Buffer;
+  contentType: string;
+  filename?: string;
+  delayMs?: number;
+  status?: number;
+  chunked?: boolean;
+}
+
 export interface FakeStoredRow extends OpenwaStoredMessage {
   sequence: number;
 }
@@ -33,6 +42,7 @@ export class FakeOpenwaGateway {
   readonly typing: Array<{ chatId: string; state: string }> = [];
   readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
+  readonly media = new Map<string, FakeMedia>();
   private readonly sendFailures: FakeSendFailure[] = [];
   private http: HttpServer | null = null;
   private io: SocketServer | null = null;
@@ -104,6 +114,15 @@ export class FakeOpenwaGateway {
 
   restartSocket(): void {
     this.acceptSockets = true;
+  }
+
+  setMedia(chatId: string, messageId: string, media: FakeMedia): void {
+    this.media.set(chatId + "\u0000" + messageId, media);
+  }
+
+  mediaRequests(messageId: string): number {
+    const suffix = "/" + encodeURIComponent(messageId) + "/media";
+    return this.requests.filter((request) => request.path.endsWith(suffix)).length;
   }
 
   failNextSend(failure: FakeSendFailure): void {
@@ -227,7 +246,29 @@ export class FakeOpenwaGateway {
       this.typing.push({ chatId: body.chatId, state: body.state });
       return reply(201, { success: true });
     }
+    const mediaPath = /^\/messages\/([^/]+)\/([^/]+)\/media$/.exec(url.pathname.slice(prefix.length));
+    if (req.method === "GET" && url.pathname.startsWith(prefix + "/") && mediaPath)
+      return this.serveMedia(decodeURIComponent(mediaPath[1]!), decodeURIComponent(mediaPath[2]!), reply, res);
     reply(404, { message: "Not found" });
+  }
+
+  private async serveMedia(
+    chatId: string,
+    messageId: string,
+    reply: (status: number, body: unknown) => void,
+    res: ServerResponse,
+  ): Promise<void> {
+    const media = this.media.get(chatId + "\u0000" + messageId);
+    if (!media) return reply(404, { message: "No media stored for this message" });
+    if (media.delayMs) await new Promise((resolve) => setTimeout(resolve, media.delayMs));
+    if (res.destroyed) return;
+    if (media.status && media.status !== 200) return reply(media.status, { message: "media failed" });
+    res.writeHead(200, {
+      "content-type": media.contentType,
+      ...(media.chunked ? {} : { "content-length": String(media.body.length) }),
+      ...(media.filename ? { "content-disposition": 'attachment; filename="' + media.filename + '"' } : {}),
+    });
+    res.end(media.body);
   }
 
   private listMessages(query: Record<string, string>, reply: (status: number, body: unknown) => void): void {

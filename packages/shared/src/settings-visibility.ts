@@ -81,6 +81,7 @@ export const HIDEABLE_GENERAL_SECTIONS = [
   "instance.general.keyboardShortcuts",
   "instance.general.backupRetention",
   "instance.general.feedbackDataSharingPreference",
+  "instance.general.speechToText",
   "instance.general.signOut",
 ] as const;
 

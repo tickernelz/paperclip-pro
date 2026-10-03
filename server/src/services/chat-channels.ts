@@ -27,6 +27,7 @@ import { createOpenwaIngressCallbacks, type OpenwaIngressHooks } from "./openwa/
 import { openwaOutboundRegistry } from "./openwa/outbound.js";
 import { OpenwaChatAdapter } from "./openwa/adapter.js";
 import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication } from "./openwa/publication.js";
+import { openwaMediaService } from "./openwa/media.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -3028,6 +3029,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   >();
   const persistence = createChatSdkStatePersistence(db);
   const openwaOutbound = openwaOutboundRegistry(db);
+  const openwaMedia = openwaMediaService(db, { storage: options.storage });
   const fetchImpl = options.fetch ?? globalThis.fetch;
   const configuredPublicBaseUrl = absoluteBaseUrl(options.publicBaseUrl);
   const configuredWebhookPublicBaseUrl = parseChatWebhookPublicBaseUrl(options.webhookPublicBaseUrl);
@@ -38526,8 +38528,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     processPendingSlackSessionSyncs,
     getIssueBinding,
     openwaOutbound,
+    openwaMedia,
     shutdown: async () => {
       shuttingDown = true;
+      await openwaMedia.shutdown();
       await Promise.allSettled([...failedRetryTasks.values()]);
       unregisterFailedRetryAuthority();
       unregisterSlackTaskAuthority();
