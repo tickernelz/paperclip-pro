@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from "node:async_hooks";
+import { Session } from "node:inspector/promises";
 import { randomBytes, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
 import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
@@ -6,7 +7,7 @@ import path from "node:path";
 import { performance } from "node:perf_hooks";
 import { pathToFileURL } from "node:url";
 import vm from "node:vm";
-import { and, eq, gte, inArray } from "drizzle-orm";
+import { and, eq, gte, inArray, notInArray, sql } from "drizzle-orm";
 import {
   agents,
   authUsers,
@@ -26,6 +27,7 @@ import { registerServerAdapter } from "../../adapters/registry.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { heartbeatService } from "../../services/heartbeat.js";
+import { instanceSettingsService } from "../../services/instance-settings.js";
 import { secretService } from "../../services/secrets.js";
 import { OpenwaChatAdapter } from "../../services/openwa/adapter.js";
 import { createOpenwaGatewayClient, type OpenwaGatewayClient } from "../../services/openwa/gateway.js";
@@ -65,6 +67,7 @@ const sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve,
 
 interface BenchOptions {
   negativeControl: boolean;
+  heapSampling: boolean;
   latencyMs: number;
   s0Samples: number;
   s0bSamples: number;
@@ -72,6 +75,7 @@ interface BenchOptions {
   s4Samples: number;
   s5Samples: number;
   burstSeconds: number;
+  burstWarmupSeconds: number;
   burstRate: number;
   triggerEvery: number;
   killAtSeconds: number;
@@ -140,6 +144,7 @@ function parseOptions(argv: string[]): BenchOptions {
   };
   return {
     negativeControl: flags.has("negative-control"),
+    heapSampling: flags.has("heap-sampling"),
     latencyMs: number("latency-ms", 20),
     s0Samples: number("s0-samples", 1000),
     s0bSamples: number("s0b-samples", 200),
@@ -147,6 +152,7 @@ function parseOptions(argv: string[]): BenchOptions {
     s4Samples: number("s4-samples", 20),
     s5Samples: number("s5-samples", 40),
     burstSeconds: number("burst-seconds", 60),
+    burstWarmupSeconds: number("burst-warmup-seconds", 15),
     burstRate: number("burst-rate", 50),
     triggerEvery: number("trigger-every", 10),
     killAtSeconds: number("kill-at-seconds", 30),
@@ -172,11 +178,11 @@ function summarize(values: number[]): Summary {
   };
 }
 
-async function until(predicate: () => boolean | Promise<boolean>, timeoutMs: number, label: string): Promise<void> {
+async function until(predicate: () => boolean | Promise<boolean>, timeoutMs: number, label: string, pollMs = 2): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!(await predicate())) {
     if (Date.now() > deadline) throw new Error("timed out waiting for " + label);
-    await sleep(2);
+    await sleep(pollMs);
   }
 }
 
@@ -213,8 +219,35 @@ class Instrumentation {
   readonly classifiedRoles = new Map<number, string | null>();
   readonly wakes: Array<{ at: number; commentId: string | null }> = [];
   readonly queryTimes = new Float64Array(1 << 20);
-  readonly querySql: string[] = new Array(1 << 17);
+  readonly querySql: string[] = new Array(1 << 14).fill("");
+  readonly queryScope: Array<string | null> = new Array(1 << 14).fill(null);
+  readonly stalls: Array<{ at: number; ms: number }> = [];
+  openTransactions = 0;
+  readonly txWaits: Array<{ at: number; ms: number; open: number }> = [];
   totalQueries = 0;
+  private stallTimer: ReturnType<typeof setInterval> | null = null;
+
+  watchStalls(): void {
+    let last = clock();
+    this.stallTimer = setInterval(() => {
+      const now = clock();
+      if (now - last > 25 && this.stalls.length < 10_000) this.stalls.push({ at: last, ms: Math.round(now - last - 5) });
+      last = now;
+    }, 5);
+    this.stallTimer.unref?.();
+  }
+
+  stopStalls(): void {
+    if (this.stallTimer) clearInterval(this.stallTimer);
+  }
+
+  stallsIn(from: number, to: number): Array<{ atMs: number; ms: number }> {
+    return this.stalls.filter((stall) => stall.at + stall.ms >= from && stall.at <= to).map((stall) => ({ atMs: Math.round(stall.at - from), ms: stall.ms }));
+  }
+
+  waitsIn(from: number, to: number): Array<{ atMs: number; ms: number; open: number }> {
+    return this.txWaits.filter((wait) => wait.at + wait.ms >= from && wait.at <= to && wait.ms > 5).map((wait) => ({ atMs: Math.round(wait.at - from), ms: Math.round(wait.ms), open: wait.open }));
+  }
 
   scope(id: string, source: EventScope["source"]): EventScope {
     const existing = this.scopes.get(id);
@@ -222,6 +255,18 @@ class Instrumentation {
     const scope: EventScope = { id, source, arrival: clock(), queries: 0, sql: [], decided: null, outcome: null };
     this.scopes.set(id, scope);
     return scope;
+  }
+
+  trace(from: number, to: number, scopeId: string): string[] {
+    const size = this.queryTimes.length;
+    const lines: string[] = [];
+    for (let index = Math.max(0, this.totalQueries - this.querySql.length); index < this.totalQueries; index++) {
+      const at = this.queryTimes[index % size]!;
+      if (at < from || at > to) continue;
+      const own = this.queryScope[index % this.queryScope.length] === scopeId ? "* " : "  ";
+      lines.push(own + (Math.round((at - from) * 10) / 10).toFixed(1) + " " + (this.querySql[index % this.querySql.length] ?? ""));
+    }
+    return lines;
   }
 
   window(from: number, to: number): QueryWindow {
@@ -259,8 +304,9 @@ class Instrumentation {
       logQuery: (query: string, params: unknown[]) => {
         this.queryTimes[this.totalQueries % this.queryTimes.length] = clock();
         this.querySql[this.totalQueries % this.querySql.length] = query.slice(0, 140);
-        this.totalQueries++;
         const event = this.events.getStore();
+        this.queryScope[this.totalQueries % this.queryScope.length] = event?.id ?? null;
+        this.totalQueries++;
         if (event && event.decided === null) {
           event.queries++;
           if (event.sql.length < 8) event.sql.push(query.slice(0, 160));
@@ -288,7 +334,19 @@ class Instrumentation {
     const transaction = db.transaction.bind(db);
     (db as { transaction: unknown }).transaction = ((fn: Parameters<Db["transaction"]>[0], config?: Parameters<Db["transaction"]>[1]) => {
       const scope: TxScope = { tokens: new Set(), deliveryTokens: new Set() };
-      return this.transactions.run(scope, () => transaction(fn, config)).then((result) => {
+      const requested = clock();
+      const open = this.openTransactions++;
+      let entered = false;
+      const body = ((tx: Parameters<Parameters<Db["transaction"]>[0]>[0]) => {
+        if (!entered) {
+          entered = true;
+          if (this.txWaits.length < 50_000) this.txWaits.push({ at: requested, ms: clock() - requested, open });
+        }
+        return fn(tx);
+      }) as Parameters<Db["transaction"]>[0];
+      return this.transactions.run(scope, () => transaction(body, config)).finally(() => {
+        this.openTransactions--;
+      }).then((result) => {
         const at = clock();
         for (const token of scope.tokens) if (!this.commits.has(token)) this.commits.set(token, at);
         for (const token of scope.deliveryTokens) if (!this.deliveryCommits.has(token)) this.deliveryCommits.set(token, at);
@@ -372,6 +430,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
   const database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-bench-");
   const db = createDb(database.connectionString);
   instrumentation.attach(db);
+  instrumentation.watchStalls();
   const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE, restLatencyMs: options.latencyMs });
   await gateway.start();
   const realFetch = globalThis.fetch;
@@ -572,7 +631,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
             }),
           }),
         );
-        if (response.status !== 200) throw new Error("Telegram webhook returned " + response.status);
+        if (response.status !== 200) throw new Error("Telegram webhook returned " + response.status + ": " + (await response.text()).slice(0, 300));
         await until(() => instrumentation.commits.has(token) && instrumentation.wakes.length > wakesBefore, 30_000, "S1 Telegram admission");
         if (index >= 3) telegramSamples.push({ token, start, queries: instrumentation.totalQueries - queriesBefore });
         await sleep(settleGap);
@@ -587,6 +646,14 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
       const drainWindows = openwaSamples.map((sample) => instrumentation.window(instrumentation.deliveryCommits.get(sample.token)!, instrumentation.commits.get(sample.token)!));
       const telegramWindows = telegramSamples.map((sample) => instrumentation.window(sample.start, instrumentation.commits.get(sample.token)!));
       const medianGap = [...drainWindows].sort((a, b) => a.maxGapMs - b.maxGapMs)[Math.floor(drainWindows.length / 2)] ?? null;
+      const medianDrainSample = [...openwaSamples].sort(
+        (a, b) =>
+          instrumentation.commits.get(a.token)! - instrumentation.deliveryCommits.get(a.token)! -
+          (instrumentation.commits.get(b.token)! - instrumentation.deliveryCommits.get(b.token)!),
+      )[Math.floor(openwaSamples.length / 2)];
+      const medianDrainTrace = medianDrainSample
+        ? instrumentation.trace(instrumentation.scopes.get(medianDrainSample.id)!.decided!, instrumentation.commits.get(medianDrainSample.token)!, medianDrainSample.id)
+        : [];
       const commentTokens = await commentTokenMap(db, fixture.companyId);
       const dispatch = (tokens: number[]) =>
         tokens
@@ -612,6 +679,21 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
         drainStageQueries: summarize(drainWindows.map((entry) => entry.queries)),
         drainStageMaxIdleGapMs: summarize(drainWindows.map((entry) => entry.maxGapMs)),
         drainStageMedianSampleIdleGap: medianGap,
+        medianSampleQueryTrace: medianDrainTrace,
+        slowestSamples: [...openwaSamples]
+          .sort((a, b) => instrumentation.commits.get(b.token)! - b.arrival - (instrumentation.commits.get(a.token)! - a.arrival))
+          .slice(0, 4)
+          .map((sample) => ({
+            totalMs: Math.round(instrumentation.commits.get(sample.token)! - sample.arrival),
+            ingressMs: Math.round(instrumentation.deliveryCommits.get(sample.token)! - sample.arrival),
+            drain: instrumentation.window(instrumentation.deliveryCommits.get(sample.token)!, instrumentation.commits.get(sample.token)!),
+            stalls: instrumentation.stallsIn(sample.arrival, instrumentation.commits.get(sample.token)!),
+            txWaits: instrumentation.waitsIn(sample.arrival, instrumentation.commits.get(sample.token)!),
+            ownTrace: instrumentation
+              .trace(sample.arrival, instrumentation.commits.get(sample.token)!, sample.id)
+              .filter((line) => line.startsWith("*"))
+              .map((line) => line.slice(0, 110)),
+          })),
         telegramToCommentQueries: summarize(telegramWindows.map((entry) => entry.queries)),
         telegramMaxIdleGapMs: summarize(telegramWindows.map((entry) => entry.maxGapMs)),
         dbQueriesEventToWake: {
@@ -756,7 +838,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
         samples.push({ token, id: row.waMessageId!, kind });
       }
       const tokens = samples.map((sample) => sample.token);
-      await until(async () => (await deliveryRoles(db, fixture.endpointId, tokens)).size >= tokens.length, 60_000, "S5 deliveries");
+      await until(async () => (await deliveryRoles(db, fixture.endpointId, tokens)).size >= tokens.length, 60_000, "S5 deliveries", 50);
       const roles = await deliveryRoles(db, fixture.endpointId, tokens);
       let hits = 0;
       let misses = 0;
@@ -822,6 +904,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     exitCode = 2;
   } finally {
     clearInterval(reconcileTimer);
+    instrumentation.stopStalls();
     await Promise.allSettled([...lanes.values()]);
     await service.shutdown().catch(() => undefined);
     await heartbeat.drainActiveRunExecutions().catch(() => undefined);
@@ -861,6 +944,7 @@ async function seed(db: Db, service: ChatChannelService, gateway: FakeOpenwaGate
   const companyId = randomUUID();
   const agentId = randomUUID();
   const userId = randomUUID();
+  await instanceSettingsService(db).updateExperimental({ enableChatConnectors: true });
   await db.insert(companies).values({
     id: companyId,
     name: "OpenWA benchmark",
@@ -936,18 +1020,61 @@ async function commentTokenMap(db: Db, companyId: string): Promise<Map<string, n
   return map;
 }
 
+interface SamplingNode {
+  callFrame: { functionName: string; url: string; lineNumber: number };
+  selfSize: number;
+  children: SamplingNode[];
+}
+
+async function retainedHeapSites(session: Session): Promise<{ totalMb: number; byFrame: string[]; byFirstProductFrame: string[] }> {
+  const { profile } = (await session.post("HeapProfiler.getSamplingProfile")) as unknown as { profile: { head: SamplingNode } };
+  await session.post("HeapProfiler.stopSampling");
+  session.disconnect();
+  const byFrame = new Map<string, number>();
+  const byProduct = new Map<string, number>();
+  let total = 0;
+  const label = (frame: SamplingNode["callFrame"]) =>
+    (frame.functionName || "(anonymous)") + " " + frame.url.replace(/^.*\/(server|packages|node_modules)\//, "$1/") + ":" + (frame.lineNumber + 1);
+  const walk = (node: SamplingNode, stack: SamplingNode["callFrame"][]) => {
+    const frames = [...stack, node.callFrame];
+    if (node.selfSize) {
+      total += node.selfSize;
+      const top = label(node.callFrame);
+      byFrame.set(top, (byFrame.get(top) ?? 0) + node.selfSize);
+      const product = [...frames].reverse().find((frame) => /\/server\/src\//.test(frame.url));
+      const key = product ? label(product) : "(no server/src frame)";
+      byProduct.set(key, (byProduct.get(key) ?? 0) + node.selfSize);
+    }
+    for (const child of node.children) walk(child, frames);
+  };
+  walk(profile.head, []);
+  const top = (map: Map<string, number>) =>
+    [...map.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 40)
+      .map(([key, size]) => (Math.round((size / MiB) * 100) / 100).toFixed(2) + " MB " + key);
+  return { totalMb: Math.round((total / MiB) * 10) / 10, byFrame: top(byFrame), byFirstProductFrame: top(byProduct) };
+}
+
 async function deliveryRoles(db: Db, endpointId: string, tokens: number[]): Promise<Map<number, string | null>> {
   const wanted = new Set(tokens);
   const rows = await db
-    .select({ normalizedEvent: chatDeliveries.normalizedEvent, principalRole: chatDeliveries.principalRole, state: chatDeliveries.state })
+    .select({
+      token: sql<string | null>`substring(${chatDeliveries.normalizedEvent}->'message'->>'text' from 'bench#([0-9]+)')`,
+      principalRole: chatDeliveries.principalRole,
+    })
     .from(chatDeliveries)
-    .where(eq(chatDeliveries.endpointId, endpointId));
+    .where(
+      and(
+        eq(chatDeliveries.endpointId, endpointId),
+        notInArray(chatDeliveries.state, ["received", "processing"]),
+        sql`${chatDeliveries.normalizedEvent}->'message'->>'text' like '%bench#%'`,
+      ),
+    );
   const roles = new Map<number, string | null>();
   for (const row of rows) {
-    const match = TOKEN_PATTERN.exec(JSON.stringify(row.normalizedEvent ?? {}));
-    if (!match || !wanted.has(Number(match[1]))) continue;
-    if (row.state === "received" || row.state === "processing") continue;
-    roles.set(Number(match[1]), row.principalRole ?? null);
+    const token = row.token === null ? Number.NaN : Number(row.token);
+    if (wanted.has(token)) roles.set(token, row.principalRole ?? null);
   }
   return roles;
 }
@@ -1007,6 +1134,7 @@ async function toolOverhead(db: Db, root: string, fixture: Fixture, options: Ben
       resultBytes.push(Buffer.byteLength(JSON.stringify(value ?? null)));
     }
   }
+  await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, run!.id));
   const latency = summarize(overhead);
   const maxBytes = Math.max(...resultBytes);
   return {
@@ -1052,9 +1180,21 @@ async function runBurst(
   gc();
   await sleep(200);
   gc();
-  const rssBefore = process.memoryUsage().rss;
-  const heapBefore = process.memoryUsage().heapUsed;
-  const total = Math.round(options.burstSeconds * options.burstRate);
+  const memoryAtStart = process.memoryUsage();
+  let memoryBefore = memoryAtStart;
+  const memoryTimeline: Array<Record<string, number>> = [];
+  const sampleMemory = () => {
+    const usage = process.memoryUsage();
+    memoryTimeline.push({ atS: Math.round((clock() - start) / 100) / 10, rss: Math.round(usage.rss / MiB), heapTotal: Math.round(usage.heapTotal / MiB), heapUsed: Math.round(usage.heapUsed / MiB), external: Math.round(usage.external / MiB), arrayBuffers: Math.round(usage.arrayBuffers / MiB) });
+  };
+  const memoryTimer = setInterval(sampleMemory, 5_000);
+  const heapSession = options.heapSampling ? new Session() : null;
+  if (heapSession) {
+    heapSession.connect();
+    await heapSession.post("HeapProfiler.startSampling", { samplingInterval: 16_384 });
+  }
+  const warmupTotal = Math.round(options.burstWarmupSeconds * options.burstRate);
+  const total = warmupTotal + Math.round(options.burstSeconds * options.burstRate);
   const interval = 1000 / options.burstRate;
   const emitted: Array<{ id: string; sequence: number; token: number | null; live: boolean }> = [];
   const triggerKinds = [
@@ -1063,7 +1203,7 @@ async function runBurst(
     { chatId: ACTIVE_GROUP, author: jid(MEMBER_PHONE), mention: true },
     { chatId: ACTIVE_GROUP, author: jid(OWNER_PHONE), mention: true },
   ];
-  const killAt = options.killAtSeconds * 1000;
+  const killAt = (options.burstWarmupSeconds + options.killAtSeconds) * 1000;
   const killUntil = killAt + options.killForSeconds * 1000;
   let killed = false;
   let killedAt: number | null = null;
@@ -1074,6 +1214,11 @@ async function runBurst(
     const due = start + index * interval;
     const wait = due - clock();
     if (wait > 0) await sleep(wait);
+    if (index === warmupTotal && warmupTotal > 0) {
+      gc();
+      memoryBefore = process.memoryUsage();
+      sampleMemory();
+    }
     lagSamples.push(clock() - due);
     const elapsed = clock() - start;
     if (!killed && options.killForSeconds > 0 && elapsed >= killAt && elapsed < killUntil) {
@@ -1115,7 +1260,7 @@ async function runBurst(
   let settleError: string | null = null;
   try {
     await until(() => emitted.every((entry) => instrumentation.admits.has(entry.id)), 120_000, "burst receiver catch-up");
-    await until(async () => (await deliveryRoles(db, fixture.endpointId, triggerTokens)).size >= triggerTokens.length, 180_000, "burst trigger admission");
+    await until(async () => (await deliveryRoles(db, fixture.endpointId, triggerTokens)).size >= triggerTokens.length, 180_000, "burst trigger admission", 250);
   } catch (error) {
     settleError = error instanceof Error ? error.message : String(error);
   }
@@ -1123,8 +1268,14 @@ async function runBurst(
   gc();
   await sleep(200);
   gc();
-  const rssAfter = process.memoryUsage().rss;
-  const heapAfter = process.memoryUsage().heapUsed;
+  clearInterval(memoryTimer);
+  sampleMemory();
+  const retainedAllocations = heapSession ? await retainedHeapSites(heapSession) : null;
+  const memoryAfter = process.memoryUsage();
+  const rssBefore = memoryBefore.rss;
+  const heapBefore = memoryBefore.heapUsed;
+  const rssAfter = memoryAfter.rss;
+  const heapAfter = memoryAfter.heapUsed;
   const lost = emitted.filter((entry) => !instrumentation.admits.has(entry.id));
   const duplicated = emitted.filter((entry) => (instrumentation.admits.get(entry.id) ?? 0) > 1);
   const deliveryRows = await db
@@ -1150,9 +1301,28 @@ async function runBurst(
   const nonTriggerQueryEvents = nonTriggerScopes.filter((scope) => scope.queries > 0);
   await sleep(options.runMs + 1000);
   const runs = await db
-    .select({ contextSnapshot: heartbeatRuns.contextSnapshot, startedAt: heartbeatRuns.startedAt, createdAt: heartbeatRuns.createdAt })
+    .select({
+      contextSnapshot: heartbeatRuns.contextSnapshot,
+      startedAt: heartbeatRuns.startedAt,
+      createdAt: heartbeatRuns.createdAt,
+      finishedAt: heartbeatRuns.finishedAt,
+      status: heartbeatRuns.status,
+      error: heartbeatRuns.error,
+    })
     .from(heartbeatRuns)
     .where(and(eq(heartbeatRuns.agentId, fixture.agentId), gte(heartbeatRuns.createdAt, new Date(start))));
+  const runOutcomes = new Map<string, { count: number; maxMs: number; minMs: number; errors: Set<string> }>();
+  for (const run of runs) {
+    const context = (run.contextSnapshot ?? {}) as { issueId?: unknown; openwa?: { triggerClass?: unknown } };
+    const key = String(context.issueId).slice(0, 8) + "|" + String(context.openwa?.triggerClass ?? "-") + "|" + run.status;
+    const durationMs = run.finishedAt && run.startedAt ? run.finishedAt.getTime() - run.startedAt.getTime() : -1;
+    const entry = runOutcomes.get(key) ?? { count: 0, maxMs: -Infinity, minMs: Infinity, errors: new Set<string>() };
+    entry.count++;
+    entry.maxMs = Math.max(entry.maxMs, durationMs);
+    entry.minMs = Math.min(entry.minMs, durationMs);
+    if (run.error && entry.errors.size < 3) entry.errors.add(String(run.error).slice(0, 160));
+    runOutcomes.set(key, entry);
+  }
   const commentTokens = await commentTokenMap(db, fixture.companyId);
   const tokenIssue = new Map<number, string>();
   const commentIds = [...commentTokens.keys()];
@@ -1220,10 +1390,17 @@ async function runBurst(
       pairs,
       violations: violations.slice(0, 10),
       pairsWithTriggersButNoRunOfTheirClass: starved,
+      runOutcomes: Object.fromEntries([...runOutcomes].map(([key, value]) => [key, { ...value, errors: [...value.errors] }])),
     },
     nonTriggerEventsWithQueries: { count: nonTriggerQueryEvents.length, of: nonTriggerScopes.length, sample: nonTriggerQueryEvents.slice(0, 3).map((scope) => scope.sql) },
     rss: { beforeMb: Math.round(rssBefore / MiB), afterMb: Math.round(rssAfter / MiB), growthMb: rssGrowthMb },
     heapUsedAfterGc: { beforeMb: Math.round(heapBefore / MiB), afterMb: Math.round(heapAfter / MiB), growthMb: Math.round(((heapAfter - heapBefore) / MiB) * 10) / 10 },
+    memoryAtBurstStart: Object.fromEntries(Object.entries(memoryAtStart).map(([key, value]) => [key, Math.round(value / MiB)])),
+    rssGrowthIncludingWarmupMb: Math.round(((rssAfter - memoryAtStart.rss) / MiB) * 10) / 10,
+    memoryBefore: Object.fromEntries(Object.entries(memoryBefore).map(([key, value]) => [key, Math.round(value / MiB)])),
+    memoryAfter: Object.fromEntries(Object.entries(memoryAfter).map(([key, value]) => [key, Math.round(value / MiB)])),
+    memoryTimeline,
+    ...(retainedAllocations ? { retainedAllocations } : {}),
   };
   const budgets: BudgetRow[] = [
     {
@@ -1256,7 +1433,9 @@ async function runBurst(
       value: rssGrowthMb,
       budget: "< 50",
       status: rssGrowthMb < 50 ? "pass" : "fail",
-      evidence: "heapUsed after GC " + Math.round(heapBefore / MiB) + " -> " + Math.round(heapAfter / MiB) + " MB",
+      evidence:
+        "after " + options.burstWarmupSeconds + " s warm-up; heapUsed after GC " + Math.round(heapBefore / MiB) + " -> " + Math.round(heapAfter / MiB) + " MB; RSS incl. warm-up +" +
+        Math.round((rssAfter - memoryAtStart.rss) / MiB) + " MB",
     },
     {
       seam: "Burst",
