@@ -788,6 +788,22 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(reached.body.error).toBe("This run predates managed GitHub credentials");
     });
 
+    it("adds no heartbeat_runs read of its own to a GitHub credential export", async () => {
+      const seed = await seedCompany(db);
+      const full = await seedRun(db, seed, { profile: "full", openwa: openwaContext(seed, { triggerClass: "owner", profile: "full" }) });
+      const counted = loggedDb();
+      const server = express();
+      server.use(express.json());
+      server.use(runtimeConnectionIntentRoutes(counted.db));
+      server.use(errorHandler);
+      const before = counted.queries.length;
+      await request(server).post("/runtime-tools/github/credentials").set(
+        "x-paperclip-github-capability",
+        createRuntimeToolsToken({ agentId: seed.agentId, companyId: seed.companyId, runId: full.runId, responsibleUserId: BOARD_USER, scope: "github_credentials" })!.token,
+      ).send({});
+      expect(counted.queries.slice(before).filter((query) => query.includes('from "heartbeat_runs"')).length).toBe(2);
+    });
+
     it("denies connection_request in a read_only run and passes the gate in a full run", async () => {
       const seed = await seedCompany(db);
       const service = connectionIntentService(db);
