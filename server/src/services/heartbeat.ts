@@ -631,6 +631,7 @@ import {
 import type { TrustPresetResolution } from "./trust-preset-resolver.js";
 import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
 import { applyOpenwaRunContext, resolveOpenwaRunContext } from "./openwa/authority.js";
+import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, joinOpenwaGuidance } from "./openwa/guidance.js";
 import {
   createEffectiveRunConfigFingerprints,
   createEffectiveRunConfigSubcategoryFingerprints,
@@ -9028,7 +9029,9 @@ export function buildPaperclipTaskMarkdown(input: {
           ]),
     );
   }
-  if (input.externalChatProvider && input.nativeRunner) {
+  const genericChatFileDelivery =
+    Boolean(input.externalChatProvider) && input.externalChatProvider !== "openwa";
+  if (genericChatFileDelivery && input.nativeRunner) {
     lines.push(
       "",
       "External chat file delivery:",
@@ -9036,7 +9039,7 @@ export function buildPaperclipTaskMarkdown(input: {
       "Use the supplied staged descriptors directly; batch independent reads/inspection with the appropriate available tools, then prepare and validate independent output files together. Compute exact sizes and SHA-256 hashes in the same preparation step, and batch independent per-file registrations into as few tool calls as practical. Keep one registration and a distinct stable idempotencyKey per file; wait for each receipt before the final-response protocol, and retry only a failed or ambiguous step with its original key. Batching never bypasses current source/generation authorization, exact-byte reuse, or approval gates; do not batch work that depends on an unread input, prior result, or unresolved approval. For a short routine media reply, skip a separate preamble and narration before each step. Keep useful wait, blocker, permission, and failure updates and any updates the user requested; do not suppress transport-managed progress.",
       "Use only the scoped native tool advertised for this run. Do not use the Paperclip skill, an upload shell helper, a control-plane API key, a separate provider connection, or `npx` for this handoff. A successful receipt already records the attachment, artifact, and final-response binding: do not upload it again or add a second handoff comment. Complete the required final-response protocol once. If the tool or execution target cannot hand off the file, state that limitation; never claim it was sent.",
     );
-  } else if (input.externalChatProvider) {
+  } else if (genericChatFileDelivery) {
     lines.push(
       "",
       "External chat file delivery:",
@@ -21672,7 +21675,37 @@ export function heartbeatService(
       } else {
         delete context.paperclipTaskMarkdownCompact;
       }
+      delete context[OPENWA_WAKE_CONTEXT_KEY];
       if (issueRef) {
+        const openwaRunContext = await resolveOpenwaRunContext(db, {
+          companyId: agent.companyId,
+          issueId: issueRef.id,
+          contextSnapshot: context,
+          wakeupRequestId: run.wakeupRequestId,
+        });
+        const openwaGuidance = openwaRunContext
+          ? await buildOpenwaRunGuidance(db, {
+              companyId: agent.companyId,
+              issueId: issueRef.id,
+              runId: run.id,
+              wakeupRequestId: run.wakeupRequestId,
+              openwa: openwaRunContext,
+              contextSnapshot: context,
+            })
+          : null;
+        if (openwaGuidance) {
+          context.paperclipTaskMarkdown = joinOpenwaGuidance(
+            readNonEmptyString(context.paperclipTaskMarkdown) ?? undefined,
+            openwaGuidance.markdown,
+          );
+          if (typeof context.paperclipTaskMarkdownCompact === "string") {
+            context.paperclipTaskMarkdownCompact = joinOpenwaGuidance(
+              context.paperclipTaskMarkdownCompact,
+              openwaGuidance.markdown,
+            );
+          }
+          context[OPENWA_WAKE_CONTEXT_KEY] = openwaGuidance.wakeEvent;
+        }
         const redactedWakeContext = await createRunSecretRedactionRegistry(
           db,
         ).redactForIssue(agent.companyId, issueRef.id, {
@@ -21681,6 +21714,7 @@ export function heartbeatService(
           paperclipTaskCommunicationGuidance: context.paperclipTaskCommunicationGuidance,
           paperclipTaskMarkdown: context.paperclipTaskMarkdown,
           paperclipTaskMarkdownCompact: context.paperclipTaskMarkdownCompact,
+          [OPENWA_WAKE_CONTEXT_KEY]: context[OPENWA_WAKE_CONTEXT_KEY],
         });
         context.paperclipIssue = redactedWakeContext.paperclipIssue;
         context.paperclipTaskCommunicationGuidance = redactedWakeContext.paperclipTaskCommunicationGuidance;
@@ -21696,15 +21730,10 @@ export function heartbeatService(
           context.paperclipTaskMarkdownCompact =
             redactedWakeContext.paperclipTaskMarkdownCompact;
         }
-        applyOpenwaRunContext(
-          context,
-          await resolveOpenwaRunContext(db, {
-            companyId: agent.companyId,
-            issueId: issueRef.id,
-            contextSnapshot: context,
-            wakeupRequestId: run.wakeupRequestId,
-          }),
-        );
+        if (redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY]) {
+          context[OPENWA_WAKE_CONTEXT_KEY] = redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY];
+        }
+        applyOpenwaRunContext(context, openwaRunContext);
       }
       // A native run's execution input is immutable once persisted. Recovery must therefore
       // restore the workspace bound to that input rather than consulting the issue's current
