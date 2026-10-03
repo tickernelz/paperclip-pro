@@ -17399,7 +17399,9 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
-          chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds,
+          ...(resolutionAuthorization.chatEndpointOwnerUserIds
+            ? { chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds }
+            : {}),
           suggestedTaskEffectsAuthorized,
         });
       const toolAction =
@@ -17730,7 +17732,9 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
-          chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds,
+          ...(resolutionAuthorization.chatEndpointOwnerUserIds
+            ? { chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds }
+            : {}),
         },
       );
 

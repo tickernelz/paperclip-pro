@@ -101,7 +101,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   beforeAll(async () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-steering-");
     db = createDb(database.connectionString);
-    scratch = await mkdtemp(path.join(os.homedir(), ".cache", "openwa-build", "tmp", "openwa-steering-"));
+    scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-steering-"));
     process.env.PAPERCLIP_HOME = scratch;
     process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
     process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
