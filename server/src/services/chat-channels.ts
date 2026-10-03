@@ -8198,7 +8198,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           const stillRegistered = runtime.get(endpoint.id) === instance;
           const stillCurrent =
             latest !== null &&
-            (latest.endpoint.status === record.endpoint.status || (record.endpoint.provider === "imessage-photon" || record.endpoint.provider === "openwa") && ["active", "verifying", "attention"].includes(record.endpoint.status) && ["active", "verifying", "attention"].includes(latest.endpoint.status)) &&
+            (latest.endpoint.status === record.endpoint.status || record.endpoint.provider === "imessage-photon" && record.endpoint.status === "attention" && ["active", "verifying"].includes(latest.endpoint.status) || record.endpoint.provider === "openwa" && ["active", "verifying", "attention"].includes(record.endpoint.status) && ["active", "verifying", "attention"].includes(latest.endpoint.status)) &&
             runtimeContextForRecord(latest).version === context.version;
           if (!stillRegistered || !stillCurrent) {
             if (stillRegistered) {
