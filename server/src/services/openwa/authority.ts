@@ -580,6 +580,16 @@ export async function restoreOpenwaGrant(db: Db, input: { companyId: string; run
     ));
 }
 
+/** True while a grant held on a write receipt is still consumed; a revoked grant no longer covers retries of that write. */
+export async function openwaHeldGrantValid(db: Db, input: { companyId: string; grantId: string }): Promise<boolean> {
+  const [grant] = await db
+    .select({ id: chatOwnerGrants.id })
+    .from(chatOwnerGrants)
+    .where(and(eq(chatOwnerGrants.id, input.grantId), eq(chatOwnerGrants.companyId, input.companyId), eq(chatOwnerGrants.status, "consumed")))
+    .limit(1);
+  return grant !== undefined;
+}
+
 export async function loadOpenwaRunAuthority(db: Db, input: { companyId: string; runId: string }): Promise<RunLike | null> {
   const [run] = await db
     .select({ id: heartbeatRuns.id, companyId: heartbeatRuns.companyId, contextSnapshot: openwaRunAuthoritySnapshot() })

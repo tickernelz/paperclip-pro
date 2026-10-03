@@ -4,7 +4,7 @@ import { OPENWA_TOOL_RESULT_LIMIT_BYTES, type OpenwaApprovalCategory } from "@ti
 import type { OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 import { HttpError } from "../../errors.js";
 import { listOpenwaAudit } from "./audit.js";
-import { OpenwaApprovalRequiredError, assertOpenwaRunMay, restoreOpenwaGrant } from "./authority.js";
+import { OpenwaApprovalRequiredError, assertOpenwaRunMay, openwaHeldGrantValid, restoreOpenwaGrant } from "./authority.js";
 import {
   OPENWA_AUDIT_LIST_OPERATION,
   OPENWA_SECRET_ISSUING_OPERATIONS,
@@ -300,12 +300,13 @@ async function assertGate(
 ): Promise<{ grant: string | null; targets: Target[] }> {
   const { operation } = effective;
   if (effective.gate === "none") return { grant: null, targets: [] };
+  const held = heldGrant !== null && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }));
   if (effective.gate === "wa_admin" || effective.gate === "gateway_admin" || effective.gate === "owner_confirmation")
-    return { grant: heldGrant ? null : await mayCategory(ctx, effective.gate === "wa_admin" ? "wa_admin" : "gateway_admin", retry), targets: [] };
+    return { grant: held ? null : await mayCategory(ctx, effective.gate === "wa_admin" ? "wa_admin" : "gateway_admin", retry), targets: [] };
   const targets = sendTargets(operation, ctx, args);
   if (targets.length) ctx.audit.chatKey = targets[0]!.chatKey;
   if (targets.length === 0 || targets.some((target) => !target.isOrigin))
-    return { grant: heldGrant ? null : await mayCategory(ctx, "cross_chat_send", retry), targets };
+    return { grant: held ? null : await mayCategory(ctx, "cross_chat_send", retry), targets };
   const failure = await replyRequirementFailure(ctx);
   if (failure)
     throw refusal(403, "reply_denied", failure.reason + "; replying here needs owner approval", {

@@ -501,6 +501,14 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(reconciled).toMatchObject({ actionId: expect.any(String), state: "delivered" });
     expect(t.gateway.sends.filter((send) => send.text === "approved forward")).toHaveLength(1);
     await expect(call(binding, cross)).resolves.toMatchObject({ actionId: reconciled.actionId, replayed: true });
+    const revokedCross = { ...cross, args: { ...cross.args, text: "revoked forward" }, idempotencyKey: randomUUID() };
+    const secondCross = await grantFor("cross_chat_send");
+    const revokedBinding = await run(t, c, "grant", [secondCross]);
+    t.gateway.failNextSend({ dropResponseAfterStore: true });
+    await expect(call(revokedBinding, revokedCross)).resolves.toMatchObject({ state: "uncertain" });
+    expect(await grantStatus(secondCross)).toBe("consumed");
+    await db.update(chatOwnerGrants).set({ status: "revoked" }).where(eq(chatOwnerGrants.id, secondCross));
+    expect((await rejection(call(revokedBinding, revokedCross))).code).toBe("approval_required");
     const fresh = await rejection(call(binding, { ...cross, idempotencyKey: randomUUID() }));
     expect(fresh.code).toBe("approval_required");
     expect(fresh.details).toMatchObject({ category: "cross_chat_send" });

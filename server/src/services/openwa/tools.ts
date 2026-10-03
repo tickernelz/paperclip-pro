@@ -36,6 +36,7 @@ import { recordOpenwaAudit } from "./audit.js";
 import {
   OpenwaApprovalRequiredError,
   assertOpenwaRunMay,
+  openwaHeldGrantValid,
   openwaRunProfile,
   readOpenwaRunContext,
   restoreOpenwaGrant,
@@ -580,7 +581,7 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
 
 async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
   if (!target.isOrigin) {
-    if (heldGrant) return null;
+    if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
     try {
       return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send");
     } catch (error) {
