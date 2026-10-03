@@ -37,6 +37,7 @@ import { bumpOpenwaPolicyRevision, openwaOwnerService, openwaPrincipalAuthorizat
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
+import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime, revokeOpenwaGrantsOfFormerOwners } from "./openwa/approvals.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -1755,6 +1756,7 @@ function openwaDestinationAllowed(
   decoration: Pick<OpenwaAdmissionDecoration, "event"> | null,
 ): boolean {
   if (endpoint.provider !== "openwa" || !decoration) return nonDirectDestinationAllowed(endpoint, resource);
+  if (decoration.event === "approval_reply") return !resource || resource.availability === "available";
   if (!resource || resource.availability !== "available") return false;
   return resource.enabled || decoration.event === "group_added";
 }
@@ -11913,7 +11915,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       commentId: string;
       principalId: string;
       actorUserId: string | null;
-      openwa?: Pick<OpenwaAdmissionDecoration, "event" | "triggerClass"> | null;
+      openwa?: Pick<OpenwaAdmissionDecoration, "event" | "triggerClass" | "approval"> | null;
     },
   ) {
     await tx
@@ -11936,7 +11938,16 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           requestedByActorType: input.actorUserId ? "user" : "system",
           requestedByActorId: input.actorUserId ?? input.principalId,
           ...(input.openwa
-            ? { openwa: { event: input.openwa.event, triggerClass: input.openwa.triggerClass, deliveryIds: [input.deliveryId] } }
+            ? {
+                openwa: {
+                  event: input.openwa.event,
+                  triggerClass: input.openwa.triggerClass,
+                  deliveryIds: [input.deliveryId],
+                  ...(input.openwa.approval
+                    ? { approvalRequestId: input.openwa.approval.requestId, requestStatus: input.openwa.approval.requestStatus }
+                    : {}),
+                },
+              }
             : {}),
         },
       })
@@ -14711,7 +14722,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           | Record<string, number>
           | undefined,
         ...(context.endpoint.provider === "openwa" && claimed.payload.openwa && typeof claimed.payload.openwa === "object"
-          ? { extraWakeContext: { openwa: claimed.payload.openwa as Record<string, unknown> } }
+          ? {
+              extraWakeContext: { openwa: claimed.payload.openwa as Record<string, unknown> },
+              ...((claimed.payload.openwa as Record<string, unknown>).event === "approval_reply" ? { allowRunCoalescing: false } : {}),
+            }
           : {}),
         durableChatRequest: request,
         rethrowOnError: true,
@@ -15694,7 +15708,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           actorUserId: rebound.authorUserId,
           openwa:
             openwaDecoration && activeDelivery.triggerClass
-              ? { event: openwaDecoration.event, triggerClass: activeDelivery.triggerClass }
+              ? { event: openwaDecoration.event, triggerClass: activeDelivery.triggerClass, approval: openwaDecoration.approval ?? null }
               : openwaDecoration,
         });
         // Attachment storage follows the atomic task/comment/link mutation.
@@ -28143,6 +28157,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           // admission; a stale in-flight post is quarantined as unknown.
           processPendingSlackTaskStarts(limit),
           processFailedChatRunRetries(limit),
+          processPendingOpenwaApprovalWakes(db, limit),
         ]);
     const reactionRecovery = processPendingReactionDeliveries(
       limit,
@@ -28846,6 +28861,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           if (rows[0]) {
             await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: endpointId });
             await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: endpointId });
+            if (link.provider === "openwa") await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
           }
           return rows[0] ?? null;
         });
@@ -38699,6 +38715,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     return listResources(endpointId);
   }
 
+  const unregisterOpenwaApprovalWakes = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
+
   const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
     async resolve(endpoint) {
       const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
@@ -38796,6 +38814,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       invalidate: (endpointId) => openwaPolicies.invalidate(endpointId),
     }),
     openwaPolicies,
+    openwaApprovals: openwaApprovalService(db),
     openwaAdmissionStats: openwaAdmission.stats,
     listPrincipals,
     createLinkIntent,
@@ -38840,6 +38859,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       unregisterFailedRetryAuthority();
       unregisterSlackTaskAuthority();
       unregisterOpenwaToolRuntime();
+      unregisterOpenwaApprovalWakes();
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);

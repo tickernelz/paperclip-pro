@@ -15,6 +15,8 @@ import {
   inspectPhotonProjectSchema,
   inspectOpenwaGatewaySchema,
   addOpenwaOwnerSchema,
+  listOpenwaApprovalsQuerySchema,
+  resolveOpenwaApprovalSchema,
   createOpenwaSenderRuleSchema,
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
@@ -332,6 +334,23 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     if (!isUuidLike(req.params.ownerId as string)) throw badRequest("A valid owner id is required");
     await service.openwa.removeOwner(endpointId(req), req.params.ownerId as string, actorUserId(req));
     res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/approvals", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    const query = listOpenwaApprovalsQuerySchema.safeParse(req.query);
+    if (!query.success) throw badRequest("status must be pending, approved, rejected or cancelled");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.list(endpointId(req), { status: query.data.status, viewerUserId: actorUserId(req) }));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/approvals/:requestId/resolve", validate(resolveOpenwaApprovalSchema), async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    if (!isUuidLike(req.params.requestId as string)) throw badRequest("A valid approval request id is required");
+    const userId = actorUserId(req);
+    if (!userId) throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.resolve(endpointId(req), req.params.requestId as string, { ...req.body, userId }));
   });
 
   router.get("/chat-endpoints/:endpointId/openwa/sender-rules", async (req, res) => {

@@ -88,8 +88,14 @@ function event(input: Partial<OpenwaInboundEvent> & { chatKey: string }): Openwa
 }
 
 describe("classifyOpenwaEvent", () => {
-  it("keeps the approval-reply seam empty until approvals land", () => {
-    expect(detectApprovalReply(event({ chatKey: OWNER + "@c.us" }), snapshot())).toBeNull();
+  it("detects approval-reply candidates only for owners quoting a message, regardless of activation", () => {
+    const s = snapshot();
+    const quoted = { id: "true_" + OWNER + "@c.us_3EB0BUBBLE", body: "May I?" };
+    expect(detectApprovalReply(event({ chatKey: OWNER + "@c.us" }), s)).toBeNull();
+    expect(detectApprovalReply(event({ chatKey: OWNER + "@c.us", quoted }), s)).toMatchObject({ quotedMessageId: quoted.id, owner: { digits: OWNER } });
+    expect(detectApprovalReply(event({ chatKey: ALLOWED + "@c.us", quoted }), s)).toBeNull();
+    expect(detectApprovalReply(event({ chatKey: OWNER + "@c.us", quoted: { id: "false_" + OWNER + "@c.us_X", body: null } }), s)).toBeNull();
+    expect(detectApprovalReply(event({ chatKey: OWNER + "@c.us", quoted, event: "message.sent", fromMe: true, phoneTyped: true }), s)).toBeNull();
   });
 
   it("applies the sender policy in direct messages, with owners bypassing the denylist", () => {

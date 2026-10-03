@@ -1375,7 +1375,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18037",
+    "boardGuard": "assertBoard@issues.ts:18081",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12985,7 +12985,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17022",
+    "boardGuard": "assertBoard@issues.ts:17033",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17914,7 +17914,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:602",
+    "boardGuard": "assertBoard@chat-channels.ts:621",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22370,7 +22370,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16195",
+    "boardGuard": "assertBoard@issues.ts:16206",
     "authorityCapability": null,
     "parameters": [
       {
@@ -23924,6 +23924,54 @@
     ]
   },
   {
+    "name": "paperclipListChatEndpointOpenwaApprovals",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals",
+    "description": "List OpenWA owner approval requests. Lists the newest 100 owner approval requests of an OpenWA endpoint, optionally filtered by status, with their grants. Owner text and agent conditions are returned only to current endpoint owners; canResolve is true for a current owner on a pending request. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "cancelled"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListChatEndpointOpenwaChats",
     "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/chats",
     "method": "GET",
@@ -24115,7 +24163,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:161",
+    "boardGuard": "assertBoard@chat-channels.ts:163",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31389,6 +31437,71 @@
     }
   },
   {
+    "name": "paperclipResolveChatEndpointApproval",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+    "description": "Approve or reject an OpenWA owner approval request. Only a board user linked as a current owner of the endpoint may resolve. Uses the same first-resolution-wins path as WhatsApp replies and the generic interaction routes: approving writes the grants and wakes the agent with approval_resolved (grant); rejecting wakes it with approval_resolved (other). A request already resolved returns 409 already_resolved. Records openwa.approval_resolved.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipResolveChatEndpointPublication",
     "operationId": "POST /api/chat-endpoints/{endpointId}/publications/{publicationId}/resolve",
     "method": "POST",
@@ -34351,7 +34464,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8911",
+    "boardGuard": "assertBoard@issues.ts:8922",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34412,7 +34525,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16165",
+    "boardGuard": "assertBoard@issues.ts:16176",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36074,7 +36187,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17979",
+    "boardGuard": "assertBoard@issues.ts:18021",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36506,7 +36619,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16974",
+    "boardGuard": "assertBoard@issues.ts:16985",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40242,7 +40355,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16133",
+    "boardGuard": "assertBoard@issues.ts:16144",
     "authorityCapability": null,
     "parameters": [
       {

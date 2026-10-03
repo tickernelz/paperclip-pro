@@ -589,6 +589,8 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       "openwa_read_chat",
       "openwa_get_media",
       "openwa_find",
+      "openwa_request_approval",
+      "openwa_approval_resolve",
       "openwa_stay_silent",
       "openwa_handoff",
     ]);
@@ -634,10 +636,12 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       ) as string[];
     actor = { type: "agent", source: "agent_jwt", companyId: t.companyId, agentId: t.agentId, runId: binding.runId };
     expect((await list()).filter((name) => name.startsWith("openwa_")).sort()).toEqual([
+      "openwa_approval_resolve",
       "openwa_find",
       "openwa_get_media",
       "openwa_handoff",
       "openwa_read_chat",
+      "openwa_request_approval",
       "openwa_send",
       "openwa_stay_silent",
     ]);

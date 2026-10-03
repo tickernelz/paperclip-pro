@@ -123,20 +123,18 @@ export interface OpenwaClassifyFacts {
   quotedFromAgent?: boolean;
 }
 
-export interface OpenwaApprovalReply {
-  readonly requestId: string;
-  readonly bubbleOutboundMessageId: string;
+export interface OpenwaApprovalReplyCandidate {
+  readonly quotedMessageId: string;
+  readonly owner: OpenwaSnapshotOwner;
 }
 
-export class OpenwaApprovalReplyUnsupportedError extends Error {
-  readonly code = "openwa_approval_reply_unsupported";
-  constructor() {
-    super("OpenWA approval replies require the approval handler");
-  }
-}
-
-export function detectApprovalReply(_event: OpenwaInboundEvent, _snapshot: OpenwaPolicySnapshot): OpenwaApprovalReply | null {
-  return null;
+/** A current owner quoting a message in any chat (D37); admission confirms the quote is an approval bubble. */
+export function detectApprovalReply(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot): OpenwaApprovalReplyCandidate | null {
+  if (!event.quoted || event.quoted.id.startsWith("false_")) return null;
+  if (event.event === "message.sent" && !event.phoneTyped) return null;
+  if (event.phoneTyped && snapshot.policy.numberMode !== "owner_number") return null;
+  const owner = openwaSenderOwner(snapshot, event);
+  return owner ? { quotedMessageId: event.quoted.id, owner } : null;
 }
 
 export function openwaDigits(value: string | null | undefined): string | null {

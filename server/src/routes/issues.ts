@@ -4,6 +4,11 @@ import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { openwaRunSuppressesMentionWakes } from "../services/openwa/authority.js";
 import {
+  openwaApprovalOwnerUserIds,
+  openwaApprovalRequestIdOf,
+  resolveOpenwaApprovalInteraction,
+} from "../services/openwa/approvals.js";
+import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
   readIssueRunModelOverride,
@@ -5938,6 +5943,11 @@ export function issueRoutes(
           })
         : null;
     const actor = getActorInfo(req);
+    const approvalRequestId = openwaApprovalRequestIdOf(interaction);
+    const chatEndpointOwnerUserIds =
+      interaction.effectiveResolverPolicy === "chat_endpoint_owner" && approvalRequestId && actor.actorType === "user"
+        ? await openwaApprovalOwnerUserIds(db, { companyId: issue.companyId, requestId: approvalRequestId })
+        : null;
     const decision: IssueThreadInteractionResolverAudienceDecision =
       evaluateIssueThreadInteractionResolverAudience({
         actor:
@@ -5950,6 +5960,7 @@ export function issueRoutes(
             : { type: "user", userId: actor.actorId },
         interaction,
         additionalRestriction: resolverPolicyRestriction,
+        chatEndpointOwnerUserIds,
         governedAction:
           interaction.kind === "request_confirmation" &&
           (payload?.toolAction !== undefined ||
@@ -17274,6 +17285,20 @@ export function issueRoutes(
       if (!suggestedTaskEffectsAuthorized) return;
 
       const actor = getActorInfo(req);
+      const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      if (openwaApprovalRequestId) {
+        if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+        await resolveOpenwaApprovalInteraction(db, {
+          companyId: issue.companyId,
+          issueId: issue.id,
+          interactionId: current.id,
+          requestId: openwaApprovalRequestId,
+          decision: "approve",
+          userId: actor.actorId,
+        });
+        res.json(await interactionSvc.getById(current.id));
+        return;
+      }
       if (
         current.kind === "request_confirmation" &&
         current.payload.toolAction
@@ -17590,6 +17615,21 @@ export function issueRoutes(
       }
 
       const actor = getActorInfo(req);
+      const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      if (openwaApprovalRequestId) {
+        if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+        await resolveOpenwaApprovalInteraction(db, {
+          companyId: issue.companyId,
+          issueId: issue.id,
+          interactionId: current.id,
+          requestId: openwaApprovalRequestId,
+          decision: "reject",
+          userId: actor.actorId,
+          reason: req.body.reason,
+        });
+        res.json(await interactionSvc.getById(current.id));
+        return;
+      }
       if (
         current.kind === "request_confirmation" &&
         current.payload.toolAction
@@ -17865,6 +17905,8 @@ export function issueRoutes(
 
       const interactionSvc = issueThreadInteractionService(db);
       const current = await interactionSvc.getForIssue(issue, interactionId);
+      if (openwaApprovalRequestIdOf(current))
+        throw unprocessable("Owner approval requests are resolved by an endpoint owner, not withdrawn");
       if (
         !(await assertIssueThreadInteractionWithdrawalAllowed(
           req,
@@ -17977,6 +18019,8 @@ export function issueRoutes(
         return;
       }
       assertBoard(req);
+      if (openwaApprovalRequestIdOf(await issueThreadInteractionService(db).getForIssue(issue, interactionId)))
+        throw unprocessable("Owner approval requests are resolved by an endpoint owner, not skipped");
 
       const actor = getActorInfo(req);
       const interaction = await issueThreadInteractionService(

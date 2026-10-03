@@ -1474,6 +1474,7 @@ export interface RequestConfirmationPayload {
   toolAction?: RequestConfirmationToolActionPayload;
   secretProposal?: RequestConfirmationSecretProposalPayload;
   connectionAuthorization?: RequestConfirmationConnectionAuthorizationPayload;
+  openwaApprovalRequestId?: string;
 }
 
 export interface RequestCheckboxConfirmationOption {

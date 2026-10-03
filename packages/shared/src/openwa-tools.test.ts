@@ -15,6 +15,8 @@ describe("OpenWA tool catalog", () => {
       ["openwa_read_chat", "read"],
       ["openwa_get_media", "read"],
       ["openwa_find", "read"],
+      ["openwa_request_approval", "write"],
+      ["openwa_approval_resolve", "write"],
       ["openwa_stay_silent", "write"],
       ["openwa_handoff", "write"],
     ]);
@@ -39,5 +41,20 @@ describe("OpenWA tool catalog", () => {
     expect(send.safeParse({ text: "hi", companyId: key, idempotencyKey: key }).success).toBe(false);
     expect(openwaTool("openwa_find")!.schema.safeParse({ query: "a", phone: "+628111" }).success).toBe(false);
     expect(z.toJSONSchema(openwaTool("openwa_handoff")!.schema)).toMatchObject({ required: ["triggerIds", "note"] });
+  });
+
+  it("validates approval request and reminder shapes", () => {
+    const request = openwaTool("openwa_request_approval")!.schema;
+    const key = "9c0dc094-41b6-4d84-a2f1-1df331774489";
+    const create = { categories: ["create_task"], summary: "Create a task", proposedAction: "Open a child issue", messageToOwners: "May I?", idempotencyKey: key };
+    expect(request.safeParse(create).success).toBe(true);
+    expect(request.safeParse({ ...create, categories: [] }).success).toBe(false);
+    expect(request.safeParse({ ...create, categories: ["create_task", "create_task"] }).success).toBe(false);
+    expect(request.safeParse({ ...create, summary: undefined }).success).toBe(false);
+    expect(request.safeParse({ remindRequestId: key, messageToOwners: "Reminder", idempotencyKey: key }).success).toBe(true);
+    expect(request.safeParse({ ...create, remindRequestId: key }).success).toBe(false);
+    const resolve = openwaTool("openwa_approval_resolve")!.schema;
+    expect(resolve.safeParse({ requestId: key, decision: "approve" }).success).toBe(true);
+    expect(resolve.safeParse({ requestId: key, decision: "maybe" }).success).toBe(false);
   });
 });

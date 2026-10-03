@@ -306,6 +306,8 @@ import {
   createOpenwaSenderRuleSchema,
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
+  listOpenwaApprovalsQuerySchema,
+  resolveOpenwaApprovalSchema,
   openwaChatSettingsSchema,
   chatInflightModeSchema,
   openwaGatewayAdminToolLevelSchema,
@@ -1645,6 +1647,8 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
   "GET /api/chat-endpoints/{endpointId}/openwa/health",
   "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
+  "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
+  "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
   "GET /api/chat-endpoints/{endpointId}/resources",
   "PUT /api/chat-endpoints/{endpointId}/resources",
   "GET /api/chat-endpoints/{endpointId}/principals",
@@ -2781,6 +2785,58 @@ registry.registerPath({
     404: r.notFound,
     409: r.conflict,
     422: r.unprocessable,
+  },
+});
+
+const openwaApprovalResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    status: z.enum(["pending", "approved", "rejected", "cancelled"]),
+    categories: z.array(z.string()),
+    scope: z.enum(["one_action", "requester"]),
+    summary: z.string(),
+    proposedAction: z.string(),
+    originChat: z.string(),
+    originConversationId: z.string().uuid().nullable(),
+    interactionId: z.string().uuid().nullable(),
+    reminderCount: z.number().int().min(0),
+    resolvedVia: z.enum(["whatsapp", "paperclip"]).nullable(),
+    resolvedByUserId: z.string().nullable(),
+    ownerText: z.string().nullable(),
+    agentConditions: z.string().nullable(),
+    resolvedAt: z.string().nullable(),
+    createdAt: z.string(),
+    grants: z.array(z.object({ id: z.string().uuid(), category: z.string(), status: z.string(), expiresAt: z.string() }).strict()),
+    canResolve: z.boolean(),
+  })
+  .strict();
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals",
+  tags: ["chat-channels"],
+  summary: "List OpenWA owner approval requests",
+  description:
+    "Lists the newest 100 owner approval requests of an OpenWA endpoint, optionally filtered by status, with their grants. Owner text and agent conditions are returned only to current endpoint owners; canResolve is true for a current owner on a pending request. Responses are not cached.",
+  request: { params: openwaEndpointParams, query: listOpenwaApprovalsQuerySchema },
+  responses: { 200: r.ok(z.array(openwaApprovalResponseSchema)), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+  tags: ["chat-channels"],
+  summary: "Approve or reject an OpenWA owner approval request",
+  description:
+    "Only a board user linked as a current owner of the endpoint may resolve. Uses the same first-resolution-wins path as WhatsApp replies and the generic interaction routes: approving writes the grants and wakes the agent with approval_resolved (grant); rejecting wakes it with approval_resolved (other). A request already resolved returns 409 already_resolved. Records openwa.approval_resolved.",
+  request: { params: z.object({ endpointId: z.string().uuid(), requestId: z.string().uuid() }), body: jsonBody(resolveOpenwaApprovalSchema) },
+  responses: {
+    200: r.ok(z.object({ requestId: z.string().uuid(), status: z.enum(["approved", "rejected"]), grantIds: z.array(z.string().uuid()) }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
   },
 });
 

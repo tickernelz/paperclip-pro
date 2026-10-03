@@ -38,6 +38,7 @@ export function queueIssueAssignmentWakeup(input: {
    * exact wake comment. These are prompt diagnostics, never authorization. */
   attachmentOmissionReasons?: Record<string, number> | null;
   extraWakeContext?: Record<string, unknown>;
+  allowRunCoalescing?: boolean;
   rethrowOnError?: boolean;
   durableChatRequest?: DurableChatWakeupRequest;
 }) {
@@ -57,6 +58,7 @@ export function queueIssueAssignmentWakeup(input: {
       },
       requestedByActorType: input.requestedByActorType,
       requestedByActorId: input.requestedByActorId ?? null,
+      ...(input.allowRunCoalescing === false ? { allowRunCoalescing: false } : {}),
       ...(input.durableChatRequest
         ? { durableChatRequest: input.durableChatRequest }
         : {}),

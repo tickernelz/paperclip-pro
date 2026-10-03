@@ -18,6 +18,7 @@ import {
   OPENWA_REPLY_POLICIES,
   OPENWA_SENDER_POLICY_MODES,
   CHAT_SENDER_RULE_LISTS,
+  CHAT_OWNER_APPROVAL_STATUSES,
   type OpenwaEndpointPolicy,
   type OpenwaNumberMode,
   type OpenwaTriggerRules,
@@ -418,6 +419,17 @@ export const updateOpenwaChatSettingsSchema = z
   .strict();
 
 export const updateOpenwaEndpointPolicySchema = z.record(z.string(), z.unknown());
+
+export const resolveOpenwaApprovalSchema = z
+  .object({
+    decision: z.enum(["approve", "reject"]),
+    reason: z.string().trim().min(1).max(2000).optional(),
+  })
+  .strict();
+
+export const listOpenwaApprovalsQuerySchema = z
+  .object({ status: z.enum(CHAT_OWNER_APPROVAL_STATUSES).optional() })
+  .strict();
 
 export type OpenwaEndpointPolicyInput = z.input<typeof openwaEndpointPolicySchema>;
 export type OpenwaChatSettingsInput = z.input<typeof openwaChatSettingsSchema>;

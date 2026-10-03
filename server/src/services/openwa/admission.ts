@@ -13,6 +13,7 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import type { ChatSdkMessageTrigger } from "../chat-sdk-runtime.js";
 import { openwaThreadId, type OpenwaChatAdapter } from "./adapter.js";
+import { findOpenwaApprovalBubble, type OpenwaApprovalRequestStatus } from "./approvals.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaIngressHooks } from "./ingress.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -33,6 +34,7 @@ import {
   openwaTriggerCandidate,
   OPENWA_DISCOVERED_GROUP_CAP,
   OPENWA_GROUP_PARTICIPANT_CAP,
+  type OpenwaApprovalReplyCandidate,
   type OpenwaPolicyCache,
   type OpenwaPolicySnapshot,
   type OpenwaTriggerRule,
@@ -44,7 +46,12 @@ const DISCOVERY_RETRY_MS = 60_000;
 const LEARNED_LID_CAP = 10_000;
 const AUDIT_TEXT_LIMIT = 4_096;
 
-export type OpenwaWakeEvent = "message" | "group_added";
+export type OpenwaWakeEvent = "message" | "group_added" | "approval_reply";
+
+export interface OpenwaApprovalReplyDecoration {
+  readonly requestId: string;
+  readonly requestStatus: OpenwaApprovalRequestStatus;
+}
 
 export interface OpenwaAdmissionDecoration {
   readonly version: 1;
@@ -67,6 +74,7 @@ export interface OpenwaAdmissionDecoration {
   readonly contact: Record<string, unknown> | null;
   readonly media: { mimetype: string | null; filename: string | null; sizeBytes: number | null; omitted: boolean } | null;
   readonly group: { name: string | null; participantCount: number; actorMasked: string | null } | null;
+  readonly approval?: OpenwaApprovalReplyDecoration | null;
 }
 
 export interface OpenwaWakePayload {
@@ -112,6 +120,7 @@ export interface OpenwaAdmissionStats {
   discoveries: number;
   discoveryFailures: number;
   quoteLookups: number;
+  approvalReplies: number;
 }
 
 function stringOf(value: unknown): string | null {
@@ -125,7 +134,7 @@ function record(value: unknown): Record<string, unknown> | null {
 export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration | null {
   const source = record(value);
   if (!source || source.version !== 1) return null;
-  const event = source.event === "group_added" ? "group_added" : source.event === "message" ? "message" : null;
+  const event = source.event === "group_added" || source.event === "message" || source.event === "approval_reply" ? source.event : null;
   const triggerClass = source.triggerClass === "owner" || source.triggerClass === "other" || source.triggerClass === "grant" ? source.triggerClass : null;
   const principalRole =
     source.principalRole === "owner" || source.principalRole === "allowed" || source.principalRole === "outside_allowlist" || source.principalRole === "denylisted"
@@ -139,6 +148,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
   const quoted = record(source.quoted);
   const media = record(source.media);
   const group = record(source.group);
+  const approval = record(source.approval);
   return {
     version: 1,
     event,
@@ -173,6 +183,10 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
           actorMasked: stringOf(group.actorMasked),
         }
       : null,
+    approval:
+      approval && typeof approval.requestId === "string"
+        ? { requestId: approval.requestId, requestStatus: approval.requestStatus === "pending" ? "pending" : "resolved" }
+        : null,
   };
 }
 
@@ -201,6 +215,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     discoveries: 0,
     discoveryFailures: 0,
     quoteLookups: 0,
+    approvalReplies: 0,
   };
 
   async function snapshotFor(runtime: OpenwaAdmissionRuntime): Promise<OpenwaPolicySnapshot | null> {
@@ -367,16 +382,63 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     return (await deps.outbound.lookupStored(snapshot.companyId, snapshot.endpointId, event.quoted.id)) !== null;
   }
 
+  async function admitApprovalReply(
+    runtime: OpenwaAdmissionRuntime,
+    snapshot: OpenwaPolicySnapshot,
+    event: OpenwaInboundEvent,
+    candidate: OpenwaApprovalReplyCandidate,
+  ): Promise<boolean> {
+    const { quotedMessageId, owner } = candidate;
+    let outbound = deps.outbound.lookup(snapshot.endpointId, quotedMessageId);
+    if (!outbound) {
+      stats.quoteLookups++;
+      outbound = await deps.outbound.lookupStored(snapshot.companyId, snapshot.endpointId, quotedMessageId);
+    }
+    if (!outbound || outbound.source !== "approval") return false;
+    const bubble = await findOpenwaApprovalBubble(db, outbound);
+    if (!bubble) return false;
+    if (event.isLidSender && event.senderPhone && !owner.lids.has(event.senderJid.toLowerCase())) await learnLid(snapshot, event);
+    const adapter = runtime.adapter();
+    if (!adapter) throw new Error("OpenWA adapter unavailable for admission");
+    const decoration: OpenwaAdmissionDecoration = {
+      version: 1,
+      event: "approval_reply",
+      triggerClass: "owner",
+      principalRole: "owner",
+      rules: [],
+      addressed: true,
+      control: null,
+      chatKey: event.chatKey,
+      chatId: event.chatKey,
+      chatKind: event.chatKind,
+      waMessageId: event.waMessageId,
+      dedupeKey: event.dedupeKey,
+      phoneTyped: event.phoneTyped,
+      sender: { jid: event.senderJid, phone: event.senderPhone, name: senderName(event) },
+      quoted: { id: quotedMessageId, body: event.quoted?.body ?? null, fromAgent: true },
+      mentionedIds: [...event.mentionedIds],
+      location: event.location,
+      contact: event.contact,
+      media: event.media ? { ...event.media } : null,
+      group: null,
+      approval: { requestId: bubble.requestId, requestStatus: bubble.requestStatus },
+    };
+    const threadId = openwaThreadId({ sessionId: runtime.sessionId, chatId: event.chatKey, isGroup: event.chatKind === "group" });
+    const message = adapter.parseMessage({ ...event, chatId: event.chatKey });
+    stats.approvalReplies++;
+    stats.admitted++;
+    await runtime.admit({ threadId, message, trigger: triggerFor(event.chatKind, true), decoration });
+    return true;
+  }
+
   async function onInbound(runtime: OpenwaAdmissionRuntime, event: OpenwaInboundEvent, ctx: OpenwaInboundContext): Promise<void> {
     const snapshot = await snapshotFor(runtime);
     if (!snapshot) {
       stats.discarded++;
       return;
     }
-    if (detectApprovalReply(event, snapshot)) {
-      stats.discarded++;
-      return;
-    }
+    const approvalCandidate = detectApprovalReply(event, snapshot);
+    if (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) return;
     const fromAgent = event.quoted ? await quotedFromAgent(snapshot, event) : false;
     const facts = { quotedFromAgent: fromAgent };
     if (event.chatKind === "group" && !snapshot.chats.has(event.chatKey)) {

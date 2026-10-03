@@ -31,6 +31,7 @@ import type { StorageService } from "../../storage/types.js";
 import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { instanceSettingsService } from "../instance-settings.js";
 import { parseOpenwaThreadId } from "./adapter.js";
+import { openwaApprovalResolveTool, openwaRequestApprovalTool } from "./approvals.js";
 import { recordOpenwaAudit } from "./audit.js";
 import {
   OpenwaApprovalRequiredError,
@@ -82,6 +83,12 @@ const E164 = /^\+?([1-9]\d{6,14})$/;
 
 export type OpenwaToolErrorCode =
   | "approval_required"
+  | "approval_not_authorized"
+  | "approval_not_needed"
+  | "already_resolved"
+  | "no_owner_chat"
+  | "message_too_long"
+  | "requester_unknown"
   | "owner_only"
   | "chat_inactive"
   | "reply_denied"
@@ -243,7 +250,7 @@ interface Target {
   number: string | null;
 }
 
-interface ToolContext {
+export interface ToolContext {
   db: Db;
   binding: OpenwaToolBinding;
   endpoint: EndpointRow;
@@ -1207,6 +1214,8 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_read_chat: openwaReadChat,
   openwa_get_media: openwaGetMedia,
   openwa_find: openwaFind,
+  openwa_request_approval: (ctx, args) => openwaRequestApprovalTool(ctx, args),
+  openwa_approval_resolve: (ctx, args) => openwaApprovalResolveTool(ctx, args),
   openwa_stay_silent: openwaStaySilent,
   openwa_handoff: openwaHandoff,
 };

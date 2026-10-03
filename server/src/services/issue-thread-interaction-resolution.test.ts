@@ -164,6 +164,30 @@ describe("issue-thread interaction resolver audience", () => {
     expect(decision).toMatchObject({ allowed: false, code: "interaction_creator_excluded" });
   });
 
+  it("admits only current endpoint owners under chat_endpoint_owner and never agents", () => {
+    const card = interaction({ effectiveResolverPolicy: "chat_endpoint_owner", createdByAgentId: "agent-1" });
+    expect(evaluateIssueThreadInteractionResolverAudience({
+      actor: { type: "user", userId: "owner-1" },
+      interaction: card,
+      chatEndpointOwnerUserIds: ["owner-1"],
+    })).toMatchObject({ allowed: true, effectiveResolverPolicy: "chat_endpoint_owner" });
+    expect(evaluateIssueThreadInteractionResolverAudience({
+      actor: { type: "user", userId: "board-2" },
+      interaction: card,
+      chatEndpointOwnerUserIds: ["owner-1"],
+    })).toMatchObject({ allowed: false, status: 403, code: "interaction_chat_endpoint_owner_only" });
+    expect(evaluateIssueThreadInteractionResolverAudience({
+      actor: { type: "user", userId: "owner-1" },
+      interaction: card,
+    })).toMatchObject({ allowed: false, code: "interaction_chat_endpoint_owner_only" });
+    expect(evaluateIssueThreadInteractionResolverAudience({
+      actor: { type: "agent", agentId: "agent-2", runId: "run-2" },
+      interaction: card,
+      chatEndpointOwnerUserIds: ["owner-1"],
+    })).toMatchObject({ allowed: false, code: "interaction_human_only" });
+    expect(issueThreadInteractionAttentionAgentAllowed({ agentId: "agent-2", interaction: card })).toBe(false);
+  });
+
   it("derives agent attention ownership from the same effective audience", () => {
     expect(issueThreadInteractionAttentionAgentAllowed({
       agentId: "agent-1",
