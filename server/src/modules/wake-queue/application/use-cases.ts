@@ -5,6 +5,9 @@ import {
   decideWakeAdmission,
   decideWakeOutcome,
   deriveImmediateRecoveryContextLabels,
+  isSoloOpenwaWake,
+  openwaWakesMayShare,
+  type OpenwaWakeClass,
 } from "../domain/policy.js";
 import {
   EXECUTION_REVIEW_PARTICIPANT_RECOVERY_RETRY_REASON,
@@ -763,6 +766,8 @@ export type AdmitWakeBehindIssueExecutionInput = {
   requestedByActorType: string | null;
   requestedByActorId: string | null;
   idempotencyKey: string | null;
+  /** Present only on OpenWA conversation issues; both classes come from server-written records. */
+  openwa?: { incoming: OpenwaWakeClass | null; target: OpenwaWakeClass | null };
 };
 
 export type { AdmitWakeBehindIssueExecutionResult };
@@ -818,6 +823,7 @@ export function createAdmitWakeBehindIssueExecution(deps: {
         )
       : input.activeExecutionRun;
 
+    const openwaSeparate = input.openwa !== undefined && !openwaWakesMayShare(input.openwa.incoming, input.openwa.target);
     const sameDurableActor =
       !input.durableReceipt ||
       (await deps.reader.matchesActiveWakeActor(scope, {
@@ -830,7 +836,7 @@ export function createAdmitWakeBehindIssueExecution(deps: {
     // merge it with comments or another card, in either arrival order.
     const interactionReceipt = Boolean(input.contextSnapshot.interactionId || input.payload?.interactionId);
     const decision = decideWakeAdmission({
-      allowRunCoalescing: interactionReceipt || parseObject(input.activeExecutionRun.contextSnapshot).interactionId
+      allowRunCoalescing: interactionReceipt || openwaSeparate || parseObject(input.activeExecutionRun.contextSnapshot).interactionId
         ? false : input.allowRunCoalescing,
       sameDurableActor,
       isSameExecutionAgent,
@@ -873,12 +879,14 @@ export function createAdmitWakeBehindIssueExecution(deps: {
     // existing deferred wake, so the coalesce path (the common path) never
     // pays for this query.
     const existingDeferred =
-      (interactionReceipt || input.allowRunCoalescing === false)
+      (interactionReceipt || input.allowRunCoalescing === false ||
+        (input.openwa?.incoming && isSoloOpenwaWake(input.openwa.incoming)))
         ? null
         : await deps.reader.findExistingDeferredWake(scope, {
             companyId: input.companyId,
             agentId: input.agentId,
             issueId: input.issueId,
+            ...(input.openwa ? { openwaClass: input.openwa.incoming } : {}),
             ...(input.durableReceipt
               ? {
                   durableActor: {

@@ -877,9 +877,14 @@ export function createWakeAdmissionReader(): WakeAdmissionReader {
 
     async findExistingDeferredWake(
       scope,
-      { companyId, agentId, issueId, durableActor },
+      { companyId, agentId, issueId, durableActor, openwaClass },
     ) {
       const tx = requireAdmissionTx(scope, companyId);
+      const openwaClassCondition = openwaClass === undefined
+        ? []
+        : openwaClass === null
+          ? [sql`not exists (select 1 from ${chatActions} where ${chatActions.id} = ${agentWakeupRequests.id} and ${chatActions.companyId} = ${agentWakeupRequests.companyId} and ${chatActions.payload} -> 'openwa' is not null)`]
+          : [sql`exists (select 1 from ${chatActions} where ${chatActions.id} = ${agentWakeupRequests.id} and ${chatActions.companyId} = ${agentWakeupRequests.companyId} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' = ${openwaClass.triggerClass} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' <> 'grant' and coalesce(${chatActions.payload} -> 'openwa' ->> 'event', '') not in ('approval_reply', 'approval_resolved'))`];
       const row = await tx
         .select()
         .from(agentWakeupRequests)
@@ -889,6 +894,7 @@ export function createWakeAdmissionReader(): WakeAdmissionReader {
             eq(agentWakeupRequests.agentId, agentId),
             eq(agentWakeupRequests.status, DEFERRED_WAKE_STATUS),
             sql`${agentWakeupRequests.payload} ->> 'issueId' = ${issueId}`,
+            ...openwaClassCondition,
             ...(durableActor
               ? [
                   durableActor.type === null

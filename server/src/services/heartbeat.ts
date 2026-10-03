@@ -633,11 +633,14 @@ import { resolveAndRetainRunTrustPreset } from "./run-trust-preset.js";
 import {
   applyOpenwaRunContext,
   clearOpenwaRunContext,
+  isOpenwaConversationIssue,
+  openwaAdmissionClasses,
   openwaHostGitHubAllowed,
   resolveOpenwaRunContext,
   type OpenwaRunContext,
 } from "./openwa/authority.js";
 import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, joinOpenwaGuidance } from "./openwa/guidance.js";
+import { notifyOpenwaRunStarted } from "./openwa/nudges.js";
 import {
   createEffectiveRunConfigFingerprints,
   createEffectiveRunConfigSubcategoryFingerprints,
@@ -21742,6 +21745,13 @@ export function heartbeatService(
           context[OPENWA_WAKE_CONTEXT_KEY] = redactedWakeContext[OPENWA_WAKE_CONTEXT_KEY];
         }
         applyOpenwaRunContext(context, openwaRunContext);
+        if (openwaRunContext)
+          notifyOpenwaRunStarted(db, {
+            companyId: agent.companyId,
+            runId: run.id,
+            endpointId: openwaRunContext.endpointId,
+            chatKey: openwaRunContext.chatKey,
+          });
       } else {
         clearOpenwaRunContext(context);
       }
@@ -28535,6 +28545,12 @@ export function heartbeatService(
               agent.companyId,
               tx as unknown as Db,
             );
+            const openwaClasses = await openwaAdmissionClasses(tx as unknown as Db, {
+              companyId: agent.companyId,
+              issueId: issue.id,
+              incomingWakeupRequestId: durableRequest?.id ?? null,
+              activeRun: activeExecutionRun,
+            });
             const admission = await wakeQueue.admitWakeBehindIssueExecution(
               admissionScope,
               {
@@ -28569,6 +28585,7 @@ export function heartbeatService(
                 requestedByActorType: opts.requestedByActorType ?? null,
                 requestedByActorId: opts.requestedByActorId ?? null,
                 idempotencyKey: opts.idempotencyKey ?? null,
+                ...(openwaClasses ? { openwa: openwaClasses } : {}),
               },
             );
 
@@ -28812,6 +28829,7 @@ export function heartbeatService(
               : null;
           const pendingComments =
             !isConversation(issue) && opts.allowRunCoalescing !== false &&
+            !(durableRequest && (await isOpenwaConversationIssue(tx as unknown as Db, issue.companyId, issue.id))) &&
             !(await getExecutionBlocker(tx as unknown as Db, issue.companyId, issue.id))
               ? await tx
                   .select()
