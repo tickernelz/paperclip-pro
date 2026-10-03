@@ -591,6 +591,9 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       "openwa_find",
       "openwa_stay_silent",
       "openwa_handoff",
+      "openwa_catalog",
+      "openwa_describe",
+      "openwa_call",
     ]);
     await db.update(heartbeatRuns).set({ runtimeMode: "native", nativeIssueId: c.issueId }).where(eq(heartbeatRuns.id, binding.runId));
     await db.update(issues).set({ executionRunId: binding.runId }).where(eq(issues.id, c.issueId));
@@ -634,6 +637,9 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       ) as string[];
     actor = { type: "agent", source: "agent_jwt", companyId: t.companyId, agentId: t.agentId, runId: binding.runId };
     expect((await list()).filter((name) => name.startsWith("openwa_")).sort()).toEqual([
+      "openwa_call",
+      "openwa_catalog",
+      "openwa_describe",
       "openwa_find",
       "openwa_get_media",
       "openwa_handoff",

@@ -11,6 +11,8 @@ const e164 = z.string().regex(/^\+?[1-9]\d{6,14}$/);
 const messageId = z.string().min(1).max(200);
 const mention = z.string().regex(/^(\+?[1-9]\d{6,14}|openwa:[A-Za-z0-9-]{1,64}:\d{5,25}@(c\.us|lid))$/);
 const triggerIds = z.array(z.string().uuid()).min(1).max(50);
+const operation = z.string().min(1).max(100);
+const cursor = z.string().min(1).max(200).optional();
 const MEDIA_KINDS = new Set<OpenwaSendKind>(["image", "video", "audio", "voice", "document", "sticker"]);
 
 function tool<N extends string, S extends z.ZodRawShape>(
@@ -93,6 +95,28 @@ export const OPENWA_TOOLS = [
     "write",
     "Hand owner triggers to a follow-up owner run carrying your note.",
     { triggerIds, note: z.string().min(1).max(2000) },
+  ),
+  tool(
+    "catalog",
+    "read",
+    "List OpenWA gateway operations with category and availability on this engine and key. Filter by category or text; page with cursor.",
+    {
+      category: z.enum(["read", "write", "wa_admin", "gateway_admin", "paperclip"]).optional(),
+      query: z.string().min(1).max(100).optional(),
+      cursor,
+    },
+  ),
+  tool("describe", "read", "Argument schema and gates of one operation from openwa_catalog.", { operation }),
+  tool(
+    "call",
+    "write",
+    "Run one catalog operation. args follow openwa_describe; the session is implied. Non-read operations need an idempotencyKey; retry only with the same key.",
+    {
+      operation,
+      args: z.record(z.string(), z.unknown()).optional(),
+      idempotencyKey: z.string().uuid().optional(),
+      cursor,
+    },
   ),
 ] as const;
 

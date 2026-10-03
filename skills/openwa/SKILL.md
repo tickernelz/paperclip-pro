@@ -60,11 +60,30 @@ and JSON `{ "tool": "openwa_read_chat", "arguments": {} }`. Read the adjacent
 - `openwa_handoff({triggerIds, note})` hands owner triggers to a follow-up owner
   run that receives your note.
 
+## Other gateway operations
+
+- `openwa_catalog({category?, query?})` lists every OpenWA operation with its
+  category (`read`, `write`, `wa_admin`, `gateway_admin`, `paperclip`),
+  its gate and whether this engine and key can run it. Page with `nextCursor`.
+- `openwa_describe({operation})` returns the argument schema. Never pass
+  `sessionId`; the session is implied.
+- `openwa_call({operation, args, idempotencyKey?, cursor?})` runs one operation.
+  Every state-changing operation needs a fresh UUID `idempotencyKey`, with the
+  same retry rules as `openwa_send`. Writes to the origin chat follow the reply
+  policy; writes to any other chat need `cross_chat_send`; `wa_admin` and
+  `gateway_admin` operations need those approvals in read-only runs.
+- Logging out, stopping or deleting this endpoint's own session needs an
+  owner-triggered run and an owner confirmation in Paperclip
+  (`self_session_requires_confirmation`); call again with the same key once it is
+  accepted.
+- `paperclip.audit.list` reads this endpoint's audit (owner-triggered runs only).
+
 ## Errors
 
 Errors carry a typed `code`: `approval_required` (with `category`),
 `reply_denied`, `chat_inactive`, `owner_only`, `retry_after` (wait
 `retryAfterSeconds`), `quote_unresolvable`, `number_not_on_whatsapp`,
 `gateway_unavailable`, `session_not_ready`, `unavailable_on_engine`,
-`unavailable_without_admin_key`, `idempotency_conflict`. Do not retry a gated call
+`unavailable_without_admin_key`, `gateway_admin_disabled`,
+`self_session_requires_confirmation`, `invalid_arguments`, `idempotency_conflict`. Do not retry a gated call
 without approval. A schema rejection means the arguments need correcting.

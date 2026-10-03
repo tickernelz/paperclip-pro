@@ -47,7 +47,7 @@ describe("Paperclip MCP toolsets", () => {
     const openwaTools = { call: async (input: unknown) => { calls.push(input); return { ok: true }; } };
     const names = (toolsets: ToolsetName[], options = {}) =>
       paperclipToolCatalog(makeClient(), toolsets, false, options).listing.tools.map((tool) => tool.name);
-    const openwaNames = ["openwa_send", "openwa_read_chat", "openwa_get_media", "openwa_find", "openwa_stay_silent", "openwa_handoff"];
+    const openwaNames = ["openwa_send", "openwa_read_chat", "openwa_get_media", "openwa_find", "openwa_stay_silent", "openwa_handoff", "openwa_catalog", "openwa_describe", "openwa_call"];
     expect(names(["core", "openwa"], { openwaTools })).toEqual(expect.arrayContaining(openwaNames));
     expect(names(["core", "openwa"]).some((name) => name.startsWith("openwa_"))).toBe(false);
     expect(names(parseToolsets(FULL_TOOLSET), { openwaTools }).some((name) => name.startsWith("openwa_"))).toBe(false);

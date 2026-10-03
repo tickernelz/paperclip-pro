@@ -62,6 +62,7 @@ export interface OpenwaGatewayClientOptions {
 export interface OpenwaCallOptions {
   timeoutMs?: number;
   maxBytes?: number;
+  useAdminKey?: boolean;
 }
 
 export interface OpenwaMediaDownload {
@@ -322,6 +323,12 @@ function validatorFor(operation: OpenwaOperation): ValidateFunction {
   return compiled;
 }
 
+/** Validates arguments against the operation's manifest schema; returns the error text or null. */
+export function openwaOperationArgsError(operation: OpenwaOperation, args: Record<string, unknown>): string | null {
+  const validate = validatorFor(operation);
+  return validate(args) ? null : (ajv as Ajv).errorsText(validate.errors, { dataVar: "args" });
+}
+
 function parseRetryAfter(value: string | null): number | null {
   if (!value) return null;
   const trimmed = value.trim();
@@ -522,8 +529,8 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     };
   }
 
-  function keyFor(operation: OpenwaOperation): string | null {
-    const requirement = openwaKeyRequirement(operation);
+  function keyFor(operation: OpenwaOperation, useAdminKey: boolean): string | null {
+    const requirement = useAdminKey && operation.auth === "api_key" ? "admin" : openwaKeyRequirement(operation);
     if (requirement === "none") return null;
     if (requirement === "operator") return apiKey;
     if (adminApiKey) return adminApiKey;
@@ -535,7 +542,11 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     );
   }
 
-  function buildRequest(operation: OpenwaOperation, args: Record<string, unknown>): { url: string; init: RequestInit } {
+  function buildRequest(
+    operation: OpenwaOperation,
+    args: Record<string, unknown>,
+    useAdminKey = false,
+  ): { url: string; init: RequestInit } {
     let path = operation.path;
     if (operation.sessionParam === "path") path = path.replace("{sessionId}", encodedSessionId);
     for (const name of operation.pathParams) {
@@ -550,7 +561,7 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     const search = query.toString();
     const url = baseUrl + path + (search ? "?" + search : "");
     const headers: Record<string, string> = {};
-    const key = keyFor(operation);
+    const key = keyFor(operation, useAdminKey);
     if (key) headers["X-API-Key"] = key;
     let body: BodyInit | undefined;
     if (operation.bodyMode === "json") {
@@ -584,7 +595,7 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
       const message = (ajv as Ajv).errorsText(validate.errors, { dataVar: "args" });
       throw fail("bad_request", operation.id + " rejected its arguments: " + message, { operationId: operation.id });
     }
-    const { url, init } = buildRequest(operation, args);
+    const { url, init } = buildRequest(operation, args, callOptions.useAdminKey === true);
     const mutating = operation.category !== "read";
     let response: Response;
     try {
