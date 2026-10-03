@@ -49,6 +49,7 @@ import {
   openwaWriteHashMatches,
   openwaWriteReplay,
   runOpenwaWrite,
+  setOpenwaWriteGrant,
   settleOpenwaWrite,
   type OpenwaWriteScope,
 } from "./tool-writes.js";
@@ -290,15 +291,21 @@ async function assertReadsAllowed(ctx: ToolContext, operation: OpenwaOperation, 
   }
 }
 
-async function assertGate(ctx: ToolContext, effective: OpenwaEffectiveOperation, args: Args, retry: boolean): Promise<{ grant: string | null; targets: Target[] }> {
+async function assertGate(
+  ctx: ToolContext,
+  effective: OpenwaEffectiveOperation,
+  args: Args,
+  retry: boolean,
+  heldGrant: string | null,
+): Promise<{ grant: string | null; targets: Target[] }> {
   const { operation } = effective;
   if (effective.gate === "none") return { grant: null, targets: [] };
   if (effective.gate === "wa_admin" || effective.gate === "gateway_admin" || effective.gate === "owner_confirmation")
-    return { grant: await mayCategory(ctx, effective.gate === "wa_admin" ? "wa_admin" : "gateway_admin", retry), targets: [] };
+    return { grant: heldGrant ? null : await mayCategory(ctx, effective.gate === "wa_admin" ? "wa_admin" : "gateway_admin", retry), targets: [] };
   const targets = sendTargets(operation, ctx, args);
   if (targets.length) ctx.audit.chatKey = targets[0]!.chatKey;
   if (targets.length === 0 || targets.some((target) => !target.isOrigin))
-    return { grant: await mayCategory(ctx, "cross_chat_send", retry), targets };
+    return { grant: heldGrant ? null : await mayCategory(ctx, "cross_chat_send", retry), targets };
   const failure = await replyRequirementFailure(ctx);
   if (failure)
     throw refusal(403, "reply_denied", failure.reason + "; replying here needs owner approval", {
@@ -434,7 +441,9 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
     throw refusal(409, "idempotency_conflict", "This idempotencyKey already belongs to a different OpenWA operation", { actionId: action.id });
   const replay = openwaWriteReplay(action);
   if (replay) return replay;
+  const heldGrant = str(action.payload.grantId);
   if (effective.gate === "owner_confirmation" && typeof action.payload.confirmationId !== "string") {
+    await assertGate(ctx, effective, args, true, heldGrant);
     const confirmationId = await selfSessionConfirmation(ctx, operation, action.id);
     const [updated] = await ctx.db
       .update(chatActions)
@@ -444,9 +453,12 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
     action = updated ?? action;
   }
   const retry = action.status === "uncertain" || action.status === "processing";
-  const { grant, targets } = await assertGate(ctx, effective, args, retry);
+  const { grant, targets } = await assertGate(ctx, effective, args, retry, heldGrant);
+  if (grant) await setOpenwaWriteGrant(ctx.db, action.id, grant);
   const restore = async () => {
-    if (grant) await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: grant });
+    if (!grant) return;
+    await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: grant });
+    await setOpenwaWriteGrant(ctx.db, action.id, null);
   };
   const sent = withPrefix(ctx, operation, args);
   let value: unknown;
@@ -593,11 +605,10 @@ export async function openwaCallTool(ctx: ToolContext, input: Args): Promise<Rec
     if (input.cursor !== undefined) throw refusal(400, "invalid_cursor", "Only read operations page with a cursor");
     const idempotencyKey = str(input.idempotencyKey);
     if (!idempotencyKey) throw refusal(400, "invalid_arguments", operationId + " changes state and needs an idempotencyKey", { operationId });
-    await assertGate(ctx, effective, args, true);
     return executeWrite(ctx, resolved, effective, args, idempotencyKey);
   }
   const cursor = parseCursor(input.cursor);
-  const { grant } = await assertGate(ctx, effective, args, false);
+  const { grant } = await assertGate(ctx, effective, args, false, null);
   let result: OpenwaCallResult;
   try {
     result = await dispatch(resolved, effective, args);

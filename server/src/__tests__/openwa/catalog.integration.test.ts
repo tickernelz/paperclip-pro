@@ -12,6 +12,8 @@ import {
   chatConversations,
   chatEndpointResources,
   chatEndpoints,
+  chatOwnerApprovalRequests,
+  chatOwnerGrants,
   companies,
   companyMemberships,
   companySecretBindings,
@@ -248,7 +250,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
 
   type Conversation = Awaited<ReturnType<typeof conversation>>;
 
-  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass) {
+  async function run(t: Fixture, c: Conversation, triggerClass: OpenwaTriggerClass, grantIds: string[] = []) {
     const runId = randomUUID();
     const profile = triggerClass === "owner" ? "full" : "read_only";
     await db.insert(heartbeatRuns).values({
@@ -267,7 +269,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
           chatKey: openwaChatKey(c.chatId),
           triggerClass,
           profile,
-          grantIds: [],
+          grantIds,
           requesterPrincipalId: null,
           approvalRequestId: null,
         },
@@ -467,6 +469,56 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
     expect(missingKey.code).toBe("invalid_arguments");
     const badArgs = await rejection(call(other, { operation: "MessageController_sendText", args: { chatId: MEMBER, text: "x", sessionId: "other" }, idempotencyKey: randomUUID() }));
     expect(badArgs.code).toBe("invalid_arguments");
+  });
+
+  it("lets a grant run retry or replay a gated write whose one_action grant it already consumed", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const grantFor = async (category: "cross_chat_send" | "wa_admin") => {
+      const [request] = await db
+        .insert(chatOwnerApprovalRequests)
+        .values({ companyId: t.companyId, endpointId: t.endpointId, originChatKey: openwaChatKey(MEMBER), categories: [category], scope: "one_action", summary: category, proposedAction: category, status: "approved" })
+        .returning();
+      const [grant] = await db
+        .insert(chatOwnerGrants)
+        .values({ companyId: t.companyId, endpointId: t.endpointId, requestId: request!.id, originChatKey: openwaChatKey(MEMBER), category, scope: "one_action", approvedVia: "paperclip", expiresAt: new Date(Date.now() + 3_600_000) })
+        .returning();
+      return grant!.id;
+    };
+    const grantStatus = async (id: string) => (await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.id, id)))[0]!.status;
+    const crossGrant = await grantFor("cross_chat_send");
+    const pinGrant = await grantFor("wa_admin");
+    const binding = await run(t, c, "grant", [crossGrant, pinGrant]);
+
+    const cross = { operation: "MessageController_sendText", args: { chatId: "openwa:" + SESSION_ID + ":" + OTHER, text: "approved forward" }, idempotencyKey: randomUUID() };
+    t.gateway.failNextSend({ dropResponseAfterStore: true });
+    await expect(call(binding, cross)).resolves.toMatchObject({ state: "uncertain" });
+    expect(await grantStatus(crossGrant)).toBe("consumed");
+    const reconciled = await call(binding, cross);
+    expect(reconciled).toMatchObject({ actionId: expect.any(String), state: "delivered" });
+    expect(t.gateway.sends.filter((send) => send.text === "approved forward")).toHaveLength(1);
+    await expect(call(binding, cross)).resolves.toMatchObject({ actionId: reconciled.actionId, replayed: true });
+    const fresh = await rejection(call(binding, { ...cross, idempotencyKey: randomUUID() }));
+    expect(fresh.code).toBe("approval_required");
+    expect(fresh.details).toMatchObject({ category: "cross_chat_send" });
+
+    const pinOperation = OPENWA_OPERATIONS.find((operation) => operation.id === "MessageController_pinMessage")!;
+    const pinArgs = { chatId: MEMBER, messageId: "m1" };
+    const pinRoute = renderedPath(pinOperation, pinArgs);
+    t.gateway.overrides.push({ method: pinOperation.method, path: pinRoute, status: 400, body: { message: "bad pin" } });
+    const failedKey = randomUUID();
+    expect((await rejection(call(binding, { operation: pinOperation.id, args: pinArgs, idempotencyKey: failedKey }))).code).not.toBe("approval_required");
+    expect(await grantStatus(pinGrant)).toBe("live");
+    const [failedAction] = await db.select().from(chatActions).where(sql`${chatActions.payload}->>'grantId' = ${pinGrant}`);
+    expect(failedAction).toBeUndefined();
+    t.gateway.overrides.splice(0);
+    const pin = { operation: pinOperation.id, args: pinArgs, idempotencyKey: randomUUID() };
+    const pinned = await call(binding, pin);
+    expect(pinned).toMatchObject({ state: "delivered" });
+    expect(await grantStatus(pinGrant)).toBe("consumed");
+    await expect(call(binding, pin)).resolves.toMatchObject({ actionId: pinned.actionId, replayed: true });
+    expect(forwarded(t, pinOperation.method, pinRoute)).toBe(2);
+    expect((await rejection(call(binding, { ...pin, idempotencyKey: randomUUID() }))).details).toMatchObject({ category: "wa_admin" });
   });
 
   it("requires an owner run plus a Paperclip confirmation before touching the endpoint's own session", async () => {
