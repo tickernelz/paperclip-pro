@@ -36,7 +36,9 @@ import { secretService } from "../../services/secrets.ts";
 import { OPENWA_HANDOFF_ACTION_KIND } from "../../services/openwa/tools.ts";
 import { OPENWA_FOLLOWUP_WAKE_ACTION_KIND, OPENWA_STEERED_OWNER_ACTION_KIND, scheduleOpenwaFollowupForRun } from "../../services/openwa/followups.ts";
 import { recordOpenwaLateTranscript, takeOpenwaLateTranscripts } from "../../services/openwa/late-transcripts.ts";
-import { steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
+import { registerOpenwaCommentSteering, steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
+import { resolveChatRunPresentationAuthorizationReason } from "../../services/chat-run-publications.ts";
+import { issueService } from "../../services/issues.ts";
 import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.ts";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
@@ -343,6 +345,87 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(captured.get(followupRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
     const followups = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_FOLLOWUP_WAKE_ACTION_KIND)));
     expect(followups).toHaveLength(1);
+  }, 180_000);
+
+  it("gives alternating member and owner group mentions their own class runs without steering, and an owner run answers the owner triggers", async () => {
+    const t = await setup();
+    registerOpenwaCommentSteering(db, async () => ({ deliveredAs: "queued", reason: "test" }))();
+    const first = await admit(t, mention(OWNER_PHONE, "start the invoice export"));
+    const firstRun = await runningRun(t, first.action.id);
+
+    const memberA = await admit(t, mention(MEMBER_PHONE, "member question one"));
+    const ownerB = await admit(t, mention(OWNER_PHONE, "owner request two"));
+    const memberC = await admit(t, mention(MEMBER_PHONE, "member question three"));
+    const ownerD = await admit(t, mention(OWNER_PHONE, "owner request four"));
+    const memberE = await admit(t, mention(MEMBER_PHONE, "member question five"));
+    expect([memberA, memberC, memberE].map((entry) => entry.delivery.triggerClass)).toEqual(["other", "other", "other"]);
+    expect([ownerB, ownerD].map((entry) => entry.delivery.triggerClass)).toEqual(["owner", "owner"]);
+    expect(steered.size).toBe(0);
+
+    const actionClass = async (wakeId: string) => {
+      const [row] = await db.select({ payload: chatActions.payload }).from(chatActions).where(eq(chatActions.id, wakeId));
+      return ((row?.payload as { openwa?: { triggerClass?: string } } | undefined)?.openwa?.triggerClass) ?? null;
+    };
+    const carrier = async (wakeId: string) => {
+      const row = await wakeRow(wakeId);
+      if (row.status !== "coalesced") return row.id;
+      return String((row.payload as Record<string, unknown>).coalescedIntoWakeupRequestId);
+    };
+    const queuedFor = async (entries: Array<{ action: { id: string } }>) => Promise.all(entries.map((entry) => carrier(entry.action.id)));
+    const memberCarriers = await queuedFor([memberA, memberC, memberE]);
+    const ownerCarriers = await queuedFor([ownerB, ownerD]);
+    expect(new Set(memberCarriers).size).toBe(1);
+    expect(new Set(ownerCarriers).size).toBe(1);
+    const memberWake = memberCarriers[0]!;
+    const ownerWake = ownerCarriers[0]!;
+    expect(memberWake).not.toBe(ownerWake);
+    expect([await actionClass(memberWake), await actionClass(ownerWake)]).toEqual(["other", "owner"]);
+    expect([(await wakeRow(memberWake)).status, (await wakeRow(ownerWake)).status]).toEqual(["deferred_issue_execution", "deferred_issue_execution"]);
+
+    release(firstRun.id);
+    const memberRun = await runningRun(t, memberWake);
+    expect((await runContext(memberRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+
+    const ownerF = await admit(t, mention(OWNER_PHONE, "owner request six"));
+    const memberG = await admit(t, mention(MEMBER_PHONE, "member question seven"));
+    expect(await carrier(ownerF.action.id)).toBe(ownerWake);
+    const memberLaterWake = await carrier(memberG.action.id);
+    expect(memberLaterWake).not.toBe(ownerWake);
+    expect(memberLaterWake).not.toBe(memberWake);
+    expect(await actionClass(memberLaterWake)).toBe("other");
+
+    release(memberRun.id);
+    const ownerRun = await runningRun(t, ownerWake);
+    expect((await runContext(ownerRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+    const issueId = String(ownerB.wake.payload!.issueId);
+    const authorizationReason = await resolveChatRunPresentationAuthorizationReason(db, { companyId: t.companyId, issueId, runId: ownerRun.id });
+    await issueService(db).addComment(issueId, "Owner work is done.", { agentId: t.agentId, runId: ownerRun.id }, { authorizationReason });
+    adapterMode.hold = false;
+    release(ownerRun.id);
+    await finishedRun(t, ownerWake);
+    const ownerIds = [first, ownerB, ownerD, ownerF].map((entry) => entry.delivery.id);
+    const memberIds = [memberA, memberC, memberE, memberG].map((entry) => entry.delivery.id);
+    const answerStates = async (ids: string[]) => {
+      const rows = await db.select({ id: chatDeliveries.id, answerState: chatDeliveries.answerState }).from(chatDeliveries).where(eq(chatDeliveries.endpointId, t.endpointId));
+      return ids.map((id) => rows.find((row) => row.id === id)?.answerState ?? null);
+    };
+    await until(async () => {
+      await t.service.processPendingPublications(25);
+      return (await answerStates(ownerIds)).every((state) => state === "answered");
+    });
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ chatId: GROUP, quotedMessageId: first.row.waMessageId, text: expect.stringContaining("Owner work is done.") })]);
+    expect(await answerStates(memberIds)).toEqual(["pending", "pending", "pending", "pending"]);
+
+    const memberLaterRun = await finishedRun(t, memberLaterWake);
+    expect(captured.get(memberLaterRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+    const runs = await db.select({ wakeupRequestId: heartbeatRuns.wakeupRequestId, contextSnapshot: heartbeatRuns.contextSnapshot })
+      .from(heartbeatRuns).where(eq(heartbeatRuns.companyId, t.companyId)).orderBy(asc(heartbeatRuns.createdAt));
+    expect(runs.map((run) => [run.wakeupRequestId, (run.contextSnapshot as { paperclipOpenwa?: { triggerClass?: string } }).paperclipOpenwa?.triggerClass])).toEqual([
+      [first.action.id, "owner"],
+      [memberWake, "other"],
+      [ownerWake, "owner"],
+      [memberLaterWake, "other"],
+    ]);
   }, 180_000);
 
   it("steers an owner follow-up into a live steer target, never sends nudges to WhatsApp, and queues without steering or in queue mode (AC2)", async () => {
