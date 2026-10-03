@@ -372,6 +372,12 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     res.json(await service.openwa.gatewayChats(endpointId(req), { limit, offset }));
   });
 
+  router.get("/chat-endpoints/:endpointId/openwa/health", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.health(endpointId(req)));
+  });
+
   router.patch("/chat-endpoints/:endpointId/openwa/policy", validate(updateOpenwaEndpointPolicySchema), async (req, res) => {
     if (!(await assertEndpointManagementAccess(req, res))) return;
     res.json(await service.openwa.updatePolicy(endpointId(req), req.body, actorUserId(req)));

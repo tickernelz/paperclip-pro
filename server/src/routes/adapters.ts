@@ -120,6 +120,8 @@ interface AdapterCapabilities {
   supportsLocalAgentJwt: boolean;
   requiresMaterializedRuntimeSkills: boolean;
   supportsAcp: boolean;
+  readOnlyToolProfile: "enforced" | "instruction_only";
+  supportsLiveSteering: boolean;
   /**
    * The projected login capability. It is present only when the adapter
    * declares an interactive login capability. It is absent otherwise.
@@ -186,6 +188,8 @@ export function buildAdapterCapabilities(adapter: ServerAdapterModule): AdapterC
     supportsLocalAgentJwt: adapter.supportsLocalAgentJwt ?? false,
     requiresMaterializedRuntimeSkills: adapter.requiresMaterializedRuntimeSkills ?? false,
     supportsAcp: Boolean(adapter.acp),
+    readOnlyToolProfile: adapter.readOnlyToolProfile ?? "instruction_only",
+    supportsLiveSteering: adapter.supportsLiveSteering ?? false,
     ...(login
       ? {
           login: {

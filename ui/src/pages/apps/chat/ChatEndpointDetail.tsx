@@ -7,6 +7,8 @@ import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { GitHubBotManagement, GitHubReviews } from "./GitHubBotManagement";
 import { EmailEndpointSettings } from "./EmailEndpointSetup";
+import { OpenwaSettings } from "./OpenwaSettings";
+import { OpenwaAuditTab } from "./OpenwaAuditTab";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -53,7 +55,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Link, Navigate, useNavigate, useParams } from "@/lib/router";
 
-const tabs = ["settings", "access", "reviews", "conversations", "activity"] as const;
+const tabs = ["settings", "access", "reviews", "conversations", "activity", "audit"] as const;
 type ChatTab = (typeof tabs)[number];
 const tabItems = tabs.map((value) => ({
   value,
@@ -285,6 +287,8 @@ export function ChatEndpointDetail() {
       </div>
     );
   if (endpoint.provider === "agentmail") return <EmailEndpointSettings endpointId={endpoint.id} companyId={endpoint.companyId} />;
+  if (activeTab === "audit" && endpoint.provider !== "openwa")
+    return <Navigate replace to={`/apps/chat/${endpoint.id}/settings`} />;
   const setupIncomplete =
     endpoint.setup?.step !== "complete" &&
     ["draft", "verifying", "attention", "revoked"].includes(endpoint.status);
@@ -329,7 +333,8 @@ export function ChatEndpointDetail() {
       {activeTab === "settings" && (
         <>
 {endpoint.provider === "github" && <GitHubBotManagement endpoint={endpoint} view="settings" />}
-{endpoint.provider !== "github" && <Settings endpointId={endpoint.id} endpoint={endpoint} />}
+{endpoint.provider === "openwa" && <OpenwaSettings endpoint={endpoint} />}
+{endpoint.provider !== "github" && endpoint.provider !== "openwa" && <Settings endpointId={endpoint.id} endpoint={endpoint} />}
 </>
       )}
       {activeTab === "reviews" && endpoint.provider === "github" && <GitHubReviews endpointId={endpoint.id} />}
@@ -347,6 +352,7 @@ export function ChatEndpointDetail() {
       {activeTab === "activity" && (
         <Activity endpointId={endpoint.id} endpoint={endpoint} />
       )}
+      {activeTab === "audit" && endpoint.provider === "openwa" && <OpenwaAuditTab endpointId={endpoint.id} />}
     </div>
   );
 }

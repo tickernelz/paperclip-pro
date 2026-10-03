@@ -1642,6 +1642,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "GET /api/chat-endpoints/{endpointId}/openwa/chats",
   "PUT /api/chat-endpoints/{endpointId}/openwa/chats",
   "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
+  "GET /api/chat-endpoints/{endpointId}/openwa/health",
   "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
   "GET /api/chat-endpoints/{endpointId}/resources",
   "PUT /api/chat-endpoints/{endpointId}/resources",
@@ -2718,6 +2719,43 @@ registry.registerPath({
     422: r.unprocessable,
     502: { description: "OpenWA gateway returned an invalid response" },
     503: { description: "OpenWA gateway unreachable" },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/health",
+  tags: ["chat-channels"],
+  summary: "Read OpenWA gateway and session health",
+  description:
+    "Connection managers only. Reads the gateway version, engine, session status, and restriction with the stored operator key, plus pacing attestation and the latest observed pacing limit from the endpoint audit. Never returns keys or full phone numbers. Gateway failures are reported in gatewayError instead of an error status. Responses are not cached.",
+  request: { params: openwaEndpointParams },
+  responses: {
+    200: r.ok(
+      z
+        .object({
+          gatewayVersion: z.string().nullable(),
+          pinnedVersion: z.string(),
+          engine: z.string().nullable(),
+          session: z
+            .object({
+              status: z.string().nullable(),
+              maskedNumber: z.string().nullable(),
+              restriction: z.object({ active: z.boolean(), kind: z.string().nullable(), expiresAt: z.string().nullable() }).strict().nullable(),
+            })
+            .strict(),
+          pacing: z.object({ attested: z.boolean(), observedAt: z.string().nullable() }).strict(),
+          adminKeyConfigured: z.boolean(),
+          gatewayError: z.string().nullable(),
+          checkedAt: z.string(),
+        })
+        .strict(),
+    ),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
   },
 });
 

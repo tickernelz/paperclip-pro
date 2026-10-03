@@ -5,6 +5,7 @@ import {
   Activity,
   GitPullRequest,
   MessageSquare,
+  ScrollText,
   Settings,
   Users,
 } from "lucide-react";
@@ -66,6 +67,14 @@ export function ChatDetailSidebar({
             icon={Activity}
             end
           />
+          {endpoint.data?.provider === "openwa" && (
+            <NavItem
+              to={`/apps/chat/${endpointId}/audit`}
+              label="Audit"
+              icon={ScrollText}
+              end
+            />
+          )}
         </div>
       </nav>
     </aside>

@@ -11,6 +11,7 @@ import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import {
   agents,
   authUsers,
+  chatAuditEntries,
   chatEndpoints,
   companies,
   companyMemberships,
@@ -88,6 +89,21 @@ async function startFakeGateway(): Promise<FakeGateway> {
         engineLoaded: true,
       })));
     }
+    const sessionPath = /^\/api\/sessions\/([^/]+)$/.exec(url.pathname);
+    if (sessionPath && req.method === "GET") {
+      const session = state.sessions.find((candidate) => candidate.id === sessionPath[1]);
+      if (!session) return json(res, 404, { message: "Session not found", statusCode: 404 });
+      return json(res, 200, {
+        ...session,
+        connectedAt: null,
+        lastActive: null,
+        createdAt: "2026-10-02T00:00:00.000Z",
+        updatedAt: "2026-10-03T00:00:00.000Z",
+        lastError: null,
+        restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" },
+        engineLoaded: true,
+      });
+    }
     return json(res, 404, { message: "Not Found", statusCode: 404 });
   };
   const server: Server = createServer(handler);
@@ -135,7 +151,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     const runtime = new ChatSdkRuntime();
     const live = new Map<string, ChatSdkEndpointRuntime>();
     vi.spyOn(runtime, "replaceEndpoint").mockImplementation(async (options) => {
-      const instance = { initialize: async () => undefined, shutdown: async () => undefined } as unknown as ChatSdkEndpointRuntime;
+      const instance = { initialize: async () => undefined, shutdown: async () => undefined, getProviderAdapter: () => null } as unknown as ChatSdkEndpointRuntime;
       live.set(options.endpointId, instance);
       return instance;
     });
@@ -374,6 +390,47 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(connection.config).toEqual({ provider: "openwa", openwa: { baseUrl: live().baseUrl, sessionId: SESSION_ID } });
     expect(connection.credentialSecretRefs.map((ref) => ref.configPath).sort()).toEqual(["credentials.adminApiKey", "credentials.apiKey"]);
     expect(JSON.stringify(connection)).not.toContain(OPERATOR_KEY);
+  });
+
+  it("reads gateway health with the stored key and reports observed pacing without secrets or full numbers", async () => {
+    const { app, endpoint, companyId, userId } = await setup();
+    expect((await request(app).post(`/api/chat-endpoints/${endpoint.id}/setup`).send({
+      action: "configure",
+      credentials: { apiKey: OPERATOR_KEY, adminApiKey: ADMIN_KEY },
+      openwa: { baseUrl: live().baseUrl, sessionId: SESSION_ID, numberMode: "agent_number", attestations: { pacing: true, soleClient: true } },
+    })).status).toBe(200);
+    const attested = await request(app).get(`/api/chat-endpoints/${endpoint.id}/openwa/health`);
+    expect(attested.status).toBe(200);
+    expect(attested.headers["cache-control"]).toBe("no-store");
+    expect(attested.body).toMatchObject({
+      gatewayVersion: "0.23.7",
+      pinnedVersion: "0.23.7",
+      engine: "whatsapp-web.js",
+      session: { status: "ready", maskedNumber: "+62xxx...7040", restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" } },
+      pacing: { attested: true, observedAt: null },
+      adminKeyConfigured: true,
+      gatewayError: null,
+    });
+    const serialized = JSON.stringify(attested.body);
+    expect(serialized).not.toContain(OPERATOR_KEY);
+    expect(serialized).not.toContain(ADMIN_KEY);
+    expect(serialized).not.toContain(PHONE);
+    expect(live().requests).toContain(`GET /api/sessions/${SESSION_ID}`);
+    const limitedAt = new Date("2026-10-03T05:00:00.000Z");
+    await db.insert(chatAuditEntries).values([
+      { companyId, endpointId: endpoint.id, kind: "tool_called", actorKind: "agent", metadata: { tool: "openwa_send", errorCode: "retry_after", pacing: true }, occurredAt: limitedAt },
+      { companyId, endpointId: endpoint.id, kind: "tool_called", actorKind: "agent", metadata: { tool: "openwa_send", errorCode: "retry_after" }, occurredAt: new Date("2026-10-03T06:00:00.000Z") },
+    ]);
+    const observed = await request(app).get(`/api/chat-endpoints/${endpoint.id}/openwa/health`);
+    expect(observed.body.pacing).toEqual({ attested: true, observedAt: limitedAt.toISOString() });
+    await gateway?.close();
+    gateway = undefined;
+    const down = await request(app).get(`/api/chat-endpoints/${endpoint.id}/openwa/health`);
+    expect(down.status).toBe(200);
+    expect(down.body.gatewayError).toContain("could not reach the OpenWA gateway");
+    expect(down.body.pacing.observedAt).toBe(limitedAt.toISOString());
+    await db.delete(principalPermissionGrants).where(eq(principalPermissionGrants.principalId, userId));
+    expect((await request(app).get(`/api/chat-endpoints/${endpoint.id}/openwa/health`)).status).toBe(403);
   });
 
   it("configures without a public Paperclip URL because ingress is an outbound socket", async () => {

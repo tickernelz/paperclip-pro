@@ -20,6 +20,10 @@ export interface AdapterCapabilities {
   supportsLocalAgentJwt: boolean;
   requiresMaterializedRuntimeSkills: boolean;
   supportsAcp: boolean;
+  /** Absent from older servers; absent means instruction-only. */
+  readOnlyToolProfile?: "enforced" | "instruction_only";
+  /** Whether runs can register a live same-turn steer target; absent means no. */
+  supportsLiveSteering?: boolean;
   /** Present only when the adapter declares an interactive login capability. */
   login?: AdapterLoginProjection;
 }
