@@ -8,7 +8,10 @@ import {
   OPENWA_SENDER_POLICY_MODES,
   openwaE164Schema,
   type OpenwaEndpointPolicy,
+  CHAT_INFLIGHT_MODES,
+  type ChatInflightMode,
   type OpenwaEndpointPolicyInput,
+  type UpdateOpenwaEndpointPolicyInput,
   type OpenwaGatewayAdminToolLevel,
   type OpenwaReplyPolicy,
   type OpenwaSenderPolicyMode,
@@ -61,12 +64,14 @@ function usePolicySave(endpoint: OpenwaEndpoint) {
   const [errors, setErrors] = useState<FieldErrors>({});
   const [saved, setSaved] = useState(false);
   const mutation = useMutation({
-    mutationFn: (patch: OpenwaEndpointPolicyInput) => chatEndpointsApi.updateOpenwaPolicy(endpoint.id, patch),
+    mutationFn: (patch: UpdateOpenwaEndpointPolicyInput) => chatEndpointsApi.updateOpenwaPolicy(endpoint.id, patch),
     onSuccess: (result) => {
       setErrors({});
       setSaved(true);
       queryClient.setQueryData<ChatEndpoint>(queryKeys.chatEndpoints.detail(endpoint.id), (current) =>
-        current ? { ...current, policy: result.policy, policyRevision: result.policyRevision } : current,
+        current
+          ? { ...current, policy: result.policy, policyRevision: result.policyRevision, inflightMode: result.inflightMode }
+          : current,
       );
     },
     onError: (error) => setErrors(apiFieldErrors(error)),
@@ -76,9 +81,10 @@ function usePolicySave(endpoint: OpenwaEndpoint) {
     saved,
     pending: mutation.isPending,
     touch: () => setSaved(false),
-    save(patch: OpenwaEndpointPolicyInput) {
+    save(patch: UpdateOpenwaEndpointPolicyInput) {
       setSaved(false);
-      const invalid = openwaPolicyPatchErrors(endpoint.policy, patch);
+      const { inflightMode: _inflightMode, ...policyPatch } = patch;
+      const invalid = openwaPolicyPatchErrors(endpoint.policy, policyPatch);
       if (invalid) {
         setErrors(invalid);
         return;
@@ -558,25 +564,43 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
 
 function ConversationSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   const [hours, setHours] = useState(String(endpoint.policy.rotateAfterIdleHours));
+  const [inflightMode, setInflightMode] = useState<ChatInflightMode>(endpoint.inflightMode ?? "steer");
   const state = usePolicySave(endpoint);
   return (
     <SettingsSection
       title="Conversation"
       description="Each chat keeps one conversation task until it has been idle this long, or until someone sends /new."
-      footer={<SaveRow label="Save conversation" state={{ ...state, submit: () => state.save({ rotateAfterIdleHours: wholeNumber(hours) }) }} />}
+      footer={
+        <SaveRow
+          label="Save conversation"
+          state={{ ...state, submit: () => state.save({ rotateAfterIdleHours: wholeNumber(hours), inflightMode }) }}
+        />
+      }
     >
       <NumberField id="openwa-rotate-hours" label="Start a new conversation after idle (hours)" value={hours} error={fieldError(state.errors, "rotateAfterIdleHours")} onChange={setHours} />
       <div className="grid gap-1">
-        <p className="text-sm font-medium">Messages during a run</p>
-        <p className="text-sm">
-          <span className="font-mono">{endpoint.inflightMode ?? "steer"}</span>
-          <span className="text-muted-foreground">
-            {endpoint.inflightMode === "queue"
-              ? " · new messages wait for the next run"
-              : " · new messages are steered into the running turn when the adapter supports it"}
-          </span>
+        <label htmlFor="openwa-inflight-mode" className="text-sm font-medium">Messages during a run</label>
+        <select
+          id="openwa-inflight-mode"
+          className={openwaSelectClass + " max-w-xs"}
+          value={inflightMode}
+          aria-describedby="openwa-inflight-mode-help"
+          aria-invalid={fieldError(state.errors, "inflightMode") ? true : undefined}
+          onChange={(event) => {
+            setInflightMode(event.target.value as ChatInflightMode);
+            state.touch();
+          }}
+        >
+          {CHAT_INFLIGHT_MODES.map((mode) => (
+            <option key={mode} value={mode}>{mode}</option>
+          ))}
+        </select>
+        <p id="openwa-inflight-mode-help" className="text-xs text-muted-foreground">
+          {inflightMode === "queue"
+            ? "New messages wait for the next run."
+            : "New messages are steered into the running turn when the adapter supports it."}
         </p>
-        <p className="text-xs text-muted-foreground">This mode is read-only here.</p>
+        <FieldMessage id="openwa-inflight-mode" error={fieldError(state.errors, "inflightMode")} />
       </div>
     </SettingsSection>
   );

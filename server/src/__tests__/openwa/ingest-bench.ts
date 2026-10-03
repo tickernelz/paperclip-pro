@@ -1415,7 +1415,7 @@ async function runBurst(
     };
     if (!context.paperclipOpenwa && !context.openwa) continue;
     openwaRuns++;
-    const triggerClass = context.openwa?.triggerClass ?? context.paperclipOpenwa?.triggerClass ?? "other";
+    const triggerClass = context.paperclipOpenwa?.triggerClass ?? context.openwa?.triggerClass ?? "other";
     const pair = String(context.issueId) + "|" + String(triggerClass);
     pairRuns.set(pair, (pairRuns.get(pair) ?? 0) + 1);
     const slot = pair + "|" + Math.floor(((run.startedAt ?? run.createdAt).getTime() - start) / windowMs);

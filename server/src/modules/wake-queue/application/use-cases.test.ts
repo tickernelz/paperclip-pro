@@ -1181,3 +1181,72 @@ describe("admitWakeBehindIssueExecution", () => {
     expect(writer.insertNewDeferredWake).not.toHaveBeenCalled();
   });
 });
+
+describe("admitWakeBehindIssueExecution OpenWA wake classes", () => {
+  const owner = { triggerClass: "owner", event: "message" };
+  const other = { triggerClass: "other", event: "message" };
+
+  async function admitWith(openwa: AdmitWakeBehindIssueExecutionInput["openwa"], existing: boolean) {
+    const writer = createFakeAdmissionWriter();
+    const reader = createFakeAdmissionReader({
+      findExistingDeferredWake: vi.fn(async () => existing ? {
+        id: "deferred-1",
+        payload: { issueId: "issue-1" },
+        deferredContext: {},
+        coalescedCount: 0,
+      } : null),
+    });
+    const admit = createAdmitWakeBehindIssueExecution({ reader, writer, helpers: createFakeAdmissionHelpers() });
+    const result = await admit(SCOPE, admissionInput({ contextSnapshot: {}, openwa }));
+    return { result, writer, reader };
+  }
+
+  it("coalesces an OpenWA wake into an active run of the same class", async () => {
+    const { result, writer } = await admitWith({ incoming: other, target: other }, false);
+    expect(result.kind).toBe("coalesced");
+    expect(writer.coalesceIntoActiveExecutionRun).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ["a member wake into an owner run", other, owner],
+    ["an owner wake into a member run", owner, other],
+    ["an unclassified wake into an OpenWA run", null, other],
+    ["an OpenWA wake into an unclassified run", other, null],
+    ["an approval reply into an owner run", { triggerClass: "owner", event: "approval_reply" }, owner],
+    ["an owner wake into an approval reply run", owner, { triggerClass: "owner", event: "approval_reply" }],
+    ["a grant wake into a grant run", { triggerClass: "grant", event: "approval_resolved" }, { triggerClass: "grant", event: "approval_resolved" }],
+  ])("never coalesces %s", async (_name, incoming, target) => {
+    const { result, writer } = await admitWith({ incoming, target }, false);
+    expect(result).toEqual({ kind: "deferred" });
+    expect(writer.coalesceIntoActiveExecutionRun).not.toHaveBeenCalled();
+    expect(writer.insertNewDeferredWake).toHaveBeenCalledOnce();
+  });
+
+  it("asks only for a deferred wake of the incoming class and merges into it", async () => {
+    const { result, writer, reader } = await admitWith({ incoming: other, target: owner }, true);
+    expect(result).toEqual({ kind: "deferred" });
+    expect(reader.findExistingDeferredWake).toHaveBeenCalledWith(SCOPE, expect.objectContaining({ openwaClass: other }));
+    expect(writer.mergeIntoExistingDeferredWake).toHaveBeenCalledOnce();
+  });
+
+  it("asks for unclassified deferred wakes only when the incoming wake has no server-written class", async () => {
+    const { reader } = await admitWith({ incoming: null, target: other }, false);
+    expect(reader.findExistingDeferredWake).toHaveBeenCalledWith(SCOPE, expect.objectContaining({ openwaClass: null }));
+  });
+
+  it.each([
+    ["approval reply", { triggerClass: "owner", event: "approval_reply" }],
+    ["grant", { triggerClass: "grant", event: "approval_resolved" }],
+  ])("never merges an %s wake into a deferred wake", async (_name, incoming) => {
+    const { reader, writer } = await admitWith({ incoming, target: owner }, true);
+    expect(reader.findExistingDeferredWake).not.toHaveBeenCalled();
+    expect(writer.mergeIntoExistingDeferredWake).not.toHaveBeenCalled();
+    expect(writer.insertNewDeferredWake).toHaveBeenCalledOnce();
+  });
+
+  it("leaves non-OpenWA admission unchanged", async () => {
+    const { result, reader } = await admitWith(undefined, false);
+    expect(result.kind).toBe("coalesced");
+    expect(reader.findExistingDeferredWake).not.toHaveBeenCalled();
+  });
+});

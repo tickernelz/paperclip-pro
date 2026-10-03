@@ -418,7 +418,7 @@ export const updateOpenwaChatSettingsSchema = z
   })
   .strict();
 
-export const updateOpenwaEndpointPolicySchema = z.record(z.string(), z.unknown());
+export const updateOpenwaEndpointPolicySchema = z.looseObject({ inflightMode: chatInflightModeSchema.optional() });
 
 export const resolveOpenwaApprovalSchema = z
   .object({
@@ -432,6 +432,7 @@ export const listOpenwaApprovalsQuerySchema = z
   .strict();
 
 export type OpenwaEndpointPolicyInput = z.input<typeof openwaEndpointPolicySchema>;
+export type UpdateOpenwaEndpointPolicyInput = OpenwaEndpointPolicyInput & { inflightMode?: z.infer<typeof chatInflightModeSchema> };
 export type OpenwaChatSettingsInput = z.input<typeof openwaChatSettingsSchema>;
 
 export const chatPublicEndpointIdSchema = z

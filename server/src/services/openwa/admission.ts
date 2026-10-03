@@ -82,6 +82,7 @@ export interface OpenwaAdmissionDecoration {
   readonly group: { name: string | null; participantCount: number; actorMasked: string | null } | null;
   readonly absence?: OpenwaAbsenceBatch | null;
   readonly approval?: OpenwaApprovalReplyDecoration | null;
+  readonly ownerNowActive?: true;
 }
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -253,6 +254,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
       approval && typeof approval.requestId === "string"
         ? { requestId: approval.requestId, requestStatus: approval.requestStatus === "pending" ? "pending" : "resolved" }
         : null,
+    ...(source.ownerNowActive === true ? { ownerNowActive: true as const } : {}),
   };
 }
 
@@ -277,6 +279,7 @@ export function openwaInboundDecoration(
     control: "new" | "close" | null;
     quotedFromAgent: boolean;
     absence?: OpenwaAbsenceBatch | null;
+    ownerNowActive?: boolean;
   },
 ): OpenwaAdmissionDecoration {
   return {
@@ -301,6 +304,7 @@ export function openwaInboundDecoration(
     media: event.media ? { ...event.media } : null,
     group: null,
     ...(input.absence ? { absence: input.absence } : {}),
+    ...(input.ownerNowActive ? { ownerNowActive: true as const } : {}),
   };
 }
 

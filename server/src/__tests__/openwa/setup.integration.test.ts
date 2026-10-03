@@ -6,9 +6,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import express from "express";
 import request from "supertest";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, expect, it, vi } from "vitest";
 import {
+  activityLog,
   agents,
   authUsers,
   chatAuditEntries,
@@ -463,5 +464,62 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     const updated = await service.get(endpoint.id);
     expect(updated.status).toBe("attention");
     expect(updated.healthMessage).toBe(OPENWA_AGENT_ADAPTER_ATTENTION_MESSAGE);
+  });
+
+  const patchPolicy = (app: express.Express, endpointId: string, body: unknown) =>
+    request(app).patch(`/api/chat-endpoints/${endpointId}/openwa/policy`).send(body as object);
+  const storedMode = async (endpointId: string) =>
+    (await db.select({ inflightMode: chatEndpoints.inflightMode }).from(chatEndpoints).where(eq(chatEndpoints.id, endpointId)))[0]?.inflightMode;
+  const configChanges = (companyId: string, endpointId: string) =>
+    db
+      .select({ actorId: activityLog.actorId, details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, companyId), eq(activityLog.entityId, endpointId), eq(activityLog.action, "openwa.config_changed")));
+
+  it("sets the in-flight mode through the policy route and records the change", async () => {
+    const { app, endpoint, companyId, userId } = await setup();
+    expect(await storedMode(endpoint.id)).toBe("steer");
+    const response = await patchPolicy(app, endpoint.id, { inflightMode: "queue" });
+    expect(response.status).toBe(200);
+    expect(response.body.inflightMode).toBe("queue");
+    expect(response.body.policyRevision).toBe(endpoint.policyRevision! + 1);
+    expect(await storedMode(endpoint.id)).toBe("queue");
+    expect(await configChanges(companyId, endpoint.id)).toEqual([
+      {
+        actorId: userId,
+        details: expect.objectContaining({ scope: "endpoint", changed: ["inflightMode"], inflightMode: { before: "steer", after: "queue" } }),
+      },
+    ]);
+    const repeat = await patchPolicy(app, endpoint.id, { inflightMode: "queue" });
+    expect(repeat.body).toMatchObject({ inflightMode: "queue", policyRevision: response.body.policyRevision });
+    expect(await configChanges(companyId, endpoint.id)).toHaveLength(1);
+  });
+
+  it("rejects an unknown in-flight mode without touching the endpoint", async () => {
+    const { app, endpoint, companyId } = await setup();
+    const response = await patchPolicy(app, endpoint.id, { inflightMode: "drop", rotateAfterIdleHours: 12 });
+    expect(response.status).toBe(400);
+    expect(await storedMode(endpoint.id)).toBe("steer");
+    expect(await configChanges(companyId, endpoint.id)).toEqual([]);
+  });
+
+  it("leaves the in-flight mode alone on a policy-only patch", async () => {
+    const { app, endpoint, companyId } = await setup();
+    const response = await patchPolicy(app, endpoint.id, { rotateAfterIdleHours: 12 });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ inflightMode: "steer", policy: { rotateAfterIdleHours: 12 } });
+    expect(await storedMode(endpoint.id)).toBe("steer");
+    const [change] = await configChanges(companyId, endpoint.id);
+    expect(change?.details).toMatchObject({ changed: ["rotateAfterIdleHours"] });
+    expect(change?.details).not.toHaveProperty("inflightMode");
+  });
+
+  it("refuses to change the in-flight mode of another company's endpoint", async () => {
+    const own = await setup();
+    const other = await setup();
+    const response = await patchPolicy(own.app, other.endpoint.id, { inflightMode: "queue" });
+    expect(response.status).toBe(404);
+    expect(await storedMode(other.endpoint.id)).toBe("steer");
+    expect(await configChanges(other.companyId, other.endpoint.id)).toEqual([]);
   });
 });

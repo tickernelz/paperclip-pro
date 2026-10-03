@@ -280,6 +280,47 @@ export async function loadOpenwaWakeAction(
   };
 }
 
+export interface OpenwaWakeClassFact {
+  triggerClass: OpenwaTriggerClass;
+  event: string | null;
+}
+
+function wakeClassFromAction(openwa: unknown): OpenwaWakeClassFact | null {
+  const raw = record(openwa);
+  const cls = triggerClass(raw.triggerClass);
+  if (!cls) return null;
+  const event = text(raw.event);
+  return { triggerClass: cls, event: event && EVENT_PATTERN.test(event) ? event : null };
+}
+
+/** Wake classes for admission on an OpenWA conversation issue, from server-written chat actions and the run's resolved context; undefined off OpenWA issues. */
+export async function openwaAdmissionClasses(
+  db: Db,
+  input: {
+    companyId: string;
+    issueId: string;
+    incomingWakeupRequestId: string | null;
+    activeRun: { contextSnapshot: unknown; wakeupRequestId?: string | null };
+  },
+): Promise<{ incoming: OpenwaWakeClassFact | null; target: OpenwaWakeClassFact | null } | undefined> {
+  if (!(await isOpenwaConversationIssue(db, input.companyId, input.issueId))) return undefined;
+  const resolved = readOpenwaRunContext(input.activeRun.contextSnapshot);
+  const targetActionId = resolved ? null : uuid(input.activeRun.wakeupRequestId);
+  const incomingActionId = uuid(input.incomingWakeupRequestId);
+  const ids = [...new Set([incomingActionId, targetActionId].filter((id): id is string => id !== null))];
+  const rows = ids.length
+    ? await db
+        .select({ id: chatActions.id, openwa: sql<unknown>`${chatActions.payload} -> 'openwa'` })
+        .from(chatActions)
+        .where(and(eq(chatActions.companyId, input.companyId), inArray(chatActions.id, ids)))
+    : [];
+  const fromAction = (id: string | null) => (id ? wakeClassFromAction(rows.find((row) => row.id === id)?.openwa) : null);
+  return {
+    incoming: fromAction(incomingActionId),
+    target: resolved ? { triggerClass: resolved.triggerClass, event: resolved.event } : fromAction(targetActionId),
+  };
+}
+
 function hasBoardProvenance(
   wake: { requestedByActorType: string | null; requestedByActorId: string | null; idempotencyKey: string | null; payload: unknown } | undefined,
   contextSnapshot: Record<string, unknown>,

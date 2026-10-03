@@ -55,6 +55,10 @@ import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
+import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
+import { createOpenwaNudges, registerOpenwaRunStartListener } from "./openwa/nudges.js";
+import { openwaOwnerAbsentRunActive, steerOpenwaLateTranscript, steerOpenwaSystemText, steerOpenwaTrigger } from "./openwa/steering.js";
+import { subscribeAllCompanyLiveEvents } from "./live-events.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -1548,6 +1552,7 @@ export interface ChatChannelServiceOptions {
   openwaTimerHooks?: OpenwaTimerHooks;
   openwaLateOwnerActivity?: (input: OpenwaLateOwnerActivity) => Promise<void>;
   openwaScheduledWakeClock?: OpenwaScheduledWakeClock;
+  openwaNudgeClock?: OpenwaScheduledWakeClock;
   /** Test override for Discord Gateway leader-lease expiry. */
   discordGatewayLeaseTtlMs?: number;
   /** Test override for Discord Gateway leader-lease renewal cadence. */
@@ -3081,9 +3086,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   >();
   const persistence = createChatSdkStatePersistence(db);
-  const openwaOutbound = openwaOutboundRegistry(db);
+  const openwaNudges = createOpenwaNudges({ steer: steerOpenwaSystemText, clock: options.openwaNudgeClock });
+  const openwaOutbound = openwaOutboundRegistry(db, Date.now, (sent) => openwaNudges.originSent(sent.runId!, sent.chatKey));
   const openwaMedia = openwaMediaService(db, { storage: options.storage });
-  openwaMedia.onTranscriptReady(openwaLateTranscriptListener(db, options.onOpenwaLateTranscript));
+  openwaMedia.onTranscriptReady(openwaLateTranscriptListener(db, options.onOpenwaLateTranscript ?? (async (event) => {
+    await steerOpenwaLateTranscript(db, event);
+  })));
   const openwaPolicies = createOpenwaPolicyCache(db);
   const openwaAdmission = createOpenwaAdmission({
     db,
@@ -8541,7 +8549,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       endpointId: endpoint.id,
       heartbeat: options.heartbeat,
       clock: options.openwaScheduledWakeClock,
-      onLateOwnerActivity: options.openwaLateOwnerActivity,
+      onLateOwnerActivity: options.openwaLateOwnerActivity ?? ((input) => admitOpenwaLateOwner(input, ownership)),
       deliverAbsence: (intent) => deliverOpenwaAbsence(intent, ownership),
     });
   }
@@ -8574,6 +8582,45 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       });
       await admitOpenwaMessage(intent.endpointId, openwaAdmitInput({ sessionId }, adapter, event, decoration), context);
     }
+  }
+
+  async function steerAdmittedOpenwaTrigger(action: typeof chatActions.$inferSelect, issueId: string, commentId: string) {
+    const openwa = action.payload.openwa;
+    if (!openwa || typeof openwa !== "object" || !action.conversationId) return;
+    const wake = openwa as Record<string, unknown>;
+    const triggerClass = wake.triggerClass === "owner" || wake.triggerClass === "other" || wake.triggerClass === "grant" ? wake.triggerClass : null;
+    if (!triggerClass) return;
+    const deliveryIds = Array.isArray(wake.deliveryIds) ? wake.deliveryIds.filter((id): id is string => typeof id === "string") : [];
+    try {
+      await steerOpenwaTrigger(db, {
+        companyId: action.companyId,
+        endpointId: action.endpointId,
+        conversationId: action.conversationId,
+        issueId,
+        commentId,
+        incoming: { triggerClass, event: typeof wake.event === "string" ? wake.event : null },
+        deliveryIds,
+      });
+    } catch (error) {
+      logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");
+    }
+  }
+
+  async function admitOpenwaLateOwner(input: OpenwaLateOwnerActivity, ownership: DiscordGatewayOwnership) {
+    const context = currentOpenwaRuntimeContext(input.endpointId, ownership);
+    const adapter = context?.endpointRuntime?.getProviderAdapter();
+    if (!context || !(adapter instanceof OpenwaChatAdapter)) return;
+    if (!(await openwaOwnerAbsentRunActive(db, { companyId: input.companyId, endpointId: input.endpointId, chatKey: input.chatKey }))) return;
+    const decoration = openwaInboundDecoration(input.event, {
+      triggerClass: "owner",
+      principalRole: "owner",
+      rules: [],
+      addressed: true,
+      control: null,
+      quotedFromAgent: false,
+      ownerNowActive: true,
+    });
+    await admitOpenwaMessage(input.endpointId, openwaAdmitInput({ sessionId: adapter.gateway.sessionId }, adapter, input.event, decoration), context);
   }
 
   async function openwaAbsenceDeliveryIds(
@@ -14867,6 +14914,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       });
       const durable = await receipt();
       if (!durable) throw new Error("chat_inbound_wakeup_receipt_missing");
+      if (context.endpoint.provider === "openwa" && (durable.status === "deferred_issue_execution" || durable.status === "coalesced"))
+        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId);
       await settle(receiptDeclined(durable) ? "failed" : "processed", {
         code: receiptDeclined(durable)
           ? `inbound_wakeup_${durable.status}`
@@ -28365,6 +28414,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           processFailedChatRunRetries(limit),
           processPendingOpenwaApprovalWakes(db, limit),
           processPendingOpenwaSessionHealthWakes(db, limit),
+          processPendingOpenwaFollowups(db, limit),
         ]);
     const reactionRecovery = processPendingReactionDeliveries(
       limit,
@@ -38923,6 +38973,27 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   }
 
   const unregisterOpenwaApprovalWakes = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
+  const unregisterOpenwaFollowups = registerOpenwaFollowupRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
+  const openwaRunEndTasks = new Set<Promise<void>>();
+  const unregisterOpenwaRunStart = registerOpenwaRunStartListener(db, (run) => {
+    void openwaPolicies
+      .get(run.companyId, run.endpointId)
+      .then((snapshot) => {
+        if (snapshot) openwaNudges.start({ runId: run.runId, chatKey: run.chatKey, progressNudgeSeconds: snapshot.policy.progressNudgeSeconds });
+      })
+      .catch((error) => logger.warn({ err: error, runId: run.runId }, "failed to start OpenWA progress nudges"));
+  });
+  const unsubscribeOpenwaRunEnd = subscribeAllCompanyLiveEvents((event) => {
+    if (event.type !== "heartbeat.run.status") return;
+    const payload = event.payload as { runId?: unknown; status?: unknown };
+    if (typeof payload.runId !== "string" || !["succeeded", "interrupted", "failed", "cancelled", "timed_out"].includes(String(payload.status))) return;
+    openwaNudges.stop(payload.runId);
+    const task = scheduleOpenwaFollowupForRun(db, { companyId: event.companyId, runId: payload.runId })
+      .then(() => undefined)
+      .catch((error) => logger.warn({ err: error, runId: payload.runId }, "failed to schedule an OpenWA follow-up owner run"));
+    openwaRunEndTasks.add(task);
+    void task.finally(() => openwaRunEndTasks.delete(task));
+  });
 
   const openwaOwners = openwaOwnerService(db, {
     createLinkIntent,
@@ -39071,6 +39142,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       unregisterSlackTaskAuthority();
       unregisterOpenwaToolRuntime();
       unregisterOpenwaApprovalWakes();
+      unregisterOpenwaFollowups();
+      unregisterOpenwaRunStart();
+      unsubscribeOpenwaRunEnd();
+      openwaNudges.stopAll();
+      await Promise.allSettled([...openwaRunEndTasks]);
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);

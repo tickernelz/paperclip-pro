@@ -181,7 +181,7 @@ export function buildQueuedCommentQueueSnapshot<TComment extends QueuedCommentQu
   steeringDisposition: IssueQueuedCommentQueue["steeringDisposition"];
   comments: TComment[];
   executionWait?: IssueQueuedCommentQueue["executionWait"];
-  actorType: "agent" | "user";
+  actorType: "agent" | "user" | "system";
   actorId: string;
 }): IssueQueuedCommentQueue {
   return {

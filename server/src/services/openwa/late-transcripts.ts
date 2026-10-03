@@ -141,6 +141,29 @@ export async function takeOpenwaLateTranscripts(
   });
 }
 
+/** Marks one stored late transcript as consumed by the run it was steered into, so the next wake does not repeat it. */
+export async function markOpenwaLateTranscriptConsumed(
+  db: DbOrTransaction,
+  input: { companyId: string; endpointId: string; conversationId: string; runId: string; attachmentId: string },
+): Promise<void> {
+  await db
+    .update(chatActions)
+    .set({
+      payload: sql`jsonb_build_object('version', 1, 'items', coalesce((
+        select jsonb_agg(case when item ->> 'attachmentId' = ${input.attachmentId} and item ->> 'consumedByRunId' is null then item || jsonb_build_object('consumedByRunId', ${input.runId}::text) else item end)
+        from jsonb_array_elements(coalesce(${chatActions.payload} -> 'items', '[]'::jsonb)) as item
+      ), '[]'::jsonb))`,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(chatActions.companyId, input.companyId),
+        eq(chatActions.endpointId, input.endpointId),
+        eq(chatActions.providerActionId, lateTranscriptActionId(input.conversationId)),
+      ),
+    );
+}
+
 /** Builds the media service listener that records late transcripts and forwards them to the steering hook. */
 export function openwaLateTranscriptListener(db: Db, hook?: OpenwaLateTranscriptHook): OpenwaTranscriptListener {
   return async (ready) => {

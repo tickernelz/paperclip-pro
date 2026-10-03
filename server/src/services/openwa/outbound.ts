@@ -149,7 +149,11 @@ class EndpointIndex {
   }
 }
 
-export function openwaOutboundRegistry(db: Db, now: () => number = Date.now): OpenwaOutboundRegistry {
+export function openwaOutboundRegistry(
+  db: Db,
+  now: () => number = Date.now,
+  onSent?: (record: OpenwaOutboundRecord) => void,
+): OpenwaOutboundRegistry {
   const indexes = new Map<string, EndpointIndex>();
   const index = (endpointId: string) => {
     let value = indexes.get(endpointId);
@@ -218,7 +222,11 @@ export function openwaOutboundRegistry(db: Db, now: () => number = Date.now): Op
     async settle({ record, providerMessageId, state }) {
       const target = index(record.endpointId);
       target.inFlight.delete(record.id);
-      if (providerMessageId) return recordProviderId(record, providerMessageId, state);
+      if (providerMessageId) {
+        const sent = await recordProviderId(record, providerMessageId, state);
+        if (state === "sent" && sent.runId) onSent?.(sent);
+        return sent;
+      }
       const [row] = await db
         .update(chatOutboundMessages)
         .set({ state, updatedAt: new Date(now()) })
