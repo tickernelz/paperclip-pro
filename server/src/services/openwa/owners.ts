@@ -15,6 +15,7 @@ import {
   maskOpenwaPhoneNumber,
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
+  type ChatInflightMode,
   type OpenwaChatSettings,
   type OpenwaEndpointHealth,
   type OpenwaPrincipalRole,
@@ -620,30 +621,53 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     });
   }
 
-  async function updatePolicy(endpointId: string, patch: Record<string, unknown>, actorUserId: string | null) {
+  async function updatePolicy(
+    endpointId: string,
+    input: Record<string, unknown> & { inflightMode?: ChatInflightMode },
+    actorUserId: string | null,
+  ) {
     const endpoint = await endpointFor(endpointId);
+    const { inflightMode: requestedMode, ...patch } = input;
     const stored = (endpoint.policy ?? {}) as Record<string, unknown>;
     const parsed = openwaEndpointPolicySchema.safeParse(mergePolicy(stored, patch));
     if (!parsed.success) throw unprocessable("Invalid OpenWA policy", { issues: parsed.error.issues.map((issue) => ({ path: issue.path, message: issue.message })) });
     const before = openwaEndpointPolicySchema.parse(stored);
-    const changed = changedKeys(before as unknown as Record<string, unknown>, parsed.data as unknown as Record<string, unknown>);
-    if (!changed.length) return { policy: before, policyRevision: endpoint.policyRevision };
+    const policyChanged = changedKeys(before as unknown as Record<string, unknown>, parsed.data as unknown as Record<string, unknown>);
+    const modeChanged = requestedMode !== undefined && requestedMode !== endpoint.inflightMode;
+    const inflightMode = modeChanged ? requestedMode : endpoint.inflightMode;
+    if (!policyChanged.length && !modeChanged) return { policy: before, policyRevision: endpoint.policyRevision, inflightMode };
+    const changed = modeChanged ? [...policyChanged, "inflightMode"].sort() : policyChanged;
     const revision = await mutate(endpoint, async (tx, publications) => {
       const [current] = await tx
-        .select({ policy: chatEndpoints.policy })
+        .select({ policy: chatEndpoints.policy, inflightMode: chatEndpoints.inflightMode })
         .from(chatEndpoints)
         .where(and(eq(chatEndpoints.companyId, endpoint.companyId), eq(chatEndpoints.id, endpoint.id)))
         .for("update");
-      if (JSON.stringify(current?.policy ?? {}) !== JSON.stringify(stored))
+      if (JSON.stringify(current?.policy ?? {}) !== JSON.stringify(stored) || current?.inflightMode !== endpoint.inflightMode)
         throw conflict("The OpenWA policy changed while saving; reload and try again", { code: "openwa_policy_conflict" });
       await tx
         .update(chatEndpoints)
-        .set({ policy: parsed.data, updatedAt: new Date() })
+        .set({
+          ...(policyChanged.length ? { policy: parsed.data } : {}),
+          ...(modeChanged ? { inflightMode } : {}),
+          updatedAt: new Date(),
+        })
         .where(and(eq(chatEndpoints.companyId, endpoint.companyId), eq(chatEndpoints.id, endpoint.id)));
-      await audit(tx, endpoint, actorUserId, "openwa.config_changed", { scope: "endpoint", changed }, publications);
+      await audit(
+        tx,
+        endpoint,
+        actorUserId,
+        "openwa.config_changed",
+        {
+          scope: "endpoint",
+          changed,
+          ...(modeChanged ? { inflightMode: { before: endpoint.inflightMode, after: inflightMode } } : {}),
+        },
+        publications,
+      );
       return endpoint.policyRevision + 1;
     });
-    return { policy: parsed.data, policyRevision: revision };
+    return { policy: parsed.data, policyRevision: revision, inflightMode };
   }
 
   async function health(endpointId: string): Promise<OpenwaEndpointHealth> {

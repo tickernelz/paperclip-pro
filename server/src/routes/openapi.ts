@@ -2775,10 +2775,18 @@ registry.registerPath({
   tags: ["chat-channels"],
   summary: "Update the OpenWA endpoint policy",
   description:
-    "Requires connection-management access. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. Records openwa.config_changed with the changed keys only.",
+    "Requires connection-management access. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. The optional inflightMode key (steer or queue) sets how messages arriving during a run are handled and is stored outside the policy. Records openwa.config_changed with the changed keys only, plus inflightMode before/after when it changed.",
   request: { params: openwaEndpointParams, body: jsonBody(updateOpenwaEndpointPolicySchema) },
   responses: {
-    200: r.ok(z.object({ policy: openwaEndpointPolicyResponseSchema, policyRevision: z.number().int().min(0) }).strict()),
+    200: r.ok(
+      z
+        .object({
+          policy: openwaEndpointPolicyResponseSchema,
+          policyRevision: z.number().int().min(0),
+          inflightMode: chatInflightModeSchema,
+        })
+        .strict(),
+    ),
     400: r.badRequest,
     401: r.unauthorized,
     403: r.forbidden,

@@ -217,8 +217,23 @@ describe("OpenWA settings", () => {
     setValue(field<HTMLInputElement>("#openwa-rotate-hours"), "12");
     click(button(section("Conversation"), "Save conversation"));
     await vi.waitFor(() => expect(field("#openwa-rotate-hours-error").textContent).toBe("Server says no"));
-    expect(section("Conversation").textContent).toContain("steer");
-    expect(section("Conversation").textContent).toContain("read-only here");
+    expect(field<HTMLSelectElement>("#openwa-inflight-mode").value).toBe("steer");
+    expect(section("Conversation").textContent).not.toContain("read-only here");
+  });
+
+  it("saves the in-flight mode with the conversation settings", async () => {
+    mocks.api.updateOpenwaPolicy.mockResolvedValue({ policy, policyRevision: 4, inflightMode: "queue" });
+    render();
+    await loaded();
+    const conversation = section("Conversation");
+    expect(conversation.textContent).toContain("steered into the running turn");
+    setValue(field<HTMLSelectElement>("#openwa-inflight-mode"), "queue");
+    expect(conversation.textContent).toContain("New messages wait for the next run.");
+    click(button(conversation, "Save conversation"));
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaPolicy).toHaveBeenCalledWith("endpoint-1", { rotateAfterIdleHours: policy.rotateAfterIdleHours, inflightMode: "queue" }),
+    );
+    await vi.waitFor(() => expect(client.getQueryData<ChatEndpoint>(queryKeys.chatEndpoints.detail(endpoint.id))?.inflightMode).toBe("queue"));
   });
 
   it("round-trips triggers, progress, prefix, admin level, instructions, and retention", async () => {

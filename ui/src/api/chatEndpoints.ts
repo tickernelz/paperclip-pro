@@ -8,7 +8,7 @@ import type {
   OpenwaGatewayInspection,
   OpenwaEndpointHealth,
   OpenwaEndpointPolicy,
-  OpenwaEndpointPolicyInput,
+  UpdateOpenwaEndpointPolicyInput,
   OpenwaChatSettings,
   OpenwaChatSettingsInput,
   OpenwaChatActivation,
@@ -313,8 +313,8 @@ export const chatEndpointsApi = {
     api.post<OpenwaGatewayInspection>(`/chat-endpoints/${endpointId}/openwa/inspect`, input),
   getOpenwaHealth: (endpointId: string) =>
     api.get<OpenwaEndpointHealth>(`/chat-endpoints/${endpointId}/openwa/health`, { cache: "no-store" }),
-  updateOpenwaPolicy: (endpointId: string, patch: OpenwaEndpointPolicyInput) =>
-    api.patch<{ policy: OpenwaEndpointPolicy; policyRevision: number }>(`/chat-endpoints/${endpointId}/openwa/policy`, patch),
+  updateOpenwaPolicy: (endpointId: string, patch: UpdateOpenwaEndpointPolicyInput) =>
+    api.patch<{ policy: OpenwaEndpointPolicy; policyRevision: number; inflightMode: ChatInflightMode }>(`/chat-endpoints/${endpointId}/openwa/policy`, patch),
   listOpenwaOwners: (endpointId: string) =>
     api.get<OpenwaOwner[]>(`/chat-endpoints/${endpointId}/openwa/owners`, { cache: "no-store" }),
   addOpenwaOwner: (endpointId: string, e164: string) =>
