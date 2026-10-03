@@ -25,6 +25,7 @@ import {
   emailConnectionSchema,
   emailSendSchema,
   slackToolCallSchema,
+  openwaToolCallSchema,
   slackSearchConfigSchema,
   // Agent
   AGENT_PALETTE_IDS,
@@ -1766,7 +1767,7 @@ function resolveOperationAuthLevel(
 ): OpenApiAuthLevel {
   const key = operationKey(method, path);
   if (PUBLIC_OPERATIONS.has(key)) return "public";
-  if (key === "POST /api/mcp/project-tools" || key === "POST /api/companies/{companyId}/slack/tasks/{issueId}/tools") return "agent_run";
+  if (key === "POST /api/mcp/project-tools" || key === "POST /api/companies/{companyId}/slack/tasks/{issueId}/tools" || key === "POST /api/companies/{companyId}/openwa/tasks/{issueId}/tools") return "agent_run";
   if (RUNTIME_TOOLS_OPERATIONS.has(key)) return "runtime_tools";
   if (INSTANCE_ADMIN_OPERATIONS.has(key)) return "instance_admin";
   if (
@@ -2261,6 +2262,11 @@ for (const [method, path, summary, body] of [
     responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
   });
 }
+registry.registerPath({ method: "post", path: "/api/companies/{companyId}/openwa/tasks/{issueId}/tools", tags: ["chat-channels"], summary: "Execute a task-bound OpenWA WhatsApp tool",
+  description: "Experimental OpenWA agent tools for runs on an OpenWA conversation issue or its child issues. Company, endpoint, session, run profile and approval grants come from the signed run, never from arguments. Errors carry a typed code such as approval_required, reply_denied, retry_after or number_not_on_whatsapp.",
+  request: { params: z.object({ companyId: z.string().uuid(), issueId: z.string().uuid() }), body: jsonBody(openwaToolCallSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
+});
 registry.registerPath({ method: "get", path: "/api/slack/search/callback", tags: ["chat-channels"], summary: "Complete personal Slack search OAuth",
   description: "Requires the same signed-in user, single-use state, linked Slack identity and workspace; redirects to connector Access. Never accepts model-supplied identity.",
   request: { query: z.object({ state: z.string(), code: z.string() }) },

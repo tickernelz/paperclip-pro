@@ -34,6 +34,7 @@ import { createOpenwaPolicyCache } from "./openwa/policy.js";
 import { bumpOpenwaPolicyRevision, openwaOwnerService, openwaPrincipalAuthorization, syncOpenwaGroupActivation } from "./openwa/owners.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { issueReferenceService } from "./issue-references.js";
+import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -38644,6 +38645,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     return listResources(endpointId);
   }
 
+  const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
+    async resolve(endpoint) {
+      const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
+      if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA runtime unavailable");
+      return { gateway: adapter.gateway, registry: openwaOutbound, media: openwaMedia, storage: options.storage };
+    },
+  });
+
   const unregisterSlackTaskAuthority = registerSlackTaskAuthority(db, async (binding) => {
     if (!(await instanceSettingsService(db).getExperimental()).enableChatConnectors)
       throw forbidden("Chat connectors are disabled");
@@ -38776,6 +38785,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       await Promise.allSettled([...failedRetryTasks.values()]);
       unregisterFailedRetryAuthority();
       unregisterSlackTaskAuthority();
+      unregisterOpenwaToolRuntime();
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);

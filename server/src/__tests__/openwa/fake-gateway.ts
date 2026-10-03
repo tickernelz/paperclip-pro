@@ -37,7 +37,13 @@ export class FakeOpenwaGateway {
   readonly ownJid: string;
   restLatencyMs: number;
   readonly rows: FakeStoredRow[] = [];
-  readonly sends: Array<{ chatId: string; text: string; messageId: string | null; quotedMessageId?: string }> = [];
+  readonly sends: Array<{ chatId: string; text: string; messageId: string | null; quotedMessageId?: string; mentions?: string[] }> = [];
+  readonly mediaSends: Array<{ kind: string; chatId: string; mimetype: string; caption: string | null; ptt: boolean; bytes: number; messageId: string }> = [];
+  readonly numbers = new Map<string, boolean>();
+  readonly contacts: Array<{ id: string; name?: string; pushName?: string; number?: string }> = [];
+  readonly chats: Array<{ id: string; name?: string }> = [];
+  readonly lids = new Map<string, string | null>();
+  strictQuotes = false;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
   readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
@@ -219,8 +225,60 @@ export class FakeOpenwaGateway {
     const prefix = "/api/sessions/" + this.sessionId;
     if (req.method === "GET" && url.pathname === prefix + "/messages") return this.listMessages(query, reply);
     if (req.method === "POST" && url.pathname === prefix + "/messages/send-text") {
-      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; text: string; quotedMessageId?: string };
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; text: string; quotedMessageId?: string; mentions?: string[] };
+      if (this.strictQuotes && body.quotedMessageId && !this.rows.some((row) => row.waMessageId === body.quotedMessageId))
+        return reply(404, { message: "Quoted message not found" });
       return this.sendText(body, reply, res);
+    }
+    const mediaSend = /^\/messages\/send-(image|video|audio|sticker)$/.exec(url.pathname.slice(prefix.length));
+    if (req.method === "POST" && mediaSend) {
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; base64: string; mimetype: string; caption?: string; ptt?: boolean };
+      const row = this.inbound({ chatId: body.chatId, body: body.caption ?? "", fromMe: true });
+      this.mediaSends.push({
+        kind: mediaSend[1]!,
+        chatId: body.chatId,
+        mimetype: body.mimetype,
+        caption: body.caption ?? null,
+        ptt: body.ptt === true,
+        bytes: Buffer.from(body.base64, "base64").length,
+        messageId: row.waMessageId!,
+      });
+      return reply(201, { messageId: row.waMessageId, timestamp: row.timestamp });
+    }
+    const check = /^\/contacts\/check\/([^/]+)$/.exec(url.pathname.slice(prefix.length));
+    if (req.method === "GET" && check) {
+      const number = decodeURIComponent(check[1]!);
+      const exists = this.numbers.get(number) ?? true;
+      return reply(200, { number, exists, whatsappId: exists ? number + "@c.us" : null });
+    }
+    const phone = /^\/contacts\/([^/]+)\/phone$/.exec(url.pathname.slice(prefix.length));
+    if (req.method === "GET" && phone) {
+      const contactId = decodeURIComponent(phone[1]!);
+      return reply(200, { contactId, phone: this.lids.get(contactId) ?? null });
+    }
+    if (req.method === "GET" && url.pathname === prefix + "/contacts") return reply(200, this.contacts);
+    if (req.method === "GET" && url.pathname === prefix + "/chats") return reply(200, this.chats);
+    const history = /^\/messages\/([^/]+)\/history$/.exec(url.pathname.slice(prefix.length));
+    if (req.method === "GET" && history) {
+      const chatId = decodeURIComponent(history[1]!);
+      const limit = Number(query.limit ?? 50);
+      const rows = [...this.rows].filter((row) => row.chatId === chatId).sort((a, b) => b.sequence - a.sequence).slice(0, limit);
+      return reply(
+        200,
+        rows.map((row) => ({
+          id: row.waMessageId,
+          from: row.from,
+          to: row.to,
+          chatId: row.chatId,
+          body: row.body ?? "",
+          type: row.type,
+          timestamp: row.timestamp,
+          fromMe: row.direction === "outgoing",
+          isGroup: row.chatId.endsWith("@g.us"),
+          kind: row.chatId.endsWith("@g.us") ? "group" : "individual",
+          ...(row.author ? { author: row.author } : {}),
+        })),
+      );
     }
     if (req.method === "POST" && url.pathname === prefix + "/messages/send-document") {
       const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as {
@@ -294,7 +352,7 @@ export class FakeOpenwaGateway {
   }
 
   private async sendText(
-    body: { chatId: string; text: string; quotedMessageId?: string },
+    body: { chatId: string; text: string; quotedMessageId?: string; mentions?: string[] },
     reply: (status: number, body: unknown) => void,
     res: ServerResponse,
   ): Promise<void> {
@@ -310,6 +368,7 @@ export class FakeOpenwaGateway {
       text: body.text,
       messageId: row.waMessageId ?? null,
       ...(body.quotedMessageId ? { quotedMessageId: body.quotedMessageId } : {}),
+      ...(body.mentions ? { mentions: body.mentions } : {}),
     });
     if (failure?.dropResponseAfterStore) {
       res.socket?.destroy();
