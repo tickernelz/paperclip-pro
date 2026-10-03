@@ -5,6 +5,16 @@ import { Server as SocketServer, type Socket } from "socket.io";
 import type { OpenwaStoredMessage } from "../../services/openwa/gateway.js";
 
 export const FAKE_OPENWA_KEY = "owa_k1_fake_operator_key_for_tests_only";
+export const FAKE_OPENWA_ADMIN_KEY = "owa_k1_fake_admin_key_for_tests_only";
+const UNAUTHENTICATED_PATH = /^\/api\/(health|ingress\/|infra\/health$|metrics$)/;
+
+export interface FakeOverride {
+  method: string;
+  path: string;
+  status: number;
+  body?: unknown;
+  headers?: Record<string, string>;
+}
 
 export interface FakeSendFailure {
   status?: number;
@@ -46,7 +56,10 @@ export class FakeOpenwaGateway {
   strictQuotes = false;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
-  readonly requests: Array<{ method: string; path: string; query: Record<string, string> }> = [];
+  readonly requests: Array<{ method: string; path: string; query: Record<string, string>; key?: "operator" | "admin" | null }> = [];
+  engine = "whatsapp-web.js";
+  generic = false;
+  readonly overrides: FakeOverride[] = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
   readonly media = new Map<string, FakeMedia>();
   readonly groups = new Map<string, { id: string; name: string; participants: Array<{ id: string; isAdmin?: boolean }> }>();
@@ -213,7 +226,9 @@ export class FakeOpenwaGateway {
   private async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? "/", this.baseUrl);
     const query = Object.fromEntries(url.searchParams);
-    this.requests.push({ method: req.method ?? "GET", path: url.pathname, query });
+    const apiKey = req.headers["x-api-key"];
+    const key = apiKey === FAKE_OPENWA_KEY ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
+    this.requests.push({ method: req.method ?? "GET", path: url.pathname, query, key });
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(chunk as Buffer);
     if (this.restLatencyMs > 0) await new Promise((resolve) => setTimeout(resolve, this.restLatencyMs));
@@ -221,7 +236,18 @@ export class FakeOpenwaGateway {
       res.writeHead(status, { "content-type": "application/json" });
       res.end(JSON.stringify(body));
     };
-    if (req.headers["x-api-key"] !== FAKE_OPENWA_KEY) return reply(401, { message: "Unauthorized" });
+    const override = this.overrides.find((entry) => entry.method === req.method && entry.path === url.pathname);
+    if (override) {
+      res.writeHead(override.status, { "content-type": "application/json", ...(override.headers ?? {}) });
+      res.end(JSON.stringify(override.body ?? {}));
+      return;
+    }
+    if (req.method === "POST" && url.pathname === "/api/auth/validate") {
+      if (!key) return reply(401, { message: "Unauthorized" });
+      return reply(200, { valid: true, role: key === "admin" ? "admin" : "operator", engineType: this.engine });
+    }
+    const open = this.generic && !apiKey && UNAUTHENTICATED_PATH.test(url.pathname);
+    if (!open && (key === null || (key === "admin" && !this.generic))) return reply(401, { message: "Unauthorized" });
     const prefix = "/api/sessions/" + this.sessionId;
     if (req.method === "GET" && url.pathname === prefix + "/messages") return this.listMessages(query, reply);
     if (req.method === "POST" && url.pathname === prefix + "/messages/send-text") {
@@ -231,7 +257,7 @@ export class FakeOpenwaGateway {
       return this.sendText(body, reply, res);
     }
     const mediaSend = /^\/messages\/send-(image|video|audio|sticker)$/.exec(url.pathname.slice(prefix.length));
-    if (req.method === "POST" && mediaSend) {
+    if (req.method === "POST" && mediaSend && !this.generic) {
       const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; base64: string; mimetype: string; caption?: string; ptt?: boolean };
       const row = this.inbound({ chatId: body.chatId, body: body.caption ?? "", fromMe: true });
       this.mediaSends.push({
@@ -280,7 +306,7 @@ export class FakeOpenwaGateway {
         })),
       );
     }
-    if (req.method === "POST" && url.pathname === prefix + "/messages/send-document") {
+    if (req.method === "POST" && url.pathname === prefix + "/messages/send-document" && !this.generic) {
       const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as {
         chatId: string;
         base64: string;
@@ -307,14 +333,38 @@ export class FakeOpenwaGateway {
       return reply(201, { success: true });
     }
     const mediaPath = /^\/messages\/([^/]+)\/([^/]+)\/media$/.exec(url.pathname.slice(prefix.length));
-    if (req.method === "GET" && url.pathname.startsWith(prefix + "/") && mediaPath)
+    if (req.method === "GET" && url.pathname.startsWith(prefix + "/") && mediaPath && !this.generic)
       return this.serveMedia(decodeURIComponent(mediaPath[1]!), decodeURIComponent(mediaPath[2]!), reply, res);
-    if (req.method === "GET" && url.pathname.startsWith(prefix + "/groups/")) {
+    if (req.method === "GET" && url.pathname.startsWith(prefix + "/groups/") && !this.generic) {
       const group = this.groups.get(decodeURIComponent(url.pathname.slice((prefix + "/groups/").length)));
       return group ? reply(200, group) : reply(404, { message: "Group not found" });
     }
     if (req.method === "GET" && url.pathname === prefix + "/chats") return reply(200, this.chats);
+    if (this.generic) return this.genericReply(req.method ?? "GET", url.pathname, reply, res);
     reply(404, { message: "Not found" });
+  }
+
+  private genericReply(method: string, path: string, reply: (status: number, body: unknown) => void, res: ServerResponse): void {
+    if (/\/media$/.test(path) && method === "GET") {
+      res.writeHead(200, { "content-type": "image/png", "content-length": "4" });
+      res.end(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+      return;
+    }
+    if (method === "HEAD" || method === "OPTIONS" || (method === "DELETE" && !path.includes("/messages"))) {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+    if (method === "GET" && path === "/api/metrics") {
+      res.writeHead(200, { "content-type": "text/plain" });
+      res.end("openwa_up 1\n");
+      return;
+    }
+    if (method === "POST" && /\/messages\/(send-[a-z]+|reply|forward)$/.test(path)) {
+      const chatId = "generic@c.us";
+      return reply(201, { messageId: this.nextWaMessageId(true, chatId), timestamp: Math.floor(Date.now() / 1000) });
+    }
+    reply(method === "POST" ? 201 : 200, {});
   }
 
   private async serveMedia(

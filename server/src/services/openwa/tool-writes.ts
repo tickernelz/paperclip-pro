@@ -118,6 +118,29 @@ async function outboundRow(db: Db, action: ActionRow, outboundId: string) {
   return row ?? null;
 }
 
+/** Claims a receipt for execution; null while another call holds a fresh claim. */
+export async function claimOpenwaWrite(db: Db, action: ActionRow): Promise<ActionRow | null> {
+  const now = new Date();
+  const [claimed] = await db
+    .update(chatActions)
+    .set({ status: "processing", updatedAt: now })
+    .where(
+      and(
+        eq(chatActions.id, action.id),
+        or(
+          inArray(chatActions.status, ["received", "failed", "uncertain"]),
+          and(eq(chatActions.status, "processing"), lt(chatActions.updatedAt, new Date(now.getTime() - STALE_PROCESSING_MS))),
+        ),
+      ),
+    )
+    .returning();
+  return claimed ?? null;
+}
+
+export async function settleOpenwaWrite(db: Db, actionId: string, status: "failed" | "uncertain"): Promise<void> {
+  await db.update(chatActions).set({ status, updatedAt: new Date() }).where(eq(chatActions.id, actionId));
+}
+
 export async function runOpenwaWrite(
   db: Db,
   input: {
@@ -129,20 +152,7 @@ export async function runOpenwaWrite(
     sends: OpenwaPlannedSend[];
   },
 ): Promise<OpenwaWriteOutcome> {
-  const now = new Date();
-  const [claimed] = await db
-    .update(chatActions)
-    .set({ status: "processing", updatedAt: now })
-    .where(
-      and(
-        eq(chatActions.id, input.action.id),
-        or(
-          inArray(chatActions.status, ["received", "failed", "uncertain"]),
-          and(eq(chatActions.status, "processing"), lt(chatActions.updatedAt, new Date(now.getTime() - STALE_PROCESSING_MS))),
-        ),
-      ),
-    )
-    .returning();
+  const claimed = await claimOpenwaWrite(db, input.action);
   if (!claimed) return { state: "processing" };
   const parts = partsOf(claimed);
   const messageIds: string[] = [];

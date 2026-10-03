@@ -49,6 +49,7 @@ import {
   type OpenwaSendResult,
   type OpenwaStoredMessage,
 } from "./gateway.js";
+import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -99,7 +100,10 @@ export type OpenwaToolErrorCode =
   | "attachment_unavailable"
   | "caption_too_long"
   | "not_found"
-  | "gateway_error";
+  | "gateway_error"
+  | "gateway_admin_disabled"
+  | "self_session_requires_confirmation"
+  | "invalid_arguments";
 
 export class OpenwaToolError extends HttpError {
   readonly code: OpenwaToolErrorCode;
@@ -236,7 +240,7 @@ export async function openwaToolBindingForRun(
   return (await openwaAssignedResource(db, binding)).length ? binding : null;
 }
 
-interface Target {
+export interface Target {
   chatId: string;
   chatKey: string;
   isGroup: boolean;
@@ -244,7 +248,7 @@ interface Target {
   number: string | null;
 }
 
-interface ToolContext {
+export interface ToolContext {
   db: Db;
   binding: OpenwaToolBinding;
   endpoint: EndpointRow;
@@ -257,11 +261,11 @@ interface ToolContext {
   sessionId: string;
   selfChatKey: string;
   origin: Target;
-  audit: { chatKey: string | null; actionId: string | null };
+  audit: { chatKey: string | null; actionId: string | null; operation: string | null };
   runtime(): Promise<OpenwaToolRuntimeHandle>;
 }
 
-function chatRef(ctx: Pick<ToolContext, "sessionId">, chatId: string): string {
+export function chatRef(ctx: Pick<ToolContext, "sessionId">, chatId: string): string {
   return "openwa:" + ctx.sessionId + ":" + chatId;
 }
 
@@ -316,7 +320,7 @@ async function resolveContext(db: Db, binding: OpenwaToolBinding): Promise<ToolC
     sessionId,
     selfChatKey: (endpoint.botExternalId ?? "").replace(/\D/g, "") + "@c.us",
     origin: { chatId: thread.chatId, chatKey: originKey, isGroup: thread.isGroup, isOrigin: true, number: phoneDigits(thread.chatId) },
-    audit: { chatKey: originKey, actionId: null },
+    audit: { chatKey: originKey, actionId: null, operation: null },
     runtime() {
       handle ??= (async () => {
         const runtime = runtimes.get(db);
@@ -333,7 +337,7 @@ async function resolveContext(db: Db, binding: OpenwaToolBinding): Promise<ToolC
   };
 }
 
-function resolveTarget(ctx: ToolContext, ref: unknown): Target {
+export function resolveTarget(ctx: ToolContext, ref: unknown): Target {
   const value = str(ref);
   if (!value) return ctx.origin;
   let chatId: string;
@@ -361,7 +365,7 @@ function resolveTarget(ctx: ToolContext, ref: unknown): Target {
   };
 }
 
-async function enabledChatKeys(ctx: ToolContext, targets?: Target[]): Promise<Set<string>> {
+export async function enabledChatKeys(ctx: ToolContext, targets?: Target[]): Promise<Set<string>> {
   const keys = targets?.map((target) => target.chatKey) ?? [];
   const rows = await ctx.db
     .select({ providerResourceId: chatEndpointResources.providerResourceId, metadata: chatEndpointResources.metadata })
@@ -389,13 +393,13 @@ async function enabledChatKeys(ctx: ToolContext, targets?: Target[]): Promise<Se
   return enabled;
 }
 
-async function assertReadable(ctx: ToolContext, target: Target): Promise<void> {
+export async function assertReadable(ctx: ToolContext, target: Target): Promise<void> {
   if (ctx.policy.numberMode !== "owner_number" || target.isOrigin || target.chatKey === ctx.selfChatKey) return;
   if ((await enabledChatKeys(ctx, [target])).has(target.chatKey)) return;
   throw new OpenwaToolError(403, "chat_inactive", "In owner_number mode only chats enabled in Settings are visible");
 }
 
-function toolErrorFromGateway(error: unknown, quoting: boolean): unknown {
+export function toolErrorFromGateway(error: unknown, quoting: boolean): unknown {
   if (!(error instanceof OpenwaGatewayError)) return error;
   const extra = { operationId: error.operationId };
   switch (error.code) {
@@ -511,7 +515,7 @@ export function openwaMentionText(text: string, mentions: ReadonlyArray<{ token:
   return missing.length ? missing.map((mention) => mention.token).join(" ") + " " + text : text;
 }
 
-async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
+export async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
   if (ctx.profile === "full" || !ctx.runClass) return null;
   const settings = ctx.conversation.resourceId
     ? await ctx.db
@@ -612,7 +616,7 @@ async function attachmentBase64(ctx: ToolContext, attachmentId: string, storage:
   return { base64: data.toString("base64"), mimetype: row.asset.contentType, filename: row.asset.originalFilename ?? "attachment" };
 }
 
-function prefixFor(ctx: ToolContext): string | null {
+export function prefixFor(ctx: ToolContext): string | null {
   return ctx.policy.numberMode === "owner_number" && ctx.policy.ownerNumberPrefix.enabled ? ctx.policy.ownerNumberPrefix.text : null;
 }
 
@@ -622,7 +626,7 @@ function safeText(text: string): string {
   return safe;
 }
 
-function messageIdOf(result: unknown): OpenwaSendResult {
+export function messageIdOf(result: unknown): OpenwaSendResult {
   const data = record(result);
   return { messageId: String(data.messageId ?? ""), timestamp: Number(data.timestamp ?? 0) };
 }
@@ -800,7 +804,7 @@ async function precheckNumber(ctx: ToolContext, target: Target): Promise<Target>
   return { ...target, chatId, chatKey: openwaChatKey(chatId), isOrigin: openwaChatKey(chatId) === ctx.origin.chatKey };
 }
 
-async function consumeReplyGrants(ctx: ToolContext): Promise<void> {
+export async function consumeReplyGrants(ctx: ToolContext): Promise<void> {
   const grantIds = ctx.openwa?.grantIds ?? [];
   if (ctx.profile === "full" || !grantIds.length) return;
   await ctx.db.execute(sql`
@@ -968,7 +972,7 @@ function liveView(ctx: ToolContext, message: OpenwaHistoryMessage) {
   };
 }
 
-function fitPage<T>(envelope: Record<string, unknown>, items: T[]): { page: T[]; truncated: boolean } {
+export function fitPage<T>(envelope: Record<string, unknown>, items: T[]): { page: T[]; truncated: boolean } {
   const budget = OPENWA_TOOL_RESULT_LIMIT_BYTES - bytes(envelope) - RESULT_ENVELOPE_BYTES;
   let used = 0;
   const page: T[] = [];
@@ -1187,7 +1191,7 @@ async function openwaHandoff(ctx: ToolContext, args: Args): Promise<Record<strin
   });
 }
 
-async function auditSafely(
+export async function auditSafely(
   ctx: ToolContext,
   entry: { kind: "tool_called" | "message_sent"; metadata: Record<string, unknown>; content: Record<string, unknown> | null },
 ): Promise<void> {
@@ -1217,6 +1221,9 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_find: openwaFind,
   openwa_stay_silent: openwaStaySilent,
   openwa_handoff: openwaHandoff,
+  openwa_catalog: (ctx, args) => openwaCatalogTool(ctx, args),
+  openwa_describe: (ctx, args) => openwaDescribeTool(ctx, args),
+  openwa_call: (ctx, args) => openwaCallTool(ctx, args),
 };
 
 export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name: string, value: unknown): Promise<Record<string, unknown>> {
@@ -1230,7 +1237,13 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
     const result = await execute(ctx, args);
     await auditSafely(ctx, {
       kind: "tool_called",
-      metadata: { tool: name, latencyMs: Math.round(performance.now() - started), errorCode: null, actionId: ctx.audit.actionId },
+      metadata: {
+        tool: name,
+        latencyMs: Math.round(performance.now() - started),
+        errorCode: null,
+        actionId: ctx.audit.actionId,
+        ...(ctx.audit.operation ? { operation: ctx.audit.operation } : {}),
+      },
       content: { args, resultSummary: result },
     });
     return result;
@@ -1244,6 +1257,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
         latencyMs: Math.round(performance.now() - started),
         errorCode,
         actionId: ctx.audit.actionId,
+        ...(ctx.audit.operation ? { operation: ctx.audit.operation } : {}),
         ...(details.pacing === true ? { pacing: true } : {}),
       },
       content: { args, resultSummary: { error: error instanceof Error ? error.message : String(error) } },

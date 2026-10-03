@@ -17,6 +17,9 @@ describe("OpenWA tool catalog", () => {
       ["openwa_find", "read"],
       ["openwa_stay_silent", "write"],
       ["openwa_handoff", "write"],
+      ["openwa_catalog", "read"],
+      ["openwa_describe", "read"],
+      ["openwa_call", "write"],
     ]);
     for (const tool of OPENWA_TOOLS) {
       const properties = Object.keys((tool.inputSchema.properties ?? {}) as Record<string, unknown>);
@@ -39,5 +42,10 @@ describe("OpenWA tool catalog", () => {
     expect(send.safeParse({ text: "hi", companyId: key, idempotencyKey: key }).success).toBe(false);
     expect(openwaTool("openwa_find")!.schema.safeParse({ query: "a", phone: "+628111" }).success).toBe(false);
     expect(z.toJSONSchema(openwaTool("openwa_handoff")!.schema)).toMatchObject({ required: ["triggerIds", "note"] });
+    const call = openwaTool("openwa_call")!.schema;
+    expect(call.safeParse({ operation: "MessageController_sendText", args: { chatId: "x", text: "y" }, idempotencyKey: key }).success).toBe(true);
+    expect(call.safeParse({ operation: "MessageController_sendText", sessionId: "s" }).success).toBe(false);
+    expect(openwaTool("openwa_catalog")!.schema.safeParse({ category: "paperclip" }).success).toBe(true);
+    expect(openwaTool("openwa_catalog")!.schema.safeParse({ category: "other" }).success).toBe(false);
   });
 });
