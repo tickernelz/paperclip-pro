@@ -136,7 +136,8 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
     expect(adapterContext.paperclipToolProfile).toBe("read_only");
     expect(adapterContext.paperclipOpenwa).toEqual({
       endpointId: target.endpointId, chatKey: "628111@c.us", triggerClass: "other", profile: "read_only",
-      grantIds: [], requesterPrincipalId: null, approvalRequestId: null,
+      toolProfile: "read_only", event: null, grantIds: [], grantedCategories: [], runAllowedCategories: [],
+      requesterPrincipalId: null, approvalRequestId: null,
     });
     expect(persisted).toMatchObject({ paperclipToolProfile: "read_only", paperclipOpenwa: { profile: "read_only" } });
   });
