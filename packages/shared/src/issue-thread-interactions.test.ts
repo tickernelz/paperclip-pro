@@ -23,6 +23,7 @@ describe("issue thread interaction schemas", () => {
       "anyone",
       "not_creator",
       "human_only",
+      "chat_endpoint_owner",
     ]);
     expect(ISSUE_THREAD_INTERACTION_LEGACY_RESOLVER_POLICY_ALIASES).toEqual([
       "board_or_agents",
@@ -46,6 +47,14 @@ describe("issue thread interaction schemas", () => {
       expect(parsed.resolverPolicy).toBe(resolverPolicy);
     },
   );
+
+  it("never accepts chat_endpoint_owner as a requested resolver policy", () => {
+    expect(createIssueThreadInteractionSchema.safeParse({
+      kind: "request_confirmation",
+      resolverPolicy: "chat_endpoint_owner",
+      payload: { version: 1, prompt: "Proceed?" },
+    }).success).toBe(false);
+  });
 
   it("parses request_confirmation payloads with default no-wake continuation", () => {
     const parsed = createIssueThreadInteractionSchema.parse({

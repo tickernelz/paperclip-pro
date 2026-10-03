@@ -23,6 +23,7 @@ import {
 import { badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logActivity, publishActivity, type ActivityPublication } from "../activity-log.js";
 import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
+import { revokeOpenwaGrantsOfFormerOwners } from "./approvals.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
@@ -412,6 +413,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
         .returning({ id: chatEndpointOwners.id });
       if (!removed) throw notFound("Owner not found");
       await audit(tx, endpoint, actorUserId, "openwa.owner_removed", { ownerId }, publications);
+      await revokeOpenwaGrantsOfFormerOwners(tx, endpoint, actorUserId);
     });
   }
 

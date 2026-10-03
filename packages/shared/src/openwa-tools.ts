@@ -13,6 +13,8 @@ const mention = z.string().regex(/^(\+?[1-9]\d{6,14}|openwa:[A-Za-z0-9-]{1,64}:\
 const triggerIds = z.array(z.string().uuid()).min(1).max(50);
 const operation = z.string().min(1).max(100);
 const cursor = z.string().min(1).max(200).optional();
+const GRANT_CATEGORIES = ["create_task", "external_tools", "cross_chat_send", "wa_admin", "gateway_admin", "reply_outside_allowlist", "reply"] as const;
+export const OPENWA_APPROVAL_MESSAGE_MAX_LENGTH = 3500;
 const MEDIA_KINDS = new Set<OpenwaSendKind>(["image", "video", "audio", "voice", "document", "sticker"]);
 
 function tool<N extends string, S extends z.ZodRawShape>(
@@ -82,6 +84,37 @@ export const OPENWA_TOOLS = [
     (value, ctx) => {
       if ([value.query, value.phone, value.lid].filter((entry) => entry !== undefined).length !== 1)
         ctx.addIssue({ code: "custom", message: "Give exactly one of query, phone, lid" });
+    },
+  ),
+  tool(
+    "request_approval",
+    "write",
+    "Ask the endpoint owners to approve categories for this chat's requester. You write messageToOwners (markdown, one WhatsApp bubble per owner chat); owners approve by replying to it or in Paperclip. Remind with remindRequestId plus messageToOwners only. Silence never approves.",
+    {
+      categories: z.array(z.enum(GRANT_CATEGORIES)).min(1).max(GRANT_CATEGORIES.length).optional(),
+      scope: z.enum(["one_action", "requester"]).optional(),
+      summary: z.string().trim().min(1).max(500).optional(),
+      proposedAction: z.string().trim().min(1).max(2000).optional(),
+      messageToOwners: z.string().trim().min(1).max(OPENWA_APPROVAL_MESSAGE_MAX_LENGTH),
+      remindRequestId: z.string().uuid().optional(),
+      idempotencyKey: z.string().uuid(),
+    },
+    (value, ctx) => {
+      const issue = (message: string) => ctx.addIssue({ code: "custom", message });
+      if (value.remindRequestId) {
+        if (value.categories || value.scope || value.summary || value.proposedAction) issue("A reminder takes only remindRequestId and messageToOwners");
+      } else if (!value.categories || !value.summary || !value.proposedAction) issue("categories, summary and proposedAction are required");
+      if (value.categories && new Set(value.categories).size !== value.categories.length) issue("categories must be unique");
+    },
+  ),
+  tool(
+    "approval_resolve",
+    "write",
+    "Record the owner's decision on an approval request. Only in the run started by that owner's reply to the request bubble. clarify keeps it pending.",
+    {
+      requestId: z.string().uuid(),
+      decision: z.enum(["approve", "reject", "clarify"]),
+      conditions: z.string().trim().min(1).max(2000).optional(),
     },
   ),
   tool(

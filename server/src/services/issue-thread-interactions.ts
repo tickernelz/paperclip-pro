@@ -46,6 +46,7 @@ import type {
   IssueThreadInteractionCanonicalResolverPolicy,
   IssueThreadInteractionEffectiveResolverPolicySource,
   IssueThreadInteractionKind,
+  IssueThreadInteractionRequestableResolverPolicy,
   IssueThreadInteractionResolverPolicy,
   IssueThreadInteractionResolverPolicyProvenance,
   RequestCheckboxConfirmationInteraction,
@@ -358,7 +359,7 @@ function isNativeCompletionReview(
 
 export const DEFAULT_RESOLVER_POLICY_BY_KIND: Record<
   IssueThreadInteractionKind,
-  IssueThreadInteractionCanonicalResolverPolicy
+  IssueThreadInteractionRequestableResolverPolicy
 > = {
   suggest_tasks: "anyone",
   ask_user_questions: "anyone",
@@ -375,6 +376,7 @@ const RESOLVER_POLICY_RESTRICTION_RANK: Record<
   anyone: 0,
   not_creator: 1,
   human_only: 2,
+  chat_endpoint_owner: 3,
 };
 
 export function resolveInteractionPolicy(args: {
@@ -3301,6 +3303,14 @@ export function issueThreadInteractionService(
       const data = normalizeCreateInteractionInput(
         createIssueThreadInteractionSchema.parse(input),
       );
+      if (
+        data.kind === "request_confirmation" &&
+        data.payload.openwaApprovalRequestId !== undefined
+      ) {
+        throw unprocessable(
+          "OpenWA approval cards are created only by openwa_request_approval",
+        );
+      }
       const usedDeprecatedResolverPolicyAlias =
         data.resolverPolicy === "board_or_agents" ||
         data.resolverPolicy === "board_only";
@@ -3565,6 +3575,7 @@ export function issueThreadInteractionService(
                 eq(issueThreadInteractions.createdByAgentId, actor.agentId),
                 eq(issueThreadInteractions.status, "pending"),
                 ne(issueThreadInteractions.id, row.id),
+                sql`${issueThreadInteractions.payload} ->> 'openwaApprovalRequestId' is null`,
               ),
             )
             .returning();

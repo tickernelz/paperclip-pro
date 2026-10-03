@@ -296,10 +296,17 @@ export const ISSUE_THREAD_INTERACTION_KINDS = [
 ] as const;
 export type IssueThreadInteractionKind = (typeof ISSUE_THREAD_INTERACTION_KINDS)[number];
 
-export const ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES = [
+export const ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES = [
   "anyone",
   "not_creator",
   "human_only",
+] as const;
+export type IssueThreadInteractionRequestableResolverPolicy =
+  (typeof ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES)[number];
+
+export const ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES = [
+  ...ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES,
+  "chat_endpoint_owner",
 ] as const;
 export type IssueThreadInteractionCanonicalResolverPolicy =
   (typeof ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES)[number];
@@ -317,7 +324,7 @@ export type IssueThreadInteractionLegacyResolverPolicyAlias =
  * aliases for one migration window.
  */
 export const ISSUE_THREAD_INTERACTION_RESOLVER_POLICIES = [
-  ...ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES,
+  ...ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES,
   ...ISSUE_THREAD_INTERACTION_LEGACY_RESOLVER_POLICY_ALIASES,
 ] as const;
 export type IssueThreadInteractionResolverPolicy =
@@ -341,6 +348,12 @@ export type IssueThreadInteractionEffectiveResolverPolicySource =
 
 export function normalizeIssueThreadInteractionResolverPolicy(
   policy: IssueThreadInteractionResolverPolicy,
+): IssueThreadInteractionRequestableResolverPolicy;
+export function normalizeIssueThreadInteractionResolverPolicy(
+  policy: IssueThreadInteractionResolverPolicy | IssueThreadInteractionCanonicalResolverPolicy,
+): IssueThreadInteractionCanonicalResolverPolicy;
+export function normalizeIssueThreadInteractionResolverPolicy(
+  policy: IssueThreadInteractionResolverPolicy | IssueThreadInteractionCanonicalResolverPolicy,
 ): IssueThreadInteractionCanonicalResolverPolicy {
   if (policy === "board_or_agents") return "anyone";
   if (policy === "board_only") return "human_only";

@@ -1112,7 +1112,7 @@ export const issueThreadInteractionKindSchema = z.enum(
 );
 export const issueThreadInteractionCanonicalResolverPolicySchema = z
   .enum(ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES)
-  .describe("Canonical resolver audience: anyone, not_creator, or human_only.");
+  .describe("Canonical resolver audience: anyone, not_creator, human_only, or chat_endpoint_owner (server-assigned to OpenWA approval cards).");
 export const issueThreadInteractionResolverPolicySchema = z
   .enum(ISSUE_THREAD_INTERACTION_RESOLVER_POLICIES)
   .describe(
@@ -1587,6 +1587,7 @@ export const requestConfirmationPayloadSchema = z.object({
   target: requestConfirmationTargetSchema.nullable().optional(),
   toolAction: requestConfirmationToolActionPayloadSchema.optional(),
   secretProposal: requestConfirmationSecretProposalPayloadSchema.optional(),
+  openwaApprovalRequestId: z.string().uuid().optional(),
 });
 
 export const requestCheckboxConfirmationOptionSchema = z.object({

@@ -68,6 +68,7 @@ export async function hasChatRunOwnedProviderInteraction(
         eq(issueThreadInteractions.issueId, input.issueId),
         eq(issueThreadInteractions.sourceRunId, input.runId),
         or(notExists(conversationOf(true)), exists(conversationOf(false))),
+        sql`${issueThreadInteractions.payload} ->> 'openwaApprovalRequestId' is null`,
         inArray(issueThreadInteractions.kind, [
           "ask_user_questions",
           "request_confirmation",
