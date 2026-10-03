@@ -16536,7 +16536,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         openwaDecoration && openwaMutationAuthorization
           ? {
               ...openwaDecoration,
-              triggerClass: openwaDecoration.event === "message" ? openwaMutationAuthorization.triggerClass : ("other" as const),
+              triggerClass:
+                openwaDecoration.event === "message" || openwaDecoration.event === "approval_reply"
+                  ? openwaMutationAuthorization.triggerClass
+                  : ("other" as const),
               principalRole: openwaMutationAuthorization.role,
             }
           : openwaDecoration;

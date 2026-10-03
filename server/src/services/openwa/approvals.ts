@@ -39,6 +39,7 @@ import { maskOpenwaDigits } from "./guidance.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId } from "./owners.js";
 import { openwaDigits } from "./policy.js";
+import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
 import { OpenwaToolError, type ToolContext } from "./tools.js";
 
@@ -50,7 +51,6 @@ type Args = Record<string, unknown>;
 
 export const OPENWA_APPROVAL_WAKE_ACTION_KIND = "openwa_approval_wakeup";
 export const OPENWA_APPROVAL_WAKE_ACTOR_ID = "openwa:approval";
-export const OPENWA_REMINDERS_UNAVAILABLE_CODE = "openwa_reminders_unavailable";
 const WAKE_MAX_ATTEMPTS = 5;
 const WAKE_STALE_PROCESSING_MS = 2 * 60_000;
 const LIST_LIMIT = 100;
@@ -65,20 +65,8 @@ export interface OpenwaApprovalBubbleMatch {
   readonly requestStatus: OpenwaApprovalRequestStatus;
 }
 
-export interface OpenwaApprovalReminderHooks {
-  schedule(db: DbOrTransaction, input: { companyId: string; endpointId: string; requestId: string; chatKey: string; createdAt: Date }): Promise<void>;
-  cancel(db: DbOrTransaction, input: { companyId: string; endpointId: string; requestId: string }): Promise<void>;
-}
-
 export interface OpenwaApprovalWakeRuntime {
   wakeup: IssueAssignmentWakeupDeps["wakeup"];
-}
-
-export class OpenwaRemindersUnavailableError extends HttpError {
-  readonly code = OPENWA_REMINDERS_UNAVAILABLE_CODE;
-  constructor() {
-    super(503, "Approval reminders are not available in this process", { code: OPENWA_REMINDERS_UNAVAILABLE_CODE });
-  }
 }
 
 export class OpenwaApprovalAlreadyResolvedError extends HttpError {
@@ -90,35 +78,13 @@ export class OpenwaApprovalAlreadyResolvedError extends HttpError {
   }
 }
 
-const UNAVAILABLE_REMINDERS: OpenwaApprovalReminderHooks = {
-  async schedule() {
-    throw new OpenwaRemindersUnavailableError();
-  },
-  async cancel() {
-    throw new OpenwaRemindersUnavailableError();
-  },
-};
-
-const reminderHooks = new WeakMap<Db, OpenwaApprovalReminderHooks>();
 const wakeRuntimes = new WeakMap<Db, OpenwaApprovalWakeRuntime>();
-
-/** Installs the reminder scheduler; until one is installed every approval mutation fails closed. */
-export function registerOpenwaApprovalReminders(db: Db, hooks: OpenwaApprovalReminderHooks): () => void {
-  reminderHooks.set(db, hooks);
-  return () => {
-    if (reminderHooks.get(db) === hooks) reminderHooks.delete(db);
-  };
-}
 
 export function registerOpenwaApprovalWakeRuntime(db: Db, runtime: OpenwaApprovalWakeRuntime): () => void {
   wakeRuntimes.set(db, runtime);
   return () => {
     if (wakeRuntimes.get(db) === runtime) wakeRuntimes.delete(db);
   };
-}
-
-function reminders(db: Db): OpenwaApprovalReminderHooks {
-  return reminderHooks.get(db) ?? UNAVAILABLE_REMINDERS;
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -508,7 +474,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         .set({ interactionId: interaction!.id })
         .where(eq(chatOwnerApprovalRequests.id, request!.id));
       await reserveBubbles(tx, ctx, registry, request!.id, planned, body, reserved);
-      await reminders(db).schedule(tx, {
+      await scheduleApprovalReminders(tx, {
         companyId: ctx.endpoint.companyId,
         endpointId: ctx.endpoint.id,
         requestId: request!.id,
@@ -735,7 +701,7 @@ export async function resolveOpenwaApproval(
         })
         .where(and(eq(issueThreadInteractions.id, request.interactionId), eq(issueThreadInteractions.companyId, input.companyId), eq(issueThreadInteractions.status, "pending")));
     }
-    await reminders(db).cancel(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
+    await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
     const wakeActionId = await stageApprovalResolvedWake(tx, endpoint, request, {
       approved,
       via: input.via,

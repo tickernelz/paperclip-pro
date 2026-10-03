@@ -19,6 +19,7 @@ import {
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   chatPublications,
+  chatScheduledWakes,
   companies,
   companyMemberships,
   companySecretBindings,
@@ -37,7 +38,6 @@ import { instanceSettingsService } from "../../services/instance-settings.js";
 import { secretService } from "../../services/secrets.js";
 import { HttpError } from "../../errors.js";
 import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, type OpenwaRunContext } from "../../services/openwa/authority.js";
-import { registerOpenwaApprovalReminders } from "../../services/openwa/approvals.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -85,8 +85,6 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
-  const cleanups: Array<() => void> = [];
-  const reminderCalls: Array<{ op: "schedule" | "cancel"; requestId: string }> = [];
 
   beforeAll(async () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-approvals-");
@@ -96,8 +94,6 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     await instanceSettingsService(db).updateExperimental({ enableChatConnectors: true });
   }, 60_000);
   afterEach(async () => {
-    for (const cleanup of cleanups.splice(0)) cleanup();
-    reminderCalls.splice(0);
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
     await Promise.all(gateways.splice(0).map((gateway) => gateway.close()));
     for (const id of endpointIds.splice(0)) await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, id));
@@ -110,17 +106,12 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
-  function installReminders() {
-    cleanups.push(
-      registerOpenwaApprovalReminders(db, {
-        async schedule(_tx, input) {
-          reminderCalls.push({ op: "schedule", requestId: input.requestId });
-        },
-        async cancel(_tx, input) {
-          reminderCalls.push({ op: "cancel", requestId: input.requestId });
-        },
-      }),
-    );
+  async function reminderStates(requestId: string) {
+    const rows = await db
+      .select({ kind: chatScheduledWakes.kind, state: chatScheduledWakes.state })
+      .from(chatScheduledWakes)
+      .where(eq(chatScheduledWakes.relatedId, requestId));
+    return rows.map((row) => row.kind + ":" + row.state);
   }
 
   async function linkUser(companyId: string, name: string) {
@@ -130,8 +121,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     return userId;
   }
 
-  async function setup(input: { policy?: Record<string, unknown>; owners?: string[]; reminders?: boolean } = {}) {
-    if (input.reminders !== false) installReminders();
+  async function setup(input: { policy?: Record<string, unknown>; owners?: string[] } = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -416,7 +406,9 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
       payload: expect.objectContaining({ openwaApprovalRequestId: request.id }),
     });
     expect(await db.select().from(chatPublications).where(sql`${chatPublications.payload}->>'interactionId' = ${interaction!.id}`)).toEqual([]);
-    expect(reminderCalls).toEqual([{ op: "schedule", requestId: request.id }]);
+    const scheduled = await reminderStates(request.id);
+    expect(scheduled.length).toBeGreaterThan(0);
+    expect(new Set(scheduled)).toEqual(new Set(["approval_reminder:pending"]));
     const ownerSend = t.gateway.sends.find((send) => send.chatId === jid(OWNER_PHONE))!;
     expect(ownerSend.text).toContain("Member asks to create a task for invoice 42");
     const [bubbleId] = await bubbleIds(request.id);
@@ -477,7 +469,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
       }),
     ]);
     expect((await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, interaction!.id)))[0]!.status).toBe("accepted");
-    expect(reminderCalls).toContainEqual({ op: "cancel", requestId: request.id });
+    expect(await reminderStates(request.id)).toEqual(scheduled.map(() => "approval_reminder:cancelled"));
 
     const grantWake = await approvalWake(t, request.id);
     expect(grantWake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: request.id } });
@@ -648,16 +640,8 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(await grantsOf(request.id)).toHaveLength(1);
   }, 120_000);
 
-  it("fails closed without a reminder scheduler and rejects owner-class requests", async () => {
-    const t = await setup({ reminders: false });
-    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
-    const runA = await runStart(t, wakeA);
-    const sendsBefore = t.gateway.sends.length;
-    const unavailable = await failure(requestApproval(runA.binding));
-    expect(codeOf(unavailable)).toBe("openwa_reminders_unavailable");
-    expect(t.gateway.sends.length).toBe(sendsBefore);
-    expect(await db.select().from(chatOwnerApprovalRequests).where(eq(chatOwnerApprovalRequests.endpointId, t.endpointId))).toEqual([]);
-    installReminders();
+  it("rejects approval requests from owner-class runs", async () => {
+    const t = await setup();
     const ownerWake = await admitted(t, { chatId: jid(OWNER_PHONE), body: "halo" });
     const ownerRun = await runStart(t, ownerWake);
     const ownerDenied = await failure(requestApproval(ownerRun.binding));
