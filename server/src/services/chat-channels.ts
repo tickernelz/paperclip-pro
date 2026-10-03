@@ -8476,8 +8476,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     commentId: string;
     deliveryId: string;
   }): Promise<void> {
-    if (input.endpoint.provider !== "openwa" || input.decoration?.event !== "message" || !input.decoration.waMessageId) return;
-    const event = input.message.raw as OpenwaInboundEvent;
+    const event = input.decoration?.event;
+    if (input.endpoint.provider !== "openwa" || (event !== "message" && event !== "approval_reply") || !input.decoration?.waMessageId) return;
     const adapter = input.endpointRuntime.getProviderAdapter();
     if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA adapter unavailable for media ingest");
     try {
@@ -8487,7 +8487,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         issueId: input.issueId,
         commentId: input.commentId,
         deliveryId: input.deliveryId,
-        event,
+        event: input.message.raw as OpenwaInboundEvent,
       });
     } catch (error) {
       logger.warn(
