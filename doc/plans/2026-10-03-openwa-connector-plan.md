@@ -96,10 +96,10 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 
 ### T2: Operation manifest and gateway client
 
-**Description:** Generator script reads `doc/connections/openwa/openapi-0.23.7.yaml` (checked-in copy of the live spec) and emits `packages/shared/src/openwa-operations.ts`: 201 operations with id, method, path, zod args, category, `requiredKey`, `sessionScoped`, `crossChat`, engine availability (static whatsapp-web.js/Baileys matrix from the spec §3 source). Server client `server/src/services/openwa/gateway.ts`: keep-alive pool, `X-API-Key` injection, `sessionId` injection, typed errors (501 -> `unavailable_on_engine`, 429 `SEND_PACING_LIMITED` -> `retry_after`, throttle 429, 401/403, 5xx, timeout -> `uncertain` for sends).
+**Description:** Generator script reads `doc/connections/openwa/openapi-0.23.7.yaml` (checked-in copy of the live spec) and emits `packages/shared/src/openwa-operations.ts`: 202 operations (OpenWA 0.23.7) with id, method, path, zod args, category, `requiredKey`, `sessionScoped`, `crossChat`, engine availability (static whatsapp-web.js/Baileys matrix from the spec §3 source). Server client `server/src/services/openwa/gateway.ts`: keep-alive pool, `X-API-Key` injection, `sessionId` injection, typed errors (501 -> `unavailable_on_engine`, 429 `SEND_PACING_LIMITED` -> `retry_after`, throttle 429, 401/403, 5xx, timeout -> `uncertain` for sends).
 
 **Acceptance criteria:**
-- [ ] Manifest has exactly 201 entries; every gateway admin route is `gateway_admin` with `requiredKey` per spec §3.
+- [ ] Manifest has exactly 202 entries (OpenWA 0.23.7); every gateway admin route is `gateway_admin` with `requiredKey` per spec §3.
 - [ ] Client never logs or returns the key; error mapping matches spec §8.5.
 - [ ] Generator is deterministic (re-run produces no diff).
 
@@ -226,7 +226,7 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 - [ ] Spec AC12 passes.
 - [ ] Every manifest operation is callable with schema-validated args or returns a typed unavailability reason.
 
-**Verification:** manifest-driven parameterized test against the fake gateway (all 201 operations: dispatch or typed refusal).
+**Verification:** manifest-driven parameterized test against the fake gateway (all 202 operations (OpenWA 0.23.7): dispatch or typed refusal).
 
 **Dependencies:** T9. **Files:** `server/src/services/openwa/{catalog,call}.ts`, tests. **Scope:** M.
 

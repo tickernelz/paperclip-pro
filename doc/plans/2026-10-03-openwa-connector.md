@@ -3,7 +3,7 @@
 Status: draft v3 (2026-10-03). Revised after independent review cycles 1 (15 findings) and 2 (10 findings) and the owner's tool-access clarification. Owner: Zhafron.
 Flow: interview-me -> spec-driven-development -> independent review -> planning-and-task-breakdown.
 
-Evidence sources: the live gateway OpenAPI document (`GET /api/docs-yaml`, version 0.23.7, 201 operations; checked in by plan task T2), upstream `docs/06-api-specification.md` and `src/engine/engine-capability-matrix.ts` at tag `v0.23.7`, and the code citations inline.
+Evidence sources: the live gateway OpenAPI document (`GET /api/docs-yaml`, version 0.23.7, 202 operations; checked in by plan task T2), upstream `docs/06-api-specification.md` and `src/engine/engine-capability-matrix.ts` at tag `v0.23.7`, and the code citations inline.
 
 ## 0. Decision log
 
@@ -372,7 +372,7 @@ Schema budget about 3k tokens: frequent operations are first-class; the rest of 
 
 ### 8.3 Operation manifest
 
-`packages/shared/src/openwa-operations.ts`, generated from the pinned OpenAPI document by a script and reviewed: operation id, method, path template, zod argument schema, `category` (`read`, `write`, `wa_admin`, `gateway_admin`), `requiredKey` (`operator` | `admin_unscoped`), `sessionScoped`, `crossChat`, engine availability. Path parameter `sessionId` is injected server-side for session-scoped operations. No arbitrary path execution. Coverage: all 201 operations of 0.23.7.
+`packages/shared/src/openwa-operations.ts`, generated from the pinned OpenAPI document by a script and reviewed: operation id, method, path template, zod argument schema, `category` (`read`, `write`, `wa_admin`, `gateway_admin`), `requiredKey` (`operator` | `admin_unscoped`), `sessionScoped`, `crossChat`, engine availability. Path parameter `sessionId` is injected server-side for session-scoped operations. No arbitrary path execution. Coverage: all 202 operations (OpenWA 0.23.7).
 
 ### 8.4 Gateway admin tools
 
@@ -531,7 +531,7 @@ node scripts/bench/openwa-ingest.mjs
 9. **Mixed principals**: member trigger during an owner run -> queued; owner message during a member `read_only` run -> steered, profile stays `read_only`, a request needing writes produces a follow-up owner run. Negative control: removing the class rule must fail the test.
 10. **Publication**: final output published once; a tool reply quoting the trigger -> no duplicate; `openwa_stay_silent` -> nothing; `ask_owner` policy -> suppressed and audited.
 11. **Formatting and media**: mentions render as tags; replies show the quote bubble; image, document, location, contact card and voice note readable; transcript present when STT is configured; wake delay bounded by `sttWaitSeconds`.
-12. **Tools**: catalog lists 201 operations with category and availability; gateway admin hidden at `off`; at `full` with admin key an owner run can list sessions; an `other` run -> `approval_required(gateway_admin)`; a Baileys-only operation -> `unavailable_on_engine` without retry; pacing 429 -> `retry_after` honoured.
+12. **Tools**: catalog lists 202 operations (OpenWA 0.23.7) with category and availability; gateway admin hidden at `off`; at `full` with admin key an owner run can list sessions; an `other` run -> `approval_required(gateway_admin)`; a Baileys-only operation -> `unavailable_on_engine` without retry; pacing 429 -> `retry_after` honoured.
 13. **WhatsApp config**: owner adds a number to the denylist by chat -> effective on the next event, audited; a member's attempt -> `owner_only`.
 14. **Audit**: every section 11 entry present; owners see content; a plain board user sees metadata only; content purged after retention (time-travel test).
 15. **Owner-number mode**: only enabled chats trigger; `/ai` from the phone triggers; prefix applied; self-chat approval works; after a restart the agent's own message quoting its approval bubble is not treated as an owner approval; a crash between send and 201 does not turn the agent's message into an owner trigger; owner replies to approval bubbles work without enabling any chat.
