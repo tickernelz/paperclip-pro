@@ -576,6 +576,22 @@ export interface OpenwaGatewayInspection {
   }>;
 }
 
+/** Read-only OpenWA endpoint health for Settings; never carries keys or full phone numbers. */
+export interface OpenwaEndpointHealth {
+  gatewayVersion: string | null;
+  pinnedVersion: string;
+  engine: string | null;
+  session: {
+    status: string | null;
+    maskedNumber: string | null;
+    restriction: { active: boolean; kind: string | null; expiresAt: string | null } | null;
+  };
+  pacing: { attested: boolean; observedAt: string | null };
+  adminKeyConfigured: boolean;
+  gatewayError: string | null;
+  checkedAt: string;
+}
+
 export const CHAT_INFLIGHT_MODES = ["steer", "queue"] as const;
 export type ChatInflightMode = (typeof CHAT_INFLIGHT_MODES)[number];
 

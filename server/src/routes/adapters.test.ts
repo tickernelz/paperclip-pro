@@ -75,3 +75,17 @@ describe("buildAdapterCapabilities login projection", () => {
     expect(caps.login).not.toHaveProperty("parsePrompt");
   });
 });
+
+describe("buildAdapterCapabilities OpenWA capability projection", () => {
+  it("defaults to instruction-only read-only runs and no live steering", () => {
+    const caps = buildAdapterCapabilities(makeAdapter());
+    expect(caps.readOnlyToolProfile).toBe("instruction_only");
+    expect(caps.supportsLiveSteering).toBe(false);
+  });
+
+  it("projects the registered adapters' declared read-only enforcement and steering", () => {
+    expect(buildAdapterCapabilities(requireServerAdapter("omp_local"))).toMatchObject({ readOnlyToolProfile: "enforced", supportsLiveSteering: true });
+    expect(buildAdapterCapabilities(requireServerAdapter("claude_local"))).toMatchObject({ readOnlyToolProfile: "enforced", supportsLiveSteering: false });
+    expect(buildAdapterCapabilities(requireServerAdapter("gemini_local"))).toMatchObject({ readOnlyToolProfile: "instruction_only", supportsLiveSteering: false });
+  });
+});

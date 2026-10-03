@@ -1,5 +1,6 @@
-import { and, asc, eq, inArray, ne, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, ne, sql } from "drizzle-orm";
 import {
+  chatAuditEntries,
   chatEndpointOwners,
   chatEndpointResources,
   chatEndpoints,
@@ -7,6 +8,7 @@ import {
   chatIdentityLinks,
   chatSenderRules,
   companyMemberships,
+  toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
 import {
@@ -14,6 +16,7 @@ import {
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
   type OpenwaChatSettings,
+  type OpenwaEndpointHealth,
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
@@ -23,7 +26,8 @@ import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
-import { openwaSetupError } from "./setup.js";
+import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
+import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -640,7 +644,76 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     return { policy: parsed.data, policyRevision: revision };
   }
 
+  async function health(endpointId: string): Promise<OpenwaEndpointHealth> {
+    const endpoint = await endpointFor(endpointId);
+    const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
+    const [connection, pacingHit] = await Promise.all([
+      db
+        .select({ refs: toolConnections.credentialSecretRefs })
+        .from(toolConnections)
+        .where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)))
+        .then((rows) => rows[0] ?? null),
+      db
+        .select({ occurredAt: chatAuditEntries.occurredAt })
+        .from(chatAuditEntries)
+        .where(
+          and(
+            eq(chatAuditEntries.companyId, endpoint.companyId),
+            eq(chatAuditEntries.endpointId, endpoint.id),
+            sql`${chatAuditEntries.metadata} @> '{"pacing":true}'::jsonb`,
+          ),
+        )
+        .orderBy(desc(chatAuditEntries.occurredAt))
+        .limit(1)
+        .then((rows) => rows[0] ?? null),
+    ]);
+    const base: OpenwaEndpointHealth = {
+      gatewayVersion: null,
+      pinnedVersion: OPENWA_GATEWAY_VERSION,
+      engine: null,
+      session: { status: null, maskedNumber: null, restriction: null },
+      pacing: { attested: policy.attestations.pacing, observedAt: pacingHit?.occurredAt.toISOString() ?? null },
+      adminKeyConfigured: (connection?.refs ?? []).some((ref) => ref.configPath === "credentials.adminApiKey"),
+      gatewayError: null,
+      checkedAt: new Date().toISOString(),
+    };
+    if (!sessionOf(endpoint)) return { ...base, gatewayError: "Connect the OpenWA gateway first" };
+    let gateway: { client: OpenwaGatewayClient; baseUrl: string };
+    try {
+      gateway = await deps.gatewayFor(endpoint);
+    } catch (error) {
+      return { ...base, gatewayError: error instanceof Error ? error.message : "The OpenWA gateway is not configured" };
+    }
+    const [version, validation, session] = await Promise.allSettled([
+      gateway.client.openApiVersion(),
+      gateway.client.validateKey("operator"),
+      gateway.client.getSession(),
+    ]);
+    const failure = [validation, session].find((result) => result.status === "rejected");
+    const restriction = session.status === "fulfilled" ? session.value.restriction : null;
+    const digits = session.status === "fulfilled" ? openwaPhoneDigits(session.value.phone) : null;
+    return {
+      ...base,
+      gatewayVersion: version.status === "fulfilled" ? version.value : null,
+      engine: validation.status === "fulfilled" && typeof validation.value.engineType === "string" ? validation.value.engineType : null,
+      session: {
+        status: session.status === "fulfilled" && typeof session.value.status === "string" ? session.value.status : null,
+        maskedNumber: digits ? maskOpenwaPhoneNumber(digits) : null,
+        restriction:
+          restriction && typeof restriction === "object"
+            ? {
+                active: restriction.active === true,
+                kind: typeof restriction.kind === "string" ? restriction.kind : null,
+                expiresAt: typeof restriction.expiresAt === "string" ? restriction.expiresAt : null,
+              }
+            : null,
+      },
+      gatewayError: failure?.status === "rejected" ? openwaSetupError(failure.reason, gateway.baseUrl).message : null,
+    };
+  }
+
   return {
+    health,
     listOwners,
     addOwner,
     removeOwner,

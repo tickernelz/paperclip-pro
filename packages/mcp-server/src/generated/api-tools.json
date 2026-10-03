@@ -12014,7 +12014,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:523",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:527",
     "authorityCapability": null,
     "parameters": [
       {
@@ -16555,6 +16555,40 @@
     ]
   },
   {
+    "name": "paperclipGetChatEndpointOpenwaHealth",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/health",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/health",
+    "description": "Read OpenWA gateway and session health. Connection managers only. Reads the gateway version, engine, session status, and restriction with the stored operator key, plus pacing attestation and the latest observed pacing limit from the endpoint audit. Never returns keys or full phone numbers. Gateway failures are reported in gatewayError instead of an error status. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetChatIdentityLinkPreview",
     "operationId": "GET /api/chat-identity-links/preview",
     "method": "GET",
@@ -17880,7 +17914,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:596",
+    "boardGuard": "assertBoard@chat-channels.ts:602",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21976,7 +22010,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:308",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:312",
     "authorityCapability": null,
     "parameters": [],
     "body": {
@@ -30533,7 +30567,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:653",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:657",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30803,7 +30837,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:600",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:604",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37921,7 +37955,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:456",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:460",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37972,7 +38006,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:493",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:497",
     "authorityCapability": null,
     "parameters": [
       {

@@ -464,6 +464,8 @@ export interface ServerAdapterModule {
   isStartupComplete?: (stdoutLine: string) => boolean;
   supportsLocalAgentJwt?: boolean;
   readOnlyToolProfile?: import("./tool-profile.js").ReadOnlyToolProfileSupport;
+  /** True when runs can register a live same-turn steer target (`registerAdapterSteerTarget`). */
+  supportsLiveSteering?: boolean;
   /** How this adapter receives Paperclip's run-scoped control tools. */
   runtimeToolDelivery?: AdapterRuntimeToolDelivery;
   models?: AdapterModel[];
