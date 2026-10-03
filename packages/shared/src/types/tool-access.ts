@@ -1406,6 +1406,7 @@ export type ToolAccessReasonCode =
   | "deny_policy_block"
   | "deny_run_context_mismatch"
   | "deny_missing_agent"
+  | "openwa_approval_required"
   | "rate_limited";
 
 export interface ToolAccessSelector {

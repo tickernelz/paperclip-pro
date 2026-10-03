@@ -2,6 +2,7 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
+import { openwaRunSuppressesMentionWakes } from "../services/openwa/authority.js";
 import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
@@ -3613,6 +3614,15 @@ export function issueRoutes(
       sourceRun?.companyId === comment.companyId &&
       sourceRun.agentId === assigneeAgentId
     );
+  };
+  const commentMentionWakesSuppressed = async (
+    comment: { companyId: string; createdByRunId?: string | null },
+    actorRunId: string | null | undefined,
+  ) => {
+    const runId = comment.createdByRunId ?? actorRunId;
+    if (!runId) return false;
+    const sourceRun = await heartbeat.getRun(runId);
+    return sourceRun?.companyId === comment.companyId && openwaRunSuppressesMentionWakes(sourceRun);
   };
   const enqueueStalledReviewDecisionWakeup =
     opts.stalledReviewDecisionEnqueueWakeup ?? heartbeat.wakeup;
@@ -15450,10 +15460,12 @@ export function issueRoutes(
 
           let mentionedIds: string[] = [];
           try {
-            mentionedIds = await svc.findMentionedAgents(
-              issue.companyId,
-              commentBody,
-            );
+            mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId))
+              ? []
+              : await svc.findMentionedAgents(
+                  issue.companyId,
+                  commentBody,
+                );
           } catch (err) {
             logger.warn({ err, issueId: id }, "failed to resolve @-mentions");
           }
@@ -19401,10 +19413,12 @@ export function issueRoutes(
 
         let mentionedIds: string[] = [];
         try {
-          mentionedIds = await svc.findMentionedAgents(
-            issue.companyId,
-            req.body.body,
-          );
+          mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId))
+            ? []
+            : await svc.findMentionedAgents(
+                issue.companyId,
+                req.body.body,
+              );
         } catch (err) {
           logger.warn({ err, issueId: id }, "failed to resolve @-mentions");
         }

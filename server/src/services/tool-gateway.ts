@@ -8,6 +8,7 @@ import { githubGuestBotConnectionForSession, githubBotToolsForSession } from "./
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { runIdentityContexts } from "@tickernelz/paperclip-pro-db";
 import { captureRunIdentity } from "./run-identity.js";
+import { assertOpenwaRunIdMay, OpenwaApprovalRequiredError } from "./openwa/authority.js";
 import { emitConnectionInvoked } from "./connector-telemetry.js";
 import { resolveManagedGitHubIdentitySelection } from "./git-credentials.js";
 import { extractRemoteMcpPending } from "./remote-mcp-pending.js";
@@ -2626,6 +2627,29 @@ export function createToolGatewayService(
   function policyErrorStatus(decision: ToolAccessDecision) {
     if (decision.decision === "rate_limited") return 429;
     return 403;
+  }
+
+  async function applyOpenwaToolProfile(
+    decision: ToolAccessDecision,
+    session: Pick<ToolGatewaySession, "companyId" | "runId">,
+    tool: ToolGatewayDescriptor,
+  ): Promise<ToolAccessDecision> {
+    if (tool.risk === "read" || (!decision.allowed && decision.decision !== "require_approval")) return decision;
+    try {
+      await assertOpenwaRunIdMay(db, { companyId: session.companyId, runId: session.runId }, "external_tools", {
+        consume: decision.allowed,
+      });
+      return decision;
+    } catch (error) {
+      if (!(error instanceof OpenwaApprovalRequiredError)) throw error;
+      return {
+        ...decision,
+        allowed: false,
+        decision: "deny",
+        reasonCode: "openwa_approval_required",
+        explanation: error.message,
+      };
+    }
   }
 
   function findStaticTool(toolName: string): ToolGatewayDescriptor {
@@ -10256,6 +10280,7 @@ export function createToolGatewayService(
         if (accessDecision.allowed && tool.providerType === "paperclip_slack_chat" && SLACK_TOOLS.some(t => t.name === tool.upstreamToolName && t.risk === "approval")) {
           accessDecision = { ...accessDecision, allowed: false, decision: "require_approval", reasonCode: "requires_approval_policy", explanation: "Slack destructive actions, channel creation and invitations require approval." };
         }
+        accessDecision = await applyOpenwaToolProfile(accessDecision, session, tool);
         const recorded = await policyService.recordInvocation(
           decisionInput,
           accessDecision,
@@ -10334,6 +10359,7 @@ export function createToolGatewayService(
               decision: accessDecision.decision,
               matchedPolicyIds: accessDecision.matchedPolicyIds,
               rateLimitState: accessDecision.rateLimitState ?? null,
+              ...(accessDecision.reasonCode === "openwa_approval_required" ? { category: "external_tools" } : {}),
             },
           );
         }
@@ -10725,7 +10751,11 @@ export function createToolGatewayService(
         parameters: requestedParameters,
         consumeRateLimit: true,
       });
-      const accessDecision = await policyService.decide(decisionInput);
+      const accessDecision = await applyOpenwaToolProfile(
+        await policyService.decide(decisionInput),
+        sessionLike,
+        tool,
+      );
       const recorded = await policyService.recordInvocation(
         decisionInput,
         accessDecision,

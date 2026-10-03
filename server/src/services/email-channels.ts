@@ -48,6 +48,7 @@ import { instanceSettingsService } from "./instance-settings.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
 import type { heartbeatService } from "./heartbeat.js";
 import type { StorageService } from "../storage/types.js";
+import { assertOpenwaRunMay } from "./openwa/authority.js";
 import {
   MAX_ATTACHMENT_BYTES,
   isAllowedContentType,
@@ -582,6 +583,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
             (task.executionRunId !== run.id && task.checkoutRunId !== run.id)))
       )
         throw forbidden("Email action does not belong to this task run");
+      await assertOpenwaRunMay(db, run, "external_tools", { consume: accepting });
     }
     return task;
   }
