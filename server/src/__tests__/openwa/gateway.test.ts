@@ -80,10 +80,10 @@ beforeAll(async () => {
 
 afterEach(() => {
   seen.length = 0;
-  server.closeAllConnections();
 });
 
 afterAll(async () => {
+  server.closeAllConnections();
   await new Promise<void>((resolve) => server.close(() => resolve()));
 });
 
