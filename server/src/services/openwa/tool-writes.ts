@@ -3,6 +3,7 @@ import { and, eq, inArray, lt, or, sql } from "drizzle-orm";
 import { chatActions, chatOutboundMessages, type Db } from "@tickernelz/paperclip-pro-db";
 import { OpenwaGatewayError, type OpenwaGatewayClient, type OpenwaSendResult } from "./gateway.js";
 import { sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
+import { redactOpenwaSecrets } from "./redact.js";
 
 export const OPENWA_TOOL_WRITE_ACTION_KIND = "openwa_tool_write";
 const STALE_PROCESSING_MS = 2 * 60_000;
@@ -66,7 +67,7 @@ export function openwaWriteHashMatches(action: ActionRow, hash: string): boolean
 export function openwaWriteReplay(action: ActionRow): Record<string, unknown> | null {
   if (action.status !== "processed") return null;
   const receipt = action.result?.receipt;
-  return { ...(receipt && typeof receipt === "object" ? (receipt as Record<string, unknown>) : {}), actionId: action.id, state: "delivered", replayed: true };
+  return { ...(receipt && typeof receipt === "object" ? redactOpenwaSecrets(receipt as Record<string, unknown>) : {}), actionId: action.id, state: "delivered", replayed: true };
 }
 
 export async function createOpenwaWrite(
@@ -230,6 +231,6 @@ export async function finishOpenwaWrite(db: Db, action: ActionRow, receipt: Reco
   const [current] = await db.select({ result: chatActions.result }).from(chatActions).where(eq(chatActions.id, action.id));
   await db
     .update(chatActions)
-    .set({ status: "processed", result: { ...(current?.result ?? {}), receipt }, updatedAt: new Date() })
+    .set({ status: "processed", result: { ...(current?.result ?? {}), receipt: redactOpenwaSecrets(receipt) }, updatedAt: new Date() })
     .where(eq(chatActions.id, action.id));
 }

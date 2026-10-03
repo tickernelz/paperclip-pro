@@ -54,6 +54,7 @@ import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import { markTriggersAnswered } from "./publication.js";
+import { redactOpenwaSecrets } from "./redact.js";
 import {
   createOpenwaWrite,
   finishOpenwaWrite,
@@ -103,6 +104,7 @@ export type OpenwaToolErrorCode =
   | "gateway_error"
   | "gateway_admin_disabled"
   | "self_session_requires_confirmation"
+  | "secret_issuing_operation"
   | "invalid_arguments";
 
 export class OpenwaToolError extends HttpError {
@@ -1206,7 +1208,7 @@ export async function auditSafely(
       conversationId: ctx.conversation.id,
       runId: ctx.run.id,
       metadata: entry.metadata,
-      content: entry.content,
+      content: entry.content && redactOpenwaSecrets(entry.content),
       retentionDays: ctx.policy.auditContentRetentionDays,
     });
   } catch (error) {
@@ -1234,7 +1236,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
   const ctx = await resolveContext(db, binding);
   const started = performance.now();
   try {
-    const result = await execute(ctx, args);
+    const result = redactOpenwaSecrets(await execute(ctx, args));
     await auditSafely(ctx, {
       kind: "tool_called",
       metadata: {
@@ -1269,7 +1271,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
 export function openwaToolErrorBody(error: unknown): Record<string, unknown> {
   if (error instanceof HttpError) {
     const details = record(error.details);
-    return { error: typeof details.code === "string" ? details.code : "http_" + error.status, message: error.message, ...details };
+    return redactOpenwaSecrets({ error: typeof details.code === "string" ? details.code : "http_" + error.status, message: error.message, ...details });
   }
   if (error && typeof error === "object" && (error as { name?: unknown }).name === "ZodError")
     return { error: "invalid_arguments", issues: (error as { issues?: unknown }).issues };

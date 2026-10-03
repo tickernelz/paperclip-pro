@@ -20,6 +20,13 @@ export const OPENWA_SELF_SESSION_OPERATIONS: ReadonlySet<string> = new Set([
   "SessionController_delete",
   "SessionController_forceKill",
 ]);
+export const OPENWA_SECRET_ISSUING_OPERATIONS: ReadonlySet<string> = new Set([
+  "AuthController_create",
+  "IntegrationInstanceController_create",
+  "IntegrationInstanceController_regenerate",
+  "SessionController_requestPairingCode",
+  "SessionController_getQRCode",
+]);
 const LIST_SESSIONS_OPERATION = "SessionController_findAll";
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 const ENGINES: readonly OpenwaEngine[] = ["whatsapp-web.js", "baileys"];
@@ -27,7 +34,7 @@ const LEARNED_LIMIT = 4096;
 const SUMMARY_LIMIT = 120;
 
 export type OpenwaCatalogCategory = OpenwaOperationCategory | "paperclip";
-export type OpenwaUnavailableReason = "unavailable_on_engine" | "unavailable_without_admin_key";
+export type OpenwaUnavailableReason = "secret_issuing_operation" | "unavailable_on_engine" | "unavailable_without_admin_key";
 export type OpenwaOperationGate =
   | "none"
   | "reply_or_cross_chat_send"
@@ -133,6 +140,7 @@ export function openwaOperationVisible(effective: OpenwaEffectiveOperation, scop
 /** Static engine matrix, the 501 learning cache and the configured keys; null when the operation can be sent. */
 export function openwaOperationUnavailable(effective: OpenwaEffectiveOperation, scope: OpenwaCatalogScope): OpenwaUnavailableReason | null {
   const { operation } = effective;
+  if (OPENWA_SECRET_ISSUING_OPERATIONS.has(operation.id)) return "secret_issuing_operation";
   if (scope.engine && !operation.engines.includes(scope.engine)) return "unavailable_on_engine";
   if (learnedUnavailable.has(learnedKey(scope, operation.id))) return "unavailable_on_engine";
   if (operation.auth !== "api_key" || scope.hasAdminKey) return null;

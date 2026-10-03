@@ -46,6 +46,7 @@ Evidence sources: the live gateway OpenAPI document (`GET /api/docs-yaml`, versi
 | D35 | Adapter authentication | OpenWA endpoints require an agent adapter that authenticates runs with signed run-bound JWTs (`supportsLocalAgentJwt`); persistent agent keys of that agent are read-only |
 | D36 | Grant scope | A grant applies only to the approved request: its requester, origin chat and proposed action. Other members need their own approval |
 | D37 | Approval chats | Owner replies to approval bubbles are detected in any chat regardless of activation; the self-chat is implicitly active for owner commands in `owner_number` mode |
+| D38 | Gateway secrets | Secret-issuing gateway operations are refused for agents; credential fields in gateway results are redacted |
 
 ## 1. Objective
 
@@ -375,7 +376,7 @@ Schema budget about 3k tokens: frequent operations are first-class; the rest of 
 
 ### 8.4 Gateway admin tools
 
-`gatewayAdminTools`: `off` (default; hidden from catalog) | `read` | `full`. Operations needing `admin_unscoped` are listed as unavailable without `adminApiKey`. Instance-global admin operations affect every session on the gateway and are labelled so in the catalog. Operations that log out, stop or delete the endpoint's own session require an owner-class run plus a Paperclip confirmation.
+`gatewayAdminTools`: `off` (default; hidden from catalog) | `read` | `full`. Operations needing `admin_unscoped` are listed as unavailable without `adminApiKey`. Instance-global admin operations affect every session on the gateway and are labelled so in the catalog. Operations that log out, stop or delete the endpoint's own session require an owner-class run plus a Paperclip confirmation. Operations whose response is the only copy of a credential or a device-linking code (`AuthController_create`, `IntegrationInstanceController_create`, `IntegrationInstanceController_regenerate`, `SessionController_requestPairingCode`, `SessionController_getQRCode`) are listed as unavailable and refused with `secret_issuing_operation` at every level and for every run class (D38); credential fields in every other gateway result, stored receipt and audit entry are replaced with `[REDACTED]`.
 
 ### 8.5 Results and errors
 

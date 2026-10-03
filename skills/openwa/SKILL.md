@@ -77,6 +77,11 @@ and JSON `{ "tool": "openwa_read_chat", "arguments": {} }`. Read the adjacent
   (`self_session_requires_confirmation`); call again with the same key once it is
   accepted.
 - `paperclip.audit.list` reads this endpoint's audit (owner-triggered runs only).
+- Creating API keys, creating integration instances, regenerating their
+  secret, requesting a pairing code and fetching the session QR code are done by
+  a person in the OpenWA dashboard, never by you: they fail with
+  `secret_issuing_operation`. Credential fields in gateway results read
+  `[REDACTED]`.
 
 ## Errors
 
@@ -85,5 +90,5 @@ Errors carry a typed `code`: `approval_required` (with `category`),
 `retryAfterSeconds`), `quote_unresolvable`, `number_not_on_whatsapp`,
 `gateway_unavailable`, `session_not_ready`, `unavailable_on_engine`,
 `unavailable_without_admin_key`, `gateway_admin_disabled`,
-`self_session_requires_confirmation`, `invalid_arguments`, `idempotency_conflict`. Do not retry a gated call
+`self_session_requires_confirmation`, `secret_issuing_operation`, `invalid_arguments`, `idempotency_conflict`. Do not retry a gated call
 without approval. A schema rejection means the arguments need correcting.
