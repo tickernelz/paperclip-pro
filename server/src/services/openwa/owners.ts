@@ -139,29 +139,60 @@ export async function openwaPrincipalAuthorization(
   endpoint: Pick<EndpointRow, "companyId" | "id" | "policy" | "status">,
   principalId: string,
   context: { isDirectMessage?: boolean } = {},
+  lock = true,
 ): Promise<OpenwaPrincipalAuthorization> {
-  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`chat-identity:${endpoint.companyId}:${principalId}`}, 0))`);
-  const [principal] = await tx
-    .select({ externalId: chatExternalPrincipals.externalId })
+  const denied: OpenwaPrincipalAuthorization = { allowed: false, userId: null, role: "outside_allowlist", triggerClass: "other", ownerId: null };
+  if (lock) await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${`chat-identity:${endpoint.companyId}:${principalId}`}, 0))`);
+  const ruleLists = sql<string[]>`coalesce((select array_agg(${chatSenderRules.list}::text) from ${chatSenderRules} where ${chatSenderRules.companyId} = ${chatExternalPrincipals.companyId} and ${chatSenderRules.endpointId} = ${endpoint.id} and ${chatSenderRules.e164} = '+' || substring(lower(btrim(${chatExternalPrincipals.externalId})) from '^\\+?([0-9]{5,20})(@(c\\.us|s\\.whatsapp\\.net))?$')), '{}'::text[])`;
+  const principalQuery = tx
+    .select({ externalId: chatExternalPrincipals.externalId, rules: ruleLists })
     .from(chatExternalPrincipals)
     .where(and(eq(chatExternalPrincipals.companyId, endpoint.companyId), eq(chatExternalPrincipals.id, principalId)))
     .limit(1);
-  const denied: OpenwaPrincipalAuthorization = { allowed: false, userId: null, role: "outside_allowlist", triggerClass: "other", ownerId: null };
+  const ownerQuery = tx
+    .select({
+      ownerId: chatEndpointOwners.id,
+      linkStatus: chatIdentityLinks.status,
+      userId: chatIdentityLinks.paperclipUserId,
+      membershipStatus: companyMemberships.status,
+      membershipRole: companyMemberships.membershipRole,
+    })
+    .from(chatIdentityLinks)
+    .innerJoin(
+      chatEndpointOwners,
+      and(
+        eq(chatEndpointOwners.companyId, chatIdentityLinks.companyId),
+        eq(chatEndpointOwners.endpointId, endpoint.id),
+        eq(chatEndpointOwners.identityLinkId, chatIdentityLinks.id),
+      ),
+    )
+    .innerJoin(
+      companyMemberships,
+      and(
+        eq(companyMemberships.companyId, chatIdentityLinks.companyId),
+        eq(companyMemberships.principalType, "user"),
+        eq(companyMemberships.principalId, chatIdentityLinks.paperclipUserId),
+      ),
+    )
+    .where(
+      and(
+        eq(chatIdentityLinks.companyId, endpoint.companyId),
+        eq(chatIdentityLinks.endpointId, endpoint.id),
+        eq(chatIdentityLinks.principalId, principalId),
+      ),
+    )
+    .limit(1);
+  const ownerLookup = lock
+    ? openwaCurrentOwnerUserId(tx, endpoint, principalId, true)
+    : ownerQuery.then(([row]) =>
+        row && row.linkStatus === "linked" && row.userId && row.membershipStatus === "active" && row.membershipRole !== "viewer"
+          ? { userId: row.userId, ownerId: row.ownerId }
+          : { userId: null, ownerId: null },
+      );
+  const [[principal], owner] = await Promise.all([principalQuery, ownerLookup]);
   if (!principal) return denied;
-  const owner = await openwaCurrentOwnerUserId(tx, endpoint, principalId, true);
   const digits = openwaDigits(principal.externalId);
-  const rules = digits
-    ? await tx
-        .select({ list: chatSenderRules.list })
-        .from(chatSenderRules)
-        .where(
-          and(
-            eq(chatSenderRules.companyId, endpoint.companyId),
-            eq(chatSenderRules.endpointId, endpoint.id),
-            eq(chatSenderRules.e164, "+" + digits),
-          ),
-        )
-    : [];
+  const rules = digits ? principal.rules.map((list) => ({ list })) : [];
   const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
   const role: OpenwaPrincipalRole = owner.userId ? "owner" : openwaRoleWithoutOwner(policy, rules, digits);
   const allowed =

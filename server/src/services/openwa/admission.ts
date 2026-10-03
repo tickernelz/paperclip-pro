@@ -269,12 +269,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
   };
 
   async function snapshotFor(runtime: OpenwaAdmissionRuntime): Promise<OpenwaPolicySnapshot | null> {
-    const cached = deps.policies.peek(runtime.endpointId);
-    if (cached) {
-      deps.policies.revalidateInBackground(runtime.companyId, runtime.endpointId);
-      return cached;
-    }
-    return deps.policies.get(runtime.companyId, runtime.endpointId);
+    return deps.policies.peek(runtime.endpointId) ?? deps.policies.get(runtime.companyId, runtime.endpointId);
   }
 
   async function audit(
