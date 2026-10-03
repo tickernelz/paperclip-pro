@@ -38,7 +38,7 @@ import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { instanceSettingsService } from "../../services/instance-settings.js";
 import { secretService } from "../../services/secrets.js";
 import { HttpError } from "../../errors.js";
-import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, type OpenwaRunContext } from "../../services/openwa/authority.js";
+import { applyOpenwaRunContext, assertOpenwaRunMay, resolveOpenwaRunContext, restoreOpenwaGrant, type OpenwaRunContext } from "../../services/openwa/authority.js";
 import { executeOpenwaTool, type OpenwaToolBinding } from "../../services/openwa/tools.js";
 import { issueRoutes } from "../../routes/issues.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
@@ -675,5 +675,32 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const ownerRun = await runStart(t, ownerWake);
     const ownerDenied = await failure(requestApproval(ownerRun.binding));
     expect(codeOf(ownerDenied)).toBe("approval_not_needed");
+  }, 120_000);
+
+  it("keeps a consumed grant revoked when its approver stops being an owner", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "buat task" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const [grant] = await grantsOf(created.requestId);
+    const request = await requestRow(created.requestId);
+    const grantRun = await runStart(t, await approvalWake(t, created.requestId), {
+      grantIds: [grant!.id],
+      requesterPrincipalId: request.requestedByPrincipalId,
+      approvalRequestId: request.id,
+    });
+    expect(await assertOpenwaRunMay(db, grantRun.run, "create_task")).toBe(grant!.id);
+    expect((await grantsOf(created.requestId))[0]).toMatchObject({ status: "consumed", consumedByRunId: grantRun.runId });
+
+    const [owner] = await t.service.openwa.listOwners(t.endpointId);
+    await t.service.openwa.removeOwner(t.endpointId, owner!.id, t.userId);
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await restoreOpenwaGrant(db, { companyId: t.companyId, runId: grantRun.runId, grantId: grant!.id });
+    expect((await grantsOf(created.requestId))[0]!.status).toBe("revoked");
+    await expect(assertOpenwaRunMay(db, grantRun.run, "create_task")).rejects.toMatchObject({ status: 403 });
   }, 120_000);
 });

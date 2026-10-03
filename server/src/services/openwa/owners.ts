@@ -236,7 +236,7 @@ export async function revokeOpenwaGrantsOfFormerOwners(
       and(
         eq(chatOwnerGrants.companyId, endpoint.companyId),
         eq(chatOwnerGrants.endpointId, endpoint.id),
-        eq(chatOwnerGrants.status, "live"),
+        inArray(chatOwnerGrants.status, ["live", "consumed"]),
         current.length
           ? or(sql`${chatOwnerGrants.approvedByUserId} is null`, notInArray(chatOwnerGrants.approvedByUserId, current))
           : undefined,
