@@ -10669,6 +10669,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     endpoint: EndpointRow,
     author: Author,
     raw?: unknown,
+    resolveLink = true,
   ) {
     const providerAccountId = endpoint.providerAccountId ?? "unknown";
     const externalId = stableExternalPrincipalId(
@@ -10706,6 +10707,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         },
       })
       .returning();
+    if (!resolveLink) return { principal, userId: null, linkedDenied: false };
     const link = await db
       .select({
         userId: chatIdentityLinks.paperclipUserId,
@@ -15912,11 +15914,43 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         return;
       }
 
-      const principalResolution = await ensurePrincipal(
-        endpoint,
-        message.author,
-        message.raw,
-      );
+      const openwaPrefetched = openwaDecoration
+        ? await (() => {
+            const principal = ensurePrincipal(endpoint, message.author, message.raw, false);
+            const conversation = db
+              .select()
+              .from(chatConversations)
+              .where(
+                and(
+                  eq(chatConversations.endpointId, endpoint.id),
+                  eq(chatConversations.externalConversationId, thread.channelId),
+                  eq(chatConversations.externalThreadId, thread.id),
+                ),
+              )
+              .orderBy(desc(chatConversations.sessionGeneration))
+              .then((rows) => rows[0] ?? null);
+            return Promise.all([
+              principal,
+              ensureResource(endpoint, thread, false),
+              conversation,
+              conversation.then((row) =>
+                row
+                  ? db
+                      .select()
+                      .from(issues)
+                      .where(and(eq(issues.companyId, endpoint.companyId), eq(issues.id, row.issueId)))
+                      .then((rows) => rows[0] ?? null)
+                  : null,
+              ),
+              principal.then((resolved) =>
+                openwaPrincipalAuthorization(db, endpoint, resolved.principal.id, { isDirectMessage: thread.isDM }, false),
+              ),
+            ]);
+          })()
+        : null;
+      const principalResolution = openwaPrefetched
+        ? openwaPrefetched[0]
+        : await ensurePrincipal(endpoint, message.author, message.raw);
       const mayEnableSetupDestination =
         endpoint.provider !== "imessage-photon" &&
         endpoint.provider !== "openwa" &&
@@ -15969,7 +16003,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             }
             return { enabledResourceCount, resource };
           })
-        : {
+        : openwaPrefetched
+          ? { enabledResourceCount: null, resource: openwaPrefetched[1] }
+          : {
             enabledResourceCount: await db
               .select({ count: sql<number>`count(*)::int` })
               .from(chatEndpointResources)
@@ -15986,16 +16022,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             resource: await ensureResource(endpoint, thread, false),
           };
       const { enabledResourceCount, resource } = resourceAdmission;
-      await db
-        .update(chatDeliveries)
-        .set({
-          principalId: principalResolution.principal.id,
-          updatedAt: new Date(),
-        })
-        .where(eq(chatDeliveries.id, activeDelivery.id));
+      if (!openwaDecoration)
+        await db
+          .update(chatDeliveries)
+          .set({
+            principalId: principalResolution.principal.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(chatDeliveries.id, activeDelivery.id));
 
-      const latestConversation =
-        endpoint.provider === "microsoft-teams"
+      const latestConversation = openwaPrefetched
+        ? openwaPrefetched[2]
+        : endpoint.provider === "microsoft-teams"
           ? await conversationForThread(endpoint.id, thread.id)
           : await db
               .select()
@@ -16018,7 +16056,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         : null;
       let existingConversation: ConversationRow | null = latestConversation;
       let existingIssue: typeof issues.$inferSelect | null =
-        existingConversation
+        openwaPrefetched
+          ? openwaPrefetched[3]
+          : existingConversation
           ? await db
               .select()
               .from(issues)
@@ -16072,9 +16112,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const destinationAllowed = thread.isDM
         ? endpoint.allowDirectMessages
         : openwaDestinationAllowed(endpoint, resource, openwaDecoration);
-      const openwaAuthorization = openwaDecoration
-        ? await openwaPrincipalAuthorization(db, endpoint, principalResolution.principal.id, { isDirectMessage: thread.isDM })
-        : null;
+      const openwaAuthorization = openwaPrefetched ? openwaPrefetched[4] : null;
       const guestSponsorAllowed =
         !openwaAuthorization &&
         principalResolution.userId === null &&
@@ -16181,6 +16219,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
 
       const filterPreControlSource = async (database: DbOrTransaction) => {
         if (
+          openwaDecoration ||
           controlCommand === "status" ||
           (controlCommand === "new" &&
             endpoint.provider === "telegram" &&
@@ -16814,6 +16853,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             conversationId: conversation!.id,
             ...(openwaDecoration
               ? {
+                  principalId: principalResolution.principal.id,
                   triggerClass: effectiveOpenwa()!.triggerClass,
                   principalRole: effectiveOpenwa()!.principalRole,
                   answerState: openwaDecoration.event === "group_added" ? null : ("pending" as const),
@@ -38994,6 +39034,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     openwaMedia,
     shutdown: async () => {
       shuttingDown = true;
+      openwaPolicies.stop();
       await openwaMedia.shutdown();
       await Promise.allSettled([...failedRetryTasks.values()]);
       unregisterFailedRetryAuthority();

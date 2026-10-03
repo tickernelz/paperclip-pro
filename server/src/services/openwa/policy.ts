@@ -1,4 +1,4 @@
-import { and, eq, or, sql } from "drizzle-orm";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
 import {
   chatEndpointOwners,
   chatEndpointResources,
@@ -548,14 +548,19 @@ export interface OpenwaPolicyCache {
   peek(endpointId: string): OpenwaPolicySnapshot | null;
   get(companyId: string, endpointId: string): Promise<OpenwaPolicySnapshot | null>;
   refreshIfStale(companyId: string, endpointId: string, revision: number): Promise<OpenwaPolicySnapshot | null>;
-  revalidateInBackground(companyId: string, endpointId: string): void;
+  revalidate(): Promise<void>;
   invalidate(endpointId: string): void;
+  stop(): void;
 }
 
-export function createOpenwaPolicyCache(db: Reader, now: () => number = Date.now): OpenwaPolicyCache {
-  const entries = new Map<string, { snapshot: OpenwaPolicySnapshot | null; checkedAt: number }>();
+export function createOpenwaPolicyCache(
+  db: Reader,
+  now: () => number = Date.now,
+  revalidateEveryMs: number = OPENWA_POLICY_REVALIDATE_MS,
+): OpenwaPolicyCache {
+  const entries = new Map<string, { snapshot: OpenwaPolicySnapshot | null }>();
   const loading = new Map<string, Promise<OpenwaPolicySnapshot | null>>();
-  const revalidating = new Set<string>();
+  let revalidating: Promise<void> | null = null;
   let generation = 0;
   const generations = new Map<string, number>();
 
@@ -565,7 +570,7 @@ export function createOpenwaPolicyCache(db: Reader, now: () => number = Date.now
     const started = generations.get(endpointId) ?? 0;
     const promise = loadOpenwaPolicySnapshot(db, companyId, endpointId, now())
       .then((snapshot) => {
-        if ((generations.get(endpointId) ?? 0) === started) entries.set(endpointId, { snapshot, checkedAt: now() });
+        if ((generations.get(endpointId) ?? 0) === started) entries.set(endpointId, { snapshot });
         return snapshot;
       })
       .finally(() => loading.delete(endpointId));
@@ -573,7 +578,39 @@ export function createOpenwaPolicyCache(db: Reader, now: () => number = Date.now
     return promise;
   }
 
-  return {
+  function refreshIfStale(companyId: string, endpointId: string, revision: number): Promise<OpenwaPolicySnapshot | null> {
+    const entry = entries.get(endpointId);
+    if (entry?.snapshot && entry.snapshot.revision === revision) return Promise.resolve(entry.snapshot);
+    generations.set(endpointId, ++generation);
+    loading.delete(endpointId);
+    return load(companyId, endpointId);
+  }
+
+  async function revalidateCached(): Promise<void> {
+    const cached: OpenwaPolicySnapshot[] = [];
+    for (const entry of entries.values()) if (entry.snapshot) cached.push(entry.snapshot);
+    if (!cached.length) return;
+    const rows = await db
+      .select({ id: chatEndpoints.id, companyId: chatEndpoints.companyId, revision: chatEndpoints.policyRevision })
+      .from(chatEndpoints)
+      .where(
+        and(
+          inArray(chatEndpoints.id, cached.map((snapshot) => snapshot.endpointId)),
+          inArray(chatEndpoints.companyId, [...new Set(cached.map((snapshot) => snapshot.companyId))]),
+        ),
+      );
+    for (const row of rows) {
+      const snapshot = entries.get(row.id)?.snapshot;
+      if (snapshot && snapshot.companyId === row.companyId && snapshot.revision !== row.revision) await refreshIfStale(row.companyId, row.id, row.revision);
+    }
+  }
+
+  const timer = setInterval(() => {
+    void cache.revalidate();
+  }, revalidateEveryMs);
+  timer.unref?.();
+
+  const cache: OpenwaPolicyCache = {
     peek(endpointId) {
       return entries.get(endpointId)?.snapshot ?? null;
     },
@@ -582,35 +619,23 @@ export function createOpenwaPolicyCache(db: Reader, now: () => number = Date.now
       if (entry?.snapshot) return entry.snapshot;
       return load(companyId, endpointId);
     },
-    async refreshIfStale(companyId, endpointId, revision) {
-      const entry = entries.get(endpointId);
-      if (entry?.snapshot && entry.snapshot.revision === revision) {
-        entry.checkedAt = now();
-        return entry.snapshot;
-      }
-      generations.set(endpointId, ++generation);
-      loading.delete(endpointId);
-      return load(companyId, endpointId);
-    },
-    revalidateInBackground(companyId, endpointId) {
-      const entry = entries.get(endpointId);
-      if (!entry?.snapshot || now() - entry.checkedAt < OPENWA_POLICY_REVALIDATE_MS || revalidating.has(endpointId)) return;
-      revalidating.add(endpointId);
-      entry.checkedAt = now();
-      void db
-        .select({ revision: chatEndpoints.policyRevision })
-        .from(chatEndpoints)
-        .where(and(eq(chatEndpoints.companyId, companyId), eq(chatEndpoints.id, endpointId)))
-        .then(async ([row]) => {
-          if (row && row.revision !== entry.snapshot?.revision) await this.refreshIfStale(companyId, endpointId, row.revision);
-        })
+    refreshIfStale,
+    revalidate() {
+      revalidating ??= revalidateCached()
         .catch(() => undefined)
-        .finally(() => revalidating.delete(endpointId));
+        .finally(() => {
+          revalidating = null;
+        });
+      return revalidating;
     },
     invalidate(endpointId) {
       generations.set(endpointId, ++generation);
       entries.delete(endpointId);
       loading.delete(endpointId);
     },
+    stop() {
+      clearInterval(timer);
+    },
   };
+  return cache;
 }

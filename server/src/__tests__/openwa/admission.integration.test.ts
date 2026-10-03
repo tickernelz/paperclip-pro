@@ -27,6 +27,7 @@ import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { secretService } from "../../services/secrets.js";
+import { createOpenwaPolicyCache, OPENWA_POLICY_REVALIDATE_MS } from "../../services/openwa/policy.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "21111111-2222-4333-8444-555555555555";
@@ -415,6 +416,59 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(t.counted.counts.transactions - transactions).toBeLessThanOrEqual(1);
     expect(await deliveries(t)).toHaveLength(0);
     expect((await audits(t)).filter((entry) => entry.kind === "trigger_filtered")).toHaveLength(0);
+  }, 90_000);
+
+  it("keeps non-trigger traffic query-free after the policy revalidation interval has elapsed", async () => {
+    const realNow = Date.now.bind(Date);
+    let skew = 0;
+    vi.spyOn(Date, "now").mockImplementation(() => realNow() + skew);
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const group = "120363000000000005@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Quiet", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    await goLive(t);
+    await send(t, { chatId: group, author: jid(MEMBER_PHONE), body: "warm up" });
+    await until(() => t.service.openwaAdmissionStats.discoveries >= 1);
+    let observed = -1;
+    await until(async () => {
+      const current = t.counted.counts.queries;
+      if (current === observed) return true;
+      observed = current;
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      return false;
+    });
+    skew = OPENWA_POLICY_REVALIDATE_MS + 1_000;
+    const queries = t.counted.counts.queries;
+    const before = handled(t);
+    for (let i = 0; i < 20; i++) t.gateway.inbound({ chatId: group, author: jid(MEMBER_PHONE), body: "later chatter " + i });
+    await until(() => handled(t) >= before + 20);
+    expect(t.counted.counts.queries - queries).toBe(0);
+  }, 90_000);
+
+  it("picks up an out-of-band policy revision on the revalidation timer", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const cache = createOpenwaPolicyCache(db, Date.now, 50);
+    try {
+      const first = await cache.get(t.companyId, t.endpointId);
+      expect(first?.policy.senderPolicyMode).toBe("allowlist");
+      const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+      await db
+        .update(chatEndpoints)
+        .set({ policy: { ...(endpoint.policy as Record<string, unknown>), senderPolicyMode: "denylist" } as typeof endpoint.policy, policyRevision: endpoint.policyRevision + 1 })
+        .where(eq(chatEndpoints.id, t.endpointId));
+      await until(() => cache.peek(t.endpointId)?.revision === endpoint.policyRevision + 1);
+      expect(cache.peek(t.endpointId)?.policy.senderPolicyMode).toBe("denylist");
+      cache.stop();
+      await db
+        .update(chatEndpoints)
+        .set({ policyRevision: endpoint.policyRevision + 2 })
+        .where(eq(chatEndpoints.id, t.endpointId));
+      await new Promise((resolve) => setTimeout(resolve, 300));
+      expect(cache.peek(t.endpointId)?.revision).toBe(endpoint.policyRevision + 1);
+    } finally {
+      cache.stop();
+    }
   }, 90_000);
 
   it("rotates conversations after idle hours and applies /new, /close and /status", async () => {
