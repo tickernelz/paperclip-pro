@@ -206,7 +206,7 @@ export function readOpenwaRunContext(contextSnapshot: unknown): OpenwaRunContext
   };
 }
 
-async function openwaConversationBinding(db: Db, companyId: string, issueId: string) {
+async function openwaConversationBinding(db: Pick<Db, "select">, companyId: string, issueId: string) {
   const [row] = await db
     .select({
       endpointId: chatConversations.endpointId,
@@ -233,7 +233,7 @@ async function openwaConversationBinding(db: Db, companyId: string, issueId: str
 }
 
 /** True when the issue is bound by a chat conversation to an OpenWA endpoint of the same company. */
-export async function isOpenwaConversationIssue(db: Db, companyId: string, issueId: string): Promise<boolean> {
+export async function isOpenwaConversationIssue(db: Pick<Db, "select">, companyId: string, issueId: string): Promise<boolean> {
   const key = `${companyId}:${issueId}`;
   const cached = cacheGet(bindingCache, key, BINDING_CACHE_TTL_MS);
   if (cached !== null) return cached;
