@@ -19,8 +19,11 @@ real WhatsApp number, or a real agent run.
   session identifiers are not recorded here; numbers appear masked
   (`+62xxx...1234`).
 - Gateway prerequisites (spec §16): `SEND_PACING_ENABLED=true`,
-  `RESOLVE_LID_TO_PHONE=true`. Status: pending live window.
-- Paperclip instance, agent adapter and test contacts: pending live window.
+  `RESOLVE_LID_TO_PHONE=true`, set during gateway preparation; send pacing
+  attested at setup.
+- Paperclip production instance on 2026.1004.1; agent adapter `omp_local`;
+  number mode `agent_number` (agent number +62xxx...7040); one owner
+  (+62xxx...7561). No other test contacts.
 
 ## Acceptance criteria
 
@@ -29,7 +32,7 @@ Fixture evidence is `file:line "test name"`. Paths under `server/src/__tests__/o
 
 | AC | Criterion | Fixture evidence | Live result |
 | --- | --- | --- | --- |
-| AC1 | Setup: run-JWT adapter gate, inspection, multi-session warning, `allowedChats` rejection, attestations, owner test DM, 422 wrong key, 503 gateway down | `openwa/setup.integration.test.ts:301` "rejects an agent whose adapter cannot sign run tokens"; `:254` "inspects a valid gateway read-only and returns no secrets"; `:275` "validates an optional admin key and warns about an unknown gateway version"; `:285` "warns when the key sees more than one session"; `:294` "rejects a key restricted to selected chats"; `:354` "requires both attestations before configuring"; `:364` "configures with vaulted keys, the session identity, and attestations, then waits in the test step"; `:312` "rejects a wrong or viewer key with 422"; `:323` "returns 503 telling the user not to replace credentials when the gateway is down"; `:444` "refuses a second endpoint on the same gateway session or number with 409"; `:458` "puts the endpoint in attention when its agent switches to an adapter without run tokens"; UI `ui/src/pages/apps/chat/OpenwaConnectStep.test.tsx:78` "inspects the gateway, shows the session, and requires both attestations before connecting". Owner test DM to setup completion: `openwa/activation.integration.test.ts:210` "AC1: configure, attest, owner test DM answered by the agent, then verifying becomes active; a non-owner DM never wakes or activates". | pending live window |
+| AC1 | Setup: run-JWT adapter gate, inspection, multi-session warning, `allowedChats` rejection, attestations, owner test DM, 422 wrong key, 503 gateway down | `openwa/setup.integration.test.ts:301` "rejects an agent whose adapter cannot sign run tokens"; `:254` "inspects a valid gateway read-only and returns no secrets"; `:275` "validates an optional admin key and warns about an unknown gateway version"; `:285` "warns when the key sees more than one session"; `:294` "rejects a key restricted to selected chats"; `:354` "requires both attestations before configuring"; `:364` "configures with vaulted keys, the session identity, and attestations, then waits in the test step"; `:312` "rejects a wrong or viewer key with 422"; `:323` "returns 503 telling the user not to replace credentials when the gateway is down"; `:444` "refuses a second endpoint on the same gateway session or number with 409"; `:458` "puts the endpoint in attention when its agent switches to an adapter without run tokens"; UI `ui/src/pages/apps/chat/OpenwaConnectStep.test.tsx:78` "inspects the gateway, shows the session, and requires both attestations before connecting". Owner test DM to setup completion: `openwa/activation.integration.test.ts:210` "AC1: configure, attest, owner test DM answered by the agent, then verifying becomes active; a non-owner DM never wakes or activates". | Pass on 2026.1004.1 (2026-10-04): owner test DM admitted as owner/full at 03:21:49Z, agent replied with `openwa_send` at 03:22:09Z, endpoint active at 04:17:01Z after the tool-reply setup fix (`bddbd74fe`). See [Live qualification](#live-qualification). |
 | AC2 | Owner full run; follow-up owner message steered mid-run, or handled next turn without steering | `openwa/authority-admission.integration.test.ts:199` "resolves owner DMs to full and allowlisted member DMs to read_only from server records"; `server/src/__tests__/openwa-authority.test.ts:401` "derives owner only from admitted owner deliveries whose principal is still an owner"; `:611` "allows full runs and denies read_only runs with a typed category"; `openwa/round-trip.integration.test.ts:328` "answers an owner DM end to end without quoting and marks the trigger answered". Steering and queue fallback: `openwa/steering.integration.test.ts:436` "steers an owner follow-up into a live steer target, never sends nudges to WhatsApp, and queues without steering or in queue mode (AC2)". Code edits by a real run: live only. | pending live window |
 | AC3 | Sender policy: unlisted DM filtered, denylist, outside-allowlist group role, `reply_denied` until granted | `openwa/admission.integration.test.ts:279` "admits owner and allowlisted DMs and filters outside-allowlist and denylisted senders (AC3)"; `:364` "activates groups by owner presence, admits outside-allowlist members, and never converts to low trust (AC4)"; `openwa/policy.test.ts:101` "applies the sender policy in direct messages, with owners bypassing the denylist"; `openwa/publication.integration.test.ts:567` "requires a reply_outside_allowlist grant for an outside-allowlist group sender"; `openwa/tools.integration.test.ts:380` "denies origin replies the reply policy holds back and the outside_allowlist rule" | pending live window |
 | AC4 | Groups: owner present active; no owner inactive plus `group_added`; invite-link join needs `wa_admin` | `openwa/admission.integration.test.ts:364` (above); `:402` "wakes the agent once when added to an inactive group"; `openwa/policy.test.ts:122` "activates groups only with an owner present and admits outside-allowlist members there"; `openwa/catalog.integration.test.ts:349` "refuses with typed reasons for an other-class run at read level without an admin key" (covers `wa_admin` refusal for group operations; no fixture names the invite-link join operation) | pending live window |
@@ -96,4 +99,28 @@ Record the tested commit, gateway version, engine, adapter, masked numbers and
 UTC timestamps for each journey. Screenshots of Settings, Approvals, Audit and
 the health card belong here after the live window.
 
-- pending live window
+### Journey 1: setup and owner test DM (AC1)
+
+- Commit: 2026.1004.0 (`d27bb187c`) for the first attempt, 2026.1004.1
+  (`e98605480`) for completion. Gateway 0.23.7, engine `whatsapp-web.js`.
+- 03:20Z: inspect returned version 0.23.7, operator key role, one `ready`
+  session; configure moved the endpoint to `verifying`, step `test`; owner
+  identity link confirmed by the owner.
+- 03:21:49Z: owner DM admitted (`trigger_class` owner, role owner); the run
+  resolved owner/full and succeeded in 34 s.
+- 03:22:09Z: the agent replied with `openwa_send` (outbound `tool`, `sent`);
+  the trigger was marked answered, so run-end publication was suppressed
+  (`no_pending_trigger`), as designed.
+- Defect found: setup only accepted a final publication, so the test step kept
+  returning 409 `chat_test_round_trip_incomplete`. Fixed in `bddbd74fe`
+  (accept the run's own sent reply to the test chat) and released in 2026.1004.1.
+- 04:17:01Z: `POST /test` returned `active`, health `Connected`, setup
+  `complete`.
+- 03:42:14Z: a DM from an unlisted number (+62xxx...8008) was audited as
+  `trigger_filtered` (`outside_allowlist`) and woke nobody. It is unrelated to
+  the owner DM and matches AC3's unlisted-DM rule.
+
+### Remaining journeys
+
+- AC2, AC13 and AC15 owner journeys: pending owner messages.
+- AC3-AC12 member and group journeys: fixture only; no second test contact.
