@@ -18,9 +18,19 @@ import type { PermissionKey, PrincipalType } from "@tickernelz/paperclip-pro-sha
 import { conflict } from "../errors.js";
 import { assertAssignableAgent } from "./agent-assignability.js";
 import { authorizationService, type AuthorizationActor, type AuthorizationResource } from "./authorization.js";
+import { revokeOpenwaGrantsOfFormerOwnersInCompanies } from "./openwa/owners.js";
 import { ensureHumanRoleDefaultGrants } from "./principal-access-compatibility.js";
 
 type MembershipRow = typeof companyMemberships.$inferSelect;
+
+function losesOpenwaOwnerEligibility(existing: MembershipRow, nextStatus: string, nextMembershipRole: string | null): boolean {
+  return (
+    existing.principalType === "user" &&
+    existing.status === "active" &&
+    existing.membershipRole !== "viewer" &&
+    (nextStatus !== "active" || nextMembershipRole === "viewer")
+  );
+}
 type GrantInput = {
   permissionKey: PermissionKey;
   scope?: Record<string, unknown> | null;
@@ -550,6 +560,8 @@ export function accessService(db: Db) {
         .where(eq(companyMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
+      if (losesOpenwaOwnerEligibility(existing, nextStatus, nextMembershipRole))
+        await revokeOpenwaGrantsOfFormerOwnersInCompanies(tx, [companyId], grantedByUserId);
 
       await tx
         .delete(principalPermissionGrants)
@@ -729,6 +741,8 @@ export function accessService(db: Db) {
         .where(eq(companyMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
+      if (losesOpenwaOwnerEligibility(existing, "archived", existing.membershipRole))
+        await revokeOpenwaGrantsOfFormerOwnersInCompanies(tx, [companyId], null);
 
       return {
         member: archived,
@@ -829,6 +843,11 @@ export function accessService(db: Db) {
           .update(companyMemberships)
           .set({ status: "archived", updatedAt: now })
           .where(inArray(companyMemberships.id, toArchive.map((row) => row.id)));
+        await revokeOpenwaGrantsOfFormerOwnersInCompanies(
+          tx,
+          toArchive.filter((row) => losesOpenwaOwnerEligibility(row, "archived", row.membershipRole)).map((row) => row.companyId),
+          options.actorUserId ?? null,
+        );
         await tx
           .delete(principalPermissionGrants)
           .where(
@@ -878,12 +897,21 @@ export function accessService(db: Db) {
     const existing = await getMembership(companyId, principalType, principalId);
     if (existing) {
       if (existing.status !== status || existing.membershipRole !== membershipRole) {
-        const updated = await db
-          .update(companyMemberships)
-          .set({ status, membershipRole, updatedAt: new Date() })
-          .where(eq(companyMemberships.id, existing.id))
-          .returning()
-          .then((rows) => rows[0] ?? null);
+        const loses = losesOpenwaOwnerEligibility(existing, status, membershipRole);
+        const update = async (tx: Pick<Db, "update">) =>
+          tx
+            .update(companyMemberships)
+            .set({ status, membershipRole, updatedAt: new Date() })
+            .where(eq(companyMemberships.id, existing.id))
+            .returning()
+            .then((rows) => rows[0] ?? null);
+        const updated = loses
+          ? await db.transaction(async (tx) => {
+              const row = await update(tx);
+              await revokeOpenwaGrantsOfFormerOwnersInCompanies(tx, [companyId], null);
+              return row;
+            })
+          : await update(db);
         return updated ?? existing;
       }
       return existing;
@@ -1112,7 +1140,7 @@ export function accessService(db: Db) {
         await sweepMemberConnectionAccess(tx, companyId, existing.principalId, now);
       }
 
-      return tx
+      const updated = await tx
         .update(companyMemberships)
         .set({
           membershipRole: nextMembershipRole,
@@ -1122,6 +1150,9 @@ export function accessService(db: Db) {
         .where(eq(companyMemberships.id, existing.id))
         .returning()
         .then((rows) => rows[0] ?? existing);
+      if (losesOpenwaOwnerEligibility(existing, nextStatus, nextMembershipRole))
+        await revokeOpenwaGrantsOfFormerOwnersInCompanies(tx, [companyId], null);
+      return updated;
     });
   }
 

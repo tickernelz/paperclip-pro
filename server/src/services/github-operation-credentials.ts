@@ -17,6 +17,7 @@ import {
 import { secretService } from "./secrets.js";
 import { resolveCoreTrustPreset } from "./trust-preset-resolver.js";
 import { isLowTrustQuarantined } from "./source-trust.js";
+import { assertOpenwaRunMay, restoreOpenwaGrant } from "./openwa/authority.js";
 
 export type GitHubCredentialSummary = {
   status: "available" | "absent" | "unavailable";
@@ -112,7 +113,18 @@ export async function resolveGitHubOperationCredentials(
     runId: string;
   },
 ) {
-  const { run, context } = await captureRunIdentity(db, input);
+  return resolveCapturedGitHubOperationCredentials(db, input, await captureRunIdentity(db, input));
+}
+
+async function resolveCapturedGitHubOperationCredentials(
+  db: Db,
+  input: {
+    companyId: string;
+    agentId: string;
+    runId: string;
+  },
+  { run, context }: Awaited<ReturnType<typeof captureRunIdentity>>,
+) {
   if (!context) throw forbidden("This run predates managed GitHub credentials");
   let summary: GitHubCredentialSummary;
   let env: Record<string, string> = {};
@@ -191,4 +203,20 @@ export async function resolveGitHubOperationCredentials(
     ...summary,
     env,
   };
+}
+
+/** Credential export to an agent process; read_only OpenWA runs need an external_tools grant. */
+export async function exportGitHubOperationCredentials(
+  db: Db,
+  input: { companyId: string; agentId: string; runId: string },
+) {
+  const captured = await captureRunIdentity(db, input);
+  const grantId = await assertOpenwaRunMay(db, captured.run, "external_tools");
+  if (!grantId) return resolveCapturedGitHubOperationCredentials(db, input, captured);
+  try {
+    return await resolveCapturedGitHubOperationCredentials(db, input, captured);
+  } catch (error) {
+    await restoreOpenwaGrant(db, { companyId: input.companyId, runId: input.runId, grantId });
+    throw error;
+  }
 }

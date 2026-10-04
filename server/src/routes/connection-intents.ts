@@ -16,7 +16,7 @@ import { logActivity } from "../services/activity-log.js";
 import { accessService } from "../services/access.js";
 import type { heartbeatService } from "../services/heartbeat.js";
 import { assertBoard, assertCompanyAccess } from "./authz.js";
-import { resolveGitHubOperationCredentials } from "../services/github-operation-credentials.js";
+import { exportGitHubOperationCredentials } from "../services/github-operation-credentials.js";
 
 function bearer(req: Request) {
   const value = req.header("authorization") ?? "";
@@ -52,7 +52,7 @@ export function runtimeConnectionIntentRoutes(db: Db) {
       ? req.headers["x-paperclip-github-capability"] : bearer(req), "github_credentials");
     if (!claims) throw unauthorized("Invalid GitHub runtime capability");
     res.setHeader("Cache-Control", "no-store");
-    res.json(await resolveGitHubOperationCredentials(db, {
+    res.json(await exportGitHubOperationCredentials(db, {
       companyId: claims.company_id, agentId: claims.sub, runId: claims.run_id,
     }));
   });

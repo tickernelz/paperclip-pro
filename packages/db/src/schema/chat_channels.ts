@@ -15,7 +15,25 @@ import {
 } from "drizzle-orm/pg-core";
 import type {
   ChatAdapterCapabilities,
+  ChatAnswerState,
+  ChatAuditActorKind,
+  ChatAuditEntryKind,
   ChatConcurrencyPolicy,
+  ChatInflightMode,
+  ChatOutboundMessageSource,
+  ChatOutboundMessageState,
+  ChatOwnerApprovalChannel,
+  ChatOwnerApprovalStatus,
+  ChatOwnerGrantScope,
+  ChatOwnerGrantStatus,
+  ChatScheduledWakeKind,
+  ChatScheduledWakeState,
+  ChatSenderRuleList,
+  OpenwaChatSettings,
+  OpenwaEndpointPolicy,
+  OpenwaGrantCategory,
+  OpenwaPrincipalRole,
+  OpenwaTriggerClass,
   ChatDeliveryState,
   ChatDeploymentMode,
   ChatEndpointSetupState,
@@ -30,7 +48,9 @@ import type {
 } from "@tickernelz/paperclip-pro-shared";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";
+import { heartbeatRuns } from "./heartbeat_runs.js";
 import { issueComments } from "./issue_comments.js";
+import { issueThreadInteractions } from "./issue_thread_interactions.js";
 import { issues } from "./issues.js";
 import { toolConnections } from "./tool_access.js";
 
@@ -98,6 +118,15 @@ export const chatEndpoints = pgTable(
       .$type<ChatEndpointSetupState>()
       .notNull()
       .default({ step: "provider_setup" }),
+    policy: jsonb("policy")
+      .$type<OpenwaEndpointPolicy | Record<string, never>>()
+      .notNull()
+      .default({}),
+    policyRevision: integer("policy_revision").notNull().default(0),
+    inflightMode: text("inflight_mode")
+      .$type<ChatInflightMode>()
+      .notNull()
+      .default("queue"),
     healthMessage: text("health_message"),
     lastEventAt: timestamp("last_event_at", { withTimezone: true }),
     lastPublicationAt: timestamp("last_publication_at", { withTimezone: true }),
@@ -117,7 +146,15 @@ export const chatEndpoints = pgTable(
     check("chat_endpoints_email_policy_check", sql`${table.provider} <> 'agentmail' or (${table.publicationMode} = 'explicit' and ${table.externalExecutionPolicy} = 'agent')`),
     check(
       "chat_endpoints_provider_check",
-      sql`${table.provider} in ('slack', 'github', 'discord', 'microsoft-teams', 'telegram', 'agentmail', 'imessage-photon')`,
+      sql`${table.provider} in ('slack', 'github', 'discord', 'microsoft-teams', 'telegram', 'agentmail', 'imessage-photon', 'openwa')`,
+    ),
+    check(
+      "chat_endpoints_inflight_mode_check",
+      sql`${table.inflightMode} in ('steer', 'queue')`,
+    ),
+    check(
+      "chat_endpoints_policy_revision_check",
+      sql`${table.policyRevision} >= 0`,
     ),
     check(
       "chat_endpoints_status_check",
@@ -159,6 +196,12 @@ export const chatEndpoints = pgTable(
     uniqueIndex("chat_endpoints_photon_number_uq")
       .on(table.botExternalId)
       .where(sql`${table.provider} = 'imessage-photon' and ${table.status} <> 'archived' and ${table.botExternalId} is not null`),
+    uniqueIndex("chat_endpoints_openwa_account_uq")
+      .on(table.providerAccountId)
+      .where(sql`${table.provider} = 'openwa' and ${table.status} <> 'archived' and ${table.providerAccountId} is not null`),
+    uniqueIndex("chat_endpoints_openwa_number_uq")
+      .on(table.botExternalId)
+      .where(sql`${table.provider} = 'openwa' and ${table.status} <> 'archived' and ${table.botExternalId} is not null`),
     uniqueIndex("chat_endpoints_live_discord_bot_external_uq")
       .on(table.provider, table.botExternalId)
       .where(
@@ -223,6 +266,10 @@ export const chatEndpointResources = pgTable(
       .$type<Record<string, unknown>>()
       .notNull()
       .default({}),
+    settings: jsonb("settings")
+      .$type<OpenwaChatSettings | Record<string, never>>()
+      .notNull()
+      .default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -271,6 +318,10 @@ export const chatExternalPrincipals = pgTable(
     handle: text("handle"),
     avatarUrl: text("avatar_url"),
     isBot: boolean("is_bot").notNull().default(false),
+    alternateExternalIds: text("alternate_external_ids")
+      .array()
+      .notNull()
+      .default(sql`'{}'::text[]`),
     lastSeenAt: timestamp("last_seen_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
@@ -282,7 +333,7 @@ export const chatExternalPrincipals = pgTable(
   (table) => [
     check(
       "chat_external_principals_provider_check",
-      sql`${table.provider} in ('slack', 'github', 'discord', 'microsoft-teams', 'telegram', 'agentmail', 'imessage-photon')`,
+      sql`${table.provider} in ('slack', 'github', 'discord', 'microsoft-teams', 'telegram', 'agentmail', 'imessage-photon', 'openwa')`,
     ),
     check(
       "chat_external_principals_kind_check",
@@ -340,6 +391,7 @@ export const chatIdentityLinks = pgTable(
       table.endpointId,
       table.principalId,
     ),
+    unique("chat_identity_links_company_id_uq").on(table.companyId, table.id),
     foreignKey({
       columns: [table.companyId, table.endpointId],
       foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
@@ -457,6 +509,9 @@ export const chatDeliveries = pgTable(
     attempts: integer("attempts").notNull().default(0),
     redactedError: text("redacted_error"),
     nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }),
+    triggerClass: text("trigger_class").$type<OpenwaTriggerClass>(),
+    principalRole: text("principal_role").$type<OpenwaPrincipalRole>(),
+    answerState: text("answer_state").$type<ChatAnswerState>(),
     receivedAt: timestamp("received_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
@@ -473,7 +528,22 @@ export const chatDeliveries = pgTable(
       "chat_deliveries_state_check",
       sql`${table.state} in ('received', 'filtered', 'processing', 'processed', 'retry', 'failed')`,
     ),
+    check(
+      "chat_deliveries_trigger_class_check",
+      sql`${table.triggerClass} is null or ${table.triggerClass} in ('owner', 'other', 'grant')`,
+    ),
+    check(
+      "chat_deliveries_principal_role_check",
+      sql`${table.principalRole} is null or ${table.principalRole} in ('owner', 'allowed', 'outside_allowlist', 'denylisted')`,
+    ),
+    check(
+      "chat_deliveries_answer_state_check",
+      sql`${table.answerState} is null or ${table.answerState} in ('pending', 'answered', 'silenced', 'handed_off')`,
+    ),
     index("chat_deliveries_work_idx").on(table.state, table.nextAttemptAt),
+    index("chat_deliveries_pending_answer_idx")
+      .on(table.endpointId, table.conversationId, table.receivedAt)
+      .where(sql`${table.answerState} = 'pending'`),
     unique("chat_deliveries_company_id_uq").on(table.companyId, table.id),
     uniqueIndex("chat_deliveries_event_uq").on(
       table.endpointId,
@@ -800,5 +870,474 @@ export const chatSdkState = pgTable(
       foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
       name: "chat_sdk_state_company_endpoint_fk",
     }).onDelete("cascade"),
+  ],
+);
+
+export const chatEndpointOwners = pgTable(
+  "chat_endpoint_owners",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    identityLinkId: uuid("identity_link_id").notNull(),
+    addedByUserId: text("added_by_user_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("chat_endpoint_owners_link_uq").on(
+      table.endpointId,
+      table.identityLinkId,
+    ),
+    unique("chat_endpoint_owners_company_id_uq").on(table.companyId, table.id),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_endpoint_owners_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.identityLinkId],
+      foreignColumns: [chatIdentityLinks.companyId, chatIdentityLinks.id],
+      name: "chat_endpoint_owners_company_identity_link_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const chatSenderRules = pgTable(
+  "chat_sender_rules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    list: text("list").$type<ChatSenderRuleList>().notNull(),
+    e164: text("e164").notNull(),
+    label: text("label"),
+    createdByUserId: text("created_by_user_id"),
+    createdByPrincipalId: uuid("created_by_principal_id").references(
+      () => chatExternalPrincipals.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check("chat_sender_rules_list_check", sql`${table.list} in ('allow', 'deny')`),
+    check("chat_sender_rules_e164_check", sql`${table.e164} ~ '^[+][1-9][0-9]{6,14}$'`),
+    uniqueIndex("chat_sender_rules_entry_uq").on(
+      table.endpointId,
+      table.list,
+      table.e164,
+    ),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_sender_rules_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.createdByPrincipalId],
+      foreignColumns: [chatExternalPrincipals.companyId, chatExternalPrincipals.id],
+      name: "chat_sender_rules_company_principal_fk",
+    }),
+  ],
+);
+
+export const chatScheduledWakes = pgTable(
+  "chat_scheduled_wakes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    chatKey: text("chat_key").notNull(),
+    kind: text("kind").$type<ChatScheduledWakeKind>().notNull(),
+    fireAt: timestamp("fire_at", { withTimezone: true }).notNull(),
+    state: text("state")
+      .$type<ChatScheduledWakeState>()
+      .notNull()
+      .default("pending"),
+    relatedId: uuid("related_id"),
+    payload: jsonb("payload")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "chat_scheduled_wakes_kind_check",
+      sql`${table.kind} in ('owner_absent', 'approval_reminder')`,
+    ),
+    check(
+      "chat_scheduled_wakes_state_check",
+      sql`${table.state} in ('pending', 'fired', 'cancelled')`,
+    ),
+    index("chat_scheduled_wakes_pending_fire_idx")
+      .on(table.fireAt)
+      .where(sql`${table.state} = 'pending'`),
+    uniqueIndex("chat_scheduled_wakes_pending_absent_uq")
+      .on(table.endpointId, table.chatKey)
+      .where(sql`${table.kind} = 'owner_absent' and ${table.state} = 'pending'`),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_scheduled_wakes_company_endpoint_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const chatOwnerApprovalRequests = pgTable(
+  "chat_owner_approval_requests",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    originChatKey: text("origin_chat_key").notNull(),
+    originConversationId: uuid("origin_conversation_id").references(
+      () => chatConversations.id,
+      { onDelete: "set null" },
+    ),
+    interactionId: uuid("interaction_id").references(
+      () => issueThreadInteractions.id,
+      { onDelete: "set null" },
+    ),
+    requestedByPrincipalId: uuid("requested_by_principal_id").references(
+      () => chatExternalPrincipals.id,
+      { onDelete: "set null" },
+    ),
+    requestedInRunId: uuid("requested_in_run_id").references(
+      () => heartbeatRuns.id,
+      { onDelete: "set null" },
+    ),
+    categories: text("categories").array().$type<OpenwaGrantCategory[]>().notNull(),
+    scope: text("scope").$type<ChatOwnerGrantScope>().notNull(),
+    summary: text("summary").notNull(),
+    proposedAction: text("proposed_action").notNull(),
+    status: text("status")
+      .$type<ChatOwnerApprovalStatus>()
+      .notNull()
+      .default("pending"),
+    reminderCount: integer("reminder_count").notNull().default(0),
+    resolvedVia: text("resolved_via").$type<ChatOwnerApprovalChannel>(),
+    resolvedByUserId: text("resolved_by_user_id"),
+    ownerText: text("owner_text"),
+    agentConditions: text("agent_conditions"),
+    resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "chat_owner_approval_requests_categories_check",
+      sql`cardinality(${table.categories}) > 0 and ${table.categories} <@ array['create_task', 'external_tools', 'cross_chat_send', 'wa_admin', 'gateway_admin', 'reply_outside_allowlist', 'reply']::text[]`,
+    ),
+    check(
+      "chat_owner_approval_requests_scope_check",
+      sql`${table.scope} in ('one_action', 'requester')`,
+    ),
+    check(
+      "chat_owner_approval_requests_status_check",
+      sql`${table.status} in ('pending', 'approved', 'rejected', 'cancelled')`,
+    ),
+    check(
+      "chat_owner_approval_requests_resolved_via_check",
+      sql`${table.resolvedVia} is null or ${table.resolvedVia} in ('whatsapp', 'paperclip')`,
+    ),
+    check(
+      "chat_owner_approval_requests_reminder_count_check",
+      sql`${table.reminderCount} >= 0`,
+    ),
+    index("chat_owner_approval_requests_status_idx").on(
+      table.endpointId,
+      table.status,
+    ),
+    unique("chat_owner_approval_requests_company_id_uq").on(
+      table.companyId,
+      table.id,
+    ),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_owner_approval_requests_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.originConversationId],
+      foreignColumns: [chatConversations.companyId, chatConversations.id],
+      name: "chat_owner_approval_requests_company_conversation_fk",
+    }),
+    foreignKey({
+      columns: [table.companyId, table.requestedByPrincipalId],
+      foreignColumns: [chatExternalPrincipals.companyId, chatExternalPrincipals.id],
+      name: "chat_owner_approval_requests_company_principal_fk",
+    }),
+  ],
+);
+
+export const chatOutboundMessages = pgTable(
+  "chat_outbound_messages",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    chatKey: text("chat_key").notNull(),
+    source: text("source").$type<ChatOutboundMessageSource>().notNull(),
+    runId: uuid("run_id").references(() => heartbeatRuns.id, {
+      onDelete: "set null",
+    }),
+    providerMessageId: text("provider_message_id"),
+    state: text("state")
+      .$type<ChatOutboundMessageState>()
+      .notNull()
+      .default("pending"),
+    bodyHash: text("body_hash").notNull(),
+    clientNonce: text("client_nonce").notNull(),
+    sentAt: timestamp("sent_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "chat_outbound_messages_source_check",
+      sql`${table.source} in ('tool', 'publication', 'approval')`,
+    ),
+    check(
+      "chat_outbound_messages_state_check",
+      sql`${table.state} in ('pending', 'sent', 'uncertain', 'failed')`,
+    ),
+    uniqueIndex("chat_outbound_messages_provider_message_uq")
+      .on(table.endpointId, table.providerMessageId)
+      .where(sql`${table.providerMessageId} is not null`),
+    index("chat_outbound_messages_chat_state_idx").on(
+      table.endpointId,
+      table.chatKey,
+      table.state,
+    ),
+    index("chat_outbound_messages_sent_at_idx").on(
+      table.endpointId,
+      table.sentAt,
+    ),
+    unique("chat_outbound_messages_company_id_uq").on(table.companyId, table.id),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_outbound_messages_company_endpoint_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const chatOwnerApprovalBubbles = pgTable(
+  "chat_owner_approval_bubbles",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    requestId: uuid("request_id").notNull(),
+    ownerId: uuid("owner_id").notNull(),
+    outboundMessageId: uuid("outbound_message_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("chat_owner_approval_bubbles_outbound_uq").on(
+      table.endpointId,
+      table.outboundMessageId,
+    ),
+    index("chat_owner_approval_bubbles_request_idx").on(table.requestId),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_owner_approval_bubbles_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.requestId],
+      foreignColumns: [chatOwnerApprovalRequests.companyId, chatOwnerApprovalRequests.id],
+      name: "chat_owner_approval_bubbles_company_request_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.ownerId],
+      foreignColumns: [chatEndpointOwners.companyId, chatEndpointOwners.id],
+      name: "chat_owner_approval_bubbles_company_owner_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.outboundMessageId],
+      foreignColumns: [chatOutboundMessages.companyId, chatOutboundMessages.id],
+      name: "chat_owner_approval_bubbles_company_outbound_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
+export const chatOwnerGrants = pgTable(
+  "chat_owner_grants",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    requestId: uuid("request_id").notNull(),
+    originChatKey: text("origin_chat_key").notNull(),
+    requesterPrincipalId: uuid("requester_principal_id").references(
+      () => chatExternalPrincipals.id,
+      { onDelete: "set null" },
+    ),
+    category: text("category").$type<OpenwaGrantCategory>().notNull(),
+    scope: text("scope").$type<ChatOwnerGrantScope>().notNull(),
+    status: text("status")
+      .$type<ChatOwnerGrantStatus>()
+      .notNull()
+      .default("live"),
+    approvedByUserId: text("approved_by_user_id"),
+    approvedVia: text("approved_via").$type<ChatOwnerApprovalChannel>().notNull(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    consumedAt: timestamp("consumed_at", { withTimezone: true }),
+    consumedByRunId: uuid("consumed_by_run_id").references(
+      () => heartbeatRuns.id,
+      { onDelete: "set null" },
+    ),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "chat_owner_grants_category_check",
+      sql`${table.category} in ('create_task', 'external_tools', 'cross_chat_send', 'wa_admin', 'gateway_admin', 'reply_outside_allowlist', 'reply')`,
+    ),
+    check(
+      "chat_owner_grants_scope_check",
+      sql`${table.scope} in ('one_action', 'requester')`,
+    ),
+    check(
+      "chat_owner_grants_status_check",
+      sql`${table.status} in ('live', 'consumed', 'revoked', 'expired')`,
+    ),
+    check(
+      "chat_owner_grants_approved_via_check",
+      sql`${table.approvedVia} in ('whatsapp', 'paperclip')`,
+    ),
+    index("chat_owner_grants_lookup_idx").on(
+      table.endpointId,
+      table.originChatKey,
+      table.requesterPrincipalId,
+      table.status,
+    ),
+    index("chat_owner_grants_request_idx").on(table.requestId),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_owner_grants_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.requestId],
+      foreignColumns: [chatOwnerApprovalRequests.companyId, chatOwnerApprovalRequests.id],
+      name: "chat_owner_grants_company_request_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.requesterPrincipalId],
+      foreignColumns: [chatExternalPrincipals.companyId, chatExternalPrincipals.id],
+      name: "chat_owner_grants_company_principal_fk",
+    }),
+  ],
+);
+
+export const chatAuditEntries = pgTable(
+  "chat_audit_entries",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    conversationId: uuid("conversation_id").references(
+      () => chatConversations.id,
+      { onDelete: "set null" },
+    ),
+    chatKey: text("chat_key"),
+    kind: text("kind").$type<ChatAuditEntryKind>().notNull(),
+    actorKind: text("actor_kind").$type<ChatAuditActorKind>().notNull(),
+    actorRef: text("actor_ref"),
+    runId: uuid("run_id").references(() => heartbeatRuns.id, {
+      onDelete: "set null",
+    }),
+    metadata: jsonb("metadata")
+      .$type<Record<string, unknown>>()
+      .notNull()
+      .default({}),
+    content: jsonb("content").$type<Record<string, unknown>>(),
+    contentPurgeAt: timestamp("content_purge_at", { withTimezone: true }),
+    occurredAt: timestamp("occurred_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    check(
+      "chat_audit_entries_kind_check",
+      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'config_changed', 'group_added', 'group_left', 'session_health')`,
+    ),
+    check(
+      "chat_audit_entries_actor_kind_check",
+      sql`${table.actorKind} in ('user', 'agent', 'chat_principal', 'system')`,
+    ),
+    index("chat_audit_entries_endpoint_occurred_idx").on(
+      table.endpointId,
+      table.occurredAt.desc(),
+    ),
+    index("chat_audit_entries_content_purge_idx")
+      .on(table.contentPurgeAt)
+      .where(sql`${table.content} is not null`),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_audit_entries_company_endpoint_fk",
+    }).onDelete("cascade"),
+    foreignKey({
+      columns: [table.companyId, table.conversationId],
+      foreignColumns: [chatConversations.companyId, chatConversations.id],
+      name: "chat_audit_entries_company_conversation_fk",
+    }),
   ],
 );

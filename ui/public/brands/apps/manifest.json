@@ -470,6 +470,12 @@
       "localAsset": "/brands/apps/imessage-photon.png"
     },
     {
+      "slug": "openwa",
+      "provider": "OpenWA",
+      "catalogVisible": true,
+      "localAsset": "/brands/apps/openwa.svg"
+    },
+    {
       "slug": "jam-dev",
       "provider": "Jam.dev",
       "catalogVisible": false,

@@ -429,6 +429,7 @@ export {
   clampIssueRequestDepth,
   ISSUE_THREAD_INTERACTION_KINDS,
   ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES,
+  ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES,
   ISSUE_THREAD_INTERACTION_LEGACY_RESOLVER_POLICY_ALIASES,
   ISSUE_THREAD_INTERACTION_RESOLVER_POLICIES,
   ISSUE_THREAD_INTERACTION_RESOLVER_POLICY_PROVENANCES,
@@ -622,6 +623,7 @@ export {
   type IssueCommentPresentationDensity,
   type IssueThreadInteractionKind,
   type IssueThreadInteractionCanonicalResolverPolicy,
+  type IssueThreadInteractionRequestableResolverPolicy,
   type IssueThreadInteractionLegacyResolverPolicyAlias,
   type IssueThreadInteractionResolverPolicy,
   type IssueThreadInteractionResolverPolicyProvenance,
@@ -936,6 +938,7 @@ export type {
   ManagedExperimentalFeatureKey,
   ManagedSettingMetadata,
   BackupRetentionPolicy,
+  SpeechToTextSettings,
   Agent,
   AgentAccessState,
   AgentChainOfCommandEntry,
@@ -1797,6 +1800,7 @@ export {
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
+  SPEECH_TO_TEXT_DEFAULTS,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./types/instance.js";
 
@@ -1833,6 +1837,7 @@ export {
 export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
+  speechToTextSettingsSchema,
   messageDeliverySchema,
   type MessageDeliveryRequest,
   MESSAGE_DELIVERY_LITERALS,
@@ -2831,3 +2836,4 @@ export { REMOTE_MCP_CONNECTOR_METHODS, isRemoteMcpConnectorId, isRemoteMcpConnec
 export { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "./retired-composio.js";
 
 export * from "./slack-tools.js";
+export * from "./openwa-tools.js";

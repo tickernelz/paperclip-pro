@@ -109,6 +109,7 @@ export type {
   ManagedExperimentalFeatureKey,
   ManagedSettingMetadata,
   BackupRetentionPolicy,
+  SpeechToTextSettings,
 } from "./instance.js";
 export type {
   SmokeLabServiceStatus,
@@ -131,6 +132,7 @@ export {
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
+  SPEECH_TO_TEXT_DEFAULTS,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./instance.js";
 export {

@@ -7,6 +7,9 @@ import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { GitHubBotManagement, GitHubReviews } from "./GitHubBotManagement";
 import { EmailEndpointSettings } from "./EmailEndpointSetup";
+import { OpenwaSettings } from "./OpenwaSettings";
+import { OpenwaAuditTab } from "./OpenwaAuditTab";
+import { OpenwaApprovalsList } from "./OpenwaApprovalsList";
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -53,7 +56,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Link, Navigate, useNavigate, useParams } from "@/lib/router";
 
-const tabs = ["settings", "access", "reviews", "conversations", "activity"] as const;
+const tabs = ["settings", "access", "reviews", "conversations", "activity", "approvals", "audit"] as const;
 type ChatTab = (typeof tabs)[number];
 const tabItems = tabs.map((value) => ({
   value,
@@ -67,6 +70,7 @@ const providerNames: Record<ChatProvider, string> = {
   "microsoft-teams": "Microsoft Teams",
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
 };
 
 const providerLifecycleGuidance: Record<
@@ -101,6 +105,10 @@ const providerLifecycleGuidance: Record<
   "imessage-photon": {
     reconnect: "Reconnect verifies the same Photon project and line allocation, then recovers eligible missed messages.",
     remove: "Disconnect archives this channel and removes its saved secret. Your Photon project, number, subscription, and Messages history remain in Photon.",
+  },
+  openwa: {
+    reconnect: "Reconnect verifies the same OpenWA gateway session and API key, then recovers missed messages.",
+    remove: "Disconnect archives this channel and removes its saved API keys. The OpenWA gateway session, its WhatsApp login, and chat history remain on the gateway.",
   },
   telegram: {
     reconnect:
@@ -280,6 +288,8 @@ export function ChatEndpointDetail() {
       </div>
     );
   if (endpoint.provider === "agentmail") return <EmailEndpointSettings endpointId={endpoint.id} companyId={endpoint.companyId} />;
+  if ((activeTab === "audit" || activeTab === "approvals") && endpoint.provider !== "openwa")
+    return <Navigate replace to={`/apps/chat/${endpoint.id}/settings`} />;
   const setupIncomplete =
     endpoint.setup?.step !== "complete" &&
     ["draft", "verifying", "attention", "revoked"].includes(endpoint.status);
@@ -324,7 +334,8 @@ export function ChatEndpointDetail() {
       {activeTab === "settings" && (
         <>
 {endpoint.provider === "github" && <GitHubBotManagement endpoint={endpoint} view="settings" />}
-{endpoint.provider !== "github" && <Settings endpointId={endpoint.id} endpoint={endpoint} />}
+{endpoint.provider === "openwa" && <OpenwaSettings endpoint={endpoint} />}
+{endpoint.provider !== "github" && endpoint.provider !== "openwa" && <Settings endpointId={endpoint.id} endpoint={endpoint} />}
 </>
       )}
       {activeTab === "reviews" && endpoint.provider === "github" && <GitHubReviews endpointId={endpoint.id} />}
@@ -342,6 +353,8 @@ export function ChatEndpointDetail() {
       {activeTab === "activity" && (
         <Activity endpointId={endpoint.id} endpoint={endpoint} />
       )}
+      {activeTab === "approvals" && endpoint.provider === "openwa" && <OpenwaApprovalsList endpointId={endpoint.id} />}
+      {activeTab === "audit" && endpoint.provider === "openwa" && <OpenwaAuditTab endpointId={endpoint.id} />}
     </div>
   );
 }

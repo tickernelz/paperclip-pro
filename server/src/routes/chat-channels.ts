@@ -8,9 +8,18 @@ import { githubChatManagementService } from "../services/chat-github-management.
 import { updateGitHubChatConfigurationSchema } from "@tickernelz/paperclip-pro-shared";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
+  CHAT_AUDIT_ACTOR_KINDS,
+  CHAT_AUDIT_ENTRY_KINDS,
   CHAT_PROVIDERS,
   configureChatEndpointSchema,
   inspectPhotonProjectSchema,
+  inspectOpenwaGatewaySchema,
+  addOpenwaOwnerSchema,
+  listOpenwaApprovalsQuerySchema,
+  resolveOpenwaApprovalSchema,
+  createOpenwaSenderRuleSchema,
+  updateOpenwaChatSettingsSchema,
+  updateOpenwaEndpointPolicySchema,
   confirmChatIdentityLinkSchema,
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
@@ -55,6 +64,20 @@ type ChatChannelRouteOptions = ChatChannelServiceOptions & {
 type ChatWebhookRouteOptions = {
   rateLimiter?: InviteRateLimiter;
 };
+
+const chatAuditQuerySchema = z.object({
+  limit: z.string().regex(/^\d+$/).transform(Number).optional(),
+  cursor: z.string().max(256).optional(),
+  kind: z.union([z.string(), z.array(z.string())])
+    .transform((value) => (Array.isArray(value) ? value : value.split(",")).map((item) => item.trim()).filter(Boolean))
+    .pipe(z.array(z.enum(CHAT_AUDIT_ENTRY_KINDS)).max(CHAT_AUDIT_ENTRY_KINDS.length))
+    .optional(),
+  chatKey: z.string().min(1).max(256).optional(),
+  actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS).optional(),
+  actorRef: z.string().min(1).max(256).optional(),
+  from: z.string().datetime({ offset: true }).transform((value) => new Date(value)).optional(),
+  to: z.string().datetime({ offset: true }).transform((value) => new Date(value)).optional(),
+}).strict();
 
 const CHAT_WEBHOOK_RATE_LIMIT_WINDOW_MS = 60_000;
 const CHAT_WEBHOOK_RATE_LIMIT_MAX_REQUESTS = 600;
@@ -227,6 +250,11 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     res.set("Cache-Control", "no-store");
     res.json(await service.inspectPhoton(endpointId(req), req.body));
   });
+  router.post("/chat-endpoints/:endpointId/openwa/inspect", validate(inspectOpenwaGatewaySchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.inspectOpenwa(endpointId(req), req.body));
+  });
 
   router.post(
     "/chat-endpoints/:endpointId/setup",
@@ -287,6 +315,101 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
       );
     },
   );
+
+  router.get("/chat-endpoints/:endpointId/openwa/owners", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.listOwners(endpointId(req)));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/owners", validate(addOpenwaOwnerSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    const result = await service.openwa.addOwner(endpointId(req), req.body, actorUserId(req));
+    res.status(result.created ? 201 : 200).json(result);
+  });
+
+  router.delete("/chat-endpoints/:endpointId/openwa/owners/:ownerId", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.ownerId as string)) throw badRequest("A valid owner id is required");
+    await service.openwa.removeOwner(endpointId(req), req.params.ownerId as string, actorUserId(req));
+    res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/approvals", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    const query = listOpenwaApprovalsQuerySchema.safeParse(req.query);
+    if (!query.success) throw badRequest("status must be pending, approved, rejected or cancelled");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.list(endpointId(req), { status: query.data.status, viewerUserId: actorUserId(req) }));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/approvals/:requestId/resolve", validate(resolveOpenwaApprovalSchema), async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    if (!isUuidLike(req.params.requestId as string)) throw badRequest("A valid approval request id is required");
+    const userId = actorUserId(req);
+    if (!userId) throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.resolve(endpointId(req), req.params.requestId as string, { ...req.body, userId }));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/approvals/:requestId/cancel", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    if (!isUuidLike(req.params.requestId as string)) throw badRequest("A valid approval request id is required");
+    const userId = actorUserId(req);
+    if (!userId) throw forbidden("Only a current owner of the chat endpoint can cancel this approval");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaApprovals.cancel(endpointId(req), req.params.requestId as string, { userId }));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/sender-rules", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.listSenderRules(endpointId(req)));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/sender-rules", validate(createOpenwaSenderRuleSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.status(201).json(await service.openwa.addSenderRule(endpointId(req), req.body, actorUserId(req)));
+  });
+
+  router.delete("/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.ruleId as string)) throw badRequest("A valid sender rule id is required");
+    await service.openwa.removeSenderRule(endpointId(req), req.params.ruleId as string, actorUserId(req));
+    res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/chats", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.json(await service.openwa.listChats(endpointId(req)));
+  });
+
+  router.put("/chat-endpoints/:endpointId/openwa/chats", validate(updateOpenwaChatSettingsSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.json(await service.openwa.putChat(endpointId(req), req.body, actorUserId(req)));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/gateway-chats", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    const limit = req.query.limit === undefined ? 100 : Number(req.query.limit);
+    const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500 || !Number.isInteger(offset) || offset < 0 || offset > 100_000)
+      throw badRequest("limit must be 1-500 and offset 0-100000");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.gatewayChats(endpointId(req), { limit, offset }));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/health", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwa.health(endpointId(req)));
+  });
+
+  router.patch("/chat-endpoints/:endpointId/openwa/policy", validate(updateOpenwaEndpointPolicySchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.json(await service.openwa.updatePolicy(endpointId(req), req.body, actorUserId(req)));
+  });
 
   router.get("/chat-endpoints/:endpointId/principals", async (req, res) => {
     if (!(await assertEndpointAccess(req, res, service))) return;
@@ -369,6 +492,20 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
     } else {
       res.json(await service.listActivity(endpointId(req)));
     }
+  });
+
+  router.get("/chat-endpoints/:endpointId/audit", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    const query = chatAuditQuerySchema.safeParse(req.query);
+    if (!query.success) throw badRequest("Invalid audit query parameters");
+    const { limit, cursor, kind, chatKey, actorKind, actorRef, from, to } = query.data;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.listAudit(endpointId(req), {
+      viewer: { type: "board", userId: actorUserId(req), instanceAdmin: req.actor.source === "local_implicit" || req.actor.isInstanceAdmin === true },
+      limit,
+      cursor,
+      filters: { kinds: kind, chatKey, actorKind, actorRef, from, to },
+    }));
   });
 
   router.post(
@@ -583,7 +720,7 @@ export function chatWebhookRoutes(
       });
     }
     const provider = req.params.provider as ChatProvider;
-    if (!CHAT_PROVIDERS.includes(provider) || provider === "agentmail")
+    if (!CHAT_PROVIDERS.includes(provider) || provider === "agentmail" || provider === "openwa")
       throw badRequest("Unsupported chat provider");
     const response = await service.handleWebhook(
       req.params.publicId as string,

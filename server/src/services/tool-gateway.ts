@@ -8,6 +8,12 @@ import { githubGuestBotConnectionForSession, githubBotToolsForSession } from "./
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { runIdentityContexts } from "@tickernelz/paperclip-pro-db";
 import { captureRunIdentity } from "./run-identity.js";
+import {
+  assertOpenwaRunIdMay,
+  assertOpenwaRunMay,
+  OpenwaApprovalRequiredError,
+  openwaRunAuthoritySnapshot,
+} from "./openwa/authority.js";
 import { emitConnectionInvoked } from "./connector-telemetry.js";
 import { resolveManagedGitHubIdentitySelection } from "./git-credentials.js";
 import { extractRemoteMcpPending } from "./remote-mcp-pending.js";
@@ -312,6 +318,7 @@ export interface ToolGatewaySession {
   identityContextId?: string | null;
   /** Set only after verifying the signed approved action. */
   approvedSlackInvocationId?: string;
+  openwaRunContext?: Record<string, unknown> | null;
   createdAt: Date;
   expiresAt: Date;
 }
@@ -1503,7 +1510,7 @@ export function createToolGatewayService(
     runId: string;
     issueId?: string | null;
     projectId?: string | null;
-  }): Promise<{ issueId: string | null; projectId: string | null }> {
+  }): Promise<{ issueId: string | null; projectId: string | null; contextSnapshot: Record<string, unknown> | null }> {
     const [run] = await db
       .select({
         companyId: heartbeatRuns.companyId,
@@ -1589,6 +1596,7 @@ export function createToolGatewayService(
     return {
       issueId,
       projectId,
+      contextSnapshot: snapshot ?? null,
     };
   }
 
@@ -1893,6 +1901,7 @@ export function createToolGatewayService(
     const [run] = await db
       .select({
         activeIdentityContextId: heartbeatRuns.activeIdentityContextId,
+        openwaRunContext: openwaRunAuthoritySnapshot(),
       })
       .from(heartbeatRuns)
       .where(
@@ -1901,14 +1910,15 @@ export function createToolGatewayService(
           eq(heartbeatRuns.companyId, session.companyId),
         ),
       );
-    if (!run?.activeIdentityContextId) return session;
+    const withOpenwa = run ? { ...session, openwaRunContext: run.openwaRunContext } : session;
+    if (!run?.activeIdentityContextId) return withOpenwa;
     const captured = await captureRunIdentity(db, {
       companyId: session.companyId,
       agentId: session.agentId,
       runId: session.runId,
     });
     return {
-      ...session,
+      ...withOpenwa,
       identityContextId: captured.context?.id,
       responsibleUserId:
         captured.context?.cause === "company_default"
@@ -2626,6 +2636,32 @@ export function createToolGatewayService(
   function policyErrorStatus(decision: ToolAccessDecision) {
     if (decision.decision === "rate_limited") return 429;
     return 403;
+  }
+
+  async function applyOpenwaToolProfile(
+    decision: ToolAccessDecision,
+    session: Pick<ToolGatewaySession, "companyId" | "runId" | "openwaRunContext">,
+    tool: ToolGatewayDescriptor,
+  ): Promise<ToolAccessDecision> {
+    if (tool.risk === "read" || (!decision.allowed && decision.decision !== "require_approval")) return decision;
+    try {
+      const options = { consume: decision.allowed };
+      if (session.runId && session.openwaRunContext !== undefined) {
+        await assertOpenwaRunMay(db, { id: session.runId, companyId: session.companyId, contextSnapshot: session.openwaRunContext }, "external_tools", options);
+      } else {
+        await assertOpenwaRunIdMay(db, { companyId: session.companyId, runId: session.runId }, "external_tools", options);
+      }
+      return decision;
+    } catch (error) {
+      if (!(error instanceof OpenwaApprovalRequiredError)) throw error;
+      return {
+        ...decision,
+        allowed: false,
+        decision: "deny",
+        reasonCode: "openwa_approval_required",
+        explanation: error.message,
+      };
+    }
   }
 
   function findStaticTool(toolName: string): ToolGatewayDescriptor {
@@ -10256,6 +10292,7 @@ export function createToolGatewayService(
         if (accessDecision.allowed && tool.providerType === "paperclip_slack_chat" && SLACK_TOOLS.some(t => t.name === tool.upstreamToolName && t.risk === "approval")) {
           accessDecision = { ...accessDecision, allowed: false, decision: "require_approval", reasonCode: "requires_approval_policy", explanation: "Slack destructive actions, channel creation and invitations require approval." };
         }
+        accessDecision = await applyOpenwaToolProfile(accessDecision, session, tool);
         const recorded = await policyService.recordInvocation(
           decisionInput,
           accessDecision,
@@ -10334,6 +10371,7 @@ export function createToolGatewayService(
               decision: accessDecision.decision,
               matchedPolicyIds: accessDecision.matchedPolicyIds,
               rateLimitState: accessDecision.rateLimitState ?? null,
+              ...(accessDecision.reasonCode === "openwa_approval_required" ? { category: "external_tools" } : {}),
             },
           );
         }
@@ -10697,6 +10735,7 @@ export function createToolGatewayService(
         runId: input.runContext.runId,
         issueId: context.issueId,
         projectId: input.runContext.projectId ?? context.projectId,
+        openwaRunContext: context.contextSnapshot,
         createdAt: new Date(),
         expiresAt: new Date(Date.now() + DEFAULT_SESSION_TTL_MS),
       };
@@ -10725,7 +10764,11 @@ export function createToolGatewayService(
         parameters: requestedParameters,
         consumeRateLimit: true,
       });
-      const accessDecision = await policyService.decide(decisionInput);
+      const accessDecision = await applyOpenwaToolProfile(
+        await policyService.decide(decisionInput),
+        sessionLike,
+        tool,
+      );
       const recorded = await policyService.recordInvocation(
         decisionInput,
         accessDecision,

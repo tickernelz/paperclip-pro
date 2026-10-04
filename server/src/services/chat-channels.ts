@@ -23,6 +23,42 @@ import { runtimeCanonicalOrigin } from "./cloud-runtime-identity.js";
 import { takePhotonCompanion } from "./photon/attachments.js";
 import { writePhotonCheckpoint } from "./photon/receiver.js";
 import { PhotonState } from "./photon/state.js";
+import { createOpenwaIngressCallbacks, type OpenwaIngressHooks } from "./openwa/ingress.js";
+import { openwaOutboundRegistry } from "./openwa/outbound.js";
+import { OpenwaChatAdapter } from "./openwa/adapter.js";
+import { decideOpenwaRunPublication, openwaTypingAllowed, sendOpenwaPublication } from "./openwa/publication.js";
+import { openwaMediaService } from "./openwa/media.js";
+import { openwaLateTranscriptListener, type OpenwaLateTranscriptHook } from "./openwa/late-transcripts.js";
+import type { OpenwaInboundEvent } from "./openwa/receiver.js";
+import { listOpenwaAudit, logOpenwaActivity, openwaAuditRetentionDays } from "./openwa/audit.js";
+import { createOpenwaAdmission, openwaAdmitInput, openwaInboundDecoration, parseOpenwaDecoration, recordOpenwaTriggerAdmitted, type OpenwaAdmissionDecoration, type OpenwaAdmitInput, type OpenwaTimerHooks } from "./openwa/admission.js";
+import { createOpenwaPolicyCache, openwaSenderRole } from "./openwa/policy.js";
+import {
+  activeOpenwaScheduledWakes,
+  createOpenwaScheduledWakes,
+  createOpenwaTimerHooks,
+  type OpenwaAbsenceIntent,
+  type OpenwaLateOwnerActivity,
+  type OpenwaScheduledWakeClock,
+  type OpenwaScheduledWakes,
+} from "./openwa/scheduled-wakes.js";
+import {
+  bumpOpenwaPolicyRevision,
+  openwaOwnerService,
+  openwaPrincipalAuthorization,
+  revokeOpenwaGrantsOfFormerOwners,
+  syncOpenwaGroupActivation,
+} from "./openwa/owners.js";
+import { createOpenwaGatewayClient } from "./openwa/gateway.js";
+import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa/authority.js";
+import { issueReferenceService } from "./issue-references.js";
+import { registerOpenwaToolRuntime } from "./openwa/tools.js";
+import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
+import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
+import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
+import { createOpenwaNudges, registerOpenwaRunStartListener } from "./openwa/nudges.js";
+import { openwaOwnerAbsentRunActive, steerOpenwaLateTranscript, steerOpenwaSystemText, steerOpenwaTrigger } from "./openwa/steering.js";
+import { subscribeAllCompanyLiveEvents } from "./live-events.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
@@ -31,7 +67,9 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { inspectOpenwaGateway, openwaProviderAccountId, verifyOpenwaSession } from "./openwa/setup.js";
+import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
   createHash,
@@ -420,6 +458,7 @@ function publicationSummary(
 
 const PROVIDER_LABELS: Record<ChatProvider, string> = {
   "imessage-photon": "iMessage Photon",
+  openwa: "OpenWA",
   agentmail: "AgentMail",
   slack: "Slack",
   github: "GitHub",
@@ -657,6 +696,7 @@ async function inspectSlackCallback(
 
 const CAPABILITIES: Record<ChatProvider, ChatAdapterCapabilities> = {
   "imessage-photon": { threads: false, directMessages: true, nativeStreaming: false, messageEdits: true, messageDeletes: false, reactions: false, files: true, cards: false, actions: true, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: false },
+  openwa: { threads: false, directMessages: true, nativeStreaming: false, messageEdits: true, messageDeletes: true, reactions: true, files: true, cards: false, actions: false, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: true },
   agentmail: { threads: true, directMessages: true, nativeStreaming: false, messageEdits: false, messageDeletes: false, reactions: false, files: true, cards: false, actions: false, modals: false, slashCommands: false, ephemeralMessages: false, proactiveDirectMessages: true },
   slack: {
     threads: true,
@@ -751,6 +791,7 @@ const REQUIRED_CREDENTIALS: Record<
   readonly string[]
 > = {
   "imessage-photon": ["projectSecret"],
+  openwa: ["apiKey"],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   discord: ["botToken", "applicationId", "guildId"],
@@ -811,6 +852,7 @@ const SUPPORTED_GITHUB_WEBHOOK_EVENTS = new Set<string>([
 
 const SUPPLIED_CREDENTIAL_KEYS: Record<ChatProvider, readonly string[]> = {
   "imessage-photon": ["projectSecret"],
+  openwa: ["apiKey", "adminApiKey"],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   github: ["appId", "privateKey"],
@@ -850,7 +892,7 @@ const PUBLICATION_ENDPOINT_CONCURRENCY = 4;
 const CREDENTIAL_MUTATION_LEASE_WAIT_MS = 10_000;
 const CREDENTIAL_MUTATION_LEASE_POLL_MS = 25;
 const DISCORD_GATEWAY_LEASE_KEY = "discord_gateway_runtime";
-function leasedChatProvider(provider: string): boolean { return provider === "discord" || provider === "imessage-photon"; }
+function leasedChatProvider(provider: string): boolean { return provider === "discord" || provider === "imessage-photon" || provider === "openwa"; }
 const DISCORD_GATEWAY_LEASE_TTL_MS = 15_000;
 const DISCORD_GATEWAY_LEASE_WAIT_MS = 20_000;
 const DISCORD_GATEWAY_LEASE_POLL_MS = 100;
@@ -1498,6 +1540,7 @@ export interface ChatChannelServiceOptions {
   }) => Promise<void>;
   /** Test override for the conversation-delivery lease renewal cadence. */
   conversationLeaseRenewalIntervalMs?: number;
+  onOpenwaLateTranscript?: OpenwaLateTranscriptHook;
   /** Narrow fault-injection boundary for renewing a conversation lease. */
   renewConversationDeliveryLease?: (input: {
     endpointId: string;
@@ -1505,6 +1548,11 @@ export interface ChatChannelServiceOptions {
     token: string;
     expiresAt: Date;
   }) => Promise<boolean>;
+  openwaIngressHooks?: OpenwaIngressHooks;
+  openwaTimerHooks?: OpenwaTimerHooks;
+  openwaLateOwnerActivity?: (input: OpenwaLateOwnerActivity) => Promise<void>;
+  openwaScheduledWakeClock?: OpenwaScheduledWakeClock;
+  openwaNudgeClock?: OpenwaScheduledWakeClock;
   /** Test override for Discord Gateway leader-lease expiry. */
   discordGatewayLeaseTtlMs?: number;
   /** Test override for Discord Gateway leader-lease renewal cadence. */
@@ -1554,8 +1602,9 @@ type DiscordGatewayOwnership = {
   context: RuntimeContext;
   endpointId: string;
   expiresAt: Date;
-  leaseKey: typeof DISCORD_GATEWAY_LEASE_KEY | "photon_receiver_runtime";
+  leaseKey: typeof DISCORD_GATEWAY_LEASE_KEY | "photon_receiver_runtime" | "openwa_receiver_runtime";
   renewTimer: ReturnType<typeof setInterval> | null;
+  scheduledWakes: OpenwaScheduledWakes | null;
   renewal: Promise<void> | null;
   stopPromise: Promise<void> | null;
   stopping: boolean;
@@ -1572,7 +1621,7 @@ function providerResourceType(
 ): string {
   if (surfaceKind === "direct_message") return "direct_message";
   if (provider === "github") return "repository";
-  if (provider === "imessage-photon") return "group_chat";
+  if (provider === "imessage-photon" || provider === "openwa") return "group_chat";
   if (provider === "discord") return "channel";
   if (provider === "microsoft-teams")
     return surfaceKind === "linear_group" ? "group_chat" : "channel";
@@ -1691,7 +1740,7 @@ function chatSurfaceKind(
   thread: Thread,
 ): ChatSurfaceKind {
   if (thread.isDM) return "direct_message";
-  if (provider === "imessage-photon") return "linear_group";
+  if (provider === "imessage-photon" || provider === "openwa") return "linear_group";
   if (provider === "telegram") {
     return /^telegram:[^:]+:[^:]+$/.test(thread.id)
       ? "native_thread"
@@ -1724,6 +1773,27 @@ function nonDirectDestinationAllowed(
     return endpoint.allowGroupChats;
   }
   return resource.enabled;
+}
+
+function openwaDestinationAllowed(
+  endpoint: EndpointRow,
+  resource: ResourceRow | null | undefined,
+  decoration: Pick<OpenwaAdmissionDecoration, "event"> | null,
+): boolean {
+  if (endpoint.provider !== "openwa" || !decoration) return nonDirectDestinationAllowed(endpoint, resource);
+  if (decoration.event === "approval_reply") return !resource || resource.availability === "available";
+  if (!resource || resource.availability !== "available") return false;
+  return resource.enabled || decoration.event === "group_added";
+}
+
+function openwaFilterReason(
+  endpoint: Pick<EndpointRow, "status">,
+  authorization: { role: string; allowed: boolean },
+): string {
+  if (endpoint.status === "verifying" && authorization.role !== "owner")
+    return "Only an endpoint owner can send the OpenWA setup test message";
+  if (authorization.role === "denylisted") return "Sender is on the OpenWA denylist";
+  return "Sender is outside the OpenWA allowlist";
 }
 
 function linearControlCommand(text: string): "new" | "close" | "status" | null {
@@ -2665,6 +2735,7 @@ function providerSetupState(
   const step = endpoint.status === "active" ? "complete" : endpoint.setup.step;
   switch (endpoint.provider) {
     case "imessage-photon": return { step, providerUrl: "https://photon.codes/", testStartedAt: endpoint.setup.testStartedAt } as const;
+    case "openwa": return { step, testStartedAt: endpoint.setup.testStartedAt } as const;
     case "agentmail": return endpoint.setup;
     case "slack": {
       const observations = (endpoint.setup as InternalSetupState)
@@ -3015,6 +3086,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   >();
   const persistence = createChatSdkStatePersistence(db);
+  const openwaNudges = createOpenwaNudges({ steer: steerOpenwaSystemText, clock: options.openwaNudgeClock });
+  const openwaOutbound = openwaOutboundRegistry(db, Date.now, (sent) => openwaNudges.originSent(sent.runId!, sent.chatKey));
+  const openwaMedia = openwaMediaService(db, { storage: options.storage });
+  openwaMedia.onTranscriptReady(openwaLateTranscriptListener(db, options.onOpenwaLateTranscript ?? (async (event) => {
+    await steerOpenwaLateTranscript(db, event);
+  })));
+  const openwaPolicies = createOpenwaPolicyCache(db);
+  const openwaAdmission = createOpenwaAdmission({
+    db,
+    policies: openwaPolicies,
+    outbound: openwaOutbound,
+    timers: options.openwaTimerHooks ?? createOpenwaTimerHooks({ lookup: activeOpenwaScheduledWakes, policies: openwaPolicies }),
+  });
+  const openwaMessages = new WeakMap<object, OpenwaAdmissionDecoration>();
   const fetchImpl = options.fetch ?? globalThis.fetch;
   const configuredPublicBaseUrl = absoluteBaseUrl(options.publicBaseUrl);
   const configuredWebhookPublicBaseUrl = parseChatWebhookPublicBaseUrl(options.webhookPublicBaseUrl);
@@ -3096,7 +3181,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (discordGatewayOwnerships.get(ownership.endpointId) === ownership) {
       discordGatewayOwnerships.delete(ownership.endpointId);
     }
+    const scheduledWakesStopped = ownership.scheduledWakes?.stop();
     ownership.stopPromise = (async () => {
+      await scheduledWakesStopped;
       if (
         removeRuntime &&
         ownership.context.endpointRuntime &&
@@ -3316,7 +3403,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     context: RuntimeContext,
     waitForOwnership: boolean,
   ): Promise<DiscordGatewayOwnership | null> {
-    const receiverLeaseKey = endpoint.provider === "imessage-photon" ? "photon_receiver_runtime" : DISCORD_GATEWAY_LEASE_KEY;
+    const receiverLeaseKey = endpoint.provider === "imessage-photon" ? "photon_receiver_runtime" : endpoint.provider === "openwa" ? "openwa_receiver_runtime" : DISCORD_GATEWAY_LEASE_KEY;
     const local = discordGatewayOwnerships.get(endpoint.id);
     if (
       local &&
@@ -3375,10 +3462,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           leaseKey: receiverLeaseKey,
           renewal: null,
           renewTimer: null,
+          scheduledWakes: null,
           stopPromise: null,
           stopping: false,
           token,
         };
+        if (endpoint.provider === "openwa") ownership.scheduledWakes = createOpenwaScheduledWakesFor(endpoint, ownership);
         discordGatewayOwnerships.set(endpoint.id, ownership);
         startDiscordGatewayLeaseRenewal(ownership);
         return ownership;
@@ -5282,6 +5371,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             // before provider I/O begins. The renewable credential lease keeps
             // runtime identity stable without holding database row locks.
             let sent: { id: string; threadId: string } | null = null;
+            if (claim.endpoint.provider === "openwa") {
+              throw Object.assign(
+                new Error("OpenWA never sends server-composed text"),
+                { code: "CHAT_PROVIDER_PRETRANSPORT_REJECTED" },
+              );
+            }
             if (payload.effect === "telegram_callback_notice") {
               sent = await (
                 await runtimeFor(claim.endpoint)
@@ -5866,6 +5961,13 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       botAvatarUrl: endpoint.botAvatarUrl,
       communicationInstructions: endpoint.communicationInstructions,
       ...(endpoint.provider === "imessage-photon" && endpoint.botExternalId ? { photonAllocation: endpoint.botExternalId.startsWith("photon-project:") ? "shared" as const : "dedicated" as const } : {}),
+      ...(endpoint.provider === "openwa"
+        ? {
+            policy: openwaEndpointPolicySchema.parse(endpoint.policy),
+            policyRevision: endpoint.policyRevision,
+            inflightMode: endpoint.inflightMode,
+          }
+        : {}),
       allowDirectMessages: endpoint.allowDirectMessages,
       allowGroupChats: endpoint.allowGroupChats,
       allowUnlinkedPeople: endpoint.allowUnlinkedPeople,
@@ -6043,7 +6145,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         // enables that surface, even when this process is running against a
         // database created before the column default was hardened.
         allowGroupChats: input.provider !== "microsoft-teams",
-        allowUnlinkedPeople: !["slack", "imessage-photon"].includes(input.provider),
+        allowUnlinkedPeople: !["slack", "imessage-photon", "openwa"].includes(input.provider),
+        inflightMode: input.provider === "openwa" ? "steer" : "queue",
+        ...(input.provider === "openwa" ? { concurrencyPolicy: "concurrent" as const } : {}),
         capabilities: CAPABILITIES[input.provider],
         setup: {
           step: "provider_setup",
@@ -6053,6 +6157,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         },
       });
     });
+    if (input.provider === "openwa") invalidateOpenwaAgentKey(companyId, agent.id);
     await logActivity(db, {
       companyId,
       actorType: "user",
@@ -6066,6 +6171,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         assignedAgentId: agent.id,
       },
     });
+    if (input.provider === "openwa")
+      await logOpenwaActivity(db, {
+        companyId,
+        endpointId,
+        action: "openwa.endpoint_created",
+        actorUserId: actorUserId ?? null,
+        details: { assignedAgentId: agent.id },
+      });
     return get(endpointId);
   }
 
@@ -6130,6 +6243,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             entityId: existing.endpoint.connectionId,
             details: { endpointId, fields: Object.keys(input) },
           });
+          if (existing.endpoint.provider === "openwa")
+            await logOpenwaActivity(tx, {
+              companyId: existing.endpoint.companyId,
+              endpointId,
+              action: "openwa.endpoint_updated",
+              actorUserId: actorUserId ?? null,
+              details: { changedKeys: Object.keys(input) },
+            });
           await credentialLease.assertOwned(tx);
         });
       },
@@ -6170,6 +6291,21 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     provider: ChatProvider,
     credentials: Record<string, string>,
   ): Promise<VerifiedProviderIdentity> {
+    if (provider === "openwa") {
+      if (!credentials.baseUrl || !credentials.sessionId)
+        throw unprocessable("Inspect the OpenWA gateway and choose a session first", { code: "openwa_session_required" });
+      const session = await verifyOpenwaSession(
+        { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId, apiKey: credentials.apiKey, ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}) },
+        { fetchImpl },
+      );
+      return {
+        providerAccountId: openwaProviderAccountId(session.baseUrl, session.sessionId),
+        providerAccountLabel: session.sessionName,
+        botExternalId: session.phoneNumber,
+        botUsername: session.pushName,
+        botLabel: session.pushName,
+      };
+    }
     if (provider === "imessage-photon") {
       const inspection = await inspectPhotonCredentials(credentials.projectId, credentials.projectSecret);
       if (inspection.allocation !== (credentials.allocation ?? "dedicated")) throw unprocessable("Photon allocation changed; inspect the project again");
@@ -6410,6 +6546,39 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     );
   }
 
+  async function assertOpenwaIdentityAvailable(endpoint: EndpointRow, identity: VerifiedProviderIdentity) {
+    if (!identity.providerAccountId || !identity.botExternalId)
+      throw unprocessable("OpenWA did not return a stable session identity");
+    const conflictEndpoint = await db
+      .select({ id: chatEndpoints.id, companyId: chatEndpoints.companyId, assignedAgentId: chatEndpoints.assignedAgentId })
+      .from(chatEndpoints)
+      .where(and(
+        eq(chatEndpoints.provider, "openwa"),
+        ne(chatEndpoints.id, endpoint.id),
+        ne(chatEndpoints.status, "archived"),
+        or(eq(chatEndpoints.providerAccountId, identity.providerAccountId), eq(chatEndpoints.botExternalId, identity.botExternalId)),
+      ))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
+    if (conflictEndpoint)
+      throw conflict(
+        "This OpenWA session or WhatsApp number already belongs to another Paperclip channel",
+        conflictEndpoint.companyId === endpoint.companyId
+          ? { code: "chat_bot_identity_in_use", endpointId: conflictEndpoint.id, assignedAgentId: conflictEndpoint.assignedAgentId }
+          : { code: "chat_bot_identity_in_use" },
+      );
+  }
+
+  async function assignedAgentAdapterType(endpoint: EndpointRow): Promise<string> {
+    const agent = await db
+      .select({ adapterType: agents.adapterType })
+      .from(agents)
+      .where(and(eq(agents.companyId, endpoint.companyId), eq(agents.id, endpoint.assignedAgentId)))
+      .then((rows) => rows[0] ?? null);
+    if (!agent) throw notFound("Assigned agent not found");
+    return agent.adapterType;
+  }
+
   function nativeBotIdentityMatches(
     provider: ChatProvider,
     current: VerifiedProviderIdentity,
@@ -6440,6 +6609,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     endpoint: EndpointRow,
     identity: VerifiedProviderIdentity,
   ): Promise<void> {
+    if (endpoint.provider === "openwa") return assertOpenwaIdentityAvailable(endpoint, identity);
     const key = nativeBotIdentityKey(endpoint.provider, identity);
     if (!key) {
       throw unprocessable(
@@ -6503,6 +6673,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   function isNativeBotIdentityUniqueViolation(error: unknown): boolean {
     return (
       isUniqueViolation(error, "chat_endpoints_photon_number_uq") ||
+      isUniqueViolation(error, "chat_endpoints_openwa_account_uq") ||
+      isUniqueViolation(error, "chat_endpoints_openwa_number_uq") ||
       isUniqueViolation(error, "chat_endpoints_live_bot_external_uq") ||
       isUniqueViolation(error, "chat_endpoints_live_discord_bot_external_uq") ||
       isUniqueViolation(
@@ -6541,6 +6713,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     try {
       for (const [key, value] of Object.entries(credentials)) {
         if (endpoint.provider === "imessage-photon" && key !== "projectSecret") continue;
+        if (endpoint.provider === "openwa" && key !== "apiKey" && key !== "adminApiKey") continue;
         await credentialLease.assertOwned();
         const suffix = randomUUID();
         const secret = await secrets.create(
@@ -6750,6 +6923,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (endpoint.provider === "imessage-photon") {
       const configuration = photonChannelConfigurationSchema.parse(connection.config.photon);
       return { ...values, ...configuration, lineId: configuration.allocation === "shared" ? photonSharedScope(configuration.projectId) : configuration.lineId };
+    }
+    if (endpoint.provider === "openwa") {
+      const openwa = connection.config.openwa as { baseUrl?: unknown; sessionId?: unknown } | undefined;
+      if (typeof openwa?.baseUrl === "string" && typeof openwa.sessionId === "string")
+        return { ...values, baseUrl: openwa.baseUrl, sessionId: openwa.sessionId };
     }
     return values;
   }
@@ -7593,6 +7771,22 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       intakeAfter: Date.parse(String((endpoint.setup as InternalSetupState).photonIntakeAfter ?? endpoint.setup.testStartedAt ?? endpoint.createdAt.toISOString())),
       credentials: { allocation: credentials.allocation === "shared" ? "shared" : "dedicated", projectId: credentials.projectId, lineId: credentials.lineId, projectSecret: credentials.projectSecret, phoneNumber: endpoint.botExternalId! },
     };
+    if (endpoint.provider === "openwa") {
+      const account = endpoint.providerAccountId ?? "";
+      const separator = account.lastIndexOf("#");
+      return {
+        provider: "openwa",
+        userName,
+        intakeAfter: Date.parse(String(endpoint.setup.testStartedAt ?? endpoint.createdAt.toISOString())),
+        credentials: {
+          baseUrl: separator > 0 ? account.slice(0, separator) : "",
+          sessionId: separator > 0 ? account.slice(separator + 1) : "",
+          phoneNumber: endpoint.botExternalId ?? "",
+          apiKey: credentials.apiKey,
+          ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}),
+        },
+      };
+    }
     if (endpoint.provider === "slack")
       return {
         provider: "slack",
@@ -7910,6 +8104,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         context.discordGatewayOwned = discordOwnership !== null;
         let instance: ChatSdkEndpointRuntime | null = null;
         try {
+          if (discordOwnership?.scheduledWakes) await discordOwnership.scheduledWakes.load();
           const stale = runtime.get(endpoint.id);
           if (stale) {
             runtimeVersions.delete(endpoint.id);
@@ -7969,6 +8164,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               }),
               onPhotonEvent: (event) => handlePhotonEvent(endpoint.id, event, context),
               onPhotonFailure: (error) => handlePhotonFailure(endpoint.id, error, context),
+              ...(record.endpoint.provider === "openwa" && discordOwnership
+                ? openwaRuntimeCallbacks(record.endpoint, discordOwnership, context)
+                : {}),
               onDiscordRootMentionAdmission:
                 record.endpoint.provider === "discord"
                   ? (event) =>
@@ -8026,7 +8224,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           const stillRegistered = runtime.get(endpoint.id) === instance;
           const stillCurrent =
             latest !== null &&
-            (latest.endpoint.status === record.endpoint.status || record.endpoint.provider === "imessage-photon" && record.endpoint.status === "attention" && ["active", "verifying"].includes(latest.endpoint.status)) &&
+            (latest.endpoint.status === record.endpoint.status || record.endpoint.provider === "imessage-photon" && record.endpoint.status === "attention" && ["active", "verifying"].includes(latest.endpoint.status) || record.endpoint.provider === "openwa" && ["active", "verifying", "attention"].includes(record.endpoint.status) && ["active", "verifying", "attention"].includes(latest.endpoint.status)) &&
             runtimeContextForRecord(latest).version === context.version;
           if (!stillRegistered || !stillCurrent) {
             if (stillRegistered) {
@@ -8049,6 +8247,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             throw discordGatewayNotOwnedError();
           }
           runtimeVersions.set(endpoint.id, context.version);
+          if (discordOwnership?.scheduledWakes) await discordOwnership.scheduledWakes.start();
           return instance;
         } catch (error) {
           if (instance && runtime.get(endpoint.id) === instance) {
@@ -8091,7 +8290,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       )
       .where(
         and(
-          inArray(chatEndpoints.provider, ["discord", "imessage-photon"]),
+          inArray(chatEndpoints.provider, ["discord", "imessage-photon", "openwa"]),
           inArray(chatEndpoints.status, ["verifying", "active", "attention"]),
           eq(toolConnections.status, "active"),
           eq(toolConnections.enabled, true),
@@ -8244,6 +8443,24 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   }
 
+  async function inspectOpenwa(
+    endpointId: string,
+    input: { baseUrl: string; apiKey: string; adminApiKey?: string },
+  ) {
+    const record = await endpointRecord(endpointId);
+    if (!record || record.endpoint.provider !== "openwa")
+      throw notFound("OpenWA endpoint not found");
+    assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(record.endpoint));
+    const reserved = await db
+      .select({ account: chatEndpoints.providerAccountId, number: chatEndpoints.botExternalId })
+      .from(chatEndpoints)
+      .where(and(eq(chatEndpoints.provider, "openwa"), ne(chatEndpoints.id, endpointId), ne(chatEndpoints.status, "archived")));
+    return inspectOpenwaGateway(input, {
+      accounts: new Set(reserved.flatMap((row) => (row.account ? [row.account] : []))),
+      numbers: new Set(reserved.flatMap((row) => (row.number ? [row.number] : []))),
+    }, { fetchImpl });
+  }
+
   async function inspectPhoton(
     endpointId: string,
     input: { projectId: string; projectSecret: string },
@@ -8274,6 +8491,251 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     inspection.eligible = inspection.allocation === "shared" ? inspection.eligible && !reserved.some((row) => row.number === photonSharedIdentity(inspection.projectId)) : inspection.lines.some((line) => line.eligible);
     return inspection;
+  }
+
+  async function ingestOpenwaTriggerMedia(input: {
+    endpoint: EndpointRow;
+    endpointRuntime: ChatSdkEndpointRuntime;
+    message: Message;
+    decoration: OpenwaAdmissionDecoration | null;
+    issueId: string;
+    commentId: string;
+    deliveryId: string;
+  }): Promise<void> {
+    const event = input.decoration?.event;
+    if (input.endpoint.provider !== "openwa" || (event !== "message" && event !== "approval_reply") || !input.decoration?.waMessageId) return;
+    const adapter = input.endpointRuntime.getProviderAdapter();
+    if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA adapter unavailable for media ingest");
+    try {
+      await openwaMedia.ingestOpenwaTriggerMedia({
+        endpoint: input.endpoint,
+        client: adapter.gateway,
+        issueId: input.issueId,
+        commentId: input.commentId,
+        deliveryId: input.deliveryId,
+        event: input.message.raw as OpenwaInboundEvent,
+      });
+    } catch (error) {
+      logger.warn(
+        { endpointId: input.endpoint.id, issueId: input.issueId, error: error instanceof Error ? error.name : "unknown" },
+        "OpenWA trigger media was not ingested; the wake reports it as pending",
+      );
+    }
+  }
+
+  async function admitOpenwaMessage(endpointId: string, input: OpenwaAdmitInput, context: RuntimeContext) {
+    if (!context.endpointRuntime) throw new Error("OpenWA runtime is unavailable for admission");
+    const record = await endpointRecord(endpointId);
+    if (!record || record.endpoint.provider !== "openwa") throw notFound("Chat endpoint not found");
+    openwaMessages.set(input.message, input.decoration);
+    await processMessage(
+      record.endpoint,
+      context.endpointRuntime.thread(input.threadId),
+      input.message,
+      input.trigger,
+      true,
+      null,
+      context,
+      undefined,
+      null,
+      false,
+    );
+  }
+
+  function createOpenwaScheduledWakesFor(endpoint: EndpointRow, ownership: DiscordGatewayOwnership) {
+    return createOpenwaScheduledWakes({
+      db,
+      companyId: endpoint.companyId,
+      endpointId: endpoint.id,
+      heartbeat: options.heartbeat,
+      clock: options.openwaScheduledWakeClock,
+      onLateOwnerActivity: options.openwaLateOwnerActivity ?? ((input) => admitOpenwaLateOwner(input, ownership)),
+      deliverAbsence: (intent) => deliverOpenwaAbsence(intent, ownership),
+    });
+  }
+
+  function currentOpenwaRuntimeContext(endpointId: string, ownership: DiscordGatewayOwnership): RuntimeContext | null {
+    const instance = runtime.get(endpointId);
+    const context = instance ? runtimeContexts.get(instance as object) : undefined;
+    if (!context || ownership.stopping || discordGatewayOwnerships.get(endpointId) !== ownership) return null;
+    return discordGatewayRuntimeIsCurrent(endpointId, context) ? context : null;
+  }
+
+  async function deliverOpenwaAbsence(intent: OpenwaAbsenceIntent, ownership: DiscordGatewayOwnership) {
+    const context = currentOpenwaRuntimeContext(intent.endpointId, ownership);
+    const adapter = context?.endpointRuntime?.getProviderAdapter();
+    if (!context || !(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA runtime is unavailable for an owner_absent wake");
+    const snapshot = await openwaPolicies.get(intent.companyId, intent.endpointId);
+    if (!snapshot) throw new Error("OpenWA policy is unavailable for an owner_absent wake");
+    const sessionId = adapter.gateway.sessionId;
+    const dedupeKeys = intent.messages.map((event) => event.dedupeKey);
+    for (const [index, event] of intent.messages.entries()) {
+      const decoration = openwaInboundDecoration(event, {
+        event: "owner_absent",
+        triggerClass: "other",
+        principalRole: openwaSenderRole(snapshot, null, event.senderPhone),
+        rules: [],
+        addressed: false,
+        control: null,
+        quotedFromAgent: false,
+        absence: { wakeId: intent.wakeId, carrier: index === intent.messages.length - 1, dedupeKeys },
+      });
+      await admitOpenwaMessage(intent.endpointId, openwaAdmitInput({ sessionId }, adapter, event, decoration), context);
+    }
+  }
+
+  async function steerAdmittedOpenwaTrigger(action: typeof chatActions.$inferSelect, issueId: string, commentId: string) {
+    const openwa = action.payload.openwa;
+    if (!openwa || typeof openwa !== "object" || !action.conversationId) return;
+    const wake = openwa as Record<string, unknown>;
+    const triggerClass = wake.triggerClass === "owner" || wake.triggerClass === "other" || wake.triggerClass === "grant" ? wake.triggerClass : null;
+    if (!triggerClass) return;
+    const deliveryIds = Array.isArray(wake.deliveryIds) ? wake.deliveryIds.filter((id): id is string => typeof id === "string") : [];
+    try {
+      await steerOpenwaTrigger(db, {
+        companyId: action.companyId,
+        endpointId: action.endpointId,
+        conversationId: action.conversationId,
+        issueId,
+        commentId,
+        incoming: { triggerClass, event: typeof wake.event === "string" ? wake.event : null },
+        deliveryIds,
+      });
+    } catch (error) {
+      logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");
+    }
+  }
+
+  async function admitOpenwaLateOwner(input: OpenwaLateOwnerActivity, ownership: DiscordGatewayOwnership) {
+    const context = currentOpenwaRuntimeContext(input.endpointId, ownership);
+    const adapter = context?.endpointRuntime?.getProviderAdapter();
+    if (!context || !(adapter instanceof OpenwaChatAdapter)) return;
+    if (!(await openwaOwnerAbsentRunActive(db, { companyId: input.companyId, endpointId: input.endpointId, chatKey: input.chatKey }))) return;
+    const decoration = openwaInboundDecoration(input.event, {
+      triggerClass: "owner",
+      principalRole: "owner",
+      rules: [],
+      addressed: true,
+      control: null,
+      quotedFromAgent: false,
+      ownerNowActive: true,
+    });
+    await admitOpenwaMessage(input.endpointId, openwaAdmitInput({ sessionId: adapter.gateway.sessionId }, adapter, input.event, decoration), context);
+  }
+
+  async function openwaAbsenceDeliveryIds(
+    tx: DbOrTransaction,
+    endpoint: EndpointRow,
+    decoration: OpenwaAdmissionDecoration,
+    conversationId: string,
+    carrierId: string,
+  ): Promise<string[]> {
+    const keys = decoration.absence?.dedupeKeys ?? [];
+    const rows = keys.length
+      ? await tx
+          .select({ id: chatDeliveries.id })
+          .from(chatDeliveries)
+          .where(
+            and(
+              eq(chatDeliveries.endpointId, endpoint.id),
+              inArray(chatDeliveries.deduplicationKey, keys),
+              eq(chatDeliveries.companyId, endpoint.companyId),
+              eq(chatDeliveries.conversationId, conversationId),
+              isNotNull(chatDeliveries.answerState),
+            ),
+          )
+          .orderBy(asc(chatDeliveries.receivedAt), asc(chatDeliveries.id))
+      : [];
+    const ids = rows.map((row) => row.id).filter((id) => id !== carrierId);
+    return [...ids, carrierId];
+  }
+
+  function openwaAbsenceCompanion(decoration: OpenwaAdmissionDecoration | null): boolean {
+    return decoration?.event === "owner_absent" && decoration.absence?.carrier === false;
+  }
+
+  async function acceptOpenwaAbsenceCompanion(
+    deliveryId: string,
+    attachmentResult: Awaited<ReturnType<typeof ingestAttachments>>,
+  ) {
+    await db
+      .update(chatDeliveries)
+      .set({
+        state: "processed",
+        processedAt: new Date(),
+        redactedError: attachmentOmissionDetail(attachmentResult),
+        nextAttemptAt: null,
+        updatedAt: new Date(),
+      })
+      .where(and(eq(chatDeliveries.id, deliveryId), eq(chatDeliveries.state, "processing")));
+  }
+
+  function gatewayForOpenwaEndpoint(endpoint: EndpointRow) {
+    const adapter = runtime.get(endpoint.id)?.getProviderAdapter();
+    const account = endpoint.providerAccountId ?? "";
+    const baseUrl = account.slice(0, Math.max(0, account.lastIndexOf("#")));
+    if (adapter instanceof OpenwaChatAdapter) return Promise.resolve({ client: adapter.gateway, baseUrl });
+    return resolveCredentials(endpoint).then((credentials) => {
+      if (!credentials.apiKey || !baseUrl) throw unprocessable("Connect the OpenWA gateway first", { code: "openwa_session_required" });
+      return {
+        client: createOpenwaGatewayClient({ baseUrl, apiKey: credentials.apiKey, sessionId: account.slice(account.lastIndexOf("#") + 1), fetchImpl }),
+        baseUrl,
+      };
+    });
+  }
+
+  function openwaRuntimeCallbacks(
+    endpoint: EndpointRow,
+    ownership: DiscordGatewayOwnership,
+    context: RuntimeContext,
+  ) {
+    const sessionId = (endpoint.providerAccountId ?? "").slice((endpoint.providerAccountId ?? "").lastIndexOf("#") + 1);
+    openwaPolicies.invalidate(endpoint.id);
+    const admissionRuntime = {
+      companyId: endpoint.companyId,
+      endpointId: endpoint.id,
+      sessionId,
+      adapter: () => {
+        const adapter = context.endpointRuntime?.getProviderAdapter();
+        return adapter instanceof OpenwaChatAdapter ? adapter : null;
+      },
+      admit: (input: OpenwaAdmitInput) => admitOpenwaMessage(endpoint.id, input, context),
+    };
+    const admissionHooks = openwaAdmission.hooks(admissionRuntime);
+    const { dispatcher: _dispatcher, ...callbacks } = createOpenwaIngressCallbacks({
+      db,
+      companyId: endpoint.companyId,
+      endpointId: endpoint.id,
+      sessionId,
+      ownJid: (endpoint.botExternalId ?? "").replace(/\D/g, "") + "@c.us",
+      leaseKey: ownership.leaseKey,
+      leaseToken: ownership.token,
+      outbound: openwaOutbound,
+      hooks: { ...admissionHooks, ...(options.openwaIngressHooks ?? {}) },
+      statePersistence: (tx) => createChatSdkStatePersistence(tx as unknown as Db),
+      ownershipIsCurrent: () => discordGatewayRuntimeIsCurrent(endpoint.id, context),
+      refreshOwnership: () => ensureDiscordGatewayRuntimeIsCurrent(endpoint.id, context),
+      fence: async (tx, statuses) => {
+        const current = await runtimeCallbackEndpoint(tx, endpoint.id, context, statuses);
+        if (!current) return null;
+        if ((await renewDiscordGatewayOwnershipForMessageAdmission(tx, endpoint.id, context)).kind !== "owned") return null;
+        return current;
+      },
+      invalidate: () => {
+        openwaOutbound.forget(endpoint.id);
+        void invalidateRuntime(endpoint.id).catch(() => undefined);
+      },
+      redact: (error) => redactError(error),
+    });
+    return {
+      ...callbacks,
+      onOpenwaTypingAllowed: (threadId: string, refresh: boolean) =>
+        openwaTypingAllowed(db, { companyId: endpoint.companyId, endpointId: endpoint.id, agentId: endpoint.assignedAgentId, threadId, requireActiveRun: refresh }),
+      async onOpenwaLive() {
+        await callbacks.onOpenwaLive();
+        void openwaAdmission.refreshGroups(admissionRuntime).catch(() => 0);
+      },
+    };
   }
 
   async function handlePhotonFailure(
@@ -9107,6 +9569,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (!record) throw notFound("Chat endpoint not found");
     if (record.endpoint.provider === "agentmail") throw badRequest("Use the email inbox API for AgentMail");
     if (input.photon && record.endpoint.provider !== "imessage-photon") throw badRequest("Photon configuration is only valid for iMessage Photon");
+    if (input.openwa && record.endpoint.provider !== "openwa") throw badRequest("OpenWA configuration is only valid for OpenWA");
     const suppliedCredentialKeys = Object.keys(input.credentials ?? {});
     if (suppliedCredentialKeys.length > 0) {
       const credentialAction =
@@ -9150,6 +9613,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const record = await endpointRecord(endpointId);
     if (!record) throw notFound("Chat endpoint not found");
     const endpoint = record.endpoint;
+    if (endpoint.provider === "openwa" && ["configure", "reconnect", "resume"].includes(input.action))
+      assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(endpoint));
     if (input.action === "pause") {
       if (endpoint.status !== "active") {
         throw conflict("Only an active chat connection can be paused", {
@@ -9516,7 +9981,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ) {
       throw unprocessable("Unsupported chat endpoint setup action");
     }
-    if (!getWebhookPublicBaseUrl() && endpoint.provider !== "discord" && endpoint.provider !== "imessage-photon") {
+    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider)) {
       throw unprocessable(
         `A public HTTPS Paperclip URL is required before connecting ${PROVIDER_LABELS[endpoint.provider]}`,
       );
@@ -9634,6 +10099,28 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       if (endpoint.botExternalId && (configuration.projectId !== endpoint.providerAccountId || credentials.lineId && lineId !== credentials.lineId)) throw conflict("A different Photon identity requires a new channel");
       credentials = { ...credentials, ...configuration, lineId };
     }
+    let openwaPolicy: OpenwaEndpointPolicy | null = null;
+    if (endpoint.provider === "openwa") {
+      const storedPolicy = openwaEndpointPolicySchema.parse(endpoint.policy);
+      const configuration = input.openwa
+        ? openwaChannelConfigurationSchema.parse(input.openwa)
+        : credentials.baseUrl && credentials.sessionId
+          ? { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId, numberMode: storedPolicy.numberMode, attestations: storedPolicy.attestations }
+          : null;
+      if (!configuration)
+        throw unprocessable("Inspect the OpenWA gateway and choose a session first", { code: "openwa_session_required" });
+      if (!configuration.attestations.pacing || !configuration.attestations.soleClient)
+        throw unprocessable("Confirm both OpenWA attestations before connecting: send pacing is enabled on the gateway, and Paperclip is the only client sending as this session", { code: "openwa_attestations_required" });
+      if (endpoint.providerAccountId && endpoint.providerAccountId !== openwaProviderAccountId(configuration.baseUrl, configuration.sessionId))
+        throw conflict("A different OpenWA gateway or session requires a new channel", { code: "chat_bot_identity_changed" });
+      credentials = { ...credentials, baseUrl: configuration.baseUrl, sessionId: configuration.sessionId };
+      const { triggers: _triggers, ...withoutTriggers } = storedPolicy;
+      openwaPolicy = openwaEndpointPolicySchema.parse({
+        ...(storedPolicy.numberMode === configuration.numberMode ? storedPolicy : withoutTriggers),
+        numberMode: configuration.numberMode,
+        attestations: configuration.attestations,
+      });
+    }
     const identity = await verifyCredentials(endpoint.provider, credentials);
     // Once setup has claimed a provider bot identity, every credential repair
     // must prove that same identity before secrets can be replaced. A process
@@ -9716,6 +10203,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
       await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
     }
+    if (endpoint.provider === "openwa") {
+      await invalidateRuntime(endpoint.id);
+      await credentialLease.assertOwned();
+      await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+    }
     if (
       (input.credentials && Object.keys(input.credentials).length > 0) ||
       credentialsChangedByDiscovery
@@ -9758,6 +10250,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               identity.botLabel ??
               endpoint.botDisplayName ??
               record.assignedAgentName,
+            ...(openwaPolicy
+              ? { policy: openwaPolicy, policyRevision: sql`${chatEndpoints.policyRevision} + 1` }
+              : {}),
             healthMessage: waitingForSlackConfiguration
               ? "Finish provider webhook configuration"
               : "Waiting for a test conversation",
@@ -10023,6 +10518,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             code: "chat_endpoint_not_testing",
           });
         }
+        if (endpoint.provider === "openwa") {
+          const { attestations } = openwaEndpointPolicySchema.parse(endpoint.policy);
+          if (!attestations.pacing || !attestations.soleClient)
+            throw unprocessable("Confirm both OpenWA attestations before activating this channel", { code: "openwa_attestations_required" });
+          assertOpenwaAgentAdapterSupported(await assignedAgentAdapterType(endpoint));
+        }
         if (endpoint.provider === "github" && endpoint.setup.github) {
           const verified = await githubChatManagementService(db, fetchImpl).verification(endpoint.id);
           if (!verified.ready) throw conflict("Finish verifying the App, repositories, and assigned agent's tools before activating this bot", { checks: verified.checks });
@@ -10055,7 +10556,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             );
           }
           const requiredTrigger =
-            ["telegram", "imessage-photon"].includes(endpoint.provider)
+            ["telegram", "imessage-photon", "openwa"].includes(endpoint.provider)
               ? "direct_message"
               : "subscribed_message";
           const qualifyingDelivery = await db
@@ -10082,7 +10583,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             !qualifyingDelivery.processedAt
           ) {
             throw conflict(
-              ["telegram", "imessage-photon"].includes(endpoint.provider)
+              ["telegram", "imessage-photon", "openwa"].includes(endpoint.provider)
                 ? "Send the test direct message before completing setup"
                 : "Reply once without mentioning the agent before completing setup",
               { code: "chat_test_follow_up_missing" },
@@ -10233,6 +10734,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     endpoint: EndpointRow,
     author: Author,
     raw?: unknown,
+    resolveLink = true,
   ) {
     const providerAccountId = endpoint.providerAccountId ?? "unknown";
     const externalId = stableExternalPrincipalId(
@@ -10270,6 +10772,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         },
       })
       .returning();
+    if (!resolveLink) return { principal, userId: null, linkedDenied: false };
     const link = await db
       .select({
         userId: chatIdentityLinks.paperclipUserId,
@@ -10340,12 +10843,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     tx: DbOrTransaction,
     endpoint: EndpointRow,
     principalId: string,
+    openwaContext: { isDirectMessage?: boolean } = {},
   ): Promise<{
     allowed: boolean;
     linkedDenied: boolean;
     userId: string | null;
     sponsorUserId?: string | null;
   }> {
+    if (endpoint.provider === "openwa") {
+      const openwa = await openwaPrincipalAuthorization(tx, endpoint, principalId, openwaContext);
+      return { allowed: openwa.allowed, linkedDenied: false, userId: openwa.userId };
+    }
     const githubAccess = await githubChatPrincipalAccess(tx, endpoint, principalId);
     if (githubAccess) return githubAccess;
     // Link confirmation already uses this transaction-scoped identity key.
@@ -11588,6 +12096,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       commentId: string;
       principalId: string;
       actorUserId: string | null;
+      openwa?: Pick<OpenwaAdmissionDecoration, "event" | "triggerClass" | "approval"> | null;
+      openwaDeliveryIds?: string[];
     },
   ) {
     await tx
@@ -11609,6 +12119,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           sessionGeneration: input.conversation.sessionGeneration,
           requestedByActorType: input.actorUserId ? "user" : "system",
           requestedByActorId: input.actorUserId ?? input.principalId,
+          ...(input.openwa
+            ? {
+                openwa: {
+                  event: input.openwa.event,
+                  triggerClass: input.openwa.triggerClass,
+                  deliveryIds: input.openwaDeliveryIds ?? [input.deliveryId],
+                  ...(input.openwa.approval
+                    ? { approvalRequestId: input.openwa.approval.requestId, requestStatus: input.openwa.approval.requestStatus }
+                    : {}),
+                },
+              }
+            : {}),
         },
       })
       .onConflictDoNothing();
@@ -11735,6 +12257,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       tx,
       endpoint,
       action.principalId,
+      { isDirectMessage: conversation.isDirectMessage },
     );
     const automatic = delivery.normalizedEvent.githubAutomatic as { context: GitHubReviewEventContext } | undefined;
     if (endpoint.provider === "github" && automatic) {
@@ -11749,7 +12272,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (
       !(conversation.isDirectMessage
         ? endpoint.allowDirectMessages
-        : nonDirectDestinationAllowed(endpoint, resource)) ||
+        : openwaDestinationAllowed(endpoint, resource, endpoint.provider === "openwa" ? parseOpenwaDecoration(delivery.normalizedEvent.openwa) : null)) ||
       !authorization.allowed ||
       authorization.userId !== expectedUserId ||
       (payload.requestedByActorType === "system" &&
@@ -11965,7 +12488,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       or exists (select 1 from environment_leases where company_id = ${run.companyId}::uuid and heartbeat_run_id = ${run.id}::uuid)`);
     return evidence.length === 0;
   }
-
   async function failedNativeRetryCoordinator(
     tx: DbOrTransaction,
     run: typeof heartbeatRuns.$inferSelect,
@@ -13513,6 +14035,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         and(
           eq(chatActions.kind, "failed_run_retry"),
           isNull(agentWakeupRequests.runId),
+          sql`not exists (select 1 from chat_endpoints openwa_endpoint where openwa_endpoint.id = ${chatActions.endpointId} and openwa_endpoint.provider = 'openwa')`,
           cursor
             ? sql`(${chatActions.createdAt}, ${chatActions.id}) > (${cursor.createdAt.toISOString()}::timestamptz, ${cursor.id}::uuid)`
             : undefined,
@@ -13907,6 +14430,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           eq(chatActions.kind, "inbound_wakeup"),
           inArray(chatActions.status, ["processed", "failed"]),
           eq(owner.companyId, chatActions.companyId),
+          sql`not exists (select 1 from chat_endpoints openwa_endpoint where openwa_endpoint.id = ${chatActions.endpointId} and openwa_endpoint.provider = 'openwa')`,
           or(
             and(
               isNull(owner.runId),
@@ -14379,11 +14903,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attachmentOmissionReasons: claimed.payload.attachmentOmissionReasons as
           | Record<string, number>
           | undefined,
+        ...(context.endpoint.provider === "openwa" && claimed.payload.openwa && typeof claimed.payload.openwa === "object"
+          ? {
+              extraWakeContext: { openwa: claimed.payload.openwa as Record<string, unknown> },
+              ...((claimed.payload.openwa as Record<string, unknown>).event === "approval_reply" ? { allowRunCoalescing: false } : {}),
+            }
+          : {}),
         durableChatRequest: request,
         rethrowOnError: true,
       });
       const durable = await receipt();
       if (!durable) throw new Error("chat_inbound_wakeup_receipt_missing");
+      if (context.endpoint.provider === "openwa" && (durable.status === "deferred_issue_execution" || durable.status === "coalesced"))
+        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId);
       await settle(receiptDeclined(durable) ? "failed" : "processed", {
         code: receiptDeclined(durable)
           ? `inbound_wakeup_${durable.status}`
@@ -14497,13 +15029,16 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         githubManual = { policy: { ...config.configuration.defaults, ...config.configuration.repositories[repositoryId] }, revision: config.revision, event: trigger === "mention" || message.isMention ? "mention" : "comment" };
       }
     }
+    const openwaDecoration = endpoint.provider === "openwa" ? (openwaMessages.get(message) ?? null) : null;
+    if (endpoint.provider === "openwa" && !openwaDecoration) return;
     const providerEventId = `${durableExternalThreadIdentity(thread.id)}:${message.id}`;
     const surfaceKind = chatSurfaceKind(endpoint.provider, thread);
-    const addressed =
-      endpoint.provider === "imessage-photon" ||
-      trigger === "mention" ||
-      trigger === "direct_message" ||
-      message.isMention === true;
+    const addressed = openwaDecoration
+      ? openwaDecoration.addressed
+      : endpoint.provider === "imessage-photon" ||
+        trigger === "mention" ||
+        trigger === "direct_message" ||
+        message.isMention === true;
     const eventKind: ChatEventKind =
       trigger === "direct_message"
         ? "direct_message"
@@ -14557,7 +15092,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           inlineRecovery.set(attachment, descriptor);
           return [restored];
         })
-      : message.attachments;
+      : endpoint.provider === "openwa"
+        ? []
+        : message.attachments;
     const unavailableTeamsReferences = teamsNonPersonal
       ? Math.min(message.attachments.length, 20) -
         nativeInboundAttachments.length
@@ -14646,6 +15183,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       },
       ...(githubAutomatic ? { githubAutomatic } : {}),
       ...(githubManual ? { githubManual } : {}),
+      ...(openwaDecoration ? { openwa: openwaDecoration } : {}),
       principal: {
         externalId: stableExternalPrincipalId(
           endpoint.provider,
@@ -14964,9 +15502,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             companyId: endpoint.companyId,
             endpointId: endpoint.id,
             providerEventId,
-            deduplicationKey: createHash("sha256")
-              .update(providerEventId)
-              .digest("hex"),
+            deduplicationKey: openwaDecoration
+              ? openwaDecoration.dedupeKey
+              : createHash("sha256").update(providerEventId).digest("hex"),
+            ...(openwaDecoration && accepting
+              ? { triggerClass: openwaDecoration.triggerClass, principalRole: openwaDecoration.principalRole }
+              : {}),
             eventKind,
             normalizedEvent: redactDestinationDelivery
               ? redactedDestinationNormalized
@@ -15342,14 +15883,23 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         if (!rebound) throw notFound("Bound task not found");
         if (!activeDelivery.principalId)
           throw new Error("chat_inbound_wakeup_principal_missing");
-        await stageInboundWakeup(db, {
-          endpoint,
-          deliveryId: activeDelivery.id,
-          conversation: rebound.conversation,
-          commentId: inboundCommentId,
-          principalId: activeDelivery.principalId,
-          actorUserId: rebound.authorUserId,
-        });
+        if (!openwaAbsenceCompanion(openwaDecoration))
+          await stageInboundWakeup(db, {
+            endpoint,
+            deliveryId: activeDelivery.id,
+            conversation: rebound.conversation,
+            commentId: inboundCommentId,
+            principalId: activeDelivery.principalId,
+            actorUserId: rebound.authorUserId,
+            openwa:
+              openwaDecoration && activeDelivery.triggerClass
+                ? { event: openwaDecoration.event, triggerClass: activeDelivery.triggerClass, approval: openwaDecoration.approval ?? null }
+                : openwaDecoration,
+            openwaDeliveryIds:
+              openwaDecoration?.event === "owner_absent"
+                ? await openwaAbsenceDeliveryIds(db, endpoint, openwaDecoration, rebound.conversation.id, activeDelivery.id)
+                : undefined,
+          });
         // Attachment storage follows the atomic task/comment/link mutation.
         // If a later wakeup or provider subscription failed, retry from the
         // committed delivery link and fill in only files that are still
@@ -15364,6 +15914,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           attachmentLimitOmissions: githubAttachmentLimitOmissions(message),
           unavailableReferenceCount: unavailableTeamsReferences,
           actorUserId: rebound.authorUserId,
+        });
+        await ingestOpenwaTriggerMedia({
+          endpoint,
+          endpointRuntime,
+          message,
+          decoration: openwaDecoration,
+          issueId: rebound.issueId,
+          commentId: inboundCommentId,
+          deliveryId: activeDelivery.id,
         });
         if (
           await settleTelegramAttachmentOnlyFailure({
@@ -15385,6 +15944,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         // fails, keep the delivery retryable; the committed message link makes
         // the retry resume here without duplicating the task or comment.
         if (addressed && !thread.isDM) await thread.subscribe();
+        if (openwaAbsenceCompanion(openwaDecoration)) {
+          await acceptOpenwaAbsenceCompanion(activeDelivery.id, attachmentResult);
+          return;
+        }
         await acceptInboundWakeup(activeDelivery.id, attachmentResult);
         if (!(await processInboundWakeup(activeDelivery.id))) return;
         const acceptedWake = await db
@@ -15418,13 +15981,46 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         return;
       }
 
-      const principalResolution = await ensurePrincipal(
-        endpoint,
-        message.author,
-        message.raw,
-      );
+      const openwaPrefetched = openwaDecoration
+        ? await (() => {
+            const principal = ensurePrincipal(endpoint, message.author, message.raw, false);
+            const conversation = db
+              .select()
+              .from(chatConversations)
+              .where(
+                and(
+                  eq(chatConversations.endpointId, endpoint.id),
+                  eq(chatConversations.externalConversationId, thread.channelId),
+                  eq(chatConversations.externalThreadId, thread.id),
+                ),
+              )
+              .orderBy(desc(chatConversations.sessionGeneration))
+              .then((rows) => rows[0] ?? null);
+            return Promise.all([
+              principal,
+              ensureResource(endpoint, thread, false),
+              conversation,
+              conversation.then((row) =>
+                row
+                  ? db
+                      .select()
+                      .from(issues)
+                      .where(and(eq(issues.companyId, endpoint.companyId), eq(issues.id, row.issueId)))
+                      .then((rows) => rows[0] ?? null)
+                  : null,
+              ),
+              principal.then((resolved) =>
+                openwaPrincipalAuthorization(db, endpoint, resolved.principal.id, { isDirectMessage: thread.isDM }, false),
+              ),
+            ]);
+          })()
+        : null;
+      const principalResolution = openwaPrefetched
+        ? openwaPrefetched[0]
+        : await ensurePrincipal(endpoint, message.author, message.raw);
       const mayEnableSetupDestination =
         endpoint.provider !== "imessage-photon" &&
+        endpoint.provider !== "openwa" &&
         !thread.isDM &&
         endpoint.status === "verifying" &&
         addressed &&
@@ -15474,7 +16070,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             }
             return { enabledResourceCount, resource };
           })
-        : {
+        : openwaPrefetched
+          ? { enabledResourceCount: null, resource: openwaPrefetched[1] }
+          : {
             enabledResourceCount: await db
               .select({ count: sql<number>`count(*)::int` })
               .from(chatEndpointResources)
@@ -15491,16 +16089,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             resource: await ensureResource(endpoint, thread, false),
           };
       const { enabledResourceCount, resource } = resourceAdmission;
-      await db
-        .update(chatDeliveries)
-        .set({
-          principalId: principalResolution.principal.id,
-          updatedAt: new Date(),
-        })
-        .where(eq(chatDeliveries.id, activeDelivery.id));
+      if (!openwaDecoration)
+        await db
+          .update(chatDeliveries)
+          .set({
+            principalId: principalResolution.principal.id,
+            updatedAt: new Date(),
+          })
+          .where(eq(chatDeliveries.id, activeDelivery.id));
 
-      const latestConversation =
-        endpoint.provider === "microsoft-teams"
+      const latestConversation = openwaPrefetched
+        ? openwaPrefetched[2]
+        : endpoint.provider === "microsoft-teams"
           ? await conversationForThread(endpoint.id, thread.id)
           : await db
               .select()
@@ -15518,9 +16118,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               .orderBy(desc(chatConversations.sessionGeneration))
               .then((rows) => rows[0] ?? null);
       const isLinear = surfaceKind !== "native_thread";
+      const openwaIdleBefore = openwaDecoration
+        ? Date.now() - openwaEndpointPolicySchema.parse(endpoint.policy ?? {}).rotateAfterIdleHours * 3_600_000
+        : null;
       let existingConversation: ConversationRow | null = latestConversation;
       let existingIssue: typeof issues.$inferSelect | null =
-        existingConversation
+        openwaPrefetched
+          ? openwaPrefetched[3]
+          : existingConversation
           ? await db
               .select()
               .from(issues)
@@ -15542,7 +16147,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           ? await hasCommittedTaskControlCompletion(existingConversation.id)
           : existingConversation.state === "completed" ||
             existingIssue?.status === "done" ||
-            existingIssue?.status === "cancelled")
+            existingIssue?.status === "cancelled" ||
+            (openwaIdleBefore !== null &&
+              (existingConversation.lastActivityAt ?? existingConversation.createdAt).getTime() < openwaIdleBefore))
       ) {
         if (existingConversation.state !== "completed") {
           await db
@@ -15557,10 +16164,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       // A forum topic is a native provider thread and therefore stays bound to
       // one immutable Paperclip task, but the command must still be consumed
       // as control-plane input instead of becoming a task comment/wakeup.
-      const controlCommand =
-        isLinear || endpoint.provider === "telegram"
+      const controlCommand = openwaDecoration
+        ? null
+        : isLinear || endpoint.provider === "telegram"
           ? linearControlCommand(message.text)
           : null;
+      const openwaControl = openwaDecoration?.control ?? null;
       const guidanceCommand =
         endpoint.provider === "telegram"
           ? telegramGuidanceCommand(message.text)
@@ -15569,17 +16178,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         endpoint.status === "verifying" || endpoint.status === "active";
       const destinationAllowed = thread.isDM
         ? endpoint.allowDirectMessages
-        : nonDirectDestinationAllowed(endpoint, resource);
+        : openwaDestinationAllowed(endpoint, resource, openwaDecoration);
+      const openwaAuthorization = openwaPrefetched ? openwaPrefetched[4] : null;
       const guestSponsorAllowed =
+        !openwaAuthorization &&
         principalResolution.userId === null &&
         !principalResolution.linkedDenied &&
         endpoint.allowUnlinkedPeople
           ? await sponsorAllowsGuest(endpoint)
           : false;
-      const principalAllowed =
-        !principalResolution.linkedDenied &&
-        (principalResolution.userId !== null || guestSponsorAllowed);
-      const activationAllowed = addressed || existingConversation !== null;
+      const principalAllowed = openwaAuthorization
+        ? openwaAuthorization.allowed
+        : !principalResolution.linkedDenied &&
+          (principalResolution.userId !== null || guestSponsorAllowed);
+      const activationAllowed = openwaDecoration !== null || addressed || existingConversation !== null;
       const allowed =
         endpointAllowed &&
         destinationAllowed &&
@@ -15648,7 +16260,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           ? "Connection is not active"
           : !destinationAllowed
             ? "Destination is not enabled in Paperclip"
-            : principalResolution.linkedDenied
+            : openwaAuthorization
+              ? openwaFilterReason(endpoint, openwaAuthorization)
+              : principalResolution.linkedDenied
               ? "Linked Paperclip account is not currently permitted"
               : !principalAllowed
                 ? endpoint.allowUnlinkedPeople
@@ -15672,6 +16286,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
 
       const filterPreControlSource = async (database: DbOrTransaction) => {
         if (
+          openwaDecoration ||
           controlCommand === "status" ||
           (controlCommand === "new" &&
             endpoint.provider === "telegram" &&
@@ -15706,6 +16321,39 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         return true;
       };
       if (await filterPreControlSource(db)) return;
+      if (openwaControl) {
+        const controlledAt = new Date();
+        await db.transaction(async (tx) => {
+          if (existingConversation)
+            await tx
+              .update(chatConversations)
+              .set({ state: "completed", updatedAt: controlledAt })
+              .where(
+                and(
+                  eq(chatConversations.companyId, endpoint.companyId),
+                  eq(chatConversations.id, existingConversation.id),
+                  inArray(chatConversations.state, ["active", "waiting"]),
+                ),
+              );
+          await tx
+            .update(chatDeliveries)
+            .set({
+              conversationId: existingConversation?.id ?? null,
+              principalId: principalResolution.principal.id,
+              state: "processed",
+              processedAt: controlledAt,
+              nextAttemptAt: null,
+              redactedError: null,
+              updatedAt: controlledAt,
+            })
+            .where(and(eq(chatDeliveries.id, activeDelivery.id), eq(chatDeliveries.state, "processing")));
+          await tx
+            .update(chatEndpoints)
+            .set({ lastEventAt: controlledAt, updatedAt: controlledAt })
+            .where(eq(chatEndpoints.id, endpoint.id));
+        });
+        return;
+      }
       const photonQuote =
         endpoint.provider === "imessage-photon"
           ? photonReplyReference(message.raw)
@@ -15996,6 +16644,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       }
 
       const inboundActivityPublications: ActivityPublication[] = [];
+      let openwaMutationAuthorization: Awaited<ReturnType<typeof openwaPrincipalAuthorization>> | null = null;
+      const effectiveOpenwa = () =>
+        openwaDecoration && openwaMutationAuthorization
+          ? {
+              ...openwaDecoration,
+              triggerClass:
+                openwaDecoration.event === "message" || openwaDecoration.event === "approval_reply"
+                  ? openwaMutationAuthorization.triggerClass
+                  : ("other" as const),
+              principalRole: openwaMutationAuthorization.role,
+            }
+          : openwaDecoration;
       const persistTaskMutation = async (
         taskTx: DbOrTransaction,
         taskEndpoint: EndpointRow,
@@ -16006,6 +16666,14 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           const sessionGeneration = isLinear
             ? (latestConversation?.sessionGeneration ?? 0) + 1
             : 1;
+          const previousIssue =
+            openwaDecoration && latestConversation
+              ? await taskTx
+                  .select({ identifier: issues.identifier })
+                  .from(issues)
+                  .where(and(eq(issues.companyId, endpoint.companyId), eq(issues.id, latestConversation.issueId)))
+                  .then((rows) => rows[0] ?? null)
+              : null;
           const issue = await issuesSvc.create(
             endpoint.companyId,
             {
@@ -16015,18 +16683,23 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   : message.text,
                 `${PROVIDER_LABELS[endpoint.provider]} conversation`,
               ),
-              description: `Started from ${PROVIDER_LABELS[endpoint.provider]}: ${resource.label}`,
+              description: previousIssue?.identifier
+                ? `Started from ${PROVIDER_LABELS[endpoint.provider]}: ${resource.label}\n\nContinues ${previousIssue.identifier}`
+                : `Started from ${PROVIDER_LABELS[endpoint.provider]}: ${resource.label}`,
               status: "todo",
               priority: "medium",
               assigneeAgentId: endpoint.assignedAgentId,
               createdByUserId: taskUserId ?? endpoint.sponsorUserId,
               responsibleUserId: taskUserId ?? endpoint.sponsorUserId,
               originKind: "chat_channel",
-              originId: `${endpoint.id}:${thread.id}:${sessionGeneration}`,
+              originId: openwaDecoration
+                ? `chat:${endpoint.id}:${openwaDecoration.chatKey}:${sessionGeneration}`
+                : `${endpoint.id}:${thread.id}:${sessionGeneration}`,
               idempotencyKey: `chat:${endpoint.id}:${thread.id}:${sessionGeneration}`,
             },
             taskTx,
           );
+          if (previousIssue?.identifier) await issueReferenceService(db).syncIssue(issue.id, taskTx);
           await taskTx
             .insert(chatConversations)
             .values({
@@ -16077,7 +16750,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 .then((rows) => rows[0] ?? null);
         if (!issue) throw notFound("Bound task not found");
           const [assignedAgentTrust] = taskEndpoint.provider === "github" ? await taskTx.select({ permissions: agents.permissions }).from(agents).where(and(eq(agents.companyId, taskEndpoint.companyId), eq(agents.id, taskEndpoint.assignedAgentId))) : [];
-        if (!taskUserId || (githubAutomatic && !principalResolution.userId) || assignedAgentTrust?.permissions?.trustPreset === LOW_TRUST_REVIEW_PRESET) {
+        if (endpoint.provider !== "openwa" && (!taskUserId || (githubAutomatic && !principalResolution.userId) || assignedAgentTrust?.permissions?.trustPreset === LOW_TRUST_REVIEW_PRESET)) {
             const reviewPreset = {
               id: LOW_TRUST_REVIEW_PRESET,
               version: LOW_TRUST_REVIEW_PRESET_VERSION,
@@ -16221,15 +16894,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                     {
                       type: "key_value",
                       label: "Authority",
-                      value: taskUserId
-                        ? "Linked Paperclip user"
-                        : "Sponsored external guest (restricted)",
+                      value: openwaDecoration
+                        ? `OpenWA ${effectiveOpenwa()!.principalRole.replace("_", " ")} (${effectiveOpenwa()!.triggerClass} trigger)`
+                        : taskUserId
+                          ? "Linked Paperclip user"
+                          : "Sponsored external guest (restricted)",
                     },
                   ],
                 },
               ],
             },
-            sourceTrust: taskUserId
+            sourceTrust: taskUserId || openwaDecoration
               ? null
               : {
                   preset: LOW_TRUST_REVIEW_PRESET,
@@ -16243,9 +16918,28 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           .update(chatDeliveries)
           .set({
             conversationId: conversation!.id,
+            ...(openwaDecoration
+              ? {
+                  principalId: principalResolution.principal.id,
+                  triggerClass: effectiveOpenwa()!.triggerClass,
+                  principalRole: effectiveOpenwa()!.principalRole,
+                  answerState: openwaDecoration.event === "group_added" ? null : ("pending" as const),
+                  normalizedEvent: sql`${chatDeliveries.normalizedEvent} || ${JSON.stringify({ openwa: effectiveOpenwa() })}::jsonb`,
+                }
+              : {}),
             updatedAt: new Date(),
           })
           .where(eq(chatDeliveries.id, activeDelivery.id));
+        if (openwaDecoration && openwaDecoration.event !== "group_added")
+          await recordOpenwaTriggerAdmitted(taskTx, {
+            companyId: endpoint.companyId,
+            endpointId: endpoint.id,
+            conversationId: conversation!.id,
+            deliveryId: activeDelivery.id,
+            decoration: effectiveOpenwa()!,
+            text: message.text,
+            retentionDays: openwaAuditRetentionDays(taskEndpoint.policy),
+          });
         await taskTx
           .insert(chatMessageLinks)
           .values({
@@ -16294,14 +16988,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             policySnapshot: githubAutomatic.policy, event: githubAutomatic.context, state: "queued",
           }).onConflictDoNothing();
         }
-        await stageInboundWakeup(taskTx, {
-          endpoint: taskEndpoint,
-          deliveryId: activeDelivery.id,
-          conversation,
-          commentId: comment.id,
-          principalId: principalResolution.principal.id,
-          actorUserId: taskUserId,
-        });
+        if (!openwaAbsenceCompanion(openwaDecoration))
+          await stageInboundWakeup(taskTx, {
+            endpoint: taskEndpoint,
+            deliveryId: activeDelivery.id,
+            conversation,
+            commentId: comment.id,
+            principalId: principalResolution.principal.id,
+            actorUserId: taskUserId,
+            openwa: effectiveOpenwa(),
+            openwaDeliveryIds:
+              openwaDecoration?.event === "owner_absent"
+                ? await openwaAbsenceDeliveryIds(taskTx, taskEndpoint, openwaDecoration, conversation!.id, activeDelivery.id)
+                : undefined,
+          });
         if (taskEndpoint.provider === "imessage-photon") {
           await logActivity(
             taskTx as Db,
@@ -16352,12 +17052,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               )
               .for("update")
               .then((rows) => rows[0] ?? null);
-        const currentPrincipalAuthorization =
-          await lockCurrentPrincipalAuthorization(
-            tx,
-            currentEndpoint,
-            principalResolution.principal.id,
-          );
+        openwaMutationAuthorization = openwaDecoration
+          ? await openwaPrincipalAuthorization(tx, currentEndpoint, principalResolution.principal.id, { isDirectMessage: thread.isDM })
+          : null;
+        const currentPrincipalAuthorization: Awaited<ReturnType<typeof lockCurrentPrincipalAuthorization>> = openwaMutationAuthorization
+          ? { allowed: openwaMutationAuthorization.allowed, linkedDenied: false, userId: openwaMutationAuthorization.userId }
+          : await lockCurrentPrincipalAuthorization(tx, currentEndpoint, principalResolution.principal.id);
         const automaticAdmission = githubAutomatic ? await githubAutomaticAdmission(tx, currentEndpoint, githubAutomatic.context) : null;
         if (githubAutomatic && !automaticAdmission?.allowed) currentPrincipalAuthorization.allowed = false;
         if (automaticAdmission?.allowed) currentPrincipalAuthorization.userId = automaticAdmission.responsibleUserId ?? null;
@@ -16366,7 +17066,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           currentEndpoint.status === "active";
         const destinationStillAllowed = thread.isDM
           ? currentEndpoint.allowDirectMessages
-          : nonDirectDestinationAllowed(currentEndpoint, currentResource);
+          : openwaDestinationAllowed(currentEndpoint, currentResource, openwaDecoration);
         if (
           !endpointStillAllowed ||
           !destinationStillAllowed ||
@@ -16454,6 +17154,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         );
       });
       if (!taskMutation) return;
+      if (endpoint.provider === "openwa" && taskMutation.conversation.id !== existingConversation?.id)
+        invalidateOpenwaIssueBinding(endpoint.companyId, taskMutation.conversation.issueId);
       // The open task can fetch the comment immediately, before attachments
       // finish preparing or the agent starts. Never publish an uncommitted row.
       for (const publication of inboundActivityPublications) {
@@ -16470,6 +17172,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attachmentLimitOmissions: githubAttachmentLimitOmissions(message),
         unavailableReferenceCount: unavailableTeamsReferences,
         actorUserId,
+      });
+      await ingestOpenwaTriggerMedia({
+        endpoint,
+        endpointRuntime,
+        message,
+        decoration: openwaDecoration,
+        issueId: conversation.issueId,
+        commentId: comment.id,
+        deliveryId: activeDelivery.id,
       });
       if (
         await settleTelegramAttachmentOnlyFailure({
@@ -16491,6 +17202,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       // processed. A retry reuses the committed message link above and tries
       // this idempotent subscription again before completing the delivery.
       if (addressed && !thread.isDM) await thread.subscribe();
+      if (openwaAbsenceCompanion(openwaDecoration)) {
+        await acceptOpenwaAbsenceCompanion(activeDelivery.id, attachmentResult);
+        return;
+      }
       await acceptInboundWakeup(activeDelivery.id, attachmentResult);
       if (!(await processInboundWakeup(activeDelivery.id))) return;
       const acceptedWake = await db
@@ -17172,6 +17887,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       links: [],
       isMention: normalized.message?.mentionedBot === true,
     } as unknown as Message;
+    if (endpointRuntime.provider === "openwa") {
+      const decoration = parseOpenwaDecoration(delivery.normalizedEvent.openwa);
+      if (!decoration) return null;
+      openwaMessages.set(message, decoration);
+    }
     const githubManual = delivery.normalizedEvent.githubManual;
     if (endpointRuntime.provider === "github" && githubManual && typeof githubManual === "object") githubManualMessages.set(message, githubManual as { policy: GitHubReviewPolicy; revision: number; event: "mention" | "comment" });
     const githubAutomatic = delivery.normalizedEvent.githubAutomatic;
@@ -20965,7 +21685,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       }
       return;
     }
-
     const action = await db
       .select()
       .from(chatActions)
@@ -27693,6 +28412,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           // admission; a stale in-flight post is quarantined as unknown.
           processPendingSlackTaskStarts(limit),
           processFailedChatRunRetries(limit),
+          processPendingOpenwaApprovalWakes(db, limit),
+          processPendingOpenwaSessionHealthWakes(db, limit),
+          processPendingOpenwaFollowups(db, limit),
         ]);
     const reactionRecovery = processPendingReactionDeliveries(
       limit,
@@ -28228,6 +28950,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const confirmationRuntime = connectReceipt ? runtimeContexts.get((await runtimeFor(endpointRecordForLink.endpoint)) as object) : null;
     let confirmationEffectId: string | null = null;
     const confirmed = await db.transaction(async (tx) => {
+      if (endpointRecordForLink.endpoint.provider === "openwa")
+        await tx
+          .select({ id: chatEndpoints.id })
+          .from(chatEndpoints)
+          .where(and(eq(chatEndpoints.companyId, link.companyId), eq(chatEndpoints.id, link.endpointId)))
+          .for("update");
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`chat-identity:${link.companyId}:${link.principalId}`}, 0))`,
       );
@@ -28317,6 +29045,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         )
         .returning({ endpointId: chatIdentityLinks.endpointId })
         .then((rows) => rows[0] ?? null);
+      if (confirmedLink && endpointRecordForLink.endpoint.provider === "openwa") {
+        await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
+        await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: confirmedLink.endpointId });
+      }
       if (confirmedLink && connectReceipt && confirmationRuntime &&
           typeof connectReceipt.payload.channelId === "string" && typeof connectReceipt.payload.userId === "string") {
         const effect = await stageProviderEffect(tx, {
@@ -28338,13 +29070,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       });
     }
     if (confirmationEffectId) scheduleProviderEffect(confirmationEffectId);
+    openwaPolicies.invalidate(confirmed.endpointId);
     return { ok: true, endpointId: confirmed.endpointId };
   }
 
   async function revokeLink(endpointId: string, principalId: string) {
     const link = await db
-      .select({ companyId: chatIdentityLinks.companyId })
+      .select({ companyId: chatIdentityLinks.companyId, provider: chatEndpoints.provider })
       .from(chatIdentityLinks)
+      .innerJoin(chatEndpoints, and(eq(chatEndpoints.companyId, chatIdentityLinks.companyId), eq(chatEndpoints.id, chatIdentityLinks.endpointId)))
       .where(
         and(
           eq(chatIdentityLinks.endpointId, endpointId),
@@ -28354,6 +29088,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       .then((rows) => rows[0] ?? null);
     if (!link) throw notFound("Identity link not found");
     const revoked = await db.transaction(async (tx) => {
+      if (link.provider === "openwa")
+        await tx
+          .select({ id: chatEndpoints.id })
+          .from(chatEndpoints)
+          .where(and(eq(chatEndpoints.companyId, link.companyId), eq(chatEndpoints.id, endpointId)))
+          .for("update");
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${`chat-identity:${link.companyId}:${principalId}`}, 0))`,
       );
@@ -28374,9 +29114,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           ),
         )
         .returning({ id: chatIdentityLinks.id })
-        .then((rows) => rows[0] ?? null);
+        .then(async (rows) => {
+          if (rows[0] && link.provider === "openwa") {
+            await bumpOpenwaPolicyRevision(tx, { companyId: link.companyId, id: endpointId });
+            await syncOpenwaGroupActivation(tx, { companyId: link.companyId, id: endpointId });
+            await revokeOpenwaGrantsOfFormerOwners(tx, { companyId: link.companyId, id: endpointId }, null);
+          }
+          return rows[0] ?? null;
+        });
     });
     if (!revoked) throw notFound("Identity link not found");
+    openwaPolicies.invalidate(endpointId);
   }
 
   async function listConversations(endpointId: string) {
@@ -28894,6 +29642,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ]
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt) || b.id.localeCompare(a.id))
       .slice(0, limit);
+  }
+
+  async function listAudit(
+    endpointId: string,
+    input: Omit<Parameters<typeof listOpenwaAudit>[1], "companyId" | "endpointId">,
+  ) {
+    const [endpoint] = await db
+      .select({ companyId: chatEndpoints.companyId })
+      .from(chatEndpoints)
+      .where(eq(chatEndpoints.id, endpointId))
+      .limit(1);
+    if (!endpoint) throw notFound("Chat endpoint not found");
+    return listOpenwaAudit(db, { ...input, companyId: endpoint.companyId, endpointId });
   }
 
   async function listActivityPage(endpointId: string, limit = 25, cursor?: string) {
@@ -33053,6 +33814,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     payload: SafeChatPublicationPayload;
     replaceProviderMessageId?: string | null;
     telegramDraftControl?: TelegramDraftControl;
+    openwaPublication?: { runId: string; quotedMessageId: string | null } | null;
     beforePhotonWrite?(): Promise<void>;
     onSlackFileUploadAccepted?: (
       receipt: SlackFileUploadAcceptedReceipt,
@@ -33136,6 +33898,27 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           text = `${text}\n\n${attachmentFallback}`;
         }
       }
+    }
+    if (input.endpoint.provider === "openwa") {
+      const adapter = endpointRuntime.getProviderAdapter();
+      if (!(adapter instanceof OpenwaChatAdapter) || !input.openwaPublication)
+        throw Object.assign(new Error("OpenWA publication runtime unavailable"), { code: "CHAT_PROVIDER_PRETRANSPORT_REJECTED" });
+      const sent = await sendOpenwaPublication({
+        db,
+        registry: openwaOutbound,
+        gateway: adapter.gateway,
+        state: adapter.state,
+        endpoint: input.endpoint,
+        conversation: input.conversation,
+        publication: input.publication,
+        runId: input.openwaPublication.runId,
+        text,
+        files,
+        quotedMessageId: input.openwaPublication.quotedMessageId,
+        assertCurrent: () => input.beforePhotonWrite?.() ?? Promise.resolve(),
+      });
+      await adapter.endTyping(thread.id).catch(() => undefined);
+      return sent;
     }
     if (input.endpoint.provider === "imessage-photon") {
       const adapter = endpointRuntime.getProviderAdapter();
@@ -37319,7 +38102,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 publication,
                 endpoint,
               );
-              const replaceProviderMessageId = endpoint.provider !== "imessage-photon" && CAPABILITIES[endpoint.provider]
+              const replaceProviderMessageId = endpoint.provider !== "imessage-photon" && endpoint.provider !== "openwa" && CAPABILITIES[endpoint.provider]
                 .messageEdits
                 ? (closedProgress?.providerMessageId ??
                   (await interactionResolutionPublicationToReplace(
@@ -37390,6 +38173,44 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               // point. Provider I/O runs without a database transaction or
               // row lock. The renewable lease preserves credential/runtime
               // identity until conditional settlement.
+              let openwaPublication: { runId: string; quotedMessageId: string | null } | null = null;
+              if (authorizationClaim.endpoint.provider === "openwa") {
+                const decision = await decideOpenwaRunPublication(db, {
+                  endpoint: authorizationClaim.endpoint,
+                  conversation: authorizationClaim.conversation,
+                  publication,
+                });
+                if (decision.kind !== "publish") {
+                  await db.transaction(async (tx) => {
+                    await credentialLease.assertOwned(tx);
+                    await tx
+                      .update(chatPublications)
+                      .set({
+                        state: "cancelled",
+                        nextAttemptAt: null,
+                        redactedError:
+                          decision.kind === "blocked"
+                            ? "OpenWA publishes only the agent's own run output"
+                            : decision.kind === "empty"
+                              ? "The run output was empty"
+                              : `OpenWA publication suppressed: ${decision.reason}`,
+                        updatedAt: new Date(),
+                      })
+                      .where(
+                        and(
+                          eq(chatPublications.id, publication.id),
+                          eq(chatPublications.state, "streaming"),
+                          eq(chatPublications.attempts, publication.attempts + 1),
+                        ),
+                      );
+                  });
+                  const typing = runtime.get(authorizationClaim.endpoint.id)?.getProviderAdapter();
+                  if (typing instanceof OpenwaChatAdapter)
+                    await typing.endTyping(authorizationClaim.conversation.externalThreadId).catch(() => undefined);
+                  return;
+                }
+                openwaPublication = { runId: decision.runId, quotedMessageId: decision.quotedMessageId };
+              }
               if (authorizationClaim.preparedText !== null)
                 payload = { ...payload, text: authorizationClaim.preparedText };
               const telegramDraft =
@@ -37422,6 +38243,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 payload,
                 replaceProviderMessageId,
                 telegramDraftControl: telegramDraft?.control,
+                openwaPublication,
                 beforePhotonWrite: () => db.transaction(async (tx) => {
                   await credentialLease.assertOwned(tx);
                   if (!(await authorizeRetainedChatSourcePublication(tx, publication))) throw new PhotonError("rejected", "Publication source authorization changed");
@@ -38150,6 +38972,44 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     return listResources(endpointId);
   }
 
+  const unregisterOpenwaApprovalWakes = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
+  const unregisterOpenwaFollowups = registerOpenwaFollowupRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
+  const openwaRunEndTasks = new Set<Promise<void>>();
+  const unregisterOpenwaRunStart = registerOpenwaRunStartListener(db, (run) => {
+    void openwaPolicies
+      .get(run.companyId, run.endpointId)
+      .then((snapshot) => {
+        if (snapshot) openwaNudges.start({ runId: run.runId, chatKey: run.chatKey, progressNudgeSeconds: snapshot.policy.progressNudgeSeconds });
+      })
+      .catch((error) => logger.warn({ err: error, runId: run.runId }, "failed to start OpenWA progress nudges"));
+  });
+  const unsubscribeOpenwaRunEnd = subscribeAllCompanyLiveEvents((event) => {
+    if (event.type !== "heartbeat.run.status") return;
+    const payload = event.payload as { runId?: unknown; status?: unknown };
+    if (typeof payload.runId !== "string" || !["succeeded", "interrupted", "failed", "cancelled", "timed_out"].includes(String(payload.status))) return;
+    openwaNudges.stop(payload.runId);
+    const task = scheduleOpenwaFollowupForRun(db, { companyId: event.companyId, runId: payload.runId })
+      .then(() => undefined)
+      .catch((error) => logger.warn({ err: error, runId: payload.runId }, "failed to schedule an OpenWA follow-up owner run"));
+    openwaRunEndTasks.add(task);
+    void task.finally(() => openwaRunEndTasks.delete(task));
+  });
+
+  const openwaOwners = openwaOwnerService(db, {
+    createLinkIntent,
+    gatewayFor: gatewayForOpenwaEndpoint,
+    invalidate: (endpointId) => openwaPolicies.invalidate(endpointId),
+  });
+
+  const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
+    async resolve(endpoint) {
+      const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
+      if (!(adapter instanceof OpenwaChatAdapter)) throw new Error("OpenWA runtime unavailable");
+      return { gateway: adapter.gateway, registry: openwaOutbound, media: openwaMedia, storage: options.storage };
+    },
+    owners: openwaOwners,
+  });
+
   const unregisterSlackTaskAuthority = registerSlackTaskAuthority(db, async (binding) => {
     if (!(await instanceSettingsService(db).getExperimental()).enableChatConnectors)
       throw forbidden("Chat connectors are disabled");
@@ -38226,12 +39086,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     generateSetupSecret,
     configure,
     inspectPhoton,
+    inspectOpenwa,
     test,
     finishSlackSetup: (endpointId: string, userId: string) => test(endpointId, { optionalSlackTestForUser: userId }),
     setupTestStatus,
     handleWebhook,
     listResources,
     replaceResources,
+    openwa: openwaOwners,
+    openwaPolicies,
+    openwaApprovals: openwaApprovalService(db),
+    openwaAdmissionStats: openwaAdmission.stats,
     listPrincipals,
     createLinkIntent,
     previewIdentityLink,
@@ -38241,6 +39106,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     listConversations,
     listActivity,
     listActivityPage,
+    listAudit,
     replayDelivery,
     replayPublication,
     resolveAction,
@@ -38265,11 +39131,22 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     processPendingSlackSessionStops,
     processPendingSlackSessionSyncs,
     getIssueBinding,
+    openwaOutbound,
+    openwaMedia,
     shutdown: async () => {
       shuttingDown = true;
+      openwaPolicies.stop();
+      await openwaMedia.shutdown();
       await Promise.allSettled([...failedRetryTasks.values()]);
       unregisterFailedRetryAuthority();
       unregisterSlackTaskAuthority();
+      unregisterOpenwaToolRuntime();
+      unregisterOpenwaApprovalWakes();
+      unregisterOpenwaFollowups();
+      unregisterOpenwaRunStart();
+      unsubscribeOpenwaRunEnd();
+      openwaNudges.stopAll();
+      await Promise.allSettled([...openwaRunEndTasks]);
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);
@@ -38283,6 +39160,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           ownership.renewTimer = null;
         }
       }
+      await Promise.allSettled(ownedDiscordGateways.map((ownership) => ownership.scheduledWakes?.stop()));
       discordGatewayOwnerships.clear();
       await Promise.allSettled(
         ownedDiscordGateways

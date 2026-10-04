@@ -227,6 +227,7 @@ export async function enqueueIssueInteractionChatPublications(
   interaction: IssueThreadInteraction,
 ) {
   if (interaction.status !== "pending") return [];
+  if (interaction.kind === "request_confirmation" && interaction.payload.openwaApprovalRequestId) return [];
   // The first native-chat wave intentionally externalizes only questions and
   // confirmations. Other governance interactions have richer partial and
   // terminal semantics that are authoritative in Paperclip; projecting a
@@ -288,6 +289,7 @@ export async function enqueueIssueInteractionChatPublications(
       : null;
   const inserted: Array<typeof chatPublications.$inferSelect> = [];
   for (const { conversation, endpoint } of bindings) {
+    if (endpoint.provider === "openwa") continue;
     if (endpoint.assignedAgentId !== interaction.createdByAgentId) continue;
     const formDraft =
       interaction.kind === "ask_user_questions" &&
@@ -506,6 +508,7 @@ export async function enqueueTerminalIssueInteractionChatPublications(
   interaction: IssueThreadInteraction,
 ) {
   if (interaction.status === "pending") return [];
+  if (interaction.kind === "request_confirmation" && interaction.payload.openwaApprovalRequestId) return [];
   const originals = (
     await db
       .select()

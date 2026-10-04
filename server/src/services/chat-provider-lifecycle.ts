@@ -495,6 +495,7 @@ export function parseChatProviderLifecycle(
   switch (input.provider) {
     case "imessage-photon": return []; // Authenticated gRPC events own lifecycle.
     case "agentmail": return [];
+    case "openwa": return [];
     case "slack":
       return parseSlackLifecycle(input);
     case "github":

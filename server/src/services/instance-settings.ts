@@ -16,6 +16,7 @@ import {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   PAPERCLIP_CLOUD_MANAGED_BY,
+  SPEECH_TO_TEXT_DEFAULTS,
   instanceGeneralSettingsSchema,
   type InstanceGeneralSettings,
   instanceExperimentalSettingsSchema,
@@ -220,6 +221,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
         parsed.data.feedbackDataSharingPreference ?? DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
       backupRetention: parsed.data.backupRetention ?? DEFAULT_BACKUP_RETENTION,
       defaultMessageDelivery: parsed.data.defaultMessageDelivery ?? DEFAULT_MESSAGE_DELIVERY,
+      speechToText: parsed.data.speechToText ?? SPEECH_TO_TEXT_DEFAULTS,
       // Absent => unrestricted; only carry through an explicit policy.
       ...(parsed.data.executionMode ? { executionMode: parsed.data.executionMode } : {}),
     };
@@ -230,6 +232,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
     feedbackDataSharingPreference: DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
     backupRetention: DEFAULT_BACKUP_RETENTION,
     defaultMessageDelivery: DEFAULT_MESSAGE_DELIVERY,
+    speechToText: SPEECH_TO_TEXT_DEFAULTS,
   };
 }
 

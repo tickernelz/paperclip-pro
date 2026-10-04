@@ -61,6 +61,14 @@ export {
   chatAgentRoutes,
   chatEndpointLeases,
   chatSdkState,
+  chatEndpointOwners,
+  chatSenderRules,
+  chatScheduledWakes,
+  chatOwnerApprovalRequests,
+  chatOutboundMessages,
+  chatOwnerApprovalBubbles,
+  chatOwnerGrants,
+  chatAuditEntries,
 } from "./chat_channels.js";
 export { issueRelations } from "./issue_relations.js";
 export { routines, routineRevisions, routineTriggers, routineWebhookTestReceipts, routineRuns } from "./routines.js";

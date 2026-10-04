@@ -25,6 +25,7 @@ import {
   emailConnectionSchema,
   emailSendSchema,
   slackToolCallSchema,
+  openwaToolCallSchema,
   slackSearchConfigSchema,
   // Agent
   AGENT_PALETTE_IDS,
@@ -298,6 +299,21 @@ import {
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
   inspectPhotonProjectSchema,
+  inspectOpenwaGatewaySchema,
+  CHAT_AUDIT_ACTOR_KINDS,
+  CHAT_AUDIT_ENTRY_KINDS,
+  addOpenwaOwnerSchema,
+  createOpenwaSenderRuleSchema,
+  updateOpenwaChatSettingsSchema,
+  updateOpenwaEndpointPolicySchema,
+  listOpenwaApprovalsQuerySchema,
+  resolveOpenwaApprovalSchema,
+  openwaChatSettingsSchema,
+  chatInflightModeSchema,
+  openwaGatewayAdminToolLevelSchema,
+  openwaNumberModeSchema,
+  openwaReplyPolicySchema,
+  openwaSenderPolicyModeSchema,
   photonProjectIdSchema,
   photonLineIdSchema,
   publishChatPublicationSchema,
@@ -854,6 +870,53 @@ const chatEndpointSetupSecretResponseSchema = z
   .object({ webhookSecret: z.string().length(64) })
   .strict();
 
+const openwaEndpointPolicyResponseSchema = z
+  .object({
+    numberMode: openwaNumberModeSchema,
+    senderPolicyMode: openwaSenderPolicyModeSchema,
+    replyPolicy: openwaReplyPolicySchema,
+    triggers: z
+      .object({
+        directMessage: z.boolean(),
+        agentMentioned: z.boolean(),
+        replyToAgent: z.boolean(),
+        commandPrefix: z
+          .object({ enabled: z.boolean(), prefix: z.string() })
+          .strict(),
+        selfChat: z.boolean(),
+        ownerMentionedAbsent: z.boolean(),
+        keywords: z.array(z.string()),
+        allMessages: z.boolean(),
+      })
+      .strict(),
+    absenceSeconds: z.number().int(),
+    approvals: z
+      .object({
+        createTask: z.boolean(),
+        externalTools: z.boolean(),
+        crossChatSend: z.boolean(),
+        waAdmin: z.boolean(),
+        gatewayAdmin: z.boolean(),
+        reminderMinutes: z.number().int(),
+        maxReminders: z.number().int(),
+        grantTtlHours: z.number().int(),
+      })
+      .strict(),
+    rotateAfterIdleHours: z.number().int(),
+    progressNudgeSeconds: z.number().int(),
+    typingIndicator: z.boolean(),
+    ownerNumberPrefix: z
+      .object({ enabled: z.boolean(), text: z.string() })
+      .strict(),
+    gatewayAdminTools: openwaGatewayAdminToolLevelSchema,
+    customInstructions: z.string(),
+    auditContentRetentionDays: z.number().int(),
+    attestations: z
+      .object({ pacing: z.boolean(), soleClient: z.boolean() })
+      .strict(),
+  })
+  .strict();
+
 const chatEndpointResponseSchema = z
   .object({
     id: z.string().uuid(),
@@ -872,6 +935,9 @@ const chatEndpointResponseSchema = z
     providerAccountLabel: z.string().nullable(),
     botExternalId: z.string().nullable(),
     photonAllocation: z.enum(["dedicated", "shared"]).optional(),
+    policy: openwaEndpointPolicyResponseSchema.optional(),
+    policyRevision: z.number().int().min(0).optional(),
+    inflightMode: chatInflightModeSchema.optional(),
     botUsername: z.string().nullable(),
     botLabel: z.string().nullable(),
     botAvatarUrl: z.string().nullable(),
@@ -1569,6 +1635,21 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "POST /api/chat-endpoints/{endpointId}/finish",
   "GET /api/chat-endpoints/{endpointId}/test-status",
   "POST /api/chat-endpoints/{endpointId}/photon/inspect",
+  "POST /api/chat-endpoints/{endpointId}/openwa/inspect",
+  "GET /api/chat-endpoints/{endpointId}/openwa/owners",
+  "POST /api/chat-endpoints/{endpointId}/openwa/owners",
+  "DELETE /api/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
+  "GET /api/chat-endpoints/{endpointId}/openwa/sender-rules",
+  "POST /api/chat-endpoints/{endpointId}/openwa/sender-rules",
+  "DELETE /api/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
+  "GET /api/chat-endpoints/{endpointId}/openwa/chats",
+  "PUT /api/chat-endpoints/{endpointId}/openwa/chats",
+  "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
+  "GET /api/chat-endpoints/{endpointId}/openwa/health",
+  "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
+  "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
+  "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+  "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
   "GET /api/chat-endpoints/{endpointId}/resources",
   "PUT /api/chat-endpoints/{endpointId}/resources",
   "GET /api/chat-endpoints/{endpointId}/principals",
@@ -1579,6 +1660,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "POST /api/chat-identity-links/request-access",
   "GET /api/chat-endpoints/{endpointId}/conversations",
   "GET /api/chat-endpoints/{endpointId}/activity",
+  "GET /api/chat-endpoints/{endpointId}/audit",
   "POST /api/chat-endpoints/{endpointId}/deliveries/{deliveryId}/replay",
   "POST /api/chat-endpoints/{endpointId}/publications/{publicationId}/replay",
   "POST /api/chat-endpoints/{endpointId}/publications/{publicationId}/resolve",
@@ -1690,7 +1772,7 @@ function resolveOperationAuthLevel(
 ): OpenApiAuthLevel {
   const key = operationKey(method, path);
   if (PUBLIC_OPERATIONS.has(key)) return "public";
-  if (key === "POST /api/mcp/project-tools" || key === "POST /api/companies/{companyId}/slack/tasks/{issueId}/tools") return "agent_run";
+  if (key === "POST /api/mcp/project-tools" || key === "POST /api/companies/{companyId}/slack/tasks/{issueId}/tools" || key === "POST /api/companies/{companyId}/openwa/tasks/{issueId}/tools") return "agent_run";
   if (RUNTIME_TOOLS_OPERATIONS.has(key)) return "runtime_tools";
   if (INSTANCE_ADMIN_OPERATIONS.has(key)) return "instance_admin";
   if (
@@ -2185,6 +2267,11 @@ for (const [method, path, summary, body] of [
     responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
   });
 }
+registry.registerPath({ method: "post", path: "/api/companies/{companyId}/openwa/tasks/{issueId}/tools", tags: ["chat-channels"], summary: "Execute a task-bound OpenWA WhatsApp tool",
+  description: "Experimental OpenWA agent tools for runs on an OpenWA conversation issue or its child issues. Company, endpoint, session, run profile and approval grants come from the signed run, never from arguments. Errors carry a typed code such as approval_required, reply_denied, retry_after or number_not_on_whatsapp.",
+  request: { params: z.object({ companyId: z.string().uuid(), issueId: z.string().uuid() }), body: jsonBody(openwaToolCallSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
+});
 registry.registerPath({ method: "get", path: "/api/slack/search/callback", tags: ["chat-channels"], summary: "Complete personal Slack search OAuth",
   description: "Requires the same signed-in user, single-use state, linked Slack identity and workspace; redirects to connector Access. Never accepts model-supplied identity.",
   request: { query: z.object({ state: z.string(), code: z.string() }) },
@@ -2376,7 +2463,7 @@ registry.registerPath({
   tags: ["chat-channels"],
   summary: "Configure or change chat endpoint lifecycle state",
   description:
-    "Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
+    "Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration; OpenWA: `apiKey` and optional `adminApiKey`, with nonsecret `openwa.baseUrl`, `openwa.sessionId`, `openwa.numberMode`, and required `openwa.attestations`). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
   request: {
     params: z.object({ endpointId: z.string().uuid() }),
     body: jsonBody(configureChatEndpointSchema),
@@ -2445,6 +2532,339 @@ registry.registerPath({
     429: { description: "Photon request limit reached; retry later" },
     502: { description: "Photon returned an invalid response; inspect provider health" },
     503: { description: "Photon temporarily unavailable; retry later" },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/inspect",
+  tags: ["chat-channels"],
+  summary: "Inspect an OpenWA gateway and its sessions for channel setup",
+  description:
+    "Requires a board user with connection-management access. The API keys are write-only input. Rejects agents whose adapter cannot authenticate runs with signed run tokens and keys restricted to selected chats. Returns the gateway version, engine, key role, visible sessions with masked numbers, and warnings; never keys or full phone numbers. Responses are not cached. Inspection alone does not activate the channel.",
+  request: {
+    params: z.object({ endpointId: z.string().uuid() }),
+    body: jsonBody(inspectOpenwaGatewaySchema),
+  },
+  responses: {
+    200: r.ok(z.object({
+      baseUrl: z.string(),
+      gatewayVersion: z.string().nullable(),
+      pinnedVersion: z.string(),
+      engine: z.string().nullable(),
+      keyRole: z.enum(["operator", "admin", "viewer"]),
+      adminKey: z.object({ role: z.enum(["operator", "admin", "viewer"]) }).strict().nullable(),
+      warnings: z.array(z.string()),
+      eligible: z.boolean(),
+      sessions: z.array(z.object({
+        sessionId: z.string(),
+        name: z.string(),
+        status: z.string(),
+        maskedNumber: z.string().nullable(),
+        pushName: z.string().nullable(),
+        eligible: z.boolean(),
+        unavailableReason: z.string().optional(),
+      }).strict()),
+    }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+    429: { description: "OpenWA gateway request limit reached; retry later" },
+    502: { description: "OpenWA gateway returned an invalid response; inspect gateway health" },
+    503: { description: "OpenWA gateway unreachable; do not replace credentials" },
+  },
+});
+
+const openwaOwnerResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    identityLinkId: z.string().uuid(),
+    principalId: z.string().uuid(),
+    numberMasked: z.string(),
+    displayName: z.string().nullable(),
+    linkStatus: chatIdentityLinkStatusSchema,
+    paperclipUserId: z.string().nullable(),
+    effective: z.boolean(),
+    createdAt: z.string(),
+  })
+  .strict();
+
+const openwaSenderRuleResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    list: z.enum(["allow", "deny"]),
+    e164: z.string(),
+    label: z.string().nullable(),
+    createdAt: z.string(),
+  })
+  .strict();
+
+const openwaChatResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    chatId: z.string(),
+    chatKey: z.string(),
+    type: z.string(),
+    label: z.string(),
+    availability: chatResourceAvailabilitySchema,
+    enabled: z.boolean(),
+    settings: openwaChatSettingsSchema,
+    ownerPresent: z.boolean().nullable(),
+    participantCount: z.number().int().nullable(),
+  })
+  .strict();
+
+const openwaEndpointParams = z.object({ endpointId: z.string().uuid() });
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/owners",
+  tags: ["chat-channels"],
+  summary: "List OpenWA owners",
+  description:
+    "Lists the WhatsApp numbers registered as owners of an OpenWA endpoint, with masked numbers and whether each owner is currently effective (identity link confirmed and active, non-viewer company membership). Responses are not cached.",
+  request: { params: openwaEndpointParams },
+  responses: { 200: r.ok(z.array(openwaOwnerResponseSchema)), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/owners",
+  tags: ["chat-channels"],
+  summary: "Add an OpenWA owner",
+  description:
+    "Requires connection-management access. Registers an E.164 WhatsApp number as an owner and, unless that number is already linked, returns a short-lived identity-link confirmation URL. The owner gains authority only after a Paperclip user with active, non-viewer membership confirms the link. Returns 201 when a new owner row is created and 200 when it already existed. Records openwa.owner_added.",
+  request: { params: openwaEndpointParams, body: jsonBody(addOpenwaOwnerSchema) },
+  responses: {
+    200: r.ok(z.object({ owner: openwaOwnerResponseSchema.nullable(), created: z.boolean(), confirmationUrl: z.string().nullable(), expiresAt: z.string().nullable() }).strict()),
+    201: r.ok(z.object({ owner: openwaOwnerResponseSchema.nullable(), created: z.boolean(), confirmationUrl: z.string().nullable(), expiresAt: z.string().nullable() }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+    422: r.unprocessable,
+  },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
+  tags: ["chat-channels"],
+  summary: "Remove an OpenWA owner",
+  description: "Requires connection-management access. Removes the owner role; the identity link itself is kept. Records openwa.owner_removed.",
+  request: { params: z.object({ endpointId: z.string().uuid(), ownerId: z.string().uuid() }) },
+  responses: { 204: r.noContent, 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/sender-rules",
+  tags: ["chat-channels"],
+  summary: "List OpenWA sender allow and deny rules",
+  request: { params: openwaEndpointParams },
+  responses: { 200: r.ok(z.array(openwaSenderRuleResponseSchema)), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/sender-rules",
+  tags: ["chat-channels"],
+  summary: "Add an OpenWA sender rule",
+  description:
+    "Requires connection-management access. Adds an E.164 number to the allowlist or denylist; re-adding an existing entry updates its label. Owners are never blocked by the denylist. Records openwa.sender_rule_changed with a masked number.",
+  request: { params: openwaEndpointParams, body: jsonBody(createOpenwaSenderRuleSchema) },
+  responses: { 201: r.ok(openwaSenderRuleResponseSchema), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
+  tags: ["chat-channels"],
+  summary: "Remove an OpenWA sender rule",
+  description: "Requires connection-management access. Records openwa.sender_rule_changed.",
+  request: { params: z.object({ endpointId: z.string().uuid(), ruleId: z.string().uuid() }) },
+  responses: { 204: r.noContent, 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/chats",
+  tags: ["chat-channels"],
+  summary: "List configured OpenWA chats",
+  description: "Lists WhatsApp chats known to the endpoint with their activation, trigger overrides, reply policy, and owner presence for groups.",
+  request: { params: openwaEndpointParams },
+  responses: { 200: r.ok(z.array(openwaChatResponseSchema)), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/chat-endpoints/{endpointId}/openwa/chats",
+  tags: ["chat-channels"],
+  summary: "Save OpenWA per-chat settings",
+  description:
+    "Requires connection-management access. Upserts activation (off, on, auto), trigger overrides, absence seconds, and reply policy for one chat. Per-chat settings win over endpoint defaults. Records openwa.chat_activation_changed and openwa.config_changed.",
+  request: { params: openwaEndpointParams, body: jsonBody(updateOpenwaChatSettingsSchema) },
+  responses: { 200: r.ok(openwaChatResponseSchema), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/gateway-chats",
+  tags: ["chat-channels"],
+  summary: "List chats from the OpenWA gateway for the chat picker",
+  description:
+    "Requires connection-management access. Reads the session's chats from the gateway and annotates each with its configured activation. Direct-chat names are masked. Responses are not cached.",
+  request: {
+    params: openwaEndpointParams,
+    query: z.object({ limit: z.coerce.number().int().min(1).max(500).optional(), offset: z.coerce.number().int().min(0).max(100_000).optional() }),
+  },
+  responses: {
+    200: r.ok(z.array(z.object({ chatId: z.string(), isGroup: z.boolean(), name: z.string(), lastActivityAt: z.string().nullable(), activation: z.enum(["off", "on", "auto"]), configured: z.boolean() }).strict())),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+    502: { description: "OpenWA gateway returned an invalid response" },
+    503: { description: "OpenWA gateway unreachable" },
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/health",
+  tags: ["chat-channels"],
+  summary: "Read OpenWA gateway and session health",
+  description:
+    "Connection managers only. Reads the gateway version, engine, session status, and restriction with the stored operator key, plus pacing attestation and the latest observed pacing limit from the endpoint audit. Never returns keys or full phone numbers. Gateway failures are reported in gatewayError instead of an error status. Responses are not cached.",
+  request: { params: openwaEndpointParams },
+  responses: {
+    200: r.ok(
+      z
+        .object({
+          gatewayVersion: z.string().nullable(),
+          pinnedVersion: z.string(),
+          engine: z.string().nullable(),
+          session: z
+            .object({
+              status: z.string().nullable(),
+              maskedNumber: z.string().nullable(),
+              restriction: z.object({ active: z.boolean(), kind: z.string().nullable(), expiresAt: z.string().nullable() }).strict().nullable(),
+            })
+            .strict(),
+          pacing: z.object({ attested: z.boolean(), observedAt: z.string().nullable() }).strict(),
+          adminKeyConfigured: z.boolean(),
+          gatewayError: z.string().nullable(),
+          checkedAt: z.string(),
+        })
+        .strict(),
+    ),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+  },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/chat-endpoints/{endpointId}/openwa/policy",
+  tags: ["chat-channels"],
+  summary: "Update the OpenWA endpoint policy",
+  description:
+    "Requires connection-management access. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. The optional inflightMode key (steer or queue) sets how messages arriving during a run are handled and is stored outside the policy. Records openwa.config_changed with the changed keys only, plus inflightMode before/after when it changed.",
+  request: { params: openwaEndpointParams, body: jsonBody(updateOpenwaEndpointPolicySchema) },
+  responses: {
+    200: r.ok(
+      z
+        .object({
+          policy: openwaEndpointPolicyResponseSchema,
+          policyRevision: z.number().int().min(0),
+          inflightMode: chatInflightModeSchema,
+        })
+        .strict(),
+    ),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+    422: r.unprocessable,
+  },
+});
+
+const openwaApprovalResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    status: z.enum(["pending", "approved", "rejected", "cancelled"]),
+    categories: z.array(z.string()),
+    scope: z.enum(["one_action", "requester"]),
+    summary: z.string(),
+    proposedAction: z.string(),
+    originChat: z.string(),
+    requester: z.string().nullable(),
+    originConversationId: z.string().uuid().nullable(),
+    interactionId: z.string().uuid().nullable(),
+    reminderCount: z.number().int().min(0),
+    resolvedVia: z.enum(["whatsapp", "paperclip"]).nullable(),
+    resolvedByUserId: z.string().nullable(),
+    ownerText: z.string().nullable(),
+    agentConditions: z.string().nullable(),
+    resolvedAt: z.string().nullable(),
+    createdAt: z.string(),
+    grants: z.array(z.object({ id: z.string().uuid(), category: z.string(), status: z.string(), expiresAt: z.string() }).strict()),
+    canResolve: z.boolean(),
+  })
+  .strict();
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals",
+  tags: ["chat-channels"],
+  summary: "List OpenWA owner approval requests",
+  description:
+    "Lists the newest 100 owner approval requests of an OpenWA endpoint, optionally filtered by status, with their grants. Owner text and agent conditions are returned only to current endpoint owners; canResolve is true for a current owner on a pending request. Responses are not cached.",
+  request: { params: openwaEndpointParams, query: listOpenwaApprovalsQuerySchema },
+  responses: { 200: r.ok(z.array(openwaApprovalResponseSchema)), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+  tags: ["chat-channels"],
+  summary: "Approve or reject an OpenWA owner approval request",
+  description:
+    "Only a board user linked as a current owner of the endpoint may resolve. Uses the same first-resolution-wins path as WhatsApp replies and the generic interaction routes: approving writes the grants and wakes the agent with approval_resolved (grant); rejecting wakes it with approval_resolved (other). A request already resolved returns 409 already_resolved. Records openwa.approval_resolved.",
+  request: { params: z.object({ endpointId: z.string().uuid(), requestId: z.string().uuid() }), body: jsonBody(resolveOpenwaApprovalSchema) },
+  responses: {
+    200: r.ok(z.object({ requestId: z.string().uuid(), status: z.enum(["approved", "rejected"]), grantIds: z.array(z.string().uuid()) }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+  tags: ["chat-channels"],
+  summary: "Cancel a pending OpenWA owner approval request",
+  description:
+    "Only a board user linked as a current owner of the endpoint may cancel. Only a pending request can be cancelled: it becomes cancelled, its reminders stop and its approval card is withdrawn. No grant is written and the agent is not woken; later wakes no longer list it as pending. A request that is no longer pending returns 409 already_resolved with requestStatus. Records openwa.approval_cancelled.",
+  request: { params: z.object({ endpointId: z.string().uuid(), requestId: z.string().uuid() }) },
+  responses: {
+    200: r.ok(z.object({ requestId: z.string().uuid(), status: z.literal("cancelled") }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
   },
 });
 
@@ -2649,6 +3069,53 @@ registry.registerPath({
   request: { params: z.object({ endpointId: z.string().uuid() }), query: z.object({ limit: z.coerce.number().int().min(1).max(100).optional(), cursor: z.string().max(256).optional() }) },
   responses: {
     200: r.ok(z.union([z.array(chatActivityResponseSchema), z.object({ items: z.array(chatActivityResponseSchema), nextCursor: z.string().nullable() })])),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+const chatAuditEntryResponseSchema = z.object({
+  id: z.string().uuid(),
+  kind: z.enum(CHAT_AUDIT_ENTRY_KINDS),
+  actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS),
+  actorRef: z.string().nullable(),
+  chatKey: z.string().nullable(),
+  conversationId: z.string().uuid().nullable(),
+  runId: z.string().uuid().nullable(),
+  metadata: z.record(z.string(), z.unknown()),
+  content: z.record(z.string(), z.unknown()).nullable(),
+  contentPurged: z.boolean(),
+  occurredAt: z.string(),
+}).strict();
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/audit",
+  tags: ["chat-channels"],
+  summary: "List the OpenWA endpoint audit trail",
+  description:
+    "Returns the endpoint's audit entries newest first with cursor paging (limit 1–100, default 25; follow nextCursor). Filters: kind (comma-separated or repeated), chatKey, actorKind, actorRef, from and to (ISO timestamps, inclusive). Endpoint owners and company owners receive content (message text, owner text, redacted tool arguments); other board users with endpoint access receive metadata only and `access` is `metadata`. Content is purged after the endpoint's retention period; purged entries keep their metadata and report contentPurged.",
+  request: {
+    params: z.object({ endpointId: z.string().uuid() }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(100).optional(),
+      cursor: z.string().max(256).optional(),
+      kind: z.string().optional(),
+      chatKey: z.string().max(256).optional(),
+      actorKind: z.enum(CHAT_AUDIT_ACTOR_KINDS).optional(),
+      actorRef: z.string().max(256).optional(),
+      from: z.string().datetime({ offset: true }).optional(),
+      to: z.string().datetime({ offset: true }).optional(),
+    }),
+  },
+  responses: {
+    200: r.ok(z.object({
+      items: z.array(chatAuditEntryResponseSchema),
+      nextCursor: z.string().nullable(),
+      access: z.enum(["content", "metadata"]),
+    }).strict()),
     400: r.badRequest,
     401: r.unauthorized,
     403: r.forbidden,

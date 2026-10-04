@@ -1,5 +1,6 @@
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import { OPENWA_TOOLS, SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
 import { slackAssignedResource, executeGovernedSlackTool } from "./connectors/slack.js";
+import { executeOpenwaTool, openwaAssignedResource } from "./openwa/tools.js";
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -42,6 +43,7 @@ interface ConnectorDefinition {
   label: string;
   skillName: string;
   tools: Tool[];
+  toolsManifest?: boolean;
   resolve: (db: Db, binding: AgentBinding) => Promise<Resource[]>;
   execute: (
     db: Db,
@@ -56,8 +58,15 @@ interface ConnectorDefinition {
 const connectors: ConnectorDefinition[] = [
   { key: "slack", label: "Slack", skillName: "slack",
     tools: SLACK_TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
+    toolsManifest: true,
     resolve: slackAssignedResource,
     execute: executeGovernedSlackTool,
+  },
+  { key: "openwa", label: "OpenWA", skillName: "openwa",
+    tools: OPENWA_TOOLS.map(({ name, description, inputSchema }) => ({ name, description, inputSchema })),
+    toolsManifest: true,
+    resolve: openwaAssignedResource,
+    execute: executeOpenwaTool,
   },
   {
     key: "agentmail",
@@ -183,7 +192,7 @@ export async function applyConnectorSkills(
         content: Buffer.from(markdown + context),
         mode: 0o444,
       },
-      ...(assignment.key === "slack" ? [{ path: "TOOLS.json", content: Buffer.from(JSON.stringify(assignment.tools, null, 2)), mode: 0o444 }] : []),
+      ...(connector.toolsManifest ? [{ path: "TOOLS.json", content: Buffer.from(JSON.stringify(assignment.tools, null, 2)), mode: 0o444 }] : []),
     ]);
     skills.push({
       key: assignment.skillKey,
@@ -217,13 +226,11 @@ export async function prepareConnectorSkillDelivery(
     (config.engine === "cli" &&
       ["codex_local", "claude_local", "kimi_local"].includes(adapterType));
   if (scopedFiles) {
-    // Runner models with semantic tools cannot necessarily read staged skill
-    // files. Supply the Slack contract and verified source IDs in their input;
-    // keep the staged bundle for CLI-capable engines and compatibility hashing.
-    const slack = adapterType === "paperclip_runner"
-      ? config.paperclipRuntimeSkills.filter(entry => entry.key === "paperclipai/paperclip/slack")
+    const manifestSkills = new Set(connectors.filter((connector) => connector.toolsManifest).map(skillKey));
+    const inline = adapterType === "paperclip_runner"
+      ? config.paperclipRuntimeSkills.filter(entry => manifestSkills.has(entry.key))
       : [];
-    const instructions = (await Promise.all(slack.map(entry =>
+    const instructions = (await Promise.all(inline.map(entry =>
       fs.readFile(path.join(entry.source, "SKILL.md"), "utf8")))).join("\n\n");
     return { config, instructions };
   }

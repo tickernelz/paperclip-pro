@@ -2,6 +2,10 @@ import { PhotonChatAdapter, parsePhotonThreadId } from "./photon/adapter.js";
 import { PhotonLineAuthentication } from "./photon/cloud.js";
 import { PhotonState } from "./photon/state.js";
 import { PhotonReceiver } from "./photon/receiver.js";
+import { OpenwaChatAdapter } from "./openwa/adapter.js";
+import { createOpenwaGatewayClient, type OpenwaGatewayClient } from "./openwa/gateway.js";
+import { OpenwaReceiver, type OpenwaIngressEvent } from "./openwa/receiver.js";
+import { OpenwaState, type OpenwaIngestCursor } from "./openwa/state.js";
 import { photonAttachmentLocator, photonAttachmentLocatorSchema, downloadPhotonAttachment, type PhotonAttachmentLocator } from "./photon/attachments.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
@@ -136,8 +140,8 @@ const DISCORD_GATEWAY_HEALTHY_SESSION_MS = 60_000;
 
 /** Public Paperclip provider ids. The Teams SDK name remains an internal detail. */
 export type ChatSdkProvider =
-  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon";
-type ChatSdkAdapterKey = "slack" | "github" | "discord" | "teams" | "telegram" | "imessage-photon";
+  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "imessage-photon" | "openwa";
+type ChatSdkAdapterKey = "slack" | "github" | "discord" | "teams" | "telegram" | "imessage-photon" | "openwa";
 
 interface ProviderConfigBase {
   /** Agent-derived native bot display/mention name. */
@@ -211,8 +215,14 @@ export interface ResolvedPhotonChatConfig extends ProviderConfigBase {
   intakeAfter: number;
   credentials: { allocation?: "dedicated" | "shared"; projectId: string; projectSecret: string; lineId: string; phoneNumber: string };
 }
+export interface ResolvedOpenwaChatConfig extends ProviderConfigBase {
+  provider: "openwa";
+  intakeAfter: number;
+  credentials: { baseUrl: string; sessionId: string; phoneNumber: string; apiKey: string; adminApiKey?: string };
+}
 export type ResolvedChatSdkProviderConfig =
   | ResolvedPhotonChatConfig
+  | ResolvedOpenwaChatConfig
   | ResolvedSlackChatConfig
   | ResolvedGitHubChatConfig
   | ResolvedDiscordChatConfig
@@ -470,6 +480,13 @@ export interface ChatSdkRuntimeCallbacks {
   onPhotonAssertOwned?(activeThreadId?: string): Promise<void>;
   onPhotonCheckpoint?(sequence: number): Promise<void>;
   onPhotonFailure?(error: unknown): Promise<void>;
+  onOpenwaAssertOwned?(activeThreadId?: string): Promise<void>;
+  onOpenwaTypingAllowed?(threadId: string, refresh: boolean): Promise<boolean>;
+  onOpenwaEvent?(event: OpenwaIngressEvent, dedupeKey: string | null): Promise<void>;
+  onOpenwaCursor?(cursor: OpenwaIngestCursor): Promise<void>;
+  onOpenwaBeforeCatchUp?(gateway: OpenwaGatewayClient): Promise<void>;
+  onOpenwaLive?(): Promise<void>;
+  onOpenwaFailure?(error: unknown): Promise<void>;
   onMessage(event: ChatSdkMessageCallbackEvent): Promise<void> | void;
   onTelegramGenerationStopped?(
     event: ChatSdkCallbackEvent<TelegramGenerationStoppedProof>,
@@ -1357,6 +1374,7 @@ function createProviderAdapter(
   const resolvedLogger = adapterLogger(logger);
   switch (config.provider) {
     case "imessage-photon": throw new Error("Photon adapter requires scoped persistence");
+    case "openwa": throw new Error("OpenWA adapter requires scoped persistence");
     case "slack": {
       const adapterConfig: SlackAdapterConfig = {
         ...config.credentials,
@@ -2042,6 +2060,7 @@ export class ChatSdkEndpointRuntime {
   private initialization: Promise<void> | null = null;
   private retired = false;
   private photonReceiver?: PhotonReceiver;
+  private openwaReceiver?: OpenwaReceiver;
   private readonly runtimeOptions: CreateChatSdkEndpointRuntimeOptions;
   private shutdownTask: Promise<void> | null = null;
   private shutdownCompleted = false;
@@ -2101,6 +2120,11 @@ export class ChatSdkEndpointRuntime {
       ? new PhotonChatAdapter(options.providerConfig.userName,
           new PhotonLineAuthentication(options.providerConfig.credentials, options.providerConfig.credentials.projectSecret),
           new PhotonState({ companyId: options.companyId, endpointId: options.endpointId }, options.persistence))
+      : options.providerConfig.provider === "openwa"
+      ? new OpenwaChatAdapter(options.providerConfig.userName,
+          createOpenwaGatewayClient(options.providerConfig.credentials),
+          new OpenwaState({ companyId: options.companyId, endpointId: options.endpointId }, options.persistence),
+          options.providerConfig.credentials)
       : createProviderAdapter(
       options.providerConfig,
       options.logger,
@@ -2292,6 +2316,24 @@ export class ChatSdkEndpointRuntime {
         assertOwned: async () => { this.assertNotRetired(); await (this.adapter as PhotonChatAdapter).authentication.token(); await options.callbacks.onPhotonAssertOwned!(); },
         commitCheckpoint: options.callbacks.onPhotonCheckpoint, admit: options.callbacks.onPhotonEvent, failure: options.callbacks.onPhotonFailure });
       this.photonReceiver.start();
+    }
+    if (this.adapter instanceof OpenwaChatAdapter && this.discordGatewayEnabled && !this.openwaReceiver) {
+      const options = this.runtimeOptions;
+      const config = options.providerConfig as ResolvedOpenwaChatConfig;
+      const callbacks = options.callbacks;
+      if (!callbacks.onOpenwaAssertOwned || !callbacks.onOpenwaEvent || !callbacks.onOpenwaCursor || !callbacks.onOpenwaFailure || !callbacks.onOpenwaBeforeCatchUp) throw new Error("OpenWA receiver requires durable admission callbacks");
+      const adapter = this.adapter;
+      adapter.typingGuard = async (threadId, refresh) => {
+        this.assertNotRetired();
+        await callbacks.onOpenwaAssertOwned!();
+        if (!callbacks.onOpenwaTypingAllowed || !(await callbacks.onOpenwaTypingAllowed(threadId, refresh))) throw new Error("OpenWA typing is not active for this conversation");
+      };
+      this.openwaReceiver = new OpenwaReceiver({ gateway: adapter.gateway, socket: adapter.createEventSocket(), state: adapter.state,
+        sessionId: config.credentials.sessionId, intakeAfter: config.intakeAfter,
+        assertOwned: async () => { this.assertNotRetired(); await callbacks.onOpenwaAssertOwned!(); },
+        admit: callbacks.onOpenwaEvent, commitCursor: callbacks.onOpenwaCursor, failure: callbacks.onOpenwaFailure,
+        beforeCatchUp: () => callbacks.onOpenwaBeforeCatchUp!(adapter.gateway), live: callbacks.onOpenwaLive });
+      this.openwaReceiver.start();
     }
     if (this.provider === "discord" && this.discordGatewayEnabled) {
       this.startDiscordGateway();
@@ -3139,6 +3181,7 @@ export class ChatSdkEndpointRuntime {
       await this.discordGatewayTask?.catch(() => undefined);
       this.discordGatewayAbort = null;
       await this.photonReceiver?.close();
+      await this.openwaReceiver?.close();
       await this.chat.shutdown();
       this.shutdownCompleted = true;
     })();

@@ -85,6 +85,7 @@ import {
   workspaceOperationService,
 } from "./services/index.js";
 import { questionResponseDeliveryService } from "./services/question-response-delivery.js";
+import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
 import { createSecretProposalsService } from "./services/secret-proposals.js";
@@ -1628,6 +1629,14 @@ async function startServerWithDatabaseTeardown(
     };
     await runRetentionSweep();
 
+    const openwaAuditPurge = openwaAuditPurgeScheduler(db as any);
+    const runOpenwaAuditPurge = () => openwaAuditPurge.runDue().then((result) => {
+      if (result && (result.purged > 0 || result.expiredGrants > 0)) logger.info({ ...result }, "openwa audit content purged");
+    });
+    await runOpenwaAuditPurge().catch((err: unknown) => {
+      logger.error({ err }, "startup openwa audit content purge failed");
+    });
+
     startHeartbeatSchedulerInterval(() => {
       // Track the outer async callback as well as the work it starts. Shutdown
       // can then wait through an already-running suppression check before it
@@ -1639,6 +1648,9 @@ async function startServerWithDatabaseTeardown(
         }));
         trackHeartbeatSchedulerWork(runRetentionSweep().catch((err: unknown) => {
           logger.error({ err }, "decision retention sweep failed");
+        }));
+        trackHeartbeatSchedulerWork(runOpenwaAuditPurge().catch((err: unknown) => {
+          logger.error({ err }, "openwa audit content purge failed");
         }));
         const sweptRuntimeStatuses = heartbeat.sweepExpiredRuntimeStatuses();
         if (sweptRuntimeStatuses > 0) {

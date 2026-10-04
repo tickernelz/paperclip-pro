@@ -4,6 +4,21 @@ import type {
   UpdateChatEndpointInput,
   PhotonProjectInspection,
   PhotonChannelConfiguration,
+  OpenwaChannelConfiguration,
+  OpenwaGatewayInspection,
+  OpenwaEndpointHealth,
+  OpenwaEndpointPolicy,
+  UpdateOpenwaEndpointPolicyInput,
+  OpenwaChatSettings,
+  OpenwaChatSettingsInput,
+  OpenwaChatActivation,
+  ChatAuditEntryKind,
+  ChatAuditActorKind,
+  ChatInflightMode,
+  ChatOwnerApprovalChannel,
+  ChatOwnerApprovalStatus,
+  ChatOwnerGrantScope,
+  OpenwaGrantCategory,
   ChatPublicationBatchStatus,
   ChatPublicationState,
   ChatPublicationSummary,
@@ -16,7 +31,7 @@ export type {
 } from "@tickernelz/paperclip-pro-shared";
 
 export type ChatProvider =
-  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon";
+  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "openwa";
 export type ChatEndpointStatus =
   | "draft"
   | "verifying"
@@ -111,6 +126,9 @@ export interface ChatEndpoint {
   botUsername?: string | null;
   botExternalId?: string | null;
   photonAllocation?: "dedicated" | "shared";
+  policy?: OpenwaEndpointPolicy;
+  policyRevision?: number;
+  inflightMode?: ChatInflightMode;
   allowDirectMessages?: boolean;
   allowGroupChats?: boolean;
   allowUnlinkedPeople: boolean;
@@ -142,6 +160,132 @@ export interface ChatEndpoint {
     };
     callbacksNeedUpdate?: boolean;
   };
+}
+
+export interface OpenwaOwner {
+  id: string;
+  identityLinkId: string;
+  principalId: string;
+  numberMasked: string;
+  displayName: string | null;
+  linkStatus: string;
+  paperclipUserId: string | null;
+  effective: boolean;
+  createdAt: string;
+}
+
+export interface OpenwaOwnerAdded {
+  owner: OpenwaOwner | null;
+  created: boolean;
+  confirmationUrl: string | null;
+  expiresAt: string | null;
+}
+
+export interface OpenwaSenderRule {
+  id: string;
+  list: "allow" | "deny";
+  e164: string;
+  label: string | null;
+  createdAt: string;
+}
+
+export interface OpenwaChat {
+  id: string;
+  chatId: string;
+  chatKey: string;
+  type: string;
+  label: string;
+  availability: string;
+  enabled: boolean;
+  settings: OpenwaChatSettings;
+  ownerPresent: boolean | null;
+  participantCount: number | null;
+}
+
+export interface OpenwaGatewayChat {
+  chatId: string;
+  isGroup: boolean;
+  name: string;
+  lastActivityAt: string | null;
+  activation: OpenwaChatActivation;
+  configured: boolean;
+}
+
+export interface OpenwaAuditEntry {
+  id: string;
+  kind: ChatAuditEntryKind;
+  actorKind: ChatAuditActorKind;
+  actorRef: string | null;
+  chatKey: string | null;
+  conversationId: string | null;
+  runId: string | null;
+  metadata: Record<string, unknown>;
+  content: Record<string, unknown> | null;
+  contentPurged: boolean;
+  occurredAt: string;
+}
+
+export interface OpenwaAuditPage {
+  items: OpenwaAuditEntry[];
+  nextCursor: string | null;
+  access: "content" | "metadata";
+}
+
+export interface OpenwaApproval {
+  id: string;
+  status: ChatOwnerApprovalStatus;
+  categories: OpenwaGrantCategory[];
+  scope: ChatOwnerGrantScope;
+  summary: string;
+  proposedAction: string;
+  originChat: string;
+  requester: string | null;
+  originConversationId: string | null;
+  interactionId: string | null;
+  reminderCount: number;
+  resolvedVia: ChatOwnerApprovalChannel | null;
+  resolvedByUserId: string | null;
+  ownerText: string | null;
+  agentConditions: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  grants: Array<{ id: string; category: OpenwaGrantCategory; status: string; expiresAt: string }>;
+  canResolve: boolean;
+}
+
+export interface OpenwaApprovalResolveInput {
+  decision: "approve" | "reject";
+  reason?: string;
+}
+
+export interface OpenwaApprovalResolveResult {
+  requestId: string;
+  status: "approved" | "rejected";
+  grantIds: string[];
+}
+
+export interface OpenwaApprovalCancelResult {
+  requestId: string;
+  status: "cancelled";
+}
+
+export interface OpenwaAuditFilters {
+  kind?: ChatAuditEntryKind;
+  chatKey?: string;
+  actorKind?: ChatAuditActorKind;
+  from?: string;
+  to?: string;
+}
+
+export function openwaAuditSearch(filters: OpenwaAuditFilters, cursor?: string): string {
+  const params = new URLSearchParams({ limit: "25" });
+  if (filters.kind) params.set("kind", filters.kind);
+  if (filters.chatKey?.trim()) params.set("chatKey", filters.chatKey.trim());
+  if (filters.actorKind) params.set("actorKind", filters.actorKind);
+  if (filters.from) params.set("from", filters.from);
+  if (filters.to) params.set("to", filters.to);
+  if (cursor) params.set("cursor", cursor);
+  return params.toString();
 }
 
 export interface ChatCallbackSurfaceState {
@@ -202,10 +346,43 @@ export const chatEndpointsApi = {
       action: ChatEndpointSetupAction;
       credentials?: Record<string, string>;
       photon?: PhotonChannelConfiguration;
+      openwa?: OpenwaChannelConfiguration;
     },
   ) => api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/setup`, input),
   inspectPhoton: (endpointId: string, input: { projectId: string; projectSecret: string }) =>
     api.post<PhotonProjectInspection>(`/chat-endpoints/${endpointId}/photon/inspect`, input),
+  inspectOpenwa: (endpointId: string, input: { baseUrl: string; apiKey: string; adminApiKey?: string }) =>
+    api.post<OpenwaGatewayInspection>(`/chat-endpoints/${endpointId}/openwa/inspect`, input),
+  getOpenwaHealth: (endpointId: string) =>
+    api.get<OpenwaEndpointHealth>(`/chat-endpoints/${endpointId}/openwa/health`, { cache: "no-store" }),
+  updateOpenwaPolicy: (endpointId: string, patch: UpdateOpenwaEndpointPolicyInput) =>
+    api.patch<{ policy: OpenwaEndpointPolicy; policyRevision: number; inflightMode: ChatInflightMode }>(`/chat-endpoints/${endpointId}/openwa/policy`, patch),
+  listOpenwaOwners: (endpointId: string) =>
+    api.get<OpenwaOwner[]>(`/chat-endpoints/${endpointId}/openwa/owners`, { cache: "no-store" }),
+  addOpenwaOwner: (endpointId: string, e164: string) =>
+    api.post<OpenwaOwnerAdded>(`/chat-endpoints/${endpointId}/openwa/owners`, { e164 }),
+  removeOpenwaOwner: (endpointId: string, ownerId: string) =>
+    api.delete<void>(`/chat-endpoints/${endpointId}/openwa/owners/${ownerId}`),
+  listOpenwaSenderRules: (endpointId: string) =>
+    api.get<OpenwaSenderRule[]>(`/chat-endpoints/${endpointId}/openwa/sender-rules`, { cache: "no-store" }),
+  addOpenwaSenderRule: (endpointId: string, input: { list: "allow" | "deny"; e164: string; label?: string }) =>
+    api.post<OpenwaSenderRule>(`/chat-endpoints/${endpointId}/openwa/sender-rules`, input),
+  removeOpenwaSenderRule: (endpointId: string, ruleId: string) =>
+    api.delete<void>(`/chat-endpoints/${endpointId}/openwa/sender-rules/${ruleId}`),
+  listOpenwaChats: (endpointId: string) =>
+    api.get<OpenwaChat[]>(`/chat-endpoints/${endpointId}/openwa/chats`),
+  updateOpenwaChat: (endpointId: string, input: { chatId: string; label?: string; settings: OpenwaChatSettingsInput }) =>
+    api.put<OpenwaChat>(`/chat-endpoints/${endpointId}/openwa/chats`, input),
+  listOpenwaGatewayChats: (endpointId: string) =>
+    api.get<OpenwaGatewayChat[]>(`/chat-endpoints/${endpointId}/openwa/gateway-chats?limit=200`, { cache: "no-store" }),
+  listOpenwaApprovals: (endpointId: string, status?: ChatOwnerApprovalStatus) =>
+    api.get<OpenwaApproval[]>(`/chat-endpoints/${endpointId}/openwa/approvals${status ? "?status=" + status : ""}`, { cache: "no-store" }),
+  resolveOpenwaApproval: (endpointId: string, requestId: string, input: OpenwaApprovalResolveInput) =>
+    api.post<OpenwaApprovalResolveResult>(`/chat-endpoints/${endpointId}/openwa/approvals/${requestId}/resolve`, input),
+  cancelOpenwaApproval: (endpointId: string, requestId: string) =>
+    api.post<OpenwaApprovalCancelResult>(`/chat-endpoints/${endpointId}/openwa/approvals/${requestId}/cancel`, {}),
+  listOpenwaAudit: (endpointId: string, filters: OpenwaAuditFilters, cursor?: string) =>
+    api.get<OpenwaAuditPage>(`/chat-endpoints/${endpointId}/audit?${openwaAuditSearch(filters, cursor)}`, { cache: "no-store" }),
   generateSetupSecret: (endpointId: string) =>
     api.post<ChatEndpointSetupSecret>(
       `/chat-endpoints/${endpointId}/setup-secret`,

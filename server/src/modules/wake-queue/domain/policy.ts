@@ -33,6 +33,30 @@ export type WakeAdmissionDecision =
   | { kind: "coalesce" }
   | { kind: "defer" };
 
+export type OpenwaWakeClass = {
+  triggerClass: string;
+  event: string | null;
+  principalId?: string | null;
+  requesterGrants?: boolean;
+};
+
+const OPENWA_SOLO_EVENTS = new Set(["approval_reply", "approval_resolved"]);
+
+/** True when an OpenWA wake must run alone: approval replies, approval results and grant wakes. */
+export function isSoloOpenwaWake(wake: OpenwaWakeClass): boolean {
+  return wake.triggerClass === "grant" || (wake.event !== null && OPENWA_SOLO_EVENTS.has(wake.event));
+}
+
+/** Same-class rule for sharing one wake or run: both sides unclassified, or both the same coalescable OpenWA class. */
+export function openwaWakesMayShare(incoming: OpenwaWakeClass | null, target: OpenwaWakeClass | null): boolean {
+  if (!incoming && !target) return true;
+  if (!incoming || !target) return false;
+  if (isSoloOpenwaWake(incoming) || isSoloOpenwaWake(target)) return false;
+  if (incoming.triggerClass !== target.triggerClass) return false;
+  if (!incoming.requesterGrants && !target.requesterGrants) return true;
+  return Boolean(incoming.principalId) && incoming.principalId === target.principalId;
+}
+
 /**
  * Decides what a new wake does when an active execution run already holds
  * the issue's execution lock: run into that run (coalesce), wait behind it

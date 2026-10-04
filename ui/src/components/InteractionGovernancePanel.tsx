@@ -61,12 +61,14 @@ const DEFAULT_POLICY_EFFECTS: Record<IssueThreadInteractionCanonicalResolverPoli
   anyone: UNSET_EFFECTS.defaultPolicy,
   not_creator: "New cards exclude the agent that created them, so the answer comes from someone else.",
   human_only: "New cards wait for a person on the board. Agents are turned away.",
+  chat_endpoint_owner: "Reserved for chat-channel approvals.",
 };
 
 const CAP_EFFECTS: Record<IssueThreadInteractionCanonicalResolverPolicy, string> = {
   anyone: UNSET_EFFECTS.cap,
   not_creator: "Even a card that asks for Anyone is narrowed to exclude its creator.",
   human_only: "Every card of this kind waits for a person, whatever it asked for.",
+  chat_endpoint_owner: "Reserved for chat-channel approvals.",
 };
 
 function governanceOptions(field: GovernanceField): {

@@ -38,6 +38,13 @@ export const queryKeys = {
     principals: (endpointId: string) => ["chat-endpoints", endpointId, "principals"] as const,
     conversations: (endpointId: string) => ["chat-endpoints", endpointId, "conversations"] as const,
     activity: (endpointId: string) => ["chat-endpoints", endpointId, "activity"] as const,
+    openwaHealth: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-health"] as const,
+    openwaOwners: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-owners"] as const,
+    openwaSenderRules: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-sender-rules"] as const,
+    openwaChats: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-chats"] as const,
+    openwaGatewayChats: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-gateway-chats"] as const,
+    audit: (endpointId: string) => ["chat-endpoints", endpointId, "audit"] as const,
+    openwaApprovals: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-approvals"] as const,
   },
   tools: {
     applications: (companyId: string) =>

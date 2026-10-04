@@ -3,13 +3,17 @@ import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
+  OpenwaMcpToolError,
   paperclipToolCatalog,
   parseToolsets,
   PaperclipApiClient,
+  type ToolsetName,
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
 import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
 import { accessService } from "../services/access.js";
 import { connectionIntentService } from "../services/connection-intents.js";
+import { executeConnectorTool } from "../services/connector-runtime.js";
+import { openwaToolBindingForRun, openwaToolErrorBody } from "../services/openwa/tools.js";
 import { forbidden, unauthorized } from "../errors.js";
 
 const PROTOCOL_VERSION = "2025-06-18";
@@ -76,7 +80,10 @@ export function paperclipMcpRoutes(db: Db) {
       .from(agents)
       .where(and(eq(agents.id, agentId), eq(agents.companyId, companyId)))
       .limit(1);
-    const toolsets = parseToolsets(typeof req.query.toolsets === "string" ? req.query.toolsets : null);
+    const signedRunId = req.actor.source === "agent_jwt" ? req.actor.runId ?? null : null;
+    const openwa = signedRunId ? await openwaToolBindingForRun(db, { companyId, agentId, runId: signedRunId }) : null;
+    const requestedToolsets = parseToolsets(typeof req.query.toolsets === "string" ? req.query.toolsets : null);
+    const toolsets: ToolsetName[] = openwa && !requestedToolsets.includes("openwa") ? [...requestedToolsets, "openwa"] : requestedToolsets;
     const client = new PaperclipApiClient({
       apiUrl: loopbackApiUrl(req),
       apiKey: token,
@@ -89,7 +96,6 @@ export function paperclipMcpRoutes(db: Db) {
     const capabilities = agentAuthorityCapabilities(agent?.role);
     const management = capabilities.some((capability) => capability.startsWith("company:"));
     const grants = management ? await access.listPrincipalGrants(companyId, "agent", agentId) : [];
-    const signedRunId = req.actor.source === "agent_jwt" ? req.actor.runId ?? null : null;
     const responsibleUserId = req.actor.onBehalfOfUserId ?? null;
     const runClaims = () => {
       if (!signedRunId) throw forbidden("Connection tools require a heartbeat run credential");
@@ -102,6 +108,19 @@ export function paperclipMcpRoutes(db: Db) {
         search: async (input) => connections.search(runClaims(), input.query),
         request: async (input) => connections.request(runClaims(), input.service),
       },
+      ...(openwa
+        ? {
+            openwaTools: {
+              call: async (input) => {
+                try {
+                  return await executeConnectorTool(db, openwa, input.tool, input.arguments);
+                } catch (error) {
+                  throw new OpenwaMcpToolError(openwaToolErrorBody(error));
+                }
+              },
+            },
+          }
+        : {}),
     });
 
     if (method === "tools/list") return send(listing);

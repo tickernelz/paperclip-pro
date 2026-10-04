@@ -1,7 +1,8 @@
 import { describe, expect, it, vi } from "vitest";
 import { paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
-import { parseToolsets, resolveToolsets, FULL_TOOLSET, TOOLSET_NAMES } from "./config.js";
+import { parseToolsets, resolveToolsets, FULL_TOOLSET, OPENWA_TOOLSET, TOOLSET_NAMES } from "./config.js";
+import type { ToolsetName } from "./tool-overrides.js";
 
 function makeClient() {
   return new PaperclipApiClient({
@@ -15,7 +16,7 @@ function makeClient() {
   });
 }
 
-function listingNames(toolsets: Array<"core" | "extended">, management = false) {
+function listingNames(toolsets: ToolsetName[], management = false) {
   return paperclipToolCatalog(makeClient(), toolsets, management).listing.tools.map(
     (tool) => tool.name,
   );
@@ -31,6 +32,26 @@ describe("Paperclip MCP toolsets", () => {
     expect(parseToolsets("")).toEqual(["core"]);
     expect(parseToolsets(null)).toEqual(["core"]);
     expect(parseToolsets("nonsense")).toEqual(["core"]);
+  });
+
+  it("selects the openwa toolset only when named, never through full", () => {
+    expect(parseToolsets(FULL_TOOLSET)).not.toContain(OPENWA_TOOLSET);
+    expect(parseToolsets("all")).not.toContain(OPENWA_TOOLSET);
+    expect(parseToolsets("openwa")).toEqual(["core", "openwa"]);
+    expect(parseToolsets("full,openwa")).toEqual([...TOOLSET_NAMES, "openwa"]);
+    expect(TOOLSET_NAMES).not.toContain(OPENWA_TOOLSET);
+  });
+
+  it("lists OpenWA tools only for the openwa toolset with a bound executor", () => {
+    const calls: unknown[] = [];
+    const openwaTools = { call: async (input: unknown) => { calls.push(input); return { ok: true }; } };
+    const names = (toolsets: ToolsetName[], options = {}) =>
+      paperclipToolCatalog(makeClient(), toolsets, false, options).listing.tools.map((tool) => tool.name);
+    const openwaNames = ["openwa_send", "openwa_read_chat", "openwa_get_media", "openwa_find", "openwa_stay_silent", "openwa_handoff", "openwa_catalog", "openwa_endpoint_config", "openwa_describe", "openwa_call"];
+    expect(names(["core", "openwa"], { openwaTools })).toEqual(expect.arrayContaining(openwaNames));
+    expect(names(["core", "openwa"]).some((name) => name.startsWith("openwa_"))).toBe(false);
+    expect(names(parseToolsets(FULL_TOOLSET), { openwaTools }).some((name) => name.startsWith("openwa_"))).toBe(false);
+    expect(calls).toEqual([]);
   });
 
   it("resolves full and its deprecated aliases to one identical union", () => {

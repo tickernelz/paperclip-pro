@@ -18,7 +18,7 @@
  */
 
 import {
-  ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES,
+  ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES,
   normalizeIssueThreadInteractionResolverPolicy,
   type AttentionItem,
   type AttentionResolverAudience,
@@ -40,6 +40,7 @@ const RESOLVER_POLICY_LABELS: Record<IssueThreadInteractionCanonicalResolverPoli
   anyone: "Anyone",
   not_creator: "Anyone except creator",
   human_only: "Human only",
+  chat_endpoint_owner: "Channel owners",
 };
 
 /**
@@ -54,15 +55,16 @@ const RESOLVER_POLICY_EFFECTS: Record<IssueThreadInteractionCanonicalResolverPol
   not_creator:
     "Anyone in the organization except the agent that created the card, and its run. Use this when the answer has to come from someone else.",
   human_only: "Only a person on the board can respond. Agents are turned away.",
+  chat_endpoint_owner: "Only people linked as current owners of the chat channel can respond. Agents are turned away.",
 };
 
 /** Accepts canonical values and the deprecated `board_*` compatibility aliases. */
-export function resolverPolicyLabel(policy: IssueThreadInteractionResolverPolicy): string {
+export function resolverPolicyLabel(policy: IssueThreadInteractionResolverPolicy | IssueThreadInteractionCanonicalResolverPolicy): string {
   return RESOLVER_POLICY_LABELS[normalizeIssueThreadInteractionResolverPolicy(policy)];
 }
 
 /** Accepts canonical values and the deprecated `board_*` compatibility aliases. */
-export function resolverPolicyEffect(policy: IssueThreadInteractionResolverPolicy): string {
+export function resolverPolicyEffect(policy: IssueThreadInteractionResolverPolicy | IssueThreadInteractionCanonicalResolverPolicy): string {
   return RESOLVER_POLICY_EFFECTS[normalizeIssueThreadInteractionResolverPolicy(policy)];
 }
 
@@ -76,7 +78,7 @@ export const RESOLVER_POLICY_CHOICES: readonly {
   label: string;
   effect: string;
   isDefault: boolean;
-}[] = ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES.map((value) => ({
+}[] = ISSUE_THREAD_INTERACTION_REQUESTABLE_RESOLVER_POLICIES.map((value) => ({
   value,
   label: RESOLVER_POLICY_LABELS[value],
   effect: RESOLVER_POLICY_EFFECTS[value],
@@ -188,7 +190,9 @@ export function describeResolverAudience({
   );
   const creator = midSentence(creatorLabel?.trim() || "the agent that created it");
 
-  const summary = isUserAddressee
+  const summary = policy === "chat_endpoint_owner"
+    ? "Only a current owner of the chat channel can respond — agents cannot resolve this card."
+    : isUserAddressee
     ? `Only ${addressee} can respond.`
     : policy === "human_only"
     ? `${hasAddressee ? `Assigned to ${addressee}. ` : ""}Only a person on the board can respond — agents cannot resolve this card.`
@@ -200,7 +204,9 @@ export function describeResolverAudience({
 
   // Same fact, fewer words: a collapsed row has to answer "is this mine to
   // decide?" in one glance, next to the buttons that act on the answer.
-  const shortSummary = isUserAddressee
+  const shortSummary = policy === "chat_endpoint_owner"
+    ? "Only channel owners can respond"
+    : isUserAddressee
     ? `Only ${addressee} can respond`
     : policy === "human_only"
     ? hasAddressee

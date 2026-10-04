@@ -134,6 +134,7 @@ function buildRuntime(
   onSetConfigOption?: (input: { key: string; value: string }) => void,
   onEnsureSession?: (input: Record<string, unknown>) => void,
   onStartTurn?: (input: Record<string, unknown>) => void,
+  onSetMode?: (mode: string) => void,
 ) {
   return {
     ensureSession: async (input: Record<string, unknown>) => {
@@ -157,6 +158,9 @@ function buildRuntime(
     setConfigOption: async (input: { key: string; value: string }) => {
       onSetConfigOption?.(input);
     },
+    setMode: async (input: { mode: string }) => {
+      onSetMode?.(input.mode);
+    },
     close: async () => {},
   };
 }
@@ -176,6 +180,7 @@ async function runExecutor(
 ) {
   const runtimeOptions: Record<string, unknown>[] = [];
   const configOptions: Array<{ key: string; value: string }> = [];
+  const sessionModes: string[] = [];
   const sessionInputs: Record<string, unknown>[] = [];
   const turnInputs: Record<string, unknown>[] = [];
   const meta: Record<string, unknown>[] = [];
@@ -191,6 +196,7 @@ async function runExecutor(
         ({ key, value }) => configOptions.push({ key, value }),
         (input) => sessionInputs.push(input),
         (input) => turnInputs.push(input),
+        (mode) => sessionModes.push(mode),
       ) as never;
     },
   });
@@ -221,7 +227,7 @@ async function runExecutor(
   } as never);
 
   expect(result.exitCode).toBe(0);
-  return { logs, meta, events, runtimeOptions, configOptions, sessionInputs, turnInputs, result };
+  return { logs, meta, events, runtimeOptions, configOptions, sessionModes, sessionInputs, turnInputs, result };
 }
 
 // Under `vi.useFakeTimers()`, setup before `ensureSession` still performs real
@@ -396,6 +402,36 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     const run = await runExecutor({ agent: "custom", agentCommand: "node ./fake-acp.js", cwd: root, stateDir: path.join(root, "state"), permissionMode });
     expect(run.runtimeOptions[0]?.permissionMode).toBe(expected);
+  });
+
+  it.each([
+    ["codex", "read-only"],
+    ["claude", "default"],
+  ])("applies the read_only tool profile to a %s ACP session through mode %s and a permission hook", async (agent, mode) => {
+    const root = await makeTempRoot();
+    const config = { agent, cwd: root, stateDir: path.join(root, "state") };
+    const full = await runExecutor(config);
+    const explicitFull = await runExecutor(config, { context: { paperclipToolProfile: "full" } });
+    const readOnly = await runExecutor(config, { context: { paperclipToolProfile: "read_only" } });
+    for (const run of [full, explicitFull]) {
+      expect(run.sessionModes).toEqual([]);
+      expect(run.runtimeOptions[0]).not.toHaveProperty("onPermissionRequest");
+    }
+    expect(explicitFull.result.sessionParams?.configFingerprint).toBe(full.result.sessionParams?.configFingerprint);
+    expect(readOnly.sessionModes).toEqual([mode]);
+    expect(typeof readOnly.runtimeOptions[0]?.onPermissionRequest).toBe("function");
+    expect(readOnly.runtimeOptions[0]?.permissionMode).toBe("approve-all");
+    expect(readOnly.result.sessionParams?.configFingerprint).not.toBe(full.result.sessionParams?.configFingerprint);
+  });
+
+  it("leaves agents without a read-only session mode on their configured mode in a read_only run", async () => {
+    const root = await makeTempRoot();
+    const run = await runExecutor(
+      { agent: "gemini", cwd: root, stateDir: path.join(root, "state") },
+      { context: { paperclipToolProfile: "read_only" } },
+    );
+    expect(run.sessionModes).toEqual([]);
+    expect(typeof run.runtimeOptions[0]?.onPermissionRequest).toBe("function");
   });
 
   it("persists ACP agent process identity before prompting on each run (host lane re-creates, no warm reuse)", async () => {

@@ -1,4 +1,4 @@
-import type { ReleaseRecoveryBlockedNoticeKind } from "../domain/policy.js";
+import type { OpenwaWakeClass, ReleaseRecoveryBlockedNoticeKind } from "../domain/policy.js";
 import type {
   InvokableAgentSnapshot,
   IssueSnapshot,
@@ -407,6 +407,8 @@ export interface WakeAdmissionReader {
       agentId: string;
       issueId: string;
       durableActor?: { type: string | null; id: string | null };
+      /** Present on OpenWA issues: only a deferred wake whose server-written chat action has this class matches; null matches only unclassified wakes. */
+      openwaClass?: OpenwaWakeClass | null;
     },
   ): Promise<ExistingDeferredWake | null>;
 }

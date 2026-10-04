@@ -4,6 +4,7 @@ import type { PaperclipApiClient } from "./client.js";
 import { expandToolsetUnion } from "./config.js";
 import { bindGeneratedTools, prepareGeneratedTools } from "./generated-tools.js";
 import { leanJsonSchema, type JsonSchemaObject } from "./lean-schema.js";
+import { createOpenwaToolDefinitions, type OpenwaMcpTools } from "./openwa-tools.js";
 import type { ToolsetName } from "./tool-overrides.js";
 import {
   createToolDefinitions,
@@ -24,6 +25,7 @@ export {
 export type { BoardSurfaceContext } from "./board-surface.js";
 export type { ToolsetName } from "./tool-overrides.js";
 export type { RuntimeConnectionTools, ToolDefinition } from "./tools.js";
+export { OpenwaMcpToolError, type OpenwaMcpTools } from "./openwa-tools.js";
 
 export type ToolListing = {
   tools: Array<{
@@ -43,6 +45,7 @@ export type CatalogOptions = {
   annotations?: boolean;
   boardSurface?: BoardSurfaceContext;
   runtimeConnections?: RuntimeConnectionTools;
+  openwaTools?: OpenwaMcpTools;
 };
 
 const listings = new Map<string, ToolListing>();
@@ -76,8 +79,11 @@ export function paperclipToolCatalog(
   management: boolean,
   options: CatalogOptions = {},
 ): { definitions: ToolDefinition[]; listing: ToolListing } {
-  const selected = expandToolsetUnion(toolsets);
-  const curated = createToolDefinitions(client, options.runtimeConnections);
+  const selected = expandToolsetUnion(toolsets).filter((name) => name !== "openwa" || options.openwaTools);
+  const curated = [
+    ...createToolDefinitions(client, options.runtimeConnections),
+    ...(selected.includes("openwa") && options.openwaTools ? createOpenwaToolDefinitions(options.openwaTools) : []),
+  ];
   const curatedNames = new Set(curated.map((tool) => tool.name));
   const prepared = prepareGeneratedTools(selected, management);
   const definitions = [

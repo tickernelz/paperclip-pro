@@ -40,6 +40,7 @@ export {
 export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
+  speechToTextSettingsSchema,
   messageDeliverySchema,
   type MessageDeliveryRequest,
   MESSAGE_DELIVERY_LITERALS,

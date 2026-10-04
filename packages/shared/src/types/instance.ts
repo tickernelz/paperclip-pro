@@ -15,6 +15,25 @@ export const DEFAULT_BACKUP_RETENTION: BackupRetentionPolicy = {
   monthlyMonths: 1,
 };
 
+/** Instance-wide speech-to-text; the API key is read from the named server environment variable at call time. */
+export interface SpeechToTextSettings {
+  enabled: boolean;
+  baseUrl: string;
+  model: string;
+  apiKeyEnvVar: string;
+  maxAudioSeconds: number;
+  sttWaitSeconds: number;
+}
+
+export const SPEECH_TO_TEXT_DEFAULTS: SpeechToTextSettings = {
+  enabled: false,
+  baseUrl: "",
+  model: "",
+  apiKeyEnvVar: "",
+  maxAudioSeconds: 600,
+  sttWaitSeconds: 15,
+};
+
 /**
  * Instance-wide execution policy.
  *
@@ -67,6 +86,7 @@ export interface InstanceGeneralSettings {
    */
   executionMode?: InstanceExecutionMode;
   defaultMessageDelivery: InstanceMessageDelivery;
+  speechToText: SpeechToTextSettings;
 }
 
 export interface InstanceExperimentalSettings {

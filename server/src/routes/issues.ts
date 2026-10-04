@@ -2,6 +2,14 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
+import { loadOpenwaRunAuthority, openwaRunSuppressesMentionWakes } from "../services/openwa/authority.js";
+import { registerOpenwaCommentSteering, type OpenwaCommentSteerRequest, type OpenwaSystemSteerActor } from "../services/openwa/steering.js";
+import {
+  openwaApprovalOwnerUserIds,
+  openwaApprovalRequestIdOf,
+  openwaIssueOwnerUserIds,
+  resolveOpenwaApprovalInteraction,
+} from "../services/openwa/approvals.js";
 import {
   IssueRunModelOverrideError,
   buildIssueRunModelOverrideView,
@@ -14,7 +22,7 @@ import type { IssueRunModelOverrideValues } from "../services/issue-run-model-ov
 import type { IssueRunModelOverrideInheritance } from "@tickernelz/paperclip-pro-shared";
 import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
-import { documentExportFileName, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { documentExportFileName, extractAgentMentionIds, extractIssueReferenceIdentifiers, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { renderDocumentPdf } from "../services/document-pdf.js";
 import {
   validateExecutionReconciliation,
@@ -373,6 +381,7 @@ import { resultJsonWithSteeringAcknowledgement } from "../services/steering-ackn
 import { setTimeout as sleep } from "node:timers/promises";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
+type QueueActor = ReturnType<typeof getActorInfo> | OpenwaSystemSteerActor;
 export type SteeringRetryPolicy = { delaysMs: readonly number[]; budgetMs: number; minAttemptMs: number };
 const DEFAULT_STEERING_RETRY: SteeringRetryPolicy = { delaysMs: [1_000, 3_000], budgetMs: 10_000, minAttemptMs: 2_000 };
 const RETRYABLE_STEERING_CODES: Record<string, true> = {
@@ -3614,6 +3623,16 @@ export function issueRoutes(
       sourceRun.agentId === assigneeAgentId
     );
   };
+  const commentMentionWakesSuppressed = async (
+    comment: { companyId: string; createdByRunId?: string | null },
+    actorRunId: string | null | undefined,
+    body: string,
+  ) => {
+    const runId = comment.createdByRunId ?? actorRunId;
+    if (!runId || extractAgentMentionIds(body).length === 0) return false;
+    const sourceRun = await loadOpenwaRunAuthority(db, { companyId: comment.companyId, runId });
+    return sourceRun !== null && await openwaRunSuppressesMentionWakes(db, sourceRun);
+  };
   const enqueueStalledReviewDecisionWakeup =
     opts.stalledReviewDecisionEnqueueWakeup ?? heartbeat.wakeup;
   const enqueueRecoveryActionWakeup =
@@ -5928,6 +5947,13 @@ export function issueRoutes(
           })
         : null;
     const actor = getActorInfo(req);
+    const approvalRequestId = openwaApprovalRequestIdOf(interaction);
+    const chatEndpointOwnerUserIds =
+      interaction.effectiveResolverPolicy === "chat_endpoint_owner" && actor.actorType === "user"
+        ? approvalRequestId
+          ? await openwaApprovalOwnerUserIds(db, { companyId: issue.companyId, requestId: approvalRequestId })
+          : await openwaIssueOwnerUserIds(db, { companyId: issue.companyId, issueId: issue.id })
+        : null;
     const decision: IssueThreadInteractionResolverAudienceDecision =
       evaluateIssueThreadInteractionResolverAudience({
         actor:
@@ -5940,6 +5966,7 @@ export function issueRoutes(
             : { type: "user", userId: actor.actorId },
         interaction,
         additionalRestriction: resolverPolicyRestriction,
+        chatEndpointOwnerUserIds,
         governedAction:
           interaction.kind === "request_confirmation" &&
           (payload?.toolAction !== undefined ||
@@ -5973,7 +6000,7 @@ export function issueRoutes(
       ))
     )
       return false;
-    return { decision, resolverPolicyRestriction } as const;
+    return { decision, resolverPolicyRestriction, chatEndpointOwnerUserIds } as const;
   }
 
   async function getIssueThreadInteractionResolutionAuthorization(
@@ -7272,7 +7299,7 @@ export function issueRoutes(
     executor: IssueQueueDb;
     issue: { id: string; companyId: string; assigneeAgentId: string | null; conversationAgentId?: string | null };
     activeRun: Awaited<ReturnType<typeof resolveActiveIssueRun>>;
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     queueState?: IssueQueueState | null;
     steeringDisposition?: IssueQueuedCommentQueue["steeringDisposition"];
   }): Promise<IssueQueuedCommentQueue> {
@@ -7361,7 +7388,7 @@ export function issueRoutes(
       assigneeAgentId: string | null;
       executionRunId?: string | null;
     };
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     queueId: string;
     targetRunId?: string;
     allowStoppedTarget?: boolean;
@@ -15450,10 +15477,12 @@ export function issueRoutes(
 
           let mentionedIds: string[] = [];
           try {
-            mentionedIds = await svc.findMentionedAgents(
-              issue.companyId,
-              commentBody,
-            );
+            mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId, commentBody))
+              ? []
+              : await svc.findMentionedAgents(
+                  issue.companyId,
+                  commentBody,
+                );
           } catch (err) {
             logger.warn({ err, issueId: id }, "failed to resolve @-mentions");
           }
@@ -16335,7 +16364,7 @@ export function issueRoutes(
 
   async function settleLateSteeringAcknowledgement(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     commentId: string;
     queueId: string;
     runId: string;
@@ -16406,12 +16435,14 @@ export function issueRoutes(
 
   async function steerQueuedCommentInTransaction(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     commentId: string;
     queueId: string;
     targetRunId: string;
     revision: string;
     timeoutMs?: number;
+    frame?: (body: string) => string;
+    preserveRunIdentity?: boolean;
   }): Promise<QueuedCommentSteerReceipt> {
     const { issue, actor, commentId } = input;
     const responseWake = await db.select().from(agentWakeupRequests).where(and(
@@ -16441,7 +16472,7 @@ export function issueRoutes(
         issue.companyId,
         steeringTargetIssue,
       ))?.kind === "low_trust_review";
-    const steeringIdentity = await reserveSteeredIdentity(db, {
+    const steeringIdentity = input.preserveRunIdentity ? null : await reserveSteeredIdentity(db, {
       companyId: issue.companyId,
       runId: input.targetRunId,
       issueId: issue.id,
@@ -16590,12 +16621,12 @@ export function issueRoutes(
           })) ??
           (await steerNativeSession({
             runId: activeRunId,
-            message: steeringExposesLowTrustRaw
+            message: (input.frame ?? ((body: string) => body))(steeringExposesLowTrustRaw
               ? entry.comment.body
               : sanitizeQuarantinedCommentForHigherTrust({
                   body: entry.comment.body,
                   sourceTrust: entry.comment.sourceTrust ?? null,
-                }).body,
+                }).body),
             correlationId: commentId,
             timeoutMs: input.timeoutMs,
             onAcknowledged: ({ turnId }) =>
@@ -16669,7 +16700,7 @@ export function issueRoutes(
   async function resolveQueuedSteeringTarget(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
     commentId: string;
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
   }): Promise<
     | { kind: "target"; target: QueuedSteeringTarget }
     | { kind: "none" }
@@ -16708,10 +16739,12 @@ export function issueRoutes(
 
   async function steerQueuedCommentWithRetry(input: {
     issue: { id: string; companyId: string; assigneeAgentId: string | null };
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     commentId: string;
     target: QueuedSteeringTarget;
     targetIsServerResolved: boolean;
+    frame?: (body: string) => string;
+    preserveRunIdentity?: boolean;
   }): Promise<QueuedCommentSteerReceipt> {
     const deadline = Date.now() + steeringRetry.budgetMs;
     let target = input.target;
@@ -16725,6 +16758,8 @@ export function issueRoutes(
           targetRunId: target.targetRunId,
           revision: target.revision,
           timeoutMs: Math.max(steeringRetry.minAttemptMs, deadline - Date.now()),
+          frame: input.frame,
+          preserveRunIdentity: input.preserveRunIdentity,
         });
       } catch (error) {
         const code = steeringErrorCode(error);
@@ -16928,9 +16963,66 @@ export function issueRoutes(
     return { deliveredAs: "steered" };
   }
 
+  async function steerOpenwaComment(request: OpenwaCommentSteerRequest) {
+    const issue = await svc.getById(request.issueId);
+    if (!issue || issue.companyId !== request.companyId) return { deliveredAs: "queued" as const, reason: "no_active_run" };
+    const [wake] = await db
+      .select()
+      .from(agentWakeupRequests)
+      .where(
+        and(
+          eq(agentWakeupRequests.companyId, issue.companyId),
+          eq(agentWakeupRequests.status, "deferred_issue_execution"),
+          sql`${agentWakeupRequests.payload}->>'issueId' = ${issue.id}`,
+          sql`${agentWakeupRequests.payload} #> '{_paperclipWakeContext,wakeCommentIds}' @> ${JSON.stringify([request.commentId])}::jsonb`,
+        ),
+      )
+      .orderBy(asc(agentWakeupRequests.requestedAt))
+      .limit(1);
+    if (!wake) return { deliveredAs: "queued" as const, reason: "no_active_run" };
+    const [activeRun] = await db
+      .select()
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.id, request.targetRunId), eq(heartbeatRuns.companyId, issue.companyId), eq(heartbeatRuns.status, "running")))
+      .limit(1);
+    if (!activeRun) return { deliveredAs: "queued" as const, reason: "no_active_run" };
+    const queue = await buildQueuedCommentQueue({
+      executor: db,
+      issue,
+      activeRun,
+      actor: request.actor,
+      queueState: { wake, state: "deferred", queueRun: null },
+      steeringDisposition: "temporarily_unavailable",
+    });
+    if (queue.protocol !== "paperclip_runner_v1") return { deliveredAs: "queued" as const, reason: "legacy_protocol" };
+    try {
+      const steered = await steerQueuedCommentWithRetry({
+        issue,
+        actor: request.actor,
+        commentId: request.commentId,
+        target: { queueId: wake.id, targetRunId: activeRun.id, revision: queue.revision },
+        targetIsServerResolved: false,
+        frame: request.frame,
+        preserveRunIdentity: true,
+      });
+      await logQueuedCommentSteered({
+        issue,
+        actor: request.actor,
+        commentId: request.commentId,
+        targetRunId: activeRun.id,
+        turnId: steered.acknowledgedTurnId,
+        duplicate: steered.duplicate,
+      }).catch((err) => logger.warn({ err, issueId: issue.id }, "failed to record the OpenWA steering acknowledgement"));
+      return { deliveredAs: "steered" as const, turnId: steered.acknowledgedTurnId };
+    } catch (error) {
+      return { deliveredAs: "queued" as const, reason: steeringUnavailableFromError(error) };
+    }
+  }
+  registerOpenwaCommentSteering(db, steerOpenwaComment);
+
   async function logQueuedCommentSteered(input: {
     issue: { id: string; companyId: string };
-    actor: ReturnType<typeof getActorInfo>;
+    actor: QueueActor;
     commentId: string;
     targetRunId: string;
     turnId: string | null;
@@ -17262,6 +17354,20 @@ export function issueRoutes(
       if (!suggestedTaskEffectsAuthorized) return;
 
       const actor = getActorInfo(req);
+      const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      if (openwaApprovalRequestId) {
+        if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+        await resolveOpenwaApprovalInteraction(db, {
+          companyId: issue.companyId,
+          issueId: issue.id,
+          interactionId: current.id,
+          requestId: openwaApprovalRequestId,
+          decision: "approve",
+          userId: actor.actorId,
+        });
+        res.json(await interactionSvc.getById(current.id));
+        return;
+      }
       if (
         current.kind === "request_confirmation" &&
         current.payload.toolAction
@@ -17293,6 +17399,9 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
+          ...(resolutionAuthorization.chatEndpointOwnerUserIds
+            ? { chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds }
+            : {}),
           suggestedTaskEffectsAuthorized,
         });
       const toolAction =
@@ -17578,6 +17687,21 @@ export function issueRoutes(
       }
 
       const actor = getActorInfo(req);
+      const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      if (openwaApprovalRequestId) {
+        if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
+        await resolveOpenwaApprovalInteraction(db, {
+          companyId: issue.companyId,
+          issueId: issue.id,
+          interactionId: current.id,
+          requestId: openwaApprovalRequestId,
+          decision: "reject",
+          userId: actor.actorId,
+          reason: req.body.reason,
+        });
+        res.json(await interactionSvc.getById(current.id));
+        return;
+      }
       if (
         current.kind === "request_confirmation" &&
         current.payload.toolAction
@@ -17608,6 +17732,9 @@ export function issueRoutes(
           userId: actor.actorType === "user" ? actor.actorId : null,
           resolverPolicyRestriction:
             resolutionAuthorization.resolverPolicyRestriction,
+          ...(resolutionAuthorization.chatEndpointOwnerUserIds
+            ? { chatEndpointOwnerUserIds: resolutionAuthorization.chatEndpointOwnerUserIds }
+            : {}),
         },
       );
 
@@ -17853,6 +17980,8 @@ export function issueRoutes(
 
       const interactionSvc = issueThreadInteractionService(db);
       const current = await interactionSvc.getForIssue(issue, interactionId);
+      if (openwaApprovalRequestIdOf(current))
+        throw unprocessable("Owner approval requests are resolved by an endpoint owner, not withdrawn");
       if (
         !(await assertIssueThreadInteractionWithdrawalAllowed(
           req,
@@ -17965,6 +18094,8 @@ export function issueRoutes(
         return;
       }
       assertBoard(req);
+      if (openwaApprovalRequestIdOf(await issueThreadInteractionService(db).getForIssue(issue, interactionId)))
+        throw unprocessable("Owner approval requests are resolved by an endpoint owner, not skipped");
 
       const actor = getActorInfo(req);
       const interaction = await issueThreadInteractionService(
@@ -19401,10 +19532,12 @@ export function issueRoutes(
 
         let mentionedIds: string[] = [];
         try {
-          mentionedIds = await svc.findMentionedAgents(
-            issue.companyId,
-            req.body.body,
-          );
+          mentionedIds = (await commentMentionWakesSuppressed(comment, actor.runId, req.body.body))
+            ? []
+            : await svc.findMentionedAgents(
+                issue.companyId,
+                req.body.body,
+              );
         } catch (err) {
           logger.warn({ err, issueId: id }, "failed to resolve @-mentions");
         }

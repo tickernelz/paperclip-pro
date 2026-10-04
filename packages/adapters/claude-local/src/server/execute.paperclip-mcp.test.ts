@@ -57,7 +57,7 @@ describe("claude-local Paperclip access surface", () => {
     }
   });
 
-  async function run(config: Record<string, unknown>) {
+  async function run(config: Record<string, unknown>, extraContext: Record<string, unknown> = {}) {
     const rootDir = await mkdtemp(path.join(os.tmpdir(), "paperclip-claude-mcp-"));
     cleanupDirs.push(rootDir);
     const workspaceDir = path.join(rootDir, "workspace");
@@ -74,7 +74,7 @@ describe("claude-local Paperclip access surface", () => {
       },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
       config: { engine: "cli", command: "claude", cwd: workspaceDir, ...config },
-      context: { paperclipWorkspace: { cwd: workspaceDir, source: "project_primary" } },
+      context: { paperclipWorkspace: { cwd: workspaceDir, source: "project_primary" }, ...extraContext },
       onLog: async () => {},
       onMeta: async (meta) => {
         prompt = String(meta.prompt ?? "");
@@ -108,6 +108,25 @@ describe("claude-local Paperclip access surface", () => {
     const { args } = await run({ paperclipMcpToolsets: " extended , core " });
     const mcpConfig = JSON.parse(await readFile(args[args.indexOf("--mcp-config") + 1], "utf8"));
     expect(mcpConfig.mcpServers.paperclip.url).toContain("toolsets=extended%2Ccore");
+  });
+
+  it("disallows Claude's file-writing tools only in a read_only run and keeps Bash", async () => {
+    const full = await run({});
+    const explicitFull = await run({}, { paperclipToolProfile: "full" });
+    const invalid = await run({}, { paperclipToolProfile: "admin" });
+    const readOnly = await run({}, { paperclipToolProfile: "read_only" });
+    const withoutCwd = (args: string[]) => args.filter((arg) => !arg.includes("paperclip-claude-mcp-"));
+    for (const args of [full.args, explicitFull.args, invalid.args]) {
+      expect(args).not.toContain("--disallowedTools");
+    }
+    expect(withoutCwd(explicitFull.args)).toEqual(withoutCwd(full.args));
+    const index = readOnly.args.indexOf("--disallowedTools");
+    expect(index).toBeGreaterThan(-1);
+    expect(readOnly.args[index + 1]).toBe("Edit,Write,MultiEdit,NotebookEdit");
+    expect(readOnly.args[index + 1]).not.toContain("Bash");
+    expect(readOnly.args).toContain("--dangerously-skip-permissions");
+    const readOnlyWithoutFlag = [...readOnly.args.slice(0, index), ...readOnly.args.slice(index + 2)];
+    expect(withoutCwd(readOnlyWithoutFlag)).toEqual(withoutCwd(full.args));
   });
 
   it("teaches the REST API and mounts nothing when the toggle is off", async () => {

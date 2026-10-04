@@ -1236,6 +1236,48 @@
     ]
   },
   {
+    "name": "paperclipCancelChatEndpointApproval",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/cancel",
+    "description": "Cancel a pending OpenWA owner approval request. Only a board user linked as a current owner of the endpoint may cancel. Only a pending request can be cancelled: it becomes cancelled, its reminders stop and its approval card is withdrawn. No grant is written and the agent is not woken; later wakes no longer list it as pending. A request that is no longer pending returns 409 already_resolved with requestStatus. Records openwa.approval_cancelled.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipCancelDecision",
     "operationId": "POST /api/decisions/{id}/cancel",
     "method": "POST",
@@ -1375,7 +1417,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18025",
+    "boardGuard": "assertBoard@issues.ts:18156",
     "authorityCapability": null,
     "parameters": [
       {
@@ -4069,13 +4111,128 @@
               "discord",
               "microsoft-teams",
               "telegram",
-              "imessage-photon"
+              "imessage-photon",
+              "openwa"
             ]
           }
         },
         "required": [
           "assignedAgentId",
           "provider"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateChatEndpointOpenwaOwner",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/owners",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/owners",
+    "description": "Add an OpenWA owner. Requires connection-management access. Registers an E.164 WhatsApp number as an owner and, unless that number is already linked, returns a short-lived identity-link confirmation URL. The owner gains authority only after a Paperclip user with active, non-viewer membership confirms the link. Returns 201 when a new owner row is created and 200 when it already existed. Records openwa.owner_added.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "e164": {
+            "type": "string"
+          },
+          "expiresInSeconds": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "e164"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateChatEndpointOpenwaRule",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/sender-rules",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/sender-rules",
+    "description": "Add an OpenWA sender rule. Requires connection-management access. Adds an E.164 number to the allowlist or denylist; re-adding an existing entry updates its label. Owners are never blocked by the denylist. Records openwa.sender_rule_changed with a masked number.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "e164": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "list": {
+            "type": "string",
+            "enum": [
+              "allow",
+              "deny"
+            ]
+          }
+        },
+        "required": [
+          "e164",
+          "list"
         ]
       }
     }
@@ -11899,7 +12056,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:523",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:527",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12147,6 +12304,90 @@
       },
       {
         "name": "linkId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteChatEndpointOpenwaOwner",
+    "operationId": "DELETE /api/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
+    "method": "DELETE",
+    "path": "/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
+    "description": "Remove an OpenWA owner. Requires connection-management access. Removes the owner role; the identity link itself is kept. Records openwa.owner_removed.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ownerId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteChatEndpointOpenwaRule",
+    "operationId": "DELETE /api/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
+    "method": "DELETE",
+    "path": "/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
+    "description": "Remove an OpenWA sender rule. Requires connection-management access. Records openwa.sender_rule_changed.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ruleId",
         "in": "path",
         "required": true,
         "schema": {
@@ -12786,7 +13027,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17010",
+    "boardGuard": "assertBoard@issues.ts:17102",
     "authorityCapability": null,
     "parameters": [
       {
@@ -16218,11 +16459,149 @@
     ]
   },
   {
+    "name": "paperclipGetChatEndpointAudit",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/audit",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/audit",
+    "description": "List the OpenWA endpoint audit trail. Returns the endpoint's audit entries newest first with cursor paging (limit 1–100, default 25; follow nextCursor). Filters: kind (comma-separated or repeated), chatKey, actorKind, actorRef, from and to (ISO timestamps, inclusive). Endpoint owners and company owners receive content (message text, owner text, redacted tool arguments); other board users with endpoint access receive metadata only and `access` is `metadata`. Content is purged after the endpoint's retention period; purged entries keep their metadata and report contentPurged.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "actorKind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "user",
+            "agent",
+            "chat_principal",
+            "system"
+          ]
+        }
+      },
+      {
+        "name": "actorRef",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "chatKey",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "kind",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetChatEndpointConfiguration",
     "operationId": "GET /api/chat-endpoints/{endpointId}/github/configuration",
     "method": "GET",
     "path": "/chat-endpoints/{endpointId}/github/configuration",
     "description": "Read GitHub bot review configuration. Returns saved company-scoped configuration and its revision, or disabled defaults for an existing chat connection. Requires connection-management access.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetChatEndpointOpenwaHealth",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/health",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/health",
+    "description": "Read OpenWA gateway and session health. Connection managers only. Reads the gateway version, engine, session status, and restriction with the stored operator key, plus pacing attestation and the latest observed pacing limit from the endpoint audit. Never returns keys or full phone numbers. Gateway failures are reported in gatewayError instead of an error status. Responses are not cached.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -17577,7 +17956,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:493",
+    "boardGuard": "assertBoard@chat-channels.ts:630",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21450,6 +21829,63 @@
     }
   },
   {
+    "name": "paperclipInspectChatEndpointOpenwa",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/inspect",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/inspect",
+    "description": "Inspect an OpenWA gateway and its sessions for channel setup. Requires a board user with connection-management access. The API keys are write-only input. Rejects agents whose adapter cannot authenticate runs with signed run tokens and keys restricted to selected chats. Returns the gateway version, engine, key role, visible sessions with masked numbers, and warnings; never keys or full phone numbers. Responses are not cached. Inspection alone does not activate the channel.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "adminApiKey": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string"
+          },
+          "baseUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "baseUrl"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipInspectChatEndpointPhoton",
     "operationId": "POST /api/chat-endpoints/{endpointId}/photon/inspect",
     "method": "POST",
@@ -21616,7 +22052,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:308",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:312",
     "authorityCapability": null,
     "parameters": [],
     "body": {
@@ -21976,7 +22412,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16183",
+    "boardGuard": "assertBoard@issues.ts:16212",
     "authorityCapability": null,
     "parameters": [
       {
@@ -23378,6 +23814,56 @@
     ]
   },
   {
+    "name": "paperclipListChatEndpointChats",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/gateway-chats",
+    "description": "List chats from the OpenWA gateway for the chat picker. Requires connection-management access. Reads the session's chats from the gateway and annotates each with its configured activation. Direct-chat names are masked. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListChatEndpointConnections",
     "operationId": "GET /api/chat-endpoints/{endpointId}/github/personal-connections",
     "method": "GET",
@@ -23451,6 +23937,156 @@
     "method": "GET",
     "path": "/chat-endpoints/{endpointId}/github/reviews",
     "description": "List review evidence attached to Paperclip tasks. Returns up to 100 newest review records for this endpoint. Each review references ordinary Paperclip tasks and runs; it is not an independent scheduler.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListChatEndpointOpenwaApprovals",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals",
+    "description": "List OpenWA owner approval requests. Lists the newest 100 owner approval requests of an OpenWA endpoint, optionally filtered by status, with their grants. Owner text and agent conditions are returned only to current endpoint owners; canResolve is true for a current owner on a pending request. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "pending",
+            "approved",
+            "rejected",
+            "cancelled"
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListChatEndpointOpenwaChats",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/chats",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/chats",
+    "description": "List configured OpenWA chats. Lists WhatsApp chats known to the endpoint with their activation, trigger overrides, reply policy, and owner presence for groups.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListChatEndpointOpenwaOwners",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/owners",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/owners",
+    "description": "List OpenWA owners. Lists the WhatsApp numbers registered as owners of an OpenWA endpoint, with masked numbers and whether each owner is currently effective (identity link confirmed and active, non-viewer company membership). Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListChatEndpointOpenwaRules",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/sender-rules",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/sender-rules",
+    "description": "List OpenWA sender allow and deny rules",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -23569,7 +24205,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:140",
+    "boardGuard": "assertBoard@chat-channels.ts:163",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30021,7 +30657,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:653",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:657",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30291,7 +30927,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:600",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:604",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30838,6 +31474,71 @@
         },
         "required": [
           "action"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipResolveChatEndpointApproval",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/approvals/{requestId}/resolve",
+    "description": "Approve or reject an OpenWA owner approval request. Only a board user linked as a current owner of the endpoint may resolve. Uses the same first-resolution-wins path as WhatsApp replies and the generic interaction routes: approving writes the grants and wakes the agent with approval_resolved (grant); rejecting wakes it with approval_resolved (other). A request already resolved returns 409 already_resolved. Records openwa.approval_resolved.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "requestId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "decision"
         ]
       }
     }
@@ -33520,6 +34221,127 @@
     }
   },
   {
+    "name": "paperclipSetChatEndpointOpenwaChat",
+    "operationId": "PUT /api/chat-endpoints/{endpointId}/openwa/chats",
+    "method": "PUT",
+    "path": "/chat-endpoints/{endpointId}/openwa/chats",
+    "description": "Save OpenWA per-chat settings. Requires connection-management access. Upserts activation (off, on, auto), trigger overrides, absence seconds, and reply policy for one chat. Per-chat settings win over endpoint defaults. Records openwa.chat_activation_changed and openwa.config_changed.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "chatId": {
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "settings": {
+            "type": "object",
+            "properties": {
+              "absenceSeconds": {
+                "type": "integer"
+              },
+              "activation": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "on",
+                  "off"
+                ]
+              },
+              "note": {
+                "type": "string"
+              },
+              "replyPolicy": {
+                "type": "string",
+                "enum": [
+                  "allowed",
+                  "ask_owner",
+                  "owner_absent_only"
+                ]
+              },
+              "triggers": {
+                "type": "object",
+                "properties": {
+                  "agentMentioned": {
+                    "type": "boolean"
+                  },
+                  "allMessages": {
+                    "type": "boolean"
+                  },
+                  "commandPrefix": {
+                    "type": "object",
+                    "properties": {
+                      "enabled": {
+                        "type": "boolean"
+                      },
+                      "prefix": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "directMessage": {
+                    "type": "boolean"
+                  },
+                  "keywords": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "ownerMentionedAbsent": {
+                    "type": "boolean"
+                  },
+                  "replyToAgent": {
+                    "type": "boolean"
+                  },
+                  "selfChat": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "required": [
+          "chatId",
+          "settings"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetChatEndpointResource",
     "operationId": "PUT /api/chat-endpoints/{endpointId}/resources",
     "method": "PUT",
@@ -33684,7 +34506,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8901",
+    "boardGuard": "assertBoard@issues.ts:8928",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33745,7 +34567,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16153",
+    "boardGuard": "assertBoard@issues.ts:16182",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35114,7 +35936,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/setup",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/setup",
-    "description": "Configure or change chat endpoint lifecycle state. Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
+    "description": "Configure or change chat endpoint lifecycle state. Runs a setup or lifecycle action. `configure` and `reconnect` accept provider credentials (Slack: `botToken`, `signingSecret`; GitHub: `appId`, `privateKey` after Paperclip generates the webhook secret; Discord: `applicationId`, `guildId`, `botToken`; Microsoft Teams: `clientId`, `tenantId`, `clientSecret`; Telegram: `botToken`; iMessage Photon: `projectSecret`, with nonsecret `photon.projectId` and `photon.lineId` configuration; OpenWA: `apiKey` and optional `adminApiKey`, with nonsecret `openwa.baseUrl`, `openwa.sessionId`, `openwa.numberMode`, and required `openwa.attestations`). Credentials are stored as Paperclip secret references and are never returned. Other actions do not require credentials.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -35165,6 +35987,44 @@
             "additionalProperties": {
               "type": "string"
             }
+          },
+          "openwa": {
+            "type": "object",
+            "properties": {
+              "attestations": {
+                "type": "object",
+                "properties": {
+                  "pacing": {
+                    "type": "boolean"
+                  },
+                  "soleClient": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "pacing",
+                  "soleClient"
+                ]
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "numberMode": {
+                "type": "string",
+                "enum": [
+                  "agent_number",
+                  "owner_number"
+                ]
+              },
+              "sessionId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "attestations",
+              "baseUrl",
+              "sessionId"
+            ]
           },
           "photon": {
             "anyOf": [
@@ -35369,7 +36229,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17967",
+    "boardGuard": "assertBoard@issues.ts:18096",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35801,7 +36661,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16962",
+    "boardGuard": "assertBoard@issues.ts:17054",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37250,7 +38110,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:456",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:460",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37301,7 +38161,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:493",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:497",
     "authorityCapability": null,
     "parameters": [
       {
@@ -38489,6 +39349,57 @@
     }
   },
   {
+    "name": "paperclipUpdateChatEndpointOpenwaPolicy",
+    "operationId": "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
+    "method": "PATCH",
+    "path": "/chat-endpoints/{endpointId}/openwa/policy",
+    "description": "Update the OpenWA endpoint policy. Requires connection-management access. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. The optional inflightMode key (steer or queue) sets how messages arriving during a run are handled and is stored outside the policy. Records openwa.config_changed with the changed keys only, plus inflightMode before/after when it changed.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "inflightMode": {
+            "type": "string",
+            "enum": [
+              "steer",
+              "queue"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
     "name": "paperclipUpdateDecisionQueue",
     "operationId": "PATCH /api/companies/{companyId}/decision-queues/{key}",
     "method": "PATCH",
@@ -39378,6 +40289,29 @@
           },
           "keyboardShortcuts": {
             "type": "boolean"
+          },
+          "speechToText": {
+            "type": "object",
+            "properties": {
+              "apiKeyEnvVar": {
+                "type": "string"
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "maxAudioSeconds": {
+                "type": "integer"
+              },
+              "model": {
+                "type": "string"
+              },
+              "sttWaitSeconds": {
+                "type": "integer"
+              }
+            }
           }
         }
       }
@@ -39472,7 +40406,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16121",
+    "boardGuard": "assertBoard@issues.ts:16150",
     "authorityCapability": null,
     "parameters": [
       {

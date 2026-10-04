@@ -1666,6 +1666,23 @@ inbound comments live, with “Sent from iMessage” attribution on user bubbles
 See [iMessage Photon](connections/IMESSAGE-PHOTON.md) for the implementation
 contract, setup, recovery, boundaries, and qualification status.
 
+### Experimental OpenWA WhatsApp channel
+
+A self-hosted rmyndharis/OpenWA gateway session can represent one agent through
+the existing experimental channel subsystem, on a dedicated agent number or an
+owner's personal number. Linked owners start full-access runs; every other
+sender gets read-only runs whose writes, task creation, cross-chat sends and
+WhatsApp or gateway administration need an owner's approval from WhatsApp or
+Paperclip. Configurable sender lists, chat activation and trigger rules gate
+admission; the server never composes WhatsApp text. Secret-issuing gateway
+operations stay in the gateway dashboard, and an endpoint audit records
+triggers, sends, tool calls, approvals and settings changes. The engine is
+unofficial, so send pacing is a required operator attestation. Live
+qualification is required before release readiness.
+
+See [OpenWA WhatsApp](connections/OPENWA.md) for setup, policy, run profiles,
+approvals, tools, and troubleshooting.
+
 ### Native task completion
 
 For ordinary low-risk tasks, accept the current agent's structured `done` claim

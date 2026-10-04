@@ -17,6 +17,7 @@ export const ISSUE_THREAD_INTERACTION_RESOLUTION_DENIAL_CODES = [
   "interaction_already_resolved",
   "interaction_issue_closed",
   "interaction_governed_action_denied",
+  "interaction_chat_endpoint_owner_only",
   "review_policy_denied",
 ] as const;
 
@@ -59,6 +60,8 @@ export type IssueThreadInteractionResolverAudienceInput = {
     | IssueThreadInteractionResolverRestriction
     | null;
   governedAction?: boolean;
+  /** Current owner user ids of the OpenWA endpoint owning the conversation; required for `chat_endpoint_owner`. */
+  chatEndpointOwnerUserIds?: readonly string[] | null;
 };
 
 export type IssueThreadInteractionResolverAudienceDecision =
@@ -78,6 +81,7 @@ export type IssueThreadInteractionResolverAudienceDecision =
         | "interaction_creator_excluded"
         | "interaction_addressee_mismatch"
         | "interaction_governed_action_denied"
+        | "interaction_chat_endpoint_owner_only"
         | "review_policy_denied"
       >;
       message: string;
@@ -100,7 +104,7 @@ export function canonicalizeStoredResolverPolicy(
   if (resolverPolicyProvenance === "legacy_inherited_restriction" && policy === "board_or_agents") {
     return "not_creator";
   }
-  return normalizeIssueThreadInteractionResolverPolicy(policy as IssueThreadInteractionResolverPolicy);
+  return normalizeIssueThreadInteractionResolverPolicy(policy as IssueThreadInteractionResolverPolicy | IssueThreadInteractionCanonicalResolverPolicy);
 }
 
 function canonicalStoredPolicy(input: IssueThreadInteractionResolverAudienceInput["interaction"]) {
@@ -147,6 +151,32 @@ function reviewPolicyDeniedDecision(
   };
 }
 
+function evaluateChatEndpointOwnerAudience(
+  input: IssueThreadInteractionResolverAudienceInput,
+): IssueThreadInteractionResolverAudienceDecision {
+  const effectiveResolverPolicy = "chat_endpoint_owner" as const;
+  if (input.actor.type === "system") return { allowed: true, effectiveResolverPolicy, reason: "allow_system" };
+  if (input.actor.type === "agent") {
+    return {
+      allowed: false,
+      effectiveResolverPolicy,
+      status: 403,
+      code: "interaction_human_only",
+      message: "Only a current owner of the chat endpoint can resolve this approval",
+    };
+  }
+  if (!input.chatEndpointOwnerUserIds?.includes(input.actor.userId)) {
+    return {
+      allowed: false,
+      effectiveResolverPolicy,
+      status: 403,
+      code: "interaction_chat_endpoint_owner_only",
+      message: "Only a current owner of the chat endpoint can resolve this approval",
+    };
+  }
+  return { allowed: true, effectiveResolverPolicy, reason: "allow_human" };
+}
+
 /**
  * The single pure audience evaluator for issue-thread interaction resolution.
  * Resource access, run validation, containment, and current-target checks must
@@ -156,6 +186,7 @@ export function evaluateIssueThreadInteractionResolverAudience(
   input: IssueThreadInteractionResolverAudienceInput,
 ): IssueThreadInteractionResolverAudienceDecision {
   const persistedPolicy = canonicalStoredPolicy(input.interaction);
+  if (persistedPolicy === "chat_endpoint_owner") return evaluateChatEndpointOwnerAudience(input);
   const additionalRestriction = typeof input.additionalRestriction === "string"
     ? { policy: input.additionalRestriction }
     : input.additionalRestriction;

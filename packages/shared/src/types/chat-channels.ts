@@ -7,6 +7,7 @@ export const CHAT_PROVIDERS = [
   "telegram",
   "agentmail",
   "imessage-photon",
+  "openwa",
 ] as const;
 export type ChatProvider = (typeof CHAT_PROVIDERS)[number];
 
@@ -246,6 +247,9 @@ export interface ChatEndpoint {
   botLabel?: string | null;
   botAvatarUrl?: string | null;
   photonAllocation?: "dedicated" | "shared";
+  policy?: OpenwaEndpointPolicy;
+  policyRevision?: number;
+  inflightMode?: ChatInflightMode;
   allowDirectMessages: boolean;
   allowGroupChats: boolean;
   allowUnlinkedPeople: boolean;
@@ -493,6 +497,7 @@ export interface ConfigureChatEndpointInput {
   action: "configure" | "verify" | "pause" | "resume" | "reconnect" | "remove";
   credentials?: Record<string, string>;
   photon?: PhotonChannelConfiguration;
+  openwa?: OpenwaChannelConfiguration;
 }
 
 export interface NormalizedChatEvent {
@@ -541,3 +546,297 @@ export interface PhotonProjectInspection {
 export type PhotonChannelConfiguration =
   | { allocation?: "dedicated"; projectId: string; lineId: string }
   | { allocation: "shared"; projectId: string };
+
+/** Nonsecret OpenWA setup choices; the API keys travel as write-only credentials. */
+export interface OpenwaChannelConfiguration {
+  baseUrl: string;
+  sessionId: string;
+  numberMode?: OpenwaNumberMode;
+  attestations: { pacing: boolean; soleClient: boolean };
+}
+
+/** Read-only OpenWA gateway inspection; never carries keys or full phone numbers. */
+export interface OpenwaGatewayInspection {
+  baseUrl: string;
+  gatewayVersion: string | null;
+  pinnedVersion: string;
+  engine: string | null;
+  keyRole: "operator" | "admin" | "viewer";
+  adminKey: { role: "operator" | "admin" | "viewer" } | null;
+  warnings: string[];
+  eligible: boolean;
+  sessions: Array<{
+    sessionId: string;
+    name: string;
+    status: string;
+    maskedNumber: string | null;
+    pushName: string | null;
+    eligible: boolean;
+    unavailableReason?: string;
+  }>;
+}
+
+/** Read-only OpenWA endpoint health for Settings; never carries keys or full phone numbers. */
+export interface OpenwaEndpointHealth {
+  gatewayVersion: string | null;
+  pinnedVersion: string;
+  engine: string | null;
+  session: {
+    status: string | null;
+    maskedNumber: string | null;
+    restriction: { active: boolean; kind: string | null; expiresAt: string | null } | null;
+  };
+  pacing: { attested: boolean; observedAt: string | null };
+  adminKeyConfigured: boolean;
+  gatewayError: string | null;
+  checkedAt: string;
+}
+
+export const CHAT_INFLIGHT_MODES = ["steer", "queue"] as const;
+export type ChatInflightMode = (typeof CHAT_INFLIGHT_MODES)[number];
+
+export const OPENWA_NUMBER_MODES = ["agent_number", "owner_number"] as const;
+export type OpenwaNumberMode = (typeof OPENWA_NUMBER_MODES)[number];
+
+export const OPENWA_SENDER_POLICY_MODES = ["all", "allowlist", "denylist"] as const;
+export type OpenwaSenderPolicyMode = (typeof OPENWA_SENDER_POLICY_MODES)[number];
+
+export const OPENWA_REPLY_POLICIES = ["allowed", "ask_owner", "owner_absent_only"] as const;
+export type OpenwaReplyPolicy = (typeof OPENWA_REPLY_POLICIES)[number];
+
+export const OPENWA_CHAT_ACTIVATIONS = ["auto", "on", "off"] as const;
+export type OpenwaChatActivation = (typeof OPENWA_CHAT_ACTIVATIONS)[number];
+
+export const OPENWA_GATEWAY_ADMIN_TOOL_LEVELS = ["off", "read", "full"] as const;
+export type OpenwaGatewayAdminToolLevel = (typeof OPENWA_GATEWAY_ADMIN_TOOL_LEVELS)[number];
+
+export const OPENWA_APPROVAL_CATEGORIES = [
+  "create_task",
+  "external_tools",
+  "cross_chat_send",
+  "wa_admin",
+  "gateway_admin",
+] as const;
+export type OpenwaApprovalCategory = (typeof OPENWA_APPROVAL_CATEGORIES)[number];
+
+export const OPENWA_GRANT_CATEGORIES = [
+  ...OPENWA_APPROVAL_CATEGORIES,
+  "reply_outside_allowlist",
+  "reply",
+] as const;
+export type OpenwaGrantCategory = (typeof OPENWA_GRANT_CATEGORIES)[number];
+
+export const OPENWA_TRIGGER_CLASSES = ["owner", "other", "grant"] as const;
+export type OpenwaTriggerClass = (typeof OPENWA_TRIGGER_CLASSES)[number];
+
+export const OPENWA_PRINCIPAL_ROLES = ["owner", "allowed", "outside_allowlist", "denylisted"] as const;
+export type OpenwaPrincipalRole = (typeof OPENWA_PRINCIPAL_ROLES)[number];
+
+export const CHAT_ANSWER_STATES = ["pending", "answered", "silenced", "handed_off"] as const;
+export type ChatAnswerState = (typeof CHAT_ANSWER_STATES)[number];
+
+export const CHAT_SENDER_RULE_LISTS = ["allow", "deny"] as const;
+export type ChatSenderRuleList = (typeof CHAT_SENDER_RULE_LISTS)[number];
+
+export const CHAT_SCHEDULED_WAKE_KINDS = ["owner_absent", "approval_reminder"] as const;
+export type ChatScheduledWakeKind = (typeof CHAT_SCHEDULED_WAKE_KINDS)[number];
+
+export const CHAT_SCHEDULED_WAKE_STATES = ["pending", "fired", "cancelled"] as const;
+export type ChatScheduledWakeState = (typeof CHAT_SCHEDULED_WAKE_STATES)[number];
+
+export const CHAT_OWNER_APPROVAL_STATUSES = ["pending", "approved", "rejected", "cancelled"] as const;
+export type ChatOwnerApprovalStatus = (typeof CHAT_OWNER_APPROVAL_STATUSES)[number];
+
+export const CHAT_OWNER_APPROVAL_CHANNELS = ["whatsapp", "paperclip"] as const;
+export type ChatOwnerApprovalChannel = (typeof CHAT_OWNER_APPROVAL_CHANNELS)[number];
+
+export const CHAT_OWNER_GRANT_SCOPES = ["one_action", "requester"] as const;
+export type ChatOwnerGrantScope = (typeof CHAT_OWNER_GRANT_SCOPES)[number];
+
+export const CHAT_OWNER_GRANT_STATUSES = ["live", "consumed", "revoked", "expired"] as const;
+export type ChatOwnerGrantStatus = (typeof CHAT_OWNER_GRANT_STATUSES)[number];
+
+export const CHAT_OUTBOUND_MESSAGE_SOURCES = ["tool", "publication", "approval"] as const;
+export type ChatOutboundMessageSource = (typeof CHAT_OUTBOUND_MESSAGE_SOURCES)[number];
+
+export const CHAT_OUTBOUND_MESSAGE_STATES = ["pending", "sent", "uncertain", "failed"] as const;
+export type ChatOutboundMessageState = (typeof CHAT_OUTBOUND_MESSAGE_STATES)[number];
+
+export const CHAT_AUDIT_ENTRY_KINDS = [
+  "trigger_admitted",
+  "trigger_filtered",
+  "message_sent",
+  "publication_suppressed",
+  "tool_called",
+  "approval_requested",
+  "approval_reminded",
+  "approval_resolved",
+  "approval_cancelled",
+  "config_changed",
+  "group_added",
+  "group_left",
+  "session_health",
+] as const;
+export type ChatAuditEntryKind = (typeof CHAT_AUDIT_ENTRY_KINDS)[number];
+
+export const CHAT_AUDIT_ACTOR_KINDS = ["user", "agent", "chat_principal", "system"] as const;
+export type ChatAuditActorKind = (typeof CHAT_AUDIT_ACTOR_KINDS)[number];
+
+export interface OpenwaTriggerRules {
+  directMessage: boolean;
+  agentMentioned: boolean;
+  replyToAgent: boolean;
+  commandPrefix: { enabled: boolean; prefix: string };
+  selfChat: boolean;
+  ownerMentionedAbsent: boolean;
+  keywords: string[];
+  allMessages: boolean;
+}
+
+export interface OpenwaEndpointPolicy {
+  numberMode: OpenwaNumberMode;
+  senderPolicyMode: OpenwaSenderPolicyMode;
+  replyPolicy: OpenwaReplyPolicy;
+  triggers: OpenwaTriggerRules;
+  absenceSeconds: number;
+  approvals: {
+    createTask: boolean;
+    externalTools: boolean;
+    crossChatSend: boolean;
+    waAdmin: boolean;
+    gatewayAdmin: boolean;
+    reminderMinutes: number;
+    maxReminders: number;
+    grantTtlHours: number;
+  };
+  rotateAfterIdleHours: number;
+  progressNudgeSeconds: number;
+  typingIndicator: boolean;
+  ownerNumberPrefix: { enabled: boolean; text: string };
+  gatewayAdminTools: OpenwaGatewayAdminToolLevel;
+  customInstructions: string;
+  auditContentRetentionDays: number;
+  attestations: { pacing: boolean; soleClient: boolean };
+}
+
+export interface OpenwaTriggerOverrides {
+  directMessage?: boolean;
+  agentMentioned?: boolean;
+  replyToAgent?: boolean;
+  commandPrefix?: { enabled?: boolean; prefix?: string };
+  selfChat?: boolean;
+  ownerMentionedAbsent?: boolean;
+  keywords?: string[];
+  allMessages?: boolean;
+}
+
+export interface OpenwaChatSettings {
+  activation: OpenwaChatActivation;
+  triggers?: OpenwaTriggerOverrides;
+  absenceSeconds?: number;
+  replyPolicy?: OpenwaReplyPolicy;
+  note?: string;
+}
+
+export interface OpenwaWakeRequestPayload {
+  triggerClass: OpenwaTriggerClass;
+  deliveryIds: string[];
+}
+
+export interface ChatEndpointOwner {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  identityLinkId: string;
+  addedByUserId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatSenderRule {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  list: ChatSenderRuleList;
+  e164: string;
+  label: string | null;
+  createdByUserId: string | null;
+  createdByPrincipalId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatOwnerApprovalRequest {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  originChatKey: string;
+  originConversationId: string | null;
+  interactionId: string | null;
+  requestedByPrincipalId: string | null;
+  requestedInRunId: string | null;
+  categories: OpenwaGrantCategory[];
+  scope: ChatOwnerGrantScope;
+  summary: string;
+  proposedAction: string;
+  status: ChatOwnerApprovalStatus;
+  reminderCount: number;
+  resolvedVia: ChatOwnerApprovalChannel | null;
+  resolvedByUserId: string | null;
+  ownerText: string | null;
+  agentConditions: string | null;
+  resolvedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatOwnerGrant {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  requestId: string;
+  originChatKey: string;
+  requesterPrincipalId: string | null;
+  category: OpenwaGrantCategory;
+  scope: ChatOwnerGrantScope;
+  status: ChatOwnerGrantStatus;
+  approvedByUserId: string | null;
+  approvedVia: ChatOwnerApprovalChannel;
+  expiresAt: string;
+  consumedAt: string | null;
+  consumedByRunId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatOutboundMessage {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  chatKey: string;
+  source: ChatOutboundMessageSource;
+  runId: string | null;
+  providerMessageId: string | null;
+  state: ChatOutboundMessageState;
+  bodyHash: string;
+  clientNonce: string;
+  sentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ChatAuditEntry {
+  id: string;
+  companyId: string;
+  endpointId: string;
+  conversationId: string | null;
+  chatKey: string | null;
+  kind: ChatAuditEntryKind;
+  actorKind: ChatAuditActorKind;
+  actorRef: string | null;
+  runId: string | null;
+  metadata: Record<string, unknown>;
+  content: Record<string, unknown> | null;
+  contentPurgeAt: string | null;
+  occurredAt: string;
+}
