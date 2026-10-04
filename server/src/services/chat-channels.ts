@@ -68,7 +68,7 @@ import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadIn
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
 import { openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
-import { inspectOpenwaGateway, openwaProviderAccountId, verifyOpenwaSession } from "./openwa/setup.js";
+import { inspectOpenwaGateway, openwaProviderAccountId, openwaSetupReplyDelivered, verifyOpenwaSession } from "./openwa/setup.js";
 import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
@@ -10658,7 +10658,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   row.commentId !== null,
               ),
             );
-          if (!finalPublication) {
+          if (
+            !finalPublication &&
+            !(endpoint.provider === "openwa" &&
+              endpoint.assignedAgentId &&
+              (await openwaSetupReplyDelivered(db, {
+                companyId: endpoint.companyId,
+                endpointId: endpoint.id,
+                agentId: endpoint.assignedAgentId,
+                deliveryId: qualifyingDelivery.id,
+                since: qualifyingDelivery.processedAt,
+              })))
+          ) {
             throw conflict(
               "Wait for the Paperclip agent to reply to the setup turn before completing setup",
               {

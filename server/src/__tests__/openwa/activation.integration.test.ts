@@ -30,6 +30,7 @@ import { instanceSettingsService } from "../../services/instance-settings.js";
 import { issueService } from "../../services/issues.js";
 import { applyOpenwaRunContext, resolveOpenwaRunContext } from "../../services/openwa/authority.js";
 import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, type OpenwaWakeEvent } from "../../services/openwa/guidance.js";
+import { executeOpenwaTool } from "../../services/openwa/tools.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
 import { errorHandler } from "../../middleware/index.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
@@ -288,5 +289,51 @@ describe.sequential("OpenWA activation through the owner test DM (embedded Postg
     expect(activated.status).toBe(200);
     expect(activated.body).toMatchObject({ status: "active", activatedAt: expect.any(String), setup: { step: "complete" } });
     expect(await endpointRow(t)).toMatchObject({ status: "active", setup: expect.objectContaining({ step: "complete" }) });
+  }, 120_000);
+
+  it("AC1: completes setup when the agent answers the owner test DM with openwa_send instead of a final comment", async () => {
+    const t = await setup();
+    await request(t.app)
+      .post("/api/chat-endpoints/" + t.endpointId + "/setup")
+      .send({
+        action: "configure",
+        credentials: { apiKey: FAKE_OPENWA_KEY },
+        openwa: { baseUrl: t.gateway.baseUrl, sessionId: SESSION_ID, numberMode: "agent_number", attestations: { pacing: true, soleClient: true } },
+      })
+      .expect(200);
+    const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    await t.service.reconcileProviderRuntimes();
+    await t.gateway.waitForSubscription();
+
+    const owner = await settled(t, { chatId: jid(OWNER_PHONE), body: "halo, tes koneksi" });
+    const [action] = await db
+      .select()
+      .from(chatActions)
+      .where(and(eq(chatActions.deliveryId, owner.delivery.id), eq(chatActions.kind, "inbound_wakeup")));
+    await until(() => t.wakes.has(action!.id));
+    const wake = t.wakes.get(action!.id)!;
+    const issueId = String(wake.contextSnapshot!.issueId);
+    const runId = randomUUID();
+    const contextSnapshot: Record<string, unknown> = { ...wake.contextSnapshot };
+    await db.insert(heartbeatRuns).values({
+      id: runId, companyId: t.companyId, agentId: t.agentId, status: "running", wakeupRequestId: action!.id, startedAt: new Date(), contextSnapshot,
+    });
+    const openwa = await resolveOpenwaRunContext(db, { companyId: t.companyId, issueId, contextSnapshot, wakeupRequestId: action!.id, runId });
+    applyOpenwaRunContext(contextSnapshot, openwa);
+    await db.update(heartbeatRuns).set({ contextSnapshot }).where(eq(heartbeatRuns.id, runId));
+    const binding = { companyId: t.companyId, agentId: t.agentId, runId, issueId };
+
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { text: "Halo, koneksi berhasil.", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    const whileRunning = await request(t.app).post("/api/chat-endpoints/" + t.endpointId + "/test").send({});
+    expect(whileRunning.status).toBe(409);
+    expect(whileRunning.body.details).toMatchObject({ code: "chat_test_round_trip_incomplete" });
+
+    await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, runId));
+    await t.service.processPendingPublications(25);
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ chatId: jid(OWNER_PHONE), text: "Halo, koneksi berhasil." })]);
+    const activated = await request(t.app).post("/api/chat-endpoints/" + t.endpointId + "/test").send({});
+    expect(activated.status).toBe(200);
+    expect(activated.body).toMatchObject({ status: "active", setup: { step: "complete" } });
   }, 120_000);
 });

@@ -1,3 +1,5 @@
+import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
+import { chatActions, chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
 import {
   maskOpenwaPhoneNumber,
   type OpenwaGatewayInspection,
@@ -239,4 +241,37 @@ export async function verifyOpenwaSession(
   } catch (error) {
     throw openwaSetupError(error, credentials.baseUrl);
   }
+}
+
+/** True when the agent run woken by the setup test message sent a WhatsApp reply to that chat itself, for example with openwa_send. */
+export async function openwaSetupReplyDelivered(
+  db: Db,
+  input: { companyId: string; endpointId: string; agentId: string; deliveryId: string; since: Date },
+): Promise<boolean> {
+  const [row] = await db
+    .select({ id: chatOutboundMessages.id })
+    .from(chatOutboundMessages)
+    .innerJoin(heartbeatRuns, and(eq(heartbeatRuns.id, chatOutboundMessages.runId), eq(heartbeatRuns.companyId, chatOutboundMessages.companyId)))
+    .innerJoin(
+      chatDeliveries,
+      and(eq(chatDeliveries.id, input.deliveryId), eq(chatDeliveries.companyId, input.companyId), eq(chatDeliveries.endpointId, input.endpointId)),
+    )
+    .where(
+      and(
+        eq(chatOutboundMessages.companyId, input.companyId),
+        eq(chatOutboundMessages.endpointId, input.endpointId),
+        eq(chatOutboundMessages.state, "sent"),
+        inArray(chatOutboundMessages.source, ["tool", "publication"]),
+        gte(chatOutboundMessages.sentAt, input.since),
+        sql`${chatOutboundMessages.chatKey} = ${chatDeliveries.normalizedEvent} -> 'openwa' ->> 'chatKey'`,
+        eq(heartbeatRuns.agentId, input.agentId),
+        eq(heartbeatRuns.status, "succeeded"),
+        or(
+          sql`exists (select 1 from ${chatActions} where ${chatActions.id} = ${heartbeatRuns.wakeupRequestId} and ${chatActions.companyId} = ${input.companyId} and ${chatActions.deliveryId} = ${input.deliveryId})`,
+          sql`coalesce(${heartbeatRuns.contextSnapshot} -> 'paperclipOpenwa' -> 'deliveryIds', '[]'::jsonb) ? ${input.deliveryId}`,
+        ),
+      ),
+    )
+    .limit(1);
+  return row !== undefined;
 }
