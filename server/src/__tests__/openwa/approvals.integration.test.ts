@@ -668,6 +668,39 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     await t.service.openwa.removeOwner(t.endpointId, owner!.id, t.userId);
     expect((await grantsOf(request.id))[0]!.status).toBe("revoked");
     await expect(assertOpenwaRunMay(db, runA2.run, "external_tools")).rejects.toMatchObject({ status: 403 });
+
+    const activity = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), sql`${activityLog.action} like 'openwa.%'`));
+    const one = (action: string) => {
+      const rows = activity.filter((row) => row.action === action);
+      expect(rows, action).toHaveLength(1);
+      return rows[0]!;
+    };
+    const base = { entityType: "chat_endpoint", entityId: t.endpointId };
+    expect(one("openwa.owner_added")).toMatchObject({
+      ...base, actorType: "user", actorId: t.userId,
+      details: { endpointId: t.endpointId, provider: "openwa", ownerId: owner!.id, numberMasked: expect.stringContaining(OWNER_PHONE.slice(-4)) },
+    });
+    expect(JSON.stringify(one("openwa.owner_added").details)).not.toContain(OWNER_PHONE);
+    expect(one("openwa.approval_requested")).toMatchObject({
+      ...base, actorType: "system", actorId: "openwa", agentId: t.agentId, runId: runA.runId,
+      details: { endpointId: t.endpointId, provider: "openwa", requestId: request.id, categories: ["external_tools"], scope: "requester" },
+    });
+    expect(one("openwa.approval_resolved")).toMatchObject({
+      ...base, actorType: "user", actorId: t.userId,
+      details: { endpointId: t.endpointId, provider: "openwa", requestId: request.id, decision: "approved", via: "paperclip" },
+    });
+    expect(one("openwa.grant_created")).toMatchObject({
+      ...base, actorType: "user", actorId: t.userId,
+      details: { endpointId: t.endpointId, provider: "openwa", requestId: request.id, grantIds: [grants[0]!.id], scope: "requester", categories: ["external_tools"] },
+    });
+    expect(one("openwa.owner_removed")).toMatchObject({
+      ...base, actorType: "user", actorId: t.userId,
+      details: { endpointId: t.endpointId, provider: "openwa", ownerId: owner!.id },
+    });
+    expect(one("openwa.grant_revoked")).toMatchObject({
+      ...base, actorType: "user", actorId: t.userId,
+      details: { endpointId: t.endpointId, provider: "openwa", grantIds: [grants[0]!.id], reason: "approver_no_longer_owner" },
+    });
   }, 120_000);
 
   it("AC7: a Paperclip rejection reason reaches the agent's approval_resolved comment", async () => {

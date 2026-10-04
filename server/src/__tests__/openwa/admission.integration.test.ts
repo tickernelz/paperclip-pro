@@ -414,6 +414,25 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect((await audits(t)).map((entry) => entry.kind)).not.toContain("trigger_admitted");
   }, 90_000);
 
+  it("marks a group unavailable and audits group_left when the agent's number is removed from it", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const group = "120363000000000017@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Leaving", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    await goLive(t);
+    const groupResource = async () => (await db.select().from(chatEndpointResources).where(and(eq(chatEndpointResources.endpointId, t.endpointId), eq(chatEndpointResources.type, "group_chat"))))[0] ?? null;
+    t.gateway.emit("group.join", { groupId: group, actorId: jid(MEMBER_PHONE), participantIds: [jid(OWN_PHONE)], timestamp: Math.floor(Date.now() / 1000) });
+    await settledDeliveries(t, 1);
+    expect(await groupResource()).toMatchObject({ availability: "available" });
+    t.gateway.emit("group.leave", { groupId: group, actorId: jid(MEMBER_PHONE), participantIds: [jid(STRANGER_PHONE)], timestamp: Math.floor(Date.now() / 1000) });
+    t.gateway.emit("group.leave", { groupId: group, actorId: jid(MEMBER_PHONE), participantIds: [jid(OWN_PHONE)], timestamp: Math.floor(Date.now() / 1000) });
+    await until(async () => (await audits(t)).some((entry) => entry.kind === "group_left"));
+    expect((await audits(t)).find((entry) => entry.kind === "group_left")).toMatchObject({ chatKey: group, actorKind: "system", actorRef: jid(MEMBER_PHONE), metadata: { groupId: group } });
+    expect((await audits(t)).filter((entry) => entry.kind === "group_left")).toHaveLength(1);
+    expect(await groupResource()).toMatchObject({ availability: "unavailable", enabled: false });
+    expect(await deliveries(t)).toHaveLength(1);
+  }, 90_000);
+
   it("drops and audits a denylisted sender matched only by a keyword rule", async () => {
     const t = await setup();
     await addOwner(t, OWNER_PHONE);
