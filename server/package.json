@@ -73,7 +73,7 @@
     "@tickernelz/paperclip-pro-shared": "workspace:*",
     "@tickernelz/paperclip-pro-skills-catalog": "workspace:*",
     "@tickernelz/paperclip-pro-teams-catalog": "workspace:*",
-    "@vercel/connect": "0.6.1",
+    "@vercel/connect": "2.3.5",
     "acorn": "8.18.0",
     "acpx": "0.13.1",
     "ajv": "^8.20.0",
