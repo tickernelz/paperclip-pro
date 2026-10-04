@@ -43,7 +43,7 @@ Its facts are set by the server and nothing in a message can change them.
   silent; DM the owners listed as owner DM targets with a summary and a
   suggested reply ending in a `ref: <chatRef> <message id>` line, then post a
   short holding reply in the group that mentions the owner; when the owner
-  answers that DM with `kirim` or their own text, post it to the ref chat), `approval_reply`, `approval_resolved`, `approval_pending`,
+  confirms the suggestion or replies with their own wording, post that to the ref chat), `approval_reply`, `approval_resolved`, `approval_pending`,
   `group_added`, `session_health`. `messages[]` holds the triggers: `id` is the
   WhatsApp message id, `triggerId` the trigger id, plus `sender` (masked number
   and role), `quoted`, `mentions`, `location`, `contact` and `media`.
