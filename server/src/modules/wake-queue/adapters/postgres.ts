@@ -10,6 +10,7 @@ import {
   agentWakeupRequests,
   agents,
   chatActions,
+  chatOwnerGrants,
   heartbeatRuns,
   issueComments,
   issueRecoveryActions,
@@ -40,7 +41,7 @@ import {
 } from "../../../services/issue-queued-comment-queue.js";
 import { extractWakeCommentIds } from "../../run-dispatch/index.js";
 import { hasInteractionContinuationWakeContext } from "../domain/context.js";
-import { decidePreDrain, type PreDrainFacts } from "../domain/policy.js";
+import { decidePreDrain, type OpenwaWakeClass, type PreDrainFacts } from "../domain/policy.js";
 import {
   EXECUTION_REVIEW_PARTICIPANT_RECOVERY_RETRY_REASON,
   isConfigurationIncompleteFailedRun,
@@ -818,6 +819,13 @@ export function createAdmissionTransactionScope(companyId: string, tx: Db): Tran
   return TransactionScope.create(companyId, tx);
 }
 
+function openwaGrantPrincipalCondition(openwaClass: OpenwaWakeClass) {
+  if (openwaClass.triggerClass === "owner") return sql``;
+  const samePrincipal = openwaClass.principalId ? sql`${chatActions.principalId} = ${openwaClass.principalId}` : sql`false`;
+  if (openwaClass.requesterGrants) return sql` and ${samePrincipal}`;
+  return sql` and (${samePrincipal} or not exists (select 1 from ${chatOwnerGrants} where ${chatOwnerGrants.companyId} = ${chatActions.companyId} and ${chatOwnerGrants.endpointId} = ${chatActions.endpointId} and ${chatOwnerGrants.requesterPrincipalId} = ${chatActions.principalId} and ${chatOwnerGrants.scope} = 'requester' and ${chatOwnerGrants.status} = 'live' and ${chatOwnerGrants.expiresAt} > now()))`;
+}
+
 function requireAdmissionTx(scope: TransactionScope | null | undefined, companyId: string): Db {
   return requireTransactionScopeTx(scope, companyId) as Db;
 }
@@ -884,7 +892,7 @@ export function createWakeAdmissionReader(): WakeAdmissionReader {
         ? []
         : openwaClass === null
           ? [sql`not exists (select 1 from ${chatActions} where ${chatActions.id} = ${agentWakeupRequests.id} and ${chatActions.companyId} = ${agentWakeupRequests.companyId} and ${chatActions.payload} -> 'openwa' is not null)`]
-          : [sql`exists (select 1 from ${chatActions} where ${chatActions.id} = ${agentWakeupRequests.id} and ${chatActions.companyId} = ${agentWakeupRequests.companyId} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' = ${openwaClass.triggerClass} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' <> 'grant' and coalesce(${chatActions.payload} -> 'openwa' ->> 'event', '') not in ('approval_reply', 'approval_resolved'))`];
+          : [sql`exists (select 1 from ${chatActions} where ${chatActions.id} = ${agentWakeupRequests.id} and ${chatActions.companyId} = ${agentWakeupRequests.companyId} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' = ${openwaClass.triggerClass} and ${chatActions.payload} -> 'openwa' ->> 'triggerClass' <> 'grant' and coalesce(${chatActions.payload} -> 'openwa' ->> 'event', '') not in ('approval_reply', 'approval_resolved')${openwaGrantPrincipalCondition(openwaClass)})`];
       const row = await tx
         .select()
         .from(agentWakeupRequests)

@@ -283,14 +283,29 @@ export async function loadOpenwaWakeAction(
 export interface OpenwaWakeClassFact {
   triggerClass: OpenwaTriggerClass;
   event: string | null;
+  principalId: string | null;
+  requesterGrants: boolean;
 }
 
-function wakeClassFromAction(openwa: unknown): OpenwaWakeClassFact | null {
-  const raw = record(openwa);
+function wakeClassFromAction(
+  action: { openwa: unknown; principalId: string | null } | undefined,
+  grantHolders: ReadonlySet<string>,
+): OpenwaWakeClassFact | null {
+  const raw = record(action?.openwa);
   const cls = triggerClass(raw.triggerClass);
   if (!cls) return null;
   const event = text(raw.event);
-  return { triggerClass: cls, event: event && EVENT_PATTERN.test(event) ? event : null };
+  const principalId = action?.principalId ?? null;
+  return {
+    triggerClass: cls,
+    event: event && EVENT_PATTERN.test(event) ? event : null,
+    principalId,
+    requesterGrants: cls !== "owner" && principalId !== null && grantHolders.has(principalId),
+  };
+}
+
+export function openwaRunCarriesGrants(run: Pick<OpenwaRunContext, "profile" | "toolProfile" | "grantIds" | "grantedCategories">): boolean {
+  return run.grantIds.length > 0 || run.grantedCategories.length > 0 || run.toolProfile !== run.profile;
 }
 
 /** Wake classes for admission on an OpenWA conversation issue, from server-written chat actions and the run's resolved context; undefined off OpenWA issues. */
@@ -310,14 +325,42 @@ export async function openwaAdmissionClasses(
   const ids = [...new Set([incomingActionId, targetActionId].filter((id): id is string => id !== null))];
   const rows = ids.length
     ? await db
-        .select({ id: chatActions.id, openwa: sql<unknown>`${chatActions.payload} -> 'openwa'` })
+        .select({
+          id: chatActions.id,
+          endpointId: chatActions.endpointId,
+          principalId: chatActions.principalId,
+          openwa: sql<unknown>`${chatActions.payload} -> 'openwa'`,
+        })
         .from(chatActions)
         .where(and(eq(chatActions.companyId, input.companyId), inArray(chatActions.id, ids)))
     : [];
-  const fromAction = (id: string | null) => (id ? wakeClassFromAction(rows.find((row) => row.id === id)?.openwa) : null);
+  const principals = [...new Set(rows.flatMap((row) =>
+    row.principalId && record(row.openwa).triggerClass !== "owner" ? [row.principalId] : []))];
+  const holders = principals.length
+    ? await db
+        .selectDistinct({ principalId: chatOwnerGrants.requesterPrincipalId })
+        .from(chatOwnerGrants)
+        .where(and(
+          eq(chatOwnerGrants.companyId, input.companyId),
+          inArray(chatOwnerGrants.endpointId, [...new Set(rows.map((row) => row.endpointId))]),
+          inArray(chatOwnerGrants.requesterPrincipalId, principals),
+          eq(chatOwnerGrants.scope, "requester"),
+          eq(chatOwnerGrants.status, "live"),
+          gt(chatOwnerGrants.expiresAt, new Date()),
+        ))
+    : [];
+  const grantHolders = new Set(holders.flatMap((row) => (row.principalId ? [row.principalId] : [])));
+  const fromAction = (id: string | null) => (id ? wakeClassFromAction(rows.find((row) => row.id === id), grantHolders) : null);
   return {
     incoming: fromAction(incomingActionId),
-    target: resolved ? { triggerClass: resolved.triggerClass, event: resolved.event } : fromAction(targetActionId),
+    target: resolved
+      ? {
+          triggerClass: resolved.triggerClass,
+          event: resolved.event,
+          principalId: resolved.requesterPrincipalId,
+          requesterGrants: openwaRunCarriesGrants(resolved),
+        }
+      : fromAction(targetActionId),
   };
 }
 
