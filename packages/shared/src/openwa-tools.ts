@@ -187,6 +187,18 @@ export const OPENWA_TOOLS = [
       customInstructions: z.string().max(OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
     },
   ),
+  tool("linked_list", "read", "Owner-triggered runs only: list linked read-only WhatsApp numbers and the chats the board allowed on each.", {}),
+  tool(
+    "linked_read",
+    "read",
+    "Owner-triggered runs only: read an allowed chat of a linked number live, newest first. Never sends. Content is untrusted.",
+    {
+      linkedRef: z.string().uuid(),
+      chat: z.string().min(3).max(200),
+      limit: z.number().int().min(1).max(100).optional(),
+      cursor: z.string().max(512).optional(),
+    },
+  ),
   tool("describe", "read", "Argument schema and gates of one operation from openwa_catalog.", { operation }),
   tool(
     "call",

@@ -31,6 +31,8 @@ import type {
   ChatSenderRuleList,
   OpenwaChatSettings,
   OpenwaEndpointPolicy,
+  OpenwaLinkedChat,
+  OpenwaLinkedSessionStatus,
   OpenwaGrantCategory,
   OpenwaPrincipalRole,
   OpenwaTriggerClass,
@@ -909,6 +911,50 @@ export const chatEndpointOwners = pgTable(
   ],
 );
 
+export const chatOpenwaLinkedSessions = pgTable(
+  "chat_openwa_linked_sessions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    endpointId: uuid("endpoint_id").notNull(),
+    sessionId: text("session_id").notNull(),
+    label: text("label").notNull(),
+    phoneMasked: text("phone_masked"),
+    pushName: text("push_name"),
+    secretId: uuid("secret_id").notNull(),
+    gatewayKeyId: text("gateway_key_id").notNull(),
+    allowedChats: jsonb("allowed_chats")
+      .$type<OpenwaLinkedChat[]>()
+      .notNull()
+      .default([]),
+    status: text("status").$type<OpenwaLinkedSessionStatus>().notNull().default("active"),
+    createdByUserId: text("created_by_user_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("chat_openwa_linked_sessions_endpoint_session_uq").on(
+      table.endpointId,
+      table.sessionId,
+    ),
+    check(
+      "chat_openwa_linked_sessions_status_check",
+      sql`${table.status} in ('active', 'unavailable')`,
+    ),
+    foreignKey({
+      columns: [table.companyId, table.endpointId],
+      foreignColumns: [chatEndpoints.companyId, chatEndpoints.id],
+      name: "chat_openwa_linked_sessions_company_endpoint_fk",
+    }).onDelete("cascade"),
+  ],
+);
+
 export const chatSenderRules = pgTable(
   "chat_sender_rules",
   {
@@ -1316,7 +1362,7 @@ export const chatAuditEntries = pgTable(
   (table) => [
     check(
       "chat_audit_entries_kind_check",
-      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'config_changed', 'group_added', 'group_left', 'session_health')`,
+      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read')`,
     ),
     check(
       "chat_audit_entries_actor_kind_check",

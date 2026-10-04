@@ -10,5 +10,6 @@
   "[Experimental] Experimental API; the corresponding instance feature must be enabled.",
   "[Experimental] On overlapping /cases routes the server selects the handler by resource identity; use a pipeline case ID.",
   "[Experimental] Overlapping /cases routes select their handler by resource identity.",
-  "[Experimental] Pipeline case resource."
+  "[Experimental] Pipeline case resource.",
+  "[chat-channels] Requires connection-management access."
 ]

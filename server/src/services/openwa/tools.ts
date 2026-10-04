@@ -55,6 +55,7 @@ import {
 } from "./gateway.js";
 import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
 import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
+import { openwaLinkedListTool, openwaLinkedReadTool, type OpenwaLinkedService } from "./linked.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -120,6 +121,8 @@ export type OpenwaToolErrorCode =
   | "secret_issuing_operation"
   | "ui_only_setting"
   | "config_conflict"
+  | "linked_chat_not_allowed"
+  | "linked_session_unavailable"
   | "invalid_arguments";
 
 export class OpenwaToolError extends HttpError {
@@ -149,6 +152,7 @@ export interface OpenwaToolRuntimeHandle {
 export interface OpenwaToolRuntime {
   resolve(endpoint: EndpointRow): Promise<OpenwaToolRuntimeHandle>;
   owners: OpenwaOwnerService;
+  linked: OpenwaLinkedService;
 }
 
 const runtimes = new WeakMap<Db, OpenwaToolRuntime>();
@@ -164,6 +168,12 @@ export function openwaToolOwners(db: Db): OpenwaOwnerService {
   const runtime = runtimes.get(db);
   if (!runtime) throw new OpenwaToolError(503, "gateway_unavailable", "The OpenWA runtime is not available in this process");
   return runtime.owners;
+}
+
+function openwaToolLinked(db: Db): OpenwaLinkedService {
+  const runtime = runtimes.get(db);
+  if (!runtime) throw new OpenwaToolError(503, "gateway_unavailable", "The OpenWA runtime is not available in this process");
+  return runtime.linked;
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -967,7 +977,7 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
   return { actionId: action.id, state: "delivered", ...receipt };
 }
 
-function senderView(ctx: ToolContext, jid: string | null | undefined, name: unknown, phone?: unknown) {
+function senderView(ctx: Pick<ToolContext, "sessionId">, jid: string | null | undefined, name: unknown, phone?: unknown) {
   const id = str(jid);
   const digits = phoneDigits(id) ?? (typeof phone === "string" && /^\d{5,}$/.test(phone) ? phone : null);
   return {
@@ -1025,7 +1035,7 @@ function storedView(ctx: ToolContext, message: OpenwaStoredMessage) {
   };
 }
 
-function liveView(ctx: ToolContext, message: OpenwaHistoryMessage) {
+export function liveView(ctx: Pick<ToolContext, "sessionId">, message: OpenwaHistoryMessage) {
   const media = record(message.media);
   const contact = record(message.contact);
   return {
@@ -1340,7 +1350,16 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_endpoint_config: (ctx, args) => openwaEndpointConfigTool(ctx, args),
   openwa_describe: (ctx, args) => openwaDescribeTool(ctx, args),
   openwa_call: (ctx, args) => openwaCallTool(ctx, args),
+  openwa_linked_list: (ctx) => openwaLinkedListTool(ctx, openwaToolLinked(ctx.db)),
+  openwa_linked_read: (ctx, args) => openwaLinkedReadTool(ctx, openwaToolLinked(ctx.db), args),
 };
+
+const LINKED_TOOLS = new Set(["openwa_linked_list", "openwa_linked_read"]);
+
+function linkedResultSummary(result: Record<string, unknown>): Record<string, unknown> {
+  if (Array.isArray(result.messages)) return { linkedRef: result.linkedRef ?? null, chatRef: result.chatRef ?? null, count: result.messages.length };
+  return { count: Array.isArray(result.linked) ? result.linked.length : 0 };
+}
 
 const MANIFEST_ONLY_TOOLS = new Set(["openwa_catalog", "openwa_describe"]);
 
@@ -1369,7 +1388,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
         actionId: ctx.audit.actionId,
         ...(ctx.audit.operation ? { operation: ctx.audit.operation } : {}),
       },
-      content: { args, resultSummary: result },
+      content: { args, resultSummary: LINKED_TOOLS.has(name) ? linkedResultSummary(result) : result },
     });
     return result;
   } catch (error) {

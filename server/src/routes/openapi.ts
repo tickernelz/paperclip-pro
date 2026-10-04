@@ -304,6 +304,8 @@ import {
   CHAT_AUDIT_ENTRY_KINDS,
   addOpenwaOwnerSchema,
   createOpenwaSenderRuleSchema,
+  linkOpenwaSessionSchema,
+  updateOpenwaLinkedChatsSchema,
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
   listOpenwaApprovalsQuerySchema,
@@ -1645,6 +1647,12 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "GET /api/chat-endpoints/{endpointId}/openwa/chats",
   "PUT /api/chat-endpoints/{endpointId}/openwa/chats",
   "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
+  "GET /api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+  "POST /api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+  "GET /api/chat-endpoints/{endpointId}/openwa/linkable-sessions",
+  "PUT /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/chats",
+  "DELETE /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}",
+  "GET /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/gateway-chats",
   "GET /api/chat-endpoints/{endpointId}/openwa/health",
   "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
   "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
@@ -2730,6 +2738,122 @@ registry.registerPath({
     422: r.unprocessable,
     502: { description: "OpenWA gateway returned an invalid response" },
     503: { description: "OpenWA gateway unreachable" },
+  },
+});
+
+const openwaLinkedChatResponseSchema = z.object({ chatId: z.string(), label: z.string(), isGroup: z.boolean() }).strict();
+
+const openwaLinkedSessionResponseSchema = z
+  .object({
+    id: z.string().uuid(),
+    sessionId: z.string(),
+    label: z.string(),
+    phoneMasked: z.string().nullable(),
+    pushName: z.string().nullable(),
+    status: z.enum(["active", "unavailable"]),
+    allowedChats: z.array(openwaLinkedChatResponseSchema),
+    createdAt: z.string(),
+    updatedAt: z.string(),
+  })
+  .strict();
+
+const openwaLinkedParams = z.object({ endpointId: z.string().uuid(), linkedId: z.string().uuid() });
+
+const openwaLinkedGatewayErrors = {
+  502: { description: "OpenWA gateway returned an invalid response" },
+  503: { description: "OpenWA gateway unreachable" },
+};
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+  tags: ["chat-channels"],
+  summary: "List linked read-only OpenWA numbers",
+  description:
+    "Lists OpenWA sessions linked to this endpoint for owner-run reads, with their allowed chats. Never returns the viewer key or its secret id. Responses are not cached.",
+  request: { params: openwaEndpointParams },
+  responses: { 200: r.ok(z.array(openwaLinkedSessionResponseSchema)), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linkable-sessions",
+  tags: ["chat-channels"],
+  summary: "List gateway sessions that can be linked",
+  description:
+    "Requires connection-management access and the endpoint's OpenWA admin key. Lists gateway sessions other than the agent's own session and those already linked. Numbers are masked.",
+  request: { params: openwaEndpointParams },
+  responses: {
+    200: r.ok(z.array(z.object({ sessionId: z.string(), name: z.string(), status: z.string(), phoneMasked: z.string().nullable(), pushName: z.string().nullable() }).strict())),
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+    ...openwaLinkedGatewayErrors,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+  tags: ["chat-channels"],
+  summary: "Link a read-only OpenWA number",
+  description:
+    "Requires connection-management access. Creates a viewer OpenWA API key scoped to the session with the endpoint's admin key, stores it as a Paperclip-managed secret, and links the session with no allowed chats. Fails 422 openwa_admin_key_required without an admin key and 422 openwa_linked_is_agent_session for the agent's own session. Records openwa.linked_session_added.",
+  request: { params: openwaEndpointParams, body: jsonBody(linkOpenwaSessionSchema) },
+  responses: {
+    201: r.ok(openwaLinkedSessionResponseSchema),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+    422: r.unprocessable,
+    ...openwaLinkedGatewayErrors,
+  },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/chats",
+  tags: ["chat-channels"],
+  summary: "Replace the allowed chats of a linked OpenWA number",
+  description:
+    "Requires connection-management access. Replaces the chat allowlist the assigned agent may read in owner-triggered runs. Records openwa.linked_session_chats_changed with counts only.",
+  request: { params: openwaLinkedParams, body: jsonBody(updateOpenwaLinkedChatsSchema) },
+  responses: { 200: r.ok(openwaLinkedSessionResponseSchema), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}",
+  tags: ["chat-channels"],
+  summary: "Unlink a read-only OpenWA number",
+  description:
+    "Requires connection-management access. Revokes the viewer key on the gateway, removes the link, and deletes the stored secret. Records openwa.linked_session_removed.",
+  request: { params: openwaLinkedParams },
+  responses: { 204: r.noContent, 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 422: r.unprocessable, ...openwaLinkedGatewayErrors },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/gateway-chats",
+  tags: ["chat-channels"],
+  summary: "List a linked number's chats for the allowlist picker",
+  description:
+    "Requires connection-management access. Reads the linked session's chats with its viewer key: names and ids only, never message bodies. Direct-chat names are masked. Responses are not cached.",
+  request: {
+    params: openwaLinkedParams,
+    query: z.object({ limit: z.coerce.number().int().min(1).max(500).optional(), offset: z.coerce.number().int().min(0).max(100_000).optional() }),
+  },
+  responses: {
+    200: r.ok(z.array(z.object({ chatId: z.string(), isGroup: z.boolean(), name: z.string(), allowed: z.boolean() }).strict())),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+    ...openwaLinkedGatewayErrors,
   },
 });
 

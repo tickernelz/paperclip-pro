@@ -10,6 +10,7 @@ import {
   chatEndpoints,
   chatExternalPrincipals,
   chatIdentityLinks,
+  chatOpenwaLinkedSessions,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   companyMemberships,
@@ -41,6 +42,7 @@ const SUMMARY_MAX_TEXT = 300;
 const MAX_MEDIA_PER_MESSAGE = 10;
 const MAX_PENDING_APPROVALS = 10;
 const MAX_OWNERS = 20;
+const MAX_LINKED_NUMBERS = 20;
 const MAX_DELIVERY_IDS = 200;
 const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -155,6 +157,7 @@ export interface OpenwaGuidanceFacts {
   progressNudgeSeconds: number;
   customInstructions: string;
   chatNote: string;
+  linkedNumbers: string[];
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -419,7 +422,8 @@ export async function buildOpenwaRunGuidance(
 ): Promise<OpenwaGuidanceBuild | null> {
   const { companyId, openwa } = input;
   const now = new Date();
-  const [[endpoint], [conversation], [wakeRequest], owners, grants, pendingApprovals] = await Promise.all([
+  const ownerRun = openwa.triggerClass === "owner" && openwa.profile === "full";
+  const [[endpoint], [conversation], [wakeRequest], owners, grants, pendingApprovals, linkedRows] = await Promise.all([
     db
       .select({ policy: chatEndpoints.policy })
       .from(chatEndpoints)
@@ -489,6 +493,14 @@ export async function buildOpenwaRunGuidance(
       )
       .orderBy(desc(chatOwnerApprovalRequests.createdAt))
       .limit(MAX_PENDING_APPROVALS),
+    ownerRun
+      ? db
+          .select({ label: chatOpenwaLinkedSessions.label })
+          .from(chatOpenwaLinkedSessions)
+          .where(and(eq(chatOpenwaLinkedSessions.companyId, companyId), eq(chatOpenwaLinkedSessions.endpointId, openwa.endpointId)))
+          .orderBy(asc(chatOpenwaLinkedSessions.createdAt))
+          .limit(MAX_LINKED_NUMBERS)
+      : Promise.resolve([]),
   ]);
   if (!endpoint || !conversation) return null;
   const policy = parsePolicy(endpoint.policy);
@@ -659,6 +671,7 @@ export async function buildOpenwaRunGuidance(
     progressNudgeSeconds: policy.progressNudgeSeconds,
     customInstructions: policy.customInstructions,
     chatNote: settings.note ?? "",
+    linkedNumbers: (linkedRows as Array<{ label: string }>).map((row) => clip(safeDisplayName(row.label), 120) ?? "Linked number"),
   };
   return { markdown: renderOpenwaGuidance(facts), wakeEvent, guidanceVersion: OPENWA_GUIDANCE_VERSION };
 }
@@ -717,6 +730,13 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     "- Allowed without approval in this run: " + list(wake.policy.allowedCategories) + ".",
     "- Requires owner approval in this run: " + list(wake.policy.approvalRequired) + ".",
     ...(wake.policy.unavailable.length > 0 ? ["- Not available on this endpoint: " + list(wake.policy.unavailable) + "."] : []),
+    ...(facts.linkedNumbers.length > 0
+      ? [
+          "- Linked read-only numbers (owner runs only): " +
+            facts.linkedNumbers.map((label) => JSON.stringify(label)).join(", ") +
+            ". Read their board-allowed chats with `openwa_linked_list` and `openwa_linked_read` when an owner asks; never send through them and never copy their content anywhere unless the owner asks.",
+        ]
+      : []),
     "- Live grants: " + (grantLines.length > 0 ? "" : "none."),
     ...grantLines,
     "- " + replyLine,

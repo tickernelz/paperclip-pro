@@ -21,6 +21,8 @@ describe("OpenWA tool catalog", () => {
       ["openwa_handoff", "write"],
       ["openwa_catalog", "read"],
       ["openwa_endpoint_config", "write"],
+      ["openwa_linked_list", "read"],
+      ["openwa_linked_read", "read"],
       ["openwa_describe", "read"],
       ["openwa_call", "write"],
     ]);
@@ -65,6 +67,24 @@ describe("OpenWA tool catalog", () => {
     const resolve = openwaTool("openwa_approval_resolve")!.schema;
     expect(resolve.safeParse({ requestId: key, decision: "approve" }).success).toBe(true);
     expect(resolve.safeParse({ requestId: key, decision: "maybe" }).success).toBe(false);
+  });
+
+  it("validates linked-number tool shapes and keeps them read-only", () => {
+    const list = openwaTool("openwa_linked_list")!;
+    const read = openwaTool("openwa_linked_read")!;
+    const linkedRef = "9c0dc094-41b6-4d84-a2f1-1df331774489";
+    expect([list.risk, read.risk]).toEqual(["read", "read"]);
+    expect(list.schema.safeParse({}).success).toBe(true);
+    expect(list.schema.safeParse({ linkedRef }).success).toBe(false);
+    expect(read.schema.safeParse({ linkedRef, chat: "openwa:s1:628111222333@c.us" }).success).toBe(true);
+    expect(read.schema.safeParse({ linkedRef, chat: "120363000000000001@g.us", limit: 100, cursor: "l:50" }).success).toBe(true);
+    expect(read.schema.safeParse({ chat: "628111222333@c.us" }).success).toBe(false);
+    expect(read.schema.safeParse({ linkedRef: "not-a-uuid", chat: "628111222333@c.us" }).success).toBe(false);
+    expect(read.schema.safeParse({ linkedRef }).success).toBe(false);
+    expect(read.schema.safeParse({ linkedRef, chat: "628111222333@c.us", limit: 101 }).success).toBe(false);
+    expect(read.schema.safeParse({ linkedRef, chat: "628111222333@c.us", text: "hi" }).success).toBe(false);
+    expect(z.toJSONSchema(read.schema)).toMatchObject({ required: ["linkedRef", "chat"] });
+    for (const tool of [list, read]) expect(tool.description).toMatch(/Owner-triggered runs only/);
   });
 
   it("validates endpoint config shapes and leaves Paperclip-only settings out of the schema", () => {

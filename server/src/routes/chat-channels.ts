@@ -20,6 +20,8 @@ import {
   createOpenwaSenderRuleSchema,
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
+  linkOpenwaSessionSchema,
+  updateOpenwaLinkedChatsSchema,
   confirmChatIdentityLinkSchema,
   createChatEndpointSchema,
   createChatIdentityLinkIntentSchema,
@@ -398,6 +400,49 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
       throw badRequest("limit must be 1-500 and offset 0-100000");
     res.set("Cache-Control", "no-store");
     res.json(await service.openwa.gatewayChats(endpointId(req), { limit, offset }));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/linked-sessions", async (req, res) => {
+    if (!(await assertEndpointAccess(req, res, service))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaLinked.list(endpointId(req)));
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/linkable-sessions", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaLinked.linkableSessions(endpointId(req)));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/linked-sessions", validate(linkOpenwaSessionSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.status(201).json(await service.openwaLinked.link(endpointId(req), req.body, actorUserId(req)));
+  });
+
+  router.put("/chat-endpoints/:endpointId/openwa/linked-sessions/:linkedId/chats", validate(updateOpenwaLinkedChatsSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.linkedId as string)) throw badRequest("A valid linked number id is required");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaLinked.updateAllowedChats(endpointId(req), req.params.linkedId as string, req.body.chats, actorUserId(req)));
+  });
+
+  router.delete("/chat-endpoints/:endpointId/openwa/linked-sessions/:linkedId", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.linkedId as string)) throw badRequest("A valid linked number id is required");
+    await service.openwaLinked.unlink(endpointId(req), req.params.linkedId as string, actorUserId(req));
+    res.status(204).end();
+  });
+
+  router.get("/chat-endpoints/:endpointId/openwa/linked-sessions/:linkedId/gateway-chats", async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    if (!isUuidLike(req.params.linkedId as string)) throw badRequest("A valid linked number id is required");
+    const limit = req.query.limit === undefined ? 200 : Number(req.query.limit);
+    const offset = req.query.offset === undefined ? 0 : Number(req.query.offset);
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500 || !Number.isInteger(offset) || offset < 0 || offset > 100_000)
+      throw badRequest("limit must be 1-500 and offset 0-100000");
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaLinked.gatewayChats(endpointId(req), req.params.linkedId as string, { limit, offset }));
   });
 
   router.get("/chat-endpoints/:endpointId/openwa/health", async (req, res) => {

@@ -2010,6 +2010,13 @@
       "when": 1791038261567,
       "tag": "0288_exotic_daimon_hellstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 289,
+      "version": "7",
+      "when": 1791131037987,
+      "tag": "0289_talented_fabian_cortez",
+      "breakpoints": true
     }
   ]
 }

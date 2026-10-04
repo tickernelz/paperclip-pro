@@ -38,6 +38,7 @@ export const AUDIT_KIND_LABELS: Record<ChatAuditEntryKind, string> = {
   group_added: "Added to group",
   group_left: "Left group",
   session_health: "Session health",
+  linked_read: "Linked number read",
 };
 
 export function mergeOpenwaPolicy(policy: OpenwaEndpointPolicy, patch: OpenwaEndpointPolicyInput): Record<string, unknown> {

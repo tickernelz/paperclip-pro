@@ -15,6 +15,7 @@ import {
   chatEndpoints,
   chatExternalPrincipals,
   chatIdentityLinks,
+  chatOpenwaLinkedSessions,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   companies,
@@ -404,6 +405,25 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(other.wake.policy).toMatchObject({ replyAllowed: true, allowedCategories: [], approvalRequired: ["create_task", "external_tools", "cross_chat_send", "wa_admin"] });
     expect(other.wake.messages.map((message) => message.text)).toEqual(["Halo, ada update?"]);
     expect(other.wake.messages[0]).toMatchObject({ triggerId: otherDelivery.id, id: otherDelivery.waMessageId, sender: { role: "allowed", name: "Member Budi" } });
+  });
+
+  it("names linked read-only numbers in owner runs only", async () => {
+    const seed = await seedOpenwa();
+    await db.insert(chatOpenwaLinkedSessions).values({
+      companyId: seed.companyId,
+      endpointId: seed.endpointId,
+      sessionId: randomUUID(),
+      label: "Zhafron pribadi",
+      secretId: randomUUID(),
+      gatewayKeyId: "key-1",
+    });
+    const owner = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [(await seedDelivery(seed, { text: "cek chat keluarga", role: "owner" })).id] });
+    const other = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "halo" })).id] });
+    expect(owner.full).toContain('Linked read-only numbers (owner runs only): "Zhafron pribadi"');
+    expect(owner.full).toContain("`openwa_linked_read`");
+    expect(owner.full).toContain("never send through them");
+    expect(other.full).not.toContain("Linked read-only numbers");
+    expect(other.full).not.toContain("openwa_linked_read");
   });
 
   it("does not count the synthetic group_added delivery as an omitted message", async () => {

@@ -36,6 +36,35 @@ export interface FakeStoredRow extends OpenwaStoredMessage {
   sequence: number;
 }
 
+export interface FakeApiKey {
+  id: string;
+  name: string;
+  role: "viewer" | "operator" | "admin";
+  allowedSessions: string[];
+  apiKey: string;
+  active: boolean;
+}
+
+export interface FakeLinkedMessage {
+  id: string;
+  chatId: string;
+  from: string;
+  body: string;
+  fromMe: boolean;
+  timestamp: number;
+  author?: string;
+}
+
+export interface FakeLinkedSession {
+  id: string;
+  name: string;
+  phone: string;
+  pushName: string | null;
+  status: string;
+  chats: Array<{ id: string; name?: string; timestamp?: number }>;
+  messages: FakeLinkedMessage[];
+}
+
 export interface FakeGatewayOptions {
   sessionId: string;
   ownPhone: string;
@@ -56,7 +85,9 @@ export class FakeOpenwaGateway {
   strictQuotes = false;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
-  readonly requests: Array<{ method: string; path: string; query: Record<string, string>; key?: "operator" | "admin" | null }> = [];
+  readonly requests: Array<{ method: string; path: string; query: Record<string, string>; key?: "operator" | "admin" | "scoped" | null }> = [];
+  readonly apiKeys = new Map<string, FakeApiKey>();
+  readonly linkedSessions = new Map<string, FakeLinkedSession>();
   engine = "whatsapp-web.js";
   generic = false;
   readonly overrides: FakeOverride[] = [];
@@ -224,12 +255,54 @@ export class FakeOpenwaGateway {
     await new Promise<void>((resolve) => (this.http?.listening ? this.http.close(() => resolve()) : resolve()));
   }
 
+  addLinkedSession(input: { id: string; phone: string; name?: string; pushName?: string | null }): FakeLinkedSession {
+    const session: FakeLinkedSession = {
+      id: input.id,
+      name: input.name ?? "linked-" + input.id.slice(0, 8),
+      phone: input.phone,
+      pushName: input.pushName ?? null,
+      status: "ready",
+      chats: [],
+      messages: [],
+    };
+    this.linkedSessions.set(session.id, session);
+    return session;
+  }
+
+  linkedMessage(sessionId: string, input: { chatId: string; body: string; fromMe?: boolean; author?: string; timestamp?: number }): FakeLinkedMessage {
+    const session = this.linkedSessions.get(sessionId);
+    if (!session) throw new Error("unknown linked session " + sessionId);
+    const sequence = ++this.sequence;
+    const message: FakeLinkedMessage = {
+      id: (input.fromMe ? "true_" : "false_") + input.chatId + "_L" + String(sequence).padStart(8, "0"),
+      chatId: input.chatId,
+      from: input.fromMe ? session.phone + "@c.us" : input.chatId,
+      body: input.body,
+      fromMe: input.fromMe === true,
+      timestamp: input.timestamp ?? Math.floor(Date.now() / 1000) + sequence,
+      ...(input.author ? { author: input.author } : {}),
+    };
+    session.messages.push(message);
+    return message;
+  }
+
+  private ownSessionView() {
+    const now = new Date().toISOString();
+    return { id: this.sessionId, name: "agent", status: "ready", phone: this.ownJid.split("@")[0], pushName: "Agent", createdAt: now, updatedAt: now, engineLoaded: true };
+  }
+
+  private linkedSessionView(session: FakeLinkedSession) {
+    const now = new Date().toISOString();
+    return { id: session.id, name: session.name, status: session.status, phone: session.phone, pushName: session.pushName, createdAt: now, updatedAt: now, engineLoaded: true };
+  }
+
   private async handle(req: IncomingMessage, res: ServerResponse): Promise<void> {
     const url = new URL(req.url ?? "/", this.baseUrl);
     const query = Object.fromEntries(url.searchParams);
     const apiKey = req.headers["x-api-key"];
+    const scoped = typeof apiKey === "string" ? [...this.apiKeys.values()].find((entry) => entry.apiKey === apiKey) : undefined;
     const key = apiKey === FAKE_OPENWA_KEY ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
-    this.requests.push({ method: req.method ?? "GET", path: url.pathname, query, key });
+    this.requests.push({ method: req.method ?? "GET", path: url.pathname, query, key: scoped ? "scoped" : key });
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(chunk as Buffer);
     if (this.restLatencyMs > 0) await new Promise((resolve) => setTimeout(resolve, this.restLatencyMs));
@@ -246,6 +319,74 @@ export class FakeOpenwaGateway {
     if (req.method === "POST" && url.pathname === "/api/auth/validate") {
       if (!key) return reply(401, { message: "Unauthorized" });
       return reply(200, { valid: true, role: key === "admin" ? "admin" : "operator", engineType: this.engine });
+    }
+    const body = () => JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as Record<string, unknown>;
+    if (req.method === "POST" && url.pathname === "/api/auth/api-keys") {
+      if (key !== "admin") return reply(key || scoped ? 403 : 401, { message: "Admin role required" });
+      const input = body();
+      const entry: FakeApiKey = {
+        id: randomUUID(),
+        name: String(input.name),
+        role: (input.role as FakeApiKey["role"]) ?? "operator",
+        allowedSessions: Array.isArray(input.allowedSessions) ? input.allowedSessions.map(String) : [],
+        apiKey: "owa_k1_scoped_" + randomUUID().replaceAll("-", ""),
+        active: true,
+      };
+      this.apiKeys.set(entry.id, entry);
+      return reply(201, { ...entry, keyPrefix: entry.apiKey.slice(0, 12), isActive: true, usageCount: 0, createdAt: new Date().toISOString() });
+    }
+    const revokeKey = /^\/api\/auth\/api-keys\/([^/]+)\/revoke$/.exec(url.pathname);
+    if (req.method === "POST" && revokeKey && !this.generic) {
+      if (key !== "admin") return reply(key || scoped ? 403 : 401, { message: "Admin role required" });
+      const entry = this.apiKeys.get(decodeURIComponent(revokeKey[1]!));
+      if (!entry) return reply(404, { message: "API key not found" });
+      entry.active = false;
+      return reply(200, { id: entry.id, name: entry.name, role: entry.role, isActive: false });
+    }
+    if (key === "admin" && req.method === "GET" && url.pathname === "/api/sessions")
+      return reply(200, [this.ownSessionView(), ...[...this.linkedSessions.values()].map((session) => this.linkedSessionView(session))]);
+    const adminSession = /^\/api\/sessions\/([^/]+)$/.exec(url.pathname);
+    if (key === "admin" && req.method === "GET" && adminSession && !this.generic) {
+      const id = decodeURIComponent(adminSession[1]!);
+      const linked = this.linkedSessions.get(id);
+      if (linked) return reply(200, this.linkedSessionView(linked));
+      if (id === this.sessionId) return reply(200, this.ownSessionView());
+      return reply(404, { message: "Session not found" });
+    }
+    if (scoped) {
+      if (!scoped.active) return reply(401, { message: "Unauthorized" });
+      const match = /^\/api\/sessions\/([^/]+)(\/.*)?$/.exec(url.pathname);
+      const sessionId = match ? decodeURIComponent(match[1]!) : null;
+      if (!sessionId || !scoped.allowedSessions.includes(sessionId)) return reply(403, { message: "API key is not allowed to access this session" });
+      if (req.method !== "GET" && scoped.role === "viewer") return reply(403, { message: "Insufficient role" });
+      const session = this.linkedSessions.get(sessionId);
+      if (!session) return reply(404, { message: "Session not found" });
+      const rest = match![2] ?? "";
+      if (req.method === "GET" && rest === "") return reply(200, this.linkedSessionView(session));
+      if (req.method === "GET" && rest === "/chats") return reply(200, session.chats);
+      const linkedHistory = /^\/messages\/([^/]+)\/history$/.exec(rest);
+      if (req.method === "GET" && linkedHistory) {
+        const chatId = decodeURIComponent(linkedHistory[1]!);
+        const limit = Number(query.limit ?? 50);
+        const rows = session.messages.filter((message) => message.chatId === chatId).sort((a, b) => b.timestamp - a.timestamp).slice(0, limit);
+        return reply(
+          200,
+          rows.map((message) => ({
+            id: message.id,
+            from: message.from,
+            to: message.fromMe ? chatId : session.phone + "@c.us",
+            chatId,
+            body: message.body,
+            type: "chat",
+            timestamp: message.timestamp,
+            fromMe: message.fromMe,
+            isGroup: chatId.endsWith("@g.us"),
+            kind: chatId.endsWith("@g.us") ? "group" : "individual",
+            ...(message.author ? { author: message.author } : {}),
+          })),
+        );
+      }
+      return reply(404, { message: "Not found" });
     }
     const open = this.generic && !apiKey && UNAUTHENTICATED_PATH.test(url.pathname);
     if (!open && (key === null || (key === "admin" && !this.generic))) return reply(401, { message: "Unauthorized" });

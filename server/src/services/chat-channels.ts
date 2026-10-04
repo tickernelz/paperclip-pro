@@ -49,6 +49,7 @@ import {
   revokeOpenwaGrantsOfFormerOwners,
   syncOpenwaGroupActivation,
 } from "./openwa/owners.js";
+import { openwaLinkedService } from "./openwa/linked.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa/authority.js";
 import { issueReferenceService } from "./issue-references.js";
@@ -39067,6 +39068,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     invalidate: (endpointId) => openwaPolicies.invalidate(endpointId),
   });
 
+  const openwaLinked = openwaLinkedService(db, {
+    adminApiKey: async (endpoint) => (await resolveCredentials(endpoint)).adminApiKey || null,
+    fetchImpl,
+  });
+
   const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
     async resolve(endpoint) {
       const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
@@ -39074,6 +39080,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       return { gateway: adapter.gateway, registry: openwaOutbound, media: openwaMedia, storage: options.storage };
     },
     owners: openwaOwners,
+    linked: openwaLinked,
   });
 
   const unregisterSlackTaskAuthority = registerSlackTaskAuthority(db, async (binding) => {
@@ -39160,6 +39167,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     listResources,
     replaceResources,
     openwa: openwaOwners,
+    openwaLinked,
     openwaPolicies,
     openwaApprovals: openwaApprovalService(db),
     openwaAdmissionStats: openwaAdmission.stats,

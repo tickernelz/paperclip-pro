@@ -207,6 +207,22 @@ export interface OpenwaContactPhone {
   phone: string | null;
 }
 
+export interface OpenwaApiKeyCreated {
+  id: string;
+  name: string;
+  role: "admin" | "operator" | "viewer";
+  allowedSessions?: string[] | null;
+  apiKey: string;
+}
+
+export interface OpenwaChatSummary {
+  id: string;
+  name?: string | null;
+  isGroup?: boolean;
+  timestamp?: number | null;
+  [key: string]: unknown;
+}
+
 export interface OpenwaNumberCheck {
   number: string;
   exists: boolean;
@@ -236,7 +252,11 @@ export interface OpenwaGatewayClient {
   openApiVersion(): Promise<string>;
   validateKey(which?: "operator" | "admin"): Promise<OpenwaKeyValidation>;
   listSessions(): Promise<OpenwaSession[]>;
+  listAllSessions(): Promise<OpenwaSession[]>;
   getSession(): Promise<OpenwaSession>;
+  createApiKey(input: { name: string; role: "viewer" | "operator" | "admin"; allowedSessions: string[] }): Promise<OpenwaApiKeyCreated>;
+  revokeApiKey(id: string): Promise<void>;
+  listChats(input?: { limit?: number; offset?: number }): Promise<OpenwaChatSummary[]>;
   sendText(input: {
     chatId: string;
     text: string;
@@ -702,7 +722,18 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     openApiVersion,
     validateKey,
     listSessions: () => json<OpenwaSession[]>("SessionController_findAll"),
+    listAllSessions: () => json<OpenwaSession[]>("SessionController_findAll", {}, { useAdminKey: true }),
     getSession: () => json<OpenwaSession>("SessionController_findOne"),
+    createApiKey: (input) => json<OpenwaApiKeyCreated>("AuthController_create", { name: input.name, role: input.role, allowedSessions: input.allowedSessions }),
+    revokeApiKey: async (id) => {
+      await call("AuthController_revoke", { id });
+    },
+    listChats: (input = {}) => {
+      const args: Record<string, unknown> = {};
+      if (input.limit !== undefined) args.limit = String(input.limit);
+      if (input.offset !== undefined) args.offset = String(input.offset);
+      return json<OpenwaChatSummary[]>("SessionController_getChats", args);
+    },
     sendText: (input) => json<OpenwaSendResult>("MessageController_sendText", { ...input }),
     async sendMedia(input) {
       const { kind, ...rest } = input;

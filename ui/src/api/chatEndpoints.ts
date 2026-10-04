@@ -19,6 +19,10 @@ import type {
   ChatOwnerApprovalStatus,
   ChatOwnerGrantScope,
   OpenwaGrantCategory,
+  OpenwaLinkableSession,
+  OpenwaLinkedChat,
+  OpenwaLinkedGatewayChat,
+  OpenwaLinkedSessionView,
   ChatPublicationBatchStatus,
   ChatPublicationState,
   ChatPublicationSummary,
@@ -375,6 +379,18 @@ export const chatEndpointsApi = {
     api.put<OpenwaChat>(`/chat-endpoints/${endpointId}/openwa/chats`, input),
   listOpenwaGatewayChats: (endpointId: string) =>
     api.get<OpenwaGatewayChat[]>(`/chat-endpoints/${endpointId}/openwa/gateway-chats?limit=200`, { cache: "no-store" }),
+  listOpenwaLinkedSessions: (endpointId: string) =>
+    api.get<OpenwaLinkedSessionView[]>(`/chat-endpoints/${endpointId}/openwa/linked-sessions`, { cache: "no-store" }),
+  listOpenwaLinkableSessions: (endpointId: string) =>
+    api.get<OpenwaLinkableSession[]>(`/chat-endpoints/${endpointId}/openwa/linkable-sessions`, { cache: "no-store" }),
+  linkOpenwaSession: (endpointId: string, input: { sessionId: string; label: string }) =>
+    api.post<OpenwaLinkedSessionView>(`/chat-endpoints/${endpointId}/openwa/linked-sessions`, input),
+  updateOpenwaLinkedChats: (endpointId: string, linkedId: string, chats: OpenwaLinkedChat[]) =>
+    api.put<OpenwaLinkedSessionView>(`/chat-endpoints/${endpointId}/openwa/linked-sessions/${linkedId}/chats`, { chats }),
+  unlinkOpenwaSession: (endpointId: string, linkedId: string) =>
+    api.delete<void>(`/chat-endpoints/${endpointId}/openwa/linked-sessions/${linkedId}`),
+  listOpenwaLinkedGatewayChats: (endpointId: string, linkedId: string) =>
+    api.get<OpenwaLinkedGatewayChat[]>(`/chat-endpoints/${endpointId}/openwa/linked-sessions/${linkedId}/gateway-chats?limit=500`, { cache: "no-store" }),
   listOpenwaApprovals: (endpointId: string, status?: ChatOwnerApprovalStatus) =>
     api.get<OpenwaApproval[]>(`/chat-endpoints/${endpointId}/openwa/approvals${status ? "?status=" + status : ""}`, { cache: "no-store" }),
   resolveOpenwaApproval: (endpointId: string, requestId: string, input: OpenwaApprovalResolveInput) =>

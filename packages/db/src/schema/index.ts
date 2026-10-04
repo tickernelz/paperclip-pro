@@ -62,6 +62,7 @@ export {
   chatEndpointLeases,
   chatSdkState,
   chatEndpointOwners,
+  chatOpenwaLinkedSessions,
   chatSenderRules,
   chatScheduledWakes,
   chatOwnerApprovalRequests,

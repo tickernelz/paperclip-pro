@@ -23,6 +23,7 @@ const mocks = vi.hoisted(() => ({
     listOpenwaChats: vi.fn(),
     updateOpenwaChat: vi.fn(),
     listOpenwaGatewayChats: vi.fn(),
+    listOpenwaLinkedSessions: vi.fn(),
     setup: vi.fn(),
   },
   getAgent: vi.fn(),
@@ -87,6 +88,7 @@ describe("OpenWA settings", () => {
         participantCount: 4,
       },
     ]);
+    mocks.api.listOpenwaLinkedSessions.mockResolvedValue([]);
     mocks.api.listOpenwaGatewayChats.mockResolvedValue([
       { chatId: "628555000555@c.us", isGroup: false, name: "+62xxx...0555", lastActivityAt: null, activation: "auto", configured: false },
     ]);

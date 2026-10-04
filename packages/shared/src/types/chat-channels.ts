@@ -592,6 +592,43 @@ export interface OpenwaEndpointHealth {
   checkedAt: string;
 }
 
+export const OPENWA_LINKED_SESSION_STATUSES = ["active", "unavailable"] as const;
+export type OpenwaLinkedSessionStatus = (typeof OPENWA_LINKED_SESSION_STATUSES)[number];
+
+export interface OpenwaLinkedChat {
+  chatId: string;
+  label: string;
+  isGroup: boolean;
+}
+
+/** A read-only OpenWA session linked to an endpoint; never carries its key or secret id. */
+export interface OpenwaLinkedSessionView {
+  id: string;
+  sessionId: string;
+  label: string;
+  phoneMasked: string | null;
+  pushName: string | null;
+  status: OpenwaLinkedSessionStatus;
+  allowedChats: OpenwaLinkedChat[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OpenwaLinkableSession {
+  sessionId: string;
+  name: string;
+  status: string;
+  phoneMasked: string | null;
+  pushName: string | null;
+}
+
+export interface OpenwaLinkedGatewayChat {
+  chatId: string;
+  isGroup: boolean;
+  name: string;
+  allowed: boolean;
+}
+
 export const CHAT_INFLIGHT_MODES = ["steer", "queue"] as const;
 export type ChatInflightMode = (typeof CHAT_INFLIGHT_MODES)[number];
 
@@ -676,6 +713,7 @@ export const CHAT_AUDIT_ENTRY_KINDS = [
   "group_added",
   "group_left",
   "session_health",
+  "linked_read",
 ] as const;
 export type ChatAuditEntryKind = (typeof CHAT_AUDIT_ENTRY_KINDS)[number];
 

@@ -4128,7 +4128,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/owners",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/openwa/owners",
-    "description": "Add an OpenWA owner. Requires connection-management access. Registers an E.164 WhatsApp number as an owner and, unless that number is already linked, returns a short-lived identity-link confirmation URL. The owner gains authority only after a Paperclip user with active, non-viewer membership confirms the link. Returns 201 when a new owner row is created and 200 when it already existed. Records openwa.owner_added.",
+    "description": "Add an OpenWA owner. Registers an E.164 WhatsApp number as an owner and, unless that number is already linked, returns a short-lived identity-link confirmation URL. The owner gains authority only after a Paperclip user with active, non-viewer membership confirms the link. Returns 201 when a new owner row is created and 200 when it already existed. Records openwa.owner_added.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -4181,7 +4181,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/sender-rules",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/openwa/sender-rules",
-    "description": "Add an OpenWA sender rule. Requires connection-management access. Adds an E.164 number to the allowlist or denylist; re-adding an existing entry updates its label. Owners are never blocked by the denylist. Records openwa.sender_rule_changed with a masked number.",
+    "description": "Add an OpenWA sender rule. Adds an E.164 number to the allowlist or denylist; re-adding an existing entry updates its label. Owners are never blocked by the denylist. Records openwa.sender_rule_changed with a masked number.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -4233,6 +4233,60 @@
         "required": [
           "e164",
           "list"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateChatEndpointOpenwaSession",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/linked-sessions",
+    "description": "Link a read-only OpenWA number. Creates a viewer OpenWA API key scoped to the session with the endpoint's admin key, stores it as a Paperclip-managed secret, and links the session with no allowed chats. Fails 422 openwa_admin_key_required without an admin key and 422 openwa_linked_is_agent_session for the agent's own session. Records openwa.linked_session_added.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "sessionId"
         ]
       }
     }
@@ -12317,7 +12371,7 @@
     "operationId": "DELETE /api/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
     "method": "DELETE",
     "path": "/chat-endpoints/{endpointId}/openwa/owners/{ownerId}",
-    "description": "Remove an OpenWA owner. Requires connection-management access. Removes the owner role; the identity link itself is kept. Records openwa.owner_removed.",
+    "description": "Remove an OpenWA owner. Removes the owner role; the identity link itself is kept. Records openwa.owner_removed.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -12359,7 +12413,7 @@
     "operationId": "DELETE /api/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
     "method": "DELETE",
     "path": "/chat-endpoints/{endpointId}/openwa/sender-rules/{ruleId}",
-    "description": "Remove an OpenWA sender rule. Requires connection-management access. Records openwa.sender_rule_changed.",
+    "description": "Remove an OpenWA sender rule. Records openwa.sender_rule_changed.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -12388,6 +12442,48 @@
       },
       {
         "name": "ruleId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteChatEndpointOpenwaSession",
+    "operationId": "DELETE /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}",
+    "method": "DELETE",
+    "path": "/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}",
+    "description": "Unlink a read-only OpenWA number. Revokes the viewer key on the gateway, removes the link, and deletes the stored secret. Records openwa.linked_session_removed.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "linkedId",
         "in": "path",
         "required": true,
         "schema": {
@@ -16567,7 +16663,7 @@
     "operationId": "GET /api/chat-endpoints/{endpointId}/github/configuration",
     "method": "GET",
     "path": "/chat-endpoints/{endpointId}/github/configuration",
-    "description": "Read GitHub bot review configuration. Returns saved company-scoped configuration and its revision, or disabled defaults for an existing chat connection. Requires connection-management access.",
+    "description": "Read GitHub bot review configuration. Returns saved company-scoped configuration and its revision, or disabled defaults for an existing chat connection.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -17956,7 +18052,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:630",
+    "boardGuard": "assertBoard@chat-channels.ts:675",
     "authorityCapability": null,
     "parameters": [
       {
@@ -23814,11 +23910,69 @@
     ]
   },
   {
+    "name": "paperclipListChatChats",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/gateway-chats",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/gateway-chats",
+    "description": "List a linked number's chats for the allowlist picker. Reads the linked session's chats with its viewer key: names and ids only, never message bodies. Direct-chat names are masked. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "linkedId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListChatEndpointChats",
     "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/gateway-chats",
     "method": "GET",
     "path": "/chat-endpoints/{endpointId}/openwa/gateway-chats",
-    "description": "List chats from the OpenWA gateway for the chat picker. Requires connection-management access. Reads the session's chats from the gateway and annotates each with its configured activation. Direct-chat names are masked. Responses are not cached.",
+    "description": "List chats from the OpenWA gateway for the chat picker. Reads the session's chats from the gateway and annotates each with its configured activation. Direct-chat names are masked. Responses are not cached.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -24116,6 +24270,40 @@
     ]
   },
   {
+    "name": "paperclipListChatEndpointOpenwaSessions",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/linkable-sessions",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/linkable-sessions",
+    "description": "List gateway sessions that can be linked. Requires connection-management access and the endpoint's OpenWA admin key. Lists gateway sessions other than the agent's own session and those already linked. Numbers are masked.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListChatEndpointPrincipals",
     "operationId": "GET /api/chat-endpoints/{endpointId}/principals",
     "method": "GET",
@@ -24205,11 +24393,45 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:163",
+    "boardGuard": "assertBoard@chat-channels.ts:165",
     "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListChatEndpointSessions",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/linked-sessions",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/openwa/linked-sessions",
+    "description": "List linked read-only OpenWA numbers. Lists OpenWA sessions linked to this endpoint for owner-run reads, with their allowed chats. Never returns the viewer key or its secret id. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
         "in": "path",
         "required": true,
         "schema": {
@@ -34225,7 +34447,7 @@
     "operationId": "PUT /api/chat-endpoints/{endpointId}/openwa/chats",
     "method": "PUT",
     "path": "/chat-endpoints/{endpointId}/openwa/chats",
-    "description": "Save OpenWA per-chat settings. Requires connection-management access. Upserts activation (off, on, auto), trigger overrides, absence seconds, and reply policy for one chat. Per-chat settings win over endpoint defaults. Records openwa.chat_activation_changed and openwa.config_changed.",
+    "description": "Save OpenWA per-chat settings. Upserts activation (off, on, auto), trigger overrides, absence seconds, and reply policy for one chat. Per-chat settings win over endpoint defaults. Records openwa.chat_activation_changed and openwa.config_changed.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -34337,6 +34559,83 @@
         "required": [
           "chatId",
           "settings"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetChatEndpointOpenwaLinkedChat",
+    "operationId": "PUT /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/chats",
+    "method": "PUT",
+    "path": "/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/chats",
+    "description": "Replace the allowed chats of a linked OpenWA number. Replaces the chat allowlist the assigned agent may read in owner-triggered runs. Records openwa.linked_session_chats_changed with counts only.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "linkedId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "chats": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "chatId": {
+                  "type": "string"
+                },
+                "isGroup": {
+                  "type": "boolean"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "chatId",
+                "isGroup",
+                "label"
+              ]
+            }
+          }
+        },
+        "required": [
+          "chats"
         ]
       }
     }
@@ -39353,7 +39652,7 @@
     "operationId": "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
     "method": "PATCH",
     "path": "/chat-endpoints/{endpointId}/openwa/policy",
-    "description": "Update the OpenWA endpoint policy. Requires connection-management access. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. The optional inflightMode key (steer or queue) sets how messages arriving during a run are handled and is stored outside the policy. Records openwa.config_changed with the changed keys only, plus inflightMode before/after when it changed.",
+    "description": "Update the OpenWA endpoint policy. Merges the patch into the stored policy, validates the result against the full OpenWA policy schema, and bumps the policy revision when anything changed. The optional inflightMode key (steer or queue) sets how messages arriving during a run are handled and is stored outside the policy. Records openwa.config_changed with the changed keys only, plus inflightMode before/after when it changed.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -43579,7 +43878,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/github/verify",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/github/verify",
-    "description": "Verify GitHub bot and assigned-agent capabilities. Separately checks signed delivery, App identity, current repository permissions, effective tool access, and runtime support. Requires connection-management access.",
+    "description": "Verify GitHub bot and assigned-agent capabilities. Separately checks signed delivery, App identity, current repository permissions, effective tool access, and runtime support.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",

@@ -418,6 +418,29 @@ export const updateOpenwaChatSettingsSchema = z
   })
   .strict();
 
+export const openwaLinkedChatSchema = z
+  .object({
+    chatId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}@(c\.us|g\.us|lid)$/),
+    label: z.string().trim().min(1).max(200),
+    isGroup: z.boolean(),
+  })
+  .strict();
+
+export const linkOpenwaSessionSchema = z
+  .object({
+    sessionId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}$/),
+    label: z.string().trim().min(1).max(120),
+  })
+  .strict();
+
+export const updateOpenwaLinkedChatsSchema = z
+  .object({ chats: z.array(openwaLinkedChatSchema).max(500) })
+  .strict()
+  .superRefine((value, ctx) => {
+    if (new Set(value.chats.map((chat) => chat.chatId.toLowerCase())).size !== value.chats.length)
+      ctx.addIssue({ code: "custom", path: ["chats"], message: "Each chat may be selected once" });
+  });
+
 export const updateOpenwaEndpointPolicySchema = z.looseObject({ inflightMode: chatInflightModeSchema.optional() });
 
 export const resolveOpenwaApprovalSchema = z
