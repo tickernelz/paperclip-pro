@@ -70,7 +70,15 @@ act beyond the run's facts. Silence never approves anything.
   `contact` (`contact: {name, number}`) or `poll`
   (`poll: {question, options, multi?}`).
 - Media (`image`, `video`, `audio`, `voice`, `document`, `sticker`) comes from an
-  attachment of this task (`attachmentId`); `text` is then the caption.
+  attachment of this task (`attachmentId`); `text` is then the caption. To send
+  a file you made or downloaded, first upload it to this conversation issue with
+  the Paperclip skill's `paperclip-upload-artifact.sh FILE --no-work-product
+  --output json` and pass the returned attachment id. Received media is already
+  an attachment (`media[].attachmentId` in the wake event), so you can forward it
+  the same way.
+- Other message actions (react, reply, forward, edit, delete, pin, star, vote in
+  a poll) go through `openwa_call` with the matching `MessageController_*`
+  operation; check it with `openwa_describe` first.
 - Every send needs a fresh UUID `idempotencyKey`. Retry only with the same key and
   identical arguments. A result with `state: "uncertain"` or `"processing"` is
   not confirmed: retry later with the same key so the server reconciles it. Never
