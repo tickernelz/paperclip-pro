@@ -195,6 +195,18 @@ the health card belong here after the live window.
   `owner_absent` headline names the owner, owner mentions render as
   `owner:"<name>"`, and `openwa_find` marks owners. The same commit pins
   OpenWA 0.24.0. The journey is to be rerun on that build.
+- 14:55:48Z (2026.1004.11): the timer fired at 14:57:47Z. The agent asked the
+  owner through a `reply` approval with a summary and a suggested reply, and
+  posted a holding reply in the group that mentioned the owner (14:59:04Z).
+  The owner's quoted "ok" (15:00:53Z) woke `approval_reply`, but the agent
+  read it as a plain acknowledgement and stayed silent. At 15:42Z the owner
+  replied "ok" again and approved in Paperclip; both the `approval_reply` run
+  and the `approval_resolved` run posted the reply (15:43:11Z and 15:43:18Z).
+- Fixed in `f162248c3` and `b9f9efd63` (2026.1004.12): the reply approval is
+  the documented owner_absent route, `approval_reply` wakes open with a
+  headline to resolve, and an `approval_reply` run's send to the request's
+  chat fails with `approval_action_pending`, so only the `approval_resolved`
+  run posts. The journey is to be rerun on that build.
 
 ### Remaining journeys
 
