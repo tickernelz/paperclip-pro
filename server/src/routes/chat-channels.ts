@@ -430,8 +430,7 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
   router.delete("/chat-endpoints/:endpointId/openwa/linked-sessions/:linkedId", async (req, res) => {
     if (!(await assertEndpointManagementAccess(req, res))) return;
     if (!isUuidLike(req.params.linkedId as string)) throw badRequest("A valid linked number id is required");
-    await service.openwaLinked.unlink(endpointId(req), req.params.linkedId as string, actorUserId(req));
-    res.status(204).end();
+    res.json(await service.openwaLinked.unlink(endpointId(req), req.params.linkedId as string, actorUserId(req)));
   });
 
   router.get("/chat-endpoints/:endpointId/openwa/linked-sessions/:linkedId/gateway-chats", async (req, res) => {

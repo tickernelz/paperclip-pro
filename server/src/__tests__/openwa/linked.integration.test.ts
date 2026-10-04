@@ -36,6 +36,7 @@ import { openwaChatKey } from "../../services/openwa/outbound.js";
 import { executeOpenwaTool, OpenwaToolError } from "../../services/openwa/tools.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
 import { errorHandler } from "../../middleware/index.js";
+import { logger } from "../../middleware/logger.js";
 import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "55555555-6666-4777-8888-999999999999";
@@ -461,7 +462,8 @@ describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake g
     await executeOpenwaTool(db, binding, "openwa_linked_read", { linkedRef: linkedId, chat: FRIEND_DM });
 
     const removed = await request(app).delete(base + "/" + linkedId);
-    expect(removed.status).toBe(204);
+    expect(removed.status).toBe(200);
+    expect(removed.body).toEqual({ revoked: true });
     const key = scopedKeys(t)[0]!;
     expect(key.active).toBe(false);
     expect(t.gateway.requests.find((entry) => entry.method === "POST" && entry.path === "/api/auth/api-keys/" + key.id + "/revoke")?.key).toBe("admin");
@@ -484,6 +486,90 @@ describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake g
     expect(activity[0]!.details).toMatchObject({ linkedSessionId: linkedId, endpointId: t.endpointId, provider: "openwa" });
     expect(leaksKey(t, activity)).toBe(false);
     expect((await request(app).delete(base + "/" + linkedId)).status).toBe(404);
+  });
+
+  it("removing the endpoint revokes every linked key, deletes the rows and their secrets", async () => {
+    const t = await setup();
+    const { linkedId } = await linkWithChats(t);
+    const [row] = await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linkedId));
+    const key = scopedKeys(t)[0]!;
+
+    await t.service.configure(t.endpointId, { action: "remove" }, t.userId);
+
+    expect(await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.endpointId, t.endpointId))).toHaveLength(0);
+    expect(await db.select().from(companySecrets).where(eq(companySecrets.id, row!.secretId))).toHaveLength(0);
+    expect(key.active).toBe(false);
+    expect(t.gateway.requests.find((entry) => entry.method === "POST" && entry.path === "/api/auth/api-keys/" + key.id + "/revoke")?.key).toBe("admin");
+    const activity = await db
+      .select()
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.linked_session_removed")));
+    expect(activity).toHaveLength(1);
+    expect(activity[0]!.details).toMatchObject({ linkedSessionId: linkedId, reason: "endpoint_removed", revoked: true });
+    expect(leaksKey(t, activity)).toBe(false);
+  });
+
+  it("unlink still removes the row and secret when the gateway cannot revoke, and warns with the key name", async () => {
+    const t = await setup();
+    const c = await conversation(t, OWNER_DM);
+    const binding = await run(t, c, "owner");
+    const [endpointRow] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+
+    const failing = await linkWithChats(t);
+    const failingKey = scopedKeys(t).find((key) => key.active)!;
+    const override = { method: "POST", path: "/api/auth/api-keys/" + failingKey.id + "/revoke", status: 503, body: { message: "down" } };
+    t.gateway.overrides.push(override);
+    const brokenAdmin = await revokeFailureCase(t, failing.app, failing.base, failing.linkedId);
+    t.gateway.overrides.splice(t.gateway.overrides.indexOf(override), 1);
+    expect(failingKey.active).toBe(true);
+    expect(brokenAdmin.activity).toMatchObject({ linkedSessionId: failing.linkedId, reason: "unlinked", revoked: false });
+
+    const missing = await linkWithChats(t);
+    const missingKey = scopedKeys(t).find((key) => key.active && key.id !== failingKey.id)!;
+    const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.id, endpointRow!.connectionId));
+    await db
+      .update(toolConnections)
+      .set({ credentialSecretRefs: connection!.credentialSecretRefs.filter((ref) => ref.label !== "adminApiKey") })
+      .where(eq(toolConnections.id, endpointRow!.connectionId));
+    const before = t.gateway.requests.length;
+    await revokeFailureCase(t, missing.app, missing.base, missing.linkedId);
+    expect(t.gateway.requests.slice(before).some((entry) => entry.path.endsWith("/revoke"))).toBe(false);
+    expect(missingKey.active).toBe(true);
+
+    for (const linkedId of [failing.linkedId, missing.linkedId]) {
+      expect(await rejection(executeOpenwaTool(db, binding, "openwa_linked_read", { linkedRef: linkedId, chat: FRIEND_DM }))).toMatchObject({
+        code: "linked_session_unavailable",
+      });
+    }
+  });
+
+  async function revokeFailureCase(t: Fixture, app: express.Express, base: string, linkedId: string) {
+    const [row] = await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linkedId));
+    const warn = vi.spyOn(logger, "warn");
+    const response = await request(app).delete(base + "/" + linkedId);
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ revoked: false, warning: expect.stringContaining('"paperclip-linked-' + linkedId.slice(0, 8) + '"') });
+    expect(response.body.warning).toMatch(/OpenWA dashboard/);
+    expect(warn).toHaveBeenCalledWith(expect.objectContaining({ linkedSessionId: linkedId, gatewayKeyName: "paperclip-linked-" + linkedId.slice(0, 8) }), expect.stringContaining("OpenWA dashboard"));
+    warn.mockRestore();
+    expect(await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linkedId))).toHaveLength(0);
+    expect(await db.select().from(companySecrets).where(eq(companySecrets.id, row!.secretId))).toHaveLength(0);
+    expect(leaksKey(t, response.body)).toBe(false);
+    const activity = await db
+      .select()
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.linked_session_removed")));
+    return { activity: activity.find((entry) => (entry.details as { linkedSessionId?: string } | null)?.linkedSessionId === linkedId)?.details };
+  }
+
+  it("revokes a created key when the gateway returns an id without the key", async () => {
+    const t = await setup();
+    t.gateway.overrides.push({ method: "POST", path: "/api/auth/api-keys", status: 201, body: { id: "orphan-key-id", name: "paperclip-linked-x", role: "viewer" } });
+    const response = await request(boardApp(t)).post("/api/chat-endpoints/" + t.endpointId + "/openwa/linked-sessions").send({ sessionId: LINKED_SESSION_ID, label: "Zhafron" });
+    expect(response.status).toBe(502);
+    expect(response.body).toMatchObject({ code: "openwa_invalid_response" });
+    expect(t.gateway.requests.find((entry) => entry.method === "POST" && entry.path === "/api/auth/api-keys/orphan-key-id/revoke")?.key).toBe("admin");
+    expect(await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.endpointId, t.endpointId))).toHaveLength(0);
   });
 
   it("marks a linked number unavailable when the gateway stops accepting its key", async () => {

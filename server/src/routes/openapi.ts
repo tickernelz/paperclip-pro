@@ -2830,9 +2830,16 @@ registry.registerPath({
   tags: ["chat-channels"],
   summary: "Unlink a read-only OpenWA number",
   description:
-    "Requires connection-management access. Revokes the viewer key on the gateway, removes the link, and deletes the stored secret. Records openwa.linked_session_removed.",
+    "Requires connection-management access. Removes the link, deletes the stored secret, and records openwa.linked_session_removed. Revoking the viewer key on the gateway is best-effort: when the admin key is missing or rejected or the gateway is unreachable, the link is still removed and the response has revoked=false with a warning naming the key to revoke in the OpenWA dashboard.",
   request: { params: openwaLinkedParams },
-  responses: { 204: r.noContent, 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 422: r.unprocessable, ...openwaLinkedGatewayErrors },
+  responses: {
+    200: r.ok(z.object({ revoked: z.boolean(), warning: z.string().optional() }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+  },
 });
 
 registry.registerPath({

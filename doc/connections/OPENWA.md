@@ -466,9 +466,14 @@ The endpoint keeps its own agent number unchanged.
   key, linking fails 422 `openwa_admin_key_required`; add one under **Admin API
   key** first. The agent's own session cannot be linked (422
   `openwa_linked_is_agent_session`).
-- **Unlink** revokes the gateway key, removes the link and deletes the secret;
-  later reads fail `linked_session_unavailable`. When the gateway stops accepting
-  a key, the number shows **Unavailable** and must be linked again.
+- **Unlink** always removes the link and deletes the secret; later reads fail
+  `linked_session_unavailable`. Revoking the gateway key is best-effort: when the
+  admin key is missing or rejected or the gateway is unreachable, the response is
+  `revoked: false` with a warning naming the key (`paperclip-linked-<short id>`)
+  to revoke in the OpenWA dashboard, and the board shows that warning. Removing
+  the channel unlinks every linked number the same way before the admin key is
+  cleared. When the gateway stops accepting a key, the number shows
+  **Unavailable** and must be linked again.
 - **Audit.** Each agent read records a `linked_read` audit entry with the chat key,
   linked number id and message count, never content. Board changes record
   `openwa.linked_session_added`, `openwa.linked_session_chats_changed` (counts
@@ -482,7 +487,7 @@ Routes, all under `/api/chat-endpoints/:endpointId/openwa` and board-only:
 | `GET /linkable-sessions` | connection management, admin key | Gateway sessions that can be linked (excludes the agent session and linked ones) |
 | `POST /linked-sessions` `{sessionId, label}` | connection management | Link a number; returns 201 |
 | `PUT /linked-sessions/:linkedId/chats` `{chats: [{chatId, label, isGroup}]}` | connection management | Replace the allowed chats |
-| `DELETE /linked-sessions/:linkedId` | connection management | Unlink; returns 204 |
+| `DELETE /linked-sessions/:linkedId` | connection management | Unlink; returns `{ revoked, warning? }` |
 | `GET /linked-sessions/:linkedId/gateway-chats` | connection management | The linked session's chats for the picker |
 
 Table: `chat_openwa_linked_sessions` (migration 0289).

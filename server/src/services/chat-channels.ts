@@ -9905,6 +9905,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         // before secret-store cleanup. If that cleanup failed, a repeated
         // remove is the recovery operation; once refs are empty, retain the
         // normal already-removed conflict contract.
+        if (endpoint.provider === "openwa") await openwaLinked.removeForEndpoint(endpoint, actorUserId);
         if (record.credentialSecretRefs.length > 0) {
           await invalidateRuntime(endpoint.id).catch(() => undefined);
           if (endpoint.provider === "telegram") {
@@ -9987,6 +9988,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         await credentialLease.assertOwned(tx);
       });
       await invalidateRuntime(endpoint.id).catch(() => undefined);
+      if (endpoint.provider === "openwa") await openwaLinked.removeForEndpoint(endpoint, actorUserId);
       if (endpoint.provider === "telegram") {
         await credentialLease.assertOwned();
         const action = await stageTelegramMaintenance(

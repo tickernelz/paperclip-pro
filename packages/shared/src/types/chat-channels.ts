@@ -614,6 +614,12 @@ export interface OpenwaLinkedSessionView {
   updatedAt: string;
 }
 
+/** Unlink outcome; `warning` names the gateway key to revoke by hand when `revoked` is false. */
+export interface OpenwaLinkedUnlinkResult {
+  revoked: boolean;
+  warning?: string;
+}
+
 export interface OpenwaLinkableSession {
   sessionId: string;
   name: string;

@@ -17,6 +17,7 @@ function failureMessage(failure: unknown, fallback: string): string {
 
 export function OpenwaLinkedNumbers({ endpointId }: { endpointId: string }) {
   const [linking, setLinking] = useState(false);
+  const [unlinkWarning, setUnlinkWarning] = useState<string>();
   const linked = useQuery({
     queryKey: queryKeys.chatEndpoints.openwaLinkedSessions(endpointId),
     queryFn: () => chatEndpointsApi.listOpenwaLinkedSessions(endpointId),
@@ -35,10 +36,18 @@ export function OpenwaLinkedNumbers({ endpointId }: { endpointId: string }) {
       ) : (
         <ul className="divide-y divide-border border-y border-border">
           {linked.data.map((entry) => (
-            <LinkedNumberRow key={entry.id} endpointId={endpointId} linked={entry} />
+            <LinkedNumberRow key={entry.id} endpointId={endpointId} linked={entry} onUnlinked={setUnlinkWarning} />
           ))}
         </ul>
       )}
+      {unlinkWarning ? (
+        <div role="alert" className="flex items-start gap-2 rounded-md border border-border bg-muted p-2">
+          <p className="min-w-0 flex-1 text-xs text-foreground">{unlinkWarning}</p>
+          <Button size="sm" variant="ghost" onClick={() => setUnlinkWarning(undefined)}>
+            Dismiss
+          </Button>
+        </div>
+      ) : null}
       <Button size="sm" variant="outline" onClick={() => setLinking(true)}>
         Link a number
       </Button>
@@ -133,14 +142,17 @@ function LinkNumberDialog({ endpointId, onClose }: { endpointId: string; onClose
   );
 }
 
-function LinkedNumberRow({ endpointId, linked }: { endpointId: string; linked: OpenwaLinkedSessionView }) {
+function LinkedNumberRow({ endpointId, linked, onUnlinked }: { endpointId: string; linked: OpenwaLinkedSessionView; onUnlinked: (warning: string | undefined) => void }) {
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
   const [picking, setPicking] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const unlink = useMutation({
     mutationFn: () => chatEndpointsApi.unlinkOpenwaSession(endpointId, linked.id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaLinkedSessions(endpointId) }),
+    onSuccess: (result) => {
+      onUnlinked(result.revoked ? undefined : result.warning);
+      return queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaLinkedSessions(endpointId) });
+    },
     onError: (failure) => pushToast({ title: "Couldn't unlink the number", body: failureMessage(failure, "Try again."), tone: "error" }),
   });
   return (

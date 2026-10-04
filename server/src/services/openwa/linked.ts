@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import { chatEndpoints, chatOpenwaLinkedSessions, type Db } from "@tickernelz/paperclip-pro-db";
 import {
   maskOpenwaPhoneNumber,
@@ -7,6 +7,7 @@ import {
   type OpenwaLinkedChat,
   type OpenwaLinkedGatewayChat,
   type OpenwaLinkedSessionView,
+  type OpenwaLinkedUnlinkResult,
 } from "@tickernelz/paperclip-pro-shared";
 import { HttpError, badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
@@ -21,6 +22,7 @@ import { OpenwaToolError, fitPage, liveView, type ToolContext } from "./tools.js
 type EndpointRow = typeof chatEndpoints.$inferSelect;
 type LinkedRow = typeof chatOpenwaLinkedSessions.$inferSelect;
 type Args = Record<string, unknown>;
+type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 
 const GATEWAY_TIMEOUT_MS = 15_000;
 const LIVE_LIMIT = 100;
@@ -56,6 +58,10 @@ function view(row: LinkedRow): OpenwaLinkedSessionView {
 function maskedPhone(phone: string | null | undefined): string | null {
   const digits = openwaPhoneDigits(phone);
   return digits ? maskOpenwaPhoneNumber(digits) : null;
+}
+
+function linkedKeyName(linkedId: string): string {
+  return "paperclip-linked-" + linkedId.slice(0, 8);
 }
 
 function adminKeyRequired(): HttpError {
@@ -122,9 +128,15 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
       .orderBy(asc(chatOpenwaLinkedSessions.createdAt));
   }
 
-  async function mutate<T>(endpoint: EndpointRow, run: (tx: Parameters<Parameters<Db["transaction"]>[0]>[0], publications: ActivityPublication[]) => Promise<T>): Promise<T> {
+  async function transact<T>(run: (tx: Tx, publications: ActivityPublication[]) => Promise<T>): Promise<T> {
     const publications: ActivityPublication[] = [];
-    const result = await db.transaction(async (tx) => {
+    const result = await db.transaction((tx) => run(tx, publications));
+    for (const publication of publications) publishActivity(publication);
+    return result;
+  }
+
+  async function mutate<T>(endpoint: EndpointRow, run: (tx: Tx, publications: ActivityPublication[]) => Promise<T>): Promise<T> {
+    return transact(async (tx, publications) => {
       const [locked] = await tx
         .select({ status: chatEndpoints.status })
         .from(chatEndpoints)
@@ -133,8 +145,61 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
       if (!locked || locked.status === "archived") throw conflict("This channel was removed");
       return run(tx, publications);
     });
-    for (const publication of publications) publishActivity(publication);
-    return result;
+  }
+
+  async function revokeGatewayKey(endpoint: EndpointRow, row: LinkedRow): Promise<boolean> {
+    try {
+      const { client } = await adminFor(endpoint, row.sessionId);
+      await client.revokeApiKey(row.gatewayKeyId).catch((error: unknown) => {
+        if (error instanceof OpenwaGatewayError && error.code === "not_found") return;
+        throw error;
+      });
+      return true;
+    } catch (error) {
+      logger.warn(
+        { err: error, endpointId: endpoint.id, linkedSessionId: row.id, gatewayKeyName: linkedKeyName(row.id) },
+        "failed to revoke an OpenWA linked-session key; revoke it in the OpenWA dashboard",
+      );
+      return false;
+    }
+  }
+
+  async function deleteRows(tx: Tx, publications: ActivityPublication[], endpoint: EndpointRow, rows: Array<{ row: LinkedRow; revoked: boolean }>, actorUserId: string | null, reason: "unlinked" | "endpoint_removed"): Promise<LinkedRow[]> {
+    if (rows.length === 0) return [];
+    const removed = await tx
+      .delete(chatOpenwaLinkedSessions)
+      .where(and(eq(chatOpenwaLinkedSessions.companyId, endpoint.companyId), inArray(chatOpenwaLinkedSessions.id, rows.map(({ row }) => row.id))))
+      .returning();
+    for (const row of removed) {
+      await logOpenwaActivity(
+        tx,
+        {
+          companyId: endpoint.companyId,
+          endpointId: endpoint.id,
+          action: "openwa.linked_session_removed",
+          actorUserId,
+          details: { linkedSessionId: row.id, phoneMasked: row.phoneMasked, reason, revoked: rows.find((entry) => entry.row.id === row.id)?.revoked ?? false },
+        },
+        publications,
+      );
+    }
+    return removed;
+  }
+
+  async function removeSecrets(endpoint: EndpointRow, rows: LinkedRow[]): Promise<void> {
+    const results = await Promise.allSettled(rows.map((row) => secrets.remove(row.secretId)));
+    if (results.some((result) => result.status === "rejected"))
+      logger.warn({ endpointId: endpoint.id }, "removed an OpenWA linked number but left its secret for later cleanup");
+  }
+
+  /** Revokes, deletes, and forgets every linked number of an endpoint being removed; gateway revoke is best-effort. */
+  async function removeForEndpoint(endpoint: EndpointRow, actorUserId: string | null | undefined): Promise<void> {
+    const rows = await rowsFor(endpoint);
+    if (rows.length === 0) return;
+    const revoked: Array<{ row: LinkedRow; revoked: boolean }> = [];
+    for (const row of rows) revoked.push({ row, revoked: await revokeGatewayKey(endpoint, row) });
+    const removed = await transact((tx, publications) => deleteRows(tx, publications, endpoint, revoked, actorUserId ?? null, "endpoint_removed"));
+    await removeSecrets(endpoint, removed);
   }
 
   async function viewerFor(endpoint: EndpointRow, row: LinkedRow): Promise<OpenwaGatewayClient> {
@@ -197,19 +262,20 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
     });
     const id = randomUUID();
     const created = await client
-      .createApiKey({ name: "paperclip-linked-" + id.slice(0, 8), role: "viewer", allowedSessions: [sessionId] })
+      .createApiKey({ name: linkedKeyName(id), role: "viewer", allowedSessions: [sessionId] })
       .catch((error: unknown) => {
         throw adminError(error, baseUrl);
       });
+    const revokeKey = (keyId: string) =>
+      client.revokeApiKey(keyId).catch((error: unknown) => {
+        logger.warn({ err: error, endpointId: endpoint.id, gatewayKeyName: linkedKeyName(id) }, "failed to revoke an OpenWA linked-session key after a failed link");
+      });
     if (!created || typeof created.id !== "string" || typeof created.apiKey !== "string" || !created.apiKey) {
+      if (created && typeof created.id === "string" && created.id) await revokeKey(created.id);
       throw new HttpError(502, "The OpenWA gateway returned an unexpected API key response. Check the gateway version and logs.", {
         code: "openwa_invalid_response",
       });
     }
-    const revoke = () =>
-      client.revokeApiKey(created.id).catch((error: unknown) => {
-        logger.warn({ err: error, endpointId: endpoint.id }, "failed to revoke an OpenWA linked-session key after a failed link");
-      });
     let secretId: string | null = null;
     try {
       const suffix = randomUUID().replaceAll("-", "");
@@ -258,7 +324,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
       });
       return view(row);
     } catch (error) {
-      await revoke();
+      await revokeKey(created.id);
       if (secretId) await secrets.remove(secretId).catch(() => undefined);
       if (error instanceof Error && /chat_openwa_linked_sessions_endpoint_session_uq/.test(error.message + String((error as { cause?: unknown }).cause ?? "")))
         throw conflict("This WhatsApp session is already linked to this channel", { code: "openwa_linked_exists" });
@@ -310,36 +376,22 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
     return view(row);
   }
 
-  async function unlink(endpointId: string, linkedId: string, actorUserId: string | null): Promise<void> {
+  async function unlink(endpointId: string, linkedId: string, actorUserId: string | null): Promise<OpenwaLinkedUnlinkResult> {
     const endpoint = await endpointFor(endpointId);
     const row = await rowFor(endpoint, linkedId);
     if (!row) throw notFound("Linked number not found");
-    const { client, baseUrl } = await adminFor(endpoint, row.sessionId);
-    await client.revokeApiKey(row.gatewayKeyId).catch((error: unknown) => {
-      if (error instanceof OpenwaGatewayError && error.code === "not_found") return;
-      throw adminError(error, baseUrl);
+    const revoked = await revokeGatewayKey(endpoint, row);
+    const removed = await mutate(endpoint, async (tx, publications) => {
+      const deleted = await deleteRows(tx, publications, endpoint, [{ row, revoked }], actorUserId, "unlinked");
+      if (deleted.length === 0) throw notFound("Linked number not found");
+      return deleted;
     });
-    await mutate(endpoint, async (tx, publications) => {
-      const [removed] = await tx
-        .delete(chatOpenwaLinkedSessions)
-        .where(and(eq(chatOpenwaLinkedSessions.companyId, endpoint.companyId), eq(chatOpenwaLinkedSessions.id, row.id)))
-        .returning({ id: chatOpenwaLinkedSessions.id });
-      if (!removed) throw notFound("Linked number not found");
-      await logOpenwaActivity(
-        tx,
-        {
-          companyId: endpoint.companyId,
-          endpointId: endpoint.id,
-          action: "openwa.linked_session_removed",
-          actorUserId,
-          details: { linkedSessionId: row.id, phoneMasked: row.phoneMasked },
-        },
-        publications,
-      );
-    });
-    await secrets.remove(row.secretId).catch((error: unknown) => {
-      logger.warn({ err: error, endpointId: endpoint.id }, "unlinked an OpenWA number but left its secret for later cleanup");
-    });
+    await removeSecrets(endpoint, removed);
+    if (revoked) return { revoked: true };
+    return {
+      revoked: false,
+      warning: "Unlinked, but OpenWA did not revoke the viewer key. Revoke the API key \"" + linkedKeyName(row.id) + "\" in the OpenWA dashboard.",
+    };
   }
 
   async function gatewayChats(endpointId: string, linkedId: string, input: { limit: number; offset: number }): Promise<OpenwaLinkedGatewayChat[]> {
@@ -373,7 +425,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
     });
   }
 
-  return { list, linkableSessions, link, updateAllowedChats, unlink, gatewayChats, rowsFor, rowFor, viewerFor, setStatus };
+  return { list, linkableSessions, link, updateAllowedChats, unlink, removeForEndpoint, gatewayChats, rowsFor, rowFor, viewerFor, setStatus };
 }
 
 export type OpenwaLinkedService = ReturnType<typeof openwaLinkedService>;

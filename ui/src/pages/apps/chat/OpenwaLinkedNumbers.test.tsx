@@ -50,7 +50,7 @@ describe("OpenWA linked numbers settings", () => {
     ]);
     mocks.api.linkOpenwaSession.mockResolvedValue({ ...linked, id: "linked-2", sessionId: "session-3", label: "Work", allowedChats: [] });
     mocks.api.updateOpenwaLinkedChats.mockResolvedValue(linked);
-    mocks.api.unlinkOpenwaSession.mockResolvedValue(undefined);
+    mocks.api.unlinkOpenwaSession.mockResolvedValue({ revoked: true });
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -148,5 +148,18 @@ describe("OpenWA linked numbers settings", () => {
     click(button(section(), "Unlink Personal"));
     click(button(container.querySelector<HTMLElement>('[role="alertdialog"]')!, "Unlink"));
     await vi.waitFor(() => expect(mocks.api.unlinkOpenwaSession).toHaveBeenCalledWith("endpoint-1", "linked-1"));
+    expect(section().querySelector('[role="alert"]')).toBeNull();
+  });
+
+  it("shows the manual-revoke warning when the gateway did not revoke the key", async () => {
+    const warning = 'Unlinked, but OpenWA did not revoke the viewer key. Revoke the API key "paperclip-linked-abcd1234" in the OpenWA dashboard.';
+    mocks.api.unlinkOpenwaSession.mockResolvedValue({ revoked: false, warning });
+    render();
+    await vi.waitFor(() => expect(section().textContent).toContain("Personal"));
+    click(button(section(), "Unlink Personal"));
+    click(button(container.querySelector<HTMLElement>('[role="alertdialog"]')!, "Unlink"));
+    await vi.waitFor(() => expect(section().querySelector('[role="alert"]')?.textContent).toContain("paperclip-linked-abcd1234"));
+    click(button(section().querySelector<HTMLElement>('[role="alert"]')!, "Dismiss"));
+    expect(section().querySelector('[role="alert"]')).toBeNull();
   });
 });
