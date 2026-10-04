@@ -33,6 +33,7 @@ const OPERATOR_KEY = "operator-key-0123456789";
 const ADMIN_KEY = "admin-key-0123456789";
 const CHAT_SCOPED_KEY = "chat-scoped-key-0123456789";
 const VIEWER_KEY = "viewer-key-0123456789";
+const OTHER_SESSION_KEY = "other-session-key-0123456789";
 const SESSION_ID = "3b1f7c2e-5a8d-4e61-9c47-0d2a6b8e5f13";
 const SECOND_SESSION_ID = "0f1e2d3c-4b5a-4968-8776-655443322110";
 const PHONE = "6281200005678";
@@ -51,7 +52,7 @@ interface FakeGateway {
 
 async function startFakeGateway(): Promise<FakeGateway> {
   const state = {
-    version: "0.23.7" as string | null,
+    version: "0.24.0" as string | null,
     sessions: [{ id: SESSION_ID, name: "ops", status: "ready", phone: PHONE, pushName: "Ops Desk" }] as FakeSession[],
     sessionsStatus: 200,
     sessionsBody: undefined as unknown,
@@ -69,6 +70,8 @@ async function startFakeGateway(): Promise<FakeGateway> {
       if (state.version === null) return json(res, 404, { message: "Not Found", statusCode: 404 });
       return json(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: state.version } });
     }
+    if (key === OTHER_SESSION_KEY)
+      return json(res, 403, { message: "API key is not allowed for this session", error: "Forbidden", statusCode: 403, code: "FORBIDDEN" });
     if (key !== OPERATOR_KEY && key !== ADMIN_KEY && key !== CHAT_SCOPED_KEY && key !== VIEWER_KEY)
       return json(res, 401, { message: "Invalid API key", error: "Unauthorized", statusCode: 401 });
     if (key === CHAT_SCOPED_KEY)
@@ -258,8 +261,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(response.headers["cache-control"]).toBe("no-store");
     expect(response.body).toEqual({
       baseUrl: live().baseUrl,
-      gatewayVersion: "0.23.7",
-      pinnedVersion: "0.23.7",
+      gatewayVersion: "0.24.0",
+      pinnedVersion: "0.24.0",
       engine: "whatsapp-web.js",
       keyRole: "operator",
       adminKey: null,
@@ -279,7 +282,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(response.status).toBe(200);
     expect(response.body.gatewayVersion).toBeNull();
     expect(response.body.adminKey).toEqual({ role: "admin" });
-    expect(response.body.warnings.join(" ")).toContain("assumes OpenWA 0.23.7");
+    expect(response.body.warnings.join(" ")).toContain("assumes OpenWA 0.24.0");
   });
 
   it("warns when the key sees more than one session", async () => {
@@ -307,6 +310,14 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(configured.status).toBe(422);
     expect(configured.body.details.code).toBe("openwa_agent_adapter_unsupported");
     expect(live().requests).toEqual([]);
+  });
+
+  it("reports a key refused by its session or IP restriction as a scope problem, not an invalid key", async () => {
+    const { app, endpoint } = await setup();
+    const scoped = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, apiKey: OTHER_SESSION_KEY });
+    expect(scoped.status).toBe(422);
+    expect(scoped.body.details.code).toBe("openwa_credentials_scope");
+    expect(JSON.stringify(scoped.body)).not.toContain(OTHER_SESSION_KEY);
   });
 
   it("rejects a wrong or viewer key with 422", async () => {
@@ -404,8 +415,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(attested.status).toBe(200);
     expect(attested.headers["cache-control"]).toBe("no-store");
     expect(attested.body).toMatchObject({
-      gatewayVersion: "0.23.7",
-      pinnedVersion: "0.23.7",
+      gatewayVersion: "0.24.0",
+      pinnedVersion: "0.24.0",
       engine: "whatsapp-web.js",
       session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" } },
       pacing: { attested: true, observedAt: null },

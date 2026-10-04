@@ -581,6 +581,10 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
 /** True when an owner_absent run sends a DM to a current endpoint owner, which needs no cross-chat approval. */
 async function ownerAbsentOwnerDm(ctx: ToolContext, target: Target): Promise<boolean> {
   if (ctx.openwa?.event !== "owner_absent" || target.isGroup || !target.number) return false;
+  return ownerPrincipal(ctx, target.number);
+}
+
+async function ownerPrincipal(ctx: ToolContext, digits: string): Promise<boolean> {
   const principals = await ctx.db
     .select({ id: chatExternalPrincipals.id })
     .from(chatExternalPrincipals)
@@ -589,7 +593,7 @@ async function ownerAbsentOwnerDm(ctx: ToolContext, target: Target): Promise<boo
         eq(chatExternalPrincipals.companyId, ctx.endpoint.companyId),
         eq(chatExternalPrincipals.provider, "openwa"),
         eq(chatExternalPrincipals.providerAccountId, ctx.endpoint.providerAccountId ?? ""),
-        eq(chatExternalPrincipals.externalId, target.number + "@c.us"),
+        eq(chatExternalPrincipals.externalId, digits.replace(/\D/g, "") + "@c.us"),
       ),
     )
     .limit(1);
@@ -1158,10 +1162,12 @@ async function openwaFind(ctx: ToolContext, args: Args): Promise<Record<string, 
   if (typeof args.lid === "string") {
     const lid = args.lid;
     const resolved = await gatewayCall(ctx, (gateway) => gateway.contactPhone(lid));
+    const owner = resolved.phone ? await ownerPrincipal(ctx, resolved.phone) : false;
     return {
       lid: chatRef(ctx, lid),
       phone: resolved.phone ? maskOpenwaPhoneNumber(resolved.phone) : null,
       chatRef: resolved.phone ? chatRef(ctx, resolved.phone + "@c.us") : null,
+      ...(owner ? { role: "owner" } : {}),
     };
   }
   const query = String(args.query);

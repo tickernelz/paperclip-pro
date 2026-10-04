@@ -6,7 +6,7 @@ const SEND_PATH = /\/messages\/(send-[a-z]+|reply|forward)$/;
 
 describe("OpenWA operation manifest", () => {
   it("covers every operation of the pinned gateway document exactly once", () => {
-    expect(OPENWA_GATEWAY_VERSION).toBe("0.23.7");
+    expect(OPENWA_GATEWAY_VERSION).toBe("0.24.0");
     expect(OPENWA_OPERATIONS).toHaveLength(202);
     expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.id)).size).toBe(202);
     expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.method + " " + operation.path)).size).toBe(202);

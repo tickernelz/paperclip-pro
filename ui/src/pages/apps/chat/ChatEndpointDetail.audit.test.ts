@@ -96,8 +96,8 @@ describe("OpenWA settings validation", () => {
 
 describe("OpenWA health and capability warnings", () => {
   const health: OpenwaEndpointHealth = {
-    gatewayVersion: "0.23.7",
-    pinnedVersion: "0.23.7",
+    gatewayVersion: "0.24.0",
+    pinnedVersion: "0.24.0",
     engine: "whatsapp-web.js",
     session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: null },
     pacing: { attested: true, observedAt: null },
@@ -114,7 +114,7 @@ describe("OpenWA health and capability warnings", () => {
     const observed = Object.fromEntries(
       openwaHealthRows({
         ...health,
-        gatewayVersion: "0.24.0",
+        gatewayVersion: "0.25.0",
         session: { status: "disconnected", maskedNumber: null, restriction: { active: true, kind: "spam", expiresAt: null } },
         pacing: { attested: true, observedAt: "2026-10-03T01:00:00.000Z" },
       }).map((row) => [row.label, row]),

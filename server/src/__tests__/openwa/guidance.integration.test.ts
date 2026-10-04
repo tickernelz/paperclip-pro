@@ -421,10 +421,13 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const delivery = await seedDelivery(seed, { text: "@owner tolong cek" });
     const absent = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id], event: "owner_absent" });
     expect(absent.full).toContain("Owner DM targets");
+    expect(absent.full).toContain("This wake is `owner_absent`, not a normal message: owner Dina Owner was mentioned");
     expect(absent.full).toContain("openwa:" + SESSION + "-");
     expect(absent.full).toContain(OWNER_DIGITS + "@c.us");
+    expect(absent.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
     const plain = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id] });
     expect(plain.full).not.toContain("Owner DM targets");
+    expect(plain.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
   });
 
   it("reports the reply requirement when the chat reply policy needs owner approval", async () => {
@@ -549,7 +552,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(result.full).toContain("Your previous final output in this chat was not published");
     expect(result.wake.sender).toEqual({ name: "Member Budi", phoneMasked: "+62xxx...2333", role: "allowed" });
     expect(result.wake.chat.id).toBe("+62xxx...2333");
-    expect(result.wake.messages[0]!.mentions).toEqual(["+62xxx...8777"]);
+    expect(result.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
     expect(result.full.length).toBeLessThan(80_000);
     const messageIds = result.wake.messages.flatMap((message) => [message.id, message.quoted?.id]).filter((id): id is string => Boolean(id));
     const withoutMessageIds = (value: string) => messageIds.reduce((text, id) => text.split(id).join("<message-id>"), value);

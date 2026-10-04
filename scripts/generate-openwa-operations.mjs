@@ -4,7 +4,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const GATEWAY_VERSION = "0.23.7";
+const GATEWAY_VERSION = "0.24.0";
 const DOC_PATH = resolve(repoRoot, "scripts/openwa/openapi-" + GATEWAY_VERSION + ".json");
 const OUT_PATH = resolve(repoRoot, "packages/shared/src/openwa-operations.ts");
 const EXPECTED_OPERATION_COUNT = 202;
