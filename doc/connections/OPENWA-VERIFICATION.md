@@ -182,6 +182,20 @@ the health card belong here after the live window.
   agent's own LID once through `contacts/check` and matches it in mentions,
   body text and group joins. The group journey is to be rerun on this build.
 
+### Journey 6: owner absent (AC8, in progress)
+
+- 09:29:20Z (2026.1004.6): a member mentioned the owner by LID; the timer armed
+  and fired at 09:31:20Z with both messages, but the agent stayed silent
+  because the mention was meant for the owner. The flow changed to brief the
+  owner by DM (`8d40a44c2`, `30959384e`, `53b249e24`).
+- 13:54:12Z (2026.1004.10, gateway upgraded to OpenWA 0.24.0): the timer armed
+  and fired at 13:56:11Z, the run received the owner DM targets, yet stayed
+  silent again: the generic wake reason read as a plain message and the
+  mention showed only as a masked LID. Fixed in `7f3e04865`: an
+  `owner_absent` headline names the owner, owner mentions render as
+  `owner:"<name>"`, and `openwa_find` marks owners. The same commit pins
+  OpenWA 0.24.0. The journey is to be rerun on that build.
+
 ### Remaining journeys
 
 - AC15 (owner-number mode): not run; this endpoint uses `agent_number`.
