@@ -562,6 +562,11 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   );
 }
 
+const INFLIGHT_MODE_LABELS: Record<ChatInflightMode, string> = {
+  steer: "Steer into the running turn",
+  queue: "Queue for the next run",
+};
+
 function ConversationSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   const [hours, setHours] = useState(String(endpoint.policy.rotateAfterIdleHours));
   const [inflightMode, setInflightMode] = useState<ChatInflightMode>(endpoint.inflightMode ?? "steer");
@@ -592,7 +597,7 @@ function ConversationSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
           }}
         >
           {CHAT_INFLIGHT_MODES.map((mode) => (
-            <option key={mode} value={mode}>{mode}</option>
+            <option key={mode} value={mode}>{INFLIGHT_MODE_LABELS[mode]}</option>
           ))}
         </select>
         <p id="openwa-inflight-mode-help" className="text-xs text-muted-foreground">

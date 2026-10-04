@@ -115,6 +115,18 @@ describe("AppsSidebar", () => {
     vi.clearAllMocks();
   });
 
+  it.each([AppsSidebar, ProductionAppsSidebar])("keeps chat navigation on the OpenWA approvals tab", async (Sidebar) => {
+    route.pathname = "/SLA/apps/chat/endpoint-a/approvals";
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    await act(async () => root.render(<QueryClientProvider client={queryClient}><Sidebar /></QueryClientProvider>));
+    await flushReact();
+    expect(container.textContent).not.toMatch(/Browse|Review/);
+    expect(container.querySelector('[data-to="/apps/chat/endpoint-a/settings"]')).not.toBeNull();
+    await act(async () => root.unmount());
+    queryClient.clear();
+  });
+
   it.each([AppsSidebar, ProductionAppsSidebar])("shows chat navigation in place of browse and review", async (Sidebar) => {
     route.pathname = "/SLA/apps/chat/endpoint-a/conversations";
     const root = createRoot(container);

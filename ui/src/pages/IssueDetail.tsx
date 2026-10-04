@@ -7457,6 +7457,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
           <ExternallyConnectedTaskBanner
             key={issue.id}
+            className={cn(shellSectionClass, taskChatShellEnabled && (isMobile ? "mt-4" : "mt-3"))}
             attachments={attachments ?? []}
             companyId={issue.companyId}
             issueId={issue.id}

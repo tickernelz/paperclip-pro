@@ -13,6 +13,7 @@ import {
   type ExternalChannelBindingSummary,
 } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/context/ToastContext";
@@ -125,6 +126,7 @@ export function useIssueChatBinding(companyId: string, issueId: string) {
 
 type ConnectedTaskProps = {
   attachments?: IssueAttachment[];
+  className?: string;
   companyId: string;
   issueId: string;
   issueCacheRefs?: string[];
@@ -149,6 +151,7 @@ export function ExternallyConnectedTaskBanner(props: ConnectedTaskProps) {
 
 function ConnectedTaskComposer({
   attachments = [],
+  className,
   companyId,
   issueId,
   issueCacheRefs,
@@ -486,7 +489,7 @@ function ConnectedTaskComposer({
   return (
     <section
       aria-label="External conversation"
-      className="space-y-3 rounded-lg border border-border bg-muted/40 p-3 text-sm"
+      className={cn("space-y-3 rounded-lg border border-border bg-muted/40 p-3 text-sm", className)}
     >
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex min-w-0 flex-1 basis-64 items-center gap-3">
