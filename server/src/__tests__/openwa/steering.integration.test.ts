@@ -33,13 +33,15 @@ import { issueRoutes } from "../../routes/issues.ts";
 import { errorHandler } from "../../middleware/index.ts";
 import { chatChannelService, type ChatChannelService } from "../../services/chat-channels.ts";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.ts";
-import { heartbeatService } from "../../services/heartbeat.ts";
+import { heartbeatService, mergeCoalescedContextSnapshot } from "../../services/heartbeat.ts";
 import { secretService } from "../../services/secrets.ts";
 import { OPENWA_HANDOFF_ACTION_KIND } from "../../services/openwa/tools.ts";
 import { OPENWA_FOLLOWUP_WAKE_ACTION_KIND, OPENWA_STEERED_OWNER_ACTION_KIND, scheduleOpenwaFollowupForRun } from "../../services/openwa/followups.ts";
 import { recordOpenwaLateTranscript, takeOpenwaLateTranscripts } from "../../services/openwa/late-transcripts.ts";
 import { registerOpenwaCommentSteering, steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
 import { resolveChatRunPresentationAuthorizationReason } from "../../services/chat-run-publications.ts";
+import { OPENWA_APPROVAL_WAKE_ACTION_KIND } from "../../services/openwa/approvals.ts";
+import { createAdmissionTransactionScope, createWakeAdmissionWriter } from "../../modules/wake-queue/adapters/postgres.ts";
 import { issueService } from "../../services/issues.ts";
 import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.ts";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
@@ -512,6 +514,127 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(outsiderContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: outsider.delivery.principalId });
     expect(outsiderContext.paperclipToolProfile).toBe("read_only");
     expect((outsiderContext.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual([outsider.delivery.id]);
+  }, 180_000);
+
+  async function grantAfterMerge(mode: "deferred" | "queued" | "solo") {
+    const t = await setup();
+    adapterMode.steer = false;
+    t.gateway.groups.set(GROUP, { id: GROUP, name: "Ops", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }, { id: jid(OTHER_MEMBER_PHONE) }] });
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + OTHER_MEMBER_PHONE }, t.userId);
+    const first = await admit(t, mention(MEMBER_PHONE, "please email the vendor"));
+    const r1 = await runningRun(t, first.action.id);
+    const requesterPrincipalId = first.delivery.principalId!;
+    const [approval] = await db.insert(chatOwnerApprovalRequests).values({
+      companyId: t.companyId, endpointId: t.endpointId, originChatKey: GROUP, categories: ["external_tools"],
+      scope: "requester", summary: "Send vendor email", proposedAction: "external_tools", status: "pending", requestedByPrincipalId: requesterPrincipalId,
+    }).returning();
+    const followup = await admit(t, mention(MEMBER_PHONE, "the vendor is acme"));
+    expect((await wakeRow(followup.action.id)).status).toBe("deferred_issue_execution");
+    let blockerId: string | null = null;
+    let queuedRunId: string | null = null;
+    if (mode === "queued") {
+      blockerId = randomUUID();
+      await db.insert(heartbeatRuns).values({
+        id: blockerId, companyId: t.companyId, agentId: t.agentId, status: "running", invocationSource: "on_demand",
+        triggerDetail: "manual", startedAt: new Date(), contextSnapshot: {},
+      });
+      release(r1.id);
+      queuedRunId = await until(async () => {
+        const [run] = await db.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.companyId, t.companyId), eq(heartbeatRuns.wakeupRequestId, followup.action.id)));
+        return run?.status === "queued" ? run.id : null;
+      });
+    }
+    let outsiderDeliveryId: string | null = null;
+    if (mode !== "solo") {
+      const outsider = await admit(t, mention(OTHER_MEMBER_PHONE, "use your tools for me too"));
+      outsiderDeliveryId = outsider.delivery.id;
+      expect(outsider.delivery.principalId).not.toBe(requesterPrincipalId);
+      const outsiderWake = await wakeRow(outsider.action.id);
+      expect(outsiderWake.status).toBe("deferred_issue_execution");
+      expect(outsiderWake.requestedByActorId).toBe(outsider.delivery.principalId);
+      const { _paperclipWakeContext: outsiderContext, ...outsiderPayload } = outsiderWake.payload as Record<string, unknown>;
+      const incoming = {
+        agentId: t.agentId, source: outsiderWake.source, triggerDetail: outsiderWake.triggerDetail,
+        requestedByActorType: outsiderWake.requestedByActorType, requestedByActorId: outsiderWake.requestedByActorId, idempotencyKey: outsiderWake.idempotencyKey,
+      };
+      const writer = createWakeAdmissionWriter();
+      await db.transaction(async (tx) => {
+        await tx.delete(agentWakeupRequests).where(eq(agentWakeupRequests.id, outsiderWake.id));
+        const scope = createAdmissionTransactionScope(t.companyId, tx as unknown as Db);
+        if (mode === "deferred") {
+          const deferred = await wakeRow(followup.action.id);
+          const deferredPayload = deferred.payload as Record<string, unknown>;
+          await writer.mergeIntoExistingDeferredWake(scope, {
+            companyId: t.companyId,
+            existingDeferredWakeId: deferred.id,
+            mergedPayload: {
+              ...deferredPayload, ...outsiderPayload,
+              _paperclipWakeContext: mergeCoalescedContextSnapshot(deferredPayload._paperclipWakeContext, outsiderContext as Record<string, unknown>, { preserveExistingInteractionContinuation: true }),
+            },
+            nextCoalescedCount: (deferred.coalescedCount ?? 0) + 1,
+            coalescedReceipt: {
+              id: outsiderWake.id, requestedAt: outsiderWake.requestedAt, ...incoming, reason: outsiderWake.reason,
+              payload: { ...outsiderPayload, coalescedIntoWakeupRequestId: deferred.id }, runId: null,
+            },
+          });
+        } else {
+          await writer.coalesceIntoActiveExecutionRun(scope, {
+            companyId: t.companyId,
+            activeExecutionRunId: queuedRunId!,
+            mergedContextSnapshot: mergeCoalescedContextSnapshot(await runContext(queuedRunId!), outsiderContext as Record<string, unknown>, { preserveExistingInteractionContinuation: true }),
+            durableReceipt: { id: outsiderWake.id, requestedAt: outsiderWake.requestedAt },
+            ...incoming,
+            payload: outsiderPayload,
+          });
+        }
+      });
+      expect(await wakeRow(outsiderWake.id)).toMatchObject({ status: "coalesced", runId: mode === "queued" ? queuedRunId : null });
+    }
+    const resolved = await t.service.openwaApprovals.resolve(t.endpointId, approval!.id, { decision: "approve", userId: t.userId });
+    expect(resolved.status).toBe("approved");
+    const [grant] = await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.requestId, approval!.id));
+    expect(grant).toMatchObject({ scope: "requester", category: "external_tools", status: "live", requesterPrincipalId });
+    const approvalWake = await until(async () => {
+      const [row] = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_APPROVAL_WAKE_ACTION_KIND)));
+      return row ? await wakeRow(row.id) : null;
+    });
+    expect(approvalWake.status).toBe("deferred_issue_execution");
+    if (mode === "queued") {
+      await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, blockerId!));
+      await t.heartbeat.resumeQueuedRuns();
+    } else {
+      release(r1.id);
+    }
+    const promoted = await runningRun(t, followup.action.id);
+    if (queuedRunId) expect(promoted.id).toBe(queuedRunId);
+    const promotedContext = await runContext(promoted.id);
+    return { t, promoted, promotedContext, grant: grant!, requesterPrincipalId, outsiderDeliveryId, approvalWakeId: approvalWake.id };
+  }
+
+  it("gives a deferred wake that another member merged into no requester grant approved before it started (D36)", async () => {
+    const { t, promoted, promotedContext, grant, requesterPrincipalId, outsiderDeliveryId, approvalWakeId } = await grantAfterMerge("deferred");
+    expect((promotedContext.openwa as { deliveryIds: string[] }).deliveryIds).toContain(outsiderDeliveryId);
+    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
+    expect((promotedContext.paperclipOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
+    expect(promotedContext.paperclipToolProfile).toBe("read_only");
+    adapterMode.hold = false;
+    release(promoted.id);
+    const grantRun = await finishedRun(t, approvalWakeId);
+    expect(captured.get(grantRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "grant", event: "approval_resolved", grantIds: [grant.id], requesterPrincipalId, toolProfile: "full" });
+  }, 180_000);
+
+  it("gives a queued run that another member coalesced into no requester grant approved before it started (D36)", async () => {
+    const { promotedContext, grant, outsiderDeliveryId } = await grantAfterMerge("queued");
+    expect((promotedContext.openwa as { deliveryIds: string[] }).deliveryIds).toContain(outsiderDeliveryId);
+    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: null });
+    expect((promotedContext.paperclipOpenwa as { grantIds: string[] }).grantIds).not.toContain(grant.id);
+    expect(promotedContext.paperclipToolProfile).toBe("read_only");
+  }, 180_000);
+
+  it("gives the requester's own deferred wake its requester grant approved before it started", async () => {
+    const { promotedContext, grant, requesterPrincipalId } = await grantAfterMerge("solo");
+    expect(promotedContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "full", grantIds: [grant.id], requesterPrincipalId });
+    expect(promotedContext.paperclipToolProfile).toBe("full");
   }, 180_000);
 
   it("steers late owner activity into the running owner_absent run marked owner_now_active", async () => {
