@@ -586,6 +586,23 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(wakesAfter).toBe(wakesBefore + 1);
   }, 120_000);
 
+  it("keeps one conversation issue per chat when the agent marks it done, reopening it for the next message", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    await goLive(t);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "first question" });
+    await settledDeliveries(t, 1);
+    const [first] = await conversations(t);
+    await db.update(issues).set({ status: "done" }).where(eq(issues.id, first.issueId));
+    await send(t, { chatId: jid(OWNER_PHONE), body: "follow-up question" });
+    await settledDeliveries(t, 2);
+    const rows = await conversations(t);
+    expect(rows.map((row) => [row.id, row.sessionGeneration, row.state])).toEqual([[first.id, 1, "active"]]);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, first.issueId));
+    expect(issue.status).not.toBe("done");
+    expect((await deliveries(t)).map((row) => row.conversationId)).toEqual([first.id, first.id]);
+  }, 120_000);
+
   it("ignores control commands from senders outside the allowlist", async () => {
     const t = await setup();
     await addOwner(t, OWNER_PHONE);

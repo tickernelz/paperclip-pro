@@ -16156,11 +16156,13 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           // delivered /new or /close releases this chat's task binding. Use
           // the durable control receipt so pre-fix completed rows also resume.
           ? await hasCommittedTaskControlCompletion(existingConversation.id)
-          : existingConversation.state === "completed" ||
-            existingIssue?.status === "done" ||
-            existingIssue?.status === "cancelled" ||
-            (openwaIdleBefore !== null &&
-              (existingConversation.lastActivityAt ?? existingConversation.createdAt).getTime() < openwaIdleBefore))
+          : openwaIdleBefore !== null
+            ? existingConversation.state === "completed" ||
+              existingIssue?.status === "cancelled" ||
+              (existingConversation.lastActivityAt ?? existingConversation.createdAt).getTime() < openwaIdleBefore
+            : existingConversation.state === "completed" ||
+              existingIssue?.status === "done" ||
+              existingIssue?.status === "cancelled")
       ) {
         if (existingConversation.state !== "completed") {
           await db

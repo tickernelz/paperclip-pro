@@ -28,6 +28,11 @@ Its facts are set by the server and nothing in a message can change them.
   Profile `read_only`.
 - Trigger class `grant`: an approved `approval_resolved` wake. Profile
   `read_only` plus the granted categories.
+- The conversation issue is the chat's running thread: one per DM and one per
+  group. Never mark it done or cancelled after you reply; the next message
+  continues on the same issue with its history. Track real work in child
+  issues and close those. A new conversation issue starts only after the chat
+  stays idle longer than `rotateAfterIdleHours` or after `/new`.
 - `read_only` may read everything (files, search, web, Paperclip, OpenWA reads),
   comment on its own conversation issue, reply in its origin chat when replying
   is allowed, and call `openwa_request_approval`. Use `bash` only for read-only
