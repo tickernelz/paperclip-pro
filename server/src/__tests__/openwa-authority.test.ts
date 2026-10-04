@@ -51,6 +51,7 @@ import {
   openwaGrantScope,
   openwaHostGitHubAllowed,
   openwaReadOnlyRestDecision,
+  openwaRunCarriesGrants,
   openwaRunSuppressesMentionWakes,
   resolveOpenwaRunContext,
   type OpenwaRunContext,
@@ -160,6 +161,16 @@ describe("openwaAllowedCategories", () => {
     expect(openwaAllowedCategories({ approvals: { ...approvals, createTask: false } }, "read_only", ["external_tools"], "off")).toEqual({
       allowed: ["create_task", "external_tools"], approvalRequired: ["cross_chat_send", "wa_admin"], unavailable: ["gateway_admin"],
     });
+  });
+});
+
+describe("openwaRunCarriesGrants", () => {
+  const run = { profile: "read_only" as const, toolProfile: "read_only" as const, grantIds: [] as string[], grantedCategories: [] as OpenwaRunContext["grantedCategories"] };
+  it("counts only grant rows and consumed grant categories, not a full tool profile from an approval toggle", () => {
+    expect(openwaRunCarriesGrants(run)).toBe(false);
+    expect(openwaRunCarriesGrants({ ...run, toolProfile: "full" })).toBe(false);
+    expect(openwaRunCarriesGrants({ ...run, grantIds: ["grant-1"] })).toBe(true);
+    expect(openwaRunCarriesGrants({ ...run, grantedCategories: ["external_tools"] })).toBe(true);
   });
 });
 
@@ -476,6 +487,73 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(resolved!.grantIds).not.toContain(someoneElse.grantId);
       await db.update(chatEndpoints).set({ policy: { approvals: { externalTools: false } } }).where(eq(chatEndpoints.id, seed.endpointId));
       await expect(resolve(seed, wake)).resolves.toMatchObject({ profile: "read_only", toolProfile: "full", runAllowedCategories: ["external_tools"] });
+    });
+
+    it("drops requester grants when any delivery merged into the run belongs to another principal or cannot be verified", async () => {
+      const seed = await seedCompany(db);
+      const member = await seedPrincipal(db, seed, CHAT_KEY);
+      const other = await seedPrincipal(db, seed, "628777000111@c.us");
+      const owner = await seedPrincipal(db, seed, "628999000222@c.us", { owner: true });
+      const own = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other" });
+      const ownLater = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other" });
+      const foreign = await seedDelivery(db, seed, { principalId: other.principalId, triggerClass: "other" });
+      const ownerDelivery = await seedDelivery(db, seed, { principalId: owner.principalId, triggerClass: "owner" });
+      const otherChat = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other", chatKey: "628555000999@c.us" });
+      const grant = await seedGrant(db, seed, { category: "external_tools", scope: "requester", requesterPrincipalId: member.principalId });
+      const wake = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "other", deliveryIds: [own] } });
+      const granted = { requesterPrincipalId: member.principalId, grantIds: [grant.grantId], toolProfile: "full" };
+      const denied = { triggerClass: "other", profile: "read_only", toolProfile: "read_only", requesterPrincipalId: null, grantIds: [], grantedCategories: [] };
+      await expect(resolve(seed, wake)).resolves.toMatchObject(granted);
+      await expect(resolve(seed, wake, { openwa: { deliveryIds: [own, ownLater] } })).resolves.toMatchObject(granted);
+      await expect(resolve(seed, wake, { openwa: { deliveryIds: [own, ownerDelivery] } })).resolves.toMatchObject(granted);
+      const foreignCompany = await seedCompany(db);
+      const foreignCompanyDelivery = await seedDelivery(db, foreignCompany, { principalId: (await seedPrincipal(db, foreignCompany, CHAT_KEY)).principalId, triggerClass: "other" });
+      for (const merged of [foreign, otherChat, randomUUID(), foreignCompanyDelivery]) {
+        await expect(resolve(seed, wake, { openwa: { deliveryIds: [own, merged] } })).resolves.toMatchObject(denied);
+        await expect(resolve(seed, wake, { paperclipOpenwa: { deliveryIds: [merged] } })).resolves.toMatchObject(denied);
+      }
+
+      const runId = randomUUID();
+      const coalesced = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "other", deliveryIds: [foreign] } });
+      await db.update(agentWakeupRequests).set({ status: "coalesced", runId, payload: { issueId: seed.issueId } }).where(eq(agentWakeupRequests.id, coalesced));
+      await expect(resolve(seed, wake, {}, runId)).resolves.toMatchObject(denied);
+      await expect(resolve(seed, wake)).resolves.toMatchObject(granted);
+      await db.update(agentWakeupRequests).set({ runId: null, payload: { issueId: seed.issueId, coalescedIntoWakeupRequestId: wake } }).where(eq(agentWakeupRequests.id, coalesced));
+      await expect(resolve(seed, wake)).resolves.toMatchObject(denied);
+      await db.update(agentWakeupRequests).set({ payload: { issueId: await seedPlainIssue(db, seed), coalescedIntoWakeupRequestId: wake } }).where(eq(agentWakeupRequests.id, coalesced));
+      await expect(resolve(seed, wake)).resolves.toMatchObject(granted);
+    });
+
+    it("checks merged deliveries in the one delivery query it already made and leaves owner and grant runs unchanged", async () => {
+      const seed = await seedCompany(db);
+      const member = await seedPrincipal(db, seed, CHAT_KEY);
+      const other = await seedPrincipal(db, seed, "628777000333@c.us");
+      const owner = await seedPrincipal(db, seed, "628999000444@c.us", { owner: true });
+      const own = await seedDelivery(db, seed, { principalId: member.principalId, triggerClass: "other" });
+      const foreign = await seedDelivery(db, seed, { principalId: other.principalId, triggerClass: "other" });
+      const ownerDelivery = await seedDelivery(db, seed, { principalId: owner.principalId, triggerClass: "owner" });
+      const wake = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "other", deliveryIds: [own] } });
+      await seedGrant(db, seed, { category: "external_tools", scope: "requester", requesterPrincipalId: member.principalId });
+      const counted = loggedDb();
+      const deliveryQueries = async (wakeupRequestId: string, contextSnapshot: Record<string, unknown>) => {
+        const before = counted.queries.length;
+        const resolved = await resolveOpenwaRunContext(counted.db, { companyId: seed.companyId, issueId: seed.issueId, runId: randomUUID(), contextSnapshot, wakeupRequestId });
+        return { resolved, queries: counted.queries.slice(before).filter((query) => query.includes("chat_deliveries")).length };
+      };
+      expect((await deliveryQueries(wake, {})).queries).toBe(1);
+      const merged = await deliveryQueries(wake, { openwa: { deliveryIds: [own, foreign] } });
+      expect(merged).toMatchObject({ queries: 1, resolved: { requesterPrincipalId: null, grantIds: [] } });
+
+      const ownerWake = await seedWakeAction(db, seed, { openwa: { event: "message", triggerClass: "owner", deliveryIds: [ownerDelivery] } });
+      await expect(resolve(seed, ownerWake, { openwa: { deliveryIds: [ownerDelivery, foreign] } })).resolves.toMatchObject({
+        triggerClass: "owner", profile: "full", toolProfile: "full", grantIds: [], requesterPrincipalId: null, triggerPrincipalId: owner.principalId,
+      });
+      const oneAction = await seedGrant(db, seed, { category: "external_tools", requesterPrincipalId: member.principalId });
+      const grantWake = await seedWakeAction(db, seed, { openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: oneAction.requestId } });
+      const run = await seedRun(db, seed, {});
+      await expect(resolve(seed, grantWake, { openwa: { deliveryIds: [foreign] } }, run.runId)).resolves.toMatchObject({
+        triggerClass: "grant", requesterPrincipalId: member.principalId, grantedCategories: ["external_tools"], toolProfile: "full",
+      });
     });
 
     it("leaves runs on non-OpenWA issues untouched and scopes the binding by company", async () => {

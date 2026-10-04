@@ -304,8 +304,8 @@ function wakeClassFromAction(
   };
 }
 
-export function openwaRunCarriesGrants(run: Pick<OpenwaRunContext, "profile" | "toolProfile" | "grantIds" | "grantedCategories">): boolean {
-  return run.grantIds.length > 0 || run.grantedCategories.length > 0 || run.toolProfile !== run.profile;
+export function openwaRunCarriesGrants(run: Pick<OpenwaRunContext, "grantIds" | "grantedCategories">): boolean {
+  return run.grantIds.length > 0 || run.grantedCategories.length > 0;
 }
 
 /** Wake classes for admission on an OpenWA conversation issue, from server-written chat actions and the run's resolved context; undefined off OpenWA issues. */
@@ -384,6 +384,72 @@ async function chatActionBacked(db: Db, companyId: string, wakeupRequestId: stri
   return Boolean(row);
 }
 
+type OpenwaRunDelivery = {
+  id: string;
+  found: boolean;
+  principalId: string | null;
+  triggerClass: OpenwaTriggerClass | null;
+  chatKey: string | null;
+};
+
+async function loadOpenwaRunDeliveries(
+  db: Db,
+  input: {
+    companyId: string;
+    endpointId: string;
+    issueId: string;
+    runId: string;
+    wakeupRequestId: string | null;
+    wakeDeliveryIds: string[];
+    contextDeliveryIds: string[];
+  },
+): Promise<OpenwaRunDelivery[]> {
+  const rows = (await db.execute(sql`
+    with wanted(id) as (
+      select value from jsonb_array_elements_text(${JSON.stringify(input.wakeDeliveryIds)}::jsonb)
+      union
+      select value from jsonb_array_elements_text(${JSON.stringify(input.contextDeliveryIds)}::jsonb)
+      union
+      select merged.id
+      from agent_wakeup_requests receipt
+      join chat_actions action on action.id = receipt.id and action.company_id = receipt.company_id
+      cross join lateral (
+        select value as id from jsonb_array_elements_text(
+          case when jsonb_typeof(action.payload -> 'openwa' -> 'deliveryIds') = 'array' then action.payload -> 'openwa' -> 'deliveryIds' else '[]'::jsonb end
+        )
+        union all
+        select action.delivery_id::text where action.delivery_id is not null
+      ) merged
+      where receipt.company_id = ${input.companyId}
+        and receipt.payload ->> 'issueId' = ${input.issueId}
+        and receipt.status = 'coalesced'
+        and (receipt.run_id = ${input.runId} or receipt.payload ->> 'coalescedIntoWakeupRequestId' = ${input.wakeupRequestId ?? ""})
+    ),
+    ids as (
+      select id, case when id ~* '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$' then id::uuid end as uid
+      from wanted
+    )
+    select ids.id, delivery.id is not null as found, delivery.principal_id, delivery.trigger_class,
+      delivery.normalized_event -> 'openwa' ->> 'chatKey' as chat_key
+    from ids
+    left join chat_deliveries delivery
+      on delivery.company_id = ${input.companyId} and delivery.endpoint_id = ${input.endpointId} and delivery.id = ids.uid
+  `)) as unknown as Array<Record<string, unknown>>;
+  return rows.map((row) => ({
+    id: String(row.id),
+    found: row.found === true,
+    principalId: text(row.principal_id),
+    triggerClass: triggerClass(row.trigger_class),
+    chatKey: text(row.chat_key),
+  }));
+}
+
+function mergedDeliveriesShare(deliveries: readonly OpenwaRunDelivery[], principalId: string, chatKey: string): boolean {
+  return deliveries.every((delivery) =>
+    delivery.found && delivery.chatKey !== null && normalizeChatKey(delivery.chatKey) === chatKey &&
+    (delivery.triggerClass === "owner" || delivery.principalId === principalId));
+}
+
 /** Resolves the run's OpenWA authority from server-written wake records at run start; null off OpenWA issues. */
 export async function resolveOpenwaRunContext(
   db: Db,
@@ -440,21 +506,25 @@ export async function resolveOpenwaRunContext(
     };
   }
   const deliveryIds = wakeAction?.deliveryIds ?? [];
-  const deliveries = deliveryIds.length > 0
-    ? await db
-        .select({
-          id: chatDeliveries.id,
-          principalId: chatDeliveries.principalId,
-          triggerClass: chatDeliveries.triggerClass,
-          chatKey: sql<string | null>`${chatDeliveries.normalizedEvent} -> 'openwa' ->> 'chatKey'`,
-        })
-        .from(chatDeliveries)
-        .where(and(
-          eq(chatDeliveries.companyId, input.companyId),
-          eq(chatDeliveries.endpointId, binding.endpointId),
-          inArray(chatDeliveries.id, deliveryIds),
-        ))
+  const runDeliveries = deliveryIds.length > 0
+    ? await loadOpenwaRunDeliveries(db, {
+        companyId: input.companyId,
+        endpointId: binding.endpointId,
+        issueId: input.issueId,
+        runId: input.runId,
+        wakeupRequestId: input.wakeupRequestId,
+        wakeDeliveryIds: deliveryIds,
+        contextDeliveryIds: [...new Set([
+          ...uuids(record(input.contextSnapshot.openwa).deliveryIds),
+          ...uuids(record(input.contextSnapshot[OPENWA_RUN_CONTEXT_KEY]).deliveryIds),
+        ])],
+      })
     : [];
+  const deliveriesById = new Map(runDeliveries.map((delivery) => [delivery.id, delivery]));
+  const deliveries = deliveryIds.flatMap((id) => {
+    const delivery = deliveriesById.get(id);
+    return delivery?.found ? [delivery] : [];
+  });
   const sameChat = deliveries.length > 0 && deliveries.length === deliveryIds.length &&
     deliveries.every((delivery) => delivery.principalId && delivery.chatKey && normalizeChatKey(delivery.chatKey) === chatKey);
   const principals = sameChat ? [...new Set(deliveries.map((delivery) => delivery.principalId!))] : [];
@@ -493,7 +563,7 @@ export async function resolveOpenwaRunContext(
     ? null
     : grantRequest
       ? grantRequest.requesterPrincipalId
-      : principals.length === 1 ? principals[0]! : null;
+      : principals.length === 1 && mergedDeliveriesShare(runDeliveries, principals[0]!, chatKey) ? principals[0]! : null;
   const now = new Date();
   const grantFilters = [
     ...(grantRequest
