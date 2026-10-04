@@ -16,7 +16,7 @@ CREATE TABLE "chat_openwa_linked_sessions" (
 	CONSTRAINT "chat_openwa_linked_sessions_status_check" CHECK ("chat_openwa_linked_sessions"."status" in ('active', 'unavailable'))
 );
 --> statement-breakpoint
-ALTER TABLE "chat_audit_entries" DROP CONSTRAINT "chat_audit_entries_kind_check";--> statement-breakpoint
+ALTER TABLE "chat_audit_entries" DROP CONSTRAINT IF EXISTS "chat_audit_entries_kind_check";--> statement-breakpoint
 ALTER TABLE "chat_openwa_linked_sessions" ADD CONSTRAINT "chat_openwa_linked_sessions_company_id_companies_id_fk" FOREIGN KEY ("company_id") REFERENCES "public"."companies"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "chat_openwa_linked_sessions" ADD CONSTRAINT "chat_openwa_linked_sessions_company_endpoint_fk" FOREIGN KEY ("company_id","endpoint_id") REFERENCES "public"."chat_endpoints"("company_id","id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "chat_openwa_linked_sessions_endpoint_session_uq" ON "chat_openwa_linked_sessions" USING btree ("endpoint_id","session_id");--> statement-breakpoint
