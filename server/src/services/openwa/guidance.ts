@@ -150,7 +150,7 @@ export interface OpenwaGuidanceFacts {
   numberMode: OpenwaNumberMode;
   ownerNumberPrefix: string | null;
   owners: string[];
-  ownerDmTargets: Array<{ name: string; e164: string }>;
+  ownerDmTargets: Array<{ name: string; chatRef: string }>;
   wake: OpenwaWakeEvent;
   progressNudgeSeconds: number;
   customInstructions: string;
@@ -360,7 +360,7 @@ function replyRequirements(input: {
   return [...missing];
 }
 
-async function listOwners(db: Db, companyId: string, endpointId: string): Promise<Array<{ name: string; e164: string | null }>> {
+async function listOwners(db: Db, companyId: string, endpointId: string): Promise<Array<{ name: string; digits: string | null }>> {
   const rows = await db
     .select({ userName: authUsers.name, principalName: chatExternalPrincipals.displayName, externalId: chatExternalPrincipals.externalId })
     .from(chatEndpointOwners)
@@ -392,7 +392,7 @@ async function listOwners(db: Db, companyId: string, endpointId: string): Promis
     const digits = (str(row.externalId) ?? "").endsWith("@c.us") ? row.externalId!.replace(/\D/g, "") : "";
     return {
       name: safeDisplayName(str(row.userName) ?? str(row.principalName)) ?? "Owner " + (index + 1),
-      e164: digits ? "+" + digits : null,
+      digits: digits || null,
     };
   });
 }
@@ -413,7 +413,7 @@ export async function buildOpenwaRunGuidance(
   const now = new Date();
   const [[endpoint], [conversation], [wakeRequest], owners, grants, pendingApprovals] = await Promise.all([
     db
-      .select({ policy: chatEndpoints.policy })
+      .select({ policy: chatEndpoints.policy, providerAccountId: chatEndpoints.providerAccountId })
       .from(chatEndpoints)
       .where(and(eq(chatEndpoints.id, openwa.endpointId), eq(chatEndpoints.companyId, companyId), eq(chatEndpoints.provider, "openwa")))
       .limit(1),
@@ -641,13 +641,15 @@ export async function buildOpenwaRunGuidance(
     ...(lastOutputSuppressed ? { lastOutputSuppressed: true as const } : {}),
     ...(sessionHealth ? { sessionHealth } : {}),
   };
+  const account = endpoint.providerAccountId ?? "";
+  const sessionId = account.slice(account.lastIndexOf("#") + 1);
   const facts: OpenwaGuidanceFacts = {
     numberMode: policy.numberMode,
     ownerNumberPrefix: policy.numberMode === "owner_number" && policy.ownerNumberPrefix.enabled ? policy.ownerNumberPrefix.text : null,
     owners: owners.map((owner) => owner.name),
     ownerDmTargets:
       wakeEvent.event === "owner_absent"
-        ? owners.flatMap((owner) => (owner.e164 ? [{ name: owner.name, e164: owner.e164 }] : []))
+        ? owners.flatMap((owner) => (owner.digits ? [{ name: owner.name, chatRef: "openwa:" + sessionId + ":" + owner.digits + "@c.us" }] : []))
         : [],
     wake: wakeEvent,
     progressNudgeSeconds: policy.progressNudgeSeconds,
@@ -670,7 +672,7 @@ function list(values: readonly string[]): string {
 const EVENT_HINTS: Record<OpenwaWakeEventName, string> = {
   message: "New WhatsApp message(s) for you in this chat.",
   owner_absent:
-    "An owner was mentioned or messaged here and stayed silent through the absence window. These messages were meant for the owner, which is why you were woken: never stay silent because they were addressed to someone else. Do both: (1) DM each owner listed under \"Owner DM targets\" with `openwa_send` (`chat` = that number): which group or chat, who wrote, what they asked, and a suggested reply the owner can approve; end by asking the owner to choose: you reply in the group with your suggestion (or their edited wording), or they reply in the group themselves, and close the DM with a last line `ref: <chatRef> <message id>` so a later run knows where to post. (2) In this chat, send one short holding reply that quotes the message, mentions the owner and says they have been notified, without answering the substance. Stay silent here only when the messages need no answer at all (a bare greeting with no question). When an owner later replies to such a DM, interpret it: a confirmation means post your suggestion, other text means post their wording, a refusal means do nothing. Read the `ref:` line of the quoted DM and post to that chat with `openwa_send` (`chat` = the chatRef, `quoteMessageId` = the message id).",
+    "An owner was mentioned or messaged here and stayed silent through the absence window. These messages were meant for the owner, which is why you were woken: never stay silent because they were addressed to someone else. Do both: (1) DM each owner listed under \"Owner DM targets\" with `openwa_send` (`chat` = that chatRef): which group or chat, who wrote, what they asked, and a suggested reply the owner can approve; end by asking the owner to choose: you reply in the group with your suggestion (or their edited wording), or they reply in the group themselves, and close the DM with a last line `ref: <chatRef> <message id>` so a later run knows where to post. (2) In this chat, send one short holding reply that quotes the message, mentions the owner and says they have been notified, without answering the substance. Stay silent here only when the messages need no answer at all (a bare greeting with no question). When an owner later replies to such a DM, interpret it: a confirmation means post your suggestion, other text means post their wording, a refusal means do nothing. Read the `ref:` line of the quoted DM and post to that chat with `openwa_send` (`chat` = the chatRef, `quoteMessageId` = the message id).",
   approval_reply:
     "An owner replied to your approval request. Interpret their free text and call `openwa_approval_resolve` with `decision` approve, reject or clarify (and any `conditions`). Only this run may resolve that request.",
   approval_resolved:
@@ -716,7 +718,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     "- " + replyLine,
     "- Pending approval requests for this chat: " + wake.pendingApprovals.length + ".",
     ...(facts.ownerDmTargets.length > 0
-      ? ["- Owner DM targets (this run may DM these owners without approval): " + facts.ownerDmTargets.map((owner) => JSON.stringify(owner.name) + " " + owner.e164).join(", ") + "."]
+      ? ["- Owner DM targets (this run may DM these owners without approval): " + facts.ownerDmTargets.map((owner) => JSON.stringify(owner.name) + " `" + owner.chatRef + "`").join(", ") + "."]
       : []),
     ...(wake.lateTranscripts?.length ? ["- Voice transcripts that finished after an earlier wake: " + wake.lateTranscripts.length + " (wake event `lateTranscripts`, keyed by message `id`)."] : []),
     ...(wake.lastOutputSuppressed ? ["- Your previous final output in this chat was not published (it stayed internal)."] : []),

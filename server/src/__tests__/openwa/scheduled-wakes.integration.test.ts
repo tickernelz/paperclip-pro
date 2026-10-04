@@ -421,6 +421,18 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     return deliveries(t);
   }
 
+  it("never arms a wake for group chatter that does not mention an owner", async () => {
+    const t = await setup({ clock: new FakeClock() });
+    const chat = group(t, "42");
+    await goLive(t);
+    const ts = Math.floor(Date.now() / 1000);
+    await send(t, { chatId: chat, author: jid(MEMBER_PHONE), body: "pagi semua", timestamp: ts });
+    await send(t, { chatId: chat, author: jid(MEMBER_PHONE), body: "@" + OTHER_MEMBER_PHONE + " udah makan?", timestamp: ts + 1, extra: { mentionedIds: [jid(OTHER_MEMBER_PHONE)] } });
+    await send(t, { chatId: chat, author: jid(OTHER_MEMBER_PHONE), body: "udah", timestamp: ts + 2 });
+    expect(await wakeRows(t)).toHaveLength(0);
+    expect(await deliveries(t)).toHaveLength(0);
+  }, 120_000);
+
   it("arms owner_absent when a group mention names the owner by LID only", async () => {
     const t = await setup({ clock: new FakeClock() });
     const ownerLid = "105000000006444@lid";

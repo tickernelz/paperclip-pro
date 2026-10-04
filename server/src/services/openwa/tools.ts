@@ -825,7 +825,7 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
 
 async function precheckNumber(ctx: ToolContext, target: Target): Promise<Target> {
   if (target.isOrigin || target.isGroup || !target.number) return target;
-  const [known] = await ctx.db
+  const [known] = ctx.openwa?.event === "owner_absent" ? [] : await ctx.db
     .select({ id: chatOutboundMessages.id })
     .from(chatOutboundMessages)
     .where(

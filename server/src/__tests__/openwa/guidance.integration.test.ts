@@ -416,6 +416,17 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(result.wake.omittedMessages).toBe(0);
   });
 
+  it("lists owner DM targets only for owner_absent wakes", async () => {
+    const seed = await seedOpenwa();
+    const delivery = await seedDelivery(seed, { text: "@owner tolong cek" });
+    const absent = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id], event: "owner_absent" });
+    expect(absent.full).toContain("Owner DM targets");
+    expect(absent.full).toContain("openwa:" + SESSION + "-");
+    expect(absent.full).toContain(OWNER_DIGITS + "@c.us");
+    const plain = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id] });
+    expect(plain.full).not.toContain("Owner DM targets");
+  });
+
   it("reports the reply requirement when the chat reply policy needs owner approval", async () => {
     const seed = await seedOpenwa({ policy: { replyPolicy: "ask_owner" } });
     const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hello" })).id] });

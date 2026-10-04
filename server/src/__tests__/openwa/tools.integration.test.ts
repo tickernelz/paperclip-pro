@@ -368,6 +368,16 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: principal!.id, paperclipUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
+    t.gateway.lids.set("628444000222", "105000000006444@lid");
+    await db.insert(chatOutboundMessages).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      chatKey: OTHER,
+      source: "tool",
+      state: "sent",
+      bodyHash: "x",
+      clientNonce: randomUUID(),
+    });
     const c = await conversation(t, GROUP);
     await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const absent = await run(t, c, { triggerClass: "other" });
@@ -377,7 +387,8 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       .where(eq(heartbeatRuns.id, absent.runId));
     await expect(
       executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "Budi asked about stock", idempotencyKey: randomUUID() }),
-    ).resolves.toMatchObject({ state: "delivered" });
+    ).resolves.toMatchObject({ state: "delivered", chatRef: "openwa:" + SESSION_ID + ":105000000006444@lid" });
+    expect(t.gateway.sends.at(-1)!.chatId).toBe("105000000006444@lid");
     const stranger = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628555000999", text: "psst", idempotencyKey: randomUUID() }));
     expect(stranger.code).toBe("approval_required");
     const plain = await run(t, c, { triggerClass: "other" });
