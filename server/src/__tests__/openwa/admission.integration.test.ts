@@ -5,6 +5,7 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, asc, eq } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   agentWakeupRequests,
   authUsers,
@@ -601,6 +602,13 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const [issue] = await db.select().from(issues).where(eq(issues.id, first.issueId));
     expect(issue.status).not.toBe("done");
     expect((await deliveries(t)).map((row) => row.conversationId)).toEqual([first.id, first.id]);
+    const reopened = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, first.issueId), eq(activityLog.action, "issue.updated")));
+    expect(reopened.map((row) => row.details)).toContainEqual(
+      expect.objectContaining({ status: "todo", source: "chat:openwa", _previous: { status: "done" } }),
+    );
   }, 120_000);
 
   it("ignores control commands from senders outside the allowlist", async () => {

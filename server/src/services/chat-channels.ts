@@ -16821,6 +16821,25 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             },
             taskTx,
           );
+          await logActivity(
+            taskTx as Db,
+            {
+              companyId: taskEndpoint.companyId,
+              actorType: taskUserId ? "user" : "system",
+              actorId: taskUserId ?? `chat:${taskEndpoint.provider}`,
+              action: "issue.updated",
+              entityType: "issue",
+              entityId: issue.id,
+              details: {
+                identifier: issue.identifier,
+                status: "todo",
+                source: `chat:${taskEndpoint.provider}`,
+                endpointId: taskEndpoint.id,
+                _previous: { status: issue.status },
+              },
+            },
+            inboundActivityPublications,
+          );
         }
         const body =
           (githubManual ? [
