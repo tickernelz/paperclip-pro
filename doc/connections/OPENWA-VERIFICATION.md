@@ -140,6 +140,18 @@ the health card belong here after the live window.
   or a cancelled issue. Guidance and the skill now tell the agent to keep the
   conversation issue open.
 
+### Journey 3: outbound media (AC11, partial)
+
+- Release 2026.1004.3 (`0e7e5f05c`), which tells the agent how to upload its
+  own files as task attachments before sending them.
+- 05:38:11Z-05:38:15Z: on an owner request the agent sent an image, a
+  document, a location and a poll; each `openwa_send` has a `tool_called`
+  and a `message_sent` audit row with the matching kind, and the owner
+  confirmed all four arrived on the phone.
+- Not covered live: video, audio, voice note, sticker, contact card, inbound
+  media and transcripts. Template and button messages are Baileys-only and this
+  gateway runs whatsapp-web.js.
+
 ### Remaining journeys
 
 - AC15 (owner-number mode): not run; this endpoint uses `agent_number`.
