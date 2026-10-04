@@ -356,7 +356,7 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends.length).toBe(sends);
   });
 
-  it("lets an owner_absent run DM a linked owner without approval but no one else", async () => {
+  it("marks owners in openwa_find and keeps owner DMs from an owner_absent run behind approval", async () => {
     const t = await setup();
     const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
     const [principal] = await db
@@ -368,16 +368,6 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: principal!.id, paperclipUserId: t.userId, status: "linked" })
       .returning();
     await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
-    t.gateway.lids.set("628444000222", "105000000006444@lid");
-    await db.insert(chatOutboundMessages).values({
-      companyId: t.companyId,
-      endpointId: t.endpointId,
-      chatKey: OTHER,
-      source: "tool",
-      state: "sent",
-      bodyHash: "x",
-      clientNonce: randomUUID(),
-    });
     const c = await conversation(t, GROUP);
     await trigger(t, c, { triggerClass: "other", role: "allowed" });
     const absent = await run(t, c, { triggerClass: "other" });
@@ -385,19 +375,12 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       .update(heartbeatRuns)
       .set({ contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"owner_absent"')` })
       .where(eq(heartbeatRuns.id, absent.runId));
-    await expect(
-      executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "Budi asked about stock", idempotencyKey: randomUUID() }),
-    ).resolves.toMatchObject({ state: "delivered", chatRef: "openwa:" + SESSION_ID + ":105000000006444@lid" });
-    expect(t.gateway.sends.at(-1)!.chatId).toBe("105000000006444@lid");
     t.gateway.lids.set("105000000006444@lid", "628444000222");
     await expect(executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000006444@lid" })).resolves.toMatchObject({ role: "owner" });
     t.gateway.lids.set("105000000009999@lid", "628555000999");
     expect(await executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000009999@lid" })).not.toHaveProperty("role");
-    const stranger = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628555000999", text: "psst", idempotencyKey: randomUUID() }));
-    expect(stranger.code).toBe("approval_required");
-    const plain = await run(t, c, { triggerClass: "other" });
-    const notAbsent = await rejection(executeOpenwaTool(db, plain, "openwa_send", { chat: "+628444000222", text: "psst", idempotencyKey: randomUUID() }));
-    expect(notAbsent.code).toBe("approval_required");
+    const ownerDm = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "psst", idempotencyKey: randomUUID() }));
+    expect(ownerDm.code).toBe("approval_required");
   });
 
   it("lets a cross_chat_send grant lift the gate exactly once", async () => {

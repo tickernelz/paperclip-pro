@@ -13,7 +13,7 @@ Evidence sources: the live gateway OpenAPI document (`GET /api/docs-yaml`, versi
 | D2 | Gates vs actions | Code enforces gates. Every outgoing action is the agent's decision (section 2) |
 | D3 | Conversation mapping | One conversation issue per chat; real work becomes agent-created child issues |
 | D4 | Wake triggers | Configurable trigger rules (section 6.5) |
-| D5 | Absence timer | Server measures, wakes the agent with `owner_absent`; agent briefs the owner by DM and holds the group |
+| D5 | Absence timer | Server measures, wakes the agent with `owner_absent`; agent asks the owner through a `reply` approval and holds the group |
 | D6 | Approval channel | WhatsApp reply to the request bubble, or Paperclip UI; first resolution wins |
 | D7 | Group sender outside allowlist | Reaches the agent as `outside_allowlist`; report/approval only. Denylist always dropped |
 | D8 | Tool path | Paperclip proxies gateway REST; gateway `/mcp` unused |
@@ -232,7 +232,7 @@ A message matching an immediate rule and `owner_mentioned_absent` wakes immediat
 
 - **Arm**: a non-owner message M in an active chat that mentions an owner (groups) or arrives in a DM with the rule on (`owner_number`). With no pending timer for the chat: insert one with `fireAt = M.timestamp + absenceSeconds` (default 120, endpoint and per chat). With a pending timer: attach M; `fireAt` never moves.
 - **Owner activity** in that chat before `fireAt` cancels it: an owner-authored text, media, sticker, location, contact or poll message (`owner_number`: phone-typed). Reactions, edits, revokes, read receipts, presence and activity in other chats do not count.
-- **Fire**: wake `owner_absent` (class `other`) with every attached message. That run may DM each linked owner without `cross_chat_send` approval (to the owner's resolved WhatsApp chat, never another target): it sends a summary with a suggested reply and asks whether the agent should post it or the owner answers, then posts a short holding reply in the origin chat that mentions the owner. An owner run woken by the owner's DM answer posts the agreed text to the origin chat.
+- **Fire**: wake `owner_absent` (class `other`) with every attached message. That run raises a one-action `reply` approval whose proposed action is the suggested reply and whose owner message summarises the mentions and offers the choice (post the suggestion, post the owner's wording, or the owner answers themselves by rejecting), then posts a short holding reply in the origin chat that mentions the owner. On approval the agent posts the agreed text to the origin chat.
 - **Late owner**: owner activity after `fireAt` while that run is active is steered into it as an owner message marked `owner_now_active`.
 - Durable rows; the lease holder keeps a min-heap of deadlines and sleeps until the earliest (no polling). Restart rebuilds the heap.
 
@@ -529,7 +529,7 @@ node scripts/bench/openwa-ingest.mjs
 5. **Read-only knowledge**: a member asks why error X happens; the `read_only` run reads code, logs and issues and answers; a runtime write tool is unavailable (OMP/Codex/Claude); creating an issue -> `approval_required(create_task)`; a connector write -> `approval_required(external_tools)`; a non-allowlisted REST mutation -> 403.
 6. **WhatsApp approval**: agent-written request reaches owner DMs; owner replies "boleh, tapi jangan sebut harga" quoting it -> `approval_reply` run -> resolve -> grant -> `grant` run creates the child issue -> requester informed. Negative controls: a member quoting the bubble; an owner reply without quote; `openwa_approval_resolve` from an `other` or `grant` run; quoting another request's bubble resolves only that request; replay during catch-up of an already-resolved reply -> no second grant; member B's run cannot use the grant approved for member A.
 7. **Paperclip approval**: owner resolves in UI -> same grant; simultaneous WhatsApp and UI resolution -> exactly one wins; non-owner board user -> 403.
-8. **Owner absent**: member mentions the owner, owner silent 120 s -> `owner_absent` wake, agent DMs the owner a summary and suggested reply and posts a holding reply in the group. Owner message at 60 s -> cancelled, no wake. Owner reaction only -> not cancelled. Message mentioning owner and agent -> immediate wake, no timer.
+8. **Owner absent**: member mentions the owner, owner silent 120 s -> `owner_absent` wake, agent asks the owner through a `reply` approval with a suggested reply and posts a holding reply in the group; on approval it posts the reply. Owner message at 60 s -> cancelled, no wake. Owner reaction only -> not cancelled. Message mentioning owner and agent -> immediate wake, no timer.
 9. **Mixed principals**: member trigger during an owner run -> queued; owner message during a member `read_only` run -> steered, profile stays `read_only`, a request needing writes produces a follow-up owner run. Negative control: removing the class rule must fail the test.
 10. **Publication**: final output published once; a tool reply quoting the trigger -> no duplicate; `openwa_stay_silent` -> nothing; `ask_owner` policy -> suppressed and audited.
 11. **Formatting and media**: mentions render as tags; replies show the quote bubble; image, document, location, contact card and voice note readable; transcript present when STT is configured; wake delay bounded by `sttWaitSeconds`.

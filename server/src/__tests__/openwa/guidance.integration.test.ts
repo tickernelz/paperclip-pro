@@ -416,18 +416,27 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(result.wake.omittedMessages).toBe(0);
   });
 
-  it("lists owner DM targets only for owner_absent wakes", async () => {
+  it("opens owner_absent wakes with a headline naming the owner and never exposes owner numbers", async () => {
     const seed = await seedOpenwa();
     const delivery = await seedDelivery(seed, { text: "@owner tolong cek" });
     const absent = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id], event: "owner_absent" });
-    expect(absent.full).toContain("Owner DM targets");
-    expect(absent.full).toContain("This wake is `owner_absent`, not a normal message: owner Dina Owner was mentioned");
-    expect(absent.full).toContain("openwa:" + SESSION + "-");
-    expect(absent.full).toContain(OWNER_DIGITS + "@c.us");
+    for (const markdown of [absent.full, absent.compact]) {
+      expect(markdown).toContain("This wake is `owner_absent`, not a normal message: owner Dina Owner was mentioned");
+      expect(markdown).not.toContain(OWNER_DIGITS);
+    }
     expect(absent.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
     const plain = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id] });
-    expect(plain.full).not.toContain("Owner DM targets");
+    expect(plain.full).not.toContain("This wake is `owner_absent`");
     expect(plain.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
+  });
+
+  it("opens approval_reply wakes with a headline to resolve the quoted request", async () => {
+    const seed = await seedOpenwa();
+    const reply = await seedDelivery(seed, { text: "ok", role: "owner", quoted: true });
+    const requestId = randomUUID();
+    const result = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [reply.id], event: "approval_reply", approvalRequestId: requestId });
+    expect(result.full).toContain("This wake is `approval_reply`, not a normal message: an owner answered approval request `" + requestId + "`");
+    expect(result.full).toContain("a short reply such as ok or yes approves");
   });
 
   it("reports the reply requirement when the chat reply policy needs owner approval", async () => {

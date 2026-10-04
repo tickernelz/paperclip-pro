@@ -209,11 +209,12 @@ revokes, read receipts and activity in other chats do not cancel it. When it
 fires, the agent is woken with `owner_absent` (class `other`) carrying every
 attached message. Only a message that mentions an owner starts a timer, and
 later mentions join it without moving the deadline, so ordinary chatter never
-wakes the agent. That run DMs each linked owner a summary with a suggested reply
-and asks whether the agent should post it or the owner answers; it may send that
-DM without `cross_chat_send` approval, and only to owners. It also posts a short
-holding reply in the group that mentions the owner. When the owner answers the
-DM, that owner run posts the agreed text to the group. A message that mentions both
+wakes the agent. That run asks the owners through an approval request in the `reply` category:
+the owner gets a summary and the suggested reply, and chooses to have the agent
+post it, to have their own wording posted, or to answer in the group themselves
+(reject). The run also posts a short holding reply in the group that mentions
+the owner. When the request is approved, the agent posts the agreed text to the
+group; reminders follow the approval settings until the owner decides. A message that mentions both
 the owner and the agent wakes the agent immediately and arms no timer. Timers
 survive restarts.
 

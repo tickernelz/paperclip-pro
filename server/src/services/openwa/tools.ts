@@ -578,12 +578,6 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
   return null;
 }
 
-/** True when an owner_absent run sends a DM to a current endpoint owner, which needs no cross-chat approval. */
-async function ownerAbsentOwnerDm(ctx: ToolContext, target: Target): Promise<boolean> {
-  if (ctx.openwa?.event !== "owner_absent" || target.isGroup || !target.number) return false;
-  return ownerPrincipal(ctx, target.number);
-}
-
 async function ownerPrincipal(ctx: ToolContext, digits: string): Promise<boolean> {
   const principals = await ctx.db
     .select({ id: chatExternalPrincipals.id })
@@ -604,7 +598,6 @@ async function ownerPrincipal(ctx: ToolContext, digits: string): Promise<boolean
 async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
   if (!target.isOrigin) {
     if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
-    if (await ownerAbsentOwnerDm(ctx, target)) return null;
     try {
       return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send");
     } catch (error) {
@@ -829,7 +822,7 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
 
 async function precheckNumber(ctx: ToolContext, target: Target): Promise<Target> {
   if (target.isOrigin || target.isGroup || !target.number) return target;
-  const [known] = ctx.openwa?.event === "owner_absent" ? [] : await ctx.db
+  const [known] = await ctx.db
     .select({ id: chatOutboundMessages.id })
     .from(chatOutboundMessages)
     .where(
