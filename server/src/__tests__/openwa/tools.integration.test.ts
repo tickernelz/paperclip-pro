@@ -383,6 +383,25 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(ownerDm.code).toBe("approval_required");
   });
 
+  it("refuses an approval_reply run's send to the request's origin chat but lets it answer the owner", async () => {
+    const t = await setup();
+    const ownerDm = await conversation(t, OTHER);
+    const [requestRow] = await db
+      .insert(chatOwnerApprovalRequests)
+      .values({ companyId: t.companyId, endpointId: t.endpointId, originChatKey: openwaChatKey(GROUP), categories: ["reply"], scope: "one_action", summary: "owner absent", proposedAction: "post the suggested reply", status: "approved" })
+      .returning();
+    await trigger(t, ownerDm, { triggerClass: "owner", role: "owner" });
+    const binding = await run(t, ownerDm, { triggerClass: "owner", event: "approval_reply" });
+    await db
+      .update(heartbeatRuns)
+      .set({ contextSnapshot: sql`jsonb_set(jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"approval_reply"'), '{paperclipOpenwa,approvalRequestId}', to_jsonb(${requestRow!.id}::text))` })
+      .where(eq(heartbeatRuns.id, binding.runId));
+    const toGroup = await rejection(executeOpenwaTool(db, binding, "openwa_send", { chat: GROUP, text: "posting it myself", idempotencyKey: randomUUID() }));
+    expect(toGroup.code).toBe("approval_action_pending");
+    expect(t.gateway.sends.some((send) => send.text === "posting it myself")).toBe(false);
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { text: "approved, posting now", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+  });
+
   it("lets a cross_chat_send grant lift the gate exactly once", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

@@ -748,7 +748,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     wake.event === "owner_absent"
       ? "**This wake is `owner_absent`, not a normal message: owner " + (ownerNames || "an owner") + " was mentioned here and stayed silent through the absence window. Ask the owner now with `openwa_request_approval` (category reply) and post a short holding reply here (see How to act).**"
       : wake.event === "approval_reply"
-        ? "**This wake is `approval_reply`, not a normal message: an owner answered approval request `" + (wake.approvalRequestId ?? "unknown") + "` by quoting it. Read their text as a decision on that request and call `openwa_approval_resolve` now (approve, reject or clarify); a short reply such as ok or yes approves. Do not stay silent without resolving it.**"
+        ? "**This wake is `approval_reply`, not a normal message: an owner answered approval request `" + (wake.approvalRequestId ?? "unknown") + "` by quoting it. Read their text as a decision on that request and call `openwa_approval_resolve` now (approve, reject or clarify); a short reply such as ok or yes approves. Do not stay silent without resolving it, and do not carry out the approved action yourself: the approval_resolved run does that, and sends from this run to the request's chat are refused. If the request is already resolved, only confirm that to the owner here.**"
         : null;
   const sections = [
     "## WhatsApp (OpenWA) guidance v" + OPENWA_GUIDANCE_VERSION,

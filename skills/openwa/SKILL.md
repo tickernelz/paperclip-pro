@@ -225,7 +225,9 @@ Errors carry a typed `code`:
   `chat_inactive`, `gateway_admin_disabled`, `self_session_requires_confirmation`,
   `secret_issuing_operation`, `ui_only_setting`. Do not retry without approval.
 - Approvals: `approval_not_authorized`, `approval_not_needed` (owner runs need
-  none), `already_resolved`, `no_owner_chat`, `message_too_long`,
+  none), `approval_action_pending` (an `approval_reply` run sent to the
+  request's chat; resolve instead, the `approval_resolved` run acts),
+  `already_resolved`, `no_owner_chat`, `message_too_long`,
   `requester_unknown`.
 - Gateway: `retry_after` (wait `retryAfterSeconds`), `gateway_unavailable`,
   `session_not_ready`, `gateway_error`, `unavailable_on_engine`,

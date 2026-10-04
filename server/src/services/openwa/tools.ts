@@ -9,6 +9,7 @@ import {
   chatEndpoints,
   chatExternalPrincipals,
   chatOutboundMessages,
+  chatOwnerApprovalRequests,
   heartbeatRuns,
   issueAttachments,
   type Db,
@@ -91,6 +92,7 @@ const E164 = /^\+?([1-9]\d{6,14})$/;
 export type OpenwaToolErrorCode =
   | "approval_required"
   | "approval_not_authorized"
+  | "approval_action_pending"
   | "approval_not_needed"
   | "already_resolved"
   | "no_owner_chat"
@@ -595,7 +597,28 @@ async function ownerPrincipal(ctx: ToolContext, digits: string): Promise<boolean
   return (await openwaCurrentOwnerUserId(ctx.db, ctx.endpoint, principals[0].id)).ownerId !== null;
 }
 
+/** Refuses sends from an approval_reply run to the approval's origin chat; the approval_resolved run carries out the approved action. */
+async function assertNotApprovalOrigin(ctx: ToolContext, target: Target): Promise<void> {
+  if (ctx.openwa?.event !== "approval_reply" || !ctx.openwa.approvalRequestId) return;
+  const [request] = await ctx.db
+    .select({ originChatKey: chatOwnerApprovalRequests.originChatKey })
+    .from(chatOwnerApprovalRequests)
+    .where(
+      and(
+        eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
+        eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
+        eq(chatOwnerApprovalRequests.id, ctx.openwa.approvalRequestId),
+      ),
+    )
+    .limit(1);
+  if (request && openwaChatKey(request.originChatKey) === target.chatKey)
+    throw new OpenwaToolError(409, "approval_action_pending", "Resolve the approval with openwa_approval_resolve; the approved action is carried out in that chat by the approval_resolved run", {
+      approvalRequestId: ctx.openwa.approvalRequestId,
+    });
+}
+
 async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
+  await assertNotApprovalOrigin(ctx, target);
   if (!target.isOrigin) {
     if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
     try {

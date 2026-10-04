@@ -248,6 +248,18 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       .orderBy(asc(chatDeliveries.createdAt));
   }
 
+  async function discovered(t: Setup, chatId: string) {
+    await send(t, { chatId, author: jid(MEMBER_PHONE), body: "hi all" });
+    await until(async () =>
+      (
+        await db
+          .select({ id: chatEndpointResources.id })
+          .from(chatEndpointResources)
+          .where(and(eq(chatEndpointResources.endpointId, t.endpointId), eq(chatEndpointResources.label, t.gateway.groups.get(chatId)!.name)))
+      ).length === 1,
+    );
+  }
+
   async function settledDeliveries(t: Setup, count: number) {
     let swept = Date.now();
     await until(async () => {
@@ -408,6 +420,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     await goLive(t);
     await send(t, { chatId: jid(OWNER_PHONE), body: "halo", extra: { notifyName: "Dina Owner" } });
     await settledDeliveries(t, 1);
+    await discovered(t, group);
     await send(t, { chatId: group, author: jid(OWNER_PHONE), body: "@" + OWN_PHONE + " cek", extra: { mentionedIds: [jid(OWN_PHONE)] } });
     await settledDeliveries(t, 2);
     const rows = await conversations(t);
@@ -425,6 +438,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     t.gateway.groups.set(active, { id: active, name: "Lid group", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
     t.gateway.groups.set(joined, { id: joined, name: "Lid join", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_PHONE) }] });
     await goLive(t);
+    await discovered(t, active);
     await send(t, { chatId: active, author: jid(MEMBER_PHONE), body: "@191000000001668 apa itu Paperclip?", extra: { mentionedIds: [ownLid] } });
     const [row] = await settledDeliveries(t, 1);
     expect((row.normalizedEvent as { openwa?: { rules?: string[] } }).openwa?.rules).toContain("agent_mentioned");
