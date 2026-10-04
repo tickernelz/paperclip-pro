@@ -392,7 +392,6 @@ type OpenwaRunDelivery = {
   chatKey: string | null;
 };
 
-/** Loads the wake's deliveries plus every delivery merged into the run or its deferred wake, scoped to the company and endpoint. */
 async function loadOpenwaRunDeliveries(
   db: Db,
   input: {
