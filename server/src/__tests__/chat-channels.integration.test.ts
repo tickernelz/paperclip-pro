@@ -5750,7 +5750,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       .select({ title: issues.title })
       .from(issues)
       .where(eq(issues.id, conversations[0]!.issueId));
-    expect(issue?.title).toBe("investigate this race");
+    expect(issue?.title).toMatch(/^GitHub: paperclipai\/paperclip(-second)? - investigate this race$/);
   });
 
   it("rejects caller-controlled GitHub setup secrets and arbitrary credential fields", async () => {
@@ -49984,8 +49984,12 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       .select()
       .from(issues)
       .where(eq(issues.companyId, fixture.companyId));
+    const [firstConversation] = await db
+      .select({ issueId: chatConversations.issueId })
+      .from(chatConversations)
+      .where(eq(chatConversations.endpointId, endpoint.id));
     const firstIssue = issuesBeforeStatus.find(
-      (issue) => issue.title === "Start the first DM task",
+      (issue) => issue.id === firstConversation?.issueId,
     );
     if (!firstIssue) throw new Error("First Slack DM task was not created");
     await db
@@ -50104,7 +50108,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     ).toEqual([
       {
         threadId: dm.thread.id,
-        text: `${firstIssue.identifier}: Start the first DM task — todo`,
+        text: `${firstIssue.identifier}: ${firstIssue.title} — todo`,
       },
       {
         threadId: dm.thread.id,

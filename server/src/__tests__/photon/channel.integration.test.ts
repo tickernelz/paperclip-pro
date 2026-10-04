@@ -935,9 +935,10 @@ describe.sequential("iMessage Photon channel control plane", () => {
     ).toBe("active");
     await t.deliver(photonEvent(7, t.f.chat, "/status"));
     await t.service.processPendingPublications();
+    const [currentIssue] = await db.select({ identifier: issues.identifier }).from(issues).where(eq(issues.id, current.issueId));
     expect(
       t.f.client.messages.sendText.mock.calls.some((call) =>
-        call[1].includes("Start the next task"),
+        call[1].includes(currentIssue!.identifier!),
       ),
     ).toBe(true);
   }, 30_000);

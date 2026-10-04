@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, inArray } from "drizzle-orm";
 import {
   activityLog,
   agents,
@@ -399,6 +399,21 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     await send(t, { chatId: inactive, author: jid(MEMBER_PHONE), body: "@" + OWN_PHONE + " again", extra: { mentionedIds: [jid(OWN_PHONE)] } });
     expect((await settledDeliveries(t, 3)).at(-1)?.principalRole).toBe("outside_allowlist");
   }, 90_000);
+
+  it("titles conversation tasks by contact name or masked number, and by group name", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const group = "120363000000000021@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Ops Room", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    await goLive(t);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "halo", extra: { notifyName: "Dina Owner" } });
+    await settledDeliveries(t, 1);
+    await send(t, { chatId: group, author: jid(OWNER_PHONE), body: "@" + OWN_PHONE + " cek", extra: { mentionedIds: [jid(OWN_PHONE)] } });
+    await settledDeliveries(t, 2);
+    const rows = await conversations(t);
+    const titles = await db.select({ id: issues.id, title: issues.title }).from(issues).where(inArray(issues.id, rows.map((row) => row.issueId)));
+    expect(titles.map((row) => row.title).sort()).toEqual(["OpenWA: Dina Owner", "OpenWA: Ops Room"]);
+  }, 120_000);
 
   it("recognises the agent's LID in group mentions and joins", async () => {
     const t = await setup();

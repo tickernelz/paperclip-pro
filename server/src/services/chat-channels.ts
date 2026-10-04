@@ -67,7 +67,7 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
 import { inspectOpenwaGateway, openwaProviderAccountId, openwaSetupReplyDelivered, verifyOpenwaSession } from "./openwa/setup.js";
 import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
@@ -1841,6 +1841,32 @@ function safeTitle(text: string, fallback: string): string {
     .trim()
     .split(/\r?\n/)[0];
   return (line || fallback).slice(0, 160);
+}
+
+const TITLE_MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+
+function clipTitlePart(value: string, limit: number): string {
+  const flat = value.replace(/\s+/g, " ").trim();
+  return flat.length > limit ? flat.slice(0, limit - 1).trimEnd() + "\u2026" : flat;
+}
+
+/** Titles a chat conversation task as "Connector: who", adding the first message for thread surfaces and the date for later sessions. */
+export function chatConversationTitle(input: {
+  providerLabel: string;
+  surfaceKind: ChatSurfaceKind;
+  who: string | null;
+  firstMessage: string;
+  sessionGeneration: number;
+  startedAt: Date;
+}): string {
+  const who = clipTitlePart(input.who ?? "", 60);
+  const head = input.providerLabel + ": " + (who || "conversation");
+  if (input.surfaceKind === "native_thread") {
+    const topic = clipTitlePart(safeTitle(input.firstMessage, ""), 80);
+    return (topic ? head + " - " + topic : head).slice(0, 160);
+  }
+  if (input.sessionGeneration <= 1) return head.slice(0, 160);
+  return (head + " \u00b7 " + input.startedAt.getUTCDate() + " " + TITLE_MONTHS[input.startedAt.getUTCMonth()]).slice(0, 160);
 }
 
 function hasMeaningfulSlackMentionRequest(text: string): boolean {
@@ -16690,12 +16716,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           const issue = await issuesSvc.create(
             endpoint.companyId,
             {
-              title: safeTitle(
-                githubAutomatic
-                  ? `PR #${githubAutomatic.context.pullNumber}: ${githubAutomatic.context.title}`
-                  : message.text,
-                `${PROVIDER_LABELS[endpoint.provider]} conversation`,
-              ),
+              title: githubAutomatic
+                ? safeTitle(`PR #${githubAutomatic.context.pullNumber}: ${githubAutomatic.context.title}`, `${PROVIDER_LABELS[endpoint.provider]} conversation`)
+                : chatConversationTitle({
+                    providerLabel: PROVIDER_LABELS[endpoint.provider],
+                    surfaceKind,
+                    who: thread.isDM
+                      ? (openwaDecoration
+                          ? (openwaDecoration.sender.name ?? (openwaDecoration.sender.phone ? maskOpenwaPhoneNumber(openwaDecoration.sender.phone) : null))
+                          : message.author.fullName || message.author.userName || null)
+                      : resource.label,
+                    firstMessage: message.text,
+                    sessionGeneration,
+                    startedAt: new Date(),
+                  }),
               description: previousIssue?.identifier
                 ? `Started from ${PROVIDER_LABELS[endpoint.provider]}: ${resource.label}\n\nContinues ${previousIssue.identifier}`
                 : `Started from ${PROVIDER_LABELS[endpoint.provider]}: ${resource.label}`,
