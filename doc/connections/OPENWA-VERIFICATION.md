@@ -152,6 +152,36 @@ the health card belong here after the live window.
   media and transcripts. Template and button messages are Baileys-only and this
   gateway runs whatsapp-web.js.
 
+### Journey 4: member DM, approval and owner-only config (AC3, AC5, AC6, AC13)
+
+- Release 2026.1004.4. Member B is a second phone number.
+- 07:32:04Z-07:32:17Z: three DMs from B (+62xxx...4657) were audited as
+  `trigger_filtered`, reason `outside_allowlist`; no run started.
+- 07:33:20Z: the owner asked by DM to allow B; the owner run (full) called
+  `openwa_endpoint_config` and the `config_changed` row records one added
+  sender rule.
+- 07:34:18Z: B's next DM was admitted as `allowed`, trigger class `other`;
+  the run resolved `read_only` and replied.
+- 07:35:21Z: B asked for a new task. The read-only run requested a one-action
+  `create_task` approval (07:35:48Z). A bare "setuju" from the owner was not
+  taken as approval; the owner's quoted reply (07:36:57Z) resolved it
+  (`approval_resolved`, via whatsapp, 07:37:20Z) and the grant run (still
+  `read_only`, class `grant`) created ZHA-381 "Cek stok gudang" as a child of
+  the conversation issue ZHA-380.
+- 07:38:53Z: B asked to denylist a number; `openwa_endpoint_config` returned
+  `owner_only` (07:39:09Z) and the agent declined.
+
+### Journey 5: group mention by LID (AC4, AC9)
+
+- Release 2026.1004.4. Group "Test Assistant" with the owner, B and the agent
+  was discovered at 07:31:40Z and enabled (owner present).
+- 07:41:57Z: B wrote "@<agent> apa itu Paperclip?". WhatsApp addressed the
+  mention to the agent's LID, which admission did not know (it only matched
+  the phone JID), so the message was discarded with no audit row and no reply.
+- Fixed in `c4a104564`, released as 2026.1004.5: admission resolves the
+  agent's own LID once through `contacts/check` and matches it in mentions,
+  body text and group joins. The group journey is to be rerun on this build.
+
 ### Remaining journeys
 
 - AC15 (owner-number mode): not run; this endpoint uses `agent_number`.
