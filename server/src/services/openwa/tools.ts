@@ -7,6 +7,7 @@ import {
   chatDeliveries,
   chatEndpointResources,
   chatEndpoints,
+  chatExternalPrincipals,
   chatOutboundMessages,
   heartbeatRuns,
   issueAttachments,
@@ -56,7 +57,7 @@ import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnl
 import { maskOpenwaDigits } from "./guidance.js";
 import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
-import type { OpenwaOwnerService } from "./owners.js";
+import { openwaCurrentOwnerUserId, type OpenwaOwnerService } from "./owners.js";
 import { markTriggersAnswered } from "./publication.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
@@ -577,9 +578,29 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
   return null;
 }
 
+/** True when an owner_absent run sends a DM to a current endpoint owner, which needs no cross-chat approval. */
+async function ownerAbsentOwnerDm(ctx: ToolContext, target: Target): Promise<boolean> {
+  if (ctx.openwa?.event !== "owner_absent" || target.isGroup || !target.number) return false;
+  const principals = await ctx.db
+    .select({ id: chatExternalPrincipals.id })
+    .from(chatExternalPrincipals)
+    .where(
+      and(
+        eq(chatExternalPrincipals.companyId, ctx.endpoint.companyId),
+        eq(chatExternalPrincipals.provider, "openwa"),
+        eq(chatExternalPrincipals.providerAccountId, ctx.endpoint.providerAccountId ?? ""),
+        eq(chatExternalPrincipals.externalId, target.number + "@c.us"),
+      ),
+    )
+    .limit(1);
+  if (!principals[0]) return false;
+  return (await openwaCurrentOwnerUserId(ctx.db, ctx.endpoint, principals[0].id)).ownerId !== null;
+}
+
 async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
   if (!target.isOrigin) {
     if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
+    if (await ownerAbsentOwnerDm(ctx, target)) return null;
     try {
       return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send");
     } catch (error) {

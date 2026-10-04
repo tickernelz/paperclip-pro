@@ -5,7 +5,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   agents,
   assets,
@@ -15,7 +15,10 @@ import {
   chatConversations,
   chatDeliveries,
   chatEndpointResources,
+  chatEndpointOwners,
   chatEndpoints,
+  chatExternalPrincipals,
+  chatIdentityLinks,
   chatOutboundMessages,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
@@ -351,6 +354,35 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     const group = await rejection(executeOpenwaTool(db, binding, "openwa_send", { chat: GROUP, text: "psst", idempotencyKey: randomUUID() }));
     expect(group.details).toMatchObject({ category: "cross_chat_send" });
     expect(t.gateway.sends.length).toBe(sends);
+  });
+
+  it("lets an owner_absent run DM a linked owner without approval but no one else", async () => {
+    const t = await setup();
+    const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    const [principal] = await db
+      .insert(chatExternalPrincipals)
+      .values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId: OTHER })
+      .returning();
+    const [link] = await db
+      .insert(chatIdentityLinks)
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: principal!.id, paperclipUserId: t.userId, status: "linked" })
+      .returning();
+    await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
+    const c = await conversation(t, GROUP);
+    await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const absent = await run(t, c, { triggerClass: "other" });
+    await db
+      .update(heartbeatRuns)
+      .set({ contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"owner_absent"')` })
+      .where(eq(heartbeatRuns.id, absent.runId));
+    await expect(
+      executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "Budi asked about stock", idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered" });
+    const stranger = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628555000999", text: "psst", idempotencyKey: randomUUID() }));
+    expect(stranger.code).toBe("approval_required");
+    const plain = await run(t, c, { triggerClass: "other" });
+    const notAbsent = await rejection(executeOpenwaTool(db, plain, "openwa_send", { chat: "+628444000222", text: "psst", idempotencyKey: randomUUID() }));
+    expect(notAbsent.code).toBe("approval_required");
   });
 
   it("lets a cross_chat_send grant lift the gate exactly once", async () => {
