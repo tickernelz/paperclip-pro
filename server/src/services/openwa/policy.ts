@@ -269,7 +269,10 @@ function startsWithPrefix(body: string, prefix: string): boolean {
 }
 
 function mentions(event: Pick<OpenwaInboundEvent, "mentionedIds" | "body">, jids: Iterable<string>, digits: string | null): boolean {
-  for (const jid of jids) for (const id of event.mentionedIds) if (id.toLowerCase() === jid) return true;
+  for (const jid of jids) {
+    for (const id of event.mentionedIds) if (id.toLowerCase() === jid) return true;
+    if (jid.endsWith("@lid") && event.body.includes("@" + openwaDigits(jid))) return true;
+  }
   if (digits) {
     for (const id of event.mentionedIds) if (openwaDigits(id) === digits) return true;
     if (event.body.includes("@" + digits)) return true;

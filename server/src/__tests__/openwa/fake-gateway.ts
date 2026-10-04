@@ -62,6 +62,7 @@ export class FakeOpenwaGateway {
   readonly overrides: FakeOverride[] = [];
   readonly subscriptions: Array<{ sessionId: string; events: string[] }> = [];
   readonly media = new Map<string, FakeMedia>();
+  readonly lids = new Map<string, string>();
   readonly groups = new Map<string, { id: string; name: string; participants: Array<{ id: string; isAdmin?: boolean }> }>();
   readonly chats: Array<{ id: string; name?: string; timestamp?: number }> = [];
   private readonly sendFailures: FakeSendFailure[] = [];
@@ -275,7 +276,7 @@ export class FakeOpenwaGateway {
     if (req.method === "GET" && check) {
       const number = decodeURIComponent(check[1]!);
       const exists = this.numbers.get(number) ?? true;
-      return reply(200, { number, exists, whatsappId: exists ? number + "@c.us" : null });
+      return reply(200, { number, exists, whatsappId: exists ? (this.lids.get(number) ?? number + "@c.us") : null });
     }
     const phone = /^\/contacts\/([^/]+)\/phone$/.exec(url.pathname.slice(prefix.length));
     if (req.method === "GET" && phone) {

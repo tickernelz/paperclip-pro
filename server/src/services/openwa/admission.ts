@@ -326,6 +326,9 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
   const discoveries = new Map<string, Promise<boolean>>();
   const discoveryFailures = new Map<string, number>();
   const learnedLids = new Set<string>();
+  const agentLids = new Map<string, string>();
+  const agentLidLookups = new Map<string, Promise<void>>();
+  const agentLidRetryAt = new Map<string, number>();
   const stats: OpenwaAdmissionStats = {
     discarded: 0,
     ownerActivity: 0,
@@ -396,6 +399,37 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       if (oldest !== undefined) learnedLids.delete(oldest);
     }
     learnedLids.add(key);
+  }
+
+  /** Adds the agent's own WhatsApp LID to the snapshot so LID-addressed groups recognise its mentions and joins. */
+  async function ensureAgentLid(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot): Promise<void> {
+    if (snapshot.agentLids.size || !snapshot.agentDigits) return;
+    const key = snapshot.endpointId + "\u0000" + snapshot.agentDigits;
+    let lid = agentLids.get(key);
+    if (!lid && (agentLidRetryAt.get(key) ?? 0) <= now()) {
+      const gateway = runtime.adapter()?.gateway ?? null;
+      if (!gateway) return;
+      let lookup = agentLidLookups.get(key);
+      if (!lookup) {
+        lookup = gateway
+          .checkNumber(snapshot.agentDigits)
+          .then(
+            (check) => {
+              const found = check.whatsappId?.trim().toLowerCase() ?? "";
+              if (found.endsWith("@lid")) agentLids.set(key, found);
+              else agentLidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+            },
+            () => {
+              agentLidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+            },
+          )
+          .finally(() => agentLidLookups.delete(key));
+        agentLidLookups.set(key, lookup);
+      }
+      await lookup;
+      lid = agentLids.get(key);
+    }
+    if (lid) snapshot.agentLids.add(lid);
   }
 
   async function discoverGroup(
@@ -548,6 +582,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     }
     const approvalCandidate = detectApprovalReply(event, snapshot);
     if (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) return;
+    if (event.chatKind === "group" && (event.mentionedIds.length || event.body.includes("@"))) await ensureAgentLid(runtime, snapshot);
     const fromAgent = event.quoted ? await quotedFromAgent(snapshot, event) : false;
     const facts = { quotedFromAgent: fromAgent };
     if (event.chatKind === "group" && !snapshot.chats.has(event.chatKey)) {
@@ -705,6 +740,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     const snapshot = await snapshotFor(runtime);
     if (!snapshot) return;
     const chatKey = openwaChatKey(event.groupId);
+    if (event.participantIds.some((id) => id.trim().toLowerCase().endsWith("@lid"))) await ensureAgentLid(runtime, snapshot);
     const self = event.participantIds.some((id) => {
       const lower = id.trim().toLowerCase();
       return lower === snapshot.agentJid || snapshot.agentLids.has(lower) || openwaDigits(lower) === snapshot.agentDigits;

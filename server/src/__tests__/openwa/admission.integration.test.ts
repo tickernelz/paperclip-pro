@@ -400,6 +400,24 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect((await settledDeliveries(t, 3)).at(-1)?.principalRole).toBe("outside_allowlist");
   }, 90_000);
 
+  it("recognises the agent's LID in group mentions and joins", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    const ownLid = "191000000001668@lid";
+    t.gateway.lids.set(OWN_PHONE, ownLid);
+    const active = "120363000000000011@g.us";
+    const joined = "120363000000000012@g.us";
+    t.gateway.groups.set(active, { id: active, name: "Lid group", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    t.gateway.groups.set(joined, { id: joined, name: "Lid join", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_PHONE) }] });
+    await goLive(t);
+    await send(t, { chatId: active, author: jid(MEMBER_PHONE), body: "@191000000001668 apa itu Paperclip?", extra: { mentionedIds: [ownLid] } });
+    const [row] = await settledDeliveries(t, 1);
+    expect((row.normalizedEvent as { openwa?: { rules?: string[] } }).openwa?.rules).toContain("agent_mentioned");
+    t.gateway.emit("group.join", { groupId: joined, actorId: jid(MEMBER_PHONE), participantIds: [ownLid], timestamp: Math.floor(Date.now() / 1000) });
+    await settledDeliveries(t, 2);
+    expect((await audits(t)).filter((entry) => entry.kind === "group_added").map((entry) => entry.chatKey)).toEqual([joined]);
+  }, 90_000);
+
   it("wakes the agent once when added to an inactive group", async () => {
     const t = await setup();
     await addOwner(t, OWNER_PHONE);
