@@ -421,6 +421,18 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     return deliveries(t);
   }
 
+  it("arms owner_absent when a group mention names the owner by LID only", async () => {
+    const t = await setup({ clock: new FakeClock() });
+    const ownerLid = "105000000006444@lid";
+    t.gateway.lids.set(OWNER_PHONE, ownerLid);
+    const chat = group(t, "41");
+    await goLive(t);
+    const ts = Math.floor(Date.now() / 1000);
+    await send(t, { chatId: chat, author: jid(MEMBER_PHONE), body: "@105000000006444 bisa cek ini?", timestamp: ts, extra: { mentionedIds: [ownerLid] } });
+    const [armed] = await wakeRows(t);
+    expect(armed).toMatchObject({ kind: "owner_absent", state: "pending", chatKey: chat });
+  }, 120_000);
+
   it("owner silent 120 s wakes owner_absent with every attached message; fireAt never moves (AC8)", async () => {
     const clock = new FakeClock();
     const t = await setup({ clock });
