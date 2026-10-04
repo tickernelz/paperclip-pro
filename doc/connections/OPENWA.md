@@ -403,6 +403,8 @@ Every call is audited as `tool_called`.
 | `openwa_describe` | read | Argument schema and gates of one operation. |
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
 | `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders and custom instructions; an empty call returns the current settings. |
+| `openwa_linked_list` | read | Owner runs only: list linked read-only numbers and their board-allowed chats. |
+| `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first. |
 
 Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
@@ -438,6 +440,52 @@ approval toggles, reminders and custom instructions from WhatsApp; other runs ge
 Paperclip-only (`ui_only_setting`). Every change bumps the policy revision and is
 audited with before and after values, attributed to the owner whose message
 started the run. Arguments are in the bundled skill.
+
+## Linked numbers
+
+The board can link other WhatsApp sessions on the same OpenWA gateway, such as an
+owner's personal number, so the assigned agent can read chats the board chose.
+The endpoint keeps its own agent number unchanged.
+
+- **Read only, on demand.** A linked session never sends, never wakes the agent,
+  is never subscribed to live events, and its messages are never copied into
+  Paperclip. The agent reads it only when it calls a linked tool.
+- **Owner runs only.** `openwa_linked_list` and `openwa_linked_read` work only in
+  owner-triggered runs (trigger class `owner`, profile `full`); every other run
+  gets 403 `owner_only`. There is no approval category for them. Owner-run
+  guidance names the linked numbers by label.
+- **Allowlist.** A newly linked number exposes no chat. In Settings **Linked
+  numbers**, **Choose chats** lists the session's chats (names and ids only, never
+  message bodies) with search and checkboxes for groups and contacts. Reads of any
+  other chat fail 403 `linked_chat_not_allowed` before the gateway is called.
+- **Key.** **Link a number** creates a dedicated OpenWA API key with the
+  endpoint's admin key: role `viewer`, `allowedSessions` set to the linked
+  session, named `paperclip-linked-<short id>`. Paperclip stores it as a
+  Paperclip-managed company secret and never returns it to a client or an agent.
+  OpenWA refuses every send and write route for a viewer key. Without an admin
+  key, linking fails 422 `openwa_admin_key_required`; add one under **Admin API
+  key** first. The agent's own session cannot be linked (422
+  `openwa_linked_is_agent_session`).
+- **Unlink** revokes the gateway key, removes the link and deletes the secret;
+  later reads fail `linked_session_unavailable`. When the gateway stops accepting
+  a key, the number shows **Unavailable** and must be linked again.
+- **Audit.** Each agent read records a `linked_read` audit entry with the chat key,
+  linked number id and message count, never content. Board changes record
+  `openwa.linked_session_added`, `openwa.linked_session_chats_changed` (counts
+  only) and `openwa.linked_session_removed`.
+
+Routes, all under `/api/chat-endpoints/:endpointId/openwa` and board-only:
+
+| Method and path | Access | Purpose |
+| --- | --- | --- |
+| `GET /linked-sessions` | endpoint access | List linked numbers and their allowed chats |
+| `GET /linkable-sessions` | connection management, admin key | Gateway sessions that can be linked (excludes the agent session and linked ones) |
+| `POST /linked-sessions` `{sessionId, label}` | connection management | Link a number; returns 201 |
+| `PUT /linked-sessions/:linkedId/chats` `{chats: [{chatId, label, isGroup}]}` | connection management | Replace the allowed chats |
+| `DELETE /linked-sessions/:linkedId` | connection management | Unlink; returns 204 |
+| `GET /linked-sessions/:linkedId/gateway-chats` | connection management | The linked session's chats for the picker |
+
+Table: `chat_openwa_linked_sessions` (migration 0289).
 
 ## Gateway secrets (D38)
 
@@ -490,7 +538,7 @@ The endpoint's **Audit** tab lists `chat_audit_entries` newest first with filter
 `trigger_admitted`, `trigger_filtered`, `message_sent`, `publication_suppressed`,
 `tool_called`, `approval_requested`, `approval_reminded`, `approval_resolved`,
 `approval_cancelled`, `config_changed`, `group_added`, `group_left`,
-`session_health`. Endpoint owners, company owners and instance admins see content;
+`session_health`, `linked_read`. Endpoint owners, company owners and instance admins see content;
 other board users with endpoint access see metadata only. Owner-class runs can
 read it through `openwa_call` operation `paperclip.audit.list`. Tool arguments are
 redacted and bounded (4 KB arguments, 1 KB result summary).
@@ -503,7 +551,8 @@ entries: `openwa.endpoint_created`, `openwa.endpoint_updated`, `openwa.owner_add
 `openwa.chat_activation_changed`, `openwa.config_changed`,
 `openwa.approval_requested`, `openwa.approval_resolved`, `openwa.approval_cancelled`,
 `openwa.grant_created`, `openwa.grant_consumed`, `openwa.grant_revoked`,
-`openwa.grant_expired` and `openwa.gateway_admin_called`.
+`openwa.grant_expired`, `openwa.gateway_admin_called`, `openwa.linked_session_added`,
+`openwa.linked_session_chats_changed` and `openwa.linked_session_removed`.
 
 ## Health card
 
