@@ -208,6 +208,19 @@ the health card belong here after the live window.
   chat fails with `approval_action_pending`, so only the `approval_resolved`
   run posts. The journey is to be rerun on that build.
 
+### Journey 7: linked read-only numbers (production readiness)
+
+- Released in 2026.1004.13 (`430437e9a`): migration 0289 applied
+  (`chat_openwa_linked_sessions` exists, the audit kind check allows
+  `linked_read`). `GET .../openwa/linked-sessions` returns `[]`;
+  `GET .../openwa/linkable-sessions` returns 422 `openwa_admin_key_required`
+  because this endpoint has no admin key yet, as specified.
+- Fixture coverage: `openwa/linked.integration.test.ts` (13 tests) with negative
+  controls for the owner-only gate, the chat allowlist and endpoint-removal
+  cleanup; independent review findings (key lifecycle) fixed in `a97948939`.
+- Live journey pending: add an admin key, connect the owner's second session on
+  the gateway, link it, select chats, and ask the agent from an owner DM.
+
 ### Remaining journeys
 
 - AC15 (owner-number mode): not run; this endpoint uses `agent_number`.
