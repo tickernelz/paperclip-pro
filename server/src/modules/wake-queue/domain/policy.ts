@@ -33,7 +33,12 @@ export type WakeAdmissionDecision =
   | { kind: "coalesce" }
   | { kind: "defer" };
 
-export type OpenwaWakeClass = { triggerClass: string; event: string | null };
+export type OpenwaWakeClass = {
+  triggerClass: string;
+  event: string | null;
+  principalId?: string | null;
+  requesterGrants?: boolean;
+};
 
 const OPENWA_SOLO_EVENTS = new Set(["approval_reply", "approval_resolved"]);
 
@@ -47,7 +52,9 @@ export function openwaWakesMayShare(incoming: OpenwaWakeClass | null, target: Op
   if (!incoming && !target) return true;
   if (!incoming || !target) return false;
   if (isSoloOpenwaWake(incoming) || isSoloOpenwaWake(target)) return false;
-  return incoming.triggerClass === target.triggerClass;
+  if (incoming.triggerClass !== target.triggerClass) return false;
+  if (!incoming.requesterGrants && !target.requesterGrants) return true;
+  return Boolean(incoming.principalId) && incoming.principalId === target.principalId;
 }
 
 /**

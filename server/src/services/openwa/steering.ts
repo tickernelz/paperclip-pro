@@ -8,7 +8,7 @@ import {
   NativeSessionSteeringError,
   steerNativeSession,
 } from "../native-runtime/native-session-executor.js";
-import { readOpenwaRunContext, type OpenwaRunContext } from "./authority.js";
+import { openwaRunCarriesGrants, readOpenwaRunContext, type OpenwaRunContext } from "./authority.js";
 import { recordSteeredOwnerTriggers } from "./followups.js";
 import { markOpenwaLateTranscriptConsumed, type OpenwaLateTranscriptEvent } from "./late-transcripts.js";
 
@@ -69,6 +69,17 @@ export function decideOpenwaInflight(input: {
   if (input.incoming.triggerClass === "other")
     return input.run.triggerClass === "other" && input.run.profile === "read_only" ? "steer" : "queue";
   return "queue";
+}
+
+export function openwaRunGrantsAdmitSteer(
+  run: Pick<OpenwaRunContext, "profile" | "toolProfile" | "grantIds" | "grantedCategories" | "requesterPrincipalId">,
+  incoming: OpenwaInflightWake,
+  principalIds: readonly (string | null)[],
+): boolean {
+  if (incoming.triggerClass === "owner") return true;
+  if (!openwaRunCarriesGrants(run)) return true;
+  const requester = run.requesterPrincipalId;
+  return requester !== null && principalIds.length > 0 && principalIds.every((principalId) => principalId === requester);
 }
 
 export async function openwaRunCanSteer(runId: string): Promise<boolean> {
@@ -171,7 +182,12 @@ export async function steerOpenwaTrigger(
   if (!(await openwaRunCanSteer(active.runId))) return { deliveredAs: "queued", reason: "steering_unsupported" };
   const deliveries = input.deliveryIds.length
     ? await db
-        .select({ triggerClass: chatDeliveries.triggerClass, principalRole: chatDeliveries.principalRole, normalizedEvent: chatDeliveries.normalizedEvent })
+        .select({
+          triggerClass: chatDeliveries.triggerClass,
+          principalId: chatDeliveries.principalId,
+          principalRole: chatDeliveries.principalRole,
+          normalizedEvent: chatDeliveries.normalizedEvent,
+        })
         .from(chatDeliveries)
         .where(and(
           eq(chatDeliveries.companyId, input.companyId),
@@ -182,6 +198,8 @@ export async function steerOpenwaTrigger(
     : [];
   if (deliveries.length !== input.deliveryIds.length || deliveries.some((row) => row.triggerClass !== input.incoming.triggerClass))
     return { deliveredAs: "queued", reason: "trigger_class_mismatch" };
+  if (!openwaRunGrantsAdmitSteer(active.openwa, input.incoming, deliveries.map((row) => row.principalId)))
+    return { deliveredAs: "queued", reason: "grant_principal_mismatch" };
   const delivery = deliveries[0];
   const ownerNowActive = record(record(delivery?.normalizedEvent).openwa).ownerNowActive === true;
   const outcome = await steerer({

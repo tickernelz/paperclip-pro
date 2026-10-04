@@ -14,6 +14,8 @@ import {
   chatConversations,
   chatDeliveries,
   chatEndpoints,
+  chatOwnerApprovalRequests,
+  chatOwnerGrants,
   companies,
   companyMemberships,
   companySecretBindings,
@@ -49,6 +51,7 @@ const SESSION_ID = "31111111-2222-4333-8444-555555555555";
 const OWN_PHONE = "628111000777";
 const OWNER_PHONE = "628333000777";
 const MEMBER_PHONE = "628444000777";
+const OTHER_MEMBER_PHONE = "628555000777";
 const GROUP = "120363000000000777@g.us";
 const jid = (phone: string) => phone + "@c.us";
 
@@ -460,6 +463,55 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     release(queuedRun.id);
     const nextRun = await finishedRun(t, third.action.id);
     expect(captured.get(nextRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+  }, 180_000);
+
+  it("steers only the grant holder's member messages into a requester-grant run; another member gets a plain read_only run", async () => {
+    const t = await setup();
+    t.gateway.groups.set(GROUP, { id: GROUP, name: "Ops", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }, { id: jid(OTHER_MEMBER_PHONE) }] });
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + OTHER_MEMBER_PHONE }, t.userId);
+    const warmup = await admit(t, mention(MEMBER_PHONE, "warm up"));
+    release((await runningRun(t, warmup.action.id)).id);
+    await finishedRun(t, warmup.action.id);
+    const requesterPrincipalId = warmup.delivery.principalId!;
+    const [approval] = await db.insert(chatOwnerApprovalRequests).values({
+      companyId: t.companyId, endpointId: t.endpointId, originChatKey: GROUP, categories: ["external_tools"],
+      scope: "requester", summary: "Send vendor email", proposedAction: "external_tools", status: "approved", requestedByPrincipalId: requesterPrincipalId,
+    }).returning();
+    const [grant] = await db.insert(chatOwnerGrants).values({
+      companyId: t.companyId, endpointId: t.endpointId, requestId: approval!.id, originChatKey: GROUP, requesterPrincipalId,
+      category: "external_tools", scope: "requester", approvedVia: "paperclip", approvedByUserId: t.userId,
+      expiresAt: new Date(Date.now() + 86_400_000),
+    }).returning();
+
+    const first = await admit(t, mention(MEMBER_PHONE, "email the vendor"));
+    const grantRun = await runningRun(t, first.action.id);
+    expect((await runContext(grantRun.id)).paperclipOpenwa).toMatchObject({
+      triggerClass: "other", profile: "read_only", toolProfile: "full", grantIds: [grant!.id], requesterPrincipalId,
+    });
+
+    const outsider = await admit(t, mention(OTHER_MEMBER_PHONE, "use your tools for me too"));
+    expect(outsider.delivery).toMatchObject({ triggerClass: "other" });
+    expect(outsider.delivery.principalId).not.toBe(requesterPrincipalId);
+    const own = await admit(t, mention(MEMBER_PHONE, "and cc the finance lead"));
+    const ownText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("and cc the finance lead")) ?? null);
+    expect(ownText).toContain("non-owner");
+    expect((await wakeRow(own.action.id)).status).toBe("cancelled");
+    const owner = await admit(t, mention(OWNER_PHONE, "go ahead"));
+    const ownerText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("go ahead")) ?? null);
+    expect(ownerText).toContain("endpoint owner");
+    expect((await wakeRow(owner.action.id)).status).toBe("cancelled");
+    expect(steered.get(grantRun.id)!.some((entry) => entry.includes("use your tools for me too"))).toBe(false);
+    expect((await wakeRow(outsider.action.id)).status).toBe("deferred_issue_execution");
+    expect((await runContext(grantRun.id)).paperclipOpenwa).toMatchObject({ grantIds: [grant!.id], requesterPrincipalId });
+
+    adapterMode.hold = false;
+    release(grantRun.id);
+    const outsiderRun = await finishedRun(t, outsider.action.id);
+    expect(outsiderRun.id).not.toBe(grantRun.id);
+    const outsiderContext = captured.get(outsiderRun.id)!;
+    expect(outsiderContext.paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only", toolProfile: "read_only", grantIds: [], requesterPrincipalId: outsider.delivery.principalId });
+    expect(outsiderContext.paperclipToolProfile).toBe("read_only");
+    expect((outsiderContext.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual([outsider.delivery.id]);
   }, 180_000);
 
   it("steers late owner activity into the running owner_absent run marked owner_now_active", async () => {

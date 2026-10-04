@@ -1215,11 +1215,21 @@ describe("admitWakeBehindIssueExecution OpenWA wake classes", () => {
     ["an approval reply into an owner run", { triggerClass: "owner", event: "approval_reply" }, owner],
     ["an owner wake into an approval reply run", owner, { triggerClass: "owner", event: "approval_reply" }],
     ["a grant wake into a grant run", { triggerClass: "grant", event: "approval_resolved" }, { triggerClass: "grant", event: "approval_resolved" }],
+    ["another member's wake into a requester-grant run", { ...other, principalId: "member-x" }, { ...other, principalId: "member-a", requesterGrants: true }],
+    ["a requester-grant holder's wake into another member's run", { ...other, principalId: "member-a", requesterGrants: true }, { ...other, principalId: "member-x" }],
+    ["a principal-less wake into a requester-grant run", other, { ...other, principalId: "member-a", requesterGrants: true }],
   ])("never coalesces %s", async (_name, incoming, target) => {
     const { result, writer } = await admitWith({ incoming, target }, false);
     expect(result).toEqual({ kind: "deferred" });
     expect(writer.coalesceIntoActiveExecutionRun).not.toHaveBeenCalled();
     expect(writer.insertNewDeferredWake).toHaveBeenCalledOnce();
+  });
+
+  it("coalesces a requester-grant holder's own wake into that holder's grant run", async () => {
+    const holder = { ...other, principalId: "member-a", requesterGrants: true };
+    const { result, writer } = await admitWith({ incoming: holder, target: holder }, false);
+    expect(result.kind).toBe("coalesced");
+    expect(writer.coalesceIntoActiveExecutionRun).toHaveBeenCalledOnce();
   });
 
   it("asks only for a deferred wake of the incoming class and merges into it", async () => {
