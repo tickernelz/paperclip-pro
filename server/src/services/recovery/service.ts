@@ -3896,6 +3896,13 @@ export function recoveryService(
     recoveryCause?: StrandedRecoveryCause;
     successfulRunHandoffEvidence?: SuccessfulRunHandoffRecoveryEvidence | null;
   }) {
+    if (input.issue.originKind === "chat_channel" && (await isOpenwaConversationIssue(db, input.issue.companyId, input.issue.id))) {
+      logger.info(
+        { issueId: input.issue.id, identifier: input.issue.identifier, latestRunId: input.latestRun?.id ?? null },
+        "skipped stranded escalation for an OpenWA conversation issue",
+      );
+      return null;
+    }
     if (isStrandedIssueRecoveryIssue(input.issue)) {
       return escalateStrandedRecoveryIssueInPlace({
         issue: input.issue,

@@ -311,8 +311,7 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(await strandedEscalationRows(companyId)).toHaveLength(0);
   });
 
-  it("never blocks an OpenWA conversation issue after a failed run; its chat reopens it", async () => {
-    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+  async function bindOpenwaConversation(companyId: string, coderId: string, issueId: string) {
     await db.update(issues).set({ originKind: "chat_channel", originId: "chat:openwa-test" }).where(eq(issues.id, issueId));
     const [application] = await db.insert(toolApplications).values({ companyId, name: "OpenWA", type: "chat" }).returning();
     const [connection] = await db
@@ -330,6 +329,11 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
       externalConversationId: "openwa:session:120363000000000001@g.us",
       externalLabel: "Group",
     });
+  }
+
+  it("never blocks an OpenWA conversation issue after a failed run; its chat reopens it", async () => {
+    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+    await bindOpenwaConversation(companyId, coderId, issueId);
     await seedRun({
       companyId,
       agentId: coderId,
@@ -346,6 +350,33 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(result.escalated).toBe(0);
     const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
     expect(issue?.status).toBe("in_progress");
+    expect(await db.select().from(issueRecoveryActions)).toHaveLength(0);
+  });
+
+  it("refuses a direct stranded escalation of an OpenWA conversation issue", async () => {
+    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+    await bindOpenwaConversation(companyId, coderId, issueId);
+    const runId = await seedRun({
+      companyId,
+      agentId: coderId,
+      issueId,
+      status: "failed",
+      errorCode: "omp_exit_1",
+      error: "400 invalid_request",
+      retryReason: "issue_continuation_needed",
+    });
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
+
+    const result = await recoveryService(db, { enqueueWakeup: vi.fn(async () => null) }).escalateStrandedAssignedIssue({
+      issue: issue!,
+      previousStatus: "in_progress",
+      latestRun: run!,
+    });
+
+    expect(result).toBeNull();
+    const [after] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(after?.status).toBe("in_progress");
     expect(await db.select().from(issueRecoveryActions)).toHaveLength(0);
   });
 
