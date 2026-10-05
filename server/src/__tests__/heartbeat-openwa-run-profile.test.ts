@@ -70,7 +70,7 @@ describeEmbeddedPostgres("heartbeat OpenWA run profile at run start", () => {
     else process.env.PAPERCLIP_HOME = previousHome;
     if (previousApiUrl === undefined) delete process.env.PAPERCLIP_API_URL;
     else process.env.PAPERCLIP_API_URL = previousApiUrl;
-    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
+    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     await tempDb?.cleanup();
   });
 
