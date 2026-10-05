@@ -36,6 +36,7 @@ type PublicationRow = typeof chatPublications.$inferSelect;
 export const OPENWA_PUBLICATION_ACTION_KIND = "openwa_publication";
 export const OPENWA_LAST_OUTPUT_ACTION_KIND = "openwa_last_output";
 const PUBLICATION_KEY = /^(comment|attachment):[0-9a-f-]{36}:[0-9a-f-]{36}$/i;
+const UNSUCCESSFUL_RUN_STATUSES = new Set(["failed", "timed_out", "cancelled", "interrupted"]);
 
 export type OpenwaSuppressionReason =
   | "already_published"
@@ -44,6 +45,7 @@ export type OpenwaSuppressionReason =
   | "reply_policy_owner_absent_only"
   | "outside_allowlist"
   | "approval_acknowledged"
+  | "run_not_succeeded"
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
@@ -125,6 +127,7 @@ async function sourceRun(db: DbOrTransaction, endpoint: EndpointRow, publication
   const [row] = await db
     .select({
       runId: heartbeatRuns.id,
+      status: heartbeatRuns.status,
       contextSnapshot: heartbeatRuns.contextSnapshot,
       startedAt: heartbeatRuns.startedAt,
       runCreatedAt: heartbeatRuns.createdAt,
@@ -242,6 +245,7 @@ export async function decideOpenwaRunPublication(
           .for("update")
       : [];
     let reason: OpenwaSuppressionReason | null = runClass ? null : "no_openwa_context";
+    if (!reason && UNSUCCESSFUL_RUN_STATUSES.has(run.status)) reason = "run_not_succeeded";
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
     const approvalRequestId = runEvent(run.contextSnapshot) === "approval_reply" ? runApprovalRequestId(run.contextSnapshot) : null;
     if (!reason && approvalRequestId) {

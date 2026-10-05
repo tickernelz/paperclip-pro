@@ -543,6 +543,24 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect((await publicationState(run.publicationId)).state).toBe("cancelled");
   }, 90_000);
 
+  it("keeps the final output of a run that did not succeed internal and leaves its triggers pending", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP);
+    for (const status of ["failed", "timed_out", "cancelled", "interrupted"]) {
+      const other = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+      const run = await runOutput(t, c, { triggerClass: "other", body: "Handled the wake: sent the reply, issue stays in_progress.", deliveryIds: [other.id], status });
+      await drain(t);
+      expect(t.gateway.sends).toHaveLength(0);
+      expect(await publicationState(run.publicationId)).toMatchObject({ state: "cancelled", redactedError: "OpenWA publication suppressed: run_not_succeeded" });
+      expect(await answerStates([other.id])).toEqual(["pending"]);
+    }
+    expect((await audits(t, "publication_suppressed")).map((row) => (row.metadata as { reason: string }).reason)).toEqual(Array(4).fill("run_not_succeeded"));
+    const other = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    await runOutput(t, c, { triggerClass: "other", body: "jawaban untuk grup", deliveryIds: [other.id] });
+    await drain(t);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["jawaban untuk grup"]);
+  }, 90_000);
+
   it("suppresses and audits an other-class reply under ask_owner until a reply grant exists", async () => {
     const t = await setup({ replyPolicy: "ask_owner" });
     const c = await conversation(t, MEMBER);

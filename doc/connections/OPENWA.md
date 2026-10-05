@@ -257,6 +257,13 @@ It is enforced on origin-chat sends (`reply_denied`) and on automatic
 publication (suppressed and audited as `publication_suppressed`) until a
 `reply` grant exists.
 
+Automatic publication also needs a run that succeeded. When a run ends
+`failed`, `timed_out`, `cancelled` or `interrupted` (for example the
+adapter process died or the provider rejected a request), its final output is
+the agent's internal narration, so it stays an issue comment and is audited as
+`publication_suppressed` with reason `run_not_succeeded`. Triggers the run
+had not answered with `openwa_send` stay pending for the next wake.
+
 ### Other endpoint settings
 
 | Setting | Key | Default | Bounds |

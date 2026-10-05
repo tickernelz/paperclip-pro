@@ -112,8 +112,9 @@ act beyond the run's facts. Silence never approves anything.
   trigger of this run, answered. Sending elsewhere needs `cross_chat_send`
   approval in read-only runs.
 - Your final output is published to the origin chat once, quoting the oldest
-  pending trigger in groups, unless you already answered with `openwa_send` or
-  the reply policy blocks it. The server never writes chat text for you.
+  pending trigger in groups, unless you already answered with `openwa_send`, the
+  reply policy blocks it, or the run did not succeed. The server never writes
+  chat text for you.
 
 ## Mentions and quotes
 
