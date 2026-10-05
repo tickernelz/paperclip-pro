@@ -472,6 +472,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     await send(t, { chatId: active, author: jid(MEMBER_PHONE), body: "@191000000001668 apa itu Paperclip?", extra: { mentionedIds: [ownLid] } });
     const [row] = await settledDeliveries(t, 1);
     expect((row.normalizedEvent as { openwa?: { rules?: string[] } }).openwa?.rules).toContain("agent_mentioned");
+    expect((row.normalizedEvent as { openwa?: { agentMentionIds?: string[] } }).openwa?.agentMentionIds).toEqual([ownLid]);
     t.gateway.emit("group.join", { groupId: joined, actorId: jid(MEMBER_PHONE), participantIds: [ownLid], timestamp: Math.floor(Date.now() / 1000) });
     await settledDeliveries(t, 2);
     expect((await audits(t)).filter((entry) => entry.kind === "group_added").map((entry) => entry.chatKey)).toEqual([joined]);

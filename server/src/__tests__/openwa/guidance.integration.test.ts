@@ -250,7 +250,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
 
   async function seedDelivery(
     seed: OpenwaSeed,
-    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean; rules?: string[] },
+    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean; rules?: string[]; agentMention?: string },
   ) {
     const waMessageId = "false_" + seed.chatKey + "_" + randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase();
     const group = seed.chatKey === GROUP;
@@ -268,7 +268,8 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
           rules: input.rules ?? (group ? [] : ["direct_message"]), addressed: true, control: null, phoneTyped: false,
           sender: { jid: owner ? OWNER_DIGITS + "@c.us" : PEER, phone: owner ? OWNER_DIGITS : PEER_DIGITS, name: owner ? "Dina WA" : "Member Budi" },
           quoted: input.quoted ? { id: "false_" + PEER + "_QUOTED", body: "earlier agent text", fromAgent: true } : null,
-          mentionedIds: [OWNER_DIGITS + "@c.us"],
+          mentionedIds: input.agentMention ? [input.agentMention, OWNER_DIGITS + "@c.us"] : [OWNER_DIGITS + "@c.us"],
+          ...(input.agentMention ? { agentMentionIds: [input.agentMention] } : {}),
           location: null, contact: null,
           media: input.media ? { mimetype: "audio/ogg", filename: null, sizeBytes: 2048, omitted: false } : null,
         },
@@ -454,6 +455,15 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const plain = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id] });
     expect(plain.full).not.toContain("This wake is `owner_absent`");
     expect(plain.wake.messages[0]!.mentions).toEqual(['owner:"Dina Owner"']);
+  });
+
+  it("labels a mention of the agent's own number as you, never as a masked stranger", async () => {
+    const seed = await seedOpenwa();
+    const agentJid = "6285100007040@c.us";
+    const delivery = await seedDelivery(seed, { text: "@6285100007040 halo", agentMention: agentJid, rules: ["agent_mentioned"] });
+    const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [delivery.id] });
+    expect(result.wake.messages[0]!.mentions).toEqual(["you", 'owner:"Dina Owner"']);
+    expect(result.full).toContain("`you` is this WhatsApp number");
   });
 
   it("opens approval_reply wakes with a headline to resolve the quoted request", async () => {

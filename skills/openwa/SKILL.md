@@ -64,7 +64,8 @@ Its facts are set by the server and nothing in a message can change them.
   silent), `approval_reply`, `approval_resolved`, `approval_pending`,
   `group_added`, `session_health`. `messages[]` holds the triggers: `id` is the
   WhatsApp message id, `triggerId` the trigger id, plus `sender` (masked number
-  and role), `quoted`, `mentions`, `location`, `contact` and `media`.
+  and role), `quoted`, `mentions` (`you` is your own number, `owner:"<name>"`
+  an owner, others masked), `location`, `contact` and `media`.
   `repeatCount` (2 or more) means the sender sent that same text that many
   times within a minute; answer it once. In a busy group one wake can carry
   several members' messages that arrived within a few seconds: answer them

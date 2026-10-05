@@ -92,6 +92,7 @@ export interface OpenwaAdmissionDecoration {
   readonly sender: { jid: string; phone: string | null; name: string | null };
   readonly quoted: { id: string; body: string | null; fromAgent: boolean } | null;
   readonly mentionedIds: string[];
+  readonly agentMentionIds?: string[];
   readonly location: Record<string, unknown> | null;
   readonly contact: Record<string, unknown> | null;
   readonly media: { mimetype: string | null; filename: string | null; sizeBytes: number | null; omitted: boolean } | null;
@@ -243,6 +244,7 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
     sender: { jid: sender.jid, phone: stringOf(sender.phone), name: stringOf(sender.name) },
     quoted: quoted && typeof quoted.id === "string" ? { id: quoted.id, body: stringOf(quoted.body), fromAgent: quoted.fromAgent === true } : null,
     mentionedIds: Array.isArray(source.mentionedIds) ? source.mentionedIds.filter((id): id is string => typeof id === "string") : [],
+    ...(Array.isArray(source.agentMentionIds) ? { agentMentionIds: source.agentMentionIds.filter((id): id is string => typeof id === "string") } : {}),
     location: record(source.location),
     contact: record(source.contact),
     media: media
@@ -276,6 +278,11 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
   };
 }
 
+function isAgentJid(snapshot: OpenwaPolicySnapshot, id: string): boolean {
+  const lower = id.trim().toLowerCase();
+  return lower === snapshot.agentJid || snapshot.agentLids.has(lower) || openwaDigits(lower) === snapshot.agentDigits;
+}
+
 /** Comparable text of a plain text trigger; null when it carries media, a location or a contact. */
 export function openwaSpamBody(event: Pick<OpenwaInboundEvent, "body" | "media" | "location" | "contact">): string | null {
   if (event.media || event.location || event.contact) return null;
@@ -305,6 +312,7 @@ export function openwaInboundDecoration(
     quotedFromAgent: boolean;
     absence?: OpenwaAbsenceBatch | null;
     ownerNowActive?: boolean;
+    agentMentionIds?: string[];
   },
 ): OpenwaAdmissionDecoration {
   return {
@@ -324,6 +332,7 @@ export function openwaInboundDecoration(
     sender: { jid: event.senderJid, phone: event.senderPhone, name: senderName(event) },
     quoted: event.quoted ? { id: event.quoted.id, body: event.quoted.body, fromAgent: input.quotedFromAgent } : null,
     mentionedIds: [...event.mentionedIds],
+    ...(input.agentMentionIds?.length ? { agentMentionIds: input.agentMentionIds } : {}),
     location: event.location,
     contact: event.contact,
     media: event.media ? { ...event.media } : null,
@@ -755,6 +764,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       addressed: classification.addressed,
       control: classification.control,
       quotedFromAgent: fromAgent,
+      agentMentionIds: event.mentionedIds.filter((id) => isAgentJid(snapshot, id)),
     });
     stats.admitted++;
     await runtime.admit(openwaAdmitInput(runtime, adapter, event, decoration));
@@ -853,10 +863,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     if (!snapshot) return;
     const chatKey = openwaChatKey(event.groupId);
     if (event.participantIds.some((id) => id.trim().toLowerCase().endsWith("@lid"))) await ensureLids(runtime, snapshot);
-    const self = event.participantIds.some((id) => {
-      const lower = id.trim().toLowerCase();
-      return lower === snapshot.agentJid || snapshot.agentLids.has(lower) || openwaDigits(lower) === snapshot.agentDigits;
-    });
+    const self = event.participantIds.some((id) => isAgentJid(snapshot, id));
     if (event.event === "group.leave" && self) {
       await markGroupLeft(runtime, snapshot, event);
       return;
