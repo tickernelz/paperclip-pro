@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import {
   DndContext,
   KeyboardSensor,
@@ -17,12 +17,15 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import {
+  ChevronDown,
+  ChevronUp,
   CornerDownRight,
   GripVertical,
   Loader2,
   MoreHorizontal,
   Pencil,
   Trash2,
+  Ungroup,
 } from "lucide-react";
 import type {
   IssueQueuedCommentEntry,
@@ -35,6 +38,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 
 type QueueAction = "steer" | "interrupt" | "discard" | null;
 
@@ -76,6 +90,7 @@ export interface TaskChatQueuedMessagesProps {
 
 function SortableQueuedMessage({
   entry,
+  count,
   queue,
   busy,
   queueMutationDisabled,
@@ -84,8 +99,10 @@ function SortableQueuedMessage({
   onSteer,
   onInterrupt,
   onDiscard,
+  onShowIndividually,
 }: {
   entry: IssueQueuedCommentEntry;
+  count: number;
   queue: IssueQueuedCommentQueue;
   busy: boolean;
   queueMutationDisabled: boolean;
@@ -94,6 +111,7 @@ function SortableQueuedMessage({
   onSteer: () => void;
   onInterrupt?: () => void;
   onDiscard: () => void;
+  onShowIndividually?: () => void;
 }) {
   const immutableResponse = entry.source?.kind === "interaction";
   const label = immutableResponse ? entry.comment.body.split("\n")[0] : entry.comment.body;
@@ -144,6 +162,15 @@ function SortableQueuedMessage({
       <span className="min-w-0 flex-1 truncate px-1" title={entry.comment.body}>
         {label}
       </span>
+      {count > 1 ? (
+        <span
+          className="shrink-0 rounded-md bg-muted px-1.5 text-xs font-medium tabular-nums text-muted-foreground"
+          title={`${count} identical queued messages`}
+          data-testid={`task-chat-queued-count-${entry.comment.id}`}
+        >
+          ×{count}
+        </span>
+      ) : null}
 
       {queue.protocol === "legacy" || entry.source?.requiresFreshSession ? (
         <button
@@ -216,10 +243,52 @@ function SortableQueuedMessage({
             <Pencil className="h-4 w-4" aria-hidden />
             Edit message
           </DropdownMenuItem>
+          {onShowIndividually ? (
+            <DropdownMenuItem onSelect={onShowIndividually}>
+              <Ungroup className="h-4 w-4" aria-hidden />
+              Show individually
+            </DropdownMenuItem>
+          ) : null}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
   );
+}
+
+const COLLAPSED_QUEUE_THRESHOLD = 3;
+
+interface QueuedMessageRow {
+  entry: IssueQueuedCommentEntry;
+  commentIds: string[];
+}
+
+function groupableEntry(entry: IssueQueuedCommentEntry) {
+  return entry.source?.kind !== "interaction";
+}
+
+function groupQueuedMessageRows(
+  entries: IssueQueuedCommentEntry[],
+  individualIds: ReadonlySet<string>,
+  grouping: boolean,
+): QueuedMessageRow[] {
+  const rows: QueuedMessageRow[] = [];
+  for (const entry of entries) {
+    const previous = rows.at(-1);
+    if (
+      grouping &&
+      previous &&
+      previous.entry.comment.body === entry.comment.body &&
+      groupableEntry(previous.entry) &&
+      groupableEntry(entry) &&
+      !individualIds.has(previous.entry.comment.id) &&
+      !individualIds.has(entry.comment.id)
+    ) {
+      previous.commentIds.push(entry.comment.id);
+    } else {
+      rows.push({ entry, commentIds: [entry.comment.id] });
+    }
+  }
+  return rows;
 }
 
 /** Compact production queue shown immediately above the default task composer. */
@@ -233,12 +302,21 @@ export function TaskChatQueuedMessages({
 }: TaskChatQueuedMessagesProps) {
   const [entries, setEntries] = useState(queue.entries);
   const [pending, setPending] = useState<{
-    commentId: string;
+    commentIds: readonly string[];
     action: Exclude<QueueAction, null>;
+    scope: "row" | "all";
   } | null>(null);
   const [reordering, setReordering] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [individualIds, setIndividualIds] = useState<ReadonlySet<string>>(
+    () => new Set(),
+  );
+  const [confirmDiscardAll, setConfirmDiscardAll] = useState(false);
   const [announcement, setAnnouncement] = useState("");
   const [visibleError, setVisibleError] = useState<string | null>(null);
+  const latest = useRef({ revision: queue.revision, onDiscard });
+  const listId = useId();
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
     useSensor(KeyboardSensor, {
@@ -247,13 +325,28 @@ export function TaskChatQueuedMessages({
   );
 
   useEffect(() => {
+    latest.current = { revision: queue.revision, onDiscard };
+  }, [queue.revision, onDiscard]);
+
+  useEffect(() => {
     setEntries(queue.entries);
   }, [queue.entries, queue.revision]);
 
-  const ids = useMemo(
-    () => entries.map((entry) => entry.comment.id),
-    [entries],
+  const rows = useMemo(
+    () => groupQueuedMessageRows(entries, individualIds, !dragging),
+    [entries, individualIds, dragging],
   );
+  const collapsible = entries.length > COLLAPSED_QUEUE_THRESHOLD;
+  const visibleRows = collapsible && !expanded ? rows.slice(0, 1) : rows;
+  const ids = useMemo(
+    () => visibleRows.map((row) => row.entry.comment.id),
+    [visibleRows],
+  );
+  const discardAllIds = entries
+    .filter(
+      (entry) => entry.canDiscard && !entry.comment.id.startsWith("optimistic-"),
+    )
+    .map((entry) => entry.comment.id);
 
   async function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
@@ -297,11 +390,15 @@ export function TaskChatQueuedMessages({
   }
 
   async function runRowAction(
-    commentId: string,
+    commentIds: readonly string[],
     action: Exclude<QueueAction, null>,
+    scope: "row" | "all" = "row",
   ) {
+    const [commentId] = commentIds;
+    if (!commentId) return;
     const locallyDiscardable =
-      action === "discard" && commentId.startsWith("optimistic-");
+      action === "discard" &&
+      commentIds.every((id) => id.startsWith("optimistic-"));
     if (
       pending ||
       reordering ||
@@ -310,14 +407,17 @@ export function TaskChatQueuedMessages({
       return;
     }
     const previous = entries;
-    setPending({ commentId, action });
+    const discardsMany = action === "discard" && commentIds.length > 1;
+    setPending({ commentIds, action, scope });
     setVisibleError(null);
     setAnnouncement(
       action === "steer"
         ? "Steering queued message."
         : action === "interrupt"
           ? "Sending queued messages."
-          : "Discarding queued message.",
+          : discardsMany
+            ? "Discarding queued messages."
+            : "Discarding queued message.",
     );
     if (action === "steer") {
       setEntries((current) =>
@@ -325,20 +425,24 @@ export function TaskChatQueuedMessages({
       );
     }
     try {
-      if (action === "steer") await onSteer(commentId, queue.revision);
+      if (action === "steer") await onSteer(commentId, latest.current.revision);
       else if (action === "interrupt") await onInterrupt?.();
-      else await onDiscard(commentId, queue.revision);
-      if (action === "discard") {
-        setEntries((current) =>
-          current.filter((entry) => entry.comment.id !== commentId),
-        );
+      else {
+        for (const id of commentIds) {
+          await latest.current.onDiscard(id, latest.current.revision);
+          setEntries((current) =>
+            current.filter((entry) => entry.comment.id !== id),
+          );
+        }
       }
       setAnnouncement(
         action === "steer"
           ? "Message steered into the active turn."
           : action === "interrupt"
             ? "Queued messages will be sent when the previous run has stopped."
-            : "Queued message discarded.",
+            : discardsMany
+              ? `${commentIds.length} queued messages discarded.`
+              : "Queued message discarded.",
       );
     } catch (error) {
       if (action === "steer") setEntries(previous);
@@ -364,51 +468,119 @@ export function TaskChatQueuedMessages({
 
   if (entries.length === 0) return null;
 
+  const busy = Boolean(pending || reordering);
+  const queueMutationDisabled = Boolean(
+    !queue.queueId || pending || reordering,
+  );
+
   return (
     <div
       className="relative z-0 mx-3 -mb-px overflow-hidden rounded-t-xl rounded-b-none border border-b-0 border-border/75 bg-card shadow-sm"
       data-testid="task-chat-queued-messages"
       aria-label="Queued messages"
     >
+      <div
+        className="flex h-8 min-w-0 items-center gap-1 border-b border-border/55 pl-3 pr-1.5 text-xs text-muted-foreground"
+        data-testid="task-chat-queued-header"
+      >
+        <span className="min-w-0 flex-1 truncate font-medium">
+          {entries.length} queued
+        </span>
+        {collapsible ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="xs"
+            aria-expanded={expanded}
+            aria-controls={listId}
+            onClick={() => setExpanded((current) => !current)}
+            className="text-muted-foreground"
+            data-testid="task-chat-queued-toggle"
+          >
+            {expanded ? (
+              <ChevronUp aria-hidden />
+            ) : (
+              <ChevronDown aria-hidden />
+            )}
+            {expanded ? "Show less" : `Show all ${entries.length}`}
+          </Button>
+        ) : null}
+        <Button
+          type="button"
+          variant="ghost"
+          size="xs"
+          onClick={() => setConfirmDiscardAll(true)}
+          disabled={busy || !queue.queueId || discardAllIds.length === 0}
+          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+          data-testid="task-chat-queued-discard-all"
+        >
+          {pending?.scope === "all" ? (
+            <Loader2 className="animate-spin" aria-hidden />
+          ) : (
+            <Trash2 aria-hidden />
+          )}
+          Discard all
+        </Button>
+      </div>
       {queue.executionWait && (
         <div role="status" aria-live="polite" className="px-3 py-1.5 text-xs text-muted-foreground">
           {queue.executionWait.message}
         </div>
       )}
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={(event) => void handleDragEnd(event)}
+      <div
+        id={listId}
+        className="max-h-44 overflow-y-auto overscroll-contain"
+        data-testid="task-chat-queued-list"
       >
-        <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          {entries.map((entry) => {
-            const action =
-              pending?.commentId === entry.comment.id ? pending.action : null;
-            const busy = Boolean(pending || reordering);
-            const queueMutationDisabled = Boolean(
-              !queue.queueId || pending || reordering,
-            );
-            return (
-              <SortableQueuedMessage
-                key={entry.comment.id}
-                entry={entry}
-                queue={queue}
-                busy={busy}
-                queueMutationDisabled={queueMutationDisabled}
-                action={action}
-                onEdit={() => onEdit(entry.comment.id)}
-                onSteer={() => void runRowAction(entry.comment.id, "steer")}
-                onInterrupt={
-                  onInterrupt
-                    ? () => void runRowAction(entry.comment.id, "interrupt")
-                    : undefined
-                }
-                onDiscard={() => void runRowAction(entry.comment.id, "discard")}
-              />
-            );
-          })}
-        </SortableContext>
-      </DndContext>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={() => setDragging(true)}
+          onDragCancel={() => setDragging(false)}
+          onDragEnd={(event) => {
+            setDragging(false);
+            void handleDragEnd(event);
+          }}
+        >
+          <SortableContext items={ids} strategy={verticalListSortingStrategy}>
+            {visibleRows.map((row) => {
+              const { entry, commentIds } = row;
+              const action =
+                pending?.scope === "row" &&
+                pending.commentIds.includes(entry.comment.id)
+                  ? pending.action
+                  : null;
+              return (
+                <SortableQueuedMessage
+                  key={entry.comment.id}
+                  entry={entry}
+                  count={commentIds.length}
+                  queue={queue}
+                  busy={busy}
+                  queueMutationDisabled={queueMutationDisabled}
+                  action={action}
+                  onEdit={() => onEdit(entry.comment.id)}
+                  onSteer={() => void runRowAction([entry.comment.id], "steer")}
+                  onInterrupt={
+                    onInterrupt
+                      ? () => void runRowAction([entry.comment.id], "interrupt")
+                      : undefined
+                  }
+                  onDiscard={() => void runRowAction(commentIds, "discard")}
+                  onShowIndividually={
+                    commentIds.length > 1
+                      ? () =>
+                          setIndividualIds(
+                            (current) => new Set([...current, ...commentIds]),
+                          )
+                      : undefined
+                  }
+                />
+              );
+            })}
+          </SortableContext>
+        </DndContext>
+      </div>
       {visibleError ? (
         <div
           role="status"
@@ -421,6 +593,28 @@ export function TaskChatQueuedMessages({
       <div className="sr-only" aria-live="polite" aria-atomic="true">
         {announcement}
       </div>
+      <AlertDialog open={confirmDiscardAll} onOpenChange={setConfirmDiscardAll}>
+        <AlertDialogContent data-testid="task-chat-queued-discard-all-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard all queued messages?</AlertDialogTitle>
+            <AlertDialogDescription>
+              {discardAllIds.length === 1
+                ? "1 queued message will be removed and never sent."
+                : `${discardAllIds.length} queued messages will be removed and never sent.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => void runRowAction(discardAllIds, "discard", "all")}
+              data-testid="task-chat-queued-discard-all-confirm"
+            >
+              Discard all
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

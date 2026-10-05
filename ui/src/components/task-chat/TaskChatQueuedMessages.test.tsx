@@ -48,6 +48,23 @@ const queue: IssueQueuedCommentQueue = {
   ),
 };
 
+function queueWithBodies(bodies: string[]): IssueQueuedCommentQueue {
+  return {
+    ...queue,
+    entries: bodies.map((body, position) => ({
+      ...queue.entries[0],
+      comment: { ...queue.entries[0].comment, id: `comment-${position + 1}`, body },
+      position,
+    })),
+  };
+}
+
+function rowIds(container: HTMLElement) {
+  return Array.from(
+    container.querySelectorAll('[data-testid^="task-chat-queued-message-"]'),
+  ).map((row) => row.getAttribute("data-testid"));
+}
+
 describe("TaskChatQueuedMessages", () => {
   let container: HTMLDivElement;
   let root: Root;
@@ -369,5 +386,155 @@ describe("TaskChatQueuedMessages", () => {
     expect(container.textContent).toContain(
       "Queued messages will be sent when the previous run has stopped.",
     );
+  });
+  it("starts collapsed to the next message when more than three are queued", async () => {
+    render({ queue: queueWithBodies(["One", "Two", "Three", "Four"]) });
+    expect(container.textContent).toContain("4 queued");
+    expect(rowIds(container)).toEqual(["task-chat-queued-message-comment-1"]);
+    const toggle = container.querySelector<HTMLButtonElement>(
+      '[data-testid="task-chat-queued-toggle"]',
+    )!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    await act(async () => {
+      toggle.click();
+    });
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    expect(rowIds(container)).toHaveLength(4);
+    expect(
+      container.querySelector('[data-testid="task-chat-queued-list"]')?.classList,
+    ).toContain("max-h-44");
+  });
+
+  it("shows every message without a toggle when three or fewer are queued", () => {
+    render({ queue: queueWithBodies(["One", "Two", "Three"]) });
+    expect(container.textContent).toContain("3 queued");
+    expect(rowIds(container)).toHaveLength(3);
+    expect(
+      container.querySelector('[data-testid="task-chat-queued-toggle"]'),
+    ).toBeNull();
+  });
+
+  it("collapses consecutive identical messages and discards all of them", async () => {
+    const props = render({ queue: queueWithBodies(["Same", "Same", "Same", "Other"]) });
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('[data-testid="task-chat-queued-toggle"]')
+        ?.click();
+    });
+    expect(rowIds(container)).toEqual([
+      "task-chat-queued-message-comment-1",
+      "task-chat-queued-message-comment-4",
+    ]);
+    expect(
+      container.querySelector('[data-testid="task-chat-queued-count-comment-1"]')
+        ?.textContent,
+    ).toBe("×3");
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-queued-discard-comment-1"]',
+        )
+        ?.click();
+    });
+    expect(vi.mocked(props.onDiscard).mock.calls).toEqual([
+      ["comment-1", "rev-1"],
+      ["comment-2", "rev-1"],
+      ["comment-3", "rev-1"],
+    ]);
+    expect(rowIds(container)).toEqual(["task-chat-queued-message-comment-4"]);
+    expect(container.textContent).toContain("3 queued messages discarded.");
+  });
+
+  it("steers only the first message of a collapsed group", async () => {
+    const props = render({ queue: queueWithBodies(["Same", "Same"]) });
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('[data-testid="task-chat-queued-steer-comment-1"]')
+        ?.click();
+    });
+    expect(props.onSteer).toHaveBeenCalledOnce();
+    expect(props.onSteer).toHaveBeenCalledWith("comment-1", "rev-1");
+    expect(rowIds(container)).toEqual(["task-chat-queued-message-comment-2"]);
+  });
+
+  it("discards every real message after confirming discard all", async () => {
+    const base = queueWithBodies(["One", "Two", "Three"]);
+    const props = render({
+      queue: {
+        ...base,
+        entries: [
+          ...base.entries,
+          {
+            ...base.entries[0],
+            comment: { ...base.entries[0].comment, id: "optimistic-local-1", body: "Local" },
+            position: 3,
+          },
+        ],
+      },
+    });
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('[data-testid="task-chat-queued-discard-all"]')
+        ?.click();
+    });
+    expect(props.onDiscard).not.toHaveBeenCalled();
+    const dialog = document.querySelector(
+      '[data-testid="task-chat-queued-discard-all-dialog"]',
+    );
+    expect(dialog?.textContent).toContain("3 queued messages will be removed");
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-queued-discard-all-confirm"]',
+        )
+        ?.click();
+    });
+    expect(vi.mocked(props.onDiscard).mock.calls).toEqual([
+      ["comment-1", "rev-1"],
+      ["comment-2", "rev-1"],
+      ["comment-3", "rev-1"],
+    ]);
+    expect(rowIds(container)).toEqual([
+      "task-chat-queued-message-optimistic-local-1",
+    ]);
+  });
+
+  it("stops discard all at the first failure and keeps the rest queued", async () => {
+    const onDiscard = vi
+      .fn()
+      .mockResolvedValueOnce(undefined)
+      .mockRejectedValueOnce({
+        body: { details: { code: "queued_comment_already_dispatching" } },
+      });
+    render({ queue: queueWithBodies(["One", "Two", "Three"]), onDiscard });
+    await act(async () => {
+      container
+        .querySelector<HTMLButtonElement>('[data-testid="task-chat-queued-discard-all"]')
+        ?.click();
+    });
+    await act(async () => {
+      document
+        .querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-queued-discard-all-confirm"]',
+        )
+        ?.click();
+    });
+    expect(onDiscard).toHaveBeenCalledTimes(2);
+    expect(rowIds(container)).toEqual([
+      "task-chat-queued-message-comment-2",
+      "task-chat-queued-message-comment-3",
+    ]);
+    expect(container.textContent).toContain(
+      "Too late to discard: this message is already being sent.",
+    );
+  });
+
+  it("disables discard all until the queue id is acknowledged", () => {
+    render({ queue: { ...queue, queueId: null, state: null } });
+    expect(
+      container.querySelector<HTMLButtonElement>(
+        '[data-testid="task-chat-queued-discard-all"]',
+      )?.disabled,
+    ).toBe(true);
   });
 });
