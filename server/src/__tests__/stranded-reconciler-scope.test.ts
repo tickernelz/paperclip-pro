@@ -7,6 +7,8 @@ import {
   agentWakeupRequests,
   agents,
   authUsers,
+  chatConversations,
+  chatEndpoints,
   companies,
   createDb,
   environmentLeases,
@@ -17,6 +19,8 @@ import {
   issueRecoveryActions,
   issueRelations,
   issues,
+  toolApplications,
+  toolConnections,
 } from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
@@ -46,6 +50,10 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     await db.delete(environments);
     await db.delete(issueInboxArchives);
     await db.delete(issueRelations);
+    await db.delete(chatConversations);
+    await db.delete(chatEndpoints);
+    await db.delete(toolConnections);
+    await db.delete(toolApplications);
     await db.delete(issues);
     await db.delete(agentRuntimeState);
     await db.delete(agents);
@@ -301,6 +309,44 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(issue?.status).toBe("todo");
     expect(issue?.blockedByIssueIds ?? []).toEqual([]);
     expect(await strandedEscalationRows(companyId)).toHaveLength(0);
+  });
+
+  it("never blocks an OpenWA conversation issue after a failed run; its chat reopens it", async () => {
+    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+    await db.update(issues).set({ originKind: "chat_channel", originId: "chat:openwa-test" }).where(eq(issues.id, issueId));
+    const [application] = await db.insert(toolApplications).values({ companyId, name: "OpenWA", type: "chat" }).returning();
+    const [connection] = await db
+      .insert(toolConnections)
+      .values({ companyId, applicationId: application!.id, name: "OpenWA", connectionPurpose: "channel", transport: "chat_sdk", status: "active", enabled: true, uid: "openwa-" + randomUUID() })
+      .returning();
+    const [endpoint] = await db
+      .insert(chatEndpoints)
+      .values({ companyId, connectionId: connection!.id, provider: "openwa", publicId: randomUUID(), assignedAgentId: coderId })
+      .returning();
+    await db.insert(chatConversations).values({
+      companyId,
+      endpointId: endpoint!.id,
+      issueId,
+      externalConversationId: "openwa:session:120363000000000001@g.us",
+      externalLabel: "Group",
+    });
+    await seedRun({
+      companyId,
+      agentId: coderId,
+      issueId,
+      status: "failed",
+      errorCode: "setup_failed",
+      error: "reviewed_chat_execution_binding_not_authorized",
+      retryReason: "issue_continuation_needed",
+    });
+    const enqueueWakeup = vi.fn(async () => null);
+
+    const result = await recoveryService(db, { enqueueWakeup }).reconcileStrandedAssignedIssues();
+
+    expect(result.escalated).toBe(0);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(issue?.status).toBe("in_progress");
+    expect(await db.select().from(issueRecoveryActions)).toHaveLength(0);
   });
 
   it("leaves a stale-context setup failure for the user to retry instead of blocking it", async () => {

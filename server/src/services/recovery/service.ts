@@ -23,6 +23,7 @@ import {
 import { executionBlockerPredicate } from "../execution-blocker.js";
 import { releaseDependencyGateRecoveryHold } from "../dependency-gate-recovery-hold.js";
 import type { Db } from "@tickernelz/paperclip-pro-db";
+import { isOpenwaConversationIssue } from "../openwa/authority.js";
 import {
   hasCommittedNativeBoardResponseWait,
   readNativeBoardResponseWaitSource,
@@ -4394,6 +4395,7 @@ export function recoveryService(
 
     result.errored = await reconcileEachCandidate("stranded_assigned_issues", candidates, issueScope, async (issue) => {
       if (issue.originKind === "chat_channel") {
+        if (await isOpenwaConversationIssue(db, issue.companyId, issue.id)) { result.skipped += 1; return; }
         await settleSlackConversation(db, issue.companyId, issue.id);
         const [current] = await db.select({ externalConversationState: externalConversationStateSql() })
           .from(issues).where(and(eq(issues.companyId, issue.companyId), eq(issues.id, issue.id)));
