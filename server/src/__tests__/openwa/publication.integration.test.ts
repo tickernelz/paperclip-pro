@@ -233,7 +233,7 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
   async function trigger(
     t: Fixture,
     c: Conversation,
-    input: { triggerClass: OpenwaTriggerClass; role: OpenwaPrincipalRole; principalId?: string | null; receivedAt?: Date },
+    input: { triggerClass: OpenwaTriggerClass; role: OpenwaPrincipalRole; principalId?: string | null; receivedAt?: Date; rules?: string[] },
   ) {
     const waMessageId = "false_" + c.chatId + "_3EB0" + randomUUID().replaceAll("-", "").slice(0, 16).toUpperCase();
     const [row] = await db
@@ -248,7 +248,14 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
         eventKind: c.isDirectMessage ? "direct_message" : "message",
         normalizedEvent: {
           message: { providerMessageId: waMessageId },
-          openwa: { chatKey: openwaChatKey(c.chatId), waMessageId, triggerClass: input.triggerClass, principalRole: input.role, rules: [] },
+          openwa: {
+            chatKey: openwaChatKey(c.chatId),
+            chatKind: c.isDirectMessage ? "dm" : "group",
+            waMessageId,
+            triggerClass: input.triggerClass,
+            principalRole: input.role,
+            rules: input.rules ?? [],
+          },
         },
         state: "processed",
         triggerClass: input.triggerClass,
@@ -577,6 +584,16 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     await runOutput(t, c, { triggerClass: "other", body: "granted reply", deliveryIds: [first.id], grantIds: [grantId] });
     await drain(t);
     expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "granted reply", quotedMessageId: first.waMessageId })]);
+  }, 90_000);
+
+  it("publishes to an outside-allowlist member who mentioned the agent in an active group without a grant", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000222");
+    const mention = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    await runOutput(t, c, { triggerClass: "other", body: "mention reply", deliveryIds: [mention.id] });
+    await drain(t);
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "mention reply", quotedMessageId: mention.waMessageId })]);
   }, 90_000);
 
   it("sends more than three parts as a markdown document and agent files as documents", async () => {

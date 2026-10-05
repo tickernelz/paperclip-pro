@@ -177,9 +177,10 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
   const SESSION = "session-1";
   const PEER_DIGITS = "628111222333";
   const PEER = PEER_DIGITS + "@c.us";
+  const GROUP = "120363000000000999@g.us";
   const OWNER_DIGITS = "628999888777";
 
-  async function seedOpenwa(opts: { policy?: Record<string, unknown>; note?: string } = {}) {
+  async function seedOpenwa(opts: { policy?: Record<string, unknown>; note?: string; group?: { activation: "on" | "off" } } = {}) {
     const companyId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
@@ -228,17 +229,19 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const [peerPrincipal] = await db.insert(chatExternalPrincipals).values({
       companyId, provider: "openwa", providerAccountId: "acct-" + endpointId, externalId: PEER, displayName: "Member Budi",
     }).returning();
-    const providerResourceId = "openwa:" + SESSION + ":" + PEER;
+    const chatKey = opts.group ? GROUP : PEER;
+    const providerResourceId = "openwa:" + SESSION + ":" + chatKey;
     const [resource] = await db.insert(chatEndpointResources).values({
-      companyId, endpointId, type: "direct_message", providerResourceId, label: "Member Budi", enabled: true,
-      metadata: { chatKey: PEER }, settings: { activation: "on", note: opts.note ?? "Budi is a supplier; keep it formal." },
+      companyId, endpointId, type: opts.group ? "group_chat" : "direct_message", providerResourceId, label: "Member Budi", enabled: true,
+      metadata: { chatKey },
+      settings: { activation: opts.group?.activation ?? "on", note: opts.note ?? "Budi is a supplier; keep it formal." },
     }).returning();
     const [conversation] = await db.insert(chatConversations).values({
       companyId, endpointId, issueId, resourceId: resource!.id, externalConversationId: providerResourceId,
-      externalThreadId: providerResourceId, externalLabel: "Member Budi", state: "active", isDirectMessage: true,
+      externalThreadId: providerResourceId, externalLabel: "Member Budi", state: "active", isDirectMessage: !opts.group,
     }).returning();
     return {
-      companyId, agentId, issueId, endpointId, conversationId: conversation!.id, resourceId: resource!.id,
+      chatKey, companyId, agentId, issueId, endpointId, conversationId: conversation!.id, resourceId: resource!.id,
       peerPrincipalId: peerPrincipal!.id, ownerPrincipalId: ownerPrincipal!.id,
     };
   }
@@ -247,9 +250,10 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
 
   async function seedDelivery(
     seed: OpenwaSeed,
-    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean },
+    input: { text: string; role?: "owner" | "allowed" | "outside_allowlist"; receivedAt?: Date; media?: boolean; quoted?: boolean; rules?: string[] },
   ) {
-    const waMessageId = "false_" + PEER + "_" + randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase();
+    const waMessageId = "false_" + seed.chatKey + "_" + randomUUID().replace(/-/g, "").slice(0, 16).toUpperCase();
+    const group = seed.chatKey === GROUP;
     const owner = input.role === "owner";
     const triggerClass = owner ? "owner" : "other";
     const [row] = await db.insert(chatDeliveries).values({
@@ -260,8 +264,8 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
         message: { providerMessageId: waMessageId, text: input.text },
         principal: { externalId: owner ? OWNER_DIGITS + "@c.us" : PEER, displayName: owner ? "Dina WA" : "Member Budi" },
         openwa: {
-          chatKey: PEER, chatId: PEER, chatKind: "dm", waMessageId, triggerClass, principalRole: input.role ?? "allowed",
-          rules: ["direct_message"], addressed: true, control: null, phoneTyped: false,
+          chatKey: seed.chatKey, chatId: seed.chatKey, chatKind: group ? "group" : "dm", waMessageId, triggerClass, principalRole: input.role ?? "allowed",
+          rules: input.rules ?? (group ? [] : ["direct_message"]), addressed: true, control: null, phoneTyped: false,
           sender: { jid: owner ? OWNER_DIGITS + "@c.us" : PEER, phone: owner ? OWNER_DIGITS : PEER_DIGITS, name: owner ? "Dina WA" : "Member Budi" },
           quoted: input.quoted ? { id: "false_" + PEER + "_QUOTED", body: "earlier agent text", fromAgent: true } : null,
           mentionedIds: [OWNER_DIGITS + "@c.us"],
@@ -466,6 +470,46 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hello" })).id] });
     expect(result.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply"] });
     expect(result.full).toContain("Replying in this chat: not allowed for this run without owner approval (`reply`).");
+  });
+
+  it("lets an outside_allowlist member who addressed the agent in an active group be answered without a grant", async () => {
+    const seed = await seedOpenwa({ group: { activation: "on" } });
+    const mentioned = await wakeOpenwa(seed, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(seed, { text: "@Wira help", role: "outside_allowlist", rules: ["agent_mentioned"] })).id],
+    });
+    expect(mentioned.wake.chat.type).toBe("group");
+    expect(mentioned.wake.policy).toMatchObject({ replyAllowed: true, replyRequires: [] });
+    expect(mentioned.full).toContain("Replying in this chat: allowed for this run.");
+    expect(mentioned.wake.profile).toBe("read_only");
+    const unaddressed = await wakeOpenwa(seed, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(seed, { text: "invoice due", role: "outside_allowlist", rules: ["keywords"] })).id],
+    });
+    expect(unaddressed.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+    const inactive = await seedOpenwa({ group: { activation: "off" } });
+    const off = await wakeOpenwa(inactive, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(inactive, { text: "@Wira help", role: "outside_allowlist", rules: ["agent_mentioned"] })).id],
+    });
+    expect(off.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+    const dm = await seedOpenwa();
+    const direct = await wakeOpenwa(dm, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(dm, { text: "hello", role: "outside_allowlist", rules: ["direct_message", "agent_mentioned"] })).id],
+    });
+    expect(direct.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+  });
+
+  it("tells every run to call OpenWA tools by name without discovering them", async () => {
+    const seed = await seedOpenwa();
+    const other = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hi" })).id] });
+    const owner = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [(await seedDelivery(seed, { text: "hi", role: "owner" })).id] });
+    for (const markdown of [other.full, other.compact, owner.full, owner.compact]) {
+      expect(markdown).toContain("directly by name. Never enumerate tools to discover them (no `tools.list`, catalog or search call)");
+    }
+    expect(other.full).toContain("you are not acting for an owner and the profile is `read_only`");
+    expect(owner.full).toContain("you act for an owner with profile `full`");
   });
 
   it("never claims a capability the run's gate denies", async () => {

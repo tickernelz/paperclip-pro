@@ -40,6 +40,8 @@ export interface StorageProvider {
   getObject(input: GetObjectInput): Promise<GetObjectResult>;
   headObject(input: GetObjectInput): Promise<HeadObjectResult>;
   deleteObject(input: GetObjectInput): Promise<void>;
+  /** Absolute on-disk path of an existing object inside the storage root; null when absent or not disk-backed. */
+  localPath?(objectKey: string): Promise<string | null>;
 }
 
 export interface PutFileInput {
@@ -65,4 +67,6 @@ export interface StorageService {
   getObject(companyId: string, objectKey: string, options?: Pick<GetObjectInput, "range">): Promise<GetObjectResult>;
   headObject(companyId: string, objectKey: string): Promise<HeadObjectResult>;
   deleteObject(companyId: string, objectKey: string): Promise<void>;
+  /** Absolute on-disk path of an existing object inside the storage root; null when absent or not disk-backed. */
+  localPath?(companyId: string, objectKey: string): Promise<string | null>;
 }

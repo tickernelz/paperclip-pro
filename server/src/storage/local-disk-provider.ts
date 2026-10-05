@@ -83,6 +83,14 @@ export function createLocalDiskStorageProvider(baseDir: string): StorageProvider
       };
     },
 
+    async localPath(objectKey): Promise<string | null> {
+      const filePath = resolveWithin(root, objectKey);
+      const [realRoot, realFile] = await Promise.all([fs.realpath(root).catch(() => null), fs.realpath(filePath).catch(() => null)]);
+      if (!realRoot || !realFile || !realFile.startsWith(realRoot + path.sep)) return null;
+      const stat = await statOrNull(realFile);
+      return stat?.isFile() ? realFile : null;
+    },
+
     async deleteObject(input): Promise<void> {
       const filePath = resolveWithin(root, input.objectKey);
       try {

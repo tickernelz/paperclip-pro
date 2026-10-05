@@ -5,6 +5,16 @@ description: Use the OpenWA WhatsApp tools during a run on a WhatsApp conversati
 
 # OpenWA WhatsApp tools
 
+## Do not discover tools
+
+Call these tools directly by name; never list, search or catalog tools to find
+them: `openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`,
+`openwa_request_approval`, `openwa_approval_resolve`, `openwa_stay_silent`,
+`openwa_handoff`, `openwa_catalog`, `openwa_describe`, `openwa_call`,
+`openwa_endpoint_config`, `openwa_linked_list`, `openwa_linked_read`. The run
+guidance already states your trigger class, profile, owners and whether you may
+reply; do not re-read this skill to confirm them.
+
 Use the `openwa_*` tools provided with this task. The server binds them to the
 endpoint, WhatsApp session, conversation, run profile and approval grants of the
 current run. Never pass company, endpoint, session, issue, run or profile values
@@ -122,10 +132,15 @@ of the person you answer.
 - Trigger media is already stored as task attachments: each `media[]` item has
   `attachmentId`, `kind`, `mime`, `size` and, for voice notes, `transcript` or
   `transcriptPending`. A `pending` or `unavailable` item was not stored yet.
+  When storage is the local disk, a stored item also has `localPath`.
 - `openwa_get_media({chat?, messageId})` stores one message's media as a task
   attachment and returns its attachment id, mime, size and transcript when
   speech-to-text is configured, never bytes. A long transcript is cut with
   `transcriptTruncated: true`; read the transcript attachment for the full text.
+  Each stored item carries `localPath` (absolute file on the Paperclip host)
+  when storage is the local disk, otherwise `contentPath` (the attachment API
+  path). With `localPath`, open the file directly (an image with your image
+  reader); do not download it with curl or list attachments first.
 - A transcript that finishes later arrives in a following wake under
   `lateTranscripts` (keyed by message `id`) or is steered into this run.
 - `openwa_find({query} | {phone} | {lid})` searches contacts and chats, checks a
@@ -148,7 +163,10 @@ of the person you answer.
 1. In an `other` or `grant` run, call
    `openwa_request_approval({categories, scope?, summary, proposedAction, messageToOwners, idempotencyKey})`.
    Categories: `create_task`, `external_tools`, `cross_chat_send`, `wa_admin`,
-   `gateway_admin`, `reply_outside_allowlist`, `reply`. `scope` is `one_action`
+   `gateway_admin`, `reply_outside_allowlist`, `reply`. A sender outside the
+   allowlist who mentioned you or replied to your message in an active group
+   needs no `reply_outside_allowlist`; a DM or an unaddressed group message
+   from them does. `scope` is `one_action`
    (default: only the run created from this request) or `requester` (this
    requester in this chat until the grant expires). You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the

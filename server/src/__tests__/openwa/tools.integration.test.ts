@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import express from "express";
@@ -49,6 +49,7 @@ import {
 import { PaperclipRunnerToolAuthority } from "../../services/native-runtime/paperclip-runner-tool-authority.js";
 import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
+import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";
 import { executeOpenwaTool, openwaMentionText, OpenwaToolError } from "../../services/openwa/tools.js";
 import { openwaToolRoutes } from "../../routes/openwa-tools.js";
 import { paperclipMcpRoutes } from "../../routes/paperclip-mcp.js";
@@ -229,7 +230,11 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
 
   type Conversation = Awaited<ReturnType<typeof conversation>>;
 
-  async function trigger(t: Fixture, c: Conversation, input: { triggerClass: OpenwaTriggerClass; role: OpenwaPrincipalRole; principalId?: string | null }) {
+  async function trigger(
+    t: Fixture,
+    c: Conversation,
+    input: { triggerClass: OpenwaTriggerClass; role: OpenwaPrincipalRole; principalId?: string | null; rules?: string[] },
+  ) {
     const row = t.gateway.inbound({ chatId: c.chatId, from: c.chatId.endsWith("@g.us") ? MEMBER : c.chatId, author: c.chatId.endsWith("@g.us") ? MEMBER : undefined, body: "question " + randomUUID().slice(0, 6), emit: false });
     const waMessageId = row.waMessageId!;
     const [delivery] = await db
@@ -244,7 +249,14 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
         eventKind: c.isDirectMessage ? "direct_message" : "message",
         normalizedEvent: {
           message: { providerMessageId: waMessageId },
-          openwa: { chatKey: openwaChatKey(c.chatId), waMessageId, triggerClass: input.triggerClass, principalRole: input.role, rules: [] },
+          openwa: {
+            chatKey: openwaChatKey(c.chatId),
+            chatKind: c.isDirectMessage ? "dm" : "group",
+            waMessageId,
+            triggerClass: input.triggerClass,
+            principalRole: input.role,
+            rules: input.rules ?? [],
+          },
         },
         state: "processed",
         triggerClass: input.triggerClass,
@@ -443,6 +455,39 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     await expect(executeOpenwaTool(db, owner, "openwa_send", { text: "owner reply", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
   });
 
+  it("lets an outside_allowlist member who addressed the agent in an active group get a reply without a grant", async () => {
+    const t = await setup();
+    const g = await conversation(t, GROUP, { activation: "on" });
+    await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", rules: ["agent_mentioned"] });
+    await expect(
+      executeOpenwaTool(db, await run(t, g, { triggerClass: "other" }), "openwa_send", { text: "group answer", idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered" });
+    const quoted = await conversation(t, "120363000000000666@g.us", { activation: "on" });
+    await trigger(t, quoted, { triggerClass: "other", role: "outside_allowlist", rules: ["reply_to_agent"] });
+    await expect(
+      executeOpenwaTool(db, await run(t, quoted, { triggerClass: "other" }), "openwa_send", { text: "quoted answer", idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered" });
+    const unaddressed = await conversation(t, "120363000000000777@g.us", { activation: "on" });
+    await trigger(t, unaddressed, { triggerClass: "other", role: "outside_allowlist", rules: ["keywords"] });
+    const keyword = await rejection(
+      executeOpenwaTool(db, await run(t, unaddressed, { triggerClass: "other" }), "openwa_send", { text: "hi", idempotencyKey: randomUUID() }),
+    );
+    expect(keyword.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    const inactive = await conversation(t, "120363000000000888@g.us", { activation: "off" });
+    await trigger(t, inactive, { triggerClass: "other", role: "outside_allowlist", rules: ["agent_mentioned"] });
+    const off = await rejection(
+      executeOpenwaTool(db, await run(t, inactive, { triggerClass: "other" }), "openwa_send", { text: "hi", idempotencyKey: randomUUID() }),
+    );
+    expect(off.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    const dm = await conversation(t, OTHER);
+    await trigger(t, dm, { triggerClass: "other", role: "outside_allowlist", rules: ["agent_mentioned", "direct_message"] });
+    const direct = await rejection(
+      executeOpenwaTool(db, await run(t, dm, { triggerClass: "other" }), "openwa_send", { text: "hi", idempotencyKey: randomUUID() }),
+    );
+    expect(direct.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["group answer", "quoted answer"]);
+  });
+
   it("replays an idempotent retry without resending and rejects a reused key", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);
@@ -567,6 +612,10 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     const [item] = media.media as Array<Record<string, unknown>>;
     expect(item).toMatchObject({ status: "stored", mime: "application/pdf", filename: "invoice.pdf" });
     expect(typeof item!.attachmentId).toBe("string");
+    expect(path.isAbsolute(String(item!.localPath))).toBe(true);
+    expect(String(item!.localPath).startsWith(await realpath(path.join(root, "storage")) + path.sep)).toBe(true);
+    expect(await readFile(String(item!.localPath), "utf8")).toBe("%PDF-1.4 tool test");
+    expect(item).not.toHaveProperty("contentPath");
     expect(JSON.stringify(media)).not.toContain(Buffer.from("%PDF-1.4 tool test").toString("base64"));
     const voice = Buffer.from("OggS-voice");
     const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "note.ogg", contentType: "audio/ogg", body: voice });
@@ -576,6 +625,30 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.mediaSends.at(-1)).toMatchObject({ kind: "audio", ptt: true, bytes: voice.length, mimetype: "audio/ogg" });
     const foreign = await rejection(executeOpenwaTool(db, binding, "openwa_send", { kind: "image", attachmentId: randomUUID(), idempotencyKey: randomUUID() }));
     expect(foreign.code).toBe("attachment_unavailable");
+  });
+
+  it("resolves local attachment paths only for files inside the local-disk storage root", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "a.txt", contentType: "text/plain", body: Buffer.from("inside") });
+    const outside = path.join(root, "outside.txt");
+    await writeFile(outside, "secret");
+    const linkKey = t.companyId + "/issues/" + c.issueId + "/link.txt";
+    await mkdir(path.dirname(path.join(root, "storage", linkKey)), { recursive: true });
+    await symlink(outside, path.join(root, "storage", linkKey));
+    const attach = async (provider: string, objectKey: string) => {
+      const [asset] = await db.insert(assets).values({ companyId: t.companyId, provider, objectKey, contentType: "text/plain", byteSize: 6, sha256: put.sha256, originalFilename: "a.txt" }).returning();
+      const [attachment] = await db.insert(issueAttachments).values({ companyId: t.companyId, issueId: c.issueId, assetId: asset!.id }).returning();
+      return attachment!.id;
+    };
+    const inside = await attach("local_disk", put.objectKey);
+    const escaped = await attach("local_disk", linkKey);
+    const remotePut = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "b.txt", contentType: "text/plain", body: Buffer.from("remote") });
+    const remote = await attach("s3", remotePut.objectKey);
+    const missing = await attach("local_disk", t.companyId + "/issues/" + c.issueId + "/missing.txt");
+    const paths = await openwaAttachmentLocalPaths(db, storage, t.companyId, [inside, escaped, remote, missing]);
+    expect([...paths.keys()]).toEqual([inside]);
+    expect(await readFile(paths.get(inside)!, "utf8")).toBe("inside");
   });
 
   it("finds numbers and LIDs with masked phones", async () => {

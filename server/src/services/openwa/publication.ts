@@ -25,6 +25,7 @@ import { openwaChatKey, sendThroughRegistry, type OpenwaOutboundRegistry } from 
 import type { OpenwaState } from "./state.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { readOpenwaRunContext } from "./authority.js";
+import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 type EndpointRow = typeof chatEndpoints.$inferSelect;
@@ -236,9 +237,9 @@ export async function decideOpenwaRunPublication(
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
     const consumable: string[] = [];
     if (!reason) {
-      const settings = conversation.resourceId
+      const resource = conversation.resourceId
         ? await tx
-            .select({ settings: chatEndpointResources.settings })
+            .select({ settings: chatEndpointResources.settings, metadata: chatEndpointResources.metadata, availability: chatEndpointResources.availability })
             .from(chatEndpointResources)
             .where(
               and(
@@ -247,14 +248,16 @@ export async function decideOpenwaRunPublication(
                 eq(chatEndpointResources.id, conversation.resourceId),
               ),
             )
-            .then((rows) => openwaChatSettingsSchema.safeParse(rows[0]?.settings ?? {}))
+            .then((rows) => rows[0] ?? null)
         : null;
+      const settings = conversation.resourceId ? openwaChatSettingsSchema.safeParse(resource?.settings ?? {}) : null;
+      const groupActive = target.isGroup && openwaResourceGroupActive(policy, resource);
       const replyPolicy = (settings?.success ? settings.data.replyPolicy : undefined) ?? policy.replyPolicy;
       const event = runEvent(run.contextSnapshot);
       const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: OpenwaSuppressionReason }> = [];
       for (const trigger of pending) {
         if (trigger.principalRole === "owner") continue;
-        if (trigger.principalRole === "outside_allowlist")
+        if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive))
           needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "outside_allowlist" });
         if (runClass === "other" && replyPolicy === "ask_owner")
           needs.push({ principalId: trigger.principalId, category: "reply", reason: "reply_policy_ask_owner" });
