@@ -141,8 +141,10 @@ the live grants that owner approved. Routes: `GET`/`POST`
 Owners are always allowed. Denylisted numbers are dropped everywhere, including
 groups, and audited as `trigger_filtered`. A DM from outside the allowlist is
 dropped and audited. In an active group, a sender outside the allowlist still
-reaches the agent with role `outside_allowlist`; replying to them in that chat
-needs a `reply_outside_allowlist` grant. Lists hold E.164 numbers with an optional
+reaches the agent with role `outside_allowlist`. When that message mentioned the
+agent or replied to one of its messages, the agent may answer in the group
+without a grant (the run stays `read_only`); otherwise replying to them in that
+chat needs a `reply_outside_allowlist` grant. Lists hold E.164 numbers with an optional
 label: `GET`/`POST` `/api/chat-endpoints/:endpointId/openwa/sender-rules` (body
 `list` `allow`|`deny`, `e164`, `label`),
 `DELETE /api/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId`.
@@ -393,7 +395,7 @@ Every call is audited as `tool_called`.
 | --- | --- | --- |
 | `openwa_send` | write | Send text, image, video, audio, voice note, document, sticker, location, contact or poll to a chat (default origin chat). Markdown text; media from a task attachment; `mentions`; `quoteMessageId`; required `idempotencyKey`. New numbers are checked first. |
 | `openwa_read_chat` | read | Page chat history, newest first, from the stored source (cursor) or live (`deep` reaches 2000 messages). |
-| `openwa_get_media` | read | Store one message's media as a task attachment; returns attachment id, mime, size and transcript when available (cut to fit 16 KB with `transcriptTruncated`). |
+| `openwa_get_media` | read | Store one message's media as a task attachment; returns attachment id, mime, size, `localPath` (absolute file inside the storage root, local-disk storage only) or `contentPath` (attachment API path) and transcript when available (cut to fit 16 KB with `transcriptTruncated`). |
 | `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`); query results page with `cursor`. |
 | `openwa_request_approval` | write | Ask the owners for categories; remind with `remindRequestId`. |
 | `openwa_approval_resolve` | write | Record the owner's decision; only in the run started by that owner's reply to the bubble. |
@@ -518,7 +520,10 @@ before the wake, under the normal attachment policy and the host cap
 on timeout the wake proceeds with the item `pending` and the agent can call
 `openwa_get_media`. Over-cap files are rejected without storing. Location and
 contact cards arrive as structured data. Media of non-trigger messages is never
-fetched unless the agent asks.
+fetched unless the agent asks. When storage is the local disk, stored media items
+in the wake event and in `openwa_get_media` results carry `localPath`, the
+absolute file path resolved inside the storage root (symlinks escaping it are
+ignored), so an agent on the same host opens the file without downloading it.
 
 Speech-to-text is instance-wide: **Speech-to-text** on the instance General
 settings page (`speechToText` in `GET`/`PATCH /api/instance/settings/general`):

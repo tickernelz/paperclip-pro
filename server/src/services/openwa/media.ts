@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import type { Readable } from "node:stream";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import {
   assets,
   chatActions,
@@ -339,6 +339,30 @@ function gatewayFailure(error: unknown): { status: "pending" | "rejected"; reaso
 }
 
 /** Trigger media ingest and on-demand media fetch for OpenWA, with optional speech-to-text. */
+/** Maps attachment ids to absolute files in local-disk storage, skipping attachments stored elsewhere or missing on disk. */
+export async function openwaAttachmentLocalPaths(
+  db: Pick<Db, "select">,
+  storage: StorageService | undefined,
+  companyId: string,
+  attachmentIds: readonly string[],
+): Promise<Map<string, string>> {
+  const paths = new Map<string, string>();
+  if (!storage?.localPath || storage.provider !== "local_disk" || attachmentIds.length === 0) return paths;
+  const rows = await db
+    .select({ id: issueAttachments.id, provider: assets.provider, objectKey: assets.objectKey })
+    .from(issueAttachments)
+    .innerJoin(assets, and(eq(assets.companyId, issueAttachments.companyId), eq(assets.id, issueAttachments.assetId)))
+    .where(and(eq(issueAttachments.companyId, companyId), inArray(issueAttachments.id, [...new Set(attachmentIds)])));
+  await Promise.all(
+    rows.map(async (row) => {
+      if (row.provider !== "local_disk") return;
+      const file = await storage.localPath!(companyId, row.objectKey).catch(() => null);
+      if (file) paths.set(row.id, file);
+    }),
+  );
+  return paths;
+}
+
 export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = {}) {
   const maxBytes = Math.min(options.maxBytes ?? MAX_ATTACHMENT_BYTES, MAX_ATTACHMENT_BYTES);
   const mediaTimeoutMs = options.mediaTimeoutMs ?? OPENWA_MEDIA_FETCH_TIMEOUT_MS;

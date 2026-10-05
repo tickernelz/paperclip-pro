@@ -57,9 +57,10 @@ import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js
 import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
 import { openwaLinkedListTool, openwaLinkedReadTool, type OpenwaLinkedService } from "./linked.js";
 import { maskOpenwaDigits } from "./guidance.js";
-import type { OpenwaIngestedMedia, OpenwaMediaService } from "./media.js";
+import { openwaAttachmentLocalPaths, type OpenwaIngestedMedia, type OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, type OpenwaOwnerService } from "./owners.js";
+import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
 import { markTriggersAnswered } from "./publication.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
@@ -549,25 +550,27 @@ export function openwaMentionText(text: string, mentions: ReadonlyArray<{ token:
 
 export async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
   if (ctx.profile === "full" || !ctx.runClass) return null;
-  const settings = ctx.conversation.resourceId
+  const resource = ctx.conversation.resourceId
     ? await ctx.db
-        .select({ settings: chatEndpointResources.settings })
+        .select({ settings: chatEndpointResources.settings, metadata: chatEndpointResources.metadata, availability: chatEndpointResources.availability })
         .from(chatEndpointResources)
         .where(and(eq(chatEndpointResources.companyId, ctx.endpoint.companyId), eq(chatEndpointResources.id, ctx.conversation.resourceId)))
-        .then((rows) => openwaChatSettingsSchema.safeParse(rows[0]?.settings ?? {}))
+        .then((rows) => rows[0] ?? null)
     : null;
+  const settings = ctx.conversation.resourceId ? openwaChatSettingsSchema.safeParse(resource?.settings ?? {}) : null;
+  const groupActive = ctx.origin.isGroup && openwaResourceGroupActive(ctx.policy, resource);
   const replyPolicy = (settings?.success ? settings.data.replyPolicy : undefined) ?? ctx.policy.replyPolicy;
   const event = str(record(ctx.run.contextSnapshot.openwa).event);
   const policyNeedsReply =
     ctx.runClass === "other" && (replyPolicy === "ask_owner" || (replyPolicy === "owner_absent_only" && event !== "owner_absent"));
   const pending = await ctx.db
-    .select({ principalId: chatDeliveries.principalId, principalRole: chatDeliveries.principalRole })
+    .select({ principalId: chatDeliveries.principalId, principalRole: chatDeliveries.principalRole, normalizedEvent: chatDeliveries.normalizedEvent })
     .from(chatDeliveries)
     .where(and(visibleTriggerScope(ctx), eq(chatDeliveries.triggerClass, ctx.runClass)));
   const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: string }> = [];
   for (const trigger of pending) {
     if (trigger.principalRole === "owner") continue;
-    if (trigger.principalRole === "outside_allowlist")
+    if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive))
       needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "The sender is outside the allowlist" });
     if (policyNeedsReply) needs.push({ principalId: trigger.principalId, category: "reply", reason: "The chat's reply policy is " + replyPolicy });
   }
@@ -1104,13 +1107,15 @@ async function openwaReadChat(ctx: ToolContext, args: Args): Promise<Record<stri
   return { ...envelope, messages: fitted.page, nextCursor: more ? "l:" + consumed : null, ...(fitted.truncated ? { truncated: true } : {}) };
 }
 
-function mediaView(item: OpenwaIngestedMedia) {
+function mediaView(item: OpenwaIngestedMedia, localPaths: ReadonlyMap<string, string>) {
   const transcript = item.transcript ? clip(item.transcript, TRANSCRIPT_LIMIT) : null;
+  const localPath = item.attachmentId ? localPaths.get(item.attachmentId) : undefined;
   return {
     kind: item.kind,
     status: item.status,
     ...(item.reason ? { reason: item.reason } : {}),
     attachmentId: item.attachmentId,
+    ...(localPath ? { localPath } : item.attachmentId ? { contentPath: "/api/attachments/" + item.attachmentId + "/content" } : {}),
     mime: item.mime,
     size: item.size,
     ...(item.filename ? { filename: item.filename } : {}),
@@ -1140,8 +1145,14 @@ async function openwaGetMedia(ctx: ToolContext, args: Args): Promise<Record<stri
     chatId: target.chatId,
     messageId: messageId!,
   });
+  const localPaths = await openwaAttachmentLocalPaths(
+    ctx.db,
+    handle.storage ?? getStorageService(),
+    ctx.endpoint.companyId,
+    items.flatMap((item) => (item.status === "stored" && item.attachmentId ? [item.attachmentId] : [])),
+  );
   const envelope = { chatRef: chatRef(ctx, target.chatId), messageId };
-  const fitted = fitMedia(envelope, items.map(mediaView));
+  const fitted = fitMedia(envelope, items.map((item) => mediaView(item, localPaths)));
   return { ...envelope, media: fitted.media, ...(fitted.omitted ? { truncated: true, omittedMedia: fitted.omitted } : {}) };
 }
 

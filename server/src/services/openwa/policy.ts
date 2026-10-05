@@ -208,6 +208,26 @@ export function openwaGroupEnabled(
   return policy.numberMode === "agent_number" && ownerPresent;
 }
 
+const GROUP_ADDRESS_RULES: ReadonlySet<string> = new Set(["agent_mentioned", "reply_to_agent"]);
+
+export function openwaResourceGroupActive(
+  policy: Pick<OpenwaEndpointPolicy, "numberMode">,
+  resource: { settings: unknown; metadata: unknown; availability: string } | null | undefined,
+): boolean {
+  if (!resource || resource.availability !== "available") return false;
+  const metadata = resource.metadata && typeof resource.metadata === "object" ? (resource.metadata as Record<string, unknown>) : {};
+  return openwaGroupEnabled(policy, settingsOf(resource.settings), metadata.ownerPresent === true);
+}
+
+/** Whether an outside-allowlist trigger needs reply_outside_allowlist: not when it mentioned or replied to the agent in an active group. */
+export function openwaOutsideAllowlistNeedsGrant(normalizedEvent: unknown, groupActive: boolean): boolean {
+  if (!groupActive) return true;
+  const event = normalizedEvent && typeof normalizedEvent === "object" ? (normalizedEvent as Record<string, unknown>) : {};
+  const openwa = event.openwa && typeof event.openwa === "object" ? (event.openwa as Record<string, unknown>) : {};
+  if (openwa.chatKind !== "group" || !Array.isArray(openwa.rules)) return true;
+  return !openwa.rules.some((rule) => typeof rule === "string" && GROUP_ADDRESS_RULES.has(rule));
+}
+
 export function openwaParticipantJids(participants: readonly { id?: unknown; number?: unknown }[]): string[] {
   const jids = new Set<string>();
   for (const participant of participants) {
