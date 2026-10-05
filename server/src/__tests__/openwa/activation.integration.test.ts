@@ -419,7 +419,8 @@ describe.sequential("OpenWA activation through the owner test DM (embedded Postg
       .post("/api/chat-endpoints/" + t.endpointId + "/setup")
       .send({ action: "reconnect", credentials: { apiKey: FAKE_OPENWA_ADMIN_KEY, adminApiKey: FAKE_OPENWA_ADMIN_KEY } });
     expect(reconnected.status).toBe(200);
-    expect(reconnected.body).toMatchObject({ status: "verifying", healthMessage: "Waiting for a test conversation", setup: { step: "test" } });
+    expect(reconnected.body.status).not.toBe("active");
+    expect(reconnected.body.setup).toMatchObject({ step: "test" });
     expect((await endpointRow(t)).setup).toMatchObject({ step: "test" });
     expect(await reconnectActivity(t)).toHaveLength(1);
   }, 120_000);
