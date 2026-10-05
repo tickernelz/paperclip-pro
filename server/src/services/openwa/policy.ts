@@ -219,19 +219,18 @@ export function openwaResourceGroupActive(
   return openwaGroupEnabled(policy, settingsOf(resource.settings), metadata.ownerPresent === true);
 }
 
-/** Whether an outside-allowlist trigger needs reply_outside_allowlist: not when groupMemberReplies is on in an active group and it addressed the agent or arrived through owner_absent. */
+/** Whether an outside-allowlist trigger needs reply_outside_allowlist: not when groupMemberReplies is on in an active group and it addressed the agent or the run itself is an owner_absent wake. */
 export function openwaOutsideAllowlistNeedsGrant(
   normalizedEvent: unknown,
   groupActive: boolean,
   policy: Pick<OpenwaEndpointPolicy, "groupMemberReplies">,
   wakeEvent: string | null | undefined,
-  ownerAbsentExempt = true,
 ): boolean {
   if (!groupActive || !policy.groupMemberReplies) return true;
   const event = normalizedEvent && typeof normalizedEvent === "object" ? (normalizedEvent as Record<string, unknown>) : {};
   const openwa = event.openwa && typeof event.openwa === "object" ? (event.openwa as Record<string, unknown>) : {};
   if (openwa.chatKind !== "group") return true;
-  if (ownerAbsentExempt && (wakeEvent === "owner_absent" || openwa.event === "owner_absent")) return false;
+  if (wakeEvent === "owner_absent") return false;
   if (!Array.isArray(openwa.rules)) return true;
   return !openwa.rules.some((rule) => typeof rule === "string" && GROUP_ADDRESS_RULES.has(rule));
 }

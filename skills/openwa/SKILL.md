@@ -173,12 +173,15 @@ of the person you answer.
    allowlist who mentioned you or replied to your message in an active group
    needs no `reply_outside_allowlist` while the endpoint's `groupMemberReplies`
    is on (the default; `openwa_endpoint_config` shows it), and neither does any
-   sender in an active group during an `owner_absent` run; a DM, an unaddressed
-   group message in other runs, or any message when it is off does. When the
-   run's triggers need `reply_outside_allowlist`, the server adds it to the
-   request. A second call from the same run while its request for this chat is
-   pending sends no new bubble: it adds the missing categories to that request
-   and returns its `requestId` with `reused: true`. `scope` is `one_action`
+   sender in an active group while this run is itself an `owner_absent` wake; a
+   DM, an unaddressed group message in other runs, or any message when it is off
+   does. When the run's triggers need `reply_outside_allowlist`, the server adds
+   it to the request; that added grant is always `one_action`, whatever the
+   request's scope. A second call from the same run asking only for `reply`
+   and/or `reply_outside_allowlist`, while its reply-only request for this chat
+   with the same scope is pending, sends no new bubble: it adds the missing
+   categories and returns that `requestId` with `reused: true`. Any other
+   category gets its own request and bubble. `scope` is `one_action`
    (default: only the run created from this request) or `requester` (this
    requester in this chat until the grant expires). You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the

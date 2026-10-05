@@ -575,7 +575,7 @@ export async function replyRequirementGaps(ctx: ToolContext, ownerAbsentExempt =
   const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: string }> = [];
   for (const trigger of pending) {
     if (trigger.principalRole === "owner") continue;
-    if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, ctx.policy, ctx.openwa?.event ?? event, ownerAbsentExempt))
+    if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, ctx.policy, ownerAbsentExempt ? ctx.openwa?.event : null))
       needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "The sender is outside the allowlist" });
     if (policyNeedsReply) needs.push({ principalId: trigger.principalId, category: "reply", reason: "The chat's reply policy is " + replyPolicy });
   }

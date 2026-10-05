@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
 import {
   chatActions,
+  chatAuditEntries,
   chatConversations,
   chatDeliveries,
   chatEndpoints,
@@ -54,6 +55,8 @@ const WAKE_STALE_PROCESSING_MS = 2 * 60_000;
 const LIST_LIMIT = 100;
 
 export type OpenwaApprovalDecision = "approve" | "reject";
+
+const REPLY_CATEGORIES: ReadonlySet<string> = new Set(["reply", "reply_outside_allowlist"]);
 export type OpenwaApprovalRequestStatus = "pending" | "resolved";
 
 export interface OpenwaApprovalBubbleMatch {
@@ -383,24 +386,33 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         reminded = true;
         return request.id;
       }
-      const requested = [...(args.categories as OpenwaGrantCategory[]), ...(replyGaps.includes("reply_outside_allowlist") ? (["reply_outside_allowlist"] as const) : [])];
+      const grantScope = (args.scope as ChatOwnerGrantScope | undefined) ?? "one_action";
+      const asked = args.categories as OpenwaGrantCategory[];
+      const autoAdded: OpenwaGrantCategory[] =
+        replyGaps.includes("reply_outside_allowlist") && !asked.includes("reply_outside_allowlist") ? ["reply_outside_allowlist"] : [];
+      const requested = [...asked, ...autoAdded];
       const categories = [...new Set(requested)].filter((category) => OPENWA_GRANT_CATEGORIES.includes(category));
+      const replyOnly = (values: readonly string[]) => values.every((category) => REPLY_CATEGORIES.has(category));
       await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + ctx.run.id + ":" + ctx.origin.chatKey}, 0))`);
-      const [open] = await tx
-        .select()
-        .from(chatOwnerApprovalRequests)
-        .where(
-          and(
-            eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
-            eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
-            eq(chatOwnerApprovalRequests.originChatKey, ctx.origin.chatKey),
-            eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
-            eq(chatOwnerApprovalRequests.status, "pending"),
-          ),
-        )
-        .orderBy(desc(chatOwnerApprovalRequests.createdAt))
-        .limit(1)
-        .for("update");
+      const open = replyOnly(categories)
+        ? (
+            await tx
+              .select()
+              .from(chatOwnerApprovalRequests)
+              .where(
+                and(
+                  eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
+                  eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
+                  eq(chatOwnerApprovalRequests.originChatKey, ctx.origin.chatKey),
+                  eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
+                  eq(chatOwnerApprovalRequests.status, "pending"),
+                  eq(chatOwnerApprovalRequests.scope, grantScope),
+                ),
+              )
+              .orderBy(desc(chatOwnerApprovalRequests.createdAt))
+              .for("update")
+          ).find((row) => replyOnly(row.categories))
+        : undefined;
       if (open) {
         const added = categories.filter((category) => !open.categories.includes(category));
         const merged = [...open.categories, ...added];
@@ -425,7 +437,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
           chatKey: open.originChatKey,
           conversationId: ctx.conversation.id,
           runId: ctx.run.id,
-          metadata: { requestId: open.id, categories: merged, added, scope: open.scope, merged: true },
+          metadata: { requestId: open.id, categories: merged, added, autoAdded: autoAdded.filter((category) => added.includes(category)), scope: open.scope, merged: true },
           content: { summary: String(args.summary), proposedAction: String(args.proposedAction), messageToOwners: body },
           retentionDays: ctx.policy.auditContentRetentionDays,
         });
@@ -433,7 +445,6 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         reused = merged;
         return open.id;
       }
-      const grantScope = (args.scope as ChatOwnerGrantScope | undefined) ?? "one_action";
       const requesterPrincipalId = await requesterOf(ctx);
       if (grantScope === "requester" && !requesterPrincipalId)
         throw new OpenwaToolError(422, "requester_unknown", "A requester-scoped approval needs a single identifiable requester for this run");
@@ -502,7 +513,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         chatKey: request!.originChatKey,
         conversationId: ctx.conversation.id,
         runId: ctx.run.id,
-        metadata: { requestId: request!.id, categories, scope: grantScope, owners: planned.length, interactionId: interaction!.id },
+        metadata: { requestId: request!.id, categories, autoAdded, scope: grantScope, owners: planned.length, interactionId: interaction!.id },
         content: { summary, proposedAction, messageToOwners: body },
         retentionDays: ctx.policy.auditContentRetentionDays,
       });
@@ -631,6 +642,27 @@ function resolvedCommentBody(
   ].join("\n\n");
 }
 
+/** Categories the server added to a request on its own; their grants are always one_action. */
+async function autoAddedCategories(tx: DbOrTransaction, request: RequestRow): Promise<Set<string>> {
+  const rows = await tx
+    .select({ metadata: chatAuditEntries.metadata })
+    .from(chatAuditEntries)
+    .where(
+      and(
+        eq(chatAuditEntries.companyId, request.companyId),
+        eq(chatAuditEntries.endpointId, request.endpointId),
+        eq(chatAuditEntries.kind, "approval_requested"),
+        sql`${chatAuditEntries.metadata} ->> 'requestId' = ${request.id}`,
+      ),
+    );
+  const added = new Set<string>();
+  for (const row of rows) {
+    const values = record(row.metadata).autoAdded;
+    if (Array.isArray(values)) for (const value of values) if (typeof value === "string" && request.categories.includes(value as OpenwaGrantCategory)) added.add(value);
+  }
+  return added;
+}
+
 export interface OpenwaApprovalResolution {
   status: "approved" | "rejected";
   grantIds: string[];
@@ -693,6 +725,7 @@ export async function resolveOpenwaApproval(
       .where(eq(chatOwnerApprovalRequests.id, request.id));
     const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
     const expiresAt = new Date(now.getTime() + policy.approvals.grantTtlHours * 3_600_000);
+    const autoAdded = approved ? await autoAddedCategories(tx, request) : new Set<string>();
     const grants = approved
       ? await tx
           .insert(chatOwnerGrants)
@@ -704,7 +737,7 @@ export async function resolveOpenwaApproval(
               originChatKey: request.originChatKey,
               requesterPrincipalId: request.requestedByPrincipalId,
               category,
-              scope: request.scope,
+              scope: autoAdded.has(category) ? ("one_action" as const) : request.scope,
               approvedByUserId: ownerUserId,
               approvedVia: input.via,
               expiresAt,

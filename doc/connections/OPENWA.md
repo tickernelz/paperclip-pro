@@ -145,7 +145,9 @@ reaches the agent with role `outside_allowlist`. With **Answer group members who
 address the agent** on (`groupMemberReplies`, default `true`), when that message
 mentioned the agent or replied to one of its messages, the agent may answer in the
 group without a grant (the run stays `read_only`); the same holds for any of
-their messages in an `owner_absent` run, so its holding reply needs no grant.
+their messages while the run itself is an `owner_absent` wake, so its holding
+reply needs no grant. Later runs (for example `approval_resolved`) get no such
+exemption.
 Otherwise, and always when the setting is off, replying to them in that chat
 needs a `reply_outside_allowlist` grant. Changing it records `openwa.config_changed`. Lists hold E.164 numbers with an optional
 label: `GET`/`POST` `/api/chat-endpoints/:endpointId/openwa/sender-rules` (body
@@ -354,10 +356,13 @@ proposed action and an agent-written `messageToOwners`, up to 3500 characters).
 The server records the request and sends one bubble per owner approval chat (the
 agent number's DM with each owner, or the owner's self-chat in `owner_number`
 mode). Silence never approves. When the run's triggers need
-`reply_outside_allowlist`, the server adds that category to the request. A run
-that asks again while its own request for the same chat is still pending gets
-that request back (`reused: true`) with any new categories added; no second
-bubble is sent. A request from another run is never reused.
+`reply_outside_allowlist`, the server adds that category to the request and
+records it as auto-added (audit `approval_requested` metadata `autoAdded`); its
+grant is always `one_action`, even on a `requester` request. A run that asks
+again only for `reply`/`reply_outside_allowlist` while its own reply-only
+request for the same chat and scope is pending gets that request back
+(`reused: true`) with the missing categories added; no second bubble is sent.
+Any other category, or a request from another run, creates a new request.
 
 - **WhatsApp**: an owner replies to the bubble, quoting it. That reply starts a
   dedicated `approval_reply` run (class `owner`). The agent interprets the free text
