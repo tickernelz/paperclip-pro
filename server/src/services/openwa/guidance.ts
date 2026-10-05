@@ -95,6 +95,7 @@ export interface OpenwaWakeMessage {
   sender: OpenwaWakeSender;
   text: string;
   textTruncated?: true;
+  repeatCount?: number;
   quoted: { id: string; text: string | null; fromAgent: boolean } | null;
   mentions: string[];
   location: { lat: number; lon: number; name?: string } | null;
@@ -332,6 +333,7 @@ function messageFrom(delivery: DeliveryRow, mediaItems: MediaItem[] | undefined,
     sender: senderFrom(delivery),
     text: text.text,
     ...(text.truncated ? { textTruncated: true as const } : {}),
+    ...(typeof openwa.repeatCount === "number" && openwa.repeatCount > 1 ? { repeatCount: openwa.repeatCount } : {}),
     quoted: quotedId
       ? { id: quotedId, text: clip(typeof quoted.body === "string" ? quoted.body : null, QUOTE_MAX_TEXT), fromAgent: quoted.fromAgent === true }
       : null,

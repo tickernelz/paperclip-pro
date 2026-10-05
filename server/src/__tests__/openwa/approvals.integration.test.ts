@@ -187,6 +187,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
       heartbeat: { wakeup } as never,
       storage: createStorageService(createLocalDiskStorageProvider(path.join(scratch, "storage"))),
       scheduleDeferredWork: () => {},
+      openwaGroupBurstMs: 0,
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,

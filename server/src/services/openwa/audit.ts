@@ -47,6 +47,7 @@ export const OPENWA_ACTIVITY_ACTIONS = [
   "openwa.linked_session_added",
   "openwa.linked_session_chats_changed",
   "openwa.linked_session_removed",
+  "openwa.burst_folded",
 ] as const;
 export type OpenwaActivityAction = (typeof OPENWA_ACTIVITY_ACTIONS)[number];
 

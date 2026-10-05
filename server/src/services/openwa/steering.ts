@@ -1,5 +1,5 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatConversations, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
 import type { ChatInflightMode, OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
 import { logger } from "../../middleware/logger.js";
 import {
@@ -9,6 +9,7 @@ import {
   steerNativeSession,
 } from "../native-runtime/native-session-executor.js";
 import { openwaRunCarriesGrants, readOpenwaRunContext, type OpenwaRunContext } from "./authority.js";
+import { logOpenwaActivity } from "./audit.js";
 import { recordSteeredOwnerTriggers } from "./followups.js";
 import { markOpenwaLateTranscriptConsumed, type OpenwaLateTranscriptEvent } from "./late-transcripts.js";
 
@@ -270,4 +271,115 @@ export async function steerOpenwaSystemText(input: { runId: string; text: string
     if (!(error instanceof NativeSessionSteeringError)) logger.warn({ err: error, runId: input.runId }, "failed to steer OpenWA system text");
     return false;
   }
+}
+
+export const OPENWA_GROUP_BURST_MS = 5_000;
+export const OPENWA_BURST_HELD = "openwa_burst_held";
+export const OPENWA_BURST_FOLDED = "openwa_burst_folded";
+const ACTIVE_RUN_STATUSES = ["queued", "scheduled_retry", "running"];
+
+export type OpenwaBurstOutcome =
+  | { kind: "dispatch" }
+  | { kind: "held"; actionId: string; heldUntil: Date }
+  | { kind: "folded"; actionId: string; foldedInto: string; deliveryCount: number };
+
+/** Holds a group member trigger's accepted wake for the burst window, or folds it into the conversation's held wake; owner triggers, DMs and busy conversations dispatch as before. */
+export async function holdOrFoldOpenwaBurstWake(
+  db: Db,
+  input: { companyId: string; endpointId: string; deliveryId: string; issueId: string; now: Date; windowMs: number },
+): Promise<OpenwaBurstOutcome> {
+  if (input.windowMs <= 0) return { kind: "dispatch" };
+  return db.transaction(async (tx) => {
+    const [own] = await tx
+      .select()
+      .from(chatActions)
+      .where(and(
+        eq(chatActions.companyId, input.companyId),
+        eq(chatActions.endpointId, input.endpointId),
+        eq(chatActions.deliveryId, input.deliveryId),
+        eq(chatActions.kind, "inbound_wakeup"),
+        eq(chatActions.status, "issued"),
+      ))
+      .for("update")
+      .limit(1);
+    const openwa = record(own?.payload.openwa);
+    if (!own?.conversationId || openwa.event !== "message" || openwa.triggerClass !== "other" || own.result !== null)
+      return { kind: "dispatch" };
+    const [conversation] = await tx
+      .select({ isDirectMessage: chatConversations.isDirectMessage })
+      .from(chatConversations)
+      .where(and(eq(chatConversations.companyId, input.companyId), eq(chatConversations.id, own.conversationId)))
+      .limit(1);
+    if (!conversation || conversation.isDirectMessage) return { kind: "dispatch" };
+    const [run] = await tx
+      .select({ id: heartbeatRuns.id })
+      .from(issues)
+      .innerJoin(heartbeatRuns, and(eq(heartbeatRuns.id, issues.executionRunId), eq(heartbeatRuns.companyId, issues.companyId)))
+      .where(and(eq(issues.companyId, input.companyId), eq(issues.id, input.issueId), inArray(heartbeatRuns.status, ACTIVE_RUN_STATUSES)))
+      .limit(1);
+    if (run) return { kind: "dispatch" };
+    const [holder] = await tx
+      .select()
+      .from(chatActions)
+      .where(and(
+        eq(chatActions.companyId, input.companyId),
+        eq(chatActions.endpointId, input.endpointId),
+        eq(chatActions.conversationId, own.conversationId),
+        eq(chatActions.kind, "inbound_wakeup"),
+        eq(chatActions.status, "issued"),
+        sql`${chatActions.id} <> ${own.id}`,
+        sql`${chatActions.result} ->> 'code' = ${OPENWA_BURST_HELD}`,
+        sql`(${chatActions.result} ->> 'retryAt')::timestamptz > ${input.now.toISOString()}::timestamptz`,
+        sql`${chatActions.payload} -> 'openwa' ->> 'triggerClass' = 'other'`,
+        sql`${chatActions.payload} -> 'openwa' ->> 'event' = 'message'`,
+        sql`${chatActions.payload} ->> 'sessionGeneration' = ${String(own.payload.sessionGeneration)}`,
+      ))
+      .orderBy(chatActions.createdAt)
+      .for("update")
+      .limit(1);
+    if (!holder) {
+      const heldUntil = new Date(input.now.getTime() + input.windowMs);
+      await tx
+        .update(chatActions)
+        .set({ result: { code: OPENWA_BURST_HELD, retryAt: heldUntil.toISOString() }, updatedAt: new Date() })
+        .where(eq(chatActions.id, own.id));
+      return { kind: "held", actionId: own.id, heldUntil };
+    }
+    const holderOpenwa = record(holder.payload.openwa);
+    const previous = Array.isArray(holderOpenwa.deliveryIds)
+      ? holderOpenwa.deliveryIds.filter((id): id is string => typeof id === "string")
+      : [];
+    const ownIds = Array.isArray(openwa.deliveryIds) ? openwa.deliveryIds.filter((id): id is string => typeof id === "string") : [input.deliveryId];
+    const deliveryIds = [...new Set([...previous, ...ownIds])];
+    await tx
+      .update(chatActions)
+      .set({ payload: { ...holder.payload, openwa: { ...holderOpenwa, deliveryIds } }, updatedAt: new Date() })
+      .where(eq(chatActions.id, holder.id));
+    await tx
+      .update(chatActions)
+      .set({ status: "processed", result: { code: OPENWA_BURST_FOLDED, foldedInto: holder.id }, updatedAt: new Date() })
+      .where(eq(chatActions.id, own.id));
+    await logOpenwaActivity(tx, {
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      action: "openwa.burst_folded",
+      details: { wakeId: holder.id, deliveryId: input.deliveryId, deliveryCount: deliveryIds.length },
+    });
+    return { kind: "folded", actionId: own.id, foldedInto: holder.id, deliveryCount: deliveryIds.length };
+  });
+}
+
+/** Ends a held burst so the conversation drain dispatches its wake; returns false when it was already released or dispatched. */
+export async function releaseOpenwaBurstWake(db: Db, input: { companyId: string; actionId: string }): Promise<boolean> {
+  const released = await db
+    .update(chatActions)
+    .set({ result: { code: "openwa_burst_released" }, updatedAt: new Date() })
+    .where(and(
+      eq(chatActions.companyId, input.companyId),
+      eq(chatActions.id, input.actionId),
+      eq(chatActions.status, "issued"),
+      sql`${chatActions.result} ->> 'code' = ${OPENWA_BURST_HELD}`,
+    ))
+    .returning({ id: chatActions.id });
+  return released.length > 0;
 }

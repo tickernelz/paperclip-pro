@@ -37,6 +37,7 @@ import {
   activeOpenwaScheduledWakes,
   createOpenwaScheduledWakes,
   createOpenwaTimerHooks,
+  openwaSystemClock,
   type OpenwaAbsenceIntent,
   type OpenwaLateOwnerActivity,
   type OpenwaScheduledWakeClock,
@@ -59,7 +60,16 @@ import { reopenOpenwaConversationIssue } from "./openwa/conversation-status.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
 import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
 import { createOpenwaNudges, registerOpenwaRunStartListener } from "./openwa/nudges.js";
-import { openwaOwnerAbsentRunActive, steerOpenwaLateTranscript, steerOpenwaSystemText, steerOpenwaTrigger } from "./openwa/steering.js";
+import {
+  holdOrFoldOpenwaBurstWake,
+  OPENWA_BURST_HELD,
+  OPENWA_GROUP_BURST_MS,
+  openwaOwnerAbsentRunActive,
+  releaseOpenwaBurstWake,
+  steerOpenwaLateTranscript,
+  steerOpenwaSystemText,
+  steerOpenwaTrigger,
+} from "./openwa/steering.js";
 import { subscribeAllCompanyLiveEvents } from "./live-events.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./photon/media.js";
@@ -1555,6 +1565,8 @@ export interface ChatChannelServiceOptions {
   openwaLateOwnerActivity?: (input: OpenwaLateOwnerActivity) => Promise<void>;
   openwaScheduledWakeClock?: OpenwaScheduledWakeClock;
   openwaNudgeClock?: OpenwaScheduledWakeClock;
+  openwaBurstClock?: OpenwaScheduledWakeClock;
+  openwaGroupBurstMs?: number;
   /** Test override for Discord Gateway leader-lease expiry. */
   discordGatewayLeaseTtlMs?: number;
   /** Test override for Discord Gateway leader-lease renewal cadence. */
@@ -3148,6 +3160,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   });
   const backgroundMessageTasks = new Set<Promise<void>>();
   const scheduledConversationDrains = new Map<string, number>();
+  const openwaBurstClock = options.openwaBurstClock ?? openwaSystemClock;
+  const openwaBurstTimers = new Set<unknown>();
   const liveInboundMessages = new Map<string, LiveInboundMessage>();
   const discordGatewayOwnerships = new Map<string, DiscordGatewayOwnership>();
   const discordGatewayStopTasks = new Set<Promise<void>>();
@@ -14818,6 +14832,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       );
   }
 
+  async function armOpenwaBurstRelease(companyId: string, endpointId: string, actionId: string, deliveryId: string, heldUntil: Date) {
+    const [delivery] = await db.select().from(chatDeliveries).where(eq(chatDeliveries.id, deliveryId)).limit(1);
+    const threadId = delivery ? normalizedDeliveryThreadId(delivery) : null;
+    if (!threadId || shuttingDown) return;
+    const handle = openwaBurstClock.setTimer(() => {
+      openwaBurstTimers.delete(handle);
+      if (shuttingDown) return;
+      void releaseOpenwaBurstWake(db, { companyId, actionId })
+        .then(() => scheduleConversationDrain(endpointId, threadId))
+        .catch((error) => logger.warn({ actionId, error: redactError(error) }, "failed to release a held OpenWA group wake; the sweep dispatches it after its hold"));
+    }, Math.max(0, heldUntil.getTime() - openwaBurstClock.now()));
+    openwaBurstTimers.add(handle);
+  }
+
   async function processInboundWakeup(deliveryId: string): Promise<boolean> {
     const now = new Date();
     const candidate = await db
@@ -14836,6 +14864,27 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       !["preparing", "issued", "processing"].includes(candidate.status)
     )
       return true;
+    if (
+      candidate.status === "issued" &&
+      candidate.result === null &&
+      candidate.conversationId &&
+      candidate.payload.openwa &&
+      typeof candidate.payload.issueId === "string"
+    ) {
+      const burst = await holdOrFoldOpenwaBurstWake(db, {
+        companyId: candidate.companyId,
+        endpointId: candidate.endpointId,
+        deliveryId,
+        issueId: candidate.payload.issueId,
+        now: new Date(openwaBurstClock.now()),
+        windowMs: options.openwaGroupBurstMs ?? OPENWA_GROUP_BURST_MS,
+      });
+      if (burst.kind === "folded") return true;
+      if (burst.kind === "held") {
+        await armOpenwaBurstRelease(candidate.companyId, candidate.endpointId, burst.actionId, deliveryId, burst.heldUntil);
+        return false;
+      }
+    }
     if (
       candidate.status === "preparing" ||
       (candidate.status === "processing" &&
@@ -17030,7 +17079,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   triggerClass: effectiveOpenwa()!.triggerClass,
                   principalRole: effectiveOpenwa()!.principalRole,
                   answerState: openwaDecoration.event === "group_added" ? null : ("pending" as const),
-                  normalizedEvent: sql`${chatDeliveries.normalizedEvent} || ${JSON.stringify({ openwa: effectiveOpenwa() })}::jsonb`,
+                  normalizedEvent: sql`${chatDeliveries.normalizedEvent} || jsonb_build_object('openwa', coalesce(${chatDeliveries.normalizedEvent} -> 'openwa', '{}'::jsonb) || ${JSON.stringify(effectiveOpenwa())}::jsonb)`,
                 }
               : {}),
             updatedAt: new Date(),
@@ -17782,6 +17831,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         and ${chatActions.companyId} = ${chatDeliveries.companyId}
         and ${chatActions.kind} = 'inbound_wakeup'
         and ${chatActions.status} in ('issued', 'processing')
+        and not (
+          coalesce(${chatActions.result}->>'code', '') = ${OPENWA_BURST_HELD}
+          and (${chatActions.result}->>'retryAt')::timestamptz > now()
+        )
         ${
           readyOnly
             ? sql`and (
@@ -39259,6 +39312,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       unregisterOpenwaRunStart();
       unsubscribeOpenwaRunEnd();
       openwaNudges.stopAll();
+      for (const handle of openwaBurstTimers) openwaBurstClock.clearTimer(handle);
+      openwaBurstTimers.clear();
       await Promise.allSettled([...openwaRunEndTasks]);
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);

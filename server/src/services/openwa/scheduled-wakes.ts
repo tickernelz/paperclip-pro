@@ -108,7 +108,7 @@ export interface OpenwaScheduledWakeClock {
   clearTimer(handle: unknown): void;
 }
 
-const systemClock: OpenwaScheduledWakeClock = {
+export const openwaSystemClock: OpenwaScheduledWakeClock = {
   now: () => Date.now(),
   setTimer(fire, delayMs) {
     const handle = setTimeout(fire, delayMs);
@@ -244,7 +244,7 @@ type Outcome = { status: "processed" | "skipped"; result: Record<string, unknown
 
 export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): OpenwaScheduledWakes {
   const { db, companyId, endpointId } = deps;
-  const clock = deps.clock ?? systemClock;
+  const clock = deps.clock ?? openwaSystemClock;
   const heap = createDeadlineHeap<string>();
   const entries = new Map<string, number>();
   const pendingAbsence = new Map<string, string>();
