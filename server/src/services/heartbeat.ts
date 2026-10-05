@@ -6145,6 +6145,44 @@ const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
   "paperclipRuntimeSkills",
   "paperclipConnectorSkillDigest",
 ] as const;
+const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
+const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
+  "model",
+  "thinking",
+  "thinkingEffort",
+  "effort",
+] as const;
+
+function adapterResumesAcrossModelSwitch(adapterType: string | null | undefined) {
+  return adapterType != null && MODEL_SWITCHING_RESUME_ADAPTER_TYPES.has(adapterType);
+}
+
+function withoutModelSwitchKeys(config: Record<string, unknown>) {
+  const next = { ...config };
+  for (const key of MODEL_SWITCH_ADAPTER_CONFIG_KEYS) delete next[key];
+  return next;
+}
+
+function notModelSwitchOnlyAgentConfigRevision() {
+  const keys = sql.raw(`'{${MODEL_SWITCH_ADAPTER_CONFIG_KEYS.join(",")}}'::text[]`);
+  return sql`not (
+    ${agentConfigRevisions.changedKeys} = '["adapterConfig"]'::jsonb
+    and coalesce(${agentConfigRevisions.afterConfig} -> 'adapterConfig', '{}'::jsonb) - ${keys}
+      = coalesce(${agentConfigRevisions.beforeConfig} -> 'adapterConfig', '{}'::jsonb) - ${keys}
+  )`;
+}
+
+function issueOverridesWithoutModelSwitchKeys(issueOverrides: unknown) {
+  const overrides = parseObject(issueOverrides);
+  if (!overrides.adapterConfig) return issueOverrides;
+  const adapterConfig = withoutModelSwitchKeys(parseObject(overrides.adapterConfig));
+  const next = {
+    ...overrides,
+    adapterConfig: Object.keys(adapterConfig).length > 0 ? adapterConfig : null,
+  };
+  return Object.values(next).every((value) => value == null) ? null : next;
+}
+
 const PROCESS_LOSS_RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES: Partial<
   Record<EffectiveRunSessionConfigCategory, true>
 > = { instructions: true, runtimeSkills: true };
@@ -6837,16 +6875,22 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
   const instructions = await resolveInstructionsConfigFingerprintMetadata(
     input.effectiveAdapterConfig,
   );
-  const fingerprintAdapterConfig = managedAiSessionFingerprintConfig(
+  const resumesAcrossModelSwitch = adapterResumesAcrossModelSwitch(input.adapterType);
+  const managedFingerprintAdapterConfig = managedAiSessionFingerprintConfig(
     input.effectiveAdapterConfig,
     input.managedAiHome,
   );
+  const fingerprintAdapterConfig = resumesAcrossModelSwitch
+    ? withoutModelSwitchKeys(managedFingerprintAdapterConfig)
+    : managedFingerprintAdapterConfig;
   const categoryValues = buildSessionConfigCategoryValues({
     adapterType: input.adapterType,
     effectiveAdapterConfig: fingerprintAdapterConfig,
     agentRuntimeConfig: input.agentRuntimeConfig,
     instructions,
-    issueOverrides: input.issueOverrides,
+    issueOverrides: resumesAcrossModelSwitch
+      ? issueOverridesWithoutModelSwitchKeys(input.issueOverrides)
+      : input.issueOverrides,
     workspaceConfig: input.workspaceConfig,
     environment: input.environment,
     environmentEnv: input.environmentEnv,
@@ -7222,6 +7266,7 @@ function processLossContinuationCanResumeAcross(input: {
 
 export function resolveTaskSessionConfigFreshness(input: {
   hasTaskSession: boolean;
+  adapterType?: string | null;
   configuredModel: string | null;
   taskSessionParams: Record<string, unknown> | null | undefined;
   configMetadata: EffectiveRunSessionConfigMetadata | null;
@@ -7250,7 +7295,11 @@ export function resolveTaskSessionConfigFreshness(input: {
     configuredModel: input.configuredModel,
     taskSessionParams: input.taskSessionParams,
   });
-  if (modelChangedSinceTaskSession && taskSessionConfiguredModel) {
+  if (
+    modelChangedSinceTaskSession &&
+    taskSessionConfiguredModel &&
+    !adapterResumesAcrossModelSwitch(input.adapterType)
+  ) {
     reasons.push(
       `configured model changed from "${taskSessionConfiguredModel}" to "${input.configuredModel}"`,
     );
@@ -11461,6 +11510,7 @@ export function heartbeatService(
   async function getLatestAgentConfigRevision(
     companyId: string,
     agentId: string,
+    adapterType: string,
   ) {
     return db
       .select({
@@ -11473,6 +11523,9 @@ export function heartbeatService(
         and(
           eq(agentConfigRevisions.companyId, companyId),
           eq(agentConfigRevisions.agentId, agentId),
+          adapterResumesAcrossModelSwitch(adapterType)
+            ? notModelSwitchOnlyAgentConfigRevision()
+            : undefined,
         ),
       )
       .orderBy(
@@ -22192,6 +22245,7 @@ export function heartbeatService(
       const latestAgentConfigRevision = await getLatestAgentConfigRevision(
         agent.companyId,
         agent.id,
+        agent.adapterType,
       );
       const sessionConfigMetadata =
         await buildEffectiveRunSessionConfigMetadata({
@@ -22264,6 +22318,7 @@ export function heartbeatService(
       const wakeSessionResetReason = describeSessionResetReason(context);
       const sessionConfigFreshness = resolveTaskSessionConfigFreshness({
         hasTaskSession: taskSession != null,
+        adapterType: agent.adapterType,
         configuredModel,
         taskSessionParams:
           taskSession?.sessionParamsJson ?? taskSessionDecodedParams,

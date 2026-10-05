@@ -2460,6 +2460,129 @@ describe("effective run session config freshness", () => {
     ]);
   });
 
+  describe("model switching inside a resumed session", () => {
+    const ompConfig = (overrides: Record<string, unknown> = {}) => ({
+      command: "omp",
+      model: "sub2api-claude/claude-opus-5-5",
+      thinking: "high",
+      ...overrides,
+    });
+
+    async function freshness(input: {
+      adapterType: string;
+      first: Record<string, unknown>;
+      next: Record<string, unknown>;
+      issueOverrides?: unknown;
+    }) {
+      const base = await buildSessionConfigMetadata({
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: input.first,
+      });
+      const next = await buildSessionConfigMetadata({
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: input.next,
+        issueOverrides: input.issueOverrides ?? null,
+      });
+      return resolveTaskSessionConfigFreshness({
+        hasTaskSession: true,
+        adapterType: input.adapterType,
+        configuredModel: String(input.next.model),
+        taskSessionParams: sessionParamsWithConfigMetadata(base, String(input.first.model)),
+        configMetadata: next,
+      });
+    }
+
+    it("resumes an omp_local session when the configured model changes", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig(),
+        next: ompConfig({ model: "nutaraline/muse-spark-1.3" }),
+      });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
+    });
+
+    it("resumes an omp_local session when the thinking level changes", async () => {
+      for (const next of [
+        ompConfig({ thinking: "low" }),
+        ompConfig({ thinkingEffort: "medium" }),
+        ompConfig({ effort: "xhigh" }),
+      ]) {
+        const decision = await freshness({ adapterType: "omp_local", first: ompConfig(), next });
+        expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
+      }
+    });
+
+    it("resumes an omp_local session when a per-task model override changes", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig(),
+        next: ompConfig({ model: "nutaraline/muse-spark-1.3", thinking: "low" }),
+        issueOverrides: { adapterConfig: { model: "nutaraline/muse-spark-1.3", thinking: "low" } },
+      });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
+    });
+
+    it("still resets an omp_local session when its instructions change", async () => {
+      const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-model-switch-"));
+      const instructionsPath = path.join(root, "AGENTS.md");
+      const instructionsConfig = ompConfig({
+        instructionsBundleMode: "managed",
+        instructionsRootPath: root,
+        instructionsEntryFile: "AGENTS.md",
+        instructionsFilePath: instructionsPath,
+      });
+      await fs.writeFile(instructionsPath, "Version one instructions.\n", "utf8");
+      const base = await buildSessionConfigMetadata({
+        adapterType: "omp_local",
+        effectiveAdapterConfig: instructionsConfig,
+      });
+      await fs.writeFile(instructionsPath, "Version two instructions.\n", "utf8");
+      const next = await buildSessionConfigMetadata({
+        adapterType: "omp_local",
+        effectiveAdapterConfig: instructionsConfig,
+      });
+
+      const decision = resolveTaskSessionConfigFreshness({
+        hasTaskSession: true,
+        adapterType: "omp_local",
+        configuredModel: "sub2api-claude/claude-opus-5-5",
+        taskSessionParams: sessionParamsWithConfigMetadata(base, "sub2api-claude/claude-opus-5-5"),
+        configMetadata: next,
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["instructions"]);
+    });
+
+    it("still resets an omp_local session when another adapter setting changes", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig(),
+        next: ompConfig({ model: "nutaraline/muse-spark-1.3", smolModel: "vendor/smol" }),
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig"]);
+      expect(decision.reasons).toEqual(["effective run configuration changed: adapter config"]);
+    });
+
+    it("keeps resetting claude_local sessions when the configured model changes", async () => {
+      const decision = await freshness({
+        adapterType: "claude_local",
+        first: { command: "claude", model: "claude-opus-5-5" },
+        next: { command: "claude", model: "claude-sonnet-5" },
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.reasons).toEqual([
+        'configured model changed from "claude-opus-5-5" to "claude-sonnet-5"',
+        "effective run configuration changed: adapter config",
+      ]);
+    });
+  });
+
   it("freshens legacy task sessions that lack versioned config metadata", async () => {
     const metadata = await buildSessionConfigMetadata();
 

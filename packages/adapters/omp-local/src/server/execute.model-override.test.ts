@@ -87,6 +87,45 @@ describe("OMP local model and thinking flags", () => {
     expect(await flagValue(overridden, "--thinking")).toBe("high");
   });
 
+  it("switches model and thinking inside a resumed session", async () => {
+    const sessionDir = path.join(root, "sessions");
+    await execute({
+      runId: "run-model-switch-resume",
+      agent: {
+        id: "agent-1",
+        companyId: "company-1",
+        name: "OMP",
+        adapterType: "omp_local",
+        adapterConfig: { model: "vendor/new-model", thinking: "low" },
+      },
+      runtime: {
+        sessionId: "saved-session",
+        sessionParams: { sessionId: "saved-session", cwd: workspaceCwd, sessionDir },
+        sessionDisplayId: "saved-session",
+        taskKey: "task-1",
+      },
+      config: {
+        command: commandPath,
+        cwd: workspaceCwd,
+        rpcSteering: false,
+        model: "vendor/new-model",
+        thinking: "low",
+      },
+      context: {},
+      onLog: async () => {},
+    });
+    const args = captured as string[] | null;
+    expect(args).not.toBeNull();
+    const flag = (name: string) => {
+      const index = (args as string[]).indexOf(name);
+      return index >= 0 ? ((args as string[])[index + 1] ?? null) : null;
+    };
+    expect(flag("--resume")).toBe("saved-session");
+    expect(flag("--session-dir")).toBe(sessionDir);
+    expect(flag("--model")).toBe("vendor/new-model");
+    expect(flag("--thinking")).toBe("low");
+  });
+
   it("omits both flags when neither the agent nor the task supplies a value", async () => {
     expect(await flagValue({}, "--model")).toBeNull();
     expect(await flagValue({}, "--thinking")).toBeNull();

@@ -103,7 +103,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     await tempDb?.cleanup();
   });
 
-  async function seedAgentWithSavedSession() {
+  async function seedAgentWithSavedSession(adapterType = "codex_local") {
     mockAdapterExecute.mockImplementation(async () => savedSessionResult);
     const instructionsRoot = await fs.mkdtemp(
       path.join(os.tmpdir(), "paperclip-process-loss-instructions-"),
@@ -129,7 +129,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       name: "Irfan",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType,
       adapterConfig: {
         model: "model-a",
         instructionsFilePath: instructionsPath,
@@ -337,6 +337,91 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     expect(turn.adapterInput?.runtime.sessionId).toBeNull();
     expect(turn.session?.reset).toBe(true);
     expect(turn.session?.taskSessionReused).toBe(false);
+  });
+
+  async function wakeOnComment(seeded: { agentId: string; issueId: string }) {
+    const heartbeat = heartbeatService(db);
+    const next = await heartbeat.wakeup(seeded.agentId, {
+      source: "automation",
+      triggerDetail: "system",
+      reason: "issue_commented",
+      requestedByActorType: "user",
+      requestedByActorId: "responsible-user",
+      payload: { issueId: seeded.issueId },
+      contextSnapshot: {
+        issueId: seeded.issueId,
+        taskId: seeded.issueId,
+        wakeReason: "issue_commented",
+      },
+    });
+    await drainHeartbeatRunsToQuiescence(db, heartbeat);
+    return settledTurn(next!.id);
+  }
+
+  async function changeAdapterConfigThroughRevision(
+    agentId: string,
+    patch: Record<string, unknown>,
+  ) {
+    const agent = await db
+      .select()
+      .from(agents)
+      .where(eq(agents.id, agentId))
+      .then((rows) => rows[0]!);
+    await agentService(db).update(
+      agentId,
+      { adapterConfig: { ...(agent.adapterConfig as Record<string, unknown>), ...patch } },
+      {
+        recordRevision: {
+          createdByAgentId: null,
+          createdByUserId: "responsible-user",
+          source: "patch",
+        },
+      },
+    );
+  }
+
+  it("resumes an omp_local session in place after its model and thinking change", async () => {
+    const seeded = await seedAgentWithSavedSession("omp_local");
+    await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b", thinking: "low" });
+
+    const turn = await wakeOnComment(seeded);
+
+    expect(turn.run?.status).toBe("succeeded");
+    expect(turn.adapterInput?.runtime.sessionId).toBe(SAVED_SESSION_ID);
+    expect(turn.session).toMatchObject({ reset: false, resetReasons: [], taskSessionReused: true });
+    const [stored] = await db
+      .select()
+      .from(agentTaskSessions)
+      .where(eq(agentTaskSessions.agentId, seeded.agentId));
+    expect(stored?.sessionParamsJson).toMatchObject({ __paperclipConfiguredModel: "model-b" });
+  });
+
+  it("still starts a fresh omp_local session when another adapter setting changes with the model", async () => {
+    const seeded = await seedAgentWithSavedSession("omp_local");
+    await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b", smolModel: "vendor/smol" });
+
+    const turn = await wakeOnComment(seeded);
+
+    expect(turn.run?.status).toBe("succeeded");
+    expect(turn.adapterInput?.runtime.sessionId).toBeNull();
+    expect(turn.session?.reset).toBe(true);
+    expect(turn.session?.changedCategories).toEqual(
+      expect.arrayContaining(["adapterConfig"]),
+    );
+  });
+
+  it("starts a fresh codex_local session after its model changes", async () => {
+    const seeded = await seedAgentWithSavedSession();
+    await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b" });
+
+    const turn = await wakeOnComment(seeded);
+
+    expect(turn.run?.status).toBe("succeeded");
+    expect(turn.adapterInput?.runtime.sessionId).toBeNull();
+    expect(turn.session?.reset).toBe(true);
+    expect(turn.session?.resetReasons).toEqual(
+      expect.arrayContaining(['configured model changed from "model-a" to "model-b"']),
+    );
   });
 
   it("keeps resetting the session for an ordinary comment wake after the instructions changed", async () => {
