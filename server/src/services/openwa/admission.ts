@@ -20,7 +20,6 @@ import type { OpenwaIngressHooks } from "./ingress.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import {
   classifyOpenwaEvent,
-  openwaTriggerArmsAbsence,
   detectApprovalReply,
   openwaChatSettings,
   openwaDigits,
@@ -744,7 +743,6 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
         },
         text: event.body,
       });
-      if (openwaTriggerArmsAbsence(event, snapshot)) await deps.timers?.onAbsenceCandidate?.(event, ctx);
       return;
     }
     await learnLid(snapshot, event);

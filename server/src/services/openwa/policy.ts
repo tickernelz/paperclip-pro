@@ -361,17 +361,6 @@ export function openwaQuoteMayAddressAgent(event: OpenwaInboundEvent, snapshot: 
   return triggers.replyToAgent && openwaChatActive(snapshot, event.chatKey, event.chatKind === "group", event.phoneTyped);
 }
 
-function armsAbsence(snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent, triggers: OpenwaTriggerRules): boolean {
-  if (event.phoneTyped || !triggers.ownerMentionedAbsent) return false;
-  return event.chatKind === "group"
-    ? mentionsOwner(snapshot, event) || openwaQuotesOwner(snapshot, event)
-    : snapshot.policy.numberMode === "owner_number";
-}
-
-export function openwaTriggerArmsAbsence(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot): boolean {
-  return armsAbsence(snapshot, event, openwaEffectiveTriggers(snapshot.policy.triggers, openwaChatSettings(snapshot, event.chatKey).triggers));
-}
-
 export function classifyOpenwaEvent(
   event: OpenwaInboundEvent,
   snapshot: OpenwaPolicySnapshot,
@@ -392,7 +381,14 @@ export function classifyOpenwaEvent(
   if (!rules.length || !active) {
     if (addressed && !active) return { kind: "filtered", reason: "chat_inactive", chatKey, principalRole: role, rules };
     if (owner && OPENWA_OWNER_ACTIVITY_TYPES.has(event.type)) return { kind: "owner_activity", chatKey, owner };
-    if (!owner && active && armsAbsence(snapshot, event, triggers)) return { kind: "discard", armsAbsence: true };
+    if (
+      !owner &&
+      active &&
+      !event.phoneTyped &&
+      triggers.ownerMentionedAbsent &&
+      (isGroup ? mentionsOwner(snapshot, event) || openwaQuotesOwner(snapshot, event) : snapshot.policy.numberMode === "owner_number")
+    )
+      return { kind: "discard", armsAbsence: true };
     return { kind: "discard" };
   }
   if (role === "denylisted") return { kind: "filtered", reason: "denylisted", chatKey, principalRole: role, rules };

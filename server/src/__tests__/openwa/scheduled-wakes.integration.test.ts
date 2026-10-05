@@ -443,34 +443,6 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     expect((await wakeRows(t)).filter((row) => row.chatKey === other)).toHaveLength(0);
   }, 120_000);
 
-  it("arms owner_absent when a member's repeated owner mention is dropped by the spam guard", async () => {
-    const t = await setup({ clock: new FakeClock() });
-    const chat = group(t, "45");
-    await goLive(t);
-    const ts = Math.floor(Date.now() / 1000);
-    for (let index = 0; index < 8; index++)
-      await send(t, {
-        chatId: chat,
-        author: jid(MEMBER_PHONE),
-        body: "@" + OWN_PHONE + " @" + OWNER_PHONE + " tolong dicek",
-        timestamp: ts + index,
-        extra: { mentionedIds: [jid(OWN_PHONE), jid(OWNER_PHONE)] },
-      });
-    const attached = async () => {
-      const [row] = await wakeRows(t);
-      return (row?.payload as { messages?: unknown[] } | undefined)?.messages?.length ?? 0;
-    };
-    await until(async () => (await attached()) === 7);
-    const rows = await wakeRows(t);
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({ kind: "owner_absent", state: "pending", chatKey: chat });
-    const filtered = await db
-      .select({ metadata: chatAuditEntries.metadata })
-      .from(chatAuditEntries)
-      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "trigger_filtered")));
-    expect(filtered.map((entry) => (entry.metadata as { reason: string }).reason)).toEqual(Array(7).fill("duplicate"));
-  }, 120_000);
-
   it("never arms a wake for group chatter that does not mention an owner", async () => {
     const t = await setup({ clock: new FakeClock() });
     const chat = group(t, "42");
