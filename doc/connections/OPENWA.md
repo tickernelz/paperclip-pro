@@ -260,7 +260,12 @@ publication (suppressed and audited as `publication_suppressed`) until a
 | Keep content for (days) | `auditContentRetentionDays` | 90 | 1 to 3650 |
 
 Each chat keeps one conversation task until it has been idle for
-`rotateAfterIdleHours`, or until someone sends `/new`. The owner-number label is
+`rotateAfterIdleHours`, or until someone sends `/new`. A wake on a conversation
+task left `in_review`, `blocked`, `done` or `cancelled` first moves it back to
+`in_progress`. When unresolved blockers refuse that, the wake still proceeds:
+the task is parked as `blocked` (activity `issue.updated` with
+`reopenRefused: unresolved_blockers`), or, if no status change is possible,
+activity `issue.chat_reopen_refused` records it. The owner-number label is
 added to the first part of each published message in `owner_number` mode. Custom
 instructions are added to the agent's OpenWA guidance on every run, after the
 built-in rules; they cannot override policy. Settings also shows capability

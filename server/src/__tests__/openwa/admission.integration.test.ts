@@ -21,6 +21,7 @@ import {
   companySecretBindings,
   createDb,
   issueComments,
+  issueRelations,
   issues,
   toolConnections,
   type Db,
@@ -833,6 +834,36 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       .from(activityLog)
       .where(and(eq(activityLog.entityId, first.issueId), eq(activityLog.action, "issue.updated"), sql`${activityLog.details}->>'wake' = 'message'`));
     expect(reopenedAt!.createdAt.getTime()).toBeLessThanOrEqual(wake!.createdAt.getTime());
+  }, 120_000);
+
+  it("still wakes the agent when an in_review conversation issue has an unresolved blocker, parking it as blocked", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + ALLOWED_PHONE }, t.userId);
+    await goLive(t);
+    await send(t, { chatId: jid(ALLOWED_PHONE), body: "first question" });
+    await settledDeliveries(t, 1);
+    const [first] = await conversations(t);
+    const blockerId = randomUUID();
+    await db.insert(issues).values({ id: blockerId, companyId: t.companyId, title: "Blocker", status: "todo" });
+    await db.insert(issueRelations).values({ companyId: t.companyId, issueId: blockerId, relatedIssueId: first.issueId, type: "blocks" });
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, first.issueId));
+    const wakesBefore = t.wakeup.mock.calls.length;
+    await send(t, { chatId: jid(ALLOWED_PHONE), body: "any news?" });
+    const rows = await settledDeliveries(t, 2);
+    expect(rows.map((row) => row.state)).toEqual(["processed", "processed"]);
+    await until(() => t.wakeup.mock.calls.length > wakesBefore);
+    const [wake] = await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, rows[1].id), eq(chatActions.kind, "inbound_wakeup")));
+    expect((wake!.result as { code?: string }).code).toBe("inbound_wakeup_durable");
+    const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, first.issueId));
+    expect(issue!.status).toBe("blocked");
+    const refused = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, first.issueId), sql`${activityLog.details}->>'reopenRefused' = 'unresolved_blockers'`));
+    expect(refused.map((row) => row.details)).toEqual([
+      expect.objectContaining({ status: "blocked", wake: "message", unresolvedBlockerIssueIds: [blockerId], _previous: { status: "in_review" } }),
+    ]);
   }, 120_000);
 
   it("ignores control commands from senders outside the allowlist", async () => {
