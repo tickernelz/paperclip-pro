@@ -3,13 +3,15 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, asc, eq } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   agentWakeupRequests,
   authUsers,
   chatActions,
   chatAuditEntries,
+  chatConversations,
   chatDeliveries,
   chatEndpoints,
   chatOwnerApprovalRequests,
@@ -18,6 +20,7 @@ import {
   companyMemberships,
   companySecretBindings,
   createDb,
+  issues,
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -511,6 +514,53 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     expect(intent.status).toBe("processed");
   }, 120_000);
 
+  async function conversationIssueId(t: Pick<Setup, "companyId" | "endpointId">) {
+    const [row] = await db
+      .select({ issueId: chatConversations.issueId })
+      .from(chatConversations)
+      .where(and(eq(chatConversations.companyId, t.companyId), eq(chatConversations.endpointId, t.endpointId)));
+    return row!.issueId;
+  }
+
+  async function reopenActivities(issueId: string, wake: string) {
+    return db
+      .select({ actorType: activityLog.actorType, actorId: activityLog.actorId, details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, issueId), eq(activityLog.action, "issue.updated"), sql`${activityLog.details}->>'wake' = ${wake}`));
+  }
+
+  it("moves an in_review conversation issue back to in_progress before an owner_absent wake", async () => {
+    const clock = new FakeClock();
+    const t = await setup({ clock });
+    const chat = group(t, "05");
+    await goLive(t);
+    await send(t, {
+      chatId: chat,
+      author: jid(MEMBER_PHONE),
+      body: "@" + OWN_PHONE + " halo",
+      extra: { mentionedIds: [jid(OWN_PHONE)] },
+    });
+    await settled(t, 1);
+    const issueId = await conversationIssueId(t);
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, issueId));
+    const ts = Math.floor(clock.now() / 1000);
+    await send(t, mentionOwner(chat, jid(MEMBER_PHONE), ts));
+    const [armed] = await wakeRows(t);
+    expect(armed).toMatchObject({ kind: "owner_absent", state: "pending" });
+    clock.advanceTo(armed.fireAt.getTime());
+    await settled(t, 2);
+    await until(async () => (await inboundWakes(t)).length === 2);
+    const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, issueId));
+    expect(issue!.status).toBe("in_progress");
+    expect(await reopenActivities(issueId, "owner_absent")).toEqual([
+      expect.objectContaining({
+        actorType: "system",
+        actorId: "chat:openwa",
+        details: expect.objectContaining({ status: "in_progress", source: "chat:openwa", _previous: { status: "in_review" } }),
+      }),
+    ]);
+  }, 120_000);
+
   it("owner message at 60 s cancels; an owner reaction or revoke alone does not (AC8)", async () => {
     const clock = new FakeClock();
     const t = await setup({ clock });
@@ -701,6 +751,48 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     clock.advance(180_000);
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(reminderCalls()).toHaveLength(1);
+  }, 120_000);
+
+  it("moves a blocked conversation issue back to in_progress before an approval reminder wake", async () => {
+    const clock = new FakeClock();
+    const t = await setup({ clock });
+    await t.service.openwa.updatePolicy(t.endpointId, { approvals: { reminderMinutes: 1, maxReminders: 1 } }, t.userId);
+    await goLive(t);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "start a conversation" });
+    await settled(t, 1);
+    const issueId = await conversationIssueId(t);
+    await db.update(issues).set({ status: "blocked" }).where(eq(issues.id, issueId));
+    const [request] = await db
+      .insert(chatOwnerApprovalRequests)
+      .values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        originChatKey: jid(OWNER_PHONE),
+        categories: ["create_task"],
+        scope: "one_action",
+        summary: "Create a task",
+        proposedAction: "create",
+      })
+      .returning();
+    let statusAtWake: string | null = null;
+    const wakeup = t.wakeup.getMockImplementation()!;
+    t.wakeup.mockImplementation(async (agentId, opts) => {
+      if (opts.idempotencyKey?.startsWith("openwa-scheduled-wake:")) {
+        const [row] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, issueId));
+        statusAtWake = row!.status;
+      }
+      return wakeup(agentId, opts);
+    });
+    await scheduleApprovalReminders(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, chatKey: jid(OWNER_PHONE), createdAt: new Date(clock.now()) });
+    clock.advance(60_000);
+    await until(() => statusAtWake !== null);
+    expect(statusAtWake).toBe("in_progress");
+    expect(await reopenActivities(issueId, "approval_pending")).toEqual([
+      expect.objectContaining({
+        actorType: "system",
+        details: expect.objectContaining({ status: "in_progress", source: "chat:openwa", _previous: { status: "blocked" } }),
+      }),
+    ]);
   }, 120_000);
 
   it("skips a reminder whose request was resolved without being cancelled", async () => {

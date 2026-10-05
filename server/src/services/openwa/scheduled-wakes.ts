@@ -15,6 +15,7 @@ import { logger } from "../../middleware/logger.js";
 import type { IssueAssignmentWakeupDeps } from "../issue-assignment-wakeup.js";
 import type { OpenwaTimerHooks } from "./admission.js";
 import { recordOpenwaAudit } from "./audit.js";
+import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { OPENWA_WAKE_MAX_MESSAGES } from "./guidance.js";
 import { OPENWA_OWNER_ACTIVITY_TYPES, openwaChatSettings, openwaSenderRole, type OpenwaPolicySnapshot } from "./policy.js";
 import type { OpenwaInboundEvent } from "./receiver.js";
@@ -776,6 +777,12 @@ async function deliverApprovalReminder(
     .orderBy(asc(agentWakeupRequests.requestedAt))
     .limit(1);
   if (!existing) {
+    await reopenOpenwaConversationIssue(db, {
+      companyId: input.companyId,
+      issueId: target.issue.id,
+      actorId: OPENWA_SCHEDULED_WAKE_ACTOR,
+      wake: "approval_pending",
+    });
     await heartbeat.wakeup(agentId, {
       source: "assignment",
       triggerDetail: "system",

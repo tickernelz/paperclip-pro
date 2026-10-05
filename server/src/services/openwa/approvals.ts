@@ -36,6 +36,7 @@ import { OpenwaGatewayError } from "./gateway.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner } from "./owners.js";
+import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
 import { OpenwaToolError, type ToolContext } from "./tools.js";
@@ -831,6 +832,12 @@ export async function dispatchOpenwaApprovalWake(db: Db, actionId: string): Prom
       wakeCommentId: commentId,
       openwa,
     };
+    await reopenOpenwaConversationIssue(db, {
+      companyId: claimed.companyId,
+      issueId,
+      actorId: OPENWA_APPROVAL_WAKE_ACTOR_ID,
+      wake: "approval_resolved",
+    });
     await runtime.wakeup(agentId, {
       source: "assignment",
       triggerDetail: "system",

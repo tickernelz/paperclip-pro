@@ -2,9 +2,10 @@ import { randomUUID } from "node:crypto";
 import os from "node:os";
 import path from "node:path";
 import { promises as fs } from "node:fs";
-import { count, eq } from "drizzle-orm";
+import { and, count, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
+  activityLog,
   agents,
   authUsers,
   chatActions,
@@ -37,6 +38,7 @@ import { buildPaperclipTaskMarkdown, heartbeatService } from "../../services/hea
 import { registerServerAdapter, unregisterServerAdapter } from "../../adapters/index.ts";
 import { assertOpenwaRunMay } from "../../services/openwa/authority.ts";
 import { createDurableChatWakeupRequest } from "../../services/durable-chat-wakeup.ts";
+import { dispatchOpenwaApprovalWake, OPENWA_APPROVAL_WAKE_ACTION_KIND, registerOpenwaApprovalWakeRuntime } from "../../services/openwa/approvals.ts";
 import {
   OPENWA_WAKE_CONTEXT_KEY,
   OPENWA_WAKE_MAX_MESSAGES,
@@ -589,6 +591,82 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     for (const digits of [PEER_DIGITS, OWNER_DIGITS, "628555666777"]) {
       expect(rendered).not.toContain(digits);
     }
+  });
+
+  async function stageApprovalResolved(seed: OpenwaSeed) {
+    const [request] = await db.insert(chatOwnerApprovalRequests).values({
+      companyId: seed.companyId, endpointId: seed.endpointId, originChatKey: PEER, requestedByPrincipalId: seed.peerPrincipalId,
+      categories: ["create_task"], scope: "one_action", summary: "Create a follow-up task", proposedAction: "create", status: "approved",
+    }).returning();
+    const [comment] = await db.insert(issueComments).values({
+      companyId: seed.companyId, issueId: seed.issueId, authorType: "system", body: "Owner approved the request.",
+    }).returning();
+    const [action] = await db.insert(chatActions).values({
+      companyId: seed.companyId, endpointId: seed.endpointId, conversationId: seed.conversationId, principalId: seed.peerPrincipalId,
+      kind: OPENWA_APPROVAL_WAKE_ACTION_KIND, providerActionId: "openwa-approval-resolved:" + request!.id, status: "queued",
+      payload: {
+        version: 1, issueId: seed.issueId, agentId: seed.agentId, commentId: comment!.id, expectedStatus: "approved",
+        openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: request!.id },
+      },
+    }).returning();
+    return action!.id;
+  }
+
+  async function runForWake(wakeupRequestId: string) {
+    const deadline = Date.now() + 10_000;
+    while (Date.now() < deadline) {
+      const [row] = await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(eq(heartbeatRuns.wakeupRequestId, wakeupRequestId));
+      if (row) return row.id;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+    throw new Error("no run for wake " + wakeupRequestId);
+  }
+
+  it("runs an approval_resolved wake on a conversation issue the agent left in_review", async () => {
+    const seed = await seedOpenwa();
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, seed.issueId));
+    const heartbeat = heartbeatService(db);
+    const unregister = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => heartbeat.wakeup(agentId, opts) });
+    try {
+      const actionId = await stageApprovalResolved(seed);
+      expect(await dispatchOpenwaApprovalWake(db, actionId)).toBe(true);
+      const finished = await waitForRunToFinish(heartbeat, await runForWake(actionId));
+      expect(finished).toMatchObject({ status: "succeeded" });
+      expect(finished?.error ?? null).not.toBe("reviewed_chat_execution_binding_not_authorized");
+      await waitForIssueLockRelease(db, seed.issueId);
+      const [reopened] = await db.select({ details: activityLog.details }).from(activityLog)
+        .where(and(eq(activityLog.entityId, seed.issueId), eq(activityLog.action, "issue.updated")));
+      expect(reopened?.details).toMatchObject({ status: "in_progress", source: "chat:openwa", wake: "approval_resolved", _previous: { status: "in_review" } });
+    } finally {
+      unregister();
+    }
+  });
+
+  it("fails a chat:openwa run on an in_review conversation issue at the reviewed-chat gate (negative control)", async () => {
+    const seed = await seedOpenwa();
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, seed.issueId));
+    const heartbeat = heartbeatService(db);
+    const actionId = await stageApprovalResolved(seed);
+    const [action] = await db.select().from(chatActions).where(eq(chatActions.id, actionId));
+    const payload = action!.payload as { commentId: string; openwa: Record<string, unknown> };
+    const queued = await heartbeat.wakeup(seed.agentId, {
+      source: "assignment",
+      triggerDetail: "system",
+      reason: "OpenWA approval resolved",
+      payload: { issueId: seed.issueId, wakeCommentId: payload.commentId, openwa: payload.openwa, mutation: "openwa_approval_resolved" },
+      contextSnapshot: { issueId: seed.issueId, wakeCommentId: payload.commentId, openwa: payload.openwa, source: "chat:openwa" },
+      allowRunCoalescing: false,
+      requestedByActorType: "system",
+      requestedByActorId: "openwa:approval",
+      durableChatRequest: createDurableChatWakeupRequest({
+        id: actionId, companyId: seed.companyId, agentId: seed.agentId, issueId: seed.issueId, commentId: payload.commentId,
+        requestedByActorType: "system", requestedByActorId: "openwa:approval", requestedAt: new Date(), authorize: async () => {},
+      }),
+    });
+    const finished = await waitForRunToFinish(heartbeat, queued!.id);
+    expect(finished).toMatchObject({ status: "failed", error: "reviewed_chat_execution_binding_not_authorized" });
+    const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, seed.issueId));
+    expect(issue!.status).toBe("in_review");
   });
 
   it("keeps OpenWA out of the generic external-chat file-delivery contract", () => {

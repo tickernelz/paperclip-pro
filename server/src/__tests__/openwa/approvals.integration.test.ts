@@ -30,6 +30,7 @@ import {
   heartbeatRuns,
   issueComments,
   issueThreadInteractions,
+  issues,
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -719,6 +720,54 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const body = await resolvedComment(wake.action);
     expect(body).toContain("rejected the approval request via Paperclip");
     expect(body).toContain("Owner note: " + reason);
+  }, 120_000);
+
+  it("moves an in_review conversation issue back to in_progress before the approval_resolved wake", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, runA.issueId));
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const wake = await approvalWake(t, created.requestId);
+    expect(wake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "grant" } });
+    const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, runA.issueId));
+    expect(issue!.status).toBe("in_progress");
+    const reopened = await db
+      .select({ actorType: activityLog.actorType, actorId: activityLog.actorId, details: activityLog.details, createdAt: activityLog.createdAt })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, runA.issueId), eq(activityLog.action, "issue.updated"), sql`${activityLog.details}->>'wake' = 'approval_resolved'`));
+    expect(reopened).toEqual([
+      expect.objectContaining({
+        actorType: "system",
+        actorId: "openwa:approval",
+        details: expect.objectContaining({ status: "in_progress", source: "chat:openwa", _previous: { status: "in_review" } }),
+      }),
+    ]);
+    expect(reopened[0]!.createdAt.getTime()).toBeLessThanOrEqual(wake.request.createdAt.getTime());
+  }, 120_000);
+
+  it("leaves an in_progress conversation issue untouched by the approval_resolved wake", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    await db.update(issues).set({ status: "in_progress" }).where(eq(issues.id, runA.issueId));
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + created.requestId + "/resolve")
+      .send({ decision: "reject" });
+    expect(resolved.status).toBe(200);
+    await approvalWake(t, created.requestId);
+    const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, runA.issueId));
+    expect(issue!.status).toBe("in_progress");
+    const statusChanges = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, runA.issueId), eq(activityLog.action, "issue.updated"), sql`${activityLog.details}->>'wake' = 'approval_resolved'`));
+    expect(statusChanges).toEqual([]);
   }, 120_000);
 
   it("AC7: simultaneous WhatsApp and Paperclip resolution yields exactly one winner", async () => {

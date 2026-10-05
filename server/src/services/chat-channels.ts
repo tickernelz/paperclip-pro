@@ -55,6 +55,7 @@ import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa
 import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
+import { reopenOpenwaConversationIssue } from "./openwa/conversation-status.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
 import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
 import { createOpenwaNudges, registerOpenwaRunStartListener } from "./openwa/nudges.js";
@@ -16873,7 +16874,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
               );
           }
 
-        if (issue.status === "done" || issue.status === "cancelled") {
+        if (taskEndpoint.provider === "openwa") {
+          await reopenOpenwaConversationIssue(
+            db,
+            {
+              companyId: taskEndpoint.companyId,
+              issueId: issue.id,
+              actorUserId: taskUserId,
+              actorId: "chat:openwa",
+              wake: openwaDecoration?.event ?? "message",
+            },
+            { tx: taskTx, activityPublications: inboundActivityPublications },
+          );
+        } else if (issue.status === "done" || issue.status === "cancelled") {
           await issuesSvc.update(
             issue.id,
             {

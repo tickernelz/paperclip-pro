@@ -3,7 +3,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import {
   activityLog,
   agents,
@@ -654,8 +654,44 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       .from(activityLog)
       .where(and(eq(activityLog.entityId, first.issueId), eq(activityLog.action, "issue.updated")));
     expect(reopened.map((row) => row.details)).toContainEqual(
-      expect.objectContaining({ status: "todo", source: "chat:openwa", _previous: { status: "done" } }),
+      expect.objectContaining({ status: "in_progress", source: "chat:openwa", _previous: { status: "done" } }),
     );
+  }, 120_000);
+
+  it("moves an in_review conversation issue back to in_progress before a member trigger wakes the agent", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + ALLOWED_PHONE }, t.userId);
+    await goLive(t);
+    await send(t, { chatId: jid(ALLOWED_PHONE), body: "first question" });
+    await settledDeliveries(t, 1);
+    const [first] = await conversations(t);
+    await db.update(issues).set({ status: "in_review" }).where(eq(issues.id, first.issueId));
+    const wakesBefore = t.wakeup.mock.calls.length;
+    await send(t, { chatId: jid(ALLOWED_PHONE), body: "any news?" });
+    const rows = await settledDeliveries(t, 2);
+    expect(rows.map((row) => [row.principalRole, row.triggerClass, row.conversationId])).toEqual([
+      ["allowed", "other", first.id],
+      ["allowed", "other", first.id],
+    ]);
+    await until(() => t.wakeup.mock.calls.length > wakesBefore);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, first.issueId));
+    expect(issue.status).toBe("in_progress");
+    const reopened = await db
+      .select({ details: activityLog.details, actorType: activityLog.actorType, actorId: activityLog.actorId })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, first.issueId), eq(activityLog.action, "issue.updated")));
+    expect(reopened).toContainEqual({
+      actorType: "system",
+      actorId: "chat:openwa",
+      details: expect.objectContaining({ status: "in_progress", source: "chat:openwa", wake: "message", _previous: { status: "in_review" } }),
+    });
+    const [wake] = await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, rows[1].id), eq(chatActions.kind, "inbound_wakeup")));
+    const [reopenedAt] = await db
+      .select({ createdAt: activityLog.createdAt })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, first.issueId), eq(activityLog.action, "issue.updated"), sql`${activityLog.details}->>'wake' = 'message'`));
+    expect(reopenedAt!.createdAt.getTime()).toBeLessThanOrEqual(wake!.createdAt.getTime());
   }, 120_000);
 
   it("ignores control commands from senders outside the allowlist", async () => {
