@@ -1,6 +1,8 @@
 import { createHash } from "node:crypto";
 import { and, asc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { chatActions, chatConversations, chatDeliveries, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatAuditEntries, chatConversations, chatDeliveries, chatOutboundMessages, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { openwaChatKey } from "./outbound.js";
+import { OPENWA_TOOL_WRITE_ACTION_KIND } from "./tool-writes.js";
 import { forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";
@@ -23,6 +25,95 @@ export const OPENWA_RUN_RETRY_WAKE_ACTOR_ID = "openwa:run-retry";
 export const OPENWA_RUN_RETRY_DELAY_MS = 45_000;
 const RETRYABLE_RUN_STATUSES = ["failed", "timed_out"];
 const ACTIVE_RETRY_RUN_STATUSES = ["scheduled_retry", "queued", "running"];
+const NON_RETRIED_EVENTS = ["approval_reply", "approval_resolved"];
+
+/** A run of the issue that is still active or was created after the source run, so it already carries or supersedes the retry. */
+async function laterIssueRun(db: Db, input: { companyId: string; issueId: string; sourceRunId: string }): Promise<string | null> {
+  const [row] = await db
+    .select({ id: heartbeatRuns.id })
+    .from(heartbeatRuns)
+    .where(
+      and(
+        eq(heartbeatRuns.companyId, input.companyId),
+        sql`${heartbeatRuns.id} <> ${input.sourceRunId}::uuid`,
+        sql`coalesce(${heartbeatRuns.contextSnapshot} ->> 'issueId', ${heartbeatRuns.contextSnapshot} ->> 'taskId') = ${input.issueId}`,
+        or(
+          inArray(heartbeatRuns.status, ACTIVE_RETRY_RUN_STATUSES),
+          sql`${heartbeatRuns.createdAt} > (select source.created_at from heartbeat_runs source where source.id = ${input.sourceRunId}::uuid)`,
+        ),
+      ),
+    )
+    .limit(1);
+  return row?.id ?? null;
+}
+
+/** True when the run left a send to chatKey pending, uncertain or sent, or a tool write uncertain or partially delivered. */
+async function runSendUnsettled(db: Db, input: { companyId: string; endpointId: string; runId: string; chatKey: string }): Promise<boolean> {
+  const [outbound] = await db
+    .select({ id: chatOutboundMessages.id })
+    .from(chatOutboundMessages)
+    .where(
+      and(
+        eq(chatOutboundMessages.companyId, input.companyId),
+        eq(chatOutboundMessages.endpointId, input.endpointId),
+        eq(chatOutboundMessages.runId, input.runId),
+        eq(chatOutboundMessages.chatKey, openwaChatKey(input.chatKey)),
+        inArray(chatOutboundMessages.state, ["pending", "uncertain", "sent"]),
+      ),
+    )
+    .limit(1);
+  if (outbound) return true;
+  const [write] = await db
+    .select({ id: chatActions.id })
+    .from(chatActions)
+    .where(
+      and(
+        eq(chatActions.companyId, input.companyId),
+        eq(chatActions.endpointId, input.endpointId),
+        eq(chatActions.kind, OPENWA_TOOL_WRITE_ACTION_KIND),
+        sql`${chatActions.payload} ->> 'runId' = ${input.runId}`,
+        or(
+          inArray(chatActions.status, ["uncertain", "processing"]),
+          and(
+            sql`${chatActions.status} <> 'processed'`,
+            sql`exists (select 1 from jsonb_each(coalesce(${chatActions.result} -> 'parts', '{}'::jsonb)) part where part.value ->> 'messageId' is not null)`,
+          ),
+        ),
+      ),
+    )
+    .limit(1);
+  return Boolean(write);
+}
+
+async function recordRunFailedOnce(
+  db: Db,
+  input: { companyId: string; endpointId: string; conversationId: string; chatKey: string; runId: string; metadata: Record<string, unknown> },
+): Promise<void> {
+  const [existing] = await db
+    .select({ id: chatAuditEntries.id })
+    .from(chatAuditEntries)
+    .where(
+      and(
+        eq(chatAuditEntries.companyId, input.companyId),
+        eq(chatAuditEntries.endpointId, input.endpointId),
+        eq(chatAuditEntries.kind, "run_failed"),
+        eq(chatAuditEntries.runId, input.runId),
+      ),
+    )
+    .limit(1);
+  if (existing) return;
+  await recordOpenwaAudit(db, {
+    companyId: input.companyId,
+    endpointId: input.endpointId,
+    conversationId: input.conversationId,
+    chatKey: input.chatKey,
+    kind: "run_failed",
+    actorKind: "system",
+    actorRef: OPENWA_RUN_RETRY_WAKE_ACTOR_ID,
+    runId: input.runId,
+    metadata: input.metadata,
+  });
+}
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface OpenwaFollowupRuntime {
@@ -363,12 +454,7 @@ export async function scheduleOpenwaRunRetryForRun(db: Db, input: { companyId: s
   const openwa = readOpenwaRunContext(run.contextSnapshot);
   const issueId = typeof run.contextSnapshot?.issueId === "string" ? run.contextSnapshot.issueId : null;
   if (!openwa || !issueId || !openwa.deliveryIds.length) return null;
-  const [nativeRetry] = await db
-    .select({ id: heartbeatRuns.id })
-    .from(heartbeatRuns)
-    .where(and(eq(heartbeatRuns.companyId, input.companyId), eq(heartbeatRuns.retryOfRunId, input.runId), inArray(heartbeatRuns.status, ACTIVE_RETRY_RUN_STATUSES)))
-    .limit(1);
-  if (nativeRetry) return null;
+  if (await laterIssueRun(db, { companyId: input.companyId, issueId, sourceRunId: input.runId })) return null;
   return db.transaction(async (tx) => {
     const [conversation] = await tx
       .select({ id: chatConversations.id })
@@ -410,14 +496,11 @@ export async function scheduleOpenwaRunRetryForRun(db: Db, input: { companyId: s
         .where(and(eq(chatActions.id, retry.id), isNull(sql`${chatActions.result} ->> 'exhaustedByRunId'`)))
         .returning({ id: chatActions.id });
       if (!marked) return null;
-      await recordOpenwaAudit(tx as unknown as Db, {
+      await recordRunFailedOnce(tx as unknown as Db, {
         companyId: input.companyId,
         endpointId: openwa.endpointId,
         conversationId: conversation.id,
         chatKey: openwa.chatKey,
-        kind: "run_failed",
-        actorKind: "system",
-        actorRef: OPENWA_RUN_RETRY_WAKE_ACTOR_ID,
         runId: input.runId,
         metadata: {
           reason: "retry_failed",
@@ -438,6 +521,20 @@ export async function scheduleOpenwaRunRetryForRun(db: Db, input: { companyId: s
         .limit(1);
       if (retryWake) return exhaust(retryWake);
     }
+    const notRetried = async (reason: "approval_event" | "send_uncertain") => {
+      await recordRunFailedOnce(tx as unknown as Db, {
+        companyId: input.companyId,
+        endpointId: openwa.endpointId,
+        conversationId: conversation.id,
+        chatKey: openwa.chatKey,
+        runId: input.runId,
+        metadata: { reason, status: run.status, errorCode: run.errorCode, triggerIds: deliveryIds, event: openwa.event },
+      });
+      return null;
+    };
+    if (openwa.event && NON_RETRIED_EVENTS.includes(openwa.event)) return notRetried("approval_event");
+    if (await runSendUnsettled(tx as unknown as Db, { companyId: input.companyId, endpointId: openwa.endpointId, runId: input.runId, chatKey: openwa.chatKey }))
+      return notRetried("send_uncertain");
     const providerActionId = runRetryActionId(deliveryIds);
     const [existing] = await tx
       .select()
@@ -473,6 +570,7 @@ export async function scheduleOpenwaRunRetryForRun(db: Db, input: { companyId: s
           agentId: issue.assigneeAgentId,
           commentId: comment.id,
           sourceRunId: input.runId,
+          chatKey: openwa.chatKey,
           notBefore: new Date(now.getTime() + OPENWA_RUN_RETRY_DELAY_MS).toISOString(),
           openwa: { event: openwa.event === "owner_absent" ? "owner_absent" : "message", triggerClass: openwa.triggerClass, deliveryIds },
         },
@@ -533,13 +631,24 @@ export async function dispatchOpenwaRunRetryWake(db: Db, actionId: string, now =
       await settle("processed", { code: "openwa_run_retry_not_needed" });
       return false;
     }
-    const [nativeRetry] = await db
-      .select({ id: heartbeatRuns.id })
-      .from(heartbeatRuns)
-      .where(and(eq(heartbeatRuns.companyId, claimed.companyId), sql`${heartbeatRuns.retryOfRunId}::text = ${String(payload.sourceRunId)}`, inArray(heartbeatRuns.status, ACTIVE_RETRY_RUN_STATUSES)))
-      .limit(1);
-    if (nativeRetry) {
-      await settle("processed", { code: "openwa_run_retry_native", nativeRetryRunId: nativeRetry.id });
+    const sourceRunId = String(payload.sourceRunId);
+    const laterRunId = await laterIssueRun(db, { companyId: claimed.companyId, issueId, sourceRunId });
+    if (laterRunId) {
+      await settle("processed", { code: "openwa_run_retry_not_needed", laterRunId });
+      return false;
+    }
+    const chatKey = typeof payload.chatKey === "string" ? payload.chatKey : null;
+    if (chatKey && (await runSendUnsettled(db, { companyId: claimed.companyId, endpointId: claimed.endpointId, runId: sourceRunId, chatKey }))) {
+      if (claimed.conversationId)
+        await recordRunFailedOnce(db, {
+          companyId: claimed.companyId,
+          endpointId: claimed.endpointId,
+          conversationId: claimed.conversationId,
+          chatKey,
+          runId: sourceRunId,
+          metadata: { reason: "send_uncertain", triggerIds: deliveryIds, retryActionId: claimed.id },
+        });
+      await settle("processed", { code: "openwa_run_retry_send_uncertain" });
       return false;
     }
     const [issue] = await db

@@ -857,4 +857,85 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: failed.id })).resolves.toBeNull();
     expect(await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND)))).toHaveLength(0);
   }, 120_000);
+  async function runRetryActions(t: Setup) {
+    return db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND)));
+  }
+
+  async function runFailedAudits(t: Setup) {
+    return db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "run_failed")));
+  }
+
+  it("does not dispatch a staged run retry once heartbeat scheduled its own retry for the issue", async () => {
+    const t = await setup();
+    adapterMode.hold = false;
+    adapterMode.failures = 1;
+    const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "export the ledger" });
+    const failed = await finishedRun(t, owner.action.id);
+    const [retry] = await until(async () => {
+      const rows = await runRetryActions(t);
+      return rows.length ? rows : null;
+    });
+    await db.insert(heartbeatRuns).values({
+      companyId: t.companyId,
+      agentId: t.agentId,
+      status: "scheduled_retry",
+      retryOfRunId: null,
+      scheduledRetryAt: new Date(Date.now() + 3_600_000),
+      scheduledRetryAttempt: 1,
+      scheduledRetryReason: "transient_failure",
+      contextSnapshot: { issueId: String(failed.contextSnapshot?.issueId) },
+    });
+    const notBefore = Date.parse(String(retry!.payload.notBefore));
+    expect(await processPendingOpenwaRunRetries(db, 25, new Date(notBefore + 1_000))).toBe(1);
+    const [settled] = await runRetryActions(t);
+    expect(settled).toMatchObject({ status: "processed", result: { code: "openwa_run_retry_not_needed" } });
+    expect(await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, retry!.id))).toHaveLength(0);
+  }, 120_000);
+
+  it("audits instead of retrying when the failed run left a send to the chat uncertain", async () => {
+    const t = await setup();
+    adapterMode.failures = 1;
+    const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "send the report" });
+    const running = await runningRun(t, owner.action.id);
+    await db.insert(chatOutboundMessages).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      chatKey: jid(OWNER_PHONE),
+      source: "tool",
+      runId: running.id,
+      state: "uncertain",
+      bodyHash: "h",
+      clientNonce: randomUUID(),
+    });
+    release(running.id);
+    const failed = await finishedRun(t, owner.action.id);
+    expect(failed.status).toBe("failed");
+    const audits = await until(async () => {
+      const rows = await runFailedAudits(t);
+      return rows.length ? rows : null;
+    });
+    expect(audits[0]).toMatchObject({ runId: failed.id, metadata: { reason: "send_uncertain", triggerIds: [owner.delivery.id] } });
+    await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: failed.id })).resolves.toBeNull();
+    expect(await runRetryActions(t)).toHaveLength(0);
+    expect(await runFailedAudits(t)).toHaveLength(1);
+  }, 120_000);
+
+  it("audits instead of retrying a failed approval_reply run", async () => {
+    const t = await setup();
+    adapterMode.failures = 1;
+    const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "yes approve it" });
+    const running = await runningRun(t, owner.action.id);
+    await db.update(heartbeatRuns).set({
+      contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"approval_reply"'::jsonb)`,
+    }).where(eq(heartbeatRuns.id, running.id));
+    release(running.id);
+    const failed = await finishedRun(t, owner.action.id);
+    expect(failed.status).toBe("failed");
+    const audits = await until(async () => {
+      const rows = await runFailedAudits(t);
+      return rows.length ? rows : null;
+    });
+    expect(audits[0]).toMatchObject({ runId: failed.id, metadata: { reason: "approval_event", event: "approval_reply" } });
+    expect(await runRetryActions(t)).toHaveLength(0);
+  }, 120_000);
 });
