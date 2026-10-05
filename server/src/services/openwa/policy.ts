@@ -117,7 +117,7 @@ export type OpenwaClassification =
     }
   | { kind: "filtered"; reason: OpenwaFilterReason; chatKey: string; principalRole: OpenwaPrincipalRole; rules: OpenwaTriggerRule[] };
 
-export type OpenwaFilterReason = "denylisted" | "outside_allowlist" | "chat_inactive";
+export type OpenwaFilterReason = "denylisted" | "outside_allowlist" | "chat_inactive" | "duplicate" | "rate_limited";
 
 export interface OpenwaClassifyFacts {
   quotedFromAgent?: boolean;

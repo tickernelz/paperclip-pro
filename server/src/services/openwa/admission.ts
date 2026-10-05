@@ -2,6 +2,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { Message, parseMarkdown } from "chat";
 import {
   chatAuditEntries,
+  chatDeliveries,
   chatEndpointResources,
   chatExternalPrincipals,
   type Db,
@@ -35,6 +36,7 @@ import {
   OPENWA_DISCOVERED_GROUP_CAP,
   OPENWA_GROUP_PARTICIPANT_CAP,
   type OpenwaApprovalReplyCandidate,
+  type OpenwaFilterReason,
   type OpenwaPolicyCache,
   type OpenwaPolicySnapshot,
   type OpenwaTriggerRule,
@@ -45,6 +47,20 @@ export const OPENWA_DISCOVERY_WAIT_MS = 2_000;
 const DISCOVERY_RETRY_MS = 60_000;
 const LEARNED_LID_CAP = 10_000;
 const AUDIT_TEXT_LIMIT = 4_096;
+export const OPENWA_SPAM_WINDOW_MS = 60_000;
+export const OPENWA_SPAM_MAX_TRIGGERS = 5;
+const SPAM_TRACK_CAP = 10_000;
+
+interface OpenwaSenderTriggers {
+  lastBody: string | null;
+  lastDedupeKey: string;
+  lastAt: number;
+  admittedAt: number[];
+}
+
+type OpenwaSpamVerdict =
+  | { reason: Extract<OpenwaFilterReason, "duplicate">; previous: OpenwaSenderTriggers }
+  | { reason: Extract<OpenwaFilterReason, "rate_limited"> };
 
 export type OpenwaWakeEvent = "message" | "group_added" | "owner_absent" | "approval_reply";
 
@@ -176,6 +192,8 @@ export interface OpenwaAdmissionStats {
   discoveryFailures: number;
   quoteLookups: number;
   approvalReplies: number;
+  duplicates: number;
+  rateLimited: number;
 }
 
 function stringOf(value: unknown): string | null {
@@ -258,6 +276,13 @@ export function parseOpenwaDecoration(value: unknown): OpenwaAdmissionDecoration
   };
 }
 
+/** Comparable text of a plain text trigger; null when it carries media, a location or a contact. */
+export function openwaSpamBody(event: Pick<OpenwaInboundEvent, "body" | "media" | "location" | "contact">): string | null {
+  if (event.media || event.location || event.contact) return null;
+  const body = event.body.normalize("NFKC").trim().replace(/\s+/g, " ").toLowerCase();
+  return body || null;
+}
+
 function senderName(event: OpenwaInboundEvent): string | null {
   const contact = event.contact ?? record(event.raw.contact);
   return stringOf(contact?.pushName) ?? stringOf(contact?.name) ?? stringOf(event.raw.notifyName) ?? stringOf(event.raw.pushName);
@@ -329,6 +354,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
   const resolvedLids = new Map<string, string>();
   const lidLookups = new Map<string, Promise<void>>();
   const lidRetryAt = new Map<string, number>();
+  const senderTriggers = new Map<string, OpenwaSenderTriggers>();
   const stats: OpenwaAdmissionStats = {
     discarded: 0,
     ownerActivity: 0,
@@ -338,7 +364,47 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     discoveryFailures: 0,
     quoteLookups: 0,
     approvalReplies: 0,
+    duplicates: 0,
+    rateLimited: 0,
   };
+
+  function senderTriggerKey(runtime: OpenwaAdmissionRuntime, event: OpenwaInboundEvent): string {
+    return runtime.endpointId + "\u0000" + event.chatKey + "\u0000" + openwaPrincipalExternalId(event.senderJid, event.senderPhone);
+  }
+
+  function spamVerdict(key: string, body: string | null, at: number): OpenwaSpamVerdict | null {
+    const previous = senderTriggers.get(key);
+    if (!previous) return null;
+    previous.admittedAt = previous.admittedAt.filter((time) => at - time < OPENWA_SPAM_WINDOW_MS);
+    if (body !== null && previous.lastBody === body && at - previous.lastAt < OPENWA_SPAM_WINDOW_MS) return { reason: "duplicate", previous };
+    return previous.admittedAt.length >= OPENWA_SPAM_MAX_TRIGGERS ? { reason: "rate_limited" } : null;
+  }
+
+  function rememberTrigger(key: string, body: string | null, dedupeKey: string, at: number) {
+    const previous = senderTriggers.get(key);
+    senderTriggers.delete(key);
+    senderTriggers.set(key, { lastBody: body, lastDedupeKey: dedupeKey, lastAt: at, admittedAt: [...(previous?.admittedAt ?? []), at] });
+    if (senderTriggers.size > SPAM_TRACK_CAP) {
+      const oldest = senderTriggers.keys().next().value;
+      if (oldest !== undefined) senderTriggers.delete(oldest);
+    }
+  }
+
+  async function countRepeat(runtime: OpenwaAdmissionRuntime, dedupeKey: string): Promise<number | null> {
+    const [row] = await db
+      .update(chatDeliveries)
+      .set({
+        normalizedEvent: sql`jsonb_set(${chatDeliveries.normalizedEvent}, '{openwa,repeatCount}', to_jsonb(coalesce((${chatDeliveries.normalizedEvent} #>> '{openwa,repeatCount}')::integer, 1) + 1))`,
+      })
+      .where(and(
+        eq(chatDeliveries.companyId, runtime.companyId),
+        eq(chatDeliveries.endpointId, runtime.endpointId),
+        eq(chatDeliveries.deduplicationKey, dedupeKey),
+        sql`jsonb_typeof(${chatDeliveries.normalizedEvent} -> 'openwa') = 'object'`,
+      ))
+      .returning({ repeatCount: sql<number>`(${chatDeliveries.normalizedEvent} #>> '{openwa,repeatCount}')::integer` });
+    return row?.repeatCount ?? null;
+  }
 
   async function snapshotFor(runtime: OpenwaAdmissionRuntime): Promise<OpenwaPolicySnapshot | null> {
     return deps.policies.peek(runtime.endpointId) ?? deps.policies.get(runtime.companyId, runtime.endpointId);
@@ -649,6 +715,36 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       case "trigger":
         break;
     }
+    const spamKey = classification.triggerClass === "owner" ? null : senderTriggerKey(runtime, event);
+    const spamBody = openwaSpamBody(event);
+    const at = now();
+    const spam = spamKey ? spamVerdict(spamKey, spamBody, at) : null;
+    if (spam) {
+      const repeatCount = spam.reason === "duplicate" ? await countRepeat(runtime, spam.previous.lastDedupeKey) : null;
+      if (spam.reason === "duplicate") stats.duplicates++;
+      else stats.rateLimited++;
+      stats.filtered++;
+      await audit(snapshot, {
+        kind: "trigger_filtered",
+        chatKey: event.chatKey,
+        actorKind: "chat_principal",
+        actorRef: openwaPrincipalExternalId(event.senderJid, event.senderPhone),
+        metadata: {
+          reason: spam.reason,
+          principalRole: classification.principalRole,
+          rules: classification.rules,
+          chatKind: event.chatKind,
+          waMessageId: event.waMessageId,
+          senderMasked: event.senderPhone ? maskOpenwaPhoneNumber(event.senderPhone) : null,
+          source: event.source,
+          ...(spam.reason === "duplicate"
+            ? { repeatCount }
+            : { limit: OPENWA_SPAM_MAX_TRIGGERS, windowSeconds: OPENWA_SPAM_WINDOW_MS / 1_000 }),
+        },
+        text: event.body,
+      });
+      return;
+    }
     await learnLid(snapshot, event);
     const adapter = runtime.adapter();
     if (!adapter) throw new Error("OpenWA adapter unavailable for admission");
@@ -662,6 +758,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     });
     stats.admitted++;
     await runtime.admit(openwaAdmitInput(runtime, adapter, event, decoration));
+    if (spamKey) rememberTrigger(spamKey, spamBody, event.dedupeKey, at);
   }
 
   async function groupAddedWake(

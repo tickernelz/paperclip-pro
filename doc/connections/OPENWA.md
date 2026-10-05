@@ -147,6 +147,16 @@ label: `GET`/`POST` `/api/chat-endpoints/:endpointId/openwa/sender-rules` (body
 `list` `allow`|`deny`, `e164`, `label`),
 `DELETE /api/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId`.
 
+**Spam guard.** Before a non-owner trigger is admitted, the server checks the
+sender's recent triggers in that chat (in memory, per endpoint, chat and sender;
+reset on restart). A plain-text message whose normalized text (case, spacing and
+Unicode form ignored) equals the sender's previous admitted trigger within 60 s is
+not admitted: it is audited as `trigger_filtered` with reason `duplicate` and the
+earlier trigger's `repeatCount` goes up, so the wake shows the message once with
+`repeatCount`. A sender gets at most 5 admitted triggers per rolling 60 s in one
+chat; further messages are audited as `trigger_filtered` with reason
+`rate_limited` (`limit`, `windowSeconds`). Owners are exempt from both.
+
 ### Chats
 
 Each chat has an **Activation** (`activation`): `auto` (Automatic, default),
@@ -545,7 +555,8 @@ The endpoint's **Audit** tab lists `chat_audit_entries` newest first with filter
 `trigger_admitted`, `trigger_filtered`, `message_sent`, `publication_suppressed`,
 `tool_called`, `approval_requested`, `approval_reminded`, `approval_resolved`,
 `approval_cancelled`, `config_changed`, `group_added`, `group_left`,
-`session_health`, `linked_read`. Endpoint owners, company owners and instance admins see content;
+`session_health`, `linked_read`. `trigger_filtered` reasons: `denylisted`,
+`outside_allowlist`, `chat_inactive`, `duplicate`, `rate_limited`. Endpoint owners, company owners and instance admins see content;
 other board users with endpoint access see metadata only. Owner-class runs can
 read it through `openwa_call` operation `paperclip.audit.list`. Tool arguments are
 redacted and bounded (4 KB arguments, 1 KB result summary).
@@ -559,7 +570,8 @@ entries: `openwa.endpoint_created`, `openwa.endpoint_updated`, `openwa.owner_add
 `openwa.approval_requested`, `openwa.approval_resolved`, `openwa.approval_cancelled`,
 `openwa.grant_created`, `openwa.grant_consumed`, `openwa.grant_revoked`,
 `openwa.grant_expired`, `openwa.gateway_admin_called`, `openwa.linked_session_added`,
-`openwa.linked_session_chats_changed` and `openwa.linked_session_removed`.
+`openwa.linked_session_chats_changed`, `openwa.linked_session_removed` and
+`openwa.burst_folded`.
 
 ## Health card
 
@@ -602,6 +614,14 @@ it as **Messages during a run**. Behaviour per spec §7.3:
 | `other` message | `read_only`, class `other` | Steered |
 | `other` message | `full` or `grant` | Queued as the next wake |
 | `approval_reply` | any | Its own wake, never steered |
+
+**Group bursts.** In a group with no queued or running run for the conversation, a
+member (`other`) trigger's wake is held for 5 s. Member triggers admitted in that
+window fold into the held wake (its `deliveryIds` grow; each folded trigger's own
+wake is settled `openwa_burst_folded` and activity records `openwa.burst_folded`),
+so the agent starts once with all of them. Owner triggers, DMs and approval events
+bypass the hold, and once a run is active the table above applies. A restart keeps
+the held wake durable; the delivery sweep dispatches it after the hold.
 
 If the agent cannot act on an owner message in its current profile, an
 `openwa_handoff` or an unanswered owner trigger produces a follow-up owner run after

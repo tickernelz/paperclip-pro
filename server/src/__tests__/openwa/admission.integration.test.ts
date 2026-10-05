@@ -30,6 +30,9 @@ import { chatChannelService, type ChatChannelService, type ChatChannelServiceOpt
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { secretService } from "../../services/secrets.js";
 import { createOpenwaPolicyCache, OPENWA_POLICY_REVALIDATE_MS } from "../../services/openwa/policy.js";
+import { OPENWA_SPAM_MAX_TRIGGERS } from "../../services/openwa/admission.js";
+import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.js";
+import { OPENWA_GROUP_BURST_MS } from "../../services/openwa/steering.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "21111111-2222-4333-8444-555555555555";
@@ -41,6 +44,31 @@ const MEMBER_PHONE = "628666000666";
 const QUERY_METHODS = new Set(["select", "selectDistinct", "insert", "update", "delete", "execute"]);
 
 const jid = (phone: string) => phone + "@c.us";
+
+class ManualClock implements OpenwaScheduledWakeClock {
+  time = Date.now();
+  private seq = 0;
+  readonly timers = new Map<number, { at: number; fire: () => void }>();
+  now() {
+    return this.time;
+  }
+  setTimer(fire: () => void, delayMs: number) {
+    const id = ++this.seq;
+    this.timers.set(id, { at: this.time + delayMs, fire });
+    return id;
+  }
+  clearTimer(handle: unknown) {
+    this.timers.delete(handle as number);
+  }
+  advance(ms: number) {
+    this.time += ms;
+    for (const [id, timer] of [...this.timers]) {
+      if (timer.at > this.time) continue;
+      this.timers.delete(id);
+      timer.fire();
+    }
+  }
+}
 
 async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -100,7 +128,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
-  async function setup() {
+  async function setup(extra: Partial<ChatChannelServiceOptions> = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -167,6 +195,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,
+      ...extra,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
@@ -656,6 +685,118 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     expect(reopened.map((row) => row.details)).toContainEqual(
       expect.objectContaining({ status: "todo", source: "chat:openwa", _previous: { status: "done" } }),
     );
+  }, 120_000);
+
+  async function wakeActions(t: Setup) {
+    return db
+      .select()
+      .from(chatActions)
+      .where(and(eq(chatActions.companyId, t.companyId), eq(chatActions.kind, "inbound_wakeup")))
+      .orderBy(asc(chatActions.createdAt));
+  }
+
+  function reasons(entries: Array<typeof chatAuditEntries.$inferSelect>) {
+    return entries.filter((entry) => entry.kind === "trigger_filtered").map((entry) => (entry.metadata as { reason: string }).reason);
+  }
+
+  it("folds a member's repeated text into one trigger and rate-limits a member's distinct triggers; owners are exempt", async () => {
+    const t = await setup();
+    await addOwner(t, OWNER_PHONE);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + ALLOWED_PHONE }, t.userId);
+    await goLive(t);
+
+    for (let index = 0; index < 8; index++) await send(t, { chatId: jid(ALLOWED_PHONE), body: index % 2 ? "BUY  now!!" : " buy now!! " });
+    const spam = await settledDeliveries(t, 1);
+    expect(spam).toHaveLength(1);
+    expect((spam[0].normalizedEvent as { openwa?: { repeatCount?: number } }).openwa?.repeatCount).toBe(8);
+    expect(reasons(await audits(t))).toEqual(Array(7).fill("duplicate"));
+    expect(
+      (await audits(t)).filter((entry) => entry.kind === "trigger_filtered").map((entry) => (entry.metadata as { repeatCount: number }).repeatCount),
+    ).toEqual([2, 3, 4, 5, 6, 7, 8]);
+
+    for (let index = 0; index < 7; index++) await send(t, { chatId: jid(ALLOWED_PHONE), body: "question " + index });
+    const afterDistinct = await settledDeliveries(t, OPENWA_SPAM_MAX_TRIGGERS);
+    expect(afterDistinct).toHaveLength(OPENWA_SPAM_MAX_TRIGGERS);
+    expect(afterDistinct.slice(1).map((row) => (row.normalizedEvent as { message?: { text?: string } }).message?.text)).toEqual([
+      "question 0",
+      "question 1",
+      "question 2",
+      "question 3",
+    ]);
+    expect(reasons(await audits(t))).toEqual([...Array(7).fill("duplicate"), ...Array(3).fill("rate_limited")]);
+    expect(t.service.openwaAdmissionStats).toMatchObject({ duplicates: 7, rateLimited: 3 });
+
+    for (let index = 0; index < 8; index++) await send(t, { chatId: jid(OWNER_PHONE), body: "same owner text" });
+    for (let index = 0; index < 7; index++) await send(t, { chatId: jid(OWNER_PHONE), body: "owner question " + index });
+    const all = await settledDeliveries(t, OPENWA_SPAM_MAX_TRIGGERS + 15);
+    expect(all.filter((row) => row.principalRole === "owner")).toHaveLength(15);
+    expect(reasons(await audits(t))).toHaveLength(10);
+  }, 120_000);
+
+  it("rate-limits seven distinct member triggers to five per minute", async () => {
+    const t = await setup();
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + ALLOWED_PHONE }, t.userId);
+    await goLive(t);
+    for (let index = 0; index < 7; index++) await send(t, { chatId: jid(ALLOWED_PHONE), body: "distinct " + index });
+    expect(await settledDeliveries(t, 5)).toHaveLength(5);
+    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    expect(filtered.map((entry) => entry.metadata)).toEqual([
+      expect.objectContaining({ reason: "rate_limited", limit: 5, windowSeconds: 60 }),
+      expect.objectContaining({ reason: "rate_limited", limit: 5, windowSeconds: 60 }),
+    ]);
+  }, 120_000);
+
+  it("holds a group's member wake for the burst window, folds later member triggers into it and lets owner triggers bypass it", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await setup({ openwaBurstClock: clock });
+    await addOwner(t, OWNER_PHONE);
+    const members = ["628666000661", "628666000662", "628666000663", "628666000664"];
+    const group = "120363000000000031@g.us";
+    t.gateway.groups.set(group, {
+      id: group,
+      name: "Busy",
+      participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, ...members.map((phone) => ({ id: jid(phone) }))],
+    });
+    await goLive(t);
+    await discovered(t, group);
+    for (const phone of members)
+      await send(t, { chatId: group, author: jid(phone), body: "@" + OWN_PHONE + " help from " + phone, extra: { mentionedIds: [jid(OWN_PHONE)] } });
+    const rows = await settledDeliveries(t, 4);
+    expect(rows).toHaveLength(4);
+    await until(async () => (await wakeActions(t)).filter((action) => action.status === "processed").length === 3);
+    let wakes = await wakeActions(t);
+    expect(wakes.map((action) => [action.status, (action.result as { code?: string } | null)?.code])).toEqual([
+      ["issued", "openwa_burst_held"],
+      ["processed", "openwa_burst_folded"],
+      ["processed", "openwa_burst_folded"],
+      ["processed", "openwa_burst_folded"],
+    ]);
+    expect((wakes[0].payload as { openwa: { deliveryIds: string[] } }).openwa.deliveryIds).toEqual(rows.map((row) => row.id));
+    expect(await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.companyId, t.companyId))).toHaveLength(0);
+    const folded = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.burst_folded")));
+    expect(folded).toHaveLength(3);
+
+    await send(t, { chatId: group, author: jid(OWNER_PHONE), body: "@" + OWN_PHONE + " owner here", extra: { mentionedIds: [jid(OWN_PHONE)] } });
+    const ownerRow = (await settledDeliveries(t, 5)).at(-1)!;
+    expect(ownerRow.triggerClass).toBe("owner");
+    await until(async () => (await wakeActions(t)).find((action) => action.deliveryId === ownerRow.id)?.status === "processed");
+    const ownerWake = (await wakeActions(t)).find((action) => action.deliveryId === ownerRow.id)!;
+    expect((ownerWake.result as { code?: string }).code).toBe("inbound_wakeup_durable");
+    expect((ownerWake.payload as { openwa: { deliveryIds: string[] } }).openwa.deliveryIds).toEqual([ownerRow.id]);
+    expect(t.wakeup).toHaveBeenCalledTimes(1);
+
+    clock.advance(OPENWA_GROUP_BURST_MS);
+    await until(async () => (await wakeActions(t))[0]?.status === "processed");
+    wakes = await wakeActions(t);
+    expect((wakes[0].result as { code?: string }).code).toBe("inbound_wakeup_durable");
+    expect(t.wakeup).toHaveBeenCalledTimes(2);
+    const memberCall = t.wakeup.mock.calls.find((call) => call[1].durableChatRequest?.id === wakes[0].id)!;
+    expect(memberCall).toBeDefined();
+    expect((memberCall[1].contextSnapshot as { openwa?: { deliveryIds?: string[] } }).openwa?.deliveryIds).toEqual(rows.map((row) => row.id));
   }, 120_000);
 
   it("ignores control commands from senders outside the allowlist", async () => {
