@@ -285,6 +285,17 @@ function mentionsOwner(snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent
   return false;
 }
 
+const QUOTED_AUTHOR = /_([0-9]{5,25}@(?:c\.us|lid))$/i;
+
+/** True when the message replies to (quotes) a message an owner wrote in this chat. */
+export function openwaQuotesOwner(snapshot: OpenwaPolicySnapshot, event: Pick<OpenwaInboundEvent, "quoted">): boolean {
+  const author = event.quoted ? QUOTED_AUTHOR.exec(event.quoted.id)?.[1]?.toLowerCase() : undefined;
+  if (!author) return false;
+  if (snapshot.ownerByJid.has(author)) return true;
+  const digits = author.endsWith("@c.us") ? openwaDigits(author) : null;
+  return digits !== null && snapshot.owners.some((owner) => owner.digits === digits);
+}
+
 export function openwaControlCommand(body: string): OpenwaControlCommand | "status" | null {
   const match = /^\/(new|close|status)\s*$/i.exec(body.trim());
   return match ? (match[1].toLowerCase() as OpenwaControlCommand | "status") : null;
@@ -351,7 +362,7 @@ export function classifyOpenwaEvent(
       active &&
       !event.phoneTyped &&
       triggers.ownerMentionedAbsent &&
-      (isGroup ? mentionsOwner(snapshot, event) : snapshot.policy.numberMode === "owner_number")
+      (isGroup ? mentionsOwner(snapshot, event) || openwaQuotesOwner(snapshot, event) : snapshot.policy.numberMode === "owner_number")
     )
       return { kind: "discard", armsAbsence: true };
     return { kind: "discard" };

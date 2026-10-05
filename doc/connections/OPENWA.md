@@ -199,8 +199,8 @@ and `/status` are accepted from owners, and from allowed senders in DMs.
 ### Absence timer
 
 While **Owner mentioned while away** is on for the chat, a non-owner message
-that matches no other trigger arms a timer when it mentions an owner in an
-active group, or arrives in an active DM in `owner_number` mode. The timer
+that matches no other trigger arms a timer when it mentions an owner, or replies
+(quotes) a message an owner wrote, in an active group, or arrives in an active DM in `owner_number` mode. The timer
 lasts **Absence timer (seconds)**
 (`absenceSeconds`, default 120, 10 to 86400; per chat override). Owner activity in
 that chat before it fires cancels it: an owner-authored text, media, sticker,

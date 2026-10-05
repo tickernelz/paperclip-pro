@@ -421,6 +421,25 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     return deliveries(t);
   }
 
+  it("arms owner_absent when a member replies to an owner's message, and once when the reply also mentions the owner", async () => {
+    const t = await setup({ clock: new FakeClock() });
+    const chat = group(t, "43");
+    await goLive(t);
+    const ts = Math.floor(Date.now() / 1000);
+    const ownerMessageId = "false_" + chat + "_3EB0OWNERMSG01_" + jid(OWNER_PHONE);
+    await send(t, { chatId: chat, author: jid(MEMBER_PHONE), body: "jadi gimana ini?", timestamp: ts, extra: { quotedMessage: { id: ownerMessageId, body: "nanti aku cek" } } });
+    await send(t, { chatId: chat, author: jid(OTHER_MEMBER_PHONE), body: "@" + OWNER_PHONE + " tolong dijawab", timestamp: ts + 5, extra: { mentionedIds: [jid(OWNER_PHONE)], quotedMessage: { id: ownerMessageId, body: "nanti aku cek" } } });
+    const rows = await wakeRows(t);
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ kind: "owner_absent", state: "pending", chatKey: chat });
+    expect(rows[0].fireAt.getTime()).toBe((ts + 120) * 1000);
+    expect((rows[0].payload as { messages: unknown[] }).messages).toHaveLength(2);
+    const memberMessageId = "false_" + chat + "_3EB0MEMBERMSG1_" + jid(MEMBER_PHONE);
+    const other = group(t, "44");
+    await send(t, { chatId: other, author: jid(OTHER_MEMBER_PHONE), body: "setuju", timestamp: ts, extra: { quotedMessage: { id: memberMessageId, body: "ayo meeting" } } });
+    expect((await wakeRows(t)).filter((row) => row.chatKey === other)).toHaveLength(0);
+  }, 120_000);
+
   it("never arms a wake for group chatter that does not mention an owner", async () => {
     const t = await setup({ clock: new FakeClock() });
     const chat = group(t, "42");

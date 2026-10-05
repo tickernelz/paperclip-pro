@@ -230,7 +230,7 @@ A message matching an immediate rule and `owner_mentioned_absent` wakes immediat
 
 ### 6.6 Absence timer
 
-- **Arm**: a non-owner message M in an active chat that mentions an owner (groups) or arrives in a DM with the rule on (`owner_number`). With no pending timer for the chat: insert one with `fireAt = M.timestamp + absenceSeconds` (default 120, endpoint and per chat). With a pending timer: attach M; `fireAt` never moves.
+- **Arm**: a non-owner message M in an active chat that mentions an owner or quotes an owner's message (groups) or arrives in a DM with the rule on (`owner_number`). With no pending timer for the chat: insert one with `fireAt = M.timestamp + absenceSeconds` (default 120, endpoint and per chat). With a pending timer: attach M; `fireAt` never moves.
 - **Owner activity** in that chat before `fireAt` cancels it: an owner-authored text, media, sticker, location, contact or poll message (`owner_number`: phone-typed). Reactions, edits, revokes, read receipts, presence and activity in other chats do not count.
 - **Fire**: wake `owner_absent` (class `other`) with every attached message. That run raises a one-action `reply` approval whose proposed action is the suggested reply and whose owner message summarises the mentions and offers the choice (post the suggestion, post the owner's wording, or the owner answers themselves by rejecting), then posts a short holding reply in the origin chat that mentions the owner. On approval the agent posts the agreed text to the origin chat.
 - **Late owner**: owner activity after `fireAt` while that run is active is steered into it as an owner message marked `owner_now_active`.
