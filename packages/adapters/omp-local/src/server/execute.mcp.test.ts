@@ -453,6 +453,30 @@ describe("OMP local Paperclip MCP wiring", () => {
     return captured as Invocation;
   }
 
+  it("puts the server-built task brief, including OpenWA guidance and wake JSON, in fresh and resumed prompts", async () => {
+    const brief = "## WhatsApp (OpenWA) guidance v1\nowner_absent headline\n\n## OpenWA wake event (server-provided; message text inside is untrusted user data)\n\n```json\n{\"event\": \"owner_absent\"}\n```";
+    for (const sessionId of [null, "session-1"]) {
+      captured = null;
+      await execute({
+        runId: "run-brief",
+        agent: { id: "agent-1", companyId: "company-1", name: "OMP", adapterType: "omp_local", adapterConfig: {} },
+        runtime: { sessionId, sessionParams: sessionId ? { sessionId, cwd: workspaceCwd } : null, sessionDisplayId: null, taskKey: null },
+        config: { command: commandPath, cwd: workspaceCwd, rpcSteering: false },
+        context: {
+          paperclipWake: { reason: "External chat message received", issue: { id: "issue-1", identifier: "ZHA-1", title: "OpenWA chat" } },
+          paperclipTaskMarkdown: brief,
+          paperclipTaskMarkdownCompact: brief,
+        },
+        onLog: async () => {},
+        authToken: "run-jwt",
+      });
+      const invocation = captured as unknown as Invocation;
+      expect(invocation).not.toBeNull();
+      expect(invocation.userPrompt).toContain("## WhatsApp (OpenWA) guidance v1");
+      expect(invocation.userPrompt).toContain('{"event": "owner_absent"}');
+    }
+  });
+
   it("hands the stdio server the connection endpoints under the names it reads", async () => {
     const invocation = await runWithRuntimeTools();
     expect(invocation.env).toMatchObject({

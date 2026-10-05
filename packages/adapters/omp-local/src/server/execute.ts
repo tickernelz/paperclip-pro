@@ -44,6 +44,7 @@ import {
   renderPaperclipWakePrompt,
   renderTemplate,
   sanitizeInheritedPaperclipEnv,
+  selectPaperclipTaskMarkdown,
   stringifyPaperclipWakePayload,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
@@ -445,8 +446,10 @@ async function buildPrompts(input: {
   const bootstrapPrompt = !input.resumedSession && bootstrapTemplate.trim()
     ? renderTemplate(bootstrapTemplate, templateData).trim()
     : "";
+  const taskContextNote = selectPaperclipTaskMarkdown(input.context, { resumedSession: input.resumedSession });
   const wakePrompt = renderPaperclipWakePrompt(input.context.paperclipWake, {
     resumedSession: input.resumedSession,
+    suppressIssueDescription: taskContextNote.length > 0,
     paperclipAccess: input.paperclipAccess,
   });
   const wakePayload = parseObject(input.context.paperclipWake);
@@ -462,6 +465,7 @@ async function buildPrompts(input: {
     bootstrapPrompt,
     wakePrompt,
     sessionHandoff,
+    taskContextNote,
     heartbeatPrompt,
   ]);
   return {
@@ -474,6 +478,7 @@ async function buildPrompts(input: {
       bootstrapPromptChars: bootstrapPrompt.length,
       wakePromptChars: wakePrompt.length,
       sessionHandoffChars: sessionHandoff.length,
+      taskContextChars: taskContextNote.length,
       heartbeatPromptChars: heartbeatPrompt.length,
     },
     notes,
