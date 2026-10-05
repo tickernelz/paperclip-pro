@@ -329,6 +329,36 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(audit.find((entry) => entry.kind === "tool_called")!.metadata).toMatchObject({ tool: "openwa_send", errorCode: null });
   });
 
+  it("drops a revoked quote of a visible trigger once and still delivers the reply under the same action", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP);
+    const first = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const second = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const binding = await run(t, c, { triggerClass: "other" });
+    t.gateway.failNextSend({ status: 404, body: { message: "Quoted message not found" } });
+    const idempotencyKey = randomUUID();
+    const sendsBefore = t.gateway.sends.length;
+    const result = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", quoteMessageId: first.id, idempotencyKey });
+    expect(result).toMatchObject({ state: "delivered", quoteDropped: true, answeredTriggerIds: [first.id] });
+    expect(result).not.toHaveProperty("quotedMessageId");
+    const sends = t.gateway.sends.slice(sendsBefore);
+    expect(sends).toHaveLength(2);
+    expect(sends[1]).toMatchObject({ text: "answer" });
+    expect(sends[1]).not.toHaveProperty("quotedMessageId");
+    expect(await answerStates([first.id, second.id])).toEqual(["answered", "pending"]);
+    const replay = await executeOpenwaTool(db, binding, "openwa_send", { text: "answer", quoteMessageId: first.id, idempotencyKey });
+    expect(replay).toMatchObject({ actionId: (result as { actionId: string }).actionId, replayed: true, quoteDropped: true });
+    expect(t.gateway.sends.length).toBe(sendsBefore + 2);
+    const sent = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "message_sent")));
+    expect(sent.at(-1)!.metadata).toMatchObject({ quoteDropped: true, quotedMessageId: null });
+    t.gateway.failNextSend({ status: 404, body: { message: "Quoted message not found" } });
+    const foreign = await rejection(
+      executeOpenwaTool(db, binding, "openwa_send", { text: "x", quoteMessageId: "false_" + GROUP + "_3EB0NOTATRIGGER", idempotencyKey: randomUUID() }),
+    );
+    expect(foreign.code).toBe("quote_unresolvable");
+    expect(t.gateway.sends.length).toBe(sendsBefore + 3);
+  });
+
   it("types unresolvable quotes and checks new numbers before sending", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

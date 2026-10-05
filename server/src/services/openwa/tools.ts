@@ -499,6 +499,16 @@ function visibleTriggerScope(ctx: ToolContext) {
   );
 }
 
+/** True when waMessageId is a visible pending trigger of this run. */
+async function quotesVisibleTrigger(ctx: ToolContext, waMessageId: string): Promise<boolean> {
+  const [row] = await ctx.db
+    .select({ id: chatDeliveries.id })
+    .from(chatDeliveries)
+    .where(and(visibleTriggerScope(ctx), sql`${chatDeliveries.normalizedEvent}->'openwa'->>'waMessageId' = ${waMessageId}`))
+    .limit(1);
+  return Boolean(row);
+}
+
 async function resolveQuote(ctx: ToolContext, target: Target, quote: unknown): Promise<string | null> {
   const value = str(quote);
   if (!value) return null;
@@ -947,10 +957,19 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     throw error;
   }
   const { gateway, registry } = await ctx.runtime();
-  const outcome = await runOpenwaWrite(ctx.db, { action, registry, gateway, chatId: target.chatId, runId: ctx.run.id, sends: planned.sends });
+  let outcome = await runOpenwaWrite(ctx.db, { action, registry, gateway, chatId: target.chatId, runId: ctx.run.id, sends: planned.sends });
+  let quoteDropped = false;
+  if (outcome.state === "failed" && outcome.delivered === 0 && quote && (await quotesVisibleTrigger(ctx, quote))) {
+    const mapped = toolErrorFromGateway(outcome.error, true);
+    if (mapped instanceof OpenwaToolError && mapped.code === "quote_unresolvable") {
+      planned = await planSends(ctx, args, target, null);
+      quoteDropped = true;
+      outcome = await runOpenwaWrite(ctx.db, { action, registry, gateway, chatId: target.chatId, runId: ctx.run.id, sends: planned.sends });
+    }
+  }
   if (outcome.state === "failed") {
     if (outcome.delivered === 0) await releaseGrant();
-    const mapped = toolErrorFromGateway(outcome.error, Boolean(quote));
+    const mapped = toolErrorFromGateway(outcome.error, Boolean(quote) && !quoteDropped);
     if (mapped instanceof HttpError) mapped.details = { ...record(mapped.details), actionId: action.id, state: "failed" };
     throw mapped;
   }
@@ -978,12 +997,13 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     messageIds: outcome.messageIds,
     chatRef: chatRef(ctx, target.chatId),
     answeredTriggerIds,
-    ...(quote ? { quotedMessageId: quote } : {}),
+    ...(quote && !quoteDropped ? { quotedMessageId: quote } : {}),
+    ...(quoteDropped ? { quoteDropped: true } : {}),
   };
   await finishOpenwaWrite(ctx.db, action, receipt);
   await auditSafely(ctx, {
     kind: "message_sent",
-    metadata: { source: "tool", actionId: action.id, kind: planned.kind, messageIds: outcome.messageIds, quotedMessageId: quote },
+    metadata: { source: "tool", actionId: action.id, kind: planned.kind, messageIds: outcome.messageIds, quotedMessageId: quoteDropped ? null : quote, ...(quoteDropped ? { quoteDropped: true } : {}) },
     content: planned.text === null ? null : { text: planned.text },
   });
   return { actionId: action.id, state: "delivered", ...receipt };

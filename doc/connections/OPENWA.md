@@ -707,7 +707,7 @@ the origin chat while a triggered run is active.
 | Tool error `owner_only` | | The action needs an owner-class run: audit reads, own-session stop/logout/delete, handoff of non-owner triggers, configuration from WhatsApp. |
 | Tool error `approval_required` / `reply_denied` (403) | category in `details` | The run's profile or the reply policy needs an owner grant; the agent asks with `openwa_request_approval`. |
 | Tool error `secret_issuing_operation` (403) | | Issue keys, pairing codes and QR codes in the OpenWA dashboard. |
-| Tool error `number_not_on_whatsapp` / `quote_unresolvable` (422) | | The number is not registered, or the quoted message is not in that chat. |
+| Tool error `number_not_on_whatsapp` / `quote_unresolvable` (422) | | The number is not registered, or the quoted message is not in that chat. When WhatsApp rejects the quote of one of the run's visible pending triggers (revoked or deleted), the server resends once without the quote under the same action and returns `quoteDropped: true`. |
 | Audit `run_failed` | `retry_failed` | A run and its automatic retry both failed; the listed triggers are unanswered. Check the provider in the run log, then reply or ask the person to resend. |
 | Tool error `chat_inactive` (403) | | In `owner_number` mode only chats enabled in Settings are visible. |
 

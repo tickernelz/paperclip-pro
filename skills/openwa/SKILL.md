@@ -121,7 +121,10 @@ act beyond the run's facts. Silence never approves anything.
   token to the text when you did not write it, so the person is tagged.
 - `quoteMessageId` is a WhatsApp message id (`messages[].id`) or a trigger id
   (`messages[].triggerId`). In groups, quote the message you answer. An unknown
-  quote fails with `quote_unresolvable`; it is never sent unquoted.
+  quote fails with `quote_unresolvable`; it is never sent unquoted, except when
+  WhatsApp rejects the quote of one of your visible pending triggers (revoked or
+  deleted): the server then sends once without the quote and the result has
+  `quoteDropped: true`. Do not resend.
 
 ## WhatsApp formatting
 
