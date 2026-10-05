@@ -278,6 +278,9 @@ function groupQueuedMessageRows(
       grouping &&
       previous &&
       previous.entry.comment.body === entry.comment.body &&
+      previous.entry.comment.authorType === entry.comment.authorType &&
+      previous.entry.comment.authorUserId === entry.comment.authorUserId &&
+      previous.entry.comment.authorAgentId === entry.comment.authorAgentId &&
       groupableEntry(previous.entry) &&
       groupableEntry(entry) &&
       !individualIds.has(previous.entry.comment.id) &&

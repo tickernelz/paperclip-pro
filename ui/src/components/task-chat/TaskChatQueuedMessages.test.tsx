@@ -445,6 +445,23 @@ describe("TaskChatQueuedMessages", () => {
     expect(container.textContent).toContain("3 queued messages discarded.");
   });
 
+  it("keeps identical messages from different authors as separate rows", () => {
+    const base = queueWithBodies(["ok", "ok", "ok"]);
+    const queue = {
+      ...base,
+      entries: base.entries.map((entry, index) =>
+        index === 1 ? { ...entry, comment: { ...entry.comment, authorUserId: "user-2" } } : entry,
+      ),
+    };
+    render({ queue });
+    expect(rowIds(container)).toEqual([
+      "task-chat-queued-message-comment-1",
+      "task-chat-queued-message-comment-2",
+      "task-chat-queued-message-comment-3",
+    ]);
+    expect(container.querySelector('[data-testid^="task-chat-queued-count-"]')).toBeNull();
+  });
+
   it("steers only the first message of a collapsed group", async () => {
     const props = render({ queue: queueWithBodies(["Same", "Same"]) });
     await act(async () => {
