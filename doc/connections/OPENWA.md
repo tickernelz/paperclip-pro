@@ -448,8 +448,10 @@ owner's personal number, so the assigned agent can read chats the board chose.
 The endpoint keeps its own agent number unchanged.
 
 - **Read only, on demand.** A linked session never sends, never wakes the agent,
-  is never subscribed to live events, and its messages are never copied into
-  Paperclip. The agent reads it only when it calls a linked tool.
+  and is never subscribed to live events. The agent reads it only when it calls
+  a linked tool. Its messages are not stored in Paperclip tables (audit rows
+  keep chat, count and time only), but the text the agent reads appears in that
+  run's transcript and run log, and the agent quotes it only when the owner asks.
 - **Owner runs only.** `openwa_linked_list` and `openwa_linked_read` work only in
   owner-triggered runs (trigger class `owner`, profile `full`); every other run
   gets 403 `owner_only`. There is no approval category for them. Owner-run

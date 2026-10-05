@@ -5,7 +5,8 @@ An OpenWA chat endpoint keeps its agent number (unchanged). The board can link
 extra OpenWA sessions on the same gateway (for example the owner's personal
 WhatsApp). The assigned agent can read selected chats of a linked session on
 demand in owner-triggered runs only. A linked session is never used to send,
-never wakes the agent, and its content is never copied into Paperclip.
+never wakes the agent, and its content is not stored in Paperclip tables; text
+the agent reads appears in that run's transcript and run log.
 
 ## Decisions (owner-confirmed)
 1. Access: only runs whose trigger class is owner (profile full). Every other

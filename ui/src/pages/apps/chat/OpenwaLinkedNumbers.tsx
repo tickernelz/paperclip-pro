@@ -87,7 +87,7 @@ function LinkNumberDialog({ endpointId, onClose }: { endpointId: string; onClose
         <DialogHeader>
           <DialogTitle>Link a number</DialogTitle>
           <DialogDescription>
-            Paperclip creates a read-only (viewer) OpenWA key for the chosen session with this channel's admin key and keeps it as a managed secret.
+            Paperclip creates a read-only (viewer) OpenWA key for the chosen session with this channel's admin key and keeps it as a managed secret. Messages are not stored in Paperclip tables, but text the agent reads appears in that run's transcript and log.
           </DialogDescription>
         </DialogHeader>
         {sessions.isPending ? (
