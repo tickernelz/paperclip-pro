@@ -7,6 +7,7 @@ import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, asc, eq } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   agentWakeupRequests,
   authUsers,
@@ -18,6 +19,7 @@ import {
   createDb,
   heartbeatRuns,
   principalPermissionGrants,
+  toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
@@ -27,13 +29,14 @@ import { chatChannelService, type ChatChannelService, type ChatChannelServiceOpt
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
 import { resolveChatRunPresentationAuthorizationReason } from "../../services/chat-run-publications.js";
 import { instanceSettingsService } from "../../services/instance-settings.js";
+import { secretService } from "../../services/secrets.js";
 import { issueService } from "../../services/issues.js";
 import { applyOpenwaRunContext, resolveOpenwaRunContext } from "../../services/openwa/authority.js";
 import { OPENWA_WAKE_CONTEXT_KEY, buildOpenwaRunGuidance, type OpenwaWakeEvent } from "../../services/openwa/guidance.js";
 import { executeOpenwaTool } from "../../services/openwa/tools.js";
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
 import { errorHandler } from "../../middleware/index.js";
-import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
+import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "51111111-2222-4333-8444-555555555555";
 const OWN_PHONE = "628111000517";
@@ -335,5 +338,89 @@ describe.sequential("OpenWA activation through the owner test DM (embedded Postg
     const activated = await request(t.app).post("/api/chat-endpoints/" + t.endpointId + "/test").send({});
     expect(activated.status).toBe(200);
     expect(activated.body).toMatchObject({ status: "active", setup: { step: "complete" } });
+  }, 120_000);
+
+  async function activeEndpoint(t: Setup) {
+    await request(t.app)
+      .post("/api/chat-endpoints/" + t.endpointId + "/setup")
+      .send({
+        action: "configure",
+        credentials: { apiKey: FAKE_OPENWA_KEY },
+        openwa: { baseUrl: t.gateway.baseUrl, sessionId: SESSION_ID, numberMode: "agent_number", attestations: { pacing: true, soleClient: true } },
+      })
+      .expect(200);
+    const activatedAt = new Date(Date.now() - 60_000).toISOString();
+    const configured = await endpointRow(t);
+    await db
+      .update(chatEndpoints)
+      .set({ status: "active", healthMessage: "Connected", setup: { ...configured.setup, step: "complete", activatedAt } })
+      .where(eq(chatEndpoints.id, t.endpointId));
+    return { activatedAt, testStartedAt: (configured.setup as { testStartedAt?: string }).testStartedAt };
+  }
+
+  async function reconnectActivity(t: Setup) {
+    return db
+      .select({ action: activityLog.action, details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "chat_endpoint.reconnected")));
+  }
+
+  it("keeps an active endpoint active when a reconnect only adds the admin key, so members are still admitted", async () => {
+    const t = await setup();
+    const { activatedAt, testStartedAt } = await activeEndpoint(t);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
+    const before = await endpointRow(t);
+
+    const reconnected = await request(t.app)
+      .post("/api/chat-endpoints/" + t.endpointId + "/setup")
+      .send({ action: "reconnect", credentials: { adminApiKey: FAKE_OPENWA_ADMIN_KEY } });
+    expect(reconnected.status).toBe(200);
+    expect(reconnected.body).toMatchObject({ status: "active", setup: { step: "complete" } });
+    expect(JSON.stringify(reconnected.body)).not.toContain(FAKE_OPENWA_ADMIN_KEY);
+    const after = await endpointRow(t);
+    expect(after).toMatchObject({ status: "active", healthMessage: "Connected", providerAccountId: before.providerAccountId, botExternalId: before.botExternalId });
+    expect(after.setup).toMatchObject({ step: "complete", activatedAt, testStartedAt });
+    expect((after.setup as { runtimeGeneration?: number }).runtimeGeneration).toBe(((before.setup as { runtimeGeneration?: number }).runtimeGeneration ?? 0) + 1);
+    const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.id, after.connectionId));
+    expect(connection!.credentialSecretRefs.map((ref) => ref.configPath).sort()).toEqual(["credentials.adminApiKey", "credentials.apiKey"]);
+    const adminRef = connection!.credentialSecretRefs.find((ref) => ref.configPath === "credentials.adminApiKey")!;
+    expect(await secretService(db).resolveSecretValue(t.companyId, adminRef.secretId, "latest")).toBe(FAKE_OPENWA_ADMIN_KEY);
+    const activity = await reconnectActivity(t);
+    expect(activity).toEqual([{ action: "chat_endpoint.reconnected", details: { endpointId: t.endpointId, provider: "openwa" } }]);
+    expect(JSON.stringify(activity)).not.toContain(FAKE_OPENWA_ADMIN_KEY);
+
+    await t.service.reconcileProviderRuntimes();
+    await t.gateway.waitForSubscription();
+    const member = await settled(t, { chatId: jid(MEMBER_PHONE), body: "halo, masih aktif?" });
+    expect(member.delivery).toMatchObject({ state: "processed", principalRole: "allowed" });
+    const memberWake = await db
+      .select({ id: chatActions.id })
+      .from(chatActions)
+      .where(and(eq(chatActions.deliveryId, member.delivery.id), eq(chatActions.kind, "inbound_wakeup")));
+    expect(memberWake).toHaveLength(1);
+  }, 120_000);
+
+  it("still sends an active endpoint back to verifying when a reconnect changes the operator key, and refuses a session change", async () => {
+    const t = await setup();
+    await activeEndpoint(t);
+
+    const otherSession = await request(t.app)
+      .post("/api/chat-endpoints/" + t.endpointId + "/setup")
+      .send({
+        action: "reconnect",
+        credentials: { adminApiKey: FAKE_OPENWA_ADMIN_KEY },
+        openwa: { baseUrl: t.gateway.baseUrl, sessionId: "61111111-2222-4333-8444-555555555555", numberMode: "agent_number", attestations: { pacing: true, soleClient: true } },
+      });
+    expect(otherSession.status).toBe(409);
+    expect(otherSession.body.details).toMatchObject({ code: "chat_bot_identity_changed" });
+    expect((await endpointRow(t)).status).toBe("active");
+
+    const reconnected = await request(t.app)
+      .post("/api/chat-endpoints/" + t.endpointId + "/setup")
+      .send({ action: "reconnect", credentials: { apiKey: FAKE_OPENWA_ADMIN_KEY, adminApiKey: FAKE_OPENWA_ADMIN_KEY } });
+    expect(reconnected.status).toBe(200);
+    expect(reconnected.body).toMatchObject({ status: "verifying", healthMessage: "Waiting for a test conversation", setup: { step: "test" } });
+    expect((await endpointRow(t)).setup).toMatchObject({ step: "test" });
+    expect(await reconnectActivity(t)).toHaveLength(1);
   }, 120_000);
 });

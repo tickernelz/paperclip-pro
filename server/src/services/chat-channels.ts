@@ -10226,6 +10226,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         throw error;
       }
     }
+    const keepOpenwaEndpointActive =
+      endpoint.provider === "openwa" &&
+      input.action === "reconnect" &&
+      endpoint.status === "active" &&
+      (identity.providerAccountId ?? null) === endpoint.providerAccountId &&
+      (identity.botExternalId ?? null) === endpoint.botExternalId &&
+      (await resolveCredentials(endpoint)
+        .then(
+          (stored) =>
+            stored.baseUrl === credentials.baseUrl &&
+            stored.sessionId === credentials.sessionId &&
+            stored.apiKey === credentials.apiKey,
+        )
+        .catch(() => false));
     if (endpoint.provider === "imessage-photon") {
       await invalidateRuntime(endpoint.id);
       await credentialLease.assertOwned();
@@ -10261,16 +10275,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       await db.transaction(async (tx) => {
         await credentialLease.assertOwned(tx);
         const current = await tx
-          .select({ setup: chatEndpoints.setup })
+          .select({ setup: chatEndpoints.setup, status: chatEndpoints.status })
           .from(chatEndpoints)
           .where(eq(chatEndpoints.id, endpoint.id))
           .for("update")
           .then((rows) => rows[0] ?? null);
         if (!current) throw notFound("Chat endpoint not found");
+        const stayActive = keepOpenwaEndpointActive && current.status === "active";
         await tx
           .update(chatEndpoints)
           .set({
-            status: "verifying",
+            status: stayActive ? "active" : "verifying",
             providerAccountId: identity.providerAccountId ?? null,
             providerAccountLabel: identity.providerAccountLabel ?? null,
             botExternalId: identity.botExternalId ?? null,
@@ -10282,23 +10297,32 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             ...(openwaPolicy
               ? { policy: openwaPolicy, policyRevision: sql`${chatEndpoints.policyRevision} + 1` }
               : {}),
-            healthMessage: waitingForSlackConfiguration
-              ? "Finish provider webhook configuration"
-              : "Waiting for a test conversation",
             lastError: null,
-            lastEventAt: null,
-            setup: {
-              ...current.setup,
-              step: waitingForSlackConfiguration ? "provider_setup" : "test",
-              ...(endpoint.provider === "imessage-photon" ? { photonIntakeAfter: (current.setup as InternalSetupState).photonIntakeAfter ?? updatedAt.toISOString() } : {}),
-              testStartedAt: waitingForSlackConfiguration
-                ? null
-                : updatedAt.toISOString(),
-              webhookVerifiedAt: waitingForSlackConfiguration
-                ? null
-                : (current.setup.webhookVerifiedAt ?? null),
-              runtimeGeneration: runtimeGeneration(current.setup) + 1,
-            } as InternalSetupState,
+            ...(stayActive
+              ? {
+                  setup: {
+                    ...current.setup,
+                    runtimeGeneration: runtimeGeneration(current.setup) + 1,
+                  } as InternalSetupState,
+                }
+              : {
+                  healthMessage: waitingForSlackConfiguration
+                    ? "Finish provider webhook configuration"
+                    : "Waiting for a test conversation",
+                  lastEventAt: null,
+                  setup: {
+                    ...current.setup,
+                    step: waitingForSlackConfiguration ? "provider_setup" : "test",
+                    ...(endpoint.provider === "imessage-photon" ? { photonIntakeAfter: (current.setup as InternalSetupState).photonIntakeAfter ?? updatedAt.toISOString() } : {}),
+                    testStartedAt: waitingForSlackConfiguration
+                      ? null
+                      : updatedAt.toISOString(),
+                    webhookVerifiedAt: waitingForSlackConfiguration
+                      ? null
+                      : (current.setup.webhookVerifiedAt ?? null),
+                    runtimeGeneration: runtimeGeneration(current.setup) + 1,
+                  } as InternalSetupState,
+                }),
             updatedAt,
           })
           .where(eq(chatEndpoints.id, endpoint.id));
