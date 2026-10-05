@@ -548,12 +548,16 @@ export function openwaMentionText(text: string, mentions: ReadonlyArray<{ token:
   return missing.length ? missing.map((mention) => mention.token).join(" ") + " " + text : text;
 }
 
-export async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
-  return (await replyRequirementGaps(ctx))[0] ?? null;
+export async function replyRequirementFailure(ctx: ToolContext, quotedMessageId: string | null = null): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
+  return (await replyRequirementGaps(ctx, true, quotedMessageId))[0] ?? null;
 }
 
-/** Reply requirements of this run's visible triggers that its grants do not cover; ownerAbsentExempt false ignores the owner_absent holding-reply exemption. */
-export async function replyRequirementGaps(ctx: ToolContext, ownerAbsentExempt = true): Promise<Array<{ category: OpenwaGrantCategory; reason: string }>> {
+/** Reply requirements of this run's visible triggers (only the quoted one when the reply quotes a visible trigger) that its grants do not cover; ownerAbsentExempt false ignores the owner_absent holding-reply exemption. */
+export async function replyRequirementGaps(
+  ctx: ToolContext,
+  ownerAbsentExempt = true,
+  quotedMessageId: string | null = null,
+): Promise<Array<{ category: OpenwaGrantCategory; reason: string }>> {
   if (ctx.profile === "full" || !ctx.runClass) return [];
   const resource = ctx.conversation.resourceId
     ? await ctx.db
@@ -568,10 +572,12 @@ export async function replyRequirementGaps(ctx: ToolContext, ownerAbsentExempt =
   const event = str(record(ctx.run.contextSnapshot.openwa).event);
   const policyNeedsReply =
     ctx.runClass === "other" && (replyPolicy === "ask_owner" || (replyPolicy === "owner_absent_only" && event !== "owner_absent"));
-  const pending = await ctx.db
+  const visible = await ctx.db
     .select({ principalId: chatDeliveries.principalId, principalRole: chatDeliveries.principalRole, normalizedEvent: chatDeliveries.normalizedEvent })
     .from(chatDeliveries)
     .where(and(visibleTriggerScope(ctx), eq(chatDeliveries.triggerClass, ctx.runClass)));
+  const quoted = quotedMessageId ? visible.filter((trigger) => str(record(record(trigger.normalizedEvent).openwa).waMessageId) === quotedMessageId) : [];
+  const pending = quoted.length ? quoted : visible;
   const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: string }> = [];
   for (const trigger of pending) {
     if (trigger.principalRole === "owner") continue;
@@ -633,7 +639,7 @@ async function assertNotApprovalOrigin(ctx: ToolContext, target: Target): Promis
     });
 }
 
-async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null): Promise<string | null> {
+async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null, quote: string | null): Promise<string | null> {
   await assertNotApprovalOrigin(ctx, target);
   if (!target.isOrigin) {
     if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
@@ -648,7 +654,7 @@ async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: st
       throw error;
     }
   }
-  const failure = await replyRequirementFailure(ctx);
+  const failure = await replyRequirementFailure(ctx, quote);
   if (failure)
     throw new OpenwaToolError(403, "reply_denied", failure.reason + "; replying here needs owner approval", {
       category: failure.category,
@@ -925,14 +931,14 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
   target = await precheckNumber(ctx, target);
   ctx.audit.chatKey = target.chatKey;
   const heldGrant = typeof action.payload.grantId === "string" ? action.payload.grantId : null;
-  const consumedGrant = await assertSendAllowed(ctx, target, heldGrant);
+  const quote = await resolveQuote(ctx, target, args.quoteMessageId);
+  const consumedGrant = await assertSendAllowed(ctx, target, heldGrant, quote);
   if (consumedGrant) await setOpenwaWriteGrant(ctx.db, action.id, consumedGrant);
   const releaseGrant = async () => {
     if (!consumedGrant) return;
     await restoreOpenwaGrant(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, grantId: consumedGrant });
     await setOpenwaWriteGrant(ctx.db, action.id, null);
   };
-  const quote = await resolveQuote(ctx, target, args.quoteMessageId);
   let planned: Awaited<ReturnType<typeof planSends>>;
   try {
     planned = await planSends(ctx, args, target, quote);

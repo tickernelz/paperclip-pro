@@ -638,6 +638,23 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends.map((send) => send.text)).toEqual(["group answer", "quoted answer"]);
   });
 
+  it("gates a quoted reply on the quoted addressed trigger, not on an older unaddressed one still pending", async () => {
+    const t = await setup();
+    const g = await conversation(t, GROUP, { activation: "on" });
+    const stale = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", rules: [] });
+    const mention = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", rules: ["agent_mentioned"] });
+    const binding = await run(t, g, { triggerClass: "other" });
+    const unquoted = await rejection(executeOpenwaTool(db, binding, "openwa_send", { text: "hi", idempotencyKey: randomUUID() }));
+    expect(unquoted.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    const toStale = await rejection(executeOpenwaTool(db, binding, "openwa_send", { text: "hi", quoteMessageId: stale.waMessageId, idempotencyKey: randomUUID() }));
+    expect(toStale.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    await expect(
+      executeOpenwaTool(db, binding, "openwa_send", { text: "mention answer", quoteMessageId: mention.waMessageId, idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered", answeredTriggerIds: [mention.id] });
+    expect(await answerStates([stale.id, mention.id])).toEqual(["pending", "answered"]);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["mention answer"]);
+  });
+
   it("requires reply_outside_allowlist for an addressed group member while groupMemberReplies is off, and audits the switch", async () => {
     const t = await setup();
     const g = await conversation(t, GROUP, { activation: "on" });
