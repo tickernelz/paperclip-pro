@@ -52,6 +52,7 @@ import { openwaThreadId } from "../../services/openwa/adapter.js";
 import { openwaChatKey } from "../../services/openwa/outbound.js";
 import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";
 import { executeOpenwaTool, openwaMentionText, OpenwaToolError } from "../../services/openwa/tools.js";
+import { resolveOpenwaApproval } from "../../services/openwa/approvals.js";
 import { openwaToolRoutes } from "../../routes/openwa-tools.js";
 import { paperclipMcpRoutes } from "../../routes/paperclip-mcp.js";
 import { errorHandler } from "../../middleware/index.js";
@@ -291,6 +292,7 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
           grantIds: input.grantIds ?? [],
           requesterPrincipalId: input.requesterPrincipalId ?? null,
           approvalRequestId: null,
+          ...(input.event ? { event: input.event } : {}),
         },
       },
     });
@@ -394,6 +396,84 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(await executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000009999@lid" })).not.toHaveProperty("role");
     const ownerDm = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "psst", idempotencyKey: randomUUID() }));
     expect(ownerDm.code).toBe("approval_required");
+  });
+
+  it("answers an owner_absent outside_allowlist group member with one merged approval and a holding reply", async () => {
+    const t = await setup();
+    const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    const principalFor = async (externalId: string) =>
+      (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
+    const ownerPrincipal = await principalFor(OTHER);
+    const [link] = await db
+      .insert(chatIdentityLinks)
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: ownerPrincipal, paperclipUserId: t.userId, status: "linked" })
+      .returning();
+    await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
+    const stranger = await principalFor(MEMBER);
+    const g = await conversation(t, GROUP, { activation: "on" });
+    const quoted = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    const absent = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
+    const ask = (binding: typeof absent, categories: string[]) =>
+      executeOpenwaTool(db, binding, "openwa_request_approval", {
+        categories,
+        scope: "one_action",
+        summary: "Member asks the owner about the invoice",
+        proposedAction: "Reply that the invoice is being checked",
+        messageToOwners: "Member asked about the invoice. Approve the suggested reply?",
+        idempotencyKey: randomUUID(),
+      }) as Promise<{ requestId: string; reused?: boolean; categories?: string[] }>;
+    const ownerBubbles = () => t.gateway.sends.filter((send) => send.chatId === OTHER).length;
+    const first = await ask(absent, ["reply"]);
+    const requestOf = async (id: string) => (await db.select().from(chatOwnerApprovalRequests).where(eq(chatOwnerApprovalRequests.id, id)))[0]!;
+    expect((await requestOf(first.requestId)).categories).toEqual(["reply", "reply_outside_allowlist"]);
+    expect(ownerBubbles()).toBe(1);
+    const second = await ask(absent, ["reply_outside_allowlist"]);
+    expect(second).toMatchObject({ requestId: first.requestId, reused: true, categories: ["reply", "reply_outside_allowlist"] });
+    const third = await ask(absent, ["create_task"]);
+    expect(third).toMatchObject({ requestId: first.requestId, reused: true, categories: ["reply", "reply_outside_allowlist", "create_task"] });
+    expect(ownerBubbles()).toBe(1);
+    expect((await requestOf(first.requestId)).categories).toEqual(["reply", "reply_outside_allowlist", "create_task"]);
+    expect(
+      (await db.select().from(chatOwnerApprovalRequests).where(eq(chatOwnerApprovalRequests.endpointId, t.endpointId))).map((row) => row.id),
+    ).toEqual([first.requestId]);
+    const merged = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_requested")));
+    expect(merged.map((entry) => (entry.metadata as { merged?: boolean }).merged === true).sort()).toEqual([false, true, true]);
+    await expect(
+      executeOpenwaTool(db, absent, "openwa_send", { text: "holding reply", quoteMessageId: quoted.waMessageId, idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered" });
+    const otherRun = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
+    const fresh = await ask(otherRun, ["reply"]);
+    expect(fresh.requestId).not.toBe(first.requestId);
+    expect(fresh).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(2);
+    const resolved = await resolveOpenwaApproval(db, {
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      requestId: first.requestId,
+      decision: "approve",
+      via: "paperclip",
+      owner: { userId: t.userId },
+      ownerText: null,
+    });
+    const grants = await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.requestId, first.requestId));
+    expect(grants.map((grant) => grant.category).sort()).toEqual(["create_task", "reply", "reply_outside_allowlist"]);
+    const granted = await run(t, g, { triggerClass: "grant", event: "approval_resolved", grantIds: resolved.grantIds, requesterPrincipalId: stranger });
+    await expect(
+      executeOpenwaTool(db, granted, "openwa_send", { text: "approved reply", quoteMessageId: quoted.waMessageId, idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.sends.filter((send) => send.chatId === GROUP).map((send) => send.text)).toEqual(["holding reply", "approved reply"]);
+
+    await t.service.openwa.updatePolicy(t.endpointId, { groupMemberReplies: false }, t.userId);
+    const late = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    const strict = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
+    const denied = await rejection(
+      executeOpenwaTool(db, strict, "openwa_send", { text: "blocked holding reply", quoteMessageId: late.waMessageId, idempotencyKey: randomUUID() }),
+    );
+    expect(denied.code).toBe("reply_denied");
+    expect(denied.details).toMatchObject({ category: "reply_outside_allowlist" });
   });
 
   it("refuses an approval_reply run's send to the request's origin chat but lets it answer the owner", async () => {

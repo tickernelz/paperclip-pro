@@ -549,7 +549,12 @@ export function openwaMentionText(text: string, mentions: ReadonlyArray<{ token:
 }
 
 export async function replyRequirementFailure(ctx: ToolContext): Promise<{ category: OpenwaGrantCategory; reason: string } | null> {
-  if (ctx.profile === "full" || !ctx.runClass) return null;
+  return (await replyRequirementGaps(ctx))[0] ?? null;
+}
+
+/** Reply requirements of this run's visible triggers that its grants do not cover; ownerAbsentExempt false ignores the owner_absent holding-reply exemption. */
+export async function replyRequirementGaps(ctx: ToolContext, ownerAbsentExempt = true): Promise<Array<{ category: OpenwaGrantCategory; reason: string }>> {
+  if (ctx.profile === "full" || !ctx.runClass) return [];
   const resource = ctx.conversation.resourceId
     ? await ctx.db
         .select({ settings: chatEndpointResources.settings, metadata: chatEndpointResources.metadata, availability: chatEndpointResources.availability })
@@ -570,13 +575,13 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
   const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: string }> = [];
   for (const trigger of pending) {
     if (trigger.principalRole === "owner") continue;
-    if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, ctx.policy))
+    if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, ctx.policy, ctx.openwa?.event ?? event, ownerAbsentExempt))
       needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "The sender is outside the allowlist" });
     if (policyNeedsReply) needs.push({ principalId: trigger.principalId, category: "reply", reason: "The chat's reply policy is " + replyPolicy });
   }
   if (policyNeedsReply && pending.length === 0)
     needs.push({ principalId: ctx.openwa?.requesterPrincipalId ?? null, category: "reply", reason: "The chat's reply policy is " + replyPolicy });
-  if (needs.length === 0) return null;
+  if (needs.length === 0) return [];
   const grantIds = ctx.openwa?.grantIds ?? [];
   const grants = grantIds.length
     ? ((await ctx.db.execute(sql`
@@ -586,11 +591,9 @@ export async function replyRequirementFailure(ctx: ToolContext): Promise<{ categ
           and id in (${sql.join(grantIds.map((id) => sql`${id}::uuid`), sql`, `)})
       `)) as unknown as Array<{ category: string; requester_principal_id: string | null }>)
     : [];
-  for (const need of needs) {
-    const covered = need.principalId !== null && grants.some((grant) => grant.category === need.category && grant.requester_principal_id === need.principalId);
-    if (!covered) return need;
-  }
-  return null;
+  return needs
+    .filter((need) => !(need.principalId !== null && grants.some((grant) => grant.category === need.category && grant.requester_principal_id === need.principalId)))
+    .map(({ category, reason }) => ({ category, reason }));
 }
 
 async function ownerPrincipal(ctx: ToolContext, digits: string): Promise<boolean> {

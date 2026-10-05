@@ -257,7 +257,7 @@ export async function decideOpenwaRunPublication(
       const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: OpenwaSuppressionReason }> = [];
       for (const trigger of pending) {
         if (trigger.principalRole === "owner") continue;
-        if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, policy))
+        if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, policy, event))
           needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "outside_allowlist" });
         if (runClass === "other" && replyPolicy === "ask_owner")
           needs.push({ principalId: trigger.principalId, category: "reply", reason: "reply_policy_ask_owner" });

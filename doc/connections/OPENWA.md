@@ -144,9 +144,10 @@ dropped and audited. In an active group, a sender outside the allowlist still
 reaches the agent with role `outside_allowlist`. With **Answer group members who
 address the agent** on (`groupMemberReplies`, default `true`), when that message
 mentioned the agent or replied to one of its messages, the agent may answer in the
-group without a grant (the run stays `read_only`); otherwise, and always when the
-setting is off, replying to them in that chat needs a `reply_outside_allowlist`
-grant. Changing it records `openwa.config_changed`. Lists hold E.164 numbers with an optional
+group without a grant (the run stays `read_only`); the same holds for any of
+their messages in an `owner_absent` run, so its holding reply needs no grant.
+Otherwise, and always when the setting is off, replying to them in that chat
+needs a `reply_outside_allowlist` grant. Changing it records `openwa.config_changed`. Lists hold E.164 numbers with an optional
 label: `GET`/`POST` `/api/chat-endpoints/:endpointId/openwa/sender-rules` (body
 `list` `allow`|`deny`, `e164`, `label`),
 `DELETE /api/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId`.
@@ -226,8 +227,10 @@ later mentions join it without moving the deadline, so ordinary chatter never
 wakes the agent. That run asks the owners through an approval request in the `reply` category:
 the owner gets a summary and the suggested reply, and chooses to have the agent
 post it, to have their own wording posted, or to answer in the group themselves
-(reject). The run also posts a short holding reply in the group that mentions
-the owner. When the request is approved, the agent posts the agreed text to the
+(reject). The request adds `reply_outside_allowlist` by itself when a sender
+needs it, so the approved run can post. The run also posts a short holding reply
+in the group that mentions the owner; with `groupMemberReplies` on it needs no
+grant, with it off the reply is refused until the owner approves. When the request is approved, the agent posts the agreed text to the
 group; reminders follow the approval settings until the owner decides. A message that mentions both
 the owner and the agent wakes the agent immediately and arms no timer. Timers
 survive restarts.
@@ -350,7 +353,11 @@ The agent asks with `openwa_request_approval` (categories, scope, summary,
 proposed action and an agent-written `messageToOwners`, up to 3500 characters).
 The server records the request and sends one bubble per owner approval chat (the
 agent number's DM with each owner, or the owner's self-chat in `owner_number`
-mode). Silence never approves.
+mode). Silence never approves. When the run's triggers need
+`reply_outside_allowlist`, the server adds that category to the request. A run
+that asks again while its own request for the same chat is still pending gets
+that request back (`reused: true`) with any new categories added; no second
+bubble is sent. A request from another run is never reused.
 
 - **WhatsApp**: an owner replies to the bubble, quoting it. That reply starts a
   dedicated `approval_reply` run (class `owner`). The agent interprets the free text

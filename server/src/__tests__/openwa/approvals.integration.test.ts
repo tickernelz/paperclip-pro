@@ -610,7 +610,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta akses pertama" });
     const runA = await runStart(t, wakeA);
     const first = await requestApproval(runA.binding, { message: "First request" });
-    const second = await requestApproval(runA.binding, { categories: ["external_tools"], message: "Second request" });
+    const second = await requestApproval((await runStart(t, wakeA)).binding, { categories: ["external_tools"], message: "Second request" });
     const [secondBubble] = await bubbleIds(second.requestId);
     const reply = await admitted(t, { chatId: jid(OWNER_PHONE), body: "yang kedua boleh", extra: { quotedMessage: { id: secondBubble, body: "Second request" } } });
     expect(reply.request.payload).toMatchObject({ openwa: { event: "approval_reply", approvalRequestId: second.requestId } });

@@ -365,7 +365,7 @@ function replyRequirements(input: {
   for (const delivery of input.deliveries) {
     if (delivery.principalRole === "owner") continue;
     const needs: OpenwaGrantCategory[] = [];
-    if (delivery.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(delivery.normalizedEvent, input.groupActive, input))
+    if (delivery.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(delivery.normalizedEvent, input.groupActive, input, input.event))
       needs.push("reply_outside_allowlist");
     if (input.triggerClass === "other" && input.replyPolicy === "ask_owner") needs.push("reply");
     if (input.triggerClass === "other" && input.replyPolicy === "owner_absent_only" && input.event !== "owner_absent") needs.push("reply");
@@ -720,7 +720,7 @@ function list(values: readonly string[]): string {
 const EVENT_HINTS: Record<OpenwaWakeEventName, string> = {
   message: "New WhatsApp message(s) for you in this chat.",
   owner_absent:
-    "An owner was mentioned or messaged here and stayed silent through the absence window. The owner is the mention shown as `owner:\"<name>\"` in `messages[].mentions`. These messages were meant for that owner, which is why you were woken: never stay silent because they were addressed to someone else, and do not re-check who was mentioned. Do both: (1) call `openwa_request_approval` with `categories` [\"reply\"], `scope` one_action, a `summary` of who wrote what here, a `proposedAction` that is the exact reply you suggest posting in this chat, and a `messageToOwners` in the owner's language that summarises the messages, quotes your suggested reply, and asks the owner to choose: approve to have you post it, reply with their own wording to have you post that instead, or reject because they will answer here themselves. (2) In this chat, send one short holding reply with `openwa_send` that quotes the latest message, mentions the owner and says they have been notified, without answering the substance. Stay silent here only when the messages need no answer at all (a bare greeting with no question).",
+    "An owner was mentioned or messaged here and stayed silent through the absence window. The owner is the mention shown as `owner:\"<name>\"` in `messages[].mentions`. These messages were meant for that owner, which is why you were woken: never stay silent because they were addressed to someone else, and do not re-check who was mentioned. Do both, once each: (1) call `openwa_request_approval` once with `categories` [\"reply\"] only (the server adds any other reply category this chat needs, and a repeated call in this run updates the same request instead of sending another bubble), `scope` one_action, a `summary` of who wrote what here, a `proposedAction` that is the exact reply you suggest posting in this chat, and a `messageToOwners` in the owner's language that summarises the messages, quotes your suggested reply, and asks the owner to choose: approve to have you post it, reply with their own wording to have you post that instead, or reject because they will answer here themselves. (2) In this chat, right before or right after that request, send one short holding reply with `openwa_send` that quotes the latest message, mentions the owner and says they have been notified, without answering the substance; if it is refused with `reply_denied`, do not ask for approval again, the pending request already covers the reply. Stay silent here only when the messages need no answer at all (a bare greeting with no question).",
   approval_reply:
     "An owner replied to your approval request. Interpret their free text and call `openwa_approval_resolve` with `decision` approve, reject or clarify (and any `conditions`). Only this run may resolve that request.",
   approval_resolved:
@@ -802,7 +802,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
   const ownerNames = facts.absentOwnerNames.join(", ");
   const headline =
     wake.event === "owner_absent"
-      ? "**This wake is `owner_absent`, not a normal message: owner " + (ownerNames || "an owner") + " was mentioned here and stayed silent through the absence window. Ask the owner now with `openwa_request_approval` (category reply) and post a short holding reply here (see How to act).**"
+      ? "**This wake is `owner_absent`, not a normal message: owner " + (ownerNames || "an owner") + " was mentioned here and stayed silent through the absence window. Ask the owner now with one `openwa_request_approval` (categories [\"reply\"]) and post a short holding reply here (see How to act).**"
       : wake.event === "approval_reply"
         ? "**This wake is `approval_reply`, not a normal message: an owner answered approval request `" + (wake.approvalRequestId ?? "unknown") + "` by quoting it. Read their text as a decision on that request and call `openwa_approval_resolve` now (approve, reject or clarify); a short reply such as ok or yes approves. Do not stay silent without resolving it, and do not carry out the approved action yourself: the approval_resolved run does that, and sends from this run to the request's chat are refused. If the request is already resolved, only confirm that to the owner here.**"
         : null;

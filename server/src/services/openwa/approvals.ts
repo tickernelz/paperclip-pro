@@ -39,7 +39,7 @@ import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner 
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
-import { OpenwaToolError, type ToolContext } from "./tools.js";
+import { OpenwaToolError, replyRequirementGaps, type ToolContext } from "./tools.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -353,6 +353,8 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
   const db = ctx.db;
   let requestId: string;
   let reminded = false;
+  let reused: OpenwaGrantCategory[] | null = null;
+  const replyGaps = remindRequestId ? [] : (await replyRequirementGaps(ctx, false)).map((gap) => gap.category);
   try {
     requestId = await db.transaction(async (tx) => {
       if (remindRequestId) {
@@ -381,7 +383,56 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         reminded = true;
         return request.id;
       }
-      const categories = [...new Set(args.categories as OpenwaGrantCategory[])].filter((category) => OPENWA_GRANT_CATEGORIES.includes(category));
+      const requested = [...(args.categories as OpenwaGrantCategory[]), ...(replyGaps.includes("reply_outside_allowlist") ? (["reply_outside_allowlist"] as const) : [])];
+      const categories = [...new Set(requested)].filter((category) => OPENWA_GRANT_CATEGORIES.includes(category));
+      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + ctx.run.id + ":" + ctx.origin.chatKey}, 0))`);
+      const [open] = await tx
+        .select()
+        .from(chatOwnerApprovalRequests)
+        .where(
+          and(
+            eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
+            eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
+            eq(chatOwnerApprovalRequests.originChatKey, ctx.origin.chatKey),
+            eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
+            eq(chatOwnerApprovalRequests.status, "pending"),
+          ),
+        )
+        .orderBy(desc(chatOwnerApprovalRequests.createdAt))
+        .limit(1)
+        .for("update");
+      if (open) {
+        const added = categories.filter((category) => !open.categories.includes(category));
+        const merged = [...open.categories, ...added];
+        if (added.length) {
+          await tx.update(chatOwnerApprovalRequests).set({ categories: merged, updatedAt: new Date() }).where(eq(chatOwnerApprovalRequests.id, open.id));
+          if (open.interactionId)
+            await tx
+              .update(issueThreadInteractions)
+              .set({
+                title: "Owner approval: " + merged.join(", "),
+                payload: sql`jsonb_set(${issueThreadInteractions.payload}, '{detailsMarkdown}', to_jsonb(${approvalDetails({ categories: merged, scope: open.scope, proposedAction: open.proposedAction, originChatKey: open.originChatKey })}::text))`,
+                updatedAt: new Date(),
+              })
+              .where(eq(issueThreadInteractions.id, open.interactionId));
+        }
+        await recordOpenwaAudit(tx, {
+          companyId: ctx.endpoint.companyId,
+          endpointId: ctx.endpoint.id,
+          kind: "approval_requested",
+          actorKind: "agent",
+          actorRef: ctx.binding.agentId,
+          chatKey: open.originChatKey,
+          conversationId: ctx.conversation.id,
+          runId: ctx.run.id,
+          metadata: { requestId: open.id, categories: merged, added, scope: open.scope, merged: true },
+          content: { summary: String(args.summary), proposedAction: String(args.proposedAction), messageToOwners: body },
+          retentionDays: ctx.policy.auditContentRetentionDays,
+        });
+        await tx.update(chatActions).set({ result: { ...record(action.result), requestId: open.id }, updatedAt: new Date() }).where(eq(chatActions.id, action.id));
+        reused = merged;
+        return open.id;
+      }
       const grantScope = (args.scope as ChatOwnerGrantScope | undefined) ?? "one_action";
       const requesterPrincipalId = await requesterOf(ctx);
       if (grantScope === "requester" && !requesterPrincipalId)
@@ -469,6 +520,11 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
   } catch (error) {
     await forgetReserved(registry, reserved);
     throw error;
+  }
+  if (reused) {
+    const receipt = { requestId, status: "pending", reused: true, categories: reused, bubbles: await bubbleStates(ctx, requestId) };
+    await finishOpenwaWrite(ctx.db, action, receipt);
+    return { actionId: action.id, ...receipt };
   }
   const bubbles = await deliverBubbles(ctx, planned, reserved, body);
   const receipt = { requestId, status: "pending", reminded, bubbles };

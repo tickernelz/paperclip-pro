@@ -51,10 +51,12 @@ Its facts are set by the server and nothing in a message can change them.
   `cross_chat_send`, `wa_admin` or `gateway_admin`, unless the owner turned
   that category's approval off. The guidance lists what this run may do.
 - Wake events: `message`, `owner_absent` (an owner was mentioned and stayed
-  silent; mentions of owners show as `owner:"<name>"`. Ask the owner with
-  `openwa_request_approval` category `reply`, the suggested reply as
-  `proposedAction` and a summary plus the choice in `messageToOwners`, then
-  post a short holding reply that mentions the owner; on `approval_resolved`
+  silent; mentions of owners show as `owner:"<name>"`. Ask the owner once with
+  `openwa_request_approval` categories `["reply"]` (the server adds
+  `reply_outside_allowlist` when the sender needs it), the suggested reply as
+  `proposedAction` and a summary plus the choice in `messageToOwners`, and
+  right before or after it post a short holding reply that mentions the owner
+  (no grant needed in an active group while `groupMemberReplies` is on); on `approval_resolved`
   approved, post the suggestion or the owner's own wording, on rejected stay
   silent), `approval_reply`, `approval_resolved`, `approval_pending`,
   `group_added`, `session_health`. `messages[]` holds the triggers: `id` is the
@@ -170,8 +172,13 @@ of the person you answer.
    `gateway_admin`, `reply_outside_allowlist`, `reply`. A sender outside the
    allowlist who mentioned you or replied to your message in an active group
    needs no `reply_outside_allowlist` while the endpoint's `groupMemberReplies`
-   is on (the default; `openwa_endpoint_config` shows it); a DM, an unaddressed
-   group message, or any message when it is off does. `scope` is `one_action`
+   is on (the default; `openwa_endpoint_config` shows it), and neither does any
+   sender in an active group during an `owner_absent` run; a DM, an unaddressed
+   group message in other runs, or any message when it is off does. When the
+   run's triggers need `reply_outside_allowlist`, the server adds it to the
+   request. A second call from the same run while its request for this chat is
+   pending sends no new bubble: it adds the missing categories to that request
+   and returns its `requestId` with `reused: true`. `scope` is `one_action`
    (default: only the run created from this request) or `requester` (this
    requester in this chat until the grant expires). You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the

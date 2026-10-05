@@ -607,6 +607,22 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "outside_allowlist" });
   }, 90_000);
 
+  it("publishes an owner_absent reply to an unaddressed outside-allowlist group member only while groupMemberReplies is on", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000444");
+    const quoted = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    await runOutput(t, c, { triggerClass: "other", body: "holding reply", deliveryIds: [quoted.id], event: "owner_absent" });
+    await drain(t);
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "holding reply", quotedMessageId: quoted.waMessageId })]);
+    await db.update(chatEndpoints).set({ policy: { groupMemberReplies: false } }).where(eq(chatEndpoints.id, t.endpointId));
+    const blocked = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    await runOutput(t, c, { triggerClass: "other", body: "blocked holding reply", deliveryIds: [blocked.id], event: "owner_absent" });
+    await drain(t);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["holding reply"]);
+    expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "outside_allowlist" });
+  }, 90_000);
+
   it("sends more than three parts as a markdown document and agent files as documents", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

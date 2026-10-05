@@ -510,6 +510,23 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(mentioned.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
   });
 
+  it("lets an owner_absent run answer an unaddressed outside_allowlist group member only while groupMemberReplies is on", async () => {
+    const seed = await seedOpenwa({ group: { activation: "on" } });
+    const quoted = await seedDelivery(seed, { text: "pak, ini gimana?", role: "outside_allowlist", rules: [] });
+    const absent = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [quoted.id], event: "owner_absent" });
+    expect(absent.wake.policy).toMatchObject({ replyAllowed: true, replyRequires: [] });
+    expect(absent.full).toContain("call `openwa_request_approval` once with `categories` [\"reply\"] only (the server adds any other reply category this chat needs");
+    const plain = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [quoted.id] });
+    expect(plain.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+    const off = await seedOpenwa({ group: { activation: "on" }, policy: { groupMemberReplies: false } });
+    const offAbsent = await wakeOpenwa(off, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(off, { text: "pak?", role: "outside_allowlist", rules: [] })).id],
+      event: "owner_absent",
+    });
+    expect(offAbsent.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+  });
+
   it("tells every run to call OpenWA tools by name without discovering them", async () => {
     const seed = await seedOpenwa();
     const other = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hi" })).id] });
