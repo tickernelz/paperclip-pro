@@ -462,6 +462,22 @@ describe("TaskChatQueuedMessages", () => {
     expect(container.querySelector('[data-testid^="task-chat-queued-count-"]')).toBeNull();
   });
 
+  it("keeps identical messages from external chat senders as separate rows", () => {
+    const base = queueWithBodies(["ok", "ok"]);
+    const queue = {
+      ...base,
+      entries: base.entries.map((entry) => ({
+        ...entry,
+        comment: { ...entry.comment, authorType: "system" as const, authorUserId: null, authorAgentId: null },
+      })),
+    };
+    render({ queue });
+    expect(rowIds(container)).toEqual([
+      "task-chat-queued-message-comment-1",
+      "task-chat-queued-message-comment-2",
+    ]);
+  });
+
   it("steers only the first message of a collapsed group", async () => {
     const props = render({ queue: queueWithBodies(["Same", "Same"]) });
     await act(async () => {

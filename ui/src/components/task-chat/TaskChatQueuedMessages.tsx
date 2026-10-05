@@ -263,7 +263,7 @@ interface QueuedMessageRow {
 }
 
 function groupableEntry(entry: IssueQueuedCommentEntry) {
-  return entry.source?.kind !== "interaction";
+  return entry.source?.kind !== "interaction" && entry.comment.authorType !== "system";
 }
 
 function groupQueuedMessageRows(
