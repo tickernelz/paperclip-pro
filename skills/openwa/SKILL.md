@@ -196,8 +196,13 @@ of the person you answer.
    with the same scope is pending, sends no new bubble: it adds the missing
    categories and returns that `requestId` with `reused: true`. Any other
    category gets its own request and bubble. `scope` is `one_action`
-   (default: only the run created from this request) or `requester` (this
-   requester in this chat until the grant expires). You write `messageToOwners`;
+   (default: one gated call, made by the run created from this request; a
+   `create_task` grant creates exactly one task) or `requester` (this
+   requester in this chat until the grant expires). When the approved action
+   needs several gated calls of one category (several tasks from one message),
+   either put the items in one task with a checklist or ask once with scope
+   `requester` and say the count in `proposedAction`; never ask again after the
+   first call. You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the
    requester you asked.
 2. Owners answer by replying to that bubble (quoting it) or in Paperclip. A
