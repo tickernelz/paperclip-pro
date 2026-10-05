@@ -126,6 +126,8 @@ act beyond the run's facts. Silence never approves anything.
   WhatsApp rejects the quote of one of your visible pending triggers (revoked or
   deleted): the server then sends once without the quote and the result has
   `quoteDropped: true`. Do not resend.
+- A message steered into a running run names its `Message id`; quote that id
+  when you answer it, not the id of an earlier message in the run.
 
 ## WhatsApp formatting
 

@@ -655,6 +655,11 @@ it as **Messages during a run**. Behaviour per spec §7.3:
 | `other` message | `full` or `grant` | Queued as the next wake |
 | `approval_reply` | any | Its own wake, never steered |
 
+A steered message reaches the agent framed with its sender, trigger ids and
+WhatsApp message id, and tells the agent to quote that id when it answers, so a
+send for a second person in the same run marks that person's trigger answered
+instead of re-quoting the first trigger.
+
 **Group bursts.** In a group with no queued or running run for the conversation, a
 member (`other`) trigger's wake is held for 5 s. Member triggers admitted in that
 window fold into the held wake (its `deliveryIds` grow; each folded trigger's own

@@ -545,12 +545,15 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const ownText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("and cc the finance lead")) ?? null);
     expect(ownText).toContain("non-owner");
     expect(ownText).toContain("Sender: ");
+    expect(ownText).toContain("Message id: " + own.row.waMessageId + "; answer it with openwa_send quoting this id");
+    expect(ownText).not.toContain(first.row.waMessageId!);
     expect(ownText).toContain(maskOpenwaPhoneNumber(MEMBER_PHONE));
     expect(ownText).not.toContain(MEMBER_PHONE);
     expect((await wakeRow(own.action.id)).status).toBe("cancelled");
     const owner = await admit(t, mention(OWNER_PHONE, "go ahead"));
     const ownerText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("go ahead")) ?? null);
     expect(ownerText).toContain("endpoint owner");
+    expect(ownerText).toContain("Message id: " + owner.row.waMessageId + ";");
     expect((await wakeRow(owner.action.id)).status).toBe("cancelled");
     expect(steered.get(grantRun.id)!.some((entry) => entry.includes("use your tools for me too"))).toBe(false);
     expect((await wakeRow(outsider.action.id)).status).toBe("deferred_issue_execution");
