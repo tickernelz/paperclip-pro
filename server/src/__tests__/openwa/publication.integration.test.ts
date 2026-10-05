@@ -276,6 +276,7 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
       deliveryIds?: string[];
       grantIds?: string[];
       event?: string;
+      approvalRequestId?: string;
       status?: string;
       projected?: boolean;
       attachment?: { filename: string; content: string };
@@ -291,7 +292,12 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
       contextSnapshot: {
         source: "chat:openwa",
         issueId: c.issueId,
-        openwa: { event: input.event ?? "message", triggerClass: input.triggerClass, deliveryIds: input.deliveryIds ?? [] },
+        openwa: {
+          event: input.event ?? "message",
+          triggerClass: input.triggerClass,
+          deliveryIds: input.deliveryIds ?? [],
+          ...(input.approvalRequestId ? { approvalRequestId: input.approvalRequestId } : {}),
+        },
         paperclipOpenwa: {
           endpointId: t.endpointId,
           chatKey: openwaChatKey(c.chatId),
@@ -607,20 +613,62 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "outside_allowlist" });
   }, 90_000);
 
-  it("publishes an owner_absent reply to an unaddressed outside-allowlist group member only while groupMemberReplies is on", async () => {
+  it("keeps an owner_absent run's final output to an unaddressed outside-allowlist group member internal even while groupMemberReplies is on", async () => {
     const t = await setup();
     const c = await conversation(t, GROUP, { activation: "on" });
     const stranger = await principal(t, "628999000444");
     const quoted = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
-    await runOutput(t, c, { triggerClass: "other", body: "holding reply", deliveryIds: [quoted.id], event: "owner_absent" });
+    const run = await runOutput(t, c, { triggerClass: "other", body: "approval requested (requestId x, pending)", deliveryIds: [quoted.id], event: "owner_absent" });
     await drain(t);
-    expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "holding reply", quotedMessageId: quoted.waMessageId })]);
-    await db.update(chatEndpoints).set({ policy: { groupMemberReplies: false } }).where(eq(chatEndpoints.id, t.endpointId));
-    const blocked = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
-    await runOutput(t, c, { triggerClass: "other", body: "blocked holding reply", deliveryIds: [blocked.id], event: "owner_absent" });
-    await drain(t);
-    expect(t.gateway.sends.map((send) => send.text)).toEqual(["holding reply"]);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect((await publicationState(run.publicationId)).state).toBe("cancelled");
     expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "outside_allowlist" });
+    expect(await answerStates([quoted.id])).toEqual(["pending"]);
+  }, 90_000);
+
+  it("keeps an approval_reply run's final output internal once it resolved the request, and reacts to the owner's reply instead", async () => {
+    const t = await setup();
+    const dm = await conversation(t, MEMBER);
+    const reply = await trigger(t, dm, { triggerClass: "owner", role: "owner" });
+    const ownerPrincipal = await principal(t, "628999000555");
+    const request = async (resolvedAt: Date) =>
+      (
+        await db
+          .insert(chatOwnerApprovalRequests)
+          .values({
+            companyId: t.companyId,
+            endpointId: t.endpointId,
+            originChatKey: openwaChatKey(GROUP),
+            requestedByPrincipalId: ownerPrincipal,
+            categories: ["reply"],
+            scope: "one_action",
+            summary: "reply",
+            proposedAction: "reply",
+            status: "approved",
+            resolvedAt,
+          })
+          .returning()
+      )[0]!;
+    const resolved = await request(new Date());
+    const run = await runOutput(t, dm, {
+      triggerClass: "owner",
+      body: "siap, approvenya sudah tercatat ya",
+      deliveryIds: [reply.id],
+      event: "approval_reply",
+      approvalRequestId: resolved.id,
+    });
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect((await publicationState(run.publicationId)).state).toBe("cancelled");
+    expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "approval_acknowledged" });
+    expect(await answerStates([reply.id])).toEqual(["answered"]);
+    expect(t.gateway.reactions).toEqual([{ chatId: MEMBER, messageId: reply.waMessageId, emoji: "✅" }]);
+
+    const late = await trigger(t, dm, { triggerClass: "owner", role: "owner" });
+    const earlier = await request(new Date(Date.now() - 10 * 60_000));
+    await runOutput(t, dm, { triggerClass: "owner", body: "sudah disetujui sebelumnya", deliveryIds: [late.id], event: "approval_reply", approvalRequestId: earlier.id });
+    await drain(t);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["sudah disetujui sebelumnya"]);
   }, 90_000);
 
   it("sends more than three parts as a markdown document and agent files as documents", async () => {

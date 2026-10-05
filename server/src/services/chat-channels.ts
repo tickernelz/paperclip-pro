@@ -38364,8 +38364,13 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                       );
                   });
                   const typing = runtime.get(authorizationClaim.endpoint.id)?.getProviderAdapter();
-                  if (typing instanceof OpenwaChatAdapter)
+                  if (typing instanceof OpenwaChatAdapter) {
                     await typing.endTyping(authorizationClaim.conversation.externalThreadId).catch(() => undefined);
+                    if (decision.kind === "suppressed" && decision.acknowledge)
+                      await typing.gateway.react({ ...decision.acknowledge, emoji: "✅" }).catch((error: unknown) => {
+                        logger.warn({ err: error, endpointId: authorizationClaim.endpoint.id }, "failed to react to an OpenWA approval reply");
+                      });
+                  }
                   return;
                 }
                 openwaPublication = { runId: decision.runId, quotedMessageId: decision.quotedMessageId };

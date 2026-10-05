@@ -5,6 +5,7 @@ import {
   chatDeliveries,
   chatEndpointResources,
   chatEndpoints,
+  chatOwnerApprovalRequests,
   chatOwnerGrants,
   chatPublications,
   heartbeatRuns,
@@ -42,11 +43,12 @@ export type OpenwaSuppressionReason =
   | "reply_policy_ask_owner"
   | "reply_policy_owner_absent_only"
   | "outside_allowlist"
+  | "approval_acknowledged"
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
   | { kind: "publish"; runId: string; quotedMessageId: string | null; triggerIds: string[] }
-  | { kind: "suppressed"; runId: string | null; reason: OpenwaSuppressionReason }
+  | { kind: "suppressed"; runId: string | null; reason: OpenwaSuppressionReason; acknowledge?: { chatId: string; messageId: string } }
   | { kind: "empty"; runId: string }
   | { kind: "blocked"; reason: "not_agent_output" };
 
@@ -86,6 +88,12 @@ function runGrantIds(contextSnapshot: unknown): Set<string> {
 function runEvent(contextSnapshot: unknown): string | null {
   const event = record(record(contextSnapshot).paperclipOpenwa).event;
   return typeof event === "string" ? event : null;
+}
+
+function runApprovalRequestId(contextSnapshot: unknown): string | null {
+  const snapshot = record(contextSnapshot);
+  const id = record(snapshot.openwa).approvalRequestId ?? record(snapshot.paperclipOpenwa).approvalRequestId;
+  return typeof id === "string" && id ? id : null;
 }
 
 function triggerWaMessageId(normalizedEvent: Record<string, unknown>): string | null {
@@ -235,6 +243,23 @@ export async function decideOpenwaRunPublication(
       : [];
     let reason: OpenwaSuppressionReason | null = runClass ? null : "no_openwa_context";
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
+    const approvalRequestId = runEvent(run.contextSnapshot) === "approval_reply" ? runApprovalRequestId(run.contextSnapshot) : null;
+    if (!reason && approvalRequestId) {
+      const [request] = await tx
+        .select({ status: chatOwnerApprovalRequests.status, resolvedAt: chatOwnerApprovalRequests.resolvedAt })
+        .from(chatOwnerApprovalRequests)
+        .where(
+          and(
+            eq(chatOwnerApprovalRequests.companyId, endpoint.companyId),
+            eq(chatOwnerApprovalRequests.endpointId, endpoint.id),
+            eq(chatOwnerApprovalRequests.id, approvalRequestId),
+          ),
+        )
+        .limit(1);
+      const runStart = run.startedAt ?? run.runCreatedAt;
+      if (request && (request.status === "approved" || request.status === "rejected") && request.resolvedAt && request.resolvedAt >= runStart)
+        reason = "approval_acknowledged";
+    }
     const consumable: string[] = [];
     if (!reason) {
       const resource = conversation.resourceId
@@ -257,7 +282,7 @@ export async function decideOpenwaRunPublication(
       const needs: Array<{ principalId: string | null; category: OpenwaGrantCategory; reason: OpenwaSuppressionReason }> = [];
       for (const trigger of pending) {
         if (trigger.principalRole === "owner") continue;
-        if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, policy, event))
+        if (trigger.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(trigger.normalizedEvent, groupActive, policy, null))
           needs.push({ principalId: trigger.principalId, category: "reply_outside_allowlist", reason: "outside_allowlist" });
         if (runClass === "other" && replyPolicy === "ask_owner")
           needs.push({ principalId: trigger.principalId, category: "reply", reason: "reply_policy_ask_owner" });
@@ -337,7 +362,14 @@ export async function decideOpenwaRunPublication(
         retentionDays: policy.auditContentRetentionDays,
         occurredAt: now,
       });
-      return { kind: "suppressed", runId: run.runId, reason };
+      if (reason === "approval_acknowledged")
+        await tx
+          .update(chatDeliveries)
+          .set({ answerState: "answered", updatedAt: now })
+          .where(and(eq(chatDeliveries.endpointId, endpoint.id), inArray(chatDeliveries.id, triggerIds), eq(chatDeliveries.answerState, "pending")));
+      const reply = pending.find((trigger) => deliveryIds.includes(trigger.id)) ?? pending.at(-1)!;
+      const acknowledged = reason === "approval_acknowledged" ? triggerWaMessageId(reply.normalizedEvent) : null;
+      return { kind: "suppressed", runId: run.runId, reason, ...(acknowledged ? { acknowledge: { chatId: target.chatId, messageId: acknowledged } } : {}) };
     }
     await tx
       .insert(chatActions)

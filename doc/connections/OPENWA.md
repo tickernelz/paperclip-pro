@@ -144,9 +144,14 @@ dropped and audited. In an active group, a sender outside the allowlist still
 reaches the agent with role `outside_allowlist`. With **Answer group members who
 address the agent** on (`groupMemberReplies`, default `true`), when that message
 mentioned the agent or replied to one of its messages, the agent may answer in the
-group without a grant (the run stays `read_only`); the same holds for any of
-their messages while the run itself is an `owner_absent` wake, so its holding
-reply needs no grant. Later runs (for example `approval_resolved`) get no such
+group without a grant (the run stays `read_only`). A reply sent with
+`openwa_send` that quotes one of those addressed messages is checked against
+that message only, so an older unaddressed message still pending in the chat
+does not block it. While the run itself is an `owner_absent` wake,
+`openwa_send` may also answer their other messages without a grant, so its
+holding reply goes out; that run's final output is still not published to them
+without a grant (suppressed as `outside_allowlist`), so internal summaries
+never reach the group. Later runs (for example `approval_resolved`) get no such
 exemption.
 Otherwise, and always when the setting is off, replying to them in that chat
 needs a `reply_outside_allowlist` grant. Changing it records `openwa.config_changed`. Lists hold E.164 numbers with an optional
@@ -367,7 +372,10 @@ Any other category, or a request from another run, creates a new request.
 - **WhatsApp**: an owner replies to the bubble, quoting it. That reply starts a
   dedicated `approval_reply` run (class `owner`). The agent interprets the free text
   and records `approve`, `reject` or `clarify` with `openwa_approval_resolve`; only that
-  run may resolve that request, and `clarify` keeps it pending. A member quoting
+  run may resolve that request, and `clarify` keeps it pending. When the request
+  was approved or rejected during that run, its final output is not published
+  to the owner (`publication_suppressed` reason `approval_acknowledged`); the
+  server reacts to the owner's reply with ✅ instead. A member quoting
   the bubble, an owner reply without a quote, and a quote of an already-resolved
   bubble never create a grant.
 - **Paperclip**: the endpoint's **Approvals** tab lists requests by **Status**

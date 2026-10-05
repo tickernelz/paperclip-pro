@@ -85,6 +85,7 @@ export class FakeOpenwaGateway {
   strictQuotes = false;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
+  readonly reactions: Array<{ chatId: string; messageId: string; emoji: string }> = [];
   readonly requests: Array<{ method: string; path: string; query: Record<string, string>; key?: "operator" | "admin" | "scoped" | null }> = [];
   readonly apiKeys = new Map<string, FakeApiKey>();
   readonly linkedSessions = new Map<string, FakeLinkedSession>();
@@ -472,6 +473,11 @@ export class FakeOpenwaGateway {
     if (req.method === "POST" && url.pathname === prefix + "/chats/typing") {
       const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; state: string };
       this.typing.push({ chatId: body.chatId, state: body.state });
+      return reply(201, { success: true });
+    }
+    if (req.method === "POST" && url.pathname === prefix + "/messages/react" && !this.generic) {
+      const body = JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}") as { chatId: string; messageId: string; emoji: string };
+      this.reactions.push({ chatId: body.chatId, messageId: body.messageId, emoji: body.emoji });
       return reply(201, { success: true });
     }
     const mediaPath = /^\/messages\/([^/]+)\/([^/]+)\/media$/.exec(url.pathname.slice(prefix.length));

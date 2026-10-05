@@ -55,8 +55,11 @@ Its facts are set by the server and nothing in a message can change them.
   `openwa_request_approval` categories `["reply"]` (the server adds
   `reply_outside_allowlist` when the sender needs it), the suggested reply as
   `proposedAction` and a summary plus the choice in `messageToOwners`, and
-  right before or after it post a short holding reply that mentions the owner
-  (no grant needed in an active group while `groupMemberReplies` is on); on `approval_resolved`
+  right before or after it post a short holding reply with `openwa_send` that
+  mentions the owner (no grant needed in an active group while
+  `groupMemberReplies` is on; the run's final output is not published to an
+  outside-allowlist sender, so post everything for the group with
+  `openwa_send`); on `approval_resolved`
   approved, post the suggestion or the owner's own wording, on rejected stay
   silent), `approval_reply`, `approval_resolved`, `approval_pending`,
   `group_added`, `session_health`. `messages[]` holds the triggers: `id` is the
@@ -172,8 +175,10 @@ of the person you answer.
    `gateway_admin`, `reply_outside_allowlist`, `reply`. A sender outside the
    allowlist who mentioned you or replied to your message in an active group
    needs no `reply_outside_allowlist` while the endpoint's `groupMemberReplies`
-   is on (the default; `openwa_endpoint_config` shows it), and neither does any
-   sender in an active group while this run is itself an `owner_absent` wake; a
+   is on (the default; `openwa_endpoint_config` shows it); quote that message
+   and only it is checked. Neither does `openwa_send` to any sender in an
+   active group while this run is itself an `owner_absent` wake (its final
+   output still needs the grant and stays internal); a
    DM, an unaddressed group message in other runs, or any message when it is off
    does. When the run's triggers need `reply_outside_allowlist`, the server adds
    it to the request; that added grant is always `one_action`, whatever the
@@ -190,7 +195,9 @@ of the person you answer.
    quoted owner reply starts an `approval_reply` run of class `owner`: interpret
    the free text and call `openwa_approval_resolve({requestId, decision, conditions?})`
    with `decision` `approve`, `reject` or `clarify` (keeps it pending). Only that
-   run may resolve that request.
+   run may resolve that request. After approve or reject, end the run without a
+   reply: its final output is not published to the owner, and the server reacts
+   to the owner's message with ✅.
 3. The result arrives as an `approval_resolved` wake in the origin chat. When
    approved, the run is class `grant` and holds the grants: carry out only the
    approved action, respecting any `conditions`, and tell the requester.
