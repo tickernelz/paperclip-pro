@@ -159,7 +159,9 @@ not admitted: it is audited as `trigger_filtered` with reason `duplicate` and th
 earlier trigger's `repeatCount` goes up, so the wake shows the message once with
 `repeatCount`. A sender gets at most 5 admitted triggers per rolling 60 s in one
 chat; further messages are audited as `trigger_filtered` with reason
-`rate_limited` (`limit`, `windowSeconds`). Owners are exempt from both.
+`rate_limited` (`limit`, `windowSeconds`). Owners are exempt from both. A dropped
+message that mentions or quotes an owner still arms (or joins) the chat's absence
+timer.
 
 ### Chats
 
