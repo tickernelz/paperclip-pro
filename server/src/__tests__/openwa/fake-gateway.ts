@@ -69,6 +69,7 @@ export interface FakeGatewayOptions {
   sessionId: string;
   ownPhone: string;
   restLatencyMs?: number;
+  port?: number;
 }
 
 export class FakeOpenwaGateway {
@@ -112,6 +113,7 @@ export class FakeOpenwaGateway {
     this.sessionId = options.sessionId;
     this.ownJid = options.ownPhone + "@c.us";
     this.restLatencyMs = options.restLatencyMs ?? 0;
+    this.port = options.port ?? 0;
   }
 
   get baseUrl(): string {
