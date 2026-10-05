@@ -853,7 +853,10 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const rows = await settledDeliveries(t, 2);
     expect(rows.map((row) => row.state)).toEqual(["processed", "processed"]);
     await until(() => t.wakeup.mock.calls.length > wakesBefore);
-    const [wake] = await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, rows[1].id), eq(chatActions.kind, "inbound_wakeup")));
+    const settledWake = async () =>
+      (await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, rows[1].id), eq(chatActions.kind, "inbound_wakeup"))))[0];
+    await until(async () => Boolean((await settledWake())?.result));
+    const wake = await settledWake();
     expect((wake!.result as { code?: string }).code).toBe("inbound_wakeup_durable");
     const [issue] = await db.select({ status: issues.status }).from(issues).where(eq(issues.id, first.issueId));
     expect(issue!.status).toBe("blocked");
