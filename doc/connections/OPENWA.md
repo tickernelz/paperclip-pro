@@ -326,7 +326,8 @@ not, unless the category's approval toggle is off or a live grant covers it:
 | `gateway_admin` | Gateway admin actions | Session lifecycle, API keys, webhooks, plugins, settings, infrastructure |
 
 The REST seam denies non-allowlisted mutations of a `read_only` run with 403
-(allowlist `READ_ONLY_REST_ALLOW` at `server/src/services/openwa/authority.ts:708`). Comments written by a
+(allowlist `READ_ONLY_REST_ALLOW` at `server/src/services/openwa/authority.ts:822`). Own-issue rules
+match the conversation issue by id or by identifier (`ZHA-2`), as the issue routes do. Comments written by a
 `read_only` run never trigger mention wakes. Persistent API keys of an agent bound
 to a live OpenWA endpoint cannot make non-safe requests at all.
 

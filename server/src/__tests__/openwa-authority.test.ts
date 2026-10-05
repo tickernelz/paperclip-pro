@@ -132,6 +132,17 @@ describe("openwaReadOnlyRestDecision", () => {
       .toEqual({ allowed: false, category: "external_tools" });
   });
 
+  it("accepts the run's own issue by identifier and never another issue's identifier", () => {
+    for (const path of ["/api/issues/ZHA-2/comments", "/api/issues/zha-2/comments", "/api/issues/ZHA-2"]) {
+      const body = path.endsWith("comments") ? { body: "hi" } : { status: "in_progress" };
+      expect(openwaReadOnlyRestDecision({ method: path.endsWith("comments") ? "POST" : "PATCH", path, ownIssueId: own, ownIssueIdentifier: "ZHA-2", body })).toEqual({ allowed: true });
+    }
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: "/api/issues/ZHA-3/comments", ownIssueId: own, ownIssueIdentifier: "ZHA-2", body: {} }))
+      .toEqual({ allowed: false, category: "external_tools" });
+    expect(openwaReadOnlyRestDecision({ method: "POST", path: "/api/issues/ZHA-2/comments", ownIssueId: own, body: {} }))
+      .toEqual({ allowed: false, category: "external_tools" });
+  });
+
   it("checks work products against the run's own issue", () => {
     const path = "/api/work-products/33333333-3333-4333-8333-333333333333";
     expect(openwaReadOnlyRestDecision({ method: "PATCH", path, ownIssueId: own })).toMatchObject({ allowed: "workProduct" });
@@ -710,6 +721,14 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(secret.body).toMatchObject({ code: "openwa_approval_required", details: { category: "external_tools" } });
       const comment = await request(app()).post(`/api/issues/${seed.issueId}/comments`).set("Authorization", `Bearer ${token}`).send({ body: "hi" });
       expect(comment.status).toBe(201);
+      const [own] = await db.select({ identifier: issues.identifier }).from(issues).where(eq(issues.id, seed.issueId));
+      const byIdentifier = await request(app()).post(`/api/issues/${own!.identifier}/comments`).set("Authorization", `Bearer ${token}`).send({ body: "by identifier" });
+      expect(byIdentifier.status).toBe(201);
+      const otherIssue = await seedPlainIssue(db, seed);
+      await db.update(issues).set({ identifier: own!.identifier!.replace(/-1$/, "-2"), issueNumber: 2 }).where(eq(issues.id, otherIssue));
+      const foreign = await request(app()).post(`/api/issues/${own!.identifier!.replace(/-1$/, "-2")}/comments`).set("Authorization", `Bearer ${token}`).send({ body: "x" });
+      expect(foreign.status).toBe(403);
+      expect(foreign.body).toMatchObject({ code: "openwa_approval_required", details: { category: "external_tools" } });
       const read = await request(app()).get(`/api/companies/${seed.companyId}/issues`).set("Authorization", `Bearer ${token}`);
       expect(read.status).toBe(200);
     });

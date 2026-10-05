@@ -10,6 +10,7 @@ import {
   chatOwnerGrants,
   heartbeatRuns,
   issueWorkProducts,
+  issues,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
 import {
@@ -856,6 +857,7 @@ export function openwaReadOnlyRestDecision(input: {
   method: string;
   path: string;
   ownIssueId: string | null;
+  ownIssueIdentifier?: string | null;
   body?: unknown;
   workProductIssueId?: string | null;
 }): OpenwaRestDecision | { allowed: "workProduct"; workProductId: string } {
@@ -863,6 +865,7 @@ export function openwaReadOnlyRestDecision(input: {
   if (SAFE_METHODS.has(method)) return { allowed: true };
   const path = (input.path.length > 1 ? input.path.replace(/\/+$/, "") : input.path).toLowerCase();
   const ownIssueId = input.ownIssueId?.toLowerCase() ?? null;
+  const ownIssueKeys = new Set([ownIssueId, input.ownIssueIdentifier?.toLowerCase() ?? null].filter((key): key is string => Boolean(key)));
   const body = record(input.body);
   const delegates = ISSUE_DELEGATION_FIELDS.some((field) => body[field] !== undefined);
   const lifecycleOnly = Object.keys(body).every((field) => ISSUE_LIFECYCLE_PATCH_FIELDS.has(field));
@@ -870,7 +873,7 @@ export function openwaReadOnlyRestDecision(input: {
     if (rule.method !== method) continue;
     const match = rule.path.exec(path);
     if (!match) continue;
-    if (rule.ownIssue && (!ownIssueId || match[rule.ownIssue] !== ownIssueId)) continue;
+    if (rule.ownIssue && !ownIssueKeys.has(match[rule.ownIssue]!)) continue;
     if (rule.check === "issuePatch" && !lifecycleOnly) continue;
     if (rule.check === "workProduct") {
       if (input.workProductIssueId === undefined) return { allowed: "workProduct", workProductId: match[1]! };
@@ -902,6 +905,15 @@ export async function assertOpenwaRestAllowed(
     decision = openwaReadOnlyRestDecision({
       method: input.method, path: input.path, ownIssueId, body: input.body, workProductIssueId: product?.issueId ?? null,
     }) as OpenwaRestDecision;
+  }
+  if (decision.allowed === false && ownIssueId) {
+    const [issue] = await db
+      .select({ identifier: issues.identifier })
+      .from(issues)
+      .where(and(eq(issues.id, ownIssueId), eq(issues.companyId, input.run.companyId)))
+      .limit(1);
+    if (issue?.identifier)
+      decision = openwaReadOnlyRestDecision({ method: input.method, path: input.path, ownIssueId, ownIssueIdentifier: issue.identifier, body: input.body }) as OpenwaRestDecision;
   }
   if (decision.allowed === true) return null;
   return assertOpenwaRunMay(db, input.run, decision.category);
