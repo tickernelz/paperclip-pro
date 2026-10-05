@@ -1,3 +1,4 @@
+import { maskOpenwaPhoneNumber } from "@tickernelz/paperclip-pro-shared";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
@@ -497,6 +498,9 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const own = await admit(t, mention(MEMBER_PHONE, "and cc the finance lead"));
     const ownText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("and cc the finance lead")) ?? null);
     expect(ownText).toContain("non-owner");
+    expect(ownText).toContain("Sender: ");
+    expect(ownText).toContain(maskOpenwaPhoneNumber(MEMBER_PHONE));
+    expect(ownText).not.toContain(MEMBER_PHONE);
     expect((await wakeRow(own.action.id)).status).toBe("cancelled");
     const owner = await admit(t, mention(OWNER_PHONE, "go ahead"));
     const ownerText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("go ahead")) ?? null);
