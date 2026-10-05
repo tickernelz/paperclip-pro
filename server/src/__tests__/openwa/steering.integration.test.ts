@@ -12,6 +12,7 @@ import {
   agentWakeupRequests,
   authUsers,
   chatActions,
+  chatAuditEntries,
   chatConversations,
   chatDeliveries,
   chatEndpoints,
@@ -39,7 +40,15 @@ import { heartbeatService, mergeCoalescedContextSnapshot } from "../../services/
 import { secretService } from "../../services/secrets.ts";
 import { OPENWA_HANDOFF_ACTION_KIND } from "../../services/openwa/tools.ts";
 import { openwaNudgeWaiting } from "../../services/openwa/nudges.ts";
-import { OPENWA_FOLLOWUP_WAKE_ACTION_KIND, OPENWA_STEERED_OWNER_ACTION_KIND, scheduleOpenwaFollowupForRun } from "../../services/openwa/followups.ts";
+import {
+  OPENWA_FOLLOWUP_WAKE_ACTION_KIND,
+  OPENWA_RUN_RETRY_DELAY_MS,
+  OPENWA_RUN_RETRY_WAKE_ACTION_KIND,
+  OPENWA_STEERED_OWNER_ACTION_KIND,
+  processPendingOpenwaRunRetries,
+  scheduleOpenwaFollowupForRun,
+  scheduleOpenwaRunRetryForRun,
+} from "../../services/openwa/followups.ts";
 import { recordOpenwaLateTranscript, takeOpenwaLateTranscripts } from "../../services/openwa/late-transcripts.ts";
 import { registerOpenwaCommentSteering, steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
 import { resolveChatRunPresentationAuthorizationReason } from "../../services/chat-run-publications.ts";
@@ -103,7 +112,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   const captured = new Map<string, Record<string, unknown>>();
   const steered = new Map<string, string[]>();
   const holds = new Map<string, () => void>();
-  const adapterMode = { steer: true, hold: true };
+  const adapterMode = { steer: true, hold: true, failures: 0 };
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -134,6 +143,17 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
         } finally {
           unregister();
         }
+        if (adapterMode.failures > 0) {
+          adapterMode.failures -= 1;
+          return {
+            exitCode: 1,
+            signal: null,
+            timedOut: false,
+            errorMessage: "upstream 400: provider database query failed",
+            resultJson: { conversationContinuation: "continue_conversation_v1" },
+            label: "Steering capture",
+          };
+        }
         return { exitCode: 0, signal: null, timedOut: false, label: "Steering capture" };
       },
       testEnvironment: async () => ({ adapterType: ADAPTER_TYPE, status: "pass", checks: [], testedAt: new Date().toISOString() }),
@@ -158,6 +178,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     steered.clear();
     adapterMode.steer = true;
     adapterMode.hold = true;
+    adapterMode.failures = 0;
   });
 
   afterAll(async () => {
@@ -785,5 +806,55 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(followups).toHaveLength(1);
     const [handoff] = await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_HANDOFF_ACTION_KIND)));
     expect(handoff!.status).toBe("processed");
+  }, 120_000);
+  it("retries a failed run's still-pending triggers once after a delay, then audits a second failure without another retry", async () => {
+    const t = await setup();
+    adapterMode.hold = false;
+    adapterMode.failures = 2;
+    const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "summarise today's invoices" });
+    const failed = await finishedRun(t, owner.action.id);
+    expect(failed.status).toBe("failed");
+    const retryActions = () =>
+      db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND)));
+    const [retry] = await until(async () => {
+      const rows = await retryActions();
+      return rows.length ? rows : null;
+    });
+    expect(retry!).toMatchObject({ status: "queued", payload: { sourceRunId: failed.id, openwa: { triggerClass: "owner", deliveryIds: [owner.delivery.id] } } });
+    const notBefore = Date.parse(String(retry!.payload.notBefore));
+    expect(notBefore - retry!.createdAt.getTime()).toBeGreaterThanOrEqual(OPENWA_RUN_RETRY_DELAY_MS - 1_000);
+    await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: failed.id })).resolves.toBeNull();
+    expect(await processPendingOpenwaRunRetries(db, 25, new Date(notBefore - 1_000))).toBe(0);
+    expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.wakeupRequestId, retry!.id))).toHaveLength(0);
+    expect(await processPendingOpenwaRunRetries(db, 25, new Date(notBefore + 1_000))).toBe(1);
+    const retried = await finishedRun(t, retry!.id);
+    expect(retried.status).toBe("failed");
+    expect(captured.get(retried.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", deliveryIds: [owner.delivery.id] });
+    const audit = await until(async () => {
+      const rows = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "run_failed")));
+      return rows.length ? rows : null;
+    });
+    await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: retried.id })).resolves.toBeNull();
+    await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: failed.id })).resolves.toBeNull();
+    expect(await processPendingOpenwaRunRetries(db, 25, new Date(notBefore + 600_000))).toBe(0);
+    expect(await retryActions()).toHaveLength(1);
+    const audits = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "run_failed")));
+    expect(audits).toHaveLength(1);
+    expect(audit[0]).toMatchObject({ runId: retried.id, actorKind: "system", metadata: { reason: "retry_failed", firstFailedRunId: failed.id, triggerIds: [owner.delivery.id] } });
+    const [delivery] = await db.select({ answerState: chatDeliveries.answerState }).from(chatDeliveries).where(eq(chatDeliveries.id, owner.delivery.id));
+    expect(delivery!.answerState).toBe("pending");
+  }, 120_000);
+
+  it("schedules no run retry when the failed run's triggers were already answered", async () => {
+    const t = await setup();
+    adapterMode.failures = 1;
+    const owner = await admit(t, { chatId: jid(OWNER_PHONE), body: "thanks" });
+    const running = await runningRun(t, owner.action.id);
+    await db.update(chatDeliveries).set({ answerState: "answered" }).where(eq(chatDeliveries.id, owner.delivery.id));
+    release(running.id);
+    const failed = await finishedRun(t, owner.action.id);
+    expect(failed.status).toBe("failed");
+    await expect(scheduleOpenwaRunRetryForRun(db, { companyId: t.companyId, runId: failed.id })).resolves.toBeNull();
+    expect(await db.select().from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND)))).toHaveLength(0);
   }, 120_000);
 });

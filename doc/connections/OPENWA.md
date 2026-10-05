@@ -587,7 +587,7 @@ The endpoint's **Audit** tab lists `chat_audit_entries` newest first with filter
 `trigger_admitted`, `trigger_filtered`, `message_sent`, `publication_suppressed`,
 `tool_called`, `approval_requested`, `approval_reminded`, `approval_resolved`,
 `approval_cancelled`, `config_changed`, `group_added`, `group_left`,
-`session_health`, `linked_read`. `trigger_filtered` reasons: `denylisted`,
+`session_health`, `linked_read`, `run_failed`. `trigger_filtered` reasons: `denylisted`,
 `outside_allowlist`, `chat_inactive`, `duplicate`, `rate_limited`. Endpoint owners, company owners and instance admins see content;
 other board users with endpoint access see metadata only. Owner-class runs can
 read it through `openwa_call` operation `paperclip.audit.list`. Tool arguments are
@@ -661,6 +661,17 @@ the current run. Steering needs an adapter with live steering (OMP registers a
 steer target in RPC mode). With `queue`, or an adapter that cannot steer, every
 row above becomes "queued", and Settings warns.
 
+**Failed run retry.** When a run ends `failed` or `timed_out` (for example a
+provider 400) while some of its visible triggers are still `pending`, and
+heartbeat scheduled no retry of its own, the server stages one retry wake for
+those triggers (`openwa_run_retry_wakeup`, actor `openwa:run-retry`) due 45 s
+later, with the same trigger class and a system comment on the issue. The retry
+runs only if a trigger is still pending then. Each trigger set is retried at
+most once: when the retry run also fails, no further retry is staged and the
+Audit tab records `run_failed` (reason `retry_failed`, both run ids, trigger
+ids). The person stays unanswered until the operator acts or a new message
+arrives.
+
 **Progress nudges** (spec §7.6): while a triggered run is active, the server
 steers an internal reminder into the run after `progressNudgeSeconds` (default
 60), then every 180 s, at most 5 per run; 0 disables them. A nudge fires only
@@ -697,6 +708,7 @@ the origin chat while a triggered run is active.
 | Tool error `approval_required` / `reply_denied` (403) | category in `details` | The run's profile or the reply policy needs an owner grant; the agent asks with `openwa_request_approval`. |
 | Tool error `secret_issuing_operation` (403) | | Issue keys, pairing codes and QR codes in the OpenWA dashboard. |
 | Tool error `number_not_on_whatsapp` / `quote_unresolvable` (422) | | The number is not registered, or the quoted message is not in that chat. |
+| Audit `run_failed` | `retry_failed` | A run and its automatic retry both failed; the listed triggers are unanswered. Check the provider in the run log, then reply or ask the person to resend. |
 | Tool error `chat_inactive` (403) | | In `owner_number` mode only chats enabled in Settings are visible. |
 
 Diagnostics use the endpoint's Audit tab, company activity and run records.

@@ -58,7 +58,13 @@ import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
 import { reopenOpenwaConversationIssue } from "./openwa/conversation-status.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
-import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
+import {
+  processPendingOpenwaFollowups,
+  processPendingOpenwaRunRetries,
+  registerOpenwaFollowupRuntime,
+  scheduleOpenwaFollowupForRun,
+  scheduleOpenwaRunRetryForRun,
+} from "./openwa/followups.js";
 import { createOpenwaNudges, openwaNudgeWaiting, registerOpenwaRunStartListener } from "./openwa/nudges.js";
 import {
   holdOrFoldOpenwaBurstWake,
@@ -28574,6 +28580,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           processPendingOpenwaApprovalWakes(db, limit),
           processPendingOpenwaSessionHealthWakes(db, limit),
           processPendingOpenwaFollowups(db, limit),
+          processPendingOpenwaRunRetries(db, limit),
         ]);
     const reactionRecovery = processPendingReactionDeliveries(
       limit,
@@ -39154,7 +39161,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     openwaNudges.stop(payload.runId);
     const task = scheduleOpenwaFollowupForRun(db, { companyId: event.companyId, runId: payload.runId })
       .then(() => undefined)
-      .catch((error) => logger.warn({ err: error, runId: payload.runId }, "failed to schedule an OpenWA follow-up owner run"));
+      .catch((error) => logger.warn({ err: error, runId: payload.runId }, "failed to schedule an OpenWA follow-up owner run"))
+      .then(() => scheduleOpenwaRunRetryForRun(db, { companyId: event.companyId, runId: String(payload.runId) }))
+      .then(() => undefined)
+      .catch((error) => logger.warn({ err: error, runId: payload.runId }, "failed to schedule an OpenWA run retry"));
     openwaRunEndTasks.add(task);
     void task.finally(() => openwaRunEndTasks.delete(task));
   });

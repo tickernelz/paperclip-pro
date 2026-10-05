@@ -720,6 +720,7 @@ export const CHAT_AUDIT_ENTRY_KINDS = [
   "group_left",
   "session_health",
   "linked_read",
+  "run_failed",
 ] as const;
 export type ChatAuditEntryKind = (typeof CHAT_AUDIT_ENTRY_KINDS)[number];
 

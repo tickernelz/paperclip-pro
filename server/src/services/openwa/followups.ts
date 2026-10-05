@@ -1,10 +1,13 @@
-import { and, asc, eq, inArray, lt, or, sql } from "drizzle-orm";
+import { createHash } from "node:crypto";
+import { and, asc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
 import { chatActions, chatConversations, chatDeliveries, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
 import { forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";
 import type { IssueAssignmentWakeupDeps } from "../issue-assignment-wakeup.js";
 import { issueService } from "../issues.js";
+import { recordOpenwaAudit } from "./audit.js";
+import { readOpenwaRunContext } from "./authority.js";
 import { OPENWA_HANDOFF_ACTION_KIND } from "./tools.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -15,6 +18,11 @@ export const OPENWA_FOLLOWUP_WAKE_ACTOR_ID = "openwa:followup";
 const WAKE_MAX_ATTEMPTS = 5;
 const WAKE_STALE_PROCESSING_MS = 2 * 60_000;
 const TERMINAL_RUN_STATUSES = ["succeeded", "interrupted", "failed", "cancelled", "timed_out"];
+export const OPENWA_RUN_RETRY_WAKE_ACTION_KIND = "openwa_run_retry_wakeup";
+export const OPENWA_RUN_RETRY_WAKE_ACTOR_ID = "openwa:run-retry";
+export const OPENWA_RUN_RETRY_DELAY_MS = 45_000;
+const RETRYABLE_RUN_STATUSES = ["failed", "timed_out"];
+const ACTIVE_RETRY_RUN_STATUSES = ["scheduled_retry", "queued", "running"];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export interface OpenwaFollowupRuntime {
@@ -333,3 +341,276 @@ export async function processPendingOpenwaFollowups(db: Db, limit = 25): Promise
   for (const wake of wakes) await dispatchOpenwaFollowupWake(db, wake.id);
   return sources.length + wakes.length;
 }
+
+function runRetryActionId(deliveryIds: string[]): string {
+  return "openwa-run-retry:" + createHash("sha256").update([...deliveryIds].sort().join(",")).digest("hex");
+}
+
+/** Stages at most one delayed retry wake per pending trigger set of a failed or timed-out OpenWA run; a failed retry leaves a run_failed audit entry instead. */
+export async function scheduleOpenwaRunRetryForRun(db: Db, input: { companyId: string; runId: string; now?: Date }): Promise<string | null> {
+  const [run] = await db
+    .select({
+      status: heartbeatRuns.status,
+      errorCode: heartbeatRuns.errorCode,
+      agentId: heartbeatRuns.agentId,
+      wakeupRequestId: heartbeatRuns.wakeupRequestId,
+      contextSnapshot: heartbeatRuns.contextSnapshot,
+    })
+    .from(heartbeatRuns)
+    .where(and(eq(heartbeatRuns.companyId, input.companyId), eq(heartbeatRuns.id, input.runId)))
+    .limit(1);
+  if (!run || !RETRYABLE_RUN_STATUSES.includes(run.status)) return null;
+  const openwa = readOpenwaRunContext(run.contextSnapshot);
+  const issueId = typeof run.contextSnapshot?.issueId === "string" ? run.contextSnapshot.issueId : null;
+  if (!openwa || !issueId || !openwa.deliveryIds.length) return null;
+  const [nativeRetry] = await db
+    .select({ id: heartbeatRuns.id })
+    .from(heartbeatRuns)
+    .where(and(eq(heartbeatRuns.companyId, input.companyId), eq(heartbeatRuns.retryOfRunId, input.runId), inArray(heartbeatRuns.status, ACTIVE_RETRY_RUN_STATUSES)))
+    .limit(1);
+  if (nativeRetry) return null;
+  return db.transaction(async (tx) => {
+    const [conversation] = await tx
+      .select({ id: chatConversations.id })
+      .from(chatConversations)
+      .where(and(eq(chatConversations.companyId, input.companyId), eq(chatConversations.endpointId, openwa.endpointId), eq(chatConversations.issueId, issueId)))
+      .limit(1);
+    if (!conversation) return null;
+    const steered = await tx
+      .select({ payload: chatActions.payload })
+      .from(chatActions)
+      .where(
+        and(
+          eq(chatActions.companyId, input.companyId),
+          eq(chatActions.endpointId, openwa.endpointId),
+          eq(chatActions.conversationId, conversation.id),
+          inArray(chatActions.kind, [OPENWA_HANDOFF_ACTION_KIND, OPENWA_STEERED_OWNER_ACTION_KIND]),
+          sql`${chatActions.payload} ->> 'runId' = ${input.runId}`,
+        ),
+      );
+    const followedUp = new Set(steered.flatMap((row) => uuids(row.payload.triggerIds)));
+    const pending = await tx
+      .select({ id: chatDeliveries.id, principalId: chatDeliveries.principalId })
+      .from(chatDeliveries)
+      .where(
+        and(
+          eq(chatDeliveries.companyId, input.companyId),
+          eq(chatDeliveries.endpointId, openwa.endpointId),
+          eq(chatDeliveries.conversationId, conversation.id),
+          eq(chatDeliveries.answerState, "pending"),
+          inArray(chatDeliveries.id, openwa.deliveryIds),
+        ),
+      );
+    const deliveryIds = openwa.deliveryIds.filter((id) => !followedUp.has(id) && pending.some((row) => row.id === id));
+    if (!deliveryIds.length) return null;
+    const exhaust = async (retry: typeof chatActions.$inferSelect) => {
+      const [marked] = await tx
+        .update(chatActions)
+        .set({ result: sql`coalesce(${chatActions.result}, '{}'::jsonb) || ${JSON.stringify({ exhaustedByRunId: input.runId })}::jsonb`, updatedAt: new Date() })
+        .where(and(eq(chatActions.id, retry.id), isNull(sql`${chatActions.result} ->> 'exhaustedByRunId'`)))
+        .returning({ id: chatActions.id });
+      if (!marked) return null;
+      await recordOpenwaAudit(tx as unknown as Db, {
+        companyId: input.companyId,
+        endpointId: openwa.endpointId,
+        conversationId: conversation.id,
+        chatKey: openwa.chatKey,
+        kind: "run_failed",
+        actorKind: "system",
+        actorRef: OPENWA_RUN_RETRY_WAKE_ACTOR_ID,
+        runId: input.runId,
+        metadata: {
+          reason: "retry_failed",
+          status: run.status,
+          errorCode: run.errorCode,
+          triggerIds: deliveryIds,
+          retryActionId: retry.id,
+          firstFailedRunId: typeof retry.payload.sourceRunId === "string" ? retry.payload.sourceRunId : null,
+        },
+      });
+      return null;
+    };
+    if (run.wakeupRequestId) {
+      const [retryWake] = await tx
+        .select()
+        .from(chatActions)
+        .where(and(eq(chatActions.companyId, input.companyId), eq(chatActions.id, run.wakeupRequestId), eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND)))
+        .limit(1);
+      if (retryWake) return exhaust(retryWake);
+    }
+    const providerActionId = runRetryActionId(deliveryIds);
+    const [existing] = await tx
+      .select()
+      .from(chatActions)
+      .where(and(eq(chatActions.endpointId, openwa.endpointId), eq(chatActions.providerActionId, providerActionId)))
+      .limit(1);
+    if (existing) return existing.payload.sourceRunId === input.runId || existing.status === "queued" ? null : exhaust(existing);
+    const [issue] = await tx
+      .select({ assigneeAgentId: issues.assigneeAgentId })
+      .from(issues)
+      .where(and(eq(issues.companyId, input.companyId), eq(issues.id, issueId)))
+      .limit(1);
+    if (!issue?.assigneeAgentId) return null;
+    const now = input.now ?? new Date();
+    const body = [
+      "Retrying the WhatsApp reply after run " + input.runId + " ended " + run.status + (run.errorCode ? " (" + run.errorCode + ")" : "") + ".",
+      "Trigger ids: " + deliveryIds.join(", ") + ".",
+    ].join("\n\n");
+    const comment = await issueService(tx as unknown as Db).addComment(issueId, body, {}, { authorType: "system" }, tx);
+    const [action] = await tx
+      .insert(chatActions)
+      .values({
+        companyId: input.companyId,
+        endpointId: openwa.endpointId,
+        conversationId: conversation.id,
+        principalId: pending.find((row) => row.id === deliveryIds.at(-1))?.principalId ?? null,
+        kind: OPENWA_RUN_RETRY_WAKE_ACTION_KIND,
+        providerActionId,
+        status: "queued",
+        payload: {
+          version: 1,
+          issueId,
+          agentId: issue.assigneeAgentId,
+          commentId: comment.id,
+          sourceRunId: input.runId,
+          notBefore: new Date(now.getTime() + OPENWA_RUN_RETRY_DELAY_MS).toISOString(),
+          openwa: { event: openwa.event === "owner_absent" ? "owner_absent" : "message", triggerClass: openwa.triggerClass, deliveryIds },
+        },
+      })
+      .onConflictDoNothing()
+      .returning({ id: chatActions.id });
+    return action?.id ?? null;
+  });
+}
+
+/** Dispatches a due retry wake when its triggers are still pending; the chat action id is the wake request id. */
+export async function dispatchOpenwaRunRetryWake(db: Db, actionId: string, now = new Date()): Promise<boolean> {
+  const runtime = runtimes.get(db);
+  if (!runtime) return false;
+  const [claimed] = await db
+    .update(chatActions)
+    .set({ status: "processing", updatedAt: now })
+    .where(
+      and(
+        eq(chatActions.id, actionId),
+        eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND),
+        sql`(${chatActions.payload} ->> 'notBefore')::timestamptz <= ${now.toISOString()}::timestamptz`,
+        or(
+          eq(chatActions.status, "queued"),
+          and(eq(chatActions.status, "processing"), lt(chatActions.updatedAt, new Date(now.getTime() - WAKE_STALE_PROCESSING_MS))),
+        ),
+      ),
+    )
+    .returning();
+  if (!claimed) return false;
+  const payload = claimed.payload;
+  const attemptCount = Number(record(claimed.result).attemptCount ?? 0) + 1;
+  const settle = (status: string, result: Record<string, unknown>) =>
+    db
+      .update(chatActions)
+      .set({ status, result: { ...record(claimed.result), ...result, attemptCount }, updatedAt: new Date() })
+      .where(and(eq(chatActions.id, claimed.id), eq(chatActions.status, "processing")));
+  try {
+    const issueId = String(payload.issueId);
+    const agentId = String(payload.agentId);
+    const commentId = String(payload.commentId);
+    const openwa = record(payload.openwa);
+    const deliveryIds = uuids(openwa.deliveryIds);
+    const live = deliveryIds.length
+      ? await db
+          .select({ id: chatDeliveries.id })
+          .from(chatDeliveries)
+          .where(
+            and(
+              eq(chatDeliveries.companyId, claimed.companyId),
+              eq(chatDeliveries.endpointId, claimed.endpointId),
+              eq(chatDeliveries.answerState, "pending"),
+              inArray(chatDeliveries.id, deliveryIds),
+            ),
+          )
+      : [];
+    if (!live.length) {
+      await settle("processed", { code: "openwa_run_retry_not_needed" });
+      return false;
+    }
+    const [nativeRetry] = await db
+      .select({ id: heartbeatRuns.id })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.companyId, claimed.companyId), sql`${heartbeatRuns.retryOfRunId}::text = ${String(payload.sourceRunId)}`, inArray(heartbeatRuns.status, ACTIVE_RETRY_RUN_STATUSES)))
+      .limit(1);
+    if (nativeRetry) {
+      await settle("processed", { code: "openwa_run_retry_native", nativeRetryRunId: nativeRetry.id });
+      return false;
+    }
+    const [issue] = await db
+      .select({ identifier: issues.identifier, assigneeAgentId: issues.assigneeAgentId, status: issues.status })
+      .from(issues)
+      .where(and(eq(issues.companyId, claimed.companyId), eq(issues.id, issueId)))
+      .limit(1);
+    if (!issue || issue.assigneeAgentId !== agentId || issue.status === "backlog") {
+      await settle("failed", { code: "openwa_run_retry_target_changed" });
+      return false;
+    }
+    const request = createDurableChatWakeupRequest({
+      id: claimed.id,
+      companyId: claimed.companyId,
+      agentId,
+      issueId,
+      commentId,
+      requestedByActorType: "system",
+      requestedByActorId: OPENWA_RUN_RETRY_WAKE_ACTOR_ID,
+      requestedAt: claimed.createdAt,
+      authorize: async (tx) => {
+        const rows = await tx
+          .select({ id: chatDeliveries.id })
+          .from(chatDeliveries)
+          .where(and(eq(chatDeliveries.companyId, claimed.companyId), eq(chatDeliveries.endpointId, claimed.endpointId), inArray(chatDeliveries.id, deliveryIds)));
+        if (rows.length !== deliveryIds.length)
+          throw forbidden("The retried triggers changed", { code: "chat_action_authorization_changed" });
+      },
+    });
+    const context = { issueId, taskKey: issue.identifier, wakeCommentId: commentId, openwa };
+    await runtime.wakeup(agentId, {
+      source: "assignment",
+      triggerDetail: "system",
+      reason: "OpenWA retry after failed run",
+      payload: { ...context, mutation: "openwa_run_retry" },
+      contextSnapshot: { ...context, source: "chat:openwa" },
+      requestedByActorType: "system",
+      requestedByActorId: OPENWA_RUN_RETRY_WAKE_ACTOR_ID,
+      durableChatRequest: request,
+    });
+    await settle("processed", { code: "openwa_run_retry_dispatched", wakeupRequestId: claimed.id });
+    return true;
+  } catch (error) {
+    logger.warn({ err: error, actionId: claimed.id }, "failed to dispatch OpenWA run retry wake");
+    await settle(attemptCount >= WAKE_MAX_ATTEMPTS ? "failed" : "queued", {
+      code: "openwa_run_retry_wake_failed",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
+}
+
+/** Dispatches due or stale retry wakes. */
+export async function processPendingOpenwaRunRetries(db: Db, limit = 25, now = new Date()): Promise<number> {
+  if (!runtimes.get(db)) return 0;
+  const staleBefore = new Date(now.getTime() - WAKE_STALE_PROCESSING_MS);
+  const wakes = await db
+    .select({ id: chatActions.id })
+    .from(chatActions)
+    .where(
+      and(
+        eq(chatActions.kind, OPENWA_RUN_RETRY_WAKE_ACTION_KIND),
+        or(
+          and(eq(chatActions.status, "queued"), sql`(${chatActions.payload} ->> 'notBefore')::timestamptz <= ${now.toISOString()}::timestamptz`),
+          and(eq(chatActions.status, "processing"), lt(chatActions.updatedAt, staleBefore)),
+        ),
+      ),
+    )
+    .orderBy(asc(chatActions.createdAt))
+    .limit(limit);
+  for (const wake of wakes) await dispatchOpenwaRunRetryWake(db, wake.id, now);
+  return wakes.length;
+}
+
