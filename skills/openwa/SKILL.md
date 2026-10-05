@@ -158,9 +158,12 @@ of the person you answer.
 
 ## Progress, silence and handoff
 
-- When work takes longer than about a minute, send a short progress update to
-  the chat with `openwa_send` (when replying is allowed). The server may remind
-  you inside the run; that reminder is never sent to WhatsApp.
+- When work takes longer than about a minute and nothing in the chat has
+  acknowledged the request yet, send one short progress update with
+  `openwa_send` (when replying is allowed). Skip it when you are about to reply,
+  and never restate what was already sent. The server may remind you inside the
+  run while a trigger waits unacknowledged; that reminder is never sent to
+  WhatsApp and stops once you send to the chat.
 - `openwa_stay_silent({triggerIds?})` marks triggers you deliberately leave
   unanswered (default: every visible pending trigger of this run). Use it when no
   reply is appropriate.

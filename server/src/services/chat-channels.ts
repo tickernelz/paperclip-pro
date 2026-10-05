@@ -59,7 +59,7 @@ import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenw
 import { reopenOpenwaConversationIssue } from "./openwa/conversation-status.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
 import { processPendingOpenwaFollowups, registerOpenwaFollowupRuntime, scheduleOpenwaFollowupForRun } from "./openwa/followups.js";
-import { createOpenwaNudges, registerOpenwaRunStartListener } from "./openwa/nudges.js";
+import { createOpenwaNudges, openwaNudgeWaiting, registerOpenwaRunStartListener } from "./openwa/nudges.js";
 import {
   holdOrFoldOpenwaBurstWake,
   OPENWA_BURST_HELD,
@@ -3126,7 +3126,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   >();
   const persistence = createChatSdkStatePersistence(db);
-  const openwaNudges = createOpenwaNudges({ steer: steerOpenwaSystemText, clock: options.openwaNudgeClock });
+  const openwaNudges = createOpenwaNudges({ steer: steerOpenwaSystemText, waiting: openwaNudgeWaiting(db), clock: options.openwaNudgeClock });
   const openwaOutbound = openwaOutboundRegistry(db, Date.now, (sent) => openwaNudges.originSent(sent.runId!, sent.chatKey));
   const openwaMedia = openwaMediaService(db, { storage: options.storage });
   openwaMedia.onTranscriptReady(openwaLateTranscriptListener(db, options.onOpenwaLateTranscript ?? (async (event) => {

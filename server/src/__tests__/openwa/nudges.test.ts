@@ -38,8 +38,9 @@ function harness(delivered = true) {
     at.push(clock.now());
     return delivered;
   });
-  const nudges = createOpenwaNudges({ steer, clock });
-  return { clock, at, steer, nudges };
+  const waiting = vi.fn(async (_runId: string, _chatKey: string) => true);
+  const nudges = createOpenwaNudges({ steer, waiting, clock });
+  return { clock, at, steer, waiting, nudges };
 }
 
 describe("OpenWA progress nudges (spec 7.6)", () => {
@@ -59,22 +60,51 @@ describe("OpenWA progress nudges (spec 7.6)", () => {
     expect(first.text).toContain("not sent to WhatsApp");
   });
 
-  it("restarts the quiet period after a send to the origin chat only", async () => {
+  it("skips the nudge and stops for the run when its triggers were already acknowledged in the chat", async () => {
+    const t = harness();
+    t.waiting.mockResolvedValue(false);
+    t.nudges.start({ runId: "run-1", chatKey: "628@c.us", progressNudgeSeconds: 60 });
+    await t.clock.advanceTo(3_600_000);
+    expect(t.waiting).toHaveBeenCalledTimes(1);
+    expect(t.waiting).toHaveBeenCalledWith("run-1", "628@c.us");
+    expect(t.steer).not.toHaveBeenCalled();
+    expect(t.nudges.active("run-1")).toBe(false);
+    expect(t.clock.timers.size).toBe(0);
+  });
+
+  it("nudges once for a fresh unacknowledged trigger and stops once nothing waits any more", async () => {
+    const t = harness();
+    t.waiting.mockResolvedValueOnce(true).mockResolvedValue(false);
+    t.nudges.start({ runId: "run-1", chatKey: "628@c.us", progressNudgeSeconds: 60 });
+    await t.clock.advanceTo(3_600_000);
+    expect(t.at).toEqual([60_000]);
+    expect(t.steer.mock.calls[0]![0].text).toContain("only if your final reply is still minutes away");
+    expect(t.nudges.active("run-1")).toBe(false);
+    expect(t.clock.timers.size).toBe(0);
+  });
+
+  it("stops nudging the run once it sends to its origin chat, also mid-check; sends to other chats do not", async () => {
     const t = harness();
     t.nudges.start({ runId: "run-1", chatKey: "628@c.us", progressNudgeSeconds: 60 });
     await t.clock.advanceTo(50_000);
-    t.nudges.originSent("run-1", "628@c.us");
-    await t.clock.advanceTo(100_000);
     t.nudges.originSent("run-1", "other@c.us");
-    await t.clock.advanceTo(109_999);
-    expect(t.steer).not.toHaveBeenCalled();
-    await t.clock.advanceTo(110_000);
-    expect(t.at).toEqual([110_000]);
+    await t.clock.advanceTo(60_000);
+    expect(t.at).toEqual([60_000]);
     t.nudges.originSent("run-1", "628@c.us");
-    await t.clock.advanceTo(169_999);
-    expect(t.at).toEqual([110_000]);
-    await t.clock.advanceTo(170_000);
-    expect(t.at).toEqual([110_000, 170_000]);
+    expect(t.nudges.active("run-1")).toBe(false);
+    expect(t.clock.timers.size).toBe(0);
+    await t.clock.advanceTo(3_600_000);
+    expect(t.at).toEqual([60_000]);
+
+    let resolve!: (value: boolean) => void;
+    t.waiting.mockImplementationOnce(() => new Promise<boolean>((done) => (resolve = done)));
+    t.nudges.start({ runId: "run-2", chatKey: "628@c.us", progressNudgeSeconds: 60 });
+    await t.clock.advanceTo(3_660_000);
+    t.nudges.originSent("run-2", "628@c.us");
+    resolve(true);
+    await new Promise((done) => setImmediate(done));
+    expect(t.at).toEqual([60_000]);
+    expect(t.nudges.active("run-2")).toBe(false);
   });
 
   it("schedules nothing at 0 seconds and stops with the run", async () => {

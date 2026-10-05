@@ -661,11 +661,17 @@ the current run. Steering needs an adapter with live steering (OMP registers a
 steer target in RPC mode). With `queue`, or an adapter that cannot steer, every
 row above becomes "queued", and Settings warns.
 
-**Progress nudges** (spec §7.6): while a triggered run is active and nothing was
-sent to the origin chat for `progressNudgeSeconds` (default 60), the server steers
-an internal reminder into the run; then every 180 s, at most 5 per run; 0
-disables them. Without steering, nudges are unavailable. The server never sends
-progress text itself; the agent decides. **Typing indicator** shows typing in
+**Progress nudges** (spec §7.6): while a triggered run is active, the server
+steers an internal reminder into the run after `progressNudgeSeconds` (default
+60), then every 180 s, at most 5 per run; 0 disables them. A nudge fires only
+while someone is waiting without acknowledgment: one of the run's visible
+pending triggers in the origin chat is newer than the latest message sent to
+that chat by any run. Otherwise the nudge is skipped and the run gets no more
+nudges. Once the run sends anything to the origin chat, nudging for that run
+stops, so a run gets at most one progress update. The reminder tells the agent
+to update only when the final reply is still minutes away and never to restate
+what was already sent. Without steering, nudges are unavailable. The server
+never sends progress text itself; the agent decides. **Typing indicator** shows typing in
 the origin chat while a triggered run is active.
 
 ## Troubleshooting

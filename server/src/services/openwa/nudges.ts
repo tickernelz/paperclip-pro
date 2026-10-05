@@ -1,4 +1,6 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import { and, eq, inArray, max, sql } from "drizzle-orm";
+import { chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { readOpenwaRunContext } from "./authority.js";
 import type { OpenwaScheduledWakeClock } from "./scheduled-wakes.js";
 
 export interface OpenwaRunStarted {
@@ -27,6 +29,42 @@ export const OPENWA_NUDGE_REPEAT_MS = 180_000;
 export const OPENWA_NUDGE_MAX_PER_RUN = 5;
 
 export type OpenwaNudgeSteer = (input: { runId: string; text: string; correlationId: string }) => Promise<boolean>;
+
+export type OpenwaNudgeWaiting = (runId: string, chatKey: string) => Promise<boolean>;
+
+/** True when a visible pending trigger of the run in chatKey is newer than the latest sent outbound to that chat from any run. */
+export function openwaNudgeWaiting(db: Db): OpenwaNudgeWaiting {
+  return async (runId, chatKey) => {
+    const [run] = await db
+      .select({ companyId: heartbeatRuns.companyId, contextSnapshot: heartbeatRuns.contextSnapshot })
+      .from(heartbeatRuns)
+      .where(eq(heartbeatRuns.id, runId))
+      .limit(1);
+    const openwa = run ? readOpenwaRunContext(run.contextSnapshot) : null;
+    if (!run || !openwa || openwa.chatKey !== chatKey || openwa.deliveryIds.length === 0) return false;
+    const [trigger] = await db
+      .select({ at: max(chatDeliveries.receivedAt) })
+      .from(chatDeliveries)
+      .where(and(
+        eq(chatDeliveries.companyId, run.companyId),
+        eq(chatDeliveries.endpointId, openwa.endpointId),
+        inArray(chatDeliveries.id, openwa.deliveryIds),
+        eq(chatDeliveries.answerState, "pending"),
+        sql`${chatDeliveries.normalizedEvent} -> 'openwa' ->> 'chatKey' = ${chatKey}`,
+      ));
+    if (!trigger?.at) return false;
+    const [outbound] = await db
+      .select({ at: max(chatOutboundMessages.sentAt) })
+      .from(chatOutboundMessages)
+      .where(and(
+        eq(chatOutboundMessages.companyId, run.companyId),
+        eq(chatOutboundMessages.endpointId, openwa.endpointId),
+        eq(chatOutboundMessages.chatKey, chatKey),
+        eq(chatOutboundMessages.state, "sent"),
+      ));
+    return !outbound?.at || trigger.at.getTime() > outbound.at.getTime();
+  };
+}
 
 export interface OpenwaNudgeRun {
   runId: string;
@@ -65,14 +103,15 @@ interface Entry {
 function nudgeText(quietSeconds: number, sent: number): string {
   return [
     "Internal progress reminder from Paperclip (not sent to WhatsApp).",
-    "Nothing has been sent to the origin chat for at least " + quietSeconds + " seconds.",
-    "If the work will take longer, send the person a short progress update with openwa_send; otherwise continue and reply when done.",
+    "A trigger in the origin chat has waited at least " + quietSeconds + " seconds without any reply to the chat.",
+    "Send one short progress update with openwa_send only if your final reply is still minutes away; skip it if you are about to reply.",
+    "Never restate what was already sent to the chat.",
     "Reminder " + sent + " of at most " + OPENWA_NUDGE_MAX_PER_RUN + ".",
   ].join(" ");
 }
 
-/** In-memory progress nudges per active run (spec 7.6): one timer per run, no polling, nothing sent to WhatsApp. */
-export function createOpenwaNudges(deps: { steer: OpenwaNudgeSteer; clock?: OpenwaScheduledWakeClock }): OpenwaNudges {
+/** In-memory progress nudges per active run (spec 7.6): one timer per run, no polling, nothing sent to WhatsApp; only while a trigger waits unacknowledged and the run has sent nothing to the origin chat. */
+export function createOpenwaNudges(deps: { steer: OpenwaNudgeSteer; waiting: OpenwaNudgeWaiting; clock?: OpenwaScheduledWakeClock }): OpenwaNudges {
   const clock = deps.clock ?? systemClock;
   const runs = new Map<string, Entry>();
 
@@ -86,6 +125,12 @@ export function createOpenwaNudges(deps: { steer: OpenwaNudgeSteer; clock?: Open
     const entry = runs.get(runId);
     if (!entry || entry.generation !== generation) return;
     entry.handle = null;
+    const waiting = await deps.waiting(runId, entry.chatKey).catch(() => false);
+    if (runs.get(runId) !== entry || entry.generation !== generation) return;
+    if (!waiting) {
+      runs.delete(runId);
+      return;
+    }
     const number = entry.sent + 1;
     const delivered = await deps.steer({
       runId,
@@ -115,9 +160,7 @@ export function createOpenwaNudges(deps: { steer: OpenwaNudgeSteer; clock?: Open
       schedule(run.runId, entry, entry.quietMs);
     },
     originSent(runId, chatKey) {
-      const entry = runs.get(runId);
-      if (!entry || entry.chatKey !== chatKey) return;
-      schedule(runId, entry, entry.quietMs);
+      if (runs.get(runId)?.chatKey === chatKey) this.stop(runId);
     },
     stop(runId) {
       const entry = runs.get(runId);

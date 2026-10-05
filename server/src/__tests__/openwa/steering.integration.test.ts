@@ -15,6 +15,7 @@ import {
   chatConversations,
   chatDeliveries,
   chatEndpoints,
+  chatOutboundMessages,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   companies,
@@ -37,6 +38,7 @@ import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.ts";
 import { heartbeatService, mergeCoalescedContextSnapshot } from "../../services/heartbeat.ts";
 import { secretService } from "../../services/secrets.ts";
 import { OPENWA_HANDOFF_ACTION_KIND } from "../../services/openwa/tools.ts";
+import { openwaNudgeWaiting } from "../../services/openwa/nudges.ts";
 import { OPENWA_FOLLOWUP_WAKE_ACTION_KIND, OPENWA_STEERED_OWNER_ACTION_KIND, scheduleOpenwaFollowupForRun } from "../../services/openwa/followups.ts";
 import { recordOpenwaLateTranscript, takeOpenwaLateTranscripts } from "../../services/openwa/late-transcripts.ts";
 import { registerOpenwaCommentSteering, steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
@@ -466,6 +468,29 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     release(queuedRun.id);
     const nextRun = await finishedRun(t, third.action.id);
     expect(captured.get(nextRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+  }, 180_000);
+
+  it("skips the progress nudge when a later send to the chat already acknowledged the run's triggers", async () => {
+    const nudgeClock = new ManualClock();
+    const t = await setup({ nudgeClock });
+    const first = await admit(t, { chatId: jid(OWNER_PHONE), body: "fix the invoice export" });
+    const ownerRun = await runningRun(t, first.action.id);
+    const chatKey = ((await runContext(ownerRun.id)).paperclipOpenwa as { chatKey: string }).chatKey;
+    const waiting = openwaNudgeWaiting(db);
+    expect(await waiting(ownerRun.id, chatKey)).toBe(true);
+    await db.insert(chatOutboundMessages).values({
+      companyId: t.companyId, endpointId: t.endpointId, chatKey, source: "tool", runId: null,
+      state: "sent", bodyHash: "ack", clientNonce: randomUUID(), sentAt: new Date(Date.now() + 1_000),
+    });
+    expect(await waiting(ownerRun.id, chatKey)).toBe(false);
+    expect(await waiting(ownerRun.id, "other@c.us")).toBe(false);
+
+    await until(async () => nudgeClock.timers.size === 1);
+    nudgeClock.advance(60_000);
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+    expect(nudgeClock.timers.size).toBe(0);
+    expect((steered.get(ownerRun.id) ?? []).some((entry) => entry.includes("progress reminder"))).toBe(false);
+    expect(t.gateway.sends).toEqual([]);
   }, 180_000);
 
   it("steers only the grant holder's member messages into a requester-grant run; another member gets a plain read_only run", async () => {
