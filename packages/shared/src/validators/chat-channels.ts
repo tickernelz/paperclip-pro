@@ -321,6 +321,7 @@ export const openwaEndpointPolicySchema = z
     numberMode: openwaNumberModeSchema.default("agent_number"),
     senderPolicyMode: openwaSenderPolicyModeSchema.default("allowlist"),
     replyPolicy: openwaReplyPolicySchema.default("allowed"),
+    groupMemberReplies: z.boolean().default(true),
     triggers: openwaTriggerRulesInputSchema.optional(),
     absenceSeconds: openwaAbsenceSecondsSchema.default(120),
     approvals: z

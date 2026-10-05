@@ -7,6 +7,7 @@ import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   assets,
   authUsers,
@@ -486,6 +487,27 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     );
     expect(direct.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
     expect(t.gateway.sends.map((send) => send.text)).toEqual(["group answer", "quoted answer"]);
+  });
+
+  it("requires reply_outside_allowlist for an addressed group member while groupMemberReplies is off, and audits the switch", async () => {
+    const t = await setup();
+    const g = await conversation(t, GROUP, { activation: "on" });
+    await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", rules: ["agent_mentioned"] });
+    const binding = await run(t, g, { triggerClass: "other" });
+    await t.service.openwa.updatePolicy(t.endpointId, { groupMemberReplies: false }, t.userId);
+    const denied = await rejection(executeOpenwaTool(db, binding, "openwa_send", { text: "hi", idempotencyKey: randomUUID() }));
+    expect(denied.details).toMatchObject({ code: "reply_denied", category: "reply_outside_allowlist" });
+    expect(t.gateway.sends).toHaveLength(0);
+    const changes = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.entityId, t.endpointId), eq(activityLog.action, "openwa.config_changed")));
+    expect(changes.map((row) => (row.details as { changed: string[] }).changed)).toEqual([["groupMemberReplies"]]);
+    await t.service.openwa.updatePolicy(t.endpointId, { groupMemberReplies: true }, t.userId);
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { text: "member answer", idempotencyKey: randomUUID() })).resolves.toMatchObject({
+      state: "delivered",
+    });
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["member answer"]);
   });
 
   it("replays an idempotent retry without resending and rejects a reused key", async () => {

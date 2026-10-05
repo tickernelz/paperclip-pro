@@ -596,6 +596,17 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "mention reply", quotedMessageId: mention.waMessageId })]);
   }, 90_000);
 
+  it("suppresses a reply to an addressed outside-allowlist group member when groupMemberReplies is off", async () => {
+    const t = await setup({ groupMemberReplies: false });
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000333");
+    const mention = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    await runOutput(t, c, { triggerClass: "other", body: "blocked mention reply", deliveryIds: [mention.id] });
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect((await audits(t, "publication_suppressed"))[0]!.metadata).toMatchObject({ reason: "outside_allowlist" });
+  }, 90_000);
+
   it("sends more than three parts as a markdown document and agent files as documents", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

@@ -169,8 +169,9 @@ of the person you answer.
    Categories: `create_task`, `external_tools`, `cross_chat_send`, `wa_admin`,
    `gateway_admin`, `reply_outside_allowlist`, `reply`. A sender outside the
    allowlist who mentioned you or replied to your message in an active group
-   needs no `reply_outside_allowlist`; a DM or an unaddressed group message
-   from them does. `scope` is `one_action`
+   needs no `reply_outside_allowlist` while the endpoint's `groupMemberReplies`
+   is on (the default; `openwa_endpoint_config` shows it); a DM, an unaddressed
+   group message, or any message when it is off does. `scope` is `one_action`
    (default: only the run created from this request) or `requester` (this
    requester in this chat until the grant expires). You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the

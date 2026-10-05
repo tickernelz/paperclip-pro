@@ -280,7 +280,9 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
 
 function SenderPolicySection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   const [mode, setMode] = useState(endpoint.policy.senderPolicyMode);
+  const [memberReplies, setMemberReplies] = useState(endpoint.policy.groupMemberReplies);
   const state = usePolicySave(endpoint);
+  const memberRepliesState = usePolicySave(endpoint);
   const rules = useQuery({
     queryKey: queryKeys.chatEndpoints.openwaSenderRules(endpoint.id),
     queryFn: () => chatEndpointsApi.listOpenwaSenderRules(endpoint.id),
@@ -309,6 +311,21 @@ function SenderPolicySection({ endpoint }: { endpoint: OpenwaEndpoint }) {
           <SaveRow label="Save sender mode" state={{ ...state, submit: () => state.save({ senderPolicyMode: mode }) }} />
         </div>
         <FieldMessage id="openwa-sender-mode" error={fieldError(state.errors, "senderPolicyMode")} />
+      </div>
+      <div className="grid gap-1">
+        <ToggleRow
+          label="Answer group members who address the agent"
+          detail="In an active group, the agent may reply without owner approval to people outside the allowlist who mention it or reply to its message. Off: each reply needs owner approval."
+          checked={memberReplies}
+          onChange={(value) => {
+            setMemberReplies(value);
+            memberRepliesState.touch();
+          }}
+        />
+        <SaveRow
+          label="Save group replies"
+          state={{ ...memberRepliesState, submit: () => memberRepliesState.save({ groupMemberReplies: memberReplies }) }}
+        />
       </div>
       {rules.isError ? <p role="alert" className="text-sm text-destructive">Couldn't load sender lists.</p> : null}
       <SenderList endpointId={endpoint.id} list="allow" title="Allowlist" rules={rules.data ?? []} loading={rules.isPending} />

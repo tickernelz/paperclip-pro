@@ -77,6 +77,7 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
     ...(changed ? { changed } : {}),
     policyRevision: endpoint?.policyRevision ?? ctx.endpoint.policyRevision,
     senderPolicyMode: policy.senderPolicyMode,
+    groupMemberReplies: policy.groupMemberReplies,
     chat: { chatRef: chatRef(ctx, chat?.chatId ?? chatKey), configured: chat !== null, enabled: chat?.enabled ?? null, settings: chat?.settings ?? null },
     approvals: toggles,
     reminders: { reminderMinutes, maxReminders },

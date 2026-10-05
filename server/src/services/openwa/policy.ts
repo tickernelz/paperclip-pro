@@ -219,9 +219,13 @@ export function openwaResourceGroupActive(
   return openwaGroupEnabled(policy, settingsOf(resource.settings), metadata.ownerPresent === true);
 }
 
-/** Whether an outside-allowlist trigger needs reply_outside_allowlist: not when it mentioned or replied to the agent in an active group. */
-export function openwaOutsideAllowlistNeedsGrant(normalizedEvent: unknown, groupActive: boolean): boolean {
-  if (!groupActive) return true;
+/** Whether an outside-allowlist trigger needs reply_outside_allowlist: not when groupMemberReplies is on and it addressed the agent in an active group. */
+export function openwaOutsideAllowlistNeedsGrant(
+  normalizedEvent: unknown,
+  groupActive: boolean,
+  policy: Pick<OpenwaEndpointPolicy, "groupMemberReplies">,
+): boolean {
+  if (!groupActive || !policy.groupMemberReplies) return true;
   const event = normalizedEvent && typeof normalizedEvent === "object" ? (normalizedEvent as Record<string, unknown>) : {};
   const openwa = event.openwa && typeof event.openwa === "object" ? (event.openwa as Record<string, unknown>) : {};
   if (openwa.chatKind !== "group" || !Array.isArray(openwa.rules)) return true;

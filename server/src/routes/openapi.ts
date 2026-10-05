@@ -877,6 +877,7 @@ const openwaEndpointPolicyResponseSchema = z
     numberMode: openwaNumberModeSchema,
     senderPolicyMode: openwaSenderPolicyModeSchema,
     replyPolicy: openwaReplyPolicySchema,
+    groupMemberReplies: z.boolean(),
     triggers: z
       .object({
         directMessage: z.boolean(),

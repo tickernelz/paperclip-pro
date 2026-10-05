@@ -178,6 +178,9 @@ describe("OpenWA settings", () => {
     await vi.waitFor(() => expect(mocks.api.updateOpenwaPolicy).toHaveBeenCalledWith("endpoint-1", { senderPolicyMode: "denylist" }));
     await vi.waitFor(() => expect(sender.textContent).toContain("Saved"));
     expect(client.getQueryData<ChatEndpoint>(queryKeys.chatEndpoints.detail(endpoint.id))?.policy?.senderPolicyMode).toBe("denylist");
+    click(button(sender, "Answer group members who address the agent"));
+    click(button(sender, "Save group replies"));
+    await vi.waitFor(() => expect(mocks.api.updateOpenwaPolicy).toHaveBeenLastCalledWith("endpoint-1", { groupMemberReplies: false }));
     setValue(field<HTMLInputElement>("#openwa-deny-number"), "12345");
     click(button(sender, "Add to denylist"));
     expect(field("#openwa-deny-number-error").textContent).toContain("E.164");

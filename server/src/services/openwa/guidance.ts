@@ -356,6 +356,7 @@ function replyRequirements(input: {
   triggerClass: OpenwaTriggerClass;
   event: OpenwaWakeEventName;
   replyPolicy: OpenwaEndpointPolicy["replyPolicy"];
+  groupMemberReplies: boolean;
   deliveries: DeliveryRow[];
   grants: Array<{ category: OpenwaGrantCategory; requesterPrincipalId: string | null }>;
   groupActive: boolean;
@@ -364,7 +365,7 @@ function replyRequirements(input: {
   for (const delivery of input.deliveries) {
     if (delivery.principalRole === "owner") continue;
     const needs: OpenwaGrantCategory[] = [];
-    if (delivery.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(delivery.normalizedEvent, input.groupActive))
+    if (delivery.principalRole === "outside_allowlist" && openwaOutsideAllowlistNeedsGrant(delivery.normalizedEvent, input.groupActive, input))
       needs.push("reply_outside_allowlist");
     if (input.triggerClass === "other" && input.replyPolicy === "ask_owner") needs.push("reply");
     if (input.triggerClass === "other" && input.replyPolicy === "owner_absent_only" && input.event !== "owner_absent") needs.push("reply");
@@ -639,6 +640,7 @@ export async function buildOpenwaRunGuidance(
     triggerClass: openwa.triggerClass,
     event,
     replyPolicy: settings.replyPolicy ?? policy.replyPolicy,
+    groupMemberReplies: policy.groupMemberReplies,
     deliveries,
     grants: grantRows,
     groupActive: chatType === "group" && openwaResourceGroupActive(policy, resource),

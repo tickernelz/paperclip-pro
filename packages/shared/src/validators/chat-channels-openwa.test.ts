@@ -8,6 +8,7 @@ import {
 const sharedDefaults = {
   senderPolicyMode: "allowlist",
   replyPolicy: "allowed",
+  groupMemberReplies: true,
   absenceSeconds: 120,
   approvals: {
     createTask: true,

@@ -501,6 +501,15 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(direct.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
   });
 
+  it("requires reply_outside_allowlist for an addressed group member when groupMemberReplies is off", async () => {
+    const seed = await seedOpenwa({ group: { activation: "on" }, policy: { groupMemberReplies: false } });
+    const mentioned = await wakeOpenwa(seed, {
+      triggerClass: "other",
+      deliveryIds: [(await seedDelivery(seed, { text: "@Wira help", role: "outside_allowlist", rules: ["agent_mentioned"] })).id],
+    });
+    expect(mentioned.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply_outside_allowlist"] });
+  });
+
   it("tells every run to call OpenWA tools by name without discovering them", async () => {
     const seed = await seedOpenwa();
     const other = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hi" })).id] });

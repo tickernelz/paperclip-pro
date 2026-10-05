@@ -141,10 +141,12 @@ the live grants that owner approved. Routes: `GET`/`POST`
 Owners are always allowed. Denylisted numbers are dropped everywhere, including
 groups, and audited as `trigger_filtered`. A DM from outside the allowlist is
 dropped and audited. In an active group, a sender outside the allowlist still
-reaches the agent with role `outside_allowlist`. When that message mentioned the
-agent or replied to one of its messages, the agent may answer in the group
-without a grant (the run stays `read_only`); otherwise replying to them in that
-chat needs a `reply_outside_allowlist` grant. Lists hold E.164 numbers with an optional
+reaches the agent with role `outside_allowlist`. With **Answer group members who
+address the agent** on (`groupMemberReplies`, default `true`), when that message
+mentioned the agent or replied to one of its messages, the agent may answer in the
+group without a grant (the run stays `read_only`); otherwise, and always when the
+setting is off, replying to them in that chat needs a `reply_outside_allowlist`
+grant. Changing it records `openwa.config_changed`. Lists hold E.164 numbers with an optional
 label: `GET`/`POST` `/api/chat-endpoints/:endpointId/openwa/sender-rules` (body
 `list` `allow`|`deny`, `e164`, `label`),
 `DELETE /api/chat-endpoints/:endpointId/openwa/sender-rules/:ruleId`.

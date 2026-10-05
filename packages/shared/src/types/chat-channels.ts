@@ -741,6 +741,7 @@ export interface OpenwaEndpointPolicy {
   numberMode: OpenwaNumberMode;
   senderPolicyMode: OpenwaSenderPolicyMode;
   replyPolicy: OpenwaReplyPolicy;
+  groupMemberReplies: boolean;
   triggers: OpenwaTriggerRules;
   absenceSeconds: number;
   approvals: {
