@@ -3838,7 +3838,8 @@ export function recoveryService(
           Boolean(readNonEmptyString(context.goalControlRequestId)) || context.resumeSessionGoalHeartbeat === true ||
           isPluginManagedIssueLifecycle(issue) || routine.length > 0 || workspaceChildren.length > 0 ||
           Boolean(goal[0]?.status && goal[0].status !== "complete") || Boolean(active && !ownsRepair),
-        conversation: Boolean(issue.conversationAgentId) || isWaitingConversation(issue),
+        conversation: Boolean(issue.conversationAgentId) || isWaitingConversation(issue) ||
+          (issue.originKind === "chat_channel" && await isOpenwaConversationIssue(db, issue.companyId, issue.id)),
         agentInvokable: Boolean(agent && await isAgentInvokable(agent) && isHeartbeatWakeOnDemandEnabled(agent)),
       },
     });

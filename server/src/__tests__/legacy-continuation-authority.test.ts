@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { agents, agentWakeupRequests, companies, createDb, heartbeatRuns, issueComments, issueRecoveryActions, issueThreadInteractions, issues } from "@tickernelz/paperclip-pro-db";
+import { agents, agentWakeupRequests, chatConversations, chatEndpoints, companies, createDb, heartbeatRuns, issueComments, issueRecoveryActions, issueThreadInteractions, issues, toolApplications, toolConnections } from "@tickernelz/paperclip-pro-db";
 import { heartbeatService } from "../services/heartbeat.js";
 import { recoveryService } from "../services/recovery/service.js";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
@@ -232,6 +232,17 @@ describe("legacy continuation persisted authority", () => {
     const f = await fixture();
     await db.update(issues).set({ monitorNextCheckAt: new Date(0) }).where(eq(issues.id, f.issueId));
     expect(await f.createRecovery().reconcileLegacyContinuation(f.runId)).toBe("skipped");
+    expect(await f.runs()).toHaveLength(1);
+  });
+  it("leaves an OpenWA conversation issue to its chat instead of queuing a disposition repair", async () => {
+    const f = await fixture();
+    await db.update(issues).set({ originKind: "chat_channel", originId: "chat:openwa-test" }).where(eq(issues.id, f.issueId));
+    const [application] = await db.insert(toolApplications).values({ companyId: f.companyId, name: "OpenWA", type: "chat" }).returning();
+    const [connection] = await db.insert(toolConnections).values({ companyId: f.companyId, applicationId: application!.id, name: "OpenWA", connectionPurpose: "channel", transport: "chat_sdk", status: "active", enabled: true, uid: "openwa-" + randomUUID() }).returning();
+    const [endpoint] = await db.insert(chatEndpoints).values({ companyId: f.companyId, connectionId: connection!.id, provider: "openwa", publicId: randomUUID(), assignedAgentId: f.agentId }).returning();
+    await db.insert(chatConversations).values({ companyId: f.companyId, endpointId: endpoint!.id, issueId: f.issueId, externalConversationId: "openwa:session:120363000000000002@g.us", externalLabel: "Group" });
+    expect(await f.createRecovery().reconcileLegacyContinuation(f.runId)).toBe("skipped");
+    expect(await f.actions()).toHaveLength(0);
     expect(await f.runs()).toHaveLength(1);
   });
   it("honors pause and changed ownership without spending a repair attempt", async () => {
