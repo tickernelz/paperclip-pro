@@ -46,7 +46,6 @@ import {
   renderTemplate,
   sanitizeInheritedPaperclipEnv,
   selectPaperclipTaskMarkdown,
-  stringifyPaperclipWakePayload,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   paperclipRestGuidance,
@@ -263,7 +262,6 @@ function addWakeEnvironment(
   const linkedIssueIds = Array.isArray(context.issueIds)
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
-  const wakePayload = stringifyPaperclipWakePayload(context.paperclipWake);
   const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
   if (taskId) env.PAPERCLIP_TASK_ID = taskId;
   if (wakeReason) env.PAPERCLIP_WAKE_REASON = wakeReason;
@@ -271,7 +269,6 @@ function addWakeEnvironment(
   if (approvalId) env.PAPERCLIP_APPROVAL_ID = approvalId;
   if (approvalStatus) env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
   if (linkedIssueIds.length > 0) env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
-  if (wakePayload) env.PAPERCLIP_WAKE_PAYLOAD_JSON = wakePayload;
   if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
 }
 

@@ -131,7 +131,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     await fs.rm(root, { recursive: true, force: true });
   });
 
-  async function run(config: Record<string, unknown>, authToken: string | null = "run-jwt"): Promise<Invocation> {
+  async function run(config: Record<string, unknown>, authToken: string | null = "run-jwt", context: Record<string, unknown> = {}): Promise<Invocation> {
     await execute({
       runId: "run-mcp",
       agent: {
@@ -143,7 +143,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       },
       runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
       config: { command: commandPath, noSession: true, cwd: workspaceCwd, ...config },
-      context: {},
+      context,
       onLog: async () => {},
       ...(authToken ? { authToken } : {}),
     });
@@ -202,6 +202,19 @@ describe("OMP local Paperclip MCP wiring", () => {
     const invocation = await run({});
     expect(invocation.toolGuardPath).toBeTruthy();
     await expect(fs.access(invocation.toolGuardPath as string)).rejects.toThrow();
+  });
+
+  it("keeps a large wake payload out of the process environment so OMP can start", async () => {
+    const body = "x".repeat(140_000);
+    const invocation = await run({}, "run-jwt", {
+      taskId: "issue-1",
+      wakeReason: "issue_commented",
+      paperclipWake: { reason: "issue_commented", issue: { id: "issue-1", identifier: "ZHA-1", title: "Big" }, comments: [{ id: "c1", body }] },
+    });
+    expect(invocation.env).not.toHaveProperty("PAPERCLIP_WAKE_PAYLOAD_JSON");
+    expect(invocation.env.PAPERCLIP_TASK_ID).toBe("issue-1");
+    expect(invocation.env.PAPERCLIP_WAKE_REASON).toBe("issue_commented");
+    expect(Math.max(...Object.values(invocation.env).map((value) => String(value).length))).toBeLessThan(131_072);
   });
 
   it("hands the Python kernel the run's PAPERCLIP_* env through a private sitecustomize dir", async () => {
