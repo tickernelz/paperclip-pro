@@ -1,7 +1,9 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import {
   ALLOW_ALL_ATTACHMENT_TYPES,
+  assetServingContentType,
   attachmentServingContentType,
+  contentDispositionHeader,
   formatAttachmentSize,
   INLINE_ATTACHMENT_TYPES,
   inferOfficeAttachmentContentTypeFromFilename,
@@ -156,6 +158,14 @@ describe("normalizeContentType", () => {
     );
   });
 
+  it("falls back to octet-stream for values outside the RFC 7231 type/subtype grammar", () => {
+    for (const value of ["image/png, text/html", "image/png text/html", "image/png,text/html; charset=utf-8", "image", "image/", "/png", "image/png/html", "image/p\u00e9g", "image/png\r\nx-evil: 1"]) {
+      expect(normalizeContentType(value)).toBe("application/octet-stream");
+    }
+    expect(normalizeContentType("application/vnd.ms-excel")).toBe("application/vnd.ms-excel");
+    expect(normalizeContentType("application/x-msdos-program")).toBe("application/x-msdos-program");
+  });
+
   it("falls back to octet-stream when the type is missing", () => {
     expect(normalizeContentType(undefined)).toBe("application/octet-stream");
     expect(normalizeContentType("")).toBe("application/octet-stream");
@@ -213,6 +223,15 @@ describe("normalizeUploadAttachmentContentType", () => {
     ).toBe("application/octet-stream");
   });
 
+  it("stores a malformed declared type as octet-stream", () => {
+    expect(
+      normalizeUploadAttachmentContentType({
+        contentType: "image/png, text/html",
+        originalFilename: "chart.png",
+      }),
+    ).toBe("application/octet-stream");
+  });
+
   it("keeps generic binary uploads generic for unknown filenames", () => {
     expect(
       normalizeUploadAttachmentContentType({
@@ -258,6 +277,15 @@ describe("attachmentServingContentType", () => {
     }
   });
 
+  it("downgrades malformed stored types instead of passing them to the browser", () => {
+    expect(attachmentServingContentType("image/png, text/html")).toBe("application/octet-stream");
+    expect(attachmentServingContentType("image/png; charset=\"x, text/html\"")).toBe("image/png");
+    expect(isInlineAttachmentContentType("image/png, text/html")).toBe(false);
+    expect(assetServingContentType({ companyId: "c", objectKey: "c/assets/companies/logo.svg", contentType: "image/svg+xml" })).toBe("image/svg+xml");
+    expect(assetServingContentType({ companyId: "c", objectKey: "c/issues/i/logo.svg", contentType: "image/svg+xml" })).toBe("application/octet-stream");
+    expect(assetServingContentType({ companyId: "c", objectKey: "c/assets/companies/logo.png", contentType: "image/png, text/html" })).toBe("application/octet-stream");
+  });
+
   it("keeps passive types and falls back to octet-stream when empty", () => {
     expect(attachmentServingContentType("application/x-msdos-program")).toBe("application/x-msdos-program");
     expect(attachmentServingContentType("text/plain; charset=utf-8")).toBe("text/plain; charset=utf-8");
@@ -265,6 +293,21 @@ describe("attachmentServingContentType", () => {
     expect(attachmentServingContentType("")).toBe("application/octet-stream");
     expect(attachmentServingContentType(null)).toBe("application/octet-stream");
     expect(isActiveAttachmentContentType("application/json")).toBe(false);
+  });
+});
+
+describe("contentDispositionHeader", () => {
+  it("keeps plain ASCII names as a single quoted filename", () => {
+    expect(contentDispositionHeader("attachment", "pantat lutpi.bat")).toBe('attachment; filename="pantat lutpi.bat"');
+  });
+
+  it("adds an RFC 5987 filename* and an ASCII fallback for other names", () => {
+    expect(contentDispositionHeader("inline", "r\u00e9sum\u00e9 (1).pdf")).toBe(
+      "inline; filename=\"r_sum_ (1).pdf\"; filename*=UTF-8''r%C3%A9sum%C3%A9%20%281%29.pdf",
+    );
+    expect(contentDispositionHeader("attachment", 'a"b\\c.txt')).toBe(
+      "attachment; filename=\"a_b_c.txt\"; filename*=UTF-8''a%22b%5Cc.txt",
+    );
   });
 });
 

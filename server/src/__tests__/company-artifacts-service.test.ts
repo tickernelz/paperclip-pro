@@ -502,6 +502,37 @@ describeEmbeddedPostgres("companyArtifactsService", () => {
     expect(afterPrimaryCursor.artifacts.map((artifact) => artifact.title)).toEqual(["notes.txt"]);
   });
 
+  it("classifies SVG attachments as files, never images", async () => {
+    const { companyId, issueId } = await seedArtifacts();
+    await db.insert(assets).values({
+      id: "1a1a1a1a-1a1a-4a1a-8a1a-1a1a1a1a1a1a",
+      companyId,
+      provider: "local_disk",
+      objectKey: "diagram.svg",
+      contentType: "image/svg+xml",
+      byteSize: 50,
+      sha256: "sha256-diagram",
+      originalFilename: "diagram.svg",
+      createdByAgentId: "33333333-3333-4333-8333-333333333333",
+    });
+    await db.insert(issueAttachments).values({
+      companyId,
+      issueId,
+      assetId: "1a1a1a1a-1a1a-4a1a-8a1a-1a1a1a1a1a1a",
+      updatedAt: new Date("2026-01-05T00:00:00.000Z"),
+    });
+    const service = companyArtifactsService(db, createStorageService());
+
+    const all = await service.list(companyId, { limit: 20 });
+    expect(all.artifacts.find((artifact) => artifact.title === "diagram.svg")?.mediaKind).toBe("file");
+    const images = await service.list(companyId, { kind: "image", limit: 20 });
+    expect(images.artifacts.map((artifact) => artifact.title)).not.toContain("diagram.svg");
+    const texts = await service.list(companyId, { kind: "text", limit: 20 });
+    expect(texts.artifacts.map((artifact) => artifact.title)).not.toContain("diagram.svg");
+    const files = await service.list(companyId, { kind: "file", limit: 20 });
+    expect(files.artifacts.map((artifact) => artifact.title)).toContain("diagram.svg");
+  });
+
   it("filters every artifact source by the agent it is attributed to", async () => {
     const { companyId } = await seedArtifacts();
     const writerId = "21212121-2121-4121-8121-212121212121";

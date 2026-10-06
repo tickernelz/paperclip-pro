@@ -57,15 +57,14 @@ export function matchesContentType(contentType: string, allowedPatterns: string[
   });
 }
 
+const MIME_TOKEN = "[!#$%&'*+.^_`|~0-9a-z-]+";
+const MIME_ESSENCE_PATTERN = new RegExp("^" + MIME_TOKEN + "/" + MIME_TOKEN + "$");
+const MIME_CHARSET_PATTERN = new RegExp("^" + MIME_TOKEN + "$");
+
+/** Lowercased RFC 7231 `type/subtype` essence of a Content-Type value; anything missing or malformed becomes `application/octet-stream`. */
 export function normalizeContentType(contentType: string | null | undefined): string {
-  // Provider APIs commonly return a complete Content-Type header value (for
-  // example Discord uses `text/plain; charset=utf-8`) while Paperclip's
-  // allowlist and persisted asset metadata operate on the MIME essence. MIME
-  // parameters do not change the media type, so normalize them away before
-  // enforcing the allowlist. Invalid/empty essences still fail closed to the
-  // generic binary type.
   const normalized = (contentType ?? "").split(";", 1)[0]!.trim().toLowerCase();
-  return normalized || DEFAULT_ATTACHMENT_CONTENT_TYPE;
+  return MIME_ESSENCE_PATTERN.test(normalized) ? normalized : DEFAULT_ATTACHMENT_CONTENT_TYPE;
 }
 
 export function inferOfficeAttachmentContentTypeFromFilename(
@@ -114,12 +113,35 @@ export function isActiveAttachmentContentType(contentType: string): boolean {
 
 /** Content type for serving a stored attachment: active content is downgraded to `application/octet-stream`. */
 export function attachmentServingContentType(contentType: string | null | undefined): string {
-  const value = contentType?.trim();
-  return !value || isActiveAttachmentContentType(value) ? DEFAULT_ATTACHMENT_CONTENT_TYPE : value;
+  const essence = normalizeContentType(contentType);
+  if (isActiveAttachmentContentType(essence)) return DEFAULT_ATTACHMENT_CONTENT_TYPE;
+  const charset = (contentType ?? "")
+    .split(";")
+    .slice(1)
+    .map((parameter) => parameter.trim().toLowerCase())
+    .find((parameter) => parameter.startsWith("charset="))
+    ?.slice("charset=".length);
+  return charset && MIME_CHARSET_PATTERN.test(charset) ? `${essence}; charset=${charset}` : essence;
+}
+
+/** Serving type for a stored asset: sanitized SVG uploaded through the asset routes keeps `image/svg+xml`, everything else goes through {@link attachmentServingContentType}. */
+export function assetServingContentType(asset: { companyId: string; objectKey: string; contentType: string | null | undefined }): string {
+  const sanitizedSvg = normalizeContentType(asset.contentType) === SVG_CONTENT_TYPE
+    && asset.objectKey.startsWith(`${asset.companyId}/assets/`);
+  return sanitizedSvg ? SVG_CONTENT_TYPE : attachmentServingContentType(asset.contentType);
+}
+
+/** `Content-Disposition` value with an ASCII `filename` fallback and an RFC 5987 `filename*` for any other name. */
+export function contentDispositionHeader(disposition: "inline" | "attachment", filename: string): string {
+  const fallback = filename.replace(/[^\x20-\x7e]|["\\]/g, "_");
+  if (fallback === filename) return `${disposition}; filename="${filename}"`;
+  const encoded = encodeURIComponent(filename).replace(/['()*]/g, (char) => `%${char.charCodeAt(0).toString(16).toUpperCase()}`);
+  return `${disposition}; filename="${fallback}"; filename*=UTF-8''${encoded}`;
 }
 
 export function isInlineAttachmentContentType(contentType: string): boolean {
-  return !isActiveAttachmentContentType(contentType) && matchesContentType(contentType, [...INLINE_ATTACHMENT_TYPES]);
+  const essence = normalizeContentType(contentType);
+  return !isActiveAttachmentContentType(essence) && matchesContentType(essence, [...INLINE_ATTACHMENT_TYPES]);
 }
 
 let allowedPatternsSource: string | undefined;
@@ -132,7 +154,7 @@ export function isAllowedContentType(contentType: string): boolean {
     allowedPatternsSource = source;
     allowedPatterns = parseAllowedTypes(source);
   }
-  return matchesContentType(contentType, allowedPatterns);
+  return matchesContentType(normalizeContentType(contentType), allowedPatterns);
 }
 
 /**

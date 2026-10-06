@@ -7,7 +7,8 @@ import { ASSET_NAMESPACE_RULE, createAssetImageMetadataSchema } from "@tickernel
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import {
-  attachmentServingContentType,
+  assetServingContentType,
+  contentDispositionHeader,
   formatAttachmentSize,
   isAllowedContentType,
   isInlineAttachmentContentType,
@@ -346,12 +347,11 @@ export function assetRoutes(db: Db, storage: StorageService) {
     }
     const range = Array.isArray(ranges) ? ranges[0] : undefined;
     const object = await storage.getObject(asset.companyId, asset.objectKey, range ? { range } : undefined);
-    const storedContentType = asset.contentType || object.contentType;
-    const sanitizedSvg = normalizeContentType(storedContentType) === SVG_CONTENT_TYPE
-      && asset.objectKey.startsWith(`${asset.companyId}/assets/`);
-    const responseContentType = sanitizedSvg
-      ? SVG_CONTENT_TYPE
-      : attachmentServingContentType(storedContentType);
+    const responseContentType = assetServingContentType({
+      companyId: asset.companyId,
+      objectKey: asset.objectKey,
+      contentType: asset.contentType || object.contentType,
+    });
     const inlineSafe = isInlineAttachmentContentType(responseContentType);
     res.setHeader("Content-Type", responseContentType);
     res.setHeader("Content-Length", String(range ? range.end - range.start + 1 : asset.byteSize || object.contentLength || 0));
@@ -364,11 +364,10 @@ export function assetRoutes(db: Db, storage: StorageService) {
     if (!inlineSafe) {
       res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
     }
-    const filename = asset.originalFilename ?? "asset";
-    const disposition = inlineSafe
-      ? "inline"
-      : "attachment";
-    res.setHeader("Content-Disposition", `${disposition}; filename=\"${filename.replaceAll("\"", "")}\"`);
+    res.setHeader(
+      "Content-Disposition",
+      contentDispositionHeader(inlineSafe ? "inline" : "attachment", asset.originalFilename ?? "asset"),
+    );
 
     object.stream.on("error", (err) => {
       next(err);

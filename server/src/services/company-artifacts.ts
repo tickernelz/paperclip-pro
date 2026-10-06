@@ -103,8 +103,9 @@ function normalizePreviewText(input: string | null | undefined) {
 }
 
 function classifyMediaKind(contentType: string | null | undefined, fallback: CompanyArtifactMediaKind = "file") {
-  const normalized = (contentType ?? "").toLowerCase();
+  const normalized = (contentType ?? "").split(";", 1)[0]!.trim().toLowerCase();
   if (!normalized) return fallback;
+  if (normalized === "image/svg+xml") return "file";
   if (normalized.startsWith("image/")) return "image";
   if (normalized.startsWith("video/")) return "video";
   if (
@@ -122,14 +123,14 @@ function classifyMediaKind(contentType: string | null | undefined, fallback: Com
 
 function contentTypeKindCondition(contentTypeExpression: SQL<string>, kind: CompanyArtifactsQuery["kind"]) {
   if (!kind || kind === "all") return undefined;
-  if (kind === "image") return sql`${contentTypeExpression} ILIKE 'image/%'`;
-  if (kind === "video") return sql`${contentTypeExpression} ILIKE 'video/%'`;
-  if (kind === "text") {
-    return sql`(${contentTypeExpression} ILIKE 'text/%' OR ${contentTypeExpression} IN ('application/json', 'application/xml', 'application/markdown') OR ${contentTypeExpression} ILIKE '%+json' OR ${contentTypeExpression} ILIKE '%+xml')`;
-  }
-  if (kind === "file") {
-    return sql`NOT (${contentTypeExpression} ILIKE 'image/%' OR ${contentTypeExpression} ILIKE 'video/%' OR ${contentTypeExpression} ILIKE 'text/%' OR ${contentTypeExpression} IN ('application/json', 'application/xml', 'application/markdown') OR ${contentTypeExpression} ILIKE '%+json' OR ${contentTypeExpression} ILIKE '%+xml')`;
-  }
+  const svg = sql`${contentTypeExpression} ILIKE 'image/svg+xml%'`;
+  const image = sql`(${contentTypeExpression} ILIKE 'image/%' AND NOT ${svg})`;
+  const video = sql`${contentTypeExpression} ILIKE 'video/%'`;
+  const text = sql`(NOT ${svg} AND (${contentTypeExpression} ILIKE 'text/%' OR ${contentTypeExpression} IN ('application/json', 'application/xml', 'application/markdown') OR ${contentTypeExpression} ILIKE '%+json' OR ${contentTypeExpression} ILIKE '%+xml'))`;
+  if (kind === "image") return image;
+  if (kind === "video") return video;
+  if (kind === "text") return text;
+  if (kind === "file") return sql`NOT (${image} OR ${video} OR ${text})`;
   return undefined;
 }
 

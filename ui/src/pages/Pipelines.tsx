@@ -121,7 +121,7 @@ import { useProjectOrder } from "../hooks/useProjectOrder";
 import { shouldDisableRerunForPermission, type LivenessRetryKind } from "../lib/pipeline-liveness";
 import { cn, formatNumber, relativeTime } from "../lib/utils";
 import { issueStatusText, issueStatusTextDefault } from "../lib/status-colors";
-import { formatBytes } from "../lib/issue-output";
+import { formatBytes, isImageContentType } from "../lib/issue-output";
 import { createIssueDetailPath, withIssueDetailHeaderSeed } from "../lib/issueDetailBreadcrumb";
 import { resolveIssueActiveRun, shouldTrackIssueActiveRun } from "../lib/issueActiveRun";
 import { extractIssueTimelineEvents } from "../lib/issue-timeline-events";
@@ -3977,7 +3977,7 @@ function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutpu
 
 function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputItem }) {
   const filename = item.filename ?? item.title ?? "Attachment";
-  const isImage = item.contentType?.startsWith("image/");
+  const isImage = isImageContentType(item.contentType);
   return (
     <div
       id={`linked-attachment-${item.attachmentId}`}

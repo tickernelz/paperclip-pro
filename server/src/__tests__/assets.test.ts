@@ -523,6 +523,56 @@ describe("GET /api/assets/:assetId/content", () => {
     expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
   });
 
+  it("serves a comma-joined stored type as an octet-stream download", async () => {
+    const body = Buffer.from("<script>globalThis.__assetXss = true</script>");
+    const storage = createStorageService("image/png, text/html");
+    getAssetByIdMock.mockResolvedValue({
+      ...createAsset(),
+      contentType: "image/png, text/html",
+      byteSize: body.byteLength,
+      originalFilename: "logo.png",
+    });
+    vi.mocked(storage.getObject).mockResolvedValue({
+      stream: Readable.from(body),
+      contentType: "image/png, text/html",
+      contentLength: body.byteLength,
+    });
+
+    const res = await requestApp(await createApp(storage), (baseUrl) =>
+      request(baseUrl).get("/api/assets/asset-1/content"),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/octet-stream");
+    expect(res.headers["content-disposition"]).toBe('attachment; filename="logo.png"');
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
+  });
+
+  it("encodes non-Latin-1 filenames with an RFC 5987 parameter and an ASCII fallback", async () => {
+    const image = Buffer.from("png-bytes");
+    const storage = createStorageService("image/png");
+    getAssetByIdMock.mockResolvedValue({
+      ...createAsset(),
+      byteSize: image.byteLength,
+      originalFilename: "laporan \u65e5\u672c \"final\" \ud83d\ude80.png",
+    });
+    vi.mocked(storage.getObject).mockResolvedValue({
+      stream: Readable.from(image),
+      contentType: "image/png",
+      contentLength: image.byteLength,
+    });
+
+    const res = await requestApp(await createApp(storage), (baseUrl) =>
+      request(baseUrl).get("/api/assets/asset-1/content"),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-disposition"]).toBe(
+      "inline; filename=\"laporan __ _final_ __.png\"; filename*=UTF-8''laporan%20%E6%97%A5%E6%9C%AC%20%22final%22%20%F0%9F%9A%80.png",
+    );
+  });
+
   it("keeps curated image types inline", async () => {
     const image = Buffer.from("png-bytes");
     const storage = createStorageService("image/png");

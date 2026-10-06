@@ -110,6 +110,11 @@ import {
 import { claimFirstInstanceAdmin } from "../first-admin-claim.js";
 import { getStorageService } from "../storage/index.js";
 import { secretService } from "../services/secrets.js";
+import {
+  assetServingContentType,
+  contentDispositionHeader,
+  isInlineAttachmentContentType,
+} from "../attachment-types.js";
 
 function hashToken(token: string) {
   return createHash("sha256").update(token).digest("hex");
@@ -3501,11 +3506,12 @@ export function accessRoutes(
       throw notFound("Invite logo not found");
     }
     const object = await storage.getObject(companyId, logoAsset.objectKey);
-    const responseContentType =
-      logoAsset.contentType ||
-      logoHead.contentType ||
-      object.contentType ||
-      "application/octet-stream";
+    const responseContentType = assetServingContentType({
+      companyId,
+      objectKey: logoAsset.objectKey,
+      contentType: logoAsset.contentType || logoHead.contentType || object.contentType,
+    });
+    const inlineSafe = isInlineAttachmentContentType(responseContentType);
     res.setHeader("Content-Type", responseContentType);
     res.setHeader(
       "Content-Length",
@@ -3513,11 +3519,11 @@ export function accessRoutes(
     );
     res.setHeader("Cache-Control", "private, max-age=60");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    if (responseContentType === "image/svg+xml") {
-      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'");
-    }
-    const filename = logoAsset.originalFilename ?? "company-logo";
-    res.setHeader("Content-Disposition", `inline; filename=\"${filename.replaceAll("\"", "")}\"`);
+    if (!inlineSafe) res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
+    res.setHeader(
+      "Content-Disposition",
+      contentDispositionHeader(inlineSafe ? "inline" : "attachment", logoAsset.originalFilename ?? "company-logo"),
+    );
 
     object.stream.on("error", (err) => {
       next(err);

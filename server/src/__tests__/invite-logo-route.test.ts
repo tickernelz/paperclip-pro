@@ -107,8 +107,55 @@ describe("GET /invites/:token/logo", () => {
 
     expect(res.status).toBe(200);
     expect(res.headers["content-type"]).toContain("image/png");
+    expect(res.headers["content-disposition"]).toBe('inline; filename="logo.png"');
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBeUndefined();
     expect(mockStorage.headObject).toHaveBeenCalledWith("company-1", "assets/companies/logo-1");
     expect(mockStorage.getObject).toHaveBeenCalledWith("company-1", "assets/companies/logo-1");
+  });
+
+  it.each([
+    ["text/html", "logo.html"],
+    ["image/svg+xml", "logo.svg"],
+    ["image/png, text/html", "\u30ed\u30b4.png"],
+  ])("downgrades an active or malformed %s logo to a sandboxed download", async (contentType, originalFilename) => {
+    const invite = {
+      id: "invite-1",
+      companyId: "company-1",
+      inviteType: "company_join",
+      allowedJoinTypes: "human",
+      tokenHash: "hash",
+      defaultsPayload: null,
+      expiresAt: new Date("2027-03-07T00:10:00.000Z"),
+      invitedByUserId: null,
+      revokedAt: null,
+      acceptedAt: null,
+      createdAt: new Date("2026-03-07T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-07T00:00:00.000Z"),
+    };
+    mockStorage.headObject.mockResolvedValue({ exists: true, contentType, contentLength: 6 });
+    mockStorage.getObject.mockResolvedValue({
+      contentType,
+      contentLength: 6,
+      stream: Readable.from([Buffer.from("<html>")]),
+    });
+    const app = createApp(
+      createDbStub([invite], [{
+        companyId: "company-1",
+        objectKey: "uploads/logo-1",
+        contentType,
+        byteSize: 6,
+        originalFilename,
+      }]),
+    );
+
+    const res = await request(app).get("/api/invites/pcp_invite_test/logo");
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/octet-stream");
+    expect(res.headers["content-disposition"]).toMatch(/^attachment; filename="/);
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
   });
 
   it("returns 404 when the logo asset record exists but storage does not", async () => {

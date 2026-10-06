@@ -559,6 +559,26 @@ describe("issue attachment routes", () => {
     expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
   });
 
+  it.each(["image/png, text/html", "image/png text/html", "image/png,text/html; charset=utf-8", "image", "image/png/html"])(
+    "serves a malformed stored type %j as an octet-stream download",
+    async (contentType) => {
+      const storage = createStorageService();
+      mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment(contentType, "chart.png"));
+
+      const app = await createApp(storage);
+      const res = await request(app)
+        .get("/api/attachments/attachment-1/content")
+        .buffer(true)
+        .parse(parseBinaryResponse);
+
+      expect(res.status).toBe(200);
+      expect(res.headers["content-type"]).toBe("application/octet-stream");
+      expect(res.headers["content-disposition"]).toBe('attachment; filename="chart.png"');
+      expect(res.headers["x-content-type-options"]).toBe("nosniff");
+      expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
+    },
+  );
+
   it("keeps safe image attachments inline with their stored type", async () => {
     const storage = createStorageService();
     mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("image/png", "chart.png"));
