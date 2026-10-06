@@ -4534,6 +4534,7 @@ registry.registerPath({
         .optional(),
       environmentId: z.string().optional(),
       refresh: z.string().optional(),
+      poolId: z.string().optional(),
     }),
   },
   responses: { 200: r.ok(), 401: r.unauthorized },
@@ -12447,6 +12448,7 @@ for (const [method, path, query] of [
   ["get", "/api/companies/{companyId}/live-runs", z.object({
     limit: z.coerce.number().int().min(1).max(50).optional(),
     minCount: z.coerce.number().int().min(0).max(50).optional(),
+    distinctTasks: queryFlag.optional(),
   })],
   ["get", "/api/heartbeat-runs/{runId}/log", runLogQuery],
   ["get", "/api/workspace-operations/{operationId}/log", runLogQuery],

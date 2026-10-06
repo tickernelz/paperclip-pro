@@ -9,8 +9,10 @@ export const AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
   assertCanGenerateOpenClawInvitePrompt: true,
   assertCanReadConfigurations: true,
   assertCanResolveProposal: true,
+  assertCanUpdateAgent: true,
   assertCompanyAccess: true,
   assertCompanyPermission: true,
+  assertIssueReadAllowed: true,
   assertIssueThreadInteractionWithdrawalAllowed: true,
   assertIssueWriteInfluenceAllowed: true,
   assertPendingReviewInteractionVerdictAllowed: true,
@@ -66,7 +68,6 @@ export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
   assertQueueMutationTarget: true,
   assertRuntimeManageAllowed: true,
   getActorInfo: true,
-  requireEnabled: true,
   requireImportTransferRun: true,
   requireLocalFolderDeclaration: true,
 };
