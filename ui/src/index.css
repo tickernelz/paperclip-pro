@@ -3159,7 +3159,10 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     flex-direction: column !important;
     width: 100% !important;
     max-width: none !important;
-    max-height: calc(var(--mobile-viewport-height, var(--mobile-entity-picker-visual-viewport-height)) * 0.52) !important;
+    max-height: max(
+      calc(var(--mobile-viewport-height, var(--mobile-entity-picker-visual-viewport-height)) * 0.52),
+      min(calc(var(--mobile-viewport-height, var(--mobile-entity-picker-visual-viewport-height)) - 3rem), 22rem)
+    ) !important;
     overflow: hidden !important;
     overscroll-behavior: contain;
     padding: 0 0 var(--sz-safe-bottom) !important;

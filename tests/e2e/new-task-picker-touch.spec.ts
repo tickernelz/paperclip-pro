@@ -23,6 +23,8 @@ async function swipeToLastOption(page: Page, picker: Locator, listName: string) 
   const session = await page.context().newCDPSession(page);
   try {
     expect(await list.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    const optionHeight = (await last.boundingBox())!.height;
+    expect((await list.boundingBox())!.height).toBeGreaterThanOrEqual(optionHeight * 3);
     for (let attempt = 0; attempt < 48; attempt += 1) {
       const bounds = (await list.boundingBox())!;
       const target = (await last.boundingBox())!;
