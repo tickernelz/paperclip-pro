@@ -214,9 +214,11 @@ const PROTECTED = [
   { why: "upstream-owned S3 bucket", source: String.raw`paperclipai-runner-e2e-history` },
   {
     why: "GitHub organisation login literals",
-    source: String.raw`(?:owner|login)(?:"?\s*:\s*|\s*!==\s*)"paperclipai"`,
+    source: String.raw`(?:owner|Owner|login|keyParts\[0\])(?:"?\s*:\s*|\s*[!=]==\s*)"paperclipai"`,
   },
   { why: "GitHub organisation login literals", source: String.raw`\["paperclipai"\]` },
+  { why: "GitHub organisation login literals", source: String.raw`OwnerLogins:\s*\["paperclipai"` },
+  { why: "URL-encoded catalog refs and upstream repositories", source: String.raw`paperclipai%2F` },
 ];
 
 const DEFAULT_RULE = r(String.raw`\bpaperclipai\b`, CLI_BIN);
