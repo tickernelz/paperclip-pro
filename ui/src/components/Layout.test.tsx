@@ -1377,13 +1377,31 @@ describe("Layout", () => {
     });
   });
 
+  function setScrollY(value: number) {
+    Object.defineProperty(window, "scrollY", { value, configurable: true });
+    Object.defineProperty(document.documentElement, "scrollHeight", { value: 2000, configurable: true });
+    Object.defineProperty(document.documentElement, "clientHeight", { value: 800, configurable: true });
+  }
+
+  function resetDocumentScroll() {
+    Object.defineProperty(window, "scrollY", { value: 0, configurable: true });
+    delete (document.documentElement as { scrollHeight?: number }).scrollHeight;
+    delete (document.documentElement as { clientHeight?: number }).clientHeight;
+  }
+
+  async function scrollWindowTo(value: number) {
+    setScrollY(value);
+    await act(async () => {
+      window.dispatchEvent(new Event("scroll"));
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+    });
+    await flushReact();
+  }
+
   it("keeps the mobile nav and the main bottom padding fixed on the task thread", async () => {
     currentPathname = "/PAP/issues/PAP-1";
     mockSidebarState.isMobile = true;
     mockSidebarState.sidebarOpen = false;
-    const setScrollY = (value: number) => {
-      Object.defineProperty(window, "scrollY", { value, configurable: true });
-    };
     setScrollY(0);
 
     const { root, rootEl } = await renderLayoutRoot();
@@ -1394,10 +1412,7 @@ describe("Layout", () => {
     expect(main?.getAttribute("style")).toContain("--tc-composer-bottom: var(--sz-calc-14)");
     expect(nav?.getAttribute("data-visible")).toBe("true");
 
-    setScrollY(400);
-    await act(async () => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    await scrollWindowTo(400);
 
     expect(main?.className).toContain("pb-(--sz-calc-14)");
     expect(main?.getAttribute("style")).toContain("--tc-composer-bottom: var(--sz-calc-14)");
@@ -1406,26 +1421,20 @@ describe("Layout", () => {
     await act(async () => {
       root.unmount();
     });
-    setScrollY(0);
+    resetDocumentScroll();
   });
 
   it("still auto-hides the mobile nav away from the task thread", async () => {
     currentPathname = "/PAP/issues";
     mockSidebarState.isMobile = true;
     mockSidebarState.sidebarOpen = false;
-    const setScrollY = (value: number) => {
-      Object.defineProperty(window, "scrollY", { value, configurable: true });
-    };
     setScrollY(0);
 
     const { root, rootEl } = await renderLayoutRoot();
     const nav = rootEl.querySelector('nav[aria-label="Mobile navigation"]');
     const main = rootEl.querySelector("main");
 
-    setScrollY(400);
-    await act(async () => {
-      window.dispatchEvent(new Event("scroll"));
-    });
+    await scrollWindowTo(400);
 
     expect(nav?.getAttribute("data-visible")).toBe("false");
     expect(main?.className).toContain("pb-(--sz-calc-14)");
@@ -1433,6 +1442,6 @@ describe("Layout", () => {
     await act(async () => {
       root.unmount();
     });
-    setScrollY(0);
+    resetDocumentScroll();
   });
 });
