@@ -372,10 +372,15 @@ mode). Silence never approves. When the run's triggers need
 `reply_outside_allowlist`, the server adds that category to the request and
 records it as auto-added (audit `approval_requested` metadata `autoAdded`); its
 grant is always `one_action`, even on a `requester` request. A run that asks
-again only for `reply`/`reply_outside_allowlist` while its own reply-only
-request for the same chat and scope is pending gets that request back
-(`reused: true`) with the missing categories added; no second bubble is sent.
-Any other category, or a request from another run, creates a new request.
+only for `reply`/`reply_outside_allowlist` while a reply-only request for the
+same chat and scope is pending, made by this run or, within `grantTtlHours` of
+its creation, by any run for the same requester, gets that request back
+(`reused: true`) with the missing categories added; no second bubble is sent
+(audit `approval_requested` metadata `merged: true`, plus `requestedInRunId`
+when another run made it). Its `approval_resolved` wake targets the
+conversation issue, not a run, so the approved run answers every pending
+trigger of that requester. Any other category, another requester, or another
+scope creates a new request.
 
 - **WhatsApp**: an owner replies to the bubble, quoting it. That reply starts a
   dedicated `approval_reply` run (class `owner`). The agent interprets the free text

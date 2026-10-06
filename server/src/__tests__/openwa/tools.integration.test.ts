@@ -444,10 +444,10 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     const g = await conversation(t, GROUP, { activation: "on" });
     const quoted = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
     const absent = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
-    const ask = (binding: typeof absent, categories: string[]) =>
+    const ask = (binding: typeof absent, categories: string[], scope = "one_action") =>
       executeOpenwaTool(db, binding, "openwa_request_approval", {
         categories,
-        scope: "one_action",
+        scope,
         summary: "Member asks the owner about the invoice",
         proposedAction: "Reply that the invoice is being checked",
         messageToOwners: "Member asked about the invoice. Approve the suggested reply?",
@@ -479,7 +479,9 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       executeOpenwaTool(db, absent, "openwa_send", { text: "holding reply", quoteMessageId: quoted.waMessageId, idempotencyKey: randomUUID() }),
     ).resolves.toMatchObject({ state: "delivered" });
     const otherRun = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
-    const fresh = await ask(otherRun, ["reply"]);
+    await expect(ask(otherRun, ["reply"])).resolves.toMatchObject({ requestId: first.requestId, reused: true, categories: ["reply", "reply_outside_allowlist"] });
+    expect(ownerBubbles()).toBe(2);
+    const fresh = await ask(otherRun, ["reply"], "requester");
     expect(fresh.requestId).not.toBe(first.requestId);
     expect(fresh).not.toHaveProperty("reused");
     expect(ownerBubbles()).toBe(3);
@@ -524,6 +526,90 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     );
     expect(denied.code).toBe("reply_denied");
     expect(denied.details).toMatchObject({ category: "reply_outside_allowlist" });
+  });
+
+  it("reuses a pending reply-only approval across runs for the same requester and wakes the conversation issue once approved", async () => {
+    const t = await setup();
+    const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    const principalFor = async (externalId: string) =>
+      (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
+    const [link] = await db
+      .insert(chatIdentityLinks)
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), paperclipUserId: t.userId, status: "linked" })
+      .returning();
+    await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
+    const stranger = await principalFor(MEMBER);
+    const neighbour = await principalFor("628666000777@c.us");
+    const g = await conversation(t, GROUP, { activation: "on" });
+    const ask = (binding: { runId: string }, categories: string[]) =>
+      executeOpenwaTool(db, binding as never, "openwa_request_approval", {
+        categories,
+        scope: "one_action",
+        summary: "Member asks the owner about the invoice",
+        proposedAction: "Reply that the invoice is being checked",
+        messageToOwners: "Member asked about the invoice. Approve the suggested reply?",
+        idempotencyKey: randomUUID(),
+      }) as Promise<{ requestId: string; reused?: boolean; categories?: string[] }>;
+    const ownerBubbles = () => t.gateway.sends.filter((send) => send.chatId === OTHER).length;
+    const mentioned = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    const messageRun = await run(t, g, { triggerClass: "other", requesterPrincipalId: stranger });
+    const first = await ask(messageRun, ["reply_outside_allowlist"]);
+    expect(first).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(1);
+    const followUp = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [], event: "owner_absent" });
+    const absentRun = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
+    const second = await ask(absentRun, ["reply"]);
+    expect(second).toMatchObject({ requestId: first.requestId, reused: true, categories: ["reply_outside_allowlist", "reply"] });
+    expect(ownerBubbles()).toBe(1);
+    const merged = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_requested"), eq(chatAuditEntries.runId, absentRun.runId)));
+    expect(merged.map((entry) => entry.metadata)).toEqual([expect.objectContaining({ requestId: first.requestId, merged: true, requestedInRunId: messageRun.runId })]);
+
+    const neighbourRun = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: neighbour });
+    const other = await ask(neighbourRun, ["reply"]);
+    expect(other.requestId).not.toBe(first.requestId);
+    expect(other).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(2);
+    const task = await ask(absentRun, ["create_task"]);
+    expect(task.requestId).not.toBe(first.requestId);
+    expect(task).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(3);
+
+    await db
+      .update(chatOwnerApprovalRequests)
+      .set({ createdAt: new Date(Date.now() - 25 * 3_600_000) })
+      .where(eq(chatOwnerApprovalRequests.id, other.requestId));
+    const staleRun = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: neighbour });
+    const afterWindow = await ask(staleRun, ["reply"]);
+    expect(afterWindow.requestId).not.toBe(other.requestId);
+    expect(afterWindow).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(4);
+
+    const resolved = await resolveOpenwaApproval(db, {
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      requestId: first.requestId,
+      decision: "approve",
+      via: "paperclip",
+      owner: { userId: t.userId },
+      ownerText: null,
+    });
+    const [wake] = await db.select().from(chatActions).where(eq(chatActions.id, resolved.wakeActionId!));
+    expect(wake).toMatchObject({ conversationId: g.id, principalId: stranger });
+    expect(wake!.payload).toMatchObject({ issueId: g.issueId, openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: first.requestId } });
+    expect(wake!.payload).not.toHaveProperty("runId");
+    const grants = await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.requestId, first.requestId));
+    expect(grants.map((grant) => grant.category).sort()).toEqual(["reply", "reply_outside_allowlist"]);
+    const granted = await run(t, g, { triggerClass: "grant", event: "approval_resolved", grantIds: resolved.grantIds, requesterPrincipalId: stranger });
+    await expect(
+      executeOpenwaTool(db, granted, "openwa_send", { text: "approved reply", quoteMessageId: mentioned.waMessageId, idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered", answeredTriggerIds: [mentioned.id] });
+    await expect(
+      executeOpenwaTool(db, granted, "openwa_send", { text: "approved follow-up", quoteMessageId: followUp.waMessageId, idempotencyKey: randomUUID() }),
+    ).resolves.toMatchObject({ state: "delivered", answeredTriggerIds: [followUp.id] });
+    expect(t.gateway.sends.filter((send) => send.chatId === GROUP).map((send) => send.text)).toEqual(["approved reply", "approved follow-up"]);
   });
 
   it("mints an auto-added reply_outside_allowlist as a one_action grant on a requester-scoped approval", async () => {

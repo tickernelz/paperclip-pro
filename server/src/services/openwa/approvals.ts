@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, lt, or, sql } from "drizzle-orm";
 import {
   chatActions,
   chatAuditEntries,
@@ -393,8 +393,13 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
       const requested = [...asked, ...autoAdded];
       const categories = [...new Set(requested)].filter((category) => OPENWA_GRANT_CATEGORIES.includes(category));
       const replyOnly = (values: readonly string[]) => values.every((category) => REPLY_CATEGORIES.has(category));
-      await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + ctx.run.id + ":" + ctx.origin.chatKey}, 0))`);
-      const open = replyOnly(categories)
+      const replyOnlyRequest = replyOnly(categories);
+      const requesterPrincipalId = await requesterOf(ctx);
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + (replyOnlyRequest ? "reply" : ctx.run.id) + ":" + ctx.origin.chatKey}, 0))`,
+      );
+      const reuseWindowStart = new Date(Date.now() - ctx.policy.approvals.grantTtlHours * 3_600_000);
+      const open = replyOnlyRequest
         ? (
             await tx
               .select()
@@ -404,14 +409,26 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
                   eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
                   eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
                   eq(chatOwnerApprovalRequests.originChatKey, ctx.origin.chatKey),
-                  eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
                   eq(chatOwnerApprovalRequests.status, "pending"),
                   eq(chatOwnerApprovalRequests.scope, grantScope),
+                  or(
+                    eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
+                    ...(requesterPrincipalId
+                      ? [
+                          and(
+                            eq(chatOwnerApprovalRequests.requestedByPrincipalId, requesterPrincipalId),
+                            gte(chatOwnerApprovalRequests.createdAt, reuseWindowStart),
+                          ),
+                        ]
+                      : []),
+                  ),
                 ),
               )
               .orderBy(desc(chatOwnerApprovalRequests.createdAt))
               .for("update")
-          ).find((row) => replyOnly(row.categories))
+          )
+            .filter((row) => replyOnly(row.categories))
+            .sort((a, b) => Number(b.requestedInRunId === ctx.run.id) - Number(a.requestedInRunId === ctx.run.id))[0]
         : undefined;
       if (open) {
         const added = categories.filter((category) => !open.categories.includes(category));
@@ -437,7 +454,15 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
           chatKey: open.originChatKey,
           conversationId: ctx.conversation.id,
           runId: ctx.run.id,
-          metadata: { requestId: open.id, categories: merged, added, autoAdded: autoAdded.filter((category) => added.includes(category)), scope: open.scope, merged: true },
+          metadata: {
+            requestId: open.id,
+            categories: merged,
+            added,
+            autoAdded: autoAdded.filter((category) => added.includes(category)),
+            scope: open.scope,
+            merged: true,
+            ...(open.requestedInRunId !== ctx.run.id ? { requestedInRunId: open.requestedInRunId } : {}),
+          },
           content: { summary: String(args.summary), proposedAction: String(args.proposedAction), messageToOwners: body },
           retentionDays: ctx.policy.auditContentRetentionDays,
         });
@@ -445,7 +470,6 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         reused = merged;
         return open.id;
       }
-      const requesterPrincipalId = await requesterOf(ctx);
       if (grantScope === "requester" && !requesterPrincipalId)
         throw new OpenwaToolError(422, "requester_unknown", "A requester-scoped approval needs a single identifiable requester for this run");
       const summary = String(args.summary);

@@ -192,11 +192,14 @@ of the person you answer.
    DM, an unaddressed group message in other runs, or any message when it is off
    does. When the run's triggers need `reply_outside_allowlist`, the server adds
    it to the request; that added grant is always `one_action`, whatever the
-   request's scope. A second call from the same run asking only for `reply`
-   and/or `reply_outside_allowlist`, while its reply-only request for this chat
-   with the same scope is pending, sends no new bubble: it adds the missing
-   categories and returns that `requestId` with `reused: true`. Any other
-   category gets its own request and bubble. `scope` is `one_action`
+   request's scope. A call asking only for `reply` and/or
+   `reply_outside_allowlist`, while a reply-only request for this chat with
+   the same scope is pending from this run or from an earlier run for the same
+   requester (for example the message run before an `owner_absent` wake),
+   sends no new bubble: it adds the missing categories and returns that
+   `requestId` with `reused: true`. Tell the requester you are still
+   waiting; the approved run answers their pending messages. Any other
+   category, or another requester, gets its own request and bubble. `scope` is `one_action`
    (default: one gated call, made by the run created from this request; a
    `create_task` grant creates exactly one task) or `requester` (this
    requester in this chat until the grant expires). When the approved action
