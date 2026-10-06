@@ -238,6 +238,14 @@ describeEmbeddedPostgres("heartbeat list", () => {
     const oversizedNestedPayload = Array.from({ length: 6_000 }, (_, index) =>
       `${index.toString(16).padStart(4, "0")}:${randomUUID()}`,
     ).join("|");
+    // Multibyte diagnostics can exceed the result byte budget while remaining
+    // within the adapter's character bounds. Other result fields can do so too.
+    const terminalSessionFailure = {
+      category: "service",
+      title: "HTTP 529: overloaded_error",
+      details: `request_id=req_retained\n${"診断".repeat(12_000)}`,
+      truncatedFields: ["title"],
+    };
 
     await db.insert(companies).values({
       id: companyId,
@@ -264,10 +272,30 @@ describeEmbeddedPostgres("heartbeat list", () => {
       agentId,
       invocationSource: "assignment",
       status: "succeeded",
+      error: terminalSessionFailure.details,
       resultJson: {
         summary: "completed",
         stdout: oversizedStdout,
         nestedHuge: { payload: oversizedNestedPayload },
+        terminalSessionFailure: {
+          ...terminalSessionFailure,
+          privateMetadata: oversizedNestedPayload,
+        },
+        instructionSave: {
+          state: "unavailable", contract: "agent_files", entryFile: "AGENTS.md",
+          errorCode: "AGENT_FILES_LIMIT_EXCEEDED",
+          storageWarning: "Agent storage is full. Runs can continue.".repeat(50),
+          privateSyncMetadata: oversizedNestedPayload,
+        },
+        workspaceRestoreFailure: "restore_unsafe_archive",
+        cancellation: { source: "provider", expected: false, initiator: { type: "provider" },
+          reason: "Provider cancelled execution ".repeat(50), recordedAt: "2026-10-02T15:00:00.000Z",
+          privateMetadata: oversizedNestedPayload },
+        acpToolInventoryComplete: true,
+        acpPendingToolCount: 0,
+        errorFamily: "configuration",
+        finalResponseRecorded: true,
+        executionBeforeRestore: { errorCode: "model_error", exitCode: 2, timedOut: false },
       },
     });
 
@@ -279,10 +307,36 @@ describeEmbeddedPostgres("heartbeat list", () => {
       truncated: true,
       truncationReason: "oversized_result_json",
       stdoutTruncated: true,
+      terminalSessionFailure: {
+        ...terminalSessionFailure,
+        details: expect.stringContaining("request_id=req_retained"),
+        retrievalTruncated: true,
+      },
+      instructionSave: {
+        state: "unavailable", contract: "agent_files", entryFile: "AGENTS.md",
+        errorCode: "AGENT_FILES_LIMIT_EXCEEDED",
+        storageWarning: "Agent storage is full. Runs can continue.".repeat(50).slice(0, 1024),
+      },
+      workspaceRestoreFailure: "restore_unsafe_archive",
+      cancellation: { source: "provider", expected: false, initiator: { type: "provider" },
+        reason: "Provider cancelled execution ".repeat(50).slice(0, 512), recordedAt: "2026-10-02T15:00:00.000Z" },
+      acpToolInventoryComplete: true,
+      acpPendingToolCount: 0,
+      errorFamily: "configuration",
+      finalResponseRecorded: true,
+      executionBeforeRestore: { errorCode: "model_error", exitCode: 2, timedOut: false },
     });
     expect(typeof result?.stdout).toBe("string");
     expect((result?.stdout as string).length).toBeLessThan(oversizedStdout.length);
     expect(result).not.toHaveProperty("nestedHuge");
+    expect(result?.instructionSave).not.toHaveProperty("privateSyncMetadata");
+    expect(result?.cancellation).not.toHaveProperty("privateMetadata");
+    expect(result?.terminalSessionFailure).not.toHaveProperty("privateMetadata");
+    const diagnostic = result?.terminalSessionFailure as { details: string };
+    expect(diagnostic.details).toContain("[truncated for run retrieval; full text in run error/transcript]");
+    expect(Buffer.byteLength(diagnostic.details)).toBeLessThanOrEqual(8192);
+    expect(Buffer.byteLength(JSON.stringify(result))).toBeLessThan(64 * 1024);
+    expect(run?.error).toBe(terminalSessionFailure.details);
   });
 });
 

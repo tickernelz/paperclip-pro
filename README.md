@@ -105,7 +105,7 @@ Operator environment — `PATH` entries for adapter binaries, provider API keys,
 | `PORT` | 3100 | — | HTTP listen port; overrides `server.port`. |
 | `PAPERCLIP_HOME` | `~/.paperclip-pro` | — | Root of all instance state. |
 | `PAPERCLIP_INSTANCE_ID` | `default` | — | Selects the instance under `PAPERCLIP_HOME/instances/`. |
-| `PAPERCLIP_TELEMETRY_DISABLED` / `DO_NOT_TRACK` | unset | — | Disables anonymous usage telemetry, which is on by default and off automatically when `CI=true`. |
+| `PAPERCLIP_TELEMETRY_DISABLED` / `DO_NOT_TRACK` | unset | — | Disables anonymous usage telemetry, which is on by default and off automatically when `CI=true`. `telemetry.enabled: false` in the instance config also disables it. |
 
 ## Running as a service
 
@@ -141,11 +141,15 @@ pnpm dev
 | `pnpm test:e2e` | Playwright browser suite |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle migrations |
 
+Source development also builds the native Paperclip Runner when enabled (the self-hosted default). Install a Rust toolchain, or set `PAPERCLIP_RUNNER_BINARY` to a compatible prebuilt runner.
+
 Tests and manual trials must never touch a live instance. Use an isolated data directory:
 
 ```sh
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
+
+Each run without `--data-dir` gets a unique, retained temporary directory; its absolute path is printed at startup. Pass `--data-dir` to reuse one, or `--no-browser` to leave the initialized instance unopened. When invoked from a linked Git worktree, `test-drive` also enables task execution in that worktree.
 
 Section 8 of [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md) documents the sandbox rules for suite runs. The full development guide is [`doc/DEVELOPING.md`](doc/DEVELOPING.md); installation details are in [`doc/INSTALLING.md`](doc/INSTALLING.md) and the CLI reference in [`doc/CLI.md`](doc/CLI.md).
 

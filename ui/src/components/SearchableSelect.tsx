@@ -1,5 +1,5 @@
-import { Check, ChevronsUpDown } from "lucide-react";
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { Check, ChevronsUpDown, X } from "lucide-react";
+import { useMemo, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Command,
@@ -12,8 +12,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { fuzzyTextMatchesQuery, normalizeSearchText, scoreFuzzyTextFields } from "@/lib/searchable-select";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
-import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { cn } from "@/lib/utils";
+import { useMobileEntityPickerViewportStyle } from "@/hooks/useMobileEntityPickerViewportStyle";
 
 export interface SearchableSelectOption<TValue extends string = string> {
   key: string;
@@ -61,6 +61,12 @@ export interface SearchableSelectProps<
   filterOption?: (option: TOption, query: string) => boolean;
   scoreOption?: (option: TOption, query: string) => number | null;
   disablePortal?: boolean;
+  /** Heading for the large mobile selector modal. Defaults to the placeholder. */
+  mobileTitle?: string;
+  triggerAriaLabel?: string;
+  modal?: boolean;
+  contentStyle?: CSSProperties;
+  listFooter?: ReactNode;
   /**
    * Optional pinned "creatable" item rendered at the bottom of the list,
    * regardless of the query (used e.g. by the secret picker's
@@ -109,11 +115,17 @@ export function SearchableSelect<
   filterOption = defaultFilterOption,
   scoreOption,
   disablePortal,
+  mobileTitle,
+  triggerAriaLabel,
+  modal,
+  contentStyle,
+  listFooter,
   createItem,
 }: SearchableSelectProps<TValue, TOption>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   useMobileViewportInsets(open);
+  const mobileViewportStyle = useMobileEntityPickerViewportStyle();
   const pointerFocusRef = useRef(false);
   const suppressNextTriggerFocusRef = useRef(false);
 
@@ -188,6 +200,7 @@ export function SearchableSelect<
 
   return (
     <Popover
+      modal={modal}
       open={open}
       onOpenChange={(next) => {
         setOpen(next);
@@ -218,6 +231,7 @@ export function SearchableSelect<
             }
           }}
           aria-expanded={open}
+          aria-label={triggerAriaLabel}
           role="combobox"
           className={cn("w-full justify-between overflow-hidden", className, triggerClassName)}
         >
@@ -229,6 +243,8 @@ export function SearchableSelect<
       </PopoverTrigger>
       <PopoverContent
         data-mobile-entity-picker=""
+        aria-label={mobileTitle ?? placeholder}
+        style={{ ...mobileViewportStyle, ...contentStyle }}
         align={align}
         collisionPadding={16}
         disablePortal={disablePortal}
@@ -246,12 +262,32 @@ export function SearchableSelect<
             closePopover({ suppressTriggerFocus: true });
           }
         }}
+        onCloseAutoFocus={() => {
+          // Modal outside dismissal restores focus to the trigger. Keep that
+          // restore from reopening the picker, without swallowing a later Tab.
+          suppressNextTriggerFocusRef.current = true;
+          queueMicrotask(() => { suppressNextTriggerFocusRef.current = false; });
+        }}
       >
-        <MobilePickerSheetHeader
-          title={placeholder}
-          value={selectedOption?.label ?? null}
-          onClose={() => closePopover({ suppressTriggerFocus: true })}
-        />
+        <div
+          data-mobile-entity-picker-header=""
+          data-mobile-sheet-header=""
+          className="hidden items-center justify-between gap-2 border-b border-border px-4 py-3"
+        >
+          <span className="shrink-0 text-base font-semibold text-foreground">{mobileTitle ?? placeholder}</span>
+          <span data-mobile-sheet-value="" className="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground">
+            {selectedOption?.label ?? null}
+          </span>
+          <button
+            type="button"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            aria-label="Close selector"
+            data-mobile-sheet-close=""
+            onClick={() => closePopover({ suppressTriggerFocus: true })}
+          >
+            <X className="size-5" />
+          </button>
+        </div>
         <Command shouldFilter={false}>
           <CommandInput
             value={query}
@@ -315,6 +351,7 @@ export function SearchableSelect<
                     </CommandItem>
                   </CommandGroup>
                 ) : null}
+                {listFooter}
               </>
             )}
           </CommandList>

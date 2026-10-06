@@ -305,6 +305,66 @@
     }
   },
   {
+    "name": "paperclipAdoptAgentConnectionIntent",
+    "operationId": "POST /api/agents/{id}/connection-intents/{interactionId}/adopt",
+    "method": "POST",
+    "path": "/agents/{agentId}/connection-intents/{interactionId}/adopt",
+    "description": "Validate and atomically adopt an AI connection for a legacy agent",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "agents",
+      "connection-intents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCanUpdateAgent"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:5627",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "interactionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connectionId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipAppChatEndpointGithub",
     "operationId": "POST /api/chat-endpoints/{endpointId}/github/app",
     "method": "POST",
@@ -1417,7 +1477,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18156",
+    "boardGuard": "assertBoard@issues.ts:18209",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1726,7 +1786,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6336",
+    "boardGuard": "assertBoard@agents.ts:6594",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1980,6 +2040,7 @@
     },
     "guards": [
       "assertToolAppMutationAccess",
+      "assertToolConnectionConfigureAccess",
       "getActorInfo"
     ],
     "permissions": [],
@@ -2002,6 +2063,36 @@
       "schema": {
         "type": "object",
         "properties": {
+          "agentInstructions": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "template": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "enabled",
+              "text"
+            ]
+          },
           "applicationId": {
             "type": "string"
           },
@@ -2139,6 +2230,69 @@
               "pause",
               "resume",
               "remove"
+            ]
+          }
+        },
+        "required": [
+          "action"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipControlIssueBrowser",
+    "operationId": "POST /api/issues/{issueId}/browsers/{browserId}/control",
+    "method": "POST",
+    "path": "/issues/{issueId}/browsers/{browserId}/control",
+    "description": "Control a task browser",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "browserId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "cancel",
+              "end",
+              "keep_open"
             ]
           }
         },
@@ -2654,35 +2808,119 @@
               "aiConnection": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "responsible_user"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "responsible_user"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "shared"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "delegated"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       }
-                    },
-                    "required": [
-                      "method",
-                      "mode",
-                      "provider"
                     ]
                   },
                   {
@@ -2691,78 +2929,16 @@
                       "connectionId": {
                         "type": "string"
                       },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
                       "mode": {
                         "type": "string",
                         "enum": [
-                          "shared"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                          "router"
                         ]
                       }
                     },
                     "required": [
                       "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "connectionId": {
-                        "type": "string"
-                      },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "delegated"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
+                      "mode"
                     ]
                   }
                 ]
@@ -3192,35 +3368,119 @@
               "aiConnection": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "responsible_user"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "responsible_user"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "shared"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "delegated"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       }
-                    },
-                    "required": [
-                      "method",
-                      "mode",
-                      "provider"
                     ]
                   },
                   {
@@ -3229,78 +3489,16 @@
                       "connectionId": {
                         "type": "string"
                       },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
                       "mode": {
                         "type": "string",
                         "enum": [
-                          "shared"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                          "router"
                         ]
                       }
                     },
                     "required": [
                       "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "connectionId": {
-                        "type": "string"
-                      },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "delegated"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
+                      "mode"
                     ]
                   }
                 ]
@@ -3521,6 +3719,252 @@
           "name",
           "ownership",
           "provider"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateAiConnectionPool",
+    "operationId": "POST /api/companies/{companyId}/ai-connection-pools",
+    "method": "POST",
+    "path": "/companies/{companyId}/ai-connection-pools",
+    "description": "Create or revise an experimental plugin-owned connection pool",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:195",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "config": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "members": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "binding": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "subscription",
+                                "api_key"
+                              ]
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "responsible_user"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "anthropic",
+                                "openai",
+                                "openrouter",
+                                "xai"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "method",
+                            "mode",
+                            "provider"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "connectionId": {
+                              "type": "string"
+                            },
+                            "grantId": {
+                              "type": "string"
+                            },
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "subscription",
+                                "api_key"
+                              ]
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "shared"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "anthropic",
+                                "openai",
+                                "openrouter",
+                                "xai"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "connectionId",
+                            "grantId",
+                            "method",
+                            "mode",
+                            "provider"
+                          ]
+                        },
+                        {
+                          "type": "object",
+                          "properties": {
+                            "connectionId": {
+                              "type": "string"
+                            },
+                            "grantId": {
+                              "type": "string"
+                            },
+                            "method": {
+                              "type": "string",
+                              "enum": [
+                                "subscription",
+                                "api_key"
+                              ]
+                            },
+                            "mode": {
+                              "type": "string",
+                              "enum": [
+                                "delegated"
+                              ]
+                            },
+                            "provider": {
+                              "type": "string",
+                              "enum": [
+                                "anthropic",
+                                "openai",
+                                "openrouter",
+                                "xai"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "connectionId",
+                            "grantId",
+                            "method",
+                            "mode",
+                            "provider"
+                          ]
+                        }
+                      ]
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "profile": {
+                      "type": "object",
+                      "properties": {
+                        "acpxAgent": {
+                          "type": "string",
+                          "enum": [
+                            "claude",
+                            "grok"
+                          ]
+                        },
+                        "effort": {
+                          "type": "string"
+                        },
+                        "model": {
+                          "type": "string"
+                        },
+                        "provider": {
+                          "type": "string",
+                          "enum": [
+                            "codex",
+                            "acpx",
+                            "opencode"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "model",
+                        "provider"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "binding",
+                    "id",
+                    "profile"
+                  ]
+                }
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "round_robin",
+                  "usage_aware"
+                ]
+              },
+              "name": {
+                "type": "string"
+              },
+              "thresholdPercent": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "members",
+              "name"
+            ]
+          },
+          "expectedRevision": {
+            "type": "integer"
+          },
+          "id": {
+            "type": "string"
+          },
+          "pluginKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "config",
+          "pluginKey"
         ]
       }
     }
@@ -4435,9 +4879,9 @@
     "guards": [
       "assertCanAssignTasks",
       "assertCanManageIssueMonitor",
+      "assertCanReuseCreatedIssue",
       "assertIssueEnvironmentSelection",
       "assertIssueWriteInfluenceAllowed",
-      "assertLowTrustControlPlaneDenied",
       "assertNoAgentDelegationCycle",
       "assertNoAgentHostWorkspaceCommandMutation",
       "assertTaskBridgeCreateAllowed",
@@ -5042,7 +5486,6 @@
           }
         },
         "required": [
-          "title",
           "status"
         ]
       }
@@ -6269,9 +6712,7 @@
       "destructiveHint": false,
       "idempotentHint": false
     },
-    "guards": [
-      "requireEnabled"
-    ],
+    "guards": [],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -6318,6 +6759,66 @@
         "required": [
           "apiKey",
           "idempotencyKey"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateEmailConnectionAddress",
+    "operationId": "POST /api/companies/{companyId}/email/connections/{connectionId}/check-address",
+    "method": "POST",
+    "path": "/companies/{companyId}/email/connections/{connectionId}/check-address",
+    "description": "Check for an existing AgentMail address using a saved credential. Requires a board connection manager and enabled chat connectors. Read-only: does not create or reserve an inbox. A missing inbox returns unknown because AgentMail hides resources outside the credential scope; it is never proof of availability.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Email"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain",
+          "username"
         ]
       }
     }
@@ -7109,7 +7610,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7327",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7592",
     "authorityCapability": null,
     "parameters": [
       {
@@ -9760,6 +10261,77 @@
     }
   },
   {
+    "name": "paperclipCreateSkillSource",
+    "operationId": "POST /api/companies/{companyId}/skill-sources",
+    "method": "POST",
+    "path": "/companies/{companyId}/skill-sources",
+    "description": "Import a GitHub skill source",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "commitSha": {
+            "type": "string"
+          },
+          "connectionId": {
+            "type": "string"
+          },
+          "excludedFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "repositoryUrl": {
+            "type": "string"
+          },
+          "selectedPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "trackingRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "commitSha",
+          "repositoryUrl",
+          "selectedPaths"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipCreateSkillTestInput",
     "operationId": "POST /api/companies/{companyId}/skills/{skillId}/test-inputs",
     "method": "POST",
@@ -10422,6 +10994,7 @@
           "type": {
             "type": "string",
             "enum": [
+              "rest_api",
               "mcp_http",
               "mcp_stdio",
               "paperclip_plugin",
@@ -10478,6 +11051,36 @@
       "schema": {
         "type": "object",
         "properties": {
+          "agentInstructions": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "template": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "enabled",
+              "text"
+            ]
+          },
           "applicationId": {
             "type": "string"
           },
@@ -10661,6 +11264,103 @@
     }
   },
   {
+    "name": "paperclipCreateToolConnectionAccount",
+    "operationId": "POST /api/tool-connections/{connectionId}/composio/apps/{toolkit}/accounts",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/composio/apps/{toolkit}/accounts",
+    "description": "Manage a Composio account through a saved gateway",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "toolkit",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "nest",
+      "schema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "add"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "rename"
+              },
+              "accountId": {
+                "type": "string"
+              },
+              "alias": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "action",
+              "accountId",
+              "alias"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "remove"
+              },
+              "accountId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "action",
+              "accountId"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipCreateToolConnectionDelegation",
     "operationId": "POST /api/tool-connections/{connectionId}/grants/{grantId}/delegations",
     "method": "POST",
@@ -10681,7 +11381,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1812",
+    "boardGuard": "assertBoard@tool-access.ts:1848",
     "authorityCapability": null,
     "parameters": [
       {
@@ -10741,7 +11441,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2006",
+    "boardGuard": "assertBoard@tool-access.ts:2104",
     "authorityCapability": null,
     "parameters": [
       {
@@ -11007,7 +11707,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1760",
+    "boardGuard": "assertBoard@tool-access.ts:1796",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12163,7 +12863,7 @@
     "operationId": "DELETE /api/agents/{id}/instructions-bundle/file",
     "method": "DELETE",
     "path": "/agents/{agentId}/instructions-bundle/file",
-    "description": "Delete agent instructions file",
+    "description": "Delete agent file with compare-and-swap for managed storage",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -12189,6 +12889,14 @@
         "name": "agentId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "baseHash",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -12226,7 +12934,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:202",
+    "boardGuard": "assertBoard@ai-connections.ts:234",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12246,6 +12954,67 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipDeleteAiConnectionPool",
+    "operationId": "DELETE /api/companies/{companyId}/ai-connection-pools/{poolId}",
+    "method": "DELETE",
+    "path": "/companies/{companyId}/ai-connection-pools/{poolId}",
+    "description": "Delete a connection pool while retaining task and run records",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "assertLocalOperator",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:202",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "poolId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedRevision"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipDeleteAttachment",
@@ -12839,7 +13608,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7465",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7730",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13123,7 +13892,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17102",
+    "boardGuard": "assertBoard@issues.ts:17130",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13639,6 +14408,46 @@
     ]
   },
   {
+    "name": "paperclipDeleteSkillSource",
+    "operationId": "DELETE /api/companies/{companyId}/skill-sources/{sourceId}",
+    "method": "DELETE",
+    "path": "/companies/{companyId}/skill-sources/{sourceId}",
+    "description": "Disconnect a skill source and retain installed skills",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sourceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipDeleteSkillStar",
     "operationId": "DELETE /api/companies/{companyId}/skills/{skillId}/star",
     "method": "DELETE",
@@ -13995,7 +14804,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1837",
+    "boardGuard": "assertBoard@tool-access.ts:1873",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14047,7 +14856,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1787",
+    "boardGuard": "assertBoard@tool-access.ts:1823",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14379,6 +15188,60 @@
             "type": "string"
           }
         }
+      }
+    }
+  },
+  {
+    "name": "paperclipDiscoverSkillSource",
+    "operationId": "POST /api/companies/{companyId}/skill-sources/discover",
+    "method": "POST",
+    "path": "/companies/{companyId}/skill-sources/discover",
+    "description": "Discover and validate repository skills",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "type": "string"
+          },
+          "repositoryUrl": {
+            "type": "string"
+          },
+          "trackingRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "repositoryUrl"
+        ]
       }
     }
   },
@@ -15077,6 +15940,36 @@
               }
             ]
           },
+          "agentInstructions": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "template": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "enabled",
+              "text"
+            ]
+          },
           "askFirstCatalogEntryIds": {
             "type": "array",
             "items": {
@@ -15717,11 +16610,69 @@
     ]
   },
   {
+    "name": "paperclipGetAgentInstructionsBundleDiff",
+    "operationId": "GET /api/agents/{id}/instructions-bundle/diff",
+    "method": "GET",
+    "path": "/agents/{agentId}/instructions-bundle/diff",
+    "description": "Compare instruction revisions (exact common prefix, removed, added, suffix)",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "path",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetAgentInstructionsBundleFile",
     "operationId": "GET /api/agents/{id}/instructions-bundle/file",
     "method": "GET",
     "path": "/agents/{agentId}/instructions-bundle/file",
-    "description": "Get agent instructions file",
+    "description": "Get agent file content or download its original bytes",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -15750,8 +16701,120 @@
         }
       },
       {
+        "name": "download",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      {
         "name": "path",
         "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAgentInstructionsHistory",
+    "operationId": "GET /api/agents/{id}/instructions-bundle/history",
+    "method": "GET",
+    "path": "/agents/{agentId}/instructions-bundle/history",
+    "description": "List immutable instruction revisions",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "path",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAgentInstructionsRevision",
+    "operationId": "GET /api/agents/{id}/instructions-bundle/revision/{revisionId}",
+    "method": "GET",
+    "path": "/agents/{agentId}/instructions-bundle/revision/{revisionId}",
+    "description": "Read exact instruction content at a revision",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "path",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "revisionId",
+        "in": "path",
         "required": true,
         "schema": {
           "type": "string"
@@ -15817,7 +16880,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:344",
+    "boardGuard": "assertBoard@ai-connections.ts:391",
     "authorityCapability": null,
     "parameters": [
       {
@@ -15832,6 +16895,102 @@
         "name": "sessionId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAiConnectionPoolInspection",
+    "operationId": "GET /api/companies/{companyId}/ai-connection-pools/{poolId}/inspection",
+    "method": "GET",
+    "path": "/companies/{companyId}/ai-connection-pools/{poolId}/inspection",
+    "description": "Inspect authorized pool members and fresh cached usage without probing",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:188",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "poolId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAiConnectionUsage",
+    "operationId": "GET /api/companies/{companyId}/ai-connections/{connectionId}/usage",
+    "method": "GET",
+    "path": "/companies/{companyId}/ai-connections/{connectionId}/usage",
+    "description": "Probe the selected AI account’s provider usage limits on demand",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:263",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "grantId",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -17728,10 +18887,7 @@
       "destructiveHint": false,
       "idempotentHint": true
     },
-    "guards": [
-      "assertCompanyAccess",
-      "assertIssueReadAllowed"
-    ],
+    "guards": [],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -17851,7 +19007,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7298",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7563",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18024,6 +19180,56 @@
         "name": "issueId",
         "in": "path",
         "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetIssueBrowserViewer",
+    "operationId": "GET /api/issues/{issueId}/browsers/{browserId}/viewer",
+    "method": "GET",
+    "path": "/issues/{issueId}/browsers/{browserId}/viewer",
+    "description": "Get a private live browser viewer",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "browserId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "viewerId",
+        "in": "query",
+        "required": false,
         "schema": {
           "type": "string"
         }
@@ -20062,6 +21268,48 @@
     ]
   },
   {
+    "name": "paperclipGetSkillSource",
+    "operationId": "GET /api/companies/{companyId}/skill-sources/{sourceId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/skill-sources/{sourceId}",
+    "description": "Get a skill source and entries",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sourceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetSkillTestRun",
     "operationId": "GET /api/companies/{companyId}/skills/{skillId}/test-runs/{runId}",
     "method": "GET",
@@ -20655,7 +21903,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1494",
+    "boardGuard": "assertBoard@tool-access.ts:1529",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20690,7 +21938,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:841",
+    "boardGuard": "assertBoard@tool-access.ts:868",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20740,7 +21988,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1667",
+    "boardGuard": "assertBoard@tool-access.ts:1703",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20774,7 +22022,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2194",
+    "boardGuard": "assertBoard@tool-access.ts:2296",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20816,7 +22064,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2187",
+    "boardGuard": "assertBoard@tool-access.ts:2289",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20851,7 +22099,7 @@
       "assertBoardAnyToolPermission"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2031",
+    "boardGuard": "assertBoard@tool-access.ts:2129",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20893,7 +22141,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1866",
+    "boardGuard": "assertBoard@tool-access.ts:1902",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20940,7 +22188,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:809",
+    "boardGuard": "assertBoard@tool-access.ts:836",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21080,7 +22328,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2237",
+    "boardGuard": "assertBoard@tool-access.ts:2339",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21123,7 +22371,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2449",
+    "boardGuard": "assertBoard@tool-access.ts:2551",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21161,7 +22409,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1216",
+    "boardGuard": "assertBoard@tool-access.ts:1244",
     "authorityCapability": null,
     "parameters": []
   },
@@ -22100,9 +23348,7 @@
       "destructiveHint": false,
       "idempotentHint": false
     },
-    "guards": [
-      "requireEnabled"
-    ],
+    "guards": [],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -22508,7 +23754,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16212",
+    "boardGuard": "assertBoard@issues.ts:16230",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22758,6 +24004,7 @@
     "guards": [
       "assertCompanyAccess",
       "assertKnownAdapterType",
+      "getActorInfo",
       "requireServerAdapter"
     ],
     "permissions": [],
@@ -22968,6 +24215,40 @@
     ]
   },
   {
+    "name": "paperclipListAgentInstructionsCandidates",
+    "operationId": "GET /api/agents/{id}/instructions-bundle/candidates",
+    "method": "GET",
+    "path": "/agents/{agentId}/instructions-bundle/candidates",
+    "description": "List preserved instruction edits and collection diagnostics",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListAgentSkills",
     "operationId": "GET /api/agents/{id}/skills",
     "method": "GET",
@@ -23080,11 +24361,46 @@
     ]
   },
   {
+    "name": "paperclipListAiConnectionPools",
+    "operationId": "GET /api/companies/{companyId}/ai-connection-pools",
+    "method": "GET",
+    "path": "/companies/{companyId}/ai-connection-pools",
+    "description": "List company AI connection pools for connection managers",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:181",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListAiConnections",
     "operationId": "GET /api/companies/{companyId}/ai-connections",
     "method": "GET",
     "path": "/companies/{companyId}/ai-connections",
-    "description": "List available AI connections and personal defaults",
+    "description": "List available AI connections, personal defaults, and connection-manager access",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -23146,6 +24462,14 @@
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
+      {
+        "name": "agentId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
       {
         "name": "companyId",
         "in": "path",
@@ -23367,6 +24691,94 @@
         "name": "to",
         "in": "query",
         "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListBrowserUseCloudProfiles",
+    "operationId": "GET /api/companies/{companyId}/browser-use-cloud/grants/{grantId}/profiles",
+    "method": "GET",
+    "path": "/companies/{companyId}/browser-use-cloud/grants/{grantId}/profiles",
+    "description": "List available browser profiles",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@browser-use.ts:120",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "grantId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListBrowserUseCloudSettings",
+    "operationId": "GET /api/companies/{companyId}/browser-use-cloud/grants/{grantId}/settings",
+    "method": "GET",
+    "path": "/companies/{companyId}/browser-use-cloud/grants/{grantId}/settings",
+    "description": "Read browser credential settings",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@browser-use.ts:135",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "grantId",
+        "in": "path",
+        "required": true,
         "schema": {
           "type": "string"
         }
@@ -24525,6 +25937,41 @@
     ]
   },
   {
+    "name": "paperclipListChats",
+    "operationId": "GET /api/companies/{companyId}/chats",
+    "method": "GET",
+    "path": "/companies/{companyId}/chats",
+    "description": "List the current board user's agent conversations. Requires Agent Chat to be enabled. Returns accessible conversations in the company, ordered by most recent activity. Each agent has one conversation per user.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess",
+      "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListClaudeOauthTokenStatus",
     "operationId": "GET /api/companies/{companyId}/claude-oauth-token-status",
     "method": "GET",
@@ -25013,6 +26460,38 @@
         "name": "since",
         "in": "query",
         "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListEmailConnections",
+    "operationId": "GET /api/companies/{companyId}/email/connections",
+    "method": "GET",
+    "path": "/companies/{companyId}/email/connections",
+    "description": "List accessible saved AgentMail API keys (metadata only).",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Email"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
         "schema": {
           "type": "string"
         }
@@ -25801,7 +27280,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:4055",
+    "boardGuard": "assertInstanceAdmin@agents.ts:4144",
     "authorityCapability": null,
     "parameters": []
   },
@@ -25881,6 +27360,40 @@
     },
     "guards": [
       "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListIssueBrowsers",
+    "operationId": "GET /api/issues/{issueId}/browsers",
+    "method": "GET",
+    "path": "/issues/{issueId}/browsers",
+    "description": "List authorized task browsers",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -27297,7 +28810,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6869",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7127",
     "authorityCapability": null,
     "parameters": [
       {
@@ -27724,6 +29237,74 @@
       },
       {
         "name": "skillId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListSkillSourceRepositories",
+    "operationId": "GET /api/companies/{companyId}/skill-sources/repositories",
+    "method": "GET",
+    "path": "/companies/{companyId}/skill-sources/repositories",
+    "description": "Browse authorized GitHub repositories for skills",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListSkillSources",
+    "operationId": "GET /api/companies/{companyId}/skill-sources",
+    "method": "GET",
+    "path": "/companies/{companyId}/skill-sources",
+    "description": "List GitHub skill sources",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -28231,7 +29812,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1501",
+    "boardGuard": "assertBoard@tool-access.ts:1536",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28284,11 +29865,75 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1563",
+    "boardGuard": "assertBoard@tool-access.ts:1598",
     "authorityCapability": null,
     "parameters": [
       {
         "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListToolConnectionApps",
+    "operationId": "GET /api/tool-connections/{connectionId}/aggregator/apps",
+    "method": "GET",
+    "path": "/tool-connections/{connectionId}/aggregator/apps",
+    "description": "List upstream account observations for the current connection manager",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListToolConnectionComposioApps",
+    "operationId": "GET /api/tool-connections/{connectionId}/composio/apps",
+    "method": "GET",
+    "path": "/tool-connections/{connectionId}/composio/apps",
+    "description": "List upstream account observations for the current connection manager",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
         "in": "path",
         "required": true,
         "schema": {
@@ -28318,7 +29963,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1692",
+    "boardGuard": "assertBoard@tool-access.ts:1728",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28352,7 +29997,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1875",
+    "boardGuard": "assertBoard@tool-access.ts:1911",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28387,7 +30032,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1628",
+    "boardGuard": "assertBoard@tool-access.ts:1663",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28423,7 +30068,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1987",
+    "boardGuard": "assertBoard@tool-access.ts:2023",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28467,7 +30112,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1946",
+    "boardGuard": "assertBoard@tool-access.ts:1982",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28502,7 +30147,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1487",
+    "boardGuard": "assertBoard@tool-access.ts:1522",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28629,7 +30274,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2470",
+    "boardGuard": "assertBoard@tool-access.ts:2572",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28663,7 +30308,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2210",
+    "boardGuard": "assertBoard@tool-access.ts:2312",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28698,7 +30343,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2203",
+    "boardGuard": "assertBoard@tool-access.ts:2305",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28733,7 +30378,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2456",
+    "boardGuard": "assertBoard@tool-access.ts:2558",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28844,7 +30489,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2463",
+    "boardGuard": "assertBoard@tool-access.ts:2565",
     "authorityCapability": null,
     "parameters": [
       {
@@ -29378,6 +31023,48 @@
     }
   },
   {
+    "name": "paperclipPresenceIssueBrowser",
+    "operationId": "POST /api/issues/{issueId}/browsers/{browserId}/presence",
+    "method": "POST",
+    "path": "/issues/{issueId}/browsers/{browserId}/presence",
+    "description": "Renew visible browser presence",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "browserId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipPreviewAgentBatchAdapterConfig",
     "operationId": "POST /api/agents/batch/adapter-config/preview",
     "method": "POST",
@@ -29905,6 +31592,72 @@
         },
         "required": [
           "mode"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipPreviewSkillSource",
+    "operationId": "POST /api/companies/{companyId}/skill-sources/preview",
+    "method": "POST",
+    "path": "/companies/{companyId}/skill-sources/preview",
+    "description": "Preview an audited skill package file at an immutable commit",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "commitSha": {
+            "type": "string"
+          },
+          "connectionId": {
+            "type": "string"
+          },
+          "filePath": {
+            "type": "string"
+          },
+          "repositoryUrl": {
+            "type": "string"
+          },
+          "skillPath": {
+            "type": "string"
+          },
+          "trackingRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "commitSha",
+          "filePath",
+          "repositoryUrl",
+          "skillPath"
         ]
       }
     }
@@ -30724,6 +32477,46 @@
     }
   },
   {
+    "name": "paperclipRefreshSkillSource",
+    "operationId": "POST /api/companies/{companyId}/skill-sources/{sourceId}/refresh",
+    "method": "POST",
+    "path": "/companies/{companyId}/skill-sources/{sourceId}/refresh",
+    "description": "Refresh installed source skills",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sourceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipRefreshStatusCard",
     "operationId": "POST /api/status-cards/{id}/refresh",
     "method": "POST",
@@ -30766,6 +32559,102 @@
         "properties": {
           "full": {
             "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "paperclipRefreshToolApp",
+    "operationId": "POST /api/tool-connections/{connectionId}/composio/apps/refresh",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/composio/apps/refresh",
+    "description": "Refresh upstream account observations",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "toolkits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "paperclipRefreshToolConnectionApp",
+    "operationId": "POST /api/tool-connections/{connectionId}/aggregator/apps/refresh",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/aggregator/apps/refresh",
+    "description": "Refresh upstream account observations",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "toolkits": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
           }
         }
       }
@@ -30994,6 +32883,64 @@
             "type": "string"
           }
         }
+      }
+    }
+  },
+  {
+    "name": "paperclipReleaseIssueBrowserViewport",
+    "operationId": "POST /api/issues/{issueId}/browsers/{browserId}/viewport/release",
+    "method": "POST",
+    "path": "/issues/{issueId}/browsers/{browserId}/viewport/release",
+    "description": "Release viewport ownership",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "browserId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "viewerId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "viewerId"
+        ]
       }
     }
   },
@@ -31569,6 +33516,68 @@
     }
   },
   {
+    "name": "paperclipResolveAgentCandidate",
+    "operationId": "POST /api/agents/{id}/instructions-bundle/candidates/{runId}/resolve",
+    "method": "POST",
+    "path": "/agents/{agentId}/instructions-bundle/candidates/{runId}/resolve",
+    "description": "Explicitly save a preserved instruction edit with compare-and-swap",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "runId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "baseRevisionId": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseRevisionId",
+          "content"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipResolveBudgetIncident",
     "operationId": "POST /api/companies/{companyId}/budget-incidents/{incidentId}/resolve",
     "method": "POST",
@@ -31924,6 +33933,81 @@
     }
   },
   {
+    "name": "paperclipResolveFromIssueInteraction",
+    "operationId": "POST /api/issues/{id}/interactions/{interactionId}/resolve-from-comment",
+    "method": "POST",
+    "path": "/issues/{issueId}/interactions/{interactionId}/resolve-from-comment",
+    "description": "Record a user's conversational confirmation answer. An eligible active agent run resolves a confirmation on its own task using the latest user comment. Resolver permissions, target staleness and conversation reset boundaries remain enforced. Matching retries are idempotent. No new wake is scheduled.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "interactionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "commentId": {
+            "type": "string"
+          },
+          "decision": {
+            "type": "string",
+            "enum": [
+              "accept",
+              "reject"
+            ]
+          },
+          "reason": {
+            "type": "string"
+          },
+          "selectedOptionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "commentId",
+          "decision"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipResolveHeartbeatRunRequest",
     "operationId": "POST /api/heartbeat-runs/{runId}/runtime-requests/{requestId}/resolve",
     "method": "POST",
@@ -32140,6 +34224,9 @@
                 ]
               },
               "runId": {
+                "type": "string"
+              },
+              "workspaceRepairEvidence": {
                 "type": "string"
               }
             },
@@ -32393,6 +34480,64 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipRestoreAgentInstructionsBundle",
+    "operationId": "POST /api/agents/{id}/instructions-bundle/restore",
+    "method": "POST",
+    "path": "/agents/{agentId}/instructions-bundle/restore",
+    "description": "Restore a pre-upgrade instruction snapshot into current files with compare-and-swap",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertExternalInstructionsAdmin"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "baseRevisionId": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "revisionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "baseRevisionId",
+          "path",
+          "revisionId"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipRestoreCaseDocumentRevision",
@@ -32745,6 +34890,66 @@
     ]
   },
   {
+    "name": "paperclipRetryIssueRecoveryAction",
+    "operationId": "POST /api/issues/{id}/recovery-actions/retry-workspace-export",
+    "method": "POST",
+    "path": "/issues/{issueId}/recovery-actions/retry-workspace-export",
+    "description": "Retry only workspace export for a repaired accepted native result",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertIssueReadAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@issues.ts:9535",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "actionId": {
+            "type": "string"
+          },
+          "repairNote": {
+            "type": "string"
+          },
+          "runId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "actionId",
+          "repairNote",
+          "runId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipRetryNowIssueScheduledRetry",
     "operationId": "POST /api/issues/{id}/scheduled-retry/retry-now",
     "method": "POST",
@@ -32800,7 +35005,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7390",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7655",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33597,6 +35802,12 @@
       "schema": {
         "type": "object",
         "properties": {
+          "baseHash": {
+            "type": "string"
+          },
+          "baseRevisionId": {
+            "type": "string"
+          },
           "clearLegacyPromptTemplate": {
             "type": "boolean"
           },
@@ -33637,7 +35848,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:317",
+    "boardGuard": "assertBoard@ai-connections.ts:364",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33663,6 +35874,69 @@
         "required": [
           "grantId"
         ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetBrowserUseCloudGrantSetting",
+    "operationId": "PUT /api/companies/{companyId}/browser-use-cloud/grants/{grantId}/settings",
+    "method": "PUT",
+    "path": "/companies/{companyId}/browser-use-cloud/grants/{grantId}/settings",
+    "description": "Update browser credential settings",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@browser-use.ts:150",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "grantId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowedProfileIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxCostUsd": {
+            "type": "number"
+          }
+        }
       }
     }
   },
@@ -34805,7 +37079,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8928",
+    "boardGuard": "assertBoard@issues.ts:8880",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34866,7 +37140,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16182",
+    "boardGuard": "assertBoard@issues.ts:16200",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34902,6 +37176,62 @@
           "orderedCommentIds",
           "queueId",
           "revision"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetIssueTitle",
+    "operationId": "PUT /api/issues/{id}/title",
+    "method": "PUT",
+    "path": "/issues/{issueId}/title",
+    "description": "Set a task title. Changes only the title. onlyIfProvisional preserves an explicit title, including concurrent user edits. Agent callers must own the task's active run. Allowed in Ask and Plan modes.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "onlyIfProvisional": {
+            "type": "boolean"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
         ]
       }
     }
@@ -36096,6 +38426,58 @@
     }
   },
   {
+    "name": "paperclipSetToolConnectionDiscovery",
+    "operationId": "PUT /api/tool-connections/{connectionId}/aggregator/discovery",
+    "method": "PUT",
+    "path": "/tool-connections/{connectionId}/aggregator/discovery",
+    "description": "Save manager-owned optional Arcade account discovery credentials",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "apiKey": {
+            "type": "string"
+          },
+          "userId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "apiKey",
+          "userId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetToolConnectionGrantMember",
     "operationId": "PUT /api/tool-connections/{connectionId}/grants/{grantId}/members",
     "method": "PUT",
@@ -36118,7 +38500,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1728",
+    "boardGuard": "assertBoard@tool-access.ts:1764",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36182,7 +38564,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1885",
+    "boardGuard": "assertBoard@tool-access.ts:1921",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36376,6 +38758,91 @@
     }
   },
   {
+    "name": "paperclipSetupToolConnectionComposioApp",
+    "operationId": "POST /api/tool-connections/{connectionId}/composio/apps/{toolkit}/setup",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/composio/apps/{toolkit}/setup",
+    "description": "Start or verify Composio app authorization through a saved gateway",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "toolkit",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "nest",
+      "schema": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "start"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "status"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "const": "complete"
+              }
+            },
+            "required": [
+              "action"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetUserInboxAgentPolicy",
     "operationId": "PUT /api/companies/{companyId}/users/{userId}/inbox-agent-policy",
     "method": "PUT",
@@ -36528,7 +38995,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18096",
+    "boardGuard": "assertBoard@issues.ts:18149",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36585,7 +39052,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1534",
+    "boardGuard": "assertBoard@tool-access.ts:1569",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36629,7 +39096,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1679",
+    "boardGuard": "assertBoard@tool-access.ts:1715",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36960,7 +39427,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17054",
+    "boardGuard": "assertBoard@issues.ts:17082",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37224,6 +39691,96 @@
     }
   },
   {
+    "name": "paperclipSyncToolConnectionAggregatorApp",
+    "operationId": "POST /api/tool-connections/{connectionId}/aggregator/apps/sync",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/aggregator/apps/sync",
+    "description": "Start upstream account discovery without changing tool access",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  {
+    "name": "paperclipSyncToolConnectionComposioApp",
+    "operationId": "POST /api/tool-connections/{connectionId}/composio/apps/sync",
+    "method": "POST",
+    "path": "/tool-connections/{connectionId}/composio/apps/sync",
+    "description": "Start upstream account discovery without changing tool access",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "tool-access"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "connectionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "force": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  {
     "name": "paperclipTaskDrainInstance",
     "operationId": "POST /api/instance/task-drain",
     "method": "POST",
@@ -37392,35 +39949,119 @@
           "aiConnection": {
             "anyOf": [
               {
-                "type": "object",
-                "properties": {
-                  "method": {
-                    "type": "string",
-                    "enum": [
-                      "subscription",
-                      "api_key"
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "subscription",
+                          "api_key"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "responsible_user"
+                        ]
+                      },
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "anthropic",
+                          "openai",
+                          "openrouter",
+                          "xai"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "mode",
+                      "provider"
                     ]
                   },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "responsible_user"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "connectionId": {
+                        "type": "string"
+                      },
+                      "grantId": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "subscription",
+                          "api_key"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "shared"
+                        ]
+                      },
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "anthropic",
+                          "openai",
+                          "openrouter",
+                          "xai"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "connectionId",
+                      "grantId",
+                      "method",
+                      "mode",
+                      "provider"
                     ]
                   },
-                  "provider": {
-                    "type": "string",
-                    "enum": [
-                      "anthropic",
-                      "openai",
-                      "openrouter",
-                      "xai"
+                  {
+                    "type": "object",
+                    "properties": {
+                      "connectionId": {
+                        "type": "string"
+                      },
+                      "grantId": {
+                        "type": "string"
+                      },
+                      "method": {
+                        "type": "string",
+                        "enum": [
+                          "subscription",
+                          "api_key"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "delegated"
+                        ]
+                      },
+                      "provider": {
+                        "type": "string",
+                        "enum": [
+                          "anthropic",
+                          "openai",
+                          "openrouter",
+                          "xai"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "connectionId",
+                      "grantId",
+                      "method",
+                      "mode",
+                      "provider"
                     ]
                   }
-                },
-                "required": [
-                  "method",
-                  "mode",
-                  "provider"
                 ]
               },
               {
@@ -37429,78 +40070,16 @@
                   "connectionId": {
                     "type": "string"
                   },
-                  "grantId": {
-                    "type": "string"
-                  },
-                  "method": {
-                    "type": "string",
-                    "enum": [
-                      "subscription",
-                      "api_key"
-                    ]
-                  },
                   "mode": {
                     "type": "string",
                     "enum": [
-                      "shared"
-                    ]
-                  },
-                  "provider": {
-                    "type": "string",
-                    "enum": [
-                      "anthropic",
-                      "openai",
-                      "openrouter",
-                      "xai"
+                      "router"
                     ]
                   }
                 },
                 "required": [
                   "connectionId",
-                  "grantId",
-                  "method",
-                  "mode",
-                  "provider"
-                ]
-              },
-              {
-                "type": "object",
-                "properties": {
-                  "connectionId": {
-                    "type": "string"
-                  },
-                  "grantId": {
-                    "type": "string"
-                  },
-                  "method": {
-                    "type": "string",
-                    "enum": [
-                      "subscription",
-                      "api_key"
-                    ]
-                  },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "delegated"
-                    ]
-                  },
-                  "provider": {
-                    "type": "string",
-                    "enum": [
-                      "anthropic",
-                      "openai",
-                      "openrouter",
-                      "xai"
-                    ]
-                  }
-                },
-                "required": [
-                  "connectionId",
-                  "grantId",
-                  "method",
-                  "mode",
-                  "provider"
+                  "mode"
                 ]
               }
             ]
@@ -37634,7 +40213,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2706",
+    "boardGuard": "assertBoard@tool-access.ts:2808",
     "authorityCapability": null,
     "parameters": [
       {
@@ -38725,35 +41304,119 @@
               "aiConnection": {
                 "anyOf": [
                   {
-                    "type": "object",
-                    "properties": {
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "responsible_user"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "responsible_user"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "shared"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                      {
+                        "type": "object",
+                        "properties": {
+                          "connectionId": {
+                            "type": "string"
+                          },
+                          "grantId": {
+                            "type": "string"
+                          },
+                          "method": {
+                            "type": "string",
+                            "enum": [
+                              "subscription",
+                              "api_key"
+                            ]
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "delegated"
+                            ]
+                          },
+                          "provider": {
+                            "type": "string",
+                            "enum": [
+                              "anthropic",
+                              "openai",
+                              "openrouter",
+                              "xai"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "connectionId",
+                          "grantId",
+                          "method",
+                          "mode",
+                          "provider"
                         ]
                       }
-                    },
-                    "required": [
-                      "method",
-                      "mode",
-                      "provider"
                     ]
                   },
                   {
@@ -38762,78 +41425,16 @@
                       "connectionId": {
                         "type": "string"
                       },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
                       "mode": {
                         "type": "string",
                         "enum": [
-                          "shared"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
+                          "router"
                         ]
                       }
                     },
                     "required": [
                       "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
-                    ]
-                  },
-                  {
-                    "type": "object",
-                    "properties": {
-                      "connectionId": {
-                        "type": "string"
-                      },
-                      "grantId": {
-                        "type": "string"
-                      },
-                      "method": {
-                        "type": "string",
-                        "enum": [
-                          "subscription",
-                          "api_key"
-                        ]
-                      },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "delegated"
-                        ]
-                      },
-                      "provider": {
-                        "type": "string",
-                        "enum": [
-                          "anthropic",
-                          "openai",
-                          "openrouter",
-                          "xai"
-                        ]
-                      }
-                    },
-                    "required": [
-                      "connectionId",
-                      "grantId",
-                      "method",
-                      "mode",
-                      "provider"
+                      "mode"
                     ]
                   }
                 ]
@@ -40365,6 +42966,9 @@
           "enableAgentChat": {
             "type": "boolean"
           },
+          "enableAiConnectionRouters": {
+            "type": "boolean"
+          },
           "enableApps": {
             "type": "boolean"
           },
@@ -40381,6 +42985,9 @@
             "type": "boolean"
           },
           "enableClassicTaskInterface": {
+            "type": "boolean"
+          },
+          "enableCombinedInboxTasks": {
             "type": "boolean"
           },
           "enableConferenceRoomChat": {
@@ -40417,6 +43024,9 @@
             "type": "boolean"
           },
           "enableMcpAggregators": {
+            "type": "boolean"
+          },
+          "enableMemoryConnectors": {
             "type": "boolean"
           },
           "enableNativeRunner": {
@@ -40586,9 +43196,6 @@
               "prompt"
             ]
           },
-          "keyboardShortcuts": {
-            "type": "boolean"
-          },
           "speechToText": {
             "type": "object",
             "properties": {
@@ -40705,7 +43312,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16150",
+    "boardGuard": "assertBoard@issues.ts:16168",
     "authorityCapability": null,
     "parameters": [
       {
@@ -42332,6 +44939,79 @@
     }
   },
   {
+    "name": "paperclipUpdateSkillSource",
+    "operationId": "PATCH /api/companies/{companyId}/skill-sources/{sourceId}",
+    "method": "PATCH",
+    "path": "/companies/{companyId}/skill-sources/{sourceId}",
+    "description": "Save skill source selection and connection",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "skills"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sourceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "connectionId": {
+            "type": "string"
+          },
+          "excludedFolders": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "revision": {
+            "type": "integer"
+          },
+          "selectedPaths": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "excludedFolders",
+          "revision",
+          "selectedPaths"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipUpdateSkillTestInput",
     "operationId": "PATCH /api/companies/{companyId}/skills/{skillId}/test-inputs/{inputId}",
     "method": "PATCH",
@@ -42712,6 +45392,7 @@
           "type": {
             "type": "string",
             "enum": [
+              "rest_api",
               "mcp_http",
               "mcp_stdio",
               "paperclip_plugin",
@@ -42763,6 +45444,36 @@
       "schema": {
         "type": "object",
         "properties": {
+          "agentInstructions": {
+            "type": "object",
+            "properties": {
+              "enabled": {
+                "type": "boolean"
+              },
+              "template": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "version": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "id",
+                  "version"
+                ]
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "enabled",
+              "text"
+            ]
+          },
           "applicationName": {
             "type": "string"
           },
@@ -43906,6 +46617,107 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipViewportIssueBrowser",
+    "operationId": "POST /api/issues/{issueId}/browsers/{browserId}/viewport",
+    "method": "POST",
+    "path": "/issues/{issueId}/browsers/{browserId}/viewport",
+    "description": "Set the browser viewport",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Browser Use Cloud"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "browserId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "nest",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "height": {
+                "type": "integer"
+              },
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "fit"
+                ]
+              },
+              "takeControl": {
+                "type": "boolean"
+              },
+              "viewerId": {
+                "type": "string"
+              },
+              "width": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "height",
+              "preset",
+              "viewerId",
+              "width"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "preset": {
+                "type": "string",
+                "enum": [
+                  "default",
+                  "phone",
+                  "tablet",
+                  "laptop",
+                  "desktop"
+                ]
+              },
+              "viewerId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "preset"
+            ]
+          }
+        ]
+      }
+    }
   },
   {
     "name": "paperclipWakeupAgent",

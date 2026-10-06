@@ -2,6 +2,7 @@ import { QueryClient } from "@tanstack/react-query";
 import type { Issue, IssueComment } from "@tickernelz/paperclip-pro-shared";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { issuesApi } from "@/api/issues";
+import { activityApi } from "@/api/activity";
 import { prefetchIssueComments, prefetchIssueDetailForNavigation } from "./issueDetailCache";
 import { queryKeys } from "./queryKeys";
 
@@ -9,6 +10,13 @@ vi.mock("@/api/issues", () => ({
   issuesApi: {
     get: vi.fn(),
     listComments: vi.fn(),
+  },
+}));
+
+vi.mock("@/api/activity", () => ({
+  activityApi: {
+    forIssue: vi.fn(),
+    runsForIssue: vi.fn(),
   },
 }));
 
@@ -97,5 +105,9 @@ describe("prefetchIssueComments", () => {
     );
     expect(cachedComments?.pages).toEqual([firstPage]);
     expect(issuesApi.listComments).toHaveBeenCalledWith(issue.id, expect.anything());
+    // Hover/focus uses this helper too. Full history starts only once the task
+    // page mounts, so moving across links does not fan out expensive reads.
+    expect(activityApi.forIssue).not.toHaveBeenCalled();
+    expect(activityApi.runsForIssue).not.toHaveBeenCalled();
   });
 });

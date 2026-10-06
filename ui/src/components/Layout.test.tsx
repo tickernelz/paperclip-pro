@@ -320,7 +320,7 @@ describe("Layout", () => {
       version: "1.2.3",
     });
     mockInstanceSettingsApi.getGeneral.mockResolvedValue({
-      keyboardShortcuts: false,
+      censorUsernameInLogs: false,
     });
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableApps: true,

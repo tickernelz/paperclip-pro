@@ -247,10 +247,7 @@ for (const mode of ["Ask", "Plan"])
     try {
       await page.goto(f.route);
       await page.getByTestId("task-chat-composer-add").click();
-      await page
-        .getByTestId("task-chat-composer-add-menu")
-        .getByText(`${mode} mode`, { exact: true })
-        .click();
+      await page.getByTestId(mode === "Plan" ? "composer-add-plan" : "composer-add-ask").click();
       await send(page, { action: "project", name: "Forbidden mutation" });
       await idle(request, f.chatPath);
       expect(
@@ -388,10 +385,7 @@ test("plan approval hands the preserved revision to an assigned project task", a
   try {
     await page.goto(f.route);
     await page.getByTestId("task-chat-composer-add").click();
-    await page
-      .getByTestId("task-chat-composer-add-menu")
-      .getByText("Plan mode", { exact: true })
-      .click();
+    await page.getByTestId("composer-add-plan").click();
     await send(page, {
       action: "plan",
       text: "# Approved welcome\nWrite two friendly sentences.",
@@ -507,6 +501,11 @@ test("shared questions resume and existing project reuse creates no project card
       }),
     );
     expect(ordinaryChild.parentId).toBe(task.id);
+    // The delegated task finishes on its own and wakes the conversation with
+    // a completion reporting turn. Wait for that turn to post its reply and
+    // settle before reading status, or this read can catch the conversation
+    // mid-turn.
+    await idle(request, f.chatPath, 4);
     expect(
       (await json(await request.get(`/api/issues/${chat.id}`))).status,
     ).toBe("in_review");

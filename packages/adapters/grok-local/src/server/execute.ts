@@ -1,3 +1,5 @@
+import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
+import { withWorkspaceRestore } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-result";
 import { cancellableSandboxStartup } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-cancellation";
 import fs from "node:fs/promises";
 import path from "node:path";
@@ -34,8 +36,8 @@ import {
   readPaperclipIssueWorkModeFromContext,
   readPaperclipRuntimeSkillEntries,
   renderTemplate,
-  renderPaperclipWakePrompt,
-  selectPaperclipTaskMarkdown,
+  hydrateFreshSessionHandoff,
+  selectPaperclipPromptSections,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
   resolveLegacyPaperclipDesiredSkillNames,
@@ -245,6 +247,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 }
 
 async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
+  const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   const { runId, agent, runtime, config, context, onLog, onMeta, onSpawn, authToken } = ctx;
   const executionTarget = readAdapterExecutionTarget({
     executionTarget: ctx.executionTarget,
@@ -298,9 +301,9 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
   // every exit path (teardown and setup failure alike), mirroring the Codex
   // adapter's `stagedCodexHomeDir` handling.
   let stagedGrokHomeDir: string | null = null;
-  let paperclipMcpMount: PaperclipMcpMount | null = null;
+  let paperclipMcpMount = null as PaperclipMcpMount | null;
 
-  try {
+  const executeTurn = async (): Promise<AdapterExecutionResult> => {
     const envConfig = parseObject(config.env);
     const env: Record<string, string> = {
       ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
@@ -562,41 +565,12 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
       run: { id: runId, source: "on_demand" },
       context,
     };
-    const taskContextNote = context.conversationMode === true
-      ? selectPaperclipTaskMarkdown(context, { resumedSession: Boolean(sessionId), includeCommunicationGuidance: false })
-      : "";
-    const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, {
-      conversationMode: context.conversationMode === true,
-      resumedSession: Boolean(sessionId),
-      suppressIssueDescription: taskContextNote.length > 0,
-      paperclipAccess,
-    });
-    const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
-    const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
-      ? ""
-      : renderTemplate(promptTemplate, templateData);
     const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
     const paperclipEnvNote = renderPaperclipEnvNote(env);
     const apiAccessNote = paperclipAccessGuidance(paperclipAccess, {
       toolsets: paperclipToolsets,
       shellHint: "shell commands",
     });
-    const basePrompt = joinPromptSections([
-      wakePrompt,
-      taskContextNote,
-      sessionHandoffNote,
-      paperclipEnvNote,
-      apiAccessNote,
-      renderedPrompt,
-    ]);
-    const promptMetrics = {
-      promptChars: basePrompt.length,
-      wakePromptChars: wakePrompt.length,
-      taskContextChars: taskContextNote.length,
-      sessionHandoffChars: sessionHandoffNote.length,
-      runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
-      heartbeatPromptChars: renderedPrompt.length,
-    };
 
     const buildArgs = (resumeSessionId: string | null, prompt: string) => {
       const args = ["--cwd", effectiveExecutionCwd, "--output-format", "streaming-json"];
@@ -619,11 +593,38 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
     };
 
     const runAttempt = async (resumeSessionId: string | null) => {
+    await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(resumeSessionId) });
       ctx.signal?.throwIfAborted();
+      const attemptSections = selectPaperclipPromptSections(context, {
+        resumedSession: Boolean(resumeSessionId),
+        includeCommunicationGuidance: false,
+        paperclipAccess,
+      });
+      const attemptWakePrompt = attemptSections.wakePrompt;
+      const attemptRenderedPrompt = Boolean(resumeSessionId) && attemptWakePrompt.length > 0
+        || isPaperclipRecoveryWakePayload(context.paperclipWake)
+        ? ""
+        : renderTemplate(promptTemplate, templateData);
+      const attemptBasePrompt = joinPromptSections([
+        attemptWakePrompt,
+        attemptSections.taskContextNote,
+        sessionHandoffNote,
+        paperclipEnvNote,
+        apiAccessNote,
+        attemptRenderedPrompt,
+      ]);
       const prompt = joinPromptSections([
         selectInitialCommunicationGuidance(context, { resumedSession: Boolean(resumeSessionId) }),
-        basePrompt,
+        attemptBasePrompt,
       ]);
+      const promptMetrics = {
+        promptChars: prompt.length,
+        wakePromptChars: attemptWakePrompt.length,
+        taskContextChars: attemptSections.taskContextNote.length,
+        sessionHandoffChars: sessionHandoffNote.length,
+        runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
+        heartbeatPromptChars: attemptRenderedPrompt.length,
+      };
       const args = buildArgs(resumeSessionId, prompt);
       if (onMeta) {
         await onMeta({
@@ -642,6 +643,7 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
       }
 
       const proc = await runAdapterExecutionTargetProcess(runId, runtimeExecutionTarget, command, args, {
+        onProcessStopped: providerStop.beginInvocation(),
         cwd,
         env,
         timeoutSec,
@@ -670,17 +672,7 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
       clearSessionOnMissingSession = false,
       isRetry = false,
     ): AdapterExecutionResult => {
-      if (attempt.proc.timedOut) {
-        return {
-          exitCode: attempt.proc.exitCode,
-          signal: attempt.proc.signal,
-          timedOut: true,
-          errorMessage: `Timed out after ${timeoutSec}s`,
-          clearSession: clearSessionOnMissingSession,
-        };
-      }
-
-      const failed = (attempt.proc.exitCode ?? 0) !== 0;
+      const failed = attempt.proc.timedOut || (attempt.proc.exitCode ?? 0) !== 0;
       const parsedError = typeof attempt.parsed.errorMessage === "string" ? attempt.parsed.errorMessage.trim() : "";
       const stderrLine = firstNonEmptyLine(attempt.proc.stderr);
       const fallbackErrorMessage =
@@ -709,8 +701,8 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
       return {
         exitCode: attempt.proc.exitCode,
         signal: attempt.proc.signal,
-        timedOut: false,
-        errorMessage: failed ? fallbackErrorMessage : null,
+        timedOut: attempt.proc.timedOut,
+        errorMessage: attempt.proc.timedOut ? `Timed out after ${timeoutSec}s` : failed ? fallbackErrorMessage : null,
         usage: {
           inputTokens: attempt.parsed.inputTokens,
           outputTokens: attempt.parsed.outputTokens,
@@ -732,6 +724,7 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
         costUsd: billingType === "api" ? attempt.parsed.costUsd : null,
         resultJson: {
           stopReason: attempt.parsed.stopReason,
+          finalResponseRecorded: attempt.parsed.stopReason === "EndTurn" && Boolean(attempt.parsed.summary?.trim()),
           requestId: attempt.parsed.requestId,
           ...(failed ? { stderr: attempt.proc.stderr } : {}),
         },
@@ -757,14 +750,38 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
     }
 
     return toResult(initial);
+  };
+
+  try {
+    return await withWorkspaceRestore(
+      async () => {
+        let result: AdapterExecutionResult;
+        let collectionFailed = false;
+        const collectionFailureMessage = "Instruction collection failed after provider stop. No instruction save is claimed.";
+        try {
+          result = await executeTurn();
+        } finally {
+          try {
+            await providerStop.collectBeforeRestore();
+          } catch {
+            collectionFailed = true;
+            await onLog("stderr", `[paperclip] ${collectionFailureMessage}\n`).catch(() => undefined);
+          }
+        }
+        if (!collectionFailed) return result;
+        const providerFailed = result.timedOut || result.signal || result.errorCode
+          || (result.exitCode !== null && result.exitCode !== 0);
+        return {
+          ...result,
+          ...(!providerFailed ? { errorCode: "instruction_collection_failed" } : {}),
+          errorMessage: [result.errorMessage, collectionFailureMessage].filter(Boolean).join(" "),
+          resultJson: { ...result.resultJson, instructionCollectionFailure: "collection_failed" },
+        };
+      },
+      async () => { await restoreRemoteWorkspace?.(); },
+    );
   } finally {
-    // Remove the staged GROK_HOME allowlist temp dir first, before the
-    // `Promise.all` below. A rejecting member of that `Promise.all` (for
-    // example a failed workspace restore) throws out of this `finally` and
-    // skips every statement after it, so the removal must run before that
-    // await to hold on every exit path (teardown AND error), never only the
-    // happy path. Cleanup failure is logged, not fatal — a leaked temp dir
-    // must not crash the run.
+    // Cleanup runs after settlement on both success and failure.
     if (stagedGrokHomeDir) {
       await fs.rm(stagedGrokHomeDir, { recursive: true, force: true }).catch(async (error) => {
         await onLog(
@@ -776,7 +793,6 @@ async function executeTurn(ctx: AdapterExecutionContext): Promise<AdapterExecuti
       });
     }
     await Promise.all([
-      restoreRemoteWorkspace?.(),
       stagedAssets.cleanup(),
       paperclipMcpMount?.cleanup(),
     ]);

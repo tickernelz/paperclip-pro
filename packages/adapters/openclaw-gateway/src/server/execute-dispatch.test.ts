@@ -1,4 +1,5 @@
 import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import { createPromptContextFixture } from "@tickernelz/paperclip-pro-adapter-utils/test-fixtures/prompt-context";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const websocketState = vi.hoisted(() => ({
@@ -159,6 +160,19 @@ describe("openclaw_gateway execute dispatch boundary", () => {
     expect(prompt).toContain("1) GET /api/agents/me");
     expect(prompt).toContain("POST /api/issues/{issueId}/checkout");
     expect(prompt).not.toMatch(/paperclip[A-Z]/);
+  });
+
+  it("sends assignment context on an ordinary gateway task turn", async () => {
+    const ctx = createContext();
+    ctx.context = createPromptContextFixture();
+    const result = await execute(ctx);
+    expect(result.exitCode).toBe(0);
+    expect(websocketState.messages).toHaveLength(1);
+    const prompt = websocketState.messages[0]!;
+    expect(prompt).toContain("## Owned assignment");
+    expect(prompt.indexOf("Append the same ledger entry.")).toBeLessThan(prompt.indexOf("Change the final scope to the launch checklist."));
+    expect(prompt.split("Append the same ledger entry.")).toHaveLength(3);
+    expect(prompt).not.toContain("Structured wake payload JSON:");
   });
 
   it("reports dispatch after transport setup and before the remote agent request", async () => {

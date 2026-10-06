@@ -3,15 +3,22 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 
 export const docsLaneVitestSuites = [
+  "packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts",
   "packages/shared/src/frontmatter.test.ts",
   "packages/shared/src/telemetry/readme-contract.test.ts",
   "packages/skills-catalog/src/release-content-cases-contract.test.ts",
   "packages/skills-catalog/src/shipped-catalog.test.ts",
+  "server/src/__tests__/agent-skills-routes.test.ts",
   "server/src/__tests__/cli-invocation-safety.test.ts",
   "server/src/__tests__/company-skills-service.test.ts",
   "server/src/__tests__/hiring-operational-examples.test.ts",
   "server/src/__tests__/paperclip-skill-utils.test.ts",
   "server/src/services/onboarding-first-task-assets.test.ts",
+  "tests/runner-e2e/hiring-template.test.ts",
+  "tests/runner-e2e/native-completion-defaults.test.ts",
+  "tests/runner-e2e/paperclip-document.test.ts",
+  "tests/runner-e2e/stock-harness-instruction-variant.test.mjs",
+  "tests/runner-e2e/stock-harness.test.ts",
 ];
 
 export const docsLaneNodeTestSuites = ["scripts/prepare-npm-readme.test.mjs"];

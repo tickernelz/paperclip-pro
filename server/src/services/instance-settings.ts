@@ -216,7 +216,6 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
   if (parsed.success) {
     return {
       censorUsernameInLogs: parsed.data.censorUsernameInLogs ?? false,
-      keyboardShortcuts: parsed.data.keyboardShortcuts ?? false,
       feedbackDataSharingPreference:
         parsed.data.feedbackDataSharingPreference ?? DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
       backupRetention: parsed.data.backupRetention ?? DEFAULT_BACKUP_RETENTION,
@@ -228,7 +227,6 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
   }
   return {
     censorUsernameInLogs: false,
-    keyboardShortcuts: false,
     feedbackDataSharingPreference: DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
     backupRetention: DEFAULT_BACKUP_RETENTION,
     defaultMessageDelivery: DEFAULT_MESSAGE_DELIVERY,
@@ -242,6 +240,7 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
     return {
       enableEnvironments: parsed.data.enableEnvironments ?? false,
       enableNativeRunner: parsed.data.enableNativeRunner ?? true,
+      enableAiConnectionRouters: parsed.data.enableAiConnectionRouters ?? false,
       enableManagedSandboxOnly: parsed.data.enableManagedSandboxOnly ?? false,
       enableIsolatedWorkspaces: parsed.data.enableIsolatedWorkspaces ?? false,
       enableIsolatedWorkspacesByDefault: parsed.data.enableIsolatedWorkspacesByDefault ?? false,
@@ -250,11 +249,13 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
       // Apps graduated from Experimental. Ignore historical off values while
       // continuing to accept the compatibility key in stored settings.
       enableApps: true,
+      enableMcpAggregators: true,
       enableChatConnectors: parsed.data.enableChatConnectors ?? false,
-      enableMcpAggregators: parsed.data.enableMcpAggregators ?? false,
+      enableMemoryConnectors: parsed.data.enableMemoryConnectors ?? false,
       enablePipelines: parsed.data.enablePipelines ?? false,
       enableCases: parsed.data.enableCases ?? false,
       enableAgentChat: parsed.data.enableAgentChat ?? false,
+      enableCombinedInboxTasks: parsed.data.enableCombinedInboxTasks ?? false,
       enableConferenceRoomChat: parsed.data.enableConferenceRoomChat ?? false,
       enableClassicTaskInterface: parsed.data.enableClassicTaskInterface ?? false,
       enableIssuePlanDecompositions: parsed.data.enableIssuePlanDecompositions ?? false,
@@ -287,17 +288,20 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
   return {
     enableEnvironments: false,
     enableNativeRunner: true,
+    enableAiConnectionRouters: false,
     enableManagedSandboxOnly: false,
     enableIsolatedWorkspaces: false,
     enableIsolatedWorkspacesByDefault: false,
     enableStreamlinedLeftNavigation: true,
     enableStreamlinedUi: true,
     enableApps: true,
+    enableMcpAggregators: true,
     enableChatConnectors: false,
-    enableMcpAggregators: false,
+    enableMemoryConnectors: false,
     enablePipelines: false,
     enableCases: false,
     enableAgentChat: false,
+    enableCombinedInboxTasks: false,
     enableConferenceRoomChat: false,
     enableClassicTaskInterface: false,
     enableIssuePlanDecompositions: false,
@@ -351,9 +355,9 @@ export function applyManagedExperimentalOverlay(
   for (const [key, value] of Object.entries(managedConfig.features) as Array<
     [ManagedExperimentalFeatureKey, boolean]
   >) {
-    // Existing Cloud stack configs may still carry enableApps. Accept the
-    // document during rollout, but never let the retired flag disable Apps.
-    if (key === "enableApps") continue;
+    // Existing Cloud stack configs may still carry retired flags. Accept the
+    // document during rollout, but never let retired flags disable Apps or MCP aggregators.
+    if (key === "enableApps" || key === "enableMcpAggregators") continue;
     next[key] = value;
     managedKeys[key] = { managed: true, managedBy: PAPERCLIP_CLOUD_MANAGED_BY };
   }

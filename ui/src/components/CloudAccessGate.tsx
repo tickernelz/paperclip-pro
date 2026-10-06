@@ -12,6 +12,8 @@ import { BootstrapPendingPage } from "@/components/BootstrapPendingPage";
 import { PaperclipLoading } from "@/components/AnimatedPaperclipIcon";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { CloudSignIn } from "@/components/CloudSignIn";
+import { clearCloudSignInAttempt } from "@/lib/cloud-sign-in";
 
 const RECONNECT_INTERVAL_MS = 5_000;
 
@@ -93,6 +95,10 @@ export function CloudAccessGate({ allowMembershipRequest = false }: { allowMembe
     refetchIntervalInBackground: true,
   });
 
+  useEffect(() => {
+    if (sessionQuery.data) clearCloudSignInAttempt();
+  }, [sessionQuery.data]);
+
   const boardAccessQuery = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -165,6 +171,10 @@ export function CloudAccessGate({ allowMembershipRequest = false }: { allowMembe
 
   if (isLoading) {
     return <PaperclipLoading />;
+  }
+
+  if (isAuthenticatedMode && healthQuery.data?.cloud && !sessionQuery.data) {
+    return <CloudSignIn cloud={healthQuery.data.cloud} returnTo={`${location.pathname}${location.search}${location.hash}`} />;
   }
 
   if (isBootstrapPending) {

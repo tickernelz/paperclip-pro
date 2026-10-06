@@ -3308,7 +3308,7 @@ function buildManifestFromPackageFiles(
       const sourceHostname = asString(primarySource?.hostname) || "github.com";
       const [owner, repoName] = (repo ?? "").split("/");
       const canonicalKey = readSkillKey(frontmatter);
-      const normalizedSourceKind = owner === "paperclipai"
+      const normalizedSourceKind = owner === "paperclip-pro"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("paperclipai/paperclip/")
         ? "paperclip_bundled"
@@ -3549,7 +3549,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
   const companies = companyService(db);
   const agents = agentService(db);
   const assetRecords = assetService(db);
-  const instructions = agentInstructionsService();
+  const instructions = agentInstructionsService(db);
   const access = accessService(db);
   const projects = projectService(db);
   const issues = issueService(db);

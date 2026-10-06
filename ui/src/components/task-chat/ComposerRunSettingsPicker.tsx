@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type Ref,
 } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, ChevronDown, Loader2, Plus, RotateCcw, Search } from "lucide-react";
@@ -18,6 +19,7 @@ import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
+import { getLastComposerEffort, rememberComposerEffort } from "@/lib/recent-composer-effort";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -83,6 +85,10 @@ interface Props {
     placement: "trigger" | "option",
   ) => ReactNode;
   subtaskRows?: boolean;
+  draft?: boolean;
+  companyId?: string | null;
+  footerSlot?: ReactNode;
+  triggerRef?: Ref<HTMLButtonElement>;
   disabled?: boolean;
   mobile?: boolean;
 }
@@ -98,6 +104,10 @@ export function ComposerRunSettingsPicker({
   staging,
   renderAssigneeIdentity,
   subtaskRows = false,
+  draft = false,
+  companyId = null,
+  footerSlot,
+  triggerRef,
   disabled = false,
   mobile = false,
 }: Props) {
@@ -115,10 +125,12 @@ export function ComposerRunSettingsPicker({
   const activeIssueId = issueId || resolvedIssueId;
   const reassigning = Boolean(activeIssueId) && assigneeValue !== currentAssigneeValue;
   const pendingAgentId = agentIdOf(assigneeValue);
-  const hasOverrideTarget = Boolean(activeIssueId || pendingIssue);
+  const hasOverrideTarget = Boolean(activeIssueId || pendingIssue || draft);
   const previewAgentId = !hasOverrideTarget
     ? null
-    : reassigning
+    : draft
+      ? pendingAgentId
+      : reassigning
       ? pendingAgentId
       : activeIssueId
         ? null
@@ -214,9 +226,11 @@ export function ComposerRunSettingsPicker({
     }
     return carried;
   }, [reassigning, view0, previewAdapterType]);
-  const overlay = reassigning
-    ? { ...carriedOverride, ...staging.values }
-    : pendingValues;
+  const overlay = draft
+    ? staging.values
+    : reassigning
+      ? { ...carriedOverride, ...staging.values }
+      : pendingValues;
   const usePreviewFields = Boolean(previewAgentId) && (reassigning || !activeIssueId);
   const fields = useMemo(
     () =>
@@ -243,6 +257,18 @@ export function ComposerRunSettingsPicker({
       return changed ? next : current;
     });
   }, [fields]);
+  const rememberCompanyId = draft ? companyId : null;
+  const stagedThinking = staging.values.thinking;
+  const setStaged = staging.set;
+  const thinkingOptionsKey =
+    fields.find((field) => field.key === "thinking")?.options.map((option) => option.value).join("\n") ?? "";
+  useEffect(() => {
+    if (!rememberCompanyId || stagedThinking !== undefined || !thinkingOptionsKey) return;
+    const remembered = getLastComposerEffort(rememberCompanyId);
+    if (remembered && thinkingOptionsKey.split("\n").includes(remembered)) {
+      setStaged("thinking", remembered);
+    }
+  }, [rememberCompanyId, stagedThinking, thinkingOptionsKey, setStaged]);
   const modelField = fields.find((field) => field.key === "model");
   const choiceFields = fields.filter(
     (field) => field.key !== "model" && field.options.length > 0,
@@ -263,7 +289,8 @@ export function ComposerRunSettingsPicker({
     (assigneeValue ? "Unassigned" : "No assignee");
 
   function applyValue(key: IssueRunModelOverrideKey, value: string | null) {
-    if (reassigning) {
+    if (rememberCompanyId && key === "thinking") rememberComposerEffort(rememberCompanyId, value);
+    if (reassigning || draft) {
       staging.set(key, value);
       return;
     }
@@ -280,7 +307,8 @@ export function ComposerRunSettingsPicker({
       update[field.key] = null;
     }
     if (Object.keys(update).length === 0) return;
-    if (reassigning) {
+    if (rememberCompanyId) rememberComposerEffort(rememberCompanyId, null);
+    if (reassigning || draft) {
       for (const key of Object.keys(update) as IssueRunModelOverrideKey[]) {
         staging.set(key, null);
       }
@@ -426,12 +454,16 @@ export function ComposerRunSettingsPicker({
           </div>
         );
       })}
-      {fields.length === 0 && hasOverrideTarget ? (
+      {fields.length === 0 &&
+      hasOverrideTarget &&
+      !(draft && pendingAgentId && previewQuery.isFetched) ? (
         <p
           className="px-1 text-xs text-muted-foreground"
           data-testid="composer-run-settings-empty"
         >
-          {view0?.unsupportedReason ?? "Loading model options…"}
+          {draft && !pendingAgentId
+            ? "Pick an agent assignee first"
+            : (view0?.unsupportedReason ?? "Loading model options…")}
         </p>
       ) : null}
     </div>
@@ -613,6 +645,7 @@ export function ComposerRunSettingsPicker({
     >
       <PopoverTrigger asChild>
         <button
+          ref={triggerRef}
           type="button"
           disabled={disabled}
           aria-label="Select assignee, model and thinking"
@@ -622,7 +655,10 @@ export function ComposerRunSettingsPicker({
           data-has-override={hasOverride ? "true" : "false"}
         >
           {renderAssigneeIdentity?.(assigneeValue, assigneeLabel, "trigger")}
-          <span className={cn("truncate", mobile ? "max-w-20" : "max-w-32")}>
+          <span
+            className={cn("truncate", mobile ? "max-w-20" : "max-w-32")}
+            data-testid="task-chat-composer-assignee-label"
+          >
             {assigneeLabel}
           </span>
           <span className="shrink-0 text-muted-foreground" aria-hidden>
@@ -659,6 +695,15 @@ export function ComposerRunSettingsPicker({
         <div data-mobile-sheet-body="" className="flex min-w-0 flex-col">
           {view === "settings" ? settingsBody : view === "agents" ? agentsBody : modelBody}
         </div>
+        {view === "settings" && !subtaskRows && footerSlot ? (
+          <div
+            data-mobile-sheet-controls=""
+            data-testid="composer-run-settings-footer"
+            className="shrink-0 border-t border-border/60"
+          >
+            {footerSlot}
+          </div>
+        ) : null}
         {view === "settings" && subtaskRows && view0?.inheritance ? (
           <div
             data-mobile-sheet-controls=""

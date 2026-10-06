@@ -448,3 +448,8 @@ export {
   MEMBERSHIP_STATUSES,
   PRINCIPAL_TYPES,
 } from "@tickernelz/paperclip-pro-shared";
+
+export { PluginEnvironmentCreationCleanupError, environmentCreationCleanupErrorData, readEnvironmentCreationCleanupError } from "./environment-creation-cleanup.js";
+export type { PluginEnvironmentCreationCleanup } from "./environment-creation-cleanup.js";
+
+export type { AiConnectionPool, AiConnectionPoolConfig, AiConnectionPoolMember, AiConnectionRouterRequest, AiConnectionRouterResult, AiConnectionRouterSelection } from "@tickernelz/paperclip-pro-shared";

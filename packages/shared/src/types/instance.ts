@@ -77,7 +77,6 @@ export const DEFAULT_MESSAGE_DELIVERY = "steer" as const satisfies InstanceMessa
 
 export interface InstanceGeneralSettings {
   censorUsernameInLogs: boolean;
-  keyboardShortcuts: boolean;
   feedbackDataSharingPreference: FeedbackDataSharingPreference;
   backupRetention: BackupRetentionPolicy;
   /**
@@ -96,6 +95,7 @@ export interface InstanceExperimentalSettings {
    * Existing native runs ignore later flag changes so they remain recoverable.
    */
   enableNativeRunner: boolean;
+  enableAiConnectionRouters: boolean;
   /**
    * Hide the local environment and run all agents in the platform-managed
    * sandbox environment. Run selection refuses local while this is on.
@@ -120,11 +120,15 @@ export interface InstanceExperimentalSettings {
   enableApps: boolean;
   /** Exposes chat connector setup and Board surfaces; existing delivery continues when hidden. */
   enableChatConnectors: boolean;
-  /** Exposes MCP aggregator setup; existing connections keep running when hidden. */
+  /** @deprecated Compatibility key only. MCP aggregators are always enabled. */
   enableMcpAggregators: boolean;
+  /** Show experimental memory connection setup. Existing connections remain usable. */
+  enableMemoryConnectors: boolean;
   enablePipelines: boolean;
   enableCases: boolean;
   enableAgentChat: boolean;
+  /** Reorganized left nav, Inbox-as-Tasks-views, and the chat agent rail + task cards. */
+  enableCombinedInboxTasks: boolean;
   enableConferenceRoomChat: boolean;
   enableClassicTaskInterface: boolean;
   enableIssuePlanDecompositions: boolean;

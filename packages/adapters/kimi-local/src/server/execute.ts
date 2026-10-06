@@ -1,3 +1,4 @@
+import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -38,8 +39,8 @@ import {
   resolveLegacyPaperclipDesiredSkillNames,
   parseObject,
   renderTemplate,
-  renderPaperclipWakePrompt,
-  selectPaperclipTaskMarkdown,
+  hydrateFreshSessionHandoff,
+  selectPaperclipPromptSections,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
   paperclipAgentPromptTemplate,
@@ -176,6 +177,7 @@ async function buildKimiSkillsDir(
 }
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
+  const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   const engineSelection = await resolveKimiExecutionEngineForRun(ctx);
   if (engineSelection.unavailableReason) {
     return {
@@ -501,46 +503,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     run: { id: runId, source: "on_demand" },
     context,
   };
-  const renderedBootstrapPrompt =
-    !sessionId && bootstrapPromptTemplate.trim().length > 0
-      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
-      : "";
-  const taskContextNote = context.conversationMode === true
-    ? selectPaperclipTaskMarkdown(context, { resumedSession: Boolean(sessionId), includeCommunicationGuidance: false })
-    : "";
-  const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, {
-    conversationMode: context.conversationMode === true,
-    resumedSession: Boolean(sessionId),
-    suppressIssueDescription: taskContextNote.length > 0,
-    paperclipAccess,
-  });
-  const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
-  const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
-    ? ""
-    : renderTemplate(promptTemplate, templateData);
   const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
   const paperclipEnvNote = renderPaperclipEnvNote(env);
   const apiAccessNote = paperclipAccessGuidance(paperclipAccess, { shellHint: "shell commands" });
-  const basePrompt = joinPromptSections([
-    instructionsPrefix,
-    renderedBootstrapPrompt,
-    wakePrompt,
-    taskContextNote,
-    sessionHandoffNote,
-    paperclipEnvNote,
-    apiAccessNote,
-    renderedPrompt,
-  ]);
-  const promptMetrics = {
-    promptChars: basePrompt.length,
-    instructionsChars: instructionsPrefix.length,
-    bootstrapPromptChars: renderedBootstrapPrompt.length,
-    wakePromptChars: wakePrompt.length,
-    taskContextChars: taskContextNote.length,
-    sessionHandoffChars: sessionHandoffNote.length,
-    runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
-    heartbeatPromptChars: renderedPrompt.length,
-  };
 
   const buildArgs = (resumeSessionId: string | null, prompt: string) => {
     const args = ["--output-format", "stream-json"];
@@ -567,10 +532,44 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   };
 
   const runAttempt = async (resumeSessionId: string | null) => {
+    await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(resumeSessionId) });
+    const attemptSections = selectPaperclipPromptSections(context, {
+      resumedSession: Boolean(resumeSessionId),
+      includeCommunicationGuidance: false,
+      paperclipAccess,
+    });
+    const attemptBootstrapPrompt = !resumeSessionId && bootstrapPromptTemplate.trim().length > 0
+      ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+      : "";
+    const attemptWakePrompt = attemptSections.wakePrompt;
+    const attemptRenderedPrompt = Boolean(resumeSessionId) && attemptWakePrompt.length > 0
+      || isPaperclipRecoveryWakePayload(context.paperclipWake)
+      ? ""
+      : renderTemplate(promptTemplate, templateData);
+    const attemptBasePrompt = joinPromptSections([
+      instructionsPrefix,
+      attemptBootstrapPrompt,
+      attemptWakePrompt,
+      attemptSections.taskContextNote,
+      sessionHandoffNote,
+      paperclipEnvNote,
+      apiAccessNote,
+      attemptRenderedPrompt,
+    ]);
     const prompt = joinPromptSections([
       selectInitialCommunicationGuidance(context, { resumedSession: Boolean(resumeSessionId) }),
-      basePrompt,
+      attemptBasePrompt,
     ]);
+    const promptMetrics = {
+      promptChars: prompt.length,
+      instructionsChars: instructionsPrefix.length,
+      bootstrapPromptChars: attemptBootstrapPrompt.length,
+      wakePromptChars: attemptWakePrompt.length,
+      taskContextChars: attemptSections.taskContextNote.length,
+      sessionHandoffChars: sessionHandoffNote.length,
+      runtimeNoteChars: paperclipEnvNote.length + apiAccessNote.length,
+      heartbeatPromptChars: attemptRenderedPrompt.length,
+    };
     const args = buildArgs(resumeSessionId, prompt);
     const invocationEnv = buildKimiHeadlessEnv(env);
     const invocationRuntimeEnv = buildKimiRuntimeEnv(env);
@@ -597,6 +596,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
     const eventForwarder = createKimiEventForwardingLog(onLog, onEvent);
     const proc = await runAdapterExecutionTargetProcess(runId, runtimeExecutionTarget, command, args, {
+      onProcessStopped: providerStop.beginInvocation(),
       cwd,
       env: invocationEnv,
       timeoutSec,
@@ -738,10 +738,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
     return toResult(initial);
   } finally {
-    await Promise.all([
-      paperclipBridge?.stop(),
-      restoreRemoteWorkspace?.(),
-      localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
-    ]);
+    try {
+      await providerStop.collectBeforeRestore();
+    } finally {
+      await Promise.all([
+        paperclipBridge?.stop(),
+        restoreRemoteWorkspace?.(),
+        localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
+      ]);
+    }
   }
 }

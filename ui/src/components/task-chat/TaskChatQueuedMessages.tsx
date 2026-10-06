@@ -32,6 +32,7 @@ import type {
   IssueQueuedCommentQueue,
 } from "@tickernelz/paperclip-pro-shared";
 import { cn } from "@/lib/utils";
+import { TaskChatComposerBar } from "./TaskChatComposerBar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -304,6 +305,9 @@ export function TaskChatQueuedMessages({
   onDiscard,
 }: TaskChatQueuedMessagesProps) {
   const [entries, setEntries] = useState(queue.entries);
+  const latestQueue = useRef(queue);
+  latestQueue.current = queue;
+  const optimisticDeliveryIds = useRef(new Set<string>());
   const [pending, setPending] = useState<{
     commentIds: readonly string[];
     action: Exclude<QueueAction, null>;
@@ -332,7 +336,10 @@ export function TaskChatQueuedMessages({
   }, [queue.revision, onDiscard]);
 
   useEffect(() => {
-    setEntries(queue.entries);
+    // Polling can return the old queue while delivery is still in flight.
+    setEntries(queue.entries.filter(
+      (entry) => !optimisticDeliveryIds.current.has(entry.comment.id),
+    ));
   }, [queue.entries, queue.revision]);
 
   const rows = useMemo(
@@ -409,8 +416,16 @@ export function TaskChatQueuedMessages({
     ) {
       return;
     }
-    const previous = entries;
     const discardsMany = action === "discard" && commentIds.length > 1;
+    const deliveredIds = action === "interrupt"
+      ? entries.map((entry) => entry.comment.id)
+      : action === "steer" ? [commentId] : [];
+    for (const id of deliveredIds) optimisticDeliveryIds.current.add(id);
+    if (deliveredIds.length) {
+      setEntries((current) => current.filter(
+        (entry) => !optimisticDeliveryIds.current.has(entry.comment.id),
+      ));
+    }
     setPending({ commentIds, action, scope });
     setVisibleError(null);
     setAnnouncement(
@@ -422,11 +437,6 @@ export function TaskChatQueuedMessages({
             ? "Discarding queued messages."
             : "Discarding queued message.",
     );
-    if (action === "steer") {
-      setEntries((current) =>
-        current.filter((entry) => entry.comment.id !== commentId),
-      );
-    }
     try {
       if (action === "steer") await onSteer(commentId, latest.current.revision);
       else if (action === "interrupt") await onInterrupt?.();
@@ -448,7 +458,12 @@ export function TaskChatQueuedMessages({
               : "Queued message discarded.",
       );
     } catch (error) {
-      if (action === "steer") setEntries(previous);
+      for (const id of deliveredIds) optimisticDeliveryIds.current.delete(id);
+      if (deliveredIds.length) {
+        setEntries(latestQueue.current.entries.filter(
+          (entry) => !optimisticDeliveryIds.current.has(entry.comment.id),
+        ));
+      }
       setAnnouncement("");
       const code = queueActionErrorCode(error);
       setVisibleError(
@@ -469,7 +484,7 @@ export function TaskChatQueuedMessages({
     }
   }
 
-  if (entries.length === 0) return null;
+  if (entries.length === 0 && !visibleError) return null;
 
   const busy = Boolean(pending || reordering);
   const queueMutationDisabled = Boolean(
@@ -477,8 +492,7 @@ export function TaskChatQueuedMessages({
   );
 
   return (
-    <div
-      className="relative z-0 mx-3 -mb-px overflow-hidden rounded-t-xl rounded-b-none border border-b-0 border-border/75 bg-card shadow-sm"
+    <TaskChatComposerBar
       data-testid="task-chat-queued-messages"
       aria-label="Queued messages"
     >
@@ -618,6 +632,6 @@ export function TaskChatQueuedMessages({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </TaskChatComposerBar>
   );
 }

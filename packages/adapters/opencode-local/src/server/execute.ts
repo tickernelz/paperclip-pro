@@ -1,3 +1,4 @@
+import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -39,8 +40,8 @@ import {
   ensurePathInEnv,
   refreshPaperclipWorkspaceEnvForExecution,
   renderTemplate,
-  renderPaperclipWakePrompt,
-  selectPaperclipTaskMarkdown,
+  hydrateFreshSessionHandoff,
+  selectPaperclipPromptSections,
   selectInitialCommunicationGuidance,
   isPaperclipRecoveryWakePayload,
   paperclipAgentPromptTemplate,
@@ -233,6 +234,7 @@ async function buildOpenCodeSkillsDir(config: Record<string, unknown>): Promise<
 }
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
+  const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   const { runId, agent, runtime, config, context, onLog, onMeta, onSpawn, authToken } = ctx;
   const executionTarget = readAdapterExecutionTarget({
     executionTarget: ctx.executionTarget,
@@ -582,47 +584,48 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       run: { id: runId, source: "on_demand" },
       context,
     };
-    const renderedBootstrapPrompt =
-      !sessionId && bootstrapPromptTemplate.trim().length > 0
-        ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
-        : "";
-    const taskContextNote = context.conversationMode === true
-      ? selectPaperclipTaskMarkdown(context, { resumedSession: Boolean(sessionId), includeCommunicationGuidance: false })
-      : "";
-    const wakePrompt = renderPaperclipWakePrompt(context.paperclipWake, {
-      conversationMode: context.conversationMode === true,
-      resumedSession: Boolean(sessionId),
-      suppressIssueDescription: taskContextNote.length > 0,
-      paperclipAccess,
-    });
-    const shouldUseResumeDeltaPrompt = Boolean(sessionId) && wakePrompt.length > 0;
-    const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
-      ? ""
-      : renderTemplate(promptTemplate, templateData);
-    const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
     const runEnv = preparedRuntimeConfig.env;
-    const apiAccessNote =
-      Boolean((runEnv.PAPERCLIP_API_URL ?? "").trim()) && Boolean((runEnv.PAPERCLIP_API_KEY ?? "").trim())
-        ? paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets, shellHint: "bash" })
-        : "";
-    const basePrompt = joinPromptSections([
-      instructionsPrefix,
-      renderedBootstrapPrompt,
-      wakePrompt,
-      taskContextNote,
-      sessionHandoffNote,
-      apiAccessNote,
-      renderedPrompt,
-    ]);
-    const promptMetrics = {
-      promptChars: basePrompt.length,
-      instructionsChars: instructionsPrefix.length,
-      bootstrapPromptChars: renderedBootstrapPrompt.length,
-      wakePromptChars: wakePrompt.length,
-      taskContextChars: taskContextNote.length,
-      sessionHandoffChars: sessionHandoffNote.length,
-      runtimeNoteChars: apiAccessNote.length,
-      heartbeatPromptChars: renderedPrompt.length,
+    const buildPrompt = (resumedSession: boolean) => {
+      const renderedBootstrapPrompt =
+        !resumedSession && bootstrapPromptTemplate.trim().length > 0
+          ? renderTemplate(bootstrapPromptTemplate, templateData).trim()
+          : "";
+      const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(context, {
+        resumedSession,
+        includeCommunicationGuidance: false,
+        paperclipAccess,
+      });
+      const shouldUseResumeDeltaPrompt = resumedSession && wakePrompt.length > 0;
+      const renderedPrompt = shouldUseResumeDeltaPrompt || isPaperclipRecoveryWakePayload(context.paperclipWake)
+        ? ""
+        : renderTemplate(promptTemplate, templateData);
+      const sessionHandoffNote = asString(context.paperclipSessionHandoffMarkdown, "").trim();
+      const apiAccessNote =
+        Boolean((runEnv.PAPERCLIP_API_URL ?? "").trim()) && Boolean((runEnv.PAPERCLIP_API_KEY ?? "").trim())
+          ? paperclipAccessGuidance(paperclipAccess, { toolsets: paperclipToolsets, shellHint: "bash" })
+          : "";
+      const basePrompt = joinPromptSections([
+        instructionsPrefix,
+        renderedBootstrapPrompt,
+        wakePrompt,
+        taskContextNote,
+        sessionHandoffNote,
+        apiAccessNote,
+        renderedPrompt,
+      ]);
+      return {
+        basePrompt,
+        promptMetrics: {
+          promptChars: basePrompt.length,
+          instructionsChars: instructionsPrefix.length,
+          bootstrapPromptChars: renderedBootstrapPrompt.length,
+          wakePromptChars: wakePrompt.length,
+          taskContextChars: taskContextNote.length,
+          sessionHandoffChars: sessionHandoffNote.length,
+          runtimeNoteChars: apiAccessNote.length,
+          heartbeatPromptChars: renderedPrompt.length,
+        },
+      };
     };
 
     // Optional diagnostic: surface OpenCode's own logs on stderr (captured into the
@@ -644,6 +647,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     };
 
     const runAttempt = async (resumeSessionId: string | null) => {
+      await hydrateFreshSessionHandoff(ctx, { resumedSession: Boolean(resumeSessionId) });
+      const { basePrompt, promptMetrics } = buildPrompt(Boolean(resumeSessionId));
       const prompt = joinPromptSections([
         selectInitialCommunicationGuidance(context, { resumedSession: Boolean(resumeSessionId) }),
         basePrompt,
@@ -664,6 +669,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       }
 
       const proc = await runAdapterExecutionTargetProcess(runId, runtimeExecutionTarget, command, args, {
+        onProcessStopped: providerStop.beginInvocation(),
         cwd,
         env: preparedRuntimeConfig.env,
         stdin: prompt,
@@ -806,12 +812,16 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
       return toResult(initial);
     } finally {
-      await Promise.all([
-        paperclipBridge?.stop(),
-        restoreRemoteWorkspace?.(),
-        paperclipMcpMount?.cleanup() ?? Promise.resolve(),
-        localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
-      ]);
+      try {
+        await providerStop.collectBeforeRestore();
+      } finally {
+        await Promise.all([
+          paperclipBridge?.stop(),
+          restoreRemoteWorkspace?.(),
+          paperclipMcpMount?.cleanup() ?? Promise.resolve(),
+          localSkillsDir ? fs.rm(path.dirname(localSkillsDir), { recursive: true, force: true }).catch(() => undefined) : Promise.resolve(),
+        ]);
+      }
     }
   } finally {
     await preparedRuntimeConfig.cleanup();

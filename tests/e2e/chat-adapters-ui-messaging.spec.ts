@@ -275,15 +275,14 @@ test.describe("Board send delivery refresh", () => {
                 "base64",
               ),
         };
-        const chooserPromise = page.waitForEvent("filechooser");
-        if (classic) {
-          await page
-            .getByRole("button", { name: "Upload attachment", exact: true })
-            .click();
-        } else {
-          await page.getByTestId("task-chat-composer-add").click();
-          await page.getByTestId("composer-add-file").click();
+        if (!classic) {
+          await page.getByRole("button", { name: "Add to composer" }).click();
         }
+        const chooserPromise = page.waitForEvent("filechooser");
+        await (classic
+          ? page.getByRole("button", { name: "Upload attachment", exact: true })
+          : page.getByRole("menuitem", { name: "Files and images", exact: true })
+        ).click();
         const responsePromise = page.waitForResponse(
           (response) =>
             response.request().method() === "POST" &&

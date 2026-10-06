@@ -10,6 +10,7 @@ const CACHE_NAME = `paperclip-public-assets-${BUILD_ID}`;
 const privateRequests = new Set();
 const privateCacheControl = /(?:^|,)\s*(?:no-store|private)(?:\s*(?:,|=)|\s*$)/i;
 
+// Static recovery only: never cache or embed authenticated page content here.
 const OFFLINE_PAGE = `<!doctype html>
 <html lang="en">
 <head>
@@ -30,9 +31,9 @@ button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; paddin
 <body>
 <main>
 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>
-<h1>You're offline</h1>
+<h1>Paperclip is offline</h1>
 <p>Paperclip needs a connection to your server. It will reload once you're back online.</p>
-<button type="button" onclick="location.reload()">Try again</button>
+<button type="button" onclick="window.location.reload()">Reload page</button>
 </main>
 <script>addEventListener("online", () => location.reload());</script>
 </body>
@@ -66,6 +67,10 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  // Vite owns development module revalidation and HMR. Passing that graph
+  // through an offline worker can forward bodyless 304 responses on reload.
+  // Only a stamped production build has an offline-cache contract.
+  if (BUILD_ID.startsWith("__")) return;
   const { request } = event;
   const url = new URL(request.url);
   // Only immutable Vite build assets have a public offline-cache contract.
@@ -82,6 +87,15 @@ self.addEventListener("fetch", (event) => {
   if (request.cache === "no-store") {
     privateRequests.add(request.url);
     event.waitUntil(evictRequest(request).catch(() => {}));
+    return;
+  }
+
+  // Vite development modules use the browser's conditional-response cache.
+  // Passing their requests through fetch/respondWith can return a bodyless 304
+  // to the module loader on reload and leave the app root empty. They are not
+  // build assets and have no offline contract, so leave them to the browser.
+  if (url.origin === self.location.origin &&
+      /^\/(?:@fs|@vite|@id|src|node_modules)\//.test(url.pathname)) {
     return;
   }
 

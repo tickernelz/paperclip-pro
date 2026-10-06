@@ -72,17 +72,20 @@ function defaultExperimentalSettings(): InstanceExperimentalSettingsPayload {
   return {
     enableEnvironments: false,
     enableNativeRunner: false,
+    enableAiConnectionRouters: false,
     enableManagedSandboxOnly: false,
     enableIsolatedWorkspaces: false,
     enableIsolatedWorkspacesByDefault: false,
     enableStreamlinedLeftNavigation: true,
     enableStreamlinedUi: true,
     enableApps: true,
+    enableMcpAggregators: true,
     enableChatConnectors: false,
-    enableMcpAggregators: false,
+    enableMemoryConnectors: false,
     enablePipelines: false,
     enableCases: false,
     enableAgentChat: false,
+    enableCombinedInboxTasks: false,
     enableConferenceRoomChat: false,
     enableClassicTaskInterface: false,
     enableIssuePlanDecompositions: false,
@@ -212,17 +215,37 @@ describe("InstanceExperimentalSettings — Conference Room Chat card (PAP-11233)
     expect(container.textContent).not.toContain("Show the Apps navigation");
   });
 
-  it("defaults MCP aggregators off and persists an explicit toggle in both directions", async () => {
+  it("defaults memory connectors off and persists an explicit toggle in both directions", async () => {
     await renderPage();
-    const selector = 'button[aria-label="Toggle MCP aggregators experimental setting"]';
+    const selector = 'button[aria-label="Toggle memory connectors experimental setting"]';
     expect(container.querySelector(selector)?.getAttribute("aria-checked")).toBe("false");
-    expect(container.textContent).toContain("Existing MCP connections keep running.");
+    expect(container.textContent).toContain("Existing connections keep running.");
     for (const enabled of [true, false]) {
       await act(() => container.querySelector<HTMLButtonElement>(selector)!.click());
       await flushReact();
-      expect(mockInstanceSettingsApi.updateExperimental).toHaveBeenLastCalledWith({ enableMcpAggregators: enabled });
+      expect(mockInstanceSettingsApi.updateExperimental).toHaveBeenLastCalledWith({ enableMemoryConnectors: enabled });
       expect(container.querySelector(selector)?.getAttribute("aria-checked")).toBe(String(enabled));
     }
+  });
+
+  it("defaults Combined Inbox + Task List off and persists an explicit toggle in both directions", async () => {
+    await renderPage();
+    const selector = 'button[aria-label="Toggle combined inbox and task list experimental setting"]';
+    expect(container.textContent).toContain("Combined Inbox + Task List");
+    expect(container.textContent).not.toContain("Agent Chat v2");
+    expect(container.querySelector(selector)?.getAttribute("aria-checked")).toBe("false");
+    for (const enabled of [true, false]) {
+      await act(() => container.querySelector<HTMLButtonElement>(selector)!.click());
+      await flushReact();
+      expect(mockInstanceSettingsApi.updateExperimental).toHaveBeenLastCalledWith({ enableCombinedInboxTasks: enabled });
+      expect(container.querySelector(selector)?.getAttribute("aria-checked")).toBe(String(enabled));
+    }
+  });
+
+  it("does not offer a retired MCP aggregators toggle", async () => {
+    await renderPage();
+    expect(container.querySelector('button[aria-label="Toggle MCP aggregators experimental setting"]')).toBeNull();
+    expect(container.textContent).not.toContain("MCP aggregators");
   });
 
   it("defaults chat connectors off and persists an explicit toggle in both directions", async () => {
@@ -1039,6 +1062,24 @@ describe("InstanceExperimentalSettings — operator-hidden cards", () => {
     await flushReact();
   }
 
+  it.each([
+    { cloud: false, enabled: false },
+    { cloud: false, enabled: true },
+    { cloud: true, enabled: false },
+    { cloud: true, enabled: true },
+  ])("offers no AI routing control with cloud=$cloud and enabled=$enabled", async ({ cloud, enabled }) => {
+    await renderPage(undefined, {
+      ...defaultExperimentalSettings(),
+      enableAiConnectionRouters: enabled,
+      ...(cloud ? { managedKeys: { enableAiConnectionRouters: { managed: true, managedBy: "paperclip-cloud" as const } } } : {}),
+    });
+
+    expect(container.textContent).toContain("Experimental features");
+    expect(container.textContent).not.toContain("AI connection routers");
+    expect(container.querySelector('button[aria-label="Toggle AI connection routers experimental setting"]')).toBeNull();
+    expect(mockInstanceSettingsApi.updateExperimental).not.toHaveBeenCalled();
+  });
+
   it("renders nothing for an operator-hidden toggle and keeps the rest", async () => {
     await renderPage(["instance.experimental.enableEnvironments"]);
 
@@ -1049,7 +1090,7 @@ describe("InstanceExperimentalSettings — operator-hidden cards", () => {
 
   it("keeps only permitted controls in alphabetical order, including when hidden features are enabled", async () => {
     setWorktreeRuntimeMeta(true);
-    const visible = new Set(["enableExternalObjects", "enableMcpAggregators", "enableSimplifiedEnglishInteractions"]);
+    const visible = new Set(["enableExternalObjects", "enableMemoryConnectors", "enableSimplifiedEnglishInteractions"]);
     await renderPage(
       INSTANCE_FEATURE_KEYS.filter((key) => !visible.has(key)).map((key) => `instance.experimental.${key}`),
       {
@@ -1065,7 +1106,7 @@ describe("InstanceExperimentalSettings — operator-hidden cards", () => {
 
     expect([...container.querySelectorAll("h3")].map((heading) => heading.textContent)).toEqual([
       "Enable External Objects",
-      "MCP aggregators",
+      "Memory connectors",
       "Simplified English Interactions",
     ]);
     expect([...container.querySelectorAll("section h2")].map((heading) => heading.textContent)).toEqual([

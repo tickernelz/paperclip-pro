@@ -1,3 +1,5 @@
+import { browserUseRoutes } from "./routes/browser-use.js";
+import { browserUseService } from "./services/browser-use.js";
 import { slackToolRoutes } from "./routes/slack-tools.js";
 import { openwaToolRoutes } from "./routes/openwa-tools.js";
 import { agentAvatarRoutes } from "./routes/agent-avatars.js";
@@ -7,6 +9,7 @@ import { paperclipMcpRoutes } from "./routes/paperclip-mcp.js";
 import { emailChannelService } from "./services/email-channels.js";
 import { emailRoutes, emailWebhookRoutes } from "./routes/email.js";
 import { toolActionDeliveryService } from "./services/tool-action-delivery.js";
+import { registerAssignedMcpGateway } from "./services/native-runtime/assigned-mcp-tools.js";
 import express, { Router, type Request as ExpressRequest } from "express";
 import {
   createServer as createHttpServer,
@@ -856,6 +859,7 @@ export async function createApp(
   api.use(slackToolRoutes(db, opts.authPublicBaseUrl));
   api.use(openwaToolRoutes(db));
   app.locals.toolGateway = toolGateway;
+  registerAssignedMcpGateway(db, toolGateway);
   app.locals.toolActionDeliveries = toolActionDeliveries;
   app.use(mcpGatewayProtocolRoutes(toolGateway));
   api.use(aiConnectionRoutes(db, { deploymentMode: opts.deploymentMode, deploymentExposure: opts.deploymentExposure, trustedLocalStdioRuntimeHost }));
@@ -906,7 +910,7 @@ export async function createApp(
       lifecycleManager: lifecycle,
       instanceInfo: {
         instanceId: opts.instanceId ?? "default",
-        hostVersion: opts.hostVersion ?? "0.0.0",
+        hostVersion: opts.hostVersion ?? serverVersion,
         deploymentMode: opts.deploymentMode,
         deploymentExposure: opts.deploymentExposure,
       },
@@ -936,6 +940,10 @@ export async function createApp(
     },
   );
   runtimePluginLoader = loader;
+  const browserUse = browserUseService(db, undefined,
+    { cancelWorkForScope: heartbeatService(db, { pluginWorkerManager: workerManager }).cancelBudgetScopeWork },
+    (session, run) => toolGateway.browserUseSessionAuthorized({ ...session, runId: run.heartbeatRunId, invocationId: run.invocationId }));
+  api.use(browserUseRoutes(db, browserUse));
   api.use(toolGatewayRoutes(db, toolGateway));
   api.use(
     pluginRoutes(
@@ -1222,6 +1230,9 @@ export async function createApp(
         );
       });
   };
+  const browserUseTimer = setInterval(() => { void browserUse.sweep().catch(() => logger.warn("Browser Use reconciliation failed; retrying.")); }, 3000);
+  browserUseTimer.unref?.();
+  void browserUse.sweep().catch(() => logger.warn("Browser Use startup reconciliation failed; retrying."));
   let importTransferSweepTimer: ReturnType<typeof setInterval> | null =
     setInterval(
       sweepImportTransferSpools,
@@ -1330,6 +1341,7 @@ export async function createApp(
         chatPublicationTimer = null;
       }
       await chatReconciliation.drain();
+      clearInterval(browserUseTimer);
       if (importTransferSweepTimer) {
         clearInterval(importTransferSweepTimer);
         importTransferSweepTimer = null;

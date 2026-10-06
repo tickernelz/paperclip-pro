@@ -1,6 +1,7 @@
 [
   "[Email] Agent sends require assigned inbox and task ownership, active run authority, and configured action policies.",
-  "[Email] Experimental AgentMail channel.",
+  "[Email] AgentMail email connection.",
+  "[Email] Available without the experimental chat setting.",
   "[Email] Internal comments never send email.",
   "[Email] New conversations create an email child task; replies require conversationId and replyToMessageId.",
   "[Email] Preserve the same idempotencyKey and payload across retries.",

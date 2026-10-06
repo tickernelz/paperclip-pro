@@ -85,7 +85,7 @@ vi.mock("@/plugins/slots", () => ({
 }));
 vi.mock("@/plugins/launchers", () => ({ PluginLauncherOutlet: () => null }));
 vi.mock("../components/ProjectProperties", () => ({
-  ProjectProperties: () => <div data-testid="project-properties" />,
+  ProjectProperties: () => <div data-testid="project-properties"><input aria-label="Unsaved project field" /></div>,
 }));
 vi.mock("../components/BudgetPolicyCard", () => ({
   BudgetPolicyCard: () => <div data-testid="budget-policy-card" />,
@@ -214,6 +214,33 @@ describe("ProjectDetail", () => {
     root = null;
     container.remove();
     vi.clearAllMocks();
+  });
+
+  it.each(["alias", "other project", "other company"])("preserves a draft only for a same-project route alias (%s)", async target => {
+    const loaded = project({ urlKey: "managed-project" });
+    mockLocation.pathname = "/projects/project-1/configuration";
+    mockProjectsApi.get.mockResolvedValueOnce(loaded);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    const render = () => root!.render(<QueryClientProvider client={queryClient}><ProjectDetail /></QueryClientProvider>);
+    root = createRoot(container);
+    await act(render);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); await new Promise(resolve => setTimeout(resolve, 0)); });
+    const draft = container.querySelector<HTMLInputElement>('input[aria-label="Unsaved project field"]');
+    expect(draft).not.toBeNull();
+    draft!.value = "Unsaved repository removal";
+    mockProjectsApi.get.mockImplementation(() => new Promise(() => {}));
+    mockParams.value = { projectId: target === "other project" ? "different-project" : "managed-project" };
+    if (target === "other company") mockCompanyContext.selectedCompanyId = "company-2";
+    mockLocation.pathname = `/projects/${mockParams.value.projectId}/configuration`;
+    await act(render);
+    const after = container.querySelector<HTMLInputElement>('input[aria-label="Unsaved project field"]');
+    if (target === "alias") {
+      expect(after).toBe(draft);
+      expect(after!.value).toBe("Unsaved repository removal");
+    } else {
+      expect(after).toBeNull();
+    }
+    await act(() => queryClient.clear());
   });
 
   it("shows managed plugin affordances and filters the operations tab by plugin origin", async () => {
