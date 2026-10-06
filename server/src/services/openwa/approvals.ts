@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, lt, or, sql } from "drizzle-orm";
 import {
   chatActions,
   chatAuditEntries,
@@ -40,7 +40,7 @@ import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner 
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
-import { OpenwaToolError, replyRequirementGaps, type ToolContext } from "./tools.js";
+import { OpenwaToolError, openwaRequesterPendingTriggerIds, replyRequirementGaps, type ToolContext } from "./tools.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -308,6 +308,27 @@ async function bubbleStates(ctx: ToolContext, requestId: string) {
     .map((row) => ({ chatRef: "openwa:" + ctx.sessionId + ":" + row.chatKey, messageId: row.messageId, state: row.state }));
 }
 
+/** Trigger deliveries a request was asked for, from its approval_requested audit metadata. */
+async function requestCoveredDeliveryIds(tx: DbOrTransaction, request: RequestRow): Promise<Set<string>> {
+  const rows = await tx
+    .select({ metadata: chatAuditEntries.metadata })
+    .from(chatAuditEntries)
+    .where(
+      and(
+        eq(chatAuditEntries.companyId, request.companyId),
+        eq(chatAuditEntries.endpointId, request.endpointId),
+        eq(chatAuditEntries.kind, "approval_requested"),
+        sql`${chatAuditEntries.metadata} ->> 'requestId' = ${request.id}`,
+      ),
+    );
+  const covered = new Set<string>();
+  for (const row of rows) {
+    const values = record(row.metadata).coveredDeliveryIds;
+    if (Array.isArray(values)) for (const value of values) if (typeof value === "string") covered.add(value);
+  }
+  return covered;
+}
+
 function approvalPrompt(summary: string): string {
   return ("Approve: " + summary).slice(0, 1000);
 }
@@ -398,8 +419,8 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + (replyOnlyRequest ? "reply" : ctx.run.id) + ":" + ctx.origin.chatKey}, 0))`,
       );
-      const reuseWindowStart = new Date(Date.now() - ctx.policy.approvals.grantTtlHours * 3_600_000);
-      const open = replyOnlyRequest
+      const coveredDeliveryIds = requesterPrincipalId ? await openwaRequesterPendingTriggerIds(ctx, requesterPrincipalId) : [];
+      const candidates = replyOnlyRequest
         ? (
             await tx
               .select()
@@ -413,14 +434,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
                   eq(chatOwnerApprovalRequests.scope, grantScope),
                   or(
                     eq(chatOwnerApprovalRequests.requestedInRunId, ctx.run.id),
-                    ...(requesterPrincipalId
-                      ? [
-                          and(
-                            eq(chatOwnerApprovalRequests.requestedByPrincipalId, requesterPrincipalId),
-                            gte(chatOwnerApprovalRequests.createdAt, reuseWindowStart),
-                          ),
-                        ]
-                      : []),
+                    ...(requesterPrincipalId && coveredDeliveryIds.length ? [eq(chatOwnerApprovalRequests.requestedByPrincipalId, requesterPrincipalId)] : []),
                   ),
                 ),
               )
@@ -428,8 +442,20 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
               .for("update")
           )
             .filter((row) => replyOnly(row.categories))
-            .sort((a, b) => Number(b.requestedInRunId === ctx.run.id) - Number(a.requestedInRunId === ctx.run.id))[0]
-        : undefined;
+            .sort((a, b) => Number(b.requestedInRunId === ctx.run.id) - Number(a.requestedInRunId === ctx.run.id))
+        : [];
+      let open: RequestRow | undefined;
+      for (const candidate of candidates) {
+        if (candidate.requestedInRunId === ctx.run.id) {
+          open = candidate;
+          break;
+        }
+        const covered = await requestCoveredDeliveryIds(tx, candidate);
+        if (coveredDeliveryIds.every((id) => covered.has(id))) {
+          open = candidate;
+          break;
+        }
+      }
       if (open) {
         const added = categories.filter((category) => !open.categories.includes(category));
         const merged = [...open.categories, ...added];
@@ -461,6 +487,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
             autoAdded: autoAdded.filter((category) => added.includes(category)),
             scope: open.scope,
             merged: true,
+            coveredDeliveryIds,
             ...(open.requestedInRunId !== ctx.run.id ? { requestedInRunId: open.requestedInRunId } : {}),
           },
           content: { summary: String(args.summary), proposedAction: String(args.proposedAction), messageToOwners: body },
@@ -537,7 +564,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         chatKey: request!.originChatKey,
         conversationId: ctx.conversation.id,
         runId: ctx.run.id,
-        metadata: { requestId: request!.id, categories, autoAdded, scope: grantScope, owners: planned.length, interactionId: interaction!.id },
+        metadata: { requestId: request!.id, categories, autoAdded, scope: grantScope, owners: planned.length, interactionId: interaction!.id, coveredDeliveryIds },
         content: { summary, proposedAction, messageToOwners: body },
         retentionDays: ctx.policy.auditContentRetentionDays,
       });

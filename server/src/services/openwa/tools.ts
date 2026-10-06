@@ -499,6 +499,15 @@ function visibleTriggerScope(ctx: ToolContext) {
   );
 }
 
+/** Ids of this run's visible pending triggers sent by principalId. */
+export async function openwaRequesterPendingTriggerIds(ctx: ToolContext, principalId: string): Promise<string[]> {
+  const rows = await ctx.db
+    .select({ id: chatDeliveries.id })
+    .from(chatDeliveries)
+    .where(and(visibleTriggerScope(ctx), eq(chatDeliveries.principalId, principalId)));
+  return rows.map((row) => row.id).sort();
+}
+
 /** True when waMessageId is a visible pending trigger of this run. */
 async function quotesVisibleTrigger(ctx: ToolContext, waMessageId: string): Promise<boolean> {
   const [row] = await ctx.db
