@@ -769,7 +769,7 @@ export async function assertOpenwaRunMay(
 
 /** Returns a one_action grant consumed by a request that was rejected before its effect. */
 export async function restoreOpenwaGrant(db: Db, input: { companyId: string; runId: string; grantId: string }) {
-  await db
+  const [restored] = await db
     .update(chatOwnerGrants)
     .set({ status: "live", consumedAt: null, consumedByRunId: null, updatedAt: new Date() })
     .where(and(
@@ -777,7 +777,16 @@ export async function restoreOpenwaGrant(db: Db, input: { companyId: string; run
       eq(chatOwnerGrants.companyId, input.companyId),
       eq(chatOwnerGrants.status, "consumed"),
       eq(chatOwnerGrants.consumedByRunId, input.runId),
-    ));
+    ))
+    .returning({ id: chatOwnerGrants.id, endpointId: chatOwnerGrants.endpointId, category: chatOwnerGrants.category });
+  if (!restored) return;
+  await logOpenwaActivity(db, {
+    companyId: input.companyId,
+    endpointId: restored.endpointId,
+    action: "openwa.grant_restored",
+    runId: input.runId,
+    details: { grantId: restored.id, category: restored.category, reason: "rejected_before_effect" },
+  });
 }
 
 /** True while a grant held on a write receipt is still consumed; a revoked grant no longer covers retries of that write. */

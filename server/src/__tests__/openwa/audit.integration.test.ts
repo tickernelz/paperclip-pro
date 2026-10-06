@@ -25,7 +25,7 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 import { CHAT_AUDIT_ENTRY_KINDS, type ChatAuditEntryKind } from "@tickernelz/paperclip-pro-shared";
 import { accessService } from "../../services/access.js";
-import { assertOpenwaRunMay } from "../../services/openwa/authority.js";
+import { assertOpenwaRunMay, restoreOpenwaGrant } from "../../services/openwa/authority.js";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { describeEmbeddedPostgres } from "../helpers/route-test-harness.js";
 import { errorHandler } from "../../middleware/index.js";
@@ -461,6 +461,14 @@ describeEmbeddedPostgres("OpenWA audit and retention", () => {
     expect(rows[0]).toMatchObject({ actorType: "system", actorId: "openwa", runId, entityId: t.endpointId, details: { grantId: grant.id, category: "create_task", scope: "one_action" } });
     await expect(assertOpenwaRunMay(db, run, "create_task")).rejects.toMatchObject({ status: 403 });
     expect(await activity(t, "openwa.grant_consumed")).toHaveLength(1);
+
+    await restoreOpenwaGrant(db, { companyId: t.companyId, runId, grantId: grant.id });
+    await restoreOpenwaGrant(db, { companyId: t.companyId, runId, grantId: grant.id });
+    const restored = await activity(t, "openwa.grant_restored");
+    expect(restored).toHaveLength(1);
+    expect(restored[0]).toMatchObject({ runId, details: { grantId: grant.id, category: "create_task", reason: "rejected_before_effect" } });
+    expect(await assertOpenwaRunMay(db, run, "create_task")).toBe(grant.id);
+    expect(await activity(t, "openwa.grant_consumed")).toHaveLength(2);
   });
 
   it("expires live grants past expires_at in the scheduled job and logs one openwa.grant_expired per endpoint", async () => {

@@ -42,6 +42,7 @@ export const OPENWA_ACTIVITY_ACTIONS = [
   "openwa.grant_created",
   "openwa.grant_consumed",
   "openwa.grant_revoked",
+  "openwa.grant_restored",
   "openwa.grant_expired",
   "openwa.gateway_admin_called",
   "openwa.linked_session_added",
