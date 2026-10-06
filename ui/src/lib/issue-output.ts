@@ -73,7 +73,7 @@ const VIDEO_FILENAME_EXTENSIONS = [
   ".quicktime",
 ];
 
-const IMAGE_FILENAME_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".svg", ".ico"];
+const IMAGE_FILENAME_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".avif", ".bmp", ".ico"];
 
 const BINARY_OUTPUT_APPLICATION_TYPES = new Set([
   "application/wasm",
@@ -224,8 +224,10 @@ export function isVideoLikeOutput(
   return VIDEO_FILENAME_EXTENSIONS.some((extension) => filename.endsWith(extension));
 }
 
+/** Raster images the server serves inline; SVG is always a sandboxed download, never an image preview. */
 export function isImageContentType(contentType: string | null | undefined): boolean {
-  return normalizeOutputContentType(contentType).startsWith("image/");
+  const type = normalizeOutputContentType(contentType);
+  return type.startsWith("image/") && type !== "image/svg+xml";
 }
 
 /** Recognize image uploads with missing or generic MIME types by filename. */

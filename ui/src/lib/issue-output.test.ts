@@ -7,6 +7,7 @@ import {
   getOutputFileGlyph,
   getPromotedOutputAttachmentIds,
   isOutputEligibleContentType,
+  isImageContentType,
   isImageLikeOutput,
 } from "./issue-output";
 
@@ -245,5 +246,15 @@ describe("isImageLikeOutput", () => {
     expect(isImageLikeOutput("text/plain", "cover.png")).toBe(false);
     expect(isImageLikeOutput("application/octet-stream", "archive.zip")).toBe(false);
     expect(isImageLikeOutput("application/octet-stream", "image.heic")).toBe(false);
+  });
+});
+
+describe("SVG outputs", () => {
+  it("never previews SVG as an image because the server serves it as a download", () => {
+    expect(isImageContentType("image/svg+xml")).toBe(false);
+    expect(isImageContentType("image/svg+xml; charset=utf-8")).toBe(false);
+    expect(isImageLikeOutput("application/octet-stream", "diagram.svg")).toBe(false);
+    expect(isImageContentType("image/png")).toBe(true);
+    expect(isImageLikeOutput("application/octet-stream", "chart.png")).toBe(true);
   });
 });

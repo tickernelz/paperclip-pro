@@ -113,7 +113,8 @@ export function caseAttachmentUrl(attachment: CaseAttachmentRef): string {
 }
 
 export function isImageAttachment(attachment: CaseAttachmentRef): boolean {
-  return attachment.asset.contentType.startsWith("image/");
+  const contentType = attachment.asset.contentType.split(";", 1)[0]!.trim().toLowerCase();
+  return contentType.startsWith("image/") && contentType !== "image/svg+xml";
 }
 
 /** The full detail payload (loadCaseDetail on the server). */

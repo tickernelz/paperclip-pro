@@ -29,7 +29,6 @@ const IMAGE_EXTENSIONS = new Set([
   "jpeg",
   "gif",
   "webp",
-  "svg",
   "avif",
   "bmp",
   "ico",
@@ -108,6 +107,7 @@ function normalizedContentType(contentType: string | undefined): string {
 /** MIME type is authoritative; filenames remain a fallback for legacy refs. */
 export function isImageAttachment(ref: AttachmentRef): boolean {
   const contentType = normalizedContentType(ref.contentType);
+  if (contentType === "image/svg+xml") return false;
   if (contentType.startsWith("image/")) return true;
   if (contentType && contentType !== "application/octet-stream") return false;
   return isImageFilename(ref.name) || isImageFilename(ref.url.split("?")[0]);
