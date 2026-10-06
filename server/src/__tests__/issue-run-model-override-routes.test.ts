@@ -119,6 +119,7 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
       name: "Runner",
       adapterType: ADAPTER_TYPE,
       adapterConfig,
+      runtimeConfig: { heartbeat: { wakeOnDemand: false } },
     });
     await ctx.db.insert(issues).values({
       id: issueId,
@@ -147,6 +148,7 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
       name: `Runner ${agentId}`,
       adapterType,
       adapterConfig: {},
+      runtimeConfig: { heartbeat: { wakeOnDemand: false } },
     });
     return agentId;
   };
