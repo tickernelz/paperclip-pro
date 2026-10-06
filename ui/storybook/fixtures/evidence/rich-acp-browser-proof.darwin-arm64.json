@@ -139,7 +139,7 @@
     }
   ],
   "reproduce": {
-    "command": "pnpm --filter @paperclipai/ui storybook",
+    "command": "pnpm --filter @tickernelz/paperclip-pro-ui storybook",
     "storyFile": "ui/storybook/stories/rich-acp-interactions.stories.tsx",
     "instructions": "Open each story ID listed below. Storybook play assertions run against production components. Inspect the Native Cursor plan pending story and scroll the Question context region to the final sentinel."
   },

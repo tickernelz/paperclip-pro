@@ -3,11 +3,11 @@ import { mkdir, mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { heartbeatRuns, type Db } from "@paperclipai/db";
-import type { EnvironmentLease } from "@paperclipai/shared";
-import type { AdapterSandboxExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
-import type { CommandManagedRuntimeRunner } from "@paperclipai/adapter-utils/command-managed-runtime";
-import { runLocalGit } from "@paperclipai/adapter-utils/git-workspace-sync";
+import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import type { EnvironmentLease } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterSandboxExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
+import { runLocalGit } from "@tickernelz/paperclip-pro-adapter-utils/git-workspace-sync";
 import { prepareNativeWorkspaceSync } from "../services/native-runtime/native-workspace-sync.js";
 
 const runner: CommandManagedRuntimeRunner = {

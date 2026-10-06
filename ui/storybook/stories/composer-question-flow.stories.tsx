@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { PaperclipQuestionResponse, PaperclipQuestionSet } from "@paperclipai/adapter-utils";
+import type { PaperclipQuestionResponse, PaperclipQuestionSet } from "@tickernelz/paperclip-pro-adapter-utils";
 import { QuestionForm, QuestionResponseSummary } from "@/components/task-chat/QuestionForm";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { Button } from "@/components/ui/button";

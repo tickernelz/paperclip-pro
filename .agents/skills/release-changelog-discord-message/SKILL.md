@@ -128,7 +128,7 @@ Notes on the template:
 
 - The opening and closing `:paperclip: :paperclip: :paperclip:` bookends are
   part of the brand — keep them.
-- Name the install channels somewhere in the post: `npx paperclipai@latest`
+- Name the install channels somewhere in the post: `npx @tickernelz/paperclip-pro@latest`
   for the stable, `@beta` / `@nightly` / `@canary` for earlier access, and
   Docker `:latest` moving **only** on stable releases.
 - The FULL RELEASE NOTES link points at `releases/v{VERSION}.md` on

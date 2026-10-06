@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { connectionGrants, createDb, toolMcpGatewayTokens, toolPolicies, startEmbeddedPostgresTestDatabase, getEmbeddedPostgresTestSupport } from "@paperclipai/db";
+import { connectionGrants, createDb, toolMcpGatewayTokens, toolPolicies, startEmbeddedPostgresTestDatabase, getEmbeddedPostgresTestSupport } from "@tickernelz/paperclip-pro-db";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { mcpGatewayProtocolRoutes } from "../routes/tool-gateway.js";
 import { createListingFixture } from "./helpers/tool-gateway-listing-fixture.js";

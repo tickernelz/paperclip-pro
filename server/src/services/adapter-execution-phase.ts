@@ -2,7 +2,7 @@ import { performance } from "node:perf_hooks";
 import {
   isAdapterExecutionPhase,
   type AdapterExecutionPhase,
-} from "@paperclipai/adapter-utils/execution-phase";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-phase";
 
 export const MAX_EXECUTION_PHASE_ELAPSED_MS = 86_400_000;
 const MAX_ACTIVE_PHASES = 16;

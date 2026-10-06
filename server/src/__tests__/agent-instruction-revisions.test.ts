@@ -5,14 +5,14 @@ import { randomUUID } from "node:crypto";
 import { beforeAll, afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
 import { agents, agentApiKeys, companies, authUsers, companyMemberships, principalPermissionGrants, heartbeatRuns,
-  agentInstructionRevisions, agentInstructionHeads, issueThreadInteractions, issues, createDb } from "@paperclipai/db";
+  agentInstructionRevisions, agentInstructionHeads, issueThreadInteractions, issues, createDb } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentInstructionRevisionService } from "../services/agent-instruction-revisions.js";
 import { agentInstructionWorkingCopyService } from "../services/agent-instruction-working-copies.js";
 import { instructionBytes, instructionPath, materializeInstructionBytes, readInstructionBytes } from "../services/agent-instruction-files.js";
 import { agentInstructionsService, resolveManagedInstructionsRoot } from "../services/agent-instructions.js";
 import type { AuthorizationActor } from "../services/authorization.js";
-import { upsertAgentInstructionsFileSchema } from "@paperclipai/shared";
+import { upsertAgentInstructionsFileSchema } from "@tickernelz/paperclip-pro-shared";
 
 describe("canonical instruction revisions", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

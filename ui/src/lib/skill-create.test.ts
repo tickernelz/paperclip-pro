@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanySkillDetail } from "@paperclipai/shared";
+import type { CompanySkillDetail } from "@tickernelz/paperclip-pro-shared";
 import {
   buildBlankSkillDraft,
   buildForkSkillDraft,

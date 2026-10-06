@@ -1,7 +1,7 @@
 import { resolveAcpxQualification } from "./acpx-qualification.js";
 import { readLocalAiCredentialFile } from "../local-ai-credential-file.js";
 import { prepareGrokRunnerCredentials } from "./grok-runner-credentials.js";
-import { copyBackGrokAuth } from "@paperclipai/adapter-grok-local/server";
+import { copyBackGrokAuth } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 
 import {
   isSupportedRemoteCodexVersion,
@@ -14,7 +14,7 @@ import { resolveGitHubOperationCredentials } from "../github-operation-credentia
 import { bindManagedNativeCredentialTurn, completeManagedNativeCredentialTurn } from "./managed-native-credentials.js";
 import { createLocalNativeQuestionBridge } from "./local-native-question-bridge.js";
 import { readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
-import { copyBackCodexAuth } from "@paperclipai/adapter-codex-local/server";
+import { copyBackCodexAuth } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { hasAcknowledgedNativeReassignmentStopIntent, hasAcknowledgedNativeStopIntent } from "../acknowledged-native-stop.js";
 import { stoppedCodexTurnIsTextOnly } from "./stopped-codex-turn.js";
@@ -55,7 +55,7 @@ import type {
   AdapterExecutionResult,
   AdapterRuntimeEvent,
 } from "../../adapters/index.js";
-import type { NativeFinalizationResult } from "@paperclipai/shared";
+import type { NativeFinalizationResult } from "@tickernelz/paperclip-pro-shared";
 import type {
   HarnessRuntimeRequestResolution,
   NativeExecutionInput,
@@ -91,14 +91,14 @@ import {
   type RunnerProcessLaunchSpec,
   type NativeSessionGoalControl,
 } from "../../vendor/paperclip-runner/index.js";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
-import type { CommandManagedRuntimeRunner } from "@paperclipai/adapter-utils/command-managed-runtime";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
 import {
   resolvePaperclipRunnerTransport,
   type PaperclipRunnerTransport,
-} from "@paperclipai/adapter-utils/runner-connectivity";
-import type { Db } from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-adapter-utils/runner-connectivity";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   and,
   desc,
@@ -122,7 +122,7 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { nativeSha256 } from "./canonical.js";
@@ -9657,7 +9657,7 @@ export function assertRemoteRunnerBuildMetadata(
   if (
     metadata.schema !== RUNNERD_BUILD_METADATA_SCHEMA ||
     metadata.binaryName !== "paperclip-runnerd" ||
-    metadata.packageName !== "@paperclipai/paperclip-runner" ||
+    metadata.packageName !== "@tickernelz/paperclip-pro-paperclip-runner" ||
     metadata.binaryContractVersion !== RUNNERD_BINARY_CONTRACT_VERSION
   ) {
     throw new Error("runner_remote_artifact_contract_incompatible");

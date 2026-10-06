@@ -11,7 +11,7 @@ import {
   issueComments,
   issues,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { projectSafeChatPublication } from "./chat-publication-projection.js";
 import { logActivity } from "./activity-log.js";
 import { instanceSettingsService } from "./instance-settings.js";

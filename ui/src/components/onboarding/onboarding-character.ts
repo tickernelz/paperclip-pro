@@ -1,6 +1,6 @@
-import type { AgentAppearance, CharacterPaletteId } from "@paperclipai/shared";
-import { CAP_V1_COLORS } from "@paperclipai/shared/cliplab/palette-tokens";
-import type { Definition } from "@paperclipai/shared/cliplab/model";
+import type { AgentAppearance, CharacterPaletteId } from "@tickernelz/paperclip-pro-shared";
+import { CAP_V1_COLORS } from "@tickernelz/paperclip-pro-shared/cliplab/palette-tokens";
+import type { Definition } from "@tickernelz/paperclip-pro-shared/cliplab/model";
 
 /**
  * The onboarding hero's ClipLab definition: the studio's App export

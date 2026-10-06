@@ -1,9 +1,9 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { adapterAuthSessions, companies, createDb, environmentLeases, environments } from "@paperclipai/db";
-import type { AgentAdapterType } from "@paperclipai/shared";
-import { DEVICE_LOGIN_URL } from "@paperclipai/adapter-codex-local/server";
+import { adapterAuthSessions, companies, createDb, environmentLeases, environments } from "@tickernelz/paperclip-pro-db";
+import type { AgentAdapterType } from "@tickernelz/paperclip-pro-shared";
+import { DEVICE_LOGIN_URL } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

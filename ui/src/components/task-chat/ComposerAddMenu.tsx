@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { IssueWorkMode } from "@paperclipai/shared";
+import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import { Check, ClipboardList, MessageCircleQuestion, Paperclip, Plus, Target, X, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { workModeMetaFor } from "@/lib/work-mode-meta";

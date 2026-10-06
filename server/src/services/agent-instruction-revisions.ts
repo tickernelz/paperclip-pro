@@ -9,14 +9,14 @@ import {
   agentInstructionHeads as heads,
   agentInstructionRevisions as revisions,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   AgentInstructionCommitReceipt,
   AgentInstructionDiff,
   AgentInstructionHistory,
   AgentInstructionSnapshot,
   AgentInstructionSource,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import {
   agentInstructionsBundleMode,

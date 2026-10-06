@@ -1,4 +1,4 @@
-import { AI_PROVIDERS, isAiConnectionCompatible, type AiConnectionBinding } from "@paperclipai/shared";
+import { AI_PROVIDERS, isAiConnectionCompatible, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
 
 /** Provider authentication signals only. Tool authorization and quotas need different repairs. */
 export function isAiAuthenticationFailure(code: string | null | undefined): boolean {

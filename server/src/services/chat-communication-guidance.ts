@@ -1,4 +1,4 @@
-import type { ChatProvider } from "@paperclipai/shared";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
 
 // Presentation guidance only. Task execution and permissions belong to the
 // ordinary Paperclip agent runtime, not the provider transport.

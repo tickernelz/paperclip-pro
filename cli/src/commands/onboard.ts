@@ -16,7 +16,7 @@ import {
   type DeploymentMode,
   type SecretProvider,
   type StorageProvider,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   backupInvalidConfig,
   configExists,
@@ -376,7 +376,7 @@ function printManagedInstallHint(): void {
   if (manifest && isManagedExecutable(process.argv[1], manifest)) return;
   if (!isEphemeralNpxExecution()) return;
   p.log.info(
-    `This npx run is temporary. Use ${pc.cyan("paperclipai install")} for atomic updates, rollback, and service support.`,
+    `This npx run is temporary. Use ${pc.cyan("paperclip-pro install")} for atomic updates, rollback, and service support.`,
   );
 }
 
@@ -386,7 +386,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   }
 
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclipai onboard ")));
+  p.intro(pc.bgCyan(pc.black(" paperclip-pro onboard ")));
   const configPath = resolveConfigPath(opts.config);
   const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
   p.log.message(
@@ -442,7 +442,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.message(
       pc.dim("Existing Paperclip install detected; keeping the current configuration unchanged."),
     );
-    p.log.message(pc.dim(`Use ${pc.cyan("paperclipai configure")} if you want to change settings.`));
+    p.log.message(pc.dim(`Use ${pc.cyan("paperclip-pro configure")} if you want to change settings.`));
 
     const jwtSecret = ensureAgentJwtSecret(configPath);
     const envFilePath = resolveAgentJwtEnvFile(configPath);
@@ -483,9 +483,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
     p.note(
       [
-        `Run: ${pc.cyan("paperclipai run")}`,
-        `Reconfigure later: ${pc.cyan("paperclipai configure")}`,
-        `Diagnose setup: ${pc.cyan("paperclipai doctor")}`,
+        `Run: ${pc.cyan("paperclip-pro run")}`,
+        `Reconfigure later: ${pc.cyan("paperclip-pro configure")}`,
+        `Diagnose setup: ${pc.cyan("paperclip-pro doctor")}`,
       ].join("\n"),
       "Next commands",
     );
@@ -586,12 +586,12 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       const s = p.spinner();
       s.start("Testing database connection...");
       try {
-        const { createDb } = await import("@paperclipai/db");
+        const { createDb } = await import("@tickernelz/paperclip-pro-db");
         const db = createDb(database.connectionString);
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
       } catch {
-        s.stop(pc.yellow("Could not connect to database — you can fix this later with `paperclipai doctor`"));
+        s.stop(pc.yellow("Could not connect to database — you can fix this later with `paperclip-pro doctor`"));
       }
     }
 
@@ -748,9 +748,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
   p.note(
     [
-      `Run: ${pc.cyan("paperclipai run")}`,
-      `Reconfigure later: ${pc.cyan("paperclipai configure")}`,
-      `Diagnose setup: ${pc.cyan("paperclipai doctor")}`,
+      `Run: ${pc.cyan("paperclip-pro run")}`,
+      `Reconfigure later: ${pc.cyan("paperclip-pro configure")}`,
+      `Diagnose setup: ${pc.cyan("paperclip-pro doctor")}`,
     ].join("\n"),
     "Next commands",
   );
@@ -787,8 +787,8 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.info(
       [
         "Bootstrap CEO invite will be created after the server starts.",
-        `Next: ${pc.cyan("paperclipai run")}`,
-        `Then: ${pc.cyan("paperclipai auth bootstrap-ceo")}`,
+        `Next: ${pc.cyan("paperclip-pro run")}`,
+        `Then: ${pc.cyan("paperclip-pro auth bootstrap-ceo")}`,
       ].join("\n"),
     );
   }

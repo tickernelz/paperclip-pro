@@ -1,5 +1,5 @@
 import { AlertTriangle, ExternalLink } from "lucide-react";
-import type { AgentPermissions } from "@paperclipai/shared";
+import type { AgentPermissions } from "@tickernelz/paperclip-pro-shared";
 import { getTrustPreset } from "@/lib/trust-policy-ui";
 
 export const LOW_TRUST_AGENT_GUIDE =

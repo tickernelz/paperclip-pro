@@ -1,10 +1,10 @@
 import { readLocalAiCredentialFile } from "./local-ai-credential-file.js";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { readClaudeToken, readIsolatedClaudeKeychainToken, fetchClaudeQuota } from "@paperclipai/adapter-claude-local/server";
-import { readCodexAuthInfo, fetchCodexQuota } from "@paperclipai/adapter-codex-local/server";
-import { parseGrokAuthPayload, hasUsableGrokAuthValue } from "@paperclipai/adapter-grok-local/server";
-import type { AiProvider } from "@paperclipai/shared";
+import { readClaudeToken, readIsolatedClaudeKeychainToken, fetchClaudeQuota } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { readCodexAuthInfo, fetchCodexQuota } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { parseGrokAuthPayload, hasUsableGrokAuthValue } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
+import type { AiProvider } from "@tickernelz/paperclip-pro-shared";
 import { unprocessable } from "../errors.js";
 
 /** Read an owned login home, or an explicitly authorized local-operator import. */

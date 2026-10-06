@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { ExecutionContinuationEnvelope } from "@paperclipai/shared";
+import type { ExecutionContinuationEnvelope } from "@tickernelz/paperclip-pro-shared";
 
 /** Credential-free semantic input shared by actual adapter-boundary tests. */
 export function createPromptContextFixture() {

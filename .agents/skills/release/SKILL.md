@@ -90,7 +90,7 @@ Useful commands:
 ```bash
 git tag --list 'v*' --sort=-version:refname | head -1
 git log --oneline --no-merges
-npm view paperclipai@canary version
+npm view @tickernelz/paperclip-pro@canary version
 ```
 
 ## Step 2 — Draft the Stable Changelog
@@ -137,7 +137,7 @@ Confirm:
 Useful checks:
 
 ```bash
-npm view paperclipai@canary version
+npm view @tickernelz/paperclip-pro@canary version
 git tag --list 'canary/v*' --sort=-version:refname | head -5
 ```
 

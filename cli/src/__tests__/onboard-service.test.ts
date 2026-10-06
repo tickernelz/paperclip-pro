@@ -32,8 +32,8 @@ function supportedDetection() {
     manager: {
       platform: "systemd" as const,
       instanceId: "default",
-      serviceName: "paperclipai.service",
-      definitionPath: "/tmp/paperclipai.service",
+      serviceName: "paperclip-pro.service",
+      definitionPath: "/tmp/paperclip-pro.service",
       renderDefinition: () => "unit",
       install: vi.fn(async () => ({ changed: true })),
       uninstall: vi.fn(async () => undefined),
@@ -42,7 +42,7 @@ function supportedDetection() {
       restart: vi.fn(async () => undefined),
       status: vi.fn(async () => ({
         platform: "systemd" as const,
-        serviceName: "paperclipai.service",
+        serviceName: "paperclip-pro.service",
         installed: true,
         active: true,
         enabled: true,
@@ -129,7 +129,7 @@ describe("onboard service policy", () => {
 
     expect(installed).toBe(true);
     expect(ensureServiceShim).toHaveBeenCalledOnce();
-    expect(success).toHaveBeenCalledWith(expect.stringContaining("managed paperclipai payload"));
+    expect(success).toHaveBeenCalledWith(expect.stringContaining("managed paperclip-pro payload"));
     expect(detection.manager.install).toHaveBeenCalledWith({ startNow: true, startOnLogin: true });
   });
 
@@ -150,7 +150,7 @@ describe("onboard service policy", () => {
     expect(installed).toBe(false);
     expect(detection.manager.install).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("npm exploded"));
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclipai install"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclip-pro install"));
   });
 
 });
@@ -243,7 +243,7 @@ describe("onboarded service dashboard handoff", () => {
     });
 
     expect(openDashboard).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclipai service logs"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclip-pro service logs"));
   });
 });
 

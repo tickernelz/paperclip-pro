@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { workspaceRuntimeServices } from "@paperclipai/db";
+import { workspaceRuntimeServices } from "@tickernelz/paperclip-pro-db";
 import { describe, expect, it } from "vitest";
 import { selectConfiguredRuntimeServiceRows } from "./workspace-runtime-read-model.js";
 

@@ -1,5 +1,5 @@
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
-import { createPromptContextFixture } from "@paperclipai/adapter-utils/test-fixtures/prompt-context";
+import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import { createPromptContextFixture } from "@tickernelz/paperclip-pro-adapter-utils/test-fixtures/prompt-context";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const websocketState = vi.hoisted(() => ({

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { heartbeatRuns } from "@paperclipai/db";
+import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { collectRunFailureDiagnostics, collectRunFailureSecretValues, redactRunFailureSecretValues, sanitizeRunFailureDiagnostics, sanitizeRunFailureText } from "../run-failure-diagnostics.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;

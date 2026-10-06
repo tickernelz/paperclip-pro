@@ -177,7 +177,7 @@ Verification: 563 distinct focused tests passed across 18 suites:
   fallback execution (113 tests).
 - Native execution input, preserving shared wake compatibility (20 tests).
 
-`@paperclipai/adapter-utils` typecheck and build passed; `git diff --check`
+`@tickernelz/paperclip-pro-adapter-utils` typecheck and build passed; `git diff --check`
 passed. Full repository typecheck/build/test and live behavioral evals were not
 run for this local bounded change. These checks prove prompt and runtime
 mechanics, not an improvement in coding-task quality.

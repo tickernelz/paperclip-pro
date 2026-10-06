@@ -1,6 +1,6 @@
-import type { Environment, EnvironmentProbeResult } from "@paperclipai/shared";
-import type { Db } from "@paperclipai/db";
-import { ensureSshWorkspaceReady } from "@paperclipai/adapter-utils/ssh";
+import type { Environment, EnvironmentProbeResult } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { ensureSshWorkspaceReady } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import {
   parseEnvironmentDriverConfig,
   resolveEnvironmentDriverConfigForRuntime,

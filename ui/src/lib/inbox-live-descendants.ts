@@ -1,4 +1,4 @@
-import type { Issue, IssueBlockerAttention } from "@paperclipai/shared";
+import type { Issue, IssueBlockerAttention } from "@tickernelz/paperclip-pro-shared";
 
 type InboxLiveDescendantIssue = Pick<Issue, "status" | "blockerAttention" | "liveDescendantCount">;
 

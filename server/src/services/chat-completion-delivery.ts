@@ -1,6 +1,6 @@
 import { and, asc, eq, inArray, lte, sql } from "drizzle-orm";
 import { agents, agentWakeupRequests, chatCompletionDeliveries as deliveries, chatTaskHandoffs as handoffs,
-  heartbeatRuns, issueComments, issueDocuments, issues, type Db } from "@paperclipai/db";
+  heartbeatRuns, issueComments, issueDocuments, issues, type Db } from "@tickernelz/paperclip-pro-db";
 import { instanceSettingsService } from "./instance-settings.js";
 
 export const CHAT_COMPLETION_WAKE_REASON = "chat_task_completed";

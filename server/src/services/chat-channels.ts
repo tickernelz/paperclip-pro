@@ -15,8 +15,8 @@ import { githubChatManagementService } from "./chat-github-management.js";
 import { githubReviewCheckService } from "./chat-github-checks.js";
 import { githubAutomaticReviewEvent, githubAutomaticAdmission, githubPreviousAssessment } from "./chat-github-events.js";
 import { githubReviewPrompt } from "./chat-github-review-policy.js";
-import { chatGitHubConfigurations, chatGitHubReviews } from "@paperclipai/db";
-import type { GitHubReviewEventContext, GitHubReviewPolicy } from "@paperclipai/shared";
+import { chatGitHubConfigurations, chatGitHubReviews } from "@tickernelz/paperclip-pro-db";
+import type { GitHubReviewEventContext, GitHubReviewPolicy } from "@tickernelz/paperclip-pro-shared";
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { githubChatRegistrationService } from "./chat-github-registration.js";
 import { githubChatPrincipalAccess } from "./chat-github-access.js";
@@ -32,10 +32,10 @@ import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./ph
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
 import { PhotonAnswerValidationError, nativePhotonInteraction, publishPhotonPrompt, photonResponseCommand, parsePhotonQuestionAnswer, type PhotonPromptReceipt, type PhotonInteractionBinding, type PhotonDraft } from "./photon/interactions.js";
 import { validateNativeQuestionResponseInput } from "./native-runtime/native-question-bridge.js";
-import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@paperclipai/shared";
+import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@paperclipai/shared";
+import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import {
   createHash,
@@ -76,7 +76,7 @@ import {
   teamsConversationId,
 } from "./chat-control-chronology.js";
 import { retryChatControlAdmission } from "./chat-control-admission-retry.js";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   createDurableChatWakeupRequest,
   assertDurableChatWakeupReceipt,
@@ -118,7 +118,7 @@ import {
   joinRequests,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ChatAdapterCapabilities,
   ChatEndpointCallbackSurfaces,
@@ -134,7 +134,7 @@ import type {
   SafeChatPublicationPayload,
   ToolCredentialSecretRef,
   UpdateChatEndpointInput,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   isAgentStatusInvokable,
   CHAT_PROVIDERS,
@@ -142,7 +142,7 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   LOW_TRUST_REVIEW_PRESET_VERSION,
   LOW_TRUST_REVIEW_RAW_OUTPUT_DISPOSITION,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   formatAttachmentSize,
   isAllowedContentType,
@@ -29234,7 +29234,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     action: "mark_delivered" | "retry_anyway" | "cancel",
     userId: string,
     fileTransfer?: {
-      phase: import("@paperclipai/shared").ChatFileTransferPhase;
+      phase: import("@tickernelz/paperclip-pro-shared").ChatFileTransferPhase;
       version: number;
     },
   ) {

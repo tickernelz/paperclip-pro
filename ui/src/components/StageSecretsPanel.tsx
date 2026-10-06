@@ -1,5 +1,5 @@
 import { KeyRound, Save } from "lucide-react";
-import type { CompanySecret, RoutineEnvConfig } from "@paperclipai/shared";
+import type { CompanySecret, RoutineEnvConfig } from "@tickernelz/paperclip-pro-shared";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "./EmptyState";
 import { EnvironmentVariablesEditor } from "./environment-variables-editor";

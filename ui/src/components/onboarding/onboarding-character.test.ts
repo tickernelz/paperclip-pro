@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { appearanceForPalette } from "@paperclipai/shared";
-import { CAP_V1_COLORS } from "@paperclipai/shared/cliplab/palette-tokens";
-import { PAPERCLIP_CHARACTER } from "@paperclipai/shared/cliplab/character";
+import { appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
+import { CAP_V1_COLORS } from "@tickernelz/paperclip-pro-shared/cliplab/palette-tokens";
+import { PAPERCLIP_CHARACTER } from "@tickernelz/paperclip-pro-shared/cliplab/character";
 import exported from "@/assets/cliplab/onboarding.character.json";
 import { colorOnboardingDefinition, resolveOnboardingSequences, sequenceDuration, sequenceLeadIn } from "./onboarding-character";
 

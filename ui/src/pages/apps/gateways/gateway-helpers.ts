@@ -5,8 +5,8 @@ import type {
   ToolMcpGatewayToken,
   ToolMcpGatewayWithTokens,
   ToolProfileWithDetails,
-} from "@paperclipai/shared";
-import { humanizeConnectionDisplayName, isToolConnectionAttentionHealth } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { humanizeConnectionDisplayName, isToolConnectionAttentionHealth } from "@tickernelz/paperclip-pro-shared";
 
 /** Days before expiry at which we surface a token as "Expiring". */
 export const TOKEN_EXPIRING_WINDOW_DAYS = 14;

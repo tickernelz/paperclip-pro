@@ -1,18 +1,18 @@
-import { AGGREGATOR_NAMES, isAppAggregator, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "@paperclipai/shared/aggregator-apps";
-import { resolveAggregatorApp, type AppCatalogAggregator } from "@paperclipai/shared/aggregator-app-catalog";
+import { AGGREGATOR_NAMES, isAppAggregator, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { resolveAggregatorApp, type AppCatalogAggregator } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 import { AggregatorDiscoveryUnavailableError, discoverArcadeApps, discoverExecutorApps, type DiscoveredApp } from "./aggregator-app-discovery.js";
-import { COMPOSIO_APP_TOOLKITS, findComposioCatalogApp } from "@paperclipai/shared/aggregator-app-catalog";
-import type { ComposioAppAccount, ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@paperclipai/shared";
+import { COMPOSIO_APP_TOOLKITS, findComposioCatalogApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
+import type { ComposioAppAccount, ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@tickernelz/paperclip-pro-shared";
 import { composioAppAccounts, composioAppSetupResult } from "./composio-app-setup.js";
 import { honchoManagedArguments } from "./honcho-connection.js";
-import { defaultConnectionAgentInstructions } from "@paperclipai/shared";
+import { defaultConnectionAgentInstructions } from "@tickernelz/paperclip-pro-shared";
 import { isInsufficientConnectionScope, INSUFFICIENT_CONNECTION_SCOPE_MESSAGE } from "./connection-permission-errors.js";
-import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@paperclipai/shared";
-import { BROWSER_USE_TOOLS } from "@paperclipai/shared";
+import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/paperclip-pro-shared";
+import { BROWSER_USE_TOOLS } from "@tickernelz/paperclip-pro-shared";
 import { browserUseClient, isBrowserUseConnection } from "./browser-use-client.js";
 import { browserUseService } from "./browser-use.js";
 import { COGNEE_STDIO_TEMPLATE, cogneeCloudUrl } from "./cognee-connection.js";
-import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@paperclipai/shared";
+import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/paperclip-pro-shared";
 import { instanceSettingsService } from "./instance-settings.js";
 import { githubBotRequest } from "./chat-github-client.js";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
@@ -40,7 +40,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   connectionGrantMembers,
@@ -82,7 +82,7 @@ import {
   toolProfiles,
   toolRuntimeMetricCounters,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   AppDefinition,
   ConnectionGrantKind,
@@ -165,7 +165,7 @@ import type {
   UnbindToolProfileBinding,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   CLASS3_STATIC_LEASE_ALLOWLIST,
   GITHUB_CONNECTOR_PROFILES,
@@ -183,19 +183,19 @@ import {
   resolveConnectionMethodServerUrl,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   checkMcpRemoteHeaderName,
   checkMcpRemoteHeaderValue,
   mcpRemoteHeaderNameFromConfigPath,
   mcpRemoteHeaderRejectionMessage,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   checkOAuthEndpointUrl,
   oauthEndpointUrlRejectionMessage,
   type OAuthEndpointKind,
   type OAuthEndpointUrlRejection,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   badRequest,
   conflict,
@@ -234,7 +234,7 @@ import {
 import { secretService } from "./secrets.js";
 import { connectionCredentialConfigPath as credentialRefConfigPath, connectionGrantCredentialRef, connectionSecretsUsedByOtherConsumers, resolveConnectionGrantSecret, validateConnectionGrantSecretOwnership, writeConnectionCredential } from "./connection-credentials.js";
 import { agentmailApi } from "./agentmail-api.js";
-import type { ConfigureRailwaySsh, RailwaySshSetup } from "@paperclipai/shared";
+import type { ConfigureRailwaySsh, RailwaySshSetup } from "@tickernelz/paperclip-pro-shared";
 import { generateRailwaySshKey, RAILWAY_SSH_SECRET_PATH, validateRailwayKnownHosts } from "./railway-ssh.js";
 import { createRailwayClient, discoverRailwayWorkspace, isRailwayConnection, isRailwayEndpoint, isRailwayToolBlocked, normalizeRailwayToolName, RAILWAY_TOOLS, RAILWAY_TOOL_PREFIX, railwayRisk, RailwayError } from "./railway.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
@@ -257,7 +257,7 @@ import {
   ToolRuntimeSupervisorError,
 } from "./tool-runtime-supervisor.js";
 import { listConnectionLifecycleEvents } from "./tool-connection-activity.js";
-import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@paperclipai/shared";
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/paperclip-pro-shared";
 import {
   appWithPaperclipCloudConnectorAvailability,
   paperclipCloudConnectorCapabilitiesFromEnv,
@@ -17642,7 +17642,7 @@ export function toolAccessService(
       ]);
       const repositories = new Map<
         string,
-        import("@paperclipai/shared").ProjectRepository
+        import("@tickernelz/paperclip-pro-shared").ProjectRepository
       >();
       const usableConnections: Array<{ id: string; name: string }> = [];
       let connectionCount = 0;

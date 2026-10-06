@@ -1,7 +1,7 @@
 import { useState, type CSSProperties } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { IssueThreadInteraction, IssueWorkMode } from "@paperclipai/shared";
+import type { IssueThreadInteraction, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import { ChevronLeft, Ellipsis } from "lucide-react";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";

@@ -1,14 +1,14 @@
 import { and, desc, eq, inArray, isNull, isNotNull, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { heartbeatRuns, issueRecoveryActions, workspaceOperations } from "@paperclipai/db";
-import { isUuidLike } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, issueRecoveryActions, workspaceOperations } from "@tickernelz/paperclip-pro-db";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import type {
   IssueRecoveryAction,
   IssueRecoveryActionKind,
   IssueRecoveryActionOwnerType,
   IssueRecoveryActionOutcome,
   IssueRecoveryActionStatus,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 import { isNativeWorkspaceFinalizationOperationActive } from "./workspace-operations.js";
 

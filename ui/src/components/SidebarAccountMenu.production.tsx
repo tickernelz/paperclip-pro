@@ -7,7 +7,7 @@ import {
   type LucideIcon,
   UserPlus,
 } from "lucide-react";
-import { hidesCompanyPage, type DeploymentMode } from "@paperclipai/shared";
+import { hidesCompanyPage, type DeploymentMode } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { authApi } from "@/api/auth";
 import { queryKeys } from "@/lib/queryKeys";

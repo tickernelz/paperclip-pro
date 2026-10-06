@@ -9,7 +9,7 @@ import {
   type CompanySecret,
   type EnvBinding,
   type Environment,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { ActiveAgentsPanel } from "@/components/ActiveAgentsPanel";
 import { AgentConfigForm, type CreateConfigValues } from "@/components/AgentConfigForm";
 import { defaultCreateValues } from "@/components/agent-config-defaults";

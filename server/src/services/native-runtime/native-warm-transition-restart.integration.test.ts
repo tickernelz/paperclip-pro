@@ -18,8 +18,8 @@ import {
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
-import type { NativeExecutionInputV1 } from "@paperclipai/paperclip-runner";
+} from "@tickernelz/paperclip-pro-db";
+import type { NativeExecutionInputV1 } from "@tickernelz/paperclip-pro-paperclip-runner";
 import { describe, expect, it, vi } from "vitest";
 import { nativeSha256 } from "./canonical.js";
 import {

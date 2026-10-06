@@ -1,4 +1,4 @@
-import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@paperclipai/shared";
+import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@tickernelz/paperclip-pro-shared";
 /**
  * JSON-RPC 2.0 message types and protocol helpers for the host ↔ worker IPC
  * channel.
@@ -49,8 +49,8 @@ import type {
   ExternalObjectMentionConfidence,
   ExternalObjectMentionSourceKind,
   EnvSecretRefBinding,
-} from "@paperclipai/shared";
-export type { PluginLauncherRenderContextSnapshot } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+export type { PluginLauncherRenderContextSnapshot } from "@tickernelz/paperclip-pro-shared";
 
 import type {
   PluginEvent,

@@ -58,7 +58,7 @@ body:
     id: paperclip-version
     attributes:
       label: Paperclip version or commit
-      description: Output of `paperclipai --version` or the commit SHA you are running.
+      description: Output of `paperclip-pro --version` or the commit SHA you are running.
       placeholder: e.g. 0.42.0 or 78dc3625ac
     validations:
       required: true

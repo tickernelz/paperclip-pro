@@ -1,11 +1,11 @@
 import { hasStopOnlyCleanup, prepareSandboxStopAndRetain, readStopOnlyCleanup, settleStopOnlyCleanup, stopOnlyCleanupKey } from "./sandbox-stop-and-retain.js";
-import { readEnvironmentCreationCleanupError } from "@paperclipai/plugin-sdk";
+import { readEnvironmentCreationCleanupError } from "@tickernelz/paperclip-pro-plugin-sdk";
 import { remoteTerminationReceipt } from "./remote-execution-termination.js";
 import { hasNativeWorkspaceExportResume, releaseCompletedNativeWorkspaceExportRetention } from "./native-runtime/native-workspace-export-resume.js";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, ne, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { companySecrets, companySecretVersions, environmentLeases, heartbeatRuns } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { companySecrets, companySecretVersions, environmentLeases, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import type {
   Environment,
   EnvironmentLease,
@@ -16,13 +16,13 @@ import type {
   PluginEnvironmentConfig,
   SandboxEnvironmentConfig,
   SandboxProviderCapabilities,
-} from "@paperclipai/shared";
-import { resolveDeclaredSandboxCapabilities } from "@paperclipai/shared";
-import type { EffectiveExecutionCapabilities } from "@paperclipai/adapter-utils/execution-target";
-import type { RunnerIngressEndpoint } from "@paperclipai/adapter-utils/runner-connectivity";
+} from "@tickernelz/paperclip-pro-shared";
+import { resolveDeclaredSandboxCapabilities } from "@tickernelz/paperclip-pro-shared";
+import type { EffectiveExecutionCapabilities } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { RunnerIngressEndpoint } from "@tickernelz/paperclip-pro-adapter-utils/runner-connectivity";
 import type {
   CommandManagedDuplexChannel,
-} from "@paperclipai/adapter-utils/command-managed-runtime";
+} from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentExecuteResult,
@@ -30,13 +30,13 @@ import type {
   PluginEnvironmentRealizeWorkspaceResult,
   PluginEnvironmentSyncResult,
   PluginSyncOperation,
-} from "@paperclipai/plugin-sdk";
-import { ensureSshWorkspaceReady } from "@paperclipai/adapter-utils/ssh";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
+import { ensureSshWorkspaceReady } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import {
   getActiveStepContext,
   runWithRuntimeParent,
   type StartupSpanContext,
-} from "@paperclipai/adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
 import { environmentService } from "./environments.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { verifyNativeHarnessBackupStamp } from "./native-runtime/native-harness-backup-stamp.js";

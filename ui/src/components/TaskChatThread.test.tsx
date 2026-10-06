@@ -13,10 +13,10 @@ import type {
   IssueQueuedCommentQueue,
   IssueThreadInteraction,
   TaskBrowser,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { heartbeatsApi } from "@/api/heartbeats";
 import { nativeRunEventsToTranscript } from "./transcript/native-run-events";
-import type { HeartbeatRunEvent } from "@paperclipai/shared";
+import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
 
 const transcriptState = vi.hoisted(() => ({
   transcriptByRun: new Map(),

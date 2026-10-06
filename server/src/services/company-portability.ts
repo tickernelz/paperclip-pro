@@ -1,4 +1,4 @@
-import { agentAppearanceSchema } from "@paperclipai/shared";
+import { agentAppearanceSchema } from "@tickernelz/paperclip-pro-shared";
 import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import { execFile } from "node:child_process";
@@ -10,7 +10,7 @@ import {
   issueRelations,
   principalPermissionGrants,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   CompanyPortabilityAgentManifestEntry,
   CompanyPortabilityBlobManifestEntry,
@@ -44,7 +44,7 @@ import type {
   AgentEnvConfig,
   PermissionKey,
   RoutineVariable,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   ISSUE_PRIORITIES,
@@ -63,13 +63,13 @@ import {
   issueCommentPresentationSchema,
   normalizeAgentUrlKey,
   PERMISSION_KEYS,
-} from "@paperclipai/shared";
-import { sha256HexOfBytes } from "@paperclipai/shared/portability-hash";
+} from "@tickernelz/paperclip-pro-shared";
+import { sha256HexOfBytes } from "@tickernelz/paperclip-pro-shared/portability-hash";
 import {
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
-import { requireOpenCodeModelId } from "@paperclipai/adapter-opencode-local/server";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { requireOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import { findServerAdapter } from "../adapters/index.js";
 import { formatAttachmentSize, MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
@@ -703,7 +703,7 @@ type ProjectLike = {
   targetDate: string | null;
   color: string | null;
   icon: string | null;
-  appearance?: import("@paperclipai/shared").AgentAppearance | null;
+  appearance?: import("@tickernelz/paperclip-pro-shared").AgentAppearance | null;
   status: string;
   env: Record<string, unknown> | null;
   executionWorkspacePolicy: Record<string, unknown> | null;
@@ -3308,7 +3308,7 @@ function buildManifestFromPackageFiles(
       const sourceHostname = asString(primarySource?.hostname) || "github.com";
       const [owner, repoName] = (repo ?? "").split("/");
       const canonicalKey = readSkillKey(frontmatter);
-      const normalizedSourceKind = owner === "paperclipai"
+      const normalizedSourceKind = owner === "paperclip-pro"
         && repoName === "paperclip"
         && canonicalKey?.startsWith("paperclipai/paperclip/")
         ? "paperclip_bundled"

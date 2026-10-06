@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import {
   createDb, heartbeatRuns, toolCatalogEntries, toolConnections, toolPolicies,
   toolProfileEntries, startEmbeddedPostgresTestDatabase,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { createListingFixture, recordingDb } from "../src/__tests__/helpers/tool-gateway-listing-fixture.js";
 import type { createToolGatewayService } from "../src/services/tool-gateway.js";
 

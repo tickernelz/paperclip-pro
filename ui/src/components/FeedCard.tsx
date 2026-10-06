@@ -2,7 +2,7 @@ import { AgentAvatar } from "@/components/AgentAvatar";
 import { Link } from "@/lib/router";
 import { timeAgo } from "../lib/timeAgo";
 import { cn } from "../lib/utils";
-import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@paperclipai/shared";
+import { deriveProjectUrlKey, type ActivityEvent, type Agent } from "@tickernelz/paperclip-pro-shared";
 import { issueStatusIcon, issueStatusIconDefault } from "../lib/status-colors";
 import {
   FileText,

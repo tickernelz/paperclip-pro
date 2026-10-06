@@ -33,7 +33,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import {
   getEmbeddedPostgresTestSupport,

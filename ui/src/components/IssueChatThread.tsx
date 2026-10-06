@@ -50,7 +50,7 @@ import type {
   IssueWorkMode,
   IssueWorkProduct,
   IssueAssigneeAdapterOverrides,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import { findUIAdapter } from "../adapters/registry";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
@@ -201,7 +201,7 @@ import type {
   IssueCommentMetadata,
   IssueCommentPresentation,
   SourceTrustMetadata,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   describeToolInput,
   displayToolName,
@@ -211,7 +211,7 @@ import {
   summarizeToolInput,
   summarizeToolResult,
 } from "../lib/transcriptPresentation";
-import { buildAgentMentionHref } from "@paperclipai/shared";
+import { buildAgentMentionHref } from "@tickernelz/paperclip-pro-shared";
 import { useComposerStop } from "@/hooks/useComposerStop";
 import { cn, formatDateTime, formatShortDate } from "../lib/utils";
 import { liveBlueBadge } from "../lib/status-colors";
@@ -539,7 +539,7 @@ interface IssueChatComposerProps {
 
 interface IssueChatThreadProps {
   /** Browser sessions are placed chronologically by the default task thread. */
-  browsers?: import("@paperclipai/shared").TaskBrowser[];
+  browsers?: import("@tickernelz/paperclip-pro-shared").TaskBrowser[];
   onOpenBrowser?: (browserId: string) => void;
   hasOlderComments?: boolean;
   comments: IssueChatComment[];

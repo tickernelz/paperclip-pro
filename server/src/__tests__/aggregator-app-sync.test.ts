@@ -4,7 +4,7 @@ import { eq, sql } from "drizzle-orm";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { companies, companyMemberships, connectionGrants, createDb, toolApplications, toolCatalogEntries, toolConnections, toolConnectionAppSnapshots } from "@paperclipai/db";
+import { companies, companyMemberships, connectionGrants, createDb, toolApplications, toolCatalogEntries, toolConnections, toolConnectionAppSnapshots } from "@tickernelz/paperclip-pro-db";
 import { toolAccessService } from "../services/tool-access.js";
 import { secretService } from "../services/secrets.js";
 import { toolAccessRoutes } from "../routes/tool-access.js";

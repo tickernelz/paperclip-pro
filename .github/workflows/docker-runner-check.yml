@@ -200,8 +200,8 @@ jobs:
         if: always() && (inputs.verify_source || inputs.build_eval_viewer)
         run: |
           set -euo pipefail
-          pnpm install --frozen-lockfile --ignore-scripts --filter '@paperclipai/paperclip-runner...'
-          pnpm --filter @paperclipai/paperclip-runner build:issue-thread > remote-verification/viewer-build.log 2>&1
+          pnpm install --frozen-lockfile --ignore-scripts --filter '@tickernelz/paperclip-pro-paperclip-runner...'
+          pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread > remote-verification/viewer-build.log 2>&1
           tar -czf remote-verification/eval-viewer.tar.gz -C packages/paperclip-runner dist-issue-thread
           sha256sum remote-verification/eval-viewer.tar.gz > remote-verification/eval-viewer.sha256
       - name: Retain source, image and verification evidence

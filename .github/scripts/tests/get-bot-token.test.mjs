@@ -7,7 +7,7 @@ test('resolveInstallationId: uses the repo installation endpoint when repo conte
   const installationId = await resolveInstallationId(async (path) => {
     seenPaths.push(path);
     return { id: 42 };
-  }, 'jwt', 'paperclipai/paperclip', 'paperclipai');
+  }, 'jwt', 'paperclipai/paperclip', 'paperclip-pro');
 
   assert.equal(installationId, 42);
   assert.deepEqual(seenPaths, ['/repos/paperclipai/paperclip/installation']);
@@ -17,7 +17,7 @@ test('resolveInstallationId: falls back to the matching owner installation', asy
   const installationId = await resolveInstallationId(async () => ([
     { id: 1, account: { login: 'someone-else' } },
     { id: 7, account: { login: 'PaperclipAI' } },
-  ]), 'jwt', undefined, 'paperclipai');
+  ]), 'jwt', undefined, 'paperclip-pro');
 
   assert.equal(installationId, 7);
 });

@@ -73,7 +73,7 @@ const mockIssueReferenceService = vi.hoisted(() => ({
 }));
 
 // Keep service factories stable while each request uses the hoisted test doubles.
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
   trackAgentTaskCompleted: vi.fn(),
   trackErrorHandlerCrash: vi.fn(),
 }));

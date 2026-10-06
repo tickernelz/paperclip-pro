@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { getAppStoreDefinition } from "@paperclipai/shared";
+import { getAppStoreDefinition } from "@tickernelz/paperclip-pro-shared";
 import { Link, Route, Routes, useLocation } from "@/lib/router";
 import { SetupWizardSidebarProvider } from "@/context/SetupWizardSidebarContext";
 import { SetupWizardSidebar } from "@/components/SetupWizard";

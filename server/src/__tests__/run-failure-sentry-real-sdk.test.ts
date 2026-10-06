@@ -1,14 +1,14 @@
 import { createRequire } from "node:module";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { collectRunFailureDiagnostics, sanitizeRunFailureDiagnostics } from "../services/run-failure-diagnostics.js";
-import type { heartbeatRuns } from "@paperclipai/db";
+import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import {
   preserveWorkspaceRestoreErrorDiagnostic,
   withWorkspaceRestoreDiagnostics,
   withWorkspaceRestoreStep,
   withWorkspaceRestoreGitCommand,
-} from "@paperclipai/adapter-utils/workspace-restore-diagnostics";
-import { createWorkspaceRestoreTeardown } from "@paperclipai/adapter-utils/workspace-restore-teardown";
+} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-diagnostics";
+import { createWorkspaceRestoreTeardown } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-teardown";
 
 // Sentry is an optional peer. When installed, exercise the real SDK with an
 // in-memory transport, including its context behavior without an OTel manager.

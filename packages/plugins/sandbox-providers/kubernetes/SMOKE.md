@@ -1,4 +1,4 @@
-# Manual smoke test — `@paperclipai/plugin-kubernetes`
+# Manual smoke test — `@tickernelz/paperclip-pro-plugin-kubernetes`
 
 Manual sanity check that the plugin works end-to-end against a real
 paperclip-server instance and a real Kubernetes cluster (kind for local
@@ -33,7 +33,7 @@ cd /path/to/paperclip
 export PAPERCLIP_HOME=/tmp/paperclip-smoke
 export PAPERCLIP_INSTANCE_ID=smoke
 export PAPERCLIP_DEPLOYMENT_MODE=local_trusted
-pnpm --filter @paperclipai/server dev
+pnpm --filter @tickernelz/paperclip-pro-server dev
 ```
 
 Wait for `Server listening on 127.0.0.1:3100`.
@@ -41,7 +41,7 @@ Wait for `Server listening on 127.0.0.1:3100`.
 ### 3. Install the plugin via the CLI
 
 ```bash
-npx paperclipai plugin install \
+npx @tickernelz/paperclip-pro plugin install \
   --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes \
   --api-base http://127.0.0.1:3100
 ```

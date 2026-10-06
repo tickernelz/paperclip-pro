@@ -92,13 +92,13 @@ plus the existing AI connection, retry accounting, run-dispatch and UI suites.
 
 ## UI review in Storybook
 
-Run `pnpm --filter @paperclipai/ui storybook` from Core, then open
+Run `pnpm --filter @tickernelz/paperclip-pro-ui storybook` from Core, then open
 **AI Connections / Connection pools**. The 16 stories use production components
 for pool selection, legacy-session adoption, unavailable/read-only selections,
 mixed-provider composer models and effort, mobile composer settings, usage waits,
 run selections and override notes, and scheduled retries.
 `AllCoreSurfaces` provides an overview; individual stories expose the expanded
-menus and adoption dialog. Run `pnpm --filter @paperclipai/ui build-storybook`
+menus and adoption dialog. Run `pnpm --filter @tickernelz/paperclip-pro-ui build-storybook`
 to build the preview.
 
 Pool configuration stories belong to the private Cloud plugin's own Storybook

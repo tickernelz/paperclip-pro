@@ -1,4 +1,4 @@
-import type { Issue } from "@paperclipai/shared";
+import type { Issue } from "@tickernelz/paperclip-pro-shared";
 import { TASK_VIEW_PARAM, normalizeTaskViewKey, taskView } from "./task-views";
 
 type IssueDetailSource = "issues" | "inbox";

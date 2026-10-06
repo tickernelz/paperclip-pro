@@ -22,7 +22,7 @@ describe("runner E2E Daytona image contract", () => {
     expect(dockerfile).toMatch(/@xai-official\/grok@\d+\.\d+\.\d+/);
     expect(dockerfile).not.toMatch(/for cli in[^;]*\bgrok\b/);
     expect(packBuilder).not.toMatch(/writePortable\w+Shim\("grok"/);
-    expect(JSON.parse(runnerPackage).dependencies).not.toHaveProperty("@paperclipai/grok-acp");
+    expect(JSON.parse(runnerPackage).dependencies).not.toHaveProperty("@tickernelz/paperclip-pro-grok-acp");
     expect(packBuilder).toContain('path: "dist/providers/grok/launcher.cjs"');
     expect(dockerfile).toContain("scripts/provision-grok.mjs");
     expect(dockerfile).toContain("/opt/paperclip/providers/grok/1.0.13/grok");
@@ -171,7 +171,7 @@ describe("runner E2E Daytona image contract", () => {
       workflow.indexOf(`--format '{{json .Image}}'`),
     );
     const providerInstall = dockerfile.indexOf(
-      "pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'",
+      "pnpm install --frozen-lockfile --filter '@tickernelz/paperclip-pro-paperclip-runner...'",
     );
     const runnerSourceCopy = dockerfile.indexOf(
       "COPY packages ./packages",
@@ -262,7 +262,7 @@ describe("runner E2E Daytona image contract", () => {
       );
       await writeFile(
         path.join(root, "packages/paperclip-runner/package.json"),
-        '{"name":"@paperclipai/paperclip-runner"}\n',
+        '{"name":"@tickernelz/paperclip-pro-paperclip-runner"}\n',
       );
       await writeFile(
         path.join(root, "packages/paperclip-runner/src/runner.ts"),

@@ -36,7 +36,7 @@ function shellQuote(value: string): string {
 const command = [
   "npx",
   "--yes",
-  shellQuote(`paperclipai@${canaryVersion}`),
+  shellQuote(`@tickernelz/paperclip-pro@${canaryVersion}`),
   "onboard",
   "--yes",
   "--data-dir",

@@ -1,6 +1,6 @@
-import type { ComposioAppAccount } from "@paperclipai/shared";
-import { aggregatorManagementUrl } from "@paperclipai/shared/aggregator-apps";
-import { resolveAggregatorApp } from "@paperclipai/shared/aggregator-app-catalog";
+import type { ComposioAppAccount } from "@tickernelz/paperclip-pro-shared";
+import { aggregatorManagementUrl } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { resolveAggregatorApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 
 export class AggregatorDiscoveryUnavailableError extends Error {}
 

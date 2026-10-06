@@ -5,8 +5,8 @@ import {
 } from "express";
 import { z } from "zod";
 import { githubChatManagementService } from "../services/chat-github-management.js";
-import { updateGitHubChatConfigurationSchema } from "@paperclipai/shared";
-import type { Db } from "@paperclipai/db";
+import { updateGitHubChatConfigurationSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   CHAT_PROVIDERS,
   configureChatEndpointSchema,
@@ -21,7 +21,7 @@ import {
   resolveChatPublicationSchema,
   updateChatEndpointSchema,
   type ChatProvider,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { validate } from "../middleware/validate.js";
 import {
   chatChannelService,

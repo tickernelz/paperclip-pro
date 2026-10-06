@@ -1,4 +1,4 @@
-import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@paperclipai/shared";
+import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/paperclip-pro-shared";
 import {
   createDecipheriv,
   createHash,
@@ -19,7 +19,7 @@ import {
   isGoogleWorkspaceConnectorProfileId,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   loadPaperclipCloudConnectorIdentity,
   paperclipCloudConnectorEnrollmentStatus,

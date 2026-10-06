@@ -7,7 +7,7 @@ import type {
   CompanySkillDetail,
   CompanySkillUsageAgent,
   CompanySkillVersion,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { agentsApi } from "@/api/agents";
 import { companySkillsApi } from "@/api/companySkills";

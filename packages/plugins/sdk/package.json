@@ -1,15 +1,15 @@
 {
-  "name": "@paperclipai/plugin-sdk",
+  "name": "@tickernelz/paperclip-pro-plugin-sdk",
   "version": "1.0.0",
   "description": "Stable public API for Paperclip plugins — worker-side context and UI bridge hooks",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/tickernelz/paperclip-pro",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/tickernelz/paperclip-pro/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/tickernelz/paperclip-pro",
     "directory": "packages/plugins/sdk"
   },
   "type": "module",
@@ -101,14 +101,14 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm --filter @paperclipai/shared build && tsc",
+    "build": "pnpm --filter @tickernelz/paperclip-pro-shared build && tsc",
     "clean": "rm -rf dist",
     "ensure-build-deps": "node ../../../scripts/ensure-plugin-build-deps.mjs",
-    "typecheck": "pnpm --filter @paperclipai/shared build && tsc --noEmit",
+    "typecheck": "pnpm --filter @tickernelz/paperclip-pro-shared build && tsc --noEmit",
     "dev:server": "tsx src/dev-cli.ts"
   },
   "dependencies": {
-    "@paperclipai/shared": "workspace:*",
+    "@tickernelz/paperclip-pro-shared": "workspace:*",
     "zod": "^4.4.3"
   },
   "devDependencies": {

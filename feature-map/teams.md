@@ -23,7 +23,7 @@ The catalog components and install wizard are available in developer tests/desig
 
 ## Driving it
 
-Preconditions: follow the [baseline](./README.md#before-driving-a-journey). Use a disposable company, a small catalog entry, and explicit company context. Check `paperclipai teams --help` for current subcommands.
+Preconditions: follow the [baseline](./README.md#before-driving-a-journey). Use a disposable company, a small catalog entry, and explicit company context. Check `paperclip-pro teams --help` for current subcommands.
 
 ### `catalog-cli`
 

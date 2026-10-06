@@ -3,14 +3,14 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
-vi.mock("@paperclipai/adapter-utils/execution-target", async (importOriginal) => {
+vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
 
 import { ensureRemoteOpenCodeModelConfiguredAndAvailable, execute } from "./execute.js";
-import { runAdapterExecutionTargetProcess } from "@paperclipai/adapter-utils/execution-target";
-import { createPromptContextFixture } from "@paperclipai/adapter-utils/test-fixtures/prompt-context";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { createPromptContextFixture } from "@tickernelz/paperclip-pro-adapter-utils/test-fixtures/prompt-context";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
 

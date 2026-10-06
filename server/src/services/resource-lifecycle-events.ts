@@ -1,4 +1,4 @@
-import { resourceLifecycleEvents, type Db } from "@paperclipai/db";
+import { resourceLifecycleEvents, type Db } from "@tickernelz/paperclip-pro-db";
 import { sql } from "drizzle-orm";
 
 /** Call inside the transaction that creates the resource or approves the hire. */

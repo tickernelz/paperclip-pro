@@ -1,15 +1,15 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   pluginManagedResources,
-} from "@paperclipai/db";
-import { normalizeAgentUrlKey } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
 import type {
   CompanySkill,
   PaperclipPluginManifestV1,
   PluginManagedSkillDeclaration,
   PluginManagedSkillResolution,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { notFound } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { companySkillService } from "./company-skills.js";

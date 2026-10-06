@@ -30,14 +30,14 @@ import {
   browserUseBrowsers,
   costEvents,
   financeEvents,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { toolAccessService } from "../services/tool-access.js";
 import { createToolGatewayService } from "../services/tool-gateway.js";
 import { browserUseViewports } from "../services/browser-use-viewport.js";
 import { browserUseService } from "../services/browser-use.js";
 import { applyConnectorSkills, prepareConnectorSkillDelivery, resolveConnectorAssignments } from "../services/connector-runtime.js";
 import { registerAssignedMcpGateway } from "../services/native-runtime/assigned-mcp-tools.js";
-import { listPaperclipSkillEntries } from "@paperclipai/adapter-utils/server-utils";
+import { listPaperclipSkillEntries } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
 import {

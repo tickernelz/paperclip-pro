@@ -4,7 +4,7 @@ import type {
   Agent,
   CatalogTeamImportPreviewResult,
   CompanyPortabilityCollisionStrategy,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   ApplyProgress,
   ApplySuccess,

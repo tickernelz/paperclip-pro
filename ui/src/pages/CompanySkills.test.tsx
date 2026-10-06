@@ -2,7 +2,7 @@
 
 import { act as reactAct, type ComponentProps, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import type { CatalogSkill, CompanySkillDetail, CompanySkillListItem, CompanySkillVersion, FolderListResult } from "@paperclipai/shared";
+import type { CatalogSkill, CompanySkillDetail, CompanySkillListItem, CompanySkillVersion, FolderListResult } from "@tickernelz/paperclip-pro-shared";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   DiscoveryGrid,

@@ -20,7 +20,7 @@ Open `/onboarding` or the onboarding launcher in an empty company context.
 
 ### `cli-setup`
 
-Use `paperclipai onboard --help` or `paperclipai run --help` to select an isolated data directory before setup.
+Use `paperclip-pro onboard --help` or `paperclip-pro run --help` to select an isolated data directory before setup.
 
 ## Driving it
 

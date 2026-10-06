@@ -11,26 +11,26 @@ mkdir -p "$PC_HOME" "$PC_CACHE"
 trap 'rm -rf "$PC_TEST_ROOT"' EXIT
 
 export HOME="$PC_HOME"
-export PAPERCLIP_HOME="$PC_HOME/.paperclip"
+export PAPERCLIP_HOME="$PC_HOME/.paperclip-pro"
 export npm_config_cache="$PC_CACHE"
 export npm_config_userconfig="$PC_HOME/.npmrc"
 export PATH="$PC_HOME/.local/bin:$PATH"
 
 if [ "$PC_INSTALL_DRIVER" = "published" ]; then
-  (cd "$PC_TEST_ROOT" && npx --yes --registry https://registry.npmjs.org paperclipai install)
+  (cd "$PC_TEST_ROOT" && npx --yes --registry https://registry.npmjs.org paperclip-pro install)
 else
-  (cd "$REPO_ROOT" && pnpm paperclipai install --yes)
+  (cd "$REPO_ROOT" && pnpm paperclip-pro install --yes)
 fi
 
-test -x "$PC_HOME/.local/bin/paperclipai"
+test -x "$PC_HOME/.local/bin/paperclip-pro"
 test -L "$PAPERCLIP_HOME/cli/current"
 test -f "$PAPERCLIP_HOME/cli/install.json"
-paperclipai --version
+paperclip-pro --version
 
 mkdir -p "$PAPERCLIP_HOME/instances/default"
 touch "$PAPERCLIP_HOME/instances/default/user-data-marker"
-(cd "$REPO_ROOT" && pnpm paperclipai uninstall)
+(cd "$REPO_ROOT" && pnpm paperclip-pro uninstall)
 
 test ! -e "$PAPERCLIP_HOME/cli"
-test ! -e "$PC_HOME/.local/bin/paperclipai"
+test ! -e "$PC_HOME/.local/bin/paperclip-pro"
 test -f "$PAPERCLIP_HOME/instances/default/user-data-marker"

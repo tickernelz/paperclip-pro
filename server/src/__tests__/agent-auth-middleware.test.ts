@@ -8,7 +8,7 @@ import {
   agents,
   boardApiKeys,
   heartbeatRuns,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { actorMiddleware } from "../middleware/auth.js";
 import { errorHandler } from "../middleware/error-handler.js";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";

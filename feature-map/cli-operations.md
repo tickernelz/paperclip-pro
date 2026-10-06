@@ -16,7 +16,7 @@ Implementation: [command registry](../cli/src/index.ts), [client context](../cli
 
 ### `client-context`
 
-Use `paperclipai context show/list/use/set`, auth/connect, and the registered resource command help.
+Use `paperclip-pro context show/list/use/set`, auth/connect, and the registered resource command help.
 
 ### `subresources-and-runs`
 
@@ -24,7 +24,7 @@ Use issue subresource, asset/skill, and run/heartbeat commands exposed by the CL
 
 ### `worktree-instance`
 
-Use the documented worktree/test-drive commands in an owned checkout; inspect `paperclipai worktree --help` first.
+Use the documented worktree/test-drive commands in an owned checkout; inspect `paperclip-pro worktree --help` first.
 
 ## Driving it
 

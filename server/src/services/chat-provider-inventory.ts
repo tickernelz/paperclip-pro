@@ -1,4 +1,4 @@
-import type { ChatProvider } from "@paperclipai/shared";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
 
 export interface ChatProviderResourceInventoryItem {
   providerResourceId: string;

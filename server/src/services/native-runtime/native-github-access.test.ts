@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { spawn, execFile } from "node:child_process";
 import { mkdtemp, mkdir, readFile, rm, writeFile, access } from "node:fs/promises";
 import { promisify } from "node:util";
-import type { CommandManagedRuntimeRunner } from "@paperclipai/adapter-utils/command-managed-runtime";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { createInterface } from "node:readline";

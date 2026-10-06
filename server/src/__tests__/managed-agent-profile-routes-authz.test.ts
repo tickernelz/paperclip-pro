@@ -1,5 +1,5 @@
 import express from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import request from "supertest";
 import { describe, it } from "vitest";
 

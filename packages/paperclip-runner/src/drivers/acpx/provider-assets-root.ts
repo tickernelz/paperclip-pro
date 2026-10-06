@@ -3,7 +3,7 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 type NativeProvider = "cursor" | "copilot" | "pi";
-const RUNNER_PACKAGE_NAME = "@paperclipai/paperclip-runner";
+const RUNNER_PACKAGE_NAME = "@tickernelz/paperclip-pro-paperclip-runner";
 
 /** Resolve only runner-owned package assets, including descriptor-loaded sidecars. */
 export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: NativeProvider): string {

@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { grokHomeHasUsableAuth, resolveManagedGrokHomeDir } from "@paperclipai/adapter-grok-local/server";
+import { grokHomeHasUsableAuth, resolveManagedGrokHomeDir } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 import { readLocalAiCredentialFile } from "../local-ai-credential-file.js";
 
 /** Resolve credentials on the controller. Remote runtimes receive only the

@@ -1,5 +1,5 @@
-import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@paperclipai/shared";
-import type { AppDefinition, ToolApplication, ToolConnection } from "@paperclipai/shared";
+import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@tickernelz/paperclip-pro-shared";
+import type { AppDefinition, ToolApplication, ToolConnection } from "@tickernelz/paperclip-pro-shared";
 
 export type AppGalleryDisplayEntry = AppDefinition & {
   key?: string;

@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, isNull, lte, or, sql, type SQL } from "drizzle-orm";
-import { documents, heartbeatRunEvents, heartbeatRuns, issueComments, issueDocuments, issues, issueThreadInteractions, type Db } from "@paperclipai/db";
+import { documents, heartbeatRunEvents, heartbeatRuns, issueComments, issueDocuments, issues, issueThreadInteractions, type Db } from "@tickernelz/paperclip-pro-db";
 import { createRunSecretRedactionRegistry } from "../run-secret-redaction.js";
 import { buildLowTrustSourceTrust, redactQuarantinedBodyForHigherTrust, sanitizeQuarantinedCommentForHigherTrust } from "../source-trust.js";
 import { resolveCoreTrustPreset } from "../trust-preset-resolver.js";

@@ -1454,10 +1454,10 @@ it("derives the ACPX package authority only from the verified dist/cli layout", 
 
 it("uses the public server npm package as the authority for vendored sidecars", () => {
   expect(runnerdLaunchProfileInternals.acpxProviderPackageAuthority(
-    "/clean/node_modules/@paperclipai/server/dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs",
+    "/clean/node_modules/@tickernelz/paperclip-pro-server/dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs",
   )).toEqual({
-    root: "/clean/node_modules/@paperclipai/server",
-    manifest: "/clean/node_modules/@paperclipai/server/package.json",
+    root: "/clean/node_modules/@tickernelz/paperclip-pro-server",
+    manifest: "/clean/node_modules/@tickernelz/paperclip-pro-server/package.json",
   });
 });
 
@@ -1497,8 +1497,8 @@ it("keeps a scoped npm-installed package inside its portable dependency root", a
   const deployedPackageRoot = join(
     deploymentRoot,
     "node_modules",
-    "@paperclipai",
-    "paperclip-runner",
+    "@tickernelz",
+    "paperclip-pro-paperclip-runner",
   );
   await mkdir(join(deployedPackageRoot, "dist", "cli"), { recursive: true });
   try {

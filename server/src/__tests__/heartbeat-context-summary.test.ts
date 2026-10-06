@@ -5,7 +5,7 @@ import {
   summarizeHeartbeatRunContextSnapshot,
   summarizeHeartbeatRunListResultJson,
 } from "../services/heartbeat.js";
-import { renderPaperclipWakePrompt } from "@paperclipai/adapter-utils/server-utils";
+import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 describe("buildPaperclipTaskMarkdown", () => {
   it("asks for early naming only while an ordinary task has a provisional title", () => {

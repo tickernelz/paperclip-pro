@@ -1,4 +1,4 @@
-import type { ProjectRepositoryOptions, SkillSourceFilePreview, SkillSourcePreviewRequest, SkillSource, SkillSourceCreateRequest, SkillSourceDiscovery, SkillSourceDiscoveryRequest, SkillSourceRefreshResult, SkillSourceSelectionRequest, SkillSourceScanUpdate, SkillSourceDiscoveryEvent } from '@paperclipai/shared';
+import type { ProjectRepositoryOptions, SkillSourceFilePreview, SkillSourcePreviewRequest, SkillSource, SkillSourceCreateRequest, SkillSourceDiscovery, SkillSourceDiscoveryRequest, SkillSourceRefreshResult, SkillSourceSelectionRequest, SkillSourceScanUpdate, SkillSourceDiscoveryEvent } from '@tickernelz/paperclip-pro-shared';
 import { api, ApiError, requestResponse } from './client';
 const base = (companyId: string) => `/companies/${companyId}/skill-sources`;
 export const skillSourcesApi = {

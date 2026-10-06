@@ -9,7 +9,7 @@ import {
   executionWorkspaces,
   projects,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { setTimeout as delay } from "node:timers/promises";
 import {

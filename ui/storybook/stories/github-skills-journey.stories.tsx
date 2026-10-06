@@ -2,7 +2,7 @@ import { userEvent, within } from "storybook/test";
 import { useEffect, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
-import { CONNECTABLE_APP_DEFINITIONS } from "@paperclipai/shared";
+import { CONNECTABLE_APP_DEFINITIONS } from "@tickernelz/paperclip-pro-shared";
 import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { CompanySkills } from "@/pages/CompanySkills";

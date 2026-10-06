@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { InstanceExperimentalSettings } from "@paperclipai/shared";
+import type { InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
 import {
   applyExperimentalSettingsPatch,
   normalizeExperimentalSettings,

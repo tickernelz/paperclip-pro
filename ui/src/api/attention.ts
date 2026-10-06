@@ -1,4 +1,4 @@
-import type { AttentionFeed, AttentionFeedQuery } from "@paperclipai/shared";
+import type { AttentionFeed, AttentionFeedQuery } from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
 export const attentionApi = {

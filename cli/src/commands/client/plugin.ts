@@ -98,7 +98,7 @@ interface PluginCompanyOptions extends PluginJsonOptions {
 function requireCompanyId(ctx: { companyId?: string }): string {
   if (!ctx.companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `paperclipai context set`.",
+      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `paperclip-pro context set`.",
     );
   }
   return ctx.companyId;
@@ -292,7 +292,7 @@ export function buildPluginInitNextCommands(outputDir: string): string[] {
     `cd ${quotedOutputDir}`,
     "pnpm install",
     "pnpm dev",
-    `paperclipai plugin install ${quotedOutputDir}`,
+    `paperclip-pro plugin install ${quotedOutputDir}`,
   ];
 }
 
@@ -341,7 +341,7 @@ export function registerPluginCommands(program: Command): void {
       .option("--display-name <name>", "Manifest display name")
       .option("--description <description>", "Manifest description")
       .option("--author <author>", "Manifest author")
-      .option("--sdk-path <path>", "Local @paperclipai/plugin-sdk package path")
+      .option("--sdk-path <path>", "Local @tickernelz/paperclip-pro-plugin-sdk package path")
       .action((packageName: string, opts: PluginInitOptions) => {
         try {
           const result = runPluginInitCommand(packageName, opts);
@@ -401,9 +401,9 @@ export function registerPluginCommands(program: Command): void {
       .description(
         "Install a plugin from a local path or npm package.\n" +
           "  Examples:\n" +
-          "    paperclipai plugin install ./my-plugin              # local path\n" +
-          "    paperclipai plugin install @acme/plugin-linear      # npm package\n" +
-          "    paperclipai plugin install @acme/plugin-linear@1.2  # pinned version",
+          "    paperclip-pro plugin install ./my-plugin              # local path\n" +
+          "    paperclip-pro plugin install @acme/plugin-linear      # npm package\n" +
+          "    paperclip-pro plugin install @acme/plugin-linear@1.2  # pinned version",
       )
       .option("-l, --local", "Treat <package> as a local filesystem path", false)
       .option("--version <version>", "Specific npm version to install (npm packages only)")
@@ -667,7 +667,7 @@ export function registerPluginCommands(program: Command): void {
             console.log(
               `${pc.bold(ex.displayName)}  ${pc.dim(ex.pluginKey)}\n` +
                 `  ${ex.description}\n` +
-                `  ${pc.cyan(`paperclipai plugin install ${ex.localPath}`)}`,
+                `  ${pc.cyan(`paperclip-pro plugin install ${ex.localPath}`)}`,
             );
           }
         } catch (err) {

@@ -1,8 +1,8 @@
 import { and, eq, ne, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { agents, companyOnboardingSeeds, goals, issues, projects } from "@paperclipai/db";
-import type { ApplyOnboardingSeed } from "@paperclipai/shared";
-import { writePaperclipSkillSyncPreference } from "@paperclipai/adapter-utils/server-utils";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { agents, companyOnboardingSeeds, goals, issues, projects } from "@tickernelz/paperclip-pro-db";
+import type { ApplyOnboardingSeed } from "@tickernelz/paperclip-pro-shared";
+import { writePaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { findActiveServerAdapter } from "../adapters/registry.js";
 import { agentService } from "./agents.js";
 import { PAPERCLIP_CORE_SKILL_KEYS } from "./company-skills.js";

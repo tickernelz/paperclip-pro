@@ -20,7 +20,7 @@ import type {
   SecretProviderDescriptor,
   SidebarBadges,
   WorkspaceRuntimeService,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { RunForIssue } from "@/api/activity";
 import type { LiveRunForIssue } from "@/api/heartbeats";
 
@@ -391,7 +391,7 @@ const storybookWorkspaceRuntime = {
       id: "typecheck-ui",
       name: "UI typecheck",
       kind: "job",
-      command: "pnpm --filter @paperclipai/ui typecheck",
+      command: "pnpm --filter @tickernelz/paperclip-pro-ui typecheck",
       cwd: ".",
     },
   ],
@@ -1717,7 +1717,7 @@ export const storybookSecretProviderHealth = {
       status: "ok" as const,
       message: "Encryption key loaded; permissions OK.",
       warnings: [] as string[],
-      backupGuidance: ["Backup ~/.paperclip/instances/default/secrets/key separately from the database."],
+      backupGuidance: ["Backup ~/.paperclip-pro/instances/default/secrets/key separately from the database."],
     },
     {
       provider: "aws_secrets_manager" as const,

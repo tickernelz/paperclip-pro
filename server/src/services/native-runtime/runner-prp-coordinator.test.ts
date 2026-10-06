@@ -17,12 +17,12 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   PrpEvent,
   PrpStructuredRunResult,
   PrpTerminalState,
-} from "@paperclipai/paperclip-runner";
+} from "@tickernelz/paperclip-pro-paperclip-runner";
 import { NativeSessionProtocolIntegrityError } from "../../vendor/paperclip-runner/index.js";
 
 import {

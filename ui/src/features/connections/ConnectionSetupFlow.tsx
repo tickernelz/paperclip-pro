@@ -1,9 +1,9 @@
 import { StepHeader } from "./ConnectionSetupHeader";
 export { StepHeader } from "./ConnectionSetupHeader";
 import { ConnectionInstructionsEditor } from "./ConnectionInstructions";
-import { connectionInstructionsConfig, defaultConnectionAgentInstructions, type ConnectionAgentInstructions } from "@paperclipai/shared";
+import { connectionInstructionsConfig, defaultConnectionAgentInstructions, type ConnectionAgentInstructions } from "@tickernelz/paperclip-pro-shared";
 import { RemoteMcpProductionSetup } from "./remote-mcp/RemoteMcpProductionSetup";
-import { findAggregatorApp } from "@paperclipai/shared/aggregator-app-catalog";
+import { findAggregatorApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 import { useMemoryConnectorsEnabled } from "@/hooks/useMemoryConnectorsEnabled";
 import { AiConnectionCredentialStep } from "@/components/ai-connections/AiConnectionCredentialStep";
 import { ConnectionChoiceList } from "./ConnectionChoiceList";
@@ -38,7 +38,7 @@ import type {
   ToolConnectionCredentialSource,
   ToolConnectionCreateCapabilities,
   ToolOAuthStartResult,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   aiConnectionMetadataSchema,
   isRemoteMcpConnectorId,
@@ -53,7 +53,7 @@ import {
   getAvailableConnectionMethods,
   getRecommendedConnectionMethod,
   isGoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
@@ -513,7 +513,7 @@ export interface ConnectionSetupFlowProps {
   connectionSettings?: ReactNode;
   additionalSettingsValid?: boolean;
   upstreamServiceName?: string;
-  aiConnection?: import("@paperclipai/shared").AiConnectionBinding;
+  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionBinding;
   /** Provider-specific authentication inside the existing access/setup shell. Undefined retains the standard credential form. */
   renderCredentialStep?: (context: { app: AppDefinition; name: string; grantKind: ConnectionGrantKind; agentIds: string[]; allAgents: boolean; onBack: () => void }) => ReactNode;
   byoOnly?: boolean;

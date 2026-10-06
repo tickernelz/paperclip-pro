@@ -1,4 +1,4 @@
-import type { AskUserQuestionsAnswer, AskUserQuestionsPayload, PaperclipQuestionSetPayload } from "@paperclipai/shared";
+import type { AskUserQuestionsAnswer, AskUserQuestionsPayload, PaperclipQuestionSetPayload } from "@tickernelz/paperclip-pro-shared";
 import { parsePaperclipQuestionResponse, type PaperclipQuestionResponse } from "../vendor/paperclip-runner/index.js";
 import { validateQuestionPatterns } from "./question-pattern-validation.js";
 

@@ -5,7 +5,7 @@ import {
   externalObjects,
   toolConnections,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, sql } from "drizzle-orm";
 import {
   logActivity,

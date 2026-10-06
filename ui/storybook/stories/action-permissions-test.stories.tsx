@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ToolCatalogEntry, ToolConnectionTestCallResult } from "@paperclipai/shared";
+import type { ToolCatalogEntry, ToolConnectionTestCallResult } from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { ActionsSection } from "@/pages/apps/app-detail/PermissionsPanel";
 

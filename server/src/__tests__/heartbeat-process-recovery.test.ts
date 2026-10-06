@@ -81,7 +81,7 @@ import {
   toolConnections,
   workAssessments,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -97,7 +97,7 @@ import { NativeRunnerOwnershipUnverifiedError } from "../services/native-runtime
 import { nativeCompletionSource } from "../services/native-runtime/completion-contracts.js";
 import { nativeCompletionFeedback } from "../services/native-runtime/native-completion-feedback.js";
 import type { PrpStructuredRunResult } from "../vendor/paperclip-runner/index.js";
-import { buildNativeModelEnvelope } from "@paperclipai/paperclip-runner";
+import { buildNativeModelEnvelope } from "@tickernelz/paperclip-pro-paperclip-runner";
 import {
   CHAT_CONTROL_RECOVERY_ADMISSION_KEY,
   CHAT_CONTROL_RECOVERY_STOP_CODE,
@@ -191,10 +191,10 @@ vi.mock("../services/local-service-supervisor.js", async () => {
   };
 });
 
-vi.mock("@paperclipai/shared/telemetry", async () => {
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async () => {
   const actual = await vi.importActual<
-    typeof import("@paperclipai/shared/telemetry")
-  >("@paperclipai/shared/telemetry");
+    typeof import("@tickernelz/paperclip-pro-shared/telemetry")
+  >("@tickernelz/paperclip-pro-shared/telemetry");
   return {
     ...actual,
     trackAgentFirstHeartbeat: mockTrackAgentFirstHeartbeat,
@@ -257,7 +257,7 @@ import { collectDispositionRepairSourceState } from "../services/recovery/dispos
 import {
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
 const embeddedPostgresSupport = externalTestDatabaseUrl
   ? { supported: true }
@@ -4575,7 +4575,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.kubernetes-sandbox-provider",
-      packageName: "@paperclipai/kubernetes-sandbox-provider",
+      packageName: "@tickernelz/paperclip-pro-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -4788,7 +4788,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.kubernetes-sandbox-provider",
-      packageName: "@paperclipai/kubernetes-sandbox-provider",
+      packageName: "@tickernelz/paperclip-pro-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],

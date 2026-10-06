@@ -13,7 +13,7 @@ import {
   companySecretVersions,
   companySecrets,
   createDb,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -42,7 +42,7 @@ source commit, not the tip of `master`:
 
   ```bash
   git fetch origin --tags
-  npm view paperclipai dist-tags   # the beta dist-tag names the version
+  npm view paperclip-pro dist-tags   # the beta dist-tag names the version
   git rev-parse 'beta/v{beta-version}^{commit}'
   ```
 

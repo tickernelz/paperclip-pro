@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ExternalLink, RefreshCw } from "lucide-react";
-import type { GitHubChatConfiguration } from "@paperclipai/shared";
+import type { GitHubChatConfiguration } from "@tickernelz/paperclip-pro-shared";
 import {
   githubChatApi,
   type GitHubConfigurationRecord,

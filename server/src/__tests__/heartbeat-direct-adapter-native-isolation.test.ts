@@ -19,7 +19,7 @@ import {
   nativeRunResults,
   statusDecisions,
   workAssessments,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type { ServerAdapterModule } from "../adapters/index.js";
 import {
   getEmbeddedPostgresTestSupport,

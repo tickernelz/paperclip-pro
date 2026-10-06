@@ -2,7 +2,7 @@
 import { act, createElement } from "react";
 import { createRoot } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { TaskBrowser } from "@paperclipai/shared";
+import type { TaskBrowser } from "@tickernelz/paperclip-pro-shared";
 import { useBrowserArrivals } from "./useTaskBrowsers";
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 const cleanups = new Set<() => void>();

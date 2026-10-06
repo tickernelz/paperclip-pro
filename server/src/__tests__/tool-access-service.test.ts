@@ -49,7 +49,7 @@ import {
   toolStdioCommandTemplates,
   userSecretDefinitions,
   userSecretDeclarations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   APP_STORE_HIDDEN_SLUGS,
@@ -59,7 +59,7 @@ import {
   getAvailableConnectionMethod,
   getConnectableAppDefinition,
   type GoogleWorkspaceConnectorProfileId,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

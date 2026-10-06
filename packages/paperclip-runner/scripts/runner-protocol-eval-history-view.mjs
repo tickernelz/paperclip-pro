@@ -25,7 +25,7 @@ function commit(repository, sha, label) {
 
 function sourceLinks(run) {
   const url = run.source?.workflowRunUrl;
-  const workflow = /^https:\/\/github\.com\/paperclipai\/paperclip\/actions\/runs\/[1-9][0-9]*$/.test(url ?? "")
+  const workflow = /^https:\/\/github\.com\/paperclip-pro\/paperclip\/actions\/runs\/[1-9][0-9]*$/.test(url ?? "")
     ? `<small><a href="${url}">GitHub Actions ↗</a></small>` : "";
   return `${commit("paperclipai/paperclip", run.source?.paperclip?.sha, "Paperclip")}${commit("paperclipai/paperclip-evals", run.source?.evals?.sha, "Evals")}${workflow}<small>${escape(run.source?.paperclip?.ref ?? "")}</small>`;
 }

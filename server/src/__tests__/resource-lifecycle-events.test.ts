@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
-import { agentApiKeys, agents, budgetPolicies, companies, costEvents, createDb, projects, resourceLifecycleEvents, type Db } from "@paperclipai/db";
+import { agentApiKeys, agents, budgetPolicies, companies, costEvents, createDb, projects, resourceLifecycleEvents, type Db } from "@tickernelz/paperclip-pro-db";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentService } from "../services/agents.js";

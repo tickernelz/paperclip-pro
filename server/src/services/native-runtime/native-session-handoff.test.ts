@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, createDb, documents, heartbeatRunEvents, heartbeatRuns, issueComments, issueDocuments, issues, issueThreadInteractions } from "@paperclipai/db";
+import { agents, companies, createDb, documents, heartbeatRunEvents, heartbeatRuns, issueComments, issueDocuments, issues, issueThreadInteractions } from "@tickernelz/paperclip-pro-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { buildNativeSessionHandoff, createNativeSessionHandoffLoader, NATIVE_HANDOFF_MAX_BYTES, renderNativeSessionHandoff } from "./native-session-handoff.js";
 import { buildNativeExecutionInput } from "./native-execution-input.js";
-import { buildNativeModelEnvelope } from "@paperclipai/paperclip-runner";
+import { buildNativeModelEnvelope } from "@tickernelz/paperclip-pro-paperclip-runner";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
 
 describe("bounded fresh-session handoff", () => {

@@ -1,8 +1,8 @@
-import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@paperclipai/adapter-codex-local";
-import { claudeLocalReasoningEffortsForModel } from "@paperclipai/adapter-claude-local";
-import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@paperclipai/adapter-grok-local";
-import { DEFAULT_KIMI_LOCAL_MODEL, modelSupportsEffort, KIMI_SUPPORTED_EFFORTS } from "@paperclipai/adapter-kimi-local";
-import { AGENT_PALETTE_IDS, appearanceForPalette } from "@paperclipai/shared";
+import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { claudeLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-claude-local";
+import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-grok-local";
+import { DEFAULT_KIMI_LOCAL_MODEL, modelSupportsEffort, KIMI_SUPPORTED_EFFORTS } from "@tickernelz/paperclip-pro-adapter-kimi-local";
+import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
 
 export type ModelOption = { id: string; label: string; detail?: string };
 export type ComposerAgent = {

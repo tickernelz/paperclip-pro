@@ -4,7 +4,7 @@ Use this reference when a board user, CEO, or manager asks you to find a skill, 
 
 ## What Exists
 
-- App-shipped catalog: a curated set of company skills in `@paperclipai/skills-catalog`, browseable and installable without leaving Paperclip.
+- App-shipped catalog: a curated set of company skills in `@tickernelz/paperclip-pro-skills-catalog`, browseable and installable without leaving Paperclip.
 - Company skill library: install, inspect, update, audit, reset, and read company skills for the whole company.
 - Agent skill assignment: add or remove company skills on an existing agent.
 - Hire/create composition: pass `desiredSkills` when creating or hiring an agent so the same assignment model applies immediately.
@@ -58,7 +58,7 @@ Agent attach and hire/create composition:
 - `POST /api/companies/:companyId/agents`
 
 If a board user, CEO, or manager is driving locally, prefer the
-`paperclipai skills` CLI documented in `doc/CLI.md` — it wraps every endpoint
+`paperclip-pro skills` CLI documented in `doc/CLI.md` — it wraps every endpoint
 above, accepts company skill or catalog refs by `id`/`key`/`slug`, and prints
 the same JSON these endpoints return when called with `--json`.
 

@@ -29,7 +29,7 @@ try {
       if (spec.startsWith('workspace:')) visit(dep);
     }
   }
-  visit('@paperclipai/server');
+  visit('@tickernelz/paperclip-pro-server');
   // Match release.sh's unified versioning in temporary staging directories.
   // Source manifests remain untouched, including independently versioned SDKs.
   run(process.execPath, [join(repo, 'scripts/build-standalone-public-packages.mjs')], repo);
@@ -92,17 +92,17 @@ try {
     assert.equal(installedManifest.version, releaseVersion, `Installed release version for ${name}`);
   }
   assert.equal(existsSync(prerequisite), false, 'npm must not provision Grok');
-  const server = join(consumer, 'node_modules/@paperclipai/server');
+  const server = join(consumer, 'node_modules/@tickernelz/paperclip-pro-server');
   const installed = join(server, 'dist/vendor/paperclip-runner');
   assert.ok(existsSync(join(installed, 'providers/grok/launcher.cjs')));
-  assert.equal(existsSync(join(consumer, 'node_modules/@paperclipai/grok-acp')), false);
+  assert.equal(existsSync(join(consumer, 'node_modules/@tickernelz/paperclip-pro-grok-acp')), false);
   assert.equal(existsSync(join(installed, 'providers/grok/bin')), false);
   // Use real installed compiled code and its actual npm dependency graph. A
   // separate process prevents module resolution from borrowing this checkout.
   const probe = `
     import assert from 'node:assert/strict';
-    import { verifyQualifiedAcpxInstallation } from '/consumer/node_modules/@paperclipai/server/dist/vendor/paperclip-runner/drivers/acpx/installation-integrity.js';
-    import { resolveQualifiedAcpxProfile } from '/consumer/node_modules/@paperclipai/server/dist/vendor/paperclip-runner/drivers/acpx/qualified-profiles.js';
+    import { verifyQualifiedAcpxInstallation } from '/consumer/node_modules/@tickernelz/paperclip-pro-server/dist/vendor/paperclip-runner/drivers/acpx/installation-integrity.js';
+    import { resolveQualifiedAcpxProfile } from '/consumer/node_modules/@tickernelz/paperclip-pro-server/dist/vendor/paperclip-runner/drivers/acpx/qualified-profiles.js';
     const profile = resolveQualifiedAcpxProfile('grok', 'grok-4.7');
     const inspect = () => verifyQualifiedAcpxInstallation(profile, () => { throw new Error('Grok must not resolve an npm package'); });
     if (process.argv[2] === 'missing') await assert.rejects(inspect, /prerequisite missing/);

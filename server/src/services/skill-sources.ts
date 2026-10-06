@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from 'node:crypto';
 import path from 'node:path';
 import { and, eq, isNull, lt, or, sql } from 'drizzle-orm';
-import { companySkillSources as sources, companySkillSourceEntries as entries, companySkills, type Db } from '@paperclipai/db';
-import type { CompanySkill, SkillSource, SkillSourceCreateRequest, SkillSourceDiscoveryRequest, SkillSourceSelectionRequest, SkillSourceRefreshResult, SkillSourcePreviewRequest } from '@paperclipai/shared';
-import { normalizeAgentUrlKey } from '@paperclipai/shared';
+import { companySkillSources as sources, companySkillSourceEntries as entries, companySkills, type Db } from '@tickernelz/paperclip-pro-db';
+import type { CompanySkill, SkillSource, SkillSourceCreateRequest, SkillSourceDiscoveryRequest, SkillSourceSelectionRequest, SkillSourceRefreshResult, SkillSourcePreviewRequest } from '@tickernelz/paperclip-pro-shared';
+import { normalizeAgentUrlKey } from '@tickernelz/paperclip-pro-shared';
 import { conflict, notFound, unprocessable } from '../errors.js';
 import { companySkillService, parseSkillImportSourceInput } from './company-skills.js';
 import { scanGitHubSkills, previewGitHubSkillFile, type GitHubRead, type ScannedSkillSource, type SkillScanOptions } from './github-skill-source.js';

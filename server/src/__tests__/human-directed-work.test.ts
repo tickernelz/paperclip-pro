@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { agents, companies, createDb, heartbeatRuns, agentWakeupRequests, issues, projects } from "@paperclipai/db";
-import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
+import { agents, companies, createDb, heartbeatRuns, agentWakeupRequests, issues, projects } from "@tickernelz/paperclip-pro-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { createPostgresWatchdogAdapter } from "../modules/active-run-watchdog/adapters/postgres.js";
 import { issueService } from "../services/issues.js";

@@ -4,7 +4,7 @@ import type {
   ListSummarySlotRevisionsResponse,
   SummarySlotKey,
   SummarySlotScopeKind,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
 export interface SummarySlotSelector {

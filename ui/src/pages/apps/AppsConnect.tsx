@@ -1,13 +1,13 @@
 import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { isRetiredComposioConnection } from "@paperclipai/shared";
-import { findComposioCatalogApp } from "@paperclipai/shared/aggregator-app-catalog";
+import { isRetiredComposioConnection } from "@tickernelz/paperclip-pro-shared";
+import { findComposioCatalogApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
 import { Button } from "@/components/ui/button";
 import { ConnectionSetupFlow } from "@/features/connections/ConnectionSetupFlow";
-import type { ToolConnectionCredentialSource } from "@paperclipai/shared";
+import type { ToolConnectionCredentialSource } from "@tickernelz/paperclip-pro-shared";
 import { useCompany } from "@/context/CompanyContext";
 import { useNavigate, useParams, useSearchParams } from "@/lib/router";
 import { consumeSkillSourceReturn, skillSourceReturnPath } from "@/lib/skill-source-connect-return";

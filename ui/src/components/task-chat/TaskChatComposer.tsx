@@ -56,8 +56,8 @@ import {
 } from "@/components/InlineEntitySelector";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MentionOption } from "@/components/MarkdownEditor";
-import type { IssueAttachment, IssueWorkMode } from "@paperclipai/shared";
-import type { RunnerGoalCapability } from "@paperclipai/shared";
+import type { IssueAttachment, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { RunnerGoalCapability } from "@tickernelz/paperclip-pro-shared";
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
 import { TaskChatComposerTakeoverActionsContext } from "./TaskChatComposerTakeoverContext";
 
@@ -66,7 +66,7 @@ import { ComposerRunSettingsPicker } from "./ComposerRunSettingsPicker";
 import { TaskChatComposerBar } from "./TaskChatComposerBar";
 import { ComposerAddMenu, ComposerModeChip } from "./ComposerAddMenu";
 import type { ComposerRunSettings } from "./composer-run-settings";
-import type { Agent, IssueAssigneeAdapterOverrides } from "@paperclipai/shared";
+import type { Agent, IssueAssigneeAdapterOverrides } from "@tickernelz/paperclip-pro-shared";
 
 /** Structurally identical to IssueChatThread's module-private CommentReassignment. */
 export interface CommentReassignment {

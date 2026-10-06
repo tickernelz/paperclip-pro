@@ -5,8 +5,8 @@ import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 import { afterEach, expect, it, vi } from "vitest";
 import { classifyClaudeTerminalSessionFailure, createClaudeAcpExecutor } from "./acp.js";
-import type { AcpxEngineExecutorOptions } from "@paperclipai/adapter-utils/acpx-engine/execute";
-import { parseAcpxStdoutLine } from "@paperclipai/adapter-utils/acpx-engine/ui";
+import type { AcpxEngineExecutorOptions } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/execute";
+import { parseAcpxStdoutLine } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/ui";
 
 const repoRoot = fileURLToPath(new URL("../../../../..", import.meta.url));
 const fixture = path.join(repoRoot, "scripts/mcp-fixtures/servers/acp-echo-agent.mjs");

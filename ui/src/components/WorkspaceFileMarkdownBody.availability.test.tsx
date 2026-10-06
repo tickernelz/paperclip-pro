@@ -9,7 +9,7 @@ import type {
   ResolvedWorkspaceResource,
   WorkspaceFileAvailabilityResponse,
   WorkspaceFileAvailabilityResult,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { FileResourceQuery } from "@/api/file-resources";
 
 const mockAvailability = vi.hoisted(() => vi.fn());

@@ -1,4 +1,4 @@
-import type { IssueChangeReceiptEntry } from "@paperclipai/shared";
+import type { IssueChangeReceiptEntry } from "@tickernelz/paperclip-pro-shared";
 import { formatReviewPolicyValue } from "./review-policy";
 
 /**

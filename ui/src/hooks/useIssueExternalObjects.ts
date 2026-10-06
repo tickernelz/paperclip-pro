@@ -4,7 +4,7 @@ import type {
   ExternalObjectMention,
   ExternalObjectMentionGroup,
   ExternalObjectSummary,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { externalObjectsApi } from "../api/externalObjects";
 import { queryKeys } from "../lib/queryKeys";
 import { normalizeExternalObjectHref } from "../lib/external-object-href";

@@ -5,10 +5,10 @@ import { createRoot } from "react-dom/client";
 import { focusManager, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { Browse } from "./Browse";
-import { aiConnectionRouterAppDefinition, getAppStoreDefinition } from "@paperclipai/shared";
+import { aiConnectionRouterAppDefinition, getAppStoreDefinition } from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { AggregatorAppCatalogEntry } from "@paperclipai/shared/aggregator-app-catalog";
+import type { AggregatorAppCatalogEntry } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 
 const aggregatorCatalogMock = vi.hoisted(() => [] as AggregatorAppCatalogEntry[]);
 const openNewIssueMock = vi.hoisted(() => vi.fn());
@@ -25,8 +25,8 @@ function genericResponse(value: { apps?: any[]; sync?: Record<string, unknown> }
       appName: snapshot.appName ?? snapshot.toolkit })) };
 }
 vi.mock("@/api/agents", () => ({ agentsApi: { list: (companyId: string) => listAgentsMock(companyId) } }));
-vi.mock("@paperclipai/shared/aggregator-app-catalog", async (importOriginal) => ({
-  ...await importOriginal<typeof import("@paperclipai/shared/aggregator-app-catalog")>(),
+vi.mock("@tickernelz/paperclip-pro-shared/aggregator-app-catalog", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@tickernelz/paperclip-pro-shared/aggregator-app-catalog")>(),
   AGGREGATOR_APP_CATALOG: aggregatorCatalogMock,
   findComposioCatalogApp: (toolkit: string) => aggregatorCatalogMock.find(app => app.aliases.includes(toolkit) || app.routes.some(route => route.provider === "composio" && route.toolkit === toolkit)),
 }));

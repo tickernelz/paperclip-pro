@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@paperclipai/db";
-import type { RunLivenessState } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import type { RunLivenessState } from "@tickernelz/paperclip-pro-shared";
 import { withRecoveryContext } from "./status-only-context.js";
 import { RECOVERY_REASON_KINDS } from "./origins.js";
 

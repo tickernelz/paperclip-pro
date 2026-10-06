@@ -26,7 +26,7 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   acpxRuntimeSessionDirectoryName,
   resolveAcpxRuntimeRoot,
@@ -38,7 +38,7 @@ import {
   type NativeExecutionInputV1,
   type NativeExecutionInput,
   type PrpEvent,
-} from "@paperclipai/paperclip-runner";
+} from "@tickernelz/paperclip-pro-paperclip-runner";
 import { createHash } from "node:crypto";
 import { DatabaseSync } from "node:sqlite";
 import { nativeSha256 } from "./canonical.js";
@@ -192,8 +192,8 @@ const state = vi.hoisted(() => ({
 }));
 
 const grokCopyBack = vi.hoisted(() => vi.fn(async (_input: { readSandboxAuth: () => Promise<Buffer>; hostHomeDir: string }) => undefined));
-vi.mock("@paperclipai/adapter-grok-local/server", async importOriginal => ({
-  ...await importOriginal<typeof import("@paperclipai/adapter-grok-local/server")>(),
+vi.mock("@tickernelz/paperclip-pro-adapter-grok-local/server", async importOriginal => ({
+  ...await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-grok-local/server")>(),
   copyBackGrokAuth: grokCopyBack,
 }));
 
@@ -213,9 +213,9 @@ vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => {
   };
 });
 
-vi.mock("@paperclipai/adapter-codex-local/server", async (importOriginal) => ({
+vi.mock("@tickernelz/paperclip-pro-adapter-codex-local/server", async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import("@paperclipai/adapter-codex-local/server")
+    typeof import("@tickernelz/paperclip-pro-adapter-codex-local/server")
   >()),
   copyBackCodexAuth: state.copyBackCodexAuth,
 }));
@@ -2266,7 +2266,7 @@ describe("remote runner build metadata", () => {
   const current = {
     schema: "paperclip-runner/runnerd-build-metadata/v1",
     binaryName: "paperclip-runnerd",
-    packageName: "@paperclipai/paperclip-runner",
+    packageName: "@tickernelz/paperclip-pro-paperclip-runner",
     binaryContractVersion: 2,
     durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
     prpTransportModes: ["dial_ws_loopback", "dial_wss", "listen_ws"],
@@ -11171,7 +11171,7 @@ describe("runnerd provider runtime wiring", () => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
           schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
-          packageName: "@paperclipai/paperclip-runner", binaryContractVersion: 2,
+          packageName: "@tickernelz/paperclip-pro-paperclip-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
         }), stderr: "",
@@ -11248,7 +11248,7 @@ describe("runnerd provider runtime wiring", () => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
           schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
-          packageName: "@paperclipai/paperclip-runner", binaryContractVersion: 2,
+          packageName: "@tickernelz/paperclip-pro-paperclip-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
         }), stderr: "",
@@ -11368,7 +11368,7 @@ describe("runnerd provider runtime wiring", () => {
           stdout = JSON.stringify({
             schema: "paperclip-runner/runnerd-build-metadata/v1",
             binaryName: "paperclip-runnerd",
-            packageName: "@paperclipai/paperclip-runner",
+            packageName: "@tickernelz/paperclip-pro-paperclip-runner",
             binaryContractVersion: 2,
             durableSessionCapabilities: (image === "stale" || retained) && command.command === "/usr/local/bin/paperclip-runnerd"
               ? undefined

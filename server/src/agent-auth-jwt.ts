@@ -1,5 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import { normalizeAgentApiKeyScope, type AgentApiKeyScope } from "@paperclipai/shared";
+import { normalizeAgentApiKeyScope, type AgentApiKeyScope } from "@tickernelz/paperclip-pro-shared";
 import { resolvePaperclipInstanceId } from "./home-paths.js";
 
 interface JwtHeader {

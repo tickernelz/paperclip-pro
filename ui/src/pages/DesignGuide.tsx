@@ -1,7 +1,7 @@
 import { AgentMailApiKeyField } from "@/features/connections/AgentMailApiKeyField";
 import { TaskBrowserFooter } from "@/components/task-side-panel/TaskBrowserFooter";
 import { TaskBrowserActivity } from "@/components/task-side-panel/TaskBrowserActivity";
-import type { TaskBrowser } from "@paperclipai/shared";
+import type { TaskBrowser } from "@tickernelz/paperclip-pro-shared";
 import { DispositionRecoveryNotice } from "../components/DispositionRecoveryNotice";
 import { CloudSignIn } from "../components/CloudSignIn";
 import { CloudAccessError } from "../components/CloudAccessGate";
@@ -24,13 +24,13 @@ import { AiConnectionDesignExamples } from "@/components/ai-connections/AiConnec
 import { SavedProviderKeySelect } from "../components/onboarding/SavedProviderKeySelect";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { AgentCharacter } from "@/components/AgentCharacter";
-import { AGENT_PALETTE_IDS, appearanceForPalette } from "@paperclipai/shared";
+import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
 import { RepositoryEditor } from "@/components/RepositoryEditor";
 import { TaskChatRunnerActivityGroup } from "@/components/task-chat/TaskChatRunnerActivityGroup";
 import { TaskChatMarker } from "@/components/task-chat/TaskChatMarker";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { ComposerAddMenu, ComposerModeChip } from "@/components/task-chat/ComposerAddMenu";
-import type { IssueWorkMode } from "@paperclipai/shared";
+import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import { TaskTreeControlDialog, TaskTreeControlMenuItems } from "@/components/TaskTreeControls";
 import { useState } from "react";
 import {
@@ -182,7 +182,7 @@ import {
   pendingConnectionIntentInteraction,
   retryConnectionIntentInteraction,
 } from "@/fixtures/issueThreadInteractionFixtures";
-import type { CompanySecret, EnvBinding, Issue } from "@paperclipai/shared";
+import type { CompanySecret, EnvBinding, Issue } from "@tickernelz/paperclip-pro-shared";
 import { CollectionToolbar } from "@/components/CollectionToolbar";
 import { IssueRow } from "@/components/IssueRow";
 import {
@@ -204,7 +204,7 @@ import {
   sampleTeam,
   warnTeam,
 } from "@/pages/TeamCatalog.fixtures";
-import type { IssueWorkProduct } from "@paperclipai/shared";
+import type { IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
 
 /* ------------------------------------------------------------------ */
 /*  Sample data for the Issue Output surface showcase                  */

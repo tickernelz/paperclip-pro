@@ -1,4 +1,4 @@
-import type { ActivityEvent, IssueWorkMode } from "@paperclipai/shared";
+import type { ActivityEvent, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import { isIssueWorkMode } from "@/lib/work-mode-meta";
 
 export interface IssueTimelineAssignee {

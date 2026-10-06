@@ -1,7 +1,7 @@
 import { nativePhotonInteraction } from "./photon/interactions.js";
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   chatActions,
   chatConversations,
@@ -9,14 +9,14 @@ import {
   chatPublications,
   heartbeatRuns,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   AskUserQuestionsInteraction,
   AskUserQuestionsQuestion,
   IssueThreadInteraction,
   RequestConfirmationInteraction,
   SafeExternalChatCardAction,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { projectSafeChatPublication } from "./chat-publication-projection.js";
 import { publicChatTaskUrl } from "./chat-task-url.js";
 import {

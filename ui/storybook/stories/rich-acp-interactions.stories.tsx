@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
-import type { PaperclipQuestionSet, TranscriptEntry } from "@paperclipai/adapter-utils";
+import type { PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatCompactInteractionCard";
 import { TaskChatProtocolActivityRow } from "@/components/task-chat/TaskChatProtocolActivityRow";

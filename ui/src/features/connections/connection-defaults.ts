@@ -1,4 +1,4 @@
-import type { ConnectToolAppResult } from "@paperclipai/shared";
+import type { ConnectToolAppResult } from "@tickernelz/paperclip-pro-shared";
 
 /**
  * Which of a fresh connection's actions start behind a human approval (PAP-659

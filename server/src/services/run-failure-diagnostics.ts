@@ -1,8 +1,8 @@
-import type { heartbeatRuns } from "@paperclipai/db";
+import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { readRunCancellation } from "./run-cancellation.js";
-import { WORKSPACE_RESTORE_FAILURE_CODES } from "@paperclipai/shared";
-import { redactDiagnosticText } from "@paperclipai/adapter-utils/command-redaction";
-import { sanitizeWorkspaceRestoreDiagnostic } from "@paperclipai/adapter-utils/workspace-restore-diagnostics";
+import { WORKSPACE_RESTORE_FAILURE_CODES } from "@tickernelz/paperclip-pro-shared";
+import { redactDiagnosticText } from "@tickernelz/paperclip-pro-adapter-utils/command-redaction";
+import { sanitizeWorkspaceRestoreDiagnostic } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-diagnostics";
 import { redactCurrentUserText } from "../log-redaction.js";
 import { redactSensitiveText, REDACTED_EVENT_VALUE } from "../redaction.js";
 

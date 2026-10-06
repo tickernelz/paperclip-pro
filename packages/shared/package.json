@@ -1,14 +1,14 @@
 {
-  "name": "@paperclipai/shared",
+  "name": "@tickernelz/paperclip-pro-shared",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/tickernelz/paperclip-pro",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/tickernelz/paperclip-pro/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/tickernelz/paperclip-pro",
     "directory": "packages/shared"
   },
   "type": "module",

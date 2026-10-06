@@ -27,7 +27,7 @@ import {
   toolPolicies,
   toolProfileEntries,
   userSecretDefinitions,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { wakeConnectionIntentAfterResolution } from "../routes/connection-intents.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";

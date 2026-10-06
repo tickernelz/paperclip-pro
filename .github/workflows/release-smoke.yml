@@ -85,16 +85,16 @@ jobs:
         if: always()
         run: |
           {
-            systemctl --user --no-pager status paperclipai.service || true
-            journalctl --user -u paperclipai.service --no-pager || true
-          } > "$RUNNER_TEMP/paperclipai-service.log" 2>&1
+            systemctl --user --no-pager status paperclip-pro.service || true
+            journalctl --user -u paperclip-pro.service --no-pager || true
+          } > "$RUNNER_TEMP/paperclip-pro-service.log" 2>&1
 
       - name: Upload service diagnostics
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ${{ inputs.artifact_name }}-service
-          path: ${{ runner.temp }}/paperclipai-service.log
+          path: ${{ runner.temp }}/paperclip-pro-service.log
           retention-days: 14
 
   smoke:

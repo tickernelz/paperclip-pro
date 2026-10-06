@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AskUserQuestionsInteraction, IssueComment } from "@paperclipai/shared";
+import type { AskUserQuestionsInteraction, IssueComment } from "@tickernelz/paperclip-pro-shared";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { TaskChatThread } from "@/components/TaskChatThread";

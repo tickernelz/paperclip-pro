@@ -5,7 +5,7 @@ import { createServer } from "node:net";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { Option, type Command } from "commander";
-import type { Agent, Company, InstanceExperimentalSettings } from "@paperclipai/shared";
+import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
 import { PaperclipApiClient } from "../client/http.js";
 import { openUrl } from "../client/board-auth.js";
 import {
@@ -438,7 +438,7 @@ export async function testDriveCommand(
       // Auto-created directories are private to this process. Explicitly reused
       // directories retain the normal guard against an already-managed instance.
       skipServiceManagerCheck: !options.dataDir?.trim(),
-      introLabel: "paperclipai test-drive",
+      introLabel: "paperclip-pro test-drive",
       afterStart: async (server) => {
         const api = dependencies.createApi(server.apiUrl);
         const result = await bootstrapTestDrive({

@@ -21,7 +21,7 @@ it("uses one fixed provider directory for source, compiled and bundled runner la
 
 it("resolves descriptor sidecars only through the runner-bound canonical package manifest", async () => {
   const path = await root();
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   expect(resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "pi")).toMatch(/provider-assets\/pi$/);
@@ -33,11 +33,11 @@ it("resolves descriptor sidecars only through the runner-bound canonical package
 
 it("rejects external manifests, links, asset escapes and incomplete authority", async () => {
   const path = await root(); const outside = await root();
-  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(outside, "package.json"));
   expect(() => resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "copilot")).toThrow("escapes");
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   await mkdir(join(path, "provider-assets"));
   await symlink(outside, join(path, "provider-assets/copilot"));

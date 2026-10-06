@@ -352,7 +352,7 @@ Share the [installation guide](https://docs.paperclip.ing/reference/cli/installa
 With **Node.js 24.11 or newer** installed:
 
 ```bash
-npx paperclipai@latest onboard --yes
+npx @tickernelz/paperclip-pro@latest onboard --yes
 ```
 
 The CLI runs from npm's cache; your instance configuration and data persist locally.
@@ -364,9 +364,9 @@ agent, use `test-drive`. It stays in the foreground, never installs a service
 or creates a first task, and opens the browser only after setup succeeds:
 
 ```bash
-ANTHROPIC_API_KEY=... npx paperclipai test-drive
-OPENAI_API_KEY=... npx paperclipai test-drive --harness codex
-OPENROUTER_API_KEY=... npx paperclipai test-drive \
+ANTHROPIC_API_KEY=... npx @tickernelz/paperclip-pro test-drive
+OPENAI_API_KEY=... npx @tickernelz/paperclip-pro test-drive --harness codex
+OPENROUTER_API_KEY=... npx @tickernelz/paperclip-pro test-drive \
   --harness opencode \
   --model openrouter/anthropic/claude-sonnet-4.5
 ```
@@ -380,7 +380,7 @@ reuse behavior.
 
 > **Troubleshooting: private npm registry `.npmrc`**
 >
-> If this fails with an `E404` for `paperclipai` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclipai` against that private registry instead of the public npm registry.
+> If this fails with an `E404` for `paperclip-pro` (or similar) and you use a private npm registry (for example GitHub Packages) via a global `~/.npmrc`, `npx` may be resolving `paperclip-pro` against that private registry instead of the public npm registry.
 >
 > Diagnostic:
 >
@@ -391,18 +391,18 @@ reuse behavior.
 > Workaround (cross-platform; force the public npm registry for this command):
 >
 > ```bash
-> npx --registry https://registry.npmjs.org paperclipai@latest onboard --yes
+> npx --registry https://registry.npmjs.org @tickernelz/paperclip-pro@latest onboard --yes
 > ```
 
 That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
 
 ```bash
-npx paperclipai@latest onboard --yes --bind lan
+npx @tickernelz/paperclip-pro@latest onboard --yes --bind lan
 # or:
-npx paperclipai@latest onboard --yes --bind tailnet
+npx @tickernelz/paperclip-pro@latest onboard --yes --bind tailnet
 ```
 
-If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `npx paperclipai configure` to edit settings.
+If you already have Paperclip configured, rerunning `onboard` keeps the existing config in place. Use `npx @tickernelz/paperclip-pro configure` to edit settings.
 
 Or manually:
 
@@ -576,7 +576,7 @@ MIT &copy; 2026 [Paperclip Labs, Inc](https://paperclip.ing)
 
 ## Star History
 
-<a href="https://www.star-history.com/?repos=paperclipai%2Fpaperclip&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=paperclip-pro%2Fpaperclip&type=date&legend=top-left">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&theme=dark&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />
     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=paperclipai/paperclip&type=date&legend=top-left&sealed_token=hFjuwFq41bQD5cevvXVv5cTru2swWRZujwJYKlHhtBh6n0H5-VvJZW2SAlcQKB8u4KxhyEB9JqFg1yccJ8WLv9wPBcoWpWcak4gx0MYTWu_pOs2jKOaDluH7KsLeTKt6DHGkHiN3LsqV9s--MTDQcC6Xl7zV51W0-YezQXo-pVPgoFDFAGf2CY5fiP5Q" />

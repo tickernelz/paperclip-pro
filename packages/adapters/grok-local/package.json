@@ -1,14 +1,14 @@
 {
-  "name": "@paperclipai/adapter-grok-local",
+  "name": "@tickernelz/paperclip-pro-adapter-grok-local",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/tickernelz/paperclip-pro",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/tickernelz/paperclip-pro/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/tickernelz/paperclip-pro",
     "directory": "packages/adapters/grok-local"
   },
   "type": "module",
@@ -50,8 +50,8 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@paperclipai/adapter-utils": "workspace:*",
-    "@paperclipai/shared": "workspace:*",
+    "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
+    "@tickernelz/paperclip-pro-shared": "workspace:*",
     "picocolors": "^1.1.1"
   },
   "devDependencies": {

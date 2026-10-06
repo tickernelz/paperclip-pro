@@ -188,7 +188,7 @@ async function verifyRunnerConsumer({
     type: "module",
     packageManager: "pnpm@9.15.4",
     dependencies: {
-      "@paperclipai/paperclip-runner": `file:${runnerTarball}`,
+      "@tickernelz/paperclip-pro-paperclip-runner": `file:${runnerTarball}`,
     },
     pnpm: { overrides: localOverrides(runtimeDependencyTarballs) },
   }, null, 2)}\n`);
@@ -197,9 +197,9 @@ import { createHash } from "node:crypto";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 
-import * as runtime from "@paperclipai/paperclip-runner";
-import * as evals from "@paperclipai/paperclip-runner/evals";
-import * as testing from "@paperclipai/paperclip-runner/testing";
+import * as runtime from "@tickernelz/paperclip-pro-paperclip-runner";
+import * as evals from "@tickernelz/paperclip-pro-paperclip-runner/evals";
+import * as testing from "@tickernelz/paperclip-pro-paperclip-runner/testing";
 
 if ("MockControlPlaneAdapter" in runtime || "runControlPlanePortConformance" in runtime) {
   throw new Error("test helpers leaked through the runtime root");
@@ -326,9 +326,9 @@ await writeFile(process.env.PAPERCLIP_CONFORMANCE_RECORD, JSON.stringify({
   consumer: {
     installMode: "offline-packed-artifact",
     imports: [
-      "@paperclipai/paperclip-runner",
-      "@paperclipai/paperclip-runner/evals",
-      "@paperclipai/paperclip-runner/testing",
+      "@tickernelz/paperclip-pro-paperclip-runner",
+      "@tickernelz/paperclip-pro-paperclip-runner/evals",
+      "@tickernelz/paperclip-pro-paperclip-runner/testing",
     ],
     appSourceTreeImports: false,
     providerCalls: 0,

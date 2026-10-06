@@ -35,7 +35,7 @@ export default defineConfig({
     headless: true,
   },
   webServer: EXTERNAL_URL ? undefined : {
-    command: "pnpm paperclipai onboard --yes --run",
+    command: "pnpm paperclip-pro onboard --yes --run",
     url: `${BASE_URL}/api/health`,
     reuseExistingServer: false,
     timeout: 120_000,

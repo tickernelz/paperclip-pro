@@ -27,8 +27,8 @@ Legacy delivery uses the same intent service, setup card, and fresh-session reso
 The equivalent CLI helpers are:
 
 ```sh
-paperclipai connections search notion
-paperclipai connections request notion
+paperclip-pro connections search notion
+paperclip-pro connections request notion
 ```
 
 The manually configured Paperclip MCP server also advertises `connections_search` and `connection_request`. Both helper surfaces require the narrow runtime token and fail outside an active heartbeat.
@@ -77,4 +77,4 @@ Task setup defaults to personal identity when supported and the requesting agent
 
 Service and native-authority tests cover discovery, current identity, company boundaries, cross-run deduplication, additive grants and installs, permission denial, resolution atomicity, restart delivery and stale assignment. `tests/e2e/in-feed-native/playwright.config.ts` starts source `test-drive` instances with fresh data directories and a deterministic fake Codex provider plus MCP server. It exercises the real native runner and gateway; it is fixture proof, not live Notion or GitHub proof. Run with `pnpm exec playwright test -c tests/e2e/in-feed-native/playwright.config.ts`.
 
-Offline Storybook examples live in `ui/storybook/stories/in-feed-connections.stories.tsx`. Build with `pnpm --filter @paperclipai/ui build-storybook`, then run `pnpm exec playwright test -c tests/storybook-visual/in-feed-connections.config.ts`. The suite checks every independently addressable story in both themes, catches play-function failures, and saves screenshots. Live provider acceptance additionally requires a model credential and a test workspace/account; do not describe fixture results or local-trusted testing as authenticated/cloud acceptance.
+Offline Storybook examples live in `ui/storybook/stories/in-feed-connections.stories.tsx`. Build with `pnpm --filter @tickernelz/paperclip-pro-ui build-storybook`, then run `pnpm exec playwright test -c tests/storybook-visual/in-feed-connections.config.ts`. The suite checks every independently addressable story in both themes, catches play-function failures, and saves screenshots. Live provider acceptance additionally requires a model credential and a test workspace/account; do not describe fixture results or local-trusted testing as authenticated/cloud acceptance.

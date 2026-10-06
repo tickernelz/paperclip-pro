@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { EmailEndpointSettings } from "@/pages/apps/chat/EmailEndpointSetup";
-import type { EmailEndpointSummary } from "@paperclipai/shared";
+import type { EmailEndpointSummary } from "@tickernelz/paperclip-pro-shared";
 
 const COMPANY = "company-storybook";
 const ENDPOINT = "agentmail-settings-preview";

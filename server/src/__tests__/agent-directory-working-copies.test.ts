@@ -1,8 +1,8 @@
 import fs from "node:fs/promises";
 import { execFile as execFileCallback } from "node:child_process";
 import { promisify } from "node:util";
-import * as executionTargetTools from "@paperclipai/adapter-utils/execution-target";
-import * as ssh from "@paperclipai/adapter-utils/ssh";
+import * as executionTargetTools from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import * as ssh from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 const execFile = promisify(execFileCallback);
 import os from "node:os";
 import path from "node:path";
@@ -10,7 +10,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
 import { agentFileStore, fileHash, inspectAgentFile, snapshotAgentFiles, MAX_AGENT_FILE_BYTES, MAX_AGENT_DIRECTORY_BYTES, MAX_AGENT_DIRECTORY_ENTRIES } from "../services/agent-file-store.js";
-import { agents, companies, authUsers, companyMemberships, principalPermissionGrants, heartbeatRuns, environmentLeases, environments, agentInstructionWorkingCopies, agentInstructionRevisions, agentInstructionHeads, createDb } from "@paperclipai/db";
+import { agents, companies, authUsers, companyMemberships, principalPermissionGrants, heartbeatRuns, environmentLeases, environments, agentInstructionWorkingCopies, agentInstructionRevisions, agentInstructionHeads, createDb } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentInstructionRevisionService } from "../services/agent-instruction-revisions.js";
 import { agentInstructionWorkingCopyService, instructionWorkingCopyGuidance } from "../services/agent-instruction-working-copies.js";
@@ -19,8 +19,8 @@ import { buildNativeRuntimeContext } from "../services/native-runtime/runtime-co
 import type { EnvironmentRuntimeService } from "../services/environment-runtime.js";
 import { remoteTerminationReceipt } from "../services/remote-execution-termination.js";
 import { AgentDirectoryReuseInvalidatedError, agentDirectoryWorkingCopyService } from "../services/agent-directory-working-copies.js";
-import { withDirectoryMergeLock } from "@paperclipai/adapter-utils/workspace-restore-merge";
-import { heartbeatRunEvents } from "@paperclipai/db";
+import { withDirectoryMergeLock } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+import { heartbeatRunEvents } from "@tickernelz/paperclip-pro-db";
 
 describe("persistent agent directories", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
@@ -596,7 +596,7 @@ describe("persistent agent directories", () => {
     const remoteCwd = path.join(home, "remote-task");
     await fs.mkdir(remoteCwd, { recursive: true });
     await execFile("git", ["init", remoteCwd]);
-    const runner: import("@paperclipai/adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner = {
+    const runner: import("@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner = {
       execute: async input => {
         const startedAt = new Date().toISOString();
         const env = { ...process.env, ...input.env };
@@ -648,7 +648,7 @@ describe("persistent agent directories", () => {
   it("checkpoints and reuses the remote directory through the real transport without copying unchanged bytes", async () => {
     const remoteCwd = path.join(home, "warm-remote-task");
     await fs.mkdir(remoteCwd, { recursive: true });
-    const runner: import("@paperclipai/adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner = {
+    const runner: import("@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner = {
       execute: async input => {
         const startedAt = new Date().toISOString();
         const env = { ...process.env, ...input.env };

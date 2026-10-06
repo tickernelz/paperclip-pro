@@ -14,7 +14,7 @@ import {
   issueRelations,
   issues,
   issueThreadInteractions,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   CapabilitySemanticDispatcher,
   createCapabilityFixtureState,

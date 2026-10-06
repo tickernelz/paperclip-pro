@@ -31,12 +31,12 @@ COPY cli/package.json ./cli/package.json
 ARG PAPERCLIP_RUNNER_LOCK_SHA256=e1856797158f7d0bdb728b9d6c6dda3d65ad5f7896e68216883174de508431a7
 RUN printf '%s  pnpm-lock.yaml\n' "${PAPERCLIP_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
     && sha256sum -c /tmp/provider-lock.sha256 \
-    && pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'
+    && pnpm install --frozen-lockfile --filter '@tickernelz/paperclip-pro-paperclip-runner...'
 ARG PAPERCLIP_RUNNER_SOURCE_REVISION
 # Optional qualification assets; this never promotes candidate profiles.
 ARG PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS=
 RUN test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
-RUN pnpm --filter @paperclipai/paperclip-runner build:typescript \
+RUN pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:typescript \
     && PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_RUNNER_SOURCE_REVISION}" \
       node packages/paperclip-runner/scripts/build-provider-pack.mjs /provider-pack \
         "--candidate-providers=${PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS}" \

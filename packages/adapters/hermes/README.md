@@ -61,14 +61,14 @@ normal Paperclip use.
 ### 1. Optional: override the built-in for adapter development
 
 For local adapter development, install the package from a local path in Adapter
-manager, or add an entry to `~/.paperclip/adapter-plugins.json` and restart
+manager, or add an entry to `~/.paperclip-pro/adapter-plugins.json` and restart
 Paperclip. The external package can override either built-in Hermes adapter
 while it is enabled:
 
 ```json
 [
   {
-    "packageName": "@paperclipai/hermes-paperclip-adapter",
+    "packageName": "@tickernelz/paperclip-pro-hermes-paperclip-adapter",
     "localPath": "/absolute/path/to/paperclip/packages/adapters/hermes",
     "type": "hermes_local",
     "installedAt": "2026-06-23T00:00:00.000Z"
@@ -146,11 +146,11 @@ with `POST /v1/runs/{run_id}/stop`.
 
 ### Compatibility with the old gateway package
 
-`@paperclipai/adapter-hermes-gateway` remains as a deprecated compatibility shim
+`@tickernelz/paperclip-pro-adapter-hermes-gateway` remains as a deprecated compatibility shim
 for one release. It re-exports the gateway entrypoints from
-`@paperclipai/hermes-paperclip-adapter/gateway` and preserves the legacy exports
+`@tickernelz/paperclip-pro-hermes-paperclip-adapter/gateway` and preserves the legacy exports
 for existing plugin installs. New installs and built-in Paperclip registrations
-should use `@paperclipai/hermes-paperclip-adapter`; the adapter type remains
+should use `@tickernelz/paperclip-pro-hermes-paperclip-adapter`; the adapter type remains
 `hermes_gateway`.
 
 ### Runtime API guidance

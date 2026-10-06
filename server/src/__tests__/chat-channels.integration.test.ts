@@ -1,4 +1,4 @@
-import { toolActionRequests, toolInvocations } from "@paperclipai/db";
+import { toolActionRequests, toolInvocations } from "@tickernelz/paperclip-pro-db";
 import { GitHubPublicationLeaseLost, withGitHubPublicationLease } from "../services/chat-github-publication-lease.js";
 import { githubChatManagementService } from "../services/chat-github-management.js";
 import { githubChatReviewService } from "../services/chat-github-reviews.js";
@@ -7,7 +7,7 @@ import { githubAutomaticReviewEvent } from "../services/chat-github-events.js";
 import { githubBotToolsForSession } from "../services/chat-github-tools.js";
 import { resolveGitHubOperationCredentials } from "../services/github-operation-credentials.js";
 import { initializeRunIdentity } from "../services/run-identity.js";
-import { chatGitHubRegistrations, chatGitHubReviews, toolCatalogEntries } from "@paperclipai/db";
+import { chatGitHubRegistrations, chatGitHubReviews, toolCatalogEntries } from "@tickernelz/paperclip-pro-db";
 import { AsyncLocalStorage } from "node:async_hooks";
 import * as cloudRuntimeIdentity from "../services/cloud-runtime-identity.js";
 import {
@@ -85,9 +85,9 @@ import {
   environmentLeases,
   principalPermissionGrants,
   toolConnections,
-} from "@paperclipai/db";
-import type { ChatProvider } from "@paperclipai/shared";
-import { isPaperclipExternalChatTurn } from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-db";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
+import { isPaperclipExternalChatTurn } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import type { Attachment, Author, Message, Thread } from "chat";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
@@ -4133,7 +4133,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   });
 
   it.each(["cancelled", "paused", "blocked", "closed-workspace"] as const)("does not bypass %s task guards from the Slack Board composer or its outbox", async (guard) => {
-    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@paperclipai/db");
+    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@tickernelz/paperclip-pro-db");
     const fixture = await seedCompany();
     const { callbacks, endpoint, service, wakeup, runtime } = await configuredSlackEndpoint(fixture);
     const channel = makeThread({ channelId: "CGUARD", id: "slack:CGUARD:8100.1", name: "guard" });
@@ -4547,7 +4547,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await rejected;
     await expect(oauth.status(fixture.companyId, endpoint.id, "owner-user")).resolves.toMatchObject({ connected: false });
     await expect(oauth.status(randomUUID(), endpoint.id, "owner-user")).rejects.toThrow("not found");
-    const { toolProfiles, toolProfileBindings } = await import("@paperclipai/db");
+    const { toolProfiles, toolProfileBindings } = await import("@tickernelz/paperclip-pro-db");
     const [slackProfile] = await db.select().from(toolProfiles).where(and(eq(toolProfiles.companyId, fixture.companyId), eq(toolProfiles.profileKey, `slack-bot:${endpoint.id}`)));
     const [removedBinding] = await db.delete(toolProfileBindings).where(and(eq(toolProfileBindings.profileId, slackProfile.id), eq(toolProfileBindings.targetId, binding.agentId))).returning();
     await expect(resolveConnectorAssignments(db, recovered)).resolves.toEqual([]);
@@ -5722,7 +5722,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(observedIssuer).toBe(appId);
     expect(configured).toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclipai",
+      providerAccountId: "paperclip-pro",
       botExternalId: "789",
       botUsername: "maya-paperclip[bot]",
       setup: { step: "test", webhookVerifiedAt: expect.any(String) },
@@ -6287,7 +6287,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ),
     ).resolves.toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclipai",
+      providerAccountId: "paperclip-pro",
       botExternalId: "991124",
       botUsername: "maya-selectable-events[bot]",
     });

@@ -10,7 +10,7 @@ import type {
   IssueRecoveryAction,
   IssueRetryNowOutcome,
   IssueScheduledRetry,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { IssueBlockedNotice } from "./IssueBlockedNotice";
 import { deriveRecoveryCardState } from "./IssueRecoveryActionCard";
 import { ToastProvider } from "../context/ToastContext";
