@@ -16633,6 +16633,7 @@ export function issueRoutes(
         }
         steeringDeliveryAttempted = true;
         const activeRunId = locked.activeRun.id;
+        const adapterOwnsDelivery = hasLiveAdapterSteering(activeRunId);
         const acknowledgement =
           (await storedSteeringAcknowledgement(tx, steeringIdentity ?? {
             companyId: issue.companyId, runId: activeRunId, messageId: commentId,
@@ -16666,7 +16667,7 @@ export function issueRoutes(
           .from(heartbeatRuns)
           .where(eq(heartbeatRuns.id, activeRunId))
           .for("update");
-        if (!acknowledgedRun || acknowledgedRun.status !== "running") {
+        if (!acknowledgedRun || (acknowledgedRun.status !== "running" && !adapterOwnsDelivery)) {
           throw conflict("The queued message targets a stopped run. Your message is still queued.", {
             code: "queued_comment_stale_target",
           });
