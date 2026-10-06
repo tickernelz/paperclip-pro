@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { activityLog, agents, issues } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agents, agentWakeupRequests, heartbeatRunEvents, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
 import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
 import {
   registerServerAdapter,
@@ -88,6 +88,9 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
   const ctx = useEmbeddedPostgres("paperclip-run-model-override-", {
     resetEach: async (db) => {
       await db.delete(activityLog);
+      await db.delete(heartbeatRunEvents);
+      await db.delete(heartbeatRuns);
+      await db.delete(agentWakeupRequests);
       await db.delete(issues);
       await db.delete(agents);
       await resetCompanyIssueFixtures(db);
