@@ -1,52 +1,5 @@
-/**
- * Shared attachment content-type configuration.
- *
- * By default a curated set of image/document/text/media types are allowed. Set the
- * `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` environment variable to a
- * comma-separated list of MIME types or wildcard patterns to expand the
- * allowed set for routes that use this allowlist.
- *
- * Examples:
- *   PAPERCLIP_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf
- *   PAPERCLIP_ALLOWED_ATTACHMENT_TYPES=image/*,application/pdf,text/*
- *
- * Supported pattern syntax:
- *   - Exact types:   "application/pdf"
- *   - Wildcards:     "image/*"  or  "application/vnd.openxmlformats-officedocument.*"
- */
-export const DEFAULT_ALLOWED_TYPES: readonly string[] = [
-  "image/png",
-  "image/jpeg",
-  "image/jpg",
-  "image/webp",
-  "image/gif",
-  "image/heic",
-  "image/heif",
-  "image/heic-sequence",
-  "image/heif-sequence",
-  "audio/mpeg",
-  "audio/mp4",
-  "audio/ogg",
-  "audio/wav",
-  "audio/webm",
-  "application/pdf",
-  "application/zip",
-  "text/markdown",
-  "text/plain",
-  "application/json",
-  "text/csv",
-  "text/html",
-  "application/msword",
-  "application/vnd.ms-excel",
-  "application/vnd.ms-powerpoint",
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-  "video/mp4",
-  "video/webm",
-  "video/quicktime",
-  "video/x-m4v",
-];
+/** Attachment content-type policy: every type is accepted unless `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restricts it to comma-separated MIME patterns. */
+export const ALLOW_ALL_ATTACHMENT_TYPES: readonly string[] = ["*"];
 
 export const DEFAULT_ATTACHMENT_CONTENT_TYPE = "application/octet-stream";
 export const SVG_CONTENT_TYPE = "image/svg+xml";
@@ -55,6 +8,15 @@ export const GENERIC_ATTACHMENT_CONTENT_TYPES: readonly string[] = [
   "binary/octet-stream",
   "application/x-binary",
 ];
+const ACTIVE_ATTACHMENT_CONTENT_TYPES: ReadonlySet<string> = new Set([
+  "text/html",
+  "application/html",
+  "application/xhtml+xml",
+  SVG_CONTENT_TYPE,
+  "text/xsl",
+  "application/x-shockwave-flash",
+  "multipart/x-mixed-replace",
+]);
 export const INLINE_ATTACHMENT_TYPES: readonly string[] = [
   "image/*",
   "application/pdf",
@@ -68,17 +30,14 @@ export const INLINE_ATTACHMENT_TYPES: readonly string[] = [
   "video/x-m4v",
 ];
 
-/**
- * Parse a comma-separated list of MIME type patterns into a normalised array.
- * Returns the default image-only list when the input is empty or undefined.
- */
+/** Parse a comma-separated list of MIME type patterns; empty input allows every type. */
 export function parseAllowedTypes(raw: string | undefined): string[] {
-  if (!raw) return [...DEFAULT_ALLOWED_TYPES];
+  if (!raw) return [...ALLOW_ALL_ATTACHMENT_TYPES];
   const parsed = raw
     .split(",")
     .map((s) => s.trim().toLowerCase())
     .filter((s) => s.length > 0);
-  return parsed.length > 0 ? parsed : [...DEFAULT_ALLOWED_TYPES];
+  return parsed.length > 0 ? parsed : [...ALLOW_ALL_ATTACHMENT_TYPES];
 }
 
 /**
@@ -141,18 +100,38 @@ export function normalizeUploadAttachmentContentType(input: {
   return inferred;
 }
 
-export function isInlineAttachmentContentType(contentType: string): boolean {
-  return matchesContentType(contentType, [...INLINE_ATTACHMENT_TYPES]);
+/** True for types a browser could execute as active content (markup, script, XML); these are only ever served as downloads. */
+export function isActiveAttachmentContentType(contentType: string): boolean {
+  const ct = normalizeContentType(contentType);
+  return (
+    ACTIVE_ATTACHMENT_CONTENT_TYPES.has(ct) ||
+    ct.endsWith("+xml") ||
+    ct.endsWith("/xml") ||
+    ct.includes("javascript") ||
+    ct.includes("ecmascript")
+  );
 }
 
-// ---------- Module-level singletons read once at startup ----------
+/** Content type for serving a stored attachment: active content is downgraded to `application/octet-stream`. */
+export function attachmentServingContentType(contentType: string | null | undefined): string {
+  const value = contentType?.trim();
+  return !value || isActiveAttachmentContentType(value) ? DEFAULT_ATTACHMENT_CONTENT_TYPE : value;
+}
 
-const allowedPatterns: string[] = parseAllowedTypes(
-  process.env.PAPERCLIP_ALLOWED_ATTACHMENT_TYPES,
-);
+export function isInlineAttachmentContentType(contentType: string): boolean {
+  return !isActiveAttachmentContentType(contentType) && matchesContentType(contentType, [...INLINE_ATTACHMENT_TYPES]);
+}
 
-/** Convenience wrapper using the process-level allowed list. */
+let allowedPatternsSource: string | undefined;
+let allowedPatterns: string[] = parseAllowedTypes(undefined);
+
+/** Whether the operator's `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restriction (allow-all when unset) admits `contentType`. */
 export function isAllowedContentType(contentType: string): boolean {
+  const source = process.env.PAPERCLIP_ALLOWED_ATTACHMENT_TYPES;
+  if (source !== allowedPatternsSource) {
+    allowedPatternsSource = source;
+    allowedPatterns = parseAllowedTypes(source);
+  }
   return matchesContentType(contentType, allowedPatterns);
 }
 

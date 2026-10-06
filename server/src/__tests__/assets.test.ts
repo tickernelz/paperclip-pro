@@ -464,6 +464,7 @@ describe("GET /api/assets/:assetId/content", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/octet-stream");
     expect(res.headers["content-disposition"]).toBe('attachment; filename="proof.html"');
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
     expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
@@ -489,6 +490,34 @@ describe("GET /api/assets/:assetId/content", () => {
     );
 
     expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("application/octet-stream");
+    expect(res.headers["content-disposition"]).toBe('attachment; filename="logo.svg"');
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
+  });
+
+  it("keeps the SVG type for sanitized image assets so logos still render, but only as a sandboxed download", async () => {
+    const svg = Buffer.from("<svg xmlns='http://www.w3.org/2000/svg'><circle r='4'/></svg>");
+    const storage = createStorageService("image/svg+xml");
+    getAssetByIdMock.mockResolvedValue({
+      ...createAsset(),
+      objectKey: "company-1/assets/companies/2026/01/01/logo.svg",
+      contentType: "image/svg+xml",
+      byteSize: svg.byteLength,
+      originalFilename: "logo.svg",
+    });
+    vi.mocked(storage.getObject).mockResolvedValue({
+      stream: Readable.from(svg),
+      contentType: "image/svg+xml",
+      contentLength: svg.byteLength,
+    });
+
+    const res = await requestApp(await createApp(storage), (baseUrl) =>
+      request(baseUrl).get("/api/assets/asset-1/content"),
+    );
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("image/svg+xml");
     expect(res.headers["content-disposition"]).toBe('attachment; filename="logo.svg"');
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
     expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");

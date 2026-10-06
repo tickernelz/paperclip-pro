@@ -399,6 +399,32 @@ describe("issue attachment routes", () => {
     expect(res.body.contentType).toBe("application/x-msdownload");
   });
 
+  it.each([
+    ["application/x-msdos-program", "pantat lutpi.bat", "application/x-msdos-program"],
+    ["application/x-msdownload", "setup.exe", "application/x-msdownload"],
+    ["application/vnd.android.package-archive", "app.apk", "application/vnd.android.package-archive"],
+    ["", "mystery.unknownext", "application/octet-stream"],
+  ])("stores a %s upload of %s", async (uploadType, filename, storedType) => {
+    const storage = createStorageService();
+    mockIssueService.getById.mockResolvedValue({
+      id: "11111111-1111-4111-8111-111111111111",
+      companyId: "company-1",
+      identifier: "PAP-1",
+    });
+    mockIssueService.createAttachment.mockResolvedValue(makeAttachment(storedType, filename));
+
+    const app = await createApp(storage);
+    const res = await request(app)
+      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .attach("file", Buffer.from("@echo off"), uploadType ? { filename, contentType: uploadType } : { filename });
+
+    expect(res.status).toBe(201);
+    expect(storage.__calls.putFile).toMatchObject({ contentType: storedType, originalFilename: filename });
+    expect(mockIssueService.createAttachment).toHaveBeenCalledWith(
+      expect.objectContaining({ contentType: storedType, originalFilename: filename }),
+    );
+  });
+
   it("accepts Office uploads with official MIME types for issue attachments", async () => {
     const contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     const storage = createStorageService();
@@ -511,9 +537,14 @@ describe("issue attachment routes", () => {
     expect(mockCompanyService.getById).not.toHaveBeenCalled();
   });
 
-  it("serves html attachments as downloads with nosniff", async () => {
+  it.each([
+    ["text/html", "report.html"],
+    ["image/svg+xml", "diagram.svg"],
+    ["application/xhtml+xml", "page.xhtml"],
+    ["application/javascript", "payload.js"],
+  ])("serves active %s attachments as octet-stream downloads with nosniff", async (contentType, filename) => {
     const storage = createStorageService();
-    mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("text/html", "report.html"));
+    mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment(contentType, filename));
 
     const app = await createApp(storage);
     const res = await request(app)
@@ -522,11 +553,27 @@ describe("issue attachment routes", () => {
       .parse(parseBinaryResponse);
 
     expect(res.status).toBe(200);
-    expect([
-      undefined,
-      'attachment; filename="report.html"',
-    ]).toContain(res.headers["content-disposition"]);
+    expect(res.headers["content-type"]).toBe("application/octet-stream");
+    expect(res.headers["content-disposition"]).toBe(`attachment; filename="${filename}"`);
     expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBe("sandbox; default-src 'none'");
+  });
+
+  it("keeps safe image attachments inline with their stored type", async () => {
+    const storage = createStorageService();
+    mockIssueService.getAttachmentById.mockResolvedValue(makeAttachment("image/png", "chart.png"));
+
+    const app = await createApp(storage);
+    const res = await request(app)
+      .get("/api/attachments/attachment-1/content")
+      .buffer(true)
+      .parse(parseBinaryResponse);
+
+    expect(res.status).toBe(200);
+    expect(res.headers["content-type"]).toBe("image/png");
+    expect(res.headers["content-disposition"]).toBe('inline; filename="chart.png"');
+    expect(res.headers["x-content-type-options"]).toBe("nosniff");
+    expect(res.headers["content-security-policy"]).toBeUndefined();
   });
 
   it("serves arbitrary binary attachments as downloads with nosniff", async () => {

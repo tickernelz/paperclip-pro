@@ -858,6 +858,19 @@ describe("public GitHub attachment download", () => {
       expect(guard.allowPrivateNetwork).toBe(false);
     }
   });
+  it("imports a public binary file of any content type", async () => {
+    request.mockResolvedValueOnce(
+      new Response("MZ binary", {
+        headers: { "content-type": "application/octet-stream" },
+      }),
+    );
+    const result = await prepareGitHubPublicAttachment(fileAttachment());
+    expect(result).toMatchObject({
+      mimeType: "application/octet-stream",
+      type: "file",
+    });
+    expect((await result.fetchData!()).toString()).toBe("MZ binary");
+  });
   it.each([401, 403, 404])(
     "reports private/unavailable %s without credential retries",
     async (status) => {
@@ -916,11 +929,6 @@ describe("public GitHub attachment download", () => {
       code: "github_attachment_invalid_response",
     },
     { body: "", type: "text/plain", code: "github_attachment_empty" },
-    {
-      body: "binary",
-      type: "application/octet-stream",
-      code: "github_attachment_unsupported_type",
-    },
   ])(
     "rejects empty/error/wrong-MIME responses $code",
     async ({ body, type, code }) => {

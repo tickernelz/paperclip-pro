@@ -5,7 +5,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, eq, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   activityLog,
   agents,
@@ -972,6 +972,63 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.mediaSends.at(-1)).toMatchObject({ kind: "audio", ptt: true, bytes: voice.length, mimetype: "audio/ogg" });
     const foreign = await rejection(executeOpenwaTool(db, binding, "openwa_send", { kind: "image", attachmentId: randomUUID(), idempotencyKey: randomUUID() }));
     expect(foreign.code).toBe("attachment_unavailable");
+  });
+
+  it("fetches files of any type as attachments and sends them as WhatsApp documents", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const script = "@echo off\r\necho halo\r\n";
+    const batRow = t.gateway.inbound({ chatId: MEMBER, body: "", emit: false });
+    t.gateway.setMedia(MEMBER, batRow.waMessageId!, { body: Buffer.from(script), contentType: "application/x-msdos-program", filename: "pantat lutpi.bat" });
+    const bat = await executeOpenwaTool(db, binding, "openwa_get_media", { messageId: batRow.waMessageId });
+    const [batItem] = bat.media as Array<Record<string, unknown>>;
+    expect(batItem).toMatchObject({ status: "stored", mime: "application/x-msdos-program", filename: "pantat lutpi.bat", size: script.length });
+    expect(batItem).not.toHaveProperty("reason");
+    const binary = Buffer.from([0x4d, 0x5a, 0x00, 0xff, 0x13, 0x37]);
+    const binRow = t.gateway.inbound({ chatId: MEMBER, body: "", emit: false });
+    t.gateway.setMedia(MEMBER, binRow.waMessageId!, { body: binary, contentType: "application/octet-stream", filename: "firmware.xyz" });
+    const unknown = await executeOpenwaTool(db, binding, "openwa_get_media", { messageId: binRow.waMessageId });
+    const [binItem] = unknown.media as Array<Record<string, unknown>>;
+    expect(binItem).toMatchObject({ status: "stored", mime: "application/octet-stream", filename: "firmware.xyz", size: binary.length });
+    const stored = await db
+      .select({ id: issueAttachments.id, issueId: issueAttachments.issueId, contentType: assets.contentType, filename: assets.originalFilename })
+      .from(issueAttachments)
+      .innerJoin(assets, eq(assets.id, issueAttachments.assetId))
+      .where(inArray(issueAttachments.id, [String(batItem!.attachmentId), String(binItem!.attachmentId)]));
+    expect(stored.map(({ id: _id, ...row }) => row).sort((a, b) => a.filename!.localeCompare(b.filename!))).toEqual([
+      { issueId: c.issueId, contentType: "application/octet-stream", filename: "firmware.xyz" },
+      { issueId: c.issueId, contentType: "application/x-msdos-program", filename: "pantat lutpi.bat" },
+    ]);
+
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "document", attachmentId: batItem!.attachmentId, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.documents.at(-1)).toMatchObject({ chatId: MEMBER, filename: "pantat lutpi.bat", mimetype: "application/x-msdos-program", content: script });
+
+    const zip = Buffer.from("PK\u0003\u0004zip-bytes");
+    const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "bundle.zip", contentType: "application/zip", body: zip });
+    const [asset] = await db.insert(assets).values({ companyId: t.companyId, provider: put.provider, objectKey: put.objectKey, contentType: put.contentType, byteSize: put.byteSize, sha256: put.sha256, originalFilename: "bundle.zip" }).returning();
+    const [attachment] = await db.insert(issueAttachments).values({ companyId: t.companyId, issueId: c.issueId, assetId: asset!.id }).returning();
+    const mediaSendsBefore = t.gateway.mediaSends.length;
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "image", text: "the bundle", attachmentId: attachment!.id, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.mediaSends).toHaveLength(mediaSendsBefore);
+    expect(t.gateway.documents.at(-1)).toMatchObject({ filename: "bundle.zip", mimetype: "application/zip", caption: expect.stringContaining("the bundle"), content: zip.toString("utf8") });
+  });
+
+  it("still rejects types outside an operator's PAPERCLIP_ALLOWED_ATTACHMENT_TYPES restriction", async () => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+    try {
+      const t = await setup();
+      const c = await conversation(t, MEMBER);
+      const binding = await run(t, c, { triggerClass: "owner" });
+      const row = t.gateway.inbound({ chatId: MEMBER, body: "", emit: false });
+      t.gateway.setMedia(MEMBER, row.waMessageId!, { body: Buffer.from("@echo off"), contentType: "application/x-msdos-program", filename: "pantat lutpi.bat" });
+      const result = await executeOpenwaTool(db, binding, "openwa_get_media", { messageId: row.waMessageId });
+      const [item] = result.media as Array<Record<string, unknown>>;
+      expect(item).toMatchObject({ status: "rejected", reason: "unsupported_type", attachmentId: null });
+      expect(await db.select().from(issueAttachments).where(eq(issueAttachments.issueId, c.issueId))).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("resolves local attachment paths only for files inside the local-disk storage root", async () => {

@@ -1,9 +1,12 @@
-import { describe, it, expect } from "vitest";
+import { afterEach, describe, it, expect, vi } from "vitest";
 import {
-  DEFAULT_ALLOWED_TYPES,
+  ALLOW_ALL_ATTACHMENT_TYPES,
+  attachmentServingContentType,
   formatAttachmentSize,
   INLINE_ATTACHMENT_TYPES,
   inferOfficeAttachmentContentTypeFromFilename,
+  isActiveAttachmentContentType,
+  isAllowedContentType,
   isInlineAttachmentContentType,
   matchesContentType,
   MAX_ATTACHMENT_BYTES,
@@ -13,12 +16,13 @@ import {
 } from "../attachment-types.js";
 
 describe("parseAllowedTypes", () => {
-  it("returns default image types when input is undefined", () => {
-    expect(parseAllowedTypes(undefined)).toEqual([...DEFAULT_ALLOWED_TYPES]);
+  it("allows every type when input is undefined", () => {
+    expect(parseAllowedTypes(undefined)).toEqual([...ALLOW_ALL_ATTACHMENT_TYPES]);
   });
 
-  it("returns default image types when input is empty string", () => {
-    expect(parseAllowedTypes("")).toEqual([...DEFAULT_ALLOWED_TYPES]);
+  it("allows every type when input is empty string", () => {
+    expect(parseAllowedTypes("")).toEqual([...ALLOW_ALL_ATTACHMENT_TYPES]);
+    expect(parseAllowedTypes(" , ")).toEqual([...ALLOW_ALL_ATTACHMENT_TYPES]);
   });
 
   it("parses comma-separated types", () => {
@@ -102,31 +106,39 @@ describe("matchesContentType", () => {
     expect(matchesContentType("application/zip", patterns)).toBe(true);
   });
 
-  it("allows common Office document types by default", () => {
+});
+
+describe("isAllowedContentType", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("accepts any content type when no operator restriction is configured", () => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "");
     for (const contentType of [
-      "application/msword",
-      "application/vnd.ms-excel",
-      "application/vnd.ms-powerpoint",
+      "application/x-msdos-program",
+      "application/x-msdownload",
+      "application/vnd.android.package-archive",
+      "application/octet-stream",
+      "application/x-unknown-thing",
+      "text/html",
+      "image/svg+xml",
+      "audio/ogg",
       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     ]) {
-      expect(matchesContentType(contentType, [...DEFAULT_ALLOWED_TYPES])).toBe(true);
+      expect(isAllowedContentType(contentType)).toBe(true);
     }
   });
 
-  it("allows common chat audio types by default", () => {
-    for (const contentType of [
-      "audio/mpeg",
-      "audio/mp4",
-      "audio/ogg",
-      "audio/wav",
-      "audio/webm",
-    ]) {
-      expect(matchesContentType(contentType, [...DEFAULT_ALLOWED_TYPES])).toBe(
-        true,
-      );
-    }
+  it("enforces PAPERCLIP_ALLOWED_ATTACHMENT_TYPES when an operator sets it", () => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+    expect(isAllowedContentType("image/png")).toBe(true);
+    expect(isAllowedContentType("application/pdf")).toBe(true);
+    expect(isAllowedContentType("application/x-msdos-program")).toBe(false);
+    expect(isAllowedContentType("application/octet-stream")).toBe(false);
+    vi.unstubAllEnvs();
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "");
+    expect(isAllowedContentType("application/x-msdos-program")).toBe(true);
   });
 });
 
@@ -213,7 +225,7 @@ describe("normalizeUploadAttachmentContentType", () => {
 
 describe("isInlineAttachmentContentType", () => {
   it("allows the configured inline-safe types", () => {
-    for (const contentType of ["image/png", "image/svg+xml", "application/pdf", "text/plain", "video/mp4"]) {
+    for (const contentType of ["image/png", "application/pdf", "text/plain", "video/mp4"]) {
       expect(isInlineAttachmentContentType(contentType)).toBe(true);
     }
   });
@@ -221,7 +233,38 @@ describe("isInlineAttachmentContentType", () => {
   it("rejects potentially unsafe or binary download types", () => {
     expect(INLINE_ATTACHMENT_TYPES).not.toContain("text/html");
     expect(isInlineAttachmentContentType("text/html")).toBe(false);
+    expect(isInlineAttachmentContentType("image/svg+xml")).toBe(false);
+    expect(isInlineAttachmentContentType("Image/SVG+XML; charset=utf-8")).toBe(false);
     expect(isInlineAttachmentContentType("application/zip")).toBe(false);
+    expect(isInlineAttachmentContentType("application/x-msdos-program")).toBe(false);
+  });
+});
+
+describe("attachmentServingContentType", () => {
+  it("downgrades browser-executable content to octet-stream", () => {
+    for (const contentType of [
+      "text/html",
+      "text/html; charset=utf-8",
+      "application/xhtml+xml",
+      "image/svg+xml",
+      "application/javascript",
+      "text/javascript",
+      "application/xml",
+      "text/xml",
+      "application/rss+xml",
+    ]) {
+      expect(isActiveAttachmentContentType(contentType)).toBe(true);
+      expect(attachmentServingContentType(contentType)).toBe("application/octet-stream");
+    }
+  });
+
+  it("keeps passive types and falls back to octet-stream when empty", () => {
+    expect(attachmentServingContentType("application/x-msdos-program")).toBe("application/x-msdos-program");
+    expect(attachmentServingContentType("text/plain; charset=utf-8")).toBe("text/plain; charset=utf-8");
+    expect(attachmentServingContentType("image/png")).toBe("image/png");
+    expect(attachmentServingContentType("")).toBe("application/octet-stream");
+    expect(attachmentServingContentType(null)).toBe("application/octet-stream");
+    expect(isActiveAttachmentContentType("application/json")).toBe(false);
   });
 });
 

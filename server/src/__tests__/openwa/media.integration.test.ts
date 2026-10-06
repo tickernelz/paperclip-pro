@@ -6,7 +6,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import express from "express";
 import request from "supertest";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { and, eq } from "drizzle-orm";
 import {
   agents,
@@ -236,11 +236,57 @@ describe.sequential("OpenWA media ingest and speech-to-text (embedded Postgres +
     const [declaredResult] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: declared });
     const [streamedResult] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: streamed });
 
-    expect(declaredResult).toMatchObject({ status: "rejected", reason: "too_large", attachmentId: null });
+    expect(declaredResult).toMatchObject({ status: "rejected", reason: "too_large", limitBytes: 1024, attachmentId: null });
     expect(gateway.mediaRequests(declared.waMessageId!)).toBe(0);
-    expect(streamedResult).toMatchObject({ status: "rejected", reason: "too_large", attachmentId: null });
+    expect(streamedResult).toMatchObject({ status: "rejected", reason: "too_large", limitBytes: 1024, attachmentId: null });
     expect(gateway.mediaRequests(streamed.waMessageId!)).toBe(1);
     expect(await attachmentsOf(target.commentId)).toEqual([]);
+  });
+
+  it("stores a .bat program and an unknown binary as attachments with their original names", async () => {
+    const target = await seed();
+    const media = service();
+    const script = Buffer.from("@echo off\r\necho halo\r\n");
+    const bat = event({ type: "document", media: { mimetype: "application/x-msdos-program", filename: "pantat lutpi.bat", sizeBytes: script.length, omitted: true } });
+    gateway.setMedia(PEER, bat.waMessageId!, { body: script, contentType: "application/x-msdos-program" });
+    const binary = Buffer.from([0x7f, 0x45, 0x4c, 0x46, 0x00, 0xff]);
+    const unknown = event({ type: "document", media: { mimetype: "application/x-totally-unknown", filename: "payload", omitted: true } });
+    gateway.setMedia(PEER, unknown.waMessageId!, { body: binary, contentType: "application/x-totally-unknown" });
+    const untypedId = "false_" + PEER + "_3EB0UNTYPED0000001";
+    gateway.setMedia(PEER, untypedId, { body: binary, contentType: "", filename: "blob.weird" });
+
+    const [batResult] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: bat });
+    const [unknownResult] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: unknown });
+    const [untypedResult] = await media.fetchOpenwaMessageMedia({ ...target, client: client(), chatId: PEER, messageId: untypedId });
+
+    expect(batResult).toMatchObject({ kind: "document", status: "stored", reason: null, mime: "application/x-msdos-program", filename: "pantat lutpi.bat", size: script.length });
+    expect(unknownResult).toMatchObject({ kind: "document", status: "stored", reason: null, mime: "application/x-totally-unknown", filename: "payload", size: binary.length });
+    expect(untypedResult).toMatchObject({ kind: "document", status: "stored", reason: null, mime: "application/octet-stream", filename: "blob.weird", size: binary.length });
+    const stored = await attachmentsOf(target.commentId);
+    expect(stored.find((row) => row.id === batResult!.attachmentId)).toMatchObject({
+      contentType: "application/x-msdos-program", filename: "pantat lutpi.bat", sha256: createHash("sha256").update(script).digest("hex"),
+    });
+    expect(stored.find((row) => row.id === unknownResult!.attachmentId)).toMatchObject({ contentType: "application/x-totally-unknown", filename: "payload" });
+    const [untypedRow] = await db.select({ assetId: issueAttachments.assetId, issueId: issueAttachments.issueId }).from(issueAttachments).where(eq(issueAttachments.id, untypedResult!.attachmentId!));
+    expect(untypedRow?.issueId).toBe(target.issueId);
+    const [untypedAsset] = await db.select().from(assets).where(eq(assets.id, untypedRow!.assetId));
+    expect(untypedAsset).toMatchObject({ contentType: "application/octet-stream", originalFilename: "blob.weird" });
+  });
+
+  it("rejects a type outside PAPERCLIP_ALLOWED_ATTACHMENT_TYPES without downloading it when an operator restricts types", async () => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+    try {
+      const target = await seed();
+      const media = service();
+      const bat = event({ type: "document", media: { mimetype: "application/x-msdos-program", filename: "pantat lutpi.bat", omitted: true } });
+      gateway.setMedia(PEER, bat.waMessageId!, { body: Buffer.from("@echo off"), contentType: "application/x-msdos-program" });
+      const [result] = await media.ingestOpenwaTriggerMedia({ ...target, client: client(), event: bat });
+      expect(result).toMatchObject({ status: "rejected", reason: "unsupported_type", attachmentId: null });
+      expect(gateway.mediaRequests(bat.waMessageId!)).toBe(0);
+      expect(await attachmentsOf(target.commentId)).toEqual([]);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 
   it("returns pending on a download timeout and the on-demand fetch later stores the same message once", async () => {

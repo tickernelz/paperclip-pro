@@ -7,10 +7,12 @@ import { ASSET_NAMESPACE_RULE, createAssetImageMetadataSchema } from "@tickernel
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import {
+  attachmentServingContentType,
   formatAttachmentSize,
   isAllowedContentType,
   isInlineAttachmentContentType,
   MAX_ATTACHMENT_BYTES,
+  normalizeContentType,
 } from "../attachment-types.js";
 import { assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
 const SVG_CONTENT_TYPE = "image/svg+xml";
@@ -148,9 +150,9 @@ export function assetRoutes(db: Db, storage: StorageService) {
     }
 
     const namespaceSuffix = parsedMeta.data.namespace ?? "general";
-    const contentType = (file.mimetype || "").toLowerCase();
+    const contentType = normalizeContentType(file.mimetype);
     if (contentType !== SVG_CONTENT_TYPE && !isAllowedContentType(contentType)) {
-      res.status(422).json({ error: `Unsupported file type: ${contentType || "unknown"}` });
+      res.status(422).json({ error: `Unsupported file type: ${contentType}` });
       return;
     }
     let fileBody = file.buffer;
@@ -344,10 +346,13 @@ export function assetRoutes(db: Db, storage: StorageService) {
     }
     const range = Array.isArray(ranges) ? ranges[0] : undefined;
     const object = await storage.getObject(asset.companyId, asset.objectKey, range ? { range } : undefined);
-    const responseContentType = asset.contentType || object.contentType || "application/octet-stream";
-    const mediaType = responseContentType.split(";", 1)[0]?.trim().toLowerCase() ?? "";
-    const inlineSafe = mediaType !== SVG_CONTENT_TYPE
-      && isInlineAttachmentContentType(mediaType);
+    const storedContentType = asset.contentType || object.contentType;
+    const sanitizedSvg = normalizeContentType(storedContentType) === SVG_CONTENT_TYPE
+      && asset.objectKey.startsWith(`${asset.companyId}/assets/`);
+    const responseContentType = sanitizedSvg
+      ? SVG_CONTENT_TYPE
+      : attachmentServingContentType(storedContentType);
+    const inlineSafe = isInlineAttachmentContentType(responseContentType);
     res.setHeader("Content-Type", responseContentType);
     res.setHeader("Content-Length", String(range ? range.end - range.start + 1 : asset.byteSize || object.contentLength || 0));
     if (range) {

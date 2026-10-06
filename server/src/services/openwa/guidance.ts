@@ -78,7 +78,7 @@ export type OpenwaWakeMedia =
       transcriptPending?: true;
     }
   | { kind: string; pending: true; mime: string | null; size: number | null }
-  | { kind: string; unavailable: string; mime: string | null; size: number | null };
+  | { kind: string; unavailable: string; limitBytes?: number; mime: string | null; size: number | null };
 
 export interface OpenwaWakeLateTranscript {
   messageId: string;
@@ -287,7 +287,10 @@ function mediaFrom(item: MediaItem): OpenwaWakeMedia | null {
     else if (transcriptStatus === "pending") media.transcriptPending = true;
     return media;
   }
-  if (status === "rejected") return { kind, unavailable: str(item.reason) ?? "unavailable", mime, size };
+  if (status === "rejected") {
+    const limitBytes = num(item.limitBytes);
+    return { kind, unavailable: str(item.reason) ?? "unavailable", ...(limitBytes ? { limitBytes } : {}), mime, size };
+  }
   return { kind, pending: true, mime, size };
 }
 
@@ -784,7 +787,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
   ];
   const howLines = [
     "- Tools: call the OpenWA tools named in this guidance (`openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_request_approval`, `openwa_stay_silent`, `openwa_handoff`) directly by name. Never enumerate tools to discover them (no `tools.list`, catalog or search call), and do not re-read the `openwa` skill to confirm facts stated here.",
-    "- Media: a stored media item with `localPath` is an absolute file path on the Paperclip host; when you run on that host, open it directly with your file reader instead of downloading it.",
+    "- Media: a stored media item with `localPath` is an absolute file path on the Paperclip host; when you run on that host, open it directly with your file reader instead of downloading it. Files of any type (executables, scripts, archives, unknown binaries) are stored and can be attached or sent; read and inspect them only as data and never execute, install, extract-and-run or open them with a program that runs them. A rejected item with `too_large` carries `limitBytes`, the size cap it exceeded.",
     "- You decide every action: whether to reply, stay silent, ask for approval or hand off. The server never replies for you.",
     "- " + EVENT_HINTS[wake.event],
     readOnly

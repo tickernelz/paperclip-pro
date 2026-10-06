@@ -273,13 +273,13 @@ import {
 } from "./workspace-command-authz.js";
 import { shouldWakeAssigneeOnCheckout } from "./issues-checkout-wakeup.js";
 import {
+  attachmentServingContentType,
   formatAttachmentSize,
   GENERIC_ATTACHMENT_CONTENT_TYPES,
   isInlineAttachmentContentType,
   MAX_ATTACHMENT_BYTES,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
-  SVG_CONTENT_TYPE,
 } from "../attachment-types.js";
 import { retainBacklogHumanAssignment } from "../services/human-directed-work.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
@@ -20070,11 +20070,13 @@ export function issueRoutes(
         ? { range: { start: range.start, end: range.end } }
         : undefined,
     );
-    const responseContentType = resolveAttachmentResponseContentType({
-      storedContentType: attachment.contentType,
-      objectContentType: object.contentType,
-      originalFilename: attachment.originalFilename,
-    });
+    const responseContentType = attachmentServingContentType(
+      resolveAttachmentResponseContentType({
+        storedContentType: attachment.contentType,
+        objectContentType: object.contentType,
+        originalFilename: attachment.originalFilename,
+      }),
+    );
     // Markdown bodies are stored as UTF-8; declare the charset so inline
     // (raw) views do not mojibake. SVG/inline checks below stay on the bare type.
     const isMarkdownResponse = isMarkdownAttachmentContent({
@@ -20091,17 +20093,14 @@ export function issueRoutes(
     );
     res.setHeader("Cache-Control", "private, max-age=60");
     res.setHeader("X-Content-Type-Options", "nosniff");
-    if (responseContentType === SVG_CONTENT_TYPE) {
-      res.setHeader(
-        "Content-Security-Policy",
-        "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'",
-      );
-    }
     const disposition = parseBooleanQuery(req.query.download)
       ? "attachment"
       : isInlineAttachmentContentType(responseContentType)
         ? "inline"
         : "attachment";
+    if (disposition === "attachment") {
+      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
+    }
     res.setHeader(
       "Content-Disposition",
       String(res.getHeader("Content-Disposition")).replace(/^attachment;/, `${disposition};`),

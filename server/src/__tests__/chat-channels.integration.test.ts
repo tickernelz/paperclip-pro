@@ -44,7 +44,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import { afterAll, afterEach, beforeAll, describe, expect, it, onTestFinished, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import {
   agents,
   agentWakeupRequests,
@@ -1005,7 +1005,45 @@ function webhookApp(
   return app;
 }
 
+const OPERATOR_RESTRICTED_ATTACHMENT_TYPES = [
+  "image/png",
+  "image/jpeg",
+  "image/jpg",
+  "image/webp",
+  "image/gif",
+  "image/heic",
+  "image/heif",
+  "image/heic-sequence",
+  "image/heif-sequence",
+  "audio/mpeg",
+  "audio/mp4",
+  "audio/ogg",
+  "audio/wav",
+  "audio/webm",
+  "application/pdf",
+  "application/zip",
+  "text/markdown",
+  "text/plain",
+  "application/json",
+  "text/csv",
+  "text/html",
+  "application/msword",
+  "application/vnd.ms-excel",
+  "application/vnd.ms-powerpoint",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  "video/mp4",
+  "video/webm",
+  "video/quicktime",
+  "video/x-m4v",
+].join(",");
+
 describeEmbeddedPostgres("chat channel control-plane integration", () => {
+  beforeEach(() => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", OPERATOR_RESTRICTED_ATTACHMENT_TYPES);
+  });
+
   let db!: TestDb;
   let tempDb: Awaited<
     ReturnType<typeof startEmbeddedPostgresTestDatabase>

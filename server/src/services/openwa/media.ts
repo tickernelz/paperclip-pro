@@ -62,6 +62,7 @@ export interface OpenwaIngestedMedia {
   mime: string | null;
   size: number | null;
   filename: string | null;
+  limitBytes?: number;
   transcriptStatus?: OpenwaTranscriptStatus;
   transcript?: string;
   transcriptTruncated?: boolean;
@@ -751,7 +752,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       filename: sanitizeFilename(descriptor.filename),
       ...(isAudioKind(descriptor.kind) ? { transcriptStatus: "unavailable" as const } : {}),
     };
-    if (descriptor.declaredSize !== null && descriptor.declaredSize > maxBytes) return { ...item, reason: "too_large" };
+    if (descriptor.declaredSize !== null && descriptor.declaredSize > maxBytes) return { ...item, reason: "too_large", limitBytes: maxBytes };
     if (declaredMime && declaredMime !== "application/octet-stream") {
       const candidate = normalizeUploadAttachmentContentType({
         contentType: declaredMime,
@@ -767,7 +768,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
     } catch (error) {
       const failure = gatewayFailure(error);
       if (isAudioKind(descriptor.kind) && failure.status === "pending") item.transcriptStatus = "pending";
-      return { ...item, ...failure };
+      return { ...item, ...failure, ...(failure.reason === "too_large" ? { limitBytes: maxBytes } : {}) };
     }
     if (downloaded.body.length === 0) return { ...item, reason: "empty" };
     const filename =

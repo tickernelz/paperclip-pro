@@ -567,9 +567,22 @@ keys named `apiKey`, `api_key`, `secret`, `clientSecret`, `verifyToken`, `token`
 
 Media of trigger messages is stored as attachments on the inbound comment
 before the wake, under the normal attachment policy and the host cap
-(`PAPERCLIP_ATTACHMENT_MAX_BYTES`, default 10 MiB). Each file has a 30 s deadline;
+(`PAPERCLIP_ATTACHMENT_MAX_BYTES`, default 10 MiB). Files of any type are
+accepted (`.bat`, `.exe`, `.apk`, `.zip`, unknown binaries); a missing type is
+stored as `application/octet-stream` with the sender's filename. Only an operator
+restriction in `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` rejects a type
+(`unsupported_type`). Each file has a 30 s deadline;
 on timeout the wake proceeds with the item `pending` and the agent can call
-`openwa_get_media`. Over-cap files are rejected without storing. Location and
+`openwa_get_media`. Over-cap files are rejected without storing as
+`too_large` with `limitBytes`, the cap they exceeded. Agents read stored files
+only as data and never execute them.
+
+`openwa_send` with an `attachmentId` sends any file type. `image`, `sticker`,
+`video`, `audio` and `voice` are used only when the attachment's MIME family
+matches (SVG is never sent as an image); any other file is sent as a WhatsApp
+document with its original filename and MIME type. Task files published to a
+WhatsApp conversation are always sent as documents. The size cap is the same
+`PAPERCLIP_ATTACHMENT_MAX_BYTES`, below WhatsApp's own document limit. Location and
 contact cards arrive as structured data. Media of non-trigger messages is never
 fetched unless the agent asks. When storage is the local disk, stored media items
 in the wake event and in `openwa_get_media` results carry `localPath`, the

@@ -160,8 +160,7 @@ describe("resolveCommandContext", () => {
 });
 
 describe("inferContentTypeFromPath", () => {
-  it("maps the issue-attachment file types the server allows", () => {
-    // Must match server/src/attachment-types.ts DEFAULT_ALLOWED_TYPES exactly.
+  it("maps common attachment file types to their MIME essence", () => {
     expect(inferContentTypeFromPath("newsletter.html")).toBe("text/html");
     expect(inferContentTypeFromPath("page.htm")).toBe("text/html");
     expect(inferContentTypeFromPath("data.csv")).toBe("text/csv");

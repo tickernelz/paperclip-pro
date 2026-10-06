@@ -25,7 +25,7 @@ import {
   type OpenwaSendKind,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { DEFAULT_ATTACHMENT_CONTENT_TYPE, MAX_ATTACHMENT_BYTES, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
 import { HttpError, forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getStorageService } from "../../storage/index.js";
@@ -714,7 +714,21 @@ async function attachmentBase64(ctx: ToolContext, attachmentId: string, storage:
   const data = Buffer.concat(chunks);
   if (createHash("sha256").update(data).digest("hex") !== row.asset.sha256)
     throw new OpenwaToolError(422, "attachment_unavailable", "Attachment changed before sending");
-  return { base64: data.toString("base64"), mimetype: row.asset.contentType, filename: row.asset.originalFilename ?? "attachment" };
+  return {
+    base64: data.toString("base64"),
+    mimetype: row.asset.contentType || DEFAULT_ATTACHMENT_CONTENT_TYPE,
+    filename: row.asset.originalFilename ?? "attachment",
+  };
+}
+
+/** Gateway media kind for an attachment: the requested kind when the file's MIME family fits it, otherwise a document. */
+export function openwaGatewayMediaKind(kind: OpenwaSendKind, mimetype: string): "image" | "video" | "audio" | "document" | "sticker" {
+  const essence = normalizeContentType(mimetype);
+  const family = essence.slice(0, essence.indexOf("/"));
+  if ((kind === "image" || kind === "sticker") && family === "image" && essence !== SVG_CONTENT_TYPE) return kind;
+  if (kind === "video" && family === "video") return "video";
+  if ((kind === "audio" || kind === "voice") && family === "audio") return "audio";
+  return "document";
 }
 
 export function prefixFor(ctx: ToolContext): string | null {
@@ -854,14 +868,15 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
     };
   }
   const media = await attachmentBase64(ctx, String(args.attachmentId), handle.storage);
+  const gatewayKind = openwaGatewayMediaKind(kind, media.mimetype);
+  const sentKind: OpenwaSendKind = gatewayKind === "document" ? "document" : kind;
   const prefix = prefixFor(ctx);
   const captionSource = args.text ? markdownToWhatsapp(openwaMentionText(safeText(String(args.text)), mentions)) : mentions.length ? mentions.map((mention) => mention.token).join(" ") : "";
   const caption = captionSource ? (prefix ? prefix + "\n" + captionSource : captionSource) : "";
   if ([...caption].length > OPENWA_DOCUMENT_CAPTION_LIMIT)
     throw new OpenwaToolError(422, "caption_too_long", "Media captions are limited to " + OPENWA_DOCUMENT_CAPTION_LIMIT + " characters; send the text separately");
-  const gatewayKind = kind === "voice" ? "audio" : kind;
   return {
-    kind,
+    kind: sentKind,
     text: caption || null,
     sends: [
       {
@@ -869,13 +884,13 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
         body: caption,
         send: () =>
           gateway.sendMedia({
-            kind: gatewayKind as "image" | "video" | "audio" | "document" | "sticker",
+            kind: gatewayKind,
             chatId,
             base64: media.base64,
             mimetype: media.mimetype,
             filename: media.filename,
-            ...(caption && kind !== "sticker" ? { caption } : {}),
-            ...(kind === "voice" ? { ptt: true } : {}),
+            ...(caption && sentKind !== "sticker" ? { caption } : {}),
+            ...(sentKind === "voice" ? { ptt: true } : {}),
             ...withQuote(0),
             ...withMentions(0),
           }),
@@ -1152,6 +1167,7 @@ function mediaView(item: OpenwaIngestedMedia, localPaths: ReadonlyMap<string, st
     kind: item.kind,
     status: item.status,
     ...(item.reason ? { reason: item.reason } : {}),
+    ...(item.limitBytes ? { limitBytes: item.limitBytes } : {}),
     attachmentId: item.attachmentId,
     ...(localPath ? { localPath } : item.attachmentId ? { contentPath: "/api/attachments/" + item.attachmentId + "/content" } : {}),
     mime: item.mime,

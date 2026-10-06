@@ -5,7 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 
 import { eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, onTestFinished, vi } from "vitest";
 import {
   agents,
   assets,
@@ -581,7 +581,11 @@ describe("native same-conversation historical attachment reading", () => {
     }
   });
 
-  it("rejects unsupported stored MIME types before storage retrieval", async () => {
+  it("rejects stored MIME types outside an operator restriction before storage retrieval", async () => {
+    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "text/plain,image/*");
+    onTestFinished(() => {
+      vi.unstubAllEnvs();
+    });
     const [attachment] = await db
       .select()
       .from(issueAttachments)

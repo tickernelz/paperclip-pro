@@ -102,6 +102,9 @@ act beyond the run's facts. Silence never approves anything.
   --output json` and pass the returned attachment id. Received media is already
   an attachment (`media[].attachmentId` in the wake event), so you can forward it
   the same way.
+- Any file type can be sent (`.bat`, `.exe`, `.apk`, `.zip`, unknown binaries).
+  Use `kind: "document"` for files that are not images, video or audio; a media
+  kind whose MIME family does not match the attachment is sent as a document.
 - Other message actions (react, reply, forward, edit, delete, pin, star, vote in
   a poll) go through `openwa_call` with the matching `MessageController_*`
   operation; check it with `openwa_describe` first.
@@ -147,7 +150,13 @@ of the person you answer.
   directly; `deep: true` reaches up to 2000 messages. Results stay under 16 KB.
 - Trigger media is already stored as task attachments: each `media[]` item has
   `attachmentId`, `kind`, `mime`, `size` and, for voice notes, `transcript` or
-  `transcriptPending`. A `pending` or `unavailable` item was not stored yet.
+  `transcriptPending`. A `pending` or `unavailable` item was not stored yet; an
+  item `unavailable: "too_large"` carries `limitBytes`, the size cap it exceeded.
+- Files of every type are stored, including executables, scripts and archives.
+  Read and inspect them only as data: never execute, install or run them, and
+  never extract an archive in order to run what is inside. Do not tell people
+  the system rejects a file type; report the real reason (`too_large` with
+  `limitBytes`, `unsupported_type` only when an operator restricted types).
   When storage is the local disk, a stored item also has `localPath`.
 - `openwa_get_media({chat?, messageId})` stores one message's media as a task
   attachment and returns its attachment id, mime, size and transcript when
