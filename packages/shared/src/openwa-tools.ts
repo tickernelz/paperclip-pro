@@ -99,7 +99,7 @@ export const OPENWA_TOOLS = [
   tool(
     "request_approval",
     "write",
-    "Ask the endpoint owners to approve categories for this chat's requester. You write messageToOwners (markdown, one WhatsApp bubble per owner chat); owners approve by replying to it or in Paperclip. Remind with remindRequestId plus messageToOwners only. Silence never approves.",
+    "Ask the endpoint owners to approve categories for this chat's requester. You write messageToOwners (markdown, one WhatsApp bubble per owner chat); owners approve by replying to it or in the OpenWA Approvals tab. Remind with remindRequestId plus messageToOwners only. Silence never approves.",
     {
       categories: z.array(z.enum(GRANT_CATEGORIES)).min(1).max(GRANT_CATEGORIES.length).optional(),
       scope: z.enum(["one_action", "requester"]).optional(),
@@ -120,7 +120,7 @@ export const OPENWA_TOOLS = [
   tool(
     "approval_resolve",
     "write",
-    "Record the owner's decision on an approval request. Only in the run started by that owner's reply to the request bubble. clarify keeps it pending.",
+    "Record the owner's decision on an approval request. Only in an owner run started by that owner's reply to the request bubble or their follow-up messages in the same chat. approve/reject need the owner's explicit words (else 409 owner_decision_unclear); clarify keeps it pending while you discuss.",
     {
       requestId: z.string().uuid(),
       decision: z.enum(["approve", "reject", "clarify"]),

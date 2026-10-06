@@ -689,6 +689,53 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends.map((send) => send.text)).toEqual(["sudah disetujui sebelumnya"]);
   }, 90_000);
 
+  it("delivers an approval_reply run's answer while the request stays pending, and keeps an owner run that resolved one internal", async () => {
+    const t = await setup();
+    const dm = await conversation(t, MEMBER);
+    const ownerPrincipal = await principal(t, "628999000556");
+    const [pending] = await db
+      .insert(chatOwnerApprovalRequests)
+      .values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        originChatKey: openwaChatKey(GROUP),
+        requestedByPrincipalId: ownerPrincipal,
+        categories: ["create_task"],
+        scope: "one_action",
+        summary: "task",
+        proposedAction: "task",
+      })
+      .returning();
+    const question = await trigger(t, dm, { triggerClass: "owner", role: "owner" });
+    await runOutput(t, dm, {
+      triggerClass: "owner",
+      body: "Sudah, PDF-nya berisi daftar task after sales. Mau saya lanjutkan?",
+      deliveryIds: [question.id],
+      event: "approval_reply",
+      approvalRequestId: pending!.id,
+    });
+    await drain(t);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["Sudah, PDF-nya berisi daftar task after sales. Mau saya lanjutkan?"]);
+    expect(t.gateway.reactions).toEqual([]);
+    expect(await answerStates([question.id])).toEqual(["answered"]);
+
+    const decision = await trigger(t, dm, { triggerClass: "owner", role: "owner" });
+    const run = await runOutput(t, dm, { triggerClass: "owner", body: "siap, saya lanjutkan", deliveryIds: [decision.id] });
+    await db.insert(chatAuditEntries).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      kind: "approval_resolved",
+      actorKind: "chat_principal",
+      runId: run.runId,
+      metadata: { requestId: pending!.id, decision: "approved", via: "whatsapp" },
+    });
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(1);
+    expect((await publicationState(run.publicationId)).state).toBe("cancelled");
+    expect((await audits(t, "publication_suppressed")).map((entry) => entry.metadata)).toEqual([expect.objectContaining({ reason: "approval_acknowledged" })]);
+    expect(t.gateway.reactions).toEqual([{ chatId: MEMBER, messageId: decision.waMessageId, emoji: "✅" }]);
+  }, 90_000);
+
   it("sends more than three parts as a markdown document and agent files as documents", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

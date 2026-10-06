@@ -33,6 +33,7 @@ import { DEFAULT_ATTACHMENT_CONTENT_TYPE } from "../../attachment-types.js";
 import { openwaAllowedCategories, type OpenwaRunContext, type OpenwaRunProfile } from "./authority.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
+import { openwaApprovalDiscussions } from "./approval-discussions.js";
 import { takeOpenwaLateTranscripts } from "./late-transcripts.js";
 import { openwaAttachmentLocalPaths } from "./media.js";
 import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
@@ -131,6 +132,7 @@ export interface OpenwaWakeEvent {
     grants: Array<{ id: string; category: OpenwaGrantCategory; expiresAt: string }>;
   };
   pendingApprovals: Array<{ requestId: string; summary: string; status: string; categories: OpenwaGrantCategory[] }>;
+  approvalDiscussions?: Array<{ requestId: string; summary: string; proposedAction: string; categories: OpenwaGrantCategory[] }>;
   lateTranscripts?: OpenwaWakeLateTranscript[];
   lastOutputSuppressed?: true;
   sessionHealth?: OpenwaWakeSessionHealth;
@@ -609,7 +611,7 @@ export async function buildOpenwaRunGuidance(
   const approvalRequestId =
     openwa.approvalRequestId ?? str(wakeOpenwa.approvalRequestId) ?? str(contextOpenwa.approvalRequestId);
   const sessionHealth = event === "session_health" ? wakeSessionHealth(wakeOpenwa.sessionHealth ?? contextOpenwa.sessionHealth) : null;
-  const [resource, deliveryRows, lastOutputSuppressed, lateTranscripts] = await Promise.all([
+  const [resource, deliveryRows, lastOutputSuppressed, lateTranscripts, discussions] = await Promise.all([
     db
       .select({
         settings: chatEndpointResources.settings,
@@ -654,6 +656,9 @@ export async function buildOpenwaRunGuidance(
       .then((last) => last?.suppressed === true && last.runId !== input.runId),
     input.runId
       ? takeOpenwaLateTranscripts(db, { companyId, endpointId: openwa.endpointId, conversationId: conversation.id, runId: input.runId })
+      : Promise.resolve([]),
+    openwa.triggerClass === "owner" && openwa.triggerPrincipalId
+      ? openwaApprovalDiscussions(db, { endpoint: { companyId, id: openwa.endpointId }, principalId: openwa.triggerPrincipalId, chatKey: openwa.chatKey })
       : Promise.resolve([]),
   ]);
   const deliveries = (deliveryRows as DeliveryRow[]).filter(
@@ -731,6 +736,16 @@ export async function buildOpenwaRunGuidance(
         categories: request.categories,
       }),
     ),
+    ...(discussions.length > 0
+      ? {
+          approvalDiscussions: discussions.map((discussion) => ({
+            requestId: discussion.requestId,
+            summary: truncate(discussion.summary, SUMMARY_MAX_TEXT).text,
+            proposedAction: truncate(discussion.proposedAction, SUMMARY_MAX_TEXT).text,
+            categories: discussion.categories,
+          })),
+        }
+      : {}),
     ...(freshTranscripts.length > 0
       ? {
           lateTranscripts: freshTranscripts.slice(-MAX_MEDIA_PER_MESSAGE).map((item): OpenwaWakeLateTranscript =>
@@ -777,7 +792,7 @@ const EVENT_HINTS: Record<OpenwaWakeEventName, string> = {
   owner_absent:
     "An owner was mentioned or messaged here and stayed silent through the absence window. The owner is the mention shown as `owner:\"<name>\"` in `messages[].mentions`. These messages were meant for that owner, which is why you were woken: never stay silent because they were addressed to someone else, and do not re-check who was mentioned. Do both, once each: (1) call `openwa_request_approval` once with `categories` [\"reply\"] only (the server adds any other reply category this chat needs, and a repeated call in this run updates the same request instead of sending another bubble), `scope` one_action, a `summary` of who wrote what here, a `proposedAction` that is the exact reply you suggest posting in this chat, and a `messageToOwners` in the owner's language that summarises the messages, quotes your suggested reply, and asks the owner to choose: approve to have you post it, reply with their own wording to have you post that instead, or reject because they will answer here themselves. (2) In this chat, right before or right after that request, send one short holding reply with `openwa_send` that quotes the latest message, mentions the owner and says they have been notified, without answering the substance; if it is refused with `reply_denied`, do not ask for approval again, the pending request already covers the reply. Your final output in this run is not posted to this chat, so send everything meant for the group with `openwa_send`. Stay silent here only when the messages need no answer at all (a bare greeting with no question).",
   approval_reply:
-    "An owner replied to your approval request. Interpret their free text and call `openwa_approval_resolve` with `decision` approve, reject or clarify (and any `conditions`). Only this run may resolve that request. After approve or reject, end the run without a reply: the server marks the owner's message with a check reaction and does not publish this run's final output.",
+    "An owner replied to your approval request. Read the reply as part of a conversation, not a forced vote. When it is a question, an objection, a request for more information or anything short of a clear decision, answer the owner in this chat (your final output is sent to them) and keep the request pending; you may call `openwa_approval_resolve` with `decision` clarify. Approve or reject only when the owner's own words clearly decide (for example ok, boleh, setuju, lanjut, or jangan, tolak, batal); the server refuses approve or reject with `owner_decision_unclear` when their messages carry no explicit approval or refusal. Add any `conditions` they gave. After approve or reject, end the run without a reply: the server marks the owner's message with a check reaction and does not publish this run's final output.",
   approval_resolved:
     "An approval request from this chat was resolved. Tell the requester the outcome in your own words; when approved, carry out only the approved action. For a `reply` request raised while an owner was absent: when approved, post the proposed reply (or the owner's own wording from their note or conditions, when they gave one) here with `openwa_send`, quoting the original message; when rejected, the owner answers here themselves, so stay silent.",
   approval_pending:
@@ -830,6 +845,13 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     ...grantLines,
     "- " + replyLine,
     "- Pending approval requests for this chat: " + wake.pendingApprovals.length + ".",
+    ...(wake.approvalDiscussions?.length
+      ? [
+          "- Approval requests this owner is discussing with you in this chat (wake event `approvalDiscussions`): " +
+            wake.approvalDiscussions.map((discussion) => "`" + discussion.requestId + "`").join(", ") +
+            ". Their messages here may continue that discussion: answer questions and keep the request pending, or resolve it with `openwa_approval_resolve` once their own words clearly approve or reject it.",
+        ]
+      : []),
     ...(wake.lateTranscripts?.length ? ["- Voice transcripts that finished after an earlier wake: " + wake.lateTranscripts.length + " (wake event `lateTranscripts`, keyed by message `id`)."] : []),
     ...(wake.lastOutputSuppressed ? ["- Your previous final output in this chat was not published (it stayed internal)."] : []),
   ];
@@ -842,7 +864,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
       ? "- Profile `read_only`: use every read capability (files, search, web, Paperclip reads, OpenWA read tools), comment on this conversation issue, and reply in this chat when replying is allowed. Use `bash` only for read-only commands: never create, modify, move or delete files, install packages, or change any system or remote state through it."
       : "- Profile `full`: this run acts for an owner; normal Paperclip authority applies for the allowed categories above." +
         (wake.triggerClass === "owner" ? " When an owner asks to change sender lists, chat settings, approval toggles, reminders or custom instructions, use `openwa_endpoint_config`." : ""),
-    "- Approval: for anything listed under \"Requires owner approval\", call `openwa_request_approval` with `categories`, `scope`, `summary`, `proposedAction` and a `messageToOwners` you write yourself, then tell the requester you asked. A gated call without approval fails with `approval_required`; do not retry it. Owners resolve through `openwa_approval_resolve` runs or in Paperclip.",
+    "- Approval: for anything listed under \"Requires owner approval\", call `openwa_request_approval` with `categories`, `scope`, `summary`, `proposedAction` and a `messageToOwners` you write yourself, then tell the requester you asked. A gated call without approval fails with `approval_required`; do not retry it. Owners decide by replying to the approval bubble, in follow-up messages of that discussion, or in the OpenWA Approvals tab.",
     facts.progressNudgeSeconds > 0
       ? "- Progress: when work takes longer than about " + facts.progressNudgeSeconds + " seconds, send a short progress update to this chat with `openwa_send` (when replying is allowed)."
       : "- Progress: send a short progress update with `openwa_send` before long work when replying is allowed.",
@@ -859,7 +881,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     wake.event === "owner_absent"
       ? "**This wake is `owner_absent`, not a normal message: owner " + (ownerNames || "an owner") + " was mentioned here and stayed silent through the absence window. Ask the owner now with one `openwa_request_approval` (categories [\"reply\"]) and post a short holding reply here (see How to act).**"
       : wake.event === "approval_reply"
-        ? "**This wake is `approval_reply`, not a normal message: an owner answered approval request `" + (wake.approvalRequestId ?? "unknown") + "` by quoting it. Read their text as a decision on that request and call `openwa_approval_resolve` now (approve, reject or clarify); a short reply such as ok or yes approves. Do not stay silent without resolving it, and do not carry out the approved action yourself: the approval_resolved run does that, and sends from this run to the request's chat are refused. Once it is approved or rejected, end the run without any reply to the owner: the server reacts to their message with a check mark and keeps this run's final output internal. If the request was already resolved before this run, only confirm that to the owner here.**"
+        ? "**This wake is `approval_reply`, not a normal message: an owner answered approval request `" + (wake.approvalRequestId ?? "unknown") + "` by quoting it. If their words clearly approve (ok, ya, boleh, setuju, lanjut) or reject (jangan, tidak, tolak, batal), call `openwa_approval_resolve` with that decision and end the run without any reply: the server reacts to their message with a check mark and keeps this run's final output internal. If they ask a question, object, want more information or are still discussing, do not resolve: answer them here (your final output is sent to the owner), keep the request pending (decision clarify), and resolve later when their follow-up messages decide. Never stay silent, and never carry out the approved action yourself: the approval_resolved run does that, and sends from this run to the request's chat are refused. If the request was already resolved before this run, only confirm that to the owner here.**"
         : null;
   const sections = [
     "## WhatsApp (OpenWA) guidance v" + OPENWA_GUIDANCE_VERSION,

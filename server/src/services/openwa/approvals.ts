@@ -11,7 +11,6 @@ import {
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   heartbeatRuns,
-  issueThreadInteractions,
   issues,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -35,6 +34,7 @@ import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { formatOpenwaPublication } from "./format.js";
 import { OpenwaGatewayError } from "./gateway.js";
 import { maskOpenwaDigits } from "./guidance.js";
+import { openwaApprovalDiscussions, openwaOwnerDecisionText, openwaOwnerMessagesSince } from "./approval-discussions.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner } from "./owners.js";
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
@@ -329,19 +329,6 @@ async function requestCoveredDeliveryIds(tx: DbOrTransaction, request: RequestRo
   return covered;
 }
 
-function approvalPrompt(summary: string): string {
-  return ("Approve: " + summary).slice(0, 1000);
-}
-
-function approvalDetails(input: { categories: string[]; scope: ChatOwnerGrantScope; proposedAction: string; originChatKey: string }): string {
-  return [
-    "**Proposed action:** " + input.proposedAction,
-    "**Categories:** " + input.categories.join(", "),
-    "**Scope:** " + (input.scope === "one_action" ? "one action in the approved run" : "this requester in this chat until the grant expires"),
-    "**Origin chat:** " + maskedChat(input.originChatKey),
-  ].join("\n");
-}
-
 export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
   if (!ctx.runClass) throw forbidden("Only runs on the WhatsApp conversation issue can request owner approval");
   if (ctx.runClass === "owner") throw new OpenwaToolError(422, "approval_not_needed", "Owner-triggered runs already have owner authority");
@@ -459,18 +446,8 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
       if (open) {
         const added = categories.filter((category) => !open.categories.includes(category));
         const merged = [...open.categories, ...added];
-        if (added.length) {
+        if (added.length)
           await tx.update(chatOwnerApprovalRequests).set({ categories: merged, updatedAt: new Date() }).where(eq(chatOwnerApprovalRequests.id, open.id));
-          if (open.interactionId)
-            await tx
-              .update(issueThreadInteractions)
-              .set({
-                title: "Owner approval: " + merged.join(", "),
-                payload: sql`jsonb_set(${issueThreadInteractions.payload}, '{detailsMarkdown}', to_jsonb(${approvalDetails({ categories: merged, scope: open.scope, proposedAction: open.proposedAction, originChatKey: open.originChatKey })}::text))`,
-                updatedAt: new Date(),
-              })
-              .where(eq(issueThreadInteractions.id, open.interactionId));
-        }
         await recordOpenwaAudit(tx, {
           companyId: ctx.endpoint.companyId,
           endpointId: ctx.endpoint.id,
@@ -516,37 +493,6 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
           proposedAction,
         })
         .returning();
-      const [interaction] = await tx
-        .insert(issueThreadInteractions)
-        .values({
-          companyId: ctx.endpoint.companyId,
-          issueId: ctx.conversation.issueId,
-          kind: "request_confirmation",
-          status: "pending",
-          continuationPolicy: "none",
-          requestedResolverPolicy: "chat_endpoint_owner",
-          effectiveResolverPolicy: "chat_endpoint_owner",
-          resolverPolicyProvenance: "explicit",
-          effectiveResolverPolicySource: "requested",
-          sourceRunId: ctx.run.id,
-          title: "Owner approval: " + categories.join(", "),
-          summary: summary.slice(0, 500),
-          createdByAgentId: ctx.binding.agentId,
-          payload: {
-            version: 1,
-            prompt: approvalPrompt(summary),
-            acceptLabel: "Approve",
-            rejectLabel: "Reject",
-            allowDeclineReason: true,
-            detailsMarkdown: approvalDetails({ categories, scope: grantScope, proposedAction, originChatKey: request!.originChatKey }),
-            openwaApprovalRequestId: request!.id,
-          },
-        })
-        .returning({ id: issueThreadInteractions.id });
-      await tx
-        .update(chatOwnerApprovalRequests)
-        .set({ interactionId: interaction!.id })
-        .where(eq(chatOwnerApprovalRequests.id, request!.id));
       await reserveBubbles(tx, ctx, registry, request!.id, planned, body, reserved);
       await scheduleApprovalReminders(tx, {
         companyId: ctx.endpoint.companyId,
@@ -564,7 +510,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
         chatKey: request!.originChatKey,
         conversationId: ctx.conversation.id,
         runId: ctx.run.id,
-        metadata: { requestId: request!.id, categories, autoAdded, scope: grantScope, owners: planned.length, interactionId: interaction!.id, coveredDeliveryIds },
+        metadata: { requestId: request!.id, categories, autoAdded, scope: grantScope, owners: planned.length, coveredDeliveryIds },
         content: { summary, proposedAction, messageToOwners: body },
         retentionDays: ctx.policy.auditContentRetentionDays,
       });
@@ -592,47 +538,60 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
   const receipt = { requestId, status: "pending", reminded, bubbles };
   if (bubbles.every((bubble) => bubble.state !== "uncertain")) await finishOpenwaWrite(ctx.db, action, receipt);
   if (bubbles.every((bubble) => bubble.state === "failed"))
-    throw new OpenwaToolError(502, "gateway_error", "No approval bubble could be delivered; the request stays pending in Paperclip", { requestId });
+    throw new OpenwaToolError(502, "gateway_error", "No approval bubble could be delivered; the request stays pending in the OpenWA Approvals tab", { requestId });
   return { actionId: action.id, ...receipt };
 }
 
 export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
   const requestId = String(args.requestId);
   const deny = () =>
-    new OpenwaToolError(403, "approval_not_authorized", "Only the run started by an owner's reply to this request's bubble can resolve it", { requestId });
+    new OpenwaToolError(
+      403,
+      "approval_not_authorized",
+      "Only a run started by an owner's own messages about this request (a reply to its bubble, or that owner's later messages in the same chat) can resolve it",
+      { requestId },
+    );
   if (!ctx.runClass || ctx.openwa?.triggerClass !== "owner") throw deny();
-  const action = await serverWakeRecord(ctx);
-  const openwa = record(record(action?.payload).openwa);
-  if (!action?.deliveryId || openwa.event !== "approval_reply" || openwa.triggerClass !== "owner" || openwa.approvalRequestId !== requestId) throw deny();
-  const [delivery] = await ctx.db
-    .select({ principalId: chatDeliveries.principalId, normalizedEvent: chatDeliveries.normalizedEvent, triggerClass: chatDeliveries.triggerClass })
-    .from(chatDeliveries)
-    .where(and(eq(chatDeliveries.companyId, ctx.endpoint.companyId), eq(chatDeliveries.endpointId, ctx.endpoint.id), eq(chatDeliveries.id, action.deliveryId)))
+  const principalId = await runOwnerPrincipal(ctx);
+  if (!principalId) throw deny();
+  const [request] = await ctx.db
+    .select({ status: chatOwnerApprovalRequests.status })
+    .from(chatOwnerApprovalRequests)
+    .where(and(eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId), eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id), eq(chatOwnerApprovalRequests.id, requestId)))
     .limit(1);
-  if (!delivery?.principalId || delivery.triggerClass !== "owner") throw deny();
+  if (!request) throw deny();
+  if (request.status !== "pending") throw new OpenwaToolError(409, "already_resolved", "This approval request has already been resolved", { requestStatus: request.status });
+  const [discussion] = await openwaApprovalDiscussions(ctx.db, { endpoint: ctx.endpoint, principalId, chatKey: ctx.origin.chatKey, requestId });
+  if (!discussion) throw deny();
   const decision = String(args.decision);
-  const conditions = str(args.conditions);
-  if (decision === "clarify") {
-    const [request] = await ctx.db
-      .select({ status: chatOwnerApprovalRequests.status })
-      .from(chatOwnerApprovalRequests)
-      .where(and(eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId), eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id), eq(chatOwnerApprovalRequests.id, requestId)))
-      .limit(1);
-    if (!request) throw new OpenwaToolError(404, "not_found", "Approval request not found");
-    if (request.status !== "pending") throw new OpenwaToolError(409, "already_resolved", "This approval request has already been resolved", { requestStatus: request.status });
-    return { requestId, status: "pending", decision: "clarify" };
-  }
-  const ownerText = str(record(record(delivery.normalizedEvent).message).text);
+  if (decision === "clarify") return { requestId, status: "pending", decision: "clarify" };
+  if (decision !== "approve" && decision !== "reject") throw badRequest("decision must be approve, reject or clarify");
+  const messages = await openwaOwnerMessagesSince(ctx.db, {
+    endpoint: ctx.endpoint,
+    principalId,
+    chatKey: ctx.origin.chatKey,
+    since: discussion.startedAt,
+    visibleBefore: ctx.run.visibleBefore,
+    deliveryIds: ctx.openwa.deliveryIds,
+  });
+  const ownerText = openwaOwnerDecisionText(messages, decision);
+  if (!ownerText)
+    throw new OpenwaToolError(
+      409,
+      "owner_decision_unclear",
+      "The owner's messages contain no explicit " + (decision === "approve" ? "approval" : "refusal") + "; keep the request pending with decision clarify and answer the owner",
+      { requestId, decision },
+    );
   try {
     const resolved = await resolveOpenwaApproval(ctx.db, {
       companyId: ctx.endpoint.companyId,
       endpointId: ctx.endpoint.id,
       requestId,
-      decision: decision as OpenwaApprovalDecision,
+      decision,
       via: "whatsapp",
-      owner: { principalId: delivery.principalId },
+      owner: { principalId },
       ownerText,
-      conditions,
+      conditions: str(args.conditions),
       runId: ctx.run.id,
       agentId: ctx.binding.agentId,
     });
@@ -643,6 +602,36 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
     if (error instanceof HttpError && error.status === 403) throw deny();
     throw error;
   }
+}
+
+/** The single owner principal behind this owner-class run's triggers in its own chat; null otherwise. */
+async function runOwnerPrincipal(ctx: ToolContext): Promise<string | null> {
+  const deliveryIds = ctx.openwa?.deliveryIds ?? [];
+  if (!deliveryIds.length) return null;
+  const rows = await ctx.db
+    .select({
+      principalId: chatDeliveries.principalId,
+      triggerClass: chatDeliveries.triggerClass,
+      principalRole: chatDeliveries.principalRole,
+      normalizedEvent: chatDeliveries.normalizedEvent,
+    })
+    .from(chatDeliveries)
+    .where(
+      and(
+        eq(chatDeliveries.companyId, ctx.endpoint.companyId),
+        eq(chatDeliveries.endpointId, ctx.endpoint.id),
+        eq(chatDeliveries.conversationId, ctx.conversation.id),
+        inArray(chatDeliveries.id, deliveryIds.slice(0, 50)),
+      ),
+    );
+  if (!rows.length) return null;
+  const principals = new Set<string>();
+  for (const row of rows) {
+    if (!row.principalId || row.triggerClass !== "owner" || row.principalRole !== "owner") return null;
+    if (openwaChatKey(str(record(row.normalizedEvent.openwa).chatKey) ?? "") !== ctx.origin.chatKey) return null;
+    principals.add(row.principalId);
+  }
+  return principals.size === 1 ? [...principals][0]! : null;
 }
 
 async function currentConversation(tx: DbOrTransaction, endpoint: EndpointRow, request: RequestRow) {
@@ -796,20 +785,6 @@ export async function resolveOpenwaApproval(
           )
           .returning({ id: chatOwnerGrants.id })
       : [];
-    if (request.interactionId) {
-      await tx
-        .update(issueThreadInteractions)
-        .set({
-          status: approved ? "accepted" : "rejected",
-          result: { version: 1, outcome: approved ? "accepted" : "rejected", reason: approved ? null : (input.ownerText ?? null) },
-          resolvedByUserId: ownerUserId,
-          resolvedByAgentId: null,
-          resolvedByRunId: null,
-          resolvedAt: now,
-          updatedAt: now,
-        })
-        .where(and(eq(issueThreadInteractions.id, request.interactionId), eq(issueThreadInteractions.companyId, input.companyId), eq(issueThreadInteractions.status, "pending")));
-    }
     await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
     const wakeActionId = await stageApprovalResolvedWake(tx, endpoint, request, {
       approved,
@@ -1188,25 +1163,6 @@ export async function cancelOpenwaApproval(
       .update(chatOwnerApprovalRequests)
       .set({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: input.userId, resolvedAt: now, updatedAt: now })
       .where(eq(chatOwnerApprovalRequests.id, request.id));
-    if (request.interactionId)
-      await tx
-        .update(issueThreadInteractions)
-        .set({
-          status: "cancelled",
-          result: { version: 1, outcome: "withdrawn", reason: "Cancelled by an endpoint owner in Paperclip" },
-          resolvedByUserId: input.userId,
-          resolvedByAgentId: null,
-          resolvedByRunId: null,
-          resolvedAt: now,
-          updatedAt: now,
-        })
-        .where(
-          and(
-            eq(issueThreadInteractions.id, request.interactionId),
-            eq(issueThreadInteractions.companyId, input.companyId),
-            eq(issueThreadInteractions.status, "pending"),
-          ),
-        );
     await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
     await recordOpenwaAudit(tx, {
       companyId: input.companyId,

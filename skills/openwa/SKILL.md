@@ -228,13 +228,21 @@ of the person you answer.
    first call. You write `messageToOwners`;
    it goes as one WhatsApp bubble to each owner approval chat. Then tell the
    requester you asked.
-2. Owners answer by replying to that bubble (quoting it) or in Paperclip. A
-   quoted owner reply starts an `approval_reply` run of class `owner`: interpret
-   the free text and call `openwa_approval_resolve({requestId, decision, conditions?})`
-   with `decision` `approve`, `reject` or `clarify` (keeps it pending). Only that
-   run may resolve that request. After approve or reject, end the run without a
-   reply: its final output is not published to the owner, and the server reacts
-   to the owner's message with ✅.
+2. Owners answer by replying to that bubble (quoting it) or in the OpenWA
+   Approvals tab. A quoted owner reply starts an `approval_reply` run of class
+   `owner`. Treat it as a conversation: when the owner asks a question, objects
+   or wants more detail, answer them in that chat (your final output is sent)
+   and keep the request pending (`decision` `clarify`). Their later messages in
+   the same chat, quoting or not, wake normal owner runs whose wake lists the
+   request under `approvalDiscussions`; those runs may resolve it too. Call
+   `openwa_approval_resolve({requestId, decision, conditions?})` with `approve` or
+   `reject` only once the owner's own words clearly decide: the server answers
+   409 `owner_decision_unclear` unless their messages in that discussion carry
+   an explicit approval (ok, oke, ya, iya, yes, boleh, setuju, acc, gas, lanjut,
+   silakan, sip, 👍, ✅) or refusal (jangan, tidak, nggak, gak, no, tolak, batal,
+   stop, reject, 👎). Member messages never count. After approve or reject, end
+   the run without a reply: its final output is not published to the owner, and
+   the server reacts to the owner's message with ✅.
 3. The result arrives as an `approval_resolved` wake in the origin chat. When
    approved, the run is class `grant` and holds the grants: carry out only the
    approved action, respecting any `conditions`, and tell the requester.
@@ -322,8 +330,9 @@ Errors carry a typed `code`:
   `chat_inactive`, `gateway_admin_disabled`, `self_session_requires_confirmation`,
   `secret_issuing_operation`, `ui_only_setting`, `linked_chat_not_allowed`.
   Do not retry without approval.
-- Approvals: `approval_not_authorized`, `approval_not_needed` (owner runs need
-  none), `approval_action_pending` (an `approval_reply` run sent to the
+- Approvals: `approval_not_authorized`, `owner_decision_unclear` (the owner's
+  words did not clearly approve or reject; use `clarify` and keep discussing),
+  `approval_not_needed` (owner runs need none), `approval_action_pending` (an `approval_reply` run sent to the
   request's chat; resolve instead, the `approval_resolved` run acts),
   `already_resolved`, `no_owner_chat`, `message_too_long`,
   `requester_unknown`.

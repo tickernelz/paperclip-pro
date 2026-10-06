@@ -1,6 +1,7 @@
 import { and, asc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
 import {
   chatActions,
+  chatAuditEntries,
   chatConversations,
   chatDeliveries,
   chatEndpointResources,
@@ -263,6 +264,21 @@ export async function decideOpenwaRunPublication(
       const runStart = run.startedAt ?? run.runCreatedAt;
       if (request && (request.status === "approved" || request.status === "rejected") && request.resolvedAt && request.resolvedAt >= runStart)
         reason = "approval_acknowledged";
+    }
+    if (!reason && runClass === "owner") {
+      const [resolvedHere] = await tx
+        .select({ id: chatAuditEntries.id })
+        .from(chatAuditEntries)
+        .where(
+          and(
+            eq(chatAuditEntries.companyId, endpoint.companyId),
+            eq(chatAuditEntries.endpointId, endpoint.id),
+            eq(chatAuditEntries.kind, "approval_resolved"),
+            eq(chatAuditEntries.runId, run.runId),
+          ),
+        )
+        .limit(1);
+      if (resolvedHere) reason = "approval_acknowledged";
     }
     const consumable: string[] = [];
     if (!reason) {

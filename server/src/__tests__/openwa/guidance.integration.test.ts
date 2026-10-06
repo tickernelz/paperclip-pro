@@ -466,13 +466,15 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(result.full).toContain("`you` is this WhatsApp number");
   });
 
-  it("opens approval_reply wakes with a headline to resolve the quoted request", async () => {
+  it("opens approval_reply wakes with a headline that resolves clear decisions and discusses anything else", async () => {
     const seed = await seedOpenwa();
     const reply = await seedDelivery(seed, { text: "ok", role: "owner", quoted: true });
     const requestId = randomUUID();
     const result = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [reply.id], event: "approval_reply", approvalRequestId: requestId });
     expect(result.full).toContain("This wake is `approval_reply`, not a normal message: an owner answered approval request `" + requestId + "`");
-    expect(result.full).toContain("a short reply such as ok or yes approves");
+    expect(result.full).toContain("If their words clearly approve");
+    expect(result.full).toContain("do not resolve: answer them here (your final output is sent to the owner)");
+    expect(result.full).not.toContain("a short reply such as ok or yes approves");
   });
 
   it("reports the reply requirement when the chat reply policy needs owner approval", async () => {

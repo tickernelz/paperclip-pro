@@ -384,29 +384,40 @@ does any other category, requester or scope. The `approval_resolved` wake
 targets the conversation issue, not a run.
 
 - **WhatsApp**: an owner replies to the bubble, quoting it. That reply starts a
-  dedicated `approval_reply` run (class `owner`). The agent interprets the free text
-  and records `approve`, `reject` or `clarify` with `openwa_approval_resolve`; only that
-  run may resolve that request, and `clarify` keeps it pending. When the request
-  was approved or rejected during that run, its final output is not published
-  to the owner (`publication_suppressed` reason `approval_acknowledged`); the
-  server reacts to the owner's reply with ✅ instead. A member quoting
-  the bubble, an owner reply without a quote, and a quote of an already-resolved
-  bubble never create a grant.
+  dedicated `approval_reply` run (class `owner`) and opens that owner's
+  discussion of the request in that chat. The agent may discuss before deciding:
+  for a question, objection or request for more information it answers the
+  owner (the run's final output is published) and the request stays pending
+  (`clarify`). The owner's later messages in the same chat, quoting or not, wake
+  ordinary owner runs whose wake event lists the request under
+  `approvalDiscussions`; any of those runs may resolve it. `openwa_approval_resolve`
+  accepts `approve` or `reject` only from an owner-class run whose triggers come
+  from one current owner in the chat where that owner quoted the bubble, and
+  only when that owner's messages since they first quoted it carry an explicit
+  approval token (ok, oke, okay, okeh, ya, iya, yes, y, boleh, setuju, approve,
+  approved, acc, gas, lanjut, lanjutkan, silakan, sip, 👍, ✅) or refusal token
+  (jangan, tidak, nggak, gak, ga, no, reject, tolak, batal, stop, 👎), compared
+  case- and punctuation-insensitively. Otherwise it returns 409
+  `owner_decision_unclear` and nothing changes. The stored `ownerText` is the
+  owner's messages from the deciding one onward. Member messages, other chats
+  and other owners' discussions never resolve a request. When the request was
+  approved or rejected during a run, its final output is not published to the
+  owner (`publication_suppressed` reason `approval_acknowledged`); the server
+  reacts to the owner's message with ✅ instead. A quote of an already-resolved
+  bubble never creates a grant.
 - **Paperclip**: the endpoint's **Approvals** tab lists requests by **Status**
   (Pending, Approved, Rejected, Cancelled, All) with origin chat, masked
   requester, scope, reminders sent and grants. Owners choose **Approve** or
   **Reject** with optional conditions or reason. API:
   `GET /api/chat-endpoints/:endpointId/openwa/approvals?status=`,
   `POST /api/chat-endpoints/:endpointId/openwa/approvals/:requestId/resolve` (body
-  `decision` `approve`|`reject`, optional `reason` up to 2000 characters). The
-  request also appears as an interaction on the conversation issue with resolver
-  policy `chat_endpoint_owner`. Only current owners may resolve; other board users
-  get 403 and see the requests view-only.
+  `decision` `approve`|`reject`, optional `reason` up to 2000 characters). No
+  card is added to the conversation issue thread. Only current owners may
+  resolve; other board users get 403 and see the requests view-only.
 - **Cancel**: an owner can withdraw a pending request with **Cancel request** in
   the Approvals tab (after a confirmation step), or through
   `POST /api/chat-endpoints/:endpointId/openwa/approvals/:requestId/cancel`. The
-  request becomes `cancelled`, its reminders stop and its interaction card is
-  withdrawn. No grant is written and the agent is not woken; its next wake simply
+  request becomes `cancelled` and its reminders stop. No grant is written and the agent is not woken; its next wake simply
   no longer lists the request as pending, and a later WhatsApp quote of the bubble
   reports it as resolved. Only current owners may cancel (others get 403); a request
   that is no longer pending returns 409 `already_resolved` with `requestStatus`.
@@ -449,7 +460,7 @@ Every call is audited as `tool_called`.
 | `openwa_get_media` | read | Store one message's media as a task attachment; returns attachment id, mime, size, `localPath` (absolute file inside the storage root, local-disk storage only) or `contentPath` (attachment API path) and transcript when available (cut to fit 16 KB with `transcriptTruncated`). |
 | `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`); query results page with `cursor`. |
 | `openwa_request_approval` | write | Ask the owners for categories; remind with `remindRequestId`. |
-| `openwa_approval_resolve` | write | Record the owner's decision; only in the run started by that owner's reply to the bubble. |
+| `openwa_approval_resolve` | write | Record the owner's decision (`approve`, `reject`, `clarify`) in an owner run of that owner's discussion; approve/reject need the owner's explicit words, else 409 `owner_decision_unclear`. |
 | `openwa_stay_silent` | write | Mark the listed (default all visible pending) triggers silenced. |
 | `openwa_handoff` | write | Hand owner triggers to a follow-up owner run with a note. |
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
@@ -752,6 +763,7 @@ the origin chat while a triggered run is active.
 | Tool error `retry_after` (429) with `retryAfterSeconds` | `pacing: true` when the gateway paced the send | WhatsApp throttling; the agent retries with the same `idempotencyKey` after the delay. The health card then shows Pacing Observed. |
 | Approval returns 409 | `already_resolved` | Another owner or surface resolved it first; the list refreshes with the winner. |
 | Approval returns 403 | | Only current owners may resolve; add and link your number under Settings → Owners. |
+| Tool error `owner_decision_unclear` (409) | `decision` in `details` | The owner's messages in the discussion carry no explicit approval or refusal; the agent keeps the request pending, answers the owner, and resolves after a clear reply. |
 | Tool error `owner_only` | | The action needs an owner-class run: audit reads, own-session stop/logout/delete, handoff of non-owner triggers, configuration from WhatsApp. |
 | Tool error `approval_required` / `reply_denied` (403) | category in `details` | The run's profile or the reply policy needs an owner grant; the agent asks with `openwa_request_approval`. |
 | Tool error `secret_issuing_operation` (403) | | Issue keys, pairing codes and QR codes in the OpenWA dashboard. |

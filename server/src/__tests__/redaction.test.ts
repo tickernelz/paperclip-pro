@@ -19,11 +19,24 @@ import {
   REDACTED_EVENT_VALUE,
   redactAgentAdapterConfig,
   redactEventPayload,
+  redactRunLogChunkText,
   redactSensitiveText,
   sanitizeRecord,
 } from "../redaction.js";
 
 describe("redaction", () => {
+  it("keeps dotted vendor mime types of WhatsApp attachments in prompts and run logs", () => {
+    const docx = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    const xlsx = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const prompt = '- {"id":"881a0a9b-29c2-4f9c-9198-2d54080bfe7b","filename":"TASK.docx","contentType":"' + docx + '"}\n"mime": "' + xlsx + '"';
+    expect(redactSensitiveText(prompt)).toBe(prompt);
+    const chunk = JSON.stringify({ type: "message_start", message: { content: [{ type: "text", text: prompt }] } }) + "\n";
+    expect(redactRunLogChunkText(chunk)).toBe(chunk);
+    expect(redactEventPayload({ media: [{ mime: docx }] })).toEqual({ media: [{ mime: docx }] });
+    const jwt = Buffer.from('{"alg":"HS256","typ":"JWT"}').toString("base64url") + ".eyJzdWIiOiIxMjM0NTY3ODkwIn0.abcdefghijklmnop";
+    expect(redactSensitiveText('"mime": "' + jwt + '"')).not.toContain(jwt);
+  });
+
   it("preserves credential-related prose, metadata, and dotted filenames", () => {
     const input = {
       body: "Keep the private key in a secret manager. Document credential handling and token permissions. Use bearer tokens for authentication. Prefer bearer authentication.",

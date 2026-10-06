@@ -94,6 +94,7 @@ const E164 = /^\+?([1-9]\d{6,14})$/;
 export type OpenwaToolErrorCode =
   | "approval_required"
   | "approval_not_authorized"
+  | "owner_decision_unclear"
   | "approval_action_pending"
   | "approval_not_needed"
   | "already_resolved"
