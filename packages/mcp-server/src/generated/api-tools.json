@@ -24115,7 +24115,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4778",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4784",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24150,7 +24150,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4705",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4711",
     "authorityCapability": null,
     "parameters": []
   },
