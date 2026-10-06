@@ -499,12 +499,12 @@ function visibleTriggerScope(ctx: ToolContext) {
   );
 }
 
-/** Ids of this run's visible pending triggers sent by principalId. */
-export async function openwaRequesterPendingTriggerIds(ctx: ToolContext, principalId: string): Promise<string[]> {
+/** Ids of this run's visible pending triggers from anyone but an owner. */
+export async function openwaPendingNonOwnerTriggerIds(ctx: ToolContext): Promise<string[]> {
   const rows = await ctx.db
     .select({ id: chatDeliveries.id })
     .from(chatDeliveries)
-    .where(and(visibleTriggerScope(ctx), eq(chatDeliveries.principalId, principalId)));
+    .where(and(visibleTriggerScope(ctx), sql`${chatDeliveries.principalRole} is distinct from 'owner'`));
   return rows.map((row) => row.id).sort();
 }
 

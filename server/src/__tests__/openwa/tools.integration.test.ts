@@ -612,6 +612,49 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends.filter((send) => send.chatId === GROUP).map((send) => send.text)).toEqual(["approved reply"]);
   });
 
+  it("opens a new reply approval when another run also sees an uncovered trigger from another sender", async () => {
+    const t = await setup();
+    const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    const principalFor = async (externalId: string) =>
+      (await db.insert(chatExternalPrincipals).values({ companyId: t.companyId, provider: "openwa", providerAccountId: endpoint!.providerAccountId!, externalId }).returning())[0]!.id;
+    const [link] = await db
+      .insert(chatIdentityLinks)
+      .values({ companyId: t.companyId, endpointId: t.endpointId, principalId: await principalFor(OTHER), paperclipUserId: t.userId, status: "linked" })
+      .returning();
+    await db.insert(chatEndpointOwners).values({ companyId: t.companyId, endpointId: t.endpointId, identityLinkId: link!.id, addedByUserId: t.userId });
+    const stranger = await principalFor(MEMBER);
+    const neighbour = await principalFor("628666000777@c.us");
+    const g = await conversation(t, GROUP, { activation: "on" });
+    const ask = (binding: { runId: string }) =>
+      executeOpenwaTool(db, binding as never, "openwa_request_approval", {
+        categories: ["reply"],
+        scope: "one_action",
+        summary: "Member asks the owner about the invoice",
+        proposedAction: "Reply that the invoice is being checked",
+        messageToOwners: "Member asked about the invoice. Approve the suggested reply?",
+        idempotencyKey: randomUUID(),
+      }) as Promise<{ requestId: string; reused?: boolean }>;
+    const ownerBubbles = () => t.gateway.sends.filter((send) => send.chatId === OTHER).length;
+    const covered = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: [] });
+    const runA = await run(t, g, { triggerClass: "other", requesterPrincipalId: stranger });
+    const first = await ask(runA);
+    expect(ownerBubbles()).toBe(1);
+    const uncovered = await trigger(t, g, { triggerClass: "other", role: "outside_allowlist", principalId: neighbour, rules: [], event: "owner_absent" });
+    const runB = await run(t, g, { triggerClass: "other", event: "owner_absent", requesterPrincipalId: stranger });
+    const second = await ask(runB);
+    expect(second.requestId).not.toBe(first.requestId);
+    expect(second).not.toHaveProperty("reused");
+    expect(ownerBubbles()).toBe(2);
+    const audits = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_requested")));
+    expect(audits.find((entry) => entry.runId === runB.runId)!.metadata).toMatchObject({ requestId: second.requestId });
+    expect(((audits.find((entry) => entry.runId === runB.runId)!.metadata as { coveredDeliveryIds: string[] }).coveredDeliveryIds).sort()).toEqual(
+      [covered.id, uncovered.id].sort(),
+    );
+  });
+
   it("mints an auto-added reply_outside_allowlist as a one_action grant on a requester-scoped approval", async () => {
     const t = await setup();
     const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));

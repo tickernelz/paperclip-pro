@@ -375,8 +375,8 @@ grant is always `one_action`, even on a `requester` request. A run that asks
 only for `reply`/`reply_outside_allowlist` while a reply-only request for the
 same chat and scope is pending gets that request back (`reused: true`) with the
 missing categories added, and no second bubble is sent, when this run made it,
-or when another run made it for the same requester and every pending trigger of
-that requester visible to this run is already covered by it (audit
+or when another run made it for the same requester and every pending non-owner
+trigger visible to this run, from any sender, is already covered by it (audit
 `approval_requested` metadata `coveredDeliveryIds`). The merge is audited with
 `merged: true`, plus `requestedInRunId` when another run made it. A new message
 from the requester that the owner never saw gets its own request and bubble, as

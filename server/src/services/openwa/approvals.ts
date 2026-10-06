@@ -40,7 +40,7 @@ import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner 
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { cancelApprovalReminders, scheduleApprovalReminders } from "./scheduled-wakes.js";
 import { createOpenwaWrite, finishOpenwaWrite, openwaToolArgsHash, openwaWriteHashMatches, openwaWriteReplay, type OpenwaWriteScope } from "./tool-writes.js";
-import { OpenwaToolError, openwaRequesterPendingTriggerIds, replyRequirementGaps, type ToolContext } from "./tools.js";
+import { OpenwaToolError, openwaPendingNonOwnerTriggerIds, replyRequirementGaps, type ToolContext } from "./tools.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -419,7 +419,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
       await tx.execute(
         sql`select pg_advisory_xact_lock(hashtextextended(${"openwa-approval:" + ctx.endpoint.id + ":" + (replyOnlyRequest ? "reply" : ctx.run.id) + ":" + ctx.origin.chatKey}, 0))`,
       );
-      const coveredDeliveryIds = requesterPrincipalId ? await openwaRequesterPendingTriggerIds(ctx, requesterPrincipalId) : [];
+      const coveredDeliveryIds = await openwaPendingNonOwnerTriggerIds(ctx);
       const candidates = replyOnlyRequest
         ? (
             await tx

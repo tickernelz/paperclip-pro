@@ -195,11 +195,11 @@ of the person you answer.
    request's scope. A call asking only for `reply` and/or
    `reply_outside_allowlist`, while a reply-only request for this chat with
    the same scope is pending from this run, or from an earlier run for the same
-   requester that already covers every pending message of theirs you see (for
-   example an `owner_absent` wake on the message the first run asked about),
-   sends no new bubble: it adds the missing categories and returns that
-   `requestId` with `reused: true`. A new message from that requester, any
-   other category, or another requester gets its own request and bubble. `scope` is `one_action`
+   requester that already covers every pending non-owner message you see, from
+   anyone (for example an `owner_absent` wake on the message the first run
+   asked about), sends no new bubble: it adds the missing categories and
+   returns that `requestId` with `reused: true`. A new message from anyone,
+   any other category, or another requester gets its own request and bubble. `scope` is `one_action`
    (default: one gated call, made by the run created from this request; a
    `create_task` grant creates exactly one task) or `requester` (this
    requester in this chat until the grant expires). When the approved action
