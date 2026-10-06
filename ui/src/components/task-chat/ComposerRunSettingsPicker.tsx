@@ -470,7 +470,7 @@ export function ComposerRunSettingsPicker({
   );
 
   const agentsBody = (
-    <div className="flex min-w-0 flex-col p-2">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col p-2">
       <div className="flex items-center gap-2 px-1 py-1.5">
         <button
           type="button"
@@ -535,7 +535,7 @@ export function ComposerRunSettingsPicker({
   );
 
   const modelBody = (
-    <div className="flex min-w-0 flex-col p-2">
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col p-2">
       <div className="flex items-center gap-2 px-1 py-1.5">
         <button
           type="button"
