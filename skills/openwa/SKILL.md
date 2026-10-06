@@ -236,11 +236,14 @@ of the person you answer.
    the same chat, quoting or not, wake normal owner runs whose wake lists the
    request under `approvalDiscussions`; those runs may resolve it too. Call
    `openwa_approval_resolve({requestId, decision, conditions?})` with `approve` or
-   `reject` only once the owner's own words clearly decide: the server answers
-   409 `owner_decision_unclear` unless their messages in that discussion carry
-   an explicit approval (ok, oke, ya, iya, yes, boleh, setuju, acc, gas, lanjut,
-   silakan, sip, 👍, ✅) or refusal (jangan, tidak, nggak, gak, no, tolak, batal,
-   stop, reject, 👎). Member messages never count. After approve or reject, end
+   `reject` only once the owner's own words clearly decide. The server answers
+   409 `owner_decision_unclear` unless the owner's latest decisive message about
+   that request opens with an approval word (ok, oke, ya, iya, yes, boleh,
+   setuju, acc, gas, lanjut, silakan, sip, 👍, ✅) or a refusal word (jangan,
+   tidak, nggak, gak, no, tolak, batal, stop, reject, 👎) matching your decision.
+   Later words are conditions ("boleh, tapi jangan sebut harga" approves; pass
+   them in `conditions`). With several requests under discussion, an unquoted
+   "ok" decides none of them. Member messages never count. After approve or reject, end
    the run without a reply: its final output is not published to the owner, and
    the server reacts to the owner's message with ✅.
 3. The result arrives as an `approval_resolved` wake in the origin chat. When

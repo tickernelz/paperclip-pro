@@ -591,7 +591,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const first = await requestApproval(runA.binding, { message: "First request" });
     const second = await requestApproval((await runStart(t, wakeA)).binding, { categories: ["external_tools"], message: "Second request" });
     const [secondBubble] = await bubbleIds(second.requestId);
-    const reply = await admitted(t, { chatId: jid(OWNER_PHONE), body: "yang kedua tolak saja", extra: { quotedMessage: { id: secondBubble, body: "Second request" } } });
+    const reply = await admitted(t, { chatId: jid(OWNER_PHONE), body: "tolak, yang kedua jangan dulu", extra: { quotedMessage: { id: secondBubble, body: "Second request" } } });
     expect(reply.request.payload).toMatchObject({ openwa: { event: "approval_reply", approvalRequestId: second.requestId } });
     const replyRun = await runStart(t, reply);
     const wrong = await failure(executeOpenwaTool(db, replyRun.binding, "openwa_approval_resolve", { requestId: first.requestId, decision: "approve" }));
@@ -1066,6 +1066,101 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(await executeOpenwaTool(db, sameChatRun.binding, "openwa_approval_resolve", { requestId: created.requestId, decision: "approve" })).toMatchObject({
       status: "approved",
     });
+  }, 120_000);
+
+  it("scopes owner words to one request: unquoted ok only counts for the single open discussion, and the latest decisive message wins", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta dua hal" });
+    const runA = await runStart(t, wakeA);
+    const first = await requestApproval(runA.binding, { message: "First request" });
+    const second = await requestApproval((await runStart(t, wakeA)).binding, { categories: ["external_tools"], message: "Second request" });
+    const [firstBubble] = await bubbleIds(first.requestId);
+    const [secondBubble] = await bubbleIds(second.requestId);
+    const resolve = async (wake: Awaited<ReturnType<typeof admitted>>, requestId: string, decision: string) =>
+      executeOpenwaTool(db, (await runStart(t, wake)).binding, "openwa_approval_resolve", { requestId, decision });
+
+    await admitted(t, { chatId: jid(OWNER_PHONE), body: "berapa biayanya?", extra: { quotedMessage: { id: firstBubble, body: "x" } } });
+    await admitted(t, { chatId: jid(OWNER_PHONE), body: "yang ini untuk apa?", extra: { quotedMessage: { id: secondBubble, body: "x" } } });
+    const plainOk = await admitted(t, { chatId: jid(OWNER_PHONE), body: "ok" });
+    const plainRun = await runStart(t, plainOk);
+    for (const requestId of [first.requestId, second.requestId])
+      expect(codeOf(await failure(executeOpenwaTool(db, plainRun.binding, "openwa_approval_resolve", { requestId, decision: "approve" })))).toBe("owner_decision_unclear");
+
+    await admitted(t, { chatId: jid(OWNER_PHONE), body: "ok, berapa biayanya?", extra: { quotedMessage: { id: firstBubble, body: "x" } } });
+    const refused = await admitted(t, { chatId: jid(OWNER_PHONE), body: "tolak", extra: { quotedMessage: { id: firstBubble, body: "x" } } });
+    expect(codeOf(await failure(resolve(refused, first.requestId, "approve")))).toBe("owner_decision_unclear");
+
+    const quotedOk = await admitted(t, { chatId: jid(OWNER_PHONE), body: "ok lanjut", extra: { quotedMessage: { id: secondBubble, body: "x" } } });
+    const quotedRun = await runStart(t, quotedOk);
+    expect(codeOf(await failure(executeOpenwaTool(db, quotedRun.binding, "openwa_approval_resolve", { requestId: first.requestId, decision: "approve" })))).toBe(
+      "owner_decision_unclear",
+    );
+    expect(await executeOpenwaTool(db, quotedRun.binding, "openwa_approval_resolve", { requestId: second.requestId, decision: "approve" })).toMatchObject({ status: "approved" });
+    expect((await requestRow(first.requestId)).status).toBe("pending");
+
+    const conditional = await admitted(t, { chatId: jid(OWNER_PHONE), body: "tolak, jangan dibuat" });
+    expect(await resolve(conditional, first.requestId, "reject")).toMatchObject({ status: "rejected" });
+    expect(await requestRow(first.requestId)).toMatchObject({ status: "rejected", ownerText: "tolak, jangan dibuat" });
+    expect(await grantsOf(first.requestId)).toEqual([]);
+  }, 120_000);
+
+  it("rejects 'jangan dulu' as an approval but accepts it as a refusal", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "buat task" });
+    const created = await requestApproval((await runStart(t, wakeA)).binding);
+    const [bubbleId] = await bubbleIds(created.requestId);
+    const reply = await admitted(t, { chatId: jid(OWNER_PHONE), body: "jangan dulu, nanti saja", extra: { quotedMessage: { id: bubbleId, body: "x" } } });
+    const replyRun = await runStart(t, reply);
+    expect(codeOf(await failure(executeOpenwaTool(db, replyRun.binding, "openwa_approval_resolve", { requestId: created.requestId, decision: "approve" })))).toBe(
+      "owner_decision_unclear",
+    );
+    expect(await executeOpenwaTool(db, replyRun.binding, "openwa_approval_resolve", { requestId: created.requestId, decision: "reject" })).toMatchObject({
+      status: "rejected",
+    });
+  }, 120_000);
+
+  it("closes a legacy pending OpenWA card on resolve and cancel, and leaves other cards alone", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "buat task" });
+    const runA = await runStart(t, wakeA);
+    const legacyCard = async (requestId: string) => {
+      const [card] = await db
+        .insert(issueThreadInteractions)
+        .values({
+          companyId: t.companyId,
+          issueId: runA.issueId,
+          kind: "request_confirmation",
+          status: "pending",
+          continuationPolicy: "none",
+          requestedResolverPolicy: "chat_endpoint_owner",
+          effectiveResolverPolicy: "chat_endpoint_owner",
+          resolverPolicyProvenance: "explicit",
+          effectiveResolverPolicySource: "requested",
+          payload: { version: 1, prompt: "Approve: legacy", openwaApprovalRequestId: requestId },
+        })
+        .returning();
+      await db.update(chatOwnerApprovalRequests).set({ interactionId: card!.id }).where(eq(chatOwnerApprovalRequests.id, requestId));
+      return card!.id;
+    };
+    const resolvedRequest = await requestApproval(runA.binding);
+    const resolvedCard = await legacyCard(resolvedRequest.requestId);
+    const cancelledRequest = await requestApproval(runA.binding, { message: "Second" });
+    const cancelledCard = await legacyCard(cancelledRequest.requestId);
+    const [bystander] = await db
+      .insert(issueThreadInteractions)
+      .values({ companyId: t.companyId, issueId: runA.issueId, kind: "request_confirmation", status: "pending", continuationPolicy: "none", payload: { version: 1, prompt: "Other" } })
+      .returning();
+
+    const resolved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + resolvedRequest.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(resolved.status).toBe(200);
+    const cancelled = await supertest(channelApp(t, t.userId)).post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + cancelledRequest.requestId + "/cancel").send({});
+    expect(cancelled.status).toBe(200);
+    const status = async (id: string) => (await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, id)))[0]!;
+    expect(await status(resolvedCard)).toMatchObject({ status: "accepted", resolvedByUserId: t.userId });
+    expect(await status(cancelledCard)).toMatchObject({ status: "cancelled", result: expect.objectContaining({ outcome: "withdrawn" }) });
+    expect(await status(bystander!.id)).toMatchObject({ status: "pending" });
   }, 120_000);
 
   it("keeps issue-thread cards for confirmations outside OpenWA owner approvals", async () => {

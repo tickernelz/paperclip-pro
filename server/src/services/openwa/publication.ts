@@ -6,7 +6,6 @@ import {
   chatDeliveries,
   chatEndpointResources,
   chatEndpoints,
-  chatOwnerApprovalRequests,
   chatOwnerGrants,
   chatPublications,
   heartbeatRuns,
@@ -91,12 +90,6 @@ function runGrantIds(contextSnapshot: unknown): Set<string> {
 function runEvent(contextSnapshot: unknown): string | null {
   const event = record(record(contextSnapshot).paperclipOpenwa).event;
   return typeof event === "string" ? event : null;
-}
-
-function runApprovalRequestId(contextSnapshot: unknown): string | null {
-  const snapshot = record(contextSnapshot);
-  const id = record(snapshot.openwa).approvalRequestId ?? record(snapshot.paperclipOpenwa).approvalRequestId;
-  return typeof id === "string" && id ? id : null;
 }
 
 function triggerWaMessageId(normalizedEvent: Record<string, unknown>): string | null {
@@ -248,23 +241,6 @@ export async function decideOpenwaRunPublication(
     let reason: OpenwaSuppressionReason | null = runClass ? null : "no_openwa_context";
     if (!reason && UNSUCCESSFUL_RUN_STATUSES.has(run.status)) reason = "run_not_succeeded";
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
-    const approvalRequestId = runEvent(run.contextSnapshot) === "approval_reply" ? runApprovalRequestId(run.contextSnapshot) : null;
-    if (!reason && approvalRequestId) {
-      const [request] = await tx
-        .select({ status: chatOwnerApprovalRequests.status, resolvedAt: chatOwnerApprovalRequests.resolvedAt })
-        .from(chatOwnerApprovalRequests)
-        .where(
-          and(
-            eq(chatOwnerApprovalRequests.companyId, endpoint.companyId),
-            eq(chatOwnerApprovalRequests.endpointId, endpoint.id),
-            eq(chatOwnerApprovalRequests.id, approvalRequestId),
-          ),
-        )
-        .limit(1);
-      const runStart = run.startedAt ?? run.runCreatedAt;
-      if (request && (request.status === "approved" || request.status === "rejected") && request.resolvedAt && request.resolvedAt >= runStart)
-        reason = "approval_acknowledged";
-    }
     if (!reason && runClass === "owner") {
       const [resolvedHere] = await tx
         .select({ id: chatAuditEntries.id })

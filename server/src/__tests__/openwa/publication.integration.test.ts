@@ -675,6 +675,14 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
       event: "approval_reply",
       approvalRequestId: resolved.id,
     });
+    await db.insert(chatAuditEntries).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      kind: "approval_resolved",
+      actorKind: "chat_principal",
+      runId: run.runId,
+      metadata: { requestId: resolved.id, decision: "approved", via: "whatsapp" },
+    });
     await drain(t);
     expect(t.gateway.sends).toHaveLength(0);
     expect((await publicationState(run.publicationId)).state).toBe("cancelled");
@@ -734,6 +742,47 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect((await publicationState(run.publicationId)).state).toBe("cancelled");
     expect((await audits(t, "publication_suppressed")).map((entry) => entry.metadata)).toEqual([expect.objectContaining({ reason: "approval_acknowledged" })]);
     expect(t.gateway.reactions).toEqual([{ chatId: MEMBER, messageId: decision.waMessageId, emoji: "✅" }]);
+  }, 90_000);
+
+  it("still delivers a clarify run's answer when the request was resolved in the Approvals tab during that run", async () => {
+    const t = await setup();
+    const dm = await conversation(t, MEMBER);
+    const ownerPrincipal = await principal(t, "628999000557");
+    const question = await trigger(t, dm, { triggerClass: "owner", role: "owner" });
+    const [request] = await db
+      .insert(chatOwnerApprovalRequests)
+      .values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        originChatKey: openwaChatKey(GROUP),
+        requestedByPrincipalId: ownerPrincipal,
+        categories: ["create_task"],
+        scope: "one_action",
+        summary: "task",
+        proposedAction: "task",
+      })
+      .returning();
+    const run = await runOutput(t, dm, {
+      triggerClass: "owner",
+      body: "PDF-nya sudah saya baca, isinya daftar task after sales.",
+      deliveryIds: [question.id],
+      event: "approval_reply",
+      approvalRequestId: request!.id,
+    });
+    await db.update(chatOwnerApprovalRequests).set({ status: "approved", resolvedVia: "paperclip", resolvedAt: new Date() }).where(eq(chatOwnerApprovalRequests.id, request!.id));
+    await db.insert(chatAuditEntries).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      kind: "approval_resolved",
+      actorKind: "user",
+      runId: null,
+      metadata: { requestId: request!.id, decision: "approved", via: "paperclip" },
+    });
+    await drain(t);
+    expect(t.gateway.sends.map((send) => send.text)).toEqual(["PDF-nya sudah saya baca, isinya daftar task after sales."]);
+    expect((await publicationState(run.publicationId)).state).not.toBe("cancelled");
+    expect(await audits(t, "publication_suppressed")).toEqual([]);
+    expect(t.gateway.reactions).toEqual([]);
   }, 90_000);
 
   it("sends more than three parts as a markdown document and agent files as documents", async () => {

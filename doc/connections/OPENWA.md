@@ -392,15 +392,20 @@ targets the conversation issue, not a run.
   ordinary owner runs whose wake event lists the request under
   `approvalDiscussions`; any of those runs may resolve it. `openwa_approval_resolve`
   accepts `approve` or `reject` only from an owner-class run whose triggers come
-  from one current owner in the chat where that owner quoted the bubble, and
-  only when that owner's messages since they first quoted it carry an explicit
-  approval token (ok, oke, okay, okeh, ya, iya, yes, y, boleh, setuju, approve,
-  approved, acc, gas, lanjut, lanjutkan, silakan, sip, 👍, ✅) or refusal token
-  (jangan, tidak, nggak, gak, ga, no, reject, tolak, batal, stop, 👎), compared
-  case- and punctuation-insensitively. Otherwise it returns 409
-  `owner_decision_unclear` and nothing changes. The stored `ownerText` is the
-  owner's messages from the deciding one onward. Member messages, other chats
-  and other owners' discussions never resolve a request. When the request was
+  from one current owner in the chat where that owner quoted the bubble. The
+  server reads that owner's messages about the request since they first quoted
+  it: quotes of its bubble, plus unquoted messages while it is the only request
+  that owner is discussing in that chat. The latest message that opens with a
+  decision word decides. It must start with an approval word (ok, oke, okay,
+  okeh, ya, iya, yes, y, boleh, setuju, approve, approved, acc, gas, lanjut,
+  lanjutkan, silakan, sip, 👍, ✅) or a refusal word (jangan, tidak, nggak, gak,
+  ga, no, reject, tolak, batal, stop, 👎). Its first clause (up to a comma,
+  "tapi" or "but") must not hold the opposite or end in a question mark. Later
+  words are conditions, so "boleh, tapi jangan sebut harga" approves. If that
+  message decides the other way, or no message decides, the tool returns 409
+  `owner_decision_unclear` and nothing changes. The stored `ownerText` is that
+  deciding message. Member messages, other chats and other owners' discussions
+  never resolve a request. When the request was
   approved or rejected during a run, its final output is not published to the
   owner (`publication_suppressed` reason `approval_acknowledged`); the server
   reacts to the owner's message with ✅ instead. A quote of an already-resolved
@@ -763,7 +768,7 @@ the origin chat while a triggered run is active.
 | Tool error `retry_after` (429) with `retryAfterSeconds` | `pacing: true` when the gateway paced the send | WhatsApp throttling; the agent retries with the same `idempotencyKey` after the delay. The health card then shows Pacing Observed. |
 | Approval returns 409 | `already_resolved` | Another owner or surface resolved it first; the list refreshes with the winner. |
 | Approval returns 403 | | Only current owners may resolve; add and link your number under Settings → Owners. |
-| Tool error `owner_decision_unclear` (409) | `decision` in `details` | The owner's messages in the discussion carry no explicit approval or refusal; the agent keeps the request pending, answers the owner, and resolves after a clear reply. |
+| Tool error `owner_decision_unclear` (409) | `decision` in `details` | The owner's latest decisive message about the request does not open with a matching approval or refusal word (or an unquoted reply was ambiguous between several requests); the agent keeps the request pending, answers the owner, and resolves after a clear reply. |
 | Tool error `owner_only` | | The action needs an owner-class run: audit reads, own-session stop/logout/delete, handoff of non-owner triggers, configuration from WhatsApp. |
 | Tool error `approval_required` / `reply_denied` (403) | category in `details` | The run's profile or the reply policy needs an owner grant; the agent asks with `openwa_request_approval`. |
 | Tool error `secret_issuing_operation` (403) | | Issue keys, pairing codes and QR codes in the OpenWA dashboard. |

@@ -29,6 +29,7 @@ export interface OpenwaApprovalDiscussion {
 export interface OpenwaOwnerMessage {
   deliveryId: string;
   text: string;
+  quotedRequestId: string | null;
 }
 
 function record(value: unknown): Record<string, unknown> {
@@ -39,15 +40,38 @@ function str(value: unknown): string | null {
   return typeof value === "string" && value.trim() ? value.trim() : null;
 }
 
-/** True when the owner's words carry an explicit approval (approve) or refusal (reject) token. */
-export function openwaOwnerWordsDecide(text: string, decision: OpenwaOwnerDecision): boolean {
-  const normalized = text.normalize("NFKC").toLowerCase();
-  if ((decision === "approve" ? AFFIRMATIVE_SYMBOLS : NEGATIVE_SYMBOLS).some((symbol) => normalized.includes(symbol))) return true;
+const CLAUSE_END = /[,.;:!?\n]|\s(?:tapi|but|namun|asal|asalkan)\s/u;
+
+function clauseWords(clause: string): string[] {
+  return clause.replace(/[^\p{L}\p{N}]+/gu, " ").trim().split(" ").filter(Boolean);
+}
+
+function clauseHas(clause: string, decision: OpenwaOwnerDecision): boolean {
   const words = decision === "approve" ? AFFIRMATIVE_WORDS : NEGATIVE_WORDS;
-  return normalized
-    .replace(/[^\p{L}\p{N}]+/gu, " ")
-    .split(" ")
-    .some((word) => words.has(word));
+  return (decision === "approve" ? AFFIRMATIVE_SYMBOLS : NEGATIVE_SYMBOLS).some((symbol) => clause.includes(symbol)) || clauseWords(clause).some((word) => words.has(word));
+}
+
+/** The decision an owner message opens with: its first word (or a leading 👍/✅/👎), unless that clause is a question or also holds the opposite; null otherwise. */
+export function openwaOwnerMessageDecision(text: string): OpenwaOwnerDecision | null {
+  const normalized = text.normalize("NFKC").toLowerCase().trim();
+  const end = CLAUSE_END.exec(normalized);
+  const clause = end ? normalized.slice(0, end.index) : normalized;
+  if (end?.[0] === "?") return null;
+  const first = clause.trim();
+  const firstWord = clauseWords(clause)[0] ?? "";
+  const approves = AFFIRMATIVE_SYMBOLS.some((symbol) => first.startsWith(symbol)) || AFFIRMATIVE_WORDS.has(firstWord);
+  const rejects = NEGATIVE_SYMBOLS.some((symbol) => first.startsWith(symbol)) || NEGATIVE_WORDS.has(firstWord);
+  if (approves === rejects) return null;
+  const decision: OpenwaOwnerDecision = approves ? "approve" : "reject";
+  return clauseHas(clause, decision === "approve" ? "reject" : "approve") ? null : decision;
+}
+
+function opensWithDecision(text: string): boolean {
+  const normalized = text.normalize("NFKC").toLowerCase().trim();
+  const end = CLAUSE_END.exec(normalized);
+  const clause = end ? normalized.slice(0, end.index) : normalized;
+  const firstWord = clauseWords(clause)[0] ?? "";
+  return [...AFFIRMATIVE_SYMBOLS, ...NEGATIVE_SYMBOLS].some((symbol) => clause.trim().startsWith(symbol)) || AFFIRMATIVE_WORDS.has(firstWord) || NEGATIVE_WORDS.has(firstWord);
 }
 
 /** Pending requests this owner principal opened by quoting their bubble in this chat; the first quoting reply starts the discussion. */
@@ -157,22 +181,24 @@ export async function openwaOwnerMessagesSince(
     }),
   );
   return messages.map((row) => {
-    const waId = str(record(row.normalizedEvent.openwa).waMessageId);
+    const openwa = record(row.normalizedEvent.openwa);
+    const waId = str(openwa.waMessageId);
     const text = [str(record(row.normalizedEvent.message).text), ...(waId ? (transcripts.get(waId) ?? []) : [])].filter(Boolean).join("\n");
-    return { deliveryId: row.id, text };
+    return { deliveryId: row.id, text, quotedRequestId: openwa.event === "approval_reply" ? str(record(openwa.approval).requestId) : null };
   });
 }
 
-/** Owner text behind the decision, from the latest message with an explicit token to the newest message; null without one. */
+/** The owner's messages that speak to this request: quotes of its bubble, and unquoted messages while it is the only open discussion. */
+export function openwaRequestMessages(messages: readonly OpenwaOwnerMessage[], requestId: string, openDiscussions: number): OpenwaOwnerMessage[] {
+  return messages.filter((message) => (message.quotedRequestId ? message.quotedRequestId === requestId : openDiscussions === 1));
+}
+
+/** Text of the owner's latest message that opens with a decision, when that decision is this one; null otherwise. */
 export function openwaOwnerDecisionText(messages: readonly OpenwaOwnerMessage[], decision: OpenwaOwnerDecision): string | null {
   for (let index = messages.length - 1; index >= 0; index--) {
-    if (!openwaOwnerWordsDecide(messages[index]!.text, decision)) continue;
-    const text = messages
-      .slice(index)
-      .map((message) => message.text)
-      .filter(Boolean)
-      .join("\n");
-    return text.slice(0, MAX_OWNER_TEXT);
+    const text = messages[index]!.text;
+    if (!opensWithDecision(text)) continue;
+    return openwaOwnerMessageDecision(text) === decision ? text.slice(0, MAX_OWNER_TEXT) : null;
   }
   return null;
 }

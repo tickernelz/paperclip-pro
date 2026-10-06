@@ -11,6 +11,7 @@ import {
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   heartbeatRuns,
+  issueThreadInteractions,
   issues,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -34,7 +35,7 @@ import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { formatOpenwaPublication } from "./format.js";
 import { OpenwaGatewayError } from "./gateway.js";
 import { maskOpenwaDigits } from "./guidance.js";
-import { openwaApprovalDiscussions, openwaOwnerDecisionText, openwaOwnerMessagesSince } from "./approval-discussions.js";
+import { openwaApprovalDiscussions, openwaOwnerDecisionText, openwaOwnerMessagesSince, openwaRequestMessages } from "./approval-discussions.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner } from "./owners.js";
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
@@ -561,7 +562,8 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
     .limit(1);
   if (!request) throw deny();
   if (request.status !== "pending") throw new OpenwaToolError(409, "already_resolved", "This approval request has already been resolved", { requestStatus: request.status });
-  const [discussion] = await openwaApprovalDiscussions(ctx.db, { endpoint: ctx.endpoint, principalId, chatKey: ctx.origin.chatKey, requestId });
+  const discussions = await openwaApprovalDiscussions(ctx.db, { endpoint: ctx.endpoint, principalId, chatKey: ctx.origin.chatKey });
+  const discussion = discussions.find((entry) => entry.requestId === requestId);
   if (!discussion) throw deny();
   const decision = String(args.decision);
   if (decision === "clarify") return { requestId, status: "pending", decision: "clarify" };
@@ -574,12 +576,14 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
     visibleBefore: ctx.run.visibleBefore,
     deliveryIds: ctx.openwa.deliveryIds,
   });
-  const ownerText = openwaOwnerDecisionText(messages, decision);
+  const ownerText = openwaOwnerDecisionText(openwaRequestMessages(messages, requestId, discussions.length), decision);
   if (!ownerText)
     throw new OpenwaToolError(
       409,
       "owner_decision_unclear",
-      "The owner's messages contain no explicit " + (decision === "approve" ? "approval" : "refusal") + "; keep the request pending with decision clarify and answer the owner",
+      "The owner's latest decisive message about this request does not open with an explicit " +
+        (decision === "approve" ? "approval" : "refusal") +
+        "; keep the request pending with decision clarify and answer the owner",
       { requestId, decision },
     );
   try {
@@ -785,6 +789,19 @@ export async function resolveOpenwaApproval(
           )
           .returning({ id: chatOwnerGrants.id })
       : [];
+    if (request.interactionId)
+      await tx
+        .update(issueThreadInteractions)
+        .set({
+          status: approved ? "accepted" : "rejected",
+          result: { version: 1, outcome: approved ? "accepted" : "rejected", reason: approved ? null : (input.ownerText ?? null) },
+          resolvedByUserId: ownerUserId,
+          resolvedByAgentId: null,
+          resolvedByRunId: null,
+          resolvedAt: now,
+          updatedAt: now,
+        })
+        .where(and(eq(issueThreadInteractions.id, request.interactionId), eq(issueThreadInteractions.companyId, input.companyId), eq(issueThreadInteractions.status, "pending")));
     await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
     const wakeActionId = await stageApprovalResolvedWake(tx, endpoint, request, {
       approved,
@@ -1163,6 +1180,19 @@ export async function cancelOpenwaApproval(
       .update(chatOwnerApprovalRequests)
       .set({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: input.userId, resolvedAt: now, updatedAt: now })
       .where(eq(chatOwnerApprovalRequests.id, request.id));
+    if (request.interactionId)
+      await tx
+        .update(issueThreadInteractions)
+        .set({
+          status: "cancelled",
+          result: { version: 1, outcome: "withdrawn", reason: "Cancelled by an endpoint owner in Paperclip" },
+          resolvedByUserId: input.userId,
+          resolvedByAgentId: null,
+          resolvedByRunId: null,
+          resolvedAt: now,
+          updatedAt: now,
+        })
+        .where(and(eq(issueThreadInteractions.id, request.interactionId), eq(issueThreadInteractions.companyId, input.companyId), eq(issueThreadInteractions.status, "pending")));
     await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
     await recordOpenwaAudit(tx, {
       companyId: input.companyId,
