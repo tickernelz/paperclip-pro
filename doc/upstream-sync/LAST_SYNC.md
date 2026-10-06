@@ -8,7 +8,7 @@
 | Previous merge base | `7b7c4d4172d6aac14919e2682b702ae87bc17653` |
 | Date | 2026-10-06 |
 | Fork branch | `sync/upstream-20261006` (from `origin/main` `93e85185c`) |
-| Fork merge commit | see the first-parent merge `merge: sync upstream paperclipai/paperclip master (81cd03b3b)` on this branch (`git log --merges -1 --format=%H -- doc/upstream-sync/LAST_SYNC.md`) |
+| Fork merge commit | `dde142577813f8a0207e1fe02c8a9a760301cfcf` (parents: fork `c74245d68`, upstream-renamed `5c49b4529` whose parent is upstream `81cd03b3b`) |
 | Conflict decisions | [2026-10-06-conflicts.md](2026-10-06-conflicts.md) |
 
 The next sync starts from `81cd03b3b542ea4af291ef56d5084fbf6410eb9c`: `git log 81cd03b3b..upstream/master`. `git merge-base HEAD upstream/master` should return that SHA.
