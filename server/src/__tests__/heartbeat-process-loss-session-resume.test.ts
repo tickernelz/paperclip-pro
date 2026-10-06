@@ -24,6 +24,7 @@ import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.j
 import type * as AdaptersModule from "../adapters/index.ts";
 
 const SAVED_SESSION_ID = "saved-session";
+const instructionOperator = { type: "board", userId: "local-board", source: "local_implicit" } as const;
 
 const savedSessionResult = {
   exitCode: 0,
@@ -59,7 +60,8 @@ vi.mock("../adapters/index.ts", async () => {
 
 import { runningProcesses } from "../adapters/index.ts";
 import { heartbeatService, resetHeartbeatServerShutdownForTests } from "../services/heartbeat.ts";
-import { agentInstructionsService } from "../services/agent-instructions.ts";
+import { agentInstructionRevisionService } from "../services/agent-instruction-revisions.ts";
+import { resolveManagedInstructionsRoot } from "../services/agent-instructions.ts";
 import { agentService } from "../services/agents.ts";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -81,9 +83,14 @@ type AdapterInput = {
 describeEmbeddedPostgres("process-loss continuation session resume", () => {
   let db!: Db;
   let tempDb: EmbeddedPostgresTestDatabase | null = null;
-  const tempRoots: string[] = [];
+  const previousHome = process.env.PAPERCLIP_HOME;
+  let paperclipHome: string | null = null;
 
   beforeAll(async () => {
+    paperclipHome = await fs.realpath(
+      await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-process-loss-home-")),
+    );
+    process.env.PAPERCLIP_HOME = paperclipHome;
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-process-loss-session-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
@@ -93,27 +100,24 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     await drainHeartbeatRunsToQuiescence(db, heartbeatService(db));
     runningProcesses.clear();
     mockAdapterExecute.mockReset();
-    while (tempRoots.length > 0) {
-      const root = tempRoots.pop();
-      if (root) await fs.rm(root, { recursive: true, force: true });
-    }
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
+    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
+    else process.env.PAPERCLIP_HOME = previousHome;
+    if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
   });
 
   async function seedAgentWithSavedSession(adapterType = "codex_local") {
     mockAdapterExecute.mockImplementation(async () => savedSessionResult);
-    const instructionsRoot = await fs.mkdtemp(
-      path.join(os.tmpdir(), "paperclip-process-loss-instructions-"),
-    );
-    tempRoots.push(instructionsRoot);
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const instructionsRoot = resolveManagedInstructionsRoot({ id: agentId, companyId, name: "Irfan", adapterConfig: {} });
+    await fs.mkdir(instructionsRoot, { recursive: true });
     const instructionsPath = path.join(instructionsRoot, "AGENTS.md");
     await fs.writeFile(instructionsPath, "You are Irfan. Version one.\n", "utf8");
 
-    const companyId = randomUUID();
-    const agentId = randomUUID();
     const issueId = randomUUID();
     const issuePrefix = `S${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
     await db.insert(companies).values({
@@ -132,6 +136,9 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       adapterType,
       adapterConfig: {
         model: "model-a",
+        instructionsBundleMode: "managed",
+        instructionsRootPath: instructionsRoot,
+        instructionsEntryFile: "AGENTS.md",
         instructionsFilePath: instructionsPath,
         promptTemplate: "Continue the assigned work.",
       },
@@ -146,6 +153,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       priority: "medium",
       assigneeAgentId: agentId,
       responsibleUserId: "responsible-user",
+      monitorNextCheckAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
       issueNumber: 1,
       identifier: `${issuePrefix}-1`,
     });
@@ -177,22 +185,18 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       .from(agents)
       .where(eq(agents.id, agentId))
       .then((rows) => rows[0]!);
-    const written = await agentInstructionsService().writeFile(
-      agent,
-      "AGENTS.md",
-      "You are Irfan. Version two, edited by Jono.\n",
-      { clearLegacyPromptTemplate: true },
-    );
-    await agentService(db).update(
-      agentId,
-      { adapterConfig: written.adapterConfig },
+    const revisions = agentInstructionRevisionService(db);
+    const target = { companyId: agent.companyId, agentId };
+    const baseline = await revisions.readCurrent(target, instructionOperator);
+    await revisions.commit(
       {
-        recordRevision: {
-          createdByAgentId: null,
-          createdByUserId: "responsible-user",
-          source: "instructions_bundle_file_put",
-        },
+        ...target,
+        entryFile: "AGENTS.md",
+        content: "You are Irfan. Version two, edited by Jono.\n",
+        baseRevisionId: baseline?.revision.id ?? null,
+        source: "board",
       },
+      instructionOperator,
     );
   }
 
@@ -311,9 +315,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       resetReasons: [],
       taskSessionReused: true,
     });
-    expect(turn.session?.changedCategories).toEqual(
-      expect.arrayContaining(["adapter", "adapterConfig", "instructions"]),
-    );
+    expect(turn.session?.changedCategories).toEqual(["instructions"]);
   });
 
   it("starts a fresh session for a process-loss continuation when the configured model changed", async () => {
