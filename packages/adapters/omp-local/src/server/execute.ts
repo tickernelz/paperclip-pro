@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -562,6 +563,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
   await ensureAbsoluteDirectory(cwd, { createIfMissing: true });
 
   const preparedConfig = await prepareOmpRuntimeConfig(config, { forceMaterialized: remote });
+  const providerStop = createProviderStoppedBoundary(ctx.onProviderStopped);
   let restoreWorkspace: (() => Promise<void>) | null = null;
   let paperclipBridge: AdapterExecutionTargetPaperclipBridgeHandle | null = null;
   let settingsOverlay: OmpSettingsOverlay | null = null;
@@ -1056,6 +1058,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             onSpawn: handleSpawn,
             onRuntimeProgress: ctx.onRuntimeProgress,
             session: steerSession,
+            onProcessStopped: providerStop.beginInvocation(),
           });
           proc = rpcRun.proc;
           if (rpcRun.sessionId) rpcSessionId = rpcRun.sessionId;
@@ -1063,6 +1066,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           rpcProtocolVersion = rpcRun.protocolVersion;
         } else {
           proc = await runAdapterExecutionTargetProcess(runId, runtimeTarget, launch.command, launch.args, {
+            onProcessStopped: providerStop.beginInvocation(),
             cwd,
             env: invocationEnv,
             timeoutSec,
@@ -1230,10 +1234,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     return toResult(initial, false);
   } finally {
     try {
-      await Promise.all([
-        paperclipBridge?.stop(),
-        restoreWorkspace?.(),
-      ]);
+      try {
+        await providerStop.collectBeforeRestore();
+      } finally {
+        await Promise.all([
+          paperclipBridge?.stop(),
+          restoreWorkspace?.(),
+        ]);
+      }
     } finally {
       await settingsOverlay?.cleanup().catch(() => {});
       await mcpExtension?.cleanup().catch(() => {});

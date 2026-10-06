@@ -317,6 +317,7 @@ export interface OmpRpcRunInput {
     typeof runAdapterExecutionTargetProcess
   >[4]["onRuntimeProgress"];
   session: OmpRpcSteerSession;
+  onProcessStopped?: () => void;
   continuationIdleMs?: number;
   idleRecheckMs?: number;
 }
@@ -633,6 +634,7 @@ export async function runOmpRpcSession(
         liveStdin: channel,
         timeoutSec: input.timeoutSec,
         graceSec: input.graceSec,
+        onProcessStopped: input.onProcessStopped,
         onSpawn: input.onSpawn,
         onRuntimeProgress: input.onRuntimeProgress,
         onLog: async (stream, chunk) => {
