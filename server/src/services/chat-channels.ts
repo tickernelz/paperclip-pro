@@ -8659,6 +8659,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         commentId,
         incoming: { triggerClass, event: typeof wake.event === "string" ? wake.event : null },
         deliveryIds,
+        storage: options.storage,
       });
     } catch (error) {
       logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");

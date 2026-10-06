@@ -29,6 +29,7 @@ import {
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_ATTACHMENT_CONTENT_TYPE } from "../../attachment-types.js";
 import { openwaAllowedCategories, type OpenwaRunContext, type OpenwaRunProfile } from "./authority.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
@@ -71,14 +72,22 @@ export type OpenwaWakeMedia =
   | {
       kind: string;
       attachmentId: string;
-      mime: string | null;
+      filename?: string;
+      mime: string;
       size: number | null;
       localPath?: string;
       transcript?: string;
       transcriptPending?: true;
     }
-  | { kind: string; pending: true; mime: string | null; size: number | null }
-  | { kind: string; unavailable: string; limitBytes?: number; mime: string | null; size: number | null };
+  | { kind: string; pending: true; filename?: string; mime: string; size: number | null }
+  | { kind: string; unavailable: string; limitBytes?: number; filename?: string; mime: string; size: number | null };
+
+export interface OpenwaSteeredMedia {
+  messageId: string;
+  media: OpenwaWakeMedia[];
+  location?: OpenwaWakeMessage["location"];
+  contact?: OpenwaWakeMessage["contact"];
+}
 
 export interface OpenwaWakeLateTranscript {
   messageId: string;
@@ -275,12 +284,14 @@ function locationFrom(value: Record<string, unknown>): OpenwaWakeMessage["locati
 function mediaFrom(item: MediaItem): OpenwaWakeMedia | null {
   const kind = str(item.kind) ?? "document";
   if (kind === "location" || kind === "contact") return null;
-  const mime = str(item.mime);
+  const mime = str(item.mime) ?? DEFAULT_ATTACHMENT_CONTENT_TYPE;
   const size = num(item.size);
   const status = str(item.status);
   const attachmentId = str(item.attachmentId);
+  const filename = str(item.filename);
+  const named = filename ? { filename } : {};
   if (status === "stored" && attachmentId) {
-    const media: OpenwaWakeMedia = { kind, attachmentId, mime, size };
+    const media: OpenwaWakeMedia = { kind, attachmentId, ...named, mime, size };
     const transcriptStatus = str(item.transcriptStatus);
     const transcript = str(item.transcript);
     if (transcriptStatus === "done" && transcript) media.transcript = truncate(transcript, OPENWA_WAKE_MAX_TEXT).text;
@@ -289,9 +300,91 @@ function mediaFrom(item: MediaItem): OpenwaWakeMedia | null {
   }
   if (status === "rejected") {
     const limitBytes = num(item.limitBytes);
-    return { kind, unavailable: str(item.reason) ?? "unavailable", ...(limitBytes ? { limitBytes } : {}), mime, size };
+    return { kind, unavailable: str(item.reason) ?? "unavailable", ...(limitBytes ? { limitBytes } : {}), ...named, mime, size };
   }
-  return { kind, pending: true, mime, size };
+  return { kind, pending: true, ...named, mime, size };
+}
+
+function wakeMediaFrom(openwa: Record<string, unknown>, mediaItems: MediaItem[] | undefined): OpenwaWakeMedia[] {
+  const media = (mediaItems ?? []).flatMap((item) => {
+    const mapped = mediaFrom(item);
+    return mapped ? [mapped] : [];
+  });
+  const rawMedia = record(openwa.media);
+  if (!mediaItems && Object.keys(rawMedia).length > 0) {
+    const mime = str(rawMedia.mimetype);
+    const filename = clip(str(rawMedia.filename), 255);
+    media.push({ kind: mediaKind(mime), pending: true, ...(filename ? { filename } : {}), mime: mime ?? DEFAULT_ATTACHMENT_CONTENT_TYPE, size: num(rawMedia.sizeBytes) });
+  }
+  return media.slice(0, MAX_MEDIA_PER_MESSAGE);
+}
+
+function wakeAttachmentsFrom(
+  openwa: Record<string, unknown>,
+  mediaItems: MediaItem[] | undefined,
+): Pick<OpenwaWakeMessage, "media" | "location" | "contact"> {
+  const items = mediaItems ?? [];
+  const locationItem = items.find((item) => item.kind === "location");
+  const contactItem = items.find((item) => item.kind === "contact");
+  const location = locationItem ? record(locationItem.location) : record(openwa.location);
+  const contact = contactItem ? record(contactItem.contact) : record(openwa.contact);
+  return {
+    media: wakeMediaFrom(openwa, mediaItems),
+    location: Object.keys(location).length > 0 ? locationFrom(location) : null,
+    contact: Object.keys(contact).length > 0 ? contactFrom(contact) : null,
+  };
+}
+
+async function openwaMediaItemsByWaId(db: Db, companyId: string, endpointId: string, waIds: readonly string[]): Promise<Map<string, MediaItem[]>> {
+  const keys = [...new Set(waIds)].map((id) => "openwa_media:" + id);
+  const mediaByWaId = new Map<string, MediaItem[]>();
+  if (keys.length === 0) return mediaByWaId;
+  const rows = await db
+    .select({ providerActionId: chatActions.providerActionId, payload: chatActions.payload })
+    .from(chatActions)
+    .where(
+      and(
+        eq(chatActions.companyId, companyId),
+        eq(chatActions.endpointId, endpointId),
+        eq(chatActions.kind, "openwa_media"),
+        inArray(chatActions.providerActionId, keys),
+      ),
+    );
+  for (const row of rows) {
+    const items = record(row.payload).items;
+    mediaByWaId.set(row.providerActionId.slice("openwa_media:".length), Array.isArray(items) ? items.map(record) : []);
+  }
+  return mediaByWaId;
+}
+
+async function attachOpenwaLocalPaths(db: Db, storage: StorageService | undefined, companyId: string, media: readonly OpenwaWakeMedia[]): Promise<void> {
+  const stored = media.filter((item) => "attachmentId" in item);
+  if (stored.length === 0) return;
+  const localPaths = await openwaAttachmentLocalPaths(db, storage, companyId, stored.map((item) => item.attachmentId));
+  for (const item of stored) {
+    const localPath = localPaths.get(item.attachmentId);
+    if (localPath) item.localPath = localPath;
+  }
+}
+
+/** Wake-format media of steered deliveries that carry files, with local paths for stored ones. */
+export async function openwaSteeredMedia(
+  db: Db,
+  input: { companyId: string; endpointId: string; normalizedEvents: readonly unknown[]; storage?: StorageService },
+): Promise<OpenwaSteeredMedia[]> {
+  const sources = input.normalizedEvents.flatMap((event) => {
+    const openwa = record(record(event).openwa);
+    const messageId = str(openwa.waMessageId);
+    return messageId ? [{ messageId, openwa }] : [];
+  });
+  const items = await openwaMediaItemsByWaId(db, input.companyId, input.endpointId, sources.map((source) => source.messageId));
+  const steered = sources.flatMap((source): OpenwaSteeredMedia[] => {
+    const { media, location, contact } = wakeAttachmentsFrom(source.openwa, items.get(source.messageId));
+    if (media.length === 0 && !location && !contact) return [];
+    return [{ messageId: source.messageId, media, ...(location ? { location } : {}), ...(contact ? { contact } : {}) }];
+  });
+  await attachOpenwaLocalPaths(db, input.storage ?? getStorageService(), input.companyId, steered.flatMap((entry) => entry.media));
+  return steered;
 }
 
 function senderFrom(delivery: DeliveryRow): OpenwaWakeSender {
@@ -318,20 +411,7 @@ function messageFrom(delivery: DeliveryRow, mediaItems: MediaItem[] | undefined,
   const selfMentions = new Set(
     (Array.isArray(openwa.agentMentionIds) ? openwa.agentMentionIds : []).filter((id): id is string => typeof id === "string").map((id) => id.trim().toLowerCase()),
   );
-  const items = mediaItems ?? [];
-  const media = items.flatMap((item) => {
-    const mapped = mediaFrom(item);
-    return mapped ? [mapped] : [];
-  });
-  const rawMedia = record(openwa.media);
-  if (!mediaItems && Object.keys(rawMedia).length > 0) {
-    const mime = str(rawMedia.mimetype);
-    media.push({ kind: mediaKind(mime), pending: true, mime, size: num(rawMedia.sizeBytes) });
-  }
-  const locationItem = items.find((item) => item.kind === "location");
-  const contactItem = items.find((item) => item.kind === "contact");
-  const location = locationItem ? record(locationItem.location) : record(openwa.location);
-  const contact = contactItem ? record(contactItem.contact) : record(openwa.contact);
+  const { media, location, contact } = wakeAttachmentsFrom(openwa, mediaItems);
   return {
     id: str(openwa.waMessageId) ?? (providerMessageId && !providerMessageId.startsWith("row:") ? providerMessageId : null),
     triggerId: delivery.id,
@@ -353,9 +433,9 @@ function messageFrom(delivery: DeliveryRow, mediaItems: MediaItem[] | undefined,
             return owner ? "owner:" + JSON.stringify(owner) : maskJid(jid);
           })
       : [],
-    location: Object.keys(location).length > 0 ? locationFrom(location) : null,
-    contact: Object.keys(contact).length > 0 ? contactFrom(contact) : null,
-    media: media.slice(0, MAX_MEDIA_PER_MESSAGE),
+    location,
+    contact,
+    media,
   };
 }
 
@@ -581,47 +661,15 @@ export async function buildOpenwaRunGuidance(
   ).reverse();
   const waIds = deliveries.flatMap((delivery) => {
     const id = str(record(delivery.normalizedEvent.openwa).waMessageId);
-    return id ? ["openwa_media:" + id] : [];
+    return id ? [id] : [];
   });
-  const mediaRows = waIds.length > 0
-    ? await db
-        .select({ providerActionId: chatActions.providerActionId, payload: chatActions.payload })
-        .from(chatActions)
-        .where(
-          and(
-            eq(chatActions.companyId, companyId),
-            eq(chatActions.endpointId, openwa.endpointId),
-            eq(chatActions.kind, "openwa_media"),
-            inArray(chatActions.providerActionId, waIds),
-          ),
-        )
-    : [];
-  const mediaByWaId = new Map<string, MediaItem[]>();
-  for (const row of mediaRows) {
-    const items = record(row.payload).items;
-    mediaByWaId.set(
-      row.providerActionId.slice("openwa_media:".length),
-      Array.isArray(items) ? items.map(record) : [],
-    );
-  }
+  const mediaByWaId = await openwaMediaItemsByWaId(db, companyId, openwa.endpointId, waIds);
   const ownerNames = new Map(owners.flatMap((owner) => owner.jids.map((jid) => [jid, owner.name] as const)));
   const messages = deliveries.map((delivery) => {
     const waId = str(record(delivery.normalizedEvent.openwa).waMessageId);
     return messageFrom(delivery, waId ? mediaByWaId.get(waId) : undefined, ownerNames);
   });
-  const storedMedia = messages.flatMap((message) => message.media.filter((media) => "attachmentId" in media));
-  if (storedMedia.length > 0) {
-    const localPaths = await openwaAttachmentLocalPaths(
-      db,
-      input.storage ?? getStorageService(),
-      companyId,
-      storedMedia.map((media) => media.attachmentId),
-    );
-    for (const media of storedMedia) {
-      const localPath = localPaths.get(media.attachmentId);
-      if (localPath) media.localPath = localPath;
-    }
-  }
+  await attachOpenwaLocalPaths(db, input.storage ?? getStorageService(), companyId, messages.flatMap((message) => message.media));
   const transcribed = new Set(
     messages.flatMap((message) => message.media.flatMap((media) => ("attachmentId" in media && media.transcript ? [media.attachmentId] : []))),
   );

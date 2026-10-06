@@ -10,6 +10,7 @@ import { and, asc, eq, sql } from "drizzle-orm";
 import {
   agents,
   agentWakeupRequests,
+  assets,
   authUsers,
   chatActions,
   chatAuditEntries,
@@ -24,6 +25,7 @@ import {
   companySecretBindings,
   createDb,
   heartbeatRuns,
+  issueAttachments,
   runIdentityContexts,
   toolConnections,
   type Db,
@@ -56,6 +58,8 @@ import { OPENWA_APPROVAL_WAKE_ACTION_KIND } from "../../services/openwa/approval
 import { createAdmissionTransactionScope, createWakeAdmissionWriter } from "../../modules/wake-queue/adapters/postgres.ts";
 import { issueService } from "../../services/issues.ts";
 import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.ts";
+import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
+import { createStorageService } from "../../storage/service.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -191,7 +195,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     }
   });
 
-  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock } = {}) {
+  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock; storage?: boolean } = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -219,6 +223,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       discordGatewayLeaseWaitMs: 200,
       ...(options.scheduledClock ? { openwaScheduledWakeClock: options.scheduledClock } : {}),
       ...(options.nudgeClock ? { openwaNudgeClock: options.nudgeClock } : {}),
+      ...(options.storage ? { storage: createStorageService(createLocalDiskStorageProvider(path.join(scratch, "storage-" + companyId))) } : {}),
     });
     services.push(service);
     issueRoutes(db, {} as never, { steeringRetry: { delaysMs: [], budgetMs: 5_000, minAttemptMs: 2_000 } });
@@ -568,6 +573,72 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(outsiderContext.paperclipToolProfile).toBe("read_only");
     expect((outsiderContext.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual([outsider.delivery.id]);
   }, 180_000);
+
+  it("steers every attachment type into the running member run as wake-format items, stored as issue attachments or with the get_media hint", async () => {
+    const t = await setup({ storage: true });
+    t.gateway.groups.set(GROUP, { id: GROUP, name: "Ops", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }, { id: jid(OTHER_MEMBER_PHONE) }] });
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + OTHER_MEMBER_PHONE }, t.userId);
+    const first = await admit(t, mention(MEMBER_PHONE, "cek laporan ini"));
+    const memberRun = await runningRun(t, first.action.id);
+    expect((await runContext(memberRun.id)).paperclipOpenwa).toMatchObject({ triggerClass: "other", profile: "read_only" });
+
+    const attached = async (text: string, extra: Record<string, unknown>, file?: { body: Buffer; contentType: string; filename?: string }, sender = MEMBER_PHONE) => {
+      const waMessageId = t.gateway.nextWaMessageId(false, GROUP);
+      if (file) t.gateway.setMedia(GROUP, waMessageId, file);
+      const admitted = await admit(t, { ...mention(sender, text), waMessageId, extra: { mentionedIds: [jid(OWN_PHONE)], ...extra } });
+      const frame = await until(async () => steered.get(memberRun.id)?.find((entry) => entry.includes(text)) ?? null);
+      expect((await wakeRow(admitted.action.id)).status).toBe("cancelled");
+      expect(frame).toContain("Read every file before you answer");
+      expect(frame).toContain("call openwa_get_media with its messageId");
+      const [entry, ...rest] = JSON.parse(frame.slice(frame.lastIndexOf("\n") + 1)) as Array<Record<string, unknown> & { messageId: string; media: Array<Record<string, unknown>> }>;
+      expect(rest).toEqual([]);
+      expect(entry!.messageId).toBe(waMessageId);
+      return { waMessageId, entry: entry! };
+    };
+    const attachmentFor = async (filename: string) => {
+      const [row] = await db.select({ id: issueAttachments.id, contentType: assets.contentType, byteSize: assets.byteSize })
+        .from(issueAttachments).innerJoin(assets, eq(assets.id, issueAttachments.assetId))
+        .where(and(eq(issueAttachments.companyId, t.companyId), eq(assets.originalFilename, filename)));
+      return row!;
+    };
+
+    const pdf = Buffer.from("%PDF-1.4\nsteered report\n%%EOF\n");
+    const pdfName = "Laporan Kebocoran Akses User.pdf";
+    const pdfMessage = await attached("ini pdf nya", { type: "document", media: { mimetype: "application/pdf", filename: pdfName, sizeBytes: pdf.length, omitted: true } }, { body: pdf, contentType: "application/pdf", filename: pdfName });
+    const pdfRow = await attachmentFor(pdfName);
+    expect(pdfRow).toMatchObject({ contentType: "application/pdf", byteSize: pdf.length });
+    expect(pdfMessage.entry.media).toEqual([{ kind: "document", attachmentId: pdfRow.id, filename: pdfName, mime: "application/pdf", size: pdf.length, localPath: expect.stringMatching(/\.pdf$/) }]);
+
+    const bat = Buffer.from("@echo off\r\nshutdown /s\r\n");
+    const batMessage = await attached("ini script nya", { type: "document", media: { filename: "run.bat", sizeBytes: bat.length, omitted: true } }, { body: bat, contentType: "application/octet-stream", filename: "run.bat" });
+    const batRow = await attachmentFor("run.bat");
+    expect(batRow.byteSize).toBe(bat.length);
+    expect(batMessage.entry.media).toEqual([{ kind: "document", attachmentId: batRow.id, filename: "run.bat", mime: batRow.contentType, size: bat.length, localPath: expect.stringMatching(/\.bat$/) }]);
+
+    const voice = Buffer.from("OggS steered voice note");
+    const voiceMessage = await attached("ini voice nya", { type: "ptt", media: { mimetype: "audio/ogg; codecs=opus", sizeBytes: voice.length, omitted: true } }, { body: voice, contentType: "audio/ogg" });
+    expect(voiceMessage.entry.media).toEqual([{ kind: "voice", attachmentId: expect.any(String), filename: expect.stringMatching(/^voice-[0-9a-f]{10}\./), mime: "audio/ogg", size: voice.length, localPath: expect.any(String) }]);
+
+    const image = Buffer.from("\x89PNG\r\n\x1a\nsteered image");
+    const imageMessage = await attached("ini fotonya", { type: "image", media: { mimetype: "image/png", sizeBytes: image.length, omitted: true } }, { body: image, contentType: "image/png" });
+    expect(imageMessage.entry.media).toEqual([expect.objectContaining({ kind: "image", attachmentId: expect.any(String), mime: "image/png", size: image.length, localPath: expect.any(String) })]);
+
+    const lost = await attached("ini file kedua", { type: "document", media: { filename: "kedua.xyz", sizeBytes: 64, omitted: true } }, undefined, OTHER_MEMBER_PHONE);
+    expect(lost.entry.media).toEqual([{ kind: "document", unavailable: "unavailable", filename: "kedua.xyz", mime: "application/octet-stream", size: 64 }]);
+
+    const huge = await attached("ini zip besar", { type: "document", media: { mimetype: "application/zip", filename: "dump.zip", sizeBytes: 1024 * 1024 * 1024, omitted: true } }, undefined, OTHER_MEMBER_PHONE);
+    expect(huge.entry.media).toEqual([{ kind: "document", unavailable: "too_large", limitBytes: expect.any(Number), filename: "dump.zip", mime: "application/zip", size: 1024 * 1024 * 1024 }]);
+    expect(t.gateway.mediaRequests(huge.waMessageId)).toBe(0);
+
+    const vcard = ["BEGIN:VCARD", "VERSION:3.0", "FN:Ada Lovelace", "TEL;TYPE=CELL:+62 812-3456-789", "END:VCARD"].join("\n");
+    const contact = await attached("ini kontaknya", { type: "vcard", vCards: [vcard] }, undefined, OTHER_MEMBER_PHONE);
+    expect(contact.entry).toEqual({ messageId: contact.waMessageId, media: [], contact: { name: "Ada Lovelace", phones: [maskOpenwaPhoneNumber("628123456789")] } });
+
+    const place = await attached("ini lokasinya", { type: "location", location: { latitude: -6.2088, longitude: 106.8456, description: "Monas" } }, undefined, OTHER_MEMBER_PHONE);
+    expect(place.entry).toEqual({ messageId: place.waMessageId, media: [], location: { lat: -6.2088, lon: 106.8456, name: "Monas" } });
+
+    expect(steered.get(memberRun.id)!.filter((entry) => entry.includes("Read every file before you answer"))).toHaveLength(8);
+  }, 240_000);
 
   async function grantAfterMerge(mode: "deferred" | "queued" | "solo") {
     const t = await setup();

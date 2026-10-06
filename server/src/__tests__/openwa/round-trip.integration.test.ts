@@ -389,7 +389,7 @@ describe.sequential("OpenWA round trip (embedded Postgres + fake gateway)", () =
     expect(t.gateway.mediaRequests(waMessageId)).toBe(1);
 
     const run = await runStart(t, wake);
-    expect(run.wakeEvent.messages[0]!.media).toEqual([{ kind: "image", attachmentId: stored[0]!.id, mime: "image/png", size: PNG.length }]);
+    expect(run.wakeEvent.messages[0]!.media).toEqual([{ kind: "image", attachmentId: stored[0]!.id, filename: expect.stringMatching(/^image-[0-9a-f]{10}\.png$/), mime: "image/png", size: PNG.length }]);
   }, 120_000);
 
   it("carries a voice note transcript from the fake speech-to-text service into the wake payload", async () => {

@@ -132,6 +132,15 @@ act beyond the run's facts. Silence never approves anything.
   `quoteDropped: true`. Do not resend.
 - A message steered into a running run names its `Message id`; quote that id
   when you answer it, not the id of an earlier message in the run.
+- A steered message may carry attachments of any type (documents of every
+  file type, images, video, voice notes, stickers, contact cards, locations):
+  the frame then ends with a JSON list of `{messageId, media[], location?,
+  contact?}` in the wake shape (`filename`, `mime`, `size`, `attachmentId`
+  and `localPath` when stored). Read every file before you answer, including
+  ones that arrive while you are already working on earlier files. Never say a
+  file was received without reading it. An item that is `pending`,
+  `unavailable` or has no `localPath` needs `openwa_get_media` with that
+  `messageId`; `too_large` items exceeded `limitBytes` and cannot be fetched.
 
 ## WhatsApp formatting
 
@@ -149,7 +158,8 @@ of the person you answer.
   newest first; continue with `nextCursor`. `source: "live"` reads WhatsApp
   directly; `deep: true` reaches up to 2000 messages. Results stay under 16 KB.
 - Trigger media is already stored as task attachments: each `media[]` item has
-  `attachmentId`, `kind`, `mime`, `size` and, for voice notes, `transcript` or
+  `attachmentId`, `kind`, `filename`, `mime` (`application/octet-stream` when
+  unknown), `size` and, for voice notes, `transcript` or
   `transcriptPending`. A `pending` or `unavailable` item was not stored yet; an
   item `unavailable: "too_large"` carries `limitBytes`, the size cap it exceeded.
 - Files of every type are stored, including executables, scripts and archives.

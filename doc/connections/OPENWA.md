@@ -584,8 +584,10 @@ document with its original filename and MIME type. Task files published to a
 WhatsApp conversation are always sent as documents. The size cap is the same
 `PAPERCLIP_ATTACHMENT_MAX_BYTES`, below WhatsApp's own document limit. Location and
 contact cards arrive as structured data. Media of non-trigger messages is never
-fetched unless the agent asks. When storage is the local disk, stored media items
-in the wake event and in `openwa_get_media` results carry `localPath`, the
+fetched unless the agent asks. Media items carry the sender's `filename` when
+known and `mime` `application/octet-stream` when the type is unknown. When
+storage is the local disk, stored media items in the wake event, in steered
+messages and in `openwa_get_media` results carry `localPath`, the
 absolute file path resolved inside the storage root (symlinks escaping it are
 ignored), so an agent on the same host opens the file without downloading it.
 
@@ -677,7 +679,16 @@ it as **Messages during a run**. Behaviour per spec §7.3:
 A steered message reaches the agent framed with its sender, trigger ids and
 WhatsApp message id, and tells the agent to quote that id when it answers, so a
 send for a second person in the same run marks that person's trigger answered
-instead of re-quoting the first trigger.
+instead of re-quoting the first trigger. When the steered message carries any
+attachment (a document of any file type, image, video, voice note, sticker,
+contact card or location), its media is stored as a task attachment first, as it
+is for a wake, and the frame ends with a JSON list of `{messageId, media[],
+location?, contact?}` in the wake event's shape (kind, filename, mime with
+`application/octet-stream` when unknown, size, `attachmentId` and `localPath`
+once stored; `pending` or `unavailable` otherwise, `too_large` with
+`limitBytes`). The frame tells the agent to read every file before answering and
+to call `openwa_get_media` with that message id for any item without a
+`localPath`.
 
 **Group bursts.** In a group with no queued or running run for the conversation, a
 member (`other`) trigger's wake is held for 5 s. Member triggers admitted in that
