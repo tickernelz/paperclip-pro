@@ -26,7 +26,8 @@ async function swipeToLastOption(page: Page, picker: Locator, listName: string) 
     for (let attempt = 0; attempt < 48; attempt += 1) {
       const bounds = (await list.boundingBox())!;
       const target = (await last.boundingBox())!;
-      if (target.y >= bounds.y && target.y + target.height <= bounds.y + bounds.height) break;
+      if (target.y >= bounds.y && target.y + target.height <= bounds.y + bounds.height + 1) break;
+      if (await list.evaluate((element) => element.scrollTop + element.clientHeight >= element.scrollHeight - 1)) break;
       const before = await list.evaluate((element) => element.scrollTop);
       const x = bounds.x + bounds.width / 2;
       const y = bounds.y + bounds.height - 10;
