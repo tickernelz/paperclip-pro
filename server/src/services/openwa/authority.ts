@@ -957,7 +957,3 @@ export async function assertOpenwaAgentKeyMethodAllowed(
     });
   }
 }
-
-export async function openwaRunSuppressesMentionWakes(db: Db, run: RunLike): Promise<boolean> {
-  return (await openwaRunProfile(db, run)) === "read_only";
-}

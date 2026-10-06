@@ -52,7 +52,6 @@ import {
   openwaHostGitHubAllowed,
   openwaReadOnlyRestDecision,
   openwaRunCarriesGrants,
-  openwaRunSuppressesMentionWakes,
   resolveOpenwaRunContext,
   type OpenwaRunContext,
 } from "../services/openwa/authority.js";
@@ -603,18 +602,6 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       expect(await bindingQueries(plainIssue)).toEqual({ resolved: null, queries: 0 });
       const openwa = await bindingQueries(seed.issueId);
       expect(openwa.resolved).toMatchObject({ endpointId: seed.endpointId, profile: "read_only" });
-    });
-
-    it("suppresses mention wakes fail-closed by run profile", async () => {
-      const seed = await seedCompany(db);
-      const unmarked = await seedRun(db, seed, {});
-      await expect(openwaRunSuppressesMentionWakes(db, { id: unmarked.runId, companyId: seed.companyId, contextSnapshot: unmarked.contextSnapshot })).resolves.toBe(true);
-      const plain = await seedRun(db, seed, { issueId: await seedPlainIssue(db, seed) });
-      await expect(openwaRunSuppressesMentionWakes(db, { id: plain.runId, companyId: seed.companyId, contextSnapshot: plain.contextSnapshot })).resolves.toBe(false);
-      const owner = await seedRun(db, seed, { profile: "full", openwa: openwaContext(seed, { triggerClass: "owner", profile: "full" }) });
-      await expect(openwaRunSuppressesMentionWakes(db, { id: owner.runId, companyId: seed.companyId, contextSnapshot: owner.contextSnapshot })).resolves.toBe(false);
-      const toolFull = await seedRun(db, seed, { profile: "full", openwa: openwaContext(seed, { toolProfile: "full" }) });
-      await expect(openwaRunSuppressesMentionWakes(db, { id: toolFull.runId, companyId: seed.companyId, contextSnapshot: toolFull.contextSnapshot })).resolves.toBe(true);
     });
   });
 

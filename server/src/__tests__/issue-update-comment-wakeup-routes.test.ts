@@ -54,14 +54,6 @@ const mockRunnerGoalService = vi.hoisted(() => ({
   act: vi.fn(),
 }));
 
-vi.mock("../services/openwa/authority.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../services/openwa/authority.js")>()),
-  loadOpenwaRunAuthority: async (_db: unknown, input: { runId: string }) => {
-    const run = await (mockHeartbeatService.getRun as (runId: string) => Promise<{ contextSnapshot?: Record<string, unknown> } | null>)(input.runId);
-    return run ? { ...run, contextSnapshot: { paperclipToolProfile: "full", ...run.contextSnapshot } } : null;
-  },
-}));
-
 vi.mock("../services/instance-settings.js", () => ({
   instanceSettingsService: () => mockInstanceSettingsService,
 }));
