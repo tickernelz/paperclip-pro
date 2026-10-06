@@ -21,6 +21,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { getLastComposerEffort, rememberComposerEffort } from "@/lib/recent-composer-effort";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
+import { useMobileSelectorModal } from "@/hooks/useMobileSelectorModal";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import type { InlineEntityOption } from "@/components/InlineEntitySelector";
@@ -121,6 +122,7 @@ export function ComposerRunSettingsPicker({
   const [pendingValues, setPendingValues] = useState<ComposerRunSettingsValues>({});
   const resolveInFlight = useRef<Promise<string> | null>(null);
   useMobileViewportInsets(open);
+  const mobileSelectorModal = useMobileSelectorModal();
 
   const activeIssueId = issueId || resolvedIssueId;
   const reassigning = Boolean(activeIssueId) && assigneeValue !== currentAssigneeValue;
@@ -634,6 +636,7 @@ export function ComposerRunSettingsPicker({
 
   return (
     <Popover
+      modal={mobileSelectorModal}
       open={open}
       onOpenChange={(next) => {
         setOpen(next);

@@ -5,6 +5,7 @@ import { orderItemsBySelectedAndRecent } from "../lib/recent-selections";
 import { useMobileViewportInsets } from "../hooks/useMobileViewportInsets";
 import { cn } from "../lib/utils";
 import { useMobileEntityPickerViewportStyle } from "../hooks/useMobileEntityPickerViewportStyle";
+import { useMobileSelectorModal } from "../hooks/useMobileSelectorModal";
 
 export interface InlineEntityOption {
   id: string;
@@ -44,25 +45,6 @@ interface InlineEntitySelectorProps {
 }
 
 const EMPTY_RECENT_OPTION_IDS: string[] = [];
-
-function useMobileSelectorModal() {
-  const [mobile, setMobile] = useState(() =>
-    typeof window !== "undefined"
-      && typeof window.matchMedia === "function"
-      && window.matchMedia("(max-width: 40rem)").matches,
-  );
-
-  useEffect(() => {
-    if (typeof window.matchMedia !== "function") return;
-    const media = window.matchMedia("(max-width: 40rem)");
-    const update = () => setMobile(media.matches);
-    update();
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  return mobile;
-}
 
 export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySelectorProps>(
   function InlineEntitySelector(

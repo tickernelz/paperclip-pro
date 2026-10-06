@@ -13,6 +13,7 @@ import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
+import { useMobileSelectorModal } from "@/hooks/useMobileSelectorModal";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModelOverrideSubtaskRows } from "./ModelOverrideSubtaskRows";
@@ -248,6 +249,7 @@ export function TaskModelOverrideControl({
   >({});
   const resolveInFlight = useRef<Promise<string> | null>(null);
   useMobileViewportInsets(open);
+  const mobileSelectorModal = useMobileSelectorModal();
   const activeIssueId = draft ? null : issueId || resolvedIssueId;
   const previewAgent = draft ?? pendingIssue;
   const key = queryKeys.issues.modelOverride(activeIssueId ?? "__none__");
@@ -336,6 +338,7 @@ export function TaskModelOverrideControl({
       : expandedOverride;
   return (
     <Popover
+      modal={mobileSelectorModal}
       open={open}
       onOpenChange={setOpen}
     >
