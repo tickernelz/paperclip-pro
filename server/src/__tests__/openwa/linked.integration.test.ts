@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdtemp, rm } from "node:fs/promises";
+import { mkdtemp, readFile, realpath, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import express from "express";
@@ -9,6 +9,7 @@ import { and, eq, like } from "drizzle-orm";
 import {
   activityLog,
   agents,
+  assets,
   authUsers,
   chatAuditEntries,
   chatConversations,
@@ -21,6 +22,7 @@ import {
   companySecrets,
   createDb,
   heartbeatRuns,
+  issueAttachments,
   issues,
   toolConnections,
   type Db,
@@ -37,6 +39,8 @@ import { executeOpenwaTool, OpenwaToolError } from "../../services/openwa/tools.
 import { chatChannelRoutes } from "../../routes/chat-channels.js";
 import { errorHandler } from "../../middleware/index.js";
 import { logger } from "../../middleware/logger.js";
+import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
+import { createStorageService } from "../../storage/service.js";
 import { FAKE_OPENWA_ADMIN_KEY, FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "55555555-6666-4777-8888-999999999999";
@@ -129,6 +133,7 @@ describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake g
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      storage: createStorageService(createLocalDiskStorageProvider(path.join(root, "storage"))),
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
@@ -584,4 +589,114 @@ describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake g
     });
     expect((await db.select().from(chatOpenwaLinkedSessions).where(eq(chatOpenwaLinkedSessions.id, linkedId)))[0]!.status).toBe("unavailable");
   });
+
+  it("surfaces document metadata in linked reads and stores linked media on the run's issue", async () => {
+    const t = await setup();
+    const { linkedId } = await linkWithChats(t);
+    const brief = "# Brief\nKalahkan Big4";
+    const doc = t.gateway.linkedMessage(LINKED_SESSION_ID, {
+      chatId: FRIEND_DM,
+      body: "",
+      type: "document",
+      media: { mimetype: "text/markdown", filename: "BRIEF_Prioritas_Kalahkan_Big4.md", sizeBytes: Buffer.byteLength(brief), omitted: true },
+    });
+    t.gateway.setLinkedMedia(LINKED_SESSION_ID, FRIEND_DM, doc.id, { body: Buffer.from(brief), contentType: "text/markdown", filename: "BRIEF_Prioritas_Kalahkan_Big4.md" });
+    const c = await conversation(t, OWNER_DM);
+    const binding = await run(t, c, "owner");
+    const chat = "openwa:" + LINKED_SESSION_ID + ":" + FRIEND_DM;
+
+    const text = t.gateway.linkedMessage(LINKED_SESSION_ID, { chatId: FRIEND_DM, body: "sudah kukirim" });
+    const historyBefore = t.gateway.requests.length;
+    const read = await executeOpenwaTool(db, binding, "openwa_linked_read", { linkedRef: linkedId, chat });
+    const messages = read.messages as Array<Record<string, unknown>>;
+    expect(messages.map((message) => [message.id, message.type, message.media])).toEqual([
+      [text.id, "chat", null],
+      [doc.id, "document", { kind: "document" }],
+    ]);
+    expect(t.gateway.requests.slice(historyBefore).map((entry) => entry.query.includeMedia)).toEqual(["false"]);
+    expect(JSON.stringify(read)).not.toContain(Buffer.from(brief).toString("base64"));
+
+    const before = t.gateway.requests.length;
+    const fetched = await executeOpenwaTool(db, binding, "openwa_linked_get_media", { linkedRef: linkedId, chat, messageId: doc.id });
+    expect(fetched).toMatchObject({ linkedRef: linkedId, chatRef: chat, messageId: doc.id });
+    const [item] = fetched.media as Array<Record<string, unknown>>;
+    expect(item).toMatchObject({ kind: "document", status: "stored", mime: "text/markdown", filename: "BRIEF_Prioritas_Kalahkan_Big4.md", size: Buffer.byteLength(brief) });
+    expect(String(item!.localPath).startsWith(await realpath(path.join(root, "storage")) + path.sep)).toBe(true);
+    expect(await readFile(String(item!.localPath), "utf8")).toBe(brief);
+    expect(JSON.stringify(fetched)).not.toContain(Buffer.from(brief).toString("base64"));
+    const [stored] = await db
+      .select({ issueId: issueAttachments.issueId, filename: assets.originalFilename })
+      .from(issueAttachments)
+      .innerJoin(assets, eq(assets.id, issueAttachments.assetId))
+      .where(eq(issueAttachments.id, String(item!.attachmentId)));
+    expect(stored).toEqual({ issueId: c.issueId, filename: "BRIEF_Prioritas_Kalahkan_Big4.md" });
+    expect(t.gateway.requests.slice(before).map((entry) => [entry.method, entry.path, entry.key])).toEqual([
+      ["GET", "/api/sessions/" + LINKED_SESSION_ID + "/messages/" + encodeURIComponent(FRIEND_DM) + "/" + encodeURIComponent(doc.id) + "/media", "scoped"],
+    ]);
+
+    const again = await executeOpenwaTool(db, binding, "openwa_linked_get_media", { linkedRef: linkedId, chat: FRIEND_DM, messageId: doc.id });
+    expect((again.media as Array<Record<string, unknown>>)[0]).toMatchObject({ status: "stored", attachmentId: item!.attachmentId });
+    expect(t.gateway.requests.length).toBe(before + 1);
+
+    const audits = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "linked_read")));
+    expect(audits.filter((entry) => (entry.metadata as { tool: string }).tool === "openwa_linked_get_media")).toHaveLength(2);
+    expect(audits.find((entry) => (entry.metadata as { tool: string }).tool === "openwa_linked_get_media")).toMatchObject({
+      chatKey: FRIEND_DM,
+      content: null,
+      metadata: { tool: "openwa_linked_get_media", linkedSessionId: linkedId, messageId: doc.id, count: 1 },
+    });
+    expect(leaksKey(t, [read, fetched, audits])).toBe(false);
+  });
+
+  it("refuses linked media for non-owner runs, disallowed chats and unknown linkedRefs, and maps a missing file to not_found", async () => {
+    const t = await setup();
+    const { linkedId } = await linkWithChats(t);
+    const secret = t.gateway.linkedMessage(LINKED_SESSION_ID, { chatId: SECRET_CHAT, body: "", type: "document" });
+    t.gateway.setLinkedMedia(LINKED_SESSION_ID, SECRET_CHAT, secret.id, { body: Buffer.from("private"), contentType: "text/plain", filename: "private.txt" });
+    const missing = t.gateway.linkedMessage(LINKED_SESSION_ID, { chatId: FRIEND_DM, body: "", type: "document" });
+    const c = await conversation(t, OWNER_DM);
+    const before = t.gateway.requests.length;
+    for (const triggerClass of ["allowed", "other"] as const) {
+      const binding = await run(t, c, triggerClass);
+      expect(await rejection(executeOpenwaTool(db, binding, "openwa_linked_get_media", { linkedRef: linkedId, chat: FRIEND_DM, messageId: missing.id }))).toMatchObject({
+        status: 403,
+        code: "owner_only",
+      });
+    }
+    const owner = await run(t, c, "owner");
+    expect(await rejection(executeOpenwaTool(db, owner, "openwa_linked_get_media", { linkedRef: linkedId, chat: SECRET_CHAT, messageId: secret.id }))).toMatchObject({
+      status: 403,
+      code: "linked_chat_not_allowed",
+    });
+    expect(await rejection(executeOpenwaTool(db, owner, "openwa_linked_get_media", { linkedRef: randomUUID(), chat: FRIEND_DM, messageId: missing.id }))).toMatchObject({
+      status: 404,
+      code: "linked_session_unavailable",
+    });
+    expect(t.gateway.requests.slice(before)).toEqual([]);
+    expect(await rejection(executeOpenwaTool(db, owner, "openwa_linked_get_media", { linkedRef: linkedId, chat: FRIEND_DM, messageId: missing.id }))).toMatchObject({
+      status: 404,
+      code: "not_found",
+      message: "No stored media for that message",
+    });
+    expect(await db.select().from(issueAttachments).where(eq(issueAttachments.issueId, c.issueId))).toHaveLength(0);
+  });
+
+  it("points openwa_get_media at openwa_linked_get_media for a linked chatRef", async () => {
+    const t = await setup();
+    const { linkedId } = await linkWithChats(t);
+    const doc = t.gateway.linkedMessage(LINKED_SESSION_ID, { chatId: FRIEND_DM, body: "", type: "document" });
+    const c = await conversation(t, OWNER_DM);
+    const binding = await run(t, c, "owner");
+    const before = t.gateway.requests.length;
+    const refused = await rejection(executeOpenwaTool(db, binding, "openwa_get_media", { chat: "openwa:" + LINKED_SESSION_ID + ":" + FRIEND_DM, messageId: doc.id }));
+    expect(refused).toMatchObject({ status: 400, code: "invalid_target", message: "This chat is on a linked number; use openwa_linked_get_media with its linkedRef" });
+    expect(t.gateway.requests.slice(before)).toEqual([]);
+    const foreign = await rejection(executeOpenwaTool(db, binding, "openwa_get_media", { chat: "openwa:" + randomUUID() + ":" + FRIEND_DM, messageId: doc.id }));
+    expect(foreign.message).toBe("The chatRef belongs to another WhatsApp session");
+    await expect(executeOpenwaTool(db, binding, "openwa_linked_get_media", { linkedRef: linkedId, chat: FRIEND_DM, messageId: doc.id })).rejects.toMatchObject({ code: "not_found" });
+  });
 });
+

@@ -408,6 +408,21 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       await expect(resolve(seed, action)).resolves.toMatchObject({ profile: "read_only" });
     });
 
+    it("classes a board wake by the endpoint's owner user as owner and any other board user as other", async () => {
+      const seed = await seedCompany(db);
+      const owner = await seedPrincipal(db, seed, "628999000111@c.us", { owner: true });
+      const ownerComment = await seedWake(db, seed, { actorType: "user", actorId: BOARD_USER });
+      const otherComment = await seedWake(db, seed, { actorType: "user", actorId: "openwa-other-board-user" });
+
+      await expect(resolve(seed, ownerComment)).resolves.toEqual(
+        openwaContext(seed, { triggerClass: "owner", profile: "full", triggerPrincipalId: owner.principalId }),
+      );
+      await expect(resolve(seed, otherComment)).resolves.toEqual(openwaContext(seed, { profile: "full" }));
+
+      await db.update(chatIdentityLinks).set({ status: "revoked" }).where(eq(chatIdentityLinks.id, owner.linkId!));
+      await expect(resolve(seed, ownerComment)).resolves.toEqual(openwaContext(seed, { profile: "full" }));
+    });
+
     it("derives owner only from admitted owner deliveries whose principal is still an owner", async () => {
       const seed = await seedCompany(db);
       const owner = await seedPrincipal(db, seed, "628999000111@c.us", { owner: true });

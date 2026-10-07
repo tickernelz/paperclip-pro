@@ -8,6 +8,7 @@ import {
   chatEndpointResources,
   chatEndpoints,
   chatExternalPrincipals,
+  chatOpenwaLinkedSessions,
   chatOutboundMessages,
   chatOwnerApprovalRequests,
   heartbeatRuns,
@@ -55,7 +56,7 @@ import {
 } from "./gateway.js";
 import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
 import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
-import { openwaLinkedListTool, openwaLinkedReadTool, type OpenwaLinkedService } from "./linked.js";
+import { openwaLinkedGetMediaTool, openwaLinkedListTool, openwaLinkedReadTool, type OpenwaLinkedService } from "./linked.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import { openwaAttachmentLocalPaths, type OpenwaIngestedMedia, type OpenwaMediaService } from "./media.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
@@ -480,7 +481,7 @@ async function gatewayCall<T>(ctx: ToolContext, run: (gateway: OpenwaGatewayClie
 }
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const WA_MESSAGE_CHAT = /^(?:true|false)_([^_]+@(?:c\.us|g\.us|lid|s\.whatsapp\.net))_/i;
+export const WA_MESSAGE_CHAT = /^(?:true|false)_([^_]+@(?:c\.us|g\.us|lid|s\.whatsapp\.net))_/i;
 const LIVE_LIMIT = 100;
 const DEEP_LIMIT = 2000;
 
@@ -1182,7 +1183,42 @@ function mediaView(item: OpenwaIngestedMedia, localPaths: ReadonlyMap<string, st
   };
 }
 
+async function refuseLinkedChatRef(ctx: ToolContext, ref: unknown): Promise<void> {
+  const match = CHAT_REF.exec(str(ref) ?? "");
+  if (!match || match[1] === ctx.sessionId) return;
+  const [linked] = await ctx.db
+    .select({ id: chatOpenwaLinkedSessions.id })
+    .from(chatOpenwaLinkedSessions)
+    .where(
+      and(
+        eq(chatOpenwaLinkedSessions.companyId, ctx.endpoint.companyId),
+        eq(chatOpenwaLinkedSessions.endpointId, ctx.endpoint.id),
+        eq(chatOpenwaLinkedSessions.sessionId, match[1]!),
+      ),
+    )
+    .limit(1);
+  if (linked) throw new OpenwaToolError(400, "invalid_target", "This chat is on a linked number; use openwa_linked_get_media with its linkedRef");
+}
+
+/** Tool result for fetched message media, fitted to the result budget. */
+export async function openwaMediaResult(
+  ctx: ToolContext,
+  handle: OpenwaToolRuntimeHandle,
+  envelope: Record<string, unknown>,
+  items: OpenwaIngestedMedia[],
+): Promise<Record<string, unknown>> {
+  const localPaths = await openwaAttachmentLocalPaths(
+    ctx.db,
+    handle.storage ?? getStorageService(),
+    ctx.endpoint.companyId,
+    items.flatMap((item) => (item.status === "stored" && item.attachmentId ? [item.attachmentId] : [])),
+  );
+  const fitted = fitMedia(envelope, items.map((item) => mediaView(item, localPaths)));
+  return { ...envelope, media: fitted.media, ...(fitted.omitted ? { truncated: true, omittedMedia: fitted.omitted } : {}) };
+}
+
 async function openwaGetMedia(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
+  await refuseLinkedChatRef(ctx, args.chat);
   const target = resolveTarget(ctx, args.chat);
   ctx.audit.chatKey = target.chatKey;
   await assertReadable(ctx, target);
@@ -1200,15 +1236,7 @@ async function openwaGetMedia(ctx: ToolContext, args: Args): Promise<Record<stri
     chatId: target.chatId,
     messageId: messageId!,
   });
-  const localPaths = await openwaAttachmentLocalPaths(
-    ctx.db,
-    handle.storage ?? getStorageService(),
-    ctx.endpoint.companyId,
-    items.flatMap((item) => (item.status === "stored" && item.attachmentId ? [item.attachmentId] : [])),
-  );
-  const envelope = { chatRef: chatRef(ctx, target.chatId), messageId };
-  const fitted = fitMedia(envelope, items.map((item) => mediaView(item, localPaths)));
-  return { ...envelope, media: fitted.media, ...(fitted.omitted ? { truncated: true, omittedMedia: fitted.omitted } : {}) };
+  return openwaMediaResult(ctx, handle, { chatRef: chatRef(ctx, target.chatId), messageId }, items);
 }
 
 function fitMedia(envelope: Record<string, unknown>, views: Array<ReturnType<typeof mediaView>>): { media: Array<ReturnType<typeof mediaView>>; omitted: number } {
@@ -1418,12 +1446,14 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_call: (ctx, args) => openwaCallTool(ctx, args),
   openwa_linked_list: (ctx) => openwaLinkedListTool(ctx, openwaToolLinked(ctx.db)),
   openwa_linked_read: (ctx, args) => openwaLinkedReadTool(ctx, openwaToolLinked(ctx.db), args),
+  openwa_linked_get_media: (ctx, args) => openwaLinkedGetMediaTool(ctx, openwaToolLinked(ctx.db), args),
 };
 
-const LINKED_TOOLS = new Set(["openwa_linked_list", "openwa_linked_read"]);
+const LINKED_TOOLS = new Set(["openwa_linked_list", "openwa_linked_read", "openwa_linked_get_media"]);
 
 function linkedResultSummary(result: Record<string, unknown>): Record<string, unknown> {
   if (Array.isArray(result.messages)) return { linkedRef: result.linkedRef ?? null, chatRef: result.chatRef ?? null, count: result.messages.length };
+  if (Array.isArray(result.media)) return { linkedRef: result.linkedRef ?? null, chatRef: result.chatRef ?? null, messageId: result.messageId ?? null, count: result.media.length };
   return { count: Array.isArray(result.linked) ? result.linked.length : 0 };
 }
 

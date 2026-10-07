@@ -131,13 +131,14 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   },
   "GET /api/issues/{id}/watchdog": {
     name: "paperclipGetIssueWatchdog",
-    description: "Read the watchdog/monitor configuration for an issue.",
+    description:
+      "Read the task watchdog for an issue: the agent that reviews the issue subtree after it stops. This is not the issue monitor; read monitorNextCheckAt from the issue.",
     toolset: "core",
   },
   "PUT /api/issues/{id}/watchdog": {
     name: "paperclipSetIssueWatchdog",
     description:
-      "Schedule or clear the issue monitor. Use only when you really want the assignee woken later; never claim a watcher without writing one.",
+      "Assign or replace the task watchdog agent that reviews the issue subtree after it stops. It does not schedule the issue monitor: schedule a timed re-check with paperclipUpdateIssue advanced.executionPolicy.monitor.nextCheckAt.",
     toolset: "core",
   },
   "GET /api/issues/{id}/attachments": {

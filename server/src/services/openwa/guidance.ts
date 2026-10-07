@@ -838,7 +838,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
       ? [
           "- Linked read-only numbers (owner runs only): " +
             facts.linkedNumbers.map((label) => JSON.stringify(label)).join(", ") +
-            ". Read their board-allowed chats with `openwa_linked_list` and `openwa_linked_read` when an owner asks; never send through them and never copy their content anywhere unless the owner asks.",
+            ". Read their board-allowed chats with `openwa_linked_list` and `openwa_linked_read`, and store a file from them with `openwa_linked_get_media`, when an owner asks; never send through them and never copy their content anywhere unless the owner asks.",
         ]
       : []),
     "- Live grants: " + (grantLines.length > 0 ? "" : "none."),

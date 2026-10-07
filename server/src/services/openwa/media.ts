@@ -114,6 +114,7 @@ export interface OpenwaMessageMediaInput {
   chatId: string;
   messageId: string;
   commentId?: string | null;
+  rethrow?: (error: unknown) => boolean;
 }
 
 export const OPENWA_MEDIA_FETCH_TIMEOUT_MS = 30_000;
@@ -739,6 +740,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
     descriptor: Descriptor,
     settings: () => Promise<SpeechToTextSettings>,
     finalized: Promise<void>,
+    rethrow?: (error: unknown) => boolean,
   ): Promise<OpenwaIngestedMedia> {
     const declaredMime = descriptor.mime ? normalizeContentType(descriptor.mime) : null;
     const item: OpenwaIngestedMedia = {
@@ -766,6 +768,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
     try {
       downloaded = await download(client, scope.chatId, scope.waMessageId);
     } catch (error) {
+      if (rethrow?.(error)) throw error;
       const failure = gatewayFailure(error);
       if (isAudioKind(descriptor.kind) && failure.status === "pending") item.transcriptStatus = "pending";
       return { ...item, ...failure, ...(failure.reason === "too_large" ? { limitBytes: maxBytes } : {}) };
@@ -810,6 +813,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
     descriptors: Descriptor[],
     structured: OpenwaIngestedMedia[],
     retryUnsettled: boolean,
+    rethrow?: (error: unknown) => boolean,
   ): Promise<OpenwaIngestedMedia[]> {
     if (stopped) throw new Error("OpenWA media service is shut down");
     if (descriptors.length) await assertIssueScope(scope);
@@ -849,7 +853,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       const todo = keep.some((item) => DOWNLOADABLE_KINDS.has(item.kind)) ? [] : retried.length ? retried : descriptors;
       const items = [
         ...keep,
-        ...(await Promise.all(todo.map((descriptor) => processDownloadable(scope, client, descriptor, settings, finalized)))),
+        ...(await Promise.all(todo.map((descriptor) => processDownloadable(scope, client, descriptor, settings, finalized, rethrow)))),
         ...(keep.some((item) => !DOWNLOADABLE_KINDS.has(item.kind)) ? [] : structured),
       ];
       await finalize(scope, claimed.id, items);
@@ -916,7 +920,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       return run(scope, input.client, downloadable, structured, false);
     },
 
-    /** Fetches one message's media on demand (openwa_get_media), reusing an earlier stored copy when present. */
+    /** Fetches one message's media on demand, reusing an earlier stored copy when present. */
     async fetchOpenwaMessageMedia(input: OpenwaMessageMediaInput): Promise<OpenwaIngestedMedia[]> {
       const scope: Scope = {
         companyId: input.endpoint.companyId,
@@ -927,7 +931,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
         chatId: input.chatId,
         waMessageId: input.messageId,
       };
-      return run(scope, input.client, [{ kind: "document", mime: null, declaredSize: null, filename: null }], [], true);
+      return run(scope, input.client, [{ kind: "document", mime: null, declaredSize: null, filename: null }], [], true, input.rethrow);
     },
 
     /** Registers a callback for transcripts that finish after the wake was released; returns an unsubscribe function. */

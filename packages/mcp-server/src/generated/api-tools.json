@@ -1477,7 +1477,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18343",
+    "boardGuard": "assertBoard@issues.ts:18361",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13927,7 +13927,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17261",
+    "boardGuard": "assertBoard@issues.ts:17279",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20146,7 +20146,7 @@
     "operationId": "GET /api/issues/{id}/watchdog",
     "method": "GET",
     "path": "/issues/{issueId}/watchdog",
-    "description": "Read the watchdog/monitor configuration for an issue.",
+    "description": "Read the task watchdog for an issue: the agent that reviews the issue subtree after it stops. This is not the issue monitor; read monitorNextCheckAt from the issue.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -23889,7 +23889,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16288",
+    "boardGuard": "assertBoard@issues.ts:16306",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25301,6 +25301,14 @@
     "authorityCapability": null,
     "parameters": [
       {
+        "name": "caseType",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
         "name": "companyId",
         "in": "path",
         "required": true,
@@ -25334,6 +25342,14 @@
             "true",
             "false"
           ]
+        }
+      },
+      {
+        "name": "key",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
         }
       },
       {
@@ -35063,7 +35079,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9467",
+    "boardGuard": "assertBoard@issues.ts:9483",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37265,7 +37281,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8812",
+    "boardGuard": "assertBoard@issues.ts:8828",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37326,7 +37342,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16258",
+    "boardGuard": "assertBoard@issues.ts:16276",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37427,7 +37443,7 @@
     "operationId": "PUT /api/issues/{id}/watchdog",
     "method": "PUT",
     "path": "/issues/{issueId}/watchdog",
-    "description": "Schedule or clear the issue monitor. Use only when you really want the assignee woken later; never claim a watcher without writing one.",
+    "description": "Assign or replace the task watchdog agent that reviews the issue subtree after it stops. It does not schedule the issue monitor: schedule a timed re-check with paperclipUpdateIssue advanced.executionPolicy.monitor.nextCheckAt.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -39254,7 +39270,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18283",
+    "boardGuard": "assertBoard@issues.ts:18301",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39686,7 +39702,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17213",
+    "boardGuard": "assertBoard@issues.ts:17231",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43529,7 +43545,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10142",
+    "boardGuard": "assertBoard@issues.ts:10158",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43655,7 +43671,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16226",
+    "boardGuard": "assertBoard@issues.ts:16244",
     "authorityCapability": null,
     "parameters": [
       {

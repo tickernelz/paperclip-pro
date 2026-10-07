@@ -453,6 +453,43 @@ describeEmbeddedPostgres("cases routes", () => {
     expect(all).toHaveLength(1);
   });
 
+  it("looks up a case by caseType and exact key on the list route", async () => {
+    await enableCases();
+    const company = await seedCompany("KEY");
+    const http = request(app(boardActor));
+
+    const target = await http
+      .post(`/api/companies/${company.id}/cases`)
+      .send({ caseType: "deploy", key: "deploy:api:2026-10-07", title: "Deploy api" })
+      .expect(201);
+    await http
+      .post(`/api/companies/${company.id}/cases`)
+      .send({ caseType: "deploy", key: "deploy:api:2026-10-07:retry", title: "Deploy api retry" })
+      .expect(201);
+    await http
+      .post(`/api/companies/${company.id}/cases`)
+      .send({ caseType: "release_note", key: "deploy:api:2026-10-07", title: "Release note" })
+      .expect(201);
+
+    const byAlias = await http
+      .get(`/api/companies/${company.id}/cases`)
+      .query({ caseType: "deploy", key: "deploy:api:2026-10-07" })
+      .expect(200);
+    expect(byAlias.body.map((row: { id: string }) => row.id)).toEqual([target.body.id]);
+
+    const byType = await http
+      .get(`/api/companies/${company.id}/cases`)
+      .query({ type: "deploy", key: "deploy:api:2026-10-07" })
+      .expect(200);
+    expect(byType.body.map((row: { id: string }) => row.id)).toEqual([target.body.id]);
+
+    const keyOnly = await http
+      .get(`/api/companies/${company.id}/cases`)
+      .query({ key: "deploy:api:2026-10-07" })
+      .expect(200);
+    expect(keyOnly.body).toHaveLength(2);
+  });
+
   it("resolves cases by identifier", async () => {
     await enableCases();
     const company = await seedCompany("REF");

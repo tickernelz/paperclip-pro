@@ -313,10 +313,13 @@ const createApprovalToolSchema = z.object({
   companyId: companyIdOptional,
 }).merge(createApprovalSchema);
 
+const apiRequestBodySchema = z.union([z.string(), z.record(z.string(), z.unknown()), z.array(z.unknown())]);
+
 const apiRequestSchema = z.object({
   method: z.enum(["GET", "POST", "PUT", "PATCH", "DELETE"]),
   path: z.string().min(1),
-  jsonBody: z.string().optional(),
+  jsonBody: apiRequestBodySchema.optional(),
+  body: apiRequestBodySchema.optional(),
 });
 
 const workspaceRuntimeControlTargetSchema = z.object({
@@ -667,7 +670,7 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipUpdateIssue",
-      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work. Agents cannot hand their own task to a reviewer: executionPolicy.stages in advanced is board-controlled, a handoff started by agent-authored stages is rejected with 422 agent_review_handoff_requires_subtask, and changing assigneeAgentId or assigneeUserId on the task you are assigned is rejected with 422 agent_reassign_requires_subtask (returning the issue to its creator user is still allowed). To get your work reviewed, create a review subtask with paperclipCreateChildIssue assigned to the reviewer with a self-contained description, add its id to blockedByIssueIds on your issue, then set status to in_review: you stay the assignee and the issue_blockers_resolved wake brings you the verdict.",
+      "Patch an issue, optionally including a comment; include resume=true when intentionally requesting follow-up on resumable closed work. Agents cannot hand their own task to a reviewer: executionPolicy.stages in advanced is board-controlled, a handoff started by agent-authored stages is rejected with 422 agent_review_handoff_requires_subtask, and changing assigneeAgentId or assigneeUserId on the task you are assigned is rejected with 422 agent_reassign_requires_subtask (returning the issue to its creator user is still allowed). To get your work reviewed, create a review subtask with paperclipCreateChildIssue assigned to the reviewer with a self-contained description, add its id to blockedByIssueIds on your issue, then set status to in_review: you stay the assignee and the issue_blockers_resolved wake brings you the verdict. Schedule a timed re-check (the issue monitor) with advanced.executionPolicy.monitor.nextCheckAt; executionPolicy replaces the stored policy as a whole.",
       updateIssueToolSchema,
       async ({ issueId, advanced, ...body }) =>
         client.requestJson("PATCH", `/issues/${encodeURIComponent(issueId)}`, {
@@ -827,16 +830,20 @@ export function createToolDefinitions(
     ),
     makeTool(
       "paperclipApiRequest",
-      "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations",
+      "Make a JSON request to an existing Paperclip /api endpoint for unsupported operations. Send the request body as jsonBody, a JSON object such as {body: 'Done'} for POST /issues/PAP-1/comments, or the same object as a JSON string; body is accepted as an alias of jsonBody.",
       apiRequestSchema,
-      async ({ method, path, jsonBody }) => {
+      async ({ method, path, jsonBody, body }) => {
         if (!path.startsWith("/") || path.includes("..")) {
           throw new Error("path must start with / and be relative to /api, and must not contain '..'");
         }
+        if (jsonBody !== undefined && body !== undefined) {
+          throw new Error("pass the request body once, as jsonBody");
+        }
+        const payload = jsonBody ?? body;
         const stripped = /^\/api(?=\/|\?|$)/.test(path) ? path.slice(4) : path;
         const relative = stripped.startsWith("/") ? stripped : `/${stripped}`;
         return client.requestJson(method, relative, {
-          body: parseOptionalJson(jsonBody),
+          body: typeof payload === "string" ? parseOptionalJson(payload) : payload,
         });
       },
     ),

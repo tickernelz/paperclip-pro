@@ -23,7 +23,7 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/paperclip-pro-adapter-utils";
 import { HttpError, forbidden } from "../../errors.js";
-import { openwaPrincipalAuthorization } from "./owners.js";
+import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";
 
 export const OPENWA_RUN_CONTEXT_KEY = "paperclipOpenwa";
@@ -491,9 +491,13 @@ export async function resolveOpenwaRunContext(
     hasBoardProvenance(wake, input.contextSnapshot) &&
     !(await chatActionBacked(db, input.companyId, input.wakeupRequestId!))
   ) {
+    const boardOwner = binding.status === "archived"
+      ? undefined
+      : (await openwaCurrentOwners(db, { companyId: input.companyId, id: binding.endpointId }))
+          .find((owner) => owner.userId === wake!.requestedByActorId);
     return {
       ...base,
-      triggerClass: "other",
+      triggerClass: boardOwner ? "owner" : "other",
       profile: "full",
       toolProfile: "full",
       event: null,
@@ -503,7 +507,7 @@ export async function resolveOpenwaRunContext(
       grantedCategories: [],
       requesterPrincipalId: null,
       approvalRequestId: null,
-      triggerPrincipalId: null,
+      triggerPrincipalId: boardOwner?.principalId ?? null,
     };
   }
   const deliveryIds = wakeAction?.deliveryIds ?? [];

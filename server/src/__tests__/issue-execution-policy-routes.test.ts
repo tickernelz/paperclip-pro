@@ -994,6 +994,57 @@ describe("issue execution policy routes", () => {
     );
   });
 
+  it("rejects top-level monitor fields and names executionPolicy.monitor.nextCheckAt", async () => {
+    const issue = {
+      id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      companyId: "company-1",
+      status: "in_progress",
+      assigneeAgentId: "33333333-3333-4333-8333-333333333333",
+      assigneeUserId: null,
+      createdByUserId: "local-board",
+      identifier: "PAP-1007",
+      title: "Misplaced monitor",
+      executionPolicy: null,
+      executionState: null,
+      monitorAttemptCount: 0,
+      monitorNextCheckAt: null,
+      monitorLastTriggeredAt: null,
+      monitorNotes: null,
+      monitorScheduledBy: null,
+    };
+    mockIssueService.getById.mockResolvedValue(issue);
+    mockIssueService.update.mockImplementation(async (_id: string, patch: Record<string, unknown>) => ({
+      ...issue,
+      ...patch,
+      updatedAt: new Date(),
+    }));
+    const app = await createApp({
+      type: "agent",
+      agentId: "33333333-3333-4333-8333-333333333333",
+      companyId: "company-1",
+      runId: "55555555-5555-4555-8555-555555555555",
+    });
+
+    for (const body of [
+      { monitorNextCheckAt: "2026-12-01T12:00:00.000Z" },
+      { monitor: { nextCheckAt: "2026-12-01T12:00:00.000Z" } },
+    ]) {
+      const res = await request(app).patch("/api/issues/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa").send(body);
+      expect(res.status).toBe(400);
+      expect(JSON.stringify(res.body)).toContain("executionPolicy.monitor.nextCheckAt");
+    }
+    expect(mockIssueService.update).not.toHaveBeenCalled();
+  });
+
+  it("rejects a top-level monitor field on issue create", async () => {
+    const res = await request(await createApp())
+      .post("/api/companies/company-1/issues")
+      .send({ title: "Watch CI", monitorNextCheckAt: "2026-12-01T12:00:00.000Z" });
+
+    expect(res.status).toBe(400);
+    expect(JSON.stringify(res.body)).toContain("executionPolicy.monitor.nextCheckAt");
+  });
+
   it("allows board-authored in_review repair updates without a review path", async () => {
     const issue = {
       id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",

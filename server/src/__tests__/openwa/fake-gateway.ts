@@ -53,6 +53,8 @@ export interface FakeLinkedMessage {
   fromMe: boolean;
   timestamp: number;
   author?: string;
+  type?: string;
+  media?: Record<string, unknown>;
 }
 
 export interface FakeLinkedSession {
@@ -63,6 +65,7 @@ export interface FakeLinkedSession {
   status: string;
   chats: Array<{ id: string; name?: string; timestamp?: number }>;
   messages: FakeLinkedMessage[];
+  media: Map<string, FakeMedia>;
 }
 
 export interface FakeGatewayOptions {
@@ -267,12 +270,16 @@ export class FakeOpenwaGateway {
       status: "ready",
       chats: [],
       messages: [],
+      media: new Map(),
     };
     this.linkedSessions.set(session.id, session);
     return session;
   }
 
-  linkedMessage(sessionId: string, input: { chatId: string; body: string; fromMe?: boolean; author?: string; timestamp?: number }): FakeLinkedMessage {
+  linkedMessage(
+    sessionId: string,
+    input: { chatId: string; body: string; fromMe?: boolean; author?: string; timestamp?: number; type?: string; media?: Record<string, unknown> },
+  ): FakeLinkedMessage {
     const session = this.linkedSessions.get(sessionId);
     if (!session) throw new Error("unknown linked session " + sessionId);
     const sequence = ++this.sequence;
@@ -284,9 +291,17 @@ export class FakeOpenwaGateway {
       fromMe: input.fromMe === true,
       timestamp: input.timestamp ?? Math.floor(Date.now() / 1000) + sequence,
       ...(input.author ? { author: input.author } : {}),
+      ...(input.type ? { type: input.type } : {}),
+      ...(input.media ? { media: input.media } : {}),
     };
     session.messages.push(message);
     return message;
+  }
+
+  setLinkedMedia(sessionId: string, chatId: string, messageId: string, media: FakeMedia): void {
+    const session = this.linkedSessions.get(sessionId);
+    if (!session) throw new Error("unknown linked session " + sessionId);
+    session.media.set(chatId + "\u0000" + messageId, media);
   }
 
   private ownSessionView() {
@@ -380,14 +395,28 @@ export class FakeOpenwaGateway {
             to: message.fromMe ? chatId : session.phone + "@c.us",
             chatId,
             body: message.body,
-            type: "chat",
+            type: message.type ?? "chat",
             timestamp: message.timestamp,
             fromMe: message.fromMe,
             isGroup: chatId.endsWith("@g.us"),
             kind: chatId.endsWith("@g.us") ? "group" : "individual",
             ...(message.author ? { author: message.author } : {}),
+            ...(message.media && query.includeMedia === "true" && query.deep !== "true" ? { media: message.media } : {}),
           })),
         );
+      }
+      const linkedMedia = /^\/messages\/([^/]+)\/([^/]+)\/media$/.exec(rest);
+      if (req.method === "GET" && linkedMedia) {
+        const media = session.media.get(decodeURIComponent(linkedMedia[1]!) + "\u0000" + decodeURIComponent(linkedMedia[2]!));
+        if (!media) return reply(404, { message: "No media stored for this message" });
+        if (media.status && media.status !== 200) return reply(media.status, { message: "media failed" });
+        res.writeHead(200, {
+          "content-type": media.contentType,
+          "content-length": String(media.body.length),
+          ...(media.filename ? { "content-disposition": 'attachment; filename="' + media.filename + '"' } : {}),
+        });
+        res.end(media.body);
+        return;
       }
       return reply(404, { message: "Not found" });
     }

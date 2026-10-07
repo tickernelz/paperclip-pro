@@ -1441,8 +1441,9 @@ Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSET
 | List recorded work products | `paperclipListIssueWorkProducts` | `issueId` |
 | Record an operator-facing work product | `paperclipCreateIssueWorkProduct` | `issueId`, work-product fields |
 | Update a recorded work product | `paperclipUpdateWorkProduct` | `workProductId`, changed fields |
-| Read the issue monitor/watchdog configuration | `paperclipGetIssueWatchdog` | `issueId` |
-| Schedule or clear the issue monitor | `paperclipSetIssueWatchdog` | `issueId`, watchdog fields |
+| Schedule the issue monitor (`monitorNextCheckAt`) | `paperclipUpdateIssue` | `issueId`, `advanced: { "executionPolicy": { "monitor": { "nextCheckAt": "2026-10-08T09:00:00.000Z", "notes": "Re-check CI" } } }` |
+| Read the task watchdog (the agent that reviews a stopped subtree; not the monitor) | `paperclipGetIssueWatchdog` | `issueId` |
+| Assign or replace the task watchdog agent | `paperclipSetIssueWatchdog` | `issueId`, `agentId`, optional `instructions` |
 | Current execution workspace, runtime services and service URLs | `paperclipGetIssueWorkspaceRuntime` | `issueId` |
 | Execution workspace detail | `paperclipGetExecutionWorkspace` | `executionWorkspaceId` |
 | Start, stop, or restart workspace runtime services | `paperclipControlIssueWorkspaceServices` | `issueId`, `action` (`start`, `stop`, `restart`), `runtimeServiceId`, `serviceIndex`, `workspaceCommandId` |

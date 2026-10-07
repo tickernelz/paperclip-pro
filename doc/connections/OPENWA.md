@@ -473,7 +473,8 @@ Every call is audited as `tool_called`.
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
 | `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders and custom instructions; an empty call returns the current settings. |
 | `openwa_linked_list` | read | Owner runs only: list linked read-only numbers and their board-allowed chats. |
-| `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first. |
+| `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first; media messages carry `media.kind`. |
+| `openwa_linked_get_media` | read | Owner runs only: store one message's media from an allowed linked chat as an attachment on the run's task, same result shape as `openwa_get_media`. |
 
 Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
@@ -521,7 +522,13 @@ The endpoint keeps its own agent number unchanged.
   a linked tool. Its messages are not stored in Paperclip tables (audit rows
   keep chat, count and time only), but the text the agent reads appears in that
   run's transcript and run log, and the agent quotes it only when the owner asks.
-- **Owner runs only.** `openwa_linked_list` and `openwa_linked_read` work only in
+  A file fetched with `openwa_linked_get_media` is stored as an attachment on the
+  run's task, under the same size and type rules as `openwa_get_media`; the
+  gateway serves it from its media archive through the viewer key. Calling
+  `openwa_get_media` with a linked chatRef fails `invalid_target` and names
+  `openwa_linked_get_media`.
+- **Owner runs only.** `openwa_linked_list`, `openwa_linked_read` and
+  `openwa_linked_get_media` work only in
   owner-triggered runs (trigger class `owner`, profile `full`); every other run
   gets 403 `owner_only`. There is no approval category for them. Owner-run
   guidance names the linked numbers by label.
@@ -545,8 +552,9 @@ The endpoint keeps its own agent number unchanged.
   the channel unlinks every linked number the same way before the admin key is
   cleared. When the gateway stops accepting a key, the number shows
   **Unavailable** and must be linked again.
-- **Audit.** Each agent read records a `linked_read` audit entry with the chat key,
-  linked number id and message count, never content. Board changes record
+- **Audit.** Each agent read or media fetch records a `linked_read` audit entry
+  with the tool, chat key, linked number id and message or media count (plus the
+  message id for a fetch), never content. Board changes record
   `openwa.linked_session_added`, `openwa.linked_session_chats_changed` (counts
   only) and `openwa.linked_session_removed`.
 
