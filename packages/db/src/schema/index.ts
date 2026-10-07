@@ -73,6 +73,7 @@ export {
 } from "./chat_channels.js";
 export { issueRelations } from "./issue_relations.js";
 export { issueShareLinks } from "./issue_share_links.js";
+export { webPushSubscriptions } from "./web_push_subscriptions.js";
 export { routines, routineRevisions, routineTriggers, routineWebhookTestReceipts, routineRuns } from "./routines.js";
 export { pipelines, pipelineStages, pipelineTransitions } from "./pipelines.js";
 export {

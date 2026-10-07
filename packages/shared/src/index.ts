@@ -2740,6 +2740,8 @@ export {
 export * from "./validators/skill-policy.js";
 export * from "./types/issue-share.js";
 export * from "./validators/issue-share.js";
+export * from "./types/notifications.js";
+export * from "./validators/notifications.js";
 export * from "./validators/provider-trace.js";
 export {
   FEATURE_TIERS,
