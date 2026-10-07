@@ -1477,7 +1477,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18210",
+    "boardGuard": "assertBoard@issues.ts:18265",
     "authorityCapability": null,
     "parameters": [
       {
@@ -8220,6 +8220,41 @@
     }
   },
   {
+    "name": "paperclipCreateIssueShareLink",
+    "operationId": "POST /api/issues/{id}/share-link",
+    "method": "POST",
+    "path": "/issues/{issueId}/share-link",
+    "description": "Create (or return the existing) public read-only link to an issue for an external requester. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertAgentIssueMutationAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipCreateIssueTreeHold",
     "operationId": "POST /api/issues/{id}/tree-holds",
     "method": "POST",
@@ -13892,7 +13927,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17131",
+    "boardGuard": "assertBoard@issues.ts:17186",
     "authorityCapability": null,
     "parameters": [
       {
@@ -19956,6 +19991,40 @@
     ]
   },
   {
+    "name": "paperclipGetIssueShareLink",
+    "operationId": "GET /api/issues/{id}/share-link",
+    "method": "GET",
+    "path": "/issues/{issueId}/share-link",
+    "description": "Get the active public read-only share link of an issue, or null when it is not shared.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetIssueTreeControlState",
     "operationId": "GET /api/issues/{id}/tree-control/state",
     "method": "GET",
@@ -23754,7 +23823,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16230",
+    "boardGuard": "assertBoard@issues.ts:16285",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24115,7 +24184,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4784",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4768",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24150,7 +24219,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4711",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4695",
     "authorityCapability": null,
     "parameters": []
   },
@@ -34928,7 +34997,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9535",
+    "boardGuard": "assertBoard@issues.ts:9464",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35280,6 +35349,41 @@
       },
       {
         "name": "sourceKind",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipRevokeIssueShareLink",
+    "operationId": "DELETE /api/issues/{id}/share-link",
+    "method": "DELETE",
+    "path": "/issues/{issueId}/share-link",
+    "description": "Revoke the public share link of an issue; the URL and every download under it stop working.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertAgentIssueMutationAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
         "in": "path",
         "required": true,
         "schema": {
@@ -37095,7 +37199,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:8880",
+    "boardGuard": "assertBoard@issues.ts:8809",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37156,7 +37260,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16200",
+    "boardGuard": "assertBoard@issues.ts:16255",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39011,7 +39115,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18150",
+    "boardGuard": "assertBoard@issues.ts:18205",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39443,7 +39547,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17083",
+    "boardGuard": "assertBoard@issues.ts:17138",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43240,6 +43344,65 @@
     }
   },
   {
+    "name": "paperclipUpdateIssueCommentPublicShare",
+    "operationId": "PATCH /api/issues/{id}/comments/{commentId}/public-share",
+    "method": "PATCH",
+    "path": "/issues/{issueId}/comments/{commentId}/public-share",
+    "description": "Show or hide a person's comment on the public share link",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@issues.ts:10139",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "commentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "visible"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipUpdateIssueDocumentAnnotation",
     "operationId": "PATCH /api/issues/{id}/documents/{key}/annotations/{threadId}",
     "method": "PATCH",
@@ -43328,7 +43491,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16168",
+    "boardGuard": "assertBoard@issues.ts:16223",
     "authorityCapability": null,
     "parameters": [
       {

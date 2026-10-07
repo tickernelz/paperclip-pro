@@ -195,6 +195,8 @@ import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { workModeMetaFor } from "../lib/work-mode-meta";
 import { IssueContinuationHandoff } from "../components/IssueContinuationHandoff";
 import { IssueAttachmentsSection } from "../components/IssueAttachmentsSection";
+import { IssueShareControl } from "../components/IssueShareControl";
+import { issueShareApi } from "../api/issue-share";
 import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
 import { IssuePlanDecompositionsSection } from "../components/IssuePlanDecompositionsSection";
 import { IssueOutputSection } from "../components/issue-output/IssueOutputSection";
@@ -408,6 +410,7 @@ type ActionableIssueThreadInteraction =
 type ResolveRecoveryActionOutcome =
   "restored" | "false_positive" | "blocked" | "cancelled";
 type IssueDetailComment = (IssueComment | OptimisticIssueComment) & {
+  publicShareVisible?: boolean;
   runId?: string | null;
   runAgentId?: string | null;
   interruptedRunId?: string | null;
@@ -1295,6 +1298,7 @@ type IssueDetailChatTabProps = {
   onAttachImage: (file: File) => Promise<IssueAttachment | void>;
   onInterruptQueued: (runId: string | null) => Promise<void>;
   onDeleteComment?: (commentId: string) => Promise<void> | void;
+  onSetCommentPublicShare?: (commentId: string, visible: boolean) => Promise<void> | void;
   onPauseWorkRun?: (runId: string, feedback?: "composer") => Promise<void>;
   onStopResponse?: (runId: string) => Promise<void>;
   stopResponsePending?: boolean;
@@ -1418,6 +1422,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   onAttachImage,
   onInterruptQueued,
   onDeleteComment,
+  onSetCommentPublicShare,
   onPauseWorkRun,
   onStopResponse,
   stopResponsePending,
@@ -2563,6 +2568,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             onSteerQueuedComment={steerQueuedComment}
             onDiscardQueuedComment={discardQueuedComment}
             onDeleteComment={onDeleteComment}
+            onSetCommentPublicShare={onSetCommentPublicShare}
             onCancelQueued={onCancelQueued}
             interruptingQueuedRunId={interruptingQueuedRunId}
             stoppingRunId={
@@ -5322,6 +5328,28 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
   });
 
+  const setCommentPublicShare = useMutation({
+    mutationFn: ({ commentId, visible }: { commentId: string; visible: boolean }) =>
+      issueShareApi.setCommentPublicShare(issueId!, commentId, visible),
+    onSuccess: (comment) => {
+      upsertCommentInCache(comment);
+      pushToast({
+        title: comment.publicShareVisible
+          ? "Comment shown on public link"
+          : "Comment hidden from public link",
+        tone: "success",
+      });
+    },
+    onError: (err) => {
+      pushToast({
+        title: "Couldn't update public visibility",
+        body:
+          err instanceof Error ? err.message : "Unable to update the comment",
+        tone: "error",
+      });
+    },
+  });
+
   const handleCancelQueuedComment = useCallback(
     (commentId: string) => {
       if (commentId.startsWith("optimistic-")) {
@@ -7370,6 +7398,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 "absolute right-0 top-0 flex h-7 items-center",
             )}
           >
+            {canManageTreeControl && issue?.id ? (
+              <IssueShareControl issueId={issue.id} />
+            ) : null}
             <Popover open={moreOpen} onOpenChange={setMoreOpen}>
               <PopoverTrigger asChild>
                 <Button
@@ -8125,6 +8156,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                       .mutateAsync({ commentId })
                       .then(() => undefined)
                   }
+                  onSetCommentPublicShare={canManageTreeControl
+                    ? (commentId, visible) =>
+                        setCommentPublicShare.mutate({ commentId, visible })
+                    : undefined}
                   onStopResponse={canManageTreeControl
                     ? (runId) => stopResponse.mutateAsync(runId)
                     : undefined}

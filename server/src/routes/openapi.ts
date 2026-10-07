@@ -75,6 +75,7 @@ import {
   checkoutIssueSchema,
   linkIssueApprovalSchema,
   createIssueWorkProductSchema,
+  updateIssueCommentPublicShareSchema,
   updateIssueWorkProductSchema,
   upsertIssueDocumentSchema,
   restoreIssueDocumentRevisionSchema,
@@ -1430,6 +1431,11 @@ const PUBLIC_OPERATIONS = new Set([
   "GET /api/cli-auth/challenges/{id}",
   "POST /api/cli-auth/challenges/{id}/cancel",
   "GET /api/invites/{token}",
+  "GET /api/public/share/{token}",
+  "GET /api/public/share/{token}/issues/{issueId}",
+  "GET /api/public/share/{token}/attachments/{attachmentId}/content",
+  "GET /api/public/share/{token}/assets/{assetId}/content",
+  "GET /api/public/share/{token}/issues/{issueId}/documents/{key}/pdf",
   "GET /api/invites/{token}/logo",
   "GET /api/invites/{token}/onboarding",
   "GET /api/invites/{token}/onboarding.txt",
@@ -1465,6 +1471,7 @@ const browserUseOperations = [
 ] as const;
 
 const BOARD_ONLY_OPERATIONS = new Set([
+  "PATCH /api/issues/{id}/comments/{commentId}/public-share",
   ...browserUseOperations.map(([method, path]) => `${method.toUpperCase()} ${path}`),
   "GET /api/companies/{companyId}/ai-connections",
   "POST /api/companies/{companyId}/ai-connections",
@@ -4911,6 +4918,55 @@ registry.registerPath({
     body: jsonBody(createIssueWorkProductSchema),
   },
   responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/issues/{id}/share-link",
+  tags: ["issues"],
+  summary: "Get the active public share link of an issue",
+  description: "Returns the active read-only public link (url, token, createdAt) or null when the issue is not shared.",
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/issues/{id}/share-link",
+  tags: ["issues"],
+  summary: "Create or return the public share link of an issue",
+  description: "Idempotent: returns the existing active link (200) or creates one (201). Anyone holding the URL can read the issue, its agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 200: r.ok(), 201: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/issues/{id}/share-link",
+  tags: ["issues"],
+  summary: "Revoke the public share link of an issue",
+  description: "The old URL and every download under it stop working; creating a link again issues a new token.",
+  request: { params: z.object({ id: z.string() }) },
+  responses: { 204: r.noContent, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "patch",
+  path: "/api/issues/{id}/comments/{commentId}/public-share",
+  tags: ["issues"],
+  summary: "Show or hide a person's comment on the public share link",
+  request: {
+    params: z.object({ id: z.string(), commentId: z.string() }),
+    body: jsonBody(updateIssueCommentPublicShareSchema),
+  },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    422: r.unprocessable,
+  },
 });
 
 registry.registerPath({
@@ -10159,6 +10215,51 @@ registry.registerPath({
   summary: "Get a CLI auth challenge",
   request: { params: z.object({ id: cliAuthChallengeIdParamSchema }) },
   responses: { 200: r.ok(), 400: r.badRequest, 404: r.notFound },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/public/share/{token}",
+  tags: ["public-share"],
+  summary: "Read the public projection of a shared issue",
+  request: { params: z.object({ token: z.string() }) },
+  responses: { 200: r.ok(), 404: r.notFound, 429: r.tooManyRequests },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/public/share/{token}/issues/{issueId}",
+  tags: ["public-share"],
+  summary: "Read the public projection of an issue one hop from the shared issue",
+  request: { params: z.object({ token: z.string(), issueId: z.string() }) },
+  responses: { 200: r.ok(), 404: r.notFound, 429: r.tooManyRequests },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/public/share/{token}/attachments/{attachmentId}/content",
+  tags: ["public-share"],
+  summary: "Download a publicly visible attachment of a shared issue",
+  request: { params: z.object({ token: z.string(), attachmentId: z.string() }) },
+  responses: { 200: { description: "File content" }, 206: { description: "Partial file content" }, 404: r.notFound, 416: { description: "Range not satisfiable" }, 429: r.tooManyRequests },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/public/share/{token}/assets/{assetId}/content",
+  tags: ["public-share"],
+  summary: "Download a publicly visible work-product file or company logo of a shared issue",
+  request: { params: z.object({ token: z.string(), assetId: z.string() }) },
+  responses: { 200: { description: "File content" }, 206: { description: "Partial file content" }, 404: r.notFound, 416: { description: "Range not satisfiable" }, 429: r.tooManyRequests },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/public/share/{token}/issues/{issueId}/documents/{key}/pdf",
+  tags: ["public-share"],
+  summary: "Download a document of a shared issue as PDF",
+  request: { params: z.object({ token: z.string(), issueId: z.string(), key: z.string() }) },
+  responses: { 200: { description: "PDF document" }, 404: r.notFound, 429: r.tooManyRequests },
 });
 
 // ─── Invite onboarding ────────────────────────────────────────────────────────

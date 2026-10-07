@@ -410,6 +410,7 @@ export const queryKeys = {
     approvals: (issueId: string) => ["issues", "approvals", issueId] as const,
     liveRuns: (issueId: string) => ["issues", "live-runs", issueId] as const,
     activeRun: (issueId: string) => ["issues", "active-run", issueId] as const,
+    shareLink: (issueId: string) => ["issues", "share-link", issueId] as const,
     runnerGoal: (issueId: string, agentId?: string | null) =>
       ["issues", "runner-goal", issueId, agentId ?? "__effective__"] as const,
     modelOverride: (issueId: string) =>
@@ -625,6 +626,10 @@ export const queryKeys = {
       ["access", "user-company-access", userId] as const,
     invite: (token: string) => ["access", "invite", token] as const,
     currentBoardAccess: ["access", "current-board-access"] as const,
+  },
+  publicShare: {
+    view: (token: string, issueId: string | null) =>
+      ["public-share", token, issueId ?? "root"] as const,
   },
   auth: {
     session: ["auth", "session"] as const,
