@@ -71,12 +71,13 @@ export function IssueShareControl({ issueId }: { issueId: string }) {
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          size="icon-xs"
+          size="xs"
           className="shrink-0"
           aria-label="Share task"
           title="Share task"
         >
-          <Share2 className="h-4 w-4" />
+          <Share2 className="size-4" />
+          <span className="hidden md:inline">Share</span>
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 space-y-3 p-3" align="end">

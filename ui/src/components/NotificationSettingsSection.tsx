@@ -128,76 +128,82 @@ function KindRow({
   const rowDisabled = disabled || !kindSettings.enabled;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 border-b border-border/70 py-3 last:border-b-0">
-      <ToggleSwitch
-        checked={kindSettings.enabled}
-        onCheckedChange={(enabled) => updateKindSettings(kind, { enabled })}
-        disabled={disabled}
-        aria-label={`${label} notifications`}
-      />
-      <div className="min-w-0 flex-1 text-sm font-medium">{label}</div>
-      <Select
-        value={kindSettings.soundId}
-        onValueChange={(soundId) => updateKindSettings(kind, { soundId })}
-        disabled={rowDisabled}
-      >
-        <SelectTrigger className="w-(--sz-170px)" aria-label={`${label} sound`}>
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          {NOTIFICATION_SOUNDS.map((sound) => (
-            <SelectItem key={sound.id} value={sound.id}>
-              {sound.label}
-            </SelectItem>
-          ))}
-          {customName ? <SelectItem value={CUSTOM_SOUND_ID}>Custom: {customName}</SelectItem> : null}
-          <SelectItem value={SILENT_SOUND_ID}>No sound</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button
-        type="button"
-        variant="outline"
-        size="icon-sm"
-        aria-label={`Preview ${label} sound`}
-        disabled={rowDisabled || kindSettings.soundId === SILENT_SOUND_ID}
-        onClick={() => void playSound(kind, kindSettings.soundId, settings.volume)}
-      >
-        <Play />
-      </Button>
-      <input
-        id={inputId}
-        type="file"
-        accept="audio/*"
-        className="sr-only"
-        disabled={rowDisabled || busy}
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = "";
-          if (file) void upload(file);
-        }}
-      />
-      <Button
-        type="button"
-        variant="outline"
-        size="sm"
-        disabled={rowDisabled || busy}
-        onClick={() => document.getElementById(inputId)?.click()}
-      >
-        {busy ? <LoaderCircle className="animate-spin" /> : <Upload />}
-        {customName ? "Replace" : "Custom"}
-      </Button>
-      {customName ? (
+    <div className="flex flex-col gap-2 border-b border-border/70 py-3 last:border-b-0 sm:flex-row sm:items-center sm:gap-3">
+      <div className="flex min-w-0 items-center gap-3 sm:w-48 sm:shrink-0">
+        <ToggleSwitch
+          checked={kindSettings.enabled}
+          onCheckedChange={(enabled) => updateKindSettings(kind, { enabled })}
+          disabled={disabled}
+          aria-label={`${label} notifications`}
+        />
+        <div className="min-w-0 flex-1 truncate text-sm font-medium" title={label}>
+          {label}
+        </div>
+      </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-2 sm:flex-1 sm:flex-nowrap">
+        <Select
+          value={kindSettings.soundId}
+          onValueChange={(soundId) => updateKindSettings(kind, { soundId })}
+          disabled={rowDisabled}
+        >
+          <SelectTrigger className="min-w-0 flex-1 sm:w-(--sz-170px) sm:flex-none" aria-label={`${label} sound`}>
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {NOTIFICATION_SOUNDS.map((sound) => (
+              <SelectItem key={sound.id} value={sound.id}>
+                {sound.label}
+              </SelectItem>
+            ))}
+            {customName ? <SelectItem value={CUSTOM_SOUND_ID}>Custom: {customName}</SelectItem> : null}
+            <SelectItem value={SILENT_SOUND_ID}>No sound</SelectItem>
+          </SelectContent>
+        </Select>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           size="icon-sm"
-          aria-label={`Remove custom ${label} sound`}
-          disabled={busy}
-          onClick={() => void remove()}
+          aria-label={`Preview ${label} sound`}
+          disabled={rowDisabled || kindSettings.soundId === SILENT_SOUND_ID}
+          onClick={() => void playSound(kind, kindSettings.soundId, settings.volume)}
         >
-          <Trash2 />
+          <Play />
         </Button>
-      ) : null}
+        <input
+          id={inputId}
+          type="file"
+          accept="audio/*"
+          className="sr-only"
+          disabled={rowDisabled || busy}
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = "";
+            if (file) void upload(file);
+          }}
+        />
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={rowDisabled || busy}
+          onClick={() => document.getElementById(inputId)?.click()}
+        >
+          {busy ? <LoaderCircle className="animate-spin" /> : <Upload />}
+          {customName ? "Replace" : "Custom"}
+        </Button>
+        {customName ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Remove custom ${label} sound`}
+            disabled={busy}
+            onClick={() => void remove()}
+          >
+            <Trash2 />
+          </Button>
+        ) : null}
+      </div>
     </div>
   );
 }
@@ -269,7 +275,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
 
       <div className="max-w-3xl space-y-4 rounded-md border border-border/70 p-4">
         <div className="flex items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="text-sm font-medium">Notifications on this device</div>
             <div className="text-xs text-muted-foreground">Play sounds and show alerts for new inbox items.</div>
           </div>
@@ -277,19 +283,19 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="text-sm font-medium">Browser permission</div>
             <div className="text-xs text-muted-foreground">{PERMISSION_LABELS[permission]}</div>
           </div>
           {permission === "default" ? (
-            <Button type="button" variant="outline" size="sm" onClick={() => void askPermission()}>
+            <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => void askPermission()}>
               Allow notifications
             </Button>
           ) : null}
         </div>
 
         <div className="flex items-center justify-between gap-4">
-          <div>
+          <div className="min-w-0">
             <div className="text-sm font-medium">Push when Paperclip is closed</div>
             <div className="text-xs text-muted-foreground">
               {canPush ? PUSH_STATUS_LABELS[pushState.status] : PUSH_STATUS_LABELS.unsupported}

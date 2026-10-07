@@ -7144,7 +7144,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       )}
     >
       {streamlinedTaskDetailEnabled ? (
-        <div className="flex min-w-0 items-start gap-2 md:items-center md:pr-8">
+        <div className="flex min-w-0 items-start gap-2 pr-14 md:items-center md:pr-32">
           <div className="hidden md:block">{issueStatusControl}</div>
           <div
             data-slot="task-detail-title"
@@ -7179,6 +7179,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           <span className="shrink-0 font-mono text-sm text-muted-foreground md:hidden">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
+        ) : null}
+        {canManageTreeControl && issue?.id ? (
+          <div className="order-last ml-auto shrink-0 md:hidden">
+            <IssueShareControl issueId={issue.id} />
+          </div>
         ) : null}
         {!streamlinedTaskDetailEnabled ? issueStatusControl : null}
         {/* PAP-411: priority UI hidden behind SHOW_TASK_PRIORITY_UI. */}
@@ -7326,7 +7331,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         )}
 
         {!streamlinedTaskDetailEnabled && !(isMobile && isFromInbox) && (
-          <div className="ml-auto flex items-center gap-0.5 md:hidden shrink-0">
+          <div className="flex items-center gap-0.5 md:hidden shrink-0">
             <Button
               variant="ghost"
               size="icon-xs"

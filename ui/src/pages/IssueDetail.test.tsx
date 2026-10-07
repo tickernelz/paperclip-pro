@@ -1677,7 +1677,7 @@ describe("IssueDetail", () => {
       "Issue detail smokePAP-1",
     );
     expect(identifier?.textContent).toBe("PAP-1");
-    expect(titleRow?.className).toContain("pr-8");
+    expect(titleRow?.className).toMatch(/\bmd:pr-\d+\b/);
     expect(titleActions?.className).toContain("absolute");
     expect(titleActions?.className).toContain("top-0");
     expect(
