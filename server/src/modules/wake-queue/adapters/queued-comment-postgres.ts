@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agentWakeupRequests, agents, heartbeatRuns, issueComments, issues } from "@tickernelz/paperclip-pro-db";
+import { agentWakeupRequests, agents, heartbeatRuns, issueAttachments, issueComments, issues } from "@tickernelz/paperclip-pro-db";
 import type { IssueComment, IssueQueuedCommentQueue } from "@tickernelz/paperclip-pro-shared";
 import {
   buildQueuedCommentQueueSnapshot,
@@ -83,6 +83,14 @@ function buildTransaction(tx: Db, companyId: string, deps: QueuedCommentQueuePos
     },
 
     async deleteComment({ issueId, commentId }) {
+      await tx
+        .update(issueAttachments)
+        .set({ updatedAt: new Date() })
+        .where(and(
+          eq(issueAttachments.issueCommentId, commentId),
+          eq(issueAttachments.issueId, issueId),
+          eq(issueAttachments.companyId, companyId),
+        ));
       const row = await tx
         .delete(issueComments)
         .where(and(eq(issueComments.id, commentId), eq(issueComments.issueId, issueId), eq(issueComments.companyId, companyId)))

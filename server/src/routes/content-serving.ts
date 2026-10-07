@@ -91,7 +91,7 @@ export interface ServableAttachment {
   originalFilename: string | null;
 }
 
-/** Streams an issue attachment with the any-type serving headers (nosniff, sandbox CSP, ranges). */
+/** Streams an issue attachment with the any-type serving headers. */
 export async function serveAttachmentContent(input: {
   storage: StorageService;
   attachment: ServableAttachment;
@@ -181,7 +181,7 @@ export interface ServableAsset {
   originalFilename: string | null;
 }
 
-/** Streams a stored asset with single-range support and the any-type serving headers. */
+/** Streams a stored asset with the any-type serving headers. */
 export async function serveAssetContent(input: {
   storage: StorageService;
   asset: ServableAsset;

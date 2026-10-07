@@ -13,6 +13,8 @@ import {
   serveAttachmentContent,
 } from "./content-serving.js";
 
+const SHARE_REQUESTS_PER_MINUTE = 300;
+
 function notFound(res: Response) {
   res.setHeader("Cache-Control", "private, no-store");
   res.status(404).json({ error: "Not found" });
@@ -21,19 +23,22 @@ function notFound(res: Response) {
 export function publicIssueShareRoutes(
   db: Db,
   storage: StorageService,
-  opts: { rateLimiter?: InviteRateLimiter } = {},
+  opts: { notFoundLimiter?: InviteRateLimiter; requestLimiter?: InviteRateLimiter } = {},
 ) {
   const router = Router();
   const shares = issueShareLinkService(db);
-  const rateLimiter = opts.rateLimiter ?? createInviteRateLimiter();
+  const notFoundLimiter = opts.notFoundLimiter ?? createInviteRateLimiter();
+  const requestLimiter =
+    opts.requestLimiter ?? createInviteRateLimiter({ maxRequests: SHARE_REQUESTS_PER_MINUTE });
 
   router.use("/public/share", (req, res, next) => {
     res.setHeader("X-Robots-Tag", "noindex, nofollow");
     res.setHeader("Referrer-Policy", "no-referrer");
     res.setHeader("Cache-Control", "private, no-store");
-    const result = rateLimiter.consume(
-      req.ip || req.socket?.remoteAddress || "unknown",
-    );
+    const ip = req.ip || req.socket?.remoteAddress || "unknown";
+    const token = req.path.split("/")[1] ?? "";
+    const lookups = notFoundLimiter.peek(ip);
+    const result = lookups.allowed ? requestLimiter.consume(`${token}:${ip}`) : lookups;
     res.setHeader("X-RateLimit-Limit", String(result.limit));
     res.setHeader("X-RateLimit-Remaining", String(result.remaining));
     if (!result.allowed) {
@@ -45,6 +50,9 @@ export function publicIssueShareRoutes(
       );
       return;
     }
+    res.on("finish", () => {
+      if (res.statusCode === 404) notFoundLimiter.consume(ip);
+    });
     next();
   });
 

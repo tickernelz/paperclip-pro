@@ -18,6 +18,7 @@ export type InviteRateLimitResult = {
 
 export type InviteRateLimiter = {
   consume(ip: string): InviteRateLimitResult;
+  peek(ip: string): InviteRateLimitResult;
 };
 
 export function createInviteRateLimiter(options: {
@@ -44,36 +45,39 @@ export function createInviteRateLimiter(options: {
     }
   }
 
-  return {
-    consume(ip: string) {
-      const currentTime = now();
-      sweep(currentTime);
-      const cutoff = currentTime - windowMs;
-      const key = ip || "unknown";
-      const recentHits = (hitsByKey.get(key) ?? []).filter((hit) => hit > cutoff);
+  function evaluate(ip: string, record: boolean): InviteRateLimitResult {
+    const currentTime = now();
+    sweep(currentTime);
+    const cutoff = currentTime - windowMs;
+    const key = ip || "unknown";
+    const recentHits = (hitsByKey.get(key) ?? []).filter((hit) => hit > cutoff);
 
-      if (recentHits.length >= maxRequests) {
-        const oldestHit = recentHits[0] ?? currentTime;
-        hitsByKey.set(key, recentHits);
-        return {
-          allowed: false,
-          limit: maxRequests,
-          remaining: 0,
-          retryAfterSeconds: Math.max(
-            1,
-            Math.ceil((oldestHit + windowMs - currentTime) / 1000),
-          ),
-        };
-      }
-
-      recentHits.push(currentTime);
+    if (recentHits.length >= maxRequests) {
+      const oldestHit = recentHits[0] ?? currentTime;
       hitsByKey.set(key, recentHits);
       return {
-        allowed: true,
+        allowed: false,
         limit: maxRequests,
-        remaining: Math.max(0, maxRequests - recentHits.length),
-        retryAfterSeconds: 0,
+        remaining: 0,
+        retryAfterSeconds: Math.max(
+          1,
+          Math.ceil((oldestHit + windowMs - currentTime) / 1000),
+        ),
       };
-    },
+    }
+
+    if (record) recentHits.push(currentTime);
+    if (recentHits.length > 0) hitsByKey.set(key, recentHits);
+    return {
+      allowed: true,
+      limit: maxRequests,
+      remaining: Math.max(0, maxRequests - recentHits.length),
+      retryAfterSeconds: 0,
+    };
+  }
+
+  return {
+    consume: (ip: string) => evaluate(ip, true),
+    peek: (ip: string) => evaluate(ip, false),
   };
 }

@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from "react";
+import { useCallback, useEffect, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Download, ExternalLink, FileText } from "lucide-react";
 import {
@@ -61,6 +61,14 @@ function sharePath(token: string, issueId?: string) {
   return issueId ? `${base}/issues/${encodeURIComponent(issueId)}` : base;
 }
 
+const ATTACHMENT_CONTENT_SRC = /^(?:https?:\/\/[^/]+)?\/api\/attachments\/([^/?#]+)\/content(?:[?#].*)?$/i;
+
+function publicShareImageSrc(token: string, src: string): string | null {
+  const match = ATTACHMENT_CONTENT_SRC.exec(src.trim());
+  if (!match) return null;
+  return `/api/public/share/${encodeURIComponent(token)}/attachments/${match[1]}/content`;
+}
+
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
@@ -92,7 +100,7 @@ function ActiveRunPill({ agentName }: { agentName: string }) {
       data-testid="public-share-run-pill"
       className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-foreground"
     >
-      <span className="h-2 w-2 animate-pulse rounded-full bg-(--liveness-blue)" aria-hidden />
+      <span className="h-2 w-2 animate-pulse rounded-full bg-(--status-agent-running)" aria-hidden />
       {agentName} is working…
     </span>
   );
@@ -167,7 +175,9 @@ function RelatedIssueRow({
   );
 }
 
-function TimelineEntry({ comment }: { comment: PublicIssueComment }) {
+type ImageSrcResolver = (src: string) => string | null;
+
+function TimelineEntry({ comment, resolveImageSrc }: { comment: PublicIssueComment; resolveImageSrc: ImageSrcResolver }) {
   if (comment.kind === "redacted") {
     return (
       <li
@@ -186,7 +196,7 @@ function TimelineEntry({ comment }: { comment: PublicIssueComment }) {
         <ActorIdentity actor={comment.author} />
         <Timestamp value={comment.createdAt} />
       </div>
-      <MarkdownBody className="text-sm" softBreaks linkIssueReferences={false}>
+      <MarkdownBody className="text-sm" softBreaks linkIssueReferences={false} resolveImageSrc={resolveImageSrc}>
         {comment.body}
       </MarkdownBody>
       {comment.attachments.length > 0 ? <AttachmentList attachments={comment.attachments} /> : null}
@@ -194,7 +204,7 @@ function TimelineEntry({ comment }: { comment: PublicIssueComment }) {
   );
 }
 
-function DocumentCard({ document }: { document: PublicShareDocument }) {
+function DocumentCard({ document, resolveImageSrc }: { document: PublicShareDocument; resolveImageSrc: ImageSrcResolver }) {
   return (
     <details className="group rounded-lg border border-border bg-card">
       <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm">
@@ -212,7 +222,7 @@ function DocumentCard({ document }: { document: PublicShareDocument }) {
           <Download className="h-3.5 w-3.5" aria-hidden />
           Download PDF
         </a>
-        <MarkdownBody className="text-sm" linkIssueReferences={false}>
+        <MarkdownBody className="text-sm" linkIssueReferences={false} resolveImageSrc={resolveImageSrc}>
           {document.body}
         </MarkdownBody>
       </div>
@@ -267,6 +277,7 @@ function CenteredNotice({ title, body, action }: { title: string; body: string; 
 
 function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; token: string }) {
   const { company, issue } = view;
+  const resolveImageSrc = useCallback((src: string) => publicShareImageSrc(token, src), [token]);
   return (
     <div className="min-h-dvh bg-background text-foreground">
       <header className="border-b border-border">
@@ -309,7 +320,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
           </p>
         </section>
         {issue.description ? (
-          <MarkdownBody className="text-sm" softBreaks linkIssueReferences={false}>
+          <MarkdownBody className="text-sm" softBreaks linkIssueReferences={false} resolveImageSrc={resolveImageSrc}>
             {issue.description}
           </MarkdownBody>
         ) : null}
@@ -331,7 +342,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
           <Section title="Documents">
             <div className="space-y-2">
               {view.documents.map((document) => (
-                <DocumentCard key={document.key} document={document} />
+                <DocumentCard key={document.key} document={document} resolveImageSrc={resolveImageSrc} />
               ))}
             </div>
           </Section>
@@ -354,7 +365,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
           {view.comments.length > 0 ? (
             <ol className="space-y-3">
               {view.comments.map((comment) => (
-                <TimelineEntry key={comment.id} comment={comment} />
+                <TimelineEntry key={comment.id} comment={comment} resolveImageSrc={resolveImageSrc} />
               ))}
             </ol>
           ) : (

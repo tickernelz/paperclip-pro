@@ -2634,9 +2634,6 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     return map;
   }, [feedbackVotes]);
 
-  // copy · 👍 · 👎 cluster for an agent bubble's footer line (PAP-413). Human
-  // and system bubbles get nothing; copy is always available, and the feedback
-  // buttons render only when the host wired a vote handler.
   const publicShareCommentById = useMemo(() => {
     const map = new Map<string, { visible: boolean; userAuthored: boolean }>();
     for (const comment of comments) {

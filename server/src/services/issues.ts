@@ -12229,6 +12229,10 @@ export function issueService(db: Db) {
       };
 
       return db.transaction(async (tx) => {
+        await tx
+          .update(issueAttachments)
+          .set({ updatedAt: new Date() })
+          .where(eq(issueAttachments.issueCommentId, commentId));
         const [comment] = await tx
           .delete(issueComments)
           .where(eq(issueComments.id, commentId))

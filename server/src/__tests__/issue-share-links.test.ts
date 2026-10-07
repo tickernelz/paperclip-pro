@@ -5,7 +5,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import {
   activityLog,
   agents,
@@ -13,9 +13,11 @@ import {
   authUsers,
   companies,
   createDb,
+  documents,
   heartbeatRuns,
   issueAttachments,
   issueComments,
+  issueDocuments,
   issueRelations,
   issueWorkProducts,
   issues,
@@ -30,6 +32,14 @@ import { issueRoutes } from "../routes/issues.js";
 import { publicIssueShareRoutes } from "../routes/public-issue-share.js";
 import { errorHandler } from "../middleware/index.js";
 import { createInviteRateLimiter } from "../services/invite-rate-limit.js";
+import { issueService } from "../services/issues.js";
+
+const renderDocumentPdfMock = vi.hoisted(() => vi.fn(async () => Buffer.from("%PDF-share")));
+
+vi.mock("../services/document-pdf.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/document-pdf.js")>()),
+  renderDocumentPdf: renderDocumentPdfMock,
+}));
 
 const support = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = support.supported ? describe : describe.skip;
@@ -99,7 +109,10 @@ describeEmbeddedPostgres("public issue share links", () => {
     if (root) await rm(root, { recursive: true, force: true });
   });
 
-  function createApp(actor: () => Express.Request["actor"], limit = 1_000) {
+  function createApp(
+    actor: () => Express.Request["actor"],
+    limits: { notFound?: number; requests?: number } = {},
+  ) {
     const app = express();
     app.use(express.json());
     app.use((req, _res, next) => {
@@ -110,7 +123,8 @@ describeEmbeddedPostgres("public issue share links", () => {
     app.use(
       "/api",
       publicIssueShareRoutes(db, storage, {
-        rateLimiter: createInviteRateLimiter({ maxRequests: limit, windowMs: 60_000 }),
+        notFoundLimiter: createInviteRateLimiter({ maxRequests: limits.notFound ?? 1_000, windowMs: 60_000 }),
+        requestLimiter: createInviteRateLimiter({ maxRequests: limits.requests ?? 1_000, windowMs: 60_000 }),
       }),
     );
     app.use(errorHandler);
@@ -269,11 +283,25 @@ describeEmbeddedPostgres("public issue share links", () => {
       privateFile: await attach({ companyId, issueId: ids.root, commentId: comments.privateHuman, filename: "private.txt", contentType: "text/plain", body: "private" }),
       issueFile: await attach({ companyId, issueId: ids.root, filename: "brief.txt", contentType: "text/plain", body: "brief" }),
       unrelatedFile: await attach({ companyId, issueId: ids.unrelated, filename: "other.txt", contentType: "text/plain", body: "other" }),
+      orphanFile: await attach({ companyId, issueId: ids.root, filename: "orphan.txt", contentType: "text/plain", body: "orphan" }),
     };
+    const cancelledCommentId = randomUUID();
+    await db.insert(issueComments).values({ id: cancelledCommentId, companyId, issueId: ids.root, authorType: "user", authorUserId: userId, body: "CANCELLED_BODY", createdAt: at(8) });
+    await db
+      .update(issueAttachments)
+      .set({ createdAt: new Date("2026-01-01T00:00:00.000Z"), updatedAt: new Date("2026-01-01T00:00:00.000Z") })
+      .where(eq(issueAttachments.id, files.orphanFile.attachmentId));
+    await db
+      .update(issueAttachments)
+      .set({ issueCommentId: cancelledCommentId, updatedAt: new Date() })
+      .where(eq(issueAttachments.id, files.orphanFile.attachmentId));
+    await db.delete(issueComments).where(eq(issueComments.id, cancelledCommentId));
     await db.insert(issueWorkProducts).values([
       { companyId, issueId: ids.root, type: "preview_url", provider: "custom", title: "Preview", status: "active", url: "https://preview.example.test/app", metadata: { internal: "WP_META" } },
       { companyId, issueId: ids.root, type: "branch", provider: "custom", title: "Branch", status: "active", url: "javascript:alert(1)" },
       { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Report", status: "active", metadata: { attachmentId: files.issueFile.attachmentId } },
+      { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Private report", status: "active", metadata: { attachmentId: files.privateFile.attachmentId } },
+      { companyId, issueId: ids.root, type: "artifact", provider: "paperclip", title: "Orphan report", status: "active", metadata: { attachmentId: files.orphanFile.attachmentId } },
     ]);
     return { companyId, otherCompanyId, agentId, otherAgentId, userId, runId, ids, comments, files };
   }
@@ -342,7 +370,7 @@ describeEmbeddedPostgres("public issue share links", () => {
       expect.objectContaining({ title: "Report", downloadUrl: `/api/public/share/${token}/assets/${seeded.files.issueFile.assetId}/content` }),
     ]));
     const raw = JSON.stringify(view);
-    for (const secret of ["PRIVATE_HUMAN_BODY", "SYSTEM_BODY", "NOTICE_BODY", "DELETED_BODY", "TRANSCRIPT_SECRET", "RESULT_SECRET", "SECRET_ADAPTER", "WP_META", "private.txt"]) {
+    for (const secret of ["PRIVATE_HUMAN_BODY", "SYSTEM_BODY", "NOTICE_BODY", "DELETED_BODY", "TRANSCRIPT_SECRET", "RESULT_SECRET", "SECRET_ADAPTER", "WP_META", "private.txt", "Private report", "orphan.txt", "Orphan report", "CANCELLED_BODY"]) {
       expect(raw).not.toContain(secret);
     }
     const keys = deepKeys(view);
@@ -424,6 +452,12 @@ describeEmbeddedPostgres("public issue share links", () => {
     await request(anonymous)
       .get(`/api/public/share/${token}/assets/${seeded.files.privateFile.assetId}/content`)
       .expect(404);
+    await request(anonymous)
+      .get(`/api/public/share/${token}/attachments/${seeded.files.orphanFile.attachmentId}/content`)
+      .expect(404);
+    await request(anonymous)
+      .get(`/api/public/share/${token}/assets/${seeded.files.orphanFile.assetId}/content`)
+      .expect(404);
     await request(boardApp).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(204);
     for (const url of [
       `/api/public/share/${token}/attachments/${seeded.files.agentFile.attachmentId}/content`,
@@ -437,6 +471,45 @@ describeEmbeddedPostgres("public issue share links", () => {
       .from(activityLog)
       .where(and(eq(activityLog.entityId, seeded.ids.root), eq(activityLog.action, "issue.share_link_revoked")));
     expect(revoked).toHaveLength(1);
+  });
+
+  it("keeps files of a hard-deleted comment off the public link", async () => {
+    const seeded = await seed();
+    const token = await share(seeded);
+    const anonymous = createApp(() => ({ type: "none", source: "none" }));
+    const commentId = randomUUID();
+    await db.insert(issueComments).values({ id: commentId, companyId: seeded.companyId, issueId: seeded.ids.root, authorType: "user", authorUserId: seeded.userId, body: "QUEUED_BODY" });
+    const file = await attach({ companyId: seeded.companyId, issueId: seeded.ids.root, commentId, filename: "queued.txt", contentType: "text/plain", body: "queued" });
+    expect(await issueService(db).removeComment(commentId)).not.toBeNull();
+    const view = (await request(anonymous).get(`/api/public/share/${token}`).expect(200)).body;
+    expect(JSON.stringify(view)).not.toContain("queued.txt");
+    await request(anonymous)
+      .get(`/api/public/share/${token}/attachments/${file.attachmentId}/content`)
+      .expect(404);
+  });
+
+  it("serves a visible document as PDF until the link is revoked", async () => {
+    const seeded = await seed();
+    const boardApp = createApp(() => board(seeded.companyId));
+    const anonymous = createApp(() => ({ type: "none", source: "none" }));
+    const [document] = await db
+      .insert(documents)
+      .values({ companyId: seeded.companyId, title: "Spec", latestBody: "# Spec body" })
+      .returning();
+    await db.insert(issueDocuments).values({ companyId: seeded.companyId, issueId: seeded.ids.root, documentId: document!.id, key: "spec" });
+    const token = await share(seeded, boardApp);
+    const view = (await request(anonymous).get(`/api/public/share/${token}`).expect(200)).body;
+    const pdfUrl = `/api/public/share/${token}/issues/${seeded.ids.root}/documents/spec/pdf`;
+    expect(view.documents).toEqual([expect.objectContaining({ key: "spec", body: "# Spec body", pdfUrl })]);
+    const pdf = await request(anonymous).get(pdfUrl).expect(200);
+    expect(pdf.headers["content-type"]).toBe("application/pdf");
+    expect(pdf.headers["x-robots-tag"]).toBe("noindex, nofollow");
+    expect(renderDocumentPdfMock).toHaveBeenCalledWith(expect.objectContaining({ title: "Spec", markdown: "# Spec body" }));
+    await request(anonymous)
+      .get(`/api/public/share/${token}/issues/${seeded.ids.unrelated}/documents/spec/pdf`)
+      .expect(404);
+    await request(boardApp).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(204);
+    expect((await request(anonymous).get(pdfUrl).expect(404)).body).toEqual(NOT_FOUND);
   });
 
   it("lets only the board reveal a person's comment on the public link", async () => {
@@ -462,6 +535,12 @@ describeEmbeddedPostgres("public issue share links", () => {
     await request(anonymous)
       .get(`/api/public/share/${token}/attachments/${seeded.files.privateFile.attachmentId}/content`)
       .expect(200);
+    expect(view.workProducts).toEqual(expect.arrayContaining([
+      expect.objectContaining({ title: "Private report", downloadUrl: `/api/public/share/${token}/assets/${seeded.files.privateFile.assetId}/content` }),
+    ]));
+    await request(anonymous)
+      .get(`/api/public/share/${token}/assets/${seeded.files.privateFile.assetId}/content`)
+      .expect(200);
     await request(boardApp).patch(path).send({ visible: false }).expect(200);
     const hiddenAgain = (await request(anonymous).get(`/api/public/share/${token}`).expect(200)).body;
     expect(JSON.stringify(hiddenAgain)).not.toContain("PRIVATE_HUMAN_BODY");
@@ -472,11 +551,24 @@ describeEmbeddedPostgres("public issue share links", () => {
     expect(toggled).toHaveLength(2);
   });
 
-  it("rate limits public share requests per IP", async () => {
+  it("rate limits failed share lookups per IP without counting successful views", async () => {
     const seeded = await seed();
     const token = await share(seeded);
-    const limited = createApp(() => ({ type: "none", source: "none" }), 1);
+    const limited = createApp(() => ({ type: "none", source: "none" }), { notFound: 1 });
     await request(limited).get(`/api/public/share/${token}`).expect(200);
+    await request(limited).get(`/api/public/share/${token}`).expect(200);
+    await request(limited).get("/api/public/share/ZZZZZZZZZZ").expect(404);
+    const response = await request(limited).get(`/api/public/share/${token}`).expect(429);
+    expect(response.headers["retry-after"]).toBeDefined();
+  });
+
+  it("caps requests per share token and IP", async () => {
+    const seeded = await seed();
+    const token = await share(seeded);
+    const other = await share(await seed());
+    const limited = createApp(() => ({ type: "none", source: "none" }), { requests: 1 });
+    await request(limited).get(`/api/public/share/${token}`).expect(200);
+    await request(limited).get(`/api/public/share/${other}`).expect(200);
     const response = await request(limited).get(`/api/public/share/${token}`).expect(429);
     expect(response.headers["retry-after"]).toBeDefined();
   });

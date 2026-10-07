@@ -177,6 +177,47 @@ describe("PublicIssueSharePage", () => {
     expect(linked?.getAttribute("href")).toBe(`/s/${TOKEN}/issues/issue-child`);
   });
 
+  it("routes inline attachment images through the share token", async () => {
+    getPublicShareMock.mockResolvedValue(
+      buildView({
+        issue: {
+          ...buildView().issue,
+          description: "![plan](/api/attachments/att-desc/content)",
+        },
+        comments: [
+          {
+            id: "c-agent",
+            kind: "comment",
+            author: { kind: "agent", name: "Wira", iconUrl: null },
+            body: "![photo](https://board.example.test/api/attachments/att-comment/content) ![logo](https://cdn.example.test/logo.png)",
+            attachments: [],
+            createdAt: "2026-10-07T07:00:00.000Z",
+          },
+        ],
+        documents: [
+          {
+            key: "spec",
+            title: "Spec",
+            body: "![diagram](/api/attachments/att-doc/content)",
+            updatedAt: "2026-10-07T07:00:00.000Z",
+            pdfUrl: `/api/public/share/${TOKEN}/issues/issue-root/documents/spec/pdf`,
+          },
+        ],
+      }),
+    );
+
+    await renderAt(`/s/${TOKEN}`);
+
+    const sources = Array.from(container.querySelectorAll("img")).map((image) => image.getAttribute("src"));
+    expect(sources).toEqual(expect.arrayContaining([
+      `/api/public/share/${TOKEN}/attachments/att-desc/content`,
+      `/api/public/share/${TOKEN}/attachments/att-comment/content`,
+      `/api/public/share/${TOKEN}/attachments/att-doc/content`,
+      "https://cdn.example.test/logo.png",
+    ]));
+    expect(sources.some((src) => src?.startsWith("/api/attachments/") || src?.includes("board.example.test"))).toBe(false);
+  });
+
   it("renders the not-available state when the link resolves to 404", async () => {
     getPublicShareMock.mockResolvedValue(null);
 

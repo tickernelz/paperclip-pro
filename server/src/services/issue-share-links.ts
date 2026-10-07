@@ -43,7 +43,6 @@ const TOKEN_BYTE_CEILING = 256 - (256 % TOKEN_ALPHABET.length);
 const CREATE_ATTEMPTS = 5;
 const PUBLIC_SHARE_PATH = "/api/public/share";
 
-/** Ten base62 characters from crypto.randomBytes with rejection sampling (no modulo bias). */
 export function generateIssueShareToken(): string {
   let token = "";
   while (token.length < ISSUE_SHARE_TOKEN_LENGTH) {
@@ -160,6 +159,10 @@ function readAttachmentId(metadata: unknown): string | null {
   if (!metadata || typeof metadata !== "object") return null;
   const value = (metadata as { attachmentId?: unknown }).attachmentId;
   return typeof value === "string" && isUuidLike(value) ? value : null;
+}
+
+function neverBoundToComment(attachment: { createdAt: Date | string; updatedAt: Date | string }) {
+  return iso(attachment.createdAt) === iso(attachment.updatedAt);
 }
 
 function sharePath(token: string, suffix: string) {
@@ -462,20 +465,24 @@ export function issueShareLinkService(db: Db) {
             createdAt: iso(comment.createdAt),
           });
 
+    const fullCommentIds = new Set(shown.flatMap(({ comment, form }) => (form === "comment" ? [comment.id] : [])));
+    const isPublicAttachment = (attachment: (typeof attachments)[number]) =>
+      attachment.issueCommentId ? fullCommentIds.has(attachment.issueCommentId) : neverBoundToComment(attachment);
     const attachmentsById = new Map(attachments.map((attachment) => [attachment.id, attachment]));
-    const publicWorkProducts: PublicShareWorkProduct[] = workProducts.map((product) => {
+    const publicWorkProducts: PublicShareWorkProduct[] = workProducts.flatMap((product) => {
       const attachmentId = product.type === "artifact" && product.provider === "paperclip"
         ? readAttachmentId(product.metadata)
         : null;
       const backing = attachmentId ? attachmentsById.get(attachmentId) : undefined;
-      return {
+      if (backing && !isPublicAttachment(backing)) return [];
+      return [{
         id: product.id,
         type: product.type,
         title: product.title,
         status: product.status,
         url: httpUrl(product.url),
         downloadUrl: backing ? sharePath(token, `/assets/${backing.assetId}/content`) : null,
-      };
+      }];
     });
 
     const assignee = target.assigneeAgentId
@@ -520,7 +527,9 @@ export function issueShareLinkService(db: Db) {
         updatedAt: iso(document.updatedAt),
         pdfUrl: sharePath(token, `/issues/${target.id}/documents/${encodeURIComponent(document.key)}/pdf`),
       })),
-      attachments: chronological.filter((attachment) => !attachment.issueCommentId).map(toAttachment),
+      attachments: chronological
+        .filter((attachment) => !attachment.issueCommentId && neverBoundToComment(attachment))
+        .map(toAttachment),
       workProducts: publicWorkProducts,
     };
     return runRedactions.redactForIssue(target.companyId, target.id, view);
@@ -532,7 +541,7 @@ export function issueShareLinkService(db: Db) {
     if (!attachment || attachment.companyId !== resolved.link.companyId) return null;
     const set = await oneHopIssues(resolved);
     if (!set.has(attachment.issueId)) return null;
-    if (!attachment.issueCommentId) return attachment;
+    if (!attachment.issueCommentId) return neverBoundToComment(attachment) ? attachment : null;
     const comment = await issuesSvc.getComment(attachment.issueCommentId);
     if (!comment || comment.issueId !== attachment.issueId) return null;
     return classifySharedComment(comment) === "comment" ? attachment : null;
@@ -549,15 +558,14 @@ export function issueShareLinkService(db: Db) {
       .limit(1)
       .then((rows) => rows[0] ?? null);
     if (logo) return asset;
-    const attachment = await db
-      .select({ id: issueAttachments.id, issueId: issueAttachments.issueId })
+    const attachmentId = await db
+      .select({ id: issueAttachments.id })
       .from(issueAttachments)
       .where(and(eq(issueAttachments.assetId, assetId), eq(issueAttachments.companyId, resolved.link.companyId)))
       .limit(1)
-      .then((rows) => rows[0] ?? null);
+      .then((rows) => rows[0]?.id ?? null);
+    const attachment = attachmentId ? await findVisibleAttachment(resolved, attachmentId) : null;
     if (!attachment) return null;
-    const set = await oneHopIssues(resolved);
-    if (!set.has(attachment.issueId)) return null;
     const product = await db
       .select({ id: issueWorkProducts.id })
       .from(issueWorkProducts)

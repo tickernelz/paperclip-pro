@@ -10,7 +10,7 @@ export function requestBaseUrl(req: Request) {
   return `${proto}://${host}`;
 }
 
-/** Public origin for links handed to people outside the board: runtime identity, then configured URL, then the request host. */
+/** Public origin for links handed to people outside the board. */
 export function resolveBaseUrl(req: Request, authPublicBaseUrl?: string): string {
   const runtimeOrigin = runtimeCanonicalOrigin();
   if (runtimeOrigin) return runtimeOrigin;
