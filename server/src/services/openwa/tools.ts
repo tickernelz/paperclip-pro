@@ -1200,7 +1200,6 @@ async function refuseLinkedChatRef(ctx: ToolContext, ref: unknown): Promise<void
   if (linked) throw new OpenwaToolError(400, "invalid_target", "This chat is on a linked number; use openwa_linked_get_media with its linkedRef");
 }
 
-/** Tool result for fetched message media, fitted to the result budget. */
 export async function openwaMediaResult(
   ctx: ToolContext,
   handle: OpenwaToolRuntimeHandle,
