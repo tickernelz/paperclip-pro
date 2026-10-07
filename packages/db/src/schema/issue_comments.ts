@@ -5,7 +5,7 @@ import type {
   IssueCommentPresentation,
   SourceTrustMetadata,
 } from "@tickernelz/paperclip-pro-shared";
-import { pgTable, uuid, text, timestamp, index, jsonb, unique, integer } from "drizzle-orm/pg-core";
+import { pgTable, uuid, text, timestamp, index, jsonb, unique, integer, boolean } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { issues } from "./issues.js";
 import { agents } from "./agents.js";
@@ -41,6 +41,7 @@ export const issueComments = pgTable(
     deletedByUserId: text("deleted_by_user_id"),
     deletedByRunId: uuid("deleted_by_run_id").references(() => heartbeatRuns.id, { onDelete: "set null" }),
     sourceTrust: jsonb("source_trust").$type<SourceTrustMetadata | null>(),
+    publicShareVisible: boolean("public_share_visible").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

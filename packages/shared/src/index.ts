@@ -2738,6 +2738,8 @@ export {
   type EnvironmentCustomImageTerminalSessionToken,
 } from "./validators/environment-custom-images.js";
 export * from "./validators/skill-policy.js";
+export * from "./types/issue-share.js";
+export * from "./validators/issue-share.js";
 export * from "./validators/provider-trace.js";
 export {
   FEATURE_TIERS,
