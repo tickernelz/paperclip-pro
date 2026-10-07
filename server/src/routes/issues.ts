@@ -217,7 +217,10 @@ import {
   RunnerGoalConflictError,
 } from "../services/runner-goals.js";
 import { queueLiveRunnerPrpCommand } from "../realtime/runner-prp-ws.js";
-import { questionResponseDeliveryService } from "../services/question-response-delivery.js";
+import {
+  hasExternalChatResponseBoundary,
+  questionResponseDeliveryService,
+} from "../services/question-response-delivery.js";
 import { emitAgentTaskRunById } from "../services/agent-task-run-telemetry.js";
 import {
   createQueuedCommentQueue,
@@ -16848,6 +16851,13 @@ export function issueRoutes(
       .from(issueComments)
       .where(and(eq(issueComments.id, commentId), eq(issueComments.companyId, issue.companyId)));
     if (!comment || isConversationReset(comment.body)) return false;
+    return !(await conversationMessageWaiting(issue, { createdAt: comment.createdAt, id: commentId }));
+  }
+
+  async function conversationMessageWaiting(
+    issue: { id: string; companyId: string },
+    before: { createdAt: Date; id: string } | null,
+  ): Promise<boolean> {
     const [earlier] = await db
       .select({ id: agentWakeupRequests.id })
       .from(agentWakeupRequests)
@@ -16860,11 +16870,13 @@ export function issueRoutes(
           eq(agentWakeupRequests.companyId, issue.companyId),
           eq(issueComments.issueId, issue.id),
           inArray(agentWakeupRequests.status, ["deferred_issue_execution", "queued"]),
-          sql`(${issueComments.createdAt}, ${issueComments.id}) < (${comment.createdAt.toISOString()}::timestamptz, ${commentId}::uuid)`,
+          before
+            ? sql`(${issueComments.createdAt}, ${issueComments.id}) < (${before.createdAt.toISOString()}::timestamptz, ${before.id}::uuid)`
+            : undefined,
         ),
       )
       .limit(1);
-    return !earlier;
+    return Boolean(earlier);
   }
 
   async function agentSteeringBlock(input: {
@@ -16990,6 +17002,69 @@ export function issueRoutes(
       );
     }
     return { deliveredAs: "steered" };
+  }
+
+  async function steerInteractionResponse(input: {
+    issueId: string;
+    interaction: {
+      id: string;
+      companyId: string;
+      issueId: string;
+      kind: string;
+      status: string;
+      sourceRunId?: string | null;
+    };
+    actor: ReturnType<typeof getActorInfo>;
+  }): Promise<void> {
+    const { interaction, actor } = input;
+    if (actor.actorType !== "user") return;
+    if (!["accepted", "answered", "rejected"].includes(interaction.status)) return;
+    let steered: { targetRunId: string; receipt: QueuedCommentSteerReceipt } | null = null;
+    const issue = await svc.getById(input.issueId).catch(() => null);
+    if (!issue?.assigneeAgentId) return;
+    try {
+      if ((await instanceSettings.getGeneral()).defaultMessageDelivery === "queue") return;
+      if (await hasExternalChatResponseBoundary(db, interaction)) return;
+      if (issue.conversationAgentId && (await conversationMessageWaiting(issue, null))) return;
+      const resolved = await resolveQueuedSteeringTarget({ issue, commentId: interaction.id, actor });
+      if (resolved.kind !== "target") return;
+      steered = {
+        targetRunId: resolved.target.targetRunId,
+        receipt: await steerQueuedCommentWithRetry({
+          issue,
+          actor,
+          commentId: interaction.id,
+          target: resolved.target,
+          targetIsServerResolved: true,
+        }),
+      };
+    } catch (err) {
+      logger.warn(
+        { err, issueId: issue.id, interactionId: interaction.id, code: steeringErrorCode(err) },
+        "interaction response stays queued because steering was refused",
+      );
+      return;
+    }
+    await logQueuedCommentSteered({
+      issue,
+      actor,
+      commentId: interaction.id,
+      targetRunId: steered.targetRunId,
+      turnId: steered.receipt.acknowledgedTurnId,
+      duplicate: steered.receipt.duplicate,
+    }).catch((err) =>
+      logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the interaction steering acknowledgement"),
+    );
+    if (interaction.kind !== "ask_user_questions") return;
+    await questionResponseDeliveries
+      .recordSteered({
+        interactionId: interaction.id,
+        targetRunId: steered.targetRunId,
+        targetTurnId: steered.receipt.acknowledgedTurnId,
+      })
+      .catch((err) =>
+        logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the steered question response delivery"),
+      );
   }
 
   async function steerOpenwaComment(request: OpenwaCommentSteerRequest) {
@@ -17706,6 +17781,7 @@ export function issueRoutes(
           ? "accepted_plan_confirmation"
           : null,
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction: continuationInteraction, actor });
 
       res.json(continuationInteraction);
     },
@@ -17834,6 +17910,7 @@ export function issueRoutes(
         actor,
         source: "issue.interaction.reject",
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction, actor });
 
       res.json(interaction);
     },
@@ -17919,6 +17996,7 @@ export function issueRoutes(
           "synchronous question response delivery failed; durable outbox will retry",
         );
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction, actor });
 
       res.json(interaction);
     },

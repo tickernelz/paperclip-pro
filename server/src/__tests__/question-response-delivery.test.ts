@@ -288,9 +288,8 @@ describeEmbeddedPostgres("question response delivery", () => {
     };
   }
 
-  it("queues an answer to a running successor instead of automatically steering", async () => {
+  it("queues an answer to a running successor through the wake path", async () => {
     const seeded = await seed({ successorStatus: "running" });
-    const steer = vi.fn().mockResolvedValue({ turnId: "unexpected" });
     const wakeup = vi.fn().mockImplementation(async () => {
       await db.insert(agentWakeupRequests).values({ companyId: seeded.companyId, agentId: seeded.agentId,
         source: "automation", reason: "issue_commented", status: "deferred_issue_execution",
@@ -299,10 +298,9 @@ describeEmbeddedPostgres("question response delivery", () => {
           interactionStatus: "answered" } });
       return null;
     });
-    const service = questionResponseDeliveryService(db, { heartbeat: { wakeup } as never, steer });
+    const service = questionResponseDeliveryService(db, { heartbeat: { wakeup } as never });
     const first = await service.deliver(seeded.interaction.id);
     const second = await service.deliver(seeded.interaction.id);
-    expect(steer).not.toHaveBeenCalled();
     expect(wakeup).toHaveBeenCalledTimes(1);
     expect(wakeup).toHaveBeenCalledWith(seeded.agentId, expect.objectContaining({
       payload: expect.objectContaining({ interactionId: seeded.interaction.id, interactionStatus: "answered" }),
@@ -377,18 +375,15 @@ describeEmbeddedPostgres("question response delivery", () => {
         id: seeded.sourceRunId,
         status: "cancelled",
       });
-      const steer = vi.fn();
       const resolveNativeQuestion = vi
         .fn()
         .mockResolvedValue("queued" as const);
       const outcome = await questionResponseDeliveryService(db, {
         heartbeat: { wakeup, cancelRun } as never,
-        steer,
         resolveNativeQuestion,
       }).deliver(seeded.interaction.id);
 
       expect(resolveNativeQuestion).not.toHaveBeenCalled();
-      expect(steer).not.toHaveBeenCalled();
       expect(cancelRun).toHaveBeenCalledWith(
         seeded.sourceRunId,
         "Superseded by a dedicated external-chat answer continuation",
@@ -577,10 +572,8 @@ describeEmbeddedPostgres("question response delivery", () => {
       .where(eq(heartbeatRuns.id, seeded.successorRunId!))
       .then((rows) => rows[0]!);
     const wakeup = vi.fn().mockResolvedValue(successor);
-    const steer = vi.fn();
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer,
     }).deliver(seeded.interaction.id);
 
     expect(outcome).toMatchObject({
@@ -588,7 +581,6 @@ describeEmbeddedPostgres("question response delivery", () => {
       mode: "coalesced",
       targetRunId: successor.id,
     });
-    expect(steer).not.toHaveBeenCalled();
     expect(wakeup).toHaveBeenCalledTimes(1);
     expect(wakeup.mock.calls[0]?.[1]).toMatchObject({
       idempotencyKey: `question-response:${seeded.interaction.id}`,
@@ -599,17 +591,14 @@ describeEmbeddedPostgres("question response delivery", () => {
     });
   });
 
-  it("never steers into the source run and keeps a skipped wake retryable", async () => {
+  it("keeps a skipped wake retryable while the source run is running", async () => {
     const seeded = await seed({ sourceStatus: "running" });
     const wakeup = vi.fn().mockResolvedValue(null);
-    const steer = vi.fn();
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer,
     }).deliver(seeded.interaction.id);
 
     expect(outcome).toBeNull();
-    expect(steer).not.toHaveBeenCalled();
     expect(wakeup).toHaveBeenCalledTimes(1);
     expect(JSON.stringify(wakeup.mock.calls[0])).not.toContain("Internal API");
     expect(JSON.stringify(wakeup.mock.calls[0])).not.toContain("Node.js");
@@ -645,7 +634,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     });
     const service = questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     });
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -693,7 +681,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     });
     const service = questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     });
 
     for (let attempt = 0; attempt < 5; attempt += 1) {
@@ -811,7 +798,6 @@ describeEmbeddedPostgres("question response delivery", () => {
 
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     }).deliver(seeded.interaction.id);
 
     expect(outcome).toMatchObject({
@@ -860,7 +846,6 @@ describeEmbeddedPostgres("question response delivery", () => {
 
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     }).deliver(seeded.interaction.id);
 
     expect(wakeup).not.toHaveBeenCalled();
@@ -911,7 +896,6 @@ describeEmbeddedPostgres("question response delivery", () => {
 
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     }).deliver(seeded.interaction.id);
 
     expect(outcome).toMatchObject({
@@ -958,7 +942,6 @@ describeEmbeddedPostgres("question response delivery", () => {
 
     const outcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
     }).deliver(seeded.interaction.id);
 
     expect(outcome).toMatchObject({
@@ -997,7 +980,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     let clock = new Date("2026-01-01T00:00:00.000Z");
     const service = questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer: vi.fn(),
       now: () => clock,
       claimStaleMs: 40,
       claimRefreshMs: 5,
@@ -1061,7 +1043,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     );
     const firstService = questionResponseDeliveryService(db, {
       heartbeat: { wakeup: firstWakeup } as never,
-      steer: vi.fn(),
       claimStaleMs: 40,
       claimRefreshMs: 5,
     });
@@ -1103,7 +1084,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     );
     const secondOutcome = await questionResponseDeliveryService(db, {
       heartbeat: { wakeup: secondWakeup } as never,
-      steer: vi.fn(),
     }).deliver(seeded.interaction.id);
 
     expect(secondOutcome).toMatchObject({
@@ -1132,7 +1112,7 @@ describeEmbeddedPostgres("question response delivery", () => {
   });
 
   it.each(DIRECT_ADAPTER_TYPES)(
-    "keeps %s on the existing wake path without invoking native steering",
+    "keeps %s on the existing wake path",
     async (adapterType) => {
       const seeded = await seed({
         adapterType,
@@ -1155,11 +1135,9 @@ describeEmbeddedPostgres("question response delivery", () => {
           .returning()
           .then((rows) => rows[0]!),
       );
-      const steer = vi.fn();
 
       const outcome = await questionResponseDeliveryService(db, {
         heartbeat: { wakeup } as never,
-        steer,
       }).deliver(seeded.interaction.id);
 
       expect(outcome).toMatchObject({
@@ -1167,7 +1145,6 @@ describeEmbeddedPostgres("question response delivery", () => {
         mode: "wake_fallback",
         targetRunId: fallbackRunId,
       });
-      expect(steer).not.toHaveBeenCalled();
       expect(wakeup).toHaveBeenCalledTimes(1);
       expect(wakeup.mock.calls[0]?.[1]).toMatchObject({
         idempotencyKey: `question-response:${seeded.interaction.id}`,
@@ -1180,14 +1157,9 @@ describeEmbeddedPostgres("question response delivery", () => {
     },
   );
 
-  it("queues once without probing successor steering", async () => {
+  it("queues once for a running successor", async () => {
     const seeded = await seed({ successorStatus: "running" });
     const fallbackRunId = randomUUID();
-    const steer = vi.fn().mockRejectedValue(
-      Object.assign(new Error("unsupported"), {
-        code: "steering_unsupported",
-      }),
-    );
     const wakeup = vi.fn().mockImplementation(async () =>
       db
         .insert(heartbeatRuns)
@@ -1205,7 +1177,6 @@ describeEmbeddedPostgres("question response delivery", () => {
     );
     const service = questionResponseDeliveryService(db, {
       heartbeat: { wakeup } as never,
-      steer,
     });
     const first = await service.deliver(seeded.interaction.id);
     const second = await service.deliver(seeded.interaction.id);
@@ -1216,7 +1187,6 @@ describeEmbeddedPostgres("question response delivery", () => {
       targetRunId: fallbackRunId,
     });
     expect(second?.duplicate).toBe(true);
-    expect(steer).not.toHaveBeenCalled();
     expect(wakeup).toHaveBeenCalledTimes(1);
   });
 
