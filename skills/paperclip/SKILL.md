@@ -276,7 +276,26 @@ A "watcher" or "monitor" is not something that lives inside a run. A run/heartbe
 
 Because of that, follow these rules:
 
-- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. Schedule it by setting `advanced.executionPolicy.monitor.nextCheckAt` (with `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`) through `paperclipUpdateIssue`; `executionPolicy` is not a top-level tool argument, it travels in the `advanced` object. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
+- **Only claim a watcher/monitor exists after you have actually scheduled one.** Describing a watcher in a comment does not create it. The one way to schedule it is `paperclipUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt` (optionally `kind`/`serviceName`/`externalRef`/`timeoutAt`/`maxAttempts`/`notes`):
+
+  ```json
+  {
+    "issueId": "PAP-42",
+    "status": "in_review",
+    "advanced": {
+      "executionPolicy": {
+        "monitor": {
+          "nextCheckAt": "2026-10-08T09:00:00.000Z",
+          "kind": "external_service",
+          "serviceName": "GitHub Actions",
+          "notes": "Re-check CI run 1234"
+        }
+      }
+    }
+  }
+  ```
+
+  The raw form is `PATCH /api/issues/{issueId}` with body `{ "executionPolicy": { "monitor": { "nextCheckAt": "..." } } }`. `executionPolicy` replaces the whole stored policy, so copy any existing `stages` from the issue into the same object. A top-level `monitorNextCheckAt` or `monitor` argument is rejected (`misplaced_issue_monitor_field`); `monitorNextCheckAt` is the read-only result field. `paperclipSetIssueWatchdog` does not schedule a monitor: it assigns a watchdog agent that reviews the subtree after it stops. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
 - **Describe it in checkable terms.** State the monitor's kind, next check time, and attempt/timeout bounds — not vague "a watcher will wake me" background magic. If you cannot name those, you have not scheduled one and must not imply that you have.
 - **Never imply a live watcher on a task you are marking `done`.** `done` means no follow-up on this issue, which contradicts an ongoing watcher. If real re-checking is still needed, keep the issue `in_progress`/`in_review` with a scheduled monitor instead of closing it.
 - This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — an open blocking issue, interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
@@ -701,7 +720,8 @@ If `plan` already exists, first call `paperclipGetDocument` (`issueId`, `key: "p
 | Upload attachment (multipart, `file`) | none — use the upload helper                                                                                                                                      |
 | List / delete attachment              | `paperclipListIssueAttachments` • `paperclipDeleteAttachment`                                                                                                     |
 | Execution workspace + runtime         | `paperclipGetIssueWorkspaceRuntime` • `paperclipControlIssueWorkspaceServices` • `paperclipWaitForIssueWorkspaceService`                                           |
-| Monitors / watchdog                   | `paperclipGetIssueWatchdog` • `paperclipSetIssueWatchdog`                                                                                                         |
+| Schedule issue monitor                | `paperclipUpdateIssue` with `advanced.executionPolicy.monitor.nextCheckAt`                                                                                        |
+| Task watchdog agent                   | `paperclipGetIssueWatchdog` • `paperclipSetIssueWatchdog`                                                                                                         |
 | List agents                           | `paperclipListAgents` • `paperclipGetAgent`                                                                                                                       |
 | Dashboard                             | `paperclipDashboard`                                                                                                                                              |
 | Credentials and secrets               | none — `paperclipApiRequest`                                                                                                                                      |

@@ -49,10 +49,18 @@ function editDistance(left: string, right: string): number {
   return previous[b.length]!;
 }
 
+const MONITOR_ARGUMENT_HINT =
+  "schedule the issue monitor with advanced.executionPolicy.monitor.nextCheckAt on paperclipUpdateIssue";
+
+function isMonitorArgument(key: string): boolean {
+  return key === "monitor" || /^monitor[A-Z]/.test(key);
+}
+
 export function assertKnownArguments(input: Record<string, unknown>, known: readonly string[]): void {
   const unknown = Object.keys(input).filter((key) => !known.includes(key));
   if (unknown.length === 0) return;
   const messages = unknown.map((key) => {
+    if (isMonitorArgument(key)) return `unknown argument "${key}"; ${MONITOR_ARGUMENT_HINT}`;
     const closest = known
       .map((candidate) => ({ candidate, distance: editDistance(key, candidate) }))
       .sort((left, right) => left.distance - right.distance)[0];

@@ -73,7 +73,9 @@ export const queryListParamSchema = z
 export const listCasesQuerySchema = z
   .object({
     type: z.string().trim().min(1).max(120).optional(),
+    caseType: z.string().trim().min(1).max(120).optional(),
     types: queryListParamSchema,
+    key: caseKeySchema.optional(),
     status: z.string().trim().min(1).max(120).optional(),
     statuses: queryListParamSchema,
     project: z.string().guid().optional(),

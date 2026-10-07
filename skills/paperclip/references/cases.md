@@ -80,9 +80,20 @@ List cases for a company with `paperclipListCases`:
 { "type": "blog_post", "status": "active", "q": "launch" }
 ```
 
+Look up one case by its upsert identity with `caseType` and an exact `key`:
+
+```json
+{ "caseType": "deploy", "key": "deploy:api:2026-10-07" }
+```
+
+The raw form is
+`GET /api/companies/{companyId}/cases?caseType=deploy&key=deploy:api:2026-10-07`.
+It returns an array with zero or one case.
+
 Useful arguments:
 
-- `type` / `types`: exact `caseType`
+- `type` / `caseType` / `types`: exact `caseType`
+- `key`: exact case `key`
 - `status` / `statuses`: exact lifecycle status, or `active` for non-terminal cases
 - `projectId` / `project`: project UUID
 - `labelId` / `label`: label UUID
@@ -117,9 +128,27 @@ Updating an existing case document requires `baseRevisionId`:
 }
 ```
 
+The raw route is `PUT /api/cases/{caseId}/documents/{key}`. Its body takes the
+same `baseRevisionId` rule: omit it only when the document does not exist yet,
+and send the current `latestRevisionId` from
+`GET /api/cases/{caseId}/documents/{key}` on every update:
+
+```json
+{
+  "method": "PUT",
+  "path": "/cases/PAP-C42/documents/body",
+  "jsonBody": {
+    "baseRevisionId": "latest-revision-uuid",
+    "format": "markdown",
+    "body": "Updated body"
+  }
+}
+```
+
 If the tool reports `stale_base_revision`, refetch the case detail, read the
 latest document revision id, merge intentionally, and retry with that
-`baseRevisionId`. A failed call wrote nothing — do not treat it as saved.
+`baseRevisionId`. The 409 body already carries `latestRevisionId`. A failed
+call wrote nothing — do not treat it as saved.
 
 ## Fields
 

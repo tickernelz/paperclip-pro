@@ -428,6 +428,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const other = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "halo" })).id] });
     expect(owner.full).toContain('Linked read-only numbers (owner runs only): "Zhafron pribadi"');
     expect(owner.full).toContain("`openwa_linked_read`");
+    expect(owner.full).toContain("`openwa_linked_get_media`");
     expect(owner.full).toContain("never send through them");
     expect(other.full).not.toContain("Linked read-only numbers");
     expect(other.full).not.toContain("openwa_linked_read");

@@ -538,6 +538,58 @@ describe("paperclip MCP tools", () => {
     expect(response.content[0]?.text).toContain("must not contain '..'");
   });
 
+  it("sends a generic request body given as jsonBody string, jsonBody object, or body alias", async () => {
+    const fetchMock = vi.fn().mockImplementation(async () => mockJsonResponse({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const tool = getTool("paperclipApiRequest");
+
+    const responses = [
+      await tool.execute({ method: "POST", path: "/issues/PAP-1/comments", jsonBody: '{"body":"a"}' }),
+      await tool.execute({ method: "POST", path: "/issues/PAP-1/comments", jsonBody: { body: "b" } }),
+      await tool.execute({ method: "POST", path: "/issues/PAP-1/comments", body: '{"body":"c"}' }),
+      await tool.execute({ method: "POST", path: "/issues/PAP-1/comments", body: { body: "d" } }),
+    ];
+
+    expect(responses.map((response) => response.isError ?? false)).toEqual([false, false, false, false]);
+    expect(fetchMock.mock.calls.map((call) => JSON.parse(String((call[1] as RequestInit).body)))).toEqual([
+      { body: "a" },
+      { body: "b" },
+      { body: "c" },
+      { body: "d" },
+    ]);
+  });
+
+  it("rejects a generic request that sets both jsonBody and body", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await getTool("paperclipApiRequest").execute({
+      method: "POST",
+      path: "/issues/PAP-1/comments",
+      jsonBody: { body: "a" },
+      body: { body: "b" },
+    });
+
+    expect(response.isError).toBe(true);
+    expect(response.content[0]?.text).toContain("jsonBody");
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("accepts an object jsonBody over the MCP protocol", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ ok: true }));
+    vi.stubGlobal("fetch", fetchMock);
+    const client = await connectedClient();
+
+    const result = await client.callTool({
+      name: "paperclipApiRequest",
+      arguments: { method: "POST", path: "/issues/PAP-1/comments", jsonBody: { body: "x" } },
+    });
+
+    expect(result.isError).toBeFalsy();
+    expect(JSON.parse(String((fetchMock.mock.calls[0]![1] as RequestInit).body))).toEqual({ body: "x" });
+    await client.close();
+  });
+
   it("accepts a generic request path written with the /api prefix", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "agent-1" }));
     vi.stubGlobal("fetch", fetchMock);
@@ -586,6 +638,20 @@ describe("paperclip MCP tools", () => {
       status: "done",
       executionPolicy: { monitor: { nextCheckAt: "2026-01-01T00:00:00.000Z" } },
     });
+  });
+
+  it("points a top-level monitor argument at advanced.executionPolicy.monitor.nextCheckAt", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await getTool("paperclipUpdateIssue").execute({
+      issueId: "PAP-1135",
+      monitorNextCheckAt: "2026-01-01T00:00:00.000Z",
+    });
+
+    expect(response.isError).toBe(true);
+    expect(response.content[0]?.text).toContain("advanced.executionPolicy.monitor.nextCheckAt");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("still enforces the required issue id on an update", async () => {

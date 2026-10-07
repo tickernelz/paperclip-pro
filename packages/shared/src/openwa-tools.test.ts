@@ -23,6 +23,7 @@ describe("OpenWA tool catalog", () => {
       ["openwa_endpoint_config", "write"],
       ["openwa_linked_list", "read"],
       ["openwa_linked_read", "read"],
+      ["openwa_linked_get_media", "read"],
       ["openwa_describe", "read"],
       ["openwa_call", "write"],
     ]);
@@ -72,8 +73,14 @@ describe("OpenWA tool catalog", () => {
   it("validates linked-number tool shapes and keeps them read-only", () => {
     const list = openwaTool("openwa_linked_list")!;
     const read = openwaTool("openwa_linked_read")!;
+    const media = openwaTool("openwa_linked_get_media")!;
     const linkedRef = "9c0dc094-41b6-4d84-a2f1-1df331774489";
-    expect([list.risk, read.risk]).toEqual(["read", "read"]);
+    expect([list.risk, read.risk, media.risk]).toEqual(["read", "read", "read"]);
+    expect(media.schema.safeParse({ linkedRef, chat: "openwa:s1:110870352887910@lid", messageId: "false_110870352887910@lid_3EB0" }).success).toBe(true);
+    expect(media.schema.safeParse({ linkedRef, chat: "628111222333@c.us" }).success).toBe(false);
+    expect(media.schema.safeParse({ linkedRef, messageId: "m1" }).success).toBe(false);
+    expect(media.schema.safeParse({ linkedRef: "not-a-uuid", chat: "628111222333@c.us", messageId: "m1" }).success).toBe(false);
+    expect(z.toJSONSchema(media.schema)).toMatchObject({ required: ["linkedRef", "chat", "messageId"] });
     expect(list.schema.safeParse({}).success).toBe(true);
     expect(list.schema.safeParse({ linkedRef }).success).toBe(false);
     expect(read.schema.safeParse({ linkedRef, chat: "openwa:s1:628111222333@c.us" }).success).toBe(true);
@@ -84,7 +91,7 @@ describe("OpenWA tool catalog", () => {
     expect(read.schema.safeParse({ linkedRef, chat: "628111222333@c.us", limit: 101 }).success).toBe(false);
     expect(read.schema.safeParse({ linkedRef, chat: "628111222333@c.us", text: "hi" }).success).toBe(false);
     expect(z.toJSONSchema(read.schema)).toMatchObject({ required: ["linkedRef", "chat"] });
-    for (const tool of [list, read]) expect(tool.description).toMatch(/Owner-triggered runs only/);
+    for (const tool of [list, read, media]) expect(tool.description).toMatch(/Owner-triggered runs only/);
   });
 
   it("validates endpoint config shapes and leaves Paperclip-only settings out of the schema", () => {

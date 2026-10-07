@@ -11,7 +11,8 @@ Call these tools directly by name; never list, search or catalog tools to find
 them: `openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`,
 `openwa_request_approval`, `openwa_approval_resolve`, `openwa_stay_silent`,
 `openwa_handoff`, `openwa_catalog`, `openwa_describe`, `openwa_call`,
-`openwa_endpoint_config`, `openwa_linked_list`, `openwa_linked_read`. The run
+`openwa_endpoint_config`, `openwa_linked_list`, `openwa_linked_read`,
+`openwa_linked_get_media`. The run
 guidance already states your trigger class, profile, owners and whether you may
 reply; do not re-read this skill to confirm them.
 
@@ -288,10 +289,15 @@ they never wake you. Owner-run guidance names them by label.
   the numbers and the chats the board allowed on each.
 - `openwa_linked_read({linkedRef, chat, limit?, cursor?})` reads one allowed chat
   live, newest first, in the same message shape as `openwa_read_chat` (sender
-  numbers masked, media metadata only). `chat` is a `chatRef` from
-  `openwa_linked_list` or that chat's id. Page with `nextCursor`.
+  numbers masked, media metadata only: a media message has `media.kind`). `chat`
+  is a `chatRef` from `openwa_linked_list` or that chat's id. Page with
+  `nextCursor`.
+- `openwa_linked_get_media({linkedRef, chat, messageId})` stores one message's
+  file from an allowed linked chat as a task attachment and returns the same
+  `media` shape as `openwa_get_media`; read its `localPath`. `openwa_get_media`
+  refuses linked chatRefs. `not_found` means the gateway has no stored copy.
 
-Both work only in owner-triggered runs; every other run gets `owner_only`. A
+All three work only in owner-triggered runs; every other run gets `owner_only`. A
 chat the board did not allow fails `linked_chat_not_allowed`: tell the owner to
 allow it in Paperclip Settings, Linked numbers. Use them only when an owner asks,
 and do not copy their content anywhere unless the owner asks. Linked content is

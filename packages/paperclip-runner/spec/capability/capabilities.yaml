@@ -180,9 +180,9 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:delegating-review-tasks:288",
+      "id": "skill:skills/paperclip/SKILL.md:delegating-review-tasks:307",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:288",
+      "sourceAnchor": "skills/paperclip/SKILL.md:307",
       "title": "Delegating review tasks",
       "expectedSemantics": "Skill guidance headed “Delegating review tasks”.",
       "primaryDisposition": "always_agent_tool",
@@ -191,13 +191,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:288"
+        "skill:skills/paperclip/SKILL.md:307"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:managing-a-user-s-inbox:301",
+      "id": "skill:skills/paperclip/SKILL.md:managing-a-user-s-inbox:320",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:301",
+      "sourceAnchor": "skills/paperclip/SKILL.md:320",
       "title": "Managing A User's Inbox",
       "expectedSemantics": "Skill guidance headed “Managing A User's Inbox”.",
       "primaryDisposition": "control_plane_owned",
@@ -206,13 +206,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:301"
+        "skill:skills/paperclip/SKILL.md:320"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:issue-dependencies-blockers:309",
+      "id": "skill:skills/paperclip/SKILL.md:issue-dependencies-blockers:328",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:309",
+      "sourceAnchor": "skills/paperclip/SKILL.md:328",
       "title": "Issue Dependencies (Blockers)",
       "expectedSemantics": "Skill guidance headed “Issue Dependencies (Blockers)”.",
       "primaryDisposition": "control_plane_owned",
@@ -221,13 +221,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:309"
+        "skill:skills/paperclip/SKILL.md:328"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:requesting-board-approval:326",
+      "id": "skill:skills/paperclip/SKILL.md:requesting-board-approval:345",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:326",
+      "sourceAnchor": "skills/paperclip/SKILL.md:345",
       "title": "Requesting Board Approval",
       "expectedSemantics": "Skill guidance headed “Requesting Board Approval”.",
       "primaryDisposition": "optional_agent_tool",
@@ -236,13 +236,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:326"
+        "skill:skills/paperclip/SKILL.md:345"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:issue-thread-interactions:346",
+      "id": "skill:skills/paperclip/SKILL.md:issue-thread-interactions:365",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:346",
+      "sourceAnchor": "skills/paperclip/SKILL.md:365",
       "title": "Issue-Thread Interactions",
       "expectedSemantics": "Skill guidance headed “Issue-Thread Interactions”.",
       "primaryDisposition": "optional_agent_tool",
@@ -251,13 +251,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:346"
+        "skill:skills/paperclip/SKILL.md:365"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:standalone-decisions:375",
+      "id": "skill:skills/paperclip/SKILL.md:standalone-decisions:394",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:375",
+      "sourceAnchor": "skills/paperclip/SKILL.md:394",
       "title": "Standalone Decisions",
       "expectedSemantics": "Skill guidance headed “Standalone Decisions”.",
       "primaryDisposition": "optional_agent_tool",
@@ -266,13 +266,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:375"
+        "skill:skills/paperclip/SKILL.md:394"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:mcp-tool-approval-gates:477",
+      "id": "skill:skills/paperclip/SKILL.md:mcp-tool-approval-gates:496",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:477",
+      "sourceAnchor": "skills/paperclip/SKILL.md:496",
       "title": "MCP Tool Approval Gates",
       "expectedSemantics": "Skill guidance headed “MCP Tool Approval Gates”.",
       "primaryDisposition": "optional_agent_tool",
@@ -281,13 +281,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:477"
+        "skill:skills/paperclip/SKILL.md:496"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:niche-workflow-pointers:518",
+      "id": "skill:skills/paperclip/SKILL.md:niche-workflow-pointers:537",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:518",
+      "sourceAnchor": "skills/paperclip/SKILL.md:537",
       "title": "Niche Workflow Pointers",
       "expectedSemantics": "Skill guidance headed “Niche Workflow Pointers”.",
       "primaryDisposition": "optional_agent_tool",
@@ -296,13 +296,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:518"
+        "skill:skills/paperclip/SKILL.md:537"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:cases:528",
+      "id": "skill:skills/paperclip/SKILL.md:cases:547",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:528",
+      "sourceAnchor": "skills/paperclip/SKILL.md:547",
       "title": "Cases",
       "expectedSemantics": "Skill guidance headed “Cases”.",
       "primaryDisposition": "optional_agent_tool",
@@ -311,13 +311,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:528"
+        "skill:skills/paperclip/SKILL.md:547"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:company-skills-workflow:534",
+      "id": "skill:skills/paperclip/SKILL.md:company-skills-workflow:553",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:534",
+      "sourceAnchor": "skills/paperclip/SKILL.md:553",
       "title": "Company Skills Workflow",
       "expectedSemantics": "Skill guidance headed “Company Skills Workflow”.",
       "primaryDisposition": "optional_agent_tool",
@@ -326,13 +326,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:534"
+        "skill:skills/paperclip/SKILL.md:553"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:routines:545",
+      "id": "skill:skills/paperclip/SKILL.md:routines:564",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:545",
+      "sourceAnchor": "skills/paperclip/SKILL.md:564",
       "title": "Routines",
       "expectedSemantics": "Skill guidance headed “Routines”.",
       "primaryDisposition": "optional_agent_tool",
@@ -341,13 +341,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:545"
+        "skill:skills/paperclip/SKILL.md:564"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:issue-workspace-runtime-controls:556",
+      "id": "skill:skills/paperclip/SKILL.md:issue-workspace-runtime-controls:575",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:556",
+      "sourceAnchor": "skills/paperclip/SKILL.md:575",
       "title": "Issue Workspace Runtime Controls",
       "expectedSemantics": "Skill guidance headed “Issue Workspace Runtime Controls”.",
       "primaryDisposition": "optional_agent_tool",
@@ -356,13 +356,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:556"
+        "skill:skills/paperclip/SKILL.md:575"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:proposing-credentials-safely:563",
+      "id": "skill:skills/paperclip/SKILL.md:proposing-credentials-safely:582",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:563",
+      "sourceAnchor": "skills/paperclip/SKILL.md:582",
       "title": "Proposing Credentials Safely",
       "expectedSemantics": "Skill guidance headed “Proposing Credentials Safely”.",
       "primaryDisposition": "optional_agent_tool",
@@ -371,13 +371,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:563"
+        "skill:skills/paperclip/SKILL.md:582"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:reading-granted-secrets:570",
+      "id": "skill:skills/paperclip/SKILL.md:reading-granted-secrets:589",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:570",
+      "sourceAnchor": "skills/paperclip/SKILL.md:589",
       "title": "Reading Granted Secrets",
       "expectedSemantics": "Skill guidance headed “Reading Granted Secrets”.",
       "primaryDisposition": "optional_agent_tool",
@@ -386,13 +386,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:570"
+        "skill:skills/paperclip/SKILL.md:589"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:critical-rules:584",
+      "id": "skill:skills/paperclip/SKILL.md:critical-rules:603",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:584",
+      "sourceAnchor": "skills/paperclip/SKILL.md:603",
       "title": "Critical Rules",
       "expectedSemantics": "Skill guidance headed “Critical Rules”.",
       "primaryDisposition": "optional_agent_tool",
@@ -401,13 +401,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:584"
+        "skill:skills/paperclip/SKILL.md:603"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:comment-style-required:605",
+      "id": "skill:skills/paperclip/SKILL.md:comment-style-required:624",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:605",
+      "sourceAnchor": "skills/paperclip/SKILL.md:624",
       "title": "Comment Style (Required)",
       "expectedSemantics": "Skill guidance headed “Comment Style (Required)”.",
       "primaryDisposition": "always_agent_tool",
@@ -416,13 +416,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:605"
+        "skill:skills/paperclip/SKILL.md:624"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:update:637",
+      "id": "skill:skills/paperclip/SKILL.md:update:656",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:637",
+      "sourceAnchor": "skills/paperclip/SKILL.md:656",
       "title": "Update",
       "expectedSemantics": "Skill guidance headed “Update”.",
       "primaryDisposition": "optional_agent_tool",
@@ -431,13 +431,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:637"
+        "skill:skills/paperclip/SKILL.md:656"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:planning-required-when-planning-requested:647",
+      "id": "skill:skills/paperclip/SKILL.md:planning-required-when-planning-requested:666",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:647",
+      "sourceAnchor": "skills/paperclip/SKILL.md:666",
       "title": "Planning (Required when planning requested)",
       "expectedSemantics": "Skill guidance headed “Planning (Required when planning requested)”.",
       "primaryDisposition": "optional_agent_tool",
@@ -446,13 +446,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:647"
+        "skill:skills/paperclip/SKILL.md:666"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:key-endpoints-hot-routes:679",
+      "id": "skill:skills/paperclip/SKILL.md:key-endpoints-hot-routes:698",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:679",
+      "sourceAnchor": "skills/paperclip/SKILL.md:698",
       "title": "Key Endpoints (Hot Routes)",
       "expectedSemantics": "Skill guidance headed “Key Endpoints (Hot Routes)”.",
       "primaryDisposition": "optional_agent_tool",
@@ -461,13 +461,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:679"
+        "skill:skills/paperclip/SKILL.md:698"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:searching-issues:712",
+      "id": "skill:skills/paperclip/SKILL.md:searching-issues:732",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:712",
+      "sourceAnchor": "skills/paperclip/SKILL.md:732",
       "title": "Searching Issues",
       "expectedSemantics": "Skill guidance headed “Searching Issues”.",
       "primaryDisposition": "optional_agent_tool",
@@ -476,13 +476,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:712"
+        "skill:skills/paperclip/SKILL.md:732"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:full-reference:718",
+      "id": "skill:skills/paperclip/SKILL.md:full-reference:738",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:718",
+      "sourceAnchor": "skills/paperclip/SKILL.md:738",
       "title": "Full Reference",
       "expectedSemantics": "Skill guidance headed “Full Reference”.",
       "primaryDisposition": "optional_agent_tool",
@@ -491,13 +491,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:718"
+        "skill:skills/paperclip/SKILL.md:738"
       ]
     },
     {
-      "id": "skill:skills/paperclip/SKILL.md:conversational-confirmation-answers:722",
+      "id": "skill:skills/paperclip/SKILL.md:conversational-confirmation-answers:742",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/SKILL.md:722",
+      "sourceAnchor": "skills/paperclip/SKILL.md:742",
       "title": "Conversational confirmation answers",
       "expectedSemantics": "Skill guidance headed “Conversational confirmation answers”.",
       "primaryDisposition": "always_agent_tool",
@@ -506,7 +506,7 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/SKILL.md:722"
+        "skill:skills/paperclip/SKILL.md:742"
       ]
     },
     {
@@ -1455,9 +1455,9 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:companies-projects-goals:1452",
+      "id": "skill:skills/paperclip/references/api-reference.md:companies-projects-goals:1453",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1452",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1453",
       "title": "Companies, Projects, Goals",
       "expectedSemantics": "Skill guidance headed “Companies, Projects, Goals”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1466,13 +1466,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1452"
+        "skill:skills/paperclip/references/api-reference.md:1453"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:routines:1476",
+      "id": "skill:skills/paperclip/references/api-reference.md:routines:1477",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1476",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1477",
       "title": "Routines",
       "expectedSemantics": "Skill guidance headed “Routines”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1481,13 +1481,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1476"
+        "skill:skills/paperclip/references/api-reference.md:1477"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:approvals-costs-activity-dashboard:1494",
+      "id": "skill:skills/paperclip/references/api-reference.md:approvals-costs-activity-dashboard:1495",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1494",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1495",
       "title": "Approvals, Costs, Activity, Dashboard",
       "expectedSemantics": "Skill guidance headed “Approvals, Costs, Activity, Dashboard”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1496,13 +1496,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1494"
+        "skill:skills/paperclip/references/api-reference.md:1495"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:secrets:1513",
+      "id": "skill:skills/paperclip/references/api-reference.md:secrets:1514",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1513",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1514",
       "title": "Secrets",
       "expectedSemantics": "Skill guidance headed “Secrets”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1511,13 +1511,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1513"
+        "skill:skills/paperclip/references/api-reference.md:1514"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:agent-secret-proposals:1528",
+      "id": "skill:skills/paperclip/references/api-reference.md:agent-secret-proposals:1529",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1528",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1529",
       "title": "Agent secret proposals",
       "expectedSemantics": "Skill guidance headed “Agent secret proposals”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1526,13 +1526,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1528"
+        "skill:skills/paperclip/references/api-reference.md:1529"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:agent-secret-access:1594",
+      "id": "skill:skills/paperclip/references/api-reference.md:agent-secret-access:1595",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1594",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1595",
       "title": "Agent secret access",
       "expectedSemantics": "Skill guidance headed “Agent secret access”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1541,13 +1541,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1594"
+        "skill:skills/paperclip/references/api-reference.md:1595"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/api-reference.md:common-mistakes:1634",
+      "id": "skill:skills/paperclip/references/api-reference.md:common-mistakes:1635",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/api-reference.md:1634",
+      "sourceAnchor": "skills/paperclip/references/api-reference.md:1635",
       "title": "Common Mistakes",
       "expectedSemantics": "Skill guidance headed “Common Mistakes”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1556,7 +1556,7 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/api-reference.md:1634"
+        "skill:skills/paperclip/references/api-reference.md:1635"
       ]
     },
     {
@@ -1695,9 +1695,9 @@
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:documents:93",
+      "id": "skill:skills/paperclip/references/cases.md:documents:104",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:93",
+      "sourceAnchor": "skills/paperclip/references/cases.md:104",
       "title": "Documents",
       "expectedSemantics": "Skill guidance headed “Documents”.",
       "primaryDisposition": "always_agent_tool",
@@ -1706,13 +1706,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:93"
+        "skill:skills/paperclip/references/cases.md:104"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:fields:124",
+      "id": "skill:skills/paperclip/references/cases.md:fields:153",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:124",
+      "sourceAnchor": "skills/paperclip/references/cases.md:153",
       "title": "Fields",
       "expectedSemantics": "Skill guidance headed “Fields”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1721,13 +1721,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:124"
+        "skill:skills/paperclip/references/cases.md:153"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:issue-links:155",
+      "id": "skill:skills/paperclip/references/cases.md:issue-links:184",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:155",
+      "sourceAnchor": "skills/paperclip/references/cases.md:184",
       "title": "Issue Links",
       "expectedSemantics": "Skill guidance headed “Issue Links”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1736,13 +1736,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:155"
+        "skill:skills/paperclip/references/cases.md:184"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:child-cases:178",
+      "id": "skill:skills/paperclip/references/cases.md:child-cases:207",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:178",
+      "sourceAnchor": "skills/paperclip/references/cases.md:207",
       "title": "Child Cases",
       "expectedSemantics": "Skill guidance headed “Child Cases”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1751,13 +1751,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:178"
+        "skill:skills/paperclip/references/cases.md:207"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:attachments:198",
+      "id": "skill:skills/paperclip/references/cases.md:attachments:227",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:198",
+      "sourceAnchor": "skills/paperclip/references/cases.md:227",
       "title": "Attachments",
       "expectedSemantics": "Skill guidance headed “Attachments”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1766,13 +1766,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:198"
+        "skill:skills/paperclip/references/cases.md:227"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:lifecycle:206",
+      "id": "skill:skills/paperclip/references/cases.md:lifecycle:235",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:206",
+      "sourceAnchor": "skills/paperclip/references/cases.md:235",
       "title": "Lifecycle",
       "expectedSemantics": "Skill guidance headed “Lifecycle”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1781,13 +1781,13 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:206"
+        "skill:skills/paperclip/references/cases.md:235"
       ]
     },
     {
-      "id": "skill:skills/paperclip/references/cases.md:worked-blog-post-example:220",
+      "id": "skill:skills/paperclip/references/cases.md:worked-blog-post-example:249",
       "sourceKind": "skill_heading",
-      "sourceAnchor": "skills/paperclip/references/cases.md:220",
+      "sourceAnchor": "skills/paperclip/references/cases.md:249",
       "title": "Worked Blog Post Example",
       "expectedSemantics": "Skill guidance headed “Worked Blog Post Example”.",
       "primaryDisposition": "optional_agent_tool",
@@ -1796,7 +1796,7 @@
         "control_plane_invariant"
       ],
       "evidenceIds": [
-        "skill:skills/paperclip/references/cases.md:220"
+        "skill:skills/paperclip/references/cases.md:249"
       ]
     },
     {

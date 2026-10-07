@@ -44,7 +44,7 @@ import {
   type RunIdentityContext,
 } from "../services/run-identity.js";
 import { createHash, randomUUID } from "node:crypto";
-import { Router, type Request, type Response } from "express";
+import { Router, type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
 import { z } from "zod";
 import {
@@ -403,6 +403,22 @@ const RETRYABLE_STEERING_CODES: Record<string, true> = {
 const updateIssueRouteSchema = updateIssueSchema.extend({
   interrupt: z.boolean().optional(),
 });
+const ISSUE_MONITOR_SCHEDULE_PATH = "executionPolicy.monitor.nextCheckAt";
+
+function rejectMisplacedIssueMonitorFields(req: Request, _res: Response, next: NextFunction) {
+  const body = req.body;
+  const fields =
+    body && typeof body === "object" && !Array.isArray(body)
+      ? Object.keys(body).filter((key) => key === "monitor" || /^monitor[A-Z]/.test(key))
+      : [];
+  if (fields.length > 0) {
+    throw badRequest(
+      `${fields.join(", ")} is not an issue field; schedule the issue monitor with ${ISSUE_MONITOR_SCHEDULE_PATH} (paperclipUpdateIssue: advanced.executionPolicy.monitor.nextCheckAt)`,
+      { code: "misplaced_issue_monitor_field", fields, expected: ISSUE_MONITOR_SCHEDULE_PATH },
+    );
+  }
+  next();
+}
 const queuedCommentMutationTargetSchema = z.object({
   queueId: z.string().min(1),
   revision: z.string().min(1),
@@ -12168,6 +12184,7 @@ export function issueRoutes(
   router.post(
     "/companies/:companyId/issues",
     applyCreateIssueStatusDefault,
+    rejectMisplacedIssueMonitorFields,
     validateIssueMutationBody(createIssueSchema),
     async (req, res) => {
       const companyId = req.params.companyId as string;
@@ -13405,6 +13422,7 @@ export function issueRoutes(
 
   router.patch(
     "/issues/:id",
+    rejectMisplacedIssueMonitorFields,
     validateIssueMutationBody(updateIssueRouteSchema),
     async (req, res) => {
       const id = req.params.id as string;

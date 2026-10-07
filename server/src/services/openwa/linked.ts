@@ -15,9 +15,10 @@ import { publishActivity, type ActivityPublication } from "../activity-log.js";
 import { secretService } from "../secrets.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { createOpenwaGatewayClient, OpenwaGatewayError, type OpenwaGatewayClient, type OpenwaHistoryMessage } from "./gateway.js";
+import type { OpenwaIngestedMedia } from "./media.js";
 import { openwaChatKey } from "./outbound.js";
 import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
-import { OpenwaToolError, fitPage, liveView, type ToolContext } from "./tools.js";
+import { OpenwaToolError, WA_MESSAGE_CHAT, fitPage, liveView, openwaMediaResult, type ToolContext } from "./tools.js";
 
 type EndpointRow = typeof chatEndpoints.$inferSelect;
 type LinkedRow = typeof chatOpenwaLinkedSessions.$inferSelect;
@@ -29,6 +30,7 @@ const LIVE_LIMIT = 100;
 const DEEP_LIMIT = 2000;
 const CHAT_ID = /^[A-Za-z0-9._-]{1,128}@(c\.us|g\.us|lid|s\.whatsapp\.net)$/i;
 const CHAT_REF = /^openwa:([A-Za-z0-9-]{1,64}):(.+)$/;
+const MEDIA_TYPES = new Set(["image", "video", "audio", "voice", "ptt", "document", "sticker"]);
 
 export interface OpenwaLinkedServiceDeps {
   adminApiKey(endpoint: EndpointRow): Promise<string | null>;
@@ -462,13 +464,59 @@ export async function openwaLinkedListTool(ctx: ToolContext, linked: OpenwaLinke
   };
 }
 
-export async function openwaLinkedReadTool(ctx: ToolContext, linked: OpenwaLinkedService, args: Args): Promise<Record<string, unknown>> {
+async function allowedLinkedChat(ctx: ToolContext, linked: OpenwaLinkedService, args: Args) {
   assertOpenwaLinkedOwnerRun(ctx);
   const row = await linked.rowFor(ctx.endpoint, String(args.linkedRef));
   if (!row) throw new OpenwaToolError(404, "linked_session_unavailable", "No linked number with that linkedRef; call openwa_linked_list");
   const chatId = linkedChatId(row, String(args.chat));
   const allowed = row.allowedChats.find((chat) => chat.chatId === chatId);
   if (!allowed) throw new OpenwaToolError(403, "linked_chat_not_allowed", "The board has not allowed this chat on the linked number");
+  return { row, chatId, allowed };
+}
+
+function linkedMessageView(ctx: Pick<ToolContext, "sessionId">, message: OpenwaHistoryMessage) {
+  const view = liveView(ctx, message);
+  if (view.media) return { ...view, media: { kind: message.type, ...view.media } };
+  return MEDIA_TYPES.has(message.type) ? { ...view, media: { kind: message.type } } : view;
+}
+
+async function auditLinked(ctx: ToolContext, chatId: string, metadata: Record<string, unknown>): Promise<void> {
+  try {
+    await recordOpenwaAudit(ctx.db, {
+      companyId: ctx.endpoint.companyId,
+      endpointId: ctx.endpoint.id,
+      kind: "linked_read",
+      actorKind: "agent",
+      actorRef: ctx.binding.agentId,
+      chatKey: chatId,
+      conversationId: ctx.conversation.id,
+      runId: ctx.run.id,
+      metadata,
+      content: null,
+    });
+  } catch (error) {
+    logger.warn({ err: error, endpointId: ctx.endpoint.id, runId: ctx.run.id }, "failed to record an OpenWA linked read audit");
+  }
+}
+
+function linkedGatewayError(error: unknown, notFound: string): OpenwaToolError {
+  if (error instanceof OpenwaGatewayError && error.code === "not_found") return new OpenwaToolError(404, "not_found", notFound);
+  if (error instanceof OpenwaGatewayError && (error.code === "gateway_unavailable" || error.code === "uncertain"))
+    return new OpenwaToolError(503, "gateway_unavailable", "The OpenWA gateway is unreachable");
+  return new OpenwaToolError(502, "gateway_error", error instanceof Error ? error.message : String(error));
+}
+
+function revokedKey(error: unknown): boolean {
+  return error instanceof OpenwaGatewayError && (error.code === "unauthorized" || error.code === "forbidden");
+}
+
+async function unavailable(linked: OpenwaLinkedService, row: LinkedRow): Promise<OpenwaToolError> {
+  await linked.setStatus(row, "unavailable");
+  return new OpenwaToolError(409, "linked_session_unavailable", "OpenWA no longer accepts this linked number's key; ask the board to link it again");
+}
+
+export async function openwaLinkedReadTool(ctx: ToolContext, linked: OpenwaLinkedService, args: Args): Promise<Record<string, unknown>> {
+  const { row, chatId, allowed } = await allowedLinkedChat(ctx, linked, args);
   const cursor = typeof args.cursor === "string" && args.cursor ? args.cursor : null;
   if (cursor && !/^l:\d{1,4}$/.test(cursor)) throw new OpenwaToolError(400, "invalid_cursor", "The cursor is malformed");
   const offset = cursor ? Number(cursor.slice(2)) : 0;
@@ -480,37 +528,44 @@ export async function openwaLinkedReadTool(ctx: ToolContext, linked: OpenwaLinke
   try {
     history = await client.chatHistory({ chatId, limit: want, deep: want > LIVE_LIMIT, includeMedia: false });
   } catch (error) {
-    if (error instanceof OpenwaGatewayError && (error.code === "unauthorized" || error.code === "forbidden")) {
-      await linked.setStatus(row, "unavailable");
-      throw new OpenwaToolError(409, "linked_session_unavailable", "OpenWA no longer accepts this linked number's key; ask the board to link it again");
-    }
-    if (error instanceof OpenwaGatewayError && error.code === "not_found") throw new OpenwaToolError(404, "not_found", "WhatsApp has no such chat on the linked number");
-    if (error instanceof OpenwaGatewayError && (error.code === "gateway_unavailable" || error.code === "uncertain"))
-      throw new OpenwaToolError(503, "gateway_unavailable", "The OpenWA gateway is unreachable");
-    throw new OpenwaToolError(502, "gateway_error", error instanceof Error ? error.message : String(error));
+    if (revokedKey(error)) throw await unavailable(linked, row);
+    throw linkedGatewayError(error, "WhatsApp has no such chat on the linked number");
   }
   await linked.setStatus(row, "active");
   const scoped = { ...ctx, sessionId: row.sessionId };
   const ordered = [...history].sort((a, b) => b.timestamp - a.timestamp).slice(offset, offset + limit);
   const envelope = { linkedRef: row.id, chatRef: linkedChatRef(row, chatId), label: allowed.label };
-  const fitted = fitPage(envelope, ordered.map((message) => liveView(scoped, message)));
+  const fitted = fitPage(envelope, ordered.map((message) => linkedMessageView(scoped, message)));
   const consumed = offset + fitted.page.length;
   const more = fitted.truncated || (history.length >= want && consumed < DEEP_LIMIT);
+  await auditLinked(ctx, chatId, { tool: "openwa_linked_read", linkedSessionId: row.id, count: fitted.page.length });
+  return { ...envelope, messages: fitted.page, nextCursor: more ? "l:" + consumed : null, ...(fitted.truncated ? { truncated: true } : {}) };
+}
+
+export async function openwaLinkedGetMediaTool(ctx: ToolContext, linked: OpenwaLinkedService, args: Args): Promise<Record<string, unknown>> {
+  const { row, chatId } = await allowedLinkedChat(ctx, linked, args);
+  const messageId = String(args.messageId).trim();
+  const ownChat = WA_MESSAGE_CHAT.exec(messageId);
+  if (ownChat && openwaChatKey(ownChat[1]!) !== chatId) throw new OpenwaToolError(404, "not_found", "The message is not in this chat");
+  const client = await linked.viewerFor(ctx.endpoint, row);
+  const handle = await ctx.runtime();
+  if (!handle.media) throw new OpenwaToolError(503, "gateway_unavailable", "OpenWA media handling is not available in this process");
+  let items: OpenwaIngestedMedia[];
   try {
-    await recordOpenwaAudit(ctx.db, {
-      companyId: ctx.endpoint.companyId,
-      endpointId: ctx.endpoint.id,
-      kind: "linked_read",
-      actorKind: "agent",
-      actorRef: ctx.binding.agentId,
-      chatKey: chatId,
-      conversationId: ctx.conversation.id,
-      runId: ctx.run.id,
-      metadata: { tool: "openwa_linked_read", linkedSessionId: row.id, count: fitted.page.length },
-      content: null,
+    items = await handle.media.fetchOpenwaMessageMedia({
+      endpoint: ctx.endpoint,
+      client,
+      issueId: ctx.binding.issueId,
+      chatId,
+      messageId,
+      rethrow: (error) => error instanceof OpenwaGatewayError && ["unauthorized", "forbidden", "not_found"].includes(error.code),
     });
   } catch (error) {
-    logger.warn({ err: error, endpointId: ctx.endpoint.id, runId: ctx.run.id }, "failed to record an OpenWA linked read audit");
+    if (revokedKey(error)) throw await unavailable(linked, row);
+    if (error instanceof OpenwaGatewayError) throw linkedGatewayError(error, "No stored media for that message");
+    throw error;
   }
-  return { ...envelope, messages: fitted.page, nextCursor: more ? "l:" + consumed : null, ...(fitted.truncated ? { truncated: true } : {}) };
+  await linked.setStatus(row, "active");
+  await auditLinked(ctx, chatId, { tool: "openwa_linked_get_media", linkedSessionId: row.id, messageId, count: items.length });
+  return openwaMediaResult(ctx, handle, { linkedRef: row.id, chatRef: linkedChatRef(row, chatId), messageId }, items);
 }

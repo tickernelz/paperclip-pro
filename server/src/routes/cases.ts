@@ -674,9 +674,10 @@ export function caseRoutes(db: Db, storage: StorageService) {
     if (!parsed.success) throw badRequest("Invalid case list query", parsed.error.issues);
     const query = parsed.data;
     const filters = [eq(cases.companyId, companyId)];
-    const typeFilters = parseQueryList(query.types ?? query.type);
+    const typeFilters = parseQueryList(query.types ?? query.type ?? query.caseType);
     if (typeFilters.length === 1) filters.push(eq(cases.caseType, typeFilters[0]!));
     else if (typeFilters.length > 1) filters.push(inArray(cases.caseType, typeFilters));
+    if (query.key) filters.push(eq(cases.key, query.key));
 
     const statusFilters = parseQueryList(query.statuses ?? (query.status === "active" ? undefined : query.status));
     if (query.status === "active" && statusFilters.length === 0) {
