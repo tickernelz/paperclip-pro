@@ -94,6 +94,16 @@ export function normalizeIssueQueuedCommentQueue(
   };
 }
 
+export function queuedInteractionResponseIds(
+  queue: IssueQueuedCommentQueue | null | undefined,
+): ReadonlySet<string> {
+  return new Set(
+    (queue?.entries ?? []).flatMap((entry) =>
+      entry.source?.kind === "interaction" ? [entry.source.interactionId] : [],
+    ),
+  );
+}
+
 export interface PendingIssueQueuedComment {
   comment: IssueComment;
   targetRunId: string | null;

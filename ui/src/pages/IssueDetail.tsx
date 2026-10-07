@@ -101,6 +101,7 @@ import { keepPreviousDataForSameQueryTail } from "../lib/query-placeholder-data"
 import {
   mergePendingIssueQueuedComments,
   normalizeIssueQueuedCommentQueue,
+  queuedInteractionResponseIds,
 } from "../lib/issue-queued-comment-queue";
 import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import {
@@ -1969,9 +1970,13 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             : null,
       });
     }
+    const serverQueuedInteractionIds = queuedInteractionResponseIds(
+      authoritativeQueuedCommentQueue,
+    );
     const responseComments = classicTaskInterfaceEnabled
       ? []
       : interactions.flatMap((interaction): IssueDetailComment[] => {
+          if (serverQueuedInteractionIds.has(interaction.id)) return [];
           const answeredQuestions =
             interaction.kind === "ask_user_questions" &&
             interaction.status === "answered";
@@ -1990,10 +1995,16 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
               ? interaction.resolvedAt
               : new Date(interaction.resolvedAt);
           if (Number.isNaN(resolvedAt.getTime())) return [];
-          const delivery = answeredQuestions
-            ? (questionDeliveryByInteractionId.get(interaction.id) ?? null)
-            : null;
+          const steeredPlacement = inputPlacementByCommentId.get(interaction.id);
+          const delivery =
+            (answeredQuestions
+              ? questionDeliveryByInteractionId.get(interaction.id)
+              : null) ??
+            (steeredPlacement?.kind === "steer"
+              ? { targetRunId: steeredPlacement.runId, deliveryMode: "steered" }
+              : null);
           const queuedTargetRunId =
+            delivery?.deliveryMode !== "steered" &&
             interaction.sourceRunId &&
             interruptibleIssueRun?.id === interaction.sourceRunId &&
             interruptibleIssueRun.adapterType !== "paperclip_runner"
@@ -2048,6 +2059,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     resolvedActivity,
     resolvedLinkedRuns,
     interruptibleIssueRun,
+    authoritativeQueuedCommentQueue,
   ]);
   const effectiveQueuedCommentQueue = useMemo(() => {
     if (!queuedCommentQueueEnabled) return null;

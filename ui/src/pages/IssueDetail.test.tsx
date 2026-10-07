@@ -3916,6 +3916,154 @@ describe("IssueDetail", () => {
     },
   );
 
+  it.each(["server_queue", "steered"] as const)(
+    "shows a resolved plan decision once when the %s path owns it",
+    async (scenario) => {
+      mockIssuesApi.get.mockResolvedValue(
+        createIssue({
+          status: "in_progress",
+          assigneeAgentId: "agent-1",
+          executionRunId: "run-source",
+        }),
+      );
+      mockIssuesApi.listInteractions.mockResolvedValue([
+        {
+          id: "interaction-plan",
+          companyId: "company-1",
+          issueId: "issue-1",
+          kind: "request_confirmation",
+          status: "accepted",
+          continuationPolicy: "wake_assignee",
+          resolverPolicy: "anyone",
+          requestedResolverPolicy: "anyone",
+          effectiveResolverPolicy: "anyone",
+          resolverPolicyProvenance: "inherited",
+          effectiveResolverPolicySource: "requested",
+          legacyResolverPolicyAliases: { requested: null, effective: null },
+          sourceRunId: "run-source",
+          resolvedByUserId: "user-1",
+          createdAt: "2026-04-21T00:00:01.000Z",
+          updatedAt: "2026-04-21T00:00:04.000Z",
+          resolvedAt: "2026-04-21T00:00:04.000Z",
+          payload: {
+            version: 1,
+            prompt: "Approve this plan?",
+            target: {
+              type: "issue_document",
+              issueId: "issue-1",
+              documentId: "document-plan",
+              key: "plan",
+              revisionId: "revision-1",
+              revisionNumber: 1,
+              label: "Plan revision 1",
+            },
+          },
+          result: { outcome: "accepted" },
+        },
+      ]);
+      const activeRun = {
+        id: "run-source",
+        status: "running",
+        invocationSource: "issue",
+        triggerDetail: null,
+        contextCommentId: null,
+        contextWakeCommentId: null,
+        startedAt: "2026-04-21T00:00:00.000Z",
+        finishedAt: null,
+        createdAt: "2026-04-21T00:00:00.000Z",
+        agentId: "agent-1",
+        agentName: "Coder",
+        adapterType: "omp_local",
+        issueId: "issue-1",
+      };
+      mockHeartbeatsApi.activeRunForIssue.mockResolvedValue(activeRun);
+      mockHeartbeatsApi.liveRunsForIssue.mockResolvedValue([activeRun]);
+      if (scenario === "server_queue") {
+        mockIssuesApi.getQueuedComments.mockResolvedValue(
+          createQueuedCommentQueue({
+            queueId: "wake-answer",
+            targetRunId: "run-source",
+            protocol: "legacy",
+            steeringDisposition: "unsupported",
+            entries: [
+              {
+                comment: createIssueComment({
+                  id: "interaction-plan",
+                  body: "Accepted: Approve this plan?",
+                }),
+                position: 0,
+                source: {
+                  kind: "interaction",
+                  interactionId: "interaction-plan",
+                  interactionKind: "request_confirmation",
+                  requiresFreshSession: false,
+                },
+                canEdit: false,
+                canDiscard: false,
+              },
+            ],
+          }),
+        );
+      } else {
+        mockActivityApi.forIssue.mockResolvedValue([
+          {
+            id: "activity-plan-steered",
+            companyId: "company-1",
+            actorType: "user",
+            actorId: "user-1",
+            agentId: null,
+            runId: null,
+            action: "issue.queued_comment_steered",
+            entityType: "issue",
+            entityId: "issue-1",
+            details: {
+              commentId: "interaction-plan",
+              targetRunId: "run-source",
+              turnId: "turn-source",
+              duplicate: false,
+            },
+            createdAt: "2026-04-21T00:00:05.000Z",
+          },
+        ]);
+      }
+
+      await act(async () => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <IssueDetail />
+          </QueryClientProvider>,
+        );
+      });
+      await flushReact();
+      await flushReact();
+
+      await waitForAssertion(() => {
+        const props = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as {
+          comments?: Array<Record<string, unknown>>;
+          queuedCommentQueue?: IssueQueuedCommentQueue | null;
+        };
+        const queuedIds = (props.queuedCommentQueue?.entries ?? []).map(
+          (entry) => entry.comment.id,
+        );
+        const synthesized = props.comments?.filter(
+          (comment) => comment.id === "interaction-response:interaction-plan",
+        ) ?? [];
+        if (scenario === "server_queue") {
+          expect(queuedIds).toEqual(["interaction-plan"]);
+          expect(synthesized).toHaveLength(0);
+        } else {
+          expect(queuedIds).toEqual([]);
+          expect(synthesized).toHaveLength(1);
+          expect(synthesized[0]).toMatchObject({
+            steeredIntoRunId: "run-source",
+            consumedByRunId: "run-source",
+          });
+          expect(synthesized[0]).not.toHaveProperty("queueState");
+        }
+      });
+    },
+  );
+
   it("queues messages against a queued live run and interrupts that exact run", async () => {
     const postedComment = createDeferred<IssueComment>();
     mockIssuesApi.get.mockResolvedValue(

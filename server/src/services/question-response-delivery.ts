@@ -54,11 +54,6 @@ type Heartbeat = Pick<
   ReturnType<typeof heartbeatService>,
   "wakeup" | "cancelRun"
 >;
-type QuestionResponseSteer = (input: {
-  runId: string;
-  message: string;
-  correlationId: string;
-}) => Promise<{ turnId?: string | null }>;
 type NativeQuestionResponseResolver = (
   interaction: AskUserQuestionsInteraction,
 ) => Promise<"not_native" | "pending" | "queued">;
@@ -82,8 +77,6 @@ export interface QuestionResponseDeliveryOutcome {
 
 export interface QuestionResponseDeliveryServiceOptions {
   heartbeat: Heartbeat;
-  /** Kept for caller compatibility. Answers never implicitly steer an active turn. */
-  steer?: QuestionResponseSteer;
   /** Resolve the original in-flight native input request before considering a continuation run. */
   resolveNativeQuestion?: NativeQuestionResponseResolver;
   now?: () => Date;
@@ -397,6 +390,44 @@ function hasExternalChatOrigin(
     source?.startsWith("chat:") === true ||
     source === "external_chat.interaction.resolve"
   );
+}
+
+export async function hasExternalChatResponseBoundary(
+  db: Db,
+  interaction: {
+    id: string;
+    companyId: string;
+    issueId: string;
+    sourceRunId?: string | null;
+  },
+): Promise<boolean> {
+  const [publication] = await db
+    .select({ id: chatPublications.id })
+    .from(chatPublications)
+    .where(
+      and(
+        eq(chatPublications.companyId, interaction.companyId),
+        eq(chatPublications.issueId, interaction.issueId),
+        eq(
+          sql<string>`${chatPublications.payload}->>'interactionId'`,
+          interaction.id,
+        ),
+      ),
+    )
+    .limit(1);
+  if (publication) return true;
+  if (!interaction.sourceRunId) return false;
+  const [sourceRun] = await db
+    .select({ contextSnapshot: heartbeatRuns.contextSnapshot })
+    .from(heartbeatRuns)
+    .where(
+      and(
+        eq(heartbeatRuns.id, interaction.sourceRunId),
+        eq(heartbeatRuns.companyId, interaction.companyId),
+      ),
+    )
+    .limit(1);
+  return hasExternalChatOrigin(sourceRun ?? null);
 }
 
 function actorForInteraction(interaction: QuestionInteractionRow) {
@@ -1139,8 +1170,6 @@ export function questionResponseDeliveryService(
       }
     }
 
-    // An answer to an older question is new input, not implicit permission to
-    // steer another active turn. Only the queue's explicit Steer action delivers it.
     const steeringErrorCode = successorRunning && externalChatBoundary
       ? "steering_external_chat_context_incompatible" : null;
 
@@ -1340,5 +1369,77 @@ export function questionResponseDeliveryService(
     return counts;
   }
 
-  return { deliver, sweepPending };
+  async function recordSteered(input: {
+    interactionId: string;
+    targetRunId: string;
+    targetTurnId: string | null;
+  }): Promise<QuestionResponseDeliveryOutcome | null> {
+    const at = now();
+    return db.transaction(async (tx) => {
+      const row = await tx
+        .update(issueQuestionResponseDeliveries)
+        .set({
+          status: "delivered",
+          deliveryMode: "steered",
+          targetRunId: input.targetRunId,
+          targetTurnId: input.targetTurnId,
+          acknowledgedAt: at,
+          lastErrorCode: null,
+          updatedAt: at,
+        })
+        .where(
+          and(
+            eq(issueQuestionResponseDeliveries.interactionId, input.interactionId),
+            eq(issueQuestionResponseDeliveries.status, "fallback_queued"),
+          ),
+        )
+        .returning()
+        .then((rows) => rows[0] ?? null);
+      if (!row) return null;
+      const [context] = await tx
+        .select({
+          sourceRunId: issueThreadInteractions.sourceRunId,
+          resolvedByAgentId: issueThreadInteractions.resolvedByAgentId,
+          adapterType: agents.adapterType,
+        })
+        .from(issueThreadInteractions)
+        .leftJoin(heartbeatRuns, eq(heartbeatRuns.id, input.targetRunId))
+        .leftJoin(agents, eq(agents.id, heartbeatRuns.agentId))
+        .where(eq(issueThreadInteractions.id, input.interactionId))
+        .limit(1);
+      await logActivity(tx as unknown as Db, {
+        companyId: row.companyId,
+        actorType: "system",
+        actorId: "question-response-delivery",
+        agentId: context?.resolvedByAgentId ?? null,
+        runId: input.targetRunId,
+        action: "issue.question_response_delivered",
+        entityType: "issue",
+        entityId: row.issueId,
+        details: {
+          deliveryId: row.id,
+          interactionId: input.interactionId,
+          sourceRunId: context?.sourceRunId ?? null,
+          targetRunId: input.targetRunId,
+          targetTurnId: input.targetTurnId,
+          correlationId: row.correlationId,
+          payloadSha256: row.payloadSha256,
+          deliveryStatus: "delivered",
+          deliveryMode: "steered",
+          adapter: context?.adapterType ?? "unknown",
+          errorCode: null,
+        },
+      });
+      return {
+        deliveryId: row.id,
+        status: row.status,
+        mode: row.deliveryMode,
+        targetRunId: row.targetRunId,
+        targetTurnId: row.targetTurnId,
+        duplicate: false,
+      };
+    });
+  }
+
+  return { deliver, sweepPending, recordSteered };
 }
