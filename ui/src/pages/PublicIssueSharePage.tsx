@@ -265,8 +265,8 @@ function WorkProductRow({ product }: { product: PublicShareWorkProduct }) {
 
 function CenteredNotice({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4 text-foreground">
-      <div className="w-full max-w-sm space-y-2 rounded-lg border border-border bg-card p-6 text-center">
+    <div className="flex h-dvh overflow-y-auto bg-background px-4 text-foreground">
+      <div className="m-auto w-full max-w-sm space-y-2 rounded-lg border border-border bg-card p-6 text-center">
         <h1 className="text-lg font-semibold">{title}</h1>
         <p className="text-sm text-muted-foreground">{body}</p>
         {action}
@@ -279,7 +279,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
   const { company, issue } = view;
   const resolveImageSrc = useCallback((src: string) => publicShareImageSrc(token, src), [token]);
   return (
-    <div className="min-h-dvh bg-background text-foreground">
+    <div className="h-dvh overflow-y-auto bg-background text-foreground">
       <header className="border-b border-border">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <CompanyPatternIcon
@@ -419,10 +419,12 @@ export function PublicIssueSharePage() {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-4 px-4 py-6" aria-busy="true">
-      <Skeleton className="h-6 w-1/2" />
-      <Skeleton className="h-4 w-1/3" />
-      <Skeleton className="h-24 w-full" />
+    <div className="h-dvh overflow-y-auto px-4 py-6" aria-busy="true">
+      <div className="mx-auto max-w-3xl space-y-4">
+        <Skeleton className="h-6 w-1/2" />
+        <Skeleton className="h-4 w-1/3" />
+        <Skeleton className="h-24 w-full" />
+      </div>
     </div>
   );
 }
