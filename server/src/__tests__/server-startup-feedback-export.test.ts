@@ -357,6 +357,14 @@ vi.mock("../services/index.js", () => ({
 
 vi.mock("../services/chat-completion-delivery.js", () => ({ chatCompletionDeliveryService: () => ({ sweepPending: completionSweepMock }) }));
 
+vi.mock("../services/notifications/dispatcher.js", () => ({
+  startNotificationDispatcher: vi.fn(() => () => {}),
+}));
+
+vi.mock("../services/notifications/web-push.js", () => ({
+  createWebPushRuntime: vi.fn(() => ({ sender: null })),
+}));
+
 vi.mock("../services/connection-intent-delivery.js", () => ({
   connectionIntentDeliveryService: vi.fn(() => ({
     sweepPending: vi.fn(async () => ({ scanned: 0, failed: 0 })),
