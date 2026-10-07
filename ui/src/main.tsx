@@ -8,6 +8,7 @@ import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import { SentryGate } from "./components/SentryGate";
 import { CompanyProvider, useCompany } from "./context/CompanyContext";
 import { LiveUpdatesProvider } from "./context/LiveUpdatesProvider";
+import { NotificationRuntime } from "./components/NotificationRuntime";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
 import { PanelProvider } from "./context/PanelContext";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -73,6 +74,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
               <EditorAutocompleteProvider>
                 <ToastProvider>
                   <LiveUpdatesProvider>
+                    <NotificationRuntime />
                     <TooltipProvider>
                       <CompanyAwareBreadcrumbProvider>
                         <SidebarProvider>

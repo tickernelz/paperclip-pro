@@ -50,6 +50,7 @@ import { useLocation } from "../lib/router";
 import { agentRouteRef } from "../lib/utils";
 import { buildSameOriginWebSocketUrl } from "../lib/websocket-url";
 import { tryCreateWebSocket } from "../lib/websocket";
+import { deliverLiveNotification, readNotificationCreatedPayload } from "../lib/notifications/delivery";
 
 const TOAST_COOLDOWN_WINDOW_MS = 10_000;
 const TOAST_COOLDOWN_MAX = 3;
@@ -2107,6 +2108,12 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
             liveCompanyId,
             parsed,
           );
+          if (parsed.type === "notification.created") {
+            const notificationPayload = readNotificationCreatedPayload(parsed.payload);
+            if (notificationPayload) {
+              void deliverLiveNotification(notificationPayload, currentActorRef.current.userId);
+            }
+          }
         } catch {
           // Ignore non-JSON payloads.
         }

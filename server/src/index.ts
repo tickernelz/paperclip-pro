@@ -1,4 +1,6 @@
 import { subscribeAllCompanyLiveEvents } from "./services/live-events.js";
+import { startNotificationDispatcher } from "./services/notifications/dispatcher.js";
+import { createWebPushRuntime } from "./services/notifications/web-push.js";
 import { chatCompletionDeliveryService } from "./services/chat-completion-delivery.js";
 /// <reference path="./types/express.d.ts" />
 // Kicks off the OTel bootstrap as early as possible (no-op unless
@@ -1240,6 +1242,11 @@ async function startServerWithDatabaseTeardown(
       .catch(err => logger.error({ err }, "post-commit chat completion delivery failed")));
   });
   server.on("close", unsubscribeChatCompletions);
+  const unsubscribeNotifications = startNotificationDispatcher({
+    db: db as any,
+    sender: createWebPushRuntime({ publicBaseUrl: config.authPublicBaseUrl }).sender,
+  });
+  server.on("close", unsubscribeNotifications);
   const connectionDeliveries = connectionIntentDeliveryService(db as any, environmentLeaseCleanupHeartbeat);
   const questionResponseDeliveries = questionResponseDeliveryService(db as any, {
     heartbeat: environmentLeaseCleanupHeartbeat,
@@ -1953,6 +1960,7 @@ async function startServerWithDatabaseTeardown(
     await systemdNotify(["--stopping", `--status=Stopping after ${signal}`]);
     heartbeatSchedulerStopped = true;
     unsubscribeChatCompletions();
+    unsubscribeNotifications();
     clearInterval(executionControlInterval);
     if (heartbeatSchedulerInterval) {
       clearInterval(heartbeatSchedulerInterval);

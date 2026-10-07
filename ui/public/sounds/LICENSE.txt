@@ -1,0 +1,19 @@
+Interface Sounds (1.0) by Kenney (www.kenney.nl)
+Source: https://kenney.nl/assets/interface-sounds
+License: Creative Commons Zero (CC0 1.0 Universal)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+The .ogg files are copied unchanged from the pack. The .mp3 files are mono
+64 kbps conversions of the same files made with ffmpeg.
+
+Files and their original names:
+confirmation.ogg  confirmation_002.ogg
+question.ogg      question_001.ogg
+glass.ogg         glass_001.ogg
+bong.ogg          bong_001.ogg
+maximize.ogg      maximize_006.ogg
+pluck.ogg         pluck_002.ogg
+error.ogg         error_006.ogg
+drop.ogg          drop_002.ogg
+select.ogg        select_003.ogg
+open.ogg          open_002.ogg

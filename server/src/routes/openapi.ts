@@ -146,6 +146,8 @@ import {
   resolveBudgetIncidentSchema,
   // Sidebar
   upsertSidebarOrderPreferenceSchema,
+  upsertWebPushSubscriptionSchema,
+  deleteWebPushSubscriptionSchema,
   // Announcements
   announcementIdSchema,
   announcementSchema,
@@ -1452,6 +1454,7 @@ const PUBLIC_OPERATIONS = new Set([
 
 const BOARD_ONLY_PREFIXES = [
   "/api/announcements/",
+  "/api/notifications/",
   "/api/auth/",
   "/api/admin/",
   "/api/plugins",
@@ -6950,6 +6953,40 @@ registerCurrentRoute({
     403: r.forbidden,
     404: r.notFound,
   },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/notifications/web-push/config",
+  tags: ["notifications"],
+  summary: "Get Web Push configuration for the current board user",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/notifications/web-push/subscription",
+  tags: ["notifications"],
+  summary: "Register or update this device's Web Push subscription",
+  request: { body: jsonBody(upsertWebPushSubscriptionSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: "/api/notifications/web-push/subscription",
+  tags: ["notifications"],
+  summary: "Remove one of the current user's Web Push subscriptions",
+  request: { body: jsonBody(deleteWebPushSubscriptionSchema) },
+  responses: { 204: r.noContent, 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/notifications/web-push/test",
+  tags: ["notifications"],
+  summary: "Send a test push to the current user's subscriptions",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 503: { description: "Web Push unavailable" } },
 });
 
 registry.registerPath({
