@@ -395,8 +395,10 @@ function TaskChatBubbleContent({
       ) : actions ? (
         streamlined ? (
           <div className="flex w-full items-center justify-between gap-2 px-1">
-            {item.timestamp ? (
+            {item.timestamp || sentFromIMessage ? (
               <span className="text-(length:--text-micro) text-muted-foreground">
+                {sentFromIMessage ? "Sent from iMessage" : null}
+                {sentFromIMessage && item.timestamp ? " · " : null}
                 {item.timestamp}
               </span>
             ) : null}
@@ -405,8 +407,10 @@ function TaskChatBubbleContent({
         ) : (
           <div className="flex items-center gap-1">
             {actions}
-            {item.timestamp ? (
+            {item.timestamp || sentFromIMessage ? (
               <span className="px-1 text-(length:--text-micro) text-muted-foreground">
+                {sentFromIMessage ? "Sent from iMessage" : null}
+                {sentFromIMessage && item.timestamp ? " · " : null}
                 {item.timestamp}
               </span>
             ) : null}

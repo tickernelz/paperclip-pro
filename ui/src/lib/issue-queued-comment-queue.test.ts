@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   mergePendingIssueQueuedComments,
   normalizeIssueQueuedCommentQueue,
+  queuedInteractionResponseIds,
 } from "./issue-queued-comment-queue";
 
 function comment(id: string, body: string) {
@@ -20,6 +21,18 @@ function comment(id: string, body: string) {
     updatedAt: now,
   };
 }
+
+describe("queuedInteractionResponseIds", () => {
+  it("lists only interaction responses the server queue already carries", () => {
+    const queue = normalizeIssueQueuedCommentQueue({ entries: [
+      { comment: comment("answer-1", "Answered: Runtime"), source: { kind: "interaction", interactionId: "answer-1",
+        interactionKind: "ask_user_questions" }, canEdit: false, canDiscard: false },
+      { comment: comment("comment-1", "Plain follow-up"), canEdit: true, canDiscard: true },
+    ] }, "issue-1");
+    expect([...queuedInteractionResponseIds(queue)]).toEqual(["answer-1"]);
+    expect(queuedInteractionResponseIds(null).size).toBe(0);
+  });
+});
 
 describe("normalizeIssueQueuedCommentQueue", () => {
   it("retains the immutable response and fresh-turn requirement", () => {

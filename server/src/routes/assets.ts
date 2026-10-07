@@ -7,15 +7,13 @@ import { ASSET_NAMESPACE_RULE, createAssetImageMetadataSchema } from "@tickernel
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import {
-  assetServingContentType,
-  contentDispositionHeader,
   formatAttachmentSize,
   isAllowedContentType,
-  isInlineAttachmentContentType,
   MAX_ATTACHMENT_BYTES,
   normalizeContentType,
 } from "../attachment-types.js";
 import { assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
+import { serveAssetContent } from "./content-serving.js";
 const SVG_CONTENT_TYPE = "image/svg+xml";
 const ALLOWED_COMPANY_LOGO_CONTENT_TYPES = new Set([
   "image/png",
@@ -330,50 +328,14 @@ export function assetRoutes(db: Db, storage: StorageService) {
     const assetId = req.params.assetId as string;
     const asset = await getAccessibleResource(req, res, svc.getById(assetId), "Asset not found");
     if (!asset) return;
-
-    // Use the persisted size only after resource authorization. Single ranges
-    // keep saved API text pages bounded all the way to disk or object storage.
-    const rawRange = req.headers.range;
-    const rangeSyntax = rawRange && /^bytes=(\d*)-(\d*)$/i.exec(rawRange);
-    const emptyRead = asset.byteSize === 0 && rangeSyntax?.[1] === "0";
-    const ranges = rawRange && !emptyRead ? req.range(asset.byteSize) : undefined;
-    res.setHeader("Accept-Ranges", "bytes");
-    if (/^[a-f0-9]{64}$/.test(asset.sha256)) res.setHeader("ETag", `"${asset.sha256}"`);
-    if (rawRange && (!rangeSyntax || (!rangeSyntax[1] && !rangeSyntax[2])
-      || (!emptyRead && (!Array.isArray(ranges) || ranges.length !== 1)))) {
-      res.setHeader("Content-Range", `bytes */${asset.byteSize}`);
-      res.status(416).end();
-      return;
-    }
-    const range = Array.isArray(ranges) ? ranges[0] : undefined;
-    const object = await storage.getObject(asset.companyId, asset.objectKey, range ? { range } : undefined);
-    const responseContentType = assetServingContentType({
-      companyId: asset.companyId,
-      objectKey: asset.objectKey,
-      contentType: asset.contentType || object.contentType,
+    await serveAssetContent({
+      storage,
+      asset,
+      rangeHeader: req.headers.range,
+      parseRange: (size) => req.range(size),
+      res,
+      next,
     });
-    const inlineSafe = isInlineAttachmentContentType(responseContentType);
-    res.setHeader("Content-Type", responseContentType);
-    res.setHeader("Content-Length", String(range ? range.end - range.start + 1 : asset.byteSize || object.contentLength || 0));
-    if (range) {
-      res.status(206);
-      res.setHeader("Content-Range", `bytes ${range.start}-${range.end}/${asset.byteSize}`);
-    }
-    res.setHeader("Cache-Control", "private, max-age=60");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    if (!inlineSafe) {
-      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
-    }
-    res.setHeader(
-      "Content-Disposition",
-      contentDispositionHeader(inlineSafe ? "inline" : "attachment", asset.originalFilename ?? "asset"),
-    );
-
-    object.stream.on("error", (err) => {
-      next(err);
-    });
-    res.on("close", () => object.stream.destroy());
-    object.stream.pipe(res);
   });
 
   return router;

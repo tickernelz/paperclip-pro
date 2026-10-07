@@ -86,6 +86,7 @@ import {
   shouldHideInteractionCard,
 } from "@/lib/issue-thread-interactions";
 import { TaskChatBubbleActions } from "@/components/task-chat/TaskChatBubbleActions";
+import { CommentPublicShareBadge, CommentPublicShareMenu } from "@/components/CommentPublicShareControl";
 import type {
   FeedbackVoteValue,
   IssueDocument,
@@ -549,6 +550,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     feedbackDataSharingPreference = "prompt",
     feedbackTermsUrl = null,
     onVote,
+    onSetCommentPublicShare,
     draftKey,
     onInterruptQueued,
     onCancelQueued,
@@ -2632,12 +2634,43 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     return map;
   }, [feedbackVotes]);
 
-  // copy · 👍 · 👎 cluster for an agent bubble's footer line (PAP-413). Human
-  // and system bubbles get nothing; copy is always available, and the feedback
-  // buttons render only when the host wired a vote handler.
+  const publicShareCommentById = useMemo(() => {
+    const map = new Map<string, { visible: boolean; userAuthored: boolean }>();
+    for (const comment of comments) {
+      map.set(comment.id, {
+        visible: comment.publicShareVisible === true,
+        userAuthored:
+          comment.authorType === "user" &&
+          !comment.authorAgentId &&
+          !comment.runAgentId &&
+          !comment.derivedAuthorAgentId &&
+          !comment.deletedAt,
+      });
+    }
+    return map;
+  }, [comments]);
+
   const renderMessageActions = useCallback(
     (item: TaskChatMessageItem) => {
-      if (item.author !== "agent" || item.optimistic) return null;
+      if (item.optimistic) return null;
+      if (item.author === "human") {
+        const share = publicShareCommentById.get(item.id);
+        if (!share?.userAuthored) return null;
+        const canToggle = Boolean(onSetCommentPublicShare);
+        if (!share.visible && !canToggle) return null;
+        return (
+          <div className="flex items-center gap-1">
+            {share.visible ? <CommentPublicShareBadge /> : null}
+            {canToggle ? (
+              <CommentPublicShareMenu
+                visible={share.visible}
+                onToggle={(visible) => void onSetCommentPublicShare?.(item.id, visible)}
+              />
+            ) : null}
+          </div>
+        );
+      }
+      if (item.author !== "agent") return null;
       return (
         <TaskChatBubbleActions
           copyText={item.text}
@@ -2659,6 +2692,8 @@ export function TaskChatThread(props: TaskChatThreadProps) {
       feedbackVoteByTargetId,
       feedbackDataSharingPreference,
       feedbackTermsUrl,
+      publicShareCommentById,
+      onSetCommentPublicShare,
     ],
   );
 

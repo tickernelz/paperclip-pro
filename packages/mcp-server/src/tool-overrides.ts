@@ -204,6 +204,22 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
       "Record an operator-facing work product on an issue. Use for every opened PR, published preview, managed service, notable commit, handoff branch, or uploaded artifact.",
     toolset: "core",
   },
+  "GET /api/issues/{id}/share-link": {
+    name: "paperclipGetIssueShareLink",
+    description: "Get the active public read-only share link of an issue, or null when it is not shared.",
+    toolset: "core",
+  },
+  "POST /api/issues/{id}/share-link": {
+    name: "paperclipCreateIssueShareLink",
+    description:
+      "Create (or return the existing) public read-only link to an issue for an external requester. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+    toolset: "core",
+  },
+  "DELETE /api/issues/{id}/share-link": {
+    name: "paperclipRevokeIssueShareLink",
+    description: "Revoke the public share link of an issue; the URL and every download under it stop working.",
+    toolset: "core",
+  },
   "PATCH /api/work-products/{id}": {
     name: "paperclipUpdateWorkProduct",
     description: "Update a recorded work product, for example when a pull request merges.",

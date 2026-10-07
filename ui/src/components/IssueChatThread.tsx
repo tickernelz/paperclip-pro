@@ -268,6 +268,7 @@ import {
 import { SourceTrustBadge } from "./SourceTrustBadge";
 import { CommentAttributionChip } from "./CommentAttributionChip";
 import { resolveCommentAttribution } from "../lib/comment-attribution";
+import { CommentPublicShareBadge, CommentPublicShareMenu } from "./CommentPublicShareControl";
 
 interface IssueChatMessageContext {
   feedbackDataSharingPreference: FeedbackDataSharingPreference;
@@ -289,6 +290,7 @@ interface IssueChatMessageContext {
   onInterruptQueued?: (runId: string | null) => Promise<void>;
   onCancelQueued?: (commentId: string) => void;
   onDeleteComment?: (commentId: string) => Promise<void> | void;
+  onSetCommentPublicShare?: (commentId: string, visible: boolean) => Promise<void> | void;
   onImageClick?: (src: string) => void;
   onAcceptInteraction?: (
     interaction:
@@ -691,6 +693,7 @@ interface IssueChatThreadProps {
     revision: string,
   ) => Promise<void>;
   onDeleteComment?: (commentId: string) => Promise<void> | void;
+  onSetCommentPublicShare?: (commentId: string, visible: boolean) => Promise<void> | void;
   interruptingQueuedRunId?: string | null;
   stoppingRunId?: string | null;
   onImageClick?: (src: string) => void;
@@ -2024,6 +2027,7 @@ function IssueChatUserMessage({
     onInterruptQueued,
     onCancelQueued,
     onDeleteComment,
+    onSetCommentPublicShare,
     currentUserId,
     userProfileMap,
   } = useContext(IssueChatCtx);
@@ -2042,6 +2046,7 @@ function IssueChatUserMessage({
     ? custom.sourceTrust
     : null;
   const followUpRequested = custom.followUpRequested === true;
+  const publicShareVisible = custom.publicShareVisible === true;
   const sentFromIMessage = isIssueCommentMetadata(custom.commentMetadata) &&
     custom.commentMetadata.sourceChannel === "imessage-photon";
   const queueReason =
@@ -2078,6 +2083,13 @@ function IssueChatUserMessage({
   const canDeleteComment = Boolean(
     onDeleteComment && isCurrentUser && !queued && !pending && !deleted,
   );
+  const canTogglePublicShare = Boolean(
+    onSetCommentPublicShare &&
+      custom.authorType === "user" &&
+      !queued &&
+      !pending &&
+      !deleted,
+  );
   const handleDeleteComment = () => {
     if (!canDeleteComment) return;
     setDeleteDialogOpen(true);
@@ -2112,6 +2124,7 @@ function IssueChatUserMessage({
             Follow-up
           </Badge>
         ) : null}
+        {publicShareVisible && !deleted ? <CommentPublicShareBadge /> : null}
       </div>
       <div
         className={cn(
@@ -2258,6 +2271,12 @@ function IssueChatUserMessage({
             >
               <Trash2 className="h-3.5 w-3.5" />
             </button>
+          ) : null}
+          {canTogglePublicShare ? (
+            <CommentPublicShareMenu
+              visible={publicShareVisible}
+              onToggle={(visible) => void onSetCommentPublicShare?.(commentId, visible)}
+            />
           ) : null}
         </div>
       )}
@@ -5868,6 +5887,7 @@ export function IssueChatThread({
   onInterruptQueued,
   onCancelQueued,
   onDeleteComment,
+  onSetCommentPublicShare,
   interruptingQueuedRunId = null,
   stoppingRunId = null,
   onImageClick,
@@ -6515,6 +6535,7 @@ export function IssueChatThread({
   const stableOnInterruptQueued = useStableEvent(onInterruptQueued);
   const stableOnCancelQueued = useStableEvent(onCancelQueued);
   const stableOnDeleteComment = useStableEvent(onDeleteComment);
+  const stableOnSetCommentPublicShare = useStableEvent(onSetCommentPublicShare);
   const stableOnImageClick = useStableEvent(onImageClick);
   const stableOnAcceptInteraction = useStableEvent(onAcceptInteraction);
   const stableOnRejectInteraction = useStableEvent(onRejectInteraction);
@@ -6544,6 +6565,7 @@ export function IssueChatThread({
       onInterruptQueued: composerPause ? undefined : stableOnInterruptQueued,
       onCancelQueued: composerPause ? undefined : stableOnCancelQueued,
       onDeleteComment: stableOnDeleteComment,
+      onSetCommentPublicShare: stableOnSetCommentPublicShare,
       onImageClick: stableOnImageClick,
       onAcceptInteraction: stableOnAcceptInteraction,
       onRejectInteraction: stableOnRejectInteraction,
@@ -6574,6 +6596,7 @@ export function IssueChatThread({
       stableOnInterruptQueued,
       stableOnCancelQueued,
       stableOnDeleteComment,
+      stableOnSetCommentPublicShare,
       stableOnImageClick,
       stableOnAcceptInteraction,
       stableOnRejectInteraction,

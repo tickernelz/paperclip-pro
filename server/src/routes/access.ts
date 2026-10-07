@@ -57,7 +57,7 @@ import {
   tooManyRequests
 } from "../errors.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
-import { runtimeCanonicalOrigin } from "../services/cloud-runtime-identity.js";
+import { requestBaseUrl, resolveBaseUrl } from "../lib/public-base-url.js";
 
 /**
  * Floor: when the hosting operator hides the Instance Access surface
@@ -151,22 +151,6 @@ function tokenHashesMatch(left: string, right: string) {
     leftBytes.length === rightBytes.length &&
     timingSafeEqual(leftBytes, rightBytes)
   );
-}
-
-function requestBaseUrl(req: Request) {
-  const forwardedProto = req.header("x-forwarded-proto");
-  const proto = forwardedProto?.split(",")[0]?.trim() || req.protocol || "http";
-  const host =
-    req.header("x-forwarded-host")?.split(",")[0]?.trim() || req.header("host");
-  if (!host) return "";
-  return `${proto}://${host}`;
-}
-
-function resolveBaseUrl(req: Request, authPublicBaseUrl?: string): string {
-  const runtimeOrigin = runtimeCanonicalOrigin();
-  if (runtimeOrigin) return runtimeOrigin;
-  if (authPublicBaseUrl) return authPublicBaseUrl.replace(/\/+$/, "");
-  return requestBaseUrl(req);
 }
 
 function buildCliAuthApprovalPath(challengeId: string, token: string) {

@@ -53,6 +53,62 @@ async function evictRequest(request) {
   }));
 }
 
+const NOTIFICATION_MESSAGE = "paperclip.notification";
+const NAVIGATE_MESSAGE = "paperclip.navigate";
+
+function readPushNotification(event) {
+  if (!event.data) return null;
+  try {
+    const notification = event.data.json()?.notification;
+    if (!notification || typeof notification.key !== "string" || typeof notification.title !== "string") return null;
+    return notification;
+  } catch {
+    return null;
+  }
+}
+
+function sameOriginPath(url) {
+  try {
+    const target = new URL(typeof url === "string" ? url : "/", self.location.origin);
+    return target.origin === self.location.origin ? target.pathname + target.search + target.hash : "/";
+  } catch {
+    return "/";
+  }
+}
+
+self.addEventListener("push", (event) => {
+  const notification = readPushNotification(event);
+  if (!notification) return;
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    for (const client of windows) client.postMessage({ type: NOTIFICATION_MESSAGE, notification });
+    const visible = windows.some((client) => client.visibilityState === "visible");
+    await self.registration.showNotification(notification.title, {
+      body: typeof notification.body === "string" ? notification.body : "",
+      tag: notification.key,
+      data: { url: sameOriginPath(notification.url) },
+      icon: "/pwa-192x192.png",
+      badge: "/pwa-monochrome-512x512.png",
+      silent: visible,
+    });
+  })());
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = sameOriginPath(event.notification.data?.url);
+  event.waitUntil((async () => {
+    const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    const client = windows.find((candidate) => candidate.visibilityState === "visible") ?? windows[0];
+    if (!client) {
+      await self.clients.openWindow(url);
+      return;
+    }
+    client.postMessage({ type: NAVIGATE_MESSAGE, url });
+    await client.focus().catch(() => client);
+  })());
+});
+
 self.addEventListener("install", () => {
   self.skipWaiting();
 });

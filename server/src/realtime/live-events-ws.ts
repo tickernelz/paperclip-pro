@@ -5,7 +5,7 @@ import type { Duplex } from "node:stream";
 import { and, eq, isNull } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { agentApiKeys, companyMemberships, instanceUserRoles } from "@tickernelz/paperclip-pro-db";
-import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import type { DeploymentMode, LiveEvent } from "@tickernelz/paperclip-pro-shared";
 import type { BetterAuthSessionResult } from "../auth/better-auth.js";
 import { logger } from "../middleware/logger.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";
@@ -56,6 +56,12 @@ export interface CloudUpgradeActor {
 interface IncomingMessageWithContext extends IncomingMessage {
   paperclipWebSocketHandled?: boolean;
   paperclipUpgradeContext?: UpgradeContext;
+}
+
+const BOARD_ONLY_LIVE_EVENT_TYPES = new Set<string>(["notification.created"]);
+
+export function isLiveEventVisibleToActor(event: LiveEvent, context: Pick<UpgradeContext, "actorType">) {
+  return context.actorType === "board" || !BOARD_ONLY_LIVE_EVENT_TYPES.has(event.type);
 }
 
 function hashToken(token: string) {
@@ -262,6 +268,7 @@ export function setupLiveEventsWebSocketServer(
 
     const unsubscribe = subscribeCompanyLiveEvents(context.companyId, (event) => {
       if (socket.readyState !== WebSocket.OPEN) return;
+      if (!isLiveEventVisibleToActor(event, context)) return;
       socket.send(JSON.stringify(event));
     });
 

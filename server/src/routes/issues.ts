@@ -27,8 +27,10 @@ import type { IssueRunModelOverrideValues } from "../services/issue-run-model-ov
 import type { IssueRunModelOverrideInheritance } from "@tickernelz/paperclip-pro-shared";
 import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
-import { documentExportFileName, requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
-import { renderDocumentPdf } from "../services/document-pdf.js";
+import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { sendIssueDocumentPdf, serveAttachmentContent } from "./content-serving.js";
+import { issueShareLinkService, toIssueShareLink } from "../services/issue-share-links.js";
+import { resolveBaseUrl } from "../lib/public-base-url.js";
 import {
   validateExecutionReconciliation,
   markExecutionReconciliation,
@@ -98,6 +100,7 @@ import {
   createIssueAttachmentMetadataSchema,
   createIssueThreadInteractionSchema,
   createIssueWorkProductSchema,
+  updateIssueCommentPublicShareSchema,
   createIssueLabelSchema,
   createAcceptedPlanDecompositionSchema,
   checkoutIssueSchema,
@@ -132,7 +135,6 @@ import {
   updateIssueSchema,
   isClosedIsolatedExecutionWorkspace,
   isMarkdownArtifactWorkProduct,
-  isMarkdownAttachmentContent,
   isUuidLike,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
   type CompactIssue,
@@ -217,7 +219,10 @@ import {
   RunnerGoalConflictError,
 } from "../services/runner-goals.js";
 import { queueLiveRunnerPrpCommand } from "../realtime/runner-prp-ws.js";
-import { questionResponseDeliveryService } from "../services/question-response-delivery.js";
+import {
+  hasExternalChatResponseBoundary,
+  questionResponseDeliveryService,
+} from "../services/question-response-delivery.js";
 import { emitAgentTaskRunById } from "../services/agent-task-run-telemetry.js";
 import {
   createQueuedCommentQueue,
@@ -273,10 +278,7 @@ import {
 } from "./workspace-command-authz.js";
 import { shouldWakeAssigneeOnCheckout } from "./issues-checkout-wakeup.js";
 import {
-  attachmentServingContentType,
   formatAttachmentSize,
-  GENERIC_ATTACHMENT_CONTENT_TYPES,
-  isInlineAttachmentContentType,
   MAX_ATTACHMENT_BYTES,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
@@ -621,41 +623,6 @@ function noopTaskWatchdogService(): TaskWatchdogService {
 
 function buildAttachmentContentPath(attachmentId: string): string {
   return `/api/attachments/${attachmentId}/content`;
-}
-
-const GENERIC_RESPONSE_ATTACHMENT_CONTENT_TYPES = new Set(
-  GENERIC_ATTACHMENT_CONTENT_TYPES,
-);
-
-function inferVideoContentTypeFromFilename(
-  filename: string | null | undefined,
-): string | null {
-  const lower = (filename ?? "").toLowerCase();
-  if (lower.endsWith(".mp4") || lower.endsWith(".m4v")) return "video/mp4";
-  if (lower.endsWith(".webm")) return "video/webm";
-  if (
-    lower.endsWith(".mov") ||
-    lower.endsWith(".qt") ||
-    lower.endsWith(".quicktime")
-  )
-    return "video/quicktime";
-  return null;
-}
-
-function resolveAttachmentResponseContentType(input: {
-  storedContentType: string | null | undefined;
-  objectContentType?: string | null;
-  originalFilename?: string | null;
-}) {
-  const storedContentType = normalizeContentType(
-    input.storedContentType || input.objectContentType,
-  );
-  if (!GENERIC_RESPONSE_ATTACHMENT_CONTENT_TYPES.has(storedContentType))
-    return storedContentType;
-  return (
-    inferVideoContentTypeFromFilename(input.originalFilename) ??
-    storedContentType
-  );
 }
 
 function requiresPaperclipAttachmentMetadata(
@@ -3609,6 +3576,7 @@ export function issueRoutes(
       actor: { agentId?: string | null; userId?: string | null };
     }) => Promise<unknown>;
     steeringRetry?: SteeringRetryPolicy;
+    publicBaseUrl?: string;
   } = {},
 ) {
   const router = Router();
@@ -3654,6 +3622,7 @@ export function issueRoutes(
   const recoveryActionsSvc = issueRecoveryActionService(db);
   const executionWorkspacesSvc = executionWorkspaceServiceDirect(db);
   const workProductsSvc = workProductService(db);
+  const shareLinksSvc = issueShareLinkService(db);
   const documentsSvc = documentService(db);
   const artifactReviewDocumentsSvc = artifactReviewDocumentService(db, storage);
   const companySkillsSvc = companySkillService(db);
@@ -4555,43 +4524,6 @@ export function issueRoutes(
       openPath: contentPath,
       downloadPath: `${contentPath}?download=1`,
     };
-  }
-
-  type ParsedAttachmentRange =
-    | { kind: "none" }
-    | { kind: "invalid" }
-    | { kind: "range"; start: number; end: number };
-
-  function parseAttachmentRangeHeader(
-    raw: string | undefined,
-    contentLength: number,
-  ): ParsedAttachmentRange {
-    if (!raw) return { kind: "none" };
-    if (!Number.isSafeInteger(contentLength) || contentLength <= 0)
-      return { kind: "invalid" };
-
-    const prefix = "bytes=";
-    if (!raw.toLowerCase().startsWith(prefix)) return { kind: "invalid" };
-    const spec = raw.slice(prefix.length).trim();
-    if (!spec || spec.includes(",")) return { kind: "invalid" };
-
-    const [startRaw, endRaw] = spec.split("-", 2);
-    if (endRaw === undefined) return { kind: "invalid" };
-
-    if (startRaw === "") {
-      const suffixLength = Number.parseInt(endRaw, 10);
-      if (!Number.isSafeInteger(suffixLength) || suffixLength <= 0)
-        return { kind: "invalid" };
-      const start = Math.max(contentLength - suffixLength, 0);
-      return { kind: "range", start, end: contentLength - 1 };
-    }
-
-    const start = Number.parseInt(startRaw, 10);
-    if (!Number.isSafeInteger(start) || start < 0 || start >= contentLength)
-      return { kind: "invalid" };
-    const end = endRaw === "" ? contentLength - 1 : Number.parseInt(endRaw, 10);
-    if (!Number.isSafeInteger(end) || end < start) return { kind: "invalid" };
-    return { kind: "range", start, end: Math.min(end, contentLength - 1) };
   }
 
   function parseBooleanQuery(value: unknown) {
@@ -10116,6 +10048,145 @@ export function issueRoutes(
     },
   );
 
+  router.get("/issues/:id/share-link", async (req, res) => {
+    const id = req.params.id as string;
+    const issue = await getAccessibleResource(
+      req,
+      res,
+      getIssueById(req, id),
+      "Issue not found",
+    );
+    if (!issue) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    const link = await shareLinksSvc.getActive(issue.id);
+    res.json(link ? toIssueShareLink(link, resolveBaseUrl(req, opts.publicBaseUrl)) : null);
+  });
+
+  router.post("/issues/:id/share-link", async (req, res) => {
+    const id = req.params.id as string;
+    const issue = await getAccessibleResource(
+      req,
+      res,
+      svc.getById(id),
+      "Issue not found",
+    );
+    if (!issue) return;
+    if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
+    const actor = getActorInfo(req);
+    const { link, created } = await shareLinksSvc.create({
+      issue,
+      actor: {
+        agentId: actor.agentId,
+        userId: actor.actorType === "user" ? actor.actorId : null,
+        runId: actor.runId,
+      },
+    });
+    if (created) {
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "issue.share_link_created",
+        entityType: "issue",
+        entityId: issue.id,
+        details: { shareLinkId: link.id },
+      });
+    }
+    res
+      .status(created ? 201 : 200)
+      .json(toIssueShareLink(link, resolveBaseUrl(req, opts.publicBaseUrl)));
+  });
+
+  router.delete("/issues/:id/share-link", async (req, res) => {
+    const id = req.params.id as string;
+    const issue = await getAccessibleResource(
+      req,
+      res,
+      svc.getById(id),
+      "Issue not found",
+    );
+    if (!issue) return;
+    if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
+    const actor = getActorInfo(req);
+    const revoked = await shareLinksSvc.revoke({
+      issueId: issue.id,
+      actor: {
+        agentId: actor.agentId,
+        userId: actor.actorType === "user" ? actor.actorId : null,
+      },
+    });
+    if (revoked) {
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "issue.share_link_revoked",
+        entityType: "issue",
+        entityId: issue.id,
+        details: { shareLinkId: revoked.id },
+      });
+    }
+    res.status(204).end();
+  });
+
+  router.patch(
+    "/issues/:id/comments/:commentId/public-share",
+    validate(updateIssueCommentPublicShareSchema),
+    async (req, res) => {
+      assertBoard(req);
+      const id = req.params.id as string;
+      const commentId = req.params.commentId as string;
+      const issue = await getAccessibleResource(
+        req,
+        res,
+        svc.getById(id),
+        "Issue not found",
+      );
+      if (!issue) return;
+      const comment = isUuidLike(commentId) ? await svc.getComment(commentId) : null;
+      if (!comment || comment.issueId !== issue.id) {
+        res.status(404).json({ error: "Comment not found" });
+        return;
+      }
+      if (
+        comment.authorType !== "user" ||
+        comment.derivedAuthorAgentId ||
+        comment.deletedAt ||
+        comment.presentation?.kind === "system_notice"
+      ) {
+        throw unprocessable("Only comments written by a person can be shown on a public link");
+      }
+      const visible = req.body.visible as boolean;
+      await db
+        .update(issueComments)
+        .set({ publicShareVisible: visible })
+        .where(and(eq(issueComments.id, comment.id), eq(issueComments.issueId, issue.id)));
+      const actor = getActorInfo(req);
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "issue.comment_public_share_updated",
+        entityType: "issue",
+        entityId: issue.id,
+        details: { commentId: comment.id, visible },
+      });
+      const updated = await svc.getComment(comment.id);
+      res.json(
+        await runRedactions.redactForIssue(issue.companyId, issue.id, updated),
+      );
+    },
+  );
+
   router.get("/issues/:id/work-products", async (req, res) => {
     const id = req.params.id as string;
     const issue = await getAccessibleResource(
@@ -10337,20 +10408,7 @@ export function issueRoutes(
       res.status(404).json({ error: "Document not found" });
       return;
     }
-    const title = doc.title?.trim() || doc.key;
-    const pdf = await renderDocumentPdf({
-      title,
-      markdown: doc.body ?? "",
-      issueIdentifier: issue.identifier ?? String(issue.id ?? ""),
-      revisionNumber: doc.latestRevisionNumber ?? 1,
-    });
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader(
-      "Content-Disposition",
-      'attachment; filename="' + documentExportFileName(title, "pdf") + '"',
-    );
-    res.setHeader("Content-Length", String(pdf.byteLength));
-    res.end(pdf);
+    await sendIssueDocumentPdf({ res, issue, document: doc });
   });
 
   router.get("/issues/:id/documents/:key/annotations", async (req, res) => {
@@ -16848,6 +16906,13 @@ export function issueRoutes(
       .from(issueComments)
       .where(and(eq(issueComments.id, commentId), eq(issueComments.companyId, issue.companyId)));
     if (!comment || isConversationReset(comment.body)) return false;
+    return !(await conversationMessageWaiting(issue, { createdAt: comment.createdAt, id: commentId }));
+  }
+
+  async function conversationMessageWaiting(
+    issue: { id: string; companyId: string },
+    before: { createdAt: Date; id: string } | null,
+  ): Promise<boolean> {
     const [earlier] = await db
       .select({ id: agentWakeupRequests.id })
       .from(agentWakeupRequests)
@@ -16860,11 +16925,13 @@ export function issueRoutes(
           eq(agentWakeupRequests.companyId, issue.companyId),
           eq(issueComments.issueId, issue.id),
           inArray(agentWakeupRequests.status, ["deferred_issue_execution", "queued"]),
-          sql`(${issueComments.createdAt}, ${issueComments.id}) < (${comment.createdAt.toISOString()}::timestamptz, ${commentId}::uuid)`,
+          before
+            ? sql`(${issueComments.createdAt}, ${issueComments.id}) < (${before.createdAt.toISOString()}::timestamptz, ${before.id}::uuid)`
+            : undefined,
         ),
       )
       .limit(1);
-    return !earlier;
+    return Boolean(earlier);
   }
 
   async function agentSteeringBlock(input: {
@@ -16990,6 +17057,69 @@ export function issueRoutes(
       );
     }
     return { deliveredAs: "steered" };
+  }
+
+  async function steerInteractionResponse(input: {
+    issueId: string;
+    interaction: {
+      id: string;
+      companyId: string;
+      issueId: string;
+      kind: string;
+      status: string;
+      sourceRunId?: string | null;
+    };
+    actor: ReturnType<typeof getActorInfo>;
+  }): Promise<void> {
+    const { interaction, actor } = input;
+    if (actor.actorType !== "user") return;
+    if (!["accepted", "answered", "rejected"].includes(interaction.status)) return;
+    let steered: { targetRunId: string; receipt: QueuedCommentSteerReceipt } | null = null;
+    const issue = await svc.getById(input.issueId).catch(() => null);
+    if (!issue?.assigneeAgentId) return;
+    try {
+      if ((await instanceSettings.getGeneral()).defaultMessageDelivery === "queue") return;
+      if (await hasExternalChatResponseBoundary(db, interaction)) return;
+      if (issue.conversationAgentId && (await conversationMessageWaiting(issue, null))) return;
+      const resolved = await resolveQueuedSteeringTarget({ issue, commentId: interaction.id, actor });
+      if (resolved.kind !== "target") return;
+      steered = {
+        targetRunId: resolved.target.targetRunId,
+        receipt: await steerQueuedCommentWithRetry({
+          issue,
+          actor,
+          commentId: interaction.id,
+          target: resolved.target,
+          targetIsServerResolved: true,
+        }),
+      };
+    } catch (err) {
+      logger.warn(
+        { err, issueId: issue.id, interactionId: interaction.id, code: steeringErrorCode(err) },
+        "interaction response stays queued because steering was refused",
+      );
+      return;
+    }
+    await logQueuedCommentSteered({
+      issue,
+      actor,
+      commentId: interaction.id,
+      targetRunId: steered.targetRunId,
+      turnId: steered.receipt.acknowledgedTurnId,
+      duplicate: steered.receipt.duplicate,
+    }).catch((err) =>
+      logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the interaction steering acknowledgement"),
+    );
+    if (interaction.kind !== "ask_user_questions") return;
+    await questionResponseDeliveries
+      .recordSteered({
+        interactionId: interaction.id,
+        targetRunId: steered.targetRunId,
+        targetTurnId: steered.receipt.acknowledgedTurnId,
+      })
+      .catch((err) =>
+        logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the steered question response delivery"),
+      );
   }
 
   async function steerOpenwaComment(request: OpenwaCommentSteerRequest) {
@@ -17706,6 +17836,7 @@ export function issueRoutes(
           ? "accepted_plan_confirmation"
           : null,
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction: continuationInteraction, actor });
 
       res.json(continuationInteraction);
     },
@@ -17834,6 +17965,7 @@ export function issueRoutes(
         actor,
         source: "issue.interaction.reject",
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction, actor });
 
       res.json(interaction);
     },
@@ -17919,6 +18051,7 @@ export function issueRoutes(
           "synchronous question response delivery failed; durable outbox will retry",
         );
       });
+      await steerInteractionResponse({ issueId: issue.id, interaction, actor });
 
       res.json(interaction);
     },
@@ -20050,82 +20183,15 @@ export function issueRoutes(
       return;
     }
     if (!(await assertIssueReadAllowed(req, res, issue))) return;
-
-    const contentLength = attachment.byteSize;
-    const range = parseAttachmentRangeHeader(
-      typeof req.headers.range === "string" ? req.headers.range : undefined,
-      contentLength,
-    );
-    res.setHeader("Accept-Ranges", "bytes");
-    if (range.kind === "invalid") {
-      res.setHeader("Content-Range", `bytes */${contentLength}`);
-      res.status(416).end();
-      return;
-    }
-
-    const object = await storage.getObject(
-      attachment.companyId,
-      attachment.objectKey,
-      range.kind === "range"
-        ? { range: { start: range.start, end: range.end } }
-        : undefined,
-    );
-    const responseContentType = attachmentServingContentType(
-      resolveAttachmentResponseContentType({
-        storedContentType: attachment.contentType,
-        objectContentType: object.contentType,
-        originalFilename: attachment.originalFilename,
-      }),
-    );
-    // Markdown bodies are stored as UTF-8; declare the charset so inline
-    // (raw) views do not mojibake. SVG/inline checks below stay on the bare type.
-    const isMarkdownResponse = isMarkdownAttachmentContent({
-      contentType: responseContentType,
-      originalFilename: attachment.originalFilename,
+    await serveAttachmentContent({
+      storage,
+      attachment,
+      rangeHeader:
+        typeof req.headers.range === "string" ? req.headers.range : undefined,
+      download: parseBooleanQuery(req.query.download),
+      res,
+      next,
     });
-    // Express formats filenames with an encoded Unicode parameter when needed.
-    res.attachment(attachment.originalFilename ?? "attachment");
-    res.setHeader(
-      "Content-Type",
-      isMarkdownResponse
-        ? `${responseContentType}; charset=utf-8`
-        : responseContentType,
-    );
-    res.setHeader("Cache-Control", "private, max-age=60");
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    const disposition = parseBooleanQuery(req.query.download)
-      ? "attachment"
-      : isInlineAttachmentContentType(responseContentType)
-        ? "inline"
-        : "attachment";
-    if (disposition === "attachment") {
-      res.setHeader("Content-Security-Policy", "sandbox; default-src 'none'");
-    }
-    res.setHeader(
-      "Content-Disposition",
-      String(res.getHeader("Content-Disposition")).replace(/^attachment;/, `${disposition};`),
-    );
-
-    object.stream.on("error", (err) => {
-      next(err);
-    });
-    if (range.kind === "range") {
-      const rangeLength = range.end - range.start + 1;
-      res.status(206);
-      res.setHeader("Content-Length", String(rangeLength));
-      res.setHeader(
-        "Content-Range",
-        `bytes ${range.start}-${range.end}/${contentLength}`,
-      );
-      object.stream.pipe(res);
-      return;
-    }
-
-    res.setHeader(
-      "Content-Length",
-      String(contentLength || object.contentLength || 0),
-    );
-    object.stream.pipe(res);
   });
 
   router.delete("/attachments/:attachmentId", async (req, res) => {

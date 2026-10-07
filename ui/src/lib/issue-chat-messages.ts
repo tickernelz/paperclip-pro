@@ -37,6 +37,7 @@ export interface IssueChatComment extends IssueComment {
   queueTargetRunId?: string | null;
   queueReason?: "hold" | "active_run" | "other";
   followUpRequested?: boolean;
+  publicShareVisible?: boolean;
   /** Causal conversation slot: the run that actually consumed this input. */
   consumedByRunId?: string | null;
   /** Same-turn PRP steering acknowledgement for this human input. */
@@ -596,6 +597,7 @@ function createCommentMessage(args: {
     queueReason: comment.queueReason ?? null,
     interruptedRunId: comment.interruptedRunId ?? null,
     followUpRequested: comment.followUpRequested === true,
+    publicShareVisible: comment.publicShareVisible === true,
     presentation: comment.presentation ?? null,
     commentMetadata: comment.metadata ?? null,
     deletedAt: comment.deletedAt ? toDate(comment.deletedAt).toISOString() : null,

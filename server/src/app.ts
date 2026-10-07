@@ -2,6 +2,7 @@ import { browserUseRoutes } from "./routes/browser-use.js";
 import { browserUseService } from "./services/browser-use.js";
 import { slackToolRoutes } from "./routes/slack-tools.js";
 import { openwaToolRoutes } from "./routes/openwa-tools.js";
+import { publicIssueShareRoutes } from "./routes/public-issue-share.js";
 import { agentAvatarRoutes } from "./routes/agent-avatars.js";
 import { aiConnectionRoutes } from "./routes/ai-connections.js";
 import { projectToolRoutes } from "./routes/project-tools.js";
@@ -100,6 +101,8 @@ import type { DecisionServiceOptions } from "./services/decisions.js";
 import { userProfileRoutes } from "./routes/user-profiles.js";
 import { sidebarBadgeRoutes } from "./routes/sidebar-badges.js";
 import { sidebarPreferenceRoutes } from "./routes/sidebar-preferences.js";
+import { notificationRoutes } from "./routes/notifications.js";
+import { createWebPushRuntime } from "./services/notifications/web-push.js";
 import { announcementRoutes } from "./routes/announcements.js";
 import { serverVersion } from "./version.js";
 import { resourceMembershipRoutes } from "./routes/resource-memberships.js";
@@ -809,6 +812,7 @@ export async function createApp(
   api.use(userProfileRoutes(db));
   api.use(sidebarBadgeRoutes(db));
   api.use(sidebarPreferenceRoutes(db));
+  api.use(notificationRoutes(db, createWebPushRuntime({ publicBaseUrl: opts.authPublicBaseUrl })));
   api.use(announcementRoutes(db, { ...opts.announcements, version: opts.hostVersion ?? serverVersion }));
   api.use(resourceMembershipRoutes(db));
   api.use(inboxDismissalRoutes(db));
@@ -855,6 +859,7 @@ export async function createApp(
     pluginWorkerManager: workerManager,
     approveToolActionRequest: (input) => toolGateway.approveActionRequest(input),
     declineToolActionRequest: (input) => toolGateway.declineActionRequest(input),
+    publicBaseUrl: opts.authPublicBaseUrl,
   }));
   api.use(slackToolRoutes(db, opts.authPublicBaseUrl));
   api.use(openwaToolRoutes(db));
@@ -972,6 +977,7 @@ export async function createApp(
       authPublicBaseUrl: opts.authPublicBaseUrl,
     }),
   );
+  api.use(publicIssueShareRoutes(db, opts.storageService));
   app.use("/api", api);
   app.use("/api", (_req, res) => {
     res.status(404).json({ error: "API route not found" });

@@ -2872,6 +2872,47 @@ function touchedByUserCondition(companyId: string, userId: string) {
   `;
 }
 
+/** Lists the users whose "mine" inbox includes the issue, matching touchedByUserCondition. */
+export async function listIssueInboxUserIds(db: Db, companyId: string, issueId: string): Promise<string[]> {
+  const [issueRows, activityRows, commentRows] = await Promise.all([
+    db
+      .select({ createdByUserId: issues.createdByUserId, assigneeUserId: issues.assigneeUserId })
+      .from(issues)
+      .where(and(eq(issues.id, issueId), eq(issues.companyId, companyId))),
+    db
+      .selectDistinct({ userId: activityLog.actorId })
+      .from(activityLog)
+      .where(
+        and(
+          eq(activityLog.companyId, companyId),
+          eq(activityLog.entityType, "issue"),
+          eq(activityLog.entityId, issueId),
+          eq(activityLog.actorType, "user"),
+          inArray(activityLog.action, [...ISSUE_USER_PARTICIPATION_ACTIVITY_ACTIONS]),
+        ),
+      ),
+    db
+      .selectDistinct({ userId: issueComments.authorUserId })
+      .from(issueComments)
+      .where(
+        and(
+          eq(issueComments.companyId, companyId),
+          eq(issueComments.issueId, issueId),
+          isNotNull(issueComments.authorUserId),
+        ),
+      ),
+  ]);
+  const userIds = new Set<string>();
+  for (const row of issueRows) {
+    if (row.createdByUserId) userIds.add(row.createdByUserId);
+    if (row.assigneeUserId) userIds.add(row.assigneeUserId);
+  }
+  for (const row of [...activityRows, ...commentRows]) {
+    if (row.userId) userIds.add(row.userId);
+  }
+  return [...userIds];
+}
+
 function participatedByAgentCondition(companyId: string, agentId: string) {
   return sql<boolean>`
     (
@@ -12188,6 +12229,10 @@ export function issueService(db: Db) {
       };
 
       return db.transaction(async (tx) => {
+        await tx
+          .update(issueAttachments)
+          .set({ updatedAt: new Date() })
+          .where(eq(issueAttachments.issueCommentId, commentId));
         const [comment] = await tx
           .delete(issueComments)
           .where(eq(issueComments.id, commentId))

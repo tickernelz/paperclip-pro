@@ -18,6 +18,7 @@ import {
   heartbeatRuns,
   heartbeatRunEvents,
   issueComments,
+  issueQuestionResponseDeliveries,
   issueThreadInteractions,
   issueRecoveryActions,
   issues,
@@ -352,6 +353,143 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       expect(wakes[0]).toMatchObject({ status: "deferred_issue_execution", runId: null });
     },
   );
+
+  async function seedLiveLegacyAnswerTarget() {
+    const seeded = await seedQueue();
+    await db.delete(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId));
+    await db.update(agents).set({ adapterType: "omp_local", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } })
+      .where(eq(agents.id, seeded.agentId));
+    await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, seeded.runId));
+    const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
+    testProcesses.set(seeded.runId, child);
+    runningProcesses.set(seeded.runId, { child, graceSec: 1, processGroupId: null });
+    const adapterSteer = vi.fn(async (_input: { turnId: string; message: { role: "user"; text: string }; correlationId?: string }) => undefined);
+    const release = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:answer" }),
+      steer: adapterSteer,
+    });
+    return { ...seeded, adapterSteer, release };
+  }
+
+  async function insertPendingInteraction(
+    seeded: Awaited<ReturnType<typeof seedQueue>>,
+    kind: "ask_user_questions" | "request_confirmation",
+  ) {
+    const interactionId = randomUUID();
+    await db.insert(issueThreadInteractions).values({
+      id: interactionId, companyId: seeded.companyId, issueId: seeded.issueId,
+      kind, status: "pending", createdByAgentId: seeded.agentId, sourceRunId: seeded.runId,
+      continuationPolicy: "wake_assignee", requestedResolverPolicy: "human_only",
+      effectiveResolverPolicy: "human_only", resolverPolicyProvenance: "explicit",
+      payload: kind === "ask_user_questions"
+        ? { version: 1, questions: [{ id: "runtime", prompt: "Which runtime?", selectionMode: "single", required: true,
+            options: [{ id: "node", label: "Node.js" }, { id: "python", label: "Python" }] }] }
+        : { version: 1, prompt: "Build the app?", detailsMarkdown: "Create exactly one child task." },
+    });
+    return interactionId;
+  }
+
+  it.each(["ask_user_questions", "request_confirmation"] as const)(
+    "steers a %s response into its live legacy source run by default",
+    async (kind) => {
+      const seeded = await seedLiveLegacyAnswerTarget();
+      try {
+        const interactionId = await insertPendingInteraction(seeded, kind);
+        const client = app(seeded.companyId);
+        await request(client)
+          .post(`/api/issues/${seeded.issueId}/interactions/${interactionId}/${kind === "ask_user_questions" ? "respond" : "accept"}`)
+          .send(kind === "ask_user_questions" ? { answers: [{ questionId: "runtime", optionIds: ["node"] }] } : {})
+          .expect(200);
+
+        expect(seeded.adapterSteer).toHaveBeenCalledTimes(1);
+        const steered = seeded.adapterSteer.mock.calls[0]![0];
+        expect(steered).toMatchObject({ turnId: "omp-rpc-turn:answer", correlationId: interactionId });
+        expect(steered.message.text).toContain(interactionId);
+        expect(steered.message.text).toContain(kind === "ask_user_questions" ? "Node.js" : "Accepted");
+        const wakes = await db.select().from(agentWakeupRequests);
+        expect(wakes).toHaveLength(1);
+        expect(wakes[0]!.status).toBe("cancelled");
+        const queue = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
+        expect(queue.body.entries).toHaveLength(0);
+        expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId)))[0]!.status).toBe("running");
+        const steeredEvents = await db.select().from(activityLog)
+          .where(eq(activityLog.action, "issue.queued_comment_steered"));
+        expect(steeredEvents.map((event) => event.details)).toEqual([
+          expect.objectContaining({ commentId: interactionId, targetRunId: seeded.runId }),
+        ]);
+        if (kind === "ask_user_questions") {
+          const [delivery] = await db.select().from(issueQuestionResponseDeliveries);
+          expect(delivery).toMatchObject({
+            status: "delivered", deliveryMode: "steered",
+            targetRunId: seeded.runId, targetTurnId: "omp-rpc-turn:answer",
+          });
+          const delivered = await db.select().from(activityLog)
+            .where(eq(activityLog.action, "issue.question_response_delivered"));
+          expect(delivered.map((event) => event.details)).toContainEqual(
+            expect.objectContaining({ interactionId, deliveryMode: "steered", targetRunId: seeded.runId }),
+          );
+        }
+      } finally {
+        seeded.release();
+      }
+    },
+  );
+
+  it("keeps an answer queued for its live run when the adapter refuses steering", async () => {
+    const seeded = await seedLiveLegacyAnswerTarget();
+    seeded.release();
+    const refused = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: false }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:answer" }),
+      steer: seeded.adapterSteer,
+    });
+    try {
+      const interactionId = await insertPendingInteraction(seeded, "ask_user_questions");
+      const client = app(seeded.companyId);
+      await request(client)
+        .post(`/api/issues/${seeded.issueId}/interactions/${interactionId}/respond`)
+        .send({ answers: [{ questionId: "runtime", optionIds: ["node"] }] })
+        .expect(200);
+
+      expect(seeded.adapterSteer).not.toHaveBeenCalled();
+      const wakes = await db.select().from(agentWakeupRequests);
+      expect(wakes).toHaveLength(1);
+      expect(wakes[0]).toMatchObject({ status: "deferred_issue_execution", runId: null });
+      const queue = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
+      expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toEqual([interactionId]);
+      const [delivery] = await db.select().from(issueQuestionResponseDeliveries);
+      expect(delivery).toMatchObject({ status: "fallback_queued", deliveryMode: "wake_fallback", targetRunId: null });
+    } finally {
+      refused();
+    }
+  });
+
+  it("keeps an external-chat answer on its dedicated continuation instead of steering", async () => {
+    const seeded = await seedLiveLegacyAnswerTarget();
+    try {
+      await db.update(agents).set({ runtimeConfig: { heartbeat: { wakeOnDemand: false } } })
+        .where(eq(agents.id, seeded.agentId));
+      await db.update(heartbeatRuns).set({ contextSnapshot: { issueId: seeded.issueId, source: "chat:whatsapp" } })
+        .where(eq(heartbeatRuns.id, seeded.runId));
+      const interactionId = await insertPendingInteraction(seeded, "ask_user_questions");
+      const client = app(seeded.companyId);
+      await request(client)
+        .post(`/api/issues/${seeded.issueId}/interactions/${interactionId}/respond`)
+        .send({ answers: [{ questionId: "runtime", optionIds: ["node"] }] })
+        .expect(200);
+
+      expect(seeded.adapterSteer).not.toHaveBeenCalled();
+      expect((await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId)))[0])
+        .toMatchObject({ status: "cancelled", errorCode: "external_chat_continuation" });
+      const [delivery] = await db.select().from(issueQuestionResponseDeliveries);
+      expect(delivery?.deliveryMode).not.toBe("steered");
+      const queue = await request(client).get(`/api/issues/${seeded.issueId}/queued-comments`).expect(200);
+      expect(queue.body.entries).toHaveLength(0);
+    } finally {
+      seeded.release();
+    }
+  });
 
   async function seedResponseQueue(native = false) {
     const seeded = await seedQueue();
