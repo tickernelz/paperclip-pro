@@ -20,5 +20,6 @@ export { sidebarBadgesApi } from "./sidebarBadges";
 export { sidebarPreferencesApi } from "./sidebarPreferences";
 export { resourceMembershipsApi } from "./resourceMemberships";
 export { inboxDismissalsApi } from "./inboxDismissals";
+export { autonomyWindowsApi } from "./autonomyWindows";
 export { companySkillsApi } from "./companySkills";
 export { chatEndpointsApi } from "./chatEndpoints";

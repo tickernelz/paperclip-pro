@@ -709,6 +709,8 @@ export const queryKeys = {
   sidebarBadges: (companyId: string) => ["sidebar-badges", companyId] as const,
   inboxDismissals: (companyId: string) =>
     ["inbox-dismissals", companyId] as const,
+  autonomyWindows: (companyId: string) =>
+    ["autonomy-windows", companyId] as const,
   activity: (companyId: string) => ["activity", companyId] as const,
   costs: (companyId: string, from?: string, to?: string) =>
     ["costs", companyId, from, to] as const,

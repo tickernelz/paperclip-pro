@@ -37,6 +37,7 @@ import {
   REQUEST_ITEM_VERDICTS_ITEM_LIMIT,
 } from "../constants.js";
 import { multilineTextSchema } from "./text.js";
+import { autonomyWindowResolutionDetailsSchema } from "../autonomy-windows.js";
 import {
   lowTrustReviewPresetPolicySchema,
   trustAuthorizationPolicySchema,
@@ -1638,6 +1639,7 @@ export const requestConfirmationPayloadSchema = z.object({
   toolAction: requestConfirmationToolActionPayloadSchema.optional(),
   secretProposal: requestConfirmationSecretProposalPayloadSchema.optional(),
   openwaApprovalRequestId: z.string().uuid().optional(),
+  destructive: z.boolean().optional(),
 });
 
 export const requestCheckboxConfirmationOptionSchema = z.object({
@@ -1800,6 +1802,7 @@ export const requestConfirmationResultSchema = z.object({
   commentId: z.string().guid().nullable().optional(),
   supersededByInteractionId: z.string().guid().nullable().optional(),
   staleTarget: requestConfirmationTargetSchema.nullable().optional(),
+  resolutionDetails: autonomyWindowResolutionDetailsSchema.optional(),
   resumeFailure: requestConfirmationResumeFailureSchema.nullable().optional(),
   toolAction: requestConfirmationToolActionResultSchema.optional(),
   secretProposal: requestConfirmationSecretProposalResultSchema.optional(),

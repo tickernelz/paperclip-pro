@@ -40,6 +40,7 @@ import { assertOpenwaRunMay } from "../../services/openwa/authority.ts";
 import { createDurableChatWakeupRequest } from "../../services/durable-chat-wakeup.ts";
 import { dispatchOpenwaApprovalWake, OPENWA_APPROVAL_WAKE_ACTION_KIND, registerOpenwaApprovalWakeRuntime } from "../../services/openwa/approvals.ts";
 import {
+  OPENWA_GUIDANCE_VERSION,
   OPENWA_WAKE_CONTEXT_KEY,
   OPENWA_WAKE_MAX_MESSAGES,
   OPENWA_WAKE_MAX_TEXT,
@@ -374,7 +375,7 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     expect(other.context.paperclipToolProfile).toBe("read_only");
     for (const result of [owner, other]) {
       for (const markdown of [result.full, result.compact]) {
-        expect(markdown).toContain("## WhatsApp (OpenWA) guidance v1");
+        expect(markdown).toContain("## WhatsApp (OpenWA) guidance v" + OPENWA_GUIDANCE_VERSION);
         expect(markdown).toContain('Owners: "Dina Owner"');
         expect(markdown).toContain("Number mode: `agent_number`");
         expect(markdown).toContain("openwa_request_approval");
@@ -483,6 +484,26 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
     const result = await wakeOpenwa(seed, { triggerClass: "other", deliveryIds: [(await seedDelivery(seed, { text: "hello" })).id] });
     expect(result.wake.policy).toMatchObject({ replyAllowed: false, replyRequires: ["reply"] });
     expect(result.full).toContain("Replying in this chat: not allowed for this run without owner approval (`reply`).");
+  });
+
+  it("keeps group chats free of internal status and limits wakes without a new message to unannounced live results", async () => {
+    const seed = await seedOpenwa({ group: { activation: "on" } });
+    const delivery = await seedDelivery(seed, { text: "@Wira deploy statusnya?", role: "owner", rules: ["agent_mentioned"] });
+    const asked = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [delivery.id] });
+    const quiet = await wakeOpenwa(seed, { triggerClass: "owner", deliveryIds: [] });
+    expect(asked.wake.chat.type).toBe("group");
+    expect(quiet.wake.messages).toEqual([]);
+    for (const markdown of [asked.full, asked.compact, quiet.full, quiet.compact]) {
+      expect(markdown).not.toContain("send a short progress update");
+      expect(markdown).toContain("only to a person whose message is in this run's `messages` and who has had no reply from you yet");
+      expect(markdown).toContain("Never post internal status to a group (approval, review, tests, retries, blocked, waiting for a deploy)");
+      expect(markdown).toContain("post to this chat only a final result that is live or delivered and not yet announced here");
+      expect(markdown).toContain("An `approval_resolved` wake still tells the requester the outcome");
+    }
+    expect(asked.full).toContain("New WhatsApp message(s) for you in this chat.");
+    expect(asked.full).not.toContain("No new WhatsApp message woke this run");
+    expect(quiet.full).toContain("No new WhatsApp message woke this run");
+    expect(quiet.full).not.toContain("New WhatsApp message(s) for you in this chat.");
   });
 
   it("lets an outside_allowlist member who addressed the agent in an active group be answered without a grant", async () => {

@@ -197,6 +197,7 @@ import { workModeMetaFor } from "../lib/work-mode-meta";
 import { IssueContinuationHandoff } from "../components/IssueContinuationHandoff";
 import { IssueAttachmentsSection } from "../components/IssueAttachmentsSection";
 import { IssueShareControl } from "../components/IssueShareControl";
+import { IssueAutonomyWindowBadge } from "../components/IssueAutonomyWindowBadge";
 import { issueShareApi } from "../api/issue-share";
 import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
 import { IssuePlanDecompositionsSection } from "../components/IssuePlanDecompositionsSection";
@@ -7210,6 +7211,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             Live
           </Badge>
         )}
+        {canManageTreeControl ? (
+          <IssueAutonomyWindowBadge companyId={issue.companyId} issueId={issue.id} ancestors={issue.ancestors} />
+        ) : null}
 
         {issue.originKind === "routine_execution" && issue.originId && (
           <Link

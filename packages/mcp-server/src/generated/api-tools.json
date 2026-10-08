@@ -1477,7 +1477,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18361",
+    "boardGuard": "assertBoard@issues.ts:18363",
     "authorityCapability": null,
     "parameters": [
       {
@@ -4015,6 +4015,70 @@
         },
         "required": [
           "companyId"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateAutonomyWindow",
+    "operationId": "POST /api/companies/{companyId}/autonomy-windows",
+    "method": "POST",
+    "path": "/companies/{companyId}/autonomy-windows",
+    "description": "Open autonomy windows that auto-accept plain confirmations in issue trees",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@autonomy-windows.ts:23",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "hours": {
+            "type": "integer"
+          },
+          "issueIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "maxAccepts": {
+            "type": "integer"
+          },
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "issueIds"
         ]
       }
     }
@@ -13079,6 +13143,41 @@
     "parameters": [
       {
         "name": "attachmentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteAutonomyWindow",
+    "operationId": "DELETE /api/autonomy-windows/{id}",
+    "method": "DELETE",
+    "path": "/autonomy-windows/{autonomyWindowId}",
+    "description": "Close an autonomy window",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@autonomy-windows.ts:36",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "autonomyWindowId",
         "in": "path",
         "required": true,
         "schema": {
@@ -24834,6 +24933,41 @@
         "name": "to",
         "in": "query",
         "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListAutonomyWindows",
+    "operationId": "GET /api/companies/{companyId}/autonomy-windows",
+    "method": "GET",
+    "path": "/companies/{companyId}/autonomy-windows",
+    "description": "List live autonomy windows",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@autonomy-windows.ts:13",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
         "schema": {
           "type": "string"
         }
@@ -39270,7 +39404,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18301",
+    "boardGuard": "assertBoard@issues.ts:18303",
     "authorityCapability": null,
     "parameters": [
       {

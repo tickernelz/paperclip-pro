@@ -21,6 +21,7 @@ describe("OpenWA tool catalog", () => {
       ["openwa_handoff", "write"],
       ["openwa_catalog", "read"],
       ["openwa_endpoint_config", "write"],
+      ["openwa_autonomy_window", "write"],
       ["openwa_linked_list", "read"],
       ["openwa_linked_read", "read"],
       ["openwa_linked_get_media", "read"],
@@ -33,6 +34,17 @@ describe("OpenWA tool catalog", () => {
         expect(properties).not.toContain(forbidden);
       expect(tool.inputSchema.additionalProperties).toBe(false);
     }
+  });
+
+  it("requires issues to open and an idempotency key to open or close an autonomy window", () => {
+    const schema = openwaTool("openwa_autonomy_window")!.schema;
+    const key = "9c0dc094-41b6-4d84-a2f1-1df331774489";
+    expect(schema.safeParse({ operation: "list" }).success).toBe(true);
+    expect(schema.safeParse({ operation: "open", issues: ["ZHA-1"], hours: 8, idempotencyKey: key }).success).toBe(true);
+    expect(schema.safeParse({ operation: "open", idempotencyKey: key }).success).toBe(false);
+    expect(schema.safeParse({ operation: "open", issues: ["ZHA-1"] }).success).toBe(false);
+    expect(schema.safeParse({ operation: "open", issues: ["ZHA-1"], hours: 25, idempotencyKey: key }).success).toBe(false);
+    expect(schema.safeParse({ operation: "close", idempotencyKey: key }).success).toBe(true);
   });
 
   it("validates send shapes per kind and requires an idempotency key", () => {

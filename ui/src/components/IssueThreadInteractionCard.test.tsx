@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Agent } from "@tickernelz/paperclip-pro-shared";
 import { ApiError } from "../api/client";
 import { IssueThreadInteractionCard } from "./IssueThreadInteractionCard";
+import { formatClockTime } from "../lib/utils";
 import { ThemeProvider } from "../context/ThemeContext";
 import { TooltipProvider } from "./ui/tooltip";
 import {
@@ -1165,6 +1166,33 @@ describe("IssueThreadInteractionCard tool-action card", () => {
     expect(
       host.querySelector('[data-testid="interaction-resolved-by-agent-chip"]'),
     ).not.toBeNull();
+  });
+
+  it("credits the autonomy window, its grantor and expiry instead of a person", () => {
+    const expiresAt = "2026-10-08T23:30:00.000Z";
+    const host = renderCard({
+      interaction: {
+        ...agentResolvedRequestConfirmationInteraction,
+        resolvedByAgentId: null,
+        resolvedByRunId: null,
+        result: {
+          version: 1,
+          outcome: "accepted",
+          resolutionDetails: {
+            source: "autonomy_window",
+            windowId: "11111111-1111-4111-8111-111111111111",
+            rootIssueId: "22222222-2222-4222-8222-222222222222",
+            grantedByUserId: "user-zhafron",
+            expiresAt,
+          },
+        },
+      },
+      userLabelMap: new Map([["user-zhafron", "Zhafron"]]),
+    });
+
+    const footer = host.querySelector('[data-testid="interaction-autonomy-window-footer"]');
+    expect(footer?.textContent).toContain(`Accepted by autonomy window (Zhafron, until ${formatClockTime(expiresAt)})`);
+    expect(host.querySelector('[data-testid="interaction-resolved-footer"]')).toBeNull();
   });
 
   it("renders a withdrawn footer with the withdrawer, reason, and agent chip", () => {

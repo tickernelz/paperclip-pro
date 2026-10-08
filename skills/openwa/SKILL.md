@@ -11,7 +11,7 @@ Call these tools directly by name; never list, search or catalog tools to find
 them: `openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`,
 `openwa_request_approval`, `openwa_approval_resolve`, `openwa_stay_silent`,
 `openwa_handoff`, `openwa_catalog`, `openwa_describe`, `openwa_call`,
-`openwa_endpoint_config`, `openwa_linked_list`, `openwa_linked_read`,
+`openwa_endpoint_config`, `openwa_autonomy_window`, `openwa_linked_list`, `openwa_linked_read`,
 `openwa_linked_get_media`. The run
 guidance already states your trigger class, profile, owners and whether you may
 reply; do not re-read this skill to confirm them.
@@ -185,12 +185,18 @@ of the person you answer.
 
 ## Progress, silence and handoff
 
-- When work takes longer than about a minute and nothing in the chat has
-  acknowledged the request yet, send one short progress update with
-  `openwa_send` (when replying is allowed). Skip it when you are about to reply,
-  and never restate what was already sent. The server may remind you inside the
-  run while a trigger waits unacknowledged; that reminder is never sent to
-  WhatsApp and stops once you send to the chat.
+- Send one progress update with `openwa_send` only to a person whose message
+  is in this run's `messages` and who has had no reply from you yet, and only
+  when your result is still minutes away. Never restate what was already sent,
+  and never post internal status to a group (approval, review, tests, retries,
+  blocked, waiting for a deploy); that belongs on the issue. The server may
+  remind you inside the run while a trigger waits unacknowledged; that reminder
+  is never sent to WhatsApp and stops once you send to the chat.
+- Wakes without a new chat message (empty `messages`: issue comments, child
+  issues completing, other non-chat wakes) post to the chat only a final result
+  that is live or delivered and not yet announced there; otherwise update the
+  issue and send nothing to the chat. An `approval_resolved` wake still tells
+  the requester the outcome as described under Approvals.
 - `openwa_stay_silent({triggerIds?})` marks triggers you deliberately leave
   unanswered (default: every visible pending trigger of this run). Use it when no
   reply is appropriate.
@@ -278,6 +284,19 @@ Call it with no arguments to read the current settings. Every change is audited
 with before and after values. Credentials, number mode, owners and the gateway
 admin level are changed by a person in Paperclip and fail with
 `ui_only_setting`.
+
+## Autonomy windows (owner runs only)
+
+When an owner hands named work over for autonomous progress ("full otonom",
+"aku approve commit, push, deploy"), call
+`openwa_autonomy_window({operation: "open", issues: ["ZHA-745"], hours?, maxAccepts?, idempotencyKey})`
+for the issues they name; descendants are included. `hours` is 1 to 24 (default
+12). Ask once which issues when their words do not name the work. While the
+window is open, plain confirmation cards created in those trees come back
+accepted and audited; questions, verdicts, governed approvals and cards marked
+`destructive: true` or without `destructive: false` still wait for a person. When the owner says they are back,
+call `{operation: "close", idempotencyKey}` (optionally with `issues`); `list` shows the
+live windows. Other runs get `owner_only`.
 
 ## Linked numbers (owner runs only)
 
