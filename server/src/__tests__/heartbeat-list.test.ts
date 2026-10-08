@@ -196,7 +196,15 @@ describeEmbeddedPostgres("heartbeat list", () => {
       processPid: 12345,
       contextSnapshot: {
         issueId,
+        taskId: "",
+        taskKey: "task-key",
+        commentId: "comment-1",
+        wakeCommentId: "wake-comment-1",
         wakeReason: "issue_assigned",
+        wakeSource: "assignment",
+        wakeTriggerDetail: 42,
+        paperclipSecretRedactions: [],
+        prompt: "p".repeat(64_000),
       },
     });
 
@@ -221,10 +229,15 @@ describeEmbeddedPostgres("heartbeat list", () => {
         externalRunId: null,
         processPid: null,
       } : {}),
-      contextSnapshot: {
-        issueId,
-        wakeReason: "issue_assigned",
-      },
+    });
+    expect(runs[0].contextSnapshot).toEqual({
+      issueId,
+      taskKey: "task-key",
+      commentId: "comment-1",
+      wakeCommentId: "wake-comment-1",
+      wakeReason: "issue_assigned",
+      wakeSource: "assignment",
+      wakeTriggerDetail: "42",
     });
   });
 
