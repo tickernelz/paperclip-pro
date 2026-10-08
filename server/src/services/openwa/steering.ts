@@ -1,6 +1,8 @@
+import { setTimeout as delay } from "node:timers/promises";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { chatActions, chatConversations, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, chatActions, chatConversations, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
 import { maskOpenwaPhoneNumber, type ChatInflightMode, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+import { findActiveServerAdapter } from "../../adapters/registry.js";
 import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";
 import {
@@ -198,19 +200,18 @@ export async function appendOpenwaSteeredDeliveries(db: Db, input: { companyId: 
 }
 
 /** Steers an admitted OpenWA trigger into the conversation's active run when the in-flight table allows it; otherwise it stays queued. */
-export async function steerOpenwaTrigger(
-  db: Db,
-  input: {
-    companyId: string;
-    endpointId: string;
-    conversationId: string;
-    issueId: string;
-    commentId: string;
-    incoming: OpenwaInflightWake;
-    deliveryIds: string[];
-    storage?: StorageService;
-  },
-): Promise<OpenwaCommentSteerOutcome> {
+export interface OpenwaTriggerSteerInput {
+  companyId: string;
+  endpointId: string;
+  conversationId: string;
+  issueId: string;
+  commentId: string;
+  incoming: OpenwaInflightWake;
+  deliveryIds: string[];
+  storage?: StorageService;
+}
+
+export async function steerOpenwaTrigger(db: Db, input: OpenwaTriggerSteerInput): Promise<OpenwaCommentSteerOutcome> {
   const steerer = steerers.get(db);
   if (!steerer) return { deliveredAs: "queued", reason: "steering_unavailable" };
   const active = await activeOpenwaRun(db, input.companyId, input.issueId);
@@ -219,6 +220,8 @@ export async function steerOpenwaTrigger(
   if (decideOpenwaInflight({ inflightMode, incoming: input.incoming, run: active.openwa }) !== "steer")
     return { deliveredAs: "queued", reason: inflightMode === "steer" ? "inflight_table" : "inflight_mode_queue" };
   if (!(await openwaRunCanSteer(active.runId))) return { deliveredAs: "queued", reason: "steering_unsupported" };
+  if (input.deliveryIds.length > 0 && input.deliveryIds.every((id) => active.openwa.deliveryIds.includes(id)))
+    return { deliveredAs: "queued", reason: "already_in_run" };
   const deliveries = input.deliveryIds.length
     ? await db
         .select({
@@ -269,6 +272,53 @@ export async function steerOpenwaTrigger(
     });
   }
   return outcome;
+}
+
+export const OPENWA_STEER_READY_WAIT_MS = 60_000;
+const OPENWA_STEER_READY_POLL_MS = 500;
+const OPENWA_STEER_WAIT_REASONS = new Set(["steering_unsupported", "no_active_run"]);
+
+export function openwaSteerMayWaitForRun(outcome: OpenwaCommentSteerOutcome): boolean {
+  return outcome.deliveredAs === "queued" && OPENWA_STEER_WAIT_REASONS.has(outcome.reason);
+}
+
+type OpenwaRunSteerReadiness = { state: "ready" | "starting"; runId: string } | { state: "never" };
+
+async function openwaRunSteerReadiness(db: Db, input: { companyId: string; issueId: string; endpointId: string }): Promise<OpenwaRunSteerReadiness> {
+  const [row] = await db
+    .select({ runId: heartbeatRuns.id, status: heartbeatRuns.status, contextSnapshot: heartbeatRuns.contextSnapshot, adapterType: agents.adapterType })
+    .from(issues)
+    .innerJoin(heartbeatRuns, and(eq(heartbeatRuns.id, issues.executionRunId), eq(heartbeatRuns.companyId, issues.companyId)))
+    .innerJoin(agents, eq(agents.id, heartbeatRuns.agentId))
+    .where(and(eq(issues.companyId, input.companyId), eq(issues.id, input.issueId)))
+    .limit(1);
+  if (!row || (row.status !== "queued" && row.status !== "running")) return { state: "never" };
+  if (row.adapterType !== "paperclip_runner" && findActiveServerAdapter(row.adapterType)?.supportsLiveSteering !== true)
+    return { state: "never" };
+  if (row.status !== "running") return { state: "starting", runId: row.runId };
+  const openwa = readOpenwaRunContext(row.contextSnapshot);
+  if (!openwa) return { state: "starting", runId: row.runId };
+  if (openwa.endpointId !== input.endpointId) return { state: "never" };
+  const steering = await getNativeSessionSteeringState(row.runId).catch(() => null);
+  if (steering?.disposition === "unsupported") return { state: "never" };
+  return { state: steering?.disposition === "available" ? "ready" : "starting", runId: row.runId };
+}
+
+export async function steerOpenwaTriggerWhenReady(
+  db: Db,
+  input: OpenwaTriggerSteerInput & { timeoutMs: number; stopped: () => boolean },
+): Promise<OpenwaCommentSteerOutcome> {
+  const deadline = Date.now() + input.timeoutMs;
+  let pinnedRunId: string | null = null;
+  for (;;) {
+    const readiness = await openwaRunSteerReadiness(db, input);
+    if (readiness.state === "never" || (pinnedRunId !== null && readiness.runId !== pinnedRunId))
+      return { deliveredAs: "queued", reason: "run_not_steerable" };
+    pinnedRunId = readiness.runId;
+    if (readiness.state === "ready") return steerOpenwaTrigger(db, input);
+    if (input.stopped() || Date.now() >= deadline) return { deliveredAs: "queued", reason: "steer_wait_expired" };
+    await delay(OPENWA_STEER_READY_POLL_MS);
+  }
 }
 
 export async function openwaOwnerAbsentRunActive(db: Db, input: { companyId: string; endpointId: string; chatKey: string }): Promise<boolean> {
