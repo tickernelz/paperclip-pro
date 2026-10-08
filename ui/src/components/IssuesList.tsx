@@ -1,5 +1,5 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { startTransition, useDeferredValue, useEffect, useLayoutEffect, useMemo, useState, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVisibilityRefetchInterval } from "@/lib/polling";
@@ -296,7 +296,7 @@ function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
       case "created":
         return dir * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
       case "updated":
-        return dir * (new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime());
+        return dir * compareIssueRecency(a, b);
       default:
         return 0;
     }
@@ -304,12 +304,43 @@ function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
   return sorted;
 }
 
+type IssueRowRenderSnapshot = { identity: string; ids: string[] };
+
+function nextIssueRowRenderLimit(
+  previous: IssueRowRenderSnapshot | null,
+  identity: string,
+  nextIds: string[],
+  current: number,
+): number {
+  const initialLimit = Math.min(nextIds.length, INITIAL_ISSUE_ROW_RENDER_LIMIT);
+  if (!previous || previous.identity !== identity) return initialLimit;
+  const positionById = new Map<string, number>();
+  nextIds.forEach((id, index) => positionById.set(id, index));
+  const renderedCount = Math.min(current, previous.ids.length);
+  let lastRenderedPosition = -1;
+  for (let index = 0; index < renderedCount; index += 1) {
+    const position = positionById.get(previous.ids[index]!);
+    if (position !== undefined && position > lastRenderedPosition) lastRenderedPosition = position;
+  }
+  return Math.min(nextIds.length, Math.max(lastRenderedPosition + 1, initialLimit));
+}
+
+function issueRecencyDate(issue: Pick<Issue, "updatedAt" | "lastActivityAt">): Date | string {
+  return issue.lastActivityAt ?? issue.updatedAt;
+}
+
+function compareIssueRecency(a: Issue, b: Issue): number {
+  const byActivity = new Date(issueRecencyDate(a)).getTime() - new Date(issueRecencyDate(b)).getTime();
+  if (byActivity !== 0) return byActivity;
+  return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+}
+
 // Only recency sorts (newest first) get date separators — for any other
 // sort/direction the boundaries would be meaningless.
-function issueDateSeparatorField(state: IssueViewState): "createdAt" | "updatedAt" | null {
+function issueDateSeparatorDate(state: IssueViewState): ((issue: Issue) => Date | string) | null {
   if (state.sortDir !== "desc") return null;
-  if (state.sortField === "created") return "createdAt";
-  if (state.sortField === "updated") return "updatedAt";
+  if (state.sortField === "created") return (issue) => issue.createdAt;
+  if (state.sortField === "updated") return issueRecencyDate;
   return null;
 }
 
@@ -824,7 +855,6 @@ function StreamlinedIssuesList({
   const [issueSearch, setIssueSearch] = useState(initialSearch ?? "");
   const [renderedIssueRowLimit, setRenderedIssueRowLimit] = useState(INITIAL_ISSUE_ROW_RENDER_LIMIT);
   const [visibleIssueColumns, setVisibleIssueColumns] = useState<InboxIssueColumn[]>(initialPreferences.columns);
-  const renderedIssueIdsRef = useRef("");
   const initialServerFillRequestedRef = useRef(false);
   const deferredIssueSearch = useDeferredValue(issueSearch);
   const normalizedIssueSearch = deferredIssueSearch.trim().toLowerCase();
@@ -1569,21 +1599,73 @@ function StreamlinedIssuesList({
     findSelectedNavElement(selectedNavKey)?.scrollIntoView({ block: "nearest" });
   }, [findSelectedNavElement, renderedIssueRowLimit, selectedNavKey]);
 
-  useEffect(() => {
-    if (viewState.viewMode !== "list") return;
-    const nextIssueIds = filtered.map((issue) => issue.id).join("|");
-    const previousIssueIds = renderedIssueIdsRef.current;
-    renderedIssueIdsRef.current = nextIssueIds;
+  const renderBudgetIdentity = useMemo(
+    () => JSON.stringify([
+      scopedKey,
+      normalizedIssueSearch,
+      viewState.statuses,
+      viewState.priorities,
+      viewState.assignees,
+      viewState.creators,
+      viewState.labels,
+      viewState.projects,
+      viewState.workspaces,
+      viewState.liveOnly ?? false,
+      viewState.externalObjectStatuses,
+      viewState.hideRoutineExecutions,
+      viewState.sortField,
+      viewState.sortDir,
+      viewState.groupBy,
+      viewState.viewMode,
+      viewState.nestingEnabled,
+    ]),
+    [
+      scopedKey,
+      normalizedIssueSearch,
+      viewState.statuses,
+      viewState.priorities,
+      viewState.assignees,
+      viewState.creators,
+      viewState.labels,
+      viewState.projects,
+      viewState.workspaces,
+      viewState.liveOnly,
+      viewState.externalObjectStatuses,
+      viewState.hideRoutineExecutions,
+      viewState.sortField,
+      viewState.sortDir,
+      viewState.groupBy,
+      viewState.viewMode,
+      viewState.nestingEnabled,
+    ],
+  );
 
-    setRenderedIssueRowLimit((current) => {
-      const nextInitialLimit = Math.min(filtered.length, INITIAL_ISSUE_ROW_RENDER_LIMIT);
-      const listAppended = previousIssueIds.length > 0
-        && nextIssueIds.startsWith(previousIssueIds)
-        && filtered.length >= current;
-      if (listAppended) return Math.min(filtered.length, Math.max(current, nextInitialLimit));
-      return nextInitialLimit;
-    });
-  }, [filtered, viewState.viewMode]);
+  const budgetOrderedIssueIds = useMemo(() => {
+    if (viewState.viewMode !== "list") return [] as string[];
+    const ids: string[] = [];
+    for (const group of groupedContent) {
+      const { roots, childMap } = viewState.nestingEnabled
+        ? buildIssueTree(group.items)
+        : { roots: group.items, childMap: new Map<string, Issue[]>() };
+      const walk = (issue: Issue) => {
+        ids.push(issue.id);
+        if (viewState.collapsedParents.includes(issue.id)) return;
+        for (const child of childMap.get(issue.id) ?? []) walk(child);
+      };
+      for (const root of roots) walk(root);
+    }
+    return ids;
+  }, [groupedContent, viewState.collapsedParents, viewState.nestingEnabled, viewState.viewMode]);
+
+  const renderBudgetSnapshotRef = useRef<IssueRowRenderSnapshot | null>(null);
+  useLayoutEffect(() => {
+    if (viewState.viewMode !== "list") return;
+    const previous = renderBudgetSnapshotRef.current;
+    renderBudgetSnapshotRef.current = { identity: renderBudgetIdentity, ids: budgetOrderedIssueIds };
+    setRenderedIssueRowLimit((current) =>
+      nextIssueRowRenderLimit(previous, renderBudgetIdentity, budgetOrderedIssueIds, current),
+    );
+  }, [budgetOrderedIssueIds, renderBudgetIdentity, viewState.viewMode]);
 
   const hasMoreRenderedRows = viewState.viewMode === "list" && renderedIssueRowLimit < filtered.length;
   const remainingIssueRowCount = Math.max(filtered.length - renderedIssueRowLimit, 0);
@@ -2194,13 +2276,10 @@ function StreamlinedIssuesList({
                       key={issue.id}
                       data-issue-row-id={issue.id}
                       // Canonical rows use the same tree-guide slots at every width.
-                      className={rowPresentation === "legacy" && depth > 0 ? MOBILE_TREE_INDENT[Math.min(depth, MOBILE_TREE_INDENT.length - 1)] : undefined}
-                      style={useDeferredRowRendering
-                        ? {
-                          contentVisibility: "auto",
-                          containIntrinsicSize: "44px",
-                        }
-                        : undefined}
+                      className={cn(
+                        rowPresentation === "legacy" && depth > 0 && MOBILE_TREE_INDENT[Math.min(depth, MOBILE_TREE_INDENT.length - 1)],
+                        useDeferredRowRendering && "paperclip-issue-list-row-deferred",
+                      ) || undefined}
                     >
                       <IssueRow
                         issue={issue}
@@ -2467,8 +2546,8 @@ function StreamlinedIssuesList({
                   );
                 };
 
-                const separatorField = viewState.showDateGroupSeparators
-                  ? issueDateSeparatorField(viewState)
+                const separatorDate = viewState.showDateGroupSeparators
+                  ? issueDateSeparatorDate(viewState)
                   : null;
                 const separatorNow = new Date();
                 const nodes: ReactNode[] = [];
@@ -2479,8 +2558,8 @@ function StreamlinedIssuesList({
                   // Skip rows the render budget dropped so separators never
                   // dangle above an unrendered (or absent) row.
                   if (node === null) return;
-                  if (separatorField && rowPresentation === "task") {
-                    const currentDateGroup = taskDateGroup(issue[separatorField], separatorNow);
+                  if (separatorDate && rowPresentation === "task") {
+                    const currentDateGroup = taskDateGroup(separatorDate(issue), separatorNow);
                     const separatorLabel = taskDateGroupSeparator(previousDateGroup, currentDateGroup);
                     if (separatorLabel) {
                       nodes.push(
@@ -2491,8 +2570,8 @@ function StreamlinedIssuesList({
                       );
                     }
                     previousDateGroup = currentDateGroup;
-                  } else if (separatorField) {
-                    const currentAgeBucket = issueAgeBucket(issue[separatorField], separatorNow.getTime());
+                  } else if (separatorDate) {
+                    const currentAgeBucket = issueAgeBucket(separatorDate(issue), separatorNow.getTime());
                     for (const crossedBucket of previousAgeBucket === null
                       ? []
                       : issueAgeBucketsCrossed(previousAgeBucket, currentAgeBucket)) {

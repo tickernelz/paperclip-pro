@@ -316,26 +316,15 @@ describe("inbox helpers", () => {
     storage.clear();
   });
 
-  it.each([
-    { currentUserId: "user-1", expected: 1 },
-    { currentUserId: "user-2", expected: 1 },
-    { currentUserId: "local-board", expected: 1 },
-    { currentUserId: null, expected: 0 },
-  ])("counts only personal failed runs for $currentUserId", ({ currentUserId, expected }) => {
+  it("counts the server's personal failed-run total without re-deriving it from runs", () => {
     const result = computeInboxBadgeData({
       approvals: [], joinRequests: [], dashboard, mineIssues: [],
-      dismissedAlerts: new Set(), dismissedAtByKey: new Map(), currentUserId,
-      heartbeatRuns: [
-        { ...makeRun("own", "failed", "2026-03-11T01:00:00Z"), responsibleUserId: "user-1" },
-        { ...makeRun("other", "timed_out", "2026-03-11T01:00:00Z", "agent-2"), responsibleUserId: "user-2" },
-        { ...makeRun("unowned", "failed", "2026-03-11T01:00:00Z", "agent-3"), responsibleUserId: null },
-        { ...makeRun("old-own", "failed", "2026-03-11T01:00:00Z", "shared-agent"), responsibleUserId: "user-1" },
-        { ...makeRun("new-other", "succeeded", "2026-03-11T02:00:00Z", "shared-agent"), responsibleUserId: "user-2" },
-      ],
+      dismissedAlerts: new Set(), dismissedAtByKey: new Map(), currentUserId: "user-1",
+      failedRuns: 2,
     });
-    expect(result.failedRuns).toBe(expected);
-    expect(result.inbox).toBe(expected);
-    expect(result.alerts).toBe(1); // The budget alert; run failures already describe agent errors in All.
+    expect(result.failedRuns).toBe(2);
+    expect(result.inbox).toBe(2);
+    expect(result.alerts).toBe(1);
   });
 
   it("counts the same inbox sources the badge uses", () => {
@@ -346,11 +335,7 @@ describe("inbox helpers", () => {
       ],
       joinRequests: [makeJoinRequest("join-1")],
       dashboard,
-      heartbeatRuns: [
-        makeRun("run-old", "failed", "2026-03-11T00:00:00.000Z"),
-        makeRun("run-latest", "timed_out", "2026-03-11T01:00:00.000Z"),
-        makeRun("run-other-agent", "failed", "2026-03-11T02:00:00.000Z", "agent-2"),
-      ],
+      failedRuns: 2,
       mineIssues: [makeIssue("1", true)],
       dismissedAlerts: new Set<string>(),
       dismissedAtByKey: new Map<string, number>(),
@@ -367,15 +352,15 @@ describe("inbox helpers", () => {
     });
   });
 
-  it("drops dismissed runs and alerts from the computed badge", () => {
+  it("drops dismissed alerts from the computed badge", () => {
     const result = computeInboxBadgeData({
       approvals: [],
       joinRequests: [],
       dashboard,
-      heartbeatRuns: [makeRun("run-1", "failed", "2026-03-11T00:00:00.000Z")],
+      failedRuns: 0,
       mineIssues: [],
       dismissedAlerts: new Set<string>(["alert:budget", "alert:agent-errors"]),
-      dismissedAtByKey: new Map<string, number>([["run:run-1", new Date("2026-03-11T00:00:00.000Z").getTime()]]),
+      dismissedAtByKey: new Map<string, number>(),
       currentUserId: "user-1",
     });
 
@@ -394,7 +379,7 @@ describe("inbox helpers", () => {
       approvals: [],
       joinRequests: [],
       dashboard,
-      heartbeatRuns: [],
+      failedRuns: 0,
       mineIssues: [makeIssue("1", false), makeIssue("2", false), makeIssue("3", true)],
       dismissedAlerts: new Set<string>(),
       dismissedAtByKey: new Map(),
@@ -499,7 +484,7 @@ describe("inbox helpers", () => {
       approvals,
       joinRequests: [],
       dashboard,
-      heartbeatRuns: [],
+      failedRuns: 0,
       mineIssues: [],
       dismissedAlerts: new Set<string>(),
       dismissedAtByKey: new Map(),
@@ -514,7 +499,7 @@ describe("inbox helpers", () => {
       approvals: [],
       joinRequests: [],
       dashboard,
-      heartbeatRuns: [],
+      failedRuns: 0,
       mineIssues: [],
       dismissedAlerts: new Set<string>(),
       dismissedAtByKey: new Map(),

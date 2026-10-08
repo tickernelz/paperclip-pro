@@ -448,6 +448,10 @@ const FEEDBACK_TERMS_URL =
   "https://paperclip.ing/tos";
 const ISSUE_COMMENT_AUTOLOAD_LIMIT = ISSUE_COMMENT_PAGE_SIZE * 3;
 const JUMP_TO_LATEST_MAX_COMMENT_PAGES = 10;
+const ISSUE_QUEUED_COMMENTS_POLL_MS = 3_000;
+const ISSUE_RUNS_POLL_MS = 15_000;
+const ISSUE_LIVE_RUNS_POLL_MS = 10_000;
+const ISSUE_ACTIVE_RUN_POLL_MS = 10_000;
 function treeControlPreviewErrorCopy(error: unknown): string {
   if (error instanceof ApiError) {
     if (error.status === 403)
@@ -1538,11 +1542,10 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
         issueId,
       ),
     enabled: queuedCommentQueueEnabled,
-    refetchInterval: (query) => {
-      if (!queuedCommentQueueEnabled) return false;
-      if (query.state.data?.entries.length) return 1000;
-      return liveRuntimeRun ? 3000 : false;
-    },
+    refetchInterval: (query) =>
+      queuedCommentQueueEnabled && query.state.data?.entries.length
+        ? ISSUE_QUEUED_COMMENTS_POLL_MS
+        : false,
   });
   const [consumedQueuedCommentIds, setConsumedQueuedCommentIds] = useState<
     ReadonlySet<string>
@@ -1589,7 +1592,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     queryFn: () => activityApi.runsForIssue(issueQueryRef),
     enabled: !!issueId,
     refetchInterval:
-      hasLiveRuns || issueStatus === "in_progress" ? 5000 : false,
+      hasLiveRuns || issueStatus === "in_progress" ? ISSUE_RUNS_POLL_MS : false,
     placeholderData: keepPreviousDataForSameQueryTail<RunForIssue[]>(issueQueryRef),
   });
   const resolvedActivity = activity ?? [];
@@ -3368,10 +3371,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       queryKey: queryKeys.issues.liveRuns(issueQueryId!),
       queryFn: () => heartbeatsApi.liveRunsForIssue(canonicalIssueId!),
       enabled: !!canonicalIssueId,
-      refetchInterval: (query) =>
-        (query.state.data?.length ?? 0) > 0 || shouldTrackIssueActiveRun(issue)
-          ? 3000
-          : 10_000,
+      refetchInterval: ISSUE_LIVE_RUNS_POLL_MS,
       select: (runs) => runs.length,
       placeholderData: keepPreviousDataForSameQueryTail<LiveRunForIssue[]>(
         canonicalIssueId ?? "pending",
@@ -3388,7 +3388,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     queryFn: () => heartbeatsApi.activeRunForIssue(canonicalIssueId!),
     enabled:
       !!canonicalIssueId && (!!issue?.executionRunId || issue?.status === "in_progress"),
-    refetchInterval: liveRunCount > 0 ? false : 3000,
+    refetchInterval: liveRunCount > 0 ? false : ISSUE_ACTIVE_RUN_POLL_MS,
     select: (run) => !!run,
     placeholderData: keepPreviousDataForSameQueryTail<ActiveRunForIssue | null>(
       canonicalIssueId ?? "pending",

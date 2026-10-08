@@ -1,4 +1,3 @@
-import { isHeartbeatRunVisibleInMine } from "@tickernelz/paperclip-pro-shared";
 import type {
   Approval,
   DashboardSummary,
@@ -1266,7 +1265,7 @@ export function computeInboxBadgeData({
   approvals,
   joinRequests,
   dashboard,
-  heartbeatRuns,
+  failedRuns,
   mineIssues,
   dismissedAlerts,
   dismissedAtByKey,
@@ -1275,7 +1274,7 @@ export function computeInboxBadgeData({
   approvals: Approval[];
   joinRequests: JoinRequest[];
   dashboard: DashboardSummary | undefined;
-  heartbeatRuns: HeartbeatRun[];
+  failedRuns: number;
   mineIssues: Issue[];
   dismissedAlerts: Set<string>;
   dismissedAtByKey: ReadonlyMap<string, number>;
@@ -1287,10 +1286,6 @@ export function computeInboxBadgeData({
       ACTIONABLE_APPROVAL_STATUSES.has(approval.status) &&
       !isInboxEntityDismissed(dismissedAtByKey, `approval:${approval.id}`, approval.updatedAt),
   ).length;
-  const visibleFailedRuns = getLatestFailedRunsByAgent(heartbeatRuns).filter(
-    (run) => !isInboxEntityDismissed(dismissedAtByKey, `run:${run.id}`, run.createdAt),
-  );
-  const failedRuns = visibleFailedRuns.filter((run) => isHeartbeatRunVisibleInMine(run, currentUserId)).length;
   const visibleJoinRequests = joinRequests.filter(
     (jr) => !isInboxEntityDismissed(dismissedAtByKey, `join:${jr.id}`, jr.updatedAt ?? jr.createdAt),
   ).length;
@@ -1300,7 +1295,7 @@ export function computeInboxBadgeData({
   const monthUtilizationPercent = dashboard?.costs.monthUtilizationPercent ?? 0;
   const showAggregateAgentError =
     agentErrorCount > 0 &&
-    visibleFailedRuns.length === 0 &&
+    failedRuns === 0 &&
     !dismissedAlerts.has("alert:agent-errors");
   const showBudgetAlert =
     monthBudgetCents > 0 &&
