@@ -8,6 +8,7 @@ import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { and, asc, eq, sql } from "drizzle-orm";
 import {
+  activityLog,
   agents,
   agentWakeupRequests,
   assets,
@@ -116,7 +117,8 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   const captured = new Map<string, Record<string, unknown>>();
   const steered = new Map<string, string[]>();
   const holds = new Map<string, () => void>();
-  const adapterMode = { steer: true, hold: true, failures: 0 };
+  const adapterMode = { steer: true, lateSteer: false, hold: true, failures: 0 };
+  const lateSteerTargets = new Map<string, () => void>();
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -131,17 +133,21 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     registerServerAdapter({
       type: ADAPTER_TYPE,
       supportsLocalAgentJwt: true,
+      supportsLiveSteering: true,
       execute: async (ctx) => {
         captured.set(ctx.runId, { ...ctx.context });
-        const unregister = adapterMode.steer
-          ? registerAdapterSteerTarget(ctx.runId, {
-              capabilities: async () => ({ steering: true }),
-              snapshot: async () => ({ activeTurnId: "turn:" + ctx.runId }),
-              steer: async (input) => {
-                steered.set(ctx.runId, [...(steered.get(ctx.runId) ?? []), input.message.text]);
-              },
-            })
-          : () => undefined;
+        let unregister = () => undefined as void;
+        const register = () => {
+          unregister = registerAdapterSteerTarget(ctx.runId, {
+            capabilities: async () => ({ steering: true }),
+            snapshot: async () => ({ activeTurnId: "turn:" + ctx.runId }),
+            steer: async (input) => {
+              steered.set(ctx.runId, [...(steered.get(ctx.runId) ?? []), input.message.text]);
+            },
+          });
+        };
+        if (adapterMode.lateSteer) lateSteerTargets.set(ctx.runId, register);
+        else if (adapterMode.steer) register();
         try {
           if (adapterMode.hold) await new Promise<void>((resolve) => holds.set(ctx.runId, resolve));
         } finally {
@@ -182,7 +188,9 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     steered.clear();
     adapterMode.steer = true;
     adapterMode.hold = true;
+    adapterMode.lateSteer = false;
     adapterMode.failures = 0;
+    lateSteerTargets.clear();
   });
 
   afterAll(async () => {
@@ -494,6 +502,49 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     release(queuedRun.id);
     const nextRun = await finishedRun(t, third.action.id);
     expect(captured.get(nextRun.id)!.paperclipOpenwa).toMatchObject({ triggerClass: "owner", profile: "full" });
+  }, 180_000);
+
+  it("steers an owner burst message into the starting run once its adapter registers a steer target, exactly once", async () => {
+    adapterMode.lateSteer = true;
+    const t = await setup({ nudgeClock: new ManualClock() });
+    const first = await admit(t, { chatId: jid(OWNER_PHONE), body: "look at this screenshot" });
+    const ownerRun = await runningRun(t, first.action.id);
+    const second = await admit(t, { chatId: jid(OWNER_PHONE), body: "and this second screenshot too" });
+    expect((await wakeRow(second.action.id)).status).toBe("deferred_issue_execution");
+    expect(steered.get(ownerRun.id)).toBeUndefined();
+
+    lateSteerTargets.get(ownerRun.id)!();
+    const text = await until(async () => steered.get(ownerRun.id)?.find((entry) => entry.includes("and this second screenshot too")) ?? null);
+    expect(text).toContain("WhatsApp message from an endpoint owner");
+    expect((await wakeRow(second.action.id)).status).toBe("cancelled");
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    expect(steered.get(ownerRun.id)!.filter((entry) => entry.includes("and this second screenshot too"))).toHaveLength(1);
+    const steeredActivity = await db.select().from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "issue.queued_comment_steered")));
+    expect(steeredActivity).toHaveLength(1);
+    expect(steeredActivity[0]).toMatchObject({ actorType: "system", actorId: "openwa:steer", details: expect.objectContaining({ targetRunId: ownerRun.id }) });
+    expect(((await runContext(ownerRun.id)).paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
+  }, 180_000);
+
+  it("keeps an owner burst message queued for the next run when the starting run never becomes steerable", async () => {
+    adapterMode.lateSteer = true;
+    const t = await setup({ nudgeClock: new ManualClock() });
+    const first = await admit(t, { chatId: jid(OWNER_PHONE), body: "look at this screenshot" });
+    const ownerRun = await runningRun(t, first.action.id);
+    const second = await admit(t, { chatId: jid(OWNER_PHONE), body: "and this second screenshot too" });
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    expect(steered.get(ownerRun.id)).toBeUndefined();
+    expect((await wakeRow(second.action.id)).status).toBe("deferred_issue_execution");
+
+    adapterMode.hold = false;
+    release(ownerRun.id);
+    const nextRun = await finishedRun(t, second.action.id);
+    expect(nextRun.id).not.toBe(ownerRun.id);
+    expect((captured.get(nextRun.id)!.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
+    expect(steered.get(ownerRun.id)).toBeUndefined();
+    const steeredActivity = await db.select().from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "issue.queued_comment_steered")));
+    expect(steeredActivity).toEqual([]);
   }, 180_000);
 
   it("skips the progress nudge when a later send to the chat already acknowledged the run's triggers", async () => {

@@ -77,8 +77,12 @@ import {
   openwaOwnerAbsentRunActive,
   releaseOpenwaBurstWake,
   steerOpenwaLateTranscript,
+  OPENWA_STEER_READY_WAIT_MS,
+  openwaSteerMayWaitForRun,
   steerOpenwaSystemText,
   steerOpenwaTrigger,
+  steerOpenwaTriggerWhenReady,
+  type OpenwaTriggerSteerInput,
 } from "./openwa/steering.js";
 import { subscribeAllCompanyLiveEvents } from "./live-events.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
@@ -8643,27 +8647,44 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   }
 
-  async function steerAdmittedOpenwaTrigger(action: typeof chatActions.$inferSelect, issueId: string, commentId: string) {
+  async function steerAdmittedOpenwaTrigger(
+    action: typeof chatActions.$inferSelect,
+    issueId: string,
+    commentId: string,
+    deferred: boolean,
+  ) {
     const openwa = action.payload.openwa;
     if (!openwa || typeof openwa !== "object" || !action.conversationId) return;
     const wake = openwa as Record<string, unknown>;
     const triggerClass = wake.triggerClass === "owner" || wake.triggerClass === "other" || wake.triggerClass === "grant" ? wake.triggerClass : null;
     if (!triggerClass) return;
     const deliveryIds = Array.isArray(wake.deliveryIds) ? wake.deliveryIds.filter((id): id is string => typeof id === "string") : [];
+    const input: OpenwaTriggerSteerInput = {
+      companyId: action.companyId,
+      endpointId: action.endpointId,
+      conversationId: action.conversationId,
+      issueId,
+      commentId,
+      incoming: { triggerClass, event: typeof wake.event === "string" ? wake.event : null },
+      deliveryIds,
+      storage: options.storage,
+    };
+    let outcome;
     try {
-      await steerOpenwaTrigger(db, {
-        companyId: action.companyId,
-        endpointId: action.endpointId,
-        conversationId: action.conversationId,
-        issueId,
-        commentId,
-        incoming: { triggerClass, event: typeof wake.event === "string" ? wake.event : null },
-        deliveryIds,
-        storage: options.storage,
-      });
+      outcome = await steerOpenwaTrigger(db, input);
     } catch (error) {
       logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");
+      return;
     }
+    if (!deferred || !openwaSteerMayWaitForRun(outcome) || shuttingDown) return;
+    const pending = steerOpenwaTriggerWhenReady(db, { ...input, timeoutMs: OPENWA_STEER_READY_WAIT_MS, stopped: () => shuttingDown })
+      .then((late) => {
+        if (late.deliveredAs === "queued")
+          logger.info({ actionId: action.id, issueId, reason: late.reason }, "OpenWA trigger stays queued after waiting for the starting run");
+      })
+      .catch((error) => logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger into its starting run; it stays queued"));
+    backgroundMessageTasks.add(pending);
+    void pending.finally(() => backgroundMessageTasks.delete(pending));
   }
 
   async function admitOpenwaLateOwner(input: OpenwaLateOwnerActivity, ownership: DiscordGatewayOwnership) {
@@ -15056,7 +15077,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const durable = await receipt();
       if (!durable) throw new Error("chat_inbound_wakeup_receipt_missing");
       if (context.endpoint.provider === "openwa" && (durable.status === "deferred_issue_execution" || durable.status === "coalesced"))
-        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId);
+        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId, durable.status === "deferred_issue_execution");
       await settle(receiptDeclined(durable) ? "failed" : "processed", {
         code: receiptDeclined(durable)
           ? `inbound_wakeup_${durable.status}`
