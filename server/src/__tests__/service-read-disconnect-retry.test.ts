@@ -57,7 +57,7 @@ function fixture(options: {
             if (name === "issue_watchdogs") return [];
             if (name === "heartbeat_runs") return [{
               id: "run-1", companyId, agentId, status: "succeeded",
-              contextIssueId: issueId, contextWakeReason: "issue_assigned", resultSummary: "Finished",
+              context: { issueId, wakeReason: "issue_assigned" }, resultSummary: "Finished",
             }];
             throw new Error(`Unexpected read: ${name}`);
           });
@@ -94,6 +94,8 @@ describe("heartbeat list connection recovery", () => {
       expect(attempt.limit).toBe(options.limit);
       expect(attempt.order).toEqual(['"heartbeat_runs"."created_at" desc']);
       expect("resultSummary" in attempt.fields).toBe(!options.summary && options.encoding === "UTF8");
+      expect("context" in attempt.fields).toBe(true);
+      expect("contextSnapshot" in attempt.fields).toBe(false);
       expect(attempt.fields).toEqual(test.attempts[0].fields);
     }
   });
