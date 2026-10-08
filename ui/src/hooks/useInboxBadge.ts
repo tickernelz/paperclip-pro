@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Issue } from "@tickernelz/paperclip-pro-shared";
 import { accessApi } from "../api/access";
 import { ApiError } from "../api/client";
 import { inboxDismissalsApi } from "../api/inboxDismissals";
 import { approvalsApi } from "../api/approvals";
 import { authApi } from "../api/auth";
 import { dashboardApi } from "../api/dashboard";
-import { heartbeatsApi } from "../api/heartbeats";
 import { issuesApi } from "../api/issues";
+import { sidebarBadgesApi } from "../api/sidebarBadges";
 import { queryKeys } from "../lib/queryKeys";
 import {
   filterLocalInboxArchivedIssues,
@@ -27,7 +28,6 @@ import {
 
 const INBOX_ISSUE_STATUSES = "backlog,todo,in_progress,in_review,blocked,done";
 const INBOX_BADGE_ISSUE_LIMIT = 500;
-const INBOX_BADGE_HEARTBEAT_RUN_LIMIT = 200;
 const INBOX_BADGE_HOT_PATH_STALE_MS = 30_000;
 
 export function useDismissedInboxAlerts() {
@@ -232,12 +232,12 @@ export function useInboxBadge(companyId: string | null | undefined) {
   const { data: mineIssuesRaw = [], dataUpdatedAt: mineIssuesUpdatedAt } = useQuery({
     queryKey: mineIssuesQueryKey,
     queryFn: () =>
-      issuesApi.list(companyId!, {
+      issuesApi.listCompact(companyId!, {
         touchedByUserId: "me",
         inboxArchivedByUserId: "me",
         status: INBOX_ISSUE_STATUSES,
         limit: INBOX_BADGE_ISSUE_LIMIT,
-      }),
+      }).then((rows) => rows as Issue[]),
     enabled: !!companyId,
     refetchOnWindowFocus: false,
     staleTime: INBOX_BADGE_HOT_PATH_STALE_MS,
@@ -250,26 +250,35 @@ export function useInboxBadge(companyId: string | null | undefined) {
   );
   const currentUserId = session?.user.id ?? session?.session.userId ?? null;
 
-  const { data: heartbeatRuns = [] } = useQuery({
-    queryKey: [...queryKeys.heartbeats(companyId!), "limit", INBOX_BADGE_HEARTBEAT_RUN_LIMIT],
-    queryFn: () => heartbeatsApi.list(companyId!, undefined, INBOX_BADGE_HEARTBEAT_RUN_LIMIT, { summary: true }),
+  const { data: sidebarBadges } = useQuery({
+    queryKey: companyId ? queryKeys.sidebarBadges(companyId) : ["sidebar-badges", "__disabled__"] as const,
+    queryFn: async () => {
+      try {
+        return await sidebarBadgesApi.get(companyId!);
+      } catch (error) {
+        if (error instanceof ApiError && (error.status === 401 || error.status === 403)) {
+          return null;
+        }
+        throw error;
+      }
+    },
     enabled: !!companyId,
-    refetchOnWindowFocus: false,
-    staleTime: INBOX_BADGE_HOT_PATH_STALE_MS,
+    retry: false,
   });
 
+  const failedRuns = sidebarBadges?.failedRuns ?? 0;
   return useMemo(
     () =>
       computeInboxBadgeData({
         approvals,
         joinRequests,
         dashboard,
-        heartbeatRuns,
+        failedRuns,
         mineIssues,
         dismissedAlerts,
         dismissedAtByKey,
         currentUserId,
       }),
-    [approvals, joinRequests, dashboard, heartbeatRuns, mineIssues, dismissedAlerts, dismissedAtByKey, currentUserId],
+    [approvals, joinRequests, dashboard, failedRuns, mineIssues, dismissedAlerts, dismissedAtByKey, currentUserId],
   );
 }

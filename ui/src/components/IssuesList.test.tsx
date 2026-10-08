@@ -1603,6 +1603,109 @@ describe("IssuesList", () => {
     });
   });
 
+  it("keeps rendered rows mounted when a page is mixed in or a middle issue moves to the top", async () => {
+    const base = new Date("2026-04-07T12:00:00.000Z").getTime();
+    const minute = 60_000;
+    const issueAt = (index: number, at: number) =>
+      createIssue({
+        id: `issue-${index}`,
+        identifier: `PAP-${index}`,
+        title: `Issue ${index}`,
+        updatedAt: new Date(at),
+      });
+    const firstPages = Array.from({ length: 300 }, (_, index) => issueAt(index + 1, base - (index + 1) * minute));
+    const mixedPage = Array.from({ length: 100 }, (_, index) =>
+      issueAt(1000 + index, base - (200 + index) * minute - minute / 2));
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const renderIssues = (issues: Issue[]) =>
+      act(() => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <IssuesList
+                issues={issues}
+                agents={[]}
+                projects={[]}
+                viewStateKey="paperclip:test-issues"
+                hasMoreIssues
+                onLoadMoreIssues={() => undefined}
+                onUpdateIssue={() => undefined}
+              />
+            </TooltipProvider>
+          </QueryClientProvider>,
+        );
+      });
+    const renderedRowCount = () => container.querySelectorAll('[data-testid="issue-row"]').length;
+
+    renderIssues(firstPages);
+    await waitForAssertion(() => expect(renderedRowCount()).toBe(100));
+    await flush();
+    for (const expected of [250, 300]) {
+      act(() => {
+        setDocumentScrollMetrics({ innerHeight: 600, scrollY: 1500, scrollHeight: 2000 });
+        window.dispatchEvent(new Event("scroll"));
+      });
+      await flushAnimationFrame();
+      await waitForAssertion(() => expect(renderedRowCount()).toBe(expected));
+    }
+
+    const withMixedPage = [...firstPages, ...mixedPage];
+    renderIssues(withMixedPage);
+    await flush();
+    expect(renderedRowCount()).toBeGreaterThanOrEqual(300);
+
+    const movedToTop = withMixedPage.map((issue) =>
+      issue.id === "issue-150" ? { ...issue, updatedAt: new Date(base + minute) } : issue);
+    renderIssues(movedToTop);
+    await flush();
+    expect(renderedRowCount()).toBeGreaterThanOrEqual(300);
+    expect(container.querySelector('[data-testid="issue-row"]')?.textContent).toContain("Issue 150");
+
+    renderIssues(movedToTop.filter((issue) => issue.id !== "issue-20"));
+    await flush();
+    expect(renderedRowCount()).toBeGreaterThanOrEqual(299);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("orders the updated sort by last activity so client and server agree", async () => {
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({
+            id: "issue-recently-updated",
+            title: "Recently updated",
+            updatedAt: new Date("2026-04-07T10:00:00.000Z"),
+          }),
+          createIssue({
+            id: "issue-recent-comment",
+            title: "Recent comment",
+            updatedAt: new Date("2026-04-07T08:00:00.000Z"),
+            lastActivityAt: new Date("2026-04-07T11:00:00.000Z"),
+          }),
+        ]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const titles = Array.from(container.querySelectorAll('[data-testid="issue-row"]')).map((row) => row.textContent);
+      expect(titles[0]).toContain("Recent comment");
+      expect(titles[1]).toContain("Recently updated");
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("waits for the desktop main scroll container before rendering more local rows", async () => {
     const manyIssues = Array.from({ length: 120 }, (_, index) =>
       createIssue({
@@ -1733,10 +1836,8 @@ describe("IssuesList", () => {
       const childRow = rows.find((row) => row.textContent?.includes("Child issue"));
       expect(parentRow).not.toBeUndefined();
       expect(childRow).not.toBeUndefined();
-      expect((parentRow?.parentElement as HTMLDivElement | null)?.style.contentVisibility).toBe("");
-      expect((parentRow?.parentElement as HTMLDivElement | null)?.style.containIntrinsicSize).toBe("");
-      expect((childRow?.parentElement as HTMLDivElement | null)?.style.contentVisibility).toBe("auto");
-      expect((childRow?.parentElement as HTMLDivElement | null)?.style.containIntrinsicSize).toBe("44px");
+      expect(parentRow?.parentElement?.classList.contains("paperclip-issue-list-row-deferred")).toBe(false);
+      expect(childRow?.parentElement?.classList.contains("paperclip-issue-list-row-deferred")).toBe(true);
     });
 
     act(() => {

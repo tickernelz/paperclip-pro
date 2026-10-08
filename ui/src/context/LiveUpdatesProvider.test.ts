@@ -11,7 +11,7 @@ vi.mock("../api/issues", () => ({
 }));
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { QueryClient } from "@tanstack/react-query";
+import { QueryCache, QueryClient, QueryObserver } from "@tanstack/react-query";
 import { __liveUpdatesTestUtils } from "./LiveUpdatesProvider";
 import { queryKeys } from "../lib/queryKeys";
 
@@ -89,7 +89,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
     "refreshes company AI account previews after %s", (action) => {
       const invalidateQueries = vi.fn();
       __liveUpdatesTestUtils.invalidateActivityQueries(
-        { invalidateQueries, getQueryData: () => undefined } as never,
+        { invalidateQueries, getQueryCache: () => new QueryCache(), getQueryData: () => undefined } as never,
         "company-1", { entityType: "connection_grant", entityId: "grant-1", action },
         { userId: "owner", agentId: null },
       );
@@ -104,6 +104,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -176,6 +177,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -284,6 +286,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       [JSON.stringify(queryKeys.issues.runs("DEMO-759")), [{ runId: "run-1" }]],
     ]);
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => cache.get(JSON.stringify(key)),
       setQueryData: (key: unknown, updater: unknown) => {
         const cacheKey = JSON.stringify(key);
@@ -391,6 +394,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -451,6 +455,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -488,6 +493,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -527,6 +533,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -562,6 +569,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -603,6 +611,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -640,6 +649,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -677,6 +687,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -723,6 +734,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -771,6 +783,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -823,6 +836,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -902,6 +916,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         return cache.get(JSON.stringify(key));
       },
@@ -972,6 +987,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       const invalidations: unknown[] = [];
       const queryClient = {
         invalidateQueries: (input: unknown) => invalidations.push(input),
+        getQueryCache: () => new QueryCache(),
         getQueryData: (key: unknown) => {
           if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
             return { id: "issue-1", identifier: "PAP-759", assigneeAgentId: "agent-1" };
@@ -1000,6 +1016,7 @@ describe("LiveUpdatesProvider issue invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -1055,6 +1072,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
 
     const setCalls: Array<{ key: unknown; value: unknown }> = [];
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -1137,6 +1155,7 @@ describe("LiveUpdatesProvider visible issue comment hydration", () => {
 describe("LiveUpdatesProvider visible issue toast suppression", () => {
   it("suppresses activity toasts for the issue page currently in view", () => {
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
           return {
@@ -1178,6 +1197,7 @@ describe("LiveUpdatesProvider visible issue toast suppression", () => {
 
   it("suppresses run and agent status toasts for the assignee of the visible issue", () => {
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => {
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.activeRun("PAP-759"))) return { id: "run-1" };
         if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-759"))) {
@@ -1220,6 +1240,7 @@ describe("LiveUpdatesProvider visible issue toast suppression", () => {
 describe("LiveUpdatesProvider run lifecycle toasts", () => {
   it("does not build start or success toasts for agent runs", () => {
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => [],
     };
 
@@ -1256,6 +1277,7 @@ describe("LiveUpdatesProvider run lifecycle toasts", () => {
 
   it("still builds failure toasts for agent errors and failed runs", () => {
     const queryClient = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => [
         {
           id: "agent-1",
@@ -1381,6 +1403,7 @@ describe("applyRunLifecycleToCompanyLiveRuns", () => {
       [JSON.stringify(queryKeys.runDetail("run-1")), initialDetail],
     ]);
     const client = {
+      getQueryCache: () => new QueryCache(),
       getQueryData: (key: unknown) => cache.get(JSON.stringify(key)),
       setQueryData: (key: unknown, updater: unknown) => {
         const cacheKey = JSON.stringify(key);
@@ -1470,6 +1493,7 @@ describe("LiveUpdatesProvider summary slot invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -1504,6 +1528,7 @@ describe("LiveUpdatesProvider summary slot invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -1533,6 +1558,7 @@ describe("LiveUpdatesProvider summary slot invalidation", () => {
       invalidateQueries: (input: unknown) => {
         invalidations.push(input);
       },
+      getQueryCache: () => new QueryCache(),
       getQueryData: () => undefined,
     };
 
@@ -1620,6 +1646,7 @@ describe("task subtree notification context", () => {
   const root = { id: "root", companyId: "company", identifier: "PAP-204", assigneeAgentId: "parent-agent" };
   const descendants = [{ id: "child", identifier: "PAP-205", assigneeAgentId: "child-agent", executionRunId: "child-run" }];
   const queryClient = {
+    getQueryCache: () => new QueryCache(),
     getQueryData: (key: unknown) => {
       if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.detail("PAP-204"))) return root;
       if (JSON.stringify(key) === JSON.stringify(queryKeys.issues.listByDescendantRoot("company", "root"))) return descendants;
@@ -1761,3 +1788,177 @@ describe("run log cache patch throttling", () => {
     client.clear();
   });
 });
+
+describe("LiveUpdatesProvider issue list live updates", () => {
+  const tasksKey = [...queryKeys.issues.list("company-1"), "compact", "infinite", 100];
+  const inboxKey = [...queryKeys.issues.listMineByMe("company-1"), "compact", 500];
+  const descendantsKey = queryKeys.issues.listByDescendantRoot("company-1", "root");
+  const row = (id: string, overrides: Record<string, unknown> = {}) => ({
+    id,
+    companyId: "company-1",
+    title: `Task ${id}`,
+    status: "todo",
+    priority: "medium",
+    updatedAt: "2026-10-01T00:00:00.000Z",
+    lastActivityAt: "2026-10-01T00:00:00.000Z",
+    ...overrides,
+  });
+
+  function seededClient() {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: Infinity } } });
+    client.setQueryData(tasksKey, {
+      pages: [[row("a"), row("issue-1")], [row("c")]],
+      pageParams: [0, 2],
+    });
+    client.setQueryData(inboxKey, Array.from({ length: 150 }, (_, index) => row(index === 7 ? "issue-1" : `inbox-${index}`)));
+    client.setQueryData(descendantsKey, [row("issue-1"), row("child")]);
+    return client;
+  }
+
+  function observe(client: QueryClient, key: readonly unknown[]) {
+    const fetches: unknown[] = [];
+    const observer = client.getQueryCache().find({ queryKey: key, exact: true })!;
+    const unsubscribe = client.getQueryCache().subscribe((event) => {
+      if (event.type === "updated" && event.action.type === "fetch" && event.query === observer) fetches.push(event.query.queryKey);
+    });
+    return { fetches, unsubscribe };
+  }
+
+  it("patches the changed issue in cached lists and defers refetching large lists", async () => {
+    const client = seededClient();
+    const fetchIssues = vi.fn(async () => [] as unknown[]);
+    for (const key of [tasksKey, inboxKey, descendantsKey]) {
+      client.getQueryCache().build(client, { queryKey: key, queryFn: fetchIssues });
+    }
+    const unobserved = [tasksKey, inboxKey, descendantsKey].map((key) => observe(client, key));
+
+    __liveUpdatesTestUtils.invalidateActivityQueries(
+      client,
+      "company-1",
+      {
+        entityType: "issue",
+        entityId: "issue-1",
+        action: "issue.updated",
+        details: {
+          changes: {
+            status: { from: "todo", to: "in_progress" },
+            description: { from: "a", to: "b", updated: true },
+          },
+        },
+      },
+      { userId: null, agentId: null },
+      { occurredAt: "2026-10-08T10:00:00.000Z" },
+    );
+
+    const tasks = client.getQueryData<{ pages: Array<Array<Record<string, unknown>>> }>(tasksKey)!;
+    expect(tasks.pages[0]![1]).toMatchObject({ id: "issue-1", status: "in_progress", lastActivityAt: "2026-10-08T10:00:00.000Z" });
+    expect(tasks.pages[0]![1]).not.toHaveProperty("description");
+    expect(tasks.pages[1]![0]).toBe(client.getQueryData<{ pages: unknown[][] }>(tasksKey)!.pages[1]![0]);
+    expect(client.getQueryData<Array<Record<string, unknown>>>(inboxKey)![7]).toMatchObject({ status: "in_progress" });
+    expect(client.getQueryState(tasksKey)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(inboxKey)?.isInvalidated).toBe(true);
+    expect(client.getQueryState(descendantsKey)?.isInvalidated).toBe(true);
+    await Promise.resolve();
+    expect(unobserved.map(({ fetches }) => fetches.length)).toEqual([0, 0, 0]);
+    for (const { unsubscribe } of unobserved) unsubscribe();
+    client.clear();
+  });
+
+  it("refetches only small active lists immediately and leaves large active lists to the periodic refresh", async () => {
+    const client = seededClient();
+    const fetched: string[] = [];
+    const unsubscribers = [tasksKey, inboxKey, descendantsKey].map((key) =>
+      new QueryObserver(client, {
+        queryKey: key,
+        staleTime: Infinity,
+        queryFn: async () => {
+          fetched.push(JSON.stringify(key));
+          return client.getQueryData(key);
+        },
+      }).subscribe(() => undefined),
+    );
+
+    __liveUpdatesTestUtils.invalidateActivityQueries(
+      client,
+      "company-1",
+      { entityType: "issue", entityId: "issue-1", action: "issue.comment_added", details: null },
+      { userId: null, agentId: null },
+      { occurredAt: "2026-10-08T10:00:00.000Z" },
+    );
+    await vi.waitFor(() => expect(fetched).toContain(JSON.stringify(descendantsKey)));
+    expect(fetched).not.toContain(JSON.stringify(tasksKey));
+    expect(fetched).not.toContain(JSON.stringify(inboxKey));
+
+    await __liveUpdatesTestUtils.refreshInvalidatedLiveLists(client, "company-1");
+    expect(fetched).toContain(JSON.stringify(tasksKey));
+    expect(fetched).toContain(JSON.stringify(inboxKey));
+    const fetchCount = fetched.length;
+    await __liveUpdatesTestUtils.refreshInvalidatedLiveLists(client, "company-1");
+    expect(fetched).toHaveLength(fetchCount);
+
+    for (const unsubscribe of unsubscribers) unsubscribe();
+    client.clear();
+  });
+
+  it("marks run lists stale only on terminal run status", () => {
+    const invalidations: Array<Record<string, unknown>> = [];
+    const queryClient = { invalidateQueries: (input: Record<string, unknown>) => invalidations.push(input) };
+    __liveUpdatesTestUtils.invalidateHeartbeatQueries(queryClient as never, "company-1", { runId: "run-1", status: "running" });
+    expect(invalidations).not.toContainEqual({ queryKey: queryKeys.heartbeats("company-1") });
+    expect(invalidations).not.toContainEqual({ queryKey: queryKeys.heartbeats("company-1"), refetchType: "none" });
+    __liveUpdatesTestUtils.invalidateHeartbeatQueries(queryClient as never, "company-1", { runId: "run-1", status: "failed" });
+    expect(invalidations).toContainEqual({ queryKey: queryKeys.heartbeats("company-1"), refetchType: "none" });
+    expect(invalidations).not.toContainEqual({ queryKey: queryKeys.heartbeats("company-1") });
+  });
+});
+
+
+describe("LiveUpdatesProvider queued comment refresh", () => {
+  it.each(["issue.queued_comment_steered", "issue.queued_comments_interrupted", "issue.comment_added"])(
+    "refreshes the queued-comment queue on %s instead of relying on a 1 s poll",
+    (action) => {
+      const invalidations: unknown[] = [];
+      const queryClient = {
+        invalidateQueries: (input: unknown) => invalidations.push(input),
+        getQueryCache: () => new QueryCache(),
+        getQueryData: () => undefined,
+      };
+      __liveUpdatesTestUtils.invalidateActivityQueries(
+        queryClient as never,
+        "company-1",
+        { entityType: "issue", entityId: "issue-1", action, details: null },
+        { userId: null, agentId: null },
+      );
+      expect(invalidations).toContainEqual({ queryKey: queryKeys.issues.queuedComments("issue-1") });
+    },
+  );
+
+  it("refreshes the visible queue on run lifecycle events but not on progress events", () => {
+    const cache = new Map<string, unknown>([
+      [JSON.stringify(queryKeys.issues.detail("PAP-1")), { id: "issue-1", identifier: "PAP-1", assigneeAgentId: "agent-1", executionRunId: "run-1" }],
+      [JSON.stringify(queryKeys.issues.detail("issue-1")), { id: "issue-1", identifier: "PAP-1", assigneeAgentId: "agent-1", executionRunId: "run-1" }],
+    ]);
+    const invalidations: unknown[] = [];
+    const queryClient = {
+      invalidateQueries: (input: unknown) => invalidations.push(input),
+      getQueryCache: () => new QueryCache(),
+      getQueryData: (key: unknown) => cache.get(JSON.stringify(key)),
+      setQueryData: () => undefined,
+    };
+    __liveUpdatesTestUtils.invalidateVisibleIssueRunQueries(
+      queryClient as never,
+      "/PAP/issues/PAP-1",
+      { runId: "run-1", agentId: "agent-1" },
+      { isForegrounded: true },
+    );
+    expect(invalidations).not.toContainEqual({ queryKey: queryKeys.issues.queuedComments("PAP-1") });
+    __liveUpdatesTestUtils.invalidateVisibleIssueRunQueries(
+      queryClient as never,
+      "/PAP/issues/PAP-1",
+      { runId: "run-1", agentId: "agent-1", status: "running" },
+      { isForegrounded: true, runLifecycleEvent: true },
+    );
+    expect(invalidations).toContainEqual({ queryKey: queryKeys.issues.queuedComments("PAP-1") });
+  });
+});
+

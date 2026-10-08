@@ -341,6 +341,7 @@
   --side-panel-tab-hover-bg: color-mix(in oklab, var(--accent) 58%, transparent);
   --radius-task-composer: 16px;
   --tc-interaction-card-max-h: 50dvh;
+  --issue-list-row-intrinsic-height: 44px;
   --shadow-task-composer: 0 2px 8px -2px color-mix(in oklab, var(--foreground) 7%, transparent),
     0 12px 32px -8px color-mix(in oklab, var(--foreground) 12%, transparent);
   --profile-popover-width: 248px;
@@ -696,6 +697,11 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     --motion-mobile-nav-enter: 0ms;
     --motion-mobile-nav-exit: 0ms;
   }
+}
+
+.paperclip-issue-list-row-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto var(--issue-list-row-intrinsic-height);
 }
 
 /* Mobile collection toolbars and square agent actions. */

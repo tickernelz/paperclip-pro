@@ -45,6 +45,13 @@ import {
   removeLiveRunById,
 } from "../lib/optimistic-issue-runs";
 import { queryKeys } from "../lib/queryKeys";
+import {
+  ISSUE_LIST_LIVE_REFRESH_INTERVAL_MS,
+  invalidateIssueListsForActivity,
+  patchIssueInListCaches,
+  readIssueListPatchFromActivity,
+  refreshInvalidatedLiveLists,
+} from "../lib/live-issue-list-cache";
 import { extractCompanyPrefixFromPath, toCompanyRelativePath } from "../lib/company-routes";
 import { useLocation } from "../lib/router";
 import { agentRouteRef } from "../lib/utils";
@@ -476,6 +483,7 @@ function shouldSuppressRunStatusToastForVisibleIssue(
 
 interface VisibleIssueRunInvalidationOptions extends VisibleRouteOptions {
   liveStatusAlreadyPatched?: boolean;
+  runLifecycleEvent?: boolean;
 }
 
 function invalidateVisibleIssueRunQueries(
@@ -534,6 +542,9 @@ function invalidateVisibleIssueRunQueries(
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(issueRef) });
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.activity(issueRef) });
     queryClient.invalidateQueries({ queryKey: queryKeys.issues.runs(issueRef) });
+    if (options?.runLifecycleEvent) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.issues.queuedComments(issueRef) });
+    }
     if (!liveRunQueriesAlreadyFresh) {
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.liveRuns(issueRef) });
       queryClient.invalidateQueries({ queryKey: queryKeys.issues.activeRun(issueRef) });
@@ -1279,7 +1290,10 @@ function invalidateHeartbeatQueries(
 ) {
   // Note: liveRuns(companyId) is intentionally NOT invalidated here — it is
   // event-sourced via applyRunLifecycleToCompanyLiveRuns in the caller.
-  queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(companyId) });
+  const status = readString(payload.status);
+  if (status && TERMINAL_RUN_STATUSES.has(status)) {
+    queryClient.invalidateQueries({ queryKey: queryKeys.heartbeats(companyId), refetchType: "none" });
+  }
   queryClient.invalidateQueries({ queryKey: queryKeys.agents.list(companyId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(companyId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.costs(companyId) });
@@ -1320,7 +1334,7 @@ function invalidateActivityQueries(
   companyId: string,
   payload: Record<string, unknown>,
   currentActor: { userId: string | null; agentId: string | null },
-  options?: { pathname?: string; isForegrounded?: boolean },
+  options?: { pathname?: string; isForegrounded?: boolean; occurredAt?: string | null },
 ) {
   queryClient.invalidateQueries({ queryKey: queryKeys.activity(companyId) });
   queryClient.invalidateQueries({ queryKey: queryKeys.dashboard(companyId) });
@@ -1365,9 +1379,15 @@ function invalidateActivityQueries(
       // An ancestor hold or reparenting changes descendants' effective pause.
       queryClient.invalidateQueries({ queryKey: ["issues", "tree-control-state"] });
     }
-    queryClient.invalidateQueries({
-      queryKey: queryKeys.issues.list(companyId),
-    });
+    if (entityId) {
+      patchIssueInListCaches(
+        queryClient,
+        companyId,
+        entityId,
+        readIssueListPatchFromActivity(action, details, options?.occurredAt ?? null),
+      );
+    }
+    invalidateIssueListsForActivity(queryClient, companyId);
     if (entityId) {
       const selfCommentActivity =
         (action === "issue.comment_added" ||
@@ -1412,6 +1432,9 @@ function invalidateActivityQueries(
         queryClient.invalidateQueries({ queryKey: queryKeys.issues.activity(ref), ...invalidationOptions });
         if (action === "issue.comment_added" || action === "issue.conversation_session_started") {
           queryClient.invalidateQueries({ queryKey: queryKeys.issues.comments(ref), ...invalidationOptions });
+        }
+        if (action === "issue.comment_added" || action?.startsWith("issue.queued_comment")) {
+          queryClient.invalidateQueries({ queryKey: queryKeys.issues.queuedComments(ref) });
         }
         if (action?.startsWith("issue.attachment_") || action?.startsWith("issue.work_product_")) {
           // These cards are durable API objects, not streamed text. Refresh the
@@ -1768,7 +1791,7 @@ function handleLiveEvent(
         queryKey: queryKeys.liveRuns(expectedCompanyId),
       });
     }
-    invalidateVisibleIssueRunQueries(queryClient, pathname, payload);
+    invalidateVisibleIssueRunQueries(queryClient, pathname, payload, { runLifecycleEvent: true });
     if (event.type === "heartbeat.run.status") {
       const toast = buildRunStatusToast(payload, nameOf);
       if (toast && !suppressRunToast) {
@@ -1830,7 +1853,7 @@ function handleLiveEvent(
       expectedCompanyId,
       payload,
       currentActor,
-      { pathname },
+      { pathname, occurredAt: event.createdAt ?? null },
     );
     if (
       shouldDeferVisibleIssueCommentActivity(queryClient, pathname, payload)
@@ -1916,6 +1939,7 @@ export const __liveUpdatesTestUtils = {
   invalidateHeartbeatProgressQueries,
   invalidateVisibleIssueRunQueries,
   readRunLiveStatusPatchFromPayload,
+  refreshInvalidatedLiveLists,
   resolveLiveCompanyId,
   canUseLiveSession,
   shouldDeferIssueRefetchForVisibleAgentActivity,
@@ -1997,6 +2021,14 @@ export function LiveUpdatesProvider({ children }: { children: ReactNode }) {
       agentId: null,
     };
   }, [currentUserId]);
+
+  useEffect(() => {
+    if (!visible || !canConnectSocket || !liveCompanyId) return;
+    const timer = window.setInterval(() => {
+      void refreshInvalidatedLiveLists(queryClient, liveCompanyId);
+    }, ISSUE_LIST_LIVE_REFRESH_INTERVAL_MS);
+    return () => window.clearInterval(timer);
+  }, [canConnectSocket, liveCompanyId, queryClient, visible]);
 
   useEffect(() => {
     if (!visible) {
