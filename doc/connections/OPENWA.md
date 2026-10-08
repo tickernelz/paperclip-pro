@@ -472,6 +472,7 @@ Every call is audited as `tool_called`.
 | `openwa_describe` | read | Argument schema and gates of one operation. |
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
 | `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders and custom instructions; an empty call returns the current settings. |
+| `openwa_autonomy_window` | write | Owner runs only: open, close or list autonomy windows; while a window is open, plain confirmation cards in its issue trees are auto-accepted and audited (destructive ones still wait). |
 | `openwa_linked_list` | read | Owner runs only: list linked read-only numbers and their board-allowed chats. |
 | `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first; media messages carry `media.kind`. |
 | `openwa_linked_get_media` | read | Owner runs only: store one message's media from an allowed linked chat as an attachment on the run's task, same result shape as `openwa_get_media`. |

@@ -56,6 +56,7 @@ import {
 } from "./gateway.js";
 import { openwaCallTool, openwaCatalogTool, openwaDescribeTool } from "./call.js";
 import { assertOpenwaConfigOwnerRun, openwaEndpointConfigTool, refuseOpenwaUiOnlyConfig } from "./config-tool.js";
+import { openwaAutonomyWindowTool } from "./autonomy-window-tool.js";
 import { openwaLinkedGetMediaTool, openwaLinkedListTool, openwaLinkedReadTool, type OpenwaLinkedService } from "./linked.js";
 import { maskOpenwaDigits } from "./guidance.js";
 import { openwaAttachmentLocalPaths, type OpenwaIngestedMedia, type OpenwaMediaService } from "./media.js";
@@ -1441,6 +1442,7 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_handoff: openwaHandoff,
   openwa_catalog: (ctx, args) => openwaCatalogTool(ctx, args),
   openwa_endpoint_config: (ctx, args) => openwaEndpointConfigTool(ctx, args),
+  openwa_autonomy_window: (ctx, args) => openwaAutonomyWindowTool(ctx, args),
   openwa_describe: (ctx, args) => openwaDescribeTool(ctx, args),
   openwa_call: (ctx, args) => openwaCallTool(ctx, args),
   openwa_linked_list: (ctx) => openwaLinkedListTool(ctx, openwaToolLinked(ctx.db)),

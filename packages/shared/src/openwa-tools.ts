@@ -188,6 +188,22 @@ export const OPENWA_TOOLS = [
       customInstructions: z.string().max(OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
     },
   ),
+  tool(
+    "autonomy_window",
+    "write",
+    "Owner-triggered runs only: open, close or list autonomy windows. While open, plain confirmation cards in the named issue trees are auto-accepted; destructive ones still wait. Close without issues closes all.",
+    {
+      operation: z.enum(["open", "close", "list"]),
+      issues: z.array(z.string().min(1).max(200)).min(1).max(20).optional().describe("identifiers or ids"),
+      hours: z.number().int().min(1).max(24).optional(),
+      maxAccepts: z.number().int().min(1).max(1000).optional(),
+      idempotencyKey: uuid.optional(),
+    },
+    (value, ctx) => {
+      if (value.operation === "open" && !value.issues) ctx.addIssue({ code: "custom", message: "open needs issues" });
+      if (value.operation !== "list" && !value.idempotencyKey) ctx.addIssue({ code: "custom", message: "idempotencyKey is required for open and close" });
+    },
+  ),
   tool("linked_list", "read", "Owner-triggered runs only: list linked read-only WhatsApp numbers and the chats the board allowed on each.", {}),
   tool(
     "linked_read",

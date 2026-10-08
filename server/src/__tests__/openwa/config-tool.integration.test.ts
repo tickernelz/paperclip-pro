@@ -13,7 +13,9 @@ import {
   chatDeliveries,
   chatEndpointResources,
   chatEndpoints,
+  chatIdentityLinks,
   chatSenderRules,
+  issueAutonomyWindows,
   companies,
   companyMemberships,
   companySecretBindings,
@@ -334,6 +336,52 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
       .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "config_changed")))
       .orderBy(asc(chatAuditEntries.occurredAt));
     expect(audits[1]!.content).toEqual({ before: [{ list: "deny", e164: "+" + TARGET_PHONE, label: "spam" }], after: [] });
+  }, 90_000);
+
+  it("lets only a linked owner's run open, list and close autonomy windows attributed to that owner", async () => {
+    const t = await setup();
+    const c = await conversation(t, OWNER_DM);
+    const [root] = await db.insert(issues).values({ companyId: t.companyId, title: "Ship the release", status: "todo" }).returning();
+    const open = { operation: "open", issues: [root!.id], hours: 6, idempotencyKey: randomUUID() };
+
+    for (const triggerClass of ["other", "grant"] as const) {
+      const binding = await run(t, c, triggerClass, triggerClass === "grant" ? [randomUUID()] : []);
+      expect(await rejection(executeOpenwaTool(db, binding, "openwa_autonomy_window", open))).toMatchObject({ status: 403, code: "owner_only" });
+    }
+    const unlinked = await run(t, c, "owner", [], randomUUID());
+    expect(await rejection(executeOpenwaTool(db, unlinked, "openwa_autonomy_window", open))).toMatchObject({ status: 403, code: "owner_only" });
+    expect(await db.select().from(issueAutonomyWindows).where(eq(issueAutonomyWindows.companyId, t.companyId))).toEqual([]);
+
+    const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_DM.split("@")[0], expiresInSeconds: 1_800 }, t.userId);
+    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    await t.service.confirmIdentityLink(token, t.userId);
+    const [link] = await db
+      .select({ principalId: chatIdentityLinks.principalId })
+      .from(chatIdentityLinks)
+      .where(and(eq(chatIdentityLinks.endpointId, t.endpointId), eq(chatIdentityLinks.paperclipUserId, t.userId)));
+    const binding = await run(t, c, "owner", [], link!.principalId);
+
+    const opened = await executeOpenwaTool(db, binding, "openwa_autonomy_window", open);
+    expect(opened).toMatchObject({ opened: [{ issue: root!.id, status: "live", acceptCount: 0 }] });
+    expect(await executeOpenwaTool(db, binding, "openwa_autonomy_window", open)).toMatchObject({ replayed: true });
+    const windows = await db.select().from(issueAutonomyWindows).where(eq(issueAutonomyWindows.companyId, t.companyId));
+    expect(windows).toHaveLength(1);
+    expect(windows[0]).toMatchObject({ rootIssueId: root!.id, grantedByUserId: t.userId, grantedVia: "whatsapp", status: "live" });
+    expect(windows[0]!.expiresAt.getTime() - Date.now()).toBeGreaterThan(5.9 * 3_600_000);
+
+    expect(await executeOpenwaTool(db, binding, "openwa_autonomy_window", { operation: "list" })).toMatchObject({ windows: [{ windowId: windows[0]!.id }] });
+    const closed = await executeOpenwaTool(db, binding, "openwa_autonomy_window", { operation: "close", idempotencyKey: randomUUID() });
+    expect(closed).toMatchObject({ closed: [{ windowId: windows[0]!.id, status: "revoked" }] });
+
+    const activity = await db.select().from(activityLog).where(eq(activityLog.companyId, t.companyId));
+    const transitions = activity.filter((row) => row.action.startsWith("autonomy_window."));
+    expect(transitions.map((row) => [row.action, row.actorType, row.actorId])).toEqual(
+      expect.arrayContaining([
+        ["autonomy_window.opened", "user", t.userId],
+        ["autonomy_window.closed", "user", t.userId],
+      ]),
+    );
+    expect(transitions.every((row) => (row.details as Record<string, unknown>).viaRunId === binding.runId)).toBe(true);
   }, 90_000);
 
   it("refuses member and grant runs with owner_only and changes nothing", async () => {
