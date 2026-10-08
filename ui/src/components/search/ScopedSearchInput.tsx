@@ -246,19 +246,19 @@ export function ScopedSearchInput({
     setHeldText("");
   };
 
-  const commitToken = (token: string) => {
+  const commitToken = (token: string, keepOpen = true) => {
     setTokens((current) => [...current, token]);
     releaseHeldText();
-    setOpen(true);
+    setOpen(keepOpen);
     focusInput();
   };
 
-  const selectOption = (option: ScopedSearchOption) => {
+  const selectOption = (option: ScopedSearchOption, keepOpen = true) => {
     if (option.field) {
       startField(option.field, draft.slice(0, currentSearchToken(draft).start));
       return;
     }
-    if (option.token) commitToken(option.token);
+    if (option.token) commitToken(option.token, keepOpen);
   };
 
   const handleDraftChange = (nextValue: string) => {
@@ -325,13 +325,13 @@ export function ScopedSearchInput({
     if (!composing && event.key === "Enter") {
       if (listVisible && activeIndex >= 0 && options[activeIndex]) {
         event.preventDefault();
-        selectOption(options[activeIndex]!);
+        selectOption(options[activeIndex]!, false);
         return;
       }
       let nextRaw = raw;
       if (pending?.kind === "text" && draft.trim()) {
         const token = formatSearchToken(pending.key, draft);
-        commitToken(token);
+        commitToken(token, false);
         nextRaw = composeRaw([...tokens, token], null, heldText);
       } else if (!pending) {
         const split = splitSearchInput(draft, operatorKeys);
