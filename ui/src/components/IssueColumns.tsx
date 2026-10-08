@@ -179,6 +179,43 @@ export function IssueColumnPicker({
   );
 }
 
+/** Pulsing blue dot marking a task with a run in progress. */
+export function LiveRunDot() {
+  return (
+    <span className="relative flex h-2 w-2">
+      <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-blue-400 opacity-75" />
+      <span
+        className={cn(
+          "relative inline-flex h-2 w-2 rounded-full",
+          "bg-blue-500",
+        )}
+      />
+    </span>
+  );
+}
+
+/** Live badge shown on task rows whose own run is in progress. */
+export function LiveRunBadge() {
+  return (
+    <Badge variant="ghost"
+      className={cn(
+        "px-1.5 sm:gap-1.5 sm:px-2",
+        "bg-blue-500/10",
+      )}
+    >
+      <LiveRunDot />
+      <span
+        className={cn(
+          "hidden text-(length:--text-micro) font-medium sm:inline",
+          "text-blue-600 dark:text-blue-400",
+        )}
+      >
+        Live
+      </span>
+    </Badge>
+  );
+}
+
 export function InboxIssueMetaLeading({
   issue,
   isLive,
@@ -215,32 +252,7 @@ export function InboxIssueMetaLeading({
           {issue.identifier ?? issue.id.slice(0, 8)}
         </span>
       ) : null}
-      {isLive && (
-        <Badge variant="ghost"
-          className={cn(
-            "px-1.5 sm:gap-1.5 sm:px-2",
-            "bg-blue-500/10",
-          )}
-        >
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-pulse rounded-full bg-blue-400 opacity-75" />
-            <span
-              className={cn(
-                "relative inline-flex h-2 w-2 rounded-full",
-                "bg-blue-500",
-              )}
-            />
-          </span>
-          <span
-            className={cn(
-              "hidden text-(length:--text-micro) font-medium sm:inline",
-              "text-blue-600 dark:text-blue-400",
-            )}
-          >
-            Live
-          </span>
-        </Badge>
-      )}
+      {isLive && <LiveRunBadge />}
       {showSubtreeLiveChip && !isLive && subtreeLiveCount > 0 && (
         <Badge variant="outline"
           className={cn(

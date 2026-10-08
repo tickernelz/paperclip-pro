@@ -2633,6 +2633,41 @@ describe("IssuesList", () => {
       root.unmount();
     });
   });
+
+  it.each([
+    ["list view", {}, undefined, true],
+    ["the Live filter", { liveOnly: true }, undefined, false],
+    ["an active search", {}, "needle", false],
+    ["board view", { viewMode: "board" }, undefined, false],
+  ] as const)("renders the list header slot only when appropriate: %s", async (_label, storedViewState, search, visible) => {
+    localStorage.setItem("paperclip:test-issues:company-1", JSON.stringify(storedViewState));
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[createIssue({ id: "issue-a", title: "needle task" })]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        rowPresentation="task"
+        initialSearch={search}
+        listHeader={<div data-testid="list-header">Live now</div>}
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(
+        container.querySelector("[data-testid='issue-row'], [data-testid='kanban-board']") !== null
+          || container.textContent?.includes("No tasks match the current filters or search."),
+      ).toBe(true);
+    });
+    expect(container.querySelector("[data-testid='list-header']") !== null).toBe(visible);
+
+    act(() => {
+      root.unmount();
+    });
+  });
 });
 
 describe("legacy issue age separators", () => {

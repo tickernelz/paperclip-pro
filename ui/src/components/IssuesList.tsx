@@ -128,7 +128,7 @@ const INITIAL_ISSUE_ROW_RENDER_LIMIT = 100;
 const ISSUE_ROW_RENDER_BATCH_SIZE = 150;
 const ISSUE_SCROLL_LOAD_THRESHOLD_PX = 320;
 
-function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | null {
+export function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | null {
   if (!element || typeof window === "undefined") return null;
   let current = element.parentElement;
   while (current && current !== document.body && current !== document.documentElement) {
@@ -596,6 +596,7 @@ interface IssuesListProps {
    * the merged Tasks surface uses to put its Views control there (PAP-670).
    */
   toolbarContext?: ReactNode;
+  listHeader?: ReactNode;
   onUpdateIssue: (id: string, data: Record<string, unknown>) => void;
 }
 
@@ -807,6 +808,7 @@ function StreamlinedIssuesList({
   rowPresentation = "legacy",
   toolbarContext,
   toolbarPresentation = "legacy",
+  listHeader,
   onUpdateIssue,
 }: IssuesListProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -2216,6 +2218,9 @@ function StreamlinedIssuesList({
         )}
       />
 
+      {listHeader && viewState.viewMode === "list" && !viewState.liveOnly && normalizedIssueSearch.length === 0
+        ? listHeader
+        : null}
       {(isLoading || externalObjectFilterLoading) && <PageSkeleton variant="issues-list" />}
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {remoteIssueSearchActive && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (
