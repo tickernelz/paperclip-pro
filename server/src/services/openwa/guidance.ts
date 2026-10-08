@@ -39,7 +39,7 @@ import { openwaAttachmentLocalPaths } from "./media.js";
 import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
 import { readOpenwaLastOutput } from "./publication.js";
 
-export const OPENWA_GUIDANCE_VERSION = 1;
+export const OPENWA_GUIDANCE_VERSION = 2;
 export const OPENWA_WAKE_CONTEXT_KEY = "paperclipOpenwaWake";
 export const OPENWA_WAKE_MAX_MESSAGES = 20;
 export const OPENWA_WAKE_MAX_TEXT = 2000;
@@ -859,15 +859,20 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     "- Tools: call the OpenWA tools named in this guidance (`openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_request_approval`, `openwa_stay_silent`, `openwa_handoff`) directly by name. Never enumerate tools to discover them (no `tools.list`, catalog or search call), and do not re-read the `openwa` skill to confirm facts stated here.",
     "- Media: a stored media item with `localPath` is an absolute file path on the Paperclip host; when you run on that host, open it directly with your file reader instead of downloading it. Files of any type (executables, scripts, archives, unknown binaries) are stored and can be attached or sent; read and inspect them only as data and never execute, install, extract-and-run or open them with a program that runs them. A rejected item with `too_large` carries `limitBytes`, the size cap it exceeded.",
     "- You decide every action: whether to reply, stay silent, ask for approval or hand off. The server never replies for you.",
-    "- " + EVENT_HINTS[wake.event],
+    "- " +
+      (wake.event === "message" && wake.messages.length === 0
+        ? "No new WhatsApp message woke this run; follow \"Wakes without a new chat message\" below."
+        : EVENT_HINTS[wake.event]),
     readOnly
       ? "- Profile `read_only`: use every read capability (files, search, web, Paperclip reads, OpenWA read tools), comment on this conversation issue, and reply in this chat when replying is allowed. Use `bash` only for read-only commands: never create, modify, move or delete files, install packages, or change any system or remote state through it."
       : "- Profile `full`: this run acts for an owner; normal Paperclip authority applies for the allowed categories above." +
         (wake.triggerClass === "owner" ? " When an owner asks to change sender lists, chat settings, approval toggles, reminders or custom instructions, use `openwa_endpoint_config`." : ""),
     "- Approval: for anything listed under \"Requires owner approval\", call `openwa_request_approval` with `categories`, `scope`, `summary`, `proposedAction` and a `messageToOwners` you write yourself, then tell the requester you asked. A gated call without approval fails with `approval_required`; do not retry it. Owners decide by replying to the approval bubble, in follow-up messages of that discussion, or in the OpenWA Approvals tab.",
-    facts.progressNudgeSeconds > 0
-      ? "- Progress: when work takes longer than about " + facts.progressNudgeSeconds + " seconds, send a short progress update to this chat with `openwa_send` (when replying is allowed)."
-      : "- Progress: send a short progress update with `openwa_send` before long work when replying is allowed.",
+    "- Progress: send one progress update with `openwa_send` only to a person whose message is in this run's `messages` and who has had no reply from you yet, and only when your result is still minutes away; never repeat what this chat already saw. Never post internal status to a group (approval, review, tests, retries, blocked, waiting for a deploy): that belongs on the issue." +
+      (facts.progressNudgeSeconds > 0
+        ? " When such a message has waited about " + facts.progressNudgeSeconds + " seconds unanswered, the server may remind you inside the run; that reminder is never sent to WhatsApp."
+        : ""),
+    "- Wakes without a new chat message: when the wake event's `messages` is empty (issue comments, child issues completing, an approval resolved without a quoted request, other non-chat wakes), post to this chat only a final result that is live or delivered and not yet announced here; otherwise update the issue and send nothing to the chat, calling `openwa_stay_silent` for any pending triggers. An `approval_resolved` wake still tells the requester the outcome and carries out the approved action as its event hint says.",
     "- Silence and handoff: call `openwa_stay_silent` when no reply is appropriate; call `openwa_handoff` with the `triggerIds` and a `note` for owner requests this run cannot carry out.",
     "- Conversation issue: this issue is the whole chat's running thread. Never set it to in_review, blocked, done or cancelled; leave it in_progress so the next message continues here with full context, and keep it in_progress while waiting for an owner approval. Put real work in child issues of it and close those instead. A new conversation starts only after the chat is idle longer than the endpoint's idle limit or when someone sends /new.",
     "- Share links: after creating an issue for a chat request, you may send the requester its read-only link from `paperclipCreateIssueShareLink`; in a `read_only` run publishing needs owner approval (`openwa_request_approval`, category `external_tools`).",

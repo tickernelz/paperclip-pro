@@ -185,12 +185,18 @@ of the person you answer.
 
 ## Progress, silence and handoff
 
-- When work takes longer than about a minute and nothing in the chat has
-  acknowledged the request yet, send one short progress update with
-  `openwa_send` (when replying is allowed). Skip it when you are about to reply,
-  and never restate what was already sent. The server may remind you inside the
-  run while a trigger waits unacknowledged; that reminder is never sent to
-  WhatsApp and stops once you send to the chat.
+- Send one progress update with `openwa_send` only to a person whose message
+  is in this run's `messages` and who has had no reply from you yet, and only
+  when your result is still minutes away. Never restate what was already sent,
+  and never post internal status to a group (approval, review, tests, retries,
+  blocked, waiting for a deploy); that belongs on the issue. The server may
+  remind you inside the run while a trigger waits unacknowledged; that reminder
+  is never sent to WhatsApp and stops once you send to the chat.
+- Wakes without a new chat message (empty `messages`: issue comments, child
+  issues completing, other non-chat wakes) post to the chat only a final result
+  that is live or delivered and not yet announced there; otherwise update the
+  issue and send nothing to the chat. An `approval_resolved` wake still tells
+  the requester the outcome as described under Approvals.
 - `openwa_stay_silent({triggerIds?})` marks triggers you deliberately leave
   unanswered (default: every visible pending trigger of this run). Use it when no
   reply is appropriate.
