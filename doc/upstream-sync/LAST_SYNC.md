@@ -38,11 +38,19 @@ Fork migrations end at `0290_dizzy_ultragirl`. Upstream migrations added after t
 
 No upstream migration SQL had to be edited. Each one creates only objects the fork did not have, or already guards with `IF [NOT] EXISTS` or `duplicate_object`. Tests that read migration files by name were updated to the new names.
 
+## Fork behaviour to keep
+
+These fork features deliberately differ from upstream. Keep them when upstream touches the same code.
+
+| Feature | Code | Tests | Why |
+| --- | --- | --- | --- |
+| Ancestor handoff mention: a comment that mentions the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or `agent://` link) is forwarded to the nearest ancestor that agent owns and wakes it with `issue_commented` (`source: comment.ancestor_handoff`). Every other mention stays context only, as upstream `2de43fc90` intends. | `routeAncestorHandoffMentions` in `server/src/routes/issues.ts` (both comment paths), `server/src/services/issue-ancestor-handoff.ts` | `issue-ancestor-handoff.test.ts`, `issue-ancestor-handoff-routes.test.ts`, the `ancestor assignee handoff` block in `issue-update-comment-wakeup-routes.test.ts` | Owner decision 2026-10-08: workers hand results back up the tree (ZHA-723 → ZHA-379 incident). |
+
 ## Procedure
 
 1. `git fetch upstream`. Create the work branch from `origin/main` in its own worktree; never use the main checkout.
 2. Create a renamed copy of upstream: `git worktree add -b upstream-renamed <dir> upstream/master`. Copy in `scripts/fork/rename-to-paperclip-pro.mjs` from the fork, run it, remove the copied script, restore `pnpm-lock.yaml` and `skills-releases/`, then commit `chore(sync): apply fork package names to upstream`. That commit's parent is upstream, so the merge makes upstream an ancestor.
-3. `git merge --no-ff --no-commit upstream-renamed`. Re-render conflicts with `git checkout --conflict=diff3`. Resolve them per file: keep every fork feature and add the upstream change on top. Record each real fork-vs-upstream decision in `doc/upstream-sync/<date>-conflicts.md`.
+3. `git merge --no-ff --no-commit upstream-renamed`. Re-render conflicts with `git checkout --conflict=diff3`. Resolve them per file: keep every fork feature (see [Fork behaviour to keep](#fork-behaviour-to-keep)) and add the upstream change on top. Record each real fork-vs-upstream decision in `doc/upstream-sync/<date>-conflicts.md`.
 4. Migrations: rename upstream migrations added after the merge base to the next free fork numbers, in upstream order. Rebuild `_journal.json` entries (idx, tag, increasing `when`). Drop conflicting upstream snapshots. Regenerate the newest snapshot from the merged schema with drizzle-kit `generateDrizzleJson`, using the last fork snapshot id as `prevId`. Gates: `check:migrations` and `src/migration-snapshot-drift.test.ts`.
 5. Regenerate derived files; never hand-merge them: `pnpm install --no-frozen-lockfile` for the lockfile, `node scripts/ingest-app-definitions.mjs --definitions-only` (then revert JSON definition drift, keeping only `app-definitions.generated.ts`), `packages/paperclip-runner` `generate-protocol-manifest.mjs`, `generate-capability-contract.mjs`, `generate-capability-inventory.mjs` (via the skill inventory), and `pnpm generate:mcp-tools`.
 6. Gates (no full suite locally): `pnpm -r typecheck`, `check:token-gates`, db `check:migrations`, `check:mcp-tools`, `check:module-boundaries`, `check-no-git-push`, `release-package-map check`, docs-lane suites, capability inventory/contract checks, ui build. Run targeted vitest on the files touched by conflicts plus `server/src/__tests__/openwa/*`, `stranded-reconciler-scope`, `openwa-authority`, `chat-channels.integration` and `packages/adapters/omp-local`.

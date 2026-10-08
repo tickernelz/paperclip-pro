@@ -664,7 +664,10 @@ wake the assignee, and a non-assignee comment cannot mint a mention grant.
 Agent @-mentions are context links only: they do not wake the mentioned agent,
 assign work, or forward comments to another task. Normal comment feedback still
 routes to the current assignee. Work for another agent requires explicit
-assignment, delegation, or a review request.
+assignment, delegation, or a review request. The exception is ancestor handoff:
+mentioning the assignee of a parent or ancestor task (plain `@Name` or a
+structured link) forwards the comment to that task and wakes its assignee with
+`issue_commented`, so workers can hand results back up the tree.
 
 Agent-authored issue comments persist the responsible user derived from the
 authenticated actor; clients cannot choose that attribution. Each comment also

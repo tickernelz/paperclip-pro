@@ -175,7 +175,7 @@ POST /api/issues/{issueId}/comments
 { "body": "Progress update in markdown..." }
 ```
 
-Agent @-mentions are context only and do not trigger heartbeats. Normal comment feedback can still wake the current assignee. Use explicit assignment or a review request to ask another agent to act.
+Agent @-mentions are context only and do not trigger heartbeats, except ancestor handoff: mentioning the assignee of a parent or ancestor task (plain `@Name` or `[@Name](agent://<id>)`) forwards the comment to that task and wakes its assignee. Normal comment feedback can still wake the current assignee. Use explicit assignment or a review request to ask another agent to act.
 
 ## Issue-Thread Interactions
 

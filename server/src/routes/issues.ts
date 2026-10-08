@@ -287,6 +287,7 @@ import {
 import { retainBacklogHumanAssignment } from "../services/human-directed-work.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
 import { shouldWakeAssigneeForIssueComment } from "../services/issue-comment-wakeup.js";
+import { matchAncestorHandoffMentions } from "../services/issue-ancestor-handoff.js";
 import { createSecretProposalsService } from "../services/secret-proposals.js";
 import { notifySecretProposalResolution } from "../services/secret-proposal-notifications.js";
 import {
@@ -6384,6 +6385,155 @@ export function issueRoutes(
     if (!identifier) return `\`${issue.id}\``;
     const prefix = identifier.split("-")[0] || "PAP";
     return `[${identifier}](/${prefix}/issues/${identifier})`;
+  }
+
+  function issueCommentMarkdownLink(
+    issue: { id: string; identifier?: string | null },
+    commentId: string,
+  ) {
+    const identifier = issue.identifier?.trim();
+    if (!identifier) return `\`${issue.id}\``;
+    const prefix = identifier.split("-")[0] || "PAP";
+    return `[${identifier}](/${prefix}/issues/${identifier}#comment-${commentId})`;
+  }
+
+  async function routeAncestorHandoffMentions(
+    req: Request,
+    issue: {
+      id: string;
+      companyId: string;
+      identifier?: string | null;
+      assigneeAgentId: string | null;
+    },
+    comment: IssueComment,
+  ) {
+    try {
+      const body = comment.body ?? "";
+      if (!body.includes("@") && !body.includes("agent://")) return;
+      const ancestors = await svc.getAncestors(issue.id);
+      const excluded = new Set(
+        [comment.authorAgentId, issue.assigneeAgentId].filter(
+          (agentId): agentId is string => Boolean(agentId),
+        ),
+      );
+      const nearestByAgent = new Map<string, (typeof ancestors)[number]>();
+      for (const ancestor of ancestors) {
+        const agentId = ancestor.assigneeAgentId;
+        if (!agentId || excluded.has(agentId) || nearestByAgent.has(agentId)) continue;
+        nearestByAgent.set(agentId, ancestor);
+      }
+      if (nearestByAgent.size === 0) return;
+      const candidates = (
+        await Promise.all(
+          [...nearestByAgent].map(async ([agentId, ancestor]) => {
+            const agent = await agentsSvc.getById(agentId);
+            if (!agent || agent.companyId !== issue.companyId) return null;
+            return { agentId, name: agent.name, issue: ancestor };
+          }),
+        )
+      ).filter((candidate) => candidate !== null);
+      const matched = matchAncestorHandoffMentions(body, candidates);
+      for (const candidate of matched) {
+        await forwardAncestorHandoff(req, issue, comment, candidate.agentId, candidate.issue.id);
+      }
+    } catch (err) {
+      logger.warn(
+        { err, issueId: issue.id, commentId: comment.id },
+        "failed to route ancestor handoff mentions",
+      );
+    }
+  }
+
+  async function forwardAncestorHandoff(
+    req: Request,
+    source: { id: string; companyId: string; identifier?: string | null },
+    comment: IssueComment,
+    agentId: string,
+    ancestorId: string,
+  ) {
+    try {
+      const ancestor = await svc.getById(ancestorId);
+      if (
+        !ancestor ||
+        ancestor.companyId !== source.companyId ||
+        ancestor.assigneeAgentId !== agentId
+      ) return;
+      const decision = await decideIssueAccess(req, ancestor, "issue:comment");
+      if (!decision.allowed) {
+        logger.warn(
+          { issueId: source.id, ancestorIssueId: ancestor.id, agentId, reason: decision.reason },
+          "skipped ancestor handoff without comment access",
+        );
+        return;
+      }
+      const forwarded = await svc.addComment(
+        ancestor.id,
+        `Forwarded from ${issueCommentMarkdownLink(source, comment.id)}:\n\n${comment.body}`,
+        {
+          agentId: comment.authorAgentId ?? undefined,
+          userId: comment.authorUserId ?? undefined,
+          runId: comment.createdByRunId,
+          onBehalfOfUserId: comment.onBehalfOfUserId,
+        },
+        {
+          authorType: comment.authorType,
+          sourceTrust: comment.sourceTrust,
+          authorizationReason: decision.reason,
+        },
+      );
+      await issueReferencesSvc.syncComment(forwarded.id).catch((err) =>
+        logger.warn(
+          { err, issueId: ancestor.id, commentId: forwarded.id },
+          "could not index forwarded ancestor handoff comment",
+        ),
+      );
+      const actor = getActorInfo(req);
+      await heartbeat.wakeup(agentId, {
+        source: "automation",
+        triggerDetail: "system",
+        reason: "issue_commented",
+        payload: { issueId: ancestor.id, commentId: forwarded.id, mutation: "comment" },
+        requestedByActorType: actor.actorType,
+        requestedByActorId: actor.actorId,
+        contextSnapshot: {
+          issueId: ancestor.id,
+          taskId: ancestor.id,
+          commentId: forwarded.id,
+          wakeCommentId: forwarded.id,
+          wakeReason: "issue_commented",
+          source: "comment.ancestor_handoff",
+          sourceIssueId: source.id,
+          sourceCommentId: comment.id,
+          ...(ancestor.externalConversationState && ancestor.identifier
+            ? { taskKey: ancestor.identifier }
+            : {}),
+        },
+      });
+      await logActivity(db, {
+        companyId: ancestor.companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "issue.comment_added",
+        entityType: "issue",
+        entityId: ancestor.id,
+        details: {
+          commentId: forwarded.id,
+          identifier: ancestor.identifier,
+          issueTitle: ancestor.title,
+          source: "comment.ancestor_handoff",
+          sourceIssueId: source.id,
+          sourceCommentId: comment.id,
+        },
+      });
+    } catch (err) {
+      logger.warn(
+        { err, issueId: source.id, ancestorIssueId: ancestorId, agentId },
+        "failed to forward ancestor handoff mention",
+      );
+    }
   }
 
   function appendWatchdogDiscoveryContext(input: {
@@ -15888,6 +16038,11 @@ export function issueRoutes(
         ),
       );
 
+      if (commentBody && comment) {
+        const handoffComment = comment;
+        void wakeDispatch.then(() => routeAncestorHandoffMentions(req, issue, handoffComment));
+      }
+
       await queueTaskWatchdogEvaluation(issue, actor.runId);
       const changes = issueResponse.changes ?? {};
       const delivery = comment
@@ -19949,6 +20104,8 @@ export function issueRoutes(
           "failed to dispatch the issue comment wake",
         ),
       );
+
+      void wakeDispatch.then(() => routeAncestorHandoffMentions(req, currentIssue, comment));
 
       await queueTaskWatchdogEvaluation(currentIssue, actor.runId);
       const delivery = await resolveMessageDeliveryDisposition({

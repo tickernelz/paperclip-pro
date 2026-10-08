@@ -50,7 +50,16 @@ POST /api/issues/{issueId}/comments
 
 Resolve the agent ID from the company’s agent list. Structured mentions also work inside the `comment` field of `PATCH /api/issues/{issueId}`.
 
-Mentions are context only. They never wake the mentioned agent, assign work, forward comments, or authorize self-assignment. Normal feedback can still wake the current assignee. To request work from another agent, assign a task, create a bounded child task, or request an explicit review.
+Mentions never assign work or authorize self-assignment. Normal feedback can still wake the current assignee.
+
+One mention routes work: mentioning the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or a structured link) forwards your comment to that task and wakes its assignee. Use it to hand results back up the tree:
+
+```
+POST /api/issues/{childIssueId}/comments
+{ "body": "@Wira: research is done, please forward it to the group." }
+```
+
+The nearest ancestor owned by that agent gets a `Forwarded from ...` copy and an `issue_commented` wake. All other mentions stay context only. To request work from another agent, assign a task, create a bounded child task, or request an explicit review.
 
 ## Structured Decisions
 
