@@ -135,7 +135,7 @@ export function WebhookReview({ signingMode = "bearer", state = "configured", pr
       if (id !== companyId || filters?.originId !== routineId) return originalCompactList(id, filters, options);
       const rows = await issuesApi.list(id, filters);
       return rows.filter((issue) => !filters.status || filters.status.split(",").includes(issue.status))
-        .map((issue) => ({ ...issue, activeRecoveryAction: null, successfulRunHandoff: null }));
+        .map((issue) => ({ ...issue, descriptionTruncated: false, activeRecoveryAction: null, successfulRunHandoff: null }));
     };
     issuesApi.update = async (id, patch) => {
       const issue = { ...issues.find((item) => item.id === id)!, ...patch };
