@@ -688,6 +688,78 @@ describe("IssuesList", () => {
     });
   });
 
+  it("keeps the server relevance order while searching without a picked sort", async () => {
+    const bestMatch = createIssue({
+      id: "issue-best",
+      identifier: "ZHA-9",
+      title: "Internal status best match",
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    const weakerMatch = createIssue({
+      id: "issue-weaker",
+      identifier: "ZHA-140",
+      title: "Recently touched weaker match",
+      updatedAt: new Date("2026-04-07T00:00:00.000Z"),
+    });
+
+    mockIssuesApi.list.mockResolvedValue([bestMatch, weakerMatch]);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        initialSearch="internal status"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      const titles = Array.from(container.querySelectorAll('[data-testid="issue-row"] > span:first-child'))
+        .map((node) => node.textContent);
+      expect(titles).toEqual(["Internal status best match", "Recently touched weaker match"]);
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("sends typed filter tokens to the server instead of filtering the capped page", async () => {
+    mockIssuesApi.list.mockResolvedValue([
+      createIssue({ id: "issue-done", identifier: "PAP-7", title: "Finished auth work", status: "done" }),
+    ]);
+
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[]}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        initialSearch='title:"auth work" status:done priority:high'
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+        q: 'title:"auth work"',
+        status: "done",
+        priority: "high",
+        projectId: undefined,
+        limit: 200,
+      }, { signal: expect.any(AbortSignal) });
+      expect(container.textContent).toContain("Finished auth work");
+    });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("uses the supplied create defaults and label for sub-issue lists", async () => {
     const { root } = renderWithQueryClient(
       <IssuesList

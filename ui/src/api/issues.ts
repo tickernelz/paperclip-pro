@@ -85,6 +85,7 @@ export type ResolveRecoveryActionResponse = {
 export type IssueListFilters = {
   attention?: "blocked";
   status?: string;
+  priority?: string;
   projectId?: string;
   parentId?: string;
   assigneeAgentId?: string;
@@ -94,6 +95,9 @@ export type IssueListFilters = {
   inboxArchivedByUserId?: string;
   unreadForUserId?: string;
   labelId?: string;
+  createdByAgentId?: string;
+  createdByUserId?: string;
+  updatedSince?: string;
   workspaceId?: string;
   executionWorkspaceId?: string;
   originKind?: string;
@@ -118,6 +122,7 @@ function issueListSearchParams(filters?: IssueListFilters) {
   const params = new URLSearchParams();
   if (filters?.attention) params.set("attention", filters.attention);
   if (filters?.status) params.set("status", filters.status);
+  if (filters?.priority) params.set("priority", filters.priority);
   if (filters?.projectId) params.set("projectId", filters.projectId);
   if (filters?.parentId) params.set("parentId", filters.parentId);
   if (filters?.assigneeAgentId)
@@ -133,6 +138,9 @@ function issueListSearchParams(filters?: IssueListFilters) {
   if (filters?.unreadForUserId)
     params.set("unreadForUserId", filters.unreadForUserId);
   if (filters?.labelId) params.set("labelId", filters.labelId);
+  if (filters?.createdByAgentId) params.set("createdByAgentId", filters.createdByAgentId);
+  if (filters?.createdByUserId) params.set("createdByUserId", filters.createdByUserId);
+  if (filters?.updatedSince) params.set("updatedSince", filters.updatedSince);
   if (filters?.workspaceId) params.set("workspaceId", filters.workspaceId);
   if (filters?.executionWorkspaceId)
     params.set("executionWorkspaceId", filters.executionWorkspaceId);

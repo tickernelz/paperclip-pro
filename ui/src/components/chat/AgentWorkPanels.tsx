@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowUpDown, File, FileText, Image, Search, Video } from "lucide-react";
+import { ArrowUpDown, File, FileText, Image, Video } from "lucide-react";
 import type { CompanyArtifact, Issue } from "@tickernelz/paperclip-pro-shared";
 import { artifactsApi } from "@/api/artifacts";
 import { issuesApi } from "@/api/issues";
@@ -8,7 +8,13 @@ import { projectsApi } from "@/api/projects";
 import { IssueFiltersPopover } from "@/components/IssueFiltersPopover";
 import { StatusIcon } from "@/components/StatusIcon";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { ScopedSearchInput, type ScopedSearchValue } from "@/components/search/ScopedSearchInput";
+import {
+  hasSearchFilters,
+  searchFiltersToIssueListParams,
+  type SearchOperatorKey,
+  type SearchQueryParserContext,
+} from "@/lib/search-query-parser";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
   applyIssueFilters,
@@ -29,6 +35,8 @@ import { cn, formatDate, relativeTime } from "@/lib/utils";
  */
 
 const AGENT_TASK_LIMIT = 200;
+const AGENT_TASK_SEARCH_OPERATORS: readonly SearchOperatorKey[] = ["status", "priority", "project", "updated", "is"];
+const EMPTY_SEARCH: ScopedSearchValue = { raw: "", q: "", filters: {} };
 const ARTIFACT_PAGE_SIZE = 100;
 const ARTIFACT_MAX_PAGES = 5;
 
@@ -114,10 +122,13 @@ export function AgentTasksPanel({
   /** The conversation issue itself, which is not one of the agent's tasks. */
   excludeIssueId?: string;
 }) {
-  const [query, setQuery] = useState("");
+  const [search, setSearch] = useState<ScopedSearchValue>(EMPTY_SEARCH);
   const [filters, setFilters] = useState<IssueFilterState>(defaultIssueFilterState);
   const [sortField, setSortField] = useState<AgentTaskSortField>("updated");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [sortPicked, setSortPicked] = useState(false);
+  const searchActive = search.q.length > 0 || hasSearchFilters(search.filters);
+  const searchParams = useMemo(() => searchFiltersToIssueListParams(search.filters), [search.filters]);
 
   const tasksQuery = useQuery({
     queryKey: queryKeys.issues.listParticipatedByAgent(companyId, agentId),
@@ -128,40 +139,51 @@ export function AgentTasksPanel({
       limit: AGENT_TASK_LIMIT,
     }),
   });
+  const searchQuery = useQuery({
+    queryKey: [...queryKeys.issues.listParticipatedByAgent(companyId, agentId), "search", search.q, searchParams],
+    queryFn: () => issuesApi.list(companyId, {
+      ...searchParams,
+      participantAgentId: agentId,
+      ...(search.q ? { q: search.q } : {}),
+      limit: AGENT_TASK_LIMIT,
+    }),
+    enabled: searchActive,
+    placeholderData: (previousData) => previousData,
+  });
   const projectsQuery = useQuery({
     queryKey: queryKeys.projects.list(companyId),
     queryFn: () => projectsApi.list(companyId),
   });
+  const searchContext = useMemo<SearchQueryParserContext>(
+    () => ({ projects: projectsQuery.data }),
+    [projectsQuery.data],
+  );
 
+  const source = searchActive ? searchQuery.data : tasksQuery.data;
   const visible = useMemo(() => {
-    const needle = query.trim().toLowerCase();
-    const scoped = (tasksQuery.data ?? []).filter((task) => {
-      if (task.id === excludeIssueId) return false;
-      if (!needle) return true;
-      return task.title.toLowerCase().includes(needle)
-        || (task.identifier ?? "").toLowerCase().includes(needle);
-    });
-    return sortAgentTasks(applyIssueFilters(scoped, filters), sortField, sortDir);
-  }, [tasksQuery.data, excludeIssueId, query, filters, sortField, sortDir]);
+    const scoped = applyIssueFilters((source ?? []).filter((task) => task.id !== excludeIssueId), filters);
+    return searchActive && !sortPicked ? scoped : sortAgentTasks(scoped, sortField, sortDir);
+  }, [source, excludeIssueId, filters, searchActive, sortPicked, sortField, sortDir]);
 
   const activeFilterCount = countActiveIssueFilters(filters);
   const total = (tasksQuery.data ?? []).filter((task) => task.id !== excludeIssueId).length;
-  // Search and filters run on the most recently updated tasks only.
-  const capped = (tasksQuery.data?.length ?? 0) >= AGENT_TASK_LIMIT;
+  const capped = !searchActive && (tasksQuery.data?.length ?? 0) >= AGENT_TASK_LIMIT;
 
   return (
     <section className="flex flex-col gap-3" aria-label="Agent tasks">
       <div className="flex items-center gap-1">
-        <div className="relative min-w-0 flex-1">
-          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search tasks"
-            aria-label="Search tasks"
-            className="h-8 pl-7 text-sm"
-          />
-        </div>
+        <ScopedSearchInput
+          value={search.raw}
+          onChange={(next) => {
+            setSearch(next);
+            setSortPicked(false);
+          }}
+          context={searchContext}
+          operatorKeys={AGENT_TASK_SEARCH_OPERATORS}
+          placeholder="Search tasks"
+          ariaLabel="Search tasks"
+          className="min-w-0 flex-1"
+        />
         <IssueFiltersPopover
           state={filters}
           onChange={(patch) => setFilters((current) => ({ ...current, ...patch }))}
@@ -189,6 +211,7 @@ export function AgentTasksPanel({
                     sortField === field ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
                   )}
                   onClick={() => {
+                    setSortPicked(true);
                     if (sortField === field) setSortDir(sortDir === "asc" ? "desc" : "asc");
                     else {
                       setSortField(field);
@@ -207,7 +230,7 @@ export function AgentTasksPanel({
         </Popover>
       </div>
 
-      {tasksQuery.isPending ? (
+      {tasksQuery.isPending || (searchActive && searchQuery.isPending) ? (
         <PanelMessage>Loading tasks…</PanelMessage>
       ) : tasksQuery.isError ? (
         <PanelMessage tone="error">Could not load this agent's tasks.</PanelMessage>

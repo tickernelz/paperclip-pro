@@ -77,7 +77,7 @@ vi.mock("@/lib/router", () => ({
 }));
 
 vi.mock("../api/issues", () => ({
-  issuesApi: mockIssuesApi,
+  issuesApi: { ...mockIssuesApi, listCompact: mockIssuesApi.list },
 }));
 
 vi.mock("../api/agents", () => ({
@@ -147,6 +147,22 @@ async function flush() {
   await act(async () => {
     await Promise.resolve();
   });
+}
+
+async function waitForTimedAssertion(assertion: () => void, attempts = 40) {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      assertion();
+      return;
+    } catch (error) {
+      lastError = error;
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 50));
+      });
+    }
+  }
+  throw lastError;
 }
 
 async function waitForAssertion(assertion: () => void, attempts = 20) {
@@ -236,13 +252,36 @@ describe("CommandPalette", () => {
       setQueryButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
-    await waitForAssertion(() => {
+    expect(mockIssuesApi.list).not.toHaveBeenCalledWith("company-1", expect.objectContaining({ q: "pull/3303" }));
+
+    await waitForTimedAssertion(() => {
       expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
         q: "pull/3303",
         limit: 10,
         includeRoutineExecutions: true,
       });
     });
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("loads a bounded compact recent-task list for the empty query", async () => {
+    const { root } = renderWithQueryClient(<CommandPalette />, container);
+
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }));
+    });
+
+    await waitForAssertion(() => {
+      expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
+        limit: 20,
+        sortField: "updated",
+        sortDir: "desc",
+      });
+    });
+    expect(mockIssuesApi.list).not.toHaveBeenCalledWith("company-1");
 
     act(() => {
       root.unmount();
@@ -347,7 +386,7 @@ describe("CommandPalette", () => {
       // Seed the caches so the already-loaded data is available synchronously —
       // this harness's flush model doesn't reliably propagate fresh async fetches.
       queryClient.setQueryData(queryKeys.projects.list("company-1"), projects);
-      queryClient.setQueryData(queryKeys.issues.search("company-1", "mob", undefined, 10), [
+      queryClient.setQueryData([...queryKeys.issues.search("company-1", "mob", undefined, 10), {}], [
         { id: "i1", identifier: "ENG-9", title: "Fix login" },
       ]);
     });
@@ -373,7 +412,7 @@ describe("CommandPalette", () => {
     expect(container.textContent).not.toContain("Billing Service");
 
     // The promoted project renders above the fold — before the Tasks group.
-    await waitForAssertion(() => {
+    await waitForTimedAssertion(() => {
       const text = container.textContent ?? "";
       expect(text).toContain("Fix login");
       expect(text.indexOf("Mobile App")).toBeLessThan(text.indexOf("Fix login"));
@@ -477,9 +516,11 @@ describe("CommandPalette", () => {
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
 
-    await waitForAssertion(() => {
+    await waitForTimedAssertion(() => {
       expect(mockIssuesApi.list).toHaveBeenCalledWith("company-1", {
         q: "auth",
+        status: "blocked",
+        updatedSince: expect.any(String),
         limit: 10,
         includeRoutineExecutions: true,
       });

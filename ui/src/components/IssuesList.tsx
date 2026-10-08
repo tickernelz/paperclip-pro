@@ -1,5 +1,5 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
-import { startTransition, useDeferredValue, useEffect, useMemo, useState, useCallback, useRef } from "react";
+import { useDeferredValue, useEffect, useMemo, useState, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 import { useQueries, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useVisibilityRefetchInterval } from "@/lib/polling";
@@ -17,6 +17,17 @@ import {
   shouldBlurPageSearchOnEnter,
   shouldBlurPageSearchOnEscape,
 } from "../lib/keyboardShortcuts";
+import {
+  hasSearchFilters,
+  issueFilterStateToListParams,
+  issueMatchesLocalSearchTerms,
+  issueMatchesSearchFilters,
+  localSearchTerms,
+  parseSearchQuery,
+  searchFiltersToIssueListParams,
+  type SearchQueryParserContext,
+} from "../lib/search-query-parser";
+import { ScopedSearchInput } from "./search/ScopedSearchInput";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import { buildCompanyUserLabelMap, buildCompanyUserProfileMap } from "../lib/company-members";
 import { createIssueDetailPath, rememberIssueDetailLocationState, withIssueDetailHeaderSeed } from "../lib/issueDetailBreadcrumb";
@@ -68,7 +79,6 @@ import { IssuesList as LegacyIssuesList } from "./LegacyIssuesList";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { PageSkeleton } from "./PageSkeleton";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { CircleDot, Plus, ArrowUpDown, Layers, Check, ChevronRight, List, ListTree, User, Search, CircleSlash2, ChevronsDownUp, PanelTopClose, RotateCcw, ListCollapse,
@@ -97,7 +107,6 @@ import {
 import { taskDateGroup, taskDateGroupSeparator, type TaskDateGroup } from "../lib/task-date-groups";
 import { deriveOriginatingActor, ISSUE_STATUSES, type Issue, type IssueStatus, type Project } from "@tickernelz/paperclip-pro-shared";
 import { Badge } from "@/components/ui/badge";
-const ISSUE_SEARCH_DEBOUNCE_MS = 250;
 const ISSUE_SEARCH_RESULT_LIMIT = 200;
 const ISSUE_BOARD_COLUMN_RESULT_LIMIT = 200;
 type IssuesListNavEntry =
@@ -357,15 +366,6 @@ function IssueDateSeparator({ label }: { label: string }) {
   );
 }
 
-function issueMatchesLocalSearch(issue: Issue, normalizedSearch: string): boolean {
-  if (!normalizedSearch) return true;
-  return [
-    issue.identifier,
-    issue.title,
-    issue.description,
-  ].some((value) => value?.toLowerCase().includes(normalizedSearch));
-}
-
 function isActionableWorkflowStatus(status: IssueStatus): boolean {
   return status !== "done" && status !== "cancelled" && status !== "blocked";
 }
@@ -527,63 +527,40 @@ function LegacyIssuesToolbar({ context, search, controls }: CollectionToolbarPro
 
 function IssueSearchInput({
   value,
+  context,
   onDebouncedChange,
 }: {
   value: string;
-  onDebouncedChange?: (search: string) => void;
+  context: SearchQueryParserContext;
+  onDebouncedChange: (search: string) => void;
 }) {
-  const [draftValue, setDraftValue] = useState(value);
-  const lastCommittedValueRef = useRef(value);
-
-  useEffect(() => {
-    setDraftValue(value);
-    lastCommittedValueRef.current = value;
-  }, [value]);
-
-  useEffect(() => {
-    if (!onDebouncedChange || draftValue === lastCommittedValueRef.current) return;
-
-    const timeoutId = window.setTimeout(() => {
-      lastCommittedValueRef.current = draftValue;
-      startTransition(() => {
-        onDebouncedChange(draftValue);
-      });
-    }, ISSUE_SEARCH_DEBOUNCE_MS);
-
-    return () => window.clearTimeout(timeoutId);
-  }, [draftValue, onDebouncedChange]);
-
   return (
-    <div className="relative w-full sm:w-64 md:w-80">
-      <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-      <Input
-        value={draftValue}
-        onChange={(e) => {
-          setDraftValue(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (shouldBlurPageSearchOnEnter({
-            key: e.key,
-            isComposing: e.nativeEvent.isComposing,
-          })) {
-            e.currentTarget.blur();
-            return;
-          }
+    <ScopedSearchInput
+      value={value}
+      context={context}
+      onChange={({ raw }) => onDebouncedChange(raw)}
+      ariaLabel="Search tasks"
+      className="w-full sm:w-64 md:w-80"
+      inputClassName="text-xs sm:text-sm"
+      pageSearchTarget
+      onKeyDown={(e) => {
+        if (shouldBlurPageSearchOnEnter({
+          key: e.key,
+          isComposing: e.nativeEvent.isComposing,
+        })) {
+          e.currentTarget.blur();
+          return;
+        }
 
-          if (shouldBlurPageSearchOnEscape({
-            key: e.key,
-            isComposing: e.nativeEvent.isComposing,
-            currentValue: e.currentTarget.value,
-          })) {
-            e.currentTarget.blur();
-          }
-        }}
-        placeholder="Search tasks..."
-        className="pl-7 text-xs sm:text-sm"
-        aria-label="Search tasks"
-        data-page-search-target="true"
-      />
-    </div>
+        if (shouldBlurPageSearchOnEscape({
+          key: e.key,
+          isComposing: e.nativeEvent.isComposing,
+          currentValue: e.currentTarget.value,
+        })) {
+          e.currentTarget.blur();
+        }
+      }}
+    />
   );
 }
 
@@ -826,12 +803,35 @@ function StreamlinedIssuesList({
   const [visibleIssueColumns, setVisibleIssueColumns] = useState<InboxIssueColumn[]>(initialPreferences.columns);
   const renderedIssueIdsRef = useRef("");
   const initialServerFillRequestedRef = useRef(false);
+  const [searchSortPicked, setSearchSortPicked] = useState(false);
   const deferredIssueSearch = useDeferredValue(issueSearch);
   const normalizedIssueSearch = deferredIssueSearch.trim().toLowerCase();
 
   useEffect(() => {
     setIssueSearch(initialSearch ?? "");
   }, [initialSearch]);
+
+  const { data: labels } = useQuery({
+    queryKey: queryKeys.issues.labels(selectedCompanyId!),
+    queryFn: () => issuesApi.listLabels(selectedCompanyId!),
+    enabled: !!selectedCompanyId,
+  });
+  const searchParserContext = useMemo<SearchQueryParserContext>(() => ({
+    currentUserId,
+    agents,
+    projects,
+    labels,
+  }), [agents, currentUserId, labels, projects]);
+  const parsedIssueSearch = useMemo(
+    () => parseSearchQuery(normalizedIssueSearch, searchParserContext),
+    [normalizedIssueSearch, searchParserContext],
+  );
+  const issueSearchText = parsedIssueSearch.query;
+  const issueSearchActive = issueSearchText.length > 0 || hasSearchFilters(parsedIssueSearch.filters);
+  const remoteIssueSearchActive = issueSearchActive && !searchWithinLoadedIssues;
+  useEffect(() => {
+    if (!issueSearchActive) setSearchSortPicked(false);
+  }, [issueSearchActive]);
 
   // Reload view state whenever the persisted context changes.
   const prevViewStateContextKey = useRef(
@@ -900,23 +900,34 @@ function StreamlinedIssuesList({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [issues]);
 
+  const issueSearchListParams = useMemo(() => {
+    if (!issueSearchActive) return {};
+    const params = {
+      ...issueFilterStateToListParams(viewState),
+      ...searchFiltersToIssueListParams(parsedIssueSearch.filters),
+    };
+    if (projectId) params.projectId = projectId;
+    return params;
+  }, [issueSearchActive, parsedIssueSearch.filters, projectId, viewState]);
   const { data: searchedIssues = [] } = useQuery({
     queryKey: [
-      ...queryKeys.issues.search(selectedCompanyId!, normalizedIssueSearch, projectId),
+      ...queryKeys.issues.search(selectedCompanyId!, issueSearchText, projectId),
       searchFilters ?? {},
+      issueSearchListParams,
       "compact",
       ISSUE_SEARCH_RESULT_LIMIT,
       enableRoutineVisibilityFilter ? "with-routine-executions" : "without-routine-executions",
     ],
     queryFn: ({ signal }) =>
       issuesApi.listCompact(selectedCompanyId!, {
-        q: normalizedIssueSearch,
+        ...issueSearchListParams,
+        ...(issueSearchText.length > 0 ? { q: issueSearchText } : {}),
         projectId,
         limit: ISSUE_SEARCH_RESULT_LIMIT,
         ...searchFilters,
         ...(enableRoutineVisibilityFilter ? { includeRoutineExecutions: true } : {}),
       }, { signal }).then((rows) => rows as Issue[]),
-    enabled: !!selectedCompanyId && normalizedIssueSearch.length > 0 && !searchWithinLoadedIssues,
+    enabled: !!selectedCompanyId && remoteIssueSearchActive,
     placeholderData: (previousData) => previousData,
   });
   const boardIssueQueries = useQueries({
@@ -925,7 +936,8 @@ function StreamlinedIssuesList({
         ...queryKeys.issues.list(selectedCompanyId ?? "__no-company__"),
         "board-column",
         status,
-        normalizedIssueSearch,
+        issueSearchText,
+        issueSearchListParams,
         projectId ?? "__all-projects__",
         searchFilters ?? {},
         "compact",
@@ -933,9 +945,12 @@ function StreamlinedIssuesList({
         enableRoutineVisibilityFilter ? "with-routine-executions" : "without-routine-executions",
       ],
       queryFn: ({ signal }: { signal: AbortSignal }) =>
-        issuesApi.listCompact(selectedCompanyId!, {
+        issueSearchListParams.status && !issueSearchListParams.status.split(",").includes(status)
+          ? Promise.resolve([] as Issue[])
+          : issuesApi.listCompact(selectedCompanyId!, {
+          ...issueSearchListParams,
           ...searchFilters,
-          ...(normalizedIssueSearch.length > 0 ? { q: normalizedIssueSearch } : {}),
+          ...(issueSearchText.length > 0 ? { q: issueSearchText } : {}),
           projectId,
           status,
           limit: ISSUE_BOARD_COLUMN_RESULT_LIMIT,
@@ -1169,17 +1184,20 @@ function StreamlinedIssuesList({
     [boardIssueQueries, searchWithinLoadedIssues, viewState.viewMode],
   );
 
-  const sourceIssues = useMemo(() => {
-    const useRemoteSearch = normalizedIssueSearch.length > 0 && !searchWithinLoadedIssues;
-    return boardIssues ?? (useRemoteSearch ? searchedIssues : issues);
-  }, [boardIssues, issues, normalizedIssueSearch, searchedIssues, searchWithinLoadedIssues]);
-
-  const searchScopedIssues = useMemo(
-    () => normalizedIssueSearch.length > 0 && searchWithinLoadedIssues
-      ? sourceIssues.filter((issue) => issueMatchesLocalSearch(issue, normalizedIssueSearch))
-      : sourceIssues,
-    [normalizedIssueSearch, searchWithinLoadedIssues, sourceIssues],
+  const sourceIssues = useMemo(
+    () => boardIssues ?? (remoteIssueSearchActive ? searchedIssues : issues),
+    [boardIssues, issues, remoteIssueSearchActive, searchedIssues],
   );
+
+  const searchScopedIssues = useMemo(() => {
+    if (!issueSearchActive || !searchWithinLoadedIssues) return sourceIssues;
+    const terms = localSearchTerms(issueSearchText);
+    return sourceIssues.filter((issue) =>
+      issueMatchesLocalSearchTerms(issue, terms)
+      && issueMatchesSearchFilters(issue, parsedIssueSearch.filters),
+    );
+  }, [issueSearchActive, issueSearchText, parsedIssueSearch.filters, searchWithinLoadedIssues, sourceIssues]);
+  const keepServerOrder = remoteIssueSearchActive && !searchSortPicked && viewState.viewMode === "list";
   const hasExternalObjectStatusFilters = viewState.externalObjectStatuses.length > 0;
   const issueIdsForExternalObjectSummaries = useMemo(
     () => (viewState.viewMode === "list" || hasExternalObjectStatusFilters
@@ -1213,8 +1231,9 @@ function StreamlinedIssuesList({
       liveIssueIds,
       issueFilterContext,
     );
-    return sortIssues(filteredByControls, viewState);
+    return keepServerOrder ? filteredByControls : sortIssues(filteredByControls, viewState);
   }, [
+    keepServerOrder,
     searchScopedIssues,
     viewState,
     currentUserId,
@@ -1269,12 +1288,6 @@ function StreamlinedIssuesList({
       currentStepIssueId: currentStepIssue?.id ?? null,
     };
   }, [checklistAffordanceEnabled, filtered, issueById, viewState.nestingEnabled]);
-
-  const { data: labels } = useQuery({
-    queryKey: queryKeys.issues.labels(selectedCompanyId!),
-    queryFn: () => issuesApi.listLabels(selectedCompanyId!),
-    enabled: !!selectedCompanyId,
-  });
 
   const activeFilterCount = countActiveIssueFilters(viewState, enableRoutineVisibilityFilter);
   const boardHighVolume = viewState.viewMode === "board" && filtered.length > KANBAN_BOARD_HIGH_VOLUME_THRESHOLD;
@@ -1775,6 +1788,7 @@ function StreamlinedIssuesList({
         search={(
           <IssueSearchInput
             value={issueSearch}
+            context={searchParserContext}
             onDebouncedChange={(nextSearch) => {
               setIssueSearch(nextSearch);
               onSearchChange?.(nextSearch);
@@ -1934,6 +1948,16 @@ function StreamlinedIssuesList({
               </PopoverTrigger>
               <PopoverContent align="end" className="w-48 p-0">
                 <div className="p-2 space-y-0.5">
+                  {remoteIssueSearchActive && (
+                    <button
+                      className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
+                        keepServerOrder ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+                      }`}
+                      onClick={() => setSearchSortPicked(false)}
+                    >
+                      <span>Relevance</span>
+                    </button>
+                  )}
                   {/* PAP-411: "priority" sort option hidden behind SHOW_TASK_PRIORITY_UI (comparator stays dormant). */}
                   {([
                     ["workflow", "Workflow"],
@@ -1948,10 +1972,13 @@ function StreamlinedIssuesList({
                     <button
                       key={field}
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
-                        viewState.sortField === field ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+                        !keepServerOrder && viewState.sortField === field ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
                       }`}
                       onClick={() => {
-                        if (viewState.sortField === field) {
+                        if (remoteIssueSearchActive) setSearchSortPicked(true);
+                        if (keepServerOrder) {
+                          updateView({ sortField: field, sortDir: field === "updated" || field === "created" ? "desc" : "asc" });
+                        } else if (viewState.sortField === field) {
                           updateView({ sortDir: viewState.sortDir === "asc" ? "desc" : "asc" });
                         } else {
                           updateView({ sortField: field, sortDir: "asc" });
@@ -1959,7 +1986,7 @@ function StreamlinedIssuesList({
                       }}
                     >
                       <span>{label}</span>
-                      {viewState.sortField === field && (
+                      {!keepServerOrder && viewState.sortField === field && (
                         <span className="text-xs text-muted-foreground">
                           {viewState.sortDir === "asc" ? "\u2191" : "\u2193"}
                         </span>
@@ -2014,7 +2041,7 @@ function StreamlinedIssuesList({
 
       {(isLoading || externalObjectFilterLoading) && <PageSkeleton variant="issues-list" />}
       {error && <p className="text-sm text-destructive">{error.message}</p>}
-      {!searchWithinLoadedIssues && normalizedIssueSearch.length > 0 && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (
+      {remoteIssueSearchActive && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (
         <p className="text-xs text-muted-foreground">
           Showing up to {ISSUE_SEARCH_RESULT_LIMIT} matches. Refine the search to narrow further.
         </p>
@@ -2467,7 +2494,7 @@ function StreamlinedIssuesList({
                   );
                 };
 
-                const separatorField = viewState.showDateGroupSeparators
+                const separatorField = viewState.showDateGroupSeparators && !keepServerOrder
                   ? issueDateSeparatorField(viewState)
                   : null;
                 const separatorNow = new Date();

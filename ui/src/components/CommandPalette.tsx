@@ -40,7 +40,9 @@ import { agentUrl, projectUrl } from "../lib/utils";
 import {
   SEARCH_OPERATOR_QUICK_FILTERS,
   buildSearchPathFromQuery,
+  hasSearchFilters,
   parseSearchQuery,
+  searchFiltersToIssueListParams,
   type SearchQueryParserContext,
 } from "../lib/search-query-parser";
 
@@ -61,6 +63,8 @@ const MAX_MATCHED_PROJECTS = 5;
 /** Task cap when projects are also promoted, so Tasks can't crowd them out. */
 const TASK_LIMIT_WITH_PROJECTS = 6;
 const TASK_LIMIT = 10;
+const RECENT_TASK_LIMIT = 20;
+const QUICK_SEARCH_DEBOUNCE_MS = 250;
 
 /** True when every char of `needle` appears in `haystack` in order (fuzzy). */
 function isSubsequence(needle: string, haystack: string): boolean {
@@ -92,6 +96,7 @@ function scoreProjectMatch(name: string, description: string, q: string): number
 export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
   const { selectedCompanyId } = useCompany();
@@ -122,6 +127,15 @@ export function CommandPalette() {
   useEffect(() => {
     if (!open) setQuery("");
   }, [open]);
+
+  useEffect(() => {
+    if (query.trim().length === 0) {
+      setDebouncedQuery("");
+      return;
+    }
+    const handle = window.setTimeout(() => setDebouncedQuery(query), QUICK_SEARCH_DEBOUNCE_MS);
+    return () => window.clearTimeout(handle);
+  }, [query]);
 
   const { data: agents = [] } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -160,17 +174,37 @@ export function CommandPalette() {
   }), [agents, currentUserId, labels, projects]);
   const parsedQuery = useMemo(() => parseSearchQuery(query, parserContext), [parserContext, query]);
   const quickSearchQuery = parsedQuery.query.trim();
+  const parsedDebouncedQuery = useMemo(
+    () => parseSearchQuery(debouncedQuery, parserContext),
+    [debouncedQuery, parserContext],
+  );
+  const remoteSearchQuery = parsedDebouncedQuery.query.trim();
+  const remoteSearchFilters = useMemo(
+    () => searchFiltersToIssueListParams(parsedDebouncedQuery.filters),
+    [parsedDebouncedQuery.filters],
+  );
+  const remoteSearchActive = remoteSearchQuery.length > 0 || hasSearchFilters(parsedDebouncedQuery.filters);
 
   const { data: issues = [] } = useQuery({
-    queryKey: queryKeys.issues.list(selectedCompanyId!),
-    queryFn: () => issuesApi.list(selectedCompanyId!),
+    queryKey: [...queryKeys.issues.list(selectedCompanyId!), "command-palette-recent", RECENT_TASK_LIMIT],
+    queryFn: () => issuesApi.listCompact(selectedCompanyId!, {
+      limit: RECENT_TASK_LIMIT,
+      sortField: "updated",
+      sortDir: "desc",
+    }),
     enabled: !!selectedCompanyId && open && searchQuery.length === 0,
   });
 
   const { data: searchedIssues = [] } = useQuery({
-    queryKey: queryKeys.issues.search(selectedCompanyId!, quickSearchQuery, undefined, 10),
-    queryFn: () => issuesApi.list(selectedCompanyId!, { q: quickSearchQuery, limit: 10, includeRoutineExecutions: true }),
-    enabled: !!selectedCompanyId && open && quickSearchQuery.length > 0,
+    queryKey: [...queryKeys.issues.search(selectedCompanyId!, remoteSearchQuery, undefined, 10), remoteSearchFilters],
+    queryFn: () => issuesApi.listCompact(selectedCompanyId!, {
+      ...remoteSearchFilters,
+      ...(remoteSearchQuery.length > 0 ? { q: remoteSearchQuery } : {}),
+      limit: 10,
+      includeRoutineExecutions: true,
+    }),
+    enabled: !!selectedCompanyId && open && remoteSearchActive,
+    placeholderData: (previousData) => previousData,
   });
 
   function go(path: string) {
@@ -188,8 +222,8 @@ export function CommandPalette() {
   };
 
   const visibleIssues = useMemo(
-    () => (quickSearchQuery.length > 0 ? searchedIssues : issues),
-    [issues, searchedIssues, quickSearchQuery],
+    () => (searchQuery.length === 0 ? issues : remoteSearchActive ? searchedIssues : []),
+    [issues, remoteSearchActive, searchedIssues, searchQuery],
   );
 
   // Client-side typeahead ranking over the already-loaded projects. cmdk ranks
