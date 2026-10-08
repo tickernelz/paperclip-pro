@@ -1322,7 +1322,7 @@ async function startServerWithDatabaseTeardown(
   await app.locals.toolGateway.cleanupExpiredSessions().catch((err: unknown) => logger.error({ err }, "startup gateway token cleanup failed"));
   await app.locals.toolActionDeliveries.sweepPending().catch((err: unknown) => logger.error({ err }, "startup tool review delivery sweep failed"));
   await questionResponseDeliveries.sweepPending().then((result) => {
-    if (result.scanned > 0) {
+    if (result.scanned > 0 || result.steered > 0) {
       logger.info(result, "startup question-response delivery sweep completed");
     }
   }).catch((err) => {
@@ -1800,7 +1800,7 @@ async function startServerWithDatabaseTeardown(
         trackHeartbeatSchedulerWork(app.locals.toolActionDeliveries.sweepPending().catch((err: unknown) => logger.error({ err }, "tool review delivery sweep failed")));
         trackHeartbeatSchedulerWork(questionResponseDeliveries.sweepPending()
           .then((result) => {
-            if (result.scanned > 0) {
+            if (result.scanned > 0 || result.steered > 0) {
               logger.info(result, "periodic question-response delivery sweep completed");
             }
           })

@@ -138,7 +138,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
 
   function app(
     companyId: string,
-    actor: { userId?: string; agentId?: string; runId?: string } = {},
+    actor: { userId?: string; agentId?: string; runId?: string; source?: string } = {},
     steeringRetry: SteeringRetryPolicy = TEST_STEERING_RETRY,
   ) {
     const agentActor = actor.agentId
@@ -150,7 +150,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       (req as unknown as { actor: unknown }).actor = {
         type: agentActor ? "agent" : "board",
         ...(agentActor ? { ...agentActor, companyId } : {}),
-        source: "session",
+        source: actor.source ?? "session",
         userId: actor.userId ?? "delivery-owner",
         companyIds: [companyId],
         memberships: [{ companyId, status: "active", membershipRole: "operator" }],
@@ -391,6 +391,27 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       turnId: "turn-delivery",
       duplicate: false,
     });
+  });
+
+  it("steers a board API key comment with no delivery field by default", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-board-key" });
+    keepRunAlive(seeded.runId);
+
+    const posted = await request(app(seeded.companyId, { source: "board_key" }))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Posted through a board API key" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "steered" });
+    expect(steerNativeSessionMock).toHaveBeenCalledWith(
+      expect.objectContaining({ runId: seeded.runId, message: "Posted through a board API key" }),
+    );
+    const queue = await request(app(seeded.companyId))
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+    expect(queue.body.entries).toHaveLength(0);
   });
 
   it("keeps the same board comment queued when deliver is queue", async () => {

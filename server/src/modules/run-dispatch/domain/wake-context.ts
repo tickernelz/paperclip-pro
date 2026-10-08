@@ -92,6 +92,20 @@ export function allowsIssueInteractionWake(
 
 export const INTERACTION_PENDING_WAKE_REASON = "interaction_pending";
 
+const RESPONDED_INTERACTION_STATUSES = new Set(["accepted", "answered", "rejected"]);
+
+/** True for the wake that carries a person's answer, acceptance, or rejection of an interaction card. */
+export function isInteractionResponseWake(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+): boolean {
+  const context = parseObject(contextSnapshot);
+  return (
+    readNonEmptyString(context.wakeReason) === "issue_commented" &&
+    readNonEmptyString(context.interactionId) !== null &&
+    RESPONDED_INTERACTION_STATUSES.has(readNonEmptyString(context.interactionStatus) ?? "")
+  );
+}
+
 export function isResolvedInteractionContinuationWakeContext(contextSnapshot: unknown): boolean {
   const context = parseObject(contextSnapshot);
   const interactionId = readNonEmptyString(context.interactionId);

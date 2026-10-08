@@ -118,6 +118,28 @@ describe("the comment tool and the comment route agree on delivery", () => {
     expect(requests.every((entry) => entry.path.endsWith("/issues/issue-1/comments"))).toBe(true);
   });
 
+  it("passes commentDeliver through paperclipUpdateIssue and leaves it unset by default", async () => {
+    const bodies: Array<Record<string, unknown>> = [];
+    const client = curatedClient();
+    client.requestJson = (async (
+      _method: string,
+      _path: string,
+      options?: { body?: Record<string, unknown> },
+    ) => {
+      bodies.push(options?.body ?? {});
+      return { id: "issue-1" };
+    }) as typeof client.requestJson;
+    const tool = createToolDefinitions(client).find((candidate) => candidate.name === "paperclipUpdateIssue")!;
+    expect(publishedProperties(tool).commentDeliver).toMatchObject({ type: "string", enum: ["steer", "queue"] });
+
+    for (const commentDeliver of ["steer", "queue"] as const) {
+      await tool.execute({ issueId: "issue-1", comment: "ping", commentDeliver });
+    }
+    await tool.execute({ issueId: "issue-1", comment: "ping" });
+
+    expect(bodies.map((body) => body.commentDeliver)).toEqual(["steer", "queue", undefined]);
+  });
+
   it("exposes every delivery field the route validates on every curated tool", async () => {
     const { sites } = await routeBodySchemas();
     const tools = new Map(

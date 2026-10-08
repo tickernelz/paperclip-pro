@@ -21,6 +21,7 @@ import { getTelemetryClient } from "../telemetry.js";
 import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";
 import type { heartbeatService } from "./heartbeat.js";
+import { steerPendingInteractionResponses } from "./message-steering.js";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 
 const DELIVERY_CLAIM_STALE_MS = 30_000;
@@ -1283,7 +1284,7 @@ export function questionResponseDeliveryService(
       const coalesced = Boolean(
         eligibleQueuedSuccessor && targetRun?.id === eligibleQueuedSuccessor.id,
       );
-      return recordTerminal({
+      return steerFallbackIntoLiveRun(await recordTerminal({
         delivery: claimed,
         interaction,
         status: coalesced ? "delivered" : "fallback_queued",
@@ -1291,7 +1292,7 @@ export function questionResponseDeliveryService(
         targetRunId: targetRun?.id ?? null,
         adapter: targetRun?.driverKind ?? adapter,
         errorCode: steeringErrorCode,
-      });
+      }), interaction);
     } catch (error) {
       if (error instanceof DeliveryClaimUnavailableError)
         return terminalOutcome(interactionId);
@@ -1314,7 +1315,7 @@ export function questionResponseDeliveryService(
             eligibleQueuedSuccessor &&
             targetRun?.id === eligibleQueuedSuccessor.id,
           );
-          return recordTerminal({
+          return steerFallbackIntoLiveRun(await recordTerminal({
             delivery: claimed,
             interaction,
             status: coalesced ? "delivered" : "fallback_queued",
@@ -1322,7 +1323,7 @@ export function questionResponseDeliveryService(
             targetRunId: targetRun?.id ?? null,
             adapter: targetRun?.driverKind ?? adapter,
             errorCode: steeringErrorCode,
-          });
+          }), interaction);
         }
       }
       const errorCode =
@@ -1352,6 +1353,27 @@ export function questionResponseDeliveryService(
         errorCode,
       });
     }
+  }
+
+  async function steerFallbackIntoLiveRun(
+    outcome: QuestionResponseDeliveryOutcome | null,
+    interaction: { id: string; companyId: string; issueId: string },
+  ): Promise<QuestionResponseDeliveryOutcome | null> {
+    if (outcome?.status !== "fallback_queued" || outcome.duplicate) return outcome;
+    const steered = await steerPendingInteractionResponses(db, {
+      companyId: interaction.companyId,
+      issueId: interaction.issueId,
+      interactionId: interaction.id,
+    }).catch((error) => {
+      logger.warn(
+        { err: error, interactionId: interaction.id },
+        "question response stays queued because steering into the live run failed",
+      );
+      return 0;
+    });
+    if (steered === 0) return outcome;
+    const current = await terminalOutcome(interaction.id);
+    return current ? { ...current, duplicate: false } : outcome;
   }
 
   async function sweepPending(limit = 50) {
@@ -1393,6 +1415,10 @@ export function questionResponseDeliveryService(
       else if (outcome?.mode === "wake_fallback") counts.wakeFallback += 1;
       else if (outcome?.status === "failed") counts.failed += 1;
     }
+    counts.steered += await steerPendingInteractionResponses(db).catch((error) => {
+      logger.warn({ err: error }, "deferred interaction responses stay queued because the steering sweep failed");
+      return 0;
+    });
     return counts;
   }
 

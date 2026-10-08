@@ -2009,6 +2009,12 @@ export function recoveryService(
           ),
         );
       if (
+        predecessor?.errorCode === "issue_dependencies_blocked" &&
+        (await issuesSvc.listDependencyReadiness(predecessor.companyId, [input.issueId]))
+          .get(input.issueId)?.isDependencyReady === false
+      )
+        return null;
+      if (
         predecessor &&
         ["failed", "timed_out", "interrupted", "cancelled"].includes(
           predecessor.status,

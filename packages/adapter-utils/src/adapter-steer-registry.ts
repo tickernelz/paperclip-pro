@@ -10,6 +10,17 @@ export interface AdapterSteerTarget {
 }
 
 const adapterSteerTargets = new Map<string, AdapterSteerTarget>();
+const registrationListeners = new Set<(runId: string) => void>();
+
+/** Subscribes to steer target registrations; returns the unsubscribe function. */
+export function onAdapterSteerTargetRegistered(
+  listener: (runId: string) => void,
+): () => void {
+  registrationListeners.add(listener);
+  return () => {
+    registrationListeners.delete(listener);
+  };
+}
 
 export function registerAdapterSteerTarget(
   runId: string,
@@ -20,6 +31,14 @@ export function registerAdapterSteerTarget(
     throw new Error("adapter_steer_target_conflict");
   }
   adapterSteerTargets.set(runId, target);
+  if (existing !== target) {
+    for (const listener of registrationListeners) {
+      try {
+        listener(runId);
+      } catch {
+      }
+    }
+  }
   return () => {
     if (adapterSteerTargets.get(runId) === target) {
       adapterSteerTargets.delete(runId);

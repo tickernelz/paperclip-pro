@@ -389,6 +389,11 @@ import {
   withQueuedCommentIdsInWakePayload,
 } from "../services/issue-queued-comment-queue.js";
 import { resultJsonWithSteeringAcknowledgement } from "../services/steering-acknowledgements.js";
+import {
+  registerMessageSteering,
+  type InteractionResponseSteeringScope,
+  type PostedCommentSteerRequest,
+} from "../services/message-steering.js";
 import { setTimeout as sleep } from "node:timers/promises";
 
 const MAX_ISSUE_COMMENT_LIMIT = 500;
@@ -7287,6 +7292,7 @@ export function issueRoutes(
   async function findQueuedCommentWake(
     executor: IssueQueueDb,
     issue: { id: string; companyId: string; assigneeAgentId: string | null },
+    messageId?: string,
   ): Promise<IssueQueueState | null> {
     if (!issue.assigneeAgentId) return null;
     const rows = await executor
@@ -7305,9 +7311,12 @@ export function issueRoutes(
       .orderBy(asc(agentWakeupRequests.requestedAt));
 
     for (const wake of rows) {
+      const interactionId = queuedInteractionId(wake.payload);
+      const commentIds = queuedCommentIdsFromWakePayload(wake.payload);
       if (
         readObject(wake.payload).issueId !== issue.id ||
-        (queuedCommentIdsFromWakePayload(wake.payload).length === 0 && !queuedInteractionId(wake.payload))
+        (commentIds.length === 0 && !interactionId) ||
+        (messageId !== undefined && interactionId !== messageId && !commentIds.includes(messageId))
       )
         continue;
       if (wake.status === "deferred_issue_execution") {
@@ -17034,6 +17043,7 @@ export function issueRoutes(
         issue: issue ?? input.issue,
         activeRun,
         actor: input.actor,
+        queueState: await findQueuedCommentWake(db, issue ?? input.issue, input.commentId),
         steeringDisposition: "temporarily_unavailable",
       });
       const entry = queue.entries.find(
@@ -17303,19 +17313,19 @@ export function issueRoutes(
       sourceRunId?: string | null;
     };
     actor: ReturnType<typeof getActorInfo>;
-  }): Promise<void> {
+  }): Promise<boolean> {
     const { interaction, actor } = input;
-    if (actor.actorType !== "user") return;
-    if (!["accepted", "answered", "rejected"].includes(interaction.status)) return;
+    if (actor.actorType !== "user") return false;
+    if (!["accepted", "answered", "rejected"].includes(interaction.status)) return false;
     let steered: { targetRunId: string; receipt: QueuedCommentSteerReceipt } | null = null;
     const issue = await svc.getById(input.issueId).catch(() => null);
-    if (!issue?.assigneeAgentId) return;
+    if (!issue?.assigneeAgentId) return false;
     try {
-      if ((await instanceSettings.getGeneral()).defaultMessageDelivery === "queue") return;
-      if (await hasExternalChatResponseBoundary(db, interaction)) return;
-      if (issue.conversationAgentId && (await conversationMessageWaiting(issue, null))) return;
+      if ((await instanceSettings.getGeneral()).defaultMessageDelivery === "queue") return false;
+      if (await hasExternalChatResponseBoundary(db, interaction)) return false;
+      if (issue.conversationAgentId && (await conversationMessageWaiting(issue, null))) return false;
       const resolved = await resolveQueuedSteeringTarget({ issue, commentId: interaction.id, actor });
-      if (resolved.kind !== "target") return;
+      if (resolved.kind !== "target") return false;
       steered = {
         targetRunId: resolved.target.targetRunId,
         receipt: await steerQueuedCommentWithRetry({
@@ -17331,7 +17341,7 @@ export function issueRoutes(
         { err, issueId: issue.id, interactionId: interaction.id, code: steeringErrorCode(err) },
         "interaction response stays queued because steering was refused",
       );
-      return;
+      return false;
     }
     await logQueuedCommentSteered({
       issue,
@@ -17343,16 +17353,84 @@ export function issueRoutes(
     }).catch((err) =>
       logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the interaction steering acknowledgement"),
     );
-    if (interaction.kind !== "ask_user_questions") return;
-    await questionResponseDeliveries
-      .recordSteered({
-        interactionId: interaction.id,
-        targetRunId: steered.targetRunId,
-        targetTurnId: steered.receipt.acknowledgedTurnId,
-      })
-      .catch((err) =>
-        logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the steered question response delivery"),
-      );
+    if (interaction.kind === "ask_user_questions") {
+      await questionResponseDeliveries
+        .recordSteered({
+          interactionId: interaction.id,
+          targetRunId: steered.targetRunId,
+          targetTurnId: steered.receipt.acknowledgedTurnId,
+        })
+        .catch((err) =>
+          logger.warn({ err, issueId: issue.id, interactionId: interaction.id }, "failed to record the steered question response delivery"),
+        );
+    }
+    return true;
+  }
+
+  function boardActorForUser(userId: string): ReturnType<typeof getActorInfo> {
+    return {
+      actorType: "user",
+      actorId: userId,
+      sessionId: null,
+      agentId: null,
+      runId: null,
+      agentApiKeyId: null,
+      actorSource: "session",
+    };
+  }
+
+  async function steerDeferredInteractionResponses(scope?: InteractionResponseSteeringScope): Promise<number> {
+    const wakes = await db
+      .select({ payload: agentWakeupRequests.payload, companyId: agentWakeupRequests.companyId })
+      .from(agentWakeupRequests)
+      .where(
+        and(
+          eq(agentWakeupRequests.status, "deferred_issue_execution"),
+          sql`${agentWakeupRequests.payload}->>'mutation' = 'interaction'`,
+          scope ? eq(agentWakeupRequests.companyId, scope.companyId) : undefined,
+          scope?.issueId ? sql`${agentWakeupRequests.payload}->>'issueId' = ${scope.issueId}` : undefined,
+          scope?.interactionId ? sql`${agentWakeupRequests.payload}->>'interactionId' = ${scope.interactionId}` : undefined,
+          sql`exists (select 1 from ${heartbeatRuns} where ${heartbeatRuns.companyId} = ${agentWakeupRequests.companyId} and ${heartbeatRuns.agentId} = ${agentWakeupRequests.agentId} and ${heartbeatRuns.status} = 'running' and ${heartbeatRuns.contextSnapshot}->>'issueId' = ${agentWakeupRequests.payload}->>'issueId')`,
+        ),
+      )
+      .orderBy(asc(agentWakeupRequests.requestedAt))
+      .limit(50);
+    let steeredCount = 0;
+    for (const wake of wakes) {
+      const interactionId = queuedInteractionId(wake.payload);
+      const issueId = readNonEmptyString(readObject(wake.payload).issueId);
+      if (!interactionId || !issueId) continue;
+      const [interaction] = await db
+        .select()
+        .from(issueThreadInteractions)
+        .where(and(eq(issueThreadInteractions.id, interactionId), eq(issueThreadInteractions.companyId, wake.companyId)))
+        .limit(1);
+      if (!interaction?.resolvedByUserId || interaction.issueId !== issueId) continue;
+      const steered = await steerInteractionResponse({
+        issueId,
+        interaction,
+        actor: boardActorForUser(interaction.resolvedByUserId),
+      }).catch((err) => {
+        logger.warn({ err, issueId, interactionId }, "failed to steer a deferred interaction response into its live run");
+        return false;
+      });
+      if (steered) steeredCount += 1;
+    }
+    return steeredCount;
+  }
+
+  async function steerPostedCommentWithDefault(request: PostedCommentSteerRequest): Promise<"steered" | "queued"> {
+    const issue = await svc.getById(request.issueId);
+    if (!issue || issue.companyId !== request.companyId) return "queued";
+    const delivery = await resolveMessageDeliveryDisposition({
+      issue,
+      commentId: request.commentId,
+      actor: boardActorForUser(request.actorUserId),
+      requested: undefined,
+      boardUserId: request.actorUserId,
+      wakeDispatch: Promise.resolve(),
+    });
+    return delivery.deliveredAs;
   }
 
   async function steerOpenwaComment(request: OpenwaCommentSteerRequest) {
@@ -17411,6 +17489,20 @@ export function issueRoutes(
     }
   }
   registerOpenwaCommentSteering(db, steerOpenwaComment);
+  registerMessageSteering(db, {
+    interactionResponses: steerDeferredInteractionResponses,
+    postedComment: steerPostedCommentWithDefault,
+    liveRunStarted: async (runId) => {
+      const [run] = await db
+        .select({ companyId: heartbeatRuns.companyId, contextSnapshot: heartbeatRuns.contextSnapshot })
+        .from(heartbeatRuns)
+        .where(eq(heartbeatRuns.id, runId))
+        .limit(1);
+      const issueId = readNonEmptyString(readObject(run?.contextSnapshot).issueId);
+      if (!run || !issueId) return;
+      await steerDeferredInteractionResponses({ companyId: run.companyId, issueId });
+    },
+  });
 
   async function logQueuedCommentSteered(input: {
     issue: { id: string; companyId: string };

@@ -572,6 +572,7 @@ import {
   extractWakeCommentIds,
   deriveCommentId,
   allowsIssueInteractionWake,
+  isInteractionResponseWake,
   isResolvedInteractionContinuationWakeContext,
 } from "../modules/run-dispatch/index.js";
 import {
@@ -18297,7 +18298,8 @@ export function heartbeatService(
         !allowsIssueInteractionWake(
           context,
           ISSUE_TREE_CONTROL_INTERACTION_WAKE_REASONS,
-        )
+        ) &&
+        !isInteractionResponseWake(context)
       ) {
         await cancelQueuedRunForBlockedDependencies(
           run,
@@ -18309,6 +18311,25 @@ export function heartbeatService(
           "claimQueuedRun: cancelled blocked queued run",
         );
         return null;
+      }
+      if (unresolvedBlockerCount > 0 && context.dependencyBlockedInteraction !== true) {
+        const unresolvedBlockerIssueIds = readiness?.unresolvedBlockerIssueIds ?? [];
+        Object.assign(context, {
+          dependencyBlockedInteraction: true,
+          unresolvedBlockerIssueIds,
+          unresolvedBlockerCount,
+          unresolvedBlockerSummaries: await listUnresolvedBlockerSummaries(
+            db,
+            run.companyId,
+            issueId,
+            unresolvedBlockerIssueIds,
+          ),
+        });
+        await db
+          .update(heartbeatRuns)
+          .set({ contextSnapshot: context, updatedAt: new Date() })
+          .where(and(eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.status, "queued")));
+        run = { ...run, contextSnapshot: context };
       }
 
       const staleness = await runDispatch.cancelStaleQueuedRun({
@@ -29266,10 +29287,11 @@ export function heartbeatService(
           const blockedInteractionWake =
             dependencyReadiness &&
             !dependencyReadiness.isDependencyReady &&
-            allowsIssueInteractionWake(
+            (allowsIssueInteractionWake(
               enrichedContextSnapshot,
               ISSUE_TREE_CONTROL_INTERACTION_WAKE_REASONS,
-            );
+            ) ||
+              isInteractionResponseWake(enrichedContextSnapshot));
 
           if (blockedInteractionWake) {
             enrichedContextSnapshot.dependencyBlockedInteraction = true;

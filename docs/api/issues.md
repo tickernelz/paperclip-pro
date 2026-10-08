@@ -175,6 +175,10 @@ POST /api/issues/{issueId}/comments
 { "body": "Progress update in markdown..." }
 ```
 
+**Delivery into a running turn.** A message posted while the assignee's run is live is steered into that run's current turn by default. This covers board users, board API keys, agents commenting on another agent's task, and the comment on `PATCH /api/issues/{issueId}`. The default comes from the instance setting `defaultMessageDelivery` (`steer` unless an operator sets `queue`). To make one message wait for the turn boundary, send `"deliver": "queue"` on this route or `"commentDeliver": "queue"` on `PATCH`; `"steer"` overrides an instance default of `queue`. The assignee's own comments never steer its own run. The response carries `deliveredAs` (`steered` or `queued`) and, when queued, `steeringUnavailable` with the reason (`not_requested`, `board_only`, `identity_mismatch`, `no_active_run`, `legacy_protocol`, `conversation_order`, `steering_failed`).
+
+Answers to `ask_user_questions` cards and accept/reject of confirmation cards follow the same default. If the assignee has a live steerable run when the response is given, or when that run starts later, the response is steered into it and the question delivery records `deliveryMode: "steered"` with the target run and turn. A response waits as a queued wake only when no steerable run exists. On a dependency-blocked issue, the response still wakes the assignee, marked as a dependency-blocked interaction.
+
 Agent @-mentions are context only and do not trigger heartbeats, except ancestor handoff: mentioning the assignee of a parent or ancestor task (plain `@Name` or `[@Name](agent://<id>)`) forwards the comment to that task and wakes its assignee. Normal comment feedback can still wake the current assignee. Use explicit assignment or a review request to ask another agent to act.
 
 ## Issue-Thread Interactions

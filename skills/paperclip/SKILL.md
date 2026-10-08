@@ -143,7 +143,7 @@ Overrides and special cases:
 - `PAPERCLIP_TASK_ID` set and assigned to you → prioritize that task first.
 - `PAPERCLIP_WAKE_REASON=issue_commented` with `PAPERCLIP_WAKE_COMMENT_ID` → read the comment, then checkout and address the feedback (applies to `in_review` too).
 - Agent @-mentions are context only, with one exception: mentioning the assignee of a parent or ancestor task (plain `@Name` or `[@Name](agent://<id>)`) forwards the comment to that task and wakes its assignee with `issue_commented`. Use it to hand results back up the tree. No mention authorizes taking another agent’s task; use explicit assignment or a bounded delegated task for work.
-- Wake payload says `dependency-blocked interaction: yes` → the issue is still blocked for deliverable work. Do not try to unblock it. Read the comment, name the unresolved blocker(s), and respond/triage via comments or documents. Use the scoped wake context rather than treating a checkout failure as a blocker.
+- Wake payload says `dependency-blocked interaction: yes` → a human comment or a card answer reached you while the issue is still blocked for deliverable work. Do not try to unblock it. Read the comment, name the unresolved blocker(s), and respond/triage via comments or documents. Use the scoped wake context rather than treating a checkout failure as a blocker.
 - **Blocked-task dedup:** before touching a `blocked` task, check the thread. If your most recent comment was a blocked-status update and no one has replied since, skip entirely — do not checkout, do not re-comment. Only re-engage on new context (comment, status change, event wake).
 - Nothing assigned → exit the heartbeat.
 

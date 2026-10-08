@@ -21,6 +21,7 @@ import {
   issues,
   toolApplications,
   toolConnections,
+  issueThreadInteractions,
 } from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
@@ -288,6 +289,38 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
     expect(await strandedEscalationRows(companyId)).toHaveLength(0);
     expect(await db.select().from(issueRecoveryActions)).toHaveLength(0);
   });
+
+  it.each(["in_progress", "in_review"])(
+    "does not retry an answered card's dependency-cancelled continuation on a still-blocked %s issue",
+    async (issueStatus) => {
+      const { companyId, coderId, issueId, prefix } = await seedCompany({ issueStatus });
+      await seedBlocker({ companyId, prefix, blockedIssueId: issueId });
+      const cancelledRunId = await seedRun({
+        companyId,
+        agentId: coderId,
+        issueId,
+        status: "cancelled",
+        errorCode: "issue_dependencies_blocked",
+      });
+      await db.insert(issueThreadInteractions).values({
+        companyId, issueId, kind: "ask_user_questions", status: "answered",
+        createdByAgentId: coderId, sourceRunId: cancelledRunId, resolvedByUserId: "board-user",
+        resolvedAt: new Date("2026-09-25T06:10:00.000Z"),
+        continuationPolicy: "wake_assignee", requestedResolverPolicy: "human_only",
+        effectiveResolverPolicy: "human_only", resolverPolicyProvenance: "explicit",
+        payload: { version: 1, questions: [{ id: "q", prompt: "Which?", selectionMode: "single", required: true,
+          options: [{ id: "a", label: "A" }] }] },
+        result: { version: 1, answers: [{ questionId: "q", optionIds: ["a"] }] },
+      });
+      const enqueueWakeup = vi.fn(async () => ({ id: randomUUID() }) as never);
+      const scheduleRecoveryRetry = vi.fn(async () => ({ id: randomUUID() }) as never);
+
+      await recoveryService(db, { enqueueWakeup, scheduleRecoveryRetry }).reconcileStrandedAssignedIssues();
+
+      expect(scheduleRecoveryRetry).not.toHaveBeenCalled();
+      expect(enqueueWakeup).not.toHaveBeenCalled();
+    },
+  );
 
   it("keeps a released dependency hold in todo when the assignee is paused", async () => {
     const { companyId, coderId, issueId } = await seedCompany({ coderStatus: "paused" });

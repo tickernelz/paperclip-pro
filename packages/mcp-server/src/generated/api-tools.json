@@ -1481,7 +1481,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18580",
+    "boardGuard": "assertBoard@issues.ts:18672",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14030,7 +14030,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17494",
+    "boardGuard": "assertBoard@issues.ts:17586",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24008,7 +24008,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16521",
+    "boardGuard": "assertBoard@issues.ts:16530",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35240,7 +35240,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9693",
+    "boardGuard": "assertBoard@issues.ts:9702",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37442,7 +37442,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9038",
+    "boardGuard": "assertBoard@issues.ts:9047",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37503,7 +37503,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16491",
+    "boardGuard": "assertBoard@issues.ts:16500",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39431,7 +39431,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18520",
+    "boardGuard": "assertBoard@issues.ts:18612",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39863,7 +39863,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17446",
+    "boardGuard": "assertBoard@issues.ts:17538",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43731,7 +43731,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10368",
+    "boardGuard": "assertBoard@issues.ts:10377",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43857,7 +43857,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16459",
+    "boardGuard": "assertBoard@issues.ts:16468",
     "authorityCapability": null,
     "parameters": [
       {

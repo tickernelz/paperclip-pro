@@ -35,6 +35,7 @@ import { projectService } from "./projects.js";
 import { executionWorkspaceService } from "./execution-workspaces.js";
 import { issueService } from "./issues.js";
 import { issueThreadInteractionService } from "./issue-thread-interactions.js";
+import { steerPostedComment } from "./message-steering.js";
 import { goalService } from "./goals.js";
 import { documentService } from "./documents.js";
 import { heartbeatService } from "./heartbeat.js";
@@ -2459,6 +2460,16 @@ export function buildHostServices(
               commentId: comment.id,
               agentId: postCommentIssue.assigneeAgentId,
             }, "failed to wake assignee on plugin-relayed human comment"));
+            await steerPostedComment(db, {
+              companyId,
+              issueId: issue.id,
+              commentId: comment.id,
+              actorUserId: params.actorUserId,
+            }).catch((err) => logger.warn({
+              err,
+              issueId: issue.id,
+              commentId: comment.id,
+            }, "plugin-relayed human comment stays queued because steering failed"));
           }
         }
 

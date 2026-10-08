@@ -22,6 +22,7 @@ export {
   extractWakeCommentIds,
   deriveCommentId,
   allowsIssueInteractionWake,
+  isInteractionResponseWake,
   isResolvedInteractionContinuationWakeContext,
 } from "./domain/wake-context.js";
 export type {
