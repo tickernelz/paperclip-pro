@@ -977,6 +977,7 @@ export type CompactIssue = Pick<
   | "createdAt"
   | "updatedAt"
 > & {
+  descriptionTruncated: NonNullable<Issue["descriptionTruncated"]>;
   labelIds?: string[];
   labels?: IssueLabel[];
   blockedBy?: IssueRelationIssueSummary[];
