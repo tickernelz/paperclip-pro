@@ -46,5 +46,8 @@ export const heartbeatRunEvents = pgTable(
       .where(sql`${table.sourceInstanceId} is not null and ${table.sourceSeq} is not null`),
     companyRunIdx: index("heartbeat_run_events_company_run_idx").on(table.companyId, table.runId),
     companyCreatedIdx: index("heartbeat_run_events_company_created_idx").on(table.companyId, table.createdAt),
+    retryExhaustedRunIdx: index("heartbeat_run_events_retry_exhausted_run_idx")
+      .on(table.runId, table.id)
+      .where(sql`${table.eventType} = 'lifecycle' and ${table.message} like 'Bounded retry exhausted%'`),
   }),
 );
