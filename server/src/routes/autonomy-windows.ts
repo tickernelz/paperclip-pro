@@ -3,8 +3,7 @@ import type { Db } from "@tickernelz/paperclip-pro-db";
 import { openIssueAutonomyWindowSchema } from "@tickernelz/paperclip-pro-shared";
 import { validate } from "../middleware/validate.js";
 import { autonomyWindowService } from "../services/autonomy-windows.js";
-import { notFound } from "../errors.js";
-import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";
 
 export function autonomyWindowRoutes(db: Db) {
   const router = Router();
@@ -35,9 +34,8 @@ export function autonomyWindowRoutes(db: Db) {
 
   router.delete("/autonomy-windows/:id", async (req, res) => {
     assertBoard(req);
-    const existing = await svc.getById(req.params.id as string);
-    if (!existing) throw notFound("Autonomy window not found");
-    assertCompanyAccess(req, existing.companyId);
+    const existing = await getAccessibleResource(req, res, svc.getById(req.params.id as string), "Autonomy window not found");
+    if (!existing) return;
     const actor = getActorInfo(req);
     const window = await svc.close(existing.id, { userId: actor.actorId, grantedVia: "paperclip" }, existing.companyId);
     res.json(window);

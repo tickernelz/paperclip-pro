@@ -4042,7 +4042,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@autonomy-windows.ts:24",
+    "boardGuard": "assertBoard@autonomy-windows.ts:23",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13170,11 +13170,10 @@
     },
     "guards": [
       "assertBoard",
-      "assertCompanyAccess",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@autonomy-windows.ts:37",
+    "boardGuard": "assertBoard@autonomy-windows.ts:36",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24962,7 +24961,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@autonomy-windows.ts:14",
+    "boardGuard": "assertBoard@autonomy-windows.ts:13",
     "authorityCapability": null,
     "parameters": [
       {
