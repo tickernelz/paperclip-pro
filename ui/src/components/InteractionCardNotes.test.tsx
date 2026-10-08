@@ -277,6 +277,13 @@ describe("interaction card Markdown", () => {
     expect(container.textContent).not.toContain("Second paragraph.");
   });
 
+  it("renders the thread card title and summary as Markdown", async () => {
+    const titled = { ...markdownConfirmation, title: "Run **bold** check", summary: "Uses `code` logs" };
+    await render(<IssueThreadInteractionCard interaction={titled} {...callbacks(titled)} />);
+    expectMarkdownPrompt();
+    expect(container.textContent).not.toContain("**");
+  });
+
   it("renders thread question prompts and option labels as Markdown", async () => {
     await render(<IssueThreadInteractionCard interaction={markdownQuestion} {...callbacks(markdownQuestion)} />);
     expectMarkdownPrompt();
@@ -397,6 +404,129 @@ describe("interaction card notes", () => {
       await render(<IssueThreadInteractionCard interaction={interaction} {...callbacks(interaction)} />);
       expect(container.querySelector('[data-testid="interaction-note-toggle"]')).toBeNull();
     }
+  });
+});
+
+async function remount(ui: ReactNode) {
+  act(() => root.unmount());
+  root = createRoot(container);
+  await render(ui);
+}
+
+function otherQuestion(selectionMode: "single" | "multi"): AskUserQuestionsInteraction {
+  return {
+    ...markdownQuestion,
+    id: `interaction-other-${selectionMode}`,
+    payload: {
+      ...markdownQuestion.payload,
+      questions: [{ ...markdownQuestion.payload.questions[0]!, selectionMode, allowOther: true }],
+    },
+  };
+}
+
+describe("thread interaction card note visibility", () => {
+  it.each(["single", "multi"] as const)("offers Add note after a %s-select pick and after choosing Other", async (mode) => {
+    const interaction = otherQuestion(mode);
+    await render(<IssueThreadInteractionCard interaction={interaction} {...callbacks(interaction)} />);
+    expect(container.querySelector('[data-testid="interaction-note-toggle"]')).toBeNull();
+    await click(container.querySelector(`#${interaction.id}-q1-yes`));
+    expect(container.querySelector('[data-testid="interaction-note-toggle"]')).not.toBeNull();
+    await click(container.querySelector(`#${interaction.id}-q1-yes`));
+    if (mode === "multi") expect(container.querySelector('[data-testid="interaction-note-toggle"]')).toBeNull();
+    await click(container.querySelector(`#${interaction.id}-q1-other`));
+    expect(container.querySelector('[data-testid="interaction-note-toggle"]')).not.toBeNull();
+  });
+
+  it("attaches archives, PDFs, images and videos as note links", async () => {
+    await render(<IssueThreadInteractionCard interaction={markdownQuestion} {...callbacks(markdownQuestion)} />);
+    await click(container.querySelector("#interaction-markdown-question-q1-yes"));
+    await click(container.querySelector('[data-testid="interaction-note-toggle"]'));
+    const input = container.querySelector<HTMLInputElement>('input[aria-label="Attach file to note"]')!;
+    expect(input.getAttribute("accept")).toBeNull();
+    const files = [
+      new File(["zip"], "logs.zip", { type: "application/zip" }),
+      new File(["%PDF"], "spec.pdf", { type: "application/pdf" }),
+      new File(["png"], "shot.png", { type: "image/png" }),
+      new File(["mp4"], "demo.mp4", { type: "video/mp4" }),
+    ];
+    for (const file of files) {
+      Object.defineProperty(input, "files", { configurable: true, value: [file] });
+      await act(async () => {
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      await act(async () => {
+        await new Promise((resolve) => setTimeout(resolve, 0));
+      });
+    }
+    await click(buttonByText("Send answers"));
+    const note = (postedBody("/interactions/interaction-markdown-question/respond").answers as Array<{ note?: string }>)[0]?.note;
+    expect(note).toContain(`[logs.zip](${ATTACHMENT_PATH})`);
+    expect(note).toContain(`[spec.pdf](${ATTACHMENT_PATH})`);
+    expect(note).toContain(`![shot.png](${ATTACHMENT_PATH})`);
+    expect(note).toContain(`[demo.mp4](${ATTACHMENT_PATH})`);
+  });
+});
+
+describe("thread interaction card drafts", () => {
+  it("restores a question draft after unmount and clears it after submit", async () => {
+    const interaction = otherQuestion("multi");
+    await render(<IssueThreadInteractionCard interaction={interaction} {...callbacks(interaction)} />);
+    await click(container.querySelector(`#${interaction.id}-q1-yes`));
+    await click(container.querySelector(`#${interaction.id}-q1-other`));
+    await typeInto(container.querySelector<HTMLTextAreaElement>('textarea[aria-label^="Other answer"]')!, "Also staging");
+    await click(container.querySelector('[data-testid="interaction-note-toggle"]'));
+    await typeInto(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')!, "Keep **this**");
+
+    await remount(<IssueThreadInteractionCard interaction={interaction} {...callbacks(interaction)} />);
+    expect(container.querySelector(`#${interaction.id}-q1-yes`)?.getAttribute("aria-checked")).toBe("true");
+    expect(container.querySelector<HTMLTextAreaElement>('textarea[aria-label^="Other answer"]')?.value).toBe("Also staging");
+    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')?.value).toBe("Keep **this**");
+
+    await click(buttonByText("Send answers"));
+    expect((postedBody(`/interactions/${interaction.id}/respond`).answers as unknown[])[0]).toEqual({
+      questionId: "q1",
+      optionIds: ["yes"],
+      otherText: "Also staging",
+      note: "Keep **this**",
+    });
+    await remount(<IssueThreadInteractionCard interaction={interaction} {...callbacks(interaction)} />);
+    expect(container.querySelector(`#${interaction.id}-q1-yes`)?.getAttribute("aria-checked")).toBe("false");
+    expect(container.querySelector('[data-testid="interaction-note"]')).toBeNull();
+  });
+
+  it("keeps the question draft when submit fails", async () => {
+    mockApi.post.mockRejectedValueOnce(new Error("offline"));
+    await render(<IssueThreadInteractionCard interaction={markdownQuestion} {...callbacks(markdownQuestion)} />);
+    await click(container.querySelector("#interaction-markdown-question-q1-yes"));
+    await click(buttonByText("Send answers"));
+    await remount(<IssueThreadInteractionCard interaction={markdownQuestion} {...callbacks(markdownQuestion)} />);
+    expect(container.querySelector("#interaction-markdown-question-q1-yes")?.getAttribute("aria-checked")).toBe("true");
+  });
+
+  it("restores confirmation and checkbox notes and selections after unmount", async () => {
+    await render(<IssueThreadInteractionCard interaction={markdownConfirmation} {...callbacks(markdownConfirmation)} />);
+    await click(container.querySelector('[data-testid="interaction-note-toggle"]'));
+    await typeInto(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')!, "After the demo");
+    await remount(<IssueThreadInteractionCard interaction={markdownConfirmation} {...callbacks(markdownConfirmation)} />);
+    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')?.value).toBe("After the demo");
+    await click(buttonByText("Approve"));
+    expect(postedBody("/interactions/interaction-markdown-confirmation/accept").note).toBe("After the demo");
+    await remount(<IssueThreadInteractionCard interaction={markdownConfirmation} {...callbacks(markdownConfirmation)} />);
+    expect(container.querySelector('[data-testid="interaction-note"]')).toBeNull();
+
+    const checkbox = { ...pendingRequestCheckboxConfirmationInteraction, companyId: "company-1" };
+    const firstOption = checkbox.payload.options[0]!.id;
+    await remount(<IssueThreadInteractionCard interaction={checkbox} {...callbacks(checkbox)} />);
+    const optionBox = () => container.querySelector<HTMLElement>(`[id="${checkbox.id}-${firstOption}"]`);
+    const before = optionBox()?.getAttribute("aria-checked") ?? optionBox()?.getAttribute("data-state");
+    await click(optionBox());
+    const after = optionBox()?.getAttribute("aria-checked") ?? optionBox()?.getAttribute("data-state");
+    expect(after).not.toBe(before);
+    await click(container.querySelector('[data-testid="interaction-note-toggle"]'));
+    await typeInto(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')!, "Only these");
+    await remount(<IssueThreadInteractionCard interaction={checkbox} {...callbacks(checkbox)} />);
+    expect(optionBox()?.getAttribute("aria-checked") ?? optionBox()?.getAttribute("data-state")).toBe(after);
+    expect(container.querySelector<HTMLTextAreaElement>('[data-testid="interaction-note-editor"] textarea')?.value).toBe("Only these");
   });
 });
 

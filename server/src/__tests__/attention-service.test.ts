@@ -1240,7 +1240,7 @@ describeEmbeddedPostgres("attention service", () => {
         payload: {
           version: 1,
           questions: [
-            { id: "q1", prompt: "Which auth provider should we use?", selectionMode: "single", options: [] },
+            { id: "q1", prompt: "Which **auth** provider should we use for `pmt_run`?\n\n- Keep *health-check* on", selectionMode: "single", options: [] },
             { id: "q2", prompt: "Should we add a fallback?", selectionMode: "single", options: [] },
           ],
         },
@@ -1266,8 +1266,8 @@ describeEmbeddedPostgres("attention service", () => {
         kind: "request_checkbox_confirmation",
         status: "pending",
         continuationPolicy: "wake_assignee",
-        title: "Checkbox",
-        payload: { version: 1, prompt: "Select rollout regions", options: [{ id: "us", label: "US" }, { id: "eu", label: "EU" }] },
+        title: "**Checkbox** for `eu_west`",
+        payload: { version: 1, prompt: "Select **rollout** regions for `snake_case_job`", options: [{ id: "us", label: "US" }, { id: "eu", label: "EU" }] },
         createdAt: new Date("2026-07-09T12:04:00.000Z"),
         updatedAt: new Date("2026-07-09T12:04:00.000Z"),
       },
@@ -1314,17 +1314,18 @@ describeEmbeddedPostgres("attention service", () => {
     expect(detailsByKind.get("questions")?.detail).toMatchObject({
       kind: "questions",
       questionCount: 2,
-      firstQuestionText: "Which auth provider should we use?",
+      firstQuestionText: "Which auth provider should we use for pmt_run? Keep health-check on",
     });
     expect(detailsByKind.get("suggested_tasks")?.detail).toMatchObject({
       kind: "suggested_tasks",
       taskCount: 2,
       firstTaskTitle: "Build API",
     });
+    expect(detailsByKind.get("checkbox_confirmation")?.subject.title).toBe("Checkbox for eu_west");
     expect(detailsByKind.get("checkbox_confirmation")?.detail).toMatchObject({
       kind: "checkbox_confirmation",
       optionCount: 2,
-      promptExcerpt: "Select rollout regions",
+      promptExcerpt: "Select rollout regions for snake_case_job",
     });
     expect(detailsByKind.get("item_verdicts")?.detail).toMatchObject({
       kind: "item_verdicts",
