@@ -5,6 +5,7 @@ import { retryIdempotentDatabaseOperation } from "../database-retry.js";
 import { externalConversationStateSql, nonIdleSlackIssueCondition, resumeSlackConversation } from "./slack-conversation-state.js";
 import { documentService } from "./documents.js";
 import { parseTaskSearch, taskSearchCtes, taskSearchScore } from "./task-search.js";
+import { parseStatusFilter } from "./issue-list-query.js";
 import { createdFromIssueCondition } from "./issue-creation-origin.js";
 import { executionProjectionsForRuns } from "./execution-projection.js";
 import { inheritIssueRunModelOverrideForChild } from "./issue-run-model-override.js";
@@ -1774,25 +1775,6 @@ export function deriveIssueCommentRunLogAttribution(
   }
 
   return derivedByCommentId;
-}
-
-// Express's default `qs` parser binds repeated query keys to a `string[]`,
-// so a request like `?status=todo&status=in_progress` arrives here as an
-// array. Single-key + comma-separated forms remain valid too; normalize the
-// supported shapes once so the service contract matches runtime reality.
-export function parseStatusFilter(
-  input: string | readonly string[] | undefined,
-): string[] {
-  if (input === undefined || input === null) return [];
-  const entries = Array.isArray(input)
-    ? input
-    : typeof input === "string"
-      ? [input]
-      : [];
-  return entries
-    .flatMap((entry) => (typeof entry === "string" ? entry.split(",") : []))
-    .map((status) => status.trim())
-    .filter(Boolean);
 }
 
 function issueAttributeFilterConditions(companyId: string, filters?: IssueFilters): SQL[] {
