@@ -257,6 +257,59 @@ function rawCalls() {
     expect(onChange).toHaveBeenLastCalledWith({ raw: 'title:"internal status"', q: 'title:"internal status"', filters: {} });
   });
 
+  function listbox() {
+    return container.querySelector('[role="listbox"]');
+  }
+
+  it("closes the dropdown after Enter commits a filter typed character by character", () => {
+    render();
+    act(() => input().focus());
+    type("s");
+    type("status:");
+    type("d");
+    type("do");
+    type("done");
+    expect(container.querySelector('[data-testid="scoped-search-pending-field"]')?.textContent).toContain("status:");
+    key("Enter");
+    expect(pills()).toEqual(["status:done"]);
+    expect(listbox()).toBeNull();
+    expect(input().getAttribute("aria-expanded")).toBe("false");
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ raw: "status:done", q: "", filters: { status: ["done"] } });
+  });
+
+  it("closes the dropdown after Enter commits a pasted filter token", () => {
+    render();
+    act(() => input().focus());
+    type("status:done");
+    key("Enter");
+    expect(pills()).toEqual(["status:done"]);
+    expect(listbox()).toBeNull();
+  });
+
+  it("closes the dropdown after Enter picks a highlighted picker option", () => {
+    render();
+    act(() => input().focus());
+    type("pri");
+    key("ArrowDown");
+    key("Enter");
+    expect(listbox()).not.toBeNull();
+    key("ArrowDown");
+    key("Enter");
+    expect(pills()).toEqual(["priority:high"]);
+    expect(listbox()).toBeNull();
+    key("ArrowDown");
+    expect(listbox()).not.toBeNull();
+  });
+
+  it("keeps suggesting the next field after a value is committed with a space", () => {
+    render();
+    act(() => input().focus());
+    type("label:bug ");
+    expect(pills()).toEqual(["label:bug"]);
+    expect(listbox()).not.toBeNull();
+  });
+
   it("closes the dropdown on Escape", () => {
     render();
     act(() => input().focus());
