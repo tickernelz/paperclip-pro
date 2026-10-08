@@ -83,6 +83,20 @@ describe("buildIssueTree", () => {
     expect(childMap.size).toBe(0);
   });
 
+  it("keeps already-seen orphans at root level after their parent arrives, nesting the parent's other children", () => {
+    const seenOrphan = makeIssue("seen", "parent");
+    const nestedUnderSeen = makeIssue("grandchild", "seen");
+    const parent = makeIssue("parent");
+    const newSibling = makeIssue("new-sibling", "parent");
+    const { roots, childMap } = buildIssueTree(
+      [seenOrphan, nestedUnderSeen, parent, newSibling],
+      new Set(["seen"]),
+    );
+    expect(roots.map((r) => r.id)).toEqual(["seen", "parent"]);
+    expect(childMap.get("parent")?.map((c) => c.id)).toEqual(["new-sibling"]);
+    expect(childMap.get("seen")?.map((c) => c.id)).toEqual(["grandchild"]);
+  });
+
   it("returns empty roots and empty childMap for an empty list", () => {
     const { roots, childMap } = buildIssueTree([]);
     expect(roots).toEqual([]);

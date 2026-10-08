@@ -92,7 +92,7 @@ import {
   KANBAN_COLUMN_PAGE_SIZE_OPTIONS,
   type KanbanColumnPageSize,
 } from "./KanbanBoard";
-import { buildIssueTree, countDescendants } from "../lib/issue-tree";
+import { buildIssueTree, countDescendants, type IssueTree } from "../lib/issue-tree";
 import { getInboxKeyboardSelectionIndex } from "../lib/inbox";
 import { hasBlockingShortcutDialog, isKeyboardShortcutTextInputTarget } from "../lib/keyboardShortcuts";
 import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
@@ -141,6 +141,7 @@ function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | n
   return null;
 }
 const ISSUE_SCROLL_ANCHOR_ROW_COUNT = 12;
+const ISSUE_SCROLL_ANCHOR_TOLERANCE_PX = 24;
 
 type IssueRowScrollAnchor = { identity: string; rows: Array<{ id: string; top: number }> };
 
@@ -179,22 +180,26 @@ function issueRowAnchorShift(
   anchor: IssueRowScrollAnchor,
 ): number | null {
   const viewport = issuesViewportBounds(scrollContainer);
-  const votes = new Map<number, { count: number; firstIndex: number }>();
+  const shifts: Array<{ shift: number; index: number }> = [];
   anchor.rows.forEach(({ id, top }, index) => {
     const row = root.querySelector<HTMLElement>(`[data-issue-row-id="${escapeAttrValue(id)}"]`);
     if (!row) return;
-    const shift = Math.round(row.getBoundingClientRect().top - viewport.top - top);
-    const vote = votes.get(shift);
-    if (vote) vote.count += 1;
-    else votes.set(shift, { count: 1, firstIndex: index });
+    shifts.push({ shift: Math.round(row.getBoundingClientRect().top - viewport.top - top), index });
   });
-  let best: { shift: number; count: number; firstIndex: number } | null = null;
-  for (const [shift, vote] of votes) {
-    if (!best || vote.count > best.count || (vote.count === best.count && vote.firstIndex < best.firstIndex)) {
-      best = { shift, ...vote };
+  if (shifts.length === 0) return null;
+  shifts.sort((a, b) => a.shift - b.shift);
+  let best: { count: number; first: { shift: number; index: number } } | null = null;
+  let clusterStart = 0;
+  for (let end = 1; end <= shifts.length; end += 1) {
+    if (end < shifts.length && shifts[end]!.shift - shifts[end - 1]!.shift <= ISSUE_SCROLL_ANCHOR_TOLERANCE_PX) continue;
+    const cluster = shifts.slice(clusterStart, end);
+    const first = cluster.reduce((top, entry) => (entry.index < top.index ? entry : top));
+    if (!best || cluster.length > best.count || (cluster.length === best.count && first.index < best.first.index)) {
+      best = { count: cluster.length, first };
     }
+    clusterStart = end;
   }
-  return best?.shift ?? null;
+  return best!.first.shift;
 }
 
 const boardIssueStatuses = ISSUE_STATUSES;
@@ -370,25 +375,33 @@ function sortIssues(issues: Issue[], state: IssueViewState): Issue[] {
   return sorted;
 }
 
-type IssueRowRenderSnapshot = { identity: string; ids: string[] };
+type IssueRowRenderSnapshot = { identity: string; ids: string[]; limit: number };
+
+type SeenIssueTreeState = {
+  identity: string;
+  keptRootIds: Set<string>;
+  seenIds: Set<string>;
+  knownIds: Set<string>;
+};
 
 function nextIssueRowRenderLimit(
   previous: IssueRowRenderSnapshot | null,
   identity: string,
   nextIds: string[],
-  current: number,
+  requested: number,
 ): number {
   const initialLimit = Math.min(nextIds.length, INITIAL_ISSUE_ROW_RENDER_LIMIT);
   if (!previous || previous.identity !== identity) return initialLimit;
+  if (previous.ids === nextIds) return Math.min(nextIds.length, Math.max(previous.limit, requested, initialLimit));
   const positionById = new Map<string, number>();
   nextIds.forEach((id, index) => positionById.set(id, index));
-  const renderedCount = Math.min(current, previous.ids.length);
+  const renderedCount = Math.min(previous.limit, previous.ids.length);
   let lastRenderedPosition = -1;
   for (let index = 0; index < renderedCount; index += 1) {
     const position = positionById.get(previous.ids[index]!);
     if (position !== undefined && position > lastRenderedPosition) lastRenderedPosition = position;
   }
-  return Math.min(nextIds.length, Math.max(lastRenderedPosition + 1, initialLimit));
+  return Math.min(nextIds.length, Math.max(lastRenderedPosition + 1, requested, initialLimit));
 }
 
 function issueRecencyDate(issue: Pick<Issue, "updatedAt" | "lastActivityAt">): Date | string {
@@ -887,7 +900,7 @@ function StreamlinedIssuesList({
   const [assigneePickerIssueId, setAssigneePickerIssueId] = useState<string | null>(null);
   const [assigneeSearch, setAssigneeSearch] = useState("");
   const [issueSearch, setIssueSearch] = useState(initialSearch ?? "");
-  const [renderedIssueRowLimit, setRenderedIssueRowLimit] = useState(INITIAL_ISSUE_ROW_RENDER_LIMIT);
+  const [requestedIssueRowLimit, setRequestedIssueRowLimit] = useState(INITIAL_ISSUE_ROW_RENDER_LIMIT);
   const [visibleIssueColumns, setVisibleIssueColumns] = useState<InboxIssueColumn[]>(initialPreferences.columns);
   const initialServerFillRequestedRef = useRef(false);
   const [searchSortPicked, setSearchSortPicked] = useState(false);
@@ -1487,6 +1500,83 @@ function StreamlinedIssuesList({
     projectById,
   ]);
 
+  const renderBudgetIdentity = useMemo(
+    () => JSON.stringify([
+      scopedKey,
+      normalizedIssueSearch,
+      viewState.statuses,
+      viewState.priorities,
+      viewState.assignees,
+      viewState.creators,
+      viewState.labels,
+      viewState.projects,
+      viewState.workspaces,
+      viewState.liveOnly ?? false,
+      viewState.externalObjectStatuses,
+      viewState.hideRoutineExecutions,
+      viewState.sortField,
+      viewState.sortDir,
+      viewState.groupBy,
+      viewState.viewMode,
+      viewState.nestingEnabled,
+      keepServerOrder,
+    ]),
+    [
+      scopedKey,
+      normalizedIssueSearch,
+      viewState.statuses,
+      viewState.priorities,
+      viewState.assignees,
+      viewState.creators,
+      viewState.labels,
+      viewState.projects,
+      viewState.workspaces,
+      viewState.liveOnly,
+      viewState.externalObjectStatuses,
+      viewState.hideRoutineExecutions,
+      viewState.sortField,
+      viewState.sortDir,
+      viewState.groupBy,
+      viewState.viewMode,
+      viewState.nestingEnabled,
+      keepServerOrder,
+    ],
+  );
+
+  const seenTreeRef = useRef<SeenIssueTreeState>({
+    identity: "",
+    keptRootIds: new Set(),
+    seenIds: new Set(),
+    knownIds: new Set(),
+  });
+  const issueTreeByGroupKey = useMemo(() => {
+    const trees = new Map<string, IssueTree>();
+    if (viewState.viewMode !== "list") return trees;
+    const seen = seenTreeRef.current.identity === renderBudgetIdentity ? seenTreeRef.current : null;
+    for (const group of groupedContent) {
+      if (!viewState.nestingEnabled) {
+        trees.set(group.key, { roots: group.items, childMap: new Map<string, Issue[]>() });
+        continue;
+      }
+      let keptRootIds: Set<string> | undefined;
+      if (seen) {
+        keptRootIds = new Set(seen.keptRootIds);
+        for (const issue of group.items) {
+          if (issue.parentId && !seen.knownIds.has(issue.id) && seen.seenIds.has(issue.parentId)) {
+            keptRootIds.add(issue.id);
+          }
+        }
+      }
+      trees.set(group.key, buildIssueTree(group.items, keptRootIds));
+    }
+    return trees;
+  }, [groupedContent, renderBudgetIdentity, viewState.nestingEnabled, viewState.viewMode]);
+  const issueTreeForGroup = (group: { key: string; items: Issue[] }): IssueTree =>
+    issueTreeByGroupKey.get(group.key)
+      ?? (viewState.nestingEnabled
+        ? buildIssueTree(group.items)
+        : { roots: group.items, childMap: new Map<string, Issue[]>() });
+
   // Flattened visible order (group headers, then tree DFS per group —
   // collapsed groups keep their header entry but skip their rows) — must
   // match render order below for keyboard traversal. `budgetOrdinal` counts
@@ -1499,9 +1589,7 @@ function StreamlinedIssuesList({
     for (const group of groupedContent) {
       const collapsed = Boolean(group.label) && viewState.collapsedGroups.includes(group.key);
       if (group.label) out.push({ type: "group", key: group.key, collapsed });
-      const { roots, childMap } = viewState.nestingEnabled
-        ? buildIssueTree(group.items)
-        : { roots: group.items, childMap: new Map<string, Issue[]>() };
+      const { roots, childMap } = issueTreeForGroup(group);
       const walk = (issue: Issue) => {
         budgetCount += 1;
         const children = childMap.get(issue.id) ?? [];
@@ -1602,7 +1690,7 @@ function StreamlinedIssuesList({
           // within the render budget so the band mounts and can scroll into
           // view (the +1 keeps the next row visible as a scroll cue).
           if (nextEntry.type === "issue") {
-            setRenderedIssueRowLimit((current) => Math.max(current, nextEntry.budgetOrdinal + 1));
+            setRequestedIssueRowLimit((current) => Math.max(current, nextEntry.budgetOrdinal + 1));
           }
           break;
         }
@@ -1661,64 +1749,12 @@ function StreamlinedIssuesList({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [navigate, queryClient]);
 
-  // Keep the keyboard selection visible while navigating. Depends on the
-  // render budget too: a selection past the mounted batch scrolls once its
-  // row mounts.
-  useEffect(() => {
-    if (!selectedNavKey) return;
-    findSelectedNavElement(selectedNavKey)?.scrollIntoView({ block: "nearest" });
-  }, [findSelectedNavElement, renderedIssueRowLimit, selectedNavKey]);
-
-  const renderBudgetIdentity = useMemo(
-    () => JSON.stringify([
-      scopedKey,
-      normalizedIssueSearch,
-      viewState.statuses,
-      viewState.priorities,
-      viewState.assignees,
-      viewState.creators,
-      viewState.labels,
-      viewState.projects,
-      viewState.workspaces,
-      viewState.liveOnly ?? false,
-      viewState.externalObjectStatuses,
-      viewState.hideRoutineExecutions,
-      viewState.sortField,
-      viewState.sortDir,
-      viewState.groupBy,
-      viewState.viewMode,
-      viewState.nestingEnabled,
-      keepServerOrder,
-    ]),
-    [
-      scopedKey,
-      normalizedIssueSearch,
-      viewState.statuses,
-      viewState.priorities,
-      viewState.assignees,
-      viewState.creators,
-      viewState.labels,
-      viewState.projects,
-      viewState.workspaces,
-      viewState.liveOnly,
-      viewState.externalObjectStatuses,
-      viewState.hideRoutineExecutions,
-      viewState.sortField,
-      viewState.sortDir,
-      viewState.groupBy,
-      viewState.viewMode,
-      viewState.nestingEnabled,
-      keepServerOrder,
-    ],
-  );
 
   const budgetOrderedIssueIds = useMemo(() => {
     if (viewState.viewMode !== "list") return [] as string[];
     const ids: string[] = [];
     for (const group of groupedContent) {
-      const { roots, childMap } = viewState.nestingEnabled
-        ? buildIssueTree(group.items)
-        : { roots: group.items, childMap: new Map<string, Issue[]>() };
+      const { roots, childMap } = issueTreeForGroup(group);
       const walk = (issue: Issue) => {
         ids.push(issue.id);
         if (viewState.collapsedParents.includes(issue.id)) return;
@@ -1730,14 +1766,58 @@ function StreamlinedIssuesList({
   }, [groupedContent, viewState.collapsedParents, viewState.nestingEnabled, viewState.viewMode]);
 
   const renderBudgetSnapshotRef = useRef<IssueRowRenderSnapshot | null>(null);
+  const renderedIssueRowLimit = useMemo(
+    () => viewState.viewMode === "list"
+      ? nextIssueRowRenderLimit(renderBudgetSnapshotRef.current, renderBudgetIdentity, budgetOrderedIssueIds, requestedIssueRowLimit)
+      : requestedIssueRowLimit,
+    [budgetOrderedIssueIds, renderBudgetIdentity, requestedIssueRowLimit, viewState.viewMode],
+  );
   useLayoutEffect(() => {
     if (viewState.viewMode !== "list") return;
-    const previous = renderBudgetSnapshotRef.current;
-    renderBudgetSnapshotRef.current = { identity: renderBudgetIdentity, ids: budgetOrderedIssueIds };
-    setRenderedIssueRowLimit((current) =>
-      nextIssueRowRenderLimit(previous, renderBudgetIdentity, budgetOrderedIssueIds, current),
-    );
-  }, [budgetOrderedIssueIds, renderBudgetIdentity, viewState.viewMode]);
+    renderBudgetSnapshotRef.current = {
+      identity: renderBudgetIdentity,
+      ids: budgetOrderedIssueIds,
+      limit: renderedIssueRowLimit,
+    };
+    if (requestedIssueRowLimit !== renderedIssueRowLimit) setRequestedIssueRowLimit(renderedIssueRowLimit);
+  }, [budgetOrderedIssueIds, renderBudgetIdentity, renderedIssueRowLimit, requestedIssueRowLimit, viewState.viewMode]);
+
+  // Keep the keyboard selection visible while navigating. Depends on the
+  // render budget too: a selection past the mounted batch scrolls once its
+  // row mounts.
+  useEffect(() => {
+    if (!selectedNavKey) return;
+    findSelectedNavElement(selectedNavKey)?.scrollIntoView({ block: "nearest" });
+  }, [findSelectedNavElement, renderedIssueRowLimit, selectedNavKey]);
+
+  useLayoutEffect(() => {
+    if (!viewState.nestingEnabled || viewState.viewMode !== "list") return;
+    const previous = seenTreeRef.current;
+    const next: SeenIssueTreeState = previous.identity === renderBudgetIdentity
+      ? previous
+      : { identity: renderBudgetIdentity, keptRootIds: new Set(), seenIds: new Set(), knownIds: new Set() };
+    const renderedIds = budgetOrderedIssueIds.slice(0, renderedIssueRowLimit);
+    for (const id of renderedIds) next.seenIds.add(id);
+    for (const group of groupedContent) {
+      for (const issue of group.items) next.knownIds.add(issue.id);
+    }
+    for (const tree of issueTreeByGroupKey.values()) {
+      for (const root of tree.roots) {
+        if (root.parentId && (next.seenIds.has(root.id) || next.knownIds.has(root.parentId))) {
+          next.keptRootIds.add(root.id);
+        }
+      }
+    }
+    seenTreeRef.current = next;
+  }, [
+    budgetOrderedIssueIds,
+    groupedContent,
+    issueTreeByGroupKey,
+    renderBudgetIdentity,
+    renderedIssueRowLimit,
+    viewState.nestingEnabled,
+    viewState.viewMode,
+  ]);
 
   const scrollAnchorRef = useRef<IssueRowScrollAnchor | null>(null);
   const captureScrollAnchor = useCallback(() => {
@@ -1780,7 +1860,7 @@ function StreamlinedIssuesList({
   const loadMoreIssueRows = useCallback(() => {
     if (viewState.viewMode !== "list") return;
     if (hasMoreRenderedRows) {
-      setRenderedIssueRowLimit((current) => Math.min(filtered.length, current + ISSUE_ROW_RENDER_BATCH_SIZE));
+      setRequestedIssueRowLimit(Math.min(filtered.length, renderedIssueRowLimit + ISSUE_ROW_RENDER_BATCH_SIZE));
       return;
     }
     if (hasMoreIssues && !isLoadingMoreIssues) {
@@ -1792,6 +1872,7 @@ function StreamlinedIssuesList({
     hasMoreRenderedRows,
     isLoadingMoreIssues,
     onLoadMoreIssues,
+    renderedIssueRowLimit,
     viewState.viewMode,
   ]);
 
@@ -2302,9 +2383,7 @@ function StreamlinedIssuesList({
             )}
             <CollapsibleContent>
               {(() => {
-                const { roots, childMap } = viewState.nestingEnabled
-                  ? buildIssueTree(group.items)
-                  : { roots: group.items, childMap: new Map<string, Issue[]>() };
+                const { roots, childMap } = issueTreeForGroup(group);
 
                 const renderIssueRow = (issue: Issue, depth: number) => {
                   if (remainingRowsToRender <= 0) return null;
