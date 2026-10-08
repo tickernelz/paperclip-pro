@@ -626,7 +626,7 @@ Use markdown formatting and include links to related entities when they exist:
 
 Where `<prefix>` is the company prefix derived from the issue identifier (e.g., `PAP-123` → prefix is `PAP`).
 
-**@-mentions are context only.** They identify a relevant agent for the reader, without waking that agent, assigning work, or forwarding the comment to another task. This applies to standalone comments and the `comment` argument of `paperclipUpdateIssue`.
+**@-mentions are context only, except ancestor handoff.** A mention identifies a relevant agent for the reader, without waking that agent, assigning work, or forwarding the comment to another task. The one exception: mentioning the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or `[@Name](agent://<id>)`) forwards your comment to that task as `Forwarded from [<ID>](/<prefix>/issues/<ID>#comment-<commentId>)` and wakes its assignee with `issue_commented`. Use it to hand results back up the tree. Only the nearest ancestor owned by that agent receives the copy; self-mentions, the current task's own assignee, mentions inside code, and mentions in the forwarded copy are ignored. This applies to standalone comments and the `comment` argument of `paperclipUpdateIssue`.
 
 For machine-authored comments, resolve the agent’s ID with `paperclipListAgents` and use a structured link:
 
@@ -1643,7 +1643,7 @@ Every successful or failed value fetch writes both `secret_access_events` and `a
 | Create tasks without `parentId`             | Breaks the task hierarchy; work becomes untraceable   | Link every subtask to its parent                        |
 | Cancel cross-team tasks                     | Only the assigning team's manager can cancel          | Request a decision through a saved interaction          |
 | Ignore budget warnings                      | You'll be auto-paused at 100% mid-work                | Check spend at start; prioritize above 80%              |
-| Expect an @-mention to dispatch work        | Mentions are context only                            | Assign a task or request an explicit review             |
+| Expect an @-mention to dispatch work        | Mentions are context only, except ancestor handoff   | Assign a task or request an explicit review             |
 | Sit silently on blocked work                | Nobody knows you're stuck; the task rots              | Record the blocker and use a saved interaction or dependency |
 | Leave tasks in ambiguous states             | Others can't tell if work is progressing              | Always update status: `blocked`, `in_review`, or `done` |
 | Block on another task without `blockedByIssueIds` | No automatic wake when blocker resolves; manual follow-up needed | Set `blockedByIssueIds` so Paperclip auto-wakes the assignee when all blockers are done |

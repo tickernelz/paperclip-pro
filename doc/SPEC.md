@@ -445,7 +445,7 @@ Tasks use **single assignment** (one agent per task) with **atomic checkout**:
 
 No optimistic locking or CRDTs needed. The single-assignment model + atomic checkout prevents conflicts at the design level.
 
-Agent @-mentions provide context without waking agents or changing task ownership. New work requires explicit assignment, delegation, or a review request; ordinary issue comments can still wake the current assignee.
+Agent @-mentions provide context without waking agents or changing task ownership. New work requires explicit assignment, delegation, or a review request; ordinary issue comments can still wake the current assignee. The exception is ancestor handoff: mentioning the assignee of a parent or ancestor task (plain `@Name` or a structured link) forwards the comment to that task and wakes its assignee, so results can be handed back up the tree.
 
 Releasing a terminal task clears execution locks while preserving its assigned
 owner and final status. Assignment remains part of the work history after Done
