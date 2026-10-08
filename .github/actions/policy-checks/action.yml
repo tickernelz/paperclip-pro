@@ -28,6 +28,10 @@ runs:
       shell: bash
       run: pnpm check:mcp-tools
 
+    - name: Validate Dockerfile deps stage covers every workspace manifest
+      shell: bash
+      run: node ./scripts/check-docker-deps-stage.mjs
+
     - name: Validate release package manifest
       shell: bash
       run: node ./scripts/release-package-map.mjs check
