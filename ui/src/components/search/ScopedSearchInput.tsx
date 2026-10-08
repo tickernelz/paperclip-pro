@@ -199,7 +199,9 @@ export function ScopedSearchInput({
       emit(raw);
       return;
     }
-    const handle = window.setTimeout(() => emit(raw), debounceMs);
+    const handle = window.setTimeout(() => {
+      if (raw !== lastEmittedRef.current) emit(raw);
+    }, debounceMs);
     return () => window.clearTimeout(handle);
   }, [debounceMs, emit, raw]);
 
@@ -326,12 +328,20 @@ export function ScopedSearchInput({
         selectOption(options[activeIndex]!);
         return;
       }
+      let nextRaw = raw;
       if (pending?.kind === "text" && draft.trim()) {
-        commitToken(formatSearchToken(pending.key, draft));
-        emit(composeRaw([...tokens, formatSearchToken(pending.key, draft)], null, heldText));
-      } else if (raw !== lastEmittedRef.current) {
-        emit(raw);
+        const token = formatSearchToken(pending.key, draft);
+        commitToken(token);
+        nextRaw = composeRaw([...tokens, token], null, heldText);
+      } else if (!pending) {
+        const split = splitSearchInput(draft, operatorKeys);
+        if (split.tokens.length > 0) {
+          setTokens([...tokens, ...split.tokens]);
+          setDraft(split.text);
+          nextRaw = composeRaw([...tokens, ...split.tokens], null, split.text);
+        }
       }
+      if (nextRaw !== lastEmittedRef.current) emit(nextRaw);
       setOpen(false);
     }
     if (!composing && event.key === "Escape" && listVisible) {

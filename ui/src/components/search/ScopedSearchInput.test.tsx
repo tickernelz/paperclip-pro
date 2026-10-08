@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
+import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ScopedSearchInput, type ScopedSearchValue } from "./ScopedSearchInput";
@@ -151,6 +151,110 @@ describe("ScopedSearchInput", () => {
     expect(pills()).toEqual(["id:ZHA-9"]);
     settle();
     expect(onChange).toHaveBeenLastCalledWith({ raw: "id:ZHA-9 crash", q: "id:ZHA-9 crash", filters: {} });
+  });
+
+function rawCalls() {
+    return onChange.mock.calls.map(([value]) => value.raw);
+  }
+
+  function startTitleField() {
+    type("title:");
+    expect(container.querySelector('[data-testid="scoped-search-pending-field"]')?.textContent).toContain("title:");
+  }
+
+  it("does not re-emit an already emitted quoted field value when Enter commits the pill", () => {
+    render();
+    act(() => input().focus());
+    startTitleField();
+    type('"internal status"');
+    settle();
+    expect(rawCalls()).toEqual(['title:"internal status"']);
+    key("Enter");
+    settle();
+    expect(pills()).toEqual(["title:internal status"]);
+    expect(rawCalls()).toEqual(['title:"internal status"']);
+  });
+
+  it("emits a quoted field value once and immediately when Enter beats the debounce", () => {
+    render();
+    act(() => input().focus());
+    startTitleField();
+    type('"internal status"');
+    key("Enter");
+    expect(rawCalls()).toEqual(['title:"internal status"']);
+    settle();
+    expect(rawCalls()).toEqual(['title:"internal status"']);
+    expect(pills()).toEqual(["title:internal status"]);
+  });
+
+  it("emits each Enter shape exactly once", () => {
+    render();
+    type("auth");
+    key("Enter");
+    expect(rawCalls()).toEqual(["auth"]);
+
+    type("");
+    startTitleField();
+    type("deploy");
+    key("Enter");
+    expect(pills()).toEqual(["title:deploy"]);
+    expect(rawCalls()).toEqual(["auth", "title:deploy"]);
+
+    type("status:done");
+    key("Enter");
+    expect(pills()).toEqual(["title:deploy", "status:done"]);
+    expect(input().value).toBe("");
+    settle();
+    expect(rawCalls()).toEqual(["auth", "title:deploy", "title:deploy status:done"]);
+    expect(onChange).toHaveBeenLastCalledWith({
+      raw: "title:deploy status:done",
+      q: "title:deploy",
+      filters: { status: ["done"] },
+    });
+  });
+
+  it("picks the highlighted option on Enter without emitting a search", () => {
+    render();
+    act(() => input().focus());
+    type("pri");
+    key("ArrowDown");
+    key("Enter");
+    expect(container.querySelector('[data-testid="scoped-search-pending-field"]')?.textContent).toContain("priority:");
+    key("ArrowDown");
+    key("Enter");
+    expect(pills()).toEqual(["priority:high"]);
+    expect(rawCalls()).toEqual([]);
+    settle();
+    expect(rawCalls()).toEqual(["priority:high"]);
+  });
+
+  it("keeps the committed pill when a controlled parent echoes the emitted value back", () => {
+    function Harness() {
+      const [value, setValue] = useState("");
+      return (
+        <ScopedSearchInput
+          value={value}
+          context={context}
+          ariaLabel="Search tasks"
+          onChange={(next) => {
+            onChange(next);
+            setValue(next.raw);
+          }}
+        />
+      );
+    }
+    act(() => {
+      root.render(<Harness />);
+    });
+    act(() => input().focus());
+    startTitleField();
+    type('"internal status"');
+    settle();
+    key("Enter");
+    settle();
+    expect(pills()).toEqual(["title:internal status"]);
+    expect(input().value).toBe("");
+    expect(onChange).toHaveBeenLastCalledWith({ raw: 'title:"internal status"', q: 'title:"internal status"', filters: {} });
   });
 
   it("closes the dropdown on Escape", () => {

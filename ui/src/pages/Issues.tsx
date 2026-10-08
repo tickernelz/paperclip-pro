@@ -82,6 +82,22 @@ export function buildIssuesSearchUrl(currentHref: string, search: string): strin
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
+export function useIssuesSearchSync(urlSearch: string, locationSearch: string) {
+  const [searchOverride, setSearchOverride] = useState<{ search: string; locationSearch: string } | null>(null);
+  const syncedSearch = useMemo(() => {
+    if (typeof window !== "undefined" && searchOverride?.locationSearch === window.location.search) {
+      return searchOverride.search;
+    }
+    return urlSearch;
+  }, [searchOverride, urlSearch, locationSearch]);
+  const handleSearchChange = useCallback((search: string) => {
+    const nextUrl = buildIssuesSearchUrl(window.location.href, search);
+    if (nextUrl) window.history.replaceState(window.history.state, "", nextUrl);
+    setSearchOverride({ search, locationSearch: window.location.search });
+  }, []);
+  return { syncedSearch, handleSearchChange };
+}
+
 /**
  * Tasks — the single task surface after PAP-670 merged Inbox into it.
  *
@@ -171,26 +187,10 @@ function OrganizationIssues({
   const queryClient = useQueryClient();
   const fetchNextPageInFlightRef = useRef(false);
 
-  const urlSearch = searchParams.get("q") ?? "";
-  const [searchOverride, setSearchOverride] = useState<{ search: string; locationSearch: string } | null>(null);
-  const syncedSearch = useMemo(() => {
-    if (typeof window !== "undefined" && searchOverride?.locationSearch === window.location.search) {
-      return searchOverride.search;
-    }
-    return urlSearch;
-  }, [searchOverride, urlSearch, location.search]);
+  const { syncedSearch, handleSearchChange } = useIssuesSearchSync(searchParams.get("q") ?? "", location.search);
   const participantAgentId = searchParams.get("participantAgentId") ?? undefined;
   const initialWorkspaces = searchParams.getAll("workspace").filter((workspaceId) => workspaceId.length > 0);
   const workspaceIdFilter = initialWorkspaces.length === 1 ? initialWorkspaces[0] : undefined;
-  const handleSearchChange = useCallback((search: string) => {
-    const nextUrl = buildIssuesSearchUrl(window.location.href, search);
-    if (!nextUrl) {
-      setSearchOverride(null);
-      return;
-    }
-    window.history.replaceState(window.history.state, "", nextUrl);
-    setSearchOverride({ search, locationSearch: window.location.search });
-  }, []);
 
   const { data: agents } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
