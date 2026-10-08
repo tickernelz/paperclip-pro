@@ -62,7 +62,11 @@ async function readProbe(page: Page) {
   );
 }
 
-async function openKeyboard(page: Page): Promise<void> {
+async function openKeyboard(
+  page: Page,
+  editor = '[data-testid="composer-input"]',
+): Promise<void> {
+  await page.locator(editor).focus();
   await page.evaluate((inset) => {
     const viewport = window.visualViewport!;
     const height = window.innerHeight - inset;
@@ -194,6 +198,42 @@ test.describe("mobile task chat shell", () => {
     expect(last.y).toBeGreaterThanOrEqual(0);
 
     await page.screenshot({ path: `${EVIDENCE_DIR}/after-webkit-iphone13-keyboard-open.png` });
+  });
+
+  test("a pending card stays capped and reachable while the keyboard is open", async ({ page }) => {
+    await page.goto(`${HARNESS}?takeover=1`);
+    await page.waitForSelector('[data-testid="task-chat-composer-takeover"]');
+    await flickToBottom(page);
+
+    const viewportHeight = await page.evaluate(() => window.visualViewport!.height);
+    const restingCard = (await page.locator('[data-testid="task-chat-composer-takeover"]').boundingBox())!;
+    expect(restingCard.height).toBeLessThanOrEqual(viewportHeight * 0.45 + 1);
+
+    await page.locator('[data-testid="task-chat-composer-takeover"] summary', { hasText: "Details" }).click();
+    const openCard = (await page.locator('[data-testid="task-chat-composer-takeover"]').boundingBox())!;
+    expect(openCard.height).toBeLessThanOrEqual(viewportHeight * 0.45 + 1);
+    const approveAtRest = (await page.getByRole("button", { name: "Approve" }).boundingBox())!;
+    expect(approveAtRest.y + approveAtRest.height).toBeLessThanOrEqual(openCard.y + openCard.height + 1);
+
+    await openKeyboard(page, '[data-testid="task-chat-composer-input"] [contenteditable="true"]');
+    await expect(page.locator("html")).toHaveAttribute("data-keyboard-open", "true");
+    await expect(page.locator('[data-testid="task-chat-composer-takeover-summary"]')).toBeVisible();
+    await expect(page.locator('[data-slot="mobile-topbar"]')).toBeHidden();
+
+    await page.locator('[data-testid="task-chat-composer-takeover-summary"]').click();
+    await expect(page.locator('[data-testid="task-chat-composer-takeover"]')).toBeVisible();
+    await page.waitForTimeout(200);
+
+    const visibleBottom = await page.evaluate(() => window.visualViewport!.height);
+    const header = (await page.locator('[data-testid="task-chat-composer-takeover-header"]').boundingBox())!;
+    const approve = (await page.getByRole("button", { name: "Approve" }).boundingBox())!;
+    const dock = (await page.locator('[data-testid="task-chat-composer-dock"]').boundingBox())!;
+    expect(header.y).toBeGreaterThanOrEqual(0);
+    expect(approve.y + approve.height).toBeLessThanOrEqual(visibleBottom + 1);
+    expect(dock.y).toBeGreaterThanOrEqual(0);
+    expect(dock.y + dock.height).toBeLessThanOrEqual(visibleBottom + 1);
+
+    await page.screenshot({ path: `${EVIDENCE_DIR}/after-webkit-iphone13-takeover-keyboard-open.png` });
   });
 
   test("the model sheet is compact and shows one section at a time", async ({ page }) => {

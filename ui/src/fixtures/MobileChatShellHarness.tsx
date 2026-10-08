@@ -9,11 +9,16 @@ import { ModelOverrideSubtaskRows } from "@/components/task-chat/ModelOverrideSu
 import { SearchableSelect } from "@/components/SearchableSelect";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { TaskChatComposerDock } from "@/components/task-chat/TaskChatComposerDock";
+import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
+import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatCompactInteractionCard";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import type { RequestConfirmationInteraction } from "@tickernelz/paperclip-pro-shared";
 import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
 import { useMobileNavAutoHide } from "@/hooks/useMobileNavAutoHide";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { TaskChatWindowScroll } from "@/components/task-chat/useWindowAutoFollow";
 import { cn } from "@/lib/utils";
+import "@mdxeditor/editor/style.css";
 import "@/index.css";
 
 const TASK_PATH = "/PAP/issues/PAP-1";
@@ -82,6 +87,73 @@ const LEGACY_NAV = params.get("legacyNav") === "1";
 const LEGACY_PICKER = params.get("legacyPicker") === "1";
 const FOOTER_ROWS = params.get("footerRows") === "1";
 const SAFE_AREA_PX = Number(params.get("safeArea") ?? "0");
+const TAKEOVER = params.get("takeover") === "1";
+
+const takeoverInteraction: RequestConfirmationInteraction = {
+  id: "confirmation-harness",
+  companyId: "company-1",
+  issueId: "issue-1",
+  kind: "request_confirmation",
+  title: "Approve the deploy plan",
+  summary: null,
+  status: "pending",
+  continuationPolicy: "wake_assignee",
+  resolverPolicy: "anyone",
+  requestedResolverPolicy: "anyone",
+  effectiveResolverPolicy: "anyone",
+  resolverPolicyProvenance: "inherited",
+  effectiveResolverPolicySource: "requested",
+  legacyResolverPolicyAliases: { requested: "board_or_agents", effective: "board_or_agents" },
+  createdByAgentId: null,
+  createdByUserId: null,
+  resolvedByAgentId: null,
+  resolvedByUserId: null,
+  createdAt: new Date("2026-10-08T00:00:00.000Z"),
+  updatedAt: new Date("2026-10-08T00:00:00.000Z"),
+  resolvedAt: null,
+  payload: {
+    version: 1,
+    prompt:
+      "Deploy the rebuilt agent bundles to production now? Every agent restarts once and loses its warm cache.",
+    detailsMarkdown: Array.from(
+      { length: 24 },
+      (_, index) => `- Step ${index + 1}: rebuild the bundle, verify skills and memory, then restart the agent.`,
+    ).join("\n"),
+  },
+  result: null,
+};
+
+function HarnessTakeoverComposer() {
+  const [open, setOpen] = useState(true);
+  return (
+    <TooltipProvider>
+      <TaskChatComposer
+        onAdd={() => undefined}
+        workMode="standard"
+        mobile
+        takeover={
+          open
+            ? {
+                id: takeoverInteraction.id,
+                label: "Confirmation",
+                pendingCount: 2,
+                content: (
+                  <TaskChatCompactInteractionCard
+                    interaction={takeoverInteraction}
+                    presentation="takeover"
+                    onAcceptInteraction={() => setOpen(false)}
+                    onRejectInteraction={() => setOpen(false)}
+                  />
+                ),
+                onDismiss: () => setOpen(false),
+                onSkip: () => setOpen(false),
+              }
+            : null
+        }
+      />
+    </TooltipProvider>
+  );
+}
 
 if (SAFE_AREA_PX > 0) {
   const style = document.documentElement.style;
@@ -250,7 +322,7 @@ function Harness() {
   return (
     <div className="min-h-dvh w-full overflow-x-clip bg-background text-foreground">
       <TaskChatWindowScroll contentKey={`thread:${reserve}`} enabled />
-      <div className="sticky top-0 z-20 bg-background/95 px-4 py-3 backdrop-blur">
+      <div data-slot="mobile-topbar" className="sticky top-0 z-20 bg-background/95 px-4 py-3 backdrop-blur">
         <p className="text-sm font-medium">Kelola Agents ZHA-99</p>
       </div>
       <main
@@ -302,7 +374,8 @@ function Harness() {
         {showComposer ? (
           <>
             <TaskChatComposerDock ref={dockRef} mobile streamlined reserve={reserve}>
-              <div className="relative isolate flex flex-col">
+              {TAKEOVER ? <HarnessTakeoverComposer /> : null}
+              <div className={cn("relative isolate flex flex-col", TAKEOVER && "hidden")}>
                 <textarea
                   data-testid="composer-input"
                   value={draft}

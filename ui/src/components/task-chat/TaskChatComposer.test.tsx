@@ -972,8 +972,9 @@ describe("TaskChatComposer", () => {
   it("uses a compact mobile editor that can grow with the message", () => {
     render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" mobile />);
 
-    expect(editable().dataset.contentClassName).toContain("min-h-(--sz-48px)");
+    expect(editable().dataset.contentClassName).toContain("min-h-(--tc-mobile-editor-min-h)");
     expect(editable().dataset.contentClassName).toContain("max-h-(--sz-28dvh)");
+    expect(editable().dataset.contentClassName).toContain("text-base");
   });
 
   it("submits the trimmed body on Cmd+Enter and clears the draft", async () => {
@@ -3251,6 +3252,111 @@ describe("pending interaction card above the composer", () => {
     expect(
       container.querySelector('[data-testid="task-chat-pending-input-indicator"]'),
     ).toBeNull();
+  });
+
+  function renderMobileTakeover() {
+    render(
+      <TaskChatComposer
+        onAdd={vi.fn()}
+        workMode="standard"
+        mobile
+        takeover={{
+          id: "confirm-1",
+          label: "Approve the deploy",
+          pendingCount: 2,
+          content: <p>{"Long details. ".repeat(200)}</p>,
+          onDismiss: vi.fn(),
+          onSkip: vi.fn(),
+        }}
+      />,
+    );
+  }
+
+  const takeoverCard = () =>
+    container.querySelector<HTMLElement>('[data-testid="task-chat-composer-takeover"]')!;
+  const takeoverSummary = () =>
+    container.querySelector<HTMLButtonElement>(
+      '[data-testid="task-chat-composer-takeover-summary"]',
+    );
+
+  it("caps the mobile card and scrolls its body while the header and actions stay outside it", () => {
+    renderMobileTakeover();
+
+    const card = takeoverCard();
+    const body = card.querySelector<HTMLElement>(
+      '[data-testid="task-chat-composer-takeover-body"]',
+    )!;
+    const header = card.querySelector<HTMLElement>(
+      '[data-testid="task-chat-composer-takeover-header"]',
+    )!;
+    const actions = card.querySelector<HTMLElement>(
+      '[data-slot="task-chat-takeover-actions"]',
+    )!;
+    expect(card.className).toContain("max-h-(--tc-interaction-card-max-h-mobile)");
+    expect(card.className).toContain("flex-col");
+    expect(card.className).not.toContain("overflow-visible");
+    expect(body.className).toContain("overflow-y-auto");
+    expect(body.className).toContain("min-h-0");
+    expect(header.className).toContain("shrink-0");
+    expect(body.contains(header)).toBe(false);
+    expect(body.contains(actions)).toBe(false);
+    expect(actions.className).toContain("shrink-0");
+  });
+
+  it("collapses the mobile card to one row while the editor is focused and expands on tap", async () => {
+    renderMobileTakeover();
+    expect(takeoverSummary()).toBeNull();
+
+    await act(async () => {
+      editable().dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    });
+
+    const summary = takeoverSummary()!;
+    expect(summary).not.toBeNull();
+    expect(summary.textContent).toContain("Approve the deploy");
+    expect(summary.textContent).toContain("2 pending");
+    expect(takeoverCard().classList.contains("hidden")).toBe(true);
+
+    await act(async () => {
+      summary.click();
+    });
+
+    expect(takeoverSummary()).toBeNull();
+    expect(takeoverCard().classList.contains("hidden")).toBe(false);
+  });
+
+  it("collapses the mobile card when the visible viewport is short", async () => {
+    const viewport = Object.assign(new EventTarget(), { height: 440, offsetTop: 0 });
+    Object.defineProperty(window, "visualViewport", { configurable: true, value: viewport });
+    try {
+      renderMobileTakeover();
+      await flushAsync();
+      expect(takeoverSummary()).not.toBeNull();
+    } finally {
+      Reflect.deleteProperty(window, "visualViewport");
+    }
+  });
+
+  it("keeps the desktop card expanded while the editor is focused", async () => {
+    render(
+      <TaskChatComposer
+        onAdd={vi.fn()}
+        workMode="standard"
+        takeover={{
+          id: "confirm-1",
+          label: "Approve the deploy",
+          pendingCount: 1,
+          content: <p>Ship it?</p>,
+          onDismiss: vi.fn(),
+          onSkip: vi.fn(),
+        }}
+      />,
+    );
+    await act(async () => {
+      editable().dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    });
+    expect(takeoverSummary()).toBeNull();
+    expect(takeoverCard().className).toContain("max-h-(--tc-interaction-card-max-h)");
   });
 });
 

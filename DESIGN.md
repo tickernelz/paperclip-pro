@@ -48,7 +48,14 @@ alignment in every step and conditional state, not just the first screen.
 The fixed bottom navigation uses an opaque surface so scrolling content cannot
 show through its labels. On touch devices, editable controls use at least the
 16px base typography token to prevent Safari's automatic focus zoom. Larger
-title sizes remain larger.
+title sizes remain larger. Density on small or short screens comes from padding,
+minimum heights and non-editable text, never from shrinking editable text.
+
+The software-keyboard inset counts only while an editable control is focused
+and the visible viewport has lost more than 120px; otherwise browser toolbars
+and momentum scrolling never move the composer. While the keyboard is open the
+composer dock fits the visible height, and the mobile top bar, bottom navigation,
+turn status island and session goal step aside.
 
 The bottom navigation responds to accumulated scrolling, ignoring small
 reversals and Safari's edge bounce. It glides out and eases back in with shared
@@ -96,6 +103,10 @@ messages while the card is open. Questions use their compact history entry as th
 reminder; dismissing one clears the composer and stays effective after reload for
 that person and task. Other inputs keep a pending indicator that can reopen them;
 resolving or skipping the input removes that indicator.
+On mobile the card is capped at about 45% of the visible height and scrolls
+its own body while its header and actions stay visible. While the composer is
+focused or the visible height is below 500px it collapses to a one-row summary
+that expands on tap. Card actions are 36px and card text 13px on narrow screens.
 
 ## Enforcement (what "compliant" means for the extraction run)
 

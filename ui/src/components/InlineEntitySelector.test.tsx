@@ -347,9 +347,14 @@ describe("InlineEntitySelector", () => {
     expect(rootStyle.getPropertyValue("--mobile-viewport-inset-bottom")).toBe("0px");
     expect(document.querySelector('[data-slot="entity-option-list"]')).not.toBeNull();
 
+    const search = document.querySelector<HTMLInputElement>('input[placeholder="Search responsible..."]');
+    expect(search).not.toBeNull();
+    search?.focus();
+    expect(document.activeElement).toBe(search);
     visualViewport.height = 508;
     await act(async () => {
       visualViewport.dispatchEvent(new Event("resize"));
+      await new Promise((resolve) => window.requestAnimationFrame(() => resolve(null)));
     });
 
     expect(rootStyle.getPropertyValue("--mobile-viewport-inset-bottom")).toBe("336px");

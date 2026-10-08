@@ -24,7 +24,8 @@ import {
   type ComposerDraftSubmission,
 } from "@/lib/composer-draft";
 import { CommentSubmissionUnknownError } from "@/lib/comment-submit-result";
-import { ArrowUp, Square, CircleHelp, Loader2, X } from "lucide-react";
+import { ArrowUp, ChevronUp, Square, CircleHelp, Loader2, X } from "lucide-react";
+import { useShortVisibleViewport } from "@/hooks/useMobileViewportInsets";
 import { Button } from "@/components/ui/button";
 import {
   Attachment,
@@ -862,6 +863,18 @@ export function TaskChatComposer({
   const uploadPending = attachments.some((item) => item.status === "uploading");
   const uploadFailed = attachments.some((item) => item.status === "error");
   const takeoverVisible = Boolean(takeover && !pause && !queuedEdit);
+  const [editorFocused, setEditorFocused] = useState(false);
+  const [takeoverFocusedId, setTakeoverFocusedId] = useState<string | null>(null);
+  const [takeoverExpandedId, setTakeoverExpandedId] = useState<string | null>(null);
+  const shortViewport = useShortVisibleViewport(mobile && takeoverVisible);
+  const takeoverCollapsed = Boolean(
+    mobile &&
+      takeoverVisible &&
+      takeover &&
+      takeoverExpandedId !== takeover.id &&
+      takeoverFocusedId !== takeover.id &&
+      (editorFocused || shortViewport),
+  );
   const previousTakeoverVisibleRef = useRef(takeoverVisible);
   useEffect(() => {
     if (previousTakeoverVisibleRef.current && !takeoverVisible && !queuedEdit) {
@@ -1206,20 +1219,48 @@ export function TaskChatComposer({
 
   return (
     <div className={cn("flex min-w-0 flex-col", creation?.contextBar ? "gap-0" : "gap-2")}>
+      {takeoverCollapsed && takeover ? (
+        <button
+          type="button"
+          className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 text-left text-(length:--text-compact) shadow-sm dark:border-0 dark:bg-muted dark:shadow-none"
+          aria-expanded={false}
+          aria-label={`Show ${takeover.label}`}
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={() => setTakeoverExpandedId(takeover.id)}
+          data-testid="task-chat-composer-takeover-summary"
+        >
+          <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+            {takeover.label}
+          </span>
+          {takeover.pendingCount > 1 ? (
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {takeover.pendingCount} pending
+            </span>
+          ) : null}
+          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        </button>
+      ) : null}
       {takeoverVisible && takeover ? (
         <section
           className={cn(
             "relative rounded-xl border border-border bg-card p-(--sz-18px) shadow-sm dark:border-0 dark:bg-muted dark:shadow-none",
             mobile
-              ? "overflow-visible p-2"
+              ? "flex max-h-(--tc-interaction-card-max-h-mobile) flex-col overflow-hidden p-(--tc-mobile-card-padding)"
               : "max-h-(--tc-interaction-card-max-h) overflow-y-auto scrollbar-auto-hide",
+            takeoverCollapsed && "hidden",
           )}
           aria-label={takeover.label}
           data-testid="task-chat-composer-takeover"
+          onFocus={() => setTakeoverFocusedId(takeover.id)}
+          onBlur={(event) => {
+            if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+            setTakeoverFocusedId(null);
+          }}
         >
           <div
             className={cn(
-              "flex min-w-0 items-center gap-2",
+              "flex min-w-0 shrink-0 items-center gap-2",
               takeover.hideLabel && takeover.pendingCount === 1
                 ? "absolute right-0 top-0 z-10"
                 : "mb-3",
@@ -1269,12 +1310,14 @@ export function TaskChatComposer({
             </div>
           </div>
           <div
-            className={
+            className={cn(
               takeover.hideLabel && takeover.pendingCount === 1
                 ? "pr-8"
-                : "pr-1"
-            }
+                : "pr-1",
+              mobile && "min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-auto-hide",
+            )}
             data-testid="task-chat-composer-takeover-body"
+            data-mobile={mobile || undefined}
           >
             <TaskChatComposerTakeoverActionsContext.Provider
               value={{
@@ -1294,12 +1337,15 @@ export function TaskChatComposer({
             </TaskChatComposerTakeoverActionsContext.Provider>
           </div>
           {takeoverError ? (
-            <p className="mt-2 text-sm text-destructive" role="alert">
+            <p className="mt-2 shrink-0 text-sm text-destructive" role="alert">
               {takeoverError}
             </p>
           ) : null}
           {!takeover.inlineSkip && !takeover.hideSkip ? (
-            <div className="mt-3 flex items-center justify-end gap-2">
+            <div
+              className="mt-3 flex shrink-0 items-center justify-end gap-2"
+              data-slot="task-chat-takeover-actions"
+            >
               {takeoverSkipButton}
             </div>
           ) : null}
@@ -1320,7 +1366,7 @@ export function TaskChatComposer({
         streamlined
           ? "paperclip-task-chat-composer rounded-(--radius-task-composer) border border-border bg-card p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-muted dark:shadow-none"
           : "paperclip-task-chat-composer rounded-xl bg-card p-(--sz-18px)",
-        mobile && "p-2",
+        mobile && "p-(--tc-mobile-card-padding)",
       )}
       onKeyDownCapture={(e) => {
         // Capture mode shortcuts on the wrapper so they work while the rich
@@ -1401,7 +1447,19 @@ export function TaskChatComposer({
               <p className="text-xs text-muted-foreground">Send /new to start a fresh session and resume this conversation.</p>
             </div>
           ) : null}
-          <div data-testid="task-chat-composer-input">
+          <div
+            data-testid="task-chat-composer-input"
+            onFocus={(event) => {
+              setEditorFocused(true);
+              if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                setTakeoverExpandedId(null);
+              }
+            }}
+            onBlur={(event) => {
+              if (event.currentTarget.contains(event.relatedTarget as Node | null)) return;
+              setEditorFocused(false);
+            }}
+          >
             <MarkdownEditor
               ref={editorRef}
               value={body}
@@ -1427,7 +1485,7 @@ export function TaskChatComposer({
               className={cn(disabled && "opacity-60")}
               contentClassName={
                 mobile
-                  ? "max-h-(--sz-28dvh) min-h-(--sz-48px) overflow-y-auto px-1 py-1 text-base scrollbar-auto-hide"
+                  ? "max-h-(--sz-28dvh) min-h-(--tc-mobile-editor-min-h) overflow-y-auto px-1 py-1 text-base scrollbar-auto-hide"
                   : "max-h-(--sz-28dvh) min-h-(--sz-48px) overflow-y-auto px-1 py-1 text-sm scrollbar-auto-hide"
               }
             />
