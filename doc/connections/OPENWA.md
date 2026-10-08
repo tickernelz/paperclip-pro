@@ -591,8 +591,11 @@ keys named `apiKey`, `api_key`, `secret`, `clientSecret`, `verifyToken`, `token`
 ## Media and speech-to-text
 
 Media of trigger messages is stored as attachments on the inbound comment
-before the wake, under the normal attachment policy and the host cap
-(`PAPERCLIP_ATTACHMENT_MAX_BYTES`, default 10 MiB). Files of any type are
+before the wake, under the normal attachment policy and the instance attachment
+size limit (Instance Settings upload limit, else `PAPERCLIP_ATTACHMENT_MAX_BYTES`,
+else 100 MB, which matches WhatsApp's 100 MB document limit). Binary media downloads
+are capped at that limit; JSON responses that can carry inline base64 media allow
+the base64 and envelope overhead on top of it. Files of any type are
 accepted (`.bat`, `.exe`, `.apk`, `.zip`, unknown binaries); a missing type is
 stored as `application/octet-stream` with the sender's filename. Only an operator
 restriction in `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` rejects a type
@@ -607,7 +610,7 @@ only as data and never execute them.
 matches (SVG is never sent as an image); any other file is sent as a WhatsApp
 document with its original filename and MIME type. Task files published to a
 WhatsApp conversation are always sent as documents. The size cap is the same
-`PAPERCLIP_ATTACHMENT_MAX_BYTES`, below WhatsApp's own document limit. Location and
+instance attachment size limit; WhatsApp itself refuses documents over 100 MB. Location and
 contact cards arrive as structured data. Media of non-trigger messages is never
 fetched unless the agent asks. Media items carry the sender's `filename` when
 known and `mime` `application/octet-stream` when the type is unknown. When

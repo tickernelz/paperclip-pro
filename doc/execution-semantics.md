@@ -1421,7 +1421,7 @@ completion contract; the server's explicit-output check is deliberately narrow.
 
 Local and remote runners use the same attachment publication contract. Remote
 files are read through the bound environment runner, with workspace confinement,
-no symlinks or hardlinks, stable file identity, a 10 MiB bound, and exact size and
+no symlinks or hardlinks, stable file identity, the instance attachment size limit, and exact size and
 SHA-256 checks before storage. Remote paths are never opened on the controller.
 
 An asynchronous remote signal failure, including a sandbox already removed by
