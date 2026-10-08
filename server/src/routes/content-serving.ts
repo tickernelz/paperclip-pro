@@ -83,12 +83,27 @@ function parseAttachmentRangeHeader(
   return { kind: "range", start, end: Math.min(end, contentLength - 1) };
 }
 
+/** Answers 410 for a file whose stored object was removed by attachment retention; returns false otherwise. */
+export function sendPurgedContent(res: Response, purgedAt: Date | string | null | undefined): boolean {
+  if (!purgedAt) return false;
+  const iso = new Date(purgedAt).toISOString();
+  res.setHeader("X-Paperclip-Purged-At", iso);
+  res.setHeader("Cache-Control", "private, no-store");
+  res.status(410).json({
+    error: `File removed by retention (${iso.slice(0, 10)})`,
+    code: "attachment_purged",
+    purgedAt: iso,
+  });
+  return true;
+}
+
 export interface ServableAttachment {
   companyId: string;
   objectKey: string;
   contentType: string | null;
   byteSize: number;
   originalFilename: string | null;
+  purgedAt?: Date | string | null;
 }
 
 /** Streams an issue attachment with the any-type serving headers. */
@@ -101,6 +116,7 @@ export async function serveAttachmentContent(input: {
   next: NextFunction;
 }) {
   const { attachment, res, next } = input;
+  if (sendPurgedContent(res, attachment.purgedAt)) return;
   const contentLength = attachment.byteSize;
   const range = parseAttachmentRangeHeader(input.rangeHeader, contentLength);
   res.setHeader("Accept-Ranges", "bytes");
@@ -179,6 +195,7 @@ export interface ServableAsset {
   byteSize: number;
   sha256: string;
   originalFilename: string | null;
+  purgedAt?: Date | string | null;
 }
 
 /** Streams a stored asset with the any-type serving headers. */
@@ -191,6 +208,7 @@ export async function serveAssetContent(input: {
   next: NextFunction;
 }) {
   const { asset, res, next } = input;
+  if (sendPurgedContent(res, asset.purgedAt)) return;
   const rawRange = input.rangeHeader;
   const rangeSyntax = rawRange && /^bytes=(\d*)-(\d*)$/i.exec(rawRange);
   const emptyRead = asset.byteSize === 0 && rangeSyntax?.[1] === "0";

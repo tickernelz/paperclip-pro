@@ -17,6 +17,7 @@ export const assets = pgTable(
     createdByUserId: text("created_by_user_id"),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+    purgedAt: timestamp("purged_at", { withTimezone: true }),
   },
   (table) => ({
     companyCreatedIdx: index("assets_company_created_idx").on(table.companyId, table.createdAt),

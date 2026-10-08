@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { eq, sql } from "drizzle-orm";
 import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
 import {
@@ -233,7 +233,7 @@ export class NativeChatAttachmentReadScope {
         for await (const chunk of value.stream) {
           const bytes = Buffer.from(chunk);
           length += bytes.length;
-          if (length > source.byteSize || length > MAX_ATTACHMENT_BYTES)
+          if (length > source.byteSize || length > getMaxAttachmentBytes())
             throw new Error(
               "paperclip_runner_chat_attachment_read_size_mismatch",
             );

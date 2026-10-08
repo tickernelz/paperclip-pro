@@ -4,7 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
-import { MAX_REMOTE_DELIVERABLE_BYTES, readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
+import { readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 describe("native SSH deliverable output budget", () => {
   let root: string;
@@ -31,7 +32,7 @@ describe("native SSH deliverable output budget", () => {
     defaultCwd: "/workspace",
   });
 
-  it.each([64, MAX_REMOTE_DELIVERABLE_BYTES])("returns exact verified bytes for a %i-byte file through the SSH adapter", async (byteSize) => {
+  it.each([64, getMaxAttachmentBytes()])("returns exact verified bytes for a %i-byte file through the SSH adapter", async (byteSize) => {
     const body = Buffer.alloc(byteSize, 65);
     await writeFile(join(root, "response"), body.toString("base64"));
     const result = await readVerifiedRemoteWorkspaceFile({
@@ -42,7 +43,7 @@ describe("native SSH deliverable output budget", () => {
   });
 
   it("stops a remote command that exceeds the maximum encoded envelope", async () => {
-    await writeFile(join(root, "response"), Buffer.alloc(4 * Math.ceil(MAX_REMOTE_DELIVERABLE_BYTES / 3) + 1, 65));
+    await writeFile(join(root, "response"), Buffer.alloc(4 * Math.ceil(getMaxAttachmentBytes() / 3) + 1, 65));
     const result = await createRunner().execute({ command: "node", args: ["unused"], timeoutMs: 10_000 });
     expect(result.exitCode).not.toBe(0);
   });

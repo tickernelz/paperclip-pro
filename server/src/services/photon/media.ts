@@ -1,7 +1,7 @@
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
 import sharp from "sharp";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 const require = createRequire(import.meta.url);
 const MAX_PIXELS = 50_000_000;
@@ -63,7 +63,7 @@ export function validateHeifDimensions(body: Buffer): void {
       at += size;
     }
   };
-  if (!body.length || body.length > MAX_ATTACHMENT_BYTES)
+  if (!body.length || body.length > getMaxAttachmentBytes())
     throw new Error("HEIF exceeds the attachment byte limit");
   visit(0, body.length, 0);
   if (!branded || !dimensions)
@@ -118,7 +118,7 @@ export async function photonHeifPreview(body: Buffer): Promise<Buffer> {
     }, 10_000);
     child.stdout.on("data", (chunk: Buffer) => {
       length += chunk.length;
-      if (length > MAX_ATTACHMENT_BYTES) {
+      if (length > getMaxAttachmentBytes()) {
         child.kill("SIGKILL");
         reject(new Error("HEIF preview exceeds the attachment byte limit"));
       } else chunks.push(chunk);

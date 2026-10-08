@@ -53,6 +53,23 @@ export function createLocalDiskStorageProvider(baseDir: string): StorageProvider
       } finally { await fs.rm(tempPath, { force: true }); }
     },
 
+    async moveFileIn(input) {
+      const targetPath = resolveWithin(root, input.objectKey);
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+      try {
+        await fs.rename(input.sourcePath, targetPath);
+        return;
+      } catch (error) {
+        if ((error as NodeJS.ErrnoException).code !== "EXDEV") throw error;
+      }
+      const tempPath = `${targetPath}.tmp-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      try {
+        await fs.copyFile(input.sourcePath, tempPath);
+        await fs.rename(tempPath, targetPath);
+      } finally { await fs.rm(tempPath, { force: true }); }
+      await fs.rm(input.sourcePath, { force: true });
+    },
+
     async getObject(input): Promise<GetObjectResult> {
       const filePath = resolveWithin(root, input.objectKey);
       const stat = await statOrNull(filePath);
@@ -91,6 +108,30 @@ export function createLocalDiskStorageProvider(baseDir: string): StorageProvider
       if (!realRoot || !realFile || !realFile.startsWith(realRoot + path.sep)) return null;
       const stat = await statOrNull(realFile);
       return stat?.isFile() ? realFile : null;
+    },
+
+    async *listObjects(prefix) {
+      const startDir = resolveWithin(root, prefix);
+      const pending = [startDir];
+      while (pending.length > 0) {
+        const dir = pending.pop()!;
+        const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => []);
+        for (const entry of entries) {
+          const entryPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            pending.push(entryPath);
+            continue;
+          }
+          if (!entry.isFile()) continue;
+          const stat = await statOrNull(entryPath);
+          if (!stat?.isFile()) continue;
+          yield {
+            objectKey: path.relative(root, entryPath).split(path.sep).join("/"),
+            byteSize: stat.size,
+            lastModified: stat.mtime,
+          };
+        }
+      }
     },
 
     async deleteObject(input): Promise<void> {

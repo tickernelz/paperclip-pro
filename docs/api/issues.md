@@ -310,6 +310,8 @@ POST /api/companies/{companyId}/issues/{issueId}/attachments
 Content-Type: multipart/form-data
 ```
 
+Send the file in the `file` field and an optional `issueCommentId`. The size limit is the instance attachment limit (Instance Settings upload limit, else `PAPERCLIP_ATTACHMENT_MAX_BYTES`, else 100 MB); `GET /api/health` reports it as `attachmentLimit: { maxBytes, source }`. A larger file returns `413` with `{ "error": "File is larger than the <limit> limit", "details": { "code": "attachment_too_large", "maxBytes": <n> } }`. A reverse proxy can answer `413` first with a non-JSON body.
+
 ### List
 
 ```
@@ -321,6 +323,8 @@ GET /api/issues/{issueId}/attachments
 ```
 GET /api/attachments/{attachmentId}/content
 ```
+
+The file streams from storage and supports byte ranges. A file removed by attachment retention returns `410` with header `X-Paperclip-Purged-At` and `{ "error": "File removed by retention (<YYYY-MM-DD>)", "code": "attachment_purged", "purgedAt": "<ISO>" }`; listings carry the same `purgedAt`.
 
 ### Delete
 

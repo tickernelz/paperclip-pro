@@ -21,6 +21,7 @@ import {
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
+import { PurgedFileNotice } from "./RetentionAwareContent";
 
 interface IssueAttachmentsSectionProps {
   attachments: IssueAttachment[];
@@ -224,6 +225,41 @@ function GenericAttachmentRow({
   );
 }
 
+function PurgedAttachmentRow({
+  attachment,
+  onDelete,
+  deletePending,
+}: {
+  attachment: IssueAttachment;
+  onDelete?: (attachmentId: string) => void;
+  deletePending?: boolean;
+}) {
+  const filename = attachmentFilename(attachment);
+  return (
+    <Card id={`attachment-${attachment.id}`} data-purged-attachment="" className="flex-row scroll-mt-20 items-center gap-2.5 p-2">
+      <OutputFileTile contentType={attachment.contentType} />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium text-muted-foreground" title={filename}>
+          {filename}
+        </p>
+        <PurgedFileNotice purgedAt={attachment.purgedAt} className="mt-1" />
+      </div>
+      {onDelete ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          title="Delete attachment"
+          className="text-muted-foreground hover:text-destructive"
+          onClick={() => onDelete(attachment.id)}
+          disabled={deletePending}
+        >
+          <Trash2 className="h-4 w-4" />
+        </Button>
+      ) : null}
+    </Card>
+  );
+}
+
 export function IssueAttachmentsSection({
   attachments,
   uploadButton,
@@ -238,14 +274,16 @@ export function IssueAttachmentsSection({
   onDrop,
 }: IssueAttachmentsSectionProps) {
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const { imageAttachments, markdownAttachments, videoAttachments, genericAttachments } = useMemo(() => {
+  const { imageAttachments, markdownAttachments, videoAttachments, genericAttachments, purgedAttachments } = useMemo(() => {
     const images: IssueAttachment[] = [];
     const markdown: IssueAttachment[] = [];
     const videos: IssueAttachment[] = [];
     const generic: IssueAttachment[] = [];
+    const purged: IssueAttachment[] = [];
 
     for (const attachment of attachments) {
-      if (isImageAttachment(attachment)) images.push(attachment);
+      if (attachment.purgedAt) purged.push(attachment);
+      else if (isImageAttachment(attachment)) images.push(attachment);
       else if (isMarkdownAttachment(attachment)) markdown.push(attachment);
       else if (isVideoAttachment(attachment)) videos.push(attachment);
       else generic.push(attachment);
@@ -256,6 +294,7 @@ export function IssueAttachmentsSection({
       markdownAttachments: markdown,
       videoAttachments: videos,
       genericAttachments: generic,
+      purgedAttachments: purged,
     };
   }, [attachments]);
 
@@ -385,6 +424,19 @@ export function IssueAttachmentsSection({
         <div className="space-y-2">
           {genericAttachments.map((attachment) => (
             <GenericAttachmentRow
+              key={attachment.id}
+              attachment={attachment}
+              onDelete={onDelete ? requestDelete : undefined}
+              deletePending={deletePending}
+            />
+          ))}
+        </div>
+      )}
+
+      {purgedAttachments.length > 0 && (
+        <div className="space-y-2">
+          {purgedAttachments.map((attachment) => (
+            <PurgedAttachmentRow
               key={attachment.id}
               attachment={attachment}
               onDelete={onDelete ? requestDelete : undefined}

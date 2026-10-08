@@ -16,8 +16,7 @@ import {
   listCasesQuerySchema,
   listEventsQuerySchema,
 } from "./cases-schemas.js";
-import { Router, type Request, type Response } from "express";
-import multer from "multer";
+import { Router, type Request } from "express";
 import { z } from "zod";
 import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
@@ -43,7 +42,8 @@ import {
   updateDocumentAnnotationThreadSchema,
   isUuidLike,
 } from "@tickernelz/paperclip-pro-shared";
-import { formatAttachmentSize, MAX_ATTACHMENT_BYTES, normalizeContentType } from "../attachment-types.js";
+import { normalizeContentType } from "../attachment-types.js";
+import { removeStagedUpload, stageSingleFileUpload } from "../attachment-upload.js";
 import { badRequest, conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
@@ -531,19 +531,6 @@ function caseDocumentResponse(input: { key: string; document: typeof documents.$
     key: input.key,
     body: input.document.latestBody,
   };
-}
-
-function singleFileUpload(req: Request, res: Response, maxBytes: number) {
-  const upload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: maxBytes, files: 1 },
-  }).single("file");
-  return new Promise<void>((resolve, reject) => {
-    upload(req, res, (err) => {
-      if (err) reject(err);
-      else resolve();
-    });
-  });
 }
 
 export function caseRoutes(db: Db, storage: StorageService) {
@@ -1227,30 +1214,25 @@ export function caseRoutes(db: Db, storage: StorageService) {
     const caseRow = await assertCaseAccess(db, req, req.params.id as string);
     const actor = getActorInfo(req);
 
-    try {
-      await singleFileUpload(req, res, MAX_ATTACHMENT_BYTES);
-    } catch (err) {
-      if (err instanceof multer.MulterError) {
-        if (err.code === "LIMIT_FILE_SIZE") {
-          throw unprocessable(
-            `Attachment is larger than the ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)} limit`,
-          );
-        }
-        throw badRequest(err.message);
-      }
-      throw err;
-    }
-    const file = (req as Request & { file?: { mimetype: string; buffer: Buffer; originalname: string } }).file;
-    if (!file) throw badRequest("Missing file field 'file'");
-    if (file.buffer.length <= 0) throw unprocessable("Attachment is empty");
-
-    const stored = await storage.putFile({
-      companyId: caseRow.companyId,
-      namespace: `cases/${caseRow.id}`,
-      originalFilename: file.originalname || null,
-      contentType: normalizeContentType(file.mimetype),
-      body: file.buffer,
+    const file = await stageSingleFileUpload(req, res, {
+      limitMessage: (limit) => `File is larger than the ${limit} limit`,
     });
+    let stored: Awaited<ReturnType<typeof storage.putFile>>;
+    try {
+      if (!file) throw badRequest("Missing file field 'file'");
+      if (file.size <= 0) throw unprocessable("Attachment is empty");
+      stored = await storage.putFile({
+        companyId: caseRow.companyId,
+        namespace: `cases/${caseRow.id}`,
+        originalFilename: file.originalname || null,
+        contentType: normalizeContentType(file.mimetype),
+        sourcePath: file.path,
+        byteSize: file.size,
+        sha256: file.sha256,
+      });
+    } finally {
+      await removeStagedUpload(file);
+    }
     const result = await db.transaction(async (tx) => {
       const now = new Date();
       const [asset] = await tx.insert(assets).values({

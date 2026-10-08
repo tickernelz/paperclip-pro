@@ -1,3 +1,4 @@
+import { DEFAULT_ATTACHMENT_MAX_MEGABYTES, type EffectiveAttachmentLimit } from "@tickernelz/paperclip-pro-shared";
 /** Attachment content-type policy: every type is accepted unless `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restricts it to comma-separated MIME patterns. */
 export const ALLOW_ALL_ATTACHMENT_TYPES: readonly string[] = ["*"];
 
@@ -157,13 +158,29 @@ export function isAllowedContentType(contentType: string): boolean {
   return matchesContentType(normalizeContentType(contentType), allowedPatterns);
 }
 
-/**
- * The one attachment size ceiling for this deployment. Every upload path —
- * assets, task attachments, cases, and company import — bounds itself by this
- * value, so an operator raises or lowers the limit in exactly one place.
- */
-export const MAX_ATTACHMENT_BYTES =
-  Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES) || 10 * 1024 * 1024;
+const BYTES_PER_MEGABYTE = 1024 * 1024;
+let attachmentLimitSettingMegabytes: number | null = null;
+
+/** Caches the saved Instance Settings limit; called whenever general settings are read or written. */
+export function setAttachmentLimitSetting(megabytes: number | null | undefined): void {
+  attachmentLimitSettingMegabytes =
+    typeof megabytes === "number" && Number.isSafeInteger(megabytes) && megabytes > 0 ? megabytes : null;
+}
+
+/** The attachment size ceiling in force now: saved setting, else PAPERCLIP_ATTACHMENT_MAX_BYTES, else 100 MB. */
+export function getEffectiveAttachmentLimit(): EffectiveAttachmentLimit {
+  if (attachmentLimitSettingMegabytes !== null) {
+    return { maxBytes: attachmentLimitSettingMegabytes * BYTES_PER_MEGABYTE, source: "setting" };
+  }
+  const fromEnv = Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES);
+  if (Number.isSafeInteger(fromEnv) && fromEnv > 0) return { maxBytes: fromEnv, source: "env" };
+  return { maxBytes: DEFAULT_ATTACHMENT_MAX_MEGABYTES * BYTES_PER_MEGABYTE, source: "default" };
+}
+
+/** The one attachment size ceiling every upload, read and handoff path bounds itself by. */
+export function getMaxAttachmentBytes(): number {
+  return getEffectiveAttachmentLimit().maxBytes;
+}
 
 const ATTACHMENT_SIZE_UNITS: readonly string[] = ["KB", "MB", "GB"];
 

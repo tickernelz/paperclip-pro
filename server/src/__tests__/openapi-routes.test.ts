@@ -54,6 +54,7 @@ const apiPrefixes: Record<string, string> = {
   "inbox-dismissals.ts": "/api",
   "autonomy-windows.ts": "/api",
   "instance-database-backups.ts": "/api",
+  "instance-attachment-retention.ts": "/api",
   "instance-settings.ts": "/api",
   "issues.ts": "/api",
   "issue-tree-control.ts": "/api",

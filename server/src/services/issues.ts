@@ -13167,6 +13167,7 @@ export function issueService(db: Db) {
           createdByUserId: asset.createdByUserId,
           createdAt: attachment.createdAt,
           updatedAt: attachment.updatedAt,
+          purgedAt: asset.purgedAt,
           artifactWorkProductId: artifactWorkProduct?.id ?? null,
         };
       });
@@ -13191,6 +13192,7 @@ export function issueService(db: Db) {
           createdByUserId: assets.createdByUserId,
           createdAt: issueAttachments.createdAt,
           updatedAt: issueAttachments.updatedAt,
+          purgedAt: assets.purgedAt,
         })
         .from(issueAttachments)
         .innerJoin(assets, eq(issueAttachments.assetId, assets.id))
@@ -13216,6 +13218,7 @@ export function issueService(db: Db) {
           createdByUserId: assets.createdByUserId,
           createdAt: issueAttachments.createdAt,
           updatedAt: issueAttachments.updatedAt,
+          purgedAt: assets.purgedAt,
         })
         .from(issueAttachments)
         .innerJoin(assets, eq(issueAttachments.assetId, assets.id))
@@ -13242,6 +13245,7 @@ export function issueService(db: Db) {
             createdByUserId: assets.createdByUserId,
             createdAt: issueAttachments.createdAt,
             updatedAt: issueAttachments.updatedAt,
+            purgedAt: assets.purgedAt,
           })
           .from(issueAttachments)
           .innerJoin(assets, eq(issueAttachments.assetId, assets.id))

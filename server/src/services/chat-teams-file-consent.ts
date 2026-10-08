@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { z } from "zod";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 import { guardedRemoteHttpFetch } from "./remote-http-fetch.js";
 import { getSecretProvider } from "../secrets/provider-registry.js";
 
@@ -55,7 +55,8 @@ const bindingSchema = z
       .number()
       .int()
       .positive()
-      .max(Math.min(MAX_ATTACHMENT_BYTES, 60 * 1024 * 1024 - 1)),
+      .max(60 * 1024 * 1024 - 1)
+      .refine((value) => value <= getMaxAttachmentBytes()),
     filename,
     token: tokenSchema,
     expiresAt: z.iso.datetime(),
@@ -1137,7 +1138,7 @@ export function parseTeamsFileConsentCard(
             .number()
             .int()
             .positive()
-            .max(Math.min(MAX_ATTACHMENT_BYTES, 60 * 1024 * 1024 - 1)),
+            .max(Math.min(getMaxAttachmentBytes(), 60 * 1024 * 1024 - 1)),
           acceptContext: contextSchema.extend({ action: z.literal("accept") }),
           declineContext: contextSchema.extend({
             action: z.literal("decline"),

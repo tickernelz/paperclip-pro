@@ -80,6 +80,7 @@ export { attentionService } from "./attention.js";
 export { captureDecisionSnapshot, decisionTrainingService } from "./decision-training.js";
 export { decisionService } from "./decisions.js";
 export { decisionRetentionService } from "./decision-retention.js";
+export { attachmentRetentionService } from "./attachment-retention.js";
 export type {
   WorkTimelineActor,
   WorkTimelineEdge,

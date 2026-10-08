@@ -23,7 +23,7 @@ import {
 
 import {
   isAllowedContentType,
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   normalizeContentType,
 } from "../../attachment-types.js";
 import { getStorageService } from "../../storage/index.js";
@@ -956,7 +956,7 @@ async function loadSource(
   if (
     !row ||
     row.byteSize < (allowEmpty ? 0 : 1) ||
-    row.byteSize > MAX_ATTACHMENT_BYTES ||
+    row.byteSize > getMaxAttachmentBytes() ||
     !isAllowedContentType(normalizeContentType(row.contentType)) ||
     !/^[a-f0-9]{64}$/iu.test(row.sha256)
   ) {
@@ -1278,7 +1278,7 @@ async function readSourceBytes(
     for await (const chunk of object.stream) {
       const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       total += buffer.length;
-      if (total > source.byteSize || total > MAX_ATTACHMENT_BYTES) {
+      if (total > source.byteSize || total > getMaxAttachmentBytes()) {
         object.stream.destroy();
         throw new Error(
           "paperclip_runner_chat_attachment_source_size_mismatch",

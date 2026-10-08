@@ -1,4 +1,5 @@
-import type { ServerInfoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import type { EffectiveAttachmentLimit, ServerInfoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import { setAttachmentLimit } from "@/lib/attachment-limit";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { ApiError } from "./client";
 import { ApiUnavailableError, readApiJson } from "./response";
@@ -47,6 +48,7 @@ export type HealthStatus = {
    * settings-visibility registry). Absent when nothing is hidden.
    */
   hiddenSettings?: string[];
+  attachmentLimit?: EffectiveAttachmentLimit;
 };
 
 export const healthApi = {
@@ -64,6 +66,7 @@ export const healthApi = {
     }
     // Startup recovery can still serve sign-in and deployment metadata.
     if (payload?.status !== "ok" && payload?.status !== "starting") throw new ApiUnavailableError(res.status);
+    setAttachmentLimit(payload.attachmentLimit);
     return payload;
   },
   requestDevServerRestart: async (): Promise<void> => {

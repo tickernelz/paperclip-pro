@@ -1,9 +1,21 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 import express from "express";
+import { mkdtempSync } from "node:fs";
+import { readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { Readable } from "node:stream";
 import request from "supertest";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
 import type { StorageService } from "../storage/types.js";
+
+const previousPaperclipHome = process.env.PAPERCLIP_HOME;
+const uploadHome = mkdtempSync(path.join(os.tmpdir(), "paperclip-assets-upload-"));
+process.env.PAPERCLIP_HOME = uploadHome;
+afterAll(async () => {
+  if (previousPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
+  else process.env.PAPERCLIP_HOME = previousPaperclipHome;
+  await rm(uploadHome, { recursive: true, force: true });
+});
 
 const { createAssetMock, getAssetByIdMock, logActivityMock } = vi.hoisted(() => ({
   createAssetMock: vi.fn(),
@@ -64,19 +76,14 @@ type TestStorageService = StorageService & {
 
 function createStorageService(contentType = "image/png"): TestStorageService {
   const calls: TestStorageService["__calls"] = { putFileInputs: [] };
-  const putFile: StorageService["putFile"] = async (input: {
-    companyId: string;
-    namespace: string;
-    originalFilename: string | null;
-    contentType: string;
-    body: Buffer;
-  }) => {
-    calls.putFileInputs.push(input);
+  const putFile: StorageService["putFile"] = async (input) => {
+    const body = "sourcePath" in input ? await readFile(input.sourcePath) : (input.body as Buffer);
+    calls.putFileInputs.push({ ...input, body });
     return {
       provider: "local_disk" as const,
       objectKey: `${input.namespace}/${input.originalFilename ?? "upload"}`,
       contentType: contentType || input.contentType,
-      byteSize: input.body.length,
+      byteSize: body.length,
       sha256: "sha256-sample",
       originalFilename: input.originalFilename,
     };
@@ -104,6 +111,8 @@ async function createApp(storage: ReturnType<typeof createStorageService>) {
     next();
   });
   app.use("/api", assetRoutes({} as any, storage));
+  const { errorHandler } = await vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js");
+  app.use(errorHandler);
   return app;
 }
 
@@ -260,18 +269,19 @@ describe("POST /api/companies/:companyId/assets/images", () => {
   });
 
   it("names the limit in human units when a file exceeds the attachment cap", async () => {
+    (await import("../attachment-types.js")).setAttachmentLimitSetting(1);
     const app = await createApp(createStorageService());
     createAssetMock.mockResolvedValue(createAsset());
 
-    const file = Buffer.alloc(MAX_ATTACHMENT_BYTES + 1, "a");
+    const file = Buffer.alloc(1024 * 1024 + 1, "a");
     const res = await requestApp(app, (baseUrl) =>
       request(baseUrl)
         .post("/api/companies/company-1/assets/images")
         .attach("file", file, "too-large.png"),
     );
 
-    expect(res.status).toBe(422);
-    expect(res.body.error).toBe("File is larger than the 10 MB limit");
+    expect(res.status).toBe(413);
+    expect(res.body.error).toBe("File is larger than the 1 MB limit");
   });
 });
 
@@ -364,18 +374,19 @@ describe("POST /api/companies/:companyId/logo", () => {
   });
 
   it("rejects logo files larger than the general attachment limit", async () => {
+    (await import("../attachment-types.js")).setAttachmentLimitSetting(1);
     const app = await createApp(createStorageService());
     createAssetMock.mockResolvedValue(createAsset());
 
-    const file = Buffer.alloc(MAX_ATTACHMENT_BYTES + 1, "a");
+    const file = Buffer.alloc(1024 * 1024 + 1, "a");
     const res = await requestApp(app, (baseUrl) =>
       request(baseUrl)
         .post("/api/companies/company-1/logo")
         .attach("file", file, "too-large.png"),
     );
 
-    expect(res.status).toBe(422);
-    expect(res.body.error).toBe("Image is larger than the 10 MB limit");
+    expect(res.status).toBe(413);
+    expect(res.body.error).toBe("File is larger than the 1 MB limit");
   });
 
   it("rejects unsupported image types", async () => {

@@ -1,4 +1,5 @@
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
+import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
 import {
   experimentalApiPaths,
   experimentalApiQueries,
@@ -1741,6 +1742,9 @@ const INSTANCE_ADMIN_OPERATIONS = new Set([
   "POST /api/companies",
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
+  "GET /api/instance/attachment-retention",
+  "POST /api/instance/attachment-retention/preview",
+  "POST /api/instance/attachment-retention/run",
   "POST /api/admin/users/{userId}/promote-instance-admin",
   "POST /api/admin/users/{userId}/demote-instance-admin",
   "PUT /api/admin/users/{userId}/company-access",
@@ -9887,6 +9891,31 @@ registry.registerPath({
   tags: ["instance"],
   summary: "Trigger a database backup",
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/instance/attachment-retention",
+  tags: ["instance"],
+  summary: "Get the attachment retention policy and the last retention run",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "post",
+  path: "/api/instance/attachment-retention/preview",
+  tags: ["instance"],
+  summary: "Preview which attachment files retention would remove, without deleting anything",
+  body: attachmentRetentionPreviewSchema,
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registerCurrentRoute({
+  method: "post",
+  path: "/api/instance/attachment-retention/run",
+  tags: ["instance"],
+  summary: "Run attachment retention now with the saved policy",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 409: r.conflict },
 });
 
 // ─── LLM text endpoints ───────────────────────────────────────────────────────

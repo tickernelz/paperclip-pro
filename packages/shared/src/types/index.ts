@@ -110,6 +110,13 @@ export type {
   ManagedSettingMetadata,
   BackupRetentionPolicy,
   SpeechToTextSettings,
+  AttachmentRetentionSettings,
+  AttachmentLimitSource,
+  EffectiveAttachmentLimit,
+  AttachmentRetentionRule,
+  AttachmentRetentionRuleSummary,
+  AttachmentRetentionReport,
+  AttachmentRetentionStatus,
 } from "./instance.js";
 export type {
   SmokeLabServiceStatus,
@@ -133,6 +140,14 @@ export {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
+  ATTACHMENT_MAX_MEGABYTES_MIN,
+  ATTACHMENT_MAX_MEGABYTES_MAX,
+  DEFAULT_ATTACHMENT_MAX_MEGABYTES,
+  ATTACHMENT_ORPHAN_AFTER_DAYS_MIN,
+  ATTACHMENT_ORPHAN_AFTER_DAYS_MAX,
+  ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN,
+  ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX,
+  DEFAULT_ATTACHMENT_RETENTION,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./instance.js";
 export {

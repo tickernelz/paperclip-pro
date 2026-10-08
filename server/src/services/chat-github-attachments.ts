@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import { JSDOM } from "jsdom";
 import {
   isAllowedContentType,
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
 } from "../attachment-types.js";
@@ -779,7 +779,7 @@ export async function prepareGitHubPublicAttachment(
       const declared = response.headers.get("content-length");
       if (
         declared &&
-        (!/^\d+$/.test(declared) || Number(declared) > MAX_ATTACHMENT_BYTES)
+        (!/^\d+$/.test(declared) || Number(declared) > getMaxAttachmentBytes())
       )
         return await rejectResponse("github_attachment_too_large");
       const reader = response.body.getReader();
@@ -796,7 +796,7 @@ export async function prepareGitHubPublicAttachment(
           signal.throwIfAborted();
           if (next.done) break;
           size += next.value.byteLength;
-          if (size > MAX_ATTACHMENT_BYTES)
+          if (size > getMaxAttachmentBytes())
             throw new GitHubAttachmentUnavailableError(
               "github_attachment_too_large",
             );

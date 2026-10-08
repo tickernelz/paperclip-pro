@@ -5,7 +5,7 @@ import type {
   Message as PhotonMessage,
 } from "@photon-ai/advanced-imessage";
 import { z } from "zod";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import { PhotonError, photonFailure } from "./cloud.js";
 const guid = z.string().min(1).max(512);
 export const photonAttachmentLocatorSchema = z
@@ -97,7 +97,7 @@ export async function downloadPhotonAttachment(
   if (
     !Number.isSafeInteger(attachment.totalBytes) ||
     attachment.totalBytes < 0 ||
-    attachment.totalBytes > MAX_ATTACHMENT_BYTES
+    attachment.totalBytes > getMaxAttachmentBytes()
   )
     throw new Error("Attachment exceeds the configured size limit");
   const stream = client.attachments.downloadStream(locator.attachmentGuid);
@@ -134,7 +134,7 @@ export async function downloadPhotonAttachment(
           (part.info.guid !== locator.attachmentGuid && !matchingSharedHeader) ||
           part.info.isHidden || part.info.isSticker ||
           !Number.isSafeInteger(part.info.totalBytes) || part.info.totalBytes < 0 ||
-          part.info.totalBytes > MAX_ATTACHMENT_BYTES
+          part.info.totalBytes > getMaxAttachmentBytes()
         )
           throw new Error("Photon attachment metadata changed");
         header = true;
@@ -147,14 +147,14 @@ export async function downloadPhotonAttachment(
               ) ||
               !Number.isSafeInteger(companionInfo.totalBytes) ||
               companionInfo.totalBytes <= 0 ||
-              companionInfo.totalBytes > MAX_ATTACHMENT_BYTES),
+              companionInfo.totalBytes > getMaxAttachmentBytes()),
         );
       } else if (part.type === "primaryChunk") {
         if (companionStarted)
           throw new Error("Photon attachment chunks arrived out of order");
         if (!header) throw new Error("Photon attachment header is missing");
         length += part.data.length;
-        if (length > MAX_ATTACHMENT_BYTES)
+        if (length > getMaxAttachmentBytes())
           throw new Error("Attachment exceeds the configured size limit");
         chunks.push(part.data);
       } else if (part.type === "companionChunk") {
@@ -162,7 +162,7 @@ export async function downloadPhotonAttachment(
           throw new Error("Photon companion metadata is missing");
         companionStarted = true;
         companionLength += part.data.length;
-        if (companionUnavailable || companionLength > MAX_ATTACHMENT_BYTES) {
+        if (companionUnavailable || companionLength > getMaxAttachmentBytes()) {
           companionUnavailable = true;
           break;
         }

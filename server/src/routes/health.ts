@@ -20,6 +20,7 @@ import {
 } from "../services/cloud-instance.js";
 import { getCloudRuntimeIdentity } from "../services/cloud-runtime-identity.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
+import { getEffectiveAttachmentLimit } from "../attachment-types.js";
 import {
   inspectDatabaseBackupHealth,
   type DatabaseBackupHealthStatus,
@@ -245,6 +246,7 @@ export function healthRoutes(
     // fuller-detail fetch. Omitted entirely when nothing is hidden, so
     // deployments without the env var keep today's byte-identical responses.
     const hiddenSettings = [...getHiddenSettings(runtimeEnv)];
+    const attachmentLimit = getEffectiveAttachmentLimit();
     // serverInfo (git SHA + process start) rides on the full-details responses
     // only, so it reaches board/agent actors in authenticated mode or any caller
     // in local_trusted dev — never anonymous authenticated callers. The
@@ -281,6 +283,7 @@ export function healthRoutes(
               serverInfo,
               ...(cloud ? { cloud } : {}),
               ...(hiddenSettings.length ? { hiddenSettings } : {}),
+              attachmentLimit,
             }
           : {
               status: healthStatus,
@@ -436,6 +439,7 @@ export function healthRoutes(
       ...(workspaceReadiness ? { workspace: workspaceReadiness } : {}),
       ...(cloud ? { cloud } : {}),
       ...(hiddenSettings.length ? { hiddenSettings } : {}),
+      attachmentLimit,
     });
   });
 

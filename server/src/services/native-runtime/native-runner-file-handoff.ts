@@ -27,7 +27,7 @@ import {
 
 import {
   isAllowedContentType,
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   normalizeUploadAttachmentContentType,
 } from "../../attachment-types.js";
 import { getStorageService } from "../../storage/index.js";
@@ -302,7 +302,7 @@ async function readVerifiedWorkspaceFile(
   if (
     !Number.isSafeInteger(input.byteSize) ||
     input.byteSize <= 0 ||
-    input.byteSize > MAX_ATTACHMENT_BYTES
+    input.byteSize > getMaxAttachmentBytes()
   ) {
     throw new Error("paperclip_runner_file_handoff_size_denied");
   }
@@ -610,7 +610,7 @@ async function readBoundedStorageObject(input: {
 }): Promise<Buffer> {
   if (
     input.expectedByteSize <= 0 ||
-    input.expectedByteSize > MAX_ATTACHMENT_BYTES
+    input.expectedByteSize > getMaxAttachmentBytes()
   ) {
     throw new Error("paperclip_runner_attachment_staging_size_denied");
   }
@@ -623,7 +623,7 @@ async function readBoundedStorageObject(input: {
   for await (const chunk of object.stream) {
     const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
     byteSize += buffer.length;
-    if (byteSize > MAX_ATTACHMENT_BYTES || byteSize > input.expectedByteSize) {
+    if (byteSize > getMaxAttachmentBytes() || byteSize > input.expectedByteSize) {
       object.stream.destroy();
       throw new Error("paperclip_runner_attachment_staging_size_mismatch");
     }
@@ -742,7 +742,7 @@ export async function stageNativeRunnerAttachmentBytes(input: {
   workspaceRoot: string;
   body: Buffer;
 }): Promise<{ workspaceRelativePath: string; cleanup(): Promise<void> }> {
-  if (input.body.length > MAX_ATTACHMENT_BYTES) {
+  if (input.body.length > getMaxAttachmentBytes()) {
     throw new Error("paperclip_runner_attachment_staging_size_denied");
   }
   const workspaceRoot = await realpath(input.workspaceRoot);

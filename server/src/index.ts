@@ -89,6 +89,7 @@ import {
   workspaceOperationService,
 } from "./services/index.js";
 import { questionResponseDeliveryService } from "./services/question-response-delivery.js";
+import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
@@ -128,6 +129,8 @@ import {
 import { initializeCloudRuntimeIdentity } from "./services/cloud-runtime-identity.js";
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
+import { getMaxAttachmentBytes } from "./attachment-types.js";
+import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   createEmbeddedPostgresSupervisor,
   type EmbeddedPostgresSupervisor,
@@ -803,6 +806,10 @@ async function startServerWithDatabaseTeardown(
     shareClient: createFeedbackTraceShareClientFromConfig(config),
   });
   const backupSettingsSvc = instanceSettingsService(db);
+  setPaperclipBridgeAttachmentMaxBytesSource(getMaxAttachmentBytes);
+  await backupSettingsSvc.getGeneral().catch((err: unknown) => {
+    logger.warn({ err }, "could not read the attachment size limit from instance settings at boot");
+  });
   const databaseBackupMaxAgeHours = Math.max(
     1,
     Number(process.env.PAPERCLIP_DB_BACKUP_MAX_AGE_HOURS) ||
@@ -1146,6 +1153,13 @@ async function startServerWithDatabaseTeardown(
   }>) | null = null;
   let beginHeartbeatServerShutdown: ((signal: "SIGINT" | "SIGTERM") => void) | null = null;
   let heartbeatSchedulerStopped = false;
+  const attachmentRetention = attachmentRetentionService(db as any, { storage: storageService });
+  setInterval(() => {
+    void attachmentRetention.scheduledTick().catch((err: unknown) => {
+      logger.error({ err }, "scheduled attachment retention failed");
+    });
+  }, ATTACHMENT_RETENTION_TICK_MS);
+
   let heartbeatSchedulerInterval: ReturnType<typeof setInterval> | null = null;
   const heartbeatSchedulerInFlight = new Set<Promise<void>>();
   const trackHeartbeatSchedulerWork = (work: Promise<unknown>) => {

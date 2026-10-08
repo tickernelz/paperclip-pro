@@ -9,7 +9,7 @@ import {
   photonFailure,
   type PhotonLineAuthentication,
 } from "./cloud.js";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 export type PhotonRecoveryEvent =
   | CatchUpEvent
@@ -118,7 +118,7 @@ export class PhotonRecoveryTransport {
     this.client =
       client ??
       new Client(authentication.address, credentials.createSsl(), {
-        "grpc.max_receive_message_length": MAX_ATTACHMENT_BYTES + 1024 * 1024,
+        "grpc.max_receive_message_length": getMaxAttachmentBytes() + 1024 * 1024,
       });
   }
   catchUp(sequence?: number): TypedEventStream<PhotonRecoveryEvent> {

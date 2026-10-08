@@ -72,11 +72,14 @@ describe("GET /health", () => {
     vi.restoreAllMocks();
     vi.unstubAllEnvs();
   });
+  beforeEach(() => {
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
+  });
   it("returns 200 with status ok", async () => {
     const app = createApp();
     const res = await request(app).get("/health");
     expect(res.status).toBe(200);
-    expect(res.body).toEqual({ status: "ok", version: serverVersion, serverVersion: serverVersion, commit: testServerInfo.git.fullSha, serverInfo: testServerInfo });
+    expect(res.body).toEqual({ status: "ok", version: serverVersion, serverVersion: serverVersion, commit: testServerInfo.git.fullSha, serverInfo: testServerInfo, attachmentLimit: { maxBytes: 100 * 1024 * 1024, source: "default" } });
   }, 15_000);
 
   it("keeps the self-hosted health response byte-identical and omits cloud", async () => {
@@ -90,6 +93,7 @@ describe("GET /health", () => {
       serverVersion,
       commit: testServerInfo.git.fullSha,
       serverInfo: testServerInfo,
+      attachmentLimit: { maxBytes: 100 * 1024 * 1024, source: "default" },
     };
     expect(res.text).toBe(JSON.stringify(baseline));
     expect(Object.prototype.hasOwnProperty.call(res.body, "cloud")).toBe(false);

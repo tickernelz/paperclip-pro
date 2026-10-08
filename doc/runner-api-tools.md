@@ -137,11 +137,12 @@ exports or binary API downloads. It does not raise attachment upload limits or
 limit files an agent creates and edits inside its workspace. Saved asset downloads
 stream from storage and support byte ranges, including video seeking.
 
-`PAPERCLIP_ATTACHMENT_MAX_BYTES` separately defaults to 10 MiB for uploads and
-native file handoffs. `call_api` uploads also have their own 10 MiB limit. Several
-upload and handoff paths buffer complete files in memory; raising those defaults
-to GiB sizes requires streaming ingestion and corresponding admission/budget
-controls first. For a future video attachment workflow, 2 GiB per streamed file
+The instance attachment size limit (Instance Settings upload limit, else
+`PAPERCLIP_ATTACHMENT_MAX_BYTES`, else 100 MB) separately bounds uploads and native
+file handoffs. `call_api` uploads also have their own 10 MiB limit. Board and
+agent uploads stream to disk, but several handoff paths still buffer complete
+files in memory; raising the limit to GiB sizes requires streaming those paths
+and corresponding admission/budget controls first. For a future video attachment workflow, 2 GiB per streamed file
 is a reasonable default, with an operator override and storage quotas. Do not
 claim that this response-paging change enables GiB attachment uploads.
 

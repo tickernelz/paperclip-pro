@@ -36,6 +36,12 @@ export interface HeadObjectResult {
   lastModified?: Date;
 }
 
+export interface StoredObjectEntry {
+  objectKey: string;
+  byteSize: number;
+  lastModified: Date;
+}
+
 export interface StorageProvider {
   id: StorageProviderId;
   putObject(input: PutObjectInput): Promise<void>;
@@ -44,6 +50,10 @@ export interface StorageProvider {
   deleteObject(input: GetObjectInput): Promise<void>;
   /** Absolute on-disk path of an existing object inside the storage root; null when absent or not disk-backed. */
   localPath?(objectKey: string): Promise<string | null>;
+  /** Moves a local file into the store as `objectKey`, consuming the source file. */
+  moveFileIn?(input: { objectKey: string; sourcePath: string }): Promise<void>;
+  /** Every stored object whose key starts with `prefix`. */
+  listObjects?(prefix: string): AsyncIterable<StoredObjectEntry>;
 }
 
 export type PutFileInput = {
@@ -51,7 +61,11 @@ export type PutFileInput = {
   namespace: string;
   originalFilename: string | null;
   contentType: string;
-} & ({ body: Buffer } | { body: Readable; byteSize: number; sha256: string });
+} & (
+  | { body: Buffer }
+  | { body: Readable; byteSize: number; sha256: string }
+  | { sourcePath: string; byteSize: number; sha256: string }
+);
 
 export interface PutFileResult {
   provider: StorageProviderId;
@@ -70,4 +84,6 @@ export interface StorageService {
   deleteObject(companyId: string, objectKey: string): Promise<void>;
   /** Absolute on-disk path of an existing object inside the storage root; null when absent or not disk-backed. */
   localPath?(companyId: string, objectKey: string): Promise<string | null>;
+  /** Every stored object under the company's key prefix. */
+  listObjects?(companyId: string): AsyncIterable<StoredObjectEntry>;
 }

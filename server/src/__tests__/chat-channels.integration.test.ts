@@ -164,7 +164,7 @@ import {
   renderPublicationTransportText,
 } from "../services/chat-publication-text-parts.js";
 import {
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   formatAttachmentSize,
 } from "../attachment-types.js";
 import { TELEGRAM_VIDEO_NOTE_MP4 } from "./fixtures/telegram-video-note.js";
@@ -62991,7 +62991,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         };
         if (mode === "malformed_note") raw.video_note.duration = -1;
         if (mode === "oversize")
-          raw.video_note.file_size = MAX_ATTACHMENT_BYTES + 1;
+          raw.video_note.file_size = getMaxAttachmentBytes() + 1;
         const { video_note: _note, ...withoutNote } = raw;
         const message = pinned.parseTelegramCommandMessage(
           mode === "unknown_document"
@@ -63241,7 +63241,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       Buffer.from("must-not-download"),
     );
     const oversizedDownloadedFetch = vi.fn(async () =>
-      Buffer.alloc(MAX_ATTACHMENT_BYTES + 1),
+      Buffer.alloc(getMaxAttachmentBytes() + 1),
     );
     const emptyFetch = vi.fn(async () => Buffer.alloc(0));
     const failedDownload = vi.fn(async () => {
@@ -63263,7 +63263,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         type: "file",
         name: "declared-too-large.txt",
         mimeType: "text/plain",
-        size: MAX_ATTACHMENT_BYTES + 1,
+        size: getMaxAttachmentBytes() + 1,
         fetchData: oversizedDeclaredFetch,
       },
       {
@@ -63415,7 +63415,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const [conversation] = await service.listConversations(endpoint.id);
       if (!conversation)
         throw new Error("Expected Telegram attachment failure conversation");
-      const visibleFailure = `Paperclip could not safely import the attached Telegram file. Please resend it as a supported file under ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)} or include text describing the request.`;
+      const visibleFailure = `Paperclip could not safely import the attached Telegram file. Please resend it as a supported file under ${formatAttachmentSize(getMaxAttachmentBytes())} or include text describing the request.`;
       await expect(
         db
           .select({ body: issueComments.body })
@@ -72154,7 +72154,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
             file_id: "optional-media",
             file_unique_id: "optional-media-unique",
             file_size:
-              mode === "oversize" ? MAX_ATTACHMENT_BYTES + 1 : bytes.length,
+              mode === "oversize" ? getMaxAttachmentBytes() + 1 : bytes.length,
             duration:
               mode === "malformed_video" || mode === "malformed_live_photo"
                 ? -1
@@ -72229,7 +72229,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               .from(issueComments)
               .where(eq(issueComments.companyId, fixture.companyId));
             expect(comment!.body).toContain(
-              `under ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)}`,
+              `under ${formatAttachmentSize(getMaxAttachmentBytes())}`,
             );
             expect(wakeup).not.toHaveBeenCalled();
             return;

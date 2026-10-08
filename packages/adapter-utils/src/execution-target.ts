@@ -4286,6 +4286,13 @@ async function closeDuplexChannelWithinBudget(
   }
 }
 
+let attachmentMaxBytesSource: (() => number) | null = null;
+
+/** Lets the host supply its live attachment size limit so the bridge body cap follows Instance Settings. */
+export function setPaperclipBridgeAttachmentMaxBytesSource(source: (() => number) | null): void {
+  attachmentMaxBytesSource = source;
+}
+
 export async function startAdapterExecutionTargetPaperclipBridge(input: {
   runId: string;
   target: AdapterExecutionTarget | null | undefined;
@@ -4355,7 +4362,7 @@ export async function startAdapterExecutionTargetPaperclipBridge(input: {
   const queueDir = path.posix.join(bridgeRuntimeDir, "queue");
   const assetRemoteDir = path.posix.join(bridgeRuntimeDir, "server");
   const bridgeToken = createSandboxCallbackBridgeToken();
-  const configuredAttachmentBytes = Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES);
+  const configuredAttachmentBytes = attachmentMaxBytesSource?.() ?? Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES);
   // A larger upload limit needs multipart headroom. A smaller attachment limit
   // remains enforced by the API and must not shrink unrelated JSON responses.
   const defaultBodyBytes = Number.isSafeInteger(configuredAttachmentBytes) && configuredAttachmentBytes > 0

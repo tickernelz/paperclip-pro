@@ -38,7 +38,7 @@ import type {
   UpsertIssueWatchdog,
   UpsertIssueDocument,
 } from "@tickernelz/paperclip-pro-shared";
-import { api, ApiError, type RequestOptions } from "./client";
+import { api, ApiError, oversizedUploadError, type RequestOptions } from "./client";
 import type { MessageDeliveryDisposition, MessageDeliveryMode } from "@/lib/message-delivery-command";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";
 
@@ -617,6 +617,8 @@ export const issuesApi = {
     file: File,
     issueCommentId?: string | null,
   ) => {
+    const oversized = oversizedUploadError(file);
+    if (oversized) return Promise.reject(oversized);
     const form = new FormData();
     form.append("file", file);
     if (issueCommentId) {

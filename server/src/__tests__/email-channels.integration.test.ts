@@ -14,7 +14,7 @@ import { Readable } from "node:stream";
 import { createStorageService } from "../storage/service.js";
 import type { StorageService } from "../storage/types.js";
 import * as remoteHttp from "../services/remote-http-fetch.js";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 import { Webhook } from "svix";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import os from "node:os";
@@ -550,7 +550,7 @@ describe("AgentMail durable email pipeline", () => {
     const f = await fixture("webhook", storage);
     const mail = f.message(undefined, undefined, { attachments: [
       { attachment_id: "context", filename: "../context.txt", content_type: "text/plain", size: 12 },
-      { attachment_id: "oversized", filename: "large.txt", content_type: "text/plain", size: MAX_ATTACHMENT_BYTES + 1 },
+      { attachment_id: "oversized", filename: "large.txt", content_type: "text/plain", size: getMaxAttachmentBytes() + 1 },
     ] });
     await f.receive(mail);
     await f.receive(mail);

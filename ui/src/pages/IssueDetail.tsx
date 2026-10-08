@@ -1,4 +1,6 @@
 import { TextAttachmentContext } from "../context/TextAttachmentContext";
+import { PurgedAttachmentsContext } from "../context/PurgedAttachmentsContext";
+import { purgedContentPaths } from "../lib/purged-attachment";
 import { useTaskBrowsers, useBrowserArrivals } from "@/hooks/useTaskBrowsers";
 import { WorkspaceExportRecovery } from "../components/WorkspaceExportRecovery";
 import { DispositionRecoveryProvider } from "../components/DispositionRecoveryNotice";
@@ -6298,6 +6300,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     () => getPromotedOutputAttachmentIds(workProducts),
     [workProducts],
   );
+  const purgedAttachmentPaths = useMemo(
+    () => purgedContentPaths(attachments ?? []),
+    [attachments],
+  );
   const attachmentList = useMemo(
     () =>
       (attachments ?? []).filter(
@@ -7662,7 +7668,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
   return (
     <FileViewerProvider issueId={conversation && !conversation.issue ? "" : issue.id} enabled={fileViewerEnabled}>
-      <TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}>
+      <TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}><PurgedAttachmentsContext.Provider value={purgedAttachmentPaths}>
         <div
           data-task-chat-shell={taskChatShellEnabled ? "" : undefined}
           className={
@@ -8544,7 +8550,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           ) : null}
           <ScrollToBottom />
         </div>
-      </IssueGalleryContext.Provider></TextAttachmentContext.Provider>
+      </PurgedAttachmentsContext.Provider></IssueGalleryContext.Provider></TextAttachmentContext.Provider>
     </FileViewerProvider>
   );
 }

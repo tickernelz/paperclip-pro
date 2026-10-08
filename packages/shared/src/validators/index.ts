@@ -41,6 +41,8 @@ export {
   instanceSettingsSchema,
   instanceGeneralSettingsSchema,
   speechToTextSettingsSchema,
+  attachmentMaxMegabytesSchema,
+  attachmentRetentionSettingsSchema,
   messageDeliverySchema,
   type MessageDeliveryRequest,
   MESSAGE_DELIVERY_LITERALS,

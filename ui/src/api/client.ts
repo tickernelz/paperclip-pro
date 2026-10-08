@@ -1,5 +1,6 @@
 import { getPageVisibility, getVisibilityHeaderValue } from "@/lib/page-visibility";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
+import { attachmentTooLargeMessage, exceedsAttachmentLimit } from "@/lib/attachment-limit";
 import { readApiJson } from "./response";
 
 const BASE = "/api";
@@ -24,6 +25,18 @@ export interface RequestOptions {
   /** The `fetch` cache mode. Use `"no-store"` for a response that must never
    *  come from the browser's HTTP cache. */
   cache?: RequestCache;
+}
+
+/** An ApiError(413) for a file above the known server upload limit, or null when it fits. */
+export function oversizedUploadError(file: Blob): ApiError | null {
+  return exceedsAttachmentLimit(file) ? new ApiError(attachmentTooLargeMessage(), 413, null) : null;
+}
+
+function errorMessage(status: number, errorBody: unknown): string {
+  const serverMessage = (errorBody as { error?: unknown } | null)?.error;
+  if (typeof serverMessage === "string" && serverMessage.trim()) return serverMessage;
+  if (status === 413) return attachmentTooLargeMessage();
+  return `Request failed: ${status}`;
 }
 
 function abortError(): DOMException {
@@ -60,11 +73,7 @@ export async function requestResponse(path: string, init?: RequestInit): Promise
     const errorBody = await readApiJson(res);
     const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, errorBody);
     if (recovery) return recovery;
-    throw new ApiError(
-      (errorBody as { error?: string } | null)?.error ?? `Request failed: ${res.status}`,
-      res.status,
-      errorBody,
-    );
+    throw new ApiError(errorMessage(res.status, errorBody), res.status, errorBody);
   }
   return res;
 }

@@ -351,4 +351,28 @@ describe("IssueAttachmentsSection", () => {
     expect(container.querySelector('button[title="Delete attachment"]')).toBeNull();
     expect(container.textContent).not.toContain("Delete this attachment?");
   });
+
+  it("renders an attachment removed by retention as a notice without open or download links", async () => {
+    const attachment = makeAttachment({
+      id: "purged-attachment",
+      originalFilename: "screenshot.png",
+      contentType: "image/png",
+      contentPath: "/api/attachments/purged-attachment/content",
+      purgedAt: new Date("2026-09-15T10:00:00.000Z"),
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <IssueAttachmentsSection attachments={[attachment]} onImageClick={vi.fn()} />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+
+    expect(container.textContent).toContain("screenshot.png");
+    expect(container.textContent).toContain("File removed by retention (2026-09-15)");
+    expect(container.querySelector("img")).toBeNull();
+    expect(container.querySelector('a[href*="purged-attachment"]')).toBeNull();
+  });
 });
