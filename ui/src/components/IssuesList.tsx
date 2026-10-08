@@ -140,6 +140,63 @@ function findIssuesScrollContainer(element: HTMLElement | null): HTMLElement | n
   }
   return null;
 }
+const ISSUE_SCROLL_ANCHOR_ROW_COUNT = 12;
+
+type IssueRowScrollAnchor = { identity: string; rows: Array<{ id: string; top: number }> };
+
+function issuesViewportBounds(scrollContainer: HTMLElement | null) {
+  if (!scrollContainer) return { top: 0, bottom: window.innerHeight };
+  const rect = scrollContainer.getBoundingClientRect();
+  return { top: rect.top, bottom: rect.top + scrollContainer.clientHeight };
+}
+
+function captureIssueRowScrollAnchor(
+  root: HTMLElement,
+  scrollContainer: HTMLElement | null,
+  identity: string,
+): IssueRowScrollAnchor {
+  const rows = root.querySelectorAll<HTMLElement>("[data-issue-row-id]");
+  const viewport = issuesViewportBounds(scrollContainer);
+  let low = 0;
+  let high = rows.length;
+  while (low < high) {
+    const middle = (low + high) >> 1;
+    if (rows[middle]!.getBoundingClientRect().bottom <= viewport.top) low = middle + 1;
+    else high = middle;
+  }
+  const anchors: IssueRowScrollAnchor["rows"] = [];
+  for (let index = low; index < rows.length && anchors.length < ISSUE_SCROLL_ANCHOR_ROW_COUNT; index += 1) {
+    const rect = rows[index]!.getBoundingClientRect();
+    if (rect.top >= viewport.bottom) break;
+    anchors.push({ id: rows[index]!.dataset.issueRowId!, top: rect.top - viewport.top });
+  }
+  return { identity, rows: anchors };
+}
+
+function issueRowAnchorShift(
+  root: HTMLElement,
+  scrollContainer: HTMLElement | null,
+  anchor: IssueRowScrollAnchor,
+): number | null {
+  const viewport = issuesViewportBounds(scrollContainer);
+  const votes = new Map<number, { count: number; firstIndex: number }>();
+  anchor.rows.forEach(({ id, top }, index) => {
+    const row = root.querySelector<HTMLElement>(`[data-issue-row-id="${escapeAttrValue(id)}"]`);
+    if (!row) return;
+    const shift = Math.round(row.getBoundingClientRect().top - viewport.top - top);
+    const vote = votes.get(shift);
+    if (vote) vote.count += 1;
+    else votes.set(shift, { count: 1, firstIndex: index });
+  });
+  let best: { shift: number; count: number; firstIndex: number } | null = null;
+  for (const [shift, vote] of votes) {
+    if (!best || vote.count > best.count || (vote.count === best.count && vote.firstIndex < best.firstIndex)) {
+      best = { shift, ...vote };
+    }
+  }
+  return best?.shift ?? null;
+}
+
 const boardIssueStatuses = ISSUE_STATUSES;
 const issueStatusLabels: Record<IssueStatus, string> = {
   backlog: "Backlog",
@@ -1682,6 +1739,42 @@ function StreamlinedIssuesList({
     );
   }, [budgetOrderedIssueIds, renderBudgetIdentity, viewState.viewMode]);
 
+  const scrollAnchorRef = useRef<IssueRowScrollAnchor | null>(null);
+  const captureScrollAnchor = useCallback(() => {
+    const root = rootRef.current;
+    if (!root || viewState.viewMode !== "list") {
+      scrollAnchorRef.current = null;
+      return;
+    }
+    scrollAnchorRef.current = captureIssueRowScrollAnchor(
+      root,
+      findIssuesScrollContainer(root),
+      renderBudgetIdentity,
+    );
+  }, [renderBudgetIdentity, viewState.viewMode]);
+
+  useEffect(() => {
+    if (viewState.viewMode !== "list") return;
+    const scrollTarget: Window | HTMLElement = findIssuesScrollContainer(rootRef.current) ?? window;
+    scrollTarget.addEventListener("scroll", captureScrollAnchor, { passive: true });
+    return () => scrollTarget.removeEventListener("scroll", captureScrollAnchor);
+  }, [captureScrollAnchor, viewState.viewMode]);
+
+  useLayoutEffect(() => {
+    const root = rootRef.current;
+    const anchor = scrollAnchorRef.current;
+    if (root && anchor && anchor.identity === renderBudgetIdentity && viewState.viewMode === "list") {
+      const scrollContainer = findIssuesScrollContainer(root);
+      const shift = issueRowAnchorShift(root, scrollContainer, anchor);
+      if (shift === null) return;
+      if (shift !== 0) {
+        if (scrollContainer) scrollContainer.scrollTop += shift;
+        else window.scrollBy(0, shift);
+      }
+    }
+    captureScrollAnchor();
+  }, [budgetOrderedIssueIds, captureScrollAnchor, renderBudgetIdentity, renderedIssueRowLimit, viewState.viewMode]);
+
   const hasMoreRenderedRows = viewState.viewMode === "list" && renderedIssueRowLimit < filtered.length;
   const remainingIssueRowCount = Math.max(filtered.length - renderedIssueRowLimit, 0);
   const loadMoreIssueRows = useCallback(() => {
@@ -1842,7 +1935,7 @@ function StreamlinedIssuesList({
   const IssuesToolbar = toolbarPresentation === "collection" ? CollectionToolbar : LegacyIssuesToolbar;
 
   return (
-    <div ref={rootRef} className="space-y-4">
+    <div ref={rootRef} className="paperclip-issue-list space-y-4">
       {progressSummary ? (
         <SubIssueProgressSummaryStrip
           summary={progressSummary}

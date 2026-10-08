@@ -1778,6 +1778,126 @@ describe("IssuesList", () => {
     });
   });
 
+  it("keeps the visible rows in place when a later page nests earlier orphan children under their parent", async () => {
+    const rowHeight = 44;
+    const listOffset = 1000;
+    const base = new Date("2026-04-07T12:00:00.000Z").getTime();
+    const minute = 60_000;
+    const issueAt = (index: number, overrides: Partial<Issue> = {}) =>
+      createIssue({
+        id: `issue-${index}`,
+        identifier: `PAP-${index}`,
+        title: `Issue ${index}`,
+        updatedAt: new Date(base - index * minute),
+        ...overrides,
+      });
+    const firstPage = Array.from({ length: 100 }, (_, index) => {
+      if (index >= 5 && index < 45) return issueAt(index, { parentId: "hub" });
+      if (index === 70) return issueAt(index, { parentId: "anchor-parent" });
+      return issueAt(index);
+    });
+    const secondPage = [
+      issueAt(100, { id: "hub", title: "Hub" }),
+      issueAt(101, { id: "anchor-parent", title: "Anchor parent" }),
+      ...Array.from({ length: 30 }, (_, index) => issueAt(102 + index)),
+    ];
+
+    const main = document.createElement("main");
+    main.style.overflowY = "auto";
+    document.body.appendChild(main);
+    main.appendChild(container);
+    let scrollTop = 0;
+    Object.defineProperty(main, "clientHeight", { configurable: true, value: 600 });
+    Object.defineProperty(main, "scrollTop", {
+      configurable: true,
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+    });
+    Object.defineProperty(main, "scrollHeight", {
+      configurable: true,
+      get: () => listOffset + container.querySelectorAll("[data-issue-row-id]").length * rowHeight + 600,
+    });
+    const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this === main) return new DOMRect(0, 0, 1000, 600);
+      if (this.dataset.issueRowId) {
+        const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-issue-row-id]"));
+        const top = listOffset + rows.indexOf(this) * rowHeight - scrollTop;
+        return new DOMRect(0, top, 1000, rowHeight);
+      }
+      return originalRect.call(this);
+    });
+    const rowTop = (id: string) =>
+      container.querySelector<HTMLElement>(`[data-issue-row-id="${id}"]`)!.getBoundingClientRect().top;
+
+    const root = createRoot(container);
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const renderIssues = (issues: Issue[]) =>
+      act(() => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>
+              <IssuesList
+                issues={issues}
+                agents={[]}
+                projects={[]}
+                viewStateKey="paperclip:test-issues"
+                hasMoreIssues
+                onLoadMoreIssues={() => undefined}
+                onUpdateIssue={() => undefined}
+              />
+            </TooltipProvider>
+          </QueryClientProvider>,
+        );
+      });
+
+    try {
+      renderIssues(firstPage);
+      await waitForAssertion(() => {
+        expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(100);
+      });
+      await flush();
+
+      act(() => {
+        main.scrollTop = listOffset + 70 * rowHeight;
+        main.dispatchEvent(new Event("scroll"));
+      });
+      await flushAnimationFrame();
+      const visibleBefore = ["issue-71", "issue-72", "issue-80"].map(rowTop);
+      const scrollTopBefore = main.scrollTop;
+
+      renderIssues([...firstPage, ...secondPage]);
+      await flush();
+
+      expect(container.querySelector('[data-issue-row-id="issue-70"]')).not.toBeNull();
+      expect(["issue-71", "issue-72", "issue-80"].map(rowTop)).toEqual(visibleBefore);
+      expect(main.scrollTop).toBe(scrollTopBefore - 41 * rowHeight);
+
+      act(() => {
+        main.dispatchEvent(new Event("scroll"));
+      });
+      const visibleAfterAppend = ["issue-75", "issue-80", "issue-90"].map(rowTop);
+      renderIssues([
+        issueAt(85, { updatedAt: new Date(base + minute) }),
+        ...[...firstPage, ...secondPage].filter((issue) => issue.id !== "issue-85"),
+      ]);
+      await flush();
+      expect(["issue-75", "issue-80", "issue-90"].map(rowTop)).toEqual([
+        visibleAfterAppend[0],
+        visibleAfterAppend[1],
+        visibleAfterAppend[2]! - rowHeight,
+      ]);
+    } finally {
+      act(() => {
+        root.unmount();
+      });
+      rectSpy.mockRestore();
+      main.remove();
+    }
+  });
+
   it("waits for the desktop main scroll container before rendering more local rows", async () => {
     const manyIssues = Array.from({ length: 120 }, (_, index) =>
       createIssue({
