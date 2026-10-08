@@ -107,6 +107,18 @@ On mobile the card is capped at about 45% of the visible height and scrolls
 its own body while its header and actions stay visible. While the composer is
 focused or the visible height is below 500px it collapses to a one-row summary
 that expands on tap. Card actions are 36px and card text 13px on narrow screens.
+The card header's Hide control collapses it to the same one-row summary on every
+screen size without skipping or dismissing the request; the choice lasts for the
+browser session per request, keeps its draft, and a new request starts expanded.
+Thread interaction cards offer the same Hide/Show toggle in their header.
+
+Agent-authored prompts, help text, option labels and descriptions, details, and
+submitted answers, reasons, and notes render as Markdown in the surrounding text
+style. Questions, confirmations, and checkbox confirmations offer a collapsed
+“Add note” beside the chosen option or the Approve/Reject actions. It opens the
+composer's Markdown editor; any attached file uploads to the task and lands in
+the note as a link, images as embeds. Notes are separate from a decline reason
+and are not offered on suggested tasks, tool reviews, or chat approvals.
 
 ## Enforcement (what "compliant" means for the extraction run)
 

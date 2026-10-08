@@ -17,7 +17,7 @@ vi.mock("@/lib/router", () => ({
 }));
 
 vi.mock("../api/issues", () => ({
-  issuesApi: { listInteractions: vi.fn(), acceptInteraction: vi.fn() },
+  issuesApi: { listInteractions: vi.fn(), acceptInteraction: vi.fn(), uploadAttachment: vi.fn() },
 }));
 
 afterEach(() => {
@@ -58,6 +58,37 @@ it("refreshes a preparing approval automatically, then stops polling without acc
     await act(async () => { await vi.advanceTimersByTimeAsync(10_000); });
     expect(issuesApi.listInteractions).toHaveBeenCalledTimes(2);
     expect(issuesApi.acceptInteraction).not.toHaveBeenCalled();
+  } finally {
+    await act(async () => root.unmount());
+    container.remove();
+    client.clear();
+  }
+});
+
+it("lets the decision note attach files through the issue attachment upload", async () => {
+  const interaction = pendingRequestConfirmationInteraction;
+  vi.mocked(issuesApi.listInteractions).mockResolvedValue([interaction]);
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const container = document.createElement("div");
+  document.body.appendChild(container);
+  const root = createRoot(container);
+  try {
+    await act(async () => root.render(
+      <QueryClientProvider client={client}>
+        <TooltipProvider><ThemeProvider>
+          <AttentionInteractionResolver
+            companyId={interaction.companyId}
+            issueId={interaction.issueId}
+            interactionId={interaction.id}
+          />
+        </ThemeProvider></TooltipProvider>
+      </QueryClientProvider>,
+    ));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 0)); });
+    await act(async () => {
+      container.querySelector<HTMLButtonElement>('[data-testid="interaction-note-toggle"]')!.click();
+    });
+    expect(container.querySelector('input[aria-label="Attach file to note"]')).not.toBeNull();
   } finally {
     await act(async () => root.unmount());
     container.remove();

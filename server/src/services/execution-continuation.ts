@@ -88,12 +88,14 @@ export function projectHumanInteractionResponse(row: {
   if (row.kind === "ask_user_questions" && row.status === "answered" && Array.isArray(result.answers)) {
     response = { answers: result.answers.map(value => {
       const answer = object(value);
-      return { questionId: answer.questionId, optionIds: answer.optionIds, otherText: answer.otherText };
+      return { questionId: answer.questionId, optionIds: answer.optionIds, otherText: answer.otherText,
+        ...(string(answer.note) ? { note: answer.note } : {}) };
     }) };
   } else if (["request_confirmation", "request_checkbox_confirmation"].includes(row.kind)
     && ["accepted", "rejected"].includes(row.status) && result.outcome === row.status) {
     response = { outcome: result.outcome, reason: result.reason,
-      ...(Array.isArray(result.selectedOptionIds) ? { selectedOptionIds: result.selectedOptionIds } : {}) };
+      ...(Array.isArray(result.selectedOptionIds) ? { selectedOptionIds: result.selectedOptionIds } : {}),
+      ...(string(result.note) ? { note: result.note } : {}) };
   } else return null;
   return { id: row.id, kind: row.kind, status: row.status, resolvedByUserId: row.resolvedByUserId,
     resolvedAt: row.resolvedAt.toISOString(), result: response };

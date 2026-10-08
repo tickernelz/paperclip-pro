@@ -15,7 +15,30 @@ import {
   requestConfirmationResultSchema,
   requestItemVerdictsResultSchema,
   submitIssueThreadInteractionVerdictsSchema,
+  rejectIssueThreadInteractionSchema,
+  respondIssueThreadInteractionSchema,
+  INTERACTION_NOTE_MAX_LENGTH,
 } from "./validators/issue.js";
+
+describe("interaction notes", () => {
+  const note = "See **attached** [log.zip](/api/attachments/a1/content)";
+  it("accepts a trimmed Markdown note on answers, accept and reject", () => {
+    expect(respondIssueThreadInteractionSchema.parse({
+      answers: [{ questionId: "q", optionIds: ["a"], note: `  ${note}  ` }],
+    }).answers[0]?.note).toBe(note);
+    expect(acceptIssueThreadInteractionSchema.parse({ note }).note).toBe(note);
+    expect(rejectIssueThreadInteractionSchema.parse({ reason: "No", note })).toEqual({ reason: "No", note });
+    expect(requestConfirmationResultSchema.parse({ version: 1, outcome: "accepted", note }).note).toBe(note);
+    expect(askUserQuestionsResultSchema.parse({ version: 1, answers: [{ questionId: "q", optionIds: [], note }] }).answers[0]?.note).toBe(note);
+  });
+  it("enforces the note length limit", () => {
+    const tooLong = "x".repeat(INTERACTION_NOTE_MAX_LENGTH + 1);
+    expect(respondIssueThreadInteractionSchema.safeParse({ answers: [{ questionId: "q", optionIds: [], note: tooLong }] }).success).toBe(false);
+    expect(acceptIssueThreadInteractionSchema.safeParse({ note: tooLong }).success).toBe(false);
+    expect(rejectIssueThreadInteractionSchema.safeParse({ note: tooLong }).success).toBe(false);
+    expect(acceptIssueThreadInteractionSchema.safeParse({ note: "x".repeat(INTERACTION_NOTE_MAX_LENGTH) }).success).toBe(true);
+  });
+});
 
 describe("issue thread interaction schemas", () => {
   it("derives every legacy question from a complete mixed canonical form", () => {

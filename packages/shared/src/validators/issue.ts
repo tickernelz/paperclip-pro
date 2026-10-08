@@ -1523,6 +1523,17 @@ export const askUserQuestionsPayloadSchema = z
     }
   });
 
+export const INTERACTION_NOTE_MAX_LENGTH = 20_000;
+
+/** Optional Markdown the resolving user attaches to a choice; attachment links live inside it. */
+export const interactionNoteSchema = multilineTextSchema
+  .pipe(z.string().trim().max(INTERACTION_NOTE_MAX_LENGTH))
+  .nullable()
+  .optional()
+  .describe(
+    "Optional Markdown note from the resolving board user, up to 20000 characters. Uploaded attachments appear as Markdown links inside it. Agents cannot send a note.",
+  );
+
 export const askUserQuestionsAnswerSchema = z.object({
   questionId: z.string().trim().min(1).max(160),
   optionIds: z.array(z.string().trim().min(1).max(160)).max(129),
@@ -1530,6 +1541,7 @@ export const askUserQuestionsAnswerSchema = z.object({
     .pipe(z.string().trim().max(100000))
     .nullable()
     .optional(),
+  note: interactionNoteSchema,
 });
 
 export const askUserQuestionsResultSchema = z.object({
@@ -1799,6 +1811,7 @@ export const requestConfirmationResultSchema = z.object({
     "addressee_deleted",
   ]),
   reason: z.string().trim().max(4000).nullable().optional(),
+  note: interactionNoteSchema,
   commentId: z.string().guid().nullable().optional(),
   supersededByInteractionId: z.string().guid().nullable().optional(),
   staleTarget: requestConfirmationTargetSchema.nullable().optional(),
@@ -2133,6 +2146,7 @@ export const acceptIssueThreadInteractionSchema = z
       .array(z.string().trim().min(1).max(120))
       .max(REQUEST_CHECKBOX_CONFIRMATION_OPTION_LIMIT)
       .optional(),
+    note: interactionNoteSchema,
   })
   .superRefine((value, ctx) => {
     const seenClientKeys = new Set<string>();
@@ -2186,6 +2200,7 @@ export type ResolveConfirmationFromComment = z.infer<typeof resolveConfirmationF
 
 export const rejectIssueThreadInteractionSchema = z.object({
   reason: z.string().trim().max(4000).optional(),
+  note: interactionNoteSchema,
 });
 export type RejectIssueThreadInteraction = z.infer<
   typeof rejectIssueThreadInteractionSchema

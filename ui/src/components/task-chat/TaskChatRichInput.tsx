@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2 } from "lucide-react";
+import { ImagePlus, Loader2, Paperclip } from "lucide-react";
 import {
   MarkdownEditor,
   type MarkdownEditorRef,
@@ -21,6 +21,14 @@ interface TaskChatRichInputProps {
   testId?: string;
   attachAriaLabel?: string;
   showImageAttachControls?: boolean;
+  attachAnyFile?: boolean;
+}
+
+function attachmentMarkdown(file: File, url: string): string {
+  const label = (file.name || "file").replace(/[[\]]/g, "\\$&");
+  return file.type.startsWith("image/")
+    ? `![${label}](${url})`
+    : `[${label}](${url})`;
 }
 
 /** Composer-grade rich text field for takeover answers and revision notes. */
@@ -38,6 +46,7 @@ export function TaskChatRichInput({
   testId = "task-chat-rich-input",
   attachAriaLabel = "Attach image",
   showImageAttachControls = false,
+  attachAnyFile = false,
 }: TaskChatRichInputProps) {
   const editorRef = useRef<MarkdownEditorRef>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -76,16 +85,20 @@ export function TaskChatRichInput({
     }
   }
 
-  async function chooseImage(file: File | null) {
+  async function attachFile(file: File | null) {
     if (!file) return;
     try {
       const url = await uploadImage(file);
-      const alt = (file.name || "image").replace(/[[\]]/g, "\\$&");
-      editorRef.current?.insertMarkdown(`\n\n![${alt}](${url})\n\n`);
+      editorRef.current?.insertMarkdown(
+        `\n\n${attachmentMarkdown(file, url)}\n\n`,
+      );
     } catch {
       // uploadImage owns the visible error state.
     }
   }
+
+  const showAttachControls =
+    Boolean(imageUploadHandler) && (showImageAttachControls || attachAnyFile);
 
   return (
     <div
@@ -100,22 +113,23 @@ export function TaskChatRichInput({
         onChange={onChange}
         placeholder={placeholder}
         imageUploadHandler={imageUploadHandler ? uploadImage : undefined}
+        onDropFile={imageUploadHandler && attachAnyFile ? attachFile : undefined}
         mentions={mentions}
         readOnly={disabled}
         onSubmit={onSubmit}
         bordered={false}
         contentClassName="max-h-(--sz-28dvh) min-h-(--sz-72px) overflow-y-auto px-0 py-0 text-sm scrollbar-auto-hide"
       />
-      {imageUploadHandler && showImageAttachControls ? (
+      {showAttachControls ? (
         <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={attachAnyFile ? undefined : "image/*"}
             className="hidden"
             aria-label={attachAriaLabel}
             onChange={(event) => {
-              void chooseImage(event.target.files?.[0] ?? null);
+              void attachFile(event.target.files?.[0] ?? null);
               event.target.value = "";
             }}
           />
@@ -129,12 +143,18 @@ export function TaskChatRichInput({
           >
             {uploading ? (
               <Loader2 aria-hidden className="h-3.5 w-3.5 animate-spin" />
+            ) : attachAnyFile ? (
+              <Paperclip aria-hidden className="h-3.5 w-3.5" />
             ) : (
               <ImagePlus aria-hidden className="h-3.5 w-3.5" />
             )}
-            Attach image
+            {attachAnyFile ? "Attach file" : "Attach image"}
           </Button>
-          <span>or drop/paste an image into the note</span>
+          <span>
+            {attachAnyFile
+              ? "or drop a file into the note"
+              : "or drop/paste an image into the note"}
+          </span>
         </div>
       ) : null}
       {uploadError ? (

@@ -447,6 +447,25 @@ const reorderQueuedCommentsSchema = queuedCommentMutationTargetSchema.extend({
   orderedCommentIds: z.array(z.string().min(1)).max(MAX_ISSUE_COMMENT_LIMIT),
 });
 
+function assertInteractionNoteSupported(
+  interaction: { kind: string; payload?: unknown },
+  openwaApprovalRequestId: string | null,
+  note: unknown,
+) {
+  if (typeof note !== "string" || note.trim().length === 0) return;
+  const toolAction =
+    interaction.kind === "request_confirmation" &&
+    interaction.payload !== null &&
+    typeof interaction.payload === "object" &&
+    "toolAction" in interaction.payload &&
+    interaction.payload.toolAction !== undefined;
+  if (openwaApprovalRequestId || toolAction) {
+    throw unprocessable("Notes are not supported on tool reviews or chat approvals", {
+      code: "interaction_note_unsupported",
+    });
+  }
+}
+
 function prefersMinimalIssueUpdateResponse(req: Request) {
   return (req.get("Prefer") ?? "")
     .split(",")
@@ -17776,6 +17795,7 @@ export function issueRoutes(
 
       const actor = getActorInfo(req);
       const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      assertInteractionNoteSupported(current, openwaApprovalRequestId, req.body.note);
       if (openwaApprovalRequestId) {
         if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
         await resolveOpenwaApprovalInteraction(db, {
@@ -18110,6 +18130,7 @@ export function issueRoutes(
 
       const actor = getActorInfo(req);
       const openwaApprovalRequestId = openwaApprovalRequestIdOf(current);
+      assertInteractionNoteSupported(current, openwaApprovalRequestId, req.body.note);
       if (openwaApprovalRequestId) {
         if (actor.actorType !== "user") throw forbidden("Only a current owner of the chat endpoint can resolve this approval");
         await resolveOpenwaApprovalInteraction(db, {

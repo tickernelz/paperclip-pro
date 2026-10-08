@@ -146,6 +146,18 @@ describe("issue thread interaction helpers", () => {
       "- Runtime — Which runtime?: Node.js",
       "- Features — Which features?: Request logs, Metrics",
     ].join("\n"));
+    const withNote = {
+      ...interaction,
+      result: { version: 1 as const, answers: [{ questionId: "runtime", optionIds: ["node"], note: "Pin **24**.\n[log.zip](/api/attachments/a/content)" }] },
+    } satisfies AskUserQuestionsInteraction;
+    expect(buildAnsweredQuestionsDeliveryText(withNote)).toBe([
+      "Answered questions",
+      "",
+      "- Runtime — Which runtime?: Node.js",
+      "  Note:",
+      "    Pin **24**.",
+      "    [log.zip](/api/attachments/a/content)",
+    ].join("\n"));
   });
 
   it("summarizes task and question interactions", () => {

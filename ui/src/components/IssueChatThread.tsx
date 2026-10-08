@@ -300,6 +300,7 @@ interface IssueChatMessageContext {
     selectedClientKeys?: string[],
     selectedOptionIds?: string[],
     rememberAction?: boolean,
+    note?: string,
   ) => Promise<void> | void;
   onRejectInteraction?: (
     interaction:
@@ -307,6 +308,7 @@ interface IssueChatMessageContext {
       | RequestConfirmationInteraction
       | RequestCheckboxConfirmationInteraction,
     reason?: string,
+    note?: string,
   ) => Promise<void> | void;
   onSubmitInteractionAnswers?: (
     interaction: AskUserQuestionsInteraction,
@@ -705,6 +707,7 @@ interface IssueChatThreadProps {
     selectedClientKeys?: string[],
     selectedOptionIds?: string[],
     rememberAction?: boolean,
+    note?: string,
   ) => Promise<void> | void;
   onRejectInteraction?: (
     interaction:
@@ -712,6 +715,7 @@ interface IssueChatThreadProps {
       | RequestConfirmationInteraction
       | RequestCheckboxConfirmationInteraction,
     reason?: string,
+    note?: string,
   ) => Promise<void> | void;
   onSubmitInteractionAnswers?: (
     interaction: AskUserQuestionsInteraction,

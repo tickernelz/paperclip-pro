@@ -192,6 +192,7 @@ export interface PlanReviewInteractionTargetContext {
 export interface PlanReviewInteractionResultContext {
   outcome: string | null;
   reason: string | null;
+  note?: string | null;
   commentId: string | null;
 }
 

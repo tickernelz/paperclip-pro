@@ -92,18 +92,20 @@ export function AttentionInteractionResolver({
       selectedClientKeys?: string[];
       selectedOptionIds?: string[];
       rememberAction?: boolean;
+      note?: string;
     }) =>
       issuesApi.acceptInteraction(issueId, input.interaction.id, {
         selectedClientKeys: input.selectedClientKeys,
         selectedOptionIds: input.selectedOptionIds,
         rememberAction: input.rememberAction,
+        note: input.note,
       }),
     onSuccess: invalidate,
   });
 
   const rejectMutation = useMutation({
-    mutationFn: (input: { interactionId: string; reason?: string }) =>
-      issuesApi.rejectInteraction(issueId, input.interactionId, input.reason),
+    mutationFn: (input: { interactionId: string; reason?: string; note?: string }) =>
+      issuesApi.rejectInteraction(issueId, input.interactionId, input.reason, input.note),
     onSuccess: invalidate,
   });
 
@@ -149,11 +151,12 @@ export function AttentionInteractionResolver({
       agentMap={agentMap}
       currentUserId={currentUserId}
       userLabelMap={userLabelMap}
-      onAcceptInteraction={(target, selectedClientKeys, selectedOptionIds, rememberAction) =>
-        acceptMutation.mutateAsync({ interaction: target, selectedClientKeys, selectedOptionIds, rememberAction }).then(() => undefined)
+      onUploadImage={async (file) => (await issuesApi.uploadAttachment(companyId, issueId, file)).contentPath}
+      onAcceptInteraction={(target, selectedClientKeys, selectedOptionIds, rememberAction, note) =>
+        acceptMutation.mutateAsync({ interaction: target, selectedClientKeys, selectedOptionIds, rememberAction, note }).then(() => undefined)
       }
-      onRejectInteraction={(target, reason) =>
-        rejectMutation.mutateAsync({ interactionId: target.id, reason }).then(() => undefined)
+      onRejectInteraction={(target, reason, note) =>
+        rejectMutation.mutateAsync({ interactionId: target.id, reason, note }).then(() => undefined)
       }
       onSubmitInteractionAnswers={(target: AskUserQuestionsInteraction, answers) =>
         respondMutation.mutateAsync({ interactionId: target.id, answers }).then(() => undefined)

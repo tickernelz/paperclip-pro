@@ -14,6 +14,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
 import { issuesApi } from "@/api/issues";
 import { agentsApi } from "@/api/agents";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { DRAFT_DEBOUNCE_MS } from "../../lib/composer-draft";
 import {
   loadDraftSubmission,
@@ -236,7 +237,11 @@ afterEach(() => {
 
 function render(ui: ReactElement) {
   flushSync(() =>
-    root!.render(<QueryClientProvider client={queryClient}>{ui}</QueryClientProvider>),
+    root!.render(
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>{ui}</ThemeProvider>
+      </QueryClientProvider>,
+    ),
   );
 }
 
@@ -2205,6 +2210,75 @@ describe("TaskChatComposer", () => {
       expect(container.textContent).not.toContain("Write instead");
     });
 
+    it("hides the takeover to its summary without skipping, keeps the draft, and starts a new request expanded", async () => {
+      sessionStorage.clear();
+      const onDismiss = vi.fn();
+      const onSkip = vi.fn();
+      const takeover = (id: string) => ({
+        id,
+        label: "Release decisions",
+        pendingCount: 2,
+        inlineSkip: true,
+        content: (
+          <QuestionForm
+            id={id}
+            draftKey={`draft:${id}`}
+            questionSet={{
+              schema: "paperclip.question_set.v1",
+              questions: [
+                {
+                  id: "scope",
+                  prompt: "Where should this ship?",
+                  required: true,
+                  answerMode: "single_select",
+                  options: [{ id: "pilot", label: "Pilot" }],
+                },
+              ],
+            }}
+            onSubmit={vi.fn()}
+          />
+        ),
+        onDismiss,
+        onSkip,
+      });
+      const card = () =>
+        container.querySelector<HTMLElement>('[data-testid="task-chat-composer-takeover"]')!;
+      const summary = () =>
+        container.querySelector<HTMLButtonElement>(
+          '[data-testid="task-chat-composer-takeover-summary"]',
+        );
+      const option = () =>
+        container.querySelector<HTMLButtonElement>("#release-1-scope-pilot")!;
+
+      render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" takeover={takeover("release-1")} />);
+      expect(summary()).toBeNull();
+      flushSync(() => option().click());
+      flushSync(() => card().querySelector<HTMLButtonElement>('button[aria-label="Hide"]')!.click());
+
+      expect(summary()?.textContent).toContain("Release decisions");
+      expect(summary()?.textContent).toContain("2 pending");
+      expect(card().className).toContain("hidden");
+      expect(option().getAttribute("aria-checked")).toBe("true");
+      expect(onDismiss).not.toHaveBeenCalled();
+      expect(onSkip).not.toHaveBeenCalled();
+
+      render(<div />);
+      render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" takeover={takeover("release-1")} />);
+      expect(summary()).not.toBeNull();
+      expect(card().className).toContain("hidden");
+      expect(option().getAttribute("aria-checked")).toBe("true");
+
+      render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" takeover={takeover("release-2")} />);
+      expect(summary()).toBeNull();
+      expect(card().className).not.toContain("hidden");
+
+      render(<TaskChatComposer onAdd={vi.fn()} workMode="standard" takeover={takeover("release-1")} />);
+      flushSync(() => summary()!.click());
+      expect(summary()).toBeNull();
+      expect(card().className).not.toContain("hidden");
+      expect(onSkip).not.toHaveBeenCalled();
+    });
+
     it("keeps title, pending count, pagination, and dismiss on one header row", () => {
       render(
         <TaskChatComposer
@@ -2488,7 +2562,7 @@ describe("TaskChatComposer", () => {
       expect(onSubmit).toHaveBeenCalledExactlyOnceWith({
         schema: "paperclip.question_response.v1",
         answers: { storage: { selectedOptionIds: ["sqlite"] }, features: { selectedOptionIds: ["auth", "search"] } },
-      });
+      }, {});
     });
 
     describe("single-choice selection stays on the page", () => {

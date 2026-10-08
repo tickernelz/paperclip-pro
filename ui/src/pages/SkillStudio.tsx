@@ -3346,9 +3346,10 @@ function InteractionSection({
   const agentMap = useMemo(() => new Map(agents.map((a) => [a.id, a])), [agents]);
 
   const accept = useMutation({
-    mutationFn: (vars: { interaction: IssueThreadInteraction; optionIds?: string[] }) =>
+    mutationFn: (vars: { interaction: IssueThreadInteraction; optionIds?: string[]; note?: string }) =>
       issuesApi.acceptInteraction(harnessIssueId!, vars.interaction.id, {
         selectedOptionIds: vars.optionIds,
+        note: vars.note,
       }),
     onSuccess: onAnswered,
   });
@@ -3358,8 +3359,8 @@ function InteractionSection({
     onSuccess: onAnswered,
   });
   const reject = useMutation({
-    mutationFn: (vars: { interaction: IssueThreadInteraction; reason?: string }) =>
-      issuesApi.rejectInteraction(harnessIssueId!, vars.interaction.id, vars.reason),
+    mutationFn: (vars: { interaction: IssueThreadInteraction; reason?: string; note?: string }) =>
+      issuesApi.rejectInteraction(harnessIssueId!, vars.interaction.id, vars.reason, vars.note),
     onSuccess: onAnswered,
   });
 
@@ -3380,11 +3381,11 @@ function InteractionSection({
                 key={summary.id}
                 interaction={full}
                 agentMap={agentMap}
-                onAcceptInteraction={async (interaction, _keys, optionIds) => {
-                  await accept.mutateAsync({ interaction, optionIds });
+                onAcceptInteraction={async (interaction, _keys, optionIds, _remember, note) => {
+                  await accept.mutateAsync({ interaction, optionIds, note });
                 }}
-                onRejectInteraction={async (interaction, reason) => {
-                  await reject.mutateAsync({ interaction, reason });
+                onRejectInteraction={async (interaction, reason, note) => {
+                  await reject.mutateAsync({ interaction, reason, note });
                 }}
                 onSubmitInteractionAnswers={async (interaction, answers) => {
                   await respond.mutateAsync({ interaction, answers });

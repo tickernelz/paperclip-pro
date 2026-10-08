@@ -1335,6 +1335,7 @@ export interface AskUserQuestionsAnswer {
   questionId: string;
   optionIds: string[];
   otherText?: string | null;
+  note?: string | null;
 }
 
 export interface AskUserQuestionsResult {
@@ -1572,6 +1573,7 @@ export interface RequestConfirmationResult {
     | "issue_closed"
     | "addressee_deleted";
   reason?: string | null;
+  note?: string | null;
   commentId?: string | null;
   supersededByInteractionId?: string | null;
   staleTarget?: RequestConfirmationTarget | null;

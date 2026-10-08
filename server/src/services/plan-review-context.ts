@@ -87,6 +87,7 @@ function readResult(value: unknown): PlanReviewInteractionResultContext | null {
   return {
     outcome: nonEmptyString(result.outcome),
     reason: nonEmptyString(result.reason) ?? nonEmptyString(result.rejectionReason),
+    note: nonEmptyString(result.note),
     commentId: nonEmptyString(result.commentId),
   };
 }

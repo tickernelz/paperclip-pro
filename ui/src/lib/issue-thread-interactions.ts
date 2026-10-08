@@ -324,7 +324,10 @@ export function buildAnsweredQuestionsDeliveryText(
     const label = canonical?.header && canonical.header !== prompt
       ? `${canonical.header} — ${prompt}`
       : prompt;
-    return `- ${label}: ${values.join(", ") || "No answer"}`;
+    const line = `- ${label}: ${values.join(", ") || "No answer"}`;
+    const note = answer.note?.trim();
+    if (!note) return line;
+    return [line, "  Note:", ...note.split("\n").map((noteLine) => (noteLine ? `    ${noteLine}` : ""))].join("\n");
   });
   return ["Answered questions", ...(lines.length > 0 ? ["", ...lines] : [])].join("\n");
 }

@@ -4,6 +4,7 @@ import type { MentionOption } from "@/components/MarkdownEditor";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import { MarkdownBody } from "@/components/MarkdownBody";
+import { InteractionInlineMarkdown } from "@/components/InteractionNoteField";
 import { Button } from "@/components/ui/button";
 import { CircleHelp, ChevronRight } from "lucide-react";
 import { shouldHideInteractionCard } from "@/lib/issue-thread-interactions";
@@ -58,7 +59,7 @@ export function TaskChatInteractionCard({
         className="group flex w-full items-center gap-2 rounded-sm px-1 py-1.5 text-left text-sm text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <CircleHelp aria-hidden className="h-3.5 w-3.5 shrink-0" />
-        <span className="min-w-0 flex-1"><span className="block text-xs">Unanswered question</span><span className="block truncate">{prompt}</span></span>
+        <span className="min-w-0 flex-1"><span className="block text-xs">Unanswered question</span><InteractionInlineMarkdown className="line-clamp-1">{prompt.split(/\n\s*\n/)[0] ?? prompt}</InteractionInlineMarkdown></span>
         <ChevronRight aria-hidden className="h-3 w-3 shrink-0" />
       </button>
     );
