@@ -224,6 +224,53 @@ describeEmbeddedPostgres("activity service", () => {
     expect(runs[0]).not.toHaveProperty("nativeIssueId");
   });
 
+  it("reflects run json updates on the next issue runs read from the same service", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const issueId = randomUUID();
+    const runIds = Array.from({ length: 40 }, () => randomUUID());
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Coder", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(heartbeatRuns).values(runIds.map((id, index) => ({
+      id,
+      companyId,
+      agentId,
+      status: "running",
+      createdAt: new Date(Date.UTC(2026, 3, 18, 10, index)),
+      contextSnapshot: { issueId, wakeCommentId: `wake-${index}` },
+      usageJson: { inputTokens: index },
+    })));
+    const service = activityService(db);
+
+    const first = await service.runsForIssue(companyId, issueId);
+    expect(first).toHaveLength(40);
+    expect(first.find((run) => run.runId === runIds[3])).toMatchObject({ wakeCommentId: "wake-3", usageJson: expect.objectContaining({ inputTokens: 3 }), resultJson: null });
+
+    await db.update(heartbeatRuns)
+      .set({
+        status: "succeeded",
+        contextSnapshot: { issueId, wakeCommentId: "wake-3", wakeCommentIds: ["wake-3", "steer-1"] },
+        usageJson: { inputTokens: 99 },
+        resultJson: { stopReason: "completed" },
+      })
+      .where(eq(heartbeatRuns.id, runIds[3]));
+
+    const second = await service.runsForIssue(companyId, issueId);
+    expect(second.find((run) => run.runId === runIds[3])).toMatchObject({
+      status: "succeeded",
+      wakeCommentIds: ["wake-3", "steer-1"],
+      usageJson: expect.objectContaining({ inputTokens: 99 }),
+      resultJson: { stopReason: "completed" },
+    });
+    expect(second.find((run) => run.runId === runIds[4])).toEqual(first.find((run) => run.runId === runIds[4]));
+    expect(second.map((run) => run.runId)).toEqual([...runIds].reverse());
+  });
+
   it("pages issue activity and omits current referenced issue snapshots", async () => {
     const companyId = randomUUID();
     const issueId = randomUUID();
