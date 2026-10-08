@@ -14,6 +14,7 @@ import { queryKeys } from "../lib/queryKeys";
 import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
 import { EmptyState } from "../components/EmptyState";
 import { IssuesList } from "../components/IssuesList";
+import { TasksLiveNowSection } from "../components/TasksLiveNowSection";
 import { TaskViewsMenu } from "../components/TaskViewsMenu";
 import { Button } from "@/components/ui/button";
 import { CircleDot, Plus } from "lucide-react";
@@ -321,6 +322,15 @@ function OrganizationIssues({
       initialWorkspaces={initialWorkspaces.length > 0 ? initialWorkspaces : undefined}
       initialStatuses={initialStatuses}
       toolbarContext={toolbarContext}
+      listHeader={(
+        <TasksLiveNowSection
+          key={selectedCompanyId}
+          companyId={selectedCompanyId}
+          liveRuns={liveRuns}
+          issues={issues}
+          issueLinkState={issueLinkState}
+        />
+      )}
       initialSearch={syncedSearch}
       onSearchChange={handleSearchChange}
       enableRoutineVisibilityFilter
