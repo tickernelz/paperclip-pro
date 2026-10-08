@@ -59,8 +59,29 @@ function issueRunIdCondition(companyId: string, issueId: string) {
   )`;
 }
 
+const RUN_JSON_SUMMARY_CACHE_MAX_ENTRIES = 2_000;
+const RUN_JSON_SUMMARY_PARALLEL_READS = 4;
+const RUN_JSON_SUMMARY_MIN_CHUNK = 16;
+
+type RunJsonSummary = {
+  runId: string;
+  rowVersion: string;
+  usageJson: Record<string, unknown> | null;
+  resultJson: Record<string, unknown> | null;
+  context: {
+    wakeCommentIds: string[] | null;
+    wakeCommentId: string | null;
+    commentId: string | null;
+    issueId: string | null;
+    failureRetriesBeforeAiConnectionWait: unknown;
+    failureRetriesBeforeWorkspaceWait: unknown;
+    failureRetriesBeforeProcessLoss: unknown;
+  } | null;
+};
+
 export function activityService(db: Db) {
   const scheduledLivenessBackfills = new Set<string>();
+  const runJsonSummaryCache = new Map<string, RunJsonSummary>();
   const issueIdAsText = sql<string>`${issues.id}::text`;
   const usageFields = {
     inputTokens: "jsonb",
@@ -330,6 +351,56 @@ export function activityService(db: Db) {
     }
   }
 
+  async function runJsonSummaries(
+    companyId: string,
+    runs: ReadonlyArray<{ runId: string; rowVersion: string }>,
+  ) {
+    const summaries = new Map<string, RunJsonSummary>();
+    const misses: string[] = [];
+    for (const run of runs) {
+      const cached = runJsonSummaryCache.get(run.runId);
+      if (cached?.rowVersion === run.rowVersion) {
+        runJsonSummaryCache.delete(run.runId);
+        runJsonSummaryCache.set(run.runId, cached);
+        summaries.set(run.runId, cached);
+      } else {
+        misses.push(run.runId);
+      }
+    }
+    if (misses.length === 0) return summaries;
+    const chunkSize = Math.ceil(misses.length / Math.min(RUN_JSON_SUMMARY_PARALLEL_READS, Math.ceil(misses.length / RUN_JSON_SUMMARY_MIN_CHUNK)));
+    const chunks = Array.from({ length: Math.ceil(misses.length / chunkSize) }, (_, index) =>
+      misses.slice(index * chunkSize, (index + 1) * chunkSize));
+    const rows = (await Promise.all(chunks.map((chunk) => db
+      .select({
+        runId: heartbeatRuns.id,
+        rowVersion: sql<string>`${heartbeatRuns}.xmin::text`,
+        usageJson: summarizedUsageJson,
+        resultJson: summarizedResultJson,
+        context: jsonbRecordFields<RunJsonSummary["context"]>(heartbeatRuns.contextSnapshot, {
+          wakeCommentIds: "jsonb",
+          wakeCommentId: "text",
+          commentId: "text",
+          issueId: "text",
+          failureRetriesBeforeAiConnectionWait: "jsonb",
+          failureRetriesBeforeWorkspaceWait: "jsonb",
+          failureRetriesBeforeProcessLoss: "jsonb",
+        }),
+      })
+      .from(heartbeatRuns)
+      .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, chunk)))))).flat();
+    for (const row of rows) {
+      summaries.set(row.runId, row);
+      runJsonSummaryCache.delete(row.runId);
+      runJsonSummaryCache.set(row.runId, row);
+    }
+    for (const runId of runJsonSummaryCache.keys()) {
+      if (runJsonSummaryCache.size <= RUN_JSON_SUMMARY_CACHE_MAX_ENTRIES) break;
+      runJsonSummaryCache.delete(runId);
+    }
+    return summaries;
+  }
+
   function scheduleRunLivenessBackfill(companyId: string, issueId: string) {
     const key = `${companyId}:${issueId}`;
     if (scheduledLivenessBackfills.has(key)) return;
@@ -410,6 +481,7 @@ export function activityService(db: Db) {
       const runRows = await db
         .select({
           runId: heartbeatRuns.id,
+          rowVersion: sql<string>`${heartbeatRuns}.xmin::text`,
           runtimeMode: heartbeatRuns.runtimeMode,
           status: heartbeatRuns.status,
           agentId: heartbeatRuns.agentId,
@@ -420,8 +492,6 @@ export function activityService(db: Db) {
           invocationSource: heartbeatRuns.invocationSource,
           responsibleUserId: heartbeatRuns.responsibleUserId,
           errorCode: heartbeatRuns.errorCode,
-          usageJson: summarizedUsageJson,
-          resultJson: summarizedResultJson,
           logBytes: heartbeatRuns.logBytes,
           retryOfRunId: heartbeatRuns.retryOfRunId,
           scheduledRetryAt: heartbeatRuns.scheduledRetryAt,
@@ -436,23 +506,6 @@ export function activityService(db: Db) {
           lastOutputAt: heartbeatRuns.lastOutputAt,
           nativeIssueId: heartbeatRuns.nativeIssueId,
           processPid: heartbeatRuns.processPid,
-          context: jsonbRecordFields<{
-            wakeCommentIds: string[] | null;
-            wakeCommentId: string | null;
-            commentId: string | null;
-            issueId: string | null;
-            failureRetriesBeforeAiConnectionWait: unknown;
-            failureRetriesBeforeWorkspaceWait: unknown;
-            failureRetriesBeforeProcessLoss: unknown;
-          } | null>(heartbeatRuns.contextSnapshot, {
-            wakeCommentIds: "jsonb",
-            wakeCommentId: "text",
-            commentId: "text",
-            issueId: "text",
-            failureRetriesBeforeAiConnectionWait: "jsonb",
-            failureRetriesBeforeWorkspaceWait: "jsonb",
-            failureRetriesBeforeProcessLoss: "jsonb",
-          }),
         })
         .from(heartbeatRuns)
         .innerJoin(
@@ -469,44 +522,66 @@ export function activityService(db: Db) {
           ),
         )
         .orderBy(desc(heartbeatRuns.createdAt));
-      const executionRuns = runRows.map((row) => ({
-        id: row.runId,
-        errorCode: row.errorCode,
-        executionControlDeadlineAt: row.executionControlDeadlineAt,
-        finishedAt: row.finishedAt,
-        lastOutputAt: row.lastOutputAt,
-        lastUsefulActionAt: row.lastUsefulActionAt,
-        nativeIssueId: row.nativeIssueId,
-        nextAction: row.nextAction,
-        processPid: row.processPid,
-        retryOfRunId: row.retryOfRunId,
-        runtimeMode: row.runtimeMode,
-        scheduledRetryAt: row.scheduledRetryAt,
-        scheduledRetryAttempt: row.scheduledRetryAttempt,
-        scheduledRetryReason: row.scheduledRetryReason,
-        startedAt: row.startedAt,
-        status: row.status,
-        contextSnapshot: {
-          issueId: row.context?.issueId ?? null,
-          failureRetriesBeforeAiConnectionWait: row.context?.failureRetriesBeforeAiConnectionWait ?? null,
-          failureRetriesBeforeWorkspaceWait: row.context?.failureRetriesBeforeWorkspaceWait ?? null,
-          failureRetriesBeforeProcessLoss: row.context?.failureRetriesBeforeProcessLoss ?? null,
-        },
-      }));
-      const runs = runRows.map(({
-        context,
-        executionControlDeadlineAt: _executionControlDeadlineAt,
-        lastOutputAt: _lastOutputAt,
-        nativeIssueId: _nativeIssueId,
-        processPid: _processPid,
-        ...run
-      }) => ({
-        ...run,
-        wakeCommentIds: context?.wakeCommentIds ?? null,
-        wakeCommentId: context?.wakeCommentId ?? null,
-        contextCommentId: context?.commentId ?? null,
-        contextIssueId: context?.issueId ?? null,
-      }));
+      const jsonByRunId = await runJsonSummaries(companyId, runRows);
+      const executionRuns = runRows.map((row) => {
+        const json = jsonByRunId.get(row.runId);
+        return {
+          id: row.runId,
+          errorCode: row.errorCode,
+          executionControlDeadlineAt: row.executionControlDeadlineAt,
+          finishedAt: row.finishedAt,
+          lastOutputAt: row.lastOutputAt,
+          lastUsefulActionAt: row.lastUsefulActionAt,
+          nativeIssueId: row.nativeIssueId,
+          nextAction: row.nextAction,
+          processPid: row.processPid,
+          retryOfRunId: row.retryOfRunId,
+          runtimeMode: row.runtimeMode,
+          scheduledRetryAt: row.scheduledRetryAt,
+          scheduledRetryAttempt: row.scheduledRetryAttempt,
+          scheduledRetryReason: row.scheduledRetryReason,
+          startedAt: row.startedAt,
+          status: row.status,
+          contextSnapshot: {
+            issueId: json?.context?.issueId ?? null,
+            failureRetriesBeforeAiConnectionWait: json?.context?.failureRetriesBeforeAiConnectionWait ?? null,
+            failureRetriesBeforeWorkspaceWait: json?.context?.failureRetriesBeforeWorkspaceWait ?? null,
+            failureRetriesBeforeProcessLoss: json?.context?.failureRetriesBeforeProcessLoss ?? null,
+          },
+        };
+      });
+      const runs = runRows.map((row) => {
+        const json = jsonByRunId.get(row.runId);
+        return {
+          runId: row.runId,
+          runtimeMode: row.runtimeMode,
+          status: row.status,
+          agentId: row.agentId,
+          adapterType: row.adapterType,
+          startedAt: row.startedAt,
+          finishedAt: row.finishedAt,
+          createdAt: row.createdAt,
+          invocationSource: row.invocationSource,
+          responsibleUserId: row.responsibleUserId,
+          errorCode: row.errorCode,
+          usageJson: json?.usageJson ?? null,
+          resultJson: json?.resultJson ?? null,
+          logBytes: row.logBytes,
+          retryOfRunId: row.retryOfRunId,
+          scheduledRetryAt: row.scheduledRetryAt,
+          scheduledRetryAttempt: row.scheduledRetryAttempt,
+          scheduledRetryReason: row.scheduledRetryReason,
+          livenessState: row.livenessState,
+          livenessReason: row.livenessReason,
+          continuationAttempt: row.continuationAttempt,
+          lastUsefulActionAt: row.lastUsefulActionAt,
+          nextAction: row.nextAction,
+          wakeCommentIds: json?.context?.wakeCommentIds ?? null,
+          wakeCommentId: json?.context?.wakeCommentId ?? null,
+          contextCommentId: json?.context?.commentId ?? null,
+          contextIssueId: json?.context?.issueId ?? null,
+        };
+      });
 
       if (runs.length === 0) return runs;
       const runIds = runs.map((run) => run.runId);
