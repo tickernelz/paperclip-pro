@@ -760,6 +760,10 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   }
 }
 
+.paperclip-issue-list {
+  overflow-anchor: none;
+}
+
 .paperclip-issue-list-row-deferred {
   content-visibility: auto;
   contain-intrinsic-size: auto var(--issue-list-row-intrinsic-height);
