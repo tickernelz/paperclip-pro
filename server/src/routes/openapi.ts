@@ -6340,8 +6340,14 @@ registry.registerPath({
   path: "/api/issues/{id}/activity",
   tags: ["activity"],
   summary: "List activity for an issue",
-  request: { params: z.object({ id: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
+  request: {
+    params: z.object({ id: z.string() }),
+    query: z.object({
+      limit: z.coerce.number().int().min(1).max(500).optional(),
+      before: z.string().uuid().optional(),
+    }),
+  },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
 });
 
 registry.registerPath({

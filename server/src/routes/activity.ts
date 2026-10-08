@@ -101,6 +101,11 @@ const createActivitySchema = z.object({
 
 const agentActionAuditActorScopeSchema = z.enum(["agents", "all"]);
 
+const issueActivityPageQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(500).optional(),
+  before: z.string().uuid().optional(),
+});
+
 const agentActionAuditQuerySchema = z.object({
   actorScope: agentActionAuditActorScopeSchema.default("agents"),
   agentId: z.string().guid().optional(),
@@ -343,7 +348,9 @@ export function activityRoutes(db: Db) {
     const issue = await getAccessibleResource(req, res, resolveIssueByRef(rawId), "Issue not found");
     if (!issue) return;
     if (!(await assertIssueReadAllowed(req, res, issue))) return;
-    const result = await svc.forIssue(issue.id);
+    const page = issueActivityPageQuerySchema.safeParse(req.query);
+    if (!page.success) throw badRequest("Invalid issue activity query", page.error.issues);
+    const result = await svc.forIssue(issue.id, { limit: page.data.limit, beforeId: page.data.before });
     res.json(result);
   });
 

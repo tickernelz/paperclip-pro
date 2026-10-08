@@ -877,17 +877,52 @@ describeEmbeddedPostgres("cost and finance aggregate overflow handling", () => {
       },
     ]);
 
-    await db.insert(activityLog).values({
-      companyId,
-      runId: linkedViaActivityRunId,
-      actorType: "agent",
-      actorId: agentId,
-      agentId,
-      action: "issue.checked_out",
-      entityType: "issue",
-      entityId: childIssueId,
-      details: {},
-    });
+    await db.insert(activityLog).values([
+      {
+        companyId,
+        runId: linkedViaActivityRunId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        action: "issue.checked_out",
+        entityType: "issue",
+        entityId: childIssueId,
+        details: {},
+      },
+      {
+        companyId,
+        runId: linkedViaActivityRunId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        action: "issue.comment_added",
+        entityType: "issue",
+        entityId: grandchildIssueId,
+        details: {},
+      },
+      {
+        companyId,
+        runId: linkedViaContextRunId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        action: "issue.comment_added",
+        entityType: "issue",
+        entityId: rootIssueId,
+        details: {},
+      },
+      {
+        companyId,
+        runId: siblingRunId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        action: "issue.updated",
+        entityType: "project",
+        entityId: childIssueId,
+        details: {},
+      },
+    ]);
 
     const summary = await costs.issueTreeSummary(companyId, rootIssueId);
 

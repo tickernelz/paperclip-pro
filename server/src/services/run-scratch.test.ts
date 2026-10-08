@@ -44,6 +44,62 @@ describe("heartbeat run scratch cleanup", () => {
     await expect(fs.stat(scratch.dir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
+  it("keeps scratch paths short enough for nested Chrome singleton sockets", async () => {
+    const previousTmpdir = process.env.TMPDIR;
+    process.env.TMPDIR = "/tmp";
+    try {
+      const scratch = await trackScratch(await prepareHeartbeatRunScratch({
+        companyId: "company-1",
+        agentId: "agent-1",
+        runId: "5059b89f-ecc0-4a6e-9d6e-1f0b1c2d3e4f",
+        issueId: "issue-1",
+        issueIdentifier: "ZHA-720 with a long, descriptive identifier",
+      }));
+      const chromeSocket = path.join(
+        scratch.dir,
+        "tmp7de1x0ir_chrome_odoo",
+        "com.google.Chrome.osrEVc",
+        "SingletonSocket",
+      );
+
+      expect(path.dirname(scratch.dir)).toBe("/tmp");
+      expect(path.basename(scratch.dir)).toMatch(/^pcr-5059b89f-[A-Za-z0-9]{6}$/);
+      expect(scratch.dir.length).toBeLessThanOrEqual(30);
+      expect(Buffer.byteLength(chromeSocket) + 1).toBeLessThanOrEqual(108);
+      expect(JSON.parse(await fs.readFile(scratch.markerPath, "utf8"))).toMatchObject({
+        runId: "5059b89f-ecc0-4a6e-9d6e-1f0b1c2d3e4f",
+        issueIdentifier: "ZHA-720 with a long, descriptive identifier",
+      });
+    } finally {
+      if (previousTmpdir === undefined) delete process.env.TMPDIR;
+      else process.env.TMPDIR = previousTmpdir;
+    }
+  });
+
+  it("removes marked scratch directories created with the legacy prefix", async () => {
+    const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-run-zha-720-5059b89f-ecc-"));
+    cleanupDirs.add(dir);
+    const scratch: HeartbeatRunScratch = {
+      dir,
+      markerPath: path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER),
+      metadata: {
+        version: 1,
+        companyId: "company-1",
+        agentId: "agent-1",
+        runId: "run-1",
+        issueId: "issue-1",
+        issueIdentifier: "ZHA-720",
+        createdAt: new Date("2026-07-08T00:00:00.000Z").toISOString(),
+      },
+    };
+    await fs.writeFile(scratch.markerPath, JSON.stringify(scratch.metadata));
+
+    const result = await cleanupHeartbeatRunScratch({ scratch });
+
+    expect(result).toEqual({ removed: true, dir });
+    await expect(fs.stat(dir)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
   it("preserves paperclip-named directories without the ownership marker", async () => {
     const dir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-run-unmarked-"));
     cleanupDirs.add(dir);

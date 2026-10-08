@@ -267,6 +267,38 @@ describeEmbeddedPostgres("agent secret routes", () => {
       .toBe(redacted[0].text);
   });
 
+  it("redacts secrets registered on any run of the issue and only that issue", async () => {
+    const fixture = await seedAgentRun();
+    const issueId = randomUUID();
+    const otherIssueId = randomUUID();
+    const quietRunId = randomUUID();
+    const otherIssueRunId = randomUUID();
+    await db.update(heartbeatRuns)
+      .set({ contextSnapshot: { issueId, prompt: "x".repeat(64_000) } })
+      .where(eq(heartbeatRuns.id, fixture.heartbeatRunId));
+    await db.insert(heartbeatRuns).values([
+      { id: quietRunId, companyId: fixture.companyId, agentId: fixture.agentId, status: "succeeded", contextSnapshot: { issueId } },
+      { id: otherIssueRunId, companyId: fixture.companyId, agentId: fixture.agentId, status: "succeeded", contextSnapshot: { issueId: otherIssueId } },
+    ]);
+    const registry = createRunSecretRedactionRegistry(db);
+    await registry.register(fixture.companyId, fixture.heartbeatRunId, "issue-secret-value");
+    await registry.register(fixture.companyId, otherIssueRunId, "other-issue-secret");
+
+    expect(await registry.redactForIssue(fixture.companyId, issueId, {
+      body: "leaked issue-secret-value and other-issue-secret",
+    })).toEqual({ body: `leaked ${REDACTED_EVENT_VALUE} and other-issue-secret` });
+    expect(await registry.redactForIssue(fixture.companyId, otherIssueId, "other-issue-secret"))
+      .toBe(REDACTED_EVENT_VALUE);
+    expect(await registry.redactForIssue(randomUUID(), issueId, "issue-secret-value")).toBe("issue-secret-value");
+    expect(await registry.redactForRuns(fixture.companyId, [
+      { id: fixture.heartbeatRunId, text: "issue-secret-value" },
+      { id: quietRunId, text: "issue-secret-value" },
+    ])).toEqual([
+      { id: fixture.heartbeatRunId, text: REDACTED_EVENT_VALUE },
+      { id: quietRunId, text: "issue-secret-value" },
+    ]);
+  });
+
   it("denies low-trust, task-bridge, and skill-test callers on both routes", async () => {
     const lowTrust = await seedAgentRun({
       trustPreset: LOW_TRUST_REVIEW_PRESET,

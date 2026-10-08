@@ -617,6 +617,7 @@ import {
   redactSensitiveText,
 } from "../redaction.js";
 import { createRunSecretRedactionRegistry } from "./run-secret-redaction.js";
+import { jsonbRecordFields } from "./jsonb-projection.js";
 import {
   hasSessionCompactionThresholds,
   resolvePaperclipRunnerIdleTimeoutMs,
@@ -3621,34 +3622,25 @@ const heartbeatRunSummaryListColumns = {
 } as const;
 
 const heartbeatRunListContextColumns = {
-  contextIssueId: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'issueId'`.as("contextIssueId"),
-  contextTaskId: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'taskId'`.as("contextTaskId"),
-  contextTaskKey: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'taskKey'`.as("contextTaskKey"),
-  contextCommentId: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'commentId'`.as("contextCommentId"),
-  contextWakeCommentId: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`.as(
-    "contextWakeCommentId",
-  ),
-  contextWakeReason: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'wakeReason'`.as("contextWakeReason"),
-  contextWakeSource: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'wakeSource'`.as("contextWakeSource"),
-  contextWakeTriggerDetail: sql<
-    string | null
-  >`${heartbeatRuns.contextSnapshot} ->> 'wakeTriggerDetail'`.as(
-    "contextWakeTriggerDetail",
-  ),
+  context: jsonbRecordFields<{
+    issueId: string | null;
+    taskId: string | null;
+    taskKey: string | null;
+    commentId: string | null;
+    wakeCommentId: string | null;
+    wakeReason: string | null;
+    wakeSource: string | null;
+    wakeTriggerDetail: string | null;
+  } | null>(heartbeatRuns.contextSnapshot, {
+    issueId: "text",
+    taskId: "text",
+    taskKey: "text",
+    commentId: "text",
+    wakeCommentId: "text",
+    wakeReason: "text",
+    wakeSource: "text",
+    wakeTriggerDetail: "text",
+  }).as("context"),
 } as const;
 
 const heartbeatRunListResultColumns = {
@@ -31136,14 +31128,7 @@ export function heartbeatService(
       });
       return rows.map((row) => {
         const {
-          contextIssueId,
-          contextTaskId,
-          contextTaskKey,
-          contextCommentId,
-          contextWakeCommentId,
-          contextWakeReason,
-          contextWakeSource,
-          contextWakeTriggerDetail,
+          context,
           resultSummary,
           resultResult,
           resultMessage,
@@ -31164,16 +31149,7 @@ export function heartbeatService(
 
         return {
           ...rest,
-          contextSnapshot: summarizeHeartbeatRunContextSnapshot({
-            issueId: contextIssueId,
-            taskId: contextTaskId,
-            taskKey: contextTaskKey,
-            commentId: contextCommentId,
-            wakeCommentId: contextWakeCommentId,
-            wakeReason: contextWakeReason,
-            wakeSource: contextWakeSource,
-            wakeTriggerDetail: contextWakeTriggerDetail,
-          }),
+          contextSnapshot: summarizeHeartbeatRunContextSnapshot(context),
           resultJson:
             safeForLegacyEncoding || summary
               ? null

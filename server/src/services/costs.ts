@@ -211,23 +211,26 @@ export function costService(db: Db, budgetHooks: BudgetServiceHooks = {}) {
             AND ${childIssues.hiddenAt} IS NULL
             AND ${childIssues.harnessKind} IS NULL
         )
+        , tree_runs(id) AS (
+          SELECT tree_run.id
+          FROM ${heartbeatRuns} tree_run
+          WHERE tree_run.company_id = ${companyId}
+            AND tree_run.context_snapshot ->> 'issueId' = ANY(ARRAY(SELECT id FROM issue_tree))
+          UNION
+          SELECT ${activityLog.runId}
+          FROM ${activityLog}
+          WHERE ${activityLog.companyId} = ${companyId}
+            AND ${activityLog.entityType} = 'issue'
+            AND ${activityLog.entityId} = ANY(ARRAY(SELECT id FROM issue_tree))
+            AND ${activityLog.runId} IS NOT NULL
+        )
         SELECT
-          count(distinct ${heartbeatRuns.id})::int AS "runCount",
+          count(${heartbeatRuns.id})::int AS "runCount",
           coalesce(sum(extract(epoch from (coalesce(${heartbeatRuns.finishedAt}, now()) - ${heartbeatRuns.startedAt})) * 1000), 0)::double precision AS "runtimeMs"
         FROM ${heartbeatRuns}
+        JOIN tree_runs ON tree_runs.id = ${heartbeatRuns.id}
         WHERE ${heartbeatRuns.companyId} = ${companyId}
           AND ${heartbeatRuns.startedAt} IS NOT NULL
-          AND (
-            ${heartbeatRuns.contextSnapshot} ->> 'issueId' IN (SELECT id FROM issue_tree)
-            OR EXISTS (
-              SELECT 1
-              FROM ${activityLog}
-              JOIN issue_tree ON ${activityLog.entityId} = issue_tree.id
-              WHERE ${activityLog.companyId} = ${companyId}
-                AND ${activityLog.entityType} = 'issue'
-                AND ${activityLog.runId} = ${heartbeatRuns.id}
-            )
-          )
       `;
 
       // Run cost-event aggregation and run-duration aggregation in parallel.

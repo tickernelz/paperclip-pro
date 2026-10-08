@@ -245,6 +245,42 @@ describeEmbeddedPostgres("issue list routes assigneeAgentId filter", () => {
     expect(res.body[0]).not.toHaveProperty("goal");
   });
 
+  it("truncates compact descriptions to 280 characters and flags the truncation", async () => {
+    const companyId = randomUUID();
+    const longIssueId = randomUUID();
+    const shortIssueId = randomUUID();
+    const longDescription = "é".repeat(279) + "🚀" + "tail beyond the compact budget";
+
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: uniqueIssuePrefix(),
+      requireBoardApprovalForNewAgents: false,
+    });
+    await seedCloudTenantMember(companyId);
+    await db.insert(issues).values([
+      { id: longIssueId, companyId, title: "Long", description: longDescription, status: "todo", priority: "medium" },
+      { id: shortIssueId, companyId, title: "Short", description: "Short detail", status: "todo", priority: "medium" },
+    ]);
+
+    const app = createApp(companyId);
+    const compact = await request(app)
+      .get(`/api/companies/${companyId}/issues`)
+      .query({ view: "compact", limit: "20" });
+    const full = await request(app)
+      .get(`/api/companies/${companyId}/issues`)
+      .query({ limit: "20" });
+
+    expect(compact.status, JSON.stringify(compact.body)).toBe(200);
+    const byId = new Map(compact.body.map((row: { id: string }) => [row.id, row]));
+    expect(byId.get(longIssueId)).toMatchObject({
+      description: "é".repeat(279) + "🚀",
+      descriptionTruncated: true,
+    });
+    expect(byId.get(shortIssueId)).toMatchObject({ description: "Short detail", descriptionTruncated: false });
+    expect(full.body.find((row: { id: string }) => row.id === longIssueId)?.description).toBe(longDescription);
+  });
+
   it("marks a required successful-run handoff live while a run targets the issue", async () => {
     const companyId = randomUUID();
     const agentId = randomUUID();

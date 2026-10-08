@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, inArray } from "drizzle-orm";
 import {
   heartbeatRuns,
   issueRecoveryActions,
@@ -8,9 +8,10 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
 import { EXECUTION_CONTROL_DEADLINE_MS } from "./execution-control-deadline.js";
+import { jsonbRecordFields } from "./jsonb-projection.js";
 import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 const text = (v: unknown) => (typeof v === "string" ? v : null);
-const executionRunColumns = {
+export const executionRunColumns = {
   id: heartbeatRuns.id,
   errorCode: heartbeatRuns.errorCode,
   executionControlDeadlineAt: heartbeatRuns.executionControlDeadlineAt,
@@ -27,13 +28,15 @@ const executionRunColumns = {
   scheduledRetryReason: heartbeatRuns.scheduledRetryReason,
   startedAt: heartbeatRuns.startedAt,
   status: heartbeatRuns.status,
-  contextSnapshot: sql<Record<string, unknown>>`jsonb_build_object(
-    'issueId', ${heartbeatRuns.contextSnapshot}->'issueId',
-    'failureRetriesBeforeAiConnectionWait', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeAiConnectionWait',
-    'failureRetriesBeforeWorkspaceWait', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeWorkspaceWait',
-    'failureRetriesBeforeProcessLoss', ${heartbeatRuns.contextSnapshot}->'failureRetriesBeforeProcessLoss')`,
+  contextSnapshot: jsonbRecordFields<Record<string, unknown>>(heartbeatRuns.contextSnapshot, {
+    issueId: "jsonb",
+    failureRetriesBeforeAiConnectionWait: "jsonb",
+    failureRetriesBeforeWorkspaceWait: "jsonb",
+    failureRetriesBeforeProcessLoss: "jsonb",
+  }),
 };
-type Run = Pick<typeof heartbeatRuns.$inferSelect, keyof typeof executionRunColumns>;
+export type ExecutionProjectionRun = Pick<typeof heartbeatRuns.$inferSelect, keyof typeof executionRunColumns>;
+type Run = ExecutionProjectionRun;
 type Coordinator = typeof nativeRunFinalizations.$inferSelect;
 type Recovery = Pick<
   typeof issueRecoveryActions.$inferSelect,
@@ -50,8 +53,7 @@ export async function executionProjectionsForRuns(
   runIds: string[],
   now = new Date(),
 ) {
-  const projections = new Map<string, ExecutionProjection>();
-  if (!runIds.length) return projections;
+  if (!runIds.length) return new Map<string, ExecutionProjection>();
   const runs = await db
     .select(executionRunColumns)
     .from(heartbeatRuns)
@@ -61,6 +63,19 @@ export async function executionProjectionsForRuns(
         inArray(heartbeatRuns.id, runIds),
       ),
     );
+  return executionProjectionsForRunRows(db, companyId, runs, now);
+}
+
+/** Projects runs already loaded with `executionRunColumns`. */
+export async function executionProjectionsForRunRows(
+  db: Db,
+  companyId: string,
+  runs: ExecutionProjectionRun[],
+  now = new Date(),
+) {
+  const projections = new Map<string, ExecutionProjection>();
+  if (!runs.length) return projections;
+  const runIds = runs.map((run) => run.id);
   const coordinators = await db
     .select()
     .from(nativeRunFinalizations)

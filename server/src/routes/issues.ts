@@ -3063,10 +3063,24 @@ function toCompactBlockerAttention(
   };
 }
 
+export const COMPACT_ISSUE_DESCRIPTION_MAX_CHARS = 280;
+
+function truncateCompactDescription(description: string | null | undefined) {
+  if (typeof description !== "string") return { description: description ?? null, descriptionTruncated: false };
+  if (description.length <= COMPACT_ISSUE_DESCRIPTION_MAX_CHARS) return { description, descriptionTruncated: false };
+  const codePoints = Array.from(description);
+  if (codePoints.length <= COMPACT_ISSUE_DESCRIPTION_MAX_CHARS) return { description, descriptionTruncated: false };
+  return {
+    description: codePoints.slice(0, COMPACT_ISSUE_DESCRIPTION_MAX_CHARS).join(""),
+    descriptionTruncated: true,
+  };
+}
+
 export function toCompactIssue(issue: any): CompactIssue {
   const blockerAttention = issue.blockerAttention
     ? toCompactBlockerAttention(issue.blockerAttention)
     : null;
+  const { description, descriptionTruncated } = truncateCompactDescription(issue.description);
   return {
     externalConversationState: issue.externalConversationState ?? null,
     id: issue.id,
@@ -3076,7 +3090,8 @@ export function toCompactIssue(issue: any): CompactIssue {
     goalId: issue.goalId,
     parentId: issue.parentId,
     title: issue.title,
-    description: issue.description,
+    description,
+    descriptionTruncated,
     status: issue.status,
     workMode: issue.workMode,
     priority: issue.priority,

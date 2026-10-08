@@ -30,18 +30,22 @@ export type HeartbeatRunScratchCleanupResult =
   | { removed: false; dir: string; reason: "missing" | "unmarked" | "owner_mismatch" | "process_group_alive" };
 
 const TEMP_ENV_KEYS = ["TMPDIR", "TEMP", "TMP"] as const;
-const ISSUE_SEGMENT_MAX_CHARS = 32;
+const SCRATCH_DIR_PREFIX = "pcr-";
+const LEGACY_SCRATCH_DIR_PREFIX = "paperclip-run-";
+const RUN_SEGMENT_CHARS = 8;
 
-function sanitizePathSegment(value: string | null | undefined, fallback: string): string {
-  const normalized = (value ?? "")
+function runPathSegment(runId: string): string {
+  const normalized = runId
     .trim()
     .toLowerCase()
-    .replace(/[^a-z0-9._-]+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, ISSUE_SEGMENT_MAX_CHARS)
-    .replace(/[.-]+$/g, "");
-  return normalized || fallback;
+    .replace(/[^a-z0-9]+/g, "")
+    .slice(0, RUN_SEGMENT_CHARS);
+  return normalized || "run";
+}
+
+function hasScratchDirPrefix(dir: string): boolean {
+  const name = path.basename(dir);
+  return name.startsWith(SCRATCH_DIR_PREFIX) || name.startsWith(LEGACY_SCRATCH_DIR_PREFIX);
 }
 
 function isPathInside(parent: string, child: string): boolean {
@@ -85,9 +89,7 @@ export async function prepareHeartbeatRunScratch(input: {
   issueIdentifier?: string | null;
   now?: Date;
 }): Promise<HeartbeatRunScratch> {
-  const issueSegment = sanitizePathSegment(input.issueIdentifier, "unassigned");
-  const runSegment = sanitizePathSegment(input.runId.slice(0, 12), "run");
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), `paperclip-run-${issueSegment}-${runSegment}-`));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), `${SCRATCH_DIR_PREFIX}${runPathSegment(input.runId)}-`));
   const markerPath = path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER);
   const metadata: HeartbeatRunScratchMetadata = {
     version: 1,
@@ -129,7 +131,7 @@ export async function cleanupHeartbeatRunScratch(input: {
 }): Promise<HeartbeatRunScratchCleanupResult> {
   const tmpRoot = path.resolve(os.tmpdir());
   const dir = path.resolve(input.scratch.dir);
-  if (!isPathInside(tmpRoot, dir) || !path.basename(dir).startsWith("paperclip-run-")) {
+  if (!isPathInside(tmpRoot, dir) || !hasScratchDirPrefix(dir)) {
     return { removed: false, dir, reason: "unmarked" };
   }
   try {
