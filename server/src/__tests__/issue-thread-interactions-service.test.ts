@@ -32,7 +32,8 @@ import {
 import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/paperclip-pro-shared";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { issueService } from "../services/issues.js";
-import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
+import { issueThreadInteractionService, resolveInteractionNote } from "../services/issue-thread-interactions.js";
+import { formatDurableQuestionResponseSummary } from "../services/question-response-delivery.js";
 import { agentService } from "../services/agents.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
@@ -237,6 +238,56 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
       { questionId: "hosting", optionIds: ["existing", "new"] },
     ] }, { userId: "local-board" });
     expect(answered.status).toBe("answered");
+  });
+
+  it("persists a user note beside selected options even when custom answers are disabled", async () => {
+    const { companyId, issueId } = await seedSourceQuestionFixture({});
+    const issue = { id: issueId, companyId };
+    const questionSet = {
+      schema: "paperclip.question_set.v1" as const,
+      questions: [
+        { id: "scope", prompt: "Which **scope**?", required: true, answerMode: "single_select" as const, options: [{ id: "all", label: "All changes" }, { id: "selected", label: "Selected changes" }] },
+      ],
+    };
+    const created = await interactionsSvc.create(issue, { kind: "ask_user_questions", idempotencyKey: "note:scope", payload: { version: 1, questionSet } }, { userId: "local-board" });
+    const note = "Only the API.\n\n[server.log](/api/attachments/abc/content)";
+    await expect(interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: [], note }] }, { userId: "local-board" }))
+      .rejects.toThrow("requires an answer");
+    const answered = await interactionsSvc.answerQuestions(issue, created.id, { answers: [{ questionId: "scope", optionIds: ["selected"], note: `  ${note}  ` }] }, { userId: "local-board" });
+    if (answered.kind !== "ask_user_questions") throw new Error("expected questions");
+    expect(answered.result?.answers).toEqual([{ questionId: "scope", optionIds: ["selected"], note }]);
+    const [row] = await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.id, created.id));
+    expect((row?.result as { answers: Array<{ note?: string }> }).answers[0]?.note).toBe(note);
+    const summary = formatDurableQuestionResponseSummary(answered);
+    expect(summary).toContain("Selected changes");
+    expect(summary).toContain("  Note:");
+    expect(summary).toContain("    [server.log](/api/attachments/abc/content)");
+  });
+
+  it("persists a user note on confirmation accept and reject", async () => {
+    const { companyId, goalId, issueId } = await seedConfirmationIssue("Confirmation notes");
+    const issue = { id: issueId, companyId, goalId, projectId: null };
+    const createConfirmation = (prompt: string) => interactionsSvc.create(issue, {
+      kind: "request_confirmation",
+      continuationPolicy: "none",
+      payload: { version: 1, prompt },
+    }, { userId: "local-board" });
+    const toAccept = await createConfirmation("Ship it?");
+    const accepted = await interactionsSvc.acceptInteraction(issue, toAccept.id, { note: "Ship **after** the demo." }, { userId: "local-board" });
+    expect(accepted.interaction.result).toMatchObject({ outcome: "accepted", note: "Ship **after** the demo." });
+    const toReject = await createConfirmation("Delete it?");
+    const rejected = await interactionsSvc.rejectInteraction(issue, toReject.id, { reason: "Keep it", note: "Full context: ![shot](/api/attachments/i/content)" }, { userId: "local-board" });
+    expect(rejected.result).toMatchObject({ outcome: "rejected", reason: "Keep it", note: "Full context: ![shot](/api/attachments/i/content)" });
+    const rows = await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.issueId, issueId));
+    expect(rows.map((row) => (row.result as { note?: string }).note).sort()).toEqual(["Full context: ![shot](/api/attachments/i/content)", "Ship **after** the demo."]);
+  });
+
+  it("rejects notes from agents, runs and system actors", async () => {
+    expect(resolveInteractionNote({ userId: "local-board" }, "  hi  ")).toBe("hi");
+    expect(resolveInteractionNote({ agentId: "agent-1", runId: "run-1" }, "   ")).toBeNull();
+    for (const actor of [{ agentId: "agent-1" }, { agentId: "agent-1", runId: "run-1" }, { userId: "u", runId: "run-1" }, { systemId: "sys" }, {}]) {
+      expect(() => resolveInteractionNote(actor, "agent wrote this")).toThrow("Only a user can attach a note");
+    }
   });
 
   it("rejects canonical text and custom answers that violate constraints before resolution", async () => {

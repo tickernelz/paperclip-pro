@@ -8377,6 +8377,7 @@ registry.registerPath({
     400: r.badRequest,
     401: r.unauthorized,
     404: r.notFound,
+    422: { description: "A note sent by a non-user actor, or on a suggested-task, tool-review or chat-approval card" },
   },
 });
 
@@ -8394,6 +8395,7 @@ registry.registerPath({
     400: r.badRequest,
     401: r.unauthorized,
     404: r.notFound,
+    422: { description: "A required decline reason is missing, or a note was sent by a non-user actor or on a suggested-task, tool-review or chat-approval card" },
   },
 });
 
@@ -8411,6 +8413,7 @@ registry.registerPath({
     400: r.badRequest,
     401: r.unauthorized,
     404: r.notFound,
+    422: { description: "Invalid answer, or a note sent by a non-user actor" },
   },
 });
 

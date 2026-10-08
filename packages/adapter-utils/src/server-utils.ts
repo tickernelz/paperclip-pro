@@ -661,6 +661,7 @@ type PaperclipWakePlanReviewInteractionTarget = {
 type PaperclipWakePlanReviewInteractionResult = {
   outcome: string | null;
   reason: string | null;
+  note: string | null;
   commentId: string | null;
 };
 
@@ -1110,9 +1111,10 @@ function normalizePaperclipWakePlanReviewInteractionResult(
   const result = parseObject(value);
   const outcome = asString(result.outcome, "").trim() || null;
   const reason = asString(result.reason, "").trim() || null;
+  const note = asString(result.note, "").trim() || null;
   const commentId = asString(result.commentId, "").trim() || null;
-  if (!outcome && !reason && !commentId) return null;
-  return { outcome, reason, commentId };
+  if (!outcome && !reason && !note && !commentId) return null;
+  return { outcome, reason, note, commentId };
 }
 
 function normalizePaperclipWakePlanReviewInteraction(
@@ -2803,6 +2805,9 @@ function renderPaperclipWakePromptBody(
         lines.push(
           `- result: ${result.outcome ?? "unknown"}${result.reason ? ` (${result.reason})` : ""}`,
         );
+        if (result.note) {
+          lines.push("- result note:", markdownFencedText(result.note));
+        }
         if (result.commentId) {
           lines.push(`- result comment id: ${result.commentId}`);
         }

@@ -1687,9 +1687,33 @@ function resolveRequestItemVerdictSubmissions(args: {
   };
 }
 
+/** Returns the trimmed note a user attached to a resolution; agents, runs and system actors cannot attach one. */
+export function resolveInteractionNote(
+  actor: InteractionActor,
+  note: string | null | undefined,
+) {
+  const trimmed = note?.trim() ?? "";
+  if (!trimmed) return null;
+  if (!actor.userId || actor.agentId || actor.runId || actor.systemId) {
+    throw unprocessable("Only a user can attach a note to an interaction response", {
+      code: "interaction_note_user_only",
+    });
+  }
+  return trimmed;
+}
+
+function assertNoSuggestedTasksNote(note: string | null | undefined) {
+  if (note?.trim()) {
+    throw unprocessable("Notes are not supported on suggested tasks", {
+      code: "interaction_note_unsupported",
+    });
+  }
+}
+
 function normalizeQuestionAnswers(args: {
   questions: AskUserQuestionsInteraction["payload"]["questions"];
   answers: RespondIssueThreadInteraction["answers"];
+  actor: InteractionActor;
 }) {
   const questionById = new Map(
     args.questions.map((question) => [question.id, question] as const),
@@ -1724,10 +1748,12 @@ function normalizeQuestionAnswers(args: {
     }
 
     const otherText = answer.otherText?.trim() ?? "";
+    const note = resolveInteractionNote(args.actor, answer.note);
     answerByQuestionId.set(answer.questionId, {
       questionId: answer.questionId,
       optionIds: uniqueOptionIds,
       ...(otherText ? { otherText } : {}),
+      ...(note ? { note } : {}),
     });
   }
 
@@ -2287,6 +2313,7 @@ export function issueThreadInteractionService(
     interaction: IssueThreadInteraction;
     continuationIssue: IssueWakeTarget | null;
   }> {
+    const note = resolveInteractionNote(args.actor, args.input.note);
     const expired = await expireStaleRequestConfirmationTarget(db, {
       row: args.current,
       actor: args.actor,
@@ -2378,6 +2405,7 @@ export function issueThreadInteractionService(
             version: 1,
             outcome: "accepted",
             ...(selectedOptionIds ? { selectedOptionIds } : {}),
+            ...(note ? { note } : {}),
             ...(autonomyWindowResolution.success
               ? { resolutionDetails: autonomyWindowResolution.data }
               : {}),
@@ -2565,6 +2593,7 @@ export function issueThreadInteractionService(
     actor: InteractionActor;
     mutationOptions?: InteractionResolutionMutationOptions;
   }): Promise<IssueThreadInteraction> {
+    const note = resolveInteractionNote(args.actor, args.input.note);
     const expired = await expireStaleRequestConfirmationTarget(db, {
       row: args.current,
       actor: args.actor,
@@ -2658,6 +2687,7 @@ export function issueThreadInteractionService(
             version: 1,
             outcome: "rejected",
             reason: reason || null,
+            ...(note ? { note } : {}),
             ...(linkedSecretProposalId(lockedCurrent)
               ? {
                   secretProposal: {
@@ -3947,6 +3977,7 @@ export function issueThreadInteractionService(
         interactionId,
       });
       assertInteractionResolutionAllowed(current, actor);
+      if (current.kind === "suggest_tasks") assertNoSuggestedTasksNote(data.note);
       switch (current.kind) {
         case "suggest_tasks":
           // Accepting suggest_tasks only creates follow-up issues; it does not
@@ -4218,6 +4249,7 @@ export function issueThreadInteractionService(
         interactionId,
       });
       assertInteractionResolutionAllowed(current, actor);
+      if (current.kind === "suggest_tasks") assertNoSuggestedTasksNote(data.note);
       switch (current.kind) {
         case "suggest_tasks":
           return issueThreadInteractionService(db).rejectSuggestedTasks(
@@ -5066,6 +5098,7 @@ export function issueThreadInteractionService(
       const normalizedAnswers = normalizeQuestionAnswers({
         questions: interaction.payload.questions,
         answers: input.answers,
+        actor,
       });
       if (interaction.payload.questionSet) {
         try {

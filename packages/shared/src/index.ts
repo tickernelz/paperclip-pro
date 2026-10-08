@@ -2059,6 +2059,8 @@ export {
   paperclipQuestionSetPayloadSchema,
   askUserQuestionsPayloadSchema,
   askUserQuestionsAnswerSchema,
+  interactionNoteSchema,
+  INTERACTION_NOTE_MAX_LENGTH,
   askUserQuestionsResultSchema,
   requestConfirmationIssueDocumentTargetSchema,
   requestConfirmationCustomTargetSchema,

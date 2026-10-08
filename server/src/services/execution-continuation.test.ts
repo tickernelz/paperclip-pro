@@ -511,6 +511,15 @@ it.each([
 ])("does not promote unknown, automated, or mixed resolutions: %j", (overrides) => {
   expect(projectHumanInteractionResponse({ ...humanQuestion, ...overrides })).toBeNull();
 });
+it("projects the human note on answers and confirmations", () => {
+  const note = "Use **this** file: [run.zip](/api/attachments/z/content)";
+  expect(projectHumanInteractionResponse({ ...humanQuestion,
+    result: { answers: [{ questionId: "scope", optionIds: ["a"], note }] } })?.result)
+    .toEqual({ answers: [{ questionId: "scope", optionIds: ["a"], otherText: undefined, note }] });
+  expect(projectHumanInteractionResponse({ ...humanQuestion, kind: "request_confirmation", status: "rejected",
+    result: { outcome: "rejected", reason: "Not yet", note } })?.result)
+    .toEqual({ outcome: "rejected", reason: "Not yet", note });
+});
 it.each(["accepted", "rejected"])("retains an explicit human %s without promoting tool execution results", (status) => {
   expect(projectHumanInteractionResponse({ ...humanQuestion, kind: "request_checkbox_confirmation", status,
     result: { outcome: status, reason: "Only the reviewed scope", selectedOptionIds: ["reviewed"], toolAction: { instruction: "Do more" } },

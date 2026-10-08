@@ -184,8 +184,24 @@ export function buildQuestionResponseDeliveryEnvelope(
   };
 }
 
+function questionAnswerNotes(
+  interaction: Pick<AskUserQuestionsInteraction, "result">,
+): ReadonlyMap<string, string> {
+  const notes = new Map<string, string>();
+  for (const answer of interaction.result?.answers ?? []) {
+    const note = answer.note?.trim();
+    if (note) notes.set(answer.questionId, note);
+  }
+  return notes;
+}
+
+function noteLines(note: string): string[] {
+  return ["  Note:", ...note.split("\n").map((line) => (line ? `    ${line}` : ""))];
+}
+
 function questionAnswerLines(
   envelope: QuestionResponseDeliveryEnvelope,
+  notes: ReadonlyMap<string, string> = new Map(),
 ): string[] {
   const lines: string[] = [];
   for (const question of envelope.questionSet.questions) {
@@ -208,14 +224,17 @@ function questionAnswerLines(
         ? `${header} — ${prompt}`
         : (header ?? prompt ?? question.id);
     lines.push(`- ${label}: ${values.join(", ") || "No answer"}`);
+    const note = notes.get(question.id);
+    if (note) lines.push(...noteLines(note));
   }
   return lines;
 }
 
 export function formatQuestionResponseSummary(
   envelope: QuestionResponseDeliveryEnvelope,
+  notes: ReadonlyMap<string, string> = new Map(),
 ): string {
-  const lines = questionAnswerLines(envelope);
+  const lines = questionAnswerLines(envelope, notes);
   return lines.length > 0
     ? ["Resolved questions and answers:", ...lines].join("\n")
     : "Resolved questions and answers.";
@@ -224,13 +243,21 @@ export function formatQuestionResponseSummary(
 export function formatDurableQuestionResponseSummary(
   interaction: AskUserQuestionsInteraction,
 ): string {
+  const notes = questionAnswerNotes(interaction);
   const existing = compactLine(interaction.result?.summaryMarkdown);
-  return (
-    existing ??
-    formatQuestionResponseSummary(
+  if (!existing) {
+    return formatQuestionResponseSummary(
       buildQuestionResponseDeliveryEnvelope(interaction),
-    )
-  );
+      notes,
+    );
+  }
+  if (notes.size === 0) return existing;
+  return [
+    existing,
+    "",
+    "Notes from the user:",
+    ...[...notes].flatMap(([questionId, note]) => [`- ${questionId}:`, ...noteLines(note)]),
+  ].join("\n");
 }
 
 export function formatQuestionResponseSteeringMessage(

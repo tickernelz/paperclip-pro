@@ -2725,6 +2725,35 @@ describe("renderPaperclipWakePrompt", () => {
     expect(prompt).toContain("[plan comment body truncated]");
   });
 
+  it("renders the user's plan review note beside the decision", () => {
+    const prompt = renderPaperclipWakePrompt({
+      reason: "issue_commented",
+      issue: { id: "issue-1", identifier: "PAP-3404", title: "Plan first", status: "in_progress", workMode: "planning" },
+      interactionKind: "request_confirmation",
+      interactionStatus: "rejected",
+      planReviewContext: {
+        documentKey: "plan",
+        issueId: "issue-1",
+        latestRevisionId: "revision-2",
+        latestRevisionNumber: 2,
+        interaction: {
+          id: "interaction-1",
+          kind: "request_confirmation",
+          status: "rejected",
+          result: { outcome: "rejected", reason: "Split it", note: "See ![trace](/api/attachments/t/content)" },
+        },
+        threads: [],
+        totals: { openThreadCount: 0, includedThreadCount: 0, omittedThreadCount: 0, commentCount: 0, includedCommentCount: 0, omittedCommentCount: 0 },
+      },
+      commentWindow: { requestedCount: 0, includedCount: 0, missingCount: 0 },
+      comments: [],
+      fallbackFetchNeeded: false,
+    });
+    expect(prompt).toContain("- result: rejected (Split it)");
+    expect(prompt).toContain("- result note:");
+    expect(prompt).toContain("See ![trace](/api/attachments/t/content)");
+  });
+
   it("renders rejected plan review context even when the rejection reason is empty", () => {
     const prompt = renderPaperclipWakePrompt({
       reason: "issue_commented",
