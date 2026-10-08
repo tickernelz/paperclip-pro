@@ -30,7 +30,7 @@ import {
   type SuggestedTaskDraft,
   type SuggestedTaskTreeNode,
 } from "../lib/issue-thread-interactions";
-import { cn, formatDateTime, formatShortDate } from "../lib/utils";
+import { cn, formatClockTime, formatDateTime, formatShortDate } from "../lib/utils";
 import { InteractionPreparationNotice } from "./InteractionPreparationNotice";
 import { InteractionAudienceLine } from "./InteractionAudienceLine";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
@@ -3675,6 +3675,10 @@ export function IssueThreadInteractionCard({
       : null;
   // P4: audit-visible distinction between agent and human resolution.
   const resolvedByAgent = Boolean(interaction.resolvedByAgentId);
+  const autonomyWindowResolution =
+    interaction.kind === "request_confirmation" && interaction.status === "accepted"
+      ? interaction.result?.resolutionDetails ?? null
+      : null;
   // PAP-17280: the effective audience, shown *before* anyone responds so a
   // reader never has to guess whether an open card is waiting on them. Derived
   // from the same server snapshot the resolver routes enforce, so the copy
@@ -3919,6 +3923,18 @@ export function IssueThreadInteractionCard({
             data-testid="interaction-issue-closed-footer"
           >
             {formatShortDate(interaction.resolvedAt)}
+          </div>
+        ) : autonomyWindowResolution ? (
+          <div
+            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            data-testid="interaction-autonomy-window-footer"
+          >
+            Accepted by{" "}
+            <span className="font-medium text-foreground">
+              autonomy window ({resolveActorLabel({ userId: autonomyWindowResolution.grantedByUserId, currentUserId, userLabelMap })}, until{" "}
+              {formatClockTime(autonomyWindowResolution.expiresAt)})
+            </span>
+            {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
           </div>
         ) : resolvedByLabel && !isToolAction && !connectionAuthorization ? (
           // The connection-authorization card states its own resolver and
