@@ -12,12 +12,13 @@ export interface IssueTree {
  *   parent at all), so orphaned sub-tasks are always visible at root level.
  * - `childMap` maps each parent id to its direct children in list order.
  */
-export function buildIssueTree(items: Issue[]): IssueTree {
+export function buildIssueTree(items: Issue[], keptRootIds?: ReadonlySet<string>): IssueTree {
   const itemIds = new Set(items.map((i) => i.id));
-  const roots = items.filter((i) => !i.parentId || !itemIds.has(i.parentId));
+  const isRoot = (item: Issue) => !item.parentId || !itemIds.has(item.parentId) || keptRootIds?.has(item.id) === true;
+  const roots = items.filter(isRoot);
   const childMap = new Map<string, Issue[]>();
   for (const item of items) {
-    if (item.parentId && itemIds.has(item.parentId)) {
+    if (item.parentId && !isRoot(item)) {
       const arr = childMap.get(item.parentId) ?? [];
       arr.push(item);
       childMap.set(item.parentId, arr);

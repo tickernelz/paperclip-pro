@@ -1778,9 +1778,9 @@ describe("IssuesList", () => {
     });
   });
 
-  it("keeps the visible rows in place when a later page nests earlier orphan children under their parent", async () => {
-    const rowHeight = 44;
-    const listOffset = 1000;
+  it("keeps seen orphan rows in place when their parents arrive on a later page", async () => {
+    const listOffset = 600;
+    const rowHeightForDepth = (depth: number) => 36 + depth * 8;
     const base = new Date("2026-04-07T12:00:00.000Z").getTime();
     const minute = 60_000;
     const issueAt = (index: number, overrides: Partial<Issue> = {}) =>
@@ -1791,15 +1791,21 @@ describe("IssuesList", () => {
         updatedAt: new Date(base - index * minute),
         ...overrides,
       });
-    const firstPage = Array.from({ length: 100 }, (_, index) => {
-      if (index >= 5 && index < 45) return issueAt(index, { parentId: "hub" });
-      if (index === 70) return issueAt(index, { parentId: "anchor-parent" });
-      return issueAt(index);
-    });
+    const orphanParent = (index: number) => {
+      if (index >= 30 && index < 50) return "parent-a";
+      if (index >= 50 && index < 60) return "parent-b";
+      if (index >= 60 && index < 65) return "issue-55";
+      if (index >= 65 && index < 70) return "parent-c";
+      return null;
+    };
+    const firstPage = Array.from({ length: 100 }, (_, index) => issueAt(index, { parentId: orphanParent(index) }));
     const secondPage = [
-      issueAt(100, { id: "hub", title: "Hub" }),
-      issueAt(101, { id: "anchor-parent", title: "Anchor parent" }),
-      ...Array.from({ length: 30 }, (_, index) => issueAt(102 + index)),
+      issueAt(100, { id: "parent-a", title: "Parent A" }),
+      issueAt(101, { id: "parent-b", title: "Parent B", parentId: "parent-a" }),
+      issueAt(102, { id: "parent-c", title: "Parent C" }),
+      issueAt(103, { id: "parent-a-new", title: "Parent A new child", parentId: "parent-a" }),
+      issueAt(104, { id: "late-child", title: "Late child of a seen row", parentId: "issue-42" }),
+      ...Array.from({ length: 35 }, (_, index) => issueAt(105 + index)),
     ];
 
     const main = document.createElement("main");
@@ -1807,30 +1813,57 @@ describe("IssuesList", () => {
     document.body.appendChild(main);
     main.appendChild(container);
     let scrollTop = 0;
+    const rowsInOrder = () => Array.from(container.querySelectorAll<HTMLElement>("[data-issue-row-id]"));
+    const rowDepth = (row: HTMLElement) =>
+      Number(row.querySelector<HTMLElement>("[data-tree-guides]")?.dataset.treeGuides ?? 0);
+    const listHeight = () => [...layout().values()].reduce((total, box) => total + box.height, 0);
     Object.defineProperty(main, "clientHeight", { configurable: true, value: 600 });
     Object.defineProperty(main, "scrollTop", {
       configurable: true,
       get: () => scrollTop,
       set: (value: number) => {
-        scrollTop = value;
+        scrollTop = Math.max(0, value);
       },
     });
-    Object.defineProperty(main, "scrollHeight", {
-      configurable: true,
-      get: () => listOffset + container.querySelectorAll("[data-issue-row-id]").length * rowHeight + 600,
-    });
+    Object.defineProperty(main, "scrollHeight", { configurable: true, get: () => listOffset + listHeight() + 600 });
     const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    let layoutCache: { key: string; boxes: Map<HTMLElement, { top: number; height: number }> } | null = null;
+    const layout = () => {
+      const rows = rowsInOrder();
+      const key = rows.map((row) => `${row.dataset.issueRowId}:${rowDepth(row)}`).join("|");
+      if (layoutCache?.key !== key) {
+        const boxes = new Map<HTMLElement, { top: number; height: number }>();
+        let top = listOffset;
+        for (const row of rows) {
+          const height = rowHeightForDepth(rowDepth(row));
+          boxes.set(row, { top, height });
+          top += height;
+        }
+        layoutCache = { key, boxes };
+      }
+      return layoutCache.boxes;
+    };
     const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
       if (this === main) return new DOMRect(0, 0, 1000, 600);
       if (this.dataset.issueRowId) {
-        const rows = Array.from(container.querySelectorAll<HTMLElement>("[data-issue-row-id]"));
-        const top = listOffset + rows.indexOf(this) * rowHeight - scrollTop;
-        return new DOMRect(0, top, 1000, rowHeight);
+        const box = layout().get(this);
+        if (box) return new DOMRect(0, box.top - scrollTop, 1000, box.height);
       }
       return originalRect.call(this);
     });
-    const rowTop = (id: string) =>
-      container.querySelector<HTMLElement>(`[data-issue-row-id="${id}"]`)!.getBoundingClientRect().top;
+    const visibleRowTops = () => {
+      const tops = new Map<string, number>();
+      for (const [row, box] of layout()) {
+        const top = box.top - scrollTop;
+        if (top + box.height > 0 && top < 600) tops.set(row.dataset.issueRowId!, top);
+      }
+      return tops;
+    };
+    const keptRows = (before: Map<string, number>) => {
+      const after = visibleRowTops();
+      return [...before].filter(([id, top]) => after.get(id) === top).length;
+    };
+    const depthOf = (id: string) => rowDepth(container.querySelector<HTMLElement>(`[data-issue-row-id="${id}"]`)!);
 
     const root = createRoot(container);
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -1856,39 +1889,40 @@ describe("IssuesList", () => {
     try {
       renderIssues(firstPage);
       await waitForAssertion(() => {
-        expect(container.querySelectorAll('[data-testid="issue-row"]')).toHaveLength(100);
+        expect(rowsInOrder()).toHaveLength(100);
       });
       await flush();
+      expect(depthOf("issue-60")).toBe(1);
+      expect(depthOf("issue-40")).toBe(0);
 
       act(() => {
-        main.scrollTop = listOffset + 70 * rowHeight;
+        main.scrollTop = container.querySelector<HTMLElement>('[data-issue-row-id="issue-40"]')!.getBoundingClientRect().top;
         main.dispatchEvent(new Event("scroll"));
       });
       await flushAnimationFrame();
-      const visibleBefore = ["issue-71", "issue-72", "issue-80"].map(rowTop);
-      const scrollTopBefore = main.scrollTop;
+      const visibleBeforeAppend = visibleRowTops();
+      expect(visibleBeforeAppend.size).toBeGreaterThanOrEqual(14);
 
       renderIssues([...firstPage, ...secondPage]);
       await flush();
 
-      expect(container.querySelector('[data-issue-row-id="issue-70"]')).not.toBeNull();
-      expect(["issue-71", "issue-72", "issue-80"].map(rowTop)).toEqual(visibleBefore);
-      expect(main.scrollTop).toBe(scrollTopBefore - 41 * rowHeight);
+      expect(keptRows(visibleBeforeAppend)).toBe(visibleBeforeAppend.size);
+      expect(depthOf("issue-40")).toBe(0);
+      expect(depthOf("issue-55")).toBe(0);
+      expect(depthOf("issue-60")).toBe(1);
+      expect(rowsInOrder().some((row) => row.dataset.issueRowId === "late-child")).toBe(false);
 
       act(() => {
         main.dispatchEvent(new Event("scroll"));
       });
-      const visibleAfterAppend = ["issue-75", "issue-80", "issue-90"].map(rowTop);
+      const visibleBeforeReorder = visibleRowTops();
       renderIssues([
-        issueAt(85, { updatedAt: new Date(base + minute) }),
-        ...[...firstPage, ...secondPage].filter((issue) => issue.id !== "issue-85"),
+        issueAt(45, { parentId: "parent-a", updatedAt: new Date(base + minute) }),
+        ...[...firstPage, ...secondPage].filter((issue) => issue.id !== "issue-45"),
       ]);
       await flush();
-      expect(["issue-75", "issue-80", "issue-90"].map(rowTop)).toEqual([
-        visibleAfterAppend[0],
-        visibleAfterAppend[1],
-        visibleAfterAppend[2]! - rowHeight,
-      ]);
+      expect(depthOf("issue-45")).toBe(0);
+      expect(keptRows(visibleBeforeReorder)).toBeGreaterThanOrEqual(Math.ceil(visibleBeforeReorder.size / 2));
     } finally {
       act(() => {
         root.unmount();
