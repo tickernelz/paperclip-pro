@@ -551,7 +551,7 @@ export function isAutonomyWindowEligibleInteraction(interaction: IssueThreadInte
     payload.secretProposal !== undefined ||
     payload.connectionAuthorization !== undefined ||
     payload.openwaApprovalRequestId !== undefined ||
-    payload.destructive === true ||
+    payload.destructive !== false ||
     interaction.addresseeAgentId ||
     !interaction.createdByAgentId ||
     isNativeCompletionReview({ kind: interaction.kind, payload: payload as unknown as IssueThreadInteractionRow["payload"] })

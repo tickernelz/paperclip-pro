@@ -38,9 +38,9 @@ describe("autonomy window eligibility", () => {
   const withPayload = (payload: Record<string, unknown>) =>
     ({ ...plain, payload: { version: 1, prompt: "Push the branch?", ...payload } }) as unknown as IssueThreadInteraction;
 
-  it("accepts only plain agent-created confirmations", () => {
-    expect(isAutonomyWindowEligibleInteraction(plain)).toBe(true);
+  it("accepts only agent-created confirmations explicitly declared non-destructive", () => {
     expect(isAutonomyWindowEligibleInteraction(withPayload({ destructive: false }))).toBe(true);
+    expect(isAutonomyWindowEligibleInteraction(plain)).toBe(false);
   });
 
   it.each([
@@ -130,7 +130,7 @@ describeEmbeddedPostgres.sequential("autonomy windows", () => {
       {
         kind: "request_confirmation",
         continuationPolicy,
-        payload: { version: 1, prompt: "Push the branch and deploy?", ...payload },
+        payload: { version: 1, prompt: "Push the branch and deploy?", destructive: false, ...payload },
       } as never,
       { agentId },
     );
@@ -201,9 +201,10 @@ describeEmbeddedPostgres.sequential("autonomy windows", () => {
         payload: { version: 1, tasks: [{ clientKey: "t1", title: "Build API" }] },
       } as never, { agentId }),
       await confirm(ids.grandchild, { destructive: true }),
+      await confirm(ids.grandchild, { destructive: undefined }),
       await confirm(ids.review),
     ];
-    expect(created.map((entry) => entry.status)).toEqual(["pending", "pending", "pending", "pending", "pending", "pending"]);
+    expect(created.map((entry) => entry.status)).toEqual(["pending", "pending", "pending", "pending", "pending", "pending", "pending"]);
     const [window] = await db.select().from(issueAutonomyWindows);
     expect(window!.acceptCount).toBe(0);
   });

@@ -294,7 +294,7 @@ for the issues they name; descendants are included. `hours` is 1 to 24 (default
 12). Ask once which issues when their words do not name the work. While the
 window is open, plain confirmation cards created in those trees come back
 accepted and audited; questions, verdicts, governed approvals and cards marked
-`destructive: true` still wait for a person. When the owner says they are back,
+`destructive: true` or without `destructive: false` still wait for a person. When the owner says they are back,
 call `{operation: "close", idempotencyKey}` (optionally with `issues`); `list` shows the
 live windows. Other runs get `owner_only`.
 

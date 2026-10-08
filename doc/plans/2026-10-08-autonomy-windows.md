@@ -18,7 +18,7 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 | D1 | Scope is what the owner asks for: one or more root issues; descendants are included. Wira asks once when the owner's words do not name the work. |
 | D2 | Only plain `request_confirmation` cards are auto-accepted. Never: `ask_user_questions`, item verdicts, checkbox confirmations, suggested tasks, connection intents, `approvals` rows, confirmations carrying `toolAction`, `secretProposal`, or `openwaApprovalRequestId`, and review verdict interactions. |
 | D3 | A window has an expiry (required, default 12 h, max 24 h) and an optional cap on accepts. It can be closed early. Expired or closed windows are inert. |
-| D4 | The window does not make destructive actions allowed: agents' existing rules for force-push, history rewrite, data loss and secrets still apply; the auto-accept only removes the wait for owner confirmation of non-destructive steps that the agent already asks for with a card. A card whose title or prompt the agent marks destructive (payload `destructive: true`) is not auto-accepted. |
+| D4 | The window does not make destructive actions allowed: agents' existing rules for force-push, history rewrite, data loss and secrets still apply; the auto-accept only removes the wait for owner confirmation of non-destructive steps that the agent already asks for with a card. Only a card the agent explicitly declares non-destructive (payload `destructive: false`) is auto-accepted; `destructive: true` or a missing field stays pending (fail closed). |
 | D5 | Only the endpoint's verified owner (owner-class OpenWA run) or a board user can open or close a window. |
 | D6 | The AGENTS.md `Mode: full otonom` marker stays as a behaviour signal; the window is the enforcement. Wira writes both. |
 
@@ -34,7 +34,7 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 - Lazy expiry: `status='expired'` for `live` rows past `expires_at` at lookup time.
 - Board routes: `GET/POST /companies/:companyId/autonomy-windows`, `DELETE /autonomy-windows/:id` (board users), activity log `autonomy_window.opened` / `autonomy_window.closed`.
 - OpenWA owner tool `openwa_autonomy_window` `{ operation: open|close|list, issues: [identifier...], hours?, maxAccepts?, idempotencyKey }`, owner-run only (`assertOpenwaConfigOwnerRun`), attributed to the owner's user.
-- Request confirmation payload gains optional `destructive: boolean` (default false) in `packages/shared` validators; the paperclip skill tells agents to set it for destructive steps.
+- Request confirmation payload gains optional `destructive: boolean` in `packages/shared` validators; only `false` makes a card eligible. The paperclip skill tells agents to declare it on every confirmation.
 
 ### UI
 
@@ -44,13 +44,13 @@ The owner opens an autonomy window for named issue trees, through Wira or the bo
 ### Agents
 
 - Wira AGENTS.md: on "full otonom", call `openwa_autonomy_window open` for the named roots (and write the marker); on "udah bangun", close it.
-- Paperclip skill: cards still get created as before; inside a window they come back accepted. Set `destructive: true` for destructive steps.
+- Paperclip skill: declare `destructive` on every confirmation; inside a window `destructive: false` cards come back accepted.
 
 ## Acceptance criteria
 
-1. With a live window on root R, a plain confirmation created on a descendant of R is accepted within the create request, audited with the window id, and the agent is woken when the card's continuation policy asks for it.
+1. With a live window on root R, a confirmation with `destructive: false` created on a descendant of R is accepted within the create request, audited with the window id, and the agent is woken when the card's continuation policy asks for it.
 2. The same card on an issue outside R stays pending.
-3. Questions, verdicts, checkbox confirmations, suggested tasks, tool-action, secret-proposal, OpenWA approval cards, review verdicts, and `destructive: true` confirmations stay pending inside R.
+3. Questions, verdicts, checkbox confirmations, suggested tasks, tool-action, secret-proposal, OpenWA approval cards, review verdicts, and confirmations with `destructive: true` or without `destructive: false` stay pending inside R.
 4. After expiry or close, new cards stay pending; the cap stops auto-accepts after N.
 5. Only an owner-class OpenWA run or a board user can open or close a window; a member-triggered run gets `owner_only`.
 6. Activity log shows open, close, and every auto-accept with the window id.
