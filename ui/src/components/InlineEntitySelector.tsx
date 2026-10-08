@@ -75,7 +75,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
     const [open, setOpen] = useState(false);
     const [query, setQuery] = useState("");
     const [highlightedIndex, setHighlightedIndex] = useState(0);
-    useMobileViewportInsets(open);
+    useMobileViewportInsets(open, { sheet: true });
     const mobileSelectorModal = useMobileSelectorModal();
     const mobileViewportStyle = useMobileEntityPickerViewportStyle();
     const highlightedIndexRef = useRef(0);

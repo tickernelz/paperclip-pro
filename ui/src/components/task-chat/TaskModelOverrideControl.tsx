@@ -248,7 +248,7 @@ export function TaskModelOverrideControl({
     Partial<Record<IssueRunModelOverrideKey, string | null>>
   >({});
   const resolveInFlight = useRef<Promise<string> | null>(null);
-  useMobileViewportInsets(open);
+  useMobileViewportInsets(open, { sheet: true });
   const mobileSelectorModal = useMobileSelectorModal();
   const activeIssueId = draft ? null : issueId || resolvedIssueId;
   const previewAgent = draft ?? pendingIssue;

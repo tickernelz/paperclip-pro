@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseStatusFilter } from "../services/issues.ts";
+import { parseStatusFilter } from "../services/issue-list-query.ts";
 
 /**
  * Unit tests for the helper introduced in https://github.com/paperclipai/paperclip/issues/4628

@@ -194,7 +194,7 @@ function OverrideSheet({
   const [inheritToSubtasks, setInheritToSubtasks] = useState(true);
   const [subtaskScope, setSubtaskScope] =
     useState<IssueRunModelOverrideSubtaskScope>("new");
-  useMobileViewportInsets(open);
+  useMobileViewportInsets(open, { sheet: true });
   if (!open) return null;
   const sections = [
     { key: "model" as const, label: "Model", value: model, options: MODEL_OPTIONS, set: setModel },

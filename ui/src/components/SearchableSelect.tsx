@@ -124,7 +124,7 @@ export function SearchableSelect<
 }: SearchableSelectProps<TValue, TOption>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  useMobileViewportInsets(open);
+  useMobileViewportInsets(open, { sheet: true });
   const mobileViewportStyle = useMobileEntityPickerViewportStyle();
   const pointerFocusRef = useRef(false);
   const suppressNextTriggerFocusRef = useRef(false);
