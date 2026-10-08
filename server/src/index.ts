@@ -1153,6 +1153,13 @@ async function startServerWithDatabaseTeardown(
   }>) | null = null;
   let beginHeartbeatServerShutdown: ((signal: "SIGINT" | "SIGTERM") => void) | null = null;
   let heartbeatSchedulerStopped = false;
+  const attachmentRetention = attachmentRetentionService(db as any, { storage: storageService });
+  setInterval(() => {
+    void attachmentRetention.scheduledTick().catch((err: unknown) => {
+      logger.error({ err }, "scheduled attachment retention failed");
+    });
+  }, ATTACHMENT_RETENTION_TICK_MS);
+
   let heartbeatSchedulerInterval: ReturnType<typeof setInterval> | null = null;
   const heartbeatSchedulerInFlight = new Set<Promise<void>>();
   const trackHeartbeatSchedulerWork = (work: Promise<unknown>) => {
@@ -1889,13 +1896,6 @@ async function startServerWithDatabaseTeardown(
       });
     }, backupIntervalMs);
   }
-
-  const attachmentRetention = attachmentRetentionService(db as any, { storage: storageService });
-  setInterval(() => {
-    void attachmentRetention.scheduledTick().catch((err: unknown) => {
-      logger.error({ err }, "scheduled attachment retention failed");
-    });
-  }, ATTACHMENT_RETENTION_TICK_MS);
   
   // Wait for external adapters to finish loading before accepting requests.
   // Without this, adapter type validation (assertKnownAdapterType) would
