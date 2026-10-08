@@ -1,6 +1,6 @@
 import type { Readable } from "node:stream";
 import type { SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 
 export type SpeechToTextErrorCode =
   | "stt_disabled"
@@ -113,7 +113,7 @@ export async function transcribeAudio(input: SpeechToTextInput, options: SpeechT
     throw new SpeechToTextError("stt_disabled", "Speech-to-text is not enabled for this instance");
   const apiKey = (options.env ?? process.env)[settings.apiKeyEnvVar];
   if (!apiKey) throw new SpeechToTextError("stt_missing_key", "The speech-to-text API key environment variable is not set");
-  const limit = Math.min(options.maxBytes ?? MAX_ATTACHMENT_BYTES, MAX_ATTACHMENT_BYTES);
+  const limit = Math.min(options.maxBytes ?? getMaxAttachmentBytes(), getMaxAttachmentBytes());
   if (input.durationHintSeconds != null && input.durationHintSeconds > settings.maxAudioSeconds)
     throw new SpeechToTextError("stt_too_long", "Audio is longer than " + settings.maxAudioSeconds + " seconds");
   let body: Buffer;

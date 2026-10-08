@@ -14,6 +14,7 @@ export type InstanceSettingsWriteDb = Pick<
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_BACKUP_RETENTION,
+  DEFAULT_ATTACHMENT_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   PAPERCLIP_CLOUD_MANAGED_BY,
   SPEECH_TO_TEXT_DEFAULTS,
@@ -36,6 +37,7 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import { eq } from "drizzle-orm";
 import { logger } from "../middleware/logger.js";
+import { setAttachmentLimitSetting } from "../attachment-types.js";
 import { getManagedInstanceConfig, type ManagedInstanceConfig } from "./managed-config.js";
 import { getOperatorSettingDefaults } from "./setting-defaults.js";
 
@@ -221,6 +223,8 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
       backupRetention: parsed.data.backupRetention ?? DEFAULT_BACKUP_RETENTION,
       defaultMessageDelivery: parsed.data.defaultMessageDelivery ?? DEFAULT_MESSAGE_DELIVERY,
       speechToText: parsed.data.speechToText ?? SPEECH_TO_TEXT_DEFAULTS,
+      attachmentMaxMegabytes: parsed.data.attachmentMaxMegabytes ?? null,
+      attachmentRetention: parsed.data.attachmentRetention ?? DEFAULT_ATTACHMENT_RETENTION,
       // Absent => unrestricted; only carry through an explicit policy.
       ...(parsed.data.executionMode ? { executionMode: parsed.data.executionMode } : {}),
     };
@@ -231,6 +235,8 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
     backupRetention: DEFAULT_BACKUP_RETENTION,
     defaultMessageDelivery: DEFAULT_MESSAGE_DELIVERY,
     speechToText: SPEECH_TO_TEXT_DEFAULTS,
+    attachmentMaxMegabytes: null,
+    attachmentRetention: DEFAULT_ATTACHMENT_RETENTION,
   };
 }
 
@@ -451,7 +457,9 @@ export function instanceSettingsService(db: Db, options: InstanceSettingsService
   const operatorDefaults = getOperatorSettingDefaults(options.runtimeEnv ?? process.env);
 
   function toGeneralView(raw: unknown): InstanceGeneralSettings {
-    return applyOperatorGeneralDefaults(normalizeGeneralSettings(raw), operatorDefaults);
+    const general = applyOperatorGeneralDefaults(normalizeGeneralSettings(raw), operatorDefaults);
+    setAttachmentLimitSetting(general.attachmentMaxMegabytes);
+    return general;
   }
 
   function toExperimentalView(raw: unknown): InstanceExperimentalSettingsWithManaged {

@@ -71,7 +71,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { requireOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import { findServerAdapter } from "../adapters/index.js";
-import { formatAttachmentSize, MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { formatAttachmentSize, getMaxAttachmentBytes } from "../attachment-types.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";
 import type { StorageService } from "../storage/types.js";
@@ -6200,8 +6200,8 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
             if (sha256HexOfBytes(body) !== attachmentEntry.sha256) {
               throw unprocessable(`Attachment blob ${blobPath} does not match its declared sha256; the package is corrupted or was tampered with.`);
             }
-            if (body.length > MAX_ATTACHMENT_BYTES) {
-              warnings.push(`Task ${manifestIssue.slug} attachment ${attachmentLabel} was skipped because it exceeds this deployment's attachment size limit of ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)}.`);
+            if (body.length > getMaxAttachmentBytes()) {
+              warnings.push(`Task ${manifestIssue.slug} attachment ${attachmentLabel} was skipped because it exceeds this deployment's attachment size limit of ${formatAttachmentSize(getMaxAttachmentBytes())}.`);
               continue;
             }
             let issueCommentId: string | null = null;

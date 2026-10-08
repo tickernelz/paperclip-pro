@@ -10,7 +10,7 @@ import {
   type FormattedContent,
   type ThreadInfo,
 } from "chat";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import {
   createOpenwaEventSocket,
@@ -132,7 +132,7 @@ export class OpenwaChatAdapter implements Adapter<OpenwaThread, OpenwaMessage> {
         size: raw.media.sizeBytes ?? undefined,
         fetchMetadata: { kind: "openwa_media", chatId, messageId },
         fetchData: async () => {
-          const download = await this.gateway.downloadMedia({ chatId, messageId, maxBytes: MAX_ATTACHMENT_BYTES });
+          const download = await this.gateway.downloadMedia({ chatId, messageId, maxBytes: getMaxAttachmentBytes() });
           const chunks: Buffer[] = [];
           for await (const chunk of download.stream) chunks.push(Buffer.from(chunk as Uint8Array));
           return Buffer.concat(chunks);

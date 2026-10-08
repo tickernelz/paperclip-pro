@@ -26,7 +26,7 @@ import {
   type OpenwaSendKind,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import { DEFAULT_ATTACHMENT_CONTENT_TYPE, MAX_ATTACHMENT_BYTES, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
+import { DEFAULT_ATTACHMENT_CONTENT_TYPE, getMaxAttachmentBytes, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
 import { HttpError, forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getStorageService } from "../../storage/index.js";
@@ -699,7 +699,7 @@ async function attachmentBase64(ctx: ToolContext, attachmentId: string, storage:
       ),
     )
     .limit(1);
-  if (!row || row.asset.byteSize > MAX_ATTACHMENT_BYTES)
+  if (!row || row.asset.byteSize > getMaxAttachmentBytes())
     throw new OpenwaToolError(422, "attachment_unavailable", "Media must be an attachment of this task within the attachment size limit");
   const stored = await (storage ?? getStorageService()).getObject(ctx.endpoint.companyId, row.asset.objectKey);
   const chunks: Buffer[] = [];
@@ -708,7 +708,7 @@ async function attachmentBase64(ctx: ToolContext, attachmentId: string, storage:
     for await (const chunk of stored.stream) {
       const buffer = Buffer.from(chunk as Uint8Array);
       total += buffer.length;
-      if (total > MAX_ATTACHMENT_BYTES) throw new OpenwaToolError(422, "attachment_unavailable", "Attachment exceeds the size limit");
+      if (total > getMaxAttachmentBytes()) throw new OpenwaToolError(422, "attachment_unavailable", "Attachment exceeds the size limit");
       chunks.push(buffer);
     }
   } finally {

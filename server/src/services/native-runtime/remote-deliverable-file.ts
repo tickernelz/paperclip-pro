@@ -2,9 +2,8 @@ import { createHash } from "node:crypto";
 import { posix } from "node:path";
 import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
 
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
-export const MAX_REMOTE_DELIVERABLE_BYTES = MAX_ATTACHMENT_BYTES;
 const PREFIX = "paperclip_runner_file_handoff_";
 const READ_TIMEOUT_MS = 10_000;
 
@@ -88,7 +87,7 @@ export async function readVerifiedRemoteWorkspaceFile(input: {
   }
   const relative = posix.normalize(contentRef);
   if (relative === "." || relative === ".." || relative.startsWith("../")) throw new Error(`${PREFIX}path_denied`);
-  if (!Number.isSafeInteger(byteSize) || byteSize <= 0 || byteSize > MAX_REMOTE_DELIVERABLE_BYTES) {
+  if (!Number.isSafeInteger(byteSize) || byteSize <= 0 || byteSize > getMaxAttachmentBytes()) {
     throw new Error(`${PREFIX}size_denied`);
   }
   const sha256 = typeof input.sha256 === "string" ? input.sha256.trim().toLowerCase() : "";

@@ -1,8 +1,12 @@
+import { createHash } from "node:crypto";
+import { mkdtemp, readdir, readFile, rm } from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { Readable } from "node:stream";
 import type { IncomingMessage } from "node:http";
 import express from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StorageService } from "../storage/types.js";
 
 const mockIssueService = vi.hoisted(() => ({
@@ -118,26 +122,31 @@ type TestStorageService = StorageService & {
     putFile?: {
       companyId: string;
       namespace: string;
-      originalFilename?: string;
+      originalFilename?: string | null;
       contentType: string;
       body: Buffer;
+      byteSize?: number;
+      sha256?: string;
     };
   };
 };
 
-function createStorageService(body = Buffer.from("test")): TestStorageService {
+function createStorageService(body = Buffer.from("test"), options: { failPut?: boolean } = {}): TestStorageService {
   const calls: TestStorageService["__calls"] = {};
   return {
     provider: "local_disk",
     __calls: calls,
     putFile: async (input) => {
-      calls.putFile = input;
+      if (!("sourcePath" in input)) throw new Error("uploads must hand storage a staged file");
+      const stagedBytes = await readFile(input.sourcePath);
+      calls.putFile = { ...input, body: stagedBytes };
+      if (options.failPut) throw new Error("storage unavailable");
       return {
       provider: "local_disk",
       objectKey: `${input.namespace}/${input.originalFilename ?? "upload"}`,
       contentType: input.contentType,
-      byteSize: input.body.length,
-      sha256: "sha256-sample",
+      byteSize: input.byteSize,
+      sha256: input.sha256,
       originalFilename: input.originalFilename,
       };
     },
@@ -204,27 +213,43 @@ function parseBinaryResponse(res: IncomingMessage, callback: (error: Error | nul
   res.on("error", callback);
 }
 
-describe("MAX_ATTACHMENT_BYTES", () => {
-  it("reads the deployment-level attachment cap from the environment", async () => {
-    const previous = process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
-    process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = "5";
-    vi.resetModules();
+describe("getMaxAttachmentBytes", () => {
+  it("reads the deployment-level attachment cap from the environment on every call", async () => {
+    const { getMaxAttachmentBytes } = await import("../attachment-types.js");
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "5");
     try {
-      const { MAX_ATTACHMENT_BYTES } = await import("../attachment-types.js");
-      expect(MAX_ATTACHMENT_BYTES).toBe(5);
+      expect(getMaxAttachmentBytes()).toBe(5);
     } finally {
-      if (previous === undefined) {
-        delete process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES;
-      } else {
-        process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES = previous;
-      }
-      vi.resetModules();
+      vi.unstubAllEnvs();
     }
   });
 });
 
+let uploadHome: string;
+
+async function stagedUploads() {
+  return readdir(path.join(uploadHome, "instances", "default", "data", "tmp", "uploads")).catch(() => []);
+}
+
 describe("issue attachment routes", () => {
+  beforeAll(async () => {
+    uploadHome = await mkdtemp(path.join(os.tmpdir(), "paperclip-upload-home-"));
+  });
+
+  afterAll(async () => {
+    await rm(uploadHome, { recursive: true, force: true });
+  });
+
+  afterEach(async () => {
+    const { setAttachmentLimitSetting } = await import("../attachment-types.js");
+    setAttachmentLimitSetting(null);
+    vi.unstubAllEnvs();
+  });
+
   beforeEach(() => {
+    vi.stubEnv("PAPERCLIP_HOME", uploadHome);
+    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
     vi.resetModules();
     vi.doUnmock("@tickernelz/paperclip-pro-shared/telemetry");
     vi.doUnmock("../telemetry.js");
@@ -281,7 +306,8 @@ describe("issue attachment routes", () => {
       originalFilename: "bundle.zip",
       contentType: "application/zip",
     });
-    expect(Buffer.isBuffer(putFileCall?.body)).toBe(true);
+    expect(putFileCall?.body.toString()).toBe("zip");
+    expect(putFileCall).toMatchObject({ byteSize: 3, sha256: createHash("sha256").update("zip").digest("hex") });
     expect(mockIssueService.createAttachment).toHaveBeenCalledWith(
       expect.objectContaining({
         issueId: "11111111-1111-4111-8111-111111111111",
@@ -290,6 +316,39 @@ describe("issue attachment routes", () => {
       }),
     );
     expect(res.body.contentType).toBe("application/zip");
+  });
+
+  it("streams a 12 MB upload under the default limit and removes the staged temp file", async () => {
+    const storage = createStorageService();
+    mockIssueService.createAttachment.mockResolvedValue(makeAttachment("application/octet-stream", "big.bin"));
+    const payload = Buffer.alloc(12 * 1024 * 1024, 7);
+
+    const app = await createApp(storage);
+    const res = await request(app)
+      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .attach("file", payload, { filename: "big.bin", contentType: "application/octet-stream" });
+
+    expect(res.status).toBe(201);
+    expect(storage.__calls.putFile).toMatchObject({
+      byteSize: payload.length,
+      sha256: createHash("sha256").update(payload).digest("hex"),
+    });
+    expect(storage.__calls.putFile?.body.equals(payload)).toBe(true);
+    expect(await stagedUploads()).toEqual([]);
+  });
+
+  it("removes the staged temp file when storage fails", async () => {
+    const storage = createStorageService(Buffer.from("test"), { failPut: true });
+
+    const app = await createApp(storage);
+    const res = await request(app)
+      .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
+      .attach("file", Buffer.from("payload"), { filename: "x.txt", contentType: "text/plain" });
+
+    expect(res.status).toBe(500);
+    expect(storage.__calls.putFile?.body.toString()).toBe("payload");
+    expect(mockIssueService.createAttachment).not.toHaveBeenCalled();
+    expect(await stagedUploads()).toEqual([]);
   });
 
   it("removes a newly stored object when attachment registration is rejected", async () => {
@@ -512,7 +571,7 @@ describe("issue attachment routes", () => {
     expect(res.body.contentType).toBe("application/octet-stream");
   });
 
-  it("bounds an issue attachment by the deployment-level limit", async () => {
+  it("bounds an issue attachment by the saved instance limit with a 413", async () => {
     const storage = createStorageService();
     mockIssueService.getById.mockResolvedValue({
       id: "11111111-1111-4111-8111-111111111111",
@@ -520,18 +579,21 @@ describe("issue attachment routes", () => {
       identifier: "PAP-1",
     });
     mockIssueService.createAttachment.mockResolvedValue(makeAttachment("application/octet-stream", "large.bin"));
+    const { setAttachmentLimitSetting } = await import("../attachment-types.js");
+    setAttachmentLimitSetting(5);
 
     const app = await createApp(storage);
     const res = await request(app)
       .post("/api/companies/company-1/issues/11111111-1111-4111-8111-111111111111/attachments")
-      .attach("file", Buffer.alloc(10 * 1024 * 1024 + 1), {
+      .attach("file", Buffer.alloc(5 * 1024 * 1024 + 1), {
         filename: "large.bin",
         contentType: "application/octet-stream",
       });
 
-    expect(res.status).toBe(422);
-    expect(res.body.error).toBe("Attachment is larger than the 10 MB limit");
+    expect(res.status).toBe(413);
+    expect(res.body.error).toBe("File is larger than the 5 MB limit");
     expect(storage.__calls.putFile).toBeUndefined();
+    expect(await stagedUploads()).toEqual([]);
     // The deployment cap is the only limit left. The route no longer reads a
     // per-company override, so it never loads the company to size an upload.
     expect(mockCompanyService.getById).not.toHaveBeenCalled();

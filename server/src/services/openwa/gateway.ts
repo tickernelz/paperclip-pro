@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import type { ReadableStream as NodeWebReadableStream } from "node:stream/web";
 import { Ajv, type ValidateFunction } from "ajv";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import {
   OPENWA_OPERATIONS,
   type OpenwaOperation,
@@ -294,7 +295,13 @@ export interface OpenwaGatewayClient {
 }
 
 const DEFAULT_TIMEOUT_MS = 30_000;
-const DEFAULT_MAX_RESPONSE_BYTES = 64 * 1024 * 1024;
+const MIN_JSON_RESPONSE_BYTES = 64 * 1024 * 1024;
+const JSON_ENVELOPE_HEADROOM_BYTES = 1024 * 1024;
+
+/** JSON responses can carry media inline as base64, so their cap is the attachment limit plus base64 and envelope overhead. */
+export function openwaJsonResponseLimit(maxAttachmentBytes = getMaxAttachmentBytes()): number {
+  return Math.max(MIN_JSON_RESPONSE_BYTES, 4 * Math.ceil(maxAttachmentBytes / 3) + JSON_ENVELOPE_HEADROOM_BYTES);
+}
 const ERROR_BODY_LIMIT = 64 * 1024;
 const OPENAPI_DOCUMENT_LIMIT = 8 * 1024 * 1024;
 const ERROR_MESSAGE_LIMIT = 500;
@@ -401,7 +408,7 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
   const sessionId = options.sessionId;
   const encodedSessionId = encodeURIComponent(sessionId);
   const defaultTimeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS;
-  const maxResponseBytes = options.maxResponseBytes ?? DEFAULT_MAX_RESPONSE_BYTES;
+  const maxResponseBytes = options.maxResponseBytes;
   const fetchImpl = options.fetchImpl ?? fetch;
   const secrets = [apiKey, adminApiKey].filter((value): value is string => typeof value === "string" && value.length > 0);
 
@@ -628,7 +635,7 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     }
     if (!response.ok) throw await errorFromResponse(response, operation);
     const status = response.status;
-    const limit = callOptions.maxBytes ?? maxResponseBytes;
+    const limit = callOptions.maxBytes ?? maxResponseBytes ?? (operation.response === "binary" ? getMaxAttachmentBytes() : openwaJsonResponseLimit());
     if (operation.response === "binary") return { kind: "binary", status, media: mediaFrom(response, limit, operation.id) };
     let bytes: Uint8Array;
     try {

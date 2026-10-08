@@ -1,5 +1,5 @@
 import { createSshCommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
-import { MAX_REMOTE_DELIVERABLE_BYTES } from "./remote-deliverable-file.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 /** The command transport used by a native session on an operator-bound SSH host. */
 export function createNativeSshCommandRunner(
@@ -9,6 +9,6 @@ export function createNativeSshCommandRunner(
     ...input,
     // The verified reader returns base64. Bound the command output to one
     // maximum-size encoded file; the adapter's 1 MiB default truncates it.
-    maxBufferBytes: 4 * Math.ceil(MAX_REMOTE_DELIVERABLE_BYTES / 3),
+    maxBufferBytes: 4 * Math.ceil(getMaxAttachmentBytes() / 3),
   });
 }

@@ -3,9 +3,10 @@ import { execFile, spawnSync } from "node:child_process";
 import { link, mkdir, mkdtemp, readFile, realpath, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from "vitest";
 import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
-import { MAX_REMOTE_DELIVERABLE_BYTES, readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
+import { readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
+import { getMaxAttachmentBytes, setAttachmentLimitSetting } from "../../attachment-types.js";
 
 const digest = (body: Buffer) => createHash("sha256").update(body).digest("hex");
 const image = "node:24-bookworm-slim";
@@ -18,7 +19,7 @@ describe("remote deliverable admission", () => {
   it.each([
     { contentRef: "../secret" }, { contentRef: "/etc/passwd" }, { contentRef: "file:///etc/passwd" },
     { contentRef: "..\\secret" }, { contentRef: "." }, { contentRef: "x\0y" },
-    { workspaceRoot: "relative" }, { byteSize: 0 }, { byteSize: MAX_REMOTE_DELIVERABLE_BYTES + 1 },
+    { workspaceRoot: "relative" }, { byteSize: 0 }, { byteSize: getMaxAttachmentBytes() + 1 },
     { byteSize: 1.5 }, { sha256: "invalid" },
   ])("rejects invalid input before dispatch: %j", async (override) => {
     const execute = vi.fn();
@@ -127,8 +128,10 @@ describe.skipIf(!hasLinuxNode)("remote deliverable real Linux descriptor reads",
     await expect(readVerifiedRemoteWorkspaceFile({ ...request, workspaceRoot, runner })).rejects.toThrow(/paperclip_runner_file_handoff_file_changed/);
   });
 
-  it("accepts the 10 MiB limit with exact bytes and hash", async () => {
-    const maximum = Buffer.alloc(MAX_REMOTE_DELIVERABLE_BYTES, 37);
+  it("accepts a file at the configured limit with exact bytes and hash", async () => {
+    setAttachmentLimitSetting(10);
+    onTestFinished(() => setAttachmentLimitSetting(null));
+    const maximum = Buffer.alloc(getMaxAttachmentBytes(), 37);
     await writeFile(join(workspaceRoot, "maximum.bin"), maximum);
     const result = await readVerifiedRemoteWorkspaceFile({ runner, workspaceRoot, contentRef: "maximum.bin", byteSize: maximum.length, sha256: digest(maximum) });
     expect(result.equals(maximum)).toBe(true);

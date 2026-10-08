@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { createReadStream } from "node:fs";
 import path from "node:path";
 import { Readable } from "node:stream";
 import type { StorageService, StorageProvider, PutFileInput, PutFileResult } from "./types.js";
@@ -80,14 +81,31 @@ function assertPutFileInput(input: PutFileInput): void {
   if (!input.contentType || input.contentType.trim().length === 0) {
     throw unprocessable("contentType is required");
   }
-  if (!(input.body instanceof Buffer) && !(input.body instanceof Readable)) {
+  if ("sourcePath" in input) {
+    if (typeof input.sourcePath !== "string" || !path.isAbsolute(input.sourcePath)) {
+      throw unprocessable("sourcePath must be an absolute file path");
+    }
+  } else if (!(input.body instanceof Buffer) && !(input.body instanceof Readable)) {
     throw unprocessable("body must be a Buffer or Readable");
   }
-  if (!Buffer.isBuffer(input.body) && (!("byteSize" in input) || !Number.isSafeInteger(input.byteSize) || input.byteSize < 0 || !/^[0-9a-f]{64}$/.test(input.sha256))) {
+  if (("sourcePath" in input || !Buffer.isBuffer(input.body)) && (!("byteSize" in input) || !Number.isSafeInteger(input.byteSize) || input.byteSize < 0 || !/^[0-9a-f]{64}$/.test(input.sha256))) {
     throw unprocessable("Streamed files require an exact byte size and SHA-256");
   }
   if (("byteSize" in input ? input.byteSize : input.body.length) <= 0) {
     throw unprocessable("File is empty");
+  }
+}
+
+async function putSourceFile(provider: StorageProvider, input: { objectKey: string; sourcePath: string; contentType: string; contentLength: number }) {
+  if (provider.moveFileIn) {
+    await provider.moveFileIn({ objectKey: input.objectKey, sourcePath: input.sourcePath });
+    return;
+  }
+  const body = createReadStream(input.sourcePath);
+  try {
+    await provider.putObject({ objectKey: input.objectKey, body, contentType: input.contentType, contentLength: input.contentLength });
+  } finally {
+    body.destroy();
   }
 }
 
@@ -101,17 +119,21 @@ export function createStorageService(provider: StorageProvider): StorageService 
       const byteSize = "byteSize" in input ? input.byteSize : input.body.length;
       const contentType = input.contentType.trim().toLowerCase();
       try {
-        await provider.putObject({
-          objectKey,
-          body: input.body,
-          contentType,
-          contentLength: byteSize,
-        });
+        if ("sourcePath" in input) {
+          await putSourceFile(provider, { objectKey, sourcePath: input.sourcePath, contentType, contentLength: byteSize });
+        } else {
+          await provider.putObject({
+            objectKey,
+            body: input.body,
+            contentType,
+            contentLength: byteSize,
+          });
+        }
       } catch (error) {
         await provider.deleteObject({ objectKey }).catch(() => {});
         throw error;
       } finally {
-        if (input.body instanceof Readable) input.body.destroy();
+        if ("body" in input && input.body instanceof Readable) input.body.destroy();
       }
 
       return {
@@ -119,7 +141,7 @@ export function createStorageService(provider: StorageProvider): StorageService 
         objectKey,
         contentType,
         byteSize,
-        sha256: "sha256" in input ? input.sha256 : hashBuffer(input.body),
+        sha256: "sha256" in input ? input.sha256 : hashBuffer(input.body as Buffer),
         originalFilename: input.originalFilename,
       };
     },

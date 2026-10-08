@@ -7,6 +7,13 @@ import {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_MESSAGE_DELIVERY,
   SPEECH_TO_TEXT_DEFAULTS,
+  ATTACHMENT_MAX_MEGABYTES_MIN,
+  ATTACHMENT_MAX_MEGABYTES_MAX,
+  ATTACHMENT_ORPHAN_AFTER_DAYS_MIN,
+  ATTACHMENT_ORPHAN_AFTER_DAYS_MAX,
+  ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN,
+  ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX,
+  DEFAULT_ATTACHMENT_RETENTION,
   type InstanceMessageDelivery,
 } from "../types/instance.js";
 import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
@@ -70,6 +77,36 @@ export const speechToTextSettingsSchema = z
     message: "Speech-to-text needs a base URL, a model and an API key environment variable before it can be enabled",
   });
 
+export const attachmentMaxMegabytesSchema = z
+  .number()
+  .int()
+  .min(ATTACHMENT_MAX_MEGABYTES_MIN)
+  .max(ATTACHMENT_MAX_MEGABYTES_MAX);
+
+export const attachmentRetentionSettingsSchema = z
+  .object({
+    enabled: z.boolean().default(DEFAULT_ATTACHMENT_RETENTION.enabled),
+    orphanAfterDays: z
+      .number()
+      .int()
+      .min(ATTACHMENT_ORPHAN_AFTER_DAYS_MIN)
+      .max(ATTACHMENT_ORPHAN_AFTER_DAYS_MAX)
+      .default(DEFAULT_ATTACHMENT_RETENTION.orphanAfterDays),
+    closedTasks: z
+      .object({
+        enabled: z.boolean().default(DEFAULT_ATTACHMENT_RETENTION.closedTasks.enabled),
+        afterDays: z
+          .number()
+          .int()
+          .min(ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN)
+          .max(ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX)
+          .default(DEFAULT_ATTACHMENT_RETENTION.closedTasks.afterDays),
+      })
+      .strict()
+      .default(DEFAULT_ATTACHMENT_RETENTION.closedTasks),
+  })
+  .strict();
+
 export const instanceGeneralSettingsSchema = z.object({
   censorUsernameInLogs: z.boolean().default(false),
   feedbackDataSharingPreference: feedbackDataSharingPreferenceSchema.default(
@@ -78,6 +115,8 @@ export const instanceGeneralSettingsSchema = z.object({
   backupRetention: backupRetentionPolicySchema.default(DEFAULT_BACKUP_RETENTION),
   defaultMessageDelivery: messageDeliverySchema.default(DEFAULT_MESSAGE_DELIVERY),
   speechToText: speechToTextSettingsSchema.default(SPEECH_TO_TEXT_DEFAULTS),
+  attachmentMaxMegabytes: attachmentMaxMegabytesSchema.nullable().default(null),
+  attachmentRetention: attachmentRetentionSettingsSchema.default(DEFAULT_ATTACHMENT_RETENTION),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
   // Kubernetes sandbox provider and denies local/ssh execution (cloud_tenant).
   executionMode: z.enum(["kubernetes", "any"]).optional(),

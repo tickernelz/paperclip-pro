@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import express from "express";
 import request from "supertest";
 import { eq } from "drizzle-orm";
@@ -69,12 +70,13 @@ describeEmbeddedPostgres("cases routes", () => {
   const storage: StorageService = {
     provider: "local_disk",
     async putFile(input) {
+      const body = "sourcePath" in input ? await readFile(input.sourcePath) : (input.body as Buffer);
       return {
         provider: "local_disk",
         objectKey: `${input.namespace}/${randomUUID()}`,
         contentType: input.contentType,
-        byteSize: input.body.length,
-        sha256: createHash("sha256").update(input.body).digest("hex"),
+        byteSize: body.length,
+        sha256: createHash("sha256").update(body).digest("hex"),
         originalFilename: input.originalFilename,
       };
     },

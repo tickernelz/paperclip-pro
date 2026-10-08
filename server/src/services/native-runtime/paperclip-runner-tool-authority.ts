@@ -70,7 +70,7 @@ import { persistActivity, publishActivity } from "../activity-log.js";
 import { captureRunIdentity } from "../run-identity.js";
 import { assertOpenwaRunMay, openwaGrantScope, restoreOpenwaGrant } from "../openwa/authority.js";
 import { prepareNativeRunnerFileHandoff, type RemoteWorkspaceFileReader } from "./native-runner-file-handoff.js";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import {
   READ_CURRENT_WAKE_COMMENTS_TOOL_DEFINITION,
   READ_CURRENT_WAKE_COMMENTS_TOOL_NAME,
@@ -251,7 +251,7 @@ export class PaperclipRunnerToolAuthority {
                   byteSize: {
                     ...(descriptor.inputSchema.properties?.byteSize ?? {}),
                     minimum: 1,
-                    maximum: MAX_ATTACHMENT_BYTES,
+                    maximum: getMaxAttachmentBytes(),
                   },
                   contentRef: {
                     ...(descriptor.inputSchema.properties?.contentRef ?? {}),

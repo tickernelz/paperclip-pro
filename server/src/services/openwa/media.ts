@@ -11,7 +11,7 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 import type { SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
 import {
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   isAllowedContentType,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
@@ -366,7 +366,7 @@ export async function openwaAttachmentLocalPaths(
 }
 
 export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = {}) {
-  const maxBytes = Math.min(options.maxBytes ?? MAX_ATTACHMENT_BYTES, MAX_ATTACHMENT_BYTES);
+  const maxBytes = () => Math.min(options.maxBytes ?? getMaxAttachmentBytes(), getMaxAttachmentBytes());
   const mediaTimeoutMs = options.mediaTimeoutMs ?? OPENWA_MEDIA_FETCH_TIMEOUT_MS;
   const settingsSource =
     options.speechToTextSettings ?? (async () => (await instanceSettingsService(db).getGeneral()).speechToText);
@@ -499,17 +499,17 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       timer.unref?.();
     });
     const work = (async () => {
-      const media = await client.downloadMedia({ chatId, messageId, maxBytes, timeoutMs: mediaTimeoutMs });
+      const media = await client.downloadMedia({ chatId, messageId, maxBytes: maxBytes(), timeoutMs: mediaTimeoutMs });
       stream = media.stream;
       if (expired) {
         media.stream.destroy();
         throw new DownloadDeadline();
       }
-      if (media.contentLength !== null && media.contentLength > maxBytes) {
+      if (media.contentLength !== null && media.contentLength > maxBytes()) {
         media.stream.destroy();
         throw new DownloadTooLarge();
       }
-      const body = await collect(media.stream, maxBytes);
+      const body = await collect(media.stream, maxBytes());
       return { body, contentType: media.contentType, filename: media.filename };
     })();
     work.catch(() => undefined);
@@ -674,7 +674,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       try {
         const result = await transcribeAudio(
           { buffer: audio.body, mime: audio.contentType, filename: audio.filename, signal: controller.signal },
-          { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes },
+          { settings, env: options.env, fetchImpl: options.fetchImpl, maxBytes: maxBytes() },
         );
         const transcriptAttachmentId = await persistTranscript(scope, source, result.text).catch((error) => {
           logger.warn(
@@ -754,7 +754,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       filename: sanitizeFilename(descriptor.filename),
       ...(isAudioKind(descriptor.kind) ? { transcriptStatus: "unavailable" as const } : {}),
     };
-    if (descriptor.declaredSize !== null && descriptor.declaredSize > maxBytes) return { ...item, reason: "too_large", limitBytes: maxBytes };
+    if (descriptor.declaredSize !== null && descriptor.declaredSize > maxBytes()) return { ...item, reason: "too_large", limitBytes: maxBytes() };
     if (declaredMime && declaredMime !== "application/octet-stream") {
       const candidate = normalizeUploadAttachmentContentType({
         contentType: declaredMime,
@@ -771,7 +771,7 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       if (rethrow?.(error)) throw error;
       const failure = gatewayFailure(error);
       if (isAudioKind(descriptor.kind) && failure.status === "pending") item.transcriptStatus = "pending";
-      return { ...item, ...failure, ...(failure.reason === "too_large" ? { limitBytes: maxBytes } : {}) };
+      return { ...item, ...failure, ...(failure.reason === "too_large" ? { limitBytes: maxBytes() } : {}) };
     }
     if (downloaded.body.length === 0) return { ...item, reason: "empty" };
     const filename =

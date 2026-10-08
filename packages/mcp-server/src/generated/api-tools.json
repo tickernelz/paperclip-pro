@@ -1481,7 +1481,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18601",
+    "boardGuard": "assertBoard@issues.ts:18580",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14030,7 +14030,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17515",
+    "boardGuard": "assertBoard@issues.ts:17494",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24008,7 +24008,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16542",
+    "boardGuard": "assertBoard@issues.ts:16521",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35240,7 +35240,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9714",
+    "boardGuard": "assertBoard@issues.ts:9693",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37442,7 +37442,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9059",
+    "boardGuard": "assertBoard@issues.ts:9038",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37503,7 +37503,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16512",
+    "boardGuard": "assertBoard@issues.ts:16491",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39431,7 +39431,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18541",
+    "boardGuard": "assertBoard@issues.ts:18520",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39863,7 +39863,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17467",
+    "boardGuard": "assertBoard@issues.ts:17446",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43618,6 +43618,31 @@
       "schema": {
         "type": "object",
         "properties": {
+          "attachmentMaxMegabytes": {
+            "type": "integer"
+          },
+          "attachmentRetention": {
+            "type": "object",
+            "properties": {
+              "closedTasks": {
+                "type": "object",
+                "properties": {
+                  "afterDays": {
+                    "type": "integer"
+                  },
+                  "enabled": {
+                    "type": "boolean"
+                  }
+                }
+              },
+              "enabled": {
+                "type": "boolean"
+              },
+              "orphanAfterDays": {
+                "type": "integer"
+              }
+            }
+          },
           "backupRetention": {
             "type": "object",
             "properties": {
@@ -43706,7 +43731,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10389",
+    "boardGuard": "assertBoard@issues.ts:10368",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43832,7 +43857,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16480",
+    "boardGuard": "assertBoard@issues.ts:16459",
     "authorityCapability": null,
     "parameters": [
       {

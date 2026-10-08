@@ -29,7 +29,7 @@ import {
   downloadPhotonAttachment,
   type PhotonAttachmentLocator,
 } from "./attachments.js";
-import { MAX_ATTACHMENT_BYTES } from "../../attachment-types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 export interface PhotonThread {
   lineId: string;
@@ -127,7 +127,7 @@ export class PhotonChatAdapter implements Adapter<PhotonThread, PhotonMessage> {
         autoIdempotency: false,
         timeout: 25_000,
         channelOptions: {
-          "grpc.max_receive_message_length": MAX_ATTACHMENT_BYTES + 1024 * 1024,
+          "grpc.max_receive_message_length": getMaxAttachmentBytes() + 1024 * 1024,
         },
       });
   }
@@ -442,7 +442,7 @@ export class PhotonChatAdapter implements Adapter<PhotonThread, PhotonMessage> {
         file.data instanceof Blob
           ? Buffer.from(await file.data.arrayBuffer())
           : Buffer.from(file.data as ArrayBuffer);
-      if (bytes.length > MAX_ATTACHMENT_BYTES)
+      if (bytes.length > getMaxAttachmentBytes())
         throw new Error("Attachment exceeds the configured size limit");
       lastId = await this.sendPart(
         publicationId,

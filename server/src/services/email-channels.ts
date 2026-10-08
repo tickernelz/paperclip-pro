@@ -50,7 +50,7 @@ import type { heartbeatService } from "./heartbeat.js";
 import type { StorageService } from "../storage/types.js";
 import { assertOpenwaRunIdMay, assertOpenwaRunMay } from "./openwa/authority.js";
 import {
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   isAllowedContentType,
 } from "../attachment-types.js";
 import {
@@ -979,7 +979,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
       const contentType = attachment.content_type ?? "application/octet-stream";
       if (
         !options.storage ||
-        attachment.size > MAX_ATTACHMENT_BYTES ||
+        attachment.size > getMaxAttachmentBytes() ||
         !isAllowedContentType(contentType)
       ) {
         omitted.push(attachment.filename ?? "attachment");
@@ -991,7 +991,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
         attachment.attachment_id,
       );
       const url = new URL(locator.download_url);
-      if (url.protocol !== "https:" || locator.size > MAX_ATTACHMENT_BYTES)
+      if (url.protocol !== "https:" || locator.size > getMaxAttachmentBytes())
         throw badRequest("Email attachment download is not permitted");
       const { guardedRemoteHttpFetch } = await import("./remote-http-fetch.js");
       const response = await guardedRemoteHttpFetch(
@@ -1009,7 +1009,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
           const chunk = await reader.read();
           if (chunk.done) break;
           size += chunk.value.length;
-          if (size > MAX_ATTACHMENT_BYTES)
+          if (size > getMaxAttachmentBytes())
             throw badRequest("Email attachment exceeds the size limit");
           chunks.push(Buffer.from(chunk.value));
         }
@@ -1672,7 +1672,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
           !attachment ||
           attachment.companyId !== endpoint.companyId ||
           attachment.issueId !== sourceId ||
-          attachment.byteSize > MAX_ATTACHMENT_BYTES
+          attachment.byteSize > getMaxAttachmentBytes()
         )
           throw forbidden("Email attachment is no longer available");
         const object = await options.storage.getObject(
@@ -1684,7 +1684,7 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
         for await (const part of object.stream) {
           const chunk = Buffer.from(part);
           length += chunk.length;
-          if (length > MAX_ATTACHMENT_BYTES) {
+          if (length > getMaxAttachmentBytes()) {
             object.stream.destroy();
             throw badRequest("Email attachment is too large");
           }

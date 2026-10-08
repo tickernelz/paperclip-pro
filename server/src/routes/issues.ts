@@ -45,7 +45,6 @@ import {
 } from "../services/run-identity.js";
 import { createHash, randomUUID } from "node:crypto";
 import { Router, type NextFunction, type Request, type Response } from "express";
-import multer from "multer";
 import { z } from "zod";
 import {
   and,
@@ -279,11 +278,10 @@ import {
 } from "./workspace-command-authz.js";
 import { shouldWakeAssigneeOnCheckout } from "./issues-checkout-wakeup.js";
 import {
-  formatAttachmentSize,
-  MAX_ATTACHMENT_BYTES,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
 } from "../attachment-types.js";
+import { removeStagedUpload, stageSingleFileUpload } from "../attachment-upload.js";
 import { retainBacklogHumanAssignment } from "../services/human-directed-work.js";
 import { queueIssueAssignmentWakeup } from "../services/issue-assignment-wakeup.js";
 import { shouldWakeAssigneeForIssueComment } from "../services/issue-comment-wakeup.js";
@@ -5030,25 +5028,6 @@ export function issueRoutes(
       throw new HttpError(400, `Invalid ${field} query value`);
     }
     return parsed;
-  }
-
-  async function runSingleFileUpload(
-    req: Request,
-    res: Response,
-    fileSizeLimit: number,
-  ) {
-    const upload = multer({
-      storage: multer.memoryStorage(),
-      // Curl and browser FormData send unlabelled filenames as UTF-8.
-      defParamCharset: "utf8",
-      limits: { fileSize: fileSizeLimit, files: 1 },
-    });
-    await new Promise<void>((resolve, reject) => {
-      upload.single("file")(req, res, (err: unknown) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
   }
 
   async function assertCanManageIssueApprovalLinks(
@@ -20294,65 +20273,56 @@ export function issueRoutes(
       )
         return;
 
+      const file = await stageSingleFileUpload(req, res, {
+        limitMessage: (limit) => `File is larger than the ${limit} limit`,
+      });
+      let stored: Awaited<ReturnType<typeof storage.putFile>>;
+      let issueCommentId: string | null;
       try {
-        await runSingleFileUpload(req, res, MAX_ATTACHMENT_BYTES);
-      } catch (err) {
-        if (err instanceof multer.MulterError) {
-          if (err.code === "LIMIT_FILE_SIZE") {
-            res.status(422).json({
-              error: `Attachment is larger than the ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)} limit`,
-            });
-            return;
-          }
-          res.status(400).json({ error: err.message });
+        if (!file) {
+          res.status(400).json({ error: "Missing file field 'file'" });
           return;
         }
-        throw err;
-      }
-
-      const file = (
-        req as Request & {
-          file?: { mimetype: string; buffer: Buffer; originalname: string };
-        }
-      ).file;
-      if (!file) {
-        res.status(400).json({ error: "Missing file field 'file'" });
-        return;
-      }
-      const contentType = normalizeUploadAttachmentContentType({
-        contentType: file.mimetype,
-        originalFilename: file.originalname,
-      });
-      if (file.buffer.length <= 0) {
-        res.status(422).json({ error: "Attachment is empty" });
-        return;
-      }
-
-      const parsedMeta = createIssueAttachmentMetadataSchema.safeParse(
-        req.body ?? {},
-      );
-      if (!parsedMeta.success) {
-        res.status(400).json({
-          error: "Invalid attachment metadata",
-          details: parsedMeta.error.issues,
+        const contentType = normalizeUploadAttachmentContentType({
+          contentType: file.mimetype,
+          originalFilename: file.originalname,
         });
-        return;
-      }
+        if (file.size <= 0) {
+          res.status(422).json({ error: "Attachment is empty" });
+          return;
+        }
 
+        const parsedMeta = createIssueAttachmentMetadataSchema.safeParse(
+          req.body ?? {},
+        );
+        if (!parsedMeta.success) {
+          res.status(400).json({
+            error: "Invalid attachment metadata",
+            details: parsedMeta.error.issues,
+          });
+          return;
+        }
+        issueCommentId = parsedMeta.data.issueCommentId ?? null;
+
+        stored = await storage.putFile({
+          companyId,
+          namespace: `issues/${issueId}`,
+          originalFilename: file.originalname || null,
+          contentType,
+          sourcePath: file.path,
+          byteSize: file.size,
+          sha256: file.sha256,
+        });
+      } finally {
+        await removeStagedUpload(file);
+      }
       const actor = getActorInfo(req);
-      const stored = await storage.putFile({
-        companyId,
-        namespace: `issues/${issueId}`,
-        originalFilename: file.originalname || null,
-        contentType,
-        body: file.buffer,
-      });
 
       let attachment: Awaited<ReturnType<typeof svc.createAttachment>>;
       try {
         attachment = await svc.createAttachment({
           issueId,
-          issueCommentId: parsedMeta.data.issueCommentId ?? null,
+          issueCommentId,
           provider: stored.provider,
           objectKey: stored.objectKey,
           contentType: stored.contentType,

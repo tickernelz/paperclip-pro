@@ -59,7 +59,7 @@ import {
   type WebhookOptions,
 } from "chat";
 import type { StateAdapter } from "chat";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 import {
   deriveTeamsInlineImageLocator,
   parseTeamsInlineImageLocator,
@@ -2999,7 +2999,7 @@ export class ChatSdkEndpointRuntime {
         ) ||
         metadata.type !== "image" ||
         metadata.mimeType !== locator.mimeType ||
-        (metadata.size !== undefined && metadata.size > MAX_ATTACHMENT_BYTES)
+        (metadata.size !== undefined && metadata.size > getMaxAttachmentBytes())
       )
         return null;
       const normalized: ChatSdkAttachmentRecoveryDescriptor = {
@@ -3043,8 +3043,8 @@ export class ChatSdkEndpointRuntime {
             http.get(teamsInlineImageDownloadUrl(locator), {
               responseType: "arraybuffer",
               maxRedirects: 0,
-              maxContentLength: MAX_ATTACHMENT_BYTES,
-              maxBodyLength: MAX_ATTACHMENT_BYTES,
+              maxContentLength: getMaxAttachmentBytes(),
+              maxBodyLength: getMaxAttachmentBytes(),
               timeout: 10_000,
               signal,
             }),
@@ -3055,7 +3055,7 @@ export class ChatSdkEndpointRuntime {
             !result.data ||
             (!(result.data instanceof ArrayBuffer) &&
               !ArrayBuffer.isView(result.data)) ||
-            result.data.byteLength > MAX_ATTACHMENT_BYTES
+            result.data.byteLength > getMaxAttachmentBytes()
           )
             throw new Error("Image exceeds attachment bound");
           return Buffer.from(

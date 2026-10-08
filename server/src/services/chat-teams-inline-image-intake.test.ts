@@ -1,6 +1,6 @@
 import { createTeamsAdapter } from "@chat-adapter/teams";
 import { describe, expect, it, vi } from "vitest";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 import { createChatSdkEndpointRuntime } from "./chat-sdk-runtime.js";
 import {
   deriveTeamsInlineImageLocator,
@@ -234,7 +234,7 @@ describe("Teams source-bound inline image resources", () => {
         "application/vnd.microsoft.teams.file.download.info";
     if (kind === "metadata_only") f.raw.attachments.length = 0;
     if (kind === "wrong_source") f.scope.messageId = "different-source";
-    if (kind === "oversize") attachment.size = MAX_ATTACHMENT_BYTES + 1;
+    if (kind === "oversize") attachment.size = getMaxAttachmentBytes() + 1;
     attachment.fetchMetadata = {
       auth: "bot",
       url,
@@ -358,8 +358,8 @@ describe("Teams source-bound inline image resources", () => {
         expect.objectContaining({
           responseType: "arraybuffer",
           maxRedirects: 0,
-          maxContentLength: MAX_ATTACHMENT_BYTES,
-          maxBodyLength: MAX_ATTACHMENT_BYTES,
+          maxContentLength: getMaxAttachmentBytes(),
+          maxBodyLength: getMaxAttachmentBytes(),
           timeout: 10_000,
           signal: expect.any(AbortSignal),
         }),

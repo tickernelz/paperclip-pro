@@ -1,8 +1,10 @@
 import { sanitizeAssetNamespace, type AssetImage } from "@tickernelz/paperclip-pro-shared";
-import { api } from "./client";
+import { api, oversizedUploadError } from "./client";
 
 export const assetsApi = {
   uploadImage: async (companyId: string, file: File, namespace?: string) => {
+    const oversized = oversizedUploadError(file);
+    if (oversized) throw oversized;
     // Read file data into memory eagerly so the fetch body is self-contained.
     // Clipboard-paste File objects reference transient data that the browser may
     // discard after the paste-event handler returns, causing ERR_ACCESS_DENIED
@@ -22,6 +24,8 @@ export const assetsApi = {
   },
 
   uploadCompanyLogo: async (companyId: string, file: File) => {
+    const oversized = oversizedUploadError(file);
+    if (oversized) throw oversized;
     const buffer = await file.arrayBuffer();
     const safeFile = new File([buffer], file.name, { type: file.type });
 

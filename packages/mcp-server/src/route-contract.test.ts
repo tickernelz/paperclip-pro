@@ -544,7 +544,7 @@ describe("generated tool input contracts", () => {
 function multipartUploadSites(): { operation: string; file: string; line: number }[] {
   const out: { operation: string; file: string; line: number }[] = [];
   for (const span of routeSpans()) {
-    if (!/run[A-Za-z]*Upload\s*\(/.test(span.body)) continue;
+    if (!/(?:run[A-Za-z]*Upload|stageSingleFileUpload)\s*\(/.test(span.body)) continue;
     const mounted = span.path.startsWith("/api") ? span.path : `/api${span.path}`;
     out.push({
       operation: `${span.method} ${mounted.replace(/\/+/g, "/")}`,

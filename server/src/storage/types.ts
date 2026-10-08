@@ -44,6 +44,8 @@ export interface StorageProvider {
   deleteObject(input: GetObjectInput): Promise<void>;
   /** Absolute on-disk path of an existing object inside the storage root; null when absent or not disk-backed. */
   localPath?(objectKey: string): Promise<string | null>;
+  /** Moves a local file into the store as `objectKey`, consuming the source file. */
+  moveFileIn?(input: { objectKey: string; sourcePath: string }): Promise<void>;
 }
 
 export type PutFileInput = {
@@ -51,7 +53,11 @@ export type PutFileInput = {
   namespace: string;
   originalFilename: string | null;
   contentType: string;
-} & ({ body: Buffer } | { body: Readable; byteSize: number; sha256: string });
+} & (
+  | { body: Buffer }
+  | { body: Readable; byteSize: number; sha256: string }
+  | { sourcePath: string; byteSize: number; sha256: string }
+);
 
 export interface PutFileResult {
   provider: StorageProviderId;

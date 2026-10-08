@@ -206,7 +206,7 @@ import {
 import {
   formatAttachmentSize,
   isAllowedContentType,
-  MAX_ATTACHMENT_BYTES,
+  getMaxAttachmentBytes,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
 } from "../attachment-types.js";
@@ -3017,7 +3017,7 @@ export async function hydrateOutboundAttachment(input: {
   if (
     !Number.isSafeInteger(input.byteSize) ||
     input.byteSize <= 0 ||
-    input.byteSize > MAX_ATTACHMENT_BYTES ||
+    input.byteSize > getMaxAttachmentBytes() ||
     !/^[0-9a-f]{64}$/iu.test(input.sha256)
   ) {
     throw new OutboundAttachmentHydrationError(
@@ -3082,7 +3082,7 @@ export async function hydrateOutboundAttachment(input: {
     for await (const chunk of object.stream) {
       const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
       bytes += buffer.length;
-      if (bytes > input.byteSize || bytes > MAX_ATTACHMENT_BYTES) {
+      if (bytes > input.byteSize || bytes > getMaxAttachmentBytes()) {
         object.stream.destroy();
         throw new OutboundAttachmentHydrationError(
           "Chat publication attachment exceeded its streaming byte limit",
@@ -7864,7 +7864,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       return {
         provider: "telegram",
         userName,
-        maxDownloadBytes: MAX_ATTACHMENT_BYTES,
+        maxDownloadBytes: getMaxAttachmentBytes(),
         credentials: {
           botToken: credentials.botToken,
           secretToken: credentials.webhookSecret,
@@ -11557,7 +11557,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           );
         if (
           attachment.size !== undefined &&
-          attachment.size > MAX_ATTACHMENT_BYTES
+          attachment.size > getMaxAttachmentBytes()
         ) {
           omit("declared_too_large");
           continue;
@@ -11600,7 +11600,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           omit("empty_download");
           continue;
         }
-        if (body.length > MAX_ATTACHMENT_BYTES) {
+        if (body.length > getMaxAttachmentBytes()) {
           omit("downloaded_too_large");
           continue;
         }
@@ -11821,7 +11821,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const diagnostic =
       attachmentOmissionDetail(input.attachmentResult) ??
       "The Telegram attachment could not be imported";
-    const visibleFailure = `Paperclip could not safely import the attached Telegram file. Please resend it as a supported file under ${formatAttachmentSize(MAX_ATTACHMENT_BYTES)} or include text describing the request.`;
+    const visibleFailure = `Paperclip could not safely import the attached Telegram file. Please resend it as a supported file under ${formatAttachmentSize(getMaxAttachmentBytes())} or include text describing the request.`;
     const effectContext =
       input.runtimeContext ??
       runtimeContextForRecord(
@@ -31981,7 +31981,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       !file ||
       !Number.isSafeInteger(file.asset.byteSize) ||
       file.asset.byteSize <= 0 ||
-      file.asset.byteSize > MAX_ATTACHMENT_BYTES ||
+      file.asset.byteSize > getMaxAttachmentBytes() ||
       file.asset.byteSize >= 60 * 1024 * 1024 ||
       !/^[a-f0-9]{64}$/.test(file.asset.sha256) ||
       !file.asset.objectKey.trim() ||
@@ -33117,7 +33117,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           (publication.commentId &&
             row.issueCommentId !== publication.commentId) ||
           row.byteSize <= 0 ||
-          row.byteSize > MAX_ATTACHMENT_BYTES ||
+          row.byteSize > getMaxAttachmentBytes() ||
           !row.objectKey.trim() ||
           !/^[0-9a-f]{64}$/iu.test(row.sha256) ||
           !isAllowedContentType(row.contentType)

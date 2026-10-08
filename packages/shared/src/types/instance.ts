@@ -34,6 +34,64 @@ export const SPEECH_TO_TEXT_DEFAULTS: SpeechToTextSettings = {
   sttWaitSeconds: 15,
 };
 
+export const ATTACHMENT_MAX_MEGABYTES_MIN = 1;
+export const ATTACHMENT_MAX_MEGABYTES_MAX = 500;
+export const DEFAULT_ATTACHMENT_MAX_MEGABYTES = 100;
+export const ATTACHMENT_ORPHAN_AFTER_DAYS_MIN = 1;
+export const ATTACHMENT_ORPHAN_AFTER_DAYS_MAX = 365;
+export const ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN = 7;
+export const ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX = 3650;
+
+/** Automatic attachment cleanup policy; every rule is off until enabled. */
+export interface AttachmentRetentionSettings {
+  enabled: boolean;
+  orphanAfterDays: number;
+  closedTasks: {
+    enabled: boolean;
+    afterDays: number;
+  };
+}
+
+export const DEFAULT_ATTACHMENT_RETENTION: AttachmentRetentionSettings = {
+  enabled: false,
+  orphanAfterDays: 7,
+  closedTasks: { enabled: false, afterDays: 90 },
+};
+
+export type AttachmentLimitSource = "setting" | "env" | "default";
+
+/** The upload size ceiling in force right now and where it came from. */
+export interface EffectiveAttachmentLimit {
+  maxBytes: number;
+  source: AttachmentLimitSource;
+}
+
+export type AttachmentRetentionRule = "orphan_objects" | "orphan_assets" | "closed_tasks";
+
+export interface AttachmentRetentionRuleSummary {
+  rule: AttachmentRetentionRule;
+  count: number;
+  bytes: number;
+  sampleIds: string[];
+}
+
+export interface AttachmentRetentionReport {
+  mode: "preview" | "run";
+  trigger: "manual" | "scheduled";
+  startedAt: string;
+  finishedAt: string;
+  settings: AttachmentRetentionSettings;
+  rules: AttachmentRetentionRuleSummary[];
+  totalCount: number;
+  totalBytes: number;
+  failedCount: number;
+}
+
+export interface AttachmentRetentionStatus {
+  settings: AttachmentRetentionSettings;
+  lastRun: AttachmentRetentionReport | null;
+}
+
 /**
  * Instance-wide execution policy.
  *
@@ -86,6 +144,8 @@ export interface InstanceGeneralSettings {
   executionMode?: InstanceExecutionMode;
   defaultMessageDelivery: InstanceMessageDelivery;
   speechToText: SpeechToTextSettings;
+  attachmentMaxMegabytes: number | null;
+  attachmentRetention: AttachmentRetentionSettings;
 }
 
 export interface InstanceExperimentalSettings {

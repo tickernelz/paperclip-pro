@@ -11,8 +11,10 @@ import {
   isAllowedContentType,
   isInlineAttachmentContentType,
   matchesContentType,
-  MAX_ATTACHMENT_BYTES,
+  getEffectiveAttachmentLimit,
+  getMaxAttachmentBytes,
   normalizeContentType,
+  setAttachmentLimitSetting,
   normalizeUploadAttachmentContentType,
   parseAllowedTypes,
 } from "../attachment-types.js";
@@ -311,10 +313,42 @@ describe("contentDispositionHeader", () => {
   });
 });
 
+describe("getEffectiveAttachmentLimit", () => {
+  afterEach(() => {
+    setAttachmentLimitSetting(null);
+    vi.unstubAllEnvs();
+  });
+
+  it("defaults to 100 MB when neither the setting nor the environment is set", () => {
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
+    expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 100 * 1024 * 1024, source: "default" });
+  });
+
+  it("uses PAPERCLIP_ATTACHMENT_MAX_BYTES when no setting is saved", () => {
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
+    expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 7 * 1024 * 1024, source: "env" });
+  });
+
+  it("lets the saved setting win over the environment and reads it on every call", () => {
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", String(7 * 1024 * 1024));
+    setAttachmentLimitSetting(250);
+    expect(getEffectiveAttachmentLimit()).toEqual({ maxBytes: 250 * 1024 * 1024, source: "setting" });
+    setAttachmentLimitSetting(5);
+    expect(getMaxAttachmentBytes()).toBe(5 * 1024 * 1024);
+    setAttachmentLimitSetting(null);
+    expect(getEffectiveAttachmentLimit().source).toBe("env");
+  });
+
+  it("ignores an invalid environment value", () => {
+    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "nope");
+    expect(getEffectiveAttachmentLimit().source).toBe("default");
+  });
+});
+
 describe("formatAttachmentSize", () => {
   it("renders the default deployment cap as a round megabyte figure", () => {
-    expect(MAX_ATTACHMENT_BYTES).toBe(10 * 1024 * 1024);
-    expect(formatAttachmentSize(MAX_ATTACHMENT_BYTES)).toBe("10 MB");
+    expect(getMaxAttachmentBytes()).toBe(100 * 1024 * 1024);
+    expect(formatAttachmentSize(getMaxAttachmentBytes())).toBe("100 MB");
   });
 
   it("keeps one decimal place for fractional sizes and drops a trailing .0", () => {

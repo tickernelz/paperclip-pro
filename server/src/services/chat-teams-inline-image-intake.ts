@@ -1,6 +1,6 @@
 import type { Attachment, Message } from "chat";
 import { z } from "zod";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 
 const opaque = z
   .string()
@@ -173,7 +173,7 @@ export function deriveTeamsInlineImageLocator(
     (attachment.size !== undefined &&
       (!Number.isSafeInteger(attachment.size) ||
         attachment.size < 0 ||
-        attachment.size > MAX_ATTACHMENT_BYTES))
+        attachment.size > getMaxAttachmentBytes()))
   )
     return null;
   const matching = Array.isArray(raw.attachments)

@@ -128,6 +128,8 @@ import {
 import { initializeCloudRuntimeIdentity } from "./services/cloud-runtime-identity.js";
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
+import { getMaxAttachmentBytes } from "./attachment-types.js";
+import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   createEmbeddedPostgresSupervisor,
   type EmbeddedPostgresSupervisor,
@@ -803,6 +805,10 @@ async function startServerWithDatabaseTeardown(
     shareClient: createFeedbackTraceShareClientFromConfig(config),
   });
   const backupSettingsSvc = instanceSettingsService(db);
+  setPaperclipBridgeAttachmentMaxBytesSource(getMaxAttachmentBytes);
+  await backupSettingsSvc.getGeneral().catch((err: unknown) => {
+    logger.warn({ err }, "could not read the attachment size limit from instance settings at boot");
+  });
   const databaseBackupMaxAgeHours = Math.max(
     1,
     Number(process.env.PAPERCLIP_DB_BACKUP_MAX_AGE_HOURS) ||

@@ -16,7 +16,7 @@ import {
 } from "./chat-github-attachments.js";
 import { createChatSdkEndpointRuntime } from "./chat-sdk-runtime.js";
 import { guardedRemoteHttpFetch } from "./remote-http-fetch.js";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes } from "../attachment-types.js";
 
 vi.mock("./remote-http-fetch.js", () => ({ guardedRemoteHttpFetch: vi.fn() }));
 const request = vi.mocked(guardedRemoteHttpFetch);
@@ -945,7 +945,7 @@ describe("public GitHub attachment download", () => {
       new Response("small", {
         headers: {
           "content-type": "text/plain",
-          "content-length": String(MAX_ATTACHMENT_BYTES + 1),
+          "content-length": String(getMaxAttachmentBytes() + 1),
         },
       }),
     );
@@ -955,7 +955,7 @@ describe("public GitHub attachment download", () => {
   });
   it("caps streamed bytes even without Content-Length", async () => {
     request.mockResolvedValue(
-      new Response(Buffer.alloc(MAX_ATTACHMENT_BYTES + 1), {
+      new Response(Buffer.alloc(getMaxAttachmentBytes() + 1), {
         headers: { "content-type": "text/plain" },
       }),
     );
