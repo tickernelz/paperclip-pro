@@ -37,6 +37,7 @@ export { sidebarPreferenceRoutes } from "./sidebar-preferences.js";
 export { notificationRoutes } from "./notifications.js";
 export { resourceMembershipRoutes } from "./resource-memberships.js";
 export { inboxDismissalRoutes } from "./inbox-dismissals.js";
+export { autonomyWindowRoutes } from "./autonomy-windows.js";
 export { llmRoutes } from "./llms.js";
 export { accessRoutes } from "./access.js";
 export { publicIssueShareRoutes } from "./public-issue-share.js";

@@ -73,8 +73,11 @@ import type {
   WithdrawIssueThreadInteraction,
 } from "@tickernelz/paperclip-pro-shared";
 import {
+  AUTONOMY_WINDOW_RESOLUTION_SOURCE,
+  AUTONOMY_WINDOW_SYSTEM_ACTOR_ID,
   acceptIssueThreadInteractionSchema,
   askUserQuestionsPayloadSchema,
+  autonomyWindowResolutionDetailsSchema,
   askUserQuestionsResultSchema,
   cancelIssueThreadInteractionSchema,
   connectionIntentPayloadSchema,
@@ -99,6 +102,8 @@ import { z } from "zod";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { authorizationService } from "./authorization.js";
+import { logger } from "../middleware/logger.js";
+import { autonomyWindowService } from "./autonomy-windows.js";
 import { isCloudManagedInstance } from "./cloud-instance.js";
 import { resolveDeploymentMode } from "../config-file.js";
 import {
@@ -536,6 +541,21 @@ async function assertRequestConfirmationResolutionAllowedUnderLock(
     issue,
     actor: verdictActor,
   });
+}
+
+export function isAutonomyWindowEligibleInteraction(interaction: IssueThreadInteraction) {
+  if (interaction.kind !== "request_confirmation" || interaction.status !== "pending") return false;
+  const payload = interaction.payload;
+  return !(
+    payload.toolAction !== undefined ||
+    payload.secretProposal !== undefined ||
+    payload.connectionAuthorization !== undefined ||
+    payload.openwaApprovalRequestId !== undefined ||
+    payload.destructive === true ||
+    interaction.addresseeAgentId ||
+    !interaction.createdByAgentId ||
+    isNativeCompletionReview({ kind: interaction.kind, payload: payload as unknown as IssueThreadInteractionRow["payload"] })
+  );
 }
 
 const REQUEST_CONFIRMATION_INTERACTION_KINDS = [
@@ -2141,6 +2161,122 @@ export function issueThreadInteractionService(
     }
   }
 
+  async function wakeAfterSystemAccept(input: {
+    resolved: { interaction: IssueThreadInteraction; continuationIssue: IssueWakeTarget | null };
+    fallbackIssue: IssueWakeTarget;
+    systemId: string;
+    resolutionSource: string;
+  }) {
+    const { resolved } = input;
+    const wakeIssue = resolved.continuationIssue ?? input.fallbackIssue;
+    const shouldWake =
+      resolved.interaction.continuationPolicy === "wake_assignee" ||
+      resolved.interaction.continuationPolicy === "wake_assignee_on_accept";
+    if (
+      !opts.wakeup ||
+      !shouldWake ||
+      !wakeIssue.assigneeAgentId ||
+      isTerminalIssueStatus(wakeIssue.status)
+    ) {
+      return false;
+    }
+    await opts.wakeup(wakeIssue.assigneeAgentId, {
+      source: "automation",
+      triggerDetail: "system",
+      reason: "issue_commented",
+      payload: {
+        issueId: wakeIssue.id,
+        interactionId: resolved.interaction.id,
+        interactionKind: resolved.interaction.kind,
+        interactionStatus: resolved.interaction.status,
+        sourceCommentId: resolved.interaction.sourceCommentId ?? null,
+        sourceRunId: resolved.interaction.sourceRunId ?? null,
+        mutation: "interaction",
+        resolutionSource: input.resolutionSource,
+      },
+      idempotencyKey: `interaction:${resolved.interaction.id}:accepted`,
+      allowRunCoalescing: false,
+      requestedByActorType: "system",
+      requestedByActorId: input.systemId,
+      contextSnapshot: {
+        issueId: wakeIssue.id,
+        taskId: wakeIssue.id,
+        interactionId: resolved.interaction.id,
+        interactionKind: resolved.interaction.kind,
+        interactionStatus: resolved.interaction.status,
+        wakeReason: "issue_commented",
+        source: input.resolutionSource,
+      },
+    });
+    return true;
+  }
+
+  async function autoAcceptWithinAutonomyWindow(
+    issue: { id: string; companyId: string },
+    interaction: IssueThreadInteraction,
+  ): Promise<IssueThreadInteraction> {
+    if (!isAutonomyWindowEligibleInteraction(interaction)) return interaction;
+    try {
+      const [issueRow] = await db
+        .select({
+          id: issues.id,
+          companyId: issues.companyId,
+          status: issues.status,
+          assigneeAgentId: issues.assigneeAgentId,
+          assigneeUserId: issues.assigneeUserId,
+        })
+        .from(issues)
+        .where(and(eq(issues.id, issue.id), eq(issues.companyId, issue.companyId)));
+      if (!issueRow || issueRow.status === "in_review" || isTerminalIssueStatus(issueRow.status)) return interaction;
+      const windows = autonomyWindowService(db);
+      const window = await windows.findCovering(issue.companyId, issue.id);
+      if (!window) return interaction;
+      const [current] = await db
+        .select()
+        .from(issueThreadInteractions)
+        .where(eq(issueThreadInteractions.id, interaction.id));
+      if (!current || current.status !== "pending") return interaction;
+      const resolutionDetails = {
+        source: AUTONOMY_WINDOW_RESOLUTION_SOURCE,
+        windowId: window.id,
+        rootIssueId: window.rootIssueId,
+        grantedByUserId: window.grantedByUserId,
+        expiresAt: window.expiresAt.toISOString(),
+      };
+      const resolved = await acceptRequestConfirmation({
+        issue,
+        current,
+        input: {},
+        actor: { systemId: AUTONOMY_WINDOW_SYSTEM_ACTOR_ID, resolutionDetails },
+        mutationOptions: {
+          beforeResolveInTransaction: async (tx) => {
+            if (!(await windows.consumeAccept(tx, window.id))) {
+              throw conflict("Autonomy window is no longer usable", { windowId: window.id });
+            }
+          },
+        },
+      });
+      await wakeAfterSystemAccept({
+        resolved,
+        fallbackIssue: issueRow,
+        systemId: AUTONOMY_WINDOW_SYSTEM_ACTOR_ID,
+        resolutionSource: AUTONOMY_WINDOW_RESOLUTION_SOURCE,
+      }).catch((err) => {
+        logger.warn(
+          { err, issueId: issue.id, interactionId: interaction.id, windowId: window.id },
+          "failed to wake assignee after autonomy window accept",
+        );
+      });
+      return resolved.interaction;
+    } catch (err) {
+      logger.warn(
+        { err, issueId: issue.id, interactionId: interaction.id },
+        "autonomy window auto-accept skipped",
+      );
+      return interaction;
+    }
+  }
+
   async function acceptRequestConfirmation(args: {
     issue: { id: string; companyId: string };
     current: IssueThreadInteractionRow;
@@ -2230,6 +2366,9 @@ export function issueThreadInteractionService(
               selectedOptionIds: args.input.selectedOptionIds,
             })
           : undefined;
+      const autonomyWindowResolution = autonomyWindowResolutionDetailsSchema.safeParse(
+        args.actor.resolutionDetails,
+      );
 
       const [updated] = await tx
         .update(issueThreadInteractions)
@@ -2239,6 +2378,9 @@ export function issueThreadInteractionService(
             version: 1,
             outcome: "accepted",
             ...(selectedOptionIds ? { selectedOptionIds } : {}),
+            ...(autonomyWindowResolution.success
+              ? { resolutionDetails: autonomyWindowResolution.data }
+              : {}),
           },
           resolvedByAgentId: args.actor.agentId ?? null,
           resolvedByRunId: args.actor.runId ?? null,
@@ -2969,50 +3111,15 @@ export function issueThreadInteractionService(
         if (resolved.interaction.status !== "accepted") continue;
         accepted += 1;
 
-        const wakeIssue = resolved.continuationIssue ?? candidate.issue;
-        const shouldWake =
-          resolved.interaction.continuationPolicy === "wake_assignee" ||
-          resolved.interaction.continuationPolicy === "wake_assignee_on_accept";
         if (
-          !opts.wakeup ||
-          !shouldWake ||
-          !wakeIssue.assigneeAgentId ||
-          isTerminalIssueStatus(wakeIssue.status)
-        ) {
-          continue;
-        }
-        await opts.wakeup(wakeIssue.assigneeAgentId, {
-          source: "automation",
-          triggerDetail: "system",
-          reason: "issue_commented",
-          payload: {
-            issueId: wakeIssue.id,
-            interactionId: resolved.interaction.id,
-            interactionKind: resolved.interaction.kind,
-            interactionStatus: resolved.interaction.status,
-            sourceCommentId: resolved.interaction.sourceCommentId ?? null,
-            sourceRunId: resolved.interaction.sourceRunId ?? null,
-            mutation: "interaction",
+          await wakeAfterSystemAccept({
+            resolved,
+            fallbackIssue: candidate.issue,
+            systemId: "system:pr-merged",
             resolutionSource: "merged_pull_request_sweep",
-          },
-          idempotencyKey: `interaction:${resolved.interaction.id}:accepted`,
-          // A merged-PR confirmation may already be visible in an external
-          // provider conversation. Keep its continuation causally isolated
-          // from unrelated queued chat/internal work on the same task.
-          allowRunCoalescing: false,
-          requestedByActorType: "system",
-          requestedByActorId: "system:pr-merged",
-          contextSnapshot: {
-            issueId: wakeIssue.id,
-            taskId: wakeIssue.id,
-            interactionId: resolved.interaction.id,
-            interactionKind: resolved.interaction.kind,
-            interactionStatus: resolved.interaction.status,
-            wakeReason: "issue_commented",
-            source: "merged_pull_request_sweep",
-          },
-        });
-        woken += 1;
+          })
+        )
+          woken += 1;
       }
 
       return {
@@ -3818,7 +3925,7 @@ export function issueThreadInteractionService(
         interactionKind: interaction.kind,
         usedDeprecatedResolverPolicyAlias,
       });
-      return interaction;
+      return autoAcceptWithinAutonomyWindow(issue, interaction);
     },
 
     acceptInteraction: async (

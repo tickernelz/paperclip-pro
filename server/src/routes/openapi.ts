@@ -122,6 +122,7 @@ import {
   updateFolderSchema,
   // Goal
   createGoalSchema,
+  openIssueAutonomyWindowSchema,
   updateGoalSchema,
   // Secret
   createSecretSchema,
@@ -7151,6 +7152,30 @@ registry.registerPath({
   summary: "Restore an inbox dismissal or snooze",
   request: { params: z.object({ companyId: z.string(), itemKey: z.string() }) },
   responses: { 204: r.ok(), 400: r.badRequest, 401: r.unauthorized },
+});
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/companies/{companyId}/autonomy-windows",
+  tags: ["issues"],
+  summary: "List live autonomy windows",
+});
+
+registerCurrentRoute({
+  method: "post",
+  path: "/api/companies/{companyId}/autonomy-windows",
+  tags: ["issues"],
+  summary: "Open autonomy windows that auto-accept plain confirmations in issue trees",
+  body: openIssueAutonomyWindowSchema,
+  responses: { 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
+});
+
+registerCurrentRoute({
+  method: "delete",
+  path: "/api/autonomy-windows/{id}",
+  tags: ["issues"],
+  summary: "Close an autonomy window",
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
 });
 
 // ─── Instance settings ────────────────────────────────────────────────────────
