@@ -55,8 +55,40 @@ import { ProposalJustification } from "../pages/secrets/proposal-review";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { AppLogo } from "@/pages/apps/AppLogo";
 import { ConnectionIntentInteractionBody } from "@/features/connections/ConnectionIntentInteractionBody";
+import { clearDraft, loadStructuredDraft, saveStructuredDraft } from "../lib/composer-draft";
 
 const OTHER_ANSWER_ID = "__paperclip_other__";
+
+function interactionCardDraftKey(interactionId: string) {
+  return `paperclip:interaction-card-draft:${interactionId}`;
+}
+
+function loadInteractionCardDraft<T extends object>(interaction: { id: string; status: string }): Partial<T> {
+  if (interaction.status !== "pending") return {};
+  const draft = loadStructuredDraft<unknown>(interactionCardDraftKey(interaction.id), null);
+  return draft && typeof draft === "object" && !Array.isArray(draft) ? (draft as Partial<T>) : {};
+}
+
+function storeInteractionCardDraft(interactionId: string, value: object, empty: boolean) {
+  const key = interactionCardDraftKey(interactionId);
+  if (empty) clearDraft(key);
+  else saveStructuredDraft(key, value);
+}
+
+function clearInteractionCardDraft(interactionId: string) {
+  clearDraft(interactionCardDraftKey(interactionId));
+}
+
+function hasDraftText(values: Record<string, string>) {
+  return Object.values(values).some((value) => value.trim().length > 0);
+}
+
+type QuestionCardDraft = {
+  answers: Record<string, string[]>;
+  otherAnswers: Record<string, string>;
+  otherActive: Record<string, boolean>;
+  notes: Record<string, string>;
+};
 
 /**
  * The card's server-evaluated audience, shared with the per-kind subcards below
@@ -1059,10 +1091,11 @@ function AskUserQuestionsCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
-  const [draftNotes, setDraftNotes] = useState<Record<string, string>>({});
+  const [restoredDraft] = useState(() => loadInteractionCardDraft<QuestionCardDraft>(interaction));
+  const [draftNotes, setDraftNotes] = useState<Record<string, string>>(() => restoredDraft.notes ?? {});
   const [noteUploading, setNoteUploading] = useState(false);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>(() =>
-    Object.fromEntries(
+    restoredDraft.answers ?? Object.fromEntries(
       (interaction.result?.answers ?? []).map((answer) => [
         answer.questionId,
         [...answer.optionIds],
@@ -1070,14 +1103,14 @@ function AskUserQuestionsCard({
     ),
   );
   const [draftOtherAnswers, setDraftOtherAnswers] = useState<Record<string, string>>(() =>
-    Object.fromEntries(
+    restoredDraft.otherAnswers ?? Object.fromEntries(
       (interaction.result?.answers ?? [])
         .filter((answer) => answer.otherText)
         .map((answer) => [answer.questionId, answer.otherText ?? ""]),
     ),
   );
   const [otherActiveQuestions, setOtherActiveQuestions] = useState<Record<string, boolean>>(() =>
-    Object.fromEntries(
+    restoredDraft.otherActive ?? Object.fromEntries(
       (interaction.result?.answers ?? [])
         .filter((answer) => answer.otherText)
         .map((answer) => [answer.questionId, true]),
@@ -1087,8 +1120,26 @@ function AskUserQuestionsCard({
   const [cancelling, setCancelling] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
+  const draftSubmittedRef = useRef(false);
 
   useEffect(() => {
+    if (interaction.status !== "pending") clearInteractionCardDraft(interaction.id);
+  }, [interaction.id, interaction.status]);
+
+  useEffect(() => {
+    if (interaction.status !== "pending" || draftSubmittedRef.current) return;
+    storeInteractionCardDraft(
+      interaction.id,
+      { answers: draftAnswers, otherAnswers: draftOtherAnswers, otherActive: otherActiveQuestions, notes: draftNotes },
+      !Object.values(draftAnswers).some((ids) => ids.length > 0)
+        && !Object.values(otherActiveQuestions).some(Boolean)
+        && !hasDraftText(draftOtherAnswers)
+        && !hasDraftText(draftNotes),
+    );
+  }, [draftAnswers, draftNotes, draftOtherAnswers, interaction.id, interaction.status, otherActiveQuestions]);
+
+  useEffect(() => {
+    if (!interaction.result?.answers) return;
     setDraftAnswers(
       Object.fromEntries(
         (interaction.result?.answers ?? []).map((answer) => [
@@ -1181,6 +1232,8 @@ function AskUserQuestionsCard({
           };
         }),
       );
+      draftSubmittedRef.current = true;
+      clearInteractionCardDraft(interaction.id);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -1328,15 +1381,19 @@ function AskUserQuestionsCard({
                     ) : null}
                   </>
                 )}
-                {questionAnswered(question.id) || draftNotes[question.id] ? (
-                  <InteractionNoteField
-                    value={draftNotes[question.id] ?? ""}
-                    onChange={(value) =>
-                      setDraftNotes((current) => ({ ...current, [question.id]: value }))}
-                    imageUploadHandler={onUploadImage}
-                    disabled={working || cancelling}
-                    onUploadingChange={setNoteUploading}
-                  />
+                {questionAnswered(question.id)
+                || otherActiveQuestions[question.id] === true
+                || draftNotes[question.id] ? (
+                  <div>
+                    <InteractionNoteField
+                      value={draftNotes[question.id] ?? ""}
+                      onChange={(value) =>
+                        setDraftNotes((current) => ({ ...current, [question.id]: value }))}
+                      imageUploadHandler={onUploadImage}
+                      disabled={working || cancelling}
+                      onUploadingChange={setNoteUploading}
+                    />
+                  </div>
                 ) : null}
               </div>
             </div>
@@ -2598,9 +2655,17 @@ function RequestConfirmationCard({
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
   const notesEnabled = interactionAcceptsNote(interaction);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(() =>
+    notesEnabled ? loadInteractionCardDraft<{ note: string }>(interaction).note ?? "" : "",
+  );
   const [noteUploading, setNoteUploading] = useState(false);
   const noteBlocked = notesEnabled && (noteUploading || interactionNoteTooLong(note));
+  const draftSubmittedRef = useRef(false);
+
+  useEffect(() => {
+    if (!notesEnabled || interaction.status !== "pending" || draftSubmittedRef.current) return;
+    storeInteractionCardDraft(interaction.id, { note }, note.trim().length === 0);
+  }, [interaction.id, interaction.status, note, notesEnabled]);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
@@ -2623,8 +2688,10 @@ function RequestConfirmationCard({
     setActionError(null);
     setShots([]);
     setUploadError(null);
-    setNote("");
+    draftSubmittedRef.current = false;
+    setNote(notesEnabled ? loadInteractionCardDraft<{ note: string }>(interaction).note ?? "" : "");
     if (interaction.status !== "pending") {
+      clearInteractionCardDraft(interaction.id);
       setWorking(null);
     }
   }, [interaction.id, interaction.result?.reason, interaction.status]);
@@ -2664,6 +2731,8 @@ function RequestConfirmationCard({
       if (submittedNote)
         await onAcceptInteraction(interaction, undefined, undefined, undefined, submittedNote);
       else await onAcceptInteraction(interaction);
+      draftSubmittedRef.current = true;
+      clearInteractionCardDraft(interaction.id);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2679,6 +2748,8 @@ function RequestConfirmationCard({
     try {
       if (submittedNote) await onRejectInteraction(interaction, reason, submittedNote);
       else await onRejectInteraction(interaction, reason);
+      draftSubmittedRef.current = true;
+      clearInteractionCardDraft(interaction.id);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2967,9 +3038,13 @@ function RequestCheckboxConfirmationCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
-  const [note, setNote] = useState("");
+  const [restoredDraft] = useState(() =>
+    loadInteractionCardDraft<{ selected: string[]; note: string }>(interaction),
+  );
+  const [note, setNote] = useState(() => restoredDraft.note ?? "");
   const [noteUploading, setNoteUploading] = useState(false);
   const noteBlocked = noteUploading || interactionNoteTooLong(note);
+  const draftSubmittedRef = useRef(false);
   const options = interaction.payload.options;
   const optionIds = useMemo(() => options.map((option) => option.id), [options]);
   const validOptionIds = useMemo(() => new Set(optionIds), [optionIds]);
@@ -2984,7 +3059,12 @@ function RequestCheckboxConfirmationCard({
     [interaction.payload.defaultSelectedOptionIds, validOptionIds],
   );
 
-  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(() => new Set(defaultSelected));
+  const [selectedOptionIds, setSelectedOptionIds] = useState<Set<string>>(() =>
+    restoredDraft.selected
+      ? new Set(restoredDraft.selected.filter((id) => validOptionIds.has(id)))
+      : new Set(defaultSelected),
+  );
+  const [draftTouched, setDraftTouched] = useState(() => restoredDraft.selected !== undefined);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [acceptAttempted, setAcceptAttempted] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -2992,15 +3072,38 @@ function RequestCheckboxConfirmationCard({
 
   const optionSeed = useMemo(() => optionIds.join("\n"), [optionIds]);
 
+  const resetSeedRef = useRef<string | null>(null);
   useEffect(() => {
-    setSelectedOptionIds(new Set(defaultSelected));
+    const seed = [interaction.id, interaction.status, interaction.result?.reason ?? "", optionSeed].join("\u0000");
+    if (resetSeedRef.current === null) {
+      resetSeedRef.current = seed;
+      return;
+    }
+    if (resetSeedRef.current === seed) return;
+    resetSeedRef.current = seed;
+    const draft = loadInteractionCardDraft<{ selected: string[]; note: string }>(interaction);
+    setSelectedOptionIds(
+      draft.selected ? new Set(draft.selected.filter((id) => validOptionIds.has(id))) : new Set(defaultSelected),
+    );
+    setDraftTouched(draft.selected !== undefined);
     setAcceptAttempted(false);
     setActionError(null);
-    setNote("");
+    draftSubmittedRef.current = false;
+    setNote(draft.note ?? "");
     if (interaction.status !== "pending") {
+      clearInteractionCardDraft(interaction.id);
       setWorking(null);
     }
   }, [interaction.id, interaction.status, interaction.result?.reason, defaultSelected, optionSeed]);
+
+  useEffect(() => {
+    if (interaction.status !== "pending" || draftSubmittedRef.current) return;
+    storeInteractionCardDraft(
+      interaction.id,
+      { ...(draftTouched ? { selected: [...selectedOptionIds] } : {}), note },
+      !draftTouched && note.trim().length === 0,
+    );
+  }, [draftTouched, interaction.id, interaction.status, note, selectedOptionIds]);
 
   const rejectRequiresReason = interaction.payload.rejectRequiresReason === true;
   const allowRevise = interaction.payload.allowDeclineReason !== false;
@@ -3025,6 +3128,7 @@ function RequestCheckboxConfirmationCard({
       : null;
 
   function toggleOption(optionId: string, checked: boolean) {
+    setDraftTouched(true);
     setSelectedOptionIds((current) => {
       const next = new Set(current);
       if (checked) {
@@ -3038,10 +3142,12 @@ function RequestCheckboxConfirmationCard({
 
   function handleSelectAll() {
     const capped = maxSelected != null ? optionIds.slice(0, maxSelected) : optionIds;
+    setDraftTouched(true);
     setSelectedOptionIds(new Set(capped));
   }
 
   function handleClearSelection() {
+    setDraftTouched(true);
     setSelectedOptionIds(new Set());
   }
 
@@ -3055,6 +3161,8 @@ function RequestCheckboxConfirmationCard({
       if (submittedNote)
         await onAcceptInteraction(interaction, undefined, [...selectedOptionIds], undefined, submittedNote);
       else await onAcceptInteraction(interaction, undefined, [...selectedOptionIds]);
+      draftSubmittedRef.current = true;
+      clearInteractionCardDraft(interaction.id);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -3070,6 +3178,8 @@ function RequestCheckboxConfirmationCard({
     try {
       if (submittedNote) await onRejectInteraction(interaction, reason, submittedNote);
       else await onRejectInteraction(interaction, reason);
+      draftSubmittedRef.current = true;
+      clearInteractionCardDraft(interaction.id);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -3910,12 +4020,15 @@ export function IssueThreadInteractionCard({
 
             <div className="mt-3 text-lg font-bold text-foreground">
               {interaction.title
-                ?? (interaction.kind === "suggest_tasks"
+                ? <InteractionInlineMarkdown>{interaction.title}</InteractionInlineMarkdown>
+                : (interaction.kind === "suggest_tasks"
                   ? "Suggested task tree"
                   : interaction.kind === "ask_user_questions"
                     // Only a human-only card is genuinely "for the operator";
                     // an open card is answerable by any teammate (PAP-17280).
-                    ? interaction.payload.title
+                    ? (interaction.payload.title
+                      ? <InteractionInlineMarkdown>{interaction.payload.title}</InteractionInlineMarkdown>
+                      : null)
                       ?? (audience.policy === "human_only"
                         ? "Questions for the operator"
                         : "Questions to answer")
@@ -3938,9 +4051,9 @@ export function IssueThreadInteractionCard({
                 reader is the person who may consent. Rendering the summary here
                 as well would be the second body PAP-17859 removed. */}
             {interaction.summary && !connectionAuthorization && interaction.kind !== "connection_intent" ? (
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-                {interaction.summary}
-              </p>
+              <div className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                <InteractionInlineMarkdown>{interaction.summary}</InteractionInlineMarkdown>
+              </div>
             ) : null}
             {interaction.status === "pending" ? (
               <InteractionAudienceLine audience={audience} className="mt-3" />

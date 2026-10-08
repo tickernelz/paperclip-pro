@@ -211,14 +211,26 @@ function activeDismissalState(
   };
 }
 
+function stripMarkdownInline(value: string) {
+  return value
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/^\s{0,3}#{1,6}\s+/gm, "")
+    .replace(/^\s{0,3}>\s?/gm, "")
+    .replace(/^\s*(?:[-*+]|\d+[.)])\s+/gm, "")
+    .replace(/^\s*(?:[-*_]\s*){3,}$/gm, " ")
+    .replace(/(\*\*|__)(?=\S)([\s\S]*?\S)\1/g, "$2")
+    .replace(/(?<![\w*])\*(?=\S)([^*\n]*?\S)\*(?![\w*])/g, "$1")
+    .replace(/(?<![\w_])_(?=\S)([^_\n]*?\S)_(?![\w_])/g, "$1")
+    .replace(/~~(?=\S)([\s\S]*?\S)~~/g, "$1");
+}
+
 function stripMarkdown(value: string) {
   return value
     .replace(/```[\s\S]*?```/g, " ")
-    .replace(/`([^`]+)`/g, "$1")
-    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
-    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
-    .replace(/^#{1,6}\s+/gm, "")
-    .replace(/[>*_~#-]+/g, " ")
+    .split(/(`[^`\n]+`)/)
+    .map((part, index) => (index % 2 === 1 ? part.slice(1, -1) : stripMarkdownInline(part)))
+    .join("")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -295,7 +307,7 @@ function interactionDetail(input: {
     return {
       kind: "questions",
       questionCount: questions.length,
-      firstQuestionText: readString(questions[0]?.prompt),
+      firstQuestionText: excerpt(questions[0]?.prompt),
       images: input.images,
     };
   }
@@ -1279,7 +1291,7 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
             kind: "interaction",
             id: interaction.id,
             companyId,
-            title: isPlanTarget && issue ? `Plan approval - ${issue.title}` : interaction.title ?? interaction.summary ?? interactionLabel(interaction.kind),
+            title: isPlanTarget && issue ? `Plan approval - ${issue.title}` : excerpt(interaction.title ?? interaction.summary) ?? interactionLabel(interaction.kind),
             identifier: null,
             status: interaction.status,
             href: issue ? `${issueHref(prefix, issue)}#interaction-${interaction.id}` : null,
