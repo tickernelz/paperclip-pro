@@ -6,12 +6,14 @@ import {
   WEEKLY_RETENTION_PRESETS,
   MONTHLY_RETENTION_PRESETS,
   DEFAULT_BACKUP_RETENTION,
+  DEFAULT_ATTACHMENT_RETENTION,
   SPEECH_TO_TEXT_DEFAULTS,
 } from "@tickernelz/paperclip-pro-shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { ModeBadge } from "@/components/access/ModeBadge";
+import { FilesAndStorageSection } from "@/components/FilesAndStorageSection";
 import { Button } from "../components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -93,6 +95,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
     ...(showBackupRetention ? ["backup retention"] : []),
     ...(showFeedbackDataSharing ? ["data sharing"] : []),
     ...(showSpeechToText ? ["speech-to-text"] : []),
+    "files and storage",
   ];
   const topicSummary = visibleTopics.length > 2
     ? `${visibleTopics.slice(0, -1).join(", ")}, and ${visibleTopics[visibleTopics.length - 1]}`
@@ -292,6 +295,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           onSave={(next) => updateGeneralMutation.mutate({ speechToText: next })}
         />
       )}
+
+      <FilesAndStorageSection
+        attachmentMaxMegabytes={generalQuery.data?.attachmentMaxMegabytes ?? null}
+        attachmentRetention={generalQuery.data?.attachmentRetention ?? DEFAULT_ATTACHMENT_RETENTION}
+        effectiveLimit={healthQuery.data?.attachmentLimit}
+      />
 
       {showFeedbackDataSharing && (
       <section>

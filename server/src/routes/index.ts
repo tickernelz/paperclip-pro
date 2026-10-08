@@ -43,6 +43,7 @@ export { accessRoutes } from "./access.js";
 export { publicIssueShareRoutes } from "./public-issue-share.js";
 export { instanceSettingsRoutes } from "./instance-settings.js";
 export { instanceDatabaseBackupRoutes } from "./instance-database-backups.js";
+export { instanceAttachmentRetentionRoutes } from "./instance-attachment-retention.js";
 export { managedAgentProfileRoutes } from "./managed-agent-profiles.js";
 export { remoteAgentProfileRoutes } from "./remote-agent-profiles.js";
 export { openwaToolRoutes } from "./openwa-tools.js";

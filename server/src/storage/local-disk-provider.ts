@@ -110,6 +110,30 @@ export function createLocalDiskStorageProvider(baseDir: string): StorageProvider
       return stat?.isFile() ? realFile : null;
     },
 
+    async *listObjects(prefix) {
+      const startDir = resolveWithin(root, prefix);
+      const pending = [startDir];
+      while (pending.length > 0) {
+        const dir = pending.pop()!;
+        const entries = await fs.readdir(dir, { withFileTypes: true }).catch(() => []);
+        for (const entry of entries) {
+          const entryPath = path.join(dir, entry.name);
+          if (entry.isDirectory()) {
+            pending.push(entryPath);
+            continue;
+          }
+          if (!entry.isFile()) continue;
+          const stat = await statOrNull(entryPath);
+          if (!stat?.isFile()) continue;
+          yield {
+            objectKey: path.relative(root, entryPath).split(path.sep).join("/"),
+            byteSize: stat.size,
+            lastModified: stat.mtime,
+          };
+        }
+      }
+    },
+
     async deleteObject(input): Promise<void> {
       const filePath = resolveWithin(root, input.objectKey);
       try {

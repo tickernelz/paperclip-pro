@@ -1731,4 +1731,5 @@ export interface IssueAttachment {
   contentPath: string;
   openPath?: string;
   downloadPath?: string;
+  purgedAt?: Date | null;
 }

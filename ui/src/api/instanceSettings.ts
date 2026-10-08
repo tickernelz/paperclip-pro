@@ -1,4 +1,7 @@
 import type {
+  AttachmentRetentionReport,
+  AttachmentRetentionSettings,
+  AttachmentRetentionStatus,
   InstanceExperimentalSettingsWithManaged,
   InstanceGeneralSettings,
   InstanceSettings,
@@ -21,4 +24,10 @@ export const instanceSettingsApi = {
     api.get<InstanceExperimentalSettingsWithManaged>("/instance/settings/experimental"),
   updateExperimental: (patch: PatchInstanceExperimentalSettings) =>
     api.patch<InstanceExperimentalSettingsWithManaged>("/instance/settings/experimental", patch),
+  getAttachmentRetention: () =>
+    api.get<AttachmentRetentionStatus>("/instance/attachment-retention", { cache: "no-store" }),
+  previewAttachmentRetention: (settings?: AttachmentRetentionSettings) =>
+    api.post<AttachmentRetentionReport>("/instance/attachment-retention/preview", settings ? { settings } : {}),
+  runAttachmentRetention: () =>
+    api.post<AttachmentRetentionReport>("/instance/attachment-retention/run", {}),
 };

@@ -109,6 +109,8 @@ import { resourceMembershipRoutes } from "./routes/resource-memberships.js";
 import { inboxDismissalRoutes } from "./routes/inbox-dismissals.js";
 import { autonomyWindowRoutes } from "./routes/autonomy-windows.js";
 import { instanceSettingsRoutes } from "./routes/instance-settings.js";
+import { instanceAttachmentRetentionRoutes } from "./routes/instance-attachment-retention.js";
+import { attachmentRetentionService } from "./services/attachment-retention.js";
 import { instanceSettingsService } from "./services/instance-settings.js";
 import { openApiRoutes } from "./routes/openapi.js";
 import {
@@ -819,6 +821,7 @@ export async function createApp(
   api.use(inboxDismissalRoutes(db));
   api.use(autonomyWindowRoutes(db));
   api.use(instanceSettingsRoutes(db));
+  api.use(instanceAttachmentRetentionRoutes(attachmentRetentionService(db, { storage: opts.storageService })));
   if (opts.databaseBackupService) {
     api.use(instanceDatabaseBackupRoutes(opts.databaseBackupService));
   }

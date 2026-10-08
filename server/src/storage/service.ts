@@ -165,5 +165,14 @@ export function createStorageService(provider: StorageProvider): StorageService 
       ensureCompanyPrefix(companyId, objectKey);
       return provider.localPath ? provider.localPath(objectKey) : null;
     },
+
+    ...(provider.listObjects
+      ? {
+        listObjects(companyId: string) {
+          ensureCompanyPrefix(companyId, `${companyId}/`);
+          return provider.listObjects!(`${companyId}/`);
+        },
+      }
+      : {}),
   };
 }

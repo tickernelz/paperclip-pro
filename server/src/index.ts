@@ -89,6 +89,7 @@ import {
   workspaceOperationService,
 } from "./services/index.js";
 import { questionResponseDeliveryService } from "./services/question-response-delivery.js";
+import { attachmentRetentionService, ATTACHMENT_RETENTION_TICK_MS } from "./services/attachment-retention.js";
 import { openwaAuditPurgeScheduler } from "./services/openwa/audit.js";
 import { deliverNativeQuestionResponse } from "./services/native-runtime/native-question-bridge.js";
 import { queueIssueAssignmentWakeup } from "./services/issue-assignment-wakeup.js";
@@ -1888,6 +1889,13 @@ async function startServerWithDatabaseTeardown(
       });
     }, backupIntervalMs);
   }
+
+  const attachmentRetention = attachmentRetentionService(db as any, { storage: storageService });
+  setInterval(() => {
+    void attachmentRetention.scheduledTick().catch((err: unknown) => {
+      logger.error({ err }, "scheduled attachment retention failed");
+    });
+  }, ATTACHMENT_RETENTION_TICK_MS);
   
   // Wait for external adapters to finish loading before accepting requests.
   // Without this, adapter type validation (assertKnownAdapterType) would

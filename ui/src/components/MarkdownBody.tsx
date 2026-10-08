@@ -36,6 +36,8 @@ import {
 import { remarkSoftBreaks } from "../lib/remark-soft-breaks";
 import { StatusIcon } from "./StatusIcon";
 import { WorkspaceFileLink } from "./WorkspaceFileLink";
+import { RetentionAwareImage, RetentionAwareLink } from "./RetentionAwareContent";
+import { isPurgeableContentPath } from "../lib/purged-attachment";
 import { ExternalObjectStatusIcon } from "./ExternalObjectStatusIcon";
 import {
   externalObjectCategoryLabel,
@@ -951,6 +953,17 @@ function MarkdownBodyImpl({
       const trailingIcon = isExternal && !isGitHubLink ? (
         <ExternalLink aria-hidden="true" className="ml-1 inline h-3 w-3 align-(--va-0_125em)" />
       ) : null;
+      if (isPurgeableContentPath(href)) {
+        return (
+          <RetentionAwareLink
+            href={href}
+            rel="noreferrer"
+            style={mergeWrapStyle(linkStyle as React.CSSProperties | undefined)}
+          >
+            {renderLinkBody(linkChildren, leadingIcon, trailingIcon)}
+          </RetentionAwareLink>
+        );
+      }
       return (
         <a
           href={href}
@@ -970,19 +983,18 @@ function MarkdownBodyImpl({
           Image: {alt || "Untitled image"}{src ? ` (${src})` : ""}
         </span>
       );
-    } else if (resolveImageSrc || onImageClick) {
+    } else {
       map.img = ({ node: _node, src, alt, ...imgProps }) => {
         const resolved = resolveImageSrc && src ? resolveImageSrc(src) : null;
         const finalSrc = resolved ?? src;
-        return (
-          <img
-            {...imgProps}
-            src={finalSrc}
-            alt={alt ?? ""}
-            onClick={onImageClick && finalSrc ? (e) => { e.preventDefault(); onImageClick(finalSrc); } : undefined}
-            style={onImageClick ? { cursor: "pointer", ...(imgProps.style as React.CSSProperties | undefined) } : imgProps.style as React.CSSProperties | undefined}
-          />
-        );
+        const imageProps = {
+          ...imgProps,
+          src: finalSrc,
+          alt: alt ?? "",
+          onClick: onImageClick && finalSrc ? (e: React.MouseEvent<HTMLImageElement>) => { e.preventDefault(); onImageClick(finalSrc); } : undefined,
+          style: onImageClick ? { cursor: "pointer", ...(imgProps.style as React.CSSProperties | undefined) } : imgProps.style as React.CSSProperties | undefined,
+        };
+        return isPurgeableContentPath(finalSrc) ? <RetentionAwareImage {...imageProps} /> : <img {...imageProps} />;
       };
     }
     return map;

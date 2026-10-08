@@ -3,6 +3,7 @@ import {
   DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { putS3Multipart } from "./s3-multipart.js";
@@ -148,6 +149,29 @@ export function createS3StorageProvider(config: S3ProviderConfig): StorageProvid
         if (code === "NoSuchKey" || code === "NotFound") return { exists: false };
         throw err;
       }
+    },
+
+    async *listObjects(listPrefix) {
+      const keyPrefix = buildKey(prefix, listPrefix);
+      let continuationToken: string | undefined;
+      do {
+        const output = await client.send(
+          new ListObjectsV2Command({
+            Bucket: bucket,
+            Prefix: keyPrefix,
+            ContinuationToken: continuationToken,
+          }),
+        );
+        for (const item of output.Contents ?? []) {
+          if (!item.Key || !item.Key.startsWith(keyPrefix) || !(item.LastModified instanceof Date)) continue;
+          yield {
+            objectKey: prefix ? item.Key.slice(prefix.length + 1) : item.Key,
+            byteSize: item.Size ?? 0,
+            lastModified: item.LastModified,
+          };
+        }
+        continuationToken = output.IsTruncated ? output.NextContinuationToken : undefined;
+      } while (continuationToken);
     },
 
     async deleteObject(input): Promise<void> {
