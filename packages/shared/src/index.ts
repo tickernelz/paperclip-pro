@@ -351,6 +351,7 @@ export { APP_DEFINITIONS } from "./app-definitions.generated.js";
 export * from "./google-workspace-connectors.js";
 export * from "./github-connectors.js";
 export * from "./agent-authority.js";
+export * from "./autonomy-windows.js";
 export * from "./asana-connectors.js";
 export {
   BLOCKED_MCP_PROVIDERS,

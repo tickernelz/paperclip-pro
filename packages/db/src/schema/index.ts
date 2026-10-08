@@ -108,6 +108,7 @@ export {
   decisionEffectExecutions,
 } from "./decisions.js";
 export { issueTreeHolds } from "./issue_tree_holds.js";
+export { issueAutonomyWindows } from "./issue_autonomy_windows.js";
 export { issueTreeHoldMembers } from "./issue_tree_hold_members.js";
 export { issueExecutionDecisions } from "./issue_execution_decisions.js";
 export { issueInboxArchives } from "./issue_inbox_archives.js";

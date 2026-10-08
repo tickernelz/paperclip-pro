@@ -1,4 +1,5 @@
 import type { ExecutionProjection, ExecutionBlocker } from "./execution-projection.js";
+import type { AutonomyWindowResolutionDetails } from "../autonomy-windows.js";
 import type {
   IssueCommentAuthorType,
   IssueCommentMetadataRowType,
@@ -1506,6 +1507,7 @@ export interface RequestConfirmationPayload {
   secretProposal?: RequestConfirmationSecretProposalPayload;
   connectionAuthorization?: RequestConfirmationConnectionAuthorizationPayload;
   openwaApprovalRequestId?: string;
+  destructive?: boolean;
 }
 
 export interface RequestCheckboxConfirmationOption {
@@ -1572,6 +1574,7 @@ export interface RequestConfirmationResult {
   commentId?: string | null;
   supersededByInteractionId?: string | null;
   staleTarget?: RequestConfirmationTarget | null;
+  resolutionDetails?: AutonomyWindowResolutionDetails;
   resumeFailure?: {
     status: "retrying" | "needs_attention";
     errorCode: string | null;
