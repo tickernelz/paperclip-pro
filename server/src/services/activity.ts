@@ -1,6 +1,6 @@
 import { executionProjectionsForRunRows } from "./execution-projection.js";
 import { jsonbRecordFields } from "./jsonb-projection.js";
-import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
@@ -28,6 +28,11 @@ export interface ActivityFilters {
   entityType?: string;
   entityId?: string;
   limit?: number;
+}
+
+export interface IssueActivityPage {
+  limit?: number;
+  beforeId?: string;
 }
 
 const DEFAULT_ACTIVITY_LIMIT = 100;
@@ -377,18 +382,28 @@ export function activityService(db: Db) {
         .then((rows) => rows.map((r) => r.activityLog));
     },
 
-    forIssue: (issueId: string) =>
-      db
-        .select()
+    forIssue: (issueId: string, page: IssueActivityPage = {}) => {
+      const query = db
+        .select({
+          ...getTableColumns(activityLog),
+          details: sql<Record<string, unknown> | null>`${activityLog.details} - 'currentReferencedIssues'`,
+        })
         .from(activityLog)
         .where(
-          or(
-            and(eq(activityLog.entityType, "issue"), eq(activityLog.entityId, issueId)),
-            and(or(eq(activityLog.action, "project.created"), eq(activityLog.action, "company.skill_created")), sql`${activityLog.details}->>'sourceIssueId' = ${issueId}`,
-              sql`${activityLog.companyId} = (select company_id from issues where id = ${issueId})`),
+          and(
+            or(
+              and(eq(activityLog.entityType, "issue"), eq(activityLog.entityId, issueId)),
+              and(or(eq(activityLog.action, "project.created"), eq(activityLog.action, "company.skill_created")), sql`${activityLog.details}->>'sourceIssueId' = ${issueId}`,
+                sql`${activityLog.companyId} = (select company_id from issues where id = ${issueId})`),
+            ),
+            page.beforeId
+              ? sql`(${activityLog.createdAt}, ${activityLog.id}) < (select cursor.created_at, cursor.id from ${activityLog} cursor where cursor.id = ${page.beforeId})`
+              : undefined,
           ),
         )
-        .orderBy(desc(activityLog.createdAt)),
+        .orderBy(desc(activityLog.createdAt), desc(activityLog.id));
+      return page.limit === undefined ? query : query.limit(page.limit);
+    },
 
     runsForIssue: async (companyId: string, issueId: string) => {
       scheduleRunLivenessBackfill(companyId, issueId);

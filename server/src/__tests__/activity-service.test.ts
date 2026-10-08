@@ -224,6 +224,41 @@ describeEmbeddedPostgres("activity service", () => {
     expect(runs[0]).not.toHaveProperty("nativeIssueId");
   });
 
+  it("pages issue activity and omits current referenced issue snapshots", async () => {
+    const companyId = randomUUID();
+    const issueId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    const reference = { id: randomUUID(), identifier: "TST-2", title: "Referenced", status: "todo" };
+    const rows = await db.insert(activityLog).values(
+      [0, 1, 2].map((index) => ({
+        companyId,
+        actorType: "system",
+        actorId: "system",
+        action: "issue.comment_added",
+        entityType: "issue",
+        entityId: issueId,
+        createdAt: new Date(Date.UTC(2026, 3, 18, 10, index)),
+        details: { commentId: `comment-${index}`, addedReferencedIssues: [reference], currentReferencedIssues: [reference] },
+      })),
+    ).returning();
+    const newestFirst = [...rows].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    const service = activityService(db);
+
+    const all = await service.forIssue(issueId);
+    expect(all.map((row) => row.id)).toEqual(newestFirst.map((row) => row.id));
+    expect(all[0].details).toEqual({ commentId: "comment-2", addedReferencedIssues: [reference] });
+
+    const firstPage = await service.forIssue(issueId, { limit: 2 });
+    expect(firstPage.map((row) => row.id)).toEqual(newestFirst.slice(0, 2).map((row) => row.id));
+    const nextPage = await service.forIssue(issueId, { limit: 2, beforeId: firstPage[1].id });
+    expect(nextPage.map((row) => row.id)).toEqual([newestFirst[2].id]);
+  });
+
   it("returns compact usage and result summaries for issue runs", async () => {
     const companyId = randomUUID();
     const agentId = randomUUID();
