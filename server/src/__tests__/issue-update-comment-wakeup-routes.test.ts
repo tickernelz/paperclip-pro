@@ -20,6 +20,15 @@ const mockIssueService = vi.hoisted(() => ({
   getWakeableParentAfterChildCompletion: vi.fn(),
   getCurrentScheduledRetry: vi.fn(),
   listReviewAttention: vi.fn(),
+  getAncestors: vi.fn(),
+}));
+
+const mockAgentService = vi.hoisted(() => ({
+  getById: vi.fn(async (_id: string): Promise<Record<string, unknown> | null> => null),
+  resolveByReference: vi.fn(async (_companyId: string, raw: string) => ({
+    ambiguous: false,
+    agent: { id: raw },
+  })),
 }));
 
 const mockPauseGate = vi.hoisted(() => vi.fn(async (): Promise<Record<string, unknown> | null> => null));
@@ -79,13 +88,7 @@ vi.mock("../services/index.js", () => ({
     decide: mockAccessDecide,
     hasPermission: vi.fn(async () => true),
   }),
-  agentService: () => ({
-    getById: vi.fn(async () => null),
-    resolveByReference: vi.fn(async (_companyId: string, raw: string) => ({
-      ambiguous: false,
-      agent: { id: raw },
-    })),
-  }),
+  agentService: () => mockAgentService,
   companySkillService: () => ({
     completeTestRunForIssue: vi.fn(async () => null),
   }),
@@ -140,13 +143,7 @@ function registerModuleMocks() {
       decide: mockAccessDecide,
       hasPermission: vi.fn(async () => true),
     }),
-    agentService: () => ({
-      getById: vi.fn(async () => null),
-      resolveByReference: vi.fn(async (_companyId: string, raw: string) => ({
-        ambiguous: false,
-        agent: { id: raw },
-      })),
-    }),
+    agentService: () => mockAgentService,
     companySkillService: () => ({
       completeTestRunForIssue: vi.fn(async () => null),
     }),
@@ -268,6 +265,8 @@ describe("issue update comment wakeups", () => {
     mockIssueService.getWakeableParentAfterChildCompletion.mockResolvedValue(null);
     mockIssueService.getCurrentScheduledRetry.mockResolvedValue(null);
     mockIssueService.listReviewAttention.mockResolvedValue(new Map());
+    mockIssueService.getAncestors.mockResolvedValue([]);
+    mockAgentService.getById.mockResolvedValue(null);
   });
 
   it.each(["post", "patch"] as const)("rejects %s board messages under an inherited pause before any mutation", async (method) => {
@@ -892,4 +891,200 @@ describe("issue update comment wakeups", () => {
     expect(mockHeartbeatService.wakeup).not.toHaveBeenCalled();
   });
 
+
+  describe("ancestor assignee handoff", () => {
+    const BAYU = "aaaa0001-0000-4000-8000-000000000001";
+    const WIRA = "aaaa0002-0000-4000-8000-000000000002";
+    const BUDI = "aaaa0003-0000-4000-8000-000000000003";
+    const SARI = "aaaa0004-0000-4000-8000-000000000004";
+    const AGENT_NAMES: Record<string, string> = {
+      [BAYU]: "Bayu (Research)",
+      [WIRA]: "Wira (WhatsApp)",
+      [BUDI]: "Budi (HMX Owner)",
+      [SARI]: "Sari",
+    };
+    const grand = makeIssue({
+      id: "cccc0001-0000-4000-8000-000000000001", identifier: "ZHA-1", title: "Root",
+      assigneeAgentId: BUDI, assigneeUserId: null, status: "in_progress",
+    });
+    const parent = makeIssue({
+      id: "cccc0002-0000-4000-8000-000000000002", identifier: "ZHA-379", title: "OpenWA channel",
+      parentId: grand.id, assigneeAgentId: WIRA, assigneeUserId: null, status: "in_progress",
+    });
+    const child = makeIssue({
+      id: "cccc0003-0000-4000-8000-000000000003", identifier: "ZHA-723", title: "Research",
+      parentId: parent.id, assigneeAgentId: BAYU, assigneeUserId: null, status: "in_progress",
+    });
+    const issuesById = new Map([grand, parent, child].map((issue) => [issue.id, issue]));
+    const ancestorSummary = (issue: ReturnType<typeof makeIssue>) => ({
+      id: issue.id, identifier: issue.identifier, title: issue.title, status: issue.status,
+      assigneeAgentId: issue.assigneeAgentId,
+    });
+
+    function seedTree(options: { authorAgentId?: string | null; failForward?: boolean } = {}) {
+      mockIssueService.getById.mockImplementation(async (id: string) => issuesById.get(id) ?? null);
+      mockIssueService.update.mockImplementation(async (id: string) => issuesById.get(id) ?? null);
+      mockIssueService.getAncestors.mockImplementation(async (id: string) =>
+        id === child.id ? [ancestorSummary(parent), ancestorSummary(grand)]
+          : id === parent.id ? [ancestorSummary(grand)]
+            : []);
+      mockAgentService.getById.mockImplementation(async (id: string) =>
+        AGENT_NAMES[id] ? { id, companyId: "company-1", name: AGENT_NAMES[id] } : null);
+      mockIssueService.addComment.mockImplementation(async (issueId: string, body: string, actor: Record<string, string | null | undefined>, opts?: Record<string, unknown>) => {
+        if (issueId !== child.id && options.failForward) throw new Error("forward write failed");
+        return {
+          id: issueId === child.id ? "comment-child" : `forwarded-${issueId}`,
+          issueId,
+          companyId: "company-1",
+          body,
+          authorAgentId: issueId === child.id ? options.authorAgentId ?? null : actor.agentId ?? null,
+          authorUserId: issueId === child.id && options.authorAgentId ? null : actor.userId ?? null,
+          authorType: (opts?.authorType as string | undefined) ?? (options.authorAgentId ? "agent" : "user"),
+          createdByRunId: actor.runId ?? null,
+          onBehalfOfUserId: actor.onBehalfOfUserId ?? null,
+          sourceTrust: (opts?.sourceTrust as string | undefined) ?? "trusted",
+        };
+      });
+    }
+
+    async function postOnChild(body: string, method: "post" | "patch" = "post") {
+      const app = await createApp();
+      const res = method === "post"
+        ? await request(app).post(`/api/issues/${child.id}/comments`).send({ body })
+        : await request(app).patch(`/api/issues/${child.id}`).send({ comment: body });
+      expect(res.status).toBe(method === "post" ? 201 : 200);
+      await new Promise<void>((resolve) => setTimeout(resolve, 20));
+      return res;
+    }
+
+    function forwardCalls() {
+      return mockIssueService.addComment.mock.calls.filter(([issueId]) => issueId !== child.id);
+    }
+
+    function handoffWakes() {
+      return mockHeartbeatService.wakeup.mock.calls.filter(([, wakeup]) =>
+        (wakeup as { contextSnapshot?: { source?: string } }).contextSnapshot?.source === "comment.ancestor_handoff");
+    }
+
+    function expectHandoff(target: ReturnType<typeof makeIssue>, agentId: string, body: string) {
+      expect(mockIssueService.addComment).toHaveBeenCalledWith(
+        target.id,
+        `Forwarded from [ZHA-723](/ZHA/issues/ZHA-723#comment-comment-child):\n\n${body}`,
+        expect.anything(),
+        expect.anything(),
+      );
+      expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(agentId, expect.objectContaining({
+        reason: "issue_commented",
+        payload: expect.objectContaining({ issueId: target.id, commentId: `forwarded-${target.id}` }),
+        contextSnapshot: expect.objectContaining({
+          issueId: target.id,
+          taskId: target.id,
+          commentId: `forwarded-${target.id}`,
+          wakeCommentId: `forwarded-${target.id}`,
+          wakeReason: "issue_commented",
+          source: "comment.ancestor_handoff",
+          sourceIssueId: child.id,
+          sourceCommentId: "comment-child",
+        }),
+      }));
+    }
+
+    it("forwards a plain-text parent assignee mention and wakes the parent assignee", async () => {
+      seedTree({ authorAgentId: BAYU });
+      const body = "@Wira: tolong teruskan ke grup Research Lab0";
+      await postOnChild(body);
+      expect(forwardCalls()).toHaveLength(1);
+      expectHandoff(parent, WIRA, body);
+      expect(handoffWakes()).toHaveLength(1);
+      expect(mockAccessDecide).toHaveBeenCalledWith(expect.objectContaining({
+        action: "issue:comment",
+        resource: expect.objectContaining({ issueId: parent.id }),
+      }));
+    });
+
+    it("forwards a structured parent assignee mention", async () => {
+      seedTree();
+      const body = `[@Wira (WhatsApp)](agent://${WIRA}) hasil riset sudah siap`;
+      await postOnChild(body);
+      expect(forwardCalls()).toHaveLength(1);
+      expectHandoff(parent, WIRA, body);
+      expect(mockHeartbeatService.wakeup).toHaveBeenCalledWith(BAYU, expect.objectContaining({
+        reason: "issue_commented",
+        contextSnapshot: expect.objectContaining({ issueId: child.id, source: "issue.comment" }),
+      }));
+    });
+
+    it("forwards a grandparent assignee mention to the grandparent", async () => {
+      seedTree({ authorAgentId: BAYU });
+      const body = "lapor ke @Budi (HMX Owner) di issue induk";
+      await postOnChild(body);
+      expect(forwardCalls()).toHaveLength(1);
+      expectHandoff(grand, BUDI, body);
+      expect(handoffWakes()).toHaveLength(1);
+    });
+
+    it.each([
+      ["a non-ancestor agent", "@Sari tolong cek"],
+      ["a structured non-ancestor agent", `[@Sari](agent://${SARI}) tolong cek`],
+      ["inline code", "config memakai `@Wira` sebagai label"],
+      ["fenced code", "contoh:\n```\n@Wira teruskan\n```\n"],
+      ["an email address", "kirim ke x@wira.com"],
+      ["the child assignee", "@Bayu lanjutkan"],
+    ])("does nothing for %s", async (_label, body) => {
+      seedTree();
+      await postOnChild(body);
+      expect(forwardCalls()).toHaveLength(0);
+      expect(handoffWakes()).toHaveLength(0);
+      expect(mockHeartbeatService.wakeup.mock.calls.every(([agentId]) => agentId === BAYU)).toBe(true);
+    });
+
+    it("ignores an author mentioning itself", async () => {
+      seedTree({ authorAgentId: WIRA });
+      await postOnChild("@Wira catatan untuk diri sendiri");
+      expect(forwardCalls()).toHaveLength(0);
+      expect(handoffWakes()).toHaveLength(0);
+    });
+
+    it("does not re-dispatch mentions inside a forwarded copy", async () => {
+      seedTree({ authorAgentId: BAYU });
+      const body = "@Wira dan @Budi: hasil sudah siap";
+      await postOnChild(body);
+      expect(forwardCalls().map(([issueId]) => issueId).sort()).toEqual([grand.id, parent.id].sort());
+      expectHandoff(parent, WIRA, body);
+      expectHandoff(grand, BUDI, body);
+      expect(handoffWakes()).toHaveLength(2);
+      expect(mockIssueService.getAncestors).toHaveBeenCalledTimes(1);
+      expect(mockIssueService.getAncestors).toHaveBeenCalledWith(child.id);
+    });
+
+    it("skips an ancestor the actor cannot comment on", async () => {
+      seedTree({ authorAgentId: BAYU });
+      mockAccessDecide.mockImplementation(async (input) => ({
+        allowed: !(input.action === "issue:comment" && input.resource?.issueId === parent.id),
+        action: input.action,
+        reason: "allow_explicit_grant",
+        explanation: "test",
+      }));
+      await postOnChild("@Wira tolong teruskan");
+      expect(forwardCalls()).toHaveLength(0);
+      expect(handoffWakes()).toHaveLength(0);
+    });
+
+    it.each(["forward", "ancestors"] as const)("keeps the comment request successful when the %s step fails", async (step) => {
+      seedTree({ authorAgentId: BAYU, failForward: step === "forward" });
+      if (step === "ancestors") mockIssueService.getAncestors.mockRejectedValue(new Error("ancestor lookup failed"));
+      const res = await postOnChild("@Wira tolong teruskan");
+      expect(res.body.id).toBe("comment-child");
+      expect(handoffWakes()).toHaveLength(0);
+    });
+
+    it("hands off from the PATCH comment path", async () => {
+      seedTree({ authorAgentId: BAYU });
+      const body = "@wira: selesai, silakan teruskan";
+      await postOnChild(body, "patch");
+      expect(forwardCalls()).toHaveLength(1);
+      expectHandoff(parent, WIRA, body);
+      expect(handoffWakes()).toHaveLength(1);
+    });
+  });
 });
