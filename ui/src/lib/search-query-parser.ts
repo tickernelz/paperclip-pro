@@ -8,6 +8,8 @@ import {
   type IssueStatus,
 } from "@tickernelz/paperclip-pro-shared";
 import type { CompanySearchParams } from "@/api/search";
+import type { IssueListFilters } from "@/api/issues";
+import type { IssueFilterState } from "./issue-filters";
 
 const SEARCH_FILTER_PARAM_KEYS = [
   "status",
@@ -23,31 +25,44 @@ const SEARCH_FILTER_PARAM_KEYS = [
 const OPEN_STATUSES: IssueStatus[] = ["backlog", "todo", "in_progress", "in_review", "blocked"];
 const CLOSED_STATUSES: IssueStatus[] = ["done", "cancelled"];
 
-export type SearchOperatorKey = "status" | "assignee" | "project" | "label" | "priority" | "updated" | "is";
+export type SearchOperatorKey = "status" | "assignee" | "project" | "label" | "priority" | "updated" | "is" | "author";
+
+export type SearchFieldKey = "title" | "id" | "desc" | "comment" | "doc" | "text";
+
+export const SEARCH_FIELD_KEYS: readonly SearchFieldKey[] = ["title", "id", "desc", "comment", "doc", "text"];
 
 export interface SearchOperatorPill {
-  key: SearchOperatorKey;
+  key: SearchOperatorKey | SearchFieldKey;
   value: string;
   label: string;
 }
 
-export interface SearchOperatorSuggestion {
-  token: string;
+export type ScopedSearchFieldKey = SearchFieldKey | Exclude<SearchOperatorKey, "is">;
+
+export interface ScopedSearchFieldDefinition {
+  key: ScopedSearchFieldKey;
   label: string;
   description: string;
+  kind: "text" | "picker";
 }
 
-export const SEARCH_OPERATOR_QUICK_FILTERS = ["assignee:me", "is:open", "updated:>7d"] as const;
-
-export const SEARCH_OPERATOR_SUGGESTIONS: SearchOperatorSuggestion[] = [
-  { token: "status:todo", label: "Open todo tasks", description: "Filter by task status" },
-  { token: "status:blocked", label: "Blocked tasks", description: "Find blocked work" },
-  { token: "assignee:me", label: "Assigned to me", description: "Use your current board user" },
-  { token: "project:\"Paperclip App\"", label: "Project name", description: "Quote multi-word project names" },
-  { token: "label:bug", label: "Label", description: "Filter by issue label" },
-  { token: "priority:high", label: "High priority", description: "Filter by priority" },
-  { token: "updated:>7d", label: "Recently updated", description: "Updated in the last 7 days" },
+export const SCOPED_SEARCH_FIELDS: readonly ScopedSearchFieldDefinition[] = [
+  { key: "title", label: "Title", description: "Match the task title", kind: "text" },
+  { key: "id", label: "ID", description: "Exact task identifier", kind: "text" },
+  { key: "desc", label: "Description", description: "Match the task description", kind: "text" },
+  { key: "comment", label: "Comments", description: "Match task comments", kind: "text" },
+  { key: "doc", label: "Documents", description: "Match task documents", kind: "text" },
+  { key: "text", label: "All text", description: "Title, ID, description, comments and documents", kind: "text" },
+  { key: "status", label: "Status", description: "Filter by status, open or closed", kind: "picker" },
+  { key: "priority", label: "Priority", description: "Filter by priority", kind: "picker" },
+  { key: "assignee", label: "Assignee", description: "Filter by assignee", kind: "picker" },
+  { key: "label", label: "Label", description: "Filter by label", kind: "picker" },
+  { key: "project", label: "Project", description: "Filter by project", kind: "picker" },
+  { key: "author", label: "Author", description: "Filter by who created the task", kind: "picker" },
+  { key: "updated", label: "Updated", description: "Filter by last update", kind: "picker" },
 ];
+
+export const SEARCH_OPERATOR_QUICK_FILTERS = ["assignee:me", "is:open", "updated:>7d"] as const;
 
 export interface SearchQueryParserContext {
   currentAgentId?: string | null;
@@ -55,6 +70,7 @@ export interface SearchQueryParserContext {
   agents?: readonly { id: string; name: string; urlKey?: string | null }[];
   projects?: readonly { id: string; name: string; urlKey?: string | null }[];
   labels?: readonly { id: string; name: string }[];
+  operatorKeys?: readonly SearchOperatorKey[];
 }
 
 export interface ParsedSearchQuery {
@@ -69,7 +85,10 @@ export interface ParsedSearchQuery {
     | "labelId"
     | "updatedWithin"
     | "updatedAfter"
-  >;
+  > & {
+    createdByAgentId?: string;
+    createdByUserId?: string;
+  };
   pills: SearchOperatorPill[];
 }
 
@@ -118,28 +137,60 @@ function tokenizeQuery(input: string): QueryToken[] {
   return tokens;
 }
 
-function currentTokenBounds(input: string): { start: number; end: number; token: string } {
-  let end = input.length;
-  while (end > 0 && /\s/.test(input[end - 1] ?? "")) end -= 1;
-  let start = end;
-  while (start > 0 && !/\s/.test(input[start - 1] ?? "")) start -= 1;
-  return { start, end, token: input.slice(start, end) };
+export function currentSearchToken(input: string): { start: number; token: string } {
+  let start = 0;
+  let inQuote = false;
+  for (let index = 0; index < input.length; index += 1) {
+    const char = input[index]!;
+    if (char === "\"") inQuote = !inQuote;
+    else if (!inQuote && /\s/.test(char)) start = index + 1;
+  }
+  return { start, token: input.slice(start) };
 }
 
-export function searchOperatorSuggestions(input: string, limit = 5): SearchOperatorSuggestion[] {
-  const { token } = currentTokenBounds(input);
-  const normalized = token.toLowerCase();
-  const candidates = normalized.length > 0
-    ? SEARCH_OPERATOR_SUGGESTIONS.filter((suggestion) => suggestion.token.toLowerCase().startsWith(normalized))
-    : SEARCH_OPERATOR_SUGGESTIONS;
-  return candidates.slice(0, limit);
+function quoteSearchValue(value: string) {
+  const cleaned = value.replace(/"/g, "").trim();
+  return /[\s:]/.test(cleaned) ? `"${cleaned}"` : cleaned;
 }
 
-export function applySearchOperatorSuggestion(input: string, token: string): string {
-  const { start, end } = currentTokenBounds(input);
-  const prefix = input.slice(0, start).trimEnd();
-  const suffix = input.slice(end).trimStart();
-  return [prefix, token, suffix].filter(Boolean).join(" ").trim();
+export function formatSearchToken(key: string, value: string) {
+  return `${key}:${quoteSearchValue(value)}`;
+}
+
+export const SEARCH_OPERATOR_KEYS: readonly SearchOperatorKey[] = ["status", "priority", "assignee", "label", "project", "author", "updated", "is"];
+
+function isCompleteScopedToken(raw: string, operatorKeys: readonly string[]) {
+  const match = /^([a-zA-Z]+):(.+)$/s.exec(raw);
+  if (!match) return false;
+  const key = match[1]!.toLowerCase();
+  if (!(SEARCH_FIELD_KEYS as readonly string[]).includes(key) && !operatorKeys.includes(key)) return false;
+  const value = match[2]!;
+  if (value.startsWith("\"") && (value.length < 2 || !value.endsWith("\""))) return false;
+  return stripValueQuotes(value).trim().length > 0;
+}
+
+export function splitSearchInput(
+  input: string,
+  operatorKeys: readonly SearchOperatorKey[] = SEARCH_OPERATOR_KEYS,
+  keepLastToken = false,
+): { tokens: string[]; text: string } {
+  const all = tokenizeQuery(input);
+  const tokens: string[] = [];
+  const textParts: string[] = [];
+  all.forEach((token, index) => {
+    const isLast = index === all.length - 1;
+    if (!(keepLastToken && isLast) && isCompleteScopedToken(token.raw, operatorKeys)) tokens.push(token.raw);
+    else textParts.push(token.raw);
+  });
+  return { tokens, text: textParts.join(" ") };
+}
+
+export function searchTokenPill(token: string, context: SearchQueryParserContext = {}): SearchOperatorPill {
+  const parsed = parseSearchQuery(token, context).pills[0];
+  if (parsed) return parsed;
+  const match = /^([a-zA-Z]+):(.*)$/s.exec(token);
+  const key = (match?.[1]?.toLowerCase() ?? "text") as SearchOperatorPill["key"];
+  return { key, value: stripValueQuotes(match?.[2] ?? token), label: token };
 }
 
 function normalizedLookup(value: string) {
@@ -180,7 +231,7 @@ function parseUpdatedWithin(value: string): string | null {
   return normalized;
 }
 
-function operatorLabel(key: SearchOperatorKey, value: string) {
+function operatorLabel(key: SearchOperatorKey | SearchFieldKey, value: string) {
   return `${key}:${value}`;
 }
 
@@ -200,6 +251,17 @@ export function parseSearchQuery(input: string, context: SearchQueryParserContex
     const rawValue = match[2]!;
     const value = stripValueQuotes(rawValue).trim();
     if (!value) {
+      appendText(textParts, token.raw);
+      continue;
+    }
+
+    if ((SEARCH_FIELD_KEYS as readonly string[]).includes(key)) {
+      appendText(textParts, token.raw);
+      pills.push({ key: key as SearchFieldKey, value, label: operatorLabel(key as SearchFieldKey, value) });
+      continue;
+    }
+
+    if (context.operatorKeys && !(context.operatorKeys as readonly string[]).includes(key)) {
       appendText(textParts, token.raw);
       continue;
     }
@@ -242,6 +304,12 @@ export function parseSearchQuery(input: string, context: SearchQueryParserContex
         continue;
       }
 
+      if (value.toLowerCase() === "none") {
+        filters.assigneeAgentId = null;
+        pills.push({ key: "assignee", value: "none", label: "assignee:none" });
+        continue;
+      }
+
       const agent = findByNameOrId(context.agents, value);
       if (!agent) {
         appendText(textParts, token.raw);
@@ -249,6 +317,31 @@ export function parseSearchQuery(input: string, context: SearchQueryParserContex
       }
       filters.assigneeAgentId = agent.id;
       pills.push({ key: "assignee", value: agent.name, label: operatorLabel("assignee", agent.name) });
+      continue;
+    }
+
+    if (key === "author") {
+      if (value.toLowerCase() === "me") {
+        if (context.currentAgentId) {
+          filters.createdByAgentId = context.currentAgentId;
+          pills.push({ key: "author", value: "me", label: "author:me" });
+          continue;
+        }
+        if (context.currentUserId) {
+          filters.createdByUserId = context.currentUserId;
+          pills.push({ key: "author", value: "me", label: "author:me" });
+          continue;
+        }
+        appendText(textParts, token.raw);
+        continue;
+      }
+      const agent = findByNameOrId(context.agents, value);
+      if (!agent) {
+        appendText(textParts, token.raw);
+        continue;
+      }
+      filters.createdByAgentId = agent.id;
+      pills.push({ key: "author", value: agent.name, label: operatorLabel("author", agent.name) });
       continue;
     }
 
@@ -372,8 +465,144 @@ export function hasSearchFilters(filters: ParsedSearchQuery["filters"]) {
     || filters.projectId
     || filters.labelId
     || filters.updatedWithin
-    || filters.updatedAfter,
+    || filters.updatedAfter
+    || filters.createdByAgentId
+    || filters.createdByUserId,
   );
+}
+
+const UPDATED_WITHIN_UNIT_HOURS: Record<string, number> = { h: 1, d: 24, w: 24 * 7, m: 24 * 30 };
+
+export function updatedWithinToSince(value: string, now: Date = new Date()): string | null {
+  const match = /^(\d+)(h|d|w|m)$/.exec(value);
+  if (!match) return null;
+  const hours = Number.parseInt(match[1]!, 10) * UPDATED_WITHIN_UNIT_HOURS[match[2]!]!;
+  return new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
+}
+
+export type IssueListSearchParams = Pick<
+  IssueListFilters,
+  | "status"
+  | "priority"
+  | "assigneeAgentId"
+  | "assigneeUserId"
+  | "projectId"
+  | "labelId"
+  | "createdByAgentId"
+  | "createdByUserId"
+  | "updatedSince"
+>;
+
+export function searchFiltersToIssueListParams(
+  filters: ParsedSearchQuery["filters"],
+  now: Date = new Date(),
+): IssueListSearchParams {
+  const params: IssueListSearchParams = {};
+  if (filters.status?.length) params.status = filters.status.join(",");
+  if (filters.priority?.length) params.priority = filters.priority.join(",");
+  if (filters.assigneeAgentId !== undefined) params.assigneeAgentId = filters.assigneeAgentId ?? "null";
+  if (filters.assigneeUserId) params.assigneeUserId = filters.assigneeUserId;
+  if (filters.projectId) params.projectId = filters.projectId;
+  if (filters.labelId) params.labelId = filters.labelId;
+  if (filters.createdByAgentId) params.createdByAgentId = filters.createdByAgentId;
+  if (filters.createdByUserId) params.createdByUserId = filters.createdByUserId;
+  const updatedSince = filters.updatedAfter ?? (filters.updatedWithin ? updatedWithinToSince(filters.updatedWithin, now) : null);
+  if (updatedSince) params.updatedSince = updatedSince;
+  return params;
+}
+
+export function issueFilterStateToListParams(
+  state: Pick<IssueFilterState, "statuses" | "priorities" | "assignees" | "creators" | "labels" | "projects">,
+): IssueListSearchParams {
+  const params: IssueListSearchParams = {};
+  if (state.statuses.length > 0) params.status = state.statuses.join(",");
+  if (state.priorities.length > 0) params.priority = state.priorities.join(",");
+  if (state.labels.length > 0) params.labelId = state.labels.join(",");
+  if (state.projects.length === 1) params.projectId = state.projects[0];
+  if (state.assignees.length === 1) {
+    const assignee = state.assignees[0]!;
+    if (assignee === "__me") params.assigneeUserId = "me";
+    else if (assignee !== "__unassigned") params.assigneeAgentId = assignee;
+  }
+  if (state.creators.length === 1) {
+    const creator = state.creators[0]!;
+    if (creator.startsWith("agent:")) params.createdByAgentId = creator.slice("agent:".length);
+    if (creator.startsWith("user:")) params.createdByUserId = creator.slice("user:".length);
+  }
+  return params;
+}
+
+interface LocalSearchTerm {
+  field: SearchFieldKey | null;
+  value: string;
+}
+
+export function localSearchTerms(query: string): LocalSearchTerm[] {
+  const terms: LocalSearchTerm[] = [];
+  for (const token of tokenizeQuery(query)) {
+    const match = /^([a-zA-Z]+):(.+)$/s.exec(token.value);
+    const key = match?.[1]?.toLowerCase();
+    if (match && key && (SEARCH_FIELD_KEYS as readonly string[]).includes(key)) {
+      const value = stripValueQuotes(match[2]!).trim().toLowerCase();
+      if (value) terms.push({ field: key as SearchFieldKey, value });
+      continue;
+    }
+    const value = stripValueQuotes(token.value).trim().toLowerCase();
+    if (value) terms.push({ field: null, value });
+  }
+  return terms;
+}
+
+export function localSearchText(query: string): string {
+  return localSearchTerms(query).map((term) => term.value).join(" ");
+}
+
+type LocallySearchableIssue = {
+  title: string;
+  identifier?: string | null;
+  description?: string | null;
+};
+
+export function issueMatchesLocalSearchTerms(issue: LocallySearchableIssue, terms: readonly LocalSearchTerm[]): boolean {
+  const title = issue.title.toLowerCase();
+  const identifier = (issue.identifier ?? "").toLowerCase();
+  const description = (issue.description ?? "").toLowerCase();
+  return terms.every((term) => {
+    if (term.field === "title") return title.includes(term.value);
+    if (term.field === "id") return identifier === term.value;
+    if (term.field === "desc") return description.includes(term.value);
+    return title.includes(term.value) || identifier.includes(term.value) || description.includes(term.value);
+  });
+}
+
+type LocallyFilterableIssue = {
+  status: string;
+  priority: string;
+  assigneeAgentId?: string | null;
+  assigneeUserId?: string | null;
+  projectId?: string | null;
+  labelIds?: string[] | null;
+  createdByAgentId?: string | null;
+  createdByUserId?: string | null;
+  updatedAt: Date | string;
+};
+
+export function issueMatchesSearchFilters(
+  issue: LocallyFilterableIssue,
+  filters: ParsedSearchQuery["filters"],
+  now: Date = new Date(),
+): boolean {
+  if (filters.status?.length && !(filters.status as readonly string[]).includes(issue.status)) return false;
+  if (filters.priority?.length && !(filters.priority as readonly string[]).includes(issue.priority)) return false;
+  if (filters.assigneeAgentId !== undefined && (issue.assigneeAgentId ?? null) !== filters.assigneeAgentId) return false;
+  if (filters.assigneeUserId && issue.assigneeUserId !== filters.assigneeUserId) return false;
+  if (filters.projectId && issue.projectId !== filters.projectId) return false;
+  if (filters.labelId && !(issue.labelIds ?? []).includes(filters.labelId)) return false;
+  if (filters.createdByAgentId && issue.createdByAgentId !== filters.createdByAgentId) return false;
+  if (filters.createdByUserId && issue.createdByUserId !== filters.createdByUserId) return false;
+  const updatedSince = filters.updatedAfter ?? (filters.updatedWithin ? updatedWithinToSince(filters.updatedWithin, now) : null);
+  if (updatedSince && new Date(issue.updatedAt).getTime() < new Date(updatedSince).getTime()) return false;
+  return true;
 }
 
 function nameForId<T extends { id: string; name: string }>(entries: readonly T[] | undefined, id: string) {

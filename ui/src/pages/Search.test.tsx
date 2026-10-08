@@ -835,58 +835,56 @@ describe("Search page", () => {
     });
   });
 
-  it("shows operator autocomplete suggestions and applies one to the current token", async () => {
-    searchApiMock.search.mockResolvedValue({
-      query: "auth",
-      normalizedQuery: "auth",
-      scope: "all",
-      limit: 20,
-      offset: 0,
-      sort: "relevance",
-      countsByType: { issue: 0, comment: 0, document: 0, artifact: 0, agent: 0, project: 0 },
-      filterOptionCounts: {
-        status: {},
-        priority: {},
-        assigneeAgentId: {},
-        assigneeUserId: {},
-        projectId: {},
-        labelId: {},
-        updatedWithin: {},
-      },
-      zeroResults: null,
-      hasMore: false,
-      results: [],
-    });
+  it("offers scoped fields while typing and turns a picked value into a filter pill", async () => {
+    searchApiMock.search.mockResolvedValue(emptyResponse());
 
     const { root } = renderSearch("/search", container);
     const input = container.querySelector('input[aria-label="Search query"]') as HTMLInputElement;
     expect(input).not.toBeNull();
+    const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
 
     flushSync(() => {
       input.focus();
-      const nativeSetter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
       nativeSetter.call(input, "auth sta");
       input.dispatchEvent(new Event("input", { bubbles: true }));
     });
 
-    let suggestionButton: HTMLButtonElement | null = null;
+    let statusOption: HTMLElement | null = null;
     await waitForAssertion(() => {
-      const suggestions = container.querySelector('[data-testid="search-operator-suggestions"]');
-      expect(suggestions).not.toBeNull();
-      expect(suggestions!.textContent).toContain("status:todo");
-      expect(suggestions!.textContent).toContain("status:blocked");
-      expect(suggestions!.textContent).not.toContain("assignee:me");
-      suggestionButton = container.querySelector('button[aria-label="Insert operator status:todo"]');
-      expect(suggestionButton).not.toBeNull();
+      const options = Array.from(container.querySelectorAll<HTMLElement>('[data-testid="scoped-search-options"] [role="option"]'));
+      expect(options.map((option) => option.querySelector("span")?.textContent)).toEqual(["Status"]);
+      statusOption = options[0]!;
     });
 
     flushSync(() => {
-      suggestionButton!.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
-      suggestionButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      statusOption!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    let todoOption: HTMLElement | null = null;
+    await waitForAssertion(() => {
+      todoOption = Array.from(container.querySelectorAll<HTMLElement>('[role="option"]'))
+        .find((option) => option.querySelector("span")?.textContent === "Todo") ?? null;
+      expect(todoOption).not.toBeNull();
+    });
+
+    flushSync(() => {
+      todoOption!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     await waitForAssertion(() => {
-      expect(input.value).toBe("auth status:todo");
+      const pills = Array.from(container.querySelectorAll('[data-testid="scoped-search-pill"]')).map((pill) => pill.textContent);
+      expect(pills).toEqual(["status:todo"]);
+      expect(input.value).toBe("auth ");
+    });
+
+    await new Promise((resolve) => setTimeout(resolve, 350));
+    await waitForAssertion(() => {
+      expect(searchApiMock.search).toHaveBeenLastCalledWith("company-1", {
+        q: "auth",
+        scope: "all",
+        limit: 20,
+        status: ["todo"],
+      });
     });
 
     flushSync(() => {

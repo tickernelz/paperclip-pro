@@ -11,7 +11,6 @@ import {
   type CompanySearchSort,
 } from "@tickernelz/paperclip-pro-shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
@@ -28,16 +27,16 @@ import { queryKeys } from "../lib/queryKeys";
 import { loadRecentSearches, pushRecentSearch } from "../lib/recent-searches";
 import { PageTabBar, type PageTabItem } from "../components/PageTabBar";
 import {
+  SEARCH_OPERATOR_KEYS,
   applySearchFiltersToParams,
-  applySearchOperatorSuggestion,
   hasSearchFilters,
   parseSearchQuery,
   readSearchFiltersFromParams,
   searchFilterPills,
-  searchOperatorSuggestions,
   type ParsedSearchQuery,
   type SearchQueryParserContext,
 } from "../lib/search-query-parser";
+import { ScopedSearchInput } from "../components/search/ScopedSearchInput";
 import { SearchResultRow } from "../components/search/SearchResultRow";
 import { SearchFilterBar, type SearchFilterDataProps } from "../components/search/SearchFilterBar";
 import { SearchFilterChips } from "../components/search/SearchFilterChips";
@@ -56,6 +55,7 @@ import type { Agent, IssueLabel, Project } from "@tickernelz/paperclip-pro-share
 
 const SEARCH_DEBOUNCE_MS = 250;
 const IDENTIFIER_PATTERN = /^[A-Z]+-\d+$/;
+const COMPANY_SEARCH_OPERATOR_KEYS = SEARCH_OPERATOR_KEYS.filter((key) => key !== "author");
 
 const SCOPE_LABELS: Record<CompanySearchScope, string> = {
   all: "All",
@@ -150,7 +150,6 @@ export function Search() {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [draftSheetFilters, setDraftSheetFilters] = useState<ParsedSearchQuery["filters"]>({});
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const [inputFocused, setInputFocused] = useState(false);
   const lastUrlSyncRef = useRef<string>("");
   const lastIdentifierRedirectRef = useRef<string>("");
   const [recentSearches, setRecentSearches] = useState<string[]>([]);
@@ -207,6 +206,7 @@ export function Search() {
     agents: agents as Agent[],
     projects: projects as Project[],
     labels: labels as IssueLabel[],
+    operatorKeys: COMPANY_SEARCH_OPERATOR_KEYS,
   }), [agents, currentUserId, labels, projects]);
   const parsedUrlFilters = useMemo(() => readSearchFiltersFromParams(searchParams), [searchParams]);
   const [urlFilters, setUrlFilters] = useState(parsedUrlFilters);
@@ -494,10 +494,7 @@ export function Search() {
   }, [counts, data, filtersActive]);
 
   const operatorPills = useMemo(() => searchFilterPills(draftFilters, parserContext), [draftFilters, parserContext]);
-  const operatorSuggestions = useMemo(
-    () => (inputFocused ? searchOperatorSuggestions(draftQuery, 4) : []),
-    [draftQuery, inputFocused],
-  );
+  const urlFilterPills = useMemo(() => searchFilterPills(urlFilters, parserContext), [urlFilters, parserContext]);
   const showInitialState = !displayQuery && !hasSearchFilters(activeFilters);
   const isLoading = queryEnabled && isFetching && !data;
   const hasResults = !!data && totalResults > 0;
@@ -546,82 +543,62 @@ export function Search() {
     <div className="flex h-full min-h-0 flex-col" data-page="search">
       <div className="border-b border-border px-4 py-3 sm:px-6">
         <h1 className="sr-only">Search</h1>
-        <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            ref={inputRef}
-            autoFocus
-            value={draftQuery}
-            onChange={(event) => setDraftQuery(event.currentTarget.value)}
-            onFocus={() => setInputFocused(true)}
-            onBlur={() => setInputFocused(false)}
-            onKeyDown={(event) => {
-              if (event.key === "Escape") {
-                if (draftQuery.length > 0) {
-                  event.preventDefault();
-                  handleClear();
-                } else {
-                  event.currentTarget.blur();
-                }
-              }
-            }}
-            placeholder="Search tasks, comments, documents, artifacts, agents, projects…"
-            aria-label="Search query"
-            className="h-10 pl-9 pr-20 text-sm"
-          />
-          {draftQuery.length > 0 ? (
-            <button
-              type="button"
-              onClick={handleClear}
-              aria-label="Clear search"
-              className="absolute right-12 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          ) : null}
-          <kbd
-            aria-hidden
-            className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-border bg-muted px-1.5 py-0.5 text-(length:--text-nano) font-medium text-muted-foreground"
-          >
-            ⌘K
-          </kbd>
-        </div>
+        <ScopedSearchInput
+          value={draftQuery}
+          onChange={({ raw }) => setDraftQuery(raw)}
+          context={parserContext}
+          operatorKeys={COMPANY_SEARCH_OPERATOR_KEYS}
+          debounceMs={0}
+          inputRef={inputRef}
+          autoFocus
+          ariaLabel="Search query"
+          fieldClassName="h-10 pl-9"
+          onKeyDown={(event) => {
+            if (event.key !== "Escape") return;
+            if (draftQuery.length > 0) {
+              event.preventDefault();
+              handleClear();
+            } else {
+              event.currentTarget.blur();
+            }
+          }}
+          trailing={(
+            <>
+              {draftQuery.length > 0 ? (
+                <button
+                  type="button"
+                  onClick={handleClear}
+                  aria-label="Clear search"
+                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+              ) : null}
+              <kbd
+                aria-hidden
+                className="pointer-events-none shrink-0 rounded border border-border bg-muted px-1.5 py-0.5 text-(length:--text-nano) font-medium text-muted-foreground"
+              >
+                ⌘K
+              </kbd>
+            </>
+          )}
+        />
         <div className="mt-2 flex min-h-6 flex-wrap items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
-          {operatorPills.length > 0 ? (
+          {urlFilterPills.length > 0 ? (
             <div className="flex flex-wrap items-center gap-1.5" data-testid="search-operator-pills">
-              {operatorPills.map((pill) => (
+              {urlFilterPills.map((pill) => (
                 <Badge key={`${pill.key}:${pill.value}`} variant="outline" className="px-1.5 py-0 text-(length:--text-micro) font-normal normal-case">
                   {pill.label}
                 </Badge>
               ))}
             </div>
           ) : null}
-          {operatorSuggestions.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-1.5" data-testid="search-operator-suggestions">
-              {operatorSuggestions.map((suggestion) => (
-                <button
-                  key={suggestion.token}
-                  type="button"
-                  aria-label={`Insert operator ${suggestion.token}`}
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => {
-                    setDraftQuery(applySearchOperatorSuggestion(draftQuery, suggestion.token));
-                    inputRef.current?.focus();
-                  }}
-                  className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5 hover:bg-accent/60"
-                >
-                  <span className="font-mono text-(length:--text-micro)">{suggestion.token}</span>
-                  <span className="hidden text-(length:--text-micro) sm:inline">{suggestion.description}</span>
-                </button>
-              ))}
-            </div>
-          ) : (
-            <span className="truncate">
-              Try <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">status:todo</code>,{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">assignee:me</code>,{" "}
-              or <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">updated:&gt;7d</code>.
-            </span>
-          )}
+          <span className="truncate">
+            Try <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">"exact phrase"</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">title:auth</code>,{" "}
+            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">comment:deploy</code>{" "}
+            or <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">status:todo</code>.
+          </span>
         </div>
       </div>
 

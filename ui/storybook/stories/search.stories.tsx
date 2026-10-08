@@ -14,7 +14,8 @@ import { SearchFilterBar, type SearchFilterDataProps } from "@/components/search
 import { SearchFilterChips } from "@/components/search/SearchFilterChips";
 import { ZeroResultsRecovery } from "@/components/search/ZeroResultsRecovery";
 import type { FilterChipLookups, SearchFilters } from "@/lib/search-filters";
-import { SEARCH_OPERATOR_QUICK_FILTERS, searchOperatorSuggestions } from "@/lib/search-query-parser";
+import { SEARCH_OPERATOR_QUICK_FILTERS } from "@/lib/search-query-parser";
+import { ScopedSearchInput } from "@/components/search/ScopedSearchInput";
 import { Tabs } from "@/components/ui/tabs";
 import {
   Bot,
@@ -364,34 +365,14 @@ function SearchPagePreview({
 }
 
 function SearchOperatorInputPreview() {
-  const suggestions = searchOperatorSuggestions("auth sta", 4);
   return (
     <div className="border-t border-border bg-background p-4">
-      <div className="relative">
-        <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input value="auth status:blocked updated:>7d" readOnly className="h-10 pl-9 pr-4 text-sm" />
-      </div>
-      <div className="mt-2 flex flex-wrap items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <Badge variant="outline" className="px-1.5 py-0 text-(length:--text-micro) font-normal normal-case">
-            status:blocked
-          </Badge>
-          <Badge variant="outline" className="px-1.5 py-0 text-(length:--text-micro) font-normal normal-case">
-            updated:&gt;7d
-          </Badge>
-        </div>
-        <div className="flex flex-wrap items-center gap-1.5">
-          {suggestions.map((suggestion) => (
-            <span
-              key={suggestion.token}
-              className="inline-flex items-center gap-1 rounded-full border border-border bg-muted px-2 py-0.5"
-            >
-              <span className="font-mono text-(length:--text-micro)">{suggestion.token}</span>
-              <span className="hidden text-(length:--text-micro) sm:inline">{suggestion.description}</span>
-            </span>
-          ))}
-        </div>
-      </div>
+      <ScopedSearchInput
+        value='title:"internal status" status:blocked updated:>7d auth'
+        onChange={() => undefined}
+        ariaLabel="Search query"
+        fieldClassName="h-10 pl-9"
+      />
     </div>
   );
 }

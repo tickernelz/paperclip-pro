@@ -1,10 +1,17 @@
 import { describe, expect, it } from "vitest";
 import {
-  applySearchOperatorSuggestion,
   buildSearchPathFromQuery,
+  currentSearchToken,
+  formatSearchToken,
+  issueFilterStateToListParams,
+  issueMatchesLocalSearchTerms,
+  issueMatchesSearchFilters,
+  localSearchTerms,
   parseSearchQuery,
   readSearchFiltersFromParams,
-  searchOperatorSuggestions,
+  searchFiltersToIssueListParams,
+  splitSearchInput,
+  updatedWithinToSince,
 } from "./search-query-parser";
 
 const context = {
@@ -128,16 +135,159 @@ describe("search query URLs", () => {
   });
 });
 
-describe("search operator suggestions", () => {
-  it("suggests syntax for the current partial token", () => {
-    expect(searchOperatorSuggestions("auth sta").map((suggestion) => suggestion.token)).toEqual([
-      "status:todo",
-      "status:blocked",
-    ]);
+describe("scoped field tokens", () => {
+  it("keeps field tokens inside q and reports them as pills", () => {
+    expect(parseSearchQuery("title:\"internal status\" comment:deploy id:ZHA-9", context)).toMatchObject({
+      query: "title:\"internal status\" comment:deploy id:ZHA-9",
+      filters: {},
+      pills: [
+        { key: "title", value: "internal status", label: "title:internal status" },
+        { key: "comment", value: "deploy", label: "comment:deploy" },
+        { key: "id", value: "ZHA-9", label: "id:ZHA-9" },
+      ],
+    });
   });
 
-  it("replaces only the current token when applying a suggestion", () => {
-    expect(applySearchOperatorSuggestion("auth sta", "status:todo")).toBe("auth status:todo");
-    expect(applySearchOperatorSuggestion("", "assignee:me")).toBe("assignee:me");
+  it("separates field tokens from filter tokens", () => {
+    expect(parseSearchQuery("desc:auth text:\"rate limit\" status:done label:bug", context)).toMatchObject({
+      query: "desc:auth text:\"rate limit\"",
+      filters: { status: ["done"], labelId: "22222222-2222-4222-8222-222222222222" },
+    });
+  });
+
+  it("parses author:me and author agent names into creator filters", () => {
+    expect(parseSearchQuery("author:me", context).filters).toEqual({ createdByUserId: "user-1" });
+    expect(parseSearchQuery("author:\"Codex Coder\" crash", context)).toMatchObject({
+      query: "crash",
+      filters: { createdByAgentId: "agent-1" },
+      pills: [{ key: "author", value: "Codex Coder" }],
+    });
+  });
+
+  it("parses assignee:none as unassigned", () => {
+    expect(parseSearchQuery("assignee:none", context).filters).toEqual({ assigneeAgentId: null });
+  });
+
+  it("treats filter tokens outside the allowed operator set as literal text", () => {
+    expect(parseSearchQuery("author:me status:todo", { ...context, operatorKeys: ["status"] })).toMatchObject({
+      query: "author:me",
+      filters: { status: ["todo"] },
+    });
+  });
+
+  it("keeps unknown prefixes and empty field values as literal text", () => {
+    expect(parseSearchQuery("foo:bar title:", context)).toMatchObject({
+      query: "foo:bar title:",
+      pills: [],
+    });
+  });
+});
+
+describe("scoped input helpers", () => {
+  it("splits complete scoped tokens from free text", () => {
+    expect(splitSearchInput("auth title:\"internal status\" status:todo bogus:x")).toEqual({
+      tokens: ["title:\"internal status\"", "status:todo"],
+      text: "auth bogus:x",
+    });
+  });
+
+  it("leaves the token being typed in the text when asked", () => {
+    expect(splitSearchInput("status:todo title:auth", undefined, true)).toEqual({
+      tokens: ["status:todo"],
+      text: "title:auth",
+    });
+    expect(splitSearchInput("title:\"open quote")).toEqual({ tokens: [], text: "title:\"open quote" });
+  });
+
+  it("restricts filter tokens to the allowed operator keys", () => {
+    expect(splitSearchInput("author:me title:x", ["status"])).toEqual({ tokens: ["title:x"], text: "author:me" });
+  });
+
+  it("finds the current token while respecting quotes", () => {
+    expect(currentSearchToken("auth title:\"a b")).toEqual({ start: 5, token: "title:\"a b" });
+    expect(currentSearchToken("auth sta")).toEqual({ start: 5, token: "sta" });
+  });
+
+  it("quotes multi-word values when formatting a token", () => {
+    expect(formatSearchToken("title", "internal status")).toBe("title:\"internal status\"");
+    expect(formatSearchToken("label", "bug")).toBe("label:bug");
+  });
+});
+
+describe("search filter params", () => {
+  const now = new Date("2026-10-08T12:00:00.000Z");
+
+  it("builds issue list params from parsed filters", () => {
+    const parsed = parseSearchQuery("status:todo status:blocked priority:high assignee:none label:bug author:me updated:>7d", context);
+    expect(searchFiltersToIssueListParams(parsed.filters, now)).toEqual({
+      status: "todo,blocked",
+      priority: "high",
+      assigneeAgentId: "null",
+      labelId: "22222222-2222-4222-8222-222222222222",
+      createdByUserId: "user-1",
+      updatedSince: "2026-10-01T12:00:00.000Z",
+    });
+  });
+
+  it("converts is:open into a status CSV", () => {
+    expect(searchFiltersToIssueListParams(parseSearchQuery("is:open", context).filters, now)).toEqual({
+      status: "backlog,todo,in_progress,in_review,blocked",
+    });
+  });
+
+  it("converts updated windows to an ISO lower bound", () => {
+    expect(updatedWithinToSince("24h", now)).toBe("2026-10-07T12:00:00.000Z");
+    expect(updatedWithinToSince("soon", now)).toBeNull();
+  });
+
+  it("maps the toolbar filter state to list params the server can apply", () => {
+    expect(issueFilterStateToListParams({
+      statuses: ["todo", "done"],
+      priorities: ["high"],
+      assignees: ["__me"],
+      creators: ["agent:agent-1"],
+      labels: ["l1", "l2"],
+      projects: ["p1"],
+    })).toEqual({
+      status: "todo,done",
+      priority: "high",
+      assigneeUserId: "me",
+      createdByAgentId: "agent-1",
+      labelId: "l1,l2",
+      projectId: "p1",
+    });
+    expect(issueFilterStateToListParams({
+      statuses: [],
+      priorities: [],
+      assignees: ["__unassigned", "agent-1"],
+      creators: ["user:u1", "agent:a1"],
+      labels: [],
+      projects: ["p1", "p2"],
+    })).toEqual({});
+  });
+});
+
+describe("local search matching", () => {
+  const issue = { title: "Internal status page", identifier: "ZHA-9", description: "Shows the deploy state" };
+
+  it("ANDs bare terms over title, identifier and description", () => {
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("internal deploy"))).toBe(true);
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("internal missing"))).toBe(false);
+  });
+
+  it("matches quoted phrases and scoped fields", () => {
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("\"status page\""))).toBe(true);
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("title:deploy"))).toBe(false);
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("desc:deploy"))).toBe(true);
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("id:zha-9"))).toBe(true);
+    expect(issueMatchesLocalSearchTerms(issue, localSearchTerms("id:zha"))).toBe(false);
+  });
+
+  it("applies parsed filters to loaded rows", () => {
+    const row = { status: "todo", priority: "high", labelIds: ["22222222-2222-4222-8222-222222222222"], updatedAt: "2026-10-06T23:00:00.000Z" };
+    const now = new Date("2026-10-08T00:00:00.000Z");
+    expect(issueMatchesSearchFilters(row, parseSearchQuery("status:todo label:bug updated:>7d", context).filters, now)).toBe(true);
+    expect(issueMatchesSearchFilters(row, parseSearchQuery("is:closed", context).filters, now)).toBe(false);
+    expect(issueMatchesSearchFilters(row, parseSearchQuery("updated:>24h", context).filters, now)).toBe(false);
   });
 });

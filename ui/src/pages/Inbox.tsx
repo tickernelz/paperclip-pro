@@ -121,7 +121,17 @@ import {
   Search,
   ListTree,
 } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { ScopedSearchInput } from "../components/search/ScopedSearchInput";
+import {
+  hasSearchFilters,
+  issueMatchesLocalSearchTerms,
+  issueMatchesSearchFilters,
+  localSearchTerms,
+  localSearchText,
+  parseSearchQuery,
+  searchFiltersToIssueListParams,
+  type SearchQueryParserContext,
+} from "../lib/search-query-parser";
 import { PageTabBar } from "../components/PageTabBar";
 import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@tickernelz/paperclip-pro-shared";
 import {
@@ -835,7 +845,6 @@ function StreamlinedInbox({
   });
   const experimentalSettingsLoaded = experimentalSettings !== undefined;
   const [searchQuery, setSearchQuery] = useState("");
-  const normalizedSearchQuery = searchQuery.trim();
   const [filterPreferences, setFilterPreferences] = useState<StreamlinedInboxViewState>(
     () => loadInboxCollectionPreferences(selectedCompanyId).viewState,
   );
@@ -1071,6 +1080,23 @@ function StreamlinedInbox({
     enabled: !!selectedCompanyId,
   });
   const currentUserId = session?.user.id ?? session?.session.userId ?? null;
+  const searchParserContext = useMemo<SearchQueryParserContext>(() => ({
+    currentUserId,
+    agents,
+    projects,
+    labels,
+  }), [agents, currentUserId, labels, projects]);
+  const parsedSearch = useMemo(
+    () => parseSearchQuery(searchQuery.trim(), searchParserContext),
+    [searchParserContext, searchQuery],
+  );
+  const searchFilters = parsedSearch.filters;
+  const searchFiltersActive = hasSearchFilters(searchFilters);
+  const remoteSearchQuery = parsedSearch.query;
+  const remoteSearchFilterParams = useMemo(() => searchFiltersToIssueListParams(searchFilters), [searchFilters]);
+  const normalizedSearchQuery = localSearchText(parsedSearch.query);
+  const localIssueSearchTerms = useMemo(() => localSearchTerms(parsedSearch.query), [parsedSearch.query]);
+  const searchActive = normalizedSearchQuery.length > 0 || searchFiltersActive;
   const [archivingIssueIds, setArchivingIssueIds] = useState<Set<string>>(new Set());
   const [undoableArchiveIssueIds, setUndoableArchiveIssueIds] = useState<string[]>([]);
   const [unarchivingIssueIds, setUnarchivingIssueIds] = useState<Set<string>>(new Set());
@@ -1102,17 +1128,19 @@ function StreamlinedInbox({
   );
   const shouldUseIssueSearchSupplement =
     !!selectedCompanyId
-    && normalizedSearchQuery.length > 0;
+    && searchActive;
   const { data: remoteIssueSearchResults = [] } = useQuery({
     queryKey: [
-      ...queryKeys.issues.search(selectedCompanyId!, normalizedSearchQuery, undefined, 25),
+      ...queryKeys.issues.search(selectedCompanyId!, remoteSearchQuery, undefined, 25),
+      remoteSearchFilterParams,
       "compact",
       "inbox-supplement",
       "live-descendant-summary",
     ],
     queryFn: () =>
       issuesApi.listCompact(selectedCompanyId!, {
-        q: normalizedSearchQuery,
+        ...remoteSearchFilterParams,
+        ...(remoteSearchQuery.length > 0 ? { q: remoteSearchQuery } : {}),
         limit: 25,
         includeRoutineExecutions: true,
         includeLiveDescendantSummary: true,
@@ -1377,9 +1405,11 @@ function StreamlinedInbox({
 
   const filteredWorkItems = useMemo(() => {
     const q = normalizedSearchQuery.toLowerCase();
-    if (!q) return workItemsToRender;
+    if (!q && !searchFiltersActive) return workItemsToRender;
     return workItemsToRender.filter((item) => {
       if (item.kind === "issue") {
+        if (!issueMatchesSearchFilters(item.issue, searchFilters)) return false;
+        if (issueMatchesLocalSearchTerms(item.issue, localIssueSearchTerms)) return true;
         return matchesInboxIssueSearch(item.issue, q, {
           isolatedWorkspacesEnabled,
           executionWorkspaceById,
@@ -1387,6 +1417,7 @@ function StreamlinedInbox({
           defaultProjectWorkspaceIdByProjectId,
         });
       }
+      if (searchFiltersActive) return false;
       if (item.kind === "approval") {
         const a = item.approval;
         const label = approvalLabel(a.type, a.payload as Record<string, unknown> | null);
@@ -1423,8 +1454,11 @@ function StreamlinedInbox({
     executionWorkspaceById,
     issueById,
     isolatedWorkspacesEnabled,
+    localIssueSearchTerms,
     normalizedSearchQuery,
     projectWorkspaceById,
+    searchFilters,
+    searchFiltersActive,
   ]);
 
   const archivedSearchIssues = useMemo(
@@ -1432,7 +1466,9 @@ function StreamlinedInbox({
       tab === "mine"
         ? getArchivedInboxSearchIssues({
           visibleIssues: visibleMineIssues,
-          searchableIssues: visibleTouchedIssues,
+          searchableIssues: searchFiltersActive
+            ? visibleTouchedIssues.filter((issue) => issueMatchesSearchFilters(issue, searchFilters))
+            : visibleTouchedIssues,
           query: normalizedSearchQuery,
           isolatedWorkspacesEnabled,
           executionWorkspaceById,
@@ -1446,6 +1482,8 @@ function StreamlinedInbox({
       isolatedWorkspacesEnabled,
       normalizedSearchQuery,
       projectWorkspaceById,
+      searchFilters,
+      searchFiltersActive,
       tab,
       visibleMineIssues,
       visibleTouchedIssues,
@@ -1454,7 +1492,7 @@ function StreamlinedInbox({
   const issueSearchSupplementResults = useMemo(
     () =>
       getInboxSearchSupplementIssues({
-        query: normalizedSearchQuery,
+        query: searchActive ? searchQuery : "",
         filteredWorkItems,
         archivedSearchIssues,
         remoteIssues: remoteIssueSearchResults,
@@ -1471,8 +1509,9 @@ function StreamlinedInbox({
       issueFilterContext,
       issueFilters,
       liveIssueIds,
-      normalizedSearchQuery,
       remoteIssueSearchResults,
+      searchActive,
+      searchQuery,
     ],
   );
   const nonInboxSearchIssueIds = useMemo(
@@ -1569,7 +1608,7 @@ function StreamlinedInbox({
         tab,
         groupBy,
         nestingEnabled,
-        normalizedSearchQuery,
+        searchQuery,
         allCategoryFilter,
         allApprovalFilter,
         issueFilters,
@@ -1580,7 +1619,7 @@ function StreamlinedInbox({
       groupBy,
       issueFilters,
       nestingEnabled,
-      normalizedSearchQuery,
+      searchQuery,
       selectedCompanyId,
       tab,
     ],
@@ -2436,34 +2475,33 @@ function StreamlinedInbox({
           </Tabs>
         )}
         search={(
-          <div className="relative ml-auto w-full sm:w-(--sz-220px)">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={(e) => {
-                if (shouldBlurPageSearchOnEnter({
-                  key: e.key,
-                  isComposing: e.nativeEvent.isComposing,
-                })) {
-                  e.currentTarget.blur();
-                  return;
-                }
+          <ScopedSearchInput
+            value={searchQuery}
+            onChange={({ raw }) => setSearchQuery(raw)}
+            context={searchParserContext}
+            placeholder={`Search ${surfaceLabel.toLowerCase()}…`}
+            ariaLabel={`Search ${surfaceLabel.toLowerCase()}`}
+            className="ml-auto w-full sm:w-(--sz-220px)"
+            inputClassName="text-xs"
+            pageSearchTarget
+            onKeyDown={(e) => {
+              if (shouldBlurPageSearchOnEnter({
+                key: e.key,
+                isComposing: e.nativeEvent.isComposing,
+              })) {
+                e.currentTarget.blur();
+                return;
+              }
 
-                if (shouldBlurPageSearchOnEscape({
-                  key: e.key,
-                  isComposing: e.nativeEvent.isComposing,
-                  currentValue: e.currentTarget.value,
-                })) {
-                  e.currentTarget.blur();
-                }
-              }}
-              className="h-8 w-full pl-8 text-xs"
-              data-page-search-target="true"
-            />
-          </div>
+              if (shouldBlurPageSearchOnEscape({
+                key: e.key,
+                isComposing: e.nativeEvent.isComposing,
+                currentValue: e.currentTarget.value,
+              })) {
+                e.currentTarget.blur();
+              }
+            }}
+          />
         )}
         controls={(
           <>
@@ -2713,7 +2751,7 @@ function StreamlinedInbox({
         <div className="-mx-2 sm:mx-0">
         <BlockedInboxView
           companyId={selectedCompanyId!}
-          searchQuery={searchQuery}
+          searchQuery={normalizedSearchQuery}
           agentNameById={agentById} agents={agents}
           userLabelById={companyUserLabelMap}
           issueLinkState={issueLinkState}
@@ -2738,9 +2776,9 @@ function StreamlinedInbox({
 
       {tab !== "blocked" && allLoaded && visibleSections.length === 0 && (
         <EmptyState
-          icon={searchQuery.trim() ? Search : InboxIcon}
+          icon={searchActive ? Search : InboxIcon}
           message={
-            searchQuery.trim()
+            searchActive
               ? "No inbox items match your search."
               : tab === "mine"
               ? "Inbox zero."
