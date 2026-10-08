@@ -5401,18 +5401,20 @@ describe("IssueDetail", () => {
       onRejectInteraction?: (
         interaction: RequestConfirmationInteraction,
         reason?: string,
+        note?: string,
       ) => Promise<void>;
     };
     expect(props.onRejectInteraction).toBeTypeOf("function");
 
     await act(async () => {
-      await props.onRejectInteraction?.(pendingInteraction, "Run turn 2");
+      await props.onRejectInteraction?.(pendingInteraction, "Run turn 2", "See [run.log](/api/attachments/a/content)");
     });
 
     expect(mockIssuesApi.rejectInteraction).toHaveBeenCalledWith(
       "PAP-1",
       pendingInteraction.id,
       "Run turn 2",
+      "See [run.log](/api/attachments/a/content)",
     );
     expect(mockPushToast).toHaveBeenCalledWith({
       title: "Selected “Continue work”",

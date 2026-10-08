@@ -61,6 +61,7 @@ export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
   assertCanTestAsAgent: true,
   assertCompanyScopeReadAllowed: true,
   assertEnvironmentSelectionForCompany: true,
+  assertInteractionNoteSupported: true,
   assertLocalLoginAvailable: true,
   assertNoHiddenSettingChanges: true,
   assertPixelsOfficeEnabled: true,
