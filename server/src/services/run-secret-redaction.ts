@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { REDACTED_EVENT_VALUE } from "../redaction.js";
@@ -9,6 +9,7 @@ import type { StoredSecretVersionMaterial } from "../secrets/types.js";
 const REGISTRY_KEY = "paperclipSecretRedactions";
 // Project only the registry: run contexts can contain megabytes of prompt data.
 const registrySnapshot = sql`jsonb_build_object('paperclipSecretRedactions', ${heartbeatRuns.contextSnapshot} -> 'paperclipSecretRedactions')`;
+const hasRegistry = sql`${heartbeatRuns.contextSnapshot} ? 'paperclipSecretRedactions'`;
 
 type RegistryEntry = {
   fingerprintSha256: string;
@@ -83,10 +84,8 @@ export function createRunSecretRedactionRegistry(db: Db) {
       .from(heartbeatRuns)
       .where(and(
         eq(heartbeatRuns.companyId, companyId),
-        or(
-          sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
-          sql`${heartbeatRuns.contextSnapshot} -> 'paperclipIssue' ->> 'id' = ${issueId}`,
-        ),
+        sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
+        hasRegistry,
       ));
     return valuesForRuns(rows);
   }
@@ -122,7 +121,7 @@ export function createRunSecretRedactionRegistry(db: Db) {
       if (runs.length === 0) return [];
       const rows = await db.select({ id: heartbeatRuns.id, contextSnapshot: registrySnapshot })
         .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, runs.map((run) => run.id))));
+        .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, runs.map((run) => run.id)), hasRegistry));
       // Resolve each encrypted value once per request, but apply only each run's
       // own registry. Do not retain plaintext secrets across requests.
       const resolved = new Map<string, Promise<string>>();

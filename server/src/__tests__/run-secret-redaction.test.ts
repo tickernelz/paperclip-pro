@@ -104,6 +104,7 @@ describe("batched run secret redaction", () => {
     const predicate = dialect.sqlToQuery(where.mock.calls[0][0]);
     expect(predicate.params).toContain("company-1");
     expect(predicate.sql).toContain('"company_id"');
+    expect(predicate.sql).toContain("\"context_snapshot\" ? 'paperclipSecretRedactions'");
     expect(dialect.sqlToQuery(select.mock.calls[0][0].contextSnapshot).sql).toContain("-> 'paperclipSecretRedactions'");
   });
 
@@ -115,6 +116,16 @@ describe("batched run secret redaction", () => {
     rows[0].contextSnapshot.paperclipSecretRedactions.push({ fingerprintSha256: "two", material: { value: "new-secret" } });
     expect(await registry.redactForRuns("company", [{ id: "a", text: "new-secret" }]))
       .toEqual([{ id: "a", text: REDACTED_EVENT_VALUE }]);
+  });
+
+  it("looks up issue registries through the issue id and registry presence only", async () => {
+    const { registry, where } = fixture([]);
+    expect(await registry.redactForIssue("company-1", "issue-1", "plain")).toBe("plain");
+    const predicate = new PgDialect().sqlToQuery(where.mock.calls[0][0]);
+    expect(predicate.sql).toContain("->> 'issueId' = $");
+    expect(predicate.sql).toContain("\"context_snapshot\" ? 'paperclipSecretRedactions'");
+    expect(predicate.sql).not.toContain("paperclipIssue");
+    expect(predicate.sql).not.toMatch(/\bor\b/i);
   });
 
   it("does not query for an empty list and fails closed on decryption failure", async () => {
