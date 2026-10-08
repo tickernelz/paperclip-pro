@@ -35,6 +35,7 @@ import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embed
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
 import type { StorageService } from "../../storage/types.js";
+import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import { issueService } from "../issues.js";
 import { findHeartbeatRunCompletionComment, resolveHeartbeatRunResponse } from "../heartbeat-run-summary.js";
 import {
@@ -261,7 +262,7 @@ describe("native runner file handoff", () => {
           filename: {
             description: expect.stringContaining("Directory components"),
           },
-          byteSize: { minimum: 1, maximum: 10 * 1024 * 1024 },
+          byteSize: { minimum: 1, maximum: getMaxAttachmentBytes() },
           contentRef: {
             description: expect.stringContaining("Workspace-relative"),
           },
