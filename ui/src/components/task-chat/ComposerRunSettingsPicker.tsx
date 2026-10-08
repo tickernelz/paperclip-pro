@@ -121,7 +121,7 @@ export function ComposerRunSettingsPicker({
   const [resolvedIssueId, setResolvedIssueId] = useState<string | null>(null);
   const [pendingValues, setPendingValues] = useState<ComposerRunSettingsValues>({});
   const resolveInFlight = useRef<Promise<string> | null>(null);
-  useMobileViewportInsets(open);
+  useMobileViewportInsets(open, { sheet: true });
   const mobileSelectorModal = useMobileSelectorModal();
 
   const activeIssueId = issueId || resolvedIssueId;

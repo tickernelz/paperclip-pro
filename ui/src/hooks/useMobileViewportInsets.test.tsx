@@ -18,8 +18,9 @@ let viewport: FakeViewport;
 let frames: FrameRequestCallback[];
 let innerHeightDescriptor: PropertyDescriptor | undefined;
 
-function Harness() {
+function Harness({ sheetOpen = false }: { sheetOpen?: boolean }) {
   useMobileViewportInsets(true);
+  useMobileViewportInsets(sheetOpen, { sheet: true });
   return (
     <>
       <textarea data-testid="editor" />
@@ -84,19 +85,25 @@ afterEach(() => {
 describe("resolveKeyboardInset", () => {
   it("ignores viewport gaps while nothing editable is focused", () => {
     expect(
-      resolveKeyboardInset({ innerHeight: 844, visualHeight: 400, offsetTop: 0, editableFocused: false }),
+      resolveKeyboardInset({ innerHeight: 844, visualHeight: 400, offsetTop: 0, editableFocused: false, sheetOpen: false }),
     ).toBe(0);
   });
 
   it("ignores toolbar-sized gaps while an editor is focused", () => {
     expect(
-      resolveKeyboardInset({ innerHeight: 844, visualHeight: 760, offsetTop: 0, editableFocused: true }),
+      resolveKeyboardInset({ innerHeight: 844, visualHeight: 760, offsetTop: 0, editableFocused: true, sheetOpen: false }),
     ).toBe(0);
   });
 
   it("reports a keyboard-sized gap while an editor is focused", () => {
     expect(
-      resolveKeyboardInset({ innerHeight: 844, visualHeight: 508, offsetTop: 0, editableFocused: true }),
+      resolveKeyboardInset({ innerHeight: 844, visualHeight: 508, offsetTop: 0, editableFocused: true, sheetOpen: false }),
+    ).toBe(336);
+  });
+
+  it("follows the whole visual viewport while a sheet is open, even when focus left the editor", () => {
+    expect(
+      resolveKeyboardInset({ innerHeight: 844, visualHeight: 508, offsetTop: 0, editableFocused: false, sheetOpen: true }),
     ).toBe(336);
   });
 });
@@ -151,6 +158,22 @@ describe("useMobileViewportInsets", () => {
     act(() => element("editor").blur());
     flushFrames();
     expect(rootStyle().getPropertyValue("--mobile-viewport-inset-bottom")).toBe("0px");
+    expect(document.documentElement.dataset.keyboardOpen).toBeUndefined();
+  });
+
+  it("keeps an open sheet above the keyboard after focus moves into the sheet", () => {
+    act(() => root.render(<Harness sheetOpen />));
+    act(() => element("button").focus());
+    scrollViewport(508);
+    flushFrames();
+
+    expect(rootStyle().getPropertyValue("--mobile-viewport-inset-bottom")).toBe("336px");
+    expect(rootStyle().getPropertyValue("--mobile-viewport-height")).toBe("508px");
+    expect(document.documentElement.dataset.keyboardOpen).toBe("true");
+
+    act(() => root.render(<Harness />));
+    expect(rootStyle().getPropertyValue("--mobile-viewport-inset-bottom")).toBe("0px");
+    expect(rootStyle().getPropertyValue("--mobile-viewport-height")).toBe("");
     expect(document.documentElement.dataset.keyboardOpen).toBeUndefined();
   });
 

@@ -56,7 +56,7 @@ export function ComposerAddMenu({
 }: ComposerAddMenuProps) {
   const [open, setOpen] = useState(false);
   const goalFocusRef = useRef(false);
-  useMobileViewportInsets(open);
+  useMobileViewportInsets(open, { sheet: true });
   if (!onModeChange && !onAttachFile && !onGoal) return null;
   const actions: AddMenuAction[] = [
     ...(onAttachFile
