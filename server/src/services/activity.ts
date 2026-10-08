@@ -1,4 +1,5 @@
-import { executionProjectionsForRuns } from "./execution-projection.js";
+import { executionProjectionsForRunRows } from "./execution-projection.js";
+import { jsonbRecordFields } from "./jsonb-projection.js";
 import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
@@ -37,88 +38,99 @@ export function normalizeActivityLimit(limit: number | undefined) {
   return Math.max(1, Math.min(MAX_ACTIVITY_LIMIT, Math.floor(limit ?? DEFAULT_ACTIVITY_LIMIT)));
 }
 
+function issueRunIdCondition(companyId: string, issueId: string) {
+  return sql<boolean>`${heartbeatRuns.id} in (
+    select issue_run.id
+    from ${heartbeatRuns} issue_run
+    where issue_run.company_id = ${companyId}
+      and issue_run.context_snapshot ->> 'issueId' = ${issueId}
+    union
+    select ${activityLog.runId}
+    from ${activityLog}
+    where ${activityLog.companyId} = ${companyId}
+      and ${activityLog.entityType} = 'issue'
+      and ${activityLog.entityId} = ${issueId}
+      and ${activityLog.runId} is not null
+  )`;
+}
+
 export function activityService(db: Db) {
   const scheduledLivenessBackfills = new Set<string>();
   const issueIdAsText = sql<string>`${issues.id}::text`;
+  const usageFields = {
+    inputTokens: "jsonb",
+    input_tokens: "jsonb",
+    outputTokens: "jsonb",
+    output_tokens: "jsonb",
+    cachedInputTokens: "jsonb",
+    cached_input_tokens: "jsonb",
+    cache_read_input_tokens: "jsonb",
+    billingType: "jsonb",
+    billing_type: "jsonb",
+    costUsd: "jsonb",
+    cost_usd: "jsonb",
+    total_cost_usd: "jsonb",
+  } as const;
   const summarizedUsageJson = sql<Record<string, unknown> | null>`
     case
       when ${heartbeatRuns.usageJson} is null then null
-      else jsonb_strip_nulls(jsonb_build_object(
-        'inputTokens', coalesce(${heartbeatRuns.usageJson} -> 'inputTokens', ${heartbeatRuns.usageJson} -> 'input_tokens'),
-        'input_tokens', coalesce(${heartbeatRuns.usageJson} -> 'input_tokens', ${heartbeatRuns.usageJson} -> 'inputTokens'),
-        'outputTokens', coalesce(${heartbeatRuns.usageJson} -> 'outputTokens', ${heartbeatRuns.usageJson} -> 'output_tokens'),
-        'output_tokens', coalesce(${heartbeatRuns.usageJson} -> 'output_tokens', ${heartbeatRuns.usageJson} -> 'outputTokens'),
-        'cachedInputTokens', coalesce(
-          ${heartbeatRuns.usageJson} -> 'cachedInputTokens',
-          ${heartbeatRuns.usageJson} -> 'cached_input_tokens',
-          ${heartbeatRuns.usageJson} -> 'cache_read_input_tokens'
-        ),
-        'cached_input_tokens', coalesce(
-          ${heartbeatRuns.usageJson} -> 'cached_input_tokens',
-          ${heartbeatRuns.usageJson} -> 'cachedInputTokens',
-          ${heartbeatRuns.usageJson} -> 'cache_read_input_tokens'
-        ),
-        'cache_read_input_tokens', coalesce(
-          ${heartbeatRuns.usageJson} -> 'cache_read_input_tokens',
-          ${heartbeatRuns.usageJson} -> 'cached_input_tokens',
-          ${heartbeatRuns.usageJson} -> 'cachedInputTokens'
-        ),
-        'billingType', coalesce(${heartbeatRuns.usageJson} -> 'billingType', ${heartbeatRuns.usageJson} -> 'billing_type'),
-        'billing_type', coalesce(${heartbeatRuns.usageJson} -> 'billing_type', ${heartbeatRuns.usageJson} -> 'billingType'),
-        'costUsd', coalesce(
-          ${heartbeatRuns.usageJson} -> 'costUsd',
-          ${heartbeatRuns.usageJson} -> 'cost_usd',
-          ${heartbeatRuns.usageJson} -> 'total_cost_usd'
-        ),
-        'cost_usd', coalesce(
-          ${heartbeatRuns.usageJson} -> 'cost_usd',
-          ${heartbeatRuns.usageJson} -> 'costUsd',
-          ${heartbeatRuns.usageJson} -> 'total_cost_usd'
-        ),
-        'total_cost_usd', coalesce(
-          ${heartbeatRuns.usageJson} -> 'total_cost_usd',
-          ${heartbeatRuns.usageJson} -> 'cost_usd',
-          ${heartbeatRuns.usageJson} -> 'costUsd'
-        )
-      ))
+      else ${jsonbRecordFields(heartbeatRuns.usageJson, usageFields, (usage) => sql`jsonb_strip_nulls(jsonb_build_object(
+        'inputTokens', coalesce(${usage("inputTokens")}, ${usage("input_tokens")}),
+        'input_tokens', coalesce(${usage("input_tokens")}, ${usage("inputTokens")}),
+        'outputTokens', coalesce(${usage("outputTokens")}, ${usage("output_tokens")}),
+        'output_tokens', coalesce(${usage("output_tokens")}, ${usage("outputTokens")}),
+        'cachedInputTokens', coalesce(${usage("cachedInputTokens")}, ${usage("cached_input_tokens")}, ${usage("cache_read_input_tokens")}),
+        'cached_input_tokens', coalesce(${usage("cached_input_tokens")}, ${usage("cachedInputTokens")}, ${usage("cache_read_input_tokens")}),
+        'cache_read_input_tokens', coalesce(${usage("cache_read_input_tokens")}, ${usage("cached_input_tokens")}, ${usage("cachedInputTokens")}),
+        'billingType', coalesce(${usage("billingType")}, ${usage("billing_type")}),
+        'billing_type', coalesce(${usage("billing_type")}, ${usage("billingType")}),
+        'costUsd', coalesce(${usage("costUsd")}, ${usage("cost_usd")}, ${usage("total_cost_usd")}),
+        'cost_usd', coalesce(${usage("cost_usd")}, ${usage("costUsd")}, ${usage("total_cost_usd")}),
+        'total_cost_usd', coalesce(${usage("total_cost_usd")}, ${usage("cost_usd")}, ${usage("costUsd")})
+      ))`)}
     end
   `.as("usageJson");
+  const resultFields = {
+    conversationReset: "jsonb",
+    workspaceRestoreFailure: "jsonb",
+    workspaceRestorePath: "jsonb",
+    finalResponseRecorded: "jsonb",
+    billingType: "jsonb",
+    billing_type: "jsonb",
+    costUsd: "jsonb",
+    cost_usd: "jsonb",
+    total_cost_usd: "jsonb",
+    stopReason: "jsonb",
+    effectiveTimeoutSec: "jsonb",
+    effectiveTimeoutMs: "jsonb",
+    timeoutConfigured: "jsonb",
+    timeoutSource: "jsonb",
+    timeoutFired: "jsonb",
+  } as const;
   const summarizedResultJson = sql<Record<string, unknown> | null>`
     case
       when ${heartbeatRuns.resultJson} is null then null
-      else jsonb_strip_nulls(jsonb_build_object(
-        'conversationReset', ${heartbeatRuns.resultJson} -> 'conversationReset',
-        'workspaceRestoreFailure', case when ${heartbeatRuns.resultJson} ->> 'workspaceRestoreFailure'
+      else ${jsonbRecordFields(heartbeatRuns.resultJson, resultFields, (result) => sql`jsonb_strip_nulls(jsonb_build_object(
+        'conversationReset', ${result("conversationReset")},
+        'workspaceRestoreFailure', case when ${result("workspaceRestoreFailure")} #>> '{}'
           in ('restore_permission_denied', 'restore_lock_timeout', 'restore_unsafe_archive', 'restore_failed')
-          then ${heartbeatRuns.resultJson} -> 'workspaceRestoreFailure' end,
-        'workspaceRestorePath', case when length(${heartbeatRuns.resultJson} ->> 'workspaceRestorePath') <= 180
-          then ${heartbeatRuns.resultJson} -> 'workspaceRestorePath' end,
-        'finalResponseRecorded', case when jsonb_typeof(${heartbeatRuns.resultJson} -> 'finalResponseRecorded') = 'boolean'
-          then ${heartbeatRuns.resultJson} -> 'finalResponseRecorded' end,
-        'billingType', coalesce(${heartbeatRuns.resultJson} -> 'billingType', ${heartbeatRuns.resultJson} -> 'billing_type'),
-        'billing_type', coalesce(${heartbeatRuns.resultJson} -> 'billing_type', ${heartbeatRuns.resultJson} -> 'billingType'),
-        'costUsd', coalesce(
-          ${heartbeatRuns.resultJson} -> 'costUsd',
-          ${heartbeatRuns.resultJson} -> 'cost_usd',
-          ${heartbeatRuns.resultJson} -> 'total_cost_usd'
-        ),
-        'cost_usd', coalesce(
-          ${heartbeatRuns.resultJson} -> 'cost_usd',
-          ${heartbeatRuns.resultJson} -> 'costUsd',
-          ${heartbeatRuns.resultJson} -> 'total_cost_usd'
-        ),
-        'total_cost_usd', coalesce(
-          ${heartbeatRuns.resultJson} -> 'total_cost_usd',
-          ${heartbeatRuns.resultJson} -> 'cost_usd',
-          ${heartbeatRuns.resultJson} -> 'costUsd'
-        ),
-        'stopReason', ${heartbeatRuns.resultJson} -> 'stopReason',
-        'effectiveTimeoutSec', ${heartbeatRuns.resultJson} -> 'effectiveTimeoutSec',
-        'effectiveTimeoutMs', ${heartbeatRuns.resultJson} -> 'effectiveTimeoutMs',
-        'timeoutConfigured', ${heartbeatRuns.resultJson} -> 'timeoutConfigured',
-        'timeoutSource', ${heartbeatRuns.resultJson} -> 'timeoutSource',
-        'timeoutFired', ${heartbeatRuns.resultJson} -> 'timeoutFired'
-      ))
+          then ${result("workspaceRestoreFailure")} end,
+        'workspaceRestorePath', case when length(${result("workspaceRestorePath")} #>> '{}') <= 180
+          then ${result("workspaceRestorePath")} end,
+        'finalResponseRecorded', case when jsonb_typeof(${result("finalResponseRecorded")}) = 'boolean'
+          then ${result("finalResponseRecorded")} end,
+        'billingType', coalesce(${result("billingType")}, ${result("billing_type")}),
+        'billing_type', coalesce(${result("billing_type")}, ${result("billingType")}),
+        'costUsd', coalesce(${result("costUsd")}, ${result("cost_usd")}, ${result("total_cost_usd")}),
+        'cost_usd', coalesce(${result("cost_usd")}, ${result("costUsd")}, ${result("total_cost_usd")}),
+        'total_cost_usd', coalesce(${result("total_cost_usd")}, ${result("cost_usd")}, ${result("costUsd")}),
+        'stopReason', ${result("stopReason")},
+        'effectiveTimeoutSec', ${result("effectiveTimeoutSec")},
+        'effectiveTimeoutMs', ${result("effectiveTimeoutMs")},
+        'timeoutConfigured', ${result("timeoutConfigured")},
+        'timeoutSource', ${result("timeoutSource")},
+        'timeoutFired', ${result("timeoutFired")}
+      ))`)}
     end
   `.as("resultJson");
 
@@ -175,17 +187,7 @@ export function activityService(db: Db) {
           eq(heartbeatRuns.companyId, companyId),
           isNull(heartbeatRuns.livenessState),
           sql`${heartbeatRuns.status} not in ('queued', 'running')`,
-          or(
-            sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
-            sql`exists (
-              select 1
-              from ${activityLog}
-              where ${activityLog.companyId} = ${companyId}
-                and ${activityLog.entityType} = 'issue'
-                and ${activityLog.entityId} = ${issueId}
-                and ${activityLog.runId} = ${heartbeatRuns.id}
-            )`,
-          ),
+          issueRunIdCondition(companyId, issueId),
         ),
       )
       .limit(20);
@@ -390,7 +392,7 @@ export function activityService(db: Db) {
 
     runsForIssue: async (companyId: string, issueId: string) => {
       scheduleRunLivenessBackfill(companyId, issueId);
-      const runs = await db
+      const runRows = await db
         .select({
           runId: heartbeatRuns.id,
           runtimeMode: heartbeatRuns.runtimeMode,
@@ -415,10 +417,27 @@ export function activityService(db: Db) {
           continuationAttempt: heartbeatRuns.continuationAttempt,
           lastUsefulActionAt: heartbeatRuns.lastUsefulActionAt,
           nextAction: heartbeatRuns.nextAction,
-          wakeCommentIds: sql<string[] | null>`${heartbeatRuns.contextSnapshot} -> 'wakeCommentIds'`,
-          wakeCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`,
-          contextCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'commentId'`,
-          contextIssueId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'issueId'`,
+          executionControlDeadlineAt: heartbeatRuns.executionControlDeadlineAt,
+          lastOutputAt: heartbeatRuns.lastOutputAt,
+          nativeIssueId: heartbeatRuns.nativeIssueId,
+          processPid: heartbeatRuns.processPid,
+          context: jsonbRecordFields<{
+            wakeCommentIds: string[] | null;
+            wakeCommentId: string | null;
+            commentId: string | null;
+            issueId: string | null;
+            failureRetriesBeforeAiConnectionWait: unknown;
+            failureRetriesBeforeWorkspaceWait: unknown;
+            failureRetriesBeforeProcessLoss: unknown;
+          } | null>(heartbeatRuns.contextSnapshot, {
+            wakeCommentIds: "jsonb",
+            wakeCommentId: "text",
+            commentId: "text",
+            issueId: "text",
+            failureRetriesBeforeAiConnectionWait: "jsonb",
+            failureRetriesBeforeWorkspaceWait: "jsonb",
+            failureRetriesBeforeProcessLoss: "jsonb",
+          }),
         })
         .from(heartbeatRuns)
         .innerJoin(
@@ -431,20 +450,48 @@ export function activityService(db: Db) {
         .where(
           and(
             eq(heartbeatRuns.companyId, companyId),
-            or(
-              sql`${heartbeatRuns.contextSnapshot} ->> 'issueId' = ${issueId}`,
-              sql`exists (
-                select 1
-                from ${activityLog}
-                where ${activityLog.companyId} = ${companyId}
-                  and ${activityLog.entityType} = 'issue'
-                  and ${activityLog.entityId} = ${issueId}
-                  and ${activityLog.runId} = ${heartbeatRuns.id}
-              )`,
-            ),
+            issueRunIdCondition(companyId, issueId),
           ),
         )
         .orderBy(desc(heartbeatRuns.createdAt));
+      const executionRuns = runRows.map((row) => ({
+        id: row.runId,
+        errorCode: row.errorCode,
+        executionControlDeadlineAt: row.executionControlDeadlineAt,
+        finishedAt: row.finishedAt,
+        lastOutputAt: row.lastOutputAt,
+        lastUsefulActionAt: row.lastUsefulActionAt,
+        nativeIssueId: row.nativeIssueId,
+        nextAction: row.nextAction,
+        processPid: row.processPid,
+        retryOfRunId: row.retryOfRunId,
+        runtimeMode: row.runtimeMode,
+        scheduledRetryAt: row.scheduledRetryAt,
+        scheduledRetryAttempt: row.scheduledRetryAttempt,
+        scheduledRetryReason: row.scheduledRetryReason,
+        startedAt: row.startedAt,
+        status: row.status,
+        contextSnapshot: {
+          issueId: row.context?.issueId ?? null,
+          failureRetriesBeforeAiConnectionWait: row.context?.failureRetriesBeforeAiConnectionWait ?? null,
+          failureRetriesBeforeWorkspaceWait: row.context?.failureRetriesBeforeWorkspaceWait ?? null,
+          failureRetriesBeforeProcessLoss: row.context?.failureRetriesBeforeProcessLoss ?? null,
+        },
+      }));
+      const runs = runRows.map(({
+        context,
+        executionControlDeadlineAt: _executionControlDeadlineAt,
+        lastOutputAt: _lastOutputAt,
+        nativeIssueId: _nativeIssueId,
+        processPid: _processPid,
+        ...run
+      }) => ({
+        ...run,
+        wakeCommentIds: context?.wakeCommentIds ?? null,
+        wakeCommentId: context?.wakeCommentId ?? null,
+        contextCommentId: context?.commentId ?? null,
+        contextIssueId: context?.issueId ?? null,
+      }));
 
       if (runs.length === 0) return runs;
       const runIds = runs.map((run) => run.runId);
@@ -497,7 +544,7 @@ export function activityService(db: Db) {
       const [exhaustionRows, leaseRows, executionByRunId, [savedPlan]] = await Promise.all([
         exhaustionRowsQuery,
         leaseRowsQuery,
-        executionProjectionsForRuns(db, companyId, runIds),
+        executionProjectionsForRunRows(db, companyId, executionRuns),
         savedPlanQuery,
       ]);
       const retryExhaustedReasonByRunId = new Map<string, string>();

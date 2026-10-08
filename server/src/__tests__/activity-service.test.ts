@@ -8,6 +8,7 @@ import {
   createDb,
   documentRevisions,
   documents,
+  heartbeatRunEvents,
   heartbeatRuns,
   issueComments,
   issueDocuments,
@@ -60,6 +61,7 @@ describeEmbeddedPostgres("activity service", () => {
   }, 20_000);
 
   afterEach(async () => {
+    await db.delete(heartbeatRunEvents);
     await db.delete(activityLog);
     await db.delete(issueComments);
     await db.delete(issueDocuments);
@@ -148,6 +150,78 @@ describeEmbeddedPostgres("activity service", () => {
     const result = await activityService(db).list({ companyId, limit: 2 });
 
     expect(result.map((event) => event.action)).toEqual(["test.newest", "test.middle"]);
+  });
+
+  it("lists issue runs linked by context or activity once each, with execution and retry exhaustion", async () => {
+    const companyId = randomUUID();
+    const otherCompanyId = randomUUID();
+    const agentId = randomUUID();
+    const otherAgentId = randomUUID();
+    const issueId = randomUUID();
+    const contextRunId = randomUUID();
+    const activityRunId = randomUUID();
+    const bothRunId = randomUUID();
+    const unrelatedRunId = randomUUID();
+    const foreignRunId = randomUUID();
+
+    await db.insert(companies).values([
+      { id: companyId, name: "Paperclip", issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`, requireBoardApprovalForNewAgents: false },
+      { id: otherCompanyId, name: "Other", issuePrefix: `T${otherCompanyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`, requireBoardApprovalForNewAgents: false },
+    ]);
+    await db.insert(agents).values([
+      { id: agentId, companyId, name: "Coder", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
+      { id: otherAgentId, companyId: otherCompanyId, name: "Other", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
+    ]);
+    await db.insert(heartbeatRuns).values([
+      {
+        id: contextRunId,
+        companyId,
+        agentId,
+        status: "failed",
+        livenessState: "failed",
+        scheduledRetryReason: "process_lost",
+        createdAt: new Date("2026-04-18T10:00:00.000Z"),
+        contextSnapshot: {
+          issueId,
+          commentId: "comment-1",
+          wakeCommentId: "wake-1",
+          wakeCommentIds: ["wake-1", "wake-2"],
+          failureRetriesBeforeProcessLoss: 2,
+          prompt: "p".repeat(64_000),
+        },
+      },
+      { id: activityRunId, companyId, agentId, status: "succeeded", livenessState: "advanced", createdAt: new Date("2026-04-18T11:00:00.000Z"), contextSnapshot: { issueId: randomUUID() } },
+      { id: bothRunId, companyId, agentId, status: "succeeded", livenessState: "advanced", createdAt: new Date("2026-04-18T12:00:00.000Z"), contextSnapshot: { issueId } },
+      { id: unrelatedRunId, companyId, agentId, status: "succeeded", livenessState: "advanced", contextSnapshot: { issueId: randomUUID() } },
+      { id: foreignRunId, companyId: otherCompanyId, agentId: otherAgentId, status: "succeeded", livenessState: "advanced", contextSnapshot: { issueId } },
+    ]);
+    await db.insert(activityLog).values([
+      { companyId, actorType: "agent", actorId: agentId, action: "issue.updated", entityType: "issue", entityId: issueId, runId: activityRunId, details: {} },
+      { companyId, actorType: "agent", actorId: agentId, action: "issue.updated", entityType: "issue", entityId: issueId, runId: bothRunId, details: {} },
+      { companyId, actorType: "agent", actorId: agentId, action: "issue.updated", entityType: "issue", entityId: issueId, runId: bothRunId, details: {} },
+      { companyId: otherCompanyId, actorType: "agent", actorId: otherAgentId, action: "issue.updated", entityType: "issue", entityId: issueId, runId: foreignRunId, details: {} },
+      { companyId, actorType: "agent", actorId: agentId, action: "issue.updated", entityType: "project", entityId: issueId, runId: unrelatedRunId, details: {} },
+    ]);
+    await db.insert(heartbeatRunEvents).values([
+      { companyId, runId: contextRunId, agentId, seq: 1, eventType: "lifecycle", level: "warn", message: "Bounded retry exhausted after 3 scheduled attempts" },
+      { companyId, runId: contextRunId, agentId, seq: 2, eventType: "lifecycle", level: "warn", message: "Bounded retry exhausted after 4 scheduled attempts" },
+      { companyId, runId: bothRunId, agentId, seq: 1, eventType: "log", level: "info", message: "Bounded retry exhausted is not a lifecycle event here" },
+    ]);
+
+    const runs = await activityService(db).runsForIssue(companyId, issueId);
+
+    expect(runs.map((run) => run.runId)).toEqual([bothRunId, activityRunId, contextRunId]);
+    expect(runs[2]).toMatchObject({
+      contextIssueId: issueId,
+      contextCommentId: "comment-1",
+      wakeCommentId: "wake-1",
+      wakeCommentIds: ["wake-1", "wake-2"],
+      retryExhaustedReason: "Bounded retry exhausted after 4 scheduled attempts",
+      execution: expect.objectContaining({ attempt: 3 }),
+    });
+    expect(runs[0].retryExhaustedReason).toBeNull();
+    expect(runs[0]).not.toHaveProperty("context");
+    expect(runs[0]).not.toHaveProperty("nativeIssueId");
   });
 
   it("returns compact usage and result summaries for issue runs", async () => {
