@@ -342,6 +342,11 @@
   --radius-task-composer: 16px;
   --tc-interaction-card-max-h: 50dvh;
   --issue-list-row-intrinsic-height: 44px;
+  --tc-interaction-card-max-h-mobile: min(45dvh, calc(var(--mobile-viewport-height, 100dvh) * 0.45));
+  --tc-mobile-card-padding: 8px;
+  --tc-mobile-option-py: 8px;
+  --tc-mobile-action-h: 44px;
+  --tc-mobile-editor-min-h: 48px;
   --shadow-task-composer: 0 2px 8px -2px color-mix(in oklab, var(--foreground) 7%, transparent),
     0 12px 32px -8px color-mix(in oklab, var(--foreground) 12%, transparent);
   --profile-popover-width: 248px;
@@ -403,6 +408,45 @@
   --tc-composer-dock-bottom: calc(
     var(--tc-composer-bottom) + var(--mobile-viewport-inset-bottom, 0px)
   );
+}
+
+[data-testid="task-chat-composer-takeover-body"][data-mobile] [data-slot="task-chat-takeover-actions"] {
+  position: sticky;
+  bottom: 0;
+  z-index: 1;
+  padding-top: var(--tc-mobile-card-padding);
+  background: var(--card);
+}
+
+.dark [data-testid="task-chat-composer-takeover-body"][data-mobile] [data-slot="task-chat-takeover-actions"] {
+  background: var(--muted);
+}
+
+[data-keyboard-open="true"] [data-testid="task-chat-composer-dock"] {
+  --tc-composer-dock-bottom: var(--mobile-viewport-inset-bottom, 0px);
+  max-height: calc(var(--mobile-viewport-height, 100dvh) - var(--spacing) * 2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+[data-keyboard-open="true"] [data-testid="task-chat-composer-dock"] :is(
+  [data-testid="task-chat-turn-status-island"],
+  [data-testid="runner-goal-widget"]
+) {
+  display: none;
+}
+
+html[data-keyboard-open="true"]:has([data-testid="task-chat-composer-dock"]) [data-slot="mobile-topbar"] {
+  display: none;
+}
+
+html[data-keyboard-open="true"]:has([data-testid="task-chat-composer-dock"]) .mobile-bottom-nav {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-composer-dock"]) {
+  padding-bottom: 0;
 }
 
 .dark {
@@ -670,6 +714,23 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
      single line of text and push it too high (notably on mobile Safari). */
   textarea[data-autosize-title] {
     min-height: 0;
+  }
+
+  [data-testid="task-chat-composer-takeover"] button:not([data-size="xs"], [data-size^="icon"]) {
+    min-height: var(--tc-mobile-action-h);
+  }
+}
+
+@media (max-width: 40rem), (max-height: 32.5rem) {
+  :root {
+    --tc-mobile-card-padding: 6px;
+    --tc-mobile-option-py: 4px;
+    --tc-mobile-action-h: 36px;
+    --tc-mobile-editor-min-h: 36px;
+  }
+
+  [data-testid="task-chat-composer-takeover"] {
+    --text-sm: var(--text-compact);
   }
 }
 

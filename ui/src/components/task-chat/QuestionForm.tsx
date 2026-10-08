@@ -139,7 +139,7 @@ function SelectOption({
       aria-checked={selected}
       disabled={disabled}
       className={cn(
-        "tc-question-option flex w-full items-start gap-2 rounded-md px-2.5 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
+        "tc-question-option flex w-full items-start gap-2 rounded-md px-2.5 py-(--tc-mobile-option-py) text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
         selected
           ? "bg-foreground/5"
           : recommended
@@ -520,7 +520,7 @@ export function QuestionForm({
           role="region"
           aria-label="Question context"
           tabIndex={0}
-          className="mb-3 max-h-96 overflow-auto text-sm text-muted-foreground"
+          className="mb-3 max-h-(--sz-28dvh) overflow-auto overscroll-contain text-sm text-muted-foreground"
         >
           <MarkdownBody mediaMode="reference" linkIssueReferences={false}>{questionSet.description}</MarkdownBody>
         </div>
@@ -666,7 +666,10 @@ export function QuestionForm({
           </div>
         ) : null}
       </div>
-      <div className="mt-3 flex flex-wrap items-center justify-end gap-2">
+      <div
+        className="mt-3 flex flex-wrap items-center justify-end gap-2"
+        data-slot="task-chat-takeover-actions"
+      >
         {cancelAction ? (
           <Button
             type="button"

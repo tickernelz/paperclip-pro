@@ -190,9 +190,9 @@ function InteractionShell({
   return (
     <article
       className={cn(
-        "overflow-hidden",
-        presentation === "timeline" &&
-          "rounded-md border border-border bg-card/60",
+        presentation === "timeline"
+          ? "overflow-hidden rounded-md border border-border bg-card/60"
+          : "overflow-clip",
       )}
     >
       {presentation === "takeover" ? (
@@ -241,7 +241,7 @@ function Details({ children }: { children?: ReactNode }) {
       <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
         <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
       </summary>
-      <div className="mt-2 rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground">
+      <div className="mt-2 max-h-(--sz-28dvh) overflow-y-auto overscroll-contain rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground scrollbar-auto-hide">
         {children}
       </div>
     </details>
@@ -256,7 +256,10 @@ function ActionRow({
   hint?: string | null;
 }) {
   return (
-    <div className="mt-3 flex flex-wrap items-center gap-2">
+    <div
+      className="mt-3 flex flex-wrap items-center gap-2"
+      data-slot="task-chat-takeover-actions"
+    >
       {hint ? (
         <span className="mr-auto text-xs text-muted-foreground">{hint}</span>
       ) : (
