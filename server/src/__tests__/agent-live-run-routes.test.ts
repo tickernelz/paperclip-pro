@@ -27,6 +27,8 @@ const mockIssueService = vi.hoisted(() => ({
 const mockExecutionProjection = vi.hoisted(() => ({
   executionProjectionForRun: vi.fn(async () => null),
   executionProjectionsForRuns: vi.fn(async () => new Map()),
+  executionProjectionsForRunRows: vi.fn(async () => new Map()),
+  executionRunColumns: {},
 }));
 
 const mockInstanceSettingsService = vi.hoisted(() => ({

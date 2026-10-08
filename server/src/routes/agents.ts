@@ -16,7 +16,7 @@ import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSki
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { canRetryStoppedRun } from "../services/cancelled-native-startup.js";
 import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
-import { executionProjectionForRun, executionProjectionsForRuns } from "../services/execution-projection.js";
+import { executionProjectionForRun, executionProjectionsForRunRows, executionProjectionsForRuns, executionRunColumns } from "../services/execution-projection.js";
 import { selectDashboardRunIds } from "../services/dashboard-run-selection.js";
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { generateKeyPairSync, randomUUID } from "node:crypto";
@@ -7854,6 +7854,7 @@ export function agentRoutes(
         lastOutputStream: heartbeatRuns.lastOutputStream,
         lastOutputBytes: heartbeatRuns.lastOutputBytes,
         processStartedAt: heartbeatRuns.processStartedAt,
+        executionRun: executionRunColumns,
       })
       .from(heartbeatRuns)
       .innerJoin(agentsTable, eq(heartbeatRuns.agentId, agentsTable.id))
@@ -7866,8 +7867,8 @@ export function agentRoutes(
       )
       .orderBy(desc(heartbeatRuns.createdAt));
 
-    const projections = await executionProjectionsForRuns(db, issue.companyId, liveRuns.map(run => run.id));
-    res.json(await Promise.all(liveRuns.map(async (run) => ({
+    const projections = await executionProjectionsForRunRows(db, issue.companyId, liveRuns.map((run) => run.executionRun));
+    res.json(await Promise.all(liveRuns.map(async ({ executionRun: _executionRun, ...run }) => ({
       ...heartbeat.decorateActiveRunStatus(run, { companyId: issue.companyId, issueId: issue.id }),
       agentAppearance: resolveAgentAppearance(run.agentAppearance, run.agentId),
       avatarUrl: agentAvatarUrl(resolveAgentAppearance(run.agentAppearance, run.agentId), 512),
