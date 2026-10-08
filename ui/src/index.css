@@ -1499,6 +1499,12 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   animation: tc-live-ping var(--motion-approval-pulse) var(--motion-ease-standard) infinite;
 }
 
+.paperclip-markdown.paperclip-markdown-inherit {
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
 .paperclip-markdown.task-chat-reasoning-markdown,
 .paperclip-markdown.task-chat-reasoning-markdown :is(h1, h2, h3, h4, h5, h6, strong) {
   font-size: inherit;

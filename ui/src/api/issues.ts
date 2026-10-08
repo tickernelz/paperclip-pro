@@ -453,16 +453,27 @@ export const issuesApi = {
       selectedClientKeys?: string[];
       selectedOptionIds?: string[];
       rememberAction?: boolean;
+      note?: string | null;
     },
+  ) => {
+    const { note, ...rest } = data ?? {};
+    return api.post<IssueThreadInteraction>(
+      `/issues/${id}/interactions/${interactionId}/accept`,
+      note?.trim() ? { ...rest, note } : rest,
+    );
+  },
+  rejectInteraction: (
+    id: string,
+    interactionId: string,
+    reason?: string,
+    note?: string | null,
   ) =>
     api.post<IssueThreadInteraction>(
-      `/issues/${id}/interactions/${interactionId}/accept`,
-      data ?? {},
-    ),
-  rejectInteraction: (id: string, interactionId: string, reason?: string) =>
-    api.post<IssueThreadInteraction>(
       `/issues/${id}/interactions/${interactionId}/reject`,
-      reason ? { reason } : {},
+      {
+        ...(reason ? { reason } : {}),
+        ...(note?.trim() ? { note } : {}),
+      },
     ),
   cancelInteraction: (id: string, interactionId: string, reason?: string) =>
     api.post<IssueThreadInteraction>(

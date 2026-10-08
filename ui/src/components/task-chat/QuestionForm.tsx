@@ -21,6 +21,12 @@ import {
 } from "@/lib/composer-draft";
 import { cn } from "@/lib/utils";
 import {
+  InteractionInlineMarkdown,
+  InteractionNoteField,
+  interactionNoteTooLong,
+  interactionNoteValue,
+} from "@/components/InteractionNoteField";
+import {
   TaskChatComposerTakeoverControls,
   useTaskChatComposerTakeoverActions,
 } from "./TaskChatComposerTakeoverContext";
@@ -49,7 +55,11 @@ export interface QuestionFormProps {
   disabled?: boolean;
   imageUploadHandler?: (file: File) => Promise<string>;
   mentions?: MentionOption[];
-  onSubmit: (response: PaperclipQuestionResponse) => void | Promise<void>;
+  notesEnabled?: boolean;
+  onSubmit: (
+    response: PaperclipQuestionResponse,
+    notes: Record<string, string>,
+  ) => void | Promise<void>;
   /**
    * Resolves the request itself (a timeline card cancelling the interaction).
    * Inside the composer takeover the form falls back to dismissing the
@@ -170,7 +180,9 @@ function SelectOption({
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium leading-5 text-foreground">
-          <span>{label}</span>
+          <InteractionInlineMarkdown className="min-w-0">
+            {label}
+          </InteractionInlineMarkdown>
           {recommended ? (
             <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">
               Recommended
@@ -179,7 +191,7 @@ function SelectOption({
         </span>
         {description ? (
           <span className="block text-xs leading-4 text-muted-foreground">
-            {description}
+            <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
           </span>
         ) : null}
       </span>
@@ -216,12 +228,18 @@ export function QuestionResponseSummary({
                   {question.header}
                 </span>
               ) : null}
-              <span className="block text-sm text-foreground">
+              <InteractionInlineMarkdown className="text-sm text-foreground">
                 {question.prompt}
-              </span>
+              </InteractionInlineMarkdown>
             </dt>
             <dd className="mt-0.5 text-foreground">
-              {values.length > 0 ? values.join(", ") : "No answer"}
+              {values.length > 0 ? (
+                <InteractionInlineMarkdown>
+                  {values.join(", ")}
+                </InteractionInlineMarkdown>
+              ) : (
+                "No answer"
+              )}
             </dd>
           </div>
         );
@@ -239,6 +257,7 @@ export function QuestionForm({
   disabled = false,
   imageUploadHandler,
   mentions,
+  notesEnabled = false,
   onSubmit,
   onCancel,
 }: QuestionFormProps) {
@@ -248,6 +267,7 @@ export function QuestionForm({
         page: number;
         answers: Record<string, Answer>;
         customActive: Record<string, boolean>;
+        notes?: Record<string, string>;
       }>(draftKey, {
         page: 0,
         answers: structuredClone(initialResponse?.answers ?? {}),
@@ -272,10 +292,13 @@ export function QuestionForm({
           .map(([questionId]) => [questionId, true]),
       ),
   );
+  const [notes, setNotes] = useState<Record<string, string>>(
+    () => initialDraft?.notes ?? {},
+  );
   const [working, setWorking] = useState<"submit" | "cancel" | null>(null);
   const [inputUploading, setInputUploading] = useState(false);
   const [error, setError] = useState<FormError | null>(null);
-  const promptRef = useRef<HTMLParagraphElement>(null);
+  const promptRef = useRef<HTMLDivElement>(null);
   const previousPage = useRef(page);
 
   useEffect(() => {
@@ -294,8 +317,8 @@ export function QuestionForm({
   }, [questionSet.questions.length]);
   useEffect(() => {
     if (draftKey)
-      saveStructuredDraft(draftKey, { page, answers, customActive });
-  }, [answers, customActive, draftKey, page]);
+      saveStructuredDraft(draftKey, { page, answers, customActive, notes });
+  }, [answers, customActive, draftKey, notes, page]);
 
   const question = questionSet.questions[page];
   const validationErrors = useMemo(
@@ -374,7 +397,10 @@ export function QuestionForm({
     });
   }
 
-  async function submit(responseAnswers: Record<string, Answer> = answers) {
+  async function submit(
+    responseAnswers: Record<string, Answer> = answers,
+    responseNotes: Record<string, string> = notes,
+  ) {
     if (disabled || working || inputUploading) return;
     const invalidIndex = questionSet.questions.findIndex(
       (candidate) =>
@@ -391,13 +417,34 @@ export function QuestionForm({
       });
       return;
     }
+    const noteIndex = notesEnabled
+      ? questionSet.questions.findIndex((candidate) =>
+          interactionNoteTooLong(responseNotes[candidate.id]),
+        )
+      : -1;
+    if (noteIndex >= 0) {
+      setPage(noteIndex);
+      setError({ message: `The note on question ${noteIndex + 1} is too long.` });
+      return;
+    }
+    const submittedNotes = notesEnabled
+      ? Object.fromEntries(
+          questionSet.questions.flatMap((candidate) => {
+            const note = interactionNoteValue(responseNotes[candidate.id]);
+            return note ? [[candidate.id, note] as const] : [];
+          }),
+        )
+      : {};
     setWorking("submit");
     setError(null);
     try {
-      await onSubmit({
-        schema: "paperclip.question_response.v1",
-        answers: structuredClone(responseAnswers),
-      });
+      await onSubmit(
+        {
+          schema: "paperclip.question_response.v1",
+          answers: structuredClone(responseAnswers),
+        },
+        submittedNotes,
+      );
       if (draftKey) clearDraft(draftKey);
     } catch (cause) {
       setError({
@@ -443,9 +490,11 @@ export function QuestionForm({
   function skipQuestion() {
     if (busy) return;
     const { [question.id]: _skipped, ...rest } = answers;
+    const { [question.id]: _skippedNote, ...remainingNotes } = notes;
     setAnswers(rest);
+    setNotes(remainingNotes);
     setCustomActive((current) => ({ ...current, [question.id]: false }));
-    if (isLastPage) void submit(rest);
+    if (isLastPage) void submit(rest, remainingNotes);
     else setPage(page + 1);
   }
   const pagination =
@@ -547,18 +596,18 @@ export function QuestionForm({
             {question.header}
           </p>
         ) : null}
-        <p
+        <div
           ref={promptRef}
           tabIndex={-1}
           id={`${id}-${question.id}-prompt`}
           className="text-sm font-medium leading-5 text-foreground"
         >
-          {question.prompt}
-        </p>
+          <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
+        </div>
         {question.helpText ? (
-          <p className="mt-1 text-xs leading-4 text-muted-foreground">
-            {question.helpText}
-          </p>
+          <div className="mt-1 text-xs leading-4 text-muted-foreground">
+            <InteractionInlineMarkdown>{question.helpText}</InteractionInlineMarkdown>
+          </div>
         ) : null}
       </div>
       {question.answerMode === "text" ? (
@@ -656,6 +705,21 @@ export function QuestionForm({
           ) : null}
         </div>
       )}
+      {notesEnabled && (answerHasValue(answer) || notes[question.id]) ? (
+        <div className="mt-2">
+          <InteractionNoteField
+            key={question.id}
+            value={notes[question.id] ?? ""}
+            onChange={(value) =>
+              setNotes((current) => ({ ...current, [question.id]: value }))
+            }
+            imageUploadHandler={imageUploadHandler}
+            mentions={mentions}
+            disabled={disabled || working != null}
+            onUploadingChange={setInputUploading}
+          />
+        </div>
+      ) : null}
       {currentError && answerHasValue(answer) ? (
         <p className="mt-2 text-xs text-destructive">{currentError}</p>
       ) : null}

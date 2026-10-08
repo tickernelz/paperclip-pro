@@ -24,7 +24,8 @@ import {
   type ComposerDraftSubmission,
 } from "@/lib/composer-draft";
 import { CommentSubmissionUnknownError } from "@/lib/comment-submit-result";
-import { ArrowUp, ChevronUp, Square, CircleHelp, Loader2, X } from "lucide-react";
+import { ArrowUp, ChevronDown, ChevronUp, Square, CircleHelp, Loader2, X } from "lucide-react";
+import { useInteractionCardHidden } from "@/lib/interaction-card-visibility";
 import { useShortVisibleViewport } from "@/hooks/useMobileViewportInsets";
 import { Button } from "@/components/ui/button";
 import {
@@ -867,13 +868,18 @@ export function TaskChatComposer({
   const [takeoverFocusedId, setTakeoverFocusedId] = useState<string | null>(null);
   const [takeoverExpandedId, setTakeoverExpandedId] = useState<string | null>(null);
   const shortViewport = useShortVisibleViewport(mobile && takeoverVisible);
+  const [takeoverHidden, setTakeoverHidden] = useInteractionCardHidden(
+    "dock",
+    takeover?.id ?? null,
+  );
   const takeoverCollapsed = Boolean(
-    mobile &&
-      takeoverVisible &&
+    takeoverVisible &&
       takeover &&
-      takeoverExpandedId !== takeover.id &&
-      takeoverFocusedId !== takeover.id &&
-      (editorFocused || shortViewport),
+      (takeoverHidden ||
+        (mobile &&
+          takeoverExpandedId !== takeover.id &&
+          takeoverFocusedId !== takeover.id &&
+          (editorFocused || shortViewport))),
   );
   const previousTakeoverVisibleRef = useRef(takeoverVisible);
   useEffect(() => {
@@ -1226,7 +1232,10 @@ export function TaskChatComposer({
           aria-expanded={false}
           aria-label={`Show ${takeover.label}`}
           onMouseDown={(event) => event.preventDefault()}
-          onClick={() => setTakeoverExpandedId(takeover.id)}
+          onClick={() => {
+            setTakeoverHidden(false);
+            setTakeoverExpandedId(takeover.id);
+          }}
           data-testid="task-chat-composer-takeover-summary"
         >
           <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
@@ -1301,6 +1310,21 @@ export function TaskChatComposer({
                 size="icon-xs"
                 variant="ghost"
                 className="text-muted-foreground hover:text-foreground"
+                aria-label="Hide"
+                aria-expanded
+                data-testid="task-chat-composer-takeover-hide"
+                onClick={() => {
+                  setTakeoverFocusedId(null);
+                  setTakeoverHidden(true);
+                }}
+              >
+                <ChevronDown aria-hidden />
+              </Button>
+              <Button
+                type="button"
+                size="icon-xs"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
                 aria-label={`Dismiss ${takeover.label}`}
                 disabled={takeoverBusy}
                 onClick={takeover.onDismiss}
@@ -1312,7 +1336,7 @@ export function TaskChatComposer({
           <div
             className={cn(
               takeover.hideLabel && takeover.pendingCount === 1
-                ? "pr-8"
+                ? "pr-14"
                 : "pr-1",
               mobile && "min-h-0 flex-1 overflow-y-auto overscroll-contain scrollbar-auto-hide",
             )}

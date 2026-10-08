@@ -2440,18 +2440,20 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     selectedClientKeys?: string[],
     selectedOptionIds?: string[],
     rememberAction?: boolean,
+    note?: string,
   ) => {
     if (!conversationIssueId) return;
-    await issuesApi.acceptInteraction(conversationIssueId, interaction.id, { selectedClientKeys, selectedOptionIds, rememberAction });
+    await issuesApi.acceptInteraction(conversationIssueId, interaction.id, { selectedClientKeys, selectedOptionIds, rememberAction, note });
     await invalidateConversation();
   }, [conversationIssueId, invalidateConversation]);
 
   const handleRejectConversationInteraction = useCallback(async (
     interaction: PipelineConversationActionableInteraction,
     reason?: string,
+    note?: string,
   ) => {
     if (!conversationIssueId) return;
-    await issuesApi.rejectInteraction(conversationIssueId, interaction.id, reason);
+    await issuesApi.rejectInteraction(conversationIssueId, interaction.id, reason, note);
     await invalidateConversation();
   }, [conversationIssueId, invalidateConversation]);
 

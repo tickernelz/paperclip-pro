@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import type { Agent } from "@tickernelz/paperclip-pro-shared";
-import { AlertTriangle, ArrowUpRight, Bot, Check, CheckCircle2, ChevronDown, ChevronRight, CircleDashed, Clock, ExternalLink, FileText, GitBranch, ImagePlus, KeyRound, Loader2, MessageSquareQuote, MinusCircle, ShieldAlert, ThumbsUp, TriangleAlert, Wrench, X, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowUpRight, Bot, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CircleDashed, Clock, ExternalLink, FileText, GitBranch, ImagePlus, KeyRound, Loader2, MessageSquareQuote, MinusCircle, ShieldAlert, ThumbsUp, TriangleAlert, Wrench, X, XCircle } from "lucide-react";
 import { Link } from "@/lib/router";
 import { formatAssigneeUserLabel } from "../lib/assignees";
 import { describeInteractionAudience, type InteractionAudienceDescription } from "../lib/interaction-audience";
@@ -34,6 +34,15 @@ import { cn, formatClockTime, formatDateTime, formatShortDate } from "../lib/uti
 import { InteractionPreparationNotice } from "./InteractionPreparationNotice";
 import { InteractionAudienceLine } from "./InteractionAudienceLine";
 import { MarkdownBody, type MarkdownExternalReferenceMap } from "./MarkdownBody";
+import { useInteractionCardHidden } from "../lib/interaction-card-visibility";
+import {
+  InteractionInlineMarkdown,
+  InteractionNoteField,
+  InteractionNoteReceipt,
+  interactionAcceptsNote,
+  interactionNoteTooLong,
+  interactionNoteValue,
+} from "./InteractionNoteField";
 import { Button } from "./ui/button";
 import { Checkbox } from "./ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
@@ -104,6 +113,7 @@ interface IssueThreadInteractionCardProps {
     selectedClientKeys?: string[],
     selectedOptionIds?: string[],
     rememberAction?: boolean,
+    note?: string,
   ) => Promise<void> | void;
   onRejectInteraction?: (
     interaction:
@@ -111,6 +121,7 @@ interface IssueThreadInteractionCardProps {
       | RequestConfirmationInteraction
       | RequestCheckboxConfirmationInteraction,
     reason?: string,
+    note?: string,
   ) => Promise<void> | void;
   onSubmitInteractionAnswers?: (
     interaction: AskUserQuestionsInteraction,
@@ -528,7 +539,7 @@ function TaskField({
   tone = "default",
 }: {
   label: string;
-  value: string;
+  value: ReactNode;
   tone?: "default" | "subtle";
 }) {
   return (
@@ -1012,7 +1023,7 @@ function QuestionOptionButton({
           selected ? "text-sky-950 dark:text-sky-50" : "text-foreground",
         )}
       >
-        {label}
+        <InteractionInlineMarkdown>{label}</InteractionInlineMarkdown>
       </div>
       {description ? (
         <div
@@ -1023,7 +1034,7 @@ function QuestionOptionButton({
               : "text-muted-foreground",
           )}
         >
-          {description}
+          <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
         </div>
       ) : null}
     </button>
@@ -1034,6 +1045,7 @@ function AskUserQuestionsCard({
   interaction,
   onSubmitInteractionAnswers,
   onCancelInteraction,
+  onUploadImage,
   externalReferences,
 }: {
   interaction: AskUserQuestionsInteraction;
@@ -1044,8 +1056,11 @@ function AskUserQuestionsCard({
   onCancelInteraction?: (
     interaction: AskUserQuestionsInteraction,
   ) => Promise<void> | void;
+  onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const [draftNotes, setDraftNotes] = useState<Record<string, string>>({});
+  const [noteUploading, setNoteUploading] = useState(false);
   const [draftAnswers, setDraftAnswers] = useState<Record<string, string[]>>(() =>
     Object.fromEntries(
       (interaction.result?.answers ?? []).map((answer) => [
@@ -1100,14 +1115,16 @@ function AskUserQuestionsCard({
 
   const questions = interaction.payload.questions;
   const requiredQuestions = questions.filter((question) => question.required);
-  const canSubmit = requiredQuestions.every(
-    (question) =>
-      (draftAnswers[question.id] ?? []).length > 0
-      || (
-        otherActiveQuestions[question.id] === true
-        && (draftOtherAnswers[question.id]?.trim().length ?? 0) > 0
-      ),
-  );
+  const questionAnswered = (questionId: string) =>
+    (draftAnswers[questionId] ?? []).length > 0
+    || (
+      otherActiveQuestions[questionId] === true
+      && (draftOtherAnswers[questionId]?.trim().length ?? 0) > 0
+    );
+  const notesBlocked =
+    noteUploading || questions.some((question) => interactionNoteTooLong(draftNotes[question.id]));
+  const canSubmit =
+    !notesBlocked && requiredQuestions.every((question) => questionAnswered(question.id));
 
   function toggleOption(
     questionId: string,
@@ -1155,10 +1172,12 @@ function AskUserQuestionsCard({
           const otherText = otherActiveQuestions[question.id] === true
             ? draftOtherAnswers[question.id]?.trim() ?? ""
             : "";
+          const note = interactionNoteValue(draftNotes[question.id]);
           return {
             questionId: question.id,
             optionIds: draftAnswers[question.id] ?? [],
             ...(otherText ? { otherText } : {}),
+            ...(note ? { note } : {}),
           };
         }),
       );
@@ -1216,12 +1235,12 @@ function AskUserQuestionsCard({
                     id={`${interaction.id}-${question.id}-prompt`}
                     className="mt-1 text-sm font-semibold text-foreground"
                   >
-                    {question.prompt}
+                    <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
                   </div>
                   {question.helpText ? (
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {question.helpText}
-                    </p>
+                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                      <InteractionInlineMarkdown>{question.helpText}</InteractionInlineMarkdown>
+                    </div>
                   ) : null}
                 </div>
                 <TaskField
@@ -1309,6 +1328,16 @@ function AskUserQuestionsCard({
                     ) : null}
                   </>
                 )}
+                {questionAnswered(question.id) || draftNotes[question.id] ? (
+                  <InteractionNoteField
+                    value={draftNotes[question.id] ?? ""}
+                    onChange={(value) =>
+                      setDraftNotes((current) => ({ ...current, [question.id]: value }))}
+                    imageUploadHandler={onUploadImage}
+                    disabled={working || cancelling}
+                    onUploadingChange={setNoteUploading}
+                  />
+                ) : null}
               </div>
             </div>
             );
@@ -1363,9 +1392,13 @@ function AskUserQuestionsCard({
               : "Question cancelled"}
           </div>
           {interaction.result?.cancellationReason ? (
-            <p className="mt-1">{interaction.result.cancellationReason}</p>
+            <div className="mt-1">
+              <InteractionInlineMarkdown>{interaction.result.cancellationReason}</InteractionInlineMarkdown>
+            </div>
           ) : interaction.result?.reason ? (
-            <p className="mt-1">{interaction.result.reason}</p>
+            <div className="mt-1">
+              <InteractionInlineMarkdown>{interaction.result.reason}</InteractionInlineMarkdown>
+            </div>
           ) : (
             <p className="mt-1">No answer was recorded.</p>
           )}
@@ -1403,23 +1436,35 @@ function AskUserQuestionsCard({
               question,
               answers: interaction.result?.answers ?? [],
             });
+            const note = interaction.result?.answers.find(
+              (answer) => answer.questionId === question.id,
+            )?.note;
             return (
               <div
                 key={question.id}
                 className="rounded-2xl border border-border/70 bg-background/82 p-4"
               >
                 <div className="text-sm font-semibold text-foreground">
-                  {question.prompt}
+                  <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {labels.length > 0 ? (
                     labels.map((label) => (
-                      <TaskField key={label} label="Answer" value={label} />
+                      <TaskField
+                        key={label}
+                        label="Answer"
+                        value={<InteractionInlineMarkdown>{label}</InteractionInlineMarkdown>}
+                      />
                     ))
                   ) : (
                     <span className="text-sm text-muted-foreground">No answer recorded.</span>
                   )}
                 </div>
+                <InteractionNoteReceipt
+                  note={note}
+                  externalReferences={externalReferences}
+                  className="mt-3"
+                />
               </div>
             );
           })}
@@ -1505,10 +1550,15 @@ function RequestConfirmationTargetChip({
 
 function RequestConfirmationResolution({
   interaction,
+  externalReferences,
 }: {
   interaction: RequestConfirmationInteraction;
+  externalReferences?: MarkdownExternalReferenceMap;
 }) {
   const outcome = interaction.result?.outcome;
+  const noteReceipt = (
+    <InteractionNoteReceipt note={interaction.result?.note} externalReferences={externalReferences} />
+  );
   const target = interaction.payload.target ?? null;
   const staleTarget = interaction.result?.staleTarget ?? null;
 
@@ -1540,9 +1590,12 @@ function RequestConfirmationResolution({
       );
     }
     return (
-      <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
-        <span className="font-medium">Confirmed</span>
-        <RequestConfirmationTargetChip interaction={interaction} target={target} />
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+          <span className="font-medium">Confirmed</span>
+          <RequestConfirmationTargetChip interaction={interaction} target={target} />
+        </div>
+        {noteReceipt}
       </div>
     );
   }
@@ -1559,6 +1612,7 @@ function RequestConfirmationResolution({
             <MarkdownBody>{interaction.result.reason}</MarkdownBody>
           </div>
         ) : null}
+        {noteReceipt}
       </div>
     );
   }
@@ -2080,6 +2134,7 @@ function ConfirmationActionRow({
   working,
   actionError,
   approveDisabled = false,
+  rejectDisabled = false,
   preparingApproval = false,
   canApprove,
   canReject,
@@ -2088,6 +2143,7 @@ function ConfirmationActionRow({
   composeReason,
   extraReasonSatisfied = false,
   revisePanelChildren,
+  noteField,
   stackActionsOnMobile = false,
 }: {
   /** Changing this (interaction id + status) collapses the revise panel and
@@ -2104,6 +2160,7 @@ function ConfirmationActionRow({
   working: "accept" | "reject" | null;
   actionError: string | null;
   approveDisabled?: boolean;
+  rejectDisabled?: boolean;
   preparingApproval?: boolean;
   canApprove: boolean;
   canReject: boolean;
@@ -2117,6 +2174,7 @@ function ConfirmationActionRow({
   extraReasonSatisfied?: boolean;
   /** Extra affordances rendered inside the revise panel (e.g. screenshot attach). */
   revisePanelChildren?: ReactNode;
+  noteField?: ReactNode;
   /** Give domain cards with longer action labels an intentional narrow-screen
    * hierarchy instead of relying on opportunistic flex wrapping. */
   stackActionsOnMobile?: boolean;
@@ -2136,13 +2194,14 @@ function ConfirmationActionRow({
 
   function submitRevision() {
     setAttempted(true);
-    if (!canReject || reasonMissing) return;
+    if (!canReject || reasonMissing || rejectDisabled) return;
     onReject(composeReason ? composeReason(reason) : trimmed || undefined);
   }
 
   return (
     <div className="space-y-3">
       {preparingApproval ? <InteractionPreparationNotice /> : null}
+      {noteField}
       <div
         data-testid="confirmation-actions"
         data-mobile-layout={stackActionsOnMobile ? "stacked" : "inline"}
@@ -2188,7 +2247,7 @@ function ConfirmationActionRow({
             size="sm"
             variant="ghost"
             className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
-            disabled={!canReject || working !== null}
+            disabled={!canReject || working !== null || rejectDisabled}
             onClick={() => onReject(undefined)}
           >
             {working === "reject" && !revising ? (
@@ -2234,7 +2293,7 @@ function ConfirmationActionRow({
             <Button
               size="sm"
               variant="outline"
-              disabled={!canReject || working !== null}
+              disabled={!canReject || working !== null || rejectDisabled}
               onClick={submitRevision}
             >
               {working === "reject" ? (
@@ -2525,14 +2584,23 @@ function RequestConfirmationCard({
   primaryActionOnRight?: boolean;
   onAcceptInteraction?: (
     interaction: RequestConfirmationInteraction,
+    selectedClientKeys?: undefined,
+    selectedOptionIds?: undefined,
+    rememberAction?: undefined,
+    note?: string,
   ) => Promise<void> | void;
   onRejectInteraction?: (
     interaction: RequestConfirmationInteraction,
     reason?: string,
+    note?: string,
   ) => Promise<void> | void;
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const notesEnabled = interactionAcceptsNote(interaction);
+  const [note, setNote] = useState("");
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteBlocked = notesEnabled && (noteUploading || interactionNoteTooLong(note));
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
@@ -2555,6 +2623,7 @@ function RequestConfirmationCard({
     setActionError(null);
     setShots([]);
     setUploadError(null);
+    setNote("");
     if (interaction.status !== "pending") {
       setWorking(null);
     }
@@ -2587,11 +2656,14 @@ function RequestConfirmationCard({
   }
 
   async function handleAccept() {
-    if (!onAcceptInteraction) return;
+    if (!onAcceptInteraction || noteBlocked) return;
+    const submittedNote = notesEnabled ? interactionNoteValue(note) : undefined;
     setWorking("accept");
     setActionError(null);
     try {
-      await onAcceptInteraction(interaction);
+      if (submittedNote)
+        await onAcceptInteraction(interaction, undefined, undefined, undefined, submittedNote);
+      else await onAcceptInteraction(interaction);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2600,11 +2672,13 @@ function RequestConfirmationCard({
   }
 
   async function handleReject(reason: string | undefined) {
-    if (!onRejectInteraction) return;
+    if (!onRejectInteraction || noteBlocked) return;
+    const submittedNote = notesEnabled ? interactionNoteValue(note) : undefined;
     setWorking("reject");
     setActionError(null);
     try {
-      await onRejectInteraction(interaction, reason);
+      if (submittedNote) await onRejectInteraction(interaction, reason, submittedNote);
+      else await onRejectInteraction(interaction, reason);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2617,7 +2691,7 @@ function RequestConfirmationCard({
       {interaction.status === "pending" ? (
         <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
           <div className="text-sm leading-6 text-foreground">
-            {interaction.payload.prompt}
+            <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
           </div>
           {interaction.payload.detailsMarkdown ? (
             <div className="border-t border-border/60 pt-3 text-sm">
@@ -2643,11 +2717,24 @@ function RequestConfirmationCard({
           reasonPlaceholder={reasonPlaceholder}
           working={working}
           actionError={actionError}
+          approveDisabled={noteBlocked}
+          rejectDisabled={noteBlocked}
           preparingApproval={isInteractionPreparingApproval(interaction)}
           canApprove={Boolean(onAcceptInteraction)}
           canReject={Boolean(onRejectInteraction)}
           onApprove={() => void handleAccept()}
           onReject={(reason) => void handleReject(reason)}
+          noteField={
+            notesEnabled ? (
+              <InteractionNoteField
+                value={note}
+                onChange={setNote}
+                imageUploadHandler={onUploadImage}
+                disabled={working !== null}
+                onUploadingChange={setNoteUploading}
+              />
+            ) : null
+          }
           composeReason={composeReason}
           extraReasonSatisfied={shots.length > 0}
           revisePanelChildren={
@@ -2717,7 +2804,7 @@ function RequestConfirmationCard({
           }
         />
       ) : (
-        <RequestConfirmationResolution interaction={interaction} />
+        <RequestConfirmationResolution interaction={interaction} externalReferences={externalReferences} />
       )}
     </div>
   );
@@ -2727,8 +2814,10 @@ const CHECKBOX_SUMMARY_LABEL_LIMIT = 8;
 
 function RequestCheckboxConfirmationResolution({
   interaction,
+  externalReferences,
 }: {
   interaction: RequestCheckboxConfirmationInteraction;
+  externalReferences?: MarkdownExternalReferenceMap;
 }) {
   const target = interaction.payload.target ?? null;
   const [expanded, setExpanded] = useState(false);
@@ -2778,12 +2867,18 @@ function RequestCheckboxConfirmationResolution({
             ) : null}
           </div>
         ) : null}
+        <InteractionNoteReceipt note={interaction.result?.note} externalReferences={externalReferences} />
       </div>
     );
   }
 
   if (interaction.status === "rejected") {
-    return <RequestConfirmationResolution interaction={interaction as unknown as RequestConfirmationInteraction} />;
+    return (
+      <RequestConfirmationResolution
+        interaction={interaction as unknown as RequestConfirmationInteraction}
+        externalReferences={externalReferences}
+      />
+    );
   }
 
   if (interaction.status === "expired") {
@@ -2834,9 +2929,13 @@ function CheckboxOptionRow({
         className="mt-0.5"
       />
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium leading-5 text-foreground">{label}</div>
+        <div className="text-sm font-medium leading-5 text-foreground">
+          <InteractionInlineMarkdown>{label}</InteractionInlineMarkdown>
+        </div>
         {description ? (
-          <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{description}</p>
+          <div className="mt-0.5 text-sm leading-5 text-muted-foreground">
+            <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
+          </div>
         ) : null}
       </div>
     </label>
@@ -2848,6 +2947,7 @@ function RequestCheckboxConfirmationCard({
   primaryActionOnRight = false,
   onAcceptInteraction,
   onRejectInteraction,
+  onUploadImage,
   externalReferences,
 }: {
   interaction: RequestCheckboxConfirmationInteraction;
@@ -2856,13 +2956,20 @@ function RequestCheckboxConfirmationCard({
     interaction: RequestCheckboxConfirmationInteraction,
     selectedClientKeys: undefined,
     selectedOptionIds: string[],
+    rememberAction?: undefined,
+    note?: string,
   ) => Promise<void> | void;
   onRejectInteraction?: (
     interaction: RequestCheckboxConfirmationInteraction,
     reason?: string,
+    note?: string,
   ) => Promise<void> | void;
+  onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const [note, setNote] = useState("");
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteBlocked = noteUploading || interactionNoteTooLong(note);
   const options = interaction.payload.options;
   const optionIds = useMemo(() => options.map((option) => option.id), [options]);
   const validOptionIds = useMemo(() => new Set(optionIds), [optionIds]);
@@ -2889,6 +2996,7 @@ function RequestCheckboxConfirmationCard({
     setSelectedOptionIds(new Set(defaultSelected));
     setAcceptAttempted(false);
     setActionError(null);
+    setNote("");
     if (interaction.status !== "pending") {
       setWorking(null);
     }
@@ -2939,11 +3047,14 @@ function RequestCheckboxConfirmationCard({
 
   async function handleAccept() {
     setAcceptAttempted(true);
-    if (!onAcceptInteraction || !selectionValid) return;
+    if (!onAcceptInteraction || !selectionValid || noteBlocked) return;
+    const submittedNote = interactionNoteValue(note);
     setWorking("accept");
     setActionError(null);
     try {
-      await onAcceptInteraction(interaction, undefined, [...selectedOptionIds]);
+      if (submittedNote)
+        await onAcceptInteraction(interaction, undefined, [...selectedOptionIds], undefined, submittedNote);
+      else await onAcceptInteraction(interaction, undefined, [...selectedOptionIds]);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2952,11 +3063,13 @@ function RequestCheckboxConfirmationCard({
   }
 
   async function handleReject(reason: string | undefined) {
-    if (!onRejectInteraction) return;
+    if (!onRejectInteraction || noteBlocked) return;
+    const submittedNote = interactionNoteValue(note);
     setWorking("reject");
     setActionError(null);
     try {
-      await onRejectInteraction(interaction, reason);
+      if (submittedNote) await onRejectInteraction(interaction, reason, submittedNote);
+      else await onRejectInteraction(interaction, reason);
     } catch (error) {
       setActionError(resolutionErrorMessage(error));
     } finally {
@@ -2967,7 +3080,7 @@ function RequestCheckboxConfirmationCard({
   if (interaction.status !== "pending") {
     return (
       <div className="space-y-4">
-        <RequestCheckboxConfirmationResolution interaction={interaction} />
+        <RequestCheckboxConfirmationResolution interaction={interaction} externalReferences={externalReferences} />
       </div>
     );
   }
@@ -2987,7 +3100,9 @@ function RequestCheckboxConfirmationCard({
         {/* Show each piece of state once: a connection-authorization prompt is
             the same sentence as the card title, so repeating it here is noise. */}
         {interaction.payload.prompt === interaction.title ? null : (
-          <div className="text-sm leading-6 text-foreground">{interaction.payload.prompt}</div>
+          <div className="text-sm leading-6 text-foreground">
+            <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
+          </div>
         )}
         {interaction.payload.detailsMarkdown ? (
           <div className="border-t border-border/60 pt-3 text-sm">
@@ -3061,11 +3176,22 @@ function RequestCheckboxConfirmationCard({
           reasonPlaceholder={reasonPlaceholder}
           working={working}
           actionError={actionError}
+          approveDisabled={noteBlocked}
+          rejectDisabled={noteBlocked}
           preparingApproval={isInteractionPreparingApproval(interaction)}
           canApprove={Boolean(onAcceptInteraction)}
           canReject={Boolean(onRejectInteraction)}
           onApprove={() => void handleAccept()}
           onReject={(reason) => void handleReject(reason)}
+          noteField={
+            <InteractionNoteField
+              value={note}
+              onChange={setNote}
+              imageUploadHandler={onUploadImage}
+              disabled={working !== null}
+              onUploadingChange={setNoteUploading}
+            />
+          }
         />
       </div>
     </div>
@@ -3572,6 +3698,13 @@ export function IssueThreadInteractionCard({
   onUploadImage,
   externalReferences,
 }: IssueThreadInteractionCardProps) {
+  const [hiddenPreference, setHidden] = useInteractionCardHidden("thread", interaction.id);
+  const canHide =
+    interaction.status === "pending"
+    && (interaction.kind === "ask_user_questions"
+      || interaction.kind === "request_confirmation"
+      || interaction.kind === "request_checkbox_confirmation");
+  const hidden = canHide && hiddenPreference;
   // Single enforcement point (PAP-424, plan from PAP-420; extended by PAP-437):
   // a card that should never be drawn — a degenerate `ask_user_questions`
   // (placeholder junk like the onboarding `Test / A` card, no genuine question)
@@ -3814,20 +3947,36 @@ export function IssueThreadInteractionCard({
             ) : null}
           </div>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
-                <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
-                <div>proposed by {createdByLabel}</div>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="text-xs">
-              Created {formatDateTime(interaction.createdAt)}
-            </TooltipContent>
-          </Tooltip>
+          <div className="flex items-start gap-2">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
+                  <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
+                  <div>proposed by {createdByLabel}</div>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="text-xs">
+                Created {formatDateTime(interaction.createdAt)}
+              </TooltipContent>
+            </Tooltip>
+            {canHide ? (
+              <Button
+                type="button"
+                size="icon-xs"
+                variant="ghost"
+                className="text-muted-foreground hover:text-foreground"
+                aria-label={hidden ? "Show" : "Hide"}
+                aria-expanded={!hidden}
+                data-testid="interaction-card-visibility-toggle"
+                onClick={() => setHidden(!hidden)}
+              >
+                {hidden ? <ChevronDown aria-hidden /> : <ChevronUp aria-hidden />}
+              </Button>
+            ) : null}
+          </div>
         </div>
 
-        <div className="mt-5">
+        <div className="mt-5" hidden={hidden} data-testid="interaction-card-body">
           {interaction.kind === "suggest_tasks" ? (
             <SuggestTasksCard
               interaction={interaction}
@@ -3842,6 +3991,7 @@ export function IssueThreadInteractionCard({
               interaction={interaction}
               onSubmitInteractionAnswers={onSubmitInteractionAnswers}
               onCancelInteraction={onCancelInteraction}
+              onUploadImage={onUploadImage}
               externalReferences={externalReferences}
             />
           ) : interaction.kind === "request_checkbox_confirmation" ? (
@@ -3850,6 +4000,7 @@ export function IssueThreadInteractionCard({
               primaryActionOnRight={primaryActionOnRight}
               onAcceptInteraction={onAcceptInteraction}
               onRejectInteraction={onRejectInteraction}
+              onUploadImage={onUploadImage}
               externalReferences={externalReferences}
             />
           ) : connectionAuthorization

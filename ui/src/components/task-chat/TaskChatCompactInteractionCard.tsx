@@ -59,6 +59,14 @@ import {
   type SuggestedTaskTreeNode,
 } from "@/lib/issue-thread-interactions";
 import { cn } from "@/lib/utils";
+import {
+  InteractionInlineMarkdown,
+  InteractionNoteField,
+  InteractionNoteReceipt,
+  interactionAcceptsNote,
+  interactionNoteTooLong,
+  interactionNoteValue,
+} from "@/components/InteractionNoteField";
 import { QuestionForm } from "./QuestionForm";
 import {
   TaskChatComposerTakeoverControls,
@@ -390,12 +398,17 @@ function ReceiptDisclosure({
     request = (
       <div className="grid gap-3">
         {questionSet.description ? (
-          <p className="text-sm text-muted-foreground">
-            {questionSet.description}
-          </p>
+          <div className="text-sm text-muted-foreground">
+            <InteractionInlineMarkdown>
+              {questionSet.description}
+            </InteractionInlineMarkdown>
+          </div>
         ) : null}
         {questionSet.questions.map((question) => {
           const answer = response?.answers[question.id];
+          const note = interaction.result?.answers.find(
+            (candidate) => candidate.questionId === question.id,
+          )?.note;
           const selected = (answer?.selectedOptionIds ?? []).map(
             (optionId) =>
               question.options?.find((option) => option.id === optionId)
@@ -411,15 +424,31 @@ function ReceiptDisclosure({
                   {question.header}
                 </p>
               ) : null}
-              <p className="text-sm text-foreground">{question.prompt}</p>
+              <div className="text-sm text-foreground">
+                <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
+              </div>
               {question.helpText ? (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {question.helpText}
-                </p>
+                <div className="mt-0.5 text-xs text-muted-foreground">
+                  <InteractionInlineMarkdown>
+                    {question.helpText}
+                  </InteractionInlineMarkdown>
+                </div>
               ) : null}
-              <p className="mt-1 text-sm font-medium text-foreground">
-                Answer: {values.length > 0 ? values.join(", ") : "No answer"}
-              </p>
+              <div className="mt-1 flex gap-1 text-sm font-medium text-foreground">
+                <span className="shrink-0">Answer:</span>
+                {values.length > 0 ? (
+                  <InteractionInlineMarkdown className="min-w-0 flex-1">
+                    {values.join(", ")}
+                  </InteractionInlineMarkdown>
+                ) : (
+                  <span>No answer</span>
+                )}
+              </div>
+              <InteractionNoteReceipt
+                note={note}
+                externalReferences={externalReferences}
+                className="mt-1"
+              />
             </div>
           );
         })}
@@ -432,15 +461,26 @@ function ReceiptDisclosure({
       .map((option) => option.label);
     request = (
       <div>
-        <p className="text-sm text-foreground">{interaction.payload.prompt}</p>
+        <div className="text-sm text-foreground">
+          <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
+        </div>
         {interaction.status === "accepted" ? (
-          <p className="mt-1 text-sm font-medium text-foreground">
-            Answer:{" "}
-            {selectedLabels.length > 0
-              ? selectedLabels.join(", ")
-              : "No options selected"}
-          </p>
+          <div className="mt-1 flex gap-1 text-sm font-medium text-foreground">
+            <span className="shrink-0">Answer:</span>
+            {selectedLabels.length > 0 ? (
+              <InteractionInlineMarkdown className="min-w-0 flex-1">
+                {selectedLabels.join(", ")}
+              </InteractionInlineMarkdown>
+            ) : (
+              <span>No options selected</span>
+            )}
+          </div>
         ) : null}
+        <InteractionNoteReceipt
+          note={interaction.result?.note}
+          externalReferences={externalReferences}
+          className="mt-1"
+        />
         {interaction.payload.detailsMarkdown ? (
           <div className="mt-2 text-sm">
             <MarkdownBody externalReferences={externalReferences}>
@@ -521,7 +561,13 @@ function ReceiptDisclosure({
   } else {
     request = (
       <div className="grid gap-2">
-        <p className="text-sm text-foreground">{interaction.payload.prompt}</p>
+        <div className="text-sm text-foreground">
+          <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
+        </div>
+        <InteractionNoteReceipt
+          note={interaction.result?.note}
+          externalReferences={externalReferences}
+        />
         {interaction.payload.detailsMarkdown ? (
           <div className="text-sm">
             <MarkdownBody externalReferences={externalReferences}>
@@ -595,9 +641,12 @@ function ReceiptDisclosure({
     >
       {request}
       {answerReason ? (
-        <p className="text-sm text-muted-foreground">
-          <span className="font-medium">Reason:</span> {answerReason}
-        </p>
+        <div className="flex gap-1 text-sm text-muted-foreground">
+          <span className="shrink-0 font-medium">Reason:</span>
+          <InteractionInlineMarkdown className="min-w-0 flex-1">
+            {answerReason}
+          </InteractionInlineMarkdown>
+        </div>
       ) : null}
     </div>
   );
@@ -756,7 +805,8 @@ function AskUserQuestionsCard({
       disabled={!onSubmitInteractionAnswers}
       imageUploadHandler={onUploadImage}
       mentions={mentions}
-      onSubmit={async (response) => {
+      notesEnabled={interactionAcceptsNote(interaction)}
+      onSubmit={async (response, notes) => {
         const answers: AskUserQuestionsAnswer[] = questionSet.questions.map(
           (question) => {
             const answer = response.answers[question.id];
@@ -764,6 +814,7 @@ function AskUserQuestionsCard({
               question.answerMode === "text"
                 ? answer?.text?.trim()
                 : answer?.customText?.trim();
+            const note = notes[question.id];
             return {
               questionId: question.id,
               optionIds:
@@ -771,6 +822,7 @@ function AskUserQuestionsCard({
                   ? []
                   : (answer?.selectedOptionIds ?? []),
               ...(otherText ? { otherText } : {}),
+              ...(note ? { note } : {}),
             };
           },
         );
@@ -819,13 +871,27 @@ function ConfirmationCard({
   mentions?: MentionOption[];
 }) {
   const preparingApproval = isInteractionPreparingApproval(interaction);
+  const notesEnabled = interactionAcceptsNote(interaction);
   const [rejecting, setRejecting] = useState(false);
-  const [reason, setReason] = useState(() =>
-    draftKey ? loadStructuredDraft(draftKey, "") : "",
-  );
+  const [restored] = useState(() => {
+    const draft = draftKey
+      ? loadStructuredDraft<string | { reason?: string; note?: string }>(
+          draftKey,
+          "",
+        )
+      : "";
+    return typeof draft === "string"
+      ? { reason: draft, note: "" }
+      : { reason: draft.reason ?? "", note: draft.note ?? "" };
+  });
+  const [reason, setReason] = useState(restored.reason);
+  const [note, setNote] = useState(restored.note);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const [revisionUploading, setRevisionUploading] = useState(false);
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteBlocked =
+    notesEnabled && (noteUploading || interactionNoteTooLong(note));
   const collectsRejectReason = Boolean(
     interaction.payload.rejectRequiresReason ||
     interaction.payload.allowDeclineReason ||
@@ -835,8 +901,8 @@ function ConfirmationCard({
     interaction.payload.target?.type === "issue_document" &&
     interaction.payload.target.key === "plan";
   useEffect(() => {
-    if (draftKey) saveStructuredDraft(draftKey, reason);
-  }, [draftKey, reason]);
+    if (draftKey) saveStructuredDraft(draftKey, { reason, note });
+  }, [draftKey, note, reason]);
   async function resolve(action: "accept" | "reject") {
     if (
       action === "reject" &&
@@ -844,11 +910,29 @@ function ConfirmationCard({
       !reason.trim()
     )
       return;
+    if (noteBlocked) return;
+    const submittedNote = notesEnabled ? interactionNoteValue(note) : undefined;
     setWorking(action);
     setActionError(null);
     try {
-      if (action === "accept") await onAcceptInteraction?.(interaction);
-      else await onRejectInteraction?.(interaction, reason.trim() || undefined);
+      if (action === "accept")
+        await (submittedNote
+          ? onAcceptInteraction?.(
+              interaction,
+              undefined,
+              undefined,
+              undefined,
+              submittedNote,
+            )
+          : onAcceptInteraction?.(interaction));
+      else
+        await (submittedNote
+          ? onRejectInteraction?.(
+              interaction,
+              reason.trim() || undefined,
+              submittedNote,
+            )
+          : onRejectInteraction?.(interaction, reason.trim() || undefined));
       if (draftKey) clearDraft(draftKey);
     } catch (error) {
       setActionError(errorMessage(error));
@@ -866,11 +950,15 @@ function ConfirmationCard({
         />
       ) : isPlanConfirmation && rejecting ? null : (
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <p className="min-w-0 flex-1 text-sm leading-5 text-foreground">
-            {isPlanConfirmation
-              ? "Do you accept this plan?"
-              : interaction.payload.prompt}
-          </p>
+          <div className="min-w-0 flex-1 text-sm leading-5 text-foreground">
+            {isPlanConfirmation ? (
+              "Do you accept this plan?"
+            ) : (
+              <InteractionInlineMarkdown>
+                {interaction.payload.prompt}
+              </InteractionInlineMarkdown>
+            )}
+          </div>
           {!isPlanConfirmation ? (
             <CompactTarget interaction={interaction} />
           ) : null}
@@ -991,6 +1079,18 @@ function ConfirmationCard({
           )}
         </div>
       ) : null}
+      {notesEnabled ? (
+        <div className="mt-3">
+          <InteractionNoteField
+            value={note}
+            onChange={setNote}
+            imageUploadHandler={onUploadImage}
+            mentions={mentions}
+            disabled={working !== null}
+            onUploadingChange={setNoteUploading}
+          />
+        </div>
+      ) : null}
       <InteractionActionError message={actionError} />
       {preparingApproval ? <InteractionPreparationNotice /> : null}
       <ActionRow>
@@ -1014,6 +1114,7 @@ function ConfirmationCard({
               disabled={
                 working !== null ||
                 revisionUploading ||
+                noteBlocked ||
                 (Boolean(interaction.payload.rejectRequiresReason) &&
                   !reason.trim()) ||
                 !onRejectInteraction
@@ -1032,7 +1133,11 @@ function ConfirmationCard({
               type="button"
               size="sm"
               variant="ghost"
-              disabled={working !== null || !onRejectInteraction}
+              disabled={
+                working !== null ||
+                !onRejectInteraction ||
+                (!collectsRejectReason && noteBlocked)
+              }
               onClick={() =>
                 collectsRejectReason
                   ? setRejecting(true)
@@ -1044,7 +1149,12 @@ function ConfirmationCard({
             <Button
               type="button"
               size="sm"
-              disabled={working !== null || preparingApproval || !onAcceptInteraction}
+              disabled={
+                working !== null ||
+                preparingApproval ||
+                noteBlocked ||
+                !onAcceptInteraction
+              }
               onClick={() => void resolve("accept")}
             >
               {working === "accept" ? (
@@ -1066,6 +1176,8 @@ function CheckboxConfirmationCard({
   externalReferences,
   errorMessage,
   draftKey,
+  onUploadImage,
+  mentions,
 }: {
   interaction: RequestCheckboxConfirmationInteraction;
   onAcceptInteraction?: SharedInteractionProps["onAcceptInteraction"];
@@ -1073,12 +1185,17 @@ function CheckboxConfirmationCard({
   externalReferences?: SharedInteractionProps["externalReferences"];
   errorMessage: (error: unknown) => string;
   draftKey?: string;
+  onUploadImage?: SharedInteractionProps["onUploadImage"];
+  mentions?: MentionOption[];
 }) {
   const restored = draftKey
-    ? loadStructuredDraft<{ selected: string[]; reason: string }>(draftKey, {
-        selected: interaction.payload.defaultSelectedOptionIds ?? [],
-        reason: "",
-      })
+    ? loadStructuredDraft<{ selected: string[]; reason: string; note?: string }>(
+        draftKey,
+        {
+          selected: interaction.payload.defaultSelectedOptionIds ?? [],
+          reason: "",
+        },
+      )
     : null;
   const [selected, setSelected] = useState(
     () =>
@@ -1091,6 +1208,9 @@ function CheckboxConfirmationCard({
   const preparingApproval = isInteractionPreparingApproval(interaction);
   const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState(restored?.reason ?? "");
+  const [note, setNote] = useState(restored?.note ?? "");
+  const [noteUploading, setNoteUploading] = useState(false);
+  const noteBlocked = noteUploading || interactionNoteTooLong(note);
   const [filter, setFilter] = useState("");
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -1112,8 +1232,8 @@ function CheckboxConfirmationCard({
   });
   useEffect(() => {
     if (draftKey)
-      saveStructuredDraft(draftKey, { selected: [...selected], reason });
-  }, [draftKey, reason, selected]);
+      saveStructuredDraft(draftKey, { selected: [...selected], reason, note });
+  }, [draftKey, note, reason, selected]);
 
   function toggle(id: string) {
     setSelected((current) => {
@@ -1132,12 +1252,29 @@ function CheckboxConfirmationCard({
       !reason.trim()
     )
       return;
+    if (noteBlocked) return;
+    const submittedNote = interactionNoteValue(note);
     setWorking(action);
     setActionError(null);
     try {
       if (action === "accept")
-        await onAcceptInteraction?.(interaction, undefined, [...selected]);
-      else await onRejectInteraction?.(interaction, reason.trim() || undefined);
+        await (submittedNote
+          ? onAcceptInteraction?.(
+              interaction,
+              undefined,
+              [...selected],
+              undefined,
+              submittedNote,
+            )
+          : onAcceptInteraction?.(interaction, undefined, [...selected]));
+      else
+        await (submittedNote
+          ? onRejectInteraction?.(
+              interaction,
+              reason.trim() || undefined,
+              submittedNote,
+            )
+          : onRejectInteraction?.(interaction, reason.trim() || undefined));
       if (draftKey) clearDraft(draftKey);
     } catch (error) {
       setActionError(errorMessage(error));
@@ -1156,9 +1293,9 @@ function CheckboxConfirmationCard({
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <p className="min-w-0 flex-1 text-sm leading-5 text-foreground">
-          {interaction.payload.prompt}
-        </p>
+        <div className="min-w-0 flex-1 text-sm leading-5 text-foreground">
+          <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
+        </div>
         <CompactTarget interaction={interaction} />
       </div>
       <div
@@ -1193,11 +1330,13 @@ function CheckboxConfirmationCard({
             />
             <span className="min-w-0">
               <span className="block text-sm leading-5 text-foreground">
-                {option.label}
+                <InteractionInlineMarkdown>{option.label}</InteractionInlineMarkdown>
               </span>
               {option.description ? (
                 <span className="block text-xs leading-4 text-muted-foreground">
-                  {option.description}
+                  <InteractionInlineMarkdown>
+                    {option.description}
+                  </InteractionInlineMarkdown>
                 </span>
               ) : null}
             </span>
@@ -1232,6 +1371,16 @@ function CheckboxConfirmationCard({
           />
         </div>
       ) : null}
+      <div className="mt-3">
+        <InteractionNoteField
+          value={note}
+          onChange={setNote}
+          imageUploadHandler={onUploadImage}
+          mentions={mentions}
+          disabled={working !== null}
+          onUploadingChange={setNoteUploading}
+        />
+      </div>
       <InteractionActionError message={actionError} />
       {preparingApproval ? <InteractionPreparationNotice /> : null}
       <ActionRow hint={countHint}>
@@ -1252,6 +1401,7 @@ function CheckboxConfirmationCard({
               variant="outline"
               disabled={
                 working !== null ||
+                noteBlocked ||
                 (Boolean(interaction.payload.rejectRequiresReason) &&
                   !reason.trim()) ||
                 !onRejectInteraction
@@ -1270,7 +1420,11 @@ function CheckboxConfirmationCard({
               type="button"
               size="sm"
               variant="ghost"
-              disabled={working !== null || !onRejectInteraction}
+              disabled={
+                working !== null ||
+                !onRejectInteraction ||
+                (!collectsRejectReason && noteBlocked)
+              }
               onClick={() =>
                 collectsRejectReason
                   ? setRejecting(true)
@@ -1282,7 +1436,13 @@ function CheckboxConfirmationCard({
             <Button
               type="button"
               size="sm"
-              disabled={working !== null || preparingApproval || !validCount || !onAcceptInteraction}
+              disabled={
+                working !== null ||
+                preparingApproval ||
+                noteBlocked ||
+                !validCount ||
+                !onAcceptInteraction
+              }
               onClick={() => void resolve("accept")}
             >
               {working === "accept" ? (
@@ -2003,6 +2163,8 @@ export function TaskChatCompactInteractionCard({
           externalReferences={externalReferences}
           errorMessage={errorMessage}
           draftKey={draftKey}
+          onUploadImage={onUploadImage}
+          mentions={mentions}
         />
       ) : interaction.kind === "suggest_tasks" ? (
         <SuggestedTasksCard
