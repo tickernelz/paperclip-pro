@@ -953,7 +953,7 @@ For an open-ended answer, render a text field using `payload.questionSet` with `
 
 **Multiple choice**
 
-Use `ask_user_questions` for a short question card. Each `payload.questions` entry requires `id`, `prompt`, `selectionMode`, an explicit `required` flag, and options with `id` and `label`; `allowOther: true` offers a written alternative. A matching `payload.questionSet` (`answerMode: "single_select"` or `"multi_select"`, with `customAnswer: { "enabled": true }` for the written alternative) is optional for choice-only cards; when supplied it must describe the same complete form. Choice questions must offer at least two distinct, meaningful choices; use the canonical text presentation above for open-ended questions. Do not send `question`/`type: "text"` or an empty options array in a `payload.questions` entry. Set `resolverPolicy: "human_only"` when the answer must come from the user.
+Use `ask_user_questions` for a short question card. Each `payload.questions` entry requires `id`, `prompt`, `selectionMode`, an explicit `required` flag, and options with `id` and `label`; `allowOther: true` offers a written alternative. A matching `payload.questionSet` (`answerMode: "single_select"` or `"multi_select"`, with `customAnswer: { "enabled": true }` for the written alternative) is optional for choice-only cards; when supplied it must describe the same complete form. Choice questions must offer at least two distinct, meaningful choices; use the canonical text presentation above for open-ended questions. Do not send `question`/`type: "text"` or an empty options array in a `payload.questions` entry. Set `resolverPolicy: "human_only"` when the answer must come from the user. A board user may attach a Markdown note to any answer; it arrives as `result.answers[].note` (and in `humanResponses` and the answered-questions summary) and qualifies that answer, but never replaces a required choice.
 
 Same tool, `paperclipAskUserQuestions`:
 
@@ -1169,7 +1169,7 @@ Reject, through `paperclipApiRequest` with `method: "POST"`, `path: "/issues/{is
 { "reason": "Keep the March draft; only delete tmp/export-2025.csv." }
 ```
 
-`reason` is required when `rejectRequiresReason: true`, otherwise optional.
+`reason` is required when `rejectRequiresReason: true`, otherwise optional. A board user may add a Markdown `note` (max 20,000 characters, often containing attachment links) on accept or reject; it is stored as `result.note`, separate from `reason`. Agents cannot send `note` (422). Treat a note in a resolved result or in `humanResponses` as part of the user's decision.
 
 Resolved result (`RequestCheckboxConfirmationResult`):
 
