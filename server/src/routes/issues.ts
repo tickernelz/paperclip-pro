@@ -136,6 +136,7 @@ import {
   isClosedIsolatedExecutionWorkspace,
   isMarkdownArtifactWorkProduct,
   isUuidLike,
+  ISSUE_PRIORITIES,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
   type CompactIssue,
   type CompanySearchExtractQuery,
@@ -314,6 +315,7 @@ import {
   ISSUE_WAKE_DIAGNOSTICS_LOOKBACK_DAYS,
   ISSUE_WAKE_DIAGNOSTICS_MAX_ACTIVITY_RECORDS,
   ISSUE_WAKE_DIAGNOSTICS_MAX_WAKE_REQUESTS,
+  parseStatusFilter,
   readAcceptedPlanConfirmationTarget,
   type IssuePostCommitAction,
 } from "../services/issues.js";
@@ -8167,6 +8169,48 @@ export function issueRoutes(
     const assigneeAgentFilterRaw = req.query.assigneeAgentId;
     let assigneeAgentId: string | null | undefined;
     const rawUpdatedSince = req.query.updatedSince as string | undefined;
+    const priorities = parseStatusFilter(req.query.priority as string | string[] | undefined);
+    const labelIds = parseStatusFilter(req.query.labelId as string | string[] | undefined);
+    const createdByAgentId = req.query.createdByAgentId as string | undefined;
+    const createdByUserFilterRaw = req.query.createdByUserId as string | undefined;
+    const createdByUserId =
+      createdByUserFilterRaw === "me" && req.actor.type === "board"
+        ? req.actor.userId
+        : createdByUserFilterRaw;
+
+    if (
+      createdByUserFilterRaw === "me" &&
+      (!createdByUserId || req.actor.type !== "board")
+    ) {
+      res
+        .status(403)
+        .json({ error: "createdByUserId=me requires board authentication" });
+      return;
+    }
+    if (
+      createdByUserId !== undefined &&
+      (typeof createdByUserId !== "string" || createdByUserId.trim().length === 0)
+    ) {
+      res.status(400).json({ error: "createdByUserId must be a user id or 'me'" });
+      return;
+    }
+    if (
+      createdByAgentId !== undefined &&
+      (typeof createdByAgentId !== "string" || !isUuidLike(createdByAgentId))
+    ) {
+      res.status(422).json({ error: "createdByAgentId must be a UUID" });
+      return;
+    }
+    if (priorities.some((priority) => !(ISSUE_PRIORITIES as readonly string[]).includes(priority))) {
+      res.status(400).json({
+        error: `priority must be a comma-separated list of ${ISSUE_PRIORITIES.join(", ")}`,
+      });
+      return;
+    }
+    if (labelIds.some((labelId) => !isUuidLike(labelId))) {
+      res.status(422).json({ error: "labelId must be a UUID or a comma-separated list of UUIDs" });
+      return;
+    }
 
     if (
       assigneeUserFilterRaw === "me" &&
@@ -8308,7 +8352,10 @@ export function issueRoutes(
         string | undefined,
       descendantOf: req.query.descendantOf as string | undefined,
       createdFromIssueId: req.query.createdFromIssueId as string | undefined,
-      labelId: req.query.labelId as string | undefined,
+      labelId: labelIds.length > 0 ? labelIds : undefined,
+      priority: priorities.length > 0 ? priorities : undefined,
+      createdByAgentId,
+      createdByUserId,
       originKind: req.query.originKind as string | undefined,
       originKindPrefix: req.query.originKindPrefix as string | undefined,
       originId: req.query.originId as string | undefined,

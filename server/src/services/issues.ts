@@ -1795,6 +1795,22 @@ export function parseStatusFilter(
     .filter(Boolean);
 }
 
+function issueAttributeFilterConditions(companyId: string, filters?: IssueFilters): SQL[] {
+  const conditions: SQL[] = [];
+  const priorities = parseStatusFilter(filters?.priority);
+  if (priorities.length > 0) conditions.push(inArray(issues.priority, priorities));
+  const labelIds = parseStatusFilter(filters?.labelId);
+  if (labelIds.length > 0) {
+    conditions.push(sql<boolean>`${issues.id} IN (
+      SELECT ${issueLabels.issueId} FROM ${issueLabels}
+      WHERE ${issueLabels.companyId} = ${companyId} AND ${inArray(issueLabels.labelId, labelIds)}
+    )`);
+  }
+  if (filters?.createdByAgentId) conditions.push(eq(issues.createdByAgentId, filters.createdByAgentId));
+  if (filters?.createdByUserId) conditions.push(eq(issues.createdByUserId, filters.createdByUserId));
+  return conditions;
+}
+
 export interface IssueFilters {
   attention?: "blocked";
   status?: string | readonly string[];
@@ -1819,7 +1835,10 @@ export interface IssueFilters {
   parentId?: string;
   descendantOf?: string;
   createdFromIssueId?: string;
-  labelId?: string;
+  labelId?: string | readonly string[];
+  priority?: string | readonly string[];
+  createdByAgentId?: string;
+  createdByUserId?: string;
   originKind?: string;
   originKindPrefix?: string;
   originId?: string;
@@ -3258,9 +3277,7 @@ function issueListOrderBy(
     const updatedOrder =
       sortDir === "asc" ? asc(issues.updatedAt) : desc(issues.updatedAt);
     const idOrder = sortDir === "asc" ? asc(issues.id) : desc(issues.id);
-    return hasSearch
-      ? [asc(searchOrder), activityOrder, updatedOrder, idOrder]
-      : [activityOrder, updatedOrder, idOrder];
+    return [activityOrder, updatedOrder, idOrder];
   }
 
   return [
@@ -6361,25 +6378,7 @@ async function blockedInboxIssueConditions(
   }
   if (!shouldIncludePluginOperationIssues(filters))
     conditions.push(nonPluginOperationIssueCondition());
-  if (filters?.labelId) {
-    const labeledIssueIds = await dbOrTx
-      .select({ issueId: issueLabels.issueId })
-      .from(issueLabels)
-      .where(
-        and(
-          eq(issueLabels.companyId, companyId),
-          eq(issueLabels.labelId, filters.labelId),
-        ),
-      );
-    if (labeledIssueIds.length === 0)
-      return { conditions: [sql<boolean>`false`], contextUserId };
-    conditions.push(
-      inArray(
-        issues.id,
-        labeledIssueIds.map((row: { issueId: string }) => row.issueId),
-      ),
-    );
-  }
+  conditions.push(...issueAttributeFilterConditions(companyId, filters));
   if (
     filters?.excludeRoutineExecutions &&
     !filters?.originKind &&
@@ -8131,24 +8130,7 @@ export function issueService(db: Db) {
       if (!shouldIncludePluginOperationIssues(filters)) {
         conditions.push(nonPluginOperationIssueCondition());
       }
-      if (filters?.labelId) {
-        const labeledIssueIds = await db
-          .select({ issueId: issueLabels.issueId })
-          .from(issueLabels)
-          .where(
-            and(
-              eq(issueLabels.companyId, companyId),
-              eq(issueLabels.labelId, filters.labelId),
-            ),
-          );
-        if (labeledIssueIds.length === 0) return [];
-        conditions.push(
-          inArray(
-            issues.id,
-            labeledIssueIds.map((row) => row.issueId),
-          ),
-        );
-      }
+      conditions.push(...issueAttributeFilterConditions(companyId, filters));
       if (filters?.updatedSince) {
         const since = new Date(filters.updatedSince);
         if (Number.isFinite(since.getTime())) {
@@ -8167,7 +8149,7 @@ export function issueService(db: Db) {
       const issueSource = db.select(issueListSelect).from(issues);
       const searchedSource = hasSearch
         ? issueSource.innerJoin(sql`(
-            ${taskSearchCtes(companyId, taskSearch, true, and(...conditions))}
+            ${taskSearchCtes(companyId, taskSearch, false, and(...conditions))}
             SELECT m.id, ${taskSearchScore(taskSearch)} AS score FROM matched m
           ) task_search`, sql`task_search.id = ${issues.id}`)
         : issueSource;
@@ -8396,6 +8378,7 @@ export function issueService(db: Db) {
       }
       if (!shouldIncludePluginOperationIssues(filters))
         conditions.push(nonPluginOperationIssueCondition());
+      conditions.push(...issueAttributeFilterConditions(companyId, filters));
       const [row] = await db
         .select({ count: sql<number>`count(*)` })
         .from(issues)

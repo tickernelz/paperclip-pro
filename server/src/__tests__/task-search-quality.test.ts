@@ -69,7 +69,7 @@ describe.skipIf(!support.supported)("task search relevance rubric (real PostgreS
         const start = performance.now();
         const rows = engine === "full"
           ? (await companySearchService(db).search(companyId, companySearchQuerySchema.parse({ q: testCase.q }))).results.filter((row) => row.type === "issue")
-          : await issueService(db).list(companyId, { q: testCase.q, limit: 50 });
+          : await issueService(db).list(companyId, { q: testCase.listQ ?? testCase.q, limit: 50 });
         const resultKeys = rows.map((row) => keys.get(row.id)!);
         report.push({ engine, name: testCase.name, q: testCase.q, keys: resultKeys, ...searchQualityMetrics(resultKeys, testCase.relevant), ms: performance.now() - start });
         if (baseline) return;
@@ -87,6 +87,14 @@ describe.skipIf(!support.supported)("task search relevance rubric (real PostgreS
       const known = rows.filter((row) => taskSearchCases.find((entry) => entry.name === row.name)!.q !== "quasarxylophone");
       expect(known.reduce((sum, row) => sum + row.reciprocalRank, 0) / known.length).toBeGreaterThanOrEqual(0.95);
       expect(rows.reduce((sum, row) => sum + row.ndcg5, 0) / rows.length).toBeGreaterThanOrEqual(0.90);
+    }
+  });
+
+  it("quick: bare terms leave comment and document matches to field prefixes", async () => {
+    if (baseline) return;
+    for (const testCase of taskSearchCases.filter((entry) => entry.listQ)) {
+      const rows = await issueService(db).list(companyId, { q: testCase.q, limit: 50 });
+      expect(rows.map((row) => keys.get(row.id)), testCase.name).not.toContain(testCase.first);
     }
   });
 
