@@ -16,4 +16,25 @@ describe("task search query intent", () => {
     expect(parseTaskSearch("T123-42").identifierQuery).toBe("t123-42");
     expect(parseTaskSearch("PAP-420").identifierQuery).toBe("pap-420");
   });
+
+  it("parses field prefixes, quoted field values and unknown prefixes as text", () => {
+    expect(parseTaskSearch('title:"Internal Status" comment:foo bar').terms).toEqual([
+      { text: "internal status", quoted: true, field: "title" },
+      { text: "foo", quoted: false, field: "comment" },
+      { text: "bar", quoted: false },
+    ]);
+    expect(parseTaskSearch("desc:x doc:y text:z").terms.map((term) => term.field)).toEqual(["desc", "doc", "text"]);
+    expect(parseTaskSearch("foo:bar").terms).toEqual([{ text: "foo:bar", quoted: false }]);
+    expect(parseTaskSearch("title:the").terms).toEqual([{ text: "the", quoted: false, field: "title" }]);
+    expect(parseTaskSearch("title: internal").terms).toEqual([{ text: "internal", quoted: false }]);
+    expect(parseTaskSearch("internal status").fielded).toBe(false);
+    expect(parseTaskSearch("title:internal").fielded).toBe(true);
+  });
+
+  it("normalizes id: values to exact identifiers", () => {
+    const search = parseTaskSearch("id:ZHA9");
+    expect(search.terms).toEqual([{ text: "zha-9", quoted: false, field: "id" }]);
+    expect(search.identifierQuery).toBe("zha-9");
+    expect(parseTaskSearch("id:ZHA-9 status").identifierQuery).toBe("zha-9");
+  });
 });

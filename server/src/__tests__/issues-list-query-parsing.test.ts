@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { expect, it } from "vitest";
-import { issues } from "@tickernelz/paperclip-pro-db";
+import { issueLabels, issues, labels } from "@tickernelz/paperclip-pro-db";
 import { issueRoutes } from "../routes/issues.js";
 import {
   describeEmbeddedPostgres,
@@ -55,5 +55,38 @@ describeEmbeddedPostgres("issue list status query parsing", () => {
 
   it("returns every status when ?status is absent", async () => {
     expect(await listStatuses("")).toEqual(["done", "in_progress", "todo"]);
+  });
+
+  it("filters by priority CSV, any-of labelId CSV and creator, and rejects malformed values", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Filter parsing");
+    const companyId = company.companyId;
+    const [bugLabel, uiLabel] = [randomUUID(), randomUUID()];
+    await ctx.db.insert(labels).values([
+      { id: bugLabel, companyId, name: "bug", color: "#ff0000" },
+      { id: uiLabel, companyId, name: "ui", color: "#00ff00" },
+    ]);
+    await ctx.db.insert(issues).values([
+      { id: randomUUID(), companyId, title: "Mine high", status: "todo", priority: "high", createdByUserId: company.userId },
+      { id: randomUUID(), companyId, title: "Other low", status: "todo", priority: "low", createdByUserId: "user-other" },
+      { id: randomUUID(), companyId, title: "Other critical", status: "todo", priority: "critical" },
+    ]);
+    const byTitle = Object.fromEntries((await ctx.db.select({ id: issues.id, title: issues.title }).from(issues)).map((row) => [row.title, row.id]));
+    await ctx.db.insert(issueLabels).values([
+      { companyId, issueId: byTitle["Mine high"]!, labelId: bugLabel },
+      { companyId, issueId: byTitle["Other critical"]!, labelId: uiLabel },
+    ]);
+    const app = routeApp(ctx.db, company.actor, issueRoutes);
+    const titles = async (query: Record<string, string>) =>
+      ((await request(app).get(`/api/companies/${companyId}/issues`).query(query).expect(200)).body as { title: string }[])
+        .map((issue) => issue.title).sort();
+
+    expect(await titles({ priority: "high,critical" })).toEqual(["Mine high", "Other critical"]);
+    expect(await titles({ labelId: `${bugLabel},${uiLabel}` })).toEqual(["Mine high", "Other critical"]);
+    expect(await titles({ labelId: uiLabel })).toEqual(["Other critical"]);
+    expect(await titles({ createdByUserId: "me" })).toEqual(["Mine high"]);
+    expect(await titles({ createdByUserId: "user-other", priority: "low" })).toEqual(["Other low"]);
+    await request(app).get(`/api/companies/${companyId}/issues`).query({ priority: "urgent" }).expect(400);
+    await request(app).get(`/api/companies/${companyId}/issues`).query({ labelId: "not-a-uuid" }).expect(422);
+    await request(app).get(`/api/companies/${companyId}/issues`).query({ createdByAgentId: "nope" }).expect(422);
   });
 });

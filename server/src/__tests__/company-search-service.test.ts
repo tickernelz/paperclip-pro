@@ -193,6 +193,66 @@ describeEmbeddedPostgres("companySearchService", () => {
     expect(result.results[0]?.matchedFields).toContain("identifier");
   });
 
+  it("returns only the exact identifier, not identifiers that extend its number", async () => {
+    const companyId = await createCompany();
+    const exactId = await createIssue(companyId, { identifier: "TST-9", title: "Internal Status" });
+    await createIssue(companyId, { identifier: "TST-90", title: "Router endpoint" });
+    await createIssue(companyId, { identifier: "TST-91", title: "Browser extension" });
+
+    for (const q of ["TST-9", "id:TST-9"]) {
+      const result = await svc.search(companyId, companySearchQuerySchema.parse({ q }));
+      expect(result.results.map((row) => row.id), q).toEqual([exactId]);
+    }
+  });
+
+  it("applies field prefixes on the search page and keeps bare issue counts on default fields", async () => {
+    const companyId = await createCompany();
+    const titleId = await createIssue(companyId, { identifier: "TST-1", title: "Internal Status" });
+    const descriptionId = await createIssue(companyId, {
+      identifier: "TST-2",
+      title: "Router endpoint",
+      description: "Report the internal placement status.",
+    });
+    const commentId = await createIssue(companyId, { identifier: "TST-3", title: "Browser extension" });
+    await db.insert(issueComments).values({ companyId, issueId: commentId, body: "The internal status page is broken." });
+
+    const bare = await svc.search(companyId, companySearchQuerySchema.parse({ q: "internal status" }));
+    const issuesOnly = await svc.search(companyId, companySearchQuerySchema.parse({ q: "internal status", scope: "issues" }));
+    const titled = await svc.search(companyId, companySearchQuerySchema.parse({ q: 'title:"internal status"' }));
+    const commented = await svc.search(companyId, companySearchQuerySchema.parse({ q: "comment:broken" }));
+
+    expect(issuesOnly.results.map((row) => row.id)).toEqual([titleId, descriptionId]);
+    expect(bare.countsByType.issue).toBe(2);
+    expect(bare.countsByType.comment).toBe(1);
+    expect(titled.results.map((row) => row.id)).toEqual([titleId]);
+    expect(commented.results.map((row) => row.id)).toEqual([commentId]);
+    expect(commented.results[0]?.matchedFields).toEqual(["comment"]);
+  });
+
+  it("never searches continuation-summary documents", async () => {
+    const companyId = await createCompany();
+    const summaryIssue = await createIssue(companyId, { identifier: "TST-5", title: "Cleanup leftovers" });
+    const planIssue = await createIssue(companyId, { identifier: "TST-6", title: "Planning notes" });
+    for (const [issueId, key, latestBody] of [
+      [summaryIssue, "continuation-summary", "- Status: in_progress quasarnote"],
+      [planIssue, "plan", "Plan mentions quasarplan."],
+    ] as const) {
+      const documentId = randomUUID();
+      await db.insert(documents).values({ id: documentId, companyId, title: null, latestBody, format: "markdown" });
+      await db.insert(issueDocuments).values({ companyId, issueId, documentId, key });
+    }
+
+    for (const q of ["quasarnote", "doc:quasarnote", "text:quasarnote"]) {
+      for (const scope of ["all", "documents"] as const) {
+        const result = await svc.search(companyId, companySearchQuerySchema.parse({ q, scope }));
+        expect(result.results, `${q} ${scope}`).toEqual([]);
+        expect(result.countsByType.document).toBe(0);
+      }
+    }
+    const plan = await svc.search(companyId, companySearchQuerySchema.parse({ q: "doc:quasarplan" }));
+    expect(plan.results.map((row) => row.id)).toEqual([planIssue]);
+  });
+
   it("ranks phrase before reordered title words and rejects partial matches", async () => {
     const companyId = await createCompany();
     const base = new Date("2026-01-01T00:00:00.000Z").getTime();

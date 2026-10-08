@@ -1,34 +1,69 @@
 import { sql, type SQL } from "drizzle-orm";
-import { COMPANY_SEARCH_MAX_QUERY_LENGTH, COMPANY_SEARCH_MAX_TOKENS } from "@tickernelz/paperclip-pro-shared";
+import {
+  COMPANY_SEARCH_MAX_QUERY_LENGTH,
+  COMPANY_SEARCH_MAX_TOKENS,
+  ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
+} from "@tickernelz/paperclip-pro-shared";
 import { visibleIssueCondition } from "./issue-visibility.js";
 
 // Only grammatical filler is ignored, only in multi-term queries, and never
 // inside quotes. Keep negation and domain words (API, UI, PR, etc.) meaningful.
 const FILLER = new Set(["a", "an", "the", "and", "of", "to", "for", "in", "on", "with"]);
+const TASK_SEARCH_FIELDS = ["title", "id", "desc", "comment", "doc", "text"] as const;
+export type TaskSearchField = (typeof TASK_SEARCH_FIELDS)[number];
+type TaskSearchSource = "title" | "identifier" | "description" | "comment" | "document";
+const PRIMARY_SOURCES: readonly TaskSearchSource[] = ["title", "identifier", "description"];
+const ALL_SOURCES: readonly TaskSearchSource[] = ["title", "identifier", "description", "comment", "document"];
+const FIELD_SOURCES: Record<TaskSearchField, readonly TaskSearchSource[]> = {
+  title: ["title"],
+  id: ["identifier"],
+  desc: ["description"],
+  comment: ["comment"],
+  doc: ["document"],
+  text: ALL_SOURCES,
+};
+const TERM_PATTERN = new RegExp(`(?:(${TASK_SEARCH_FIELDS.join("|")}):)?(?:"([^"]+)"|([^\\s"]+))`, "g");
+const DANGLING_FIELD = new Set(TASK_SEARCH_FIELDS.map((field) => `${field}:`));
+const IDENTIFIER_TERM = /^[a-z][a-z0-9]*-\d+$/;
+
+export type TaskSearchTerm = { text: string; quoted: boolean; field?: TaskSearchField };
+
 export function escapeTaskSearchPattern(value: string) {
   return value.replace(/[\\%_]/g, "\\$&");
 }
 
+function canonicalTaskIdentifier(value: string) {
+  const match = /^([a-z][a-z0-9]*)[- ](\d+)$/i.exec(value) ?? /^([a-z]+)(\d+)$/i.exec(value);
+  return match ? `${match[1]}-${match[2]}`.toLowerCase() : null;
+}
+
 export function parseTaskSearch(text: string) {
   const normalizedQuery = text.slice(0, COMPANY_SEARCH_MAX_QUERY_LENGTH).trim().replace(/\s+/g, " ").toLowerCase();
-  const parsed = Array.from(normalizedQuery.matchAll(/"([^"]+)"|([^\s"]+)/g), (match) => ({
-    text: match[1] ?? match[2]!, quoted: match[1] !== undefined,
-  }));
-  const meaningful = parsed.filter((term) => term.quoted || !FILLER.has(term.text));
-  const uniqueTerms = new Map<string, { text: string; quoted: boolean }>();
+  const parsed = Array.from(normalizedQuery.matchAll(TERM_PATTERN), (match): TaskSearchTerm => {
+    const field = match[1] as TaskSearchField | undefined;
+    const value = match[2] ?? match[3]!;
+    const quoted = match[2] !== undefined;
+    if (!field) return { text: value, quoted };
+    return { text: field === "id" ? canonicalTaskIdentifier(value) ?? value : value, quoted, field };
+  }).filter((term) => term.field || term.quoted || !DANGLING_FIELD.has(term.text));
+  const meaningful = parsed.filter((term) => term.field || term.quoted || !FILLER.has(term.text));
+  const uniqueTerms = new Map<string, TaskSearchTerm>();
   for (const term of meaningful.length > 0 ? meaningful : parsed) {
-    uniqueTerms.set(term.text, { ...term, quoted: term.quoted || uniqueTerms.get(term.text)?.quoted === true });
+    const key = `${term.field ?? ""}:${term.text}`;
+    uniqueTerms.set(key, { ...term, quoted: term.quoted || uniqueTerms.get(key)?.quoted === true });
   }
   const terms = [...uniqueTerms.values()].slice(0, COMPANY_SEARCH_MAX_TOKENS);
   const tokens = terms.map((term) => term.text);
   const phrase = tokens.join(" ");
+  const fielded = terms.some((term) => term.field !== undefined);
   // A copied/typed task identifier is navigation, never a fuzzy number match.
-  const identifier = /^([a-z][a-z0-9]*)[- ](\d+)$/i.exec(normalizedQuery) ?? /^([a-z]+)(\d+)$/i.exec(normalizedQuery);
-  const identifierQuery = identifier ? `${identifier[1]}-${identifier[2]}` : normalizedQuery;
+  const identifierQuery = fielded
+    ? terms.find((term) => term.field === "id")?.text ?? normalizedQuery
+    : canonicalTaskIdentifier(normalizedQuery) ?? normalizedQuery;
   const patterns = tokens.map((token) => `%${escapeTaskSearchPattern(token)}%`);
   const containsPattern = `%${escapeTaskSearchPattern(phrase)}%`;
   const startsWithPattern = `${escapeTaskSearchPattern(phrase)}%`;
-  return { normalizedQuery, terms, tokens, phrase, identifierQuery, patterns, containsPattern, startsWithPattern };
+  return { normalizedQuery, terms, tokens, phrase, fielded, identifierQuery, patterns, containsPattern, startsWithPattern };
 }
 export type TaskSearch = ReturnType<typeof parseTaskSearch>;
 
@@ -36,22 +71,34 @@ function taskSearchAny(field: SQL, search: TaskSearch): SQL<boolean> {
   return search.patterns.length === 0 ? sql`false`
     : sql`(${sql.join(search.patterns.map((pattern) => sql`${field} ILIKE ${pattern}`), sql` OR `)})`;
 }
+function termSources(term: TaskSearchTerm, includeContext: boolean): readonly TaskSearchSource[] {
+  if (term.field) return FIELD_SOURCES[term.field];
+  return includeContext ? ALL_SOURCES : PRIMARY_SOURCES;
+}
+function termAllows(term: TaskSearchTerm, source: TaskSearchSource) {
+  return term.field ? FIELD_SOURCES[term.field].includes(source) : PRIMARY_SOURCES.includes(source);
+}
 // Short typeahead terms must start a word: UI must not match "build", and
 // API must not match "Capistrano". Keep an indexable literal precondition.
 export function taskSearchTermMatch(field: SQL, search: TaskSearch, index: number): SQL<boolean> {
   const term = search.tokens[index]!;
   const literal = sql<boolean>`${field} ILIKE ${search.patterns[index]!}`;
+  if (IDENTIFIER_TERM.test(term)) return sql`(${literal} AND ${field} ~* ${`${term}($|[^0-9])`})`;
   return /^[\p{L}]{1,3}$/u.test(term)
     ? sql`(${literal} AND ${field} ~* ${`(^|[^[:alnum:]])${term}`})`
     : literal;
 }
-export function taskSearchFieldMatch(field: SQL, search: TaskSearch): SQL<boolean> {
-  return search.tokens.length === 0 ? sql`false`
-    : sql`(${sql.join(search.tokens.map((_, index) => taskSearchTermMatch(field, search, index)), sql` OR `)})`;
+export function taskSearchContextMatch(field: SQL, search: TaskSearch, source: "comment" | "document"): SQL<boolean> {
+  const indexes = search.terms.flatMap((term, index) => termSources(term, true).includes(source) ? [index] : []);
+  return indexes.length === 0 ? sql`false`
+    : sql`(${sql.join(indexes.map((index) => taskSearchTermMatch(field, search, index)), sql` OR `)})`;
 }
 function coverage(matches: SQL[]): SQL<number> {
   return matches.length === 0 ? sql`0`
     : sql`(${sql.join(matches.map((match) => sql`CASE WHEN ${match} THEN 1 ELSE 0 END`), sql` + `)})`;
+}
+function anyOf(matches: SQL[]): SQL<boolean> {
+  return matches.length === 0 ? sql`false` : sql`(${sql.join(matches, sql` OR `)})`;
 }
 
 // Score bands are deliberately disjoint. Incidental comments, repeated terms,
@@ -83,31 +130,53 @@ export function taskSearchScore(search: TaskSearch): SQL<number> {
  */
 export function taskSearchCtes(companyId: string, search: TaskSearch, includeContext = true, fallbackFilters?: SQL): SQL {
   const n = search.tokens.length;
-  const comments = n === 0 || !includeContext ? sql`SELECT NULL::uuid AS issue_id, 0 AS ord WHERE false`
-    : sql.join(search.patterns.map((_, index) => sql`
+  const sources = search.terms.map((term) => termSources(term, includeContext));
+  const emptySet = sql`SELECT NULL::uuid AS issue_id, 0 AS ord WHERE false`;
+  const commentIndexes = search.terms.flatMap((_, index) => sources[index]!.includes("comment") ? [index] : []);
+  const documentIndexes = search.terms.flatMap((_, index) => sources[index]!.includes("document") ? [index] : []);
+  const comments = commentIndexes.length === 0 ? emptySet
+    : sql.join(commentIndexes.map((index) => sql`
       SELECT c.issue_id, ${index}::int AS ord FROM issue_comments c
       WHERE c.company_id = ${companyId} AND c.deleted_at IS NULL AND ${taskSearchTermMatch(sql`c.body`, search, index)}
       GROUP BY c.issue_id
     `), sql` UNION ALL `);
-  const documents = n === 0 || !includeContext ? sql`SELECT NULL::uuid AS issue_id, 0 AS ord WHERE false`
-    : sql.join(search.patterns.map((_, index) => sql`
+  const documents = documentIndexes.length === 0 ? emptySet
+    : sql.join(documentIndexes.map((index) => sql`
       SELECT d.issue_id, ${index}::int AS ord FROM issue_documents d
       JOIN documents body ON body.id = d.document_id AND body.company_id = d.company_id
-      WHERE d.company_id = ${companyId} AND (${taskSearchTermMatch(sql`body.title`, search, index)} OR ${taskSearchTermMatch(sql`body.latest_body`, search, index)})
+      WHERE d.company_id = ${companyId} AND d.key <> ${ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY}
+        AND (${taskSearchTermMatch(sql`body.title`, search, index)} OR ${taskSearchTermMatch(sql`body.latest_body`, search, index)})
       GROUP BY d.issue_id
     `), sql` UNION ALL `);
-  const titleTerms = search.patterns.map((_, index) => taskSearchTermMatch(sql`issues.title`, search, index));
-  const issueTerms = search.patterns.map((_, index) => sql`(
-    ${titleTerms[index]!} OR ${taskSearchTermMatch(sql`issues.identifier`, search, index)}
-    OR ${taskSearchTermMatch(sql`issues.description`, search, index)}
-  )`);
-  const commentTerms = search.patterns.map((_, index) => sql`issues.id IN (SELECT issue_id FROM comment_matches WHERE ord = ${index})`);
-  const documentTerms = search.patterns.map((_, index) => sql`issues.id IN (SELECT issue_id FROM document_matches WHERE ord = ${index})`);
-  const allTerms = issueTerms.map((term, index) => sql`(${term} OR ${commentTerms[index]!} OR ${documentTerms[index]!})`);
+  const sourceMatch = (source: TaskSearchSource, index: number): SQL<boolean> => {
+    if (source === "title") return taskSearchTermMatch(sql`issues.title`, search, index);
+    if (source === "description") return taskSearchTermMatch(sql`issues.description`, search, index);
+    if (source === "comment") return sql`issues.id IN (SELECT issue_id FROM comment_matches WHERE ord = ${index})`;
+    if (source === "document") return sql`issues.id IN (SELECT issue_id FROM document_matches WHERE ord = ${index})`;
+    return search.terms[index]!.field === "id"
+      ? sql`lower(issues.identifier) = ${search.tokens[index]!}`
+      : taskSearchTermMatch(sql`issues.identifier`, search, index);
+  };
+  const termMatch = (index: number, allowed: (source: TaskSearchSource) => boolean) =>
+    anyOf(sources[index]!.filter(allowed).map((source) => sourceMatch(source, index)));
+  const isPrimary = (source: TaskSearchSource) => PRIMARY_SOURCES.includes(source);
+  const titleTerms = search.terms.map((term, index) => termAllows(term, "title") ? sourceMatch("title", index) : sql`false`);
+  const issueTerms = search.terms.map((_, index) => termMatch(index, isPrimary));
+  const defaultTerms = search.terms.map((term, index) => termMatch(index, (source) => termAllows(term, source)));
+  const allTerms = search.terms.map((_, index) => termMatch(index, () => true));
+  const fieldMatch = (source: TaskSearchSource) =>
+    anyOf(search.terms.flatMap((term, index) => termAllows(term, source) ? [sourceMatch(source, index)] : []));
+  const titleWide = search.terms.every((term) => termAllows(term, "title"));
   const phraseMatch = (field: SQL) => n > 0 ? sql`coalesce(${field} ILIKE ${search.containsPattern}, false)` : sql`false`;
   const identExact = n > 0 ? sql`lower(issues.identifier) = ${search.identifierQuery}` : sql`false`;
-  const identStarts = n > 0 ? sql`issues.identifier ILIKE ${escapeTaskSearchPattern(search.identifierQuery) + "%"}` : sql`false`;
-  const fuzzyAllowed = !search.terms.some((term) => term.quoted)
+  const exactIdentifierQuery = !search.fielded && IDENTIFIER_TERM.test(search.identifierQuery);
+  const identifierMention = `(^|[^[:alnum:]])${search.identifierQuery}($|[^0-9])`;
+  const identMention = exactIdentifierQuery
+    ? sql`(issues.title ~* ${identifierMention} OR coalesce(issues.description ~* ${identifierMention}, false))` : sql`false`;
+  const identStarts = n > 0 && !search.fielded
+    ? sql`issues.identifier ILIKE ${escapeTaskSearchPattern(search.identifierQuery) + "%"}` : sql`false`;
+  const fuzzyAllowed = !search.fielded
+    && !search.terms.some((term) => term.quoted)
     && search.terms.some((term) => /^[\p{L}]{4,255}$/u.test(term.text))
     && !/^[a-z][a-z0-9]*[- ]?\d+$/i.test(search.normalizedQuery);
   const fuzzyTerms = search.terms.map((term, index) => {
@@ -126,9 +195,10 @@ export function taskSearchCtes(companyId: string, search: TaskSearch, includeCon
   });
   const fuzzy = fuzzyAllowed ? sql`CASE WHEN ${coverage(titleTerms)} = ${n} THEN false
     ELSE (${sql.join(fuzzyTerms, sql` AND `)}) END` : sql`false`;
-  const wordTerms = search.tokens.map((token) => {
-    const escaped = token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return sql`issues.title ~* ${`(^|[^[:alnum:]_])${escaped}($|[^[:alnum:]_])`}`;
+  const wordTerms = search.terms.flatMap((term) => {
+    if (!termAllows(term, "title")) return [];
+    const escaped = term.text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return [sql`issues.title ~* ${`(^|[^[:alnum:]_])${escaped}($|[^[:alnum:]_])`}`];
   });
   // Carry flags, not potentially large bodies, through materialized stages.
   // The search page fetches descriptions only for its result window.
@@ -136,26 +206,29 @@ export function taskSearchCtes(companyId: string, search: TaskSearch, includeCon
       SELECT issues.id, issues.identifier, issues.title,
         issues.status, issues.priority, issues.assignee_agent_id, issues.assignee_user_id,
         issues.project_id, issues.created_at, issues.updated_at,
-        ${identExact} AS ident_exact, ${identStarts} AS ident_starts,
-        ${phraseMatch(sql`issues.identifier`)} AS ident_phrase,
-        ${taskSearchFieldMatch(sql`issues.identifier`, search)} AS ident_token,
-        ${n > 0 ? sql`lower(issues.title) = ${search.phrase}` : sql`false`} AS title_exact,
-        ${n > 0 ? sql`issues.title ILIKE ${search.startsWithPattern}` : sql`false`} AS title_starts,
-        ${phraseMatch(sql`issues.title`)} AS title_phrase,
-        ${taskSearchFieldMatch(sql`issues.title`, search)} AS title_token,
-        ${phraseMatch(sql`issues.description`)} AS desc_phrase,
-        ${taskSearchFieldMatch(sql`issues.description`, search)} AS desc_token,
+        ${identExact} AS ident_exact, ${identStarts} AS ident_starts, ${identMention} AS ident_mention,
+        ${search.fielded ? sql`false` : phraseMatch(sql`issues.identifier`)} AS ident_phrase,
+        ${fieldMatch("identifier")} AS ident_token,
+        ${n > 0 && titleWide ? sql`lower(issues.title) = ${search.phrase}` : sql`false`} AS title_exact,
+        ${n > 0 && titleWide ? sql`issues.title ILIKE ${search.startsWithPattern}` : sql`false`} AS title_starts,
+        ${titleWide ? phraseMatch(sql`issues.title`) : sql`false`} AS title_phrase,
+        ${fieldMatch("title")} AS title_token,
+        ${fieldMatch("description")} AS desc_token,
         ${coverage(titleTerms)} AS title_coverage,
         ${coverage(wordTerms)} AS title_word_coverage,
         ${coverage(issueTerms)} AS issue_coverage,
-        ${coverage(commentTerms)} AS comment_coverage,
-        ${coverage(documentTerms)} AS document_coverage,
+        ${coverage(defaultTerms)} AS default_coverage,
         ${coverage(allTerms)} AS token_coverage,
         ${fuzzyMatch} AS fuzzy_title,
         issues.id IN (SELECT issue_id FROM comment_matches) AS comment_match,
         issues.id IN (SELECT issue_id FROM document_matches) AS document_match
       FROM issues
   `;
+  const textMatch = sql`token_coverage = ${n}${search.fielded ? sql`` : sql` OR ident_exact OR ident_starts`}`;
+  const literalGate = exactIdentifierQuery
+    ? sql`ident_exact OR CASE WHEN EXISTS (SELECT 1 FROM search_flags exact WHERE exact.ident_exact)
+        THEN ident_mention ELSE ${textMatch} END`
+    : textMatch;
   return sql`
     WITH comment_matches AS MATERIALIZED (${comments}),
     document_matches AS MATERIALIZED (${documents}),
@@ -176,7 +249,7 @@ export function taskSearchCtes(companyId: string, search: TaskSearch, includeCon
         AND issues.id IN (SELECT id FROM literal_candidates)
     ), literal_matches AS MATERIALIZED (
       SELECT * FROM search_flags
-      WHERE ${n === 0 ? sql`true` : sql`token_coverage = ${n} OR ident_exact OR ident_starts`}
+      WHERE ${n === 0 ? sql`true` : literalGate}
     ), fuzzy_candidates AS MATERIALIZED (
       SELECT issues.id FROM issues
       WHERE NOT EXISTS (

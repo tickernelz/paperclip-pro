@@ -39,6 +39,7 @@ export type TaskSearchCase = {
   relevant: Record<string, number>; // 3 = intended task; 2 = useful; 1 = incidental; absent = irrelevant
   first?: string;
   absent?: string[];
+  listQ?: string;
   scope?: "all" | "issues" | "comments" | "documents";
 };
 export const taskSearchCases: TaskSearchCase[] = [
@@ -57,9 +58,9 @@ export const taskSearchCases: TaskSearchCase[] = [
   { name: "substitution", q: "mibile navigation", relevant: { mobile: 3, unicode: 3 }, absent: ["mobile-api", "mobile-ui"] },
   { name: "two missing letters", q: "onbordng wizard", relevant: { onboarding: 3 }, first: "onboarding" },
   { name: "short token constrains typo", q: "mibile api", relevant: { "mobile-api": 3 }, first: "mobile-api", absent: ["mobile", "mobile-ui"] },
-  { name: "cross-field thread", q: "checkout concurrency", relevant: { cross: 3 }, first: "cross", absent: ["cross-partial"] },
-  { name: "document title", q: "Hermes parser", relevant: { document: 3 }, first: "document" },
-  { name: "document body", q: "plugins manifest", relevant: { document: 3 }, first: "document" },
+  { name: "cross-field thread", q: "checkout concurrency", listQ: "text:checkout text:concurrency", relevant: { cross: 3 }, first: "cross", absent: ["cross-partial"] },
+  { name: "document title", q: "Hermes parser", listQ: "doc:hermes doc:parser", relevant: { document: 3 }, first: "document" },
+  { name: "document body", q: "plugins manifest", listQ: "text:plugins text:manifest", relevant: { document: 3 }, first: "document" },
   { name: "literal percent", q: "100%", relevant: { percentage: 3 }, first: "percentage", absent: ["percentage-decoy"] },
   { name: "literal underscore", q: "foo_bar", relevant: { path: 3 }, first: "path", absent: ["path-decoy"] },
   { name: "code identifier", q: "heartbeat_run_events", relevant: { "identifier-code": 3 }, first: "identifier-code" },

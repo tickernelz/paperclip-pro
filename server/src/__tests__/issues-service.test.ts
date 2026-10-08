@@ -23,7 +23,9 @@ import {
   issueRelations,
   issueThreadInteractions,
   issueWorkProducts,
+  issueLabels,
   issues,
+  labels,
   projectWorkspaces,
   projects,
   workspaceOperations,
@@ -1617,7 +1619,7 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     expect(result.map((issue) => issue.id)).toEqual([recentMediumIssueId]);
   });
 
-  it("ranks direct description matches ahead of comment-only matches", async () => {
+  it("ranks direct description matches ahead of comment matches requested with text:", async () => {
     const companyId = randomUUID();
     const commentMatchId = randomUUID();
     const descriptionMatchId = randomUUID();
@@ -1654,12 +1656,14 @@ describeEmbeddedPostgres("issueService.list participantAgentId", () => {
     });
 
     const result = await svc.list(companyId, {
-      q: "pull/3303",
+      q: "text:pull/3303",
       limit: 2,
       includeRoutineExecutions: true,
     });
+    const bare = await svc.list(companyId, { q: "pull/3303", includeRoutineExecutions: true });
 
     expect(result.map((issue) => issue.id)).toEqual([descriptionMatchId, commentMatchId]);
+    expect(bare.map((issue) => issue.id)).toEqual([descriptionMatchId]);
   });
 
   it("filters issue lists to the full descendant tree for a root issue", async () => {
@@ -7372,5 +7376,163 @@ describeEmbeddedPostgres("issueService.addComment createdByRunId", () => {
       .from(issueComments)
       .where(eq(issueComments.createdByRunId, runId));
     expect(duplicates).toHaveLength(1);
+  });
+});
+
+describeEmbeddedPostgres("issueService.list scoped search", () => {
+  let db!: ReturnType<typeof createDb>;
+  let svc!: ReturnType<typeof issueService>;
+  let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
+
+  beforeAll(async () => {
+    tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issues-scoped-search-");
+    db = createDb(tempDb.connectionString);
+    svc = issueService(db);
+  }, 20_000);
+
+  afterEach(async () => {
+    await db.delete(issueLabels);
+    await db.delete(labels);
+    await db.delete(issueComments);
+    await db.delete(issueDocuments);
+    await db.delete(documents);
+    await db.delete(issues);
+    await db.delete(agents);
+    await db.delete(companies);
+  });
+
+  afterAll(async () => {
+    await tempDb?.cleanup();
+  });
+
+  async function seedCompany() {
+    const companyId = randomUUID();
+    const prefix = `S${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`;
+    await db.insert(companies).values({ id: companyId, name: "Search", issuePrefix: prefix, requireBoardApprovalForNewAgents: false });
+    return { companyId, prefix };
+  }
+
+  async function seedIssue(companyId: string, values: Partial<typeof issues.$inferInsert>) {
+    const id = randomUUID();
+    await db.insert(issues).values({ id, companyId, title: "Unrelated", status: "todo", priority: "medium", ...values });
+    return id;
+  }
+
+  async function attachDocument(companyId: string, issueId: string, key: string, body: string) {
+    const documentId = randomUUID();
+    await db.insert(documents).values({ id: documentId, companyId, title: null, format: "markdown", latestBody: body });
+    await db.insert(issueDocuments).values({ companyId, issueId, documentId, key });
+  }
+
+  async function seedInternalStatusCorpus() {
+    const { companyId, prefix } = await seedCompany();
+    const titleId = await seedIssue(companyId, { identifier: `${prefix}-9`, title: "Internal Status", updatedAt: new Date("2026-01-01T00:00:00.000Z") });
+    const descriptionId = await seedIssue(companyId, {
+      identifier: `${prefix}-90`,
+      title: "Router endpoint",
+      description: "Report the internal placement status before rollout.",
+      updatedAt: new Date("2026-03-01T00:00:00.000Z"),
+    });
+    const commentId = await seedIssue(companyId, { identifier: `${prefix}-91`, title: "Browser extension", updatedAt: new Date("2026-04-01T00:00:00.000Z") });
+    await db.insert(issueComments).values({ companyId, issueId: commentId, body: "The internal status page is broken." });
+    const summaryId = await seedIssue(companyId, { identifier: `${prefix}-92`, title: "Cleanup leftovers", updatedAt: new Date("2026-05-01T00:00:00.000Z") });
+    await attachDocument(companyId, summaryId, "continuation-summary", "- Status: in_progress\n- Agent: internal coder");
+    const documentId = await seedIssue(companyId, { identifier: `${prefix}-93`, title: "Planning notes", updatedAt: new Date("2026-06-01T00:00:00.000Z") });
+    await attachDocument(companyId, documentId, "plan", "Internal rollout status checklist.");
+    return { companyId, prefix, titleId, descriptionId, commentId, summaryId, documentId };
+  }
+
+  it("matches bare terms on title, identifier and description only, title match first", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    const result = await svc.list(corpus.companyId, { q: "internal status" });
+
+    expect(result.map((issue) => issue.id)).toEqual([corpus.titleId, corpus.descriptionId]);
+  });
+
+  it("scopes quoted title terms to the title", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    const result = await svc.list(corpus.companyId, { q: 'title:"internal status"' });
+
+    expect(result.map((issue) => issue.id)).toEqual([corpus.titleId]);
+  });
+
+  it("finds comment-only and document-only matches only through their field prefix", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    const comments = await svc.list(corpus.companyId, { q: "comment:broken" });
+    const documentsOnly = await svc.list(corpus.companyId, { q: "doc:checklist" });
+    const bare = await svc.list(corpus.companyId, { q: "broken" });
+    const everywhere = await svc.list(corpus.companyId, { q: "text:internal text:status" });
+
+    expect(comments.map((issue) => issue.id)).toEqual([corpus.commentId]);
+    expect(documentsOnly.map((issue) => issue.id)).toEqual([corpus.documentId]);
+    expect(bare).toEqual([]);
+    expect(new Set(everywhere.map((issue) => issue.id))).toEqual(
+      new Set([corpus.titleId, corpus.descriptionId, corpus.commentId, corpus.documentId]),
+    );
+  });
+
+  it("never matches continuation-summary documents", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    for (const q of ["doc:coder", "text:coder", "doc:in_progress"]) {
+      expect((await svc.list(corpus.companyId, { q })).map((issue) => issue.id)).toEqual([]);
+    }
+  });
+
+  it("returns exactly the issue for an exact identifier query without prefix neighbours", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    for (const q of [`${corpus.prefix}-9`, `${corpus.prefix.toLowerCase()}-9`, `id:${corpus.prefix}-9`]) {
+      expect((await svc.list(corpus.companyId, { q })).map((issue) => issue.id), q).toEqual([corpus.titleId]);
+    }
+    expect((await svc.list(corpus.companyId, { q: `id:${corpus.prefix}-9${0}` })).map((issue) => issue.id))
+      .toEqual([corpus.descriptionId]);
+  });
+
+  it("keeps relevance order unless a sort field is requested", async () => {
+    const corpus = await seedInternalStatusCorpus();
+
+    const relevance = await svc.list(corpus.companyId, { q: "internal status" });
+    const updated = await svc.list(corpus.companyId, { q: "internal status", sortField: "updated", sortDir: "desc" });
+
+    expect(relevance.map((issue) => issue.id)).toEqual([corpus.titleId, corpus.descriptionId]);
+    expect(updated.map((issue) => issue.id)).toEqual([corpus.descriptionId, corpus.titleId]);
+  });
+
+  it("filters by priority, any of several labels, and creator", async () => {
+    const { companyId } = await seedCompany();
+    const agentId = randomUUID();
+    await db.insert(agents).values({
+      id: agentId, companyId, name: "Creator", role: "engineer", status: "active",
+      adapterType: "codex_local", adapterConfig: {}, runtimeConfig: { heartbeat: { wakeOnDemand: false } }, permissions: {},
+    });
+    const [bugLabel, uiLabel, docsLabel] = [randomUUID(), randomUUID(), randomUUID()];
+    await db.insert(labels).values([
+      { id: bugLabel, companyId, name: "bug", color: "#ff0000" },
+      { id: uiLabel, companyId, name: "ui", color: "#00ff00" },
+      { id: docsLabel, companyId, name: "docs", color: "#0000ff" },
+    ]);
+    const highBug = await seedIssue(companyId, { title: "High bug", priority: "high", createdByAgentId: agentId });
+    const criticalUi = await seedIssue(companyId, { title: "Critical ui", priority: "critical", createdByUserId: "user-1" });
+    const lowDocs = await seedIssue(companyId, { title: "Low docs", priority: "low", createdByUserId: "user-2" });
+    await db.insert(issueLabels).values([
+      { companyId, issueId: highBug, labelId: bugLabel },
+      { companyId, issueId: criticalUi, labelId: uiLabel },
+      { companyId, issueId: criticalUi, labelId: bugLabel },
+      { companyId, issueId: lowDocs, labelId: docsLabel },
+    ]);
+    const ids = async (filters: Parameters<typeof svc.list>[1]) =>
+      (await svc.list(companyId, filters)).map((issue) => issue.id).sort();
+
+    expect(await ids({ priority: "high,critical" })).toEqual([highBug, criticalUi].sort());
+    expect(await ids({ labelId: [uiLabel, docsLabel] })).toEqual([criticalUi, lowDocs].sort());
+    expect(await ids({ labelId: `${bugLabel}` })).toEqual([highBug, criticalUi].sort());
+    expect(await ids({ createdByAgentId: agentId })).toEqual([highBug]);
+    expect(await ids({ createdByUserId: "user-2" })).toEqual([lowDocs]);
+    expect(await ids({ priority: ["critical"], labelId: `${bugLabel},${docsLabel}` })).toEqual([criticalUi]);
+    expect(await svc.count(companyId, { priority: "low", labelId: docsLabel })).toBe(1);
   });
 });

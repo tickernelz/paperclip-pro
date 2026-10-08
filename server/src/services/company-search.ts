@@ -19,6 +19,7 @@ import {
   COMPANY_SEARCH_UPDATED_WITHIN_OPTIONS,
   COMPANY_ARTIFACTS_MAX_LIMIT,
   COMPANY_ARTIFACTS_MAX_QUERY_LENGTH,
+  ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
   ISSUE_PRIORITIES,
   ISSUE_STATUSES,
   SYSTEM_ISSUE_DOCUMENT_KEYS,
@@ -39,7 +40,7 @@ import {
 import { companyArtifactsService } from "./company-artifacts.js";
 import { companySearchExtractService } from "./company-search-extract.js";
 import { visibleIssueCondition } from "./issue-visibility.js";
-import { parseTaskSearch, taskSearchCtes, taskSearchScore, taskSearchFieldMatch, taskSearchTermMatch } from "./task-search.js";
+import { parseTaskSearch, taskSearchContextMatch, taskSearchCtes, taskSearchScore, taskSearchTermMatch } from "./task-search.js";
 
 const SNIPPET_MAX_CHARS = 240;
 export const COMPANY_SEARCH_BRANCH_FETCH_LIMIT = COMPANY_SEARCH_MAX_OFFSET + COMPANY_SEARCH_MAX_LIMIT + 1;
@@ -570,11 +571,11 @@ export function companySearchService(db: Db) {
       const tokenCount = tokens.length;
 
       const issueFilters = issueFilterConditions(companyId, query);
-      const hasIssueOnlyFilters = issueOnlyFiltersActive(query);
+      const hasIssueOnlyFilters = issueOnlyFiltersActive(query) || taskSearch.fielded;
 
       // Scope conditions over precomputed flag columns (alias-qualified).
       function flagTextMatch(alias: string) {
-        return sql<boolean>`(${sql.raw(alias)}.issue_coverage = ${tokenCount}
+        return sql<boolean>`(${sql.raw(alias)}.default_coverage = ${tokenCount}
           OR ${sql.raw(alias)}.ident_exact OR ${sql.raw(alias)}.ident_starts)`;
       }
       function flagFuzzyMatch(alias: string) {
@@ -801,9 +802,7 @@ export function companySearchService(db: Db) {
             WHERE search_comments.company_id = ${companyId}
               AND search_comments.issue_id = target.id
               AND search_comments.deleted_at IS NULL
-              AND (
-                ${taskSearchFieldMatch(sql`search_comments.body`, taskSearch)}
-              )
+              AND ${taskSearchContextMatch(sql`search_comments.body`, taskSearch, "comment")}
             ORDER BY
               CASE WHEN search_comments.body ILIKE ${containsPattern} THEN 0 ELSE 1 END,
               ${sql.join(tokens.map((_, index) => sql`CASE WHEN ${taskSearchTermMatch(sql`search_comments.body`, taskSearch, index)} THEN 1 ELSE 0 END`), sql` + `)} DESC,
@@ -819,9 +818,10 @@ export function companySearchService(db: Db) {
               AND search_documents.company_id = search_issue_documents.company_id
             WHERE search_issue_documents.company_id = ${companyId}
               AND search_issue_documents.issue_id = target.id
+              AND search_issue_documents.key <> ${ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY}
               AND (
-                ${taskSearchFieldMatch(sql`search_documents.title`, taskSearch)}
-                OR ${taskSearchFieldMatch(sql`search_documents.latest_body`, taskSearch)}
+                ${taskSearchContextMatch(sql`search_documents.title`, taskSearch, "document")}
+                OR ${taskSearchContextMatch(sql`search_documents.latest_body`, taskSearch, "document")}
               )
             ORDER BY
               CASE
@@ -903,7 +903,7 @@ export function companySearchService(db: Db) {
       }
 
       async function countArtifacts(filters: CompanySearchQuery = query) {
-        if (!hasSearchText) return 0;
+        if (!hasSearchText || taskSearch.fielded) return 0;
         const artifactIssueFilters = issueFilterConditions(companyId, filters);
         const artifactIssueConditions = [
           eq(issues.companyId, companyId),
@@ -971,7 +971,7 @@ export function companySearchService(db: Db) {
       }
 
       async function countAgents(filters: CompanySearchQuery = query) {
-        if (!hasSearchText || issueOnlyFiltersActive(filters)) return 0;
+        if (!hasSearchText || taskSearch.fielded || issueOnlyFiltersActive(filters)) return 0;
         const rows = await db
           .select({ count: sql<number>`count(*)::int` })
           .from(agents)
@@ -980,7 +980,7 @@ export function companySearchService(db: Db) {
       }
 
       async function countProjects(filters: CompanySearchQuery = query) {
-        if (!hasSearchText || issueOnlyFiltersActive(filters)) return 0;
+        if (!hasSearchText || taskSearch.fielded || issueOnlyFiltersActive(filters)) return 0;
         const rows = await db
           .select({ count: sql<number>`count(*)::int` })
           .from(projects)
@@ -989,7 +989,7 @@ export function companySearchService(db: Db) {
       }
 
       async function fetchArtifactRows() {
-        if (!hasSearchText || !scopeIncludesArtifacts(scope)) return [];
+        if (!hasSearchText || taskSearch.fielded || !scopeIncludesArtifacts(scope)) return [];
         const result = await companyArtifactsService(db).list(companyId, {
           q: normalizedQuery.slice(0, COMPANY_ARTIFACTS_MAX_QUERY_LENGTH),
           limit: Math.min(fetchLimit, COMPANY_ARTIFACTS_MAX_LIMIT),
