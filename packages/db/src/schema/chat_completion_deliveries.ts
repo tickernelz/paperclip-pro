@@ -12,6 +12,7 @@ export const chatTaskHandoffs = pgTable("chat_task_handoffs", {
   conversationId: uuid("conversation_id").notNull().references(() => issues.id, { onDelete: "cascade" }),
   agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
   sessionGeneration: integer("session_generation").notNull(),
+  channel: text("channel").$type<"board" | "openwa">().notNull().default("board"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, t => ({ sourceIdx: index("chat_task_handoffs_source_idx").on(t.companyId, t.conversationId) }));
 
@@ -26,6 +27,7 @@ export const chatCompletionDeliveries = pgTable("chat_completion_deliveries", {
   nextAttemptAt: timestamp("next_attempt_at", { withTimezone: true }).notNull().defaultNow(),
   targetRunId: uuid("target_run_id").references(() => heartbeatRuns.id, { onDelete: "set null" }),
   responseCommentId: uuid("response_comment_id").references(() => issueComments.id, { onDelete: "set null" }),
+  responseActionId: uuid("response_action_id"),
   error: text("error"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, t => ({

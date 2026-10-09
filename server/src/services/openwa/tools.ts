@@ -33,6 +33,7 @@ import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
 import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { instanceSettingsService } from "../instance-settings.js";
+import { claimOpenwaCompletionReport, isOpenwaCompletionTurn, settleOpenwaCompletionReport } from "../chat-completion-delivery.js";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { openwaApprovalResolveTool, openwaApprovalWithdrawTool, openwaRequestApprovalTool } from "./approvals.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
@@ -127,6 +128,8 @@ export type OpenwaToolErrorCode =
   | "config_conflict"
   | "linked_chat_not_allowed"
   | "linked_session_unavailable"
+  | "completion_already_reported"
+  | "completion_report_origin_only"
   | "invalid_arguments";
 
 export class OpenwaToolError extends HttpError {
@@ -296,6 +299,7 @@ export interface ToolContext {
   openwa: OpenwaRunContext | null;
   profile: OpenwaRunProfile;
   runClass: OpenwaTriggerClass | null;
+  completion: boolean;
   sessionId: string;
   selfChatKey: string;
   origin: Target;
@@ -343,6 +347,7 @@ async function resolveContext(db: Db, binding: OpenwaToolBinding): Promise<ToolC
   const runRecord = { id: run.id, companyId: run.companyId, contextSnapshot: snapshot, visibleBefore: run.startedAt ?? run.createdAt };
   const profile = await openwaRunProfile(db, runRecord);
   const runClass: OpenwaTriggerClass | null = found.conversationIssueId === binding.issueId ? (openwa?.triggerClass ?? "other") : null;
+  const completion = runClass !== null && (await isOpenwaCompletionTurn(db, { companyId: binding.companyId, runId: run.id, issueId: binding.issueId }));
   const originKey = openwaChatKey(thread.chatId);
   let handle: Promise<OpenwaToolRuntimeHandle> | null = null;
   return {
@@ -355,6 +360,7 @@ async function resolveContext(db: Db, binding: OpenwaToolBinding): Promise<ToolC
     openwa,
     profile,
     runClass,
+    completion,
     sessionId,
     selfChatKey: (endpoint.botExternalId ?? "").replace(/\D/g, "") + "@c.us",
     origin: { chatId: thread.chatId, chatKey: originKey, isGroup: thread.isGroup, isOrigin: true, number: phoneDigits(thread.chatId) },
@@ -580,7 +586,7 @@ export async function replyRequirementGaps(
   ownerAbsentExempt = true,
   quotedMessageId: string | null = null,
 ): Promise<Array<{ category: OpenwaGrantCategory; reason: string }>> {
-  if (ctx.profile === "full" || !ctx.runClass) return [];
+  if (ctx.profile === "full" || !ctx.runClass || ctx.completion) return [];
   const resource = ctx.conversation.resourceId
     ? await ctx.db
         .select({ settings: chatEndpointResources.settings, metadata: chatEndpointResources.metadata, availability: chatEndpointResources.availability })
@@ -965,10 +971,24 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     throw new OpenwaToolError(409, "idempotency_conflict", "This idempotencyKey already belongs to a different OpenWA operation", { actionId: action.id });
   const replay = openwaWriteReplay(action);
   if (replay) return replay;
-  target = await precheckNumber(ctx, target);
+  if (ctx.completion) {
+    if (!target.isOrigin)
+      throw new OpenwaToolError(403, "completion_report_origin_only", "A task_completion run reports only to the origin chat; omit `chat`");
+    if ((await claimOpenwaCompletionReport(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, actionId: action.id })) === "reported")
+      throw new OpenwaToolError(409, "completion_already_reported", "These task outcomes were already reported in this chat; end the run without sending anything else");
+  }
+  const releaseReport = async (delivered: boolean) => {
+    if (ctx.completion) await settleOpenwaCompletionReport(ctx.db, { companyId: ctx.endpoint.companyId, actionId: action.id, delivered });
+  };
+  try {
+    target = await precheckNumber(ctx, target);
+  } catch (error) {
+    await releaseReport(false);
+    throw error;
+  }
   ctx.audit.chatKey = target.chatKey;
   const heldGrant = typeof action.payload.grantId === "string" ? action.payload.grantId : null;
-  const quote = await resolveQuote(ctx, target, args.quoteMessageId);
+  const quote = ctx.completion ? null : await resolveQuote(ctx, target, args.quoteMessageId);
   const consumedGrant = await assertSendAllowed(ctx, target, heldGrant, quote);
   if (consumedGrant) await setOpenwaWriteGrant(ctx.db, action.id, consumedGrant);
   const releaseGrant = async () => {
@@ -981,6 +1001,7 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     planned = await planSends(ctx, args, target, quote);
   } catch (error) {
     await releaseGrant();
+    await releaseReport(false);
     throw error;
   }
   const { gateway, registry } = await ctx.runtime();
@@ -995,7 +1016,10 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     }
   }
   if (outcome.state === "failed") {
-    if (outcome.delivered === 0) await releaseGrant();
+    if (outcome.delivered === 0) {
+      await releaseGrant();
+      await releaseReport(false);
+    } else await releaseReport(true);
     const mapped = toolErrorFromGateway(outcome.error, Boolean(quote) && !quoteDropped);
     if (mapped instanceof HttpError) mapped.details = { ...record(mapped.details), actionId: action.id, state: "failed" };
     throw mapped;
@@ -1006,8 +1030,9 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
       state: outcome.state,
       instruction: "The outcome is not confirmed yet. Do not send again with a new key; retry later with the same idempotencyKey to reconcile.",
     };
+  await releaseReport(true);
   const answeredTriggerIds =
-    target.isOrigin && ctx.runClass
+    target.isOrigin && ctx.runClass && !ctx.completion
       ? await markTriggersAnswered(ctx.db, {
           companyId: ctx.endpoint.companyId,
           endpointId: ctx.endpoint.id,

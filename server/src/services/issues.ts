@@ -1,4 +1,5 @@
-import { recordChatHandoff, recordChatCompletion, existingChatCompletionReply, acknowledgeChatCompletionReply } from "./chat-completion-delivery.js";
+import { recordChatHandoff, recordChatCompletion, recordChatReassignment, existingChatCompletionReply, acknowledgeChatCompletionReply,
+  openwaConversationCoversChildren } from "./chat-completion-delivery.js";
 import { mirrorSlackBoardComment, slackBoardReplyBindings } from "./slack-board-messages.js";
 import { assertAgentRunWriteAllowed } from "../agent-run-cancellation.js";
 import { retryIdempotentDatabaseOperation } from "../database-retry.js";
@@ -9297,6 +9298,9 @@ export function issueService(db: Db) {
       ) {
         return null;
       }
+      if (await openwaConversationCoversChildren(db, { companyId: parent.companyId, issueId: parent.id, agentId: parent.assigneeAgentId })) {
+        return null;
+      }
 
       const childIdsForSummaries = children
         .slice(0, MAX_CHILD_COMPLETION_SUMMARIES)
@@ -11138,6 +11142,7 @@ export function issueService(db: Db) {
           .then((rows: Array<typeof issues.$inferSelect>) => rows[0] ?? null);
         if (!updated) return null;
         await recordChatCompletion(tx, receiptExisting, updated);
+        await recordChatReassignment(tx, receiptExisting, updated, actorAgentId, actorRunId);
         // An operator explicitly choosing a disposition owns that decision,
         // including choosing In Review while the conversation is Idle.
         if (actorUserId && issueData.status !== undefined) {

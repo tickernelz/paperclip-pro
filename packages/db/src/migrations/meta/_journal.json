@@ -2178,6 +2178,13 @@
       "when": 1791527140990,
       "tag": "0312_slippery_meteorite",
       "breakpoints": true
+    },
+    {
+      "idx": 313,
+      "version": "7",
+      "when": 1791559027175,
+      "tag": "0313_jittery_klaw",
+      "breakpoints": true
     }
   ]
 }

@@ -287,6 +287,10 @@ the agent's internal narration, so it stays an issue comment and is audited as
 `publication_suppressed` with reason `run_not_succeeded`. Triggers the run
 had not answered with `openwa_send` stay pending for the next wake.
 
+A `task_completion` run (see [Delegated task reports](#delegated-task-reports))
+is exempt from the reply policy for its one report to the origin chat; its
+final output is never published (reason `completion_report`).
+
 ### Other endpoint settings
 
 | Setting | Key | Default | Bounds |
@@ -324,7 +328,7 @@ Class claims in caller-supplied wake payloads are ignored.
 | Class | Started by | Profile |
 | --- | --- | --- |
 | `owner` | Owner triggers, owner replies to an approval bubble (`approval_reply`) | `full` |
-| `other` | Allowed and outside-allowlist senders, `owner_absent`, `group_added`, `approval_pending`, `approval_expired`, rejected `approval_resolved` | `read_only` |
+| `other` | Allowed and outside-allowlist senders, `owner_absent`, `group_added`, `approval_pending`, `approval_expired`, rejected `approval_resolved`, `task_completion` | `read_only` |
 | `grant` | Approved `approval_resolved` for one request | `read_only` plus the granted categories |
 
 A run on the conversation issue without OpenWA context (agent mention,
@@ -822,6 +826,41 @@ to update only when the final reply is still minutes away and never to restate
 what was already sent. Without steering, nudges are unavailable. The server
 never sends progress text itself; the agent decides. **Typing indicator** shows typing in
 the origin chat while a triggered run is active.
+
+## Delegated task reports
+
+When a run of the endpoint's agent on a conversation issue creates a task
+assigned to anyone but itself (a child of the conversation or a task under any
+other parent), or reassigns an existing task to another agent, the server
+records a handoff for that conversation (`chat_task_handoffs.channel =
+openwa`). Each time the task becomes `done`, `cancelled` or `blocked`, the same
+transaction writes a row to the `chat_completion_deliveries` outbox, independent
+of the task's siblings and parent.
+
+- The outbox row becomes due 60 s after the change, so changes within that
+  window share one `chat_task_completed` wake (event `task_completion`, class
+  `other`, profile `read_only`) on the conversation. If the chat rotated to a
+  new conversation issue meanwhile, the wake goes to the newest one.
+- The wake event's `completedTasks` lists identifier, title, status, assignee,
+  link, the assignee's latest comment (shortened) and, for blocked tasks, the
+  blockers and unblock descriptor. The guidance tells the agent to send one
+  message in the owner's language covering only those tasks: who did the work
+  and the link; for cancelled tasks, whether to continue or take another route;
+  for blocked tasks, what blocks it and which decision is needed.
+- The run may send exactly one message, only to the origin chat, never quoting
+  (a quote is dropped). It marks no trigger answered. A second send fails with
+  `completion_already_reported`, a send elsewhere with
+  `completion_report_origin_only`. The send is reserved on the outbox row
+  before the gateway call, so a run that fails or retries after a send (even
+  an uncertain one) never sends again. A run that ends without sending is
+  retried up to 5 times.
+- A task that stays blocked (for example its blockers change) is reported
+  once; it is reported again only after it leaves `blocked` and is blocked
+  again.
+- When every child of a conversation issue has such a handoff, the generic
+  `issue_children_completed` wake for that conversation is skipped, so the
+  agent gets one turn per change. A child created on the board without a
+  handoff keeps the generic wake.
 
 ## Troubleshooting
 

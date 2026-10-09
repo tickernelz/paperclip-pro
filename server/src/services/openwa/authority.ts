@@ -25,6 +25,7 @@ import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/paperclip-pro-adapter-
 import { HttpError, forbidden } from "../../errors.js";
 import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";
+import { isOpenwaCompletionTurn } from "../chat-completion-delivery.js";
 
 export const OPENWA_RUN_CONTEXT_KEY = "paperclipOpenwa";
 export const OPENWA_APPROVAL_REQUIRED_CODE = "openwa_approval_required";
@@ -637,12 +638,14 @@ export async function resolveOpenwaRunContext(
   const profile: OpenwaRunProfile = cls === "owner" ? "full" : "read_only";
   const runAllowedCategories = openwaAllowedCategories(policy, profile, runGranted, policy.gatewayAdminTools).allowed;
   const requesterExternalTools = grants.some((grant) => grant.scope === "requester" && grant.category === "external_tools");
+  const completionTurn = !wakeAction && cls === "other" && deliveries.length === 0 &&
+    (await isOpenwaCompletionTurn(db, { companyId: input.companyId, runId: input.runId, issueId: input.issueId }));
   return {
     ...base,
     triggerClass: cls,
     profile,
     toolProfile: profile === "full" || runAllowedCategories.includes("external_tools") || requesterExternalTools ? "full" : "read_only",
-    event: wakeAction?.event ?? null,
+    event: wakeAction?.event ?? (completionTurn ? "task_completion" : null),
     grantIds: grants.map((grant) => grant.id).sort(),
     deliveryIds: deliveries
       .filter((delivery) => delivery.chatKey && normalizeChatKey(delivery.chatKey) === chatKey)

@@ -46,6 +46,7 @@ export type OpenwaSuppressionReason =
   | "outside_allowlist"
   | "approval_acknowledged"
   | "run_not_succeeded"
+  | "completion_report"
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
@@ -240,6 +241,7 @@ export async function decideOpenwaRunPublication(
       : [];
     let reason: OpenwaSuppressionReason | null = runClass ? null : "no_openwa_context";
     if (!reason && UNSUCCESSFUL_RUN_STATUSES.has(run.status)) reason = "run_not_succeeded";
+    if (!reason && runEvent(run.contextSnapshot) === "task_completion") reason = "completion_report";
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
     if (!reason && runClass === "owner") {
       const [resolvedHere] = await tx
