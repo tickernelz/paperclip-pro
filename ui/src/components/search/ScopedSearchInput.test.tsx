@@ -310,6 +310,76 @@ function rawCalls() {
     expect(listbox()).not.toBeNull();
   });
 
+  function keyEvent(name: string, init: KeyboardEventInit = {}) {
+    const event = new KeyboardEvent("keydown", { key: name, bubbles: true, cancelable: true, ...init });
+    act(() => {
+      input().dispatchEvent(event);
+    });
+    return event;
+  }
+
+  function pendingField() {
+    return container.querySelector('[data-testid="scoped-search-pending-field"]');
+  }
+
+  it("keeps spaces inside a pending field value without committing a pill", () => {
+    render();
+    act(() => input().focus());
+    startTitleField();
+    type("internal ");
+    type("internal status ");
+    expect(pills()).toEqual([]);
+    expect(pendingField()?.textContent).toContain("title:");
+    expect(input().value).toBe("internal status ");
+  });
+
+  it("commits the pending value on Tab and keeps focus in the input", () => {
+    render();
+    act(() => input().focus());
+    startTitleField();
+    type("internal status ");
+    const event = keyEvent("Tab");
+    expect(event.defaultPrevented).toBe(true);
+    expect(pills()).toEqual(["title:internal status"]);
+    expect(pendingField()).toBeNull();
+    expect(document.activeElement).toBe(input());
+    settle();
+    expect(onChange).toHaveBeenLastCalledWith({ raw: 'title:"internal status"', q: 'title:"internal status"', filters: {} });
+  });
+
+  it("commits a multi-word value on Enter and emits once", () => {
+    render();
+    act(() => input().focus());
+    startTitleField();
+    type("internal status");
+    key("Enter");
+    settle();
+    expect(pills()).toEqual(["title:internal status"]);
+    expect(rawCalls()).toEqual(['title:"internal status"']);
+  });
+
+  it("leaves Tab alone when nothing is pending and the dropdown is closed", () => {
+    render();
+    type("auth");
+    key("Escape");
+    expect(keyEvent("Tab").defaultPrevented).toBe(false);
+  });
+
+  it("still commits a status picker selection immediately", () => {
+    render();
+    act(() => input().focus());
+    type("status:");
+    const done = Array.from(container.querySelectorAll('[role="option"]')).find((option) => option.textContent?.startsWith("Done"))!;
+    act(() => done.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(pills()).toEqual(["status:done"]);
+  });
+
+  it("splits a pasted quoted field and filter into two pills", () => {
+    render();
+    type('title:"internal status" status:done ');
+    expect(pills()).toEqual(["title:internal status", "status:done"]);
+  });
+
   it("closes the dropdown on Escape", () => {
     render();
     act(() => input().focus());

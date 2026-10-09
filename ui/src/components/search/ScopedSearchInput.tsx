@@ -265,23 +265,6 @@ export function ScopedSearchInput({
     const endsWithSpace = /\s$/.test(nextValue);
     if (endsWithSpace) setOpen(true);
     if (pending) {
-      if (pending.kind === "text" && endsWithSpace) {
-        const trimmed = nextValue.trim();
-        const quoted = trimmed.startsWith("\"");
-        if (trimmed && (!quoted || (trimmed.length > 1 && trimmed.endsWith("\"")))) {
-          commitToken(formatSearchToken(pending.key, trimmed));
-          return;
-        }
-      }
-      if (pending.kind === "picker" && endsWithSpace) {
-        const needle = nextValue.trim().toLowerCase();
-        const exact = pickerOptions(pending.key, context, operatorKeys)
-          .find((option) => option.label.toLowerCase() === needle || option.id.toLowerCase() === needle);
-        if (exact?.token) {
-          commitToken(exact.token);
-          return;
-        }
-      }
       setDraft(nextValue);
       return;
     }
@@ -306,8 +289,35 @@ export function ScopedSearchInput({
     focusInput();
   };
 
+  const commitPendingDraft = () => {
+    if (!pending) return false;
+    const trimmed = draft.trim();
+    if (!trimmed) return false;
+    if (pending.kind === "text") {
+      commitToken(formatSearchToken(pending.key, trimmed));
+      return true;
+    }
+    const needle = trimmed.toLowerCase();
+    const exact = pickerOptions(pending.key, context, operatorKeys)
+      .find((option) => option.label.toLowerCase() === needle || option.id.toLowerCase() === needle);
+    const chosen = exact ?? (listVisible && activeIndex >= 0 ? options[activeIndex] : undefined) ?? (options.length === 1 ? options[0] : undefined);
+    if (!chosen?.token) return false;
+    commitToken(chosen.token);
+    return true;
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     const composing = event.nativeEvent.isComposing;
+    if (!composing && event.key === "Tab" && !event.shiftKey && (pending || listVisible)) {
+      event.preventDefault();
+      if (commitPendingDraft()) return;
+      if (!pending && listVisible && activeIndex >= 0 && options[activeIndex]) {
+        selectOption(options[activeIndex]!);
+        return;
+      }
+      if (!pending) setOpen(false);
+      return;
+    }
     if (!composing && event.key === "ArrowDown") {
       event.preventDefault();
       if (!open) {
@@ -330,7 +340,7 @@ export function ScopedSearchInput({
       }
       let nextRaw = raw;
       if (pending?.kind === "text" && draft.trim()) {
-        const token = formatSearchToken(pending.key, draft);
+        const token = formatSearchToken(pending.key, draft.trim());
         commitToken(token, false);
         nextRaw = composeRaw([...tokens, token], null, heldText);
       } else if (!pending) {
@@ -378,7 +388,7 @@ export function ScopedSearchInput({
 
   const pills = tokens.map((token) => searchTokenPill(token, context));
   const inputPlaceholder = pending
-    ? (pending.kind === "text" ? `${pending.label}: type text or "exact phrase", Enter to add` : `Pick ${pending.label.toLowerCase()}…`)
+    ? (pending.kind === "text" ? `${pending.label}: type text, Tab or Enter to add` : `Pick ${pending.label.toLowerCase()}…`)
     : tokens.length > 0 ? "" : placeholder;
 
   return (
