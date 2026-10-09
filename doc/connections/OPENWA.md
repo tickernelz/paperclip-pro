@@ -218,6 +218,29 @@ up to 50 of 1 to 100 characters. In `owner_number` mode the agent number's own
 messages count only when typed on the phone. Control commands `/new`, `/close`
 and `/status` are accepted from owners, and from allowed senders in DMs.
 
+### Dedicated group (reply to every message)
+
+A dedicated group is a WhatsApp group that holds only an owner and the agent
+number, used as a private desk where the agent handles every message without
+being mentioned. It is a group with **Activation** `on` and the `allMessages`
+trigger on: every message in it is a trigger, whatever the group's members.
+
+- In **Chats**, a group row (configured, or listed by **Add a chat from
+  WhatsApp**) has **Dedicated group: reply to every message**. One click saves
+  `activation: "on"` and `triggers.allMessages: true` and keeps every other
+  setting and trigger override of that chat.
+- From WhatsApp, an owner can ask the agent for the same change; the owner run
+  calls `openwa_endpoint_config` with
+  `{chat: "<group>@g.us", chatSettings: {activation: "on", triggers: {allMessages: true}}}`.
+  `triggers` replaces the chat's trigger overrides, so the agent includes the
+  ones the chat already has.
+
+Owner messages wake runs of class `owner`, which reply freely. Replies to
+anyone else still follow the chat's **Replies to non-owners** (`replyPolicy`),
+and a sender outside the allowlist still needs `reply_outside_allowlist` unless
+the message mentions or quotes the agent (`groupMemberReplies` covers only
+those).
+
 ### Absence timer
 
 While **Owner mentioned while away** is on for the chat, a non-owner message
@@ -301,7 +324,7 @@ Class claims in caller-supplied wake payloads are ignored.
 | Class | Started by | Profile |
 | --- | --- | --- |
 | `owner` | Owner triggers, owner replies to an approval bubble (`approval_reply`) | `full` |
-| `other` | Allowed and outside-allowlist senders, `owner_absent`, `group_added`, `approval_pending`, rejected `approval_resolved` | `read_only` |
+| `other` | Allowed and outside-allowlist senders, `owner_absent`, `group_added`, `approval_pending`, `approval_expired`, rejected `approval_resolved` | `read_only` |
 | `grant` | Approved `approval_resolved` for one request | `read_only` plus the granted categories |
 
 A run on the conversation issue without OpenWA context (agent mention,
@@ -411,7 +434,7 @@ targets the conversation issue, not a run.
   reacts to the owner's message with ✅ instead. A quote of an already-resolved
   bubble never creates a grant.
 - **Paperclip**: the endpoint's **Approvals** tab lists requests by **Status**
-  (Pending, Approved, Rejected, Cancelled, All) with origin chat, masked
+  (Pending, Approved, Rejected, Cancelled, Expired, Withdrawn, All) with origin chat, masked
   requester, scope, reminders sent and grants. Owners choose **Approve** or
   **Reject** with optional conditions or reason. API:
   `GET /api/chat-endpoints/:endpointId/openwa/approvals?status=`,
@@ -434,8 +457,39 @@ targets the conversation issue, not a run.
 - **Reminders**: while a request is pending the server wakes the agent with
   `approval_pending` at **Reminder interval (minutes)** × k (`reminderMinutes`,
   default 30, 1 to 1440) for k up to **Maximum reminders** (`maxReminders`,
-  default 3, 0 to 10). The agent may send a reminder with `remindRequestId` or do
-  nothing. After the last reminder the request stays pending.
+  default 3, 0 to 10). The agent may send a reminder with `remindRequestId`,
+  withdraw the request, or do nothing. Reminders that would fire after the
+  pending lifetime are not scheduled.
+- **Owner reply stops reminders**: when a current owner writes in the request's
+  origin chat, or in a chat that received its bubble (an unquoted message or a
+  quote of the bubble), after the request was created, its remaining reminder
+  wakes are cancelled. The request itself stays pending until it is resolved,
+  withdrawn or expires. The next owner-message run in that chat lists it under
+  `pendingApprovals`, and its guidance tells the agent to resolve it when the
+  owner's words decide it (or act on them in that owner run), to withdraw it when
+  the reply answered it differently or made it irrelevant, and never to ask the
+  owner about it again.
+- **Expiry**: a pending request older than **Pending request lifetime (hours)**
+  (`pendingTtlHours`, default 24, 1 to 168) becomes `expired`. The scheduler
+  keeps one `approval_expiry` scheduled wake per pending request at
+  `createdAt + pendingTtlHours` (moved when the setting changes, recreated when
+  the endpoint runtime loads). On expiry the remaining reminders are cancelled,
+  any legacy issue-thread card becomes `expired`, audit `approval_expired` and
+  activity `openwa.approval_expired` are written, and the agent is woken once
+  (`approval_expired`, class `other`, idempotency key
+  `openwa-approval-expired:<requestId>`) so it can tell the requester or drop the
+  action. An expired request never grants anything: a later WhatsApp quote,
+  `openwa_approval_resolve` or Paperclip resolve returns `already_resolved`.
+- **Withdraw**: the agent closes its own pending request with
+  `openwa_approval_withdraw({requestId, reason, ownerMessageRef?})` from a run on
+  the WhatsApp conversation issue of the request's origin chat or of a chat that
+  received its bubble (another chat gets 404 `not_found`; another agent, or a run
+  off the conversation issue, gets 403). The request becomes `withdrawn`, its
+  reminders and expiry wake are cancelled, and audit `approval_withdrawn`
+  (reason in content, `ownerMessageRef` in metadata) plus activity
+  `openwa.approval_withdrawn` are written. Nothing is sent to WhatsApp, no grant
+  is written and the action is never executed. A request that is no longer
+  pending returns 409 `already_resolved` with `requestStatus`.
 - **Grants** are one row per approved category with scope `one_action` (one gated
   call, consumed atomically by the grant run) or `requester` (usable by that
   requester's runs in that origin chat until expiry). A `one_action` `external_tools` grant is consumed at run start and covers that single grant run, because runtime tool profiles are fixed at adapter launch and individual runtime dispatches cannot be metered. A grant expires after
@@ -466,6 +520,7 @@ Every call is audited as `tool_called`.
 | `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`); query results page with `cursor`. |
 | `openwa_request_approval` | write | Ask the owners for categories; remind with `remindRequestId`. |
 | `openwa_approval_resolve` | write | Record the owner's decision (`approve`, `reject`, `clarify`) in an owner run of that owner's discussion; approve/reject need the owner's explicit words, else 409 `owner_decision_unclear`. |
+| `openwa_approval_withdraw` | write | Withdraw your own pending request from this chat (origin or bubble chat) with a `reason` and optional `ownerMessageRef`; sends and executes nothing, stops its reminders. |
 | `openwa_stay_silent` | write | Mark the listed (default all visible pending) triggers silenced. |
 | `openwa_handoff` | write | Hand owner triggers to a follow-up owner run with a note. |
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
@@ -643,7 +698,7 @@ The endpoint's **Audit** tab lists `chat_audit_entries` newest first with filter
 `actorRef`, `from`, `to`, `cursor`, `limit` 1 to 100, default 25). Kinds:
 `trigger_admitted`, `trigger_filtered`, `message_sent`, `publication_suppressed`,
 `tool_called`, `approval_requested`, `approval_reminded`, `approval_resolved`,
-`approval_cancelled`, `config_changed`, `group_added`, `group_left`,
+`approval_cancelled`, `approval_expired`, `approval_withdrawn`, `config_changed`, `group_added`, `group_left`,
 `session_health`, `linked_read`, `run_failed`. `trigger_filtered` reasons: `denylisted`,
 `outside_allowlist`, `chat_inactive`, `duplicate`, `rate_limited`. Endpoint owners, company owners and instance admins see content;
 other board users with endpoint access see metadata only. Owner-class runs can
@@ -657,6 +712,7 @@ entries: `openwa.endpoint_created`, `openwa.endpoint_updated`, `openwa.owner_add
 `openwa.owner_removed`, `openwa.sender_rule_changed`,
 `openwa.chat_activation_changed`, `openwa.config_changed`,
 `openwa.approval_requested`, `openwa.approval_resolved`, `openwa.approval_cancelled`,
+`openwa.approval_expired`, `openwa.approval_withdrawn`,
 `openwa.grant_created`, `openwa.grant_consumed`, `openwa.grant_revoked`,
 `openwa.grant_expired`, `openwa.gateway_admin_called`, `openwa.linked_session_added`,
 `openwa.linked_session_chats_changed`, `openwa.linked_session_removed` and

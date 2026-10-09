@@ -72,7 +72,7 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
   const policy = openwaEndpointPolicySchema.parse(endpoint?.policy ?? {});
   const chat = chats.find((entry) => entry.chatKey === chatKey) ?? null;
   const custom = [...policy.customInstructions];
-  const { reminderMinutes, maxReminders, grantTtlHours: _grantTtlHours, ...toggles } = policy.approvals;
+  const { reminderMinutes, maxReminders, pendingTtlHours, grantTtlHours: _grantTtlHours, ...toggles } = policy.approvals;
   const envelope = {
     ...(changed ? { changed } : {}),
     policyRevision: endpoint?.policyRevision ?? ctx.endpoint.policyRevision,
@@ -80,7 +80,7 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
     groupMemberReplies: policy.groupMemberReplies,
     chat: { chatRef: chatRef(ctx, chat?.chatId ?? chatKey), configured: chat !== null, enabled: chat?.enabled ?? null, settings: chat?.settings ?? null },
     approvals: toggles,
-    reminders: { reminderMinutes, maxReminders },
+    reminders: { reminderMinutes, maxReminders, pendingTtlHours },
     customInstructions: custom.length > RESULT_TEXT_LIMIT ? custom.slice(0, RESULT_TEXT_LIMIT).join("") + "…" : policy.customInstructions,
     ...(custom.length > RESULT_TEXT_LIMIT ? { customInstructionsTruncated: true } : {}),
   };

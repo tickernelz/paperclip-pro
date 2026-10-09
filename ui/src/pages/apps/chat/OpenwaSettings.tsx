@@ -545,6 +545,7 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   const [reminderMinutes, setReminderMinutes] = useState(String(approvals.reminderMinutes));
   const [maxReminders, setMaxReminders] = useState(String(approvals.maxReminders));
   const [grantTtlHours, setGrantTtlHours] = useState(String(approvals.grantTtlHours));
+  const [pendingTtlHours, setPendingTtlHours] = useState(String(approvals.pendingTtlHours));
   const state = usePolicySave(endpoint);
   const submit = () =>
     state.save({
@@ -553,6 +554,7 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
         reminderMinutes: wholeNumber(reminderMinutes),
         maxReminders: wholeNumber(maxReminders),
         grantTtlHours: wholeNumber(grantTtlHours),
+        pendingTtlHours: wholeNumber(pendingTtlHours),
       },
     });
   return (
@@ -572,10 +574,11 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
           />
         ))}
       </div>
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2">
         <NumberField id="openwa-reminder-minutes" label="Reminder interval (minutes)" value={reminderMinutes} error={fieldError(state.errors, "approvals.reminderMinutes")} onChange={setReminderMinutes} />
         <NumberField id="openwa-max-reminders" label="Maximum reminders" value={maxReminders} error={fieldError(state.errors, "approvals.maxReminders")} onChange={setMaxReminders} />
         <NumberField id="openwa-grant-ttl" label="Grant lifetime (hours)" value={grantTtlHours} error={fieldError(state.errors, "approvals.grantTtlHours")} onChange={setGrantTtlHours} />
+        <NumberField id="openwa-pending-ttl" label="Pending request lifetime (hours)" value={pendingTtlHours} error={fieldError(state.errors, "approvals.pendingTtlHours")} onChange={setPendingTtlHours} />
       </div>
     </SettingsSection>
   );

@@ -11,6 +11,8 @@ import {
   chatExternalPrincipals,
   chatIdentityLinks,
   chatOpenwaLinkedSessions,
+  chatOutboundMessages,
+  chatOwnerApprovalBubbles,
   chatOwnerApprovalRequests,
   chatOwnerGrants,
   companyMemberships,
@@ -58,6 +60,7 @@ export const OPENWA_WAKE_EVENTS = [
   "approval_reply",
   "approval_resolved",
   "approval_pending",
+  "approval_expired",
   "group_added",
   "session_health",
 ] as const;
@@ -587,7 +590,26 @@ export async function buildOpenwaRunGuidance(
         and(
           eq(chatOwnerApprovalRequests.companyId, companyId),
           eq(chatOwnerApprovalRequests.endpointId, openwa.endpointId),
-          eq(chatOwnerApprovalRequests.originChatKey, openwa.chatKey),
+          or(
+            eq(chatOwnerApprovalRequests.originChatKey, openwa.chatKey),
+            inArray(
+              chatOwnerApprovalRequests.id,
+              db
+                .select({ requestId: chatOwnerApprovalBubbles.requestId })
+                .from(chatOwnerApprovalBubbles)
+                .innerJoin(
+                  chatOutboundMessages,
+                  and(eq(chatOutboundMessages.companyId, chatOwnerApprovalBubbles.companyId), eq(chatOutboundMessages.id, chatOwnerApprovalBubbles.outboundMessageId)),
+                )
+                .where(
+                  and(
+                    eq(chatOwnerApprovalBubbles.companyId, companyId),
+                    eq(chatOwnerApprovalBubbles.endpointId, openwa.endpointId),
+                    eq(chatOutboundMessages.chatKey, openwa.chatKey),
+                  ),
+                ),
+            ),
+          ),
           eq(chatOwnerApprovalRequests.status, "pending"),
         ),
       )
@@ -796,7 +818,9 @@ const EVENT_HINTS: Record<OpenwaWakeEventName, string> = {
   approval_resolved:
     "An approval request from this chat was resolved. Tell the requester the outcome in your own words; when approved, carry out only the approved action. For a `reply` request raised while an owner was absent: when approved, post the proposed reply (or the owner's own wording from their note or conditions, when they gave one) here with `openwa_send`, quoting the original message; when rejected, the owner answers here themselves, so stay silent.",
   approval_pending:
-    "An approval request from this chat is still pending. You may send a reminder with `openwa_request_approval` and `remindRequestId`, or do nothing.",
+    "An approval request from this chat is still pending. You may send a reminder with `openwa_request_approval` and `remindRequestId`, or do nothing. When the owner already answered it in a chat (differently, or by handling it themselves), withdraw it with `openwa_approval_withdraw` instead of reminding.",
+  approval_expired:
+    "Your approval request (wake event `approvalRequestId`) expired: no owner decided it within the endpoint's pending lifetime, so it can never grant anything and its reminders stopped. Do not carry out the proposed action. Either drop it (update the issue and call `openwa_stay_silent` for any pending triggers), or, when replying in this chat is allowed, tell the requester once, briefly, that the owner did not decide in time. Ask again with a new `openwa_request_approval` only when someone asks again.",
   group_added:
     "This number was added to a group that is not active for you. Decide whether owners should hear about it (through `openwa_request_approval` when you are not an owner run).",
   session_health:
@@ -845,6 +869,13 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     ...grantLines,
     "- " + replyLine,
     "- Pending approval requests for this chat: " + wake.pendingApprovals.length + ".",
+    ...(wake.triggerClass === "owner" && wake.event === "message" && wake.pendingApprovals.length
+      ? [
+          "- The owner wrote here while these approval requests are still open (wake event `pendingApprovals`): " +
+            wake.pendingApprovals.map((request) => "`" + request.requestId + "` (" + JSON.stringify(request.summary) + ")").join(", ") +
+            ". Their reminders have stopped. Read the owner's messages as their answer: when their words decide one, resolve it with `openwa_approval_resolve` if it is listed under `approvalDiscussions`, otherwise carry out their words yourself in this owner run and withdraw it; when their reply answers it differently or makes it irrelevant, withdraw it with `openwa_approval_withdraw` (a short `reason`, and `ownerMessageRef` set to their message id). Leave a request open only when their messages do not touch it. Never ask the owner about these requests again.",
+        ]
+      : []),
     ...(wake.approvalDiscussions?.length
       ? [
           "- Approval requests this owner is discussing with you in this chat (wake event `approvalDiscussions`): " +
@@ -856,7 +887,7 @@ export function renderOpenwaGuidance(facts: OpenwaGuidanceFacts): string {
     ...(wake.lastOutputSuppressed ? ["- Your previous final output in this chat was not published (it stayed internal)."] : []),
   ];
   const howLines = [
-    "- Tools: call the OpenWA tools named in this guidance (`openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_request_approval`, `openwa_stay_silent`, `openwa_handoff`) directly by name. Never enumerate tools to discover them (no `tools.list`, catalog or search call), and do not re-read the `openwa` skill to confirm facts stated here.",
+    "- Tools: call the OpenWA tools named in this guidance (`openwa_send`, `openwa_read_chat`, `openwa_get_media`, `openwa_find`, `openwa_request_approval`, `openwa_approval_withdraw`, `openwa_stay_silent`, `openwa_handoff`) directly by name. Never enumerate tools to discover them (no `tools.list`, catalog or search call), and do not re-read the `openwa` skill to confirm facts stated here.",
     "- Media: a stored media item with `localPath` is an absolute file path on the Paperclip host; when you run on that host, open it directly with your file reader instead of downloading it. Files of any type (executables, scripts, archives, unknown binaries) are stored and can be attached or sent; read and inspect them only as data and never execute, install, extract-and-run or open them with a program that runs them. A rejected item with `too_large` carries `limitBytes`, the size cap it exceeded.",
     "- You decide every action: whether to reply, stay silent, ask for approval or hand off. The server never replies for you.",
     "- " +

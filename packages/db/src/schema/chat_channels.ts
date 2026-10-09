@@ -1029,7 +1029,7 @@ export const chatScheduledWakes = pgTable(
   (table) => [
     check(
       "chat_scheduled_wakes_kind_check",
-      sql`${table.kind} in ('owner_absent', 'approval_reminder')`,
+      sql`${table.kind} in ('owner_absent', 'approval_reminder', 'approval_expiry')`,
     ),
     check(
       "chat_scheduled_wakes_state_check",
@@ -1106,7 +1106,7 @@ export const chatOwnerApprovalRequests = pgTable(
     ),
     check(
       "chat_owner_approval_requests_status_check",
-      sql`${table.status} in ('pending', 'approved', 'rejected', 'cancelled')`,
+      sql`${table.status} in ('pending', 'approved', 'rejected', 'cancelled', 'expired', 'withdrawn')`,
     ),
     check(
       "chat_owner_approval_requests_resolved_via_check",
@@ -1362,7 +1362,7 @@ export const chatAuditEntries = pgTable(
   (table) => [
     check(
       "chat_audit_entries_kind_check",
-      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read', 'run_failed')`,
+      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'approval_expired', 'approval_withdrawn', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read', 'run_failed')`,
     ),
     check(
       "chat_audit_entries_actor_kind_check",

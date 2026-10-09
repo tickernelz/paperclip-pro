@@ -671,7 +671,10 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       return;
     }
     const approvalCandidate = detectApprovalReply(event, snapshot);
-    if (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) return;
+    if (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) {
+      await deps.timers?.onOwnerActivity?.(event.chatKey, event, ctx);
+      return;
+    }
     if (event.chatKind === "group" && (event.mentionedIds.length || event.body.includes("@") || event.quoted)) await ensureLids(runtime, snapshot);
     const fromAgent = event.quoted ? await quotedFromAgent(snapshot, event) : false;
     const facts = { quotedFromAgent: fromAgent };

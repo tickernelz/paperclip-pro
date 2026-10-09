@@ -25886,7 +25886,9 @@
             "pending",
             "approved",
             "rejected",
-            "cancelled"
+            "cancelled",
+            "expired",
+            "withdrawn"
           ]
         }
       }

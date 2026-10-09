@@ -608,6 +608,100 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
   }
 }
 
+/** Moves a pending request from this chat (its origin chat or a chat that got its bubble) to withdrawn; never sends or executes anything. */
+export async function openwaApprovalWithdrawTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
+  const requestId = String(args.requestId);
+  const reason = String(args.reason).trim();
+  const ownerMessageRef = str(args.ownerMessageRef);
+  if (!ctx.runClass)
+    throw new OpenwaToolError(403, "approval_not_authorized", "Only runs on the WhatsApp conversation issue can withdraw an approval request", { requestId });
+  return ctx.db.transaction(async (tx) => {
+    const [request] = await tx
+      .select()
+      .from(chatOwnerApprovalRequests)
+      .where(
+        and(
+          eq(chatOwnerApprovalRequests.companyId, ctx.endpoint.companyId),
+          eq(chatOwnerApprovalRequests.endpointId, ctx.endpoint.id),
+          eq(chatOwnerApprovalRequests.id, requestId),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (!request || !(await requestReachesChat(tx, request, ctx.origin.chatKey)))
+      throw new OpenwaToolError(404, "not_found", "No approval request from this chat has that id", { requestId });
+    if (request.status !== "pending")
+      throw new OpenwaToolError(409, "already_resolved", "This approval request is no longer pending", { requestId, requestStatus: request.status });
+    const now = new Date();
+    await tx
+      .update(chatOwnerApprovalRequests)
+      .set({ status: "withdrawn", resolvedAt: now, updatedAt: now })
+      .where(and(eq(chatOwnerApprovalRequests.id, request.id), eq(chatOwnerApprovalRequests.status, "pending")));
+    if (request.interactionId)
+      await tx
+        .update(issueThreadInteractions)
+        .set({
+          status: "cancelled",
+          result: { version: 1, outcome: "withdrawn", reason },
+          resolvedByUserId: null,
+          resolvedByAgentId: ctx.binding.agentId,
+          resolvedByRunId: ctx.run.id,
+          resolvedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(issueThreadInteractions.id, request.interactionId),
+            eq(issueThreadInteractions.companyId, ctx.endpoint.companyId),
+            eq(issueThreadInteractions.status, "pending"),
+          ),
+        );
+    await cancelApprovalReminders(tx, { companyId: ctx.endpoint.companyId, endpointId: ctx.endpoint.id, requestId: request.id });
+    await recordOpenwaAudit(tx, {
+      companyId: ctx.endpoint.companyId,
+      endpointId: ctx.endpoint.id,
+      kind: "approval_withdrawn",
+      actorKind: "agent",
+      actorRef: ctx.binding.agentId,
+      chatKey: request.originChatKey,
+      conversationId: ctx.conversation.id,
+      runId: ctx.run.id,
+      metadata: { requestId: request.id, triggerClass: ctx.runClass, ...(ownerMessageRef ? { ownerMessageRef } : {}) },
+      content: { reason },
+      retentionDays: ctx.policy.auditContentRetentionDays,
+    });
+    await logOpenwaActivity(tx, {
+      companyId: ctx.endpoint.companyId,
+      endpointId: ctx.endpoint.id,
+      action: "openwa.approval_withdrawn",
+      agentId: ctx.binding.agentId,
+      runId: ctx.run.id,
+      details: { requestId: request.id },
+    });
+    return { requestId: request.id, status: "withdrawn" };
+  });
+}
+
+async function requestReachesChat(tx: DbOrTransaction, request: RequestRow, chatKey: string): Promise<boolean> {
+  if (request.originChatKey === chatKey) return true;
+  const [bubble] = await tx
+    .select({ id: chatOwnerApprovalBubbles.id })
+    .from(chatOwnerApprovalBubbles)
+    .innerJoin(
+      chatOutboundMessages,
+      and(eq(chatOutboundMessages.companyId, chatOwnerApprovalBubbles.companyId), eq(chatOutboundMessages.id, chatOwnerApprovalBubbles.outboundMessageId)),
+    )
+    .where(
+      and(
+        eq(chatOwnerApprovalBubbles.companyId, request.companyId),
+        eq(chatOwnerApprovalBubbles.requestId, request.id),
+        eq(chatOutboundMessages.chatKey, chatKey),
+      ),
+    )
+    .limit(1);
+  return Boolean(bubble);
+}
+
 /** The single owner principal behind this owner-class run's triggers in its own chat; null otherwise. */
 async function runOwnerPrincipal(ctx: ToolContext): Promise<string | null> {
   const deliveryIds = ctx.openwa?.deliveryIds ?? [];

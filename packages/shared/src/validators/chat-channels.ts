@@ -334,6 +334,7 @@ export const openwaEndpointPolicySchema = z
         reminderMinutes: z.number().int().min(1).max(1440).default(30),
         maxReminders: z.number().int().min(0).max(10).default(3),
         grantTtlHours: z.number().int().min(1).max(720).default(24),
+        pendingTtlHours: z.number().int().min(1).max(168).default(24),
       })
       .strict()
       .prefault({}),

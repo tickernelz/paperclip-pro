@@ -681,13 +681,13 @@ export type ChatAnswerState = (typeof CHAT_ANSWER_STATES)[number];
 export const CHAT_SENDER_RULE_LISTS = ["allow", "deny"] as const;
 export type ChatSenderRuleList = (typeof CHAT_SENDER_RULE_LISTS)[number];
 
-export const CHAT_SCHEDULED_WAKE_KINDS = ["owner_absent", "approval_reminder"] as const;
+export const CHAT_SCHEDULED_WAKE_KINDS = ["owner_absent", "approval_reminder", "approval_expiry"] as const;
 export type ChatScheduledWakeKind = (typeof CHAT_SCHEDULED_WAKE_KINDS)[number];
 
 export const CHAT_SCHEDULED_WAKE_STATES = ["pending", "fired", "cancelled"] as const;
 export type ChatScheduledWakeState = (typeof CHAT_SCHEDULED_WAKE_STATES)[number];
 
-export const CHAT_OWNER_APPROVAL_STATUSES = ["pending", "approved", "rejected", "cancelled"] as const;
+export const CHAT_OWNER_APPROVAL_STATUSES = ["pending", "approved", "rejected", "cancelled", "expired", "withdrawn"] as const;
 export type ChatOwnerApprovalStatus = (typeof CHAT_OWNER_APPROVAL_STATUSES)[number];
 
 export const CHAT_OWNER_APPROVAL_CHANNELS = ["whatsapp", "paperclip"] as const;
@@ -715,6 +715,8 @@ export const CHAT_AUDIT_ENTRY_KINDS = [
   "approval_reminded",
   "approval_resolved",
   "approval_cancelled",
+  "approval_expired",
+  "approval_withdrawn",
   "config_changed",
   "group_added",
   "group_left",
@@ -754,6 +756,7 @@ export interface OpenwaEndpointPolicy {
     reminderMinutes: number;
     maxReminders: number;
     grantTtlHours: number;
+    pendingTtlHours: number;
   };
   rotateAfterIdleHours: number;
   progressNudgeSeconds: number;

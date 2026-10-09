@@ -925,6 +925,7 @@ const openwaEndpointPolicyResponseSchema = z
         reminderMinutes: z.number().int(),
         maxReminders: z.number().int(),
         grantTtlHours: z.number().int(),
+        pendingTtlHours: z.number().int(),
       })
       .strict(),
     rotateAfterIdleHours: z.number().int(),

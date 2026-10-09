@@ -39,6 +39,8 @@ export const OPENWA_ACTIVITY_ACTIONS = [
   "openwa.approval_requested",
   "openwa.approval_resolved",
   "openwa.approval_cancelled",
+  "openwa.approval_expired",
+  "openwa.approval_withdrawn",
   "openwa.grant_created",
   "openwa.grant_consumed",
   "openwa.grant_revoked",

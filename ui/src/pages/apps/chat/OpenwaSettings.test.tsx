@@ -9,6 +9,7 @@ import type { ChatEndpoint } from "@/api/chatEndpoints";
 import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";
 import { OpenwaSettings } from "./OpenwaSettings";
+import { openwaDedicatedGroupSettings } from "./openwa-settings-model";
 
 const mocks = vi.hoisted(() => ({
   api: {
@@ -202,13 +203,23 @@ describe("OpenWA settings", () => {
     expect(field<HTMLInputElement>("#openwa-max-reminders").getAttribute("aria-invalid")).toBe("true");
     expect(mocks.api.updateOpenwaPolicy).not.toHaveBeenCalled();
     setValue(field<HTMLInputElement>("#openwa-max-reminders"), "5");
+    expect(field<HTMLInputElement>("#openwa-pending-ttl").value).toBe("24");
+    setValue(field<HTMLInputElement>("#openwa-pending-ttl"), "169");
+    click(button(approvals, "Save approvals"));
+    expect(field("#openwa-pending-ttl-error").textContent).toBe("Use at most 168");
+    expect(mocks.api.updateOpenwaPolicy).not.toHaveBeenCalled();
+    setValue(field<HTMLInputElement>("#openwa-pending-ttl"), "0");
+    click(button(approvals, "Save approvals"));
+    expect(field("#openwa-pending-ttl-error").textContent).toBe("Use at least 1");
+    expect(mocks.api.updateOpenwaPolicy).not.toHaveBeenCalled();
+    setValue(field<HTMLInputElement>("#openwa-pending-ttl"), "72");
     setValue(field<HTMLInputElement>("#openwa-reminder-minutes"), "45");
     setValue(field<HTMLInputElement>("#openwa-grant-ttl"), "48");
     click(button(approvals, "Creating or delegating tasks"));
     click(button(approvals, "Save approvals"));
     await vi.waitFor(() =>
       expect(mocks.api.updateOpenwaPolicy).toHaveBeenCalledWith("endpoint-1", {
-        approvals: { createTask: false, externalTools: true, crossChatSend: true, waAdmin: true, gatewayAdmin: true, reminderMinutes: 45, maxReminders: 5, grantTtlHours: 48 },
+        approvals: { createTask: false, externalTools: true, crossChatSend: true, waAdmin: true, gatewayAdmin: true, reminderMinutes: 45, maxReminders: 5, grantTtlHours: 48, pendingTtlHours: 72 },
       }),
     );
   });
@@ -339,6 +350,71 @@ describe("OpenWA settings", () => {
         chatId: "628555000555@c.us",
         label: "+62xxx...0555",
         settings: { activation: "off" },
+      }),
+    );
+  });
+
+  it("builds dedicated-group settings by turning the chat on and adding allMessages to the existing overrides", () => {
+    expect(openwaDedicatedGroupSettings(null)).toEqual({ activation: "on", triggers: { allMessages: true } });
+    expect(
+      openwaDedicatedGroupSettings({
+        activation: "off",
+        replyPolicy: "ask_owner",
+        absenceSeconds: 600,
+        note: "Warehouse",
+        triggers: { agentMentioned: false, keywords: ["invoice"], allMessages: false },
+      }),
+    ).toEqual({
+      activation: "on",
+      replyPolicy: "ask_owner",
+      absenceSeconds: 600,
+      note: "Warehouse",
+      triggers: { agentMentioned: false, keywords: ["invoice"], allMessages: true },
+    });
+  });
+
+  it("turns a group into a dedicated group in one click and offers it only for groups", async () => {
+    const group = {
+      id: "res-2",
+      chatId: "120363000000000002@g.us",
+      chatKey: "120363000000000002@g.us",
+      type: "group_chat",
+      label: "Wira desk",
+      availability: "available",
+      enabled: false,
+      settings: { activation: "auto", replyPolicy: "ask_owner", note: "Warehouse", triggers: { keywords: ["invoice"], agentMentioned: false } },
+      ownerPresent: true,
+      participantCount: 2,
+    };
+    const direct = { ...group, id: "res-3", chatId: "628555000555@c.us", chatKey: "628555000555@c.us", type: "direct_message", label: "Supplier", settings: { activation: "on" } };
+    mocks.api.listOpenwaChats.mockResolvedValue([group, direct]);
+    mocks.api.listOpenwaGatewayChats.mockResolvedValue([
+      { chatId: "120363000000000009@g.us", isGroup: true, name: "Fresh group", lastActivityAt: null, activation: "auto", configured: false },
+    ]);
+    mocks.api.updateOpenwaChat.mockResolvedValue({});
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Wira desk"));
+    const chats = section("Chats");
+    const rows = Array.from(chats.querySelectorAll("li"));
+    const label = "Dedicated group: reply to every message";
+    expect(rows.map((row) => Array.from(row.querySelectorAll("button")).some((node) => node.textContent?.trim() === label))).toEqual([true, false]);
+    click(button(chats, label));
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaChat).toHaveBeenCalledWith("endpoint-1", {
+        chatId: "120363000000000002@g.us",
+        label: "Wira desk",
+        settings: { activation: "on", replyPolicy: "ask_owner", note: "Warehouse", triggers: { keywords: ["invoice"], agentMentioned: false, allMessages: true } },
+      }),
+    );
+    click(button(chats, "Add a chat from WhatsApp"));
+    await vi.waitFor(() => expect(chats.textContent).toContain("Fresh group"));
+    const picked = Array.from(chats.querySelectorAll('ul[aria-label="Gateway chats"] button')).find((node) => node.textContent?.trim() === label) as HTMLButtonElement;
+    click(picked);
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaChat).toHaveBeenLastCalledWith("endpoint-1", {
+        chatId: "120363000000000009@g.us",
+        label: "Fresh group",
+        settings: { activation: "on", triggers: { allMessages: true } },
       }),
     );
   });

@@ -34,7 +34,7 @@ import type { StorageService } from "../../storage/types.js";
 import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { instanceSettingsService } from "../instance-settings.js";
 import { parseOpenwaThreadId } from "./adapter.js";
-import { openwaApprovalResolveTool, openwaRequestApprovalTool } from "./approvals.js";
+import { openwaApprovalResolveTool, openwaApprovalWithdrawTool, openwaRequestApprovalTool } from "./approvals.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import {
   OpenwaApprovalRequiredError,
@@ -1438,6 +1438,7 @@ const EXECUTORS: Record<string, (ctx: ToolContext, args: Args) => Promise<Record
   openwa_find: openwaFind,
   openwa_request_approval: (ctx, args) => openwaRequestApprovalTool(ctx, args),
   openwa_approval_resolve: (ctx, args) => openwaApprovalResolveTool(ctx, args),
+  openwa_approval_withdraw: (ctx, args) => openwaApprovalWithdrawTool(ctx, args),
   openwa_stay_silent: openwaStaySilent,
   openwa_handoff: openwaHandoff,
   openwa_catalog: (ctx, args) => openwaCatalogTool(ctx, args),

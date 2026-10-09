@@ -15,6 +15,7 @@ import {
   chatDeliveries,
   chatEndpoints,
   chatOwnerApprovalRequests,
+  chatOwnerGrants,
   chatScheduledWakes,
   companies,
   companyMemberships,
@@ -42,6 +43,7 @@ import {
   type OpenwaScheduledWakeClock,
   type OpenwaScheduledWakes,
 } from "../../services/openwa/scheduled-wakes.js";
+import { OpenwaApprovalAlreadyResolvedError, resolveOpenwaApproval } from "../../services/openwa/approvals.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "31111111-2222-4333-8444-555555555555";
@@ -732,7 +734,7 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
       ["pending", 120_000, request.id],
       ["pending", 180_000, request.id],
     ]);
-    expect(activeOpenwaScheduledWakes(t.endpointId)?.pendingCount).toBe(3);
+    expect(activeOpenwaScheduledWakes(t.endpointId)?.pendingCount).toBe(4);
 
     clock.advance(60_000);
     await until(() => reminderCalls().length === 1);
@@ -820,4 +822,130 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
     );
     expect(t.wakeup).not.toHaveBeenCalled();
   }, 60_000);
+
+  async function requestRow(requestId: string) {
+    const [row] = await db.select().from(chatOwnerApprovalRequests).where(eq(chatOwnerApprovalRequests.id, requestId));
+    return row!;
+  }
+
+  it("expires a pending request after its lifetime: reminders stop, one approval_expired wake, never a grant", async () => {
+    const clock = new FakeClock();
+    const t = await setup({ clock });
+    await t.service.openwa.updatePolicy(t.endpointId, { approvals: { reminderMinutes: 50, maxReminders: 3 } }, t.userId);
+    await goLive(t);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "start a conversation" });
+    await settled(t, 1);
+    const createdAt = new Date(clock.now());
+    const [request] = await db
+      .insert(chatOwnerApprovalRequests)
+      .values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        originChatKey: jid(OWNER_PHONE),
+        categories: ["create_task"],
+        scope: "one_action",
+        summary: "Create a task",
+        proposedAction: "create",
+        createdAt,
+      })
+      .returning();
+    await scheduleApprovalReminders(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, chatKey: jid(OWNER_PHONE), createdAt });
+    const requestWakes = async () => (await wakeRows(t)).filter((row) => row.relatedId === request.id);
+    expect((await requestWakes()).map((row) => [row.kind, row.state, row.fireAt.getTime() - createdAt.getTime()])).toEqual([
+      ["approval_reminder", "pending", 50 * 60_000],
+      ["approval_reminder", "pending", 100 * 60_000],
+      ["approval_reminder", "pending", 150 * 60_000],
+      ["approval_expiry", "pending", 24 * 3_600_000],
+    ]);
+    await t.service.openwa.updatePolicy(t.endpointId, { approvals: { pendingTtlHours: 1 } }, t.userId);
+    const expiry = (await requestWakes()).find((row) => row.kind === "approval_expiry")!;
+    expect(expiry.fireAt.getTime() - createdAt.getTime()).toBe(3_600_000);
+    const callsWith = (prefix: string) => t.wakeup.mock.calls.filter(([, opts]) => opts.idempotencyKey?.startsWith(prefix));
+
+    clock.advance(51 * 60_000);
+    await until(() => callsWith("openwa-scheduled-wake:").length === 1);
+    expect((await requestRow(request.id)).status).toBe("pending");
+
+    clock.advance(10 * 60_000);
+    await until(() => callsWith("openwa-approval-expired:").length === 1);
+    expect(await requestRow(request.id)).toMatchObject({ status: "expired", resolvedVia: null, resolvedByUserId: null });
+    expect((await requestWakes()).map((row) => row.kind + ":" + row.state)).toEqual([
+      "approval_reminder:fired",
+      "approval_expiry:fired",
+      "approval_reminder:cancelled",
+      "approval_reminder:cancelled",
+    ]);
+    const [agentId, opts] = callsWith("openwa-approval-expired:")[0];
+    expect(agentId).toBe(t.agentId);
+    expect(opts.reason).toBe("OpenWA approval request expired");
+    expect(opts.payload?.openwa).toEqual({ event: "approval_expired", triggerClass: "other", deliveryIds: [], approvalRequestId: request.id });
+    expect(opts.contextSnapshot?.openwa).toEqual(opts.payload?.openwa);
+    const expiredAudit = () => db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_expired")));
+    expect(await expiredAudit()).toEqual([
+      expect.objectContaining({ actorKind: "system", chatKey: jid(OWNER_PHONE), metadata: expect.objectContaining({ requestId: request.id, pendingTtlHours: 1, reminderCount: 1 }) }),
+    ]);
+    const activity = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.approval_expired")));
+    expect(activity).toEqual([expect.objectContaining({ entityId: t.endpointId, details: expect.objectContaining({ requestId: request.id, pendingTtlHours: 1 }) })]);
+
+    clock.advance(6 * 3_600_000);
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    expect(callsWith("openwa-scheduled-wake:")).toHaveLength(1);
+    expect(callsWith("openwa-approval-expired:")).toHaveLength(1);
+    expect(await expiredAudit()).toHaveLength(1);
+    await expect(
+      resolveOpenwaApproval(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, decision: "approve", via: "paperclip", owner: { userId: t.userId } }),
+    ).rejects.toBeInstanceOf(OpenwaApprovalAlreadyResolvedError);
+    expect(await db.select().from(chatOwnerGrants).where(eq(chatOwnerGrants.requestId, request.id))).toEqual([]);
+    expect((await requestRow(request.id)).status).toBe("expired");
+  }, 120_000);
+
+  it("stops a request's reminders when an owner writes in its chat after it was created, not in another chat", async () => {
+    const clock = new FakeClock();
+    const t = await setup({ clock });
+    await t.service.openwa.updatePolicy(t.endpointId, { approvals: { reminderMinutes: 30, maxReminders: 2 } }, t.userId);
+    await goLive(t, { discover: false });
+    const scheduler = activeOpenwaScheduledWakes(t.endpointId)!;
+    const here = "120363000000000501@g.us";
+    const elsewhere = "120363000000000502@g.us";
+    const third = "120363000000000503@g.us";
+    const createdAt = new Date(clock.now());
+    const make = async (chatKey: string) => {
+      const [request] = await db
+        .insert(chatOwnerApprovalRequests)
+        .values({
+          companyId: t.companyId,
+          endpointId: t.endpointId,
+          originChatKey: chatKey,
+          categories: ["reply"],
+          scope: "one_action",
+          summary: "Reply here",
+          proposedAction: "reply",
+          createdAt,
+        })
+        .returning();
+      await scheduleApprovalReminders(db, { companyId: t.companyId, endpointId: t.endpointId, requestId: request.id, chatKey, createdAt });
+      return request;
+    };
+    const a = await make(here);
+    const b = await make(elsewhere);
+    const states = async (requestId: string) => (await wakeRows(t)).filter((row) => row.relatedId === requestId).map((row) => row.kind + ":" + row.state);
+    const allPending = ["approval_reminder:pending", "approval_reminder:pending", "approval_expiry:pending"];
+    const seconds = Math.floor(createdAt.getTime() / 1000);
+
+    await scheduler.ownerActivity(here, inboundEvent({ chatId: here, chatKey: here, from: here, timestamp: seconds - 60 }));
+    expect(await states(a.id)).toEqual(allPending);
+    await scheduler.ownerActivity(third, inboundEvent({ chatId: third, chatKey: third, from: third, timestamp: seconds + 5 }));
+    expect(await states(a.id)).toEqual(allPending);
+    expect(await states(b.id)).toEqual(allPending);
+
+    await scheduler.ownerActivity(here, inboundEvent({ chatId: here, chatKey: here, from: here, timestamp: seconds + 5 }));
+    expect(await states(a.id)).toEqual(["approval_reminder:cancelled", "approval_reminder:cancelled", "approval_expiry:pending"]);
+    expect(await states(b.id)).toEqual(allPending);
+    expect((await requestRow(a.id)).status).toBe("pending");
+    expect((await requestRow(b.id)).status).toBe("pending");
+
+    clock.advance(31 * 60_000);
+    await until(async () => (await states(b.id))[0] === "approval_reminder:fired");
+    expect(await states(a.id)).toEqual(["approval_reminder:cancelled", "approval_reminder:cancelled", "approval_expiry:pending"]);
+  }, 120_000);
 });

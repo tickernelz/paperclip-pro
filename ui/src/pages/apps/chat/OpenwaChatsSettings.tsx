@@ -5,6 +5,7 @@ import {
   OPENWA_CHAT_NOTE_MAX_LENGTH,
   OPENWA_REPLY_POLICIES,
   type OpenwaChatActivation,
+  type OpenwaChatSettings,
   type OpenwaEndpointPolicy,
   type OpenwaReplyPolicy,
 } from "@tickernelz/paperclip-pro-shared";
@@ -20,6 +21,7 @@ import {
   chatDraft,
   chatSettingsInput,
   openwaChatSettingsErrors,
+  openwaDedicatedGroupSettings,
   type ChatDraft,
   type FieldErrors,
   type TriggerChoice,
@@ -57,6 +59,18 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
     queryFn: () => chatEndpointsApi.listOpenwaGatewayChats(endpointId),
     enabled: picking,
   });
+  const queryClient = useQueryClient();
+  const dedicate = useMutation({
+    mutationFn: (chat: { chatId: string; label: string; settings: OpenwaChatSettings | null }) =>
+      chatEndpointsApi.updateOpenwaChat(endpointId, { chatId: chat.chatId, label: chat.label, settings: openwaDedicatedGroupSettings(chat.settings) }),
+    onSuccess: async () => {
+      setPicking(false);
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaChats(endpointId) }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.chatEndpoints.openwaGatewayChats(endpointId) }),
+      ]);
+    },
+  });
   const configured = chats.data ?? [];
   const unconfigured = (gatewayChats.data ?? []).filter((chat) => !chat.configured);
   return (
@@ -85,6 +99,16 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                   {chat.participantCount !== null ? " · " + chat.participantCount + " members" : ""}
                 </p>
               </div>
+              {chat.type === "group_chat" ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={dedicate.isPending || (chat.settings.activation === "on" && chat.settings.triggers?.allMessages === true)}
+                  onClick={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
+                >
+                  Dedicated group: reply to every message
+                </Button>
+              ) : null}
               <Button size="sm" variant="outline" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
                 Edit
               </Button>
@@ -92,6 +116,11 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
           ))}
         </ul>
       )}
+      {dedicate.isError ? (
+        <p role="alert" className="text-sm text-destructive">
+          {dedicate.error instanceof Error ? dedicate.error.message : "Couldn't save the chat."}
+        </p>
+      ) : null}
       {editing ? (
         <ChatEditor
           key={editing.chatId}
@@ -122,6 +151,16 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                     <p className="truncate text-sm">{chat.name}</p>
                     <p className="text-xs text-muted-foreground">{chat.isGroup ? "Group" : "Direct chat"}</p>
                   </div>
+                  {chat.isGroup ? (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      disabled={dedicate.isPending}
+                      onClick={() => dedicate.mutate({ chatId: chat.chatId, label: chat.name, settings: null })}
+                    >
+                      Dedicated group: reply to every message
+                    </Button>
+                  ) : null}
                   <Button
                     size="sm"
                     variant="ghost"

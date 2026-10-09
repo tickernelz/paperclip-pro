@@ -449,13 +449,13 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
 
     const empty = await executeOpenwaTool(db, binding, "openwa_endpoint_config", {});
     expect(empty).not.toHaveProperty("changed");
-    expect(empty).toMatchObject({ policyRevision: revision, customInstructions: "Be brief.", approvals: { createTask: true }, reminders: { reminderMinutes: 30, maxReminders: 3 } });
+    expect(empty).toMatchObject({ policyRevision: revision, customInstructions: "Be brief.", approvals: { createTask: true }, reminders: { reminderMinutes: 30, maxReminders: 3, pendingTtlHours: 24 } });
     expect((await endpointRow(t)).policyRevision).toBe(revision);
 
     const result = await executeOpenwaTool(db, binding, "openwa_endpoint_config", {
       chat: GROUP,
       chatSettings: { activation: "on", replyPolicy: "ask_owner", absenceSeconds: 300, triggers: { keywords: ["invoice"] }, note: "Supplier group." },
-      approvals: { createTask: false, reminderMinutes: 15, maxReminders: 1 },
+      approvals: { createTask: false, reminderMinutes: 15, maxReminders: 1, pendingTtlHours: 48 },
       customInstructions: "Sign every reply as Bot Gamma.",
     });
     const groupRef = "openwa:" + SESSION_ID + ":" + GROUP;
@@ -468,11 +468,11 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
         settings: { activation: "on", replyPolicy: "ask_owner", absenceSeconds: 300, triggers: { keywords: ["invoice"] }, note: "Supplier group." },
       },
       approvals: { createTask: false, externalTools: true },
-      reminders: { reminderMinutes: 15, maxReminders: 1 },
+      reminders: { reminderMinutes: 15, maxReminders: 1, pendingTtlHours: 48 },
       customInstructions: "Sign every reply as Bot Gamma.",
     });
     const policy = openwaEndpointPolicySchema.parse((await endpointRow(t)).policy);
-    expect(policy.approvals).toMatchObject({ createTask: false, reminderMinutes: 15, maxReminders: 1, grantTtlHours: 24 });
+    expect(policy.approvals).toMatchObject({ createTask: false, reminderMinutes: 15, maxReminders: 1, grantTtlHours: 24, pendingTtlHours: 48 });
     expect(policy.customInstructions).toBe("Sign every reply as Bot Gamma.");
     expect(policy.numberMode).toBe("agent_number");
 
@@ -514,5 +514,25 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
 
     const invalid = await rejection(executeOpenwaTool(db, binding, "openwa_endpoint_config", { chat: "not a chat", chatSettings: { activation: "on" } }));
     expect(invalid).toMatchObject({ status: 400, code: "invalid_target" });
+  }, 90_000);
+
+  it("lets an owner run turn a group into a dedicated group that triggers on every message, and refuses a member run", async () => {
+    const t = await setup();
+    const dm = await conversation(t, OWNER_DM);
+    const group = await conversation(t, GROUP, { activation: "auto", replyPolicy: "ask_owner" });
+    const dedicated = { chat: GROUP, chatSettings: { activation: "on", triggers: { allMessages: true } } };
+    const before = await snapshot(t);
+    const member = await run(t, group, "other");
+    expect(await rejection(executeOpenwaTool(db, member, "openwa_endpoint_config", dedicated))).toMatchObject({ status: 403, code: "owner_only" });
+    expect(await snapshot(t)).toEqual(before);
+
+    const owner = await run(t, dm, "owner", [], randomUUID());
+    const result = await executeOpenwaTool(db, owner, "openwa_endpoint_config", dedicated);
+    const groupRef = "openwa:" + SESSION_ID + ":" + GROUP;
+    expect(result).toMatchObject({ changed: { chat: groupRef }, chat: { chatRef: groupRef, configured: true } });
+    expect((result.chat as { settings: unknown }).settings).toEqual({ activation: "on", replyPolicy: "ask_owner", triggers: { allMessages: true } });
+    const [stored] = await db.select().from(chatEndpointResources).where(eq(chatEndpointResources.id, group.resourceId));
+    expect(stored!.settings).toEqual({ activation: "on", replyPolicy: "ask_owner", triggers: { allMessages: true } });
+    expect(stored!.enabled).toBe(true);
   }, 90_000);
 });

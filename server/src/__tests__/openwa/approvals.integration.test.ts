@@ -118,7 +118,8 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const rows = await db
       .select({ kind: chatScheduledWakes.kind, state: chatScheduledWakes.state })
       .from(chatScheduledWakes)
-      .where(eq(chatScheduledWakes.relatedId, requestId));
+      .where(eq(chatScheduledWakes.relatedId, requestId))
+      .orderBy(asc(chatScheduledWakes.fireAt));
     return rows.map((row) => row.kind + ":" + row.state);
   }
 
@@ -474,7 +475,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.issueId, memberRun.issueId))).toEqual([]);
     const scheduled = await reminderStates(request.id);
     expect(scheduled.length).toBeGreaterThan(0);
-    expect(new Set(scheduled)).toEqual(new Set(["approval_reminder:pending"]));
+    expect(new Set(scheduled)).toEqual(new Set(["approval_reminder:pending", "approval_expiry:pending"]));
     const ownerSend = t.gateway.sends.find((send) => send.chatId === jid(OWNER_PHONE))!;
     expect(ownerSend.text).toContain("Member asks to create a task for invoice 42");
     const [bubbleId] = await bubbleIds(request.id);
@@ -535,7 +536,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
       }),
     ]);
     expect(await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.issueId, memberRun.issueId))).toEqual([]);
-    expect(await reminderStates(request.id)).toEqual(scheduled.map(() => "approval_reminder:cancelled"));
+    expect(await reminderStates(request.id)).toEqual(scheduled.map((state) => state.replace(":pending", ":cancelled")));
 
     const grantWake = await approvalWake(t, request.id);
     expect(grantWake.request.payload).toMatchObject({ openwa: { event: "approval_resolved", triggerClass: "grant", deliveryIds: [], approvalRequestId: request.id } });
@@ -921,7 +922,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(cancelled.status).toBe(200);
     expect(cancelled.body).toEqual({ requestId: request.id, status: "cancelled" });
     expect(await requestRow(request.id)).toMatchObject({ status: "cancelled", resolvedVia: "paperclip", resolvedByUserId: t.userId });
-    expect(await reminderStates(request.id)).toEqual(scheduled.map(() => "approval_reminder:cancelled"));
+    expect(await reminderStates(request.id)).toEqual(scheduled.map((state) => state.replace(":pending", ":cancelled")));
     expect(await db.select().from(issueThreadInteractions).where(eq(issueThreadInteractions.issueId, runA.issueId))).toEqual([]);
     expect(await grantsOf(request.id)).toEqual([]);
     expect(t.wakeup.mock.calls.length).toBe(wakesBefore);
@@ -954,6 +955,110 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(cancelApproved.body.details).toMatchObject({ code: "already_resolved", requestStatus: "approved" });
     expect((await requestRow(second.requestId)).status).toBe("approved");
     expect(await grantsOf(second.requestId)).toHaveLength(1);
+  }, 120_000);
+
+  it("lets the owning agent withdraw a pending request after the owner's reply; foreign chats, foreign agents and non-pending requests are refused", async () => {
+    const t = await setup();
+    const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin buat task" });
+    const runA = await runStart(t, wakeA);
+    const created = await requestApproval(runA.binding);
+    const requestId = created.requestId;
+    const pending = await reminderStates(requestId);
+    expect(pending).toContain("approval_expiry:pending");
+    expect(pending).toContain("approval_reminder:pending");
+
+    const wakeB = await admitted(t, { chatId: jid(MEMBER_B), body: "halo" });
+    const runB = await runStart(t, wakeB);
+    const foreignChat = await failure(executeOpenwaTool(db, runB.binding, "openwa_approval_withdraw", { requestId, reason: "Not my chat" }));
+    expect(foreignChat.status).toBe(404);
+    expect(codeOf(foreignChat)).toBe("not_found");
+    const otherAgentId = randomUUID();
+    await db.insert(agents).values({
+      id: otherAgentId,
+      companyId: t.companyId,
+      name: "Other Agent",
+      role: "engineer",
+      status: "idle",
+      adapterType: "paperclip_runner",
+      adapterConfig: {},
+      runtimeConfig: {},
+      permissions: {},
+    });
+    const foreignAgent = await failure(executeOpenwaTool(db, { ...runA.binding, agentId: otherAgentId }, "openwa_approval_withdraw", { requestId, reason: "Not my agent" }));
+    expect(foreignAgent.status).toBe(403);
+    expect(await requestRow(requestId)).toMatchObject({ status: "pending" });
+    expect(await reminderStates(requestId)).toEqual(pending);
+
+    const outboundBefore = (await db.select().from(chatOutboundMessages).where(eq(chatOutboundMessages.endpointId, t.endpointId))).length;
+    const ownerReply = await admitted(t, { chatId: jid(OWNER_PHONE), body: "sudah saya jawab langsung ke dia, pakai vendor lain saja" });
+    expect(ownerReply.request.payload).toMatchObject({ openwa: { event: "message", triggerClass: "owner" } });
+    await until(async () => (await reminderStates(requestId)).every((state) => state !== "approval_reminder:pending"));
+    expect(await reminderStates(requestId)).toEqual(pending.map((state) => (state.startsWith("approval_reminder:") ? "approval_reminder:cancelled" : state)));
+    expect(await requestRow(requestId)).toMatchObject({ status: "pending" });
+    const ownerRun = await runStart(t, ownerReply);
+    const guidance = await buildOpenwaRunGuidance(db, {
+      companyId: t.companyId,
+      issueId: ownerRun.issueId,
+      runId: ownerRun.runId,
+      wakeupRequestId: ownerReply.request.id,
+      openwa: ownerRun.openwa,
+      contextSnapshot: ownerRun.run.contextSnapshot,
+    });
+    expect(guidance!.wakeEvent.pendingApprovals).toEqual([expect.objectContaining({ requestId })]);
+    expect(guidance!.markdown).toContain("The owner wrote here while these approval requests are still open");
+    expect(guidance!.markdown).toContain("\x60" + requestId + "\x60");
+    expect(guidance!.markdown).toContain("withdraw it with \x60openwa_approval_withdraw\x60");
+    expect(guidance!.markdown).toContain("Never ask the owner about these requests again.");
+
+    const withdrawn = await executeOpenwaTool(db, ownerRun.binding, "openwa_approval_withdraw", {
+      requestId,
+      reason: "Owner answered the member directly with another vendor",
+      ownerMessageRef: "false_owner_ref",
+    });
+    expect(withdrawn).toEqual({ requestId, status: "withdrawn" });
+    expect(await requestRow(requestId)).toMatchObject({ status: "withdrawn", resolvedVia: null, resolvedByUserId: null });
+    expect((await requestRow(requestId)).resolvedAt).not.toBeNull();
+    expect(await reminderStates(requestId)).toEqual(pending.map((state) => state.replace(":pending", ":cancelled")));
+    const audit = await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_withdrawn")));
+    expect(audit).toEqual([
+      expect.objectContaining({
+        actorKind: "agent",
+        actorRef: t.agentId,
+        runId: ownerRun.runId,
+        metadata: expect.objectContaining({ requestId, triggerClass: "owner", ownerMessageRef: "false_owner_ref" }),
+        content: { reason: "Owner answered the member directly with another vendor" },
+      }),
+    ]);
+    const activity = await db.select().from(activityLog).where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "openwa.approval_withdrawn")));
+    expect(activity).toEqual([expect.objectContaining({ entityId: t.endpointId, details: expect.objectContaining({ requestId }) })]);
+    expect((await db.select().from(chatOutboundMessages).where(eq(chatOutboundMessages.endpointId, t.endpointId))).length).toBe(outboundBefore);
+    expect(await grantsOf(requestId)).toEqual([]);
+    expect(await db.select().from(chatActions).where(eq(chatActions.providerActionId, "openwa-approval-resolved:" + requestId))).toEqual([]);
+
+    const again = await failure(executeOpenwaTool(db, ownerRun.binding, "openwa_approval_withdraw", { requestId, reason: "Again" }));
+    expect(again.status).toBe(409);
+    expect(again.details).toMatchObject({ code: "already_resolved", requestStatus: "withdrawn" });
+    const lateResolve = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(lateResolve.status).toBe(409);
+    expect(await grantsOf(requestId)).toEqual([]);
+
+    const second = await requestApproval(runA.binding, { message: "Second request" });
+    const approved = await supertest(channelApp(t, t.userId))
+      .post("/api/chat-endpoints/" + t.endpointId + "/openwa/approvals/" + second.requestId + "/resolve")
+      .send({ decision: "approve" });
+    expect(approved.status).toBe(200);
+    const withdrawApproved = await failure(executeOpenwaTool(db, runA.binding, "openwa_approval_withdraw", { requestId: second.requestId, reason: "Too late" }));
+    expect(withdrawApproved.status).toBe(409);
+    expect(withdrawApproved.details).toMatchObject({ code: "already_resolved", requestStatus: "approved" });
+    expect((await requestRow(second.requestId)).status).toBe("approved");
+
+    const third = await requestApproval(runA.binding, { message: "Third request" });
+    expect(await executeOpenwaTool(db, runA.binding, "openwa_approval_withdraw", { requestId: third.requestId, reason: "Member cancelled the request" })).toEqual({
+      requestId: third.requestId,
+      status: "withdrawn",
+    });
   }, 120_000);
 
   it("ZHA-639: an owner's question on the bubble keeps the request pending; only explicit owner words resolve it later", async () => {

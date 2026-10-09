@@ -424,4 +424,46 @@ describe.sequential("OpenWA activation through the owner test DM (embedded Postg
     expect((await endpointRow(t)).setup).toMatchObject({ step: "test" });
     expect(await reconnectActivity(t)).toHaveLength(1);
   }, 120_000);
+
+  it("lets a dedicated group with only the owner and the agent wake the agent on every owner message and accept its reply", async () => {
+    const t = await setup();
+    await activeEndpoint(t);
+    const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
+    await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
+    const group = "120363000000000051@g.us";
+    t.gateway.groups.set(group, { id: group, name: "Wira desk", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }] });
+    const configured = await request(t.app)
+      .put("/api/chat-endpoints/" + t.endpointId + "/openwa/chats")
+      .send({ chatId: group, label: "Wira desk", settings: { activation: "on", triggers: { allMessages: true } } });
+    expect(configured.status).toBe(200);
+    await t.service.reconcileProviderRuntimes();
+    await t.gateway.waitForSubscription();
+
+    const owner = await settled(t, { chatId: group, author: jid(OWNER_PHONE), body: "tolong cek stok gudang hari ini" });
+    expect(owner.delivery).toMatchObject({ state: "processed", triggerClass: "owner", principalRole: "owner" });
+    expect(owner.delivery.normalizedEvent).toMatchObject({ openwa: { chatKind: "group", rules: ["all_messages"], addressed: false } });
+    const [action] = await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, owner.delivery.id), eq(chatActions.kind, "inbound_wakeup")));
+    await until(() => t.wakes.has(action!.id));
+    const wake = t.wakes.get(action!.id)!;
+    const issueId = String(wake.contextSnapshot!.issueId);
+    const runId = randomUUID();
+    const contextSnapshot: Record<string, unknown> = { ...wake.contextSnapshot };
+    await db.insert(heartbeatRuns).values({ id: runId, companyId: t.companyId, agentId: t.agentId, status: "running", wakeupRequestId: action!.id, startedAt: new Date(), contextSnapshot });
+    const openwa = await resolveOpenwaRunContext(db, { companyId: t.companyId, issueId, contextSnapshot, wakeupRequestId: action!.id, runId });
+    expect(openwa).toMatchObject({ endpointId: t.endpointId, triggerClass: "owner", profile: "full" });
+    applyOpenwaRunContext(contextSnapshot, openwa!);
+    const guidance = await buildOpenwaRunGuidance(db, { companyId: t.companyId, issueId, runId, wakeupRequestId: action!.id, openwa: openwa!, contextSnapshot });
+    expect(guidance!.wakeEvent).toMatchObject({ triggerClass: "owner", chat: { type: "group", activation: "on" }, policy: { replyAllowed: true, replyRequires: [] } });
+    contextSnapshot[OPENWA_WAKE_CONTEXT_KEY] = guidance!.wakeEvent;
+    await db.update(heartbeatRuns).set({ contextSnapshot }).where(eq(heartbeatRuns.id, runId));
+    const binding = { companyId: t.companyId, agentId: t.agentId, runId, issueId };
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { text: "Siap, saya cek stoknya.", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ chatId: group, text: "Siap, saya cek stoknya." })]);
+    await db.update(heartbeatRuns).set({ status: "succeeded", finishedAt: new Date() }).where(eq(heartbeatRuns.id, runId));
+
+    const member = await settled(t, { chatId: group, author: jid(MEMBER_PHONE), body: "stok sudah masuk belum?" });
+    expect(member.delivery).toMatchObject({ state: "processed", triggerClass: "other", principalRole: "allowed" });
+    expect(member.delivery.normalizedEvent).toMatchObject({ openwa: { chatKind: "group", rules: ["all_messages"] } });
+  }, 120_000);
 });

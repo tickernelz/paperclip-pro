@@ -19,6 +19,7 @@ const sharedDefaults = {
     reminderMinutes: 30,
     maxReminders: 3,
     grantTtlHours: 24,
+    pendingTtlHours: 24,
   },
   rotateAfterIdleHours: 24,
   progressNudgeSeconds: 60,
@@ -98,6 +99,9 @@ describe("OpenWA endpoint policy", () => {
     [{ approvals: { reminderMinutes: 0 } }],
     [{ approvals: { maxReminders: 11 } }],
     [{ approvals: { grantTtlHours: 0 } }],
+    [{ approvals: { pendingTtlHours: 0 } }],
+    [{ approvals: { pendingTtlHours: 169 } }],
+    [{ approvals: { pendingTtlHours: 1.5 } }],
     [{ rotateAfterIdleHours: 0 }],
     [{ progressNudgeSeconds: -1 }],
     [{ auditContentRetentionDays: 0 }],
@@ -116,8 +120,10 @@ describe("OpenWA endpoint policy", () => {
       absenceSeconds: 10,
       progressNudgeSeconds: 0,
       customInstructions: "x".repeat(8000),
-      approvals: { maxReminders: 0 },
+      approvals: { maxReminders: 0, pendingTtlHours: 1 },
     });
+    expect(openwaEndpointPolicySchema.parse({ approvals: { pendingTtlHours: 168 } }).approvals.pendingTtlHours).toBe(168);
+    expect(policy.approvals.pendingTtlHours).toBe(1);
     expect(policy.absenceSeconds).toBe(10);
     expect(policy.progressNudgeSeconds).toBe(0);
     expect(policy.customInstructions).toHaveLength(8000);

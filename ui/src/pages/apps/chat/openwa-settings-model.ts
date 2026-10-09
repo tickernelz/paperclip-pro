@@ -34,6 +34,8 @@ export const AUDIT_KIND_LABELS: Record<ChatAuditEntryKind, string> = {
   approval_reminded: "Approval reminded",
   approval_resolved: "Approval resolved",
   approval_cancelled: "Approval cancelled",
+  approval_expired: "Approval expired",
+  approval_withdrawn: "Approval withdrawn",
   config_changed: "Settings changed",
   group_added: "Added to group",
   group_left: "Left group",
@@ -203,6 +205,10 @@ export function chatSettingsInput(draft: ChatDraft): OpenwaChatSettingsInput {
     ...(draft.replyPolicy === "inherit" ? {} : { replyPolicy: draft.replyPolicy }),
     ...(draft.note.trim() ? { note: draft.note } : {}),
   };
+}
+
+export function openwaDedicatedGroupSettings(current: OpenwaChatSettings | null): OpenwaChatSettings {
+  return { ...current, activation: "on", triggers: { ...current?.triggers, allMessages: true } };
 }
 
 export function openwaCapabilityWarnings(input: {

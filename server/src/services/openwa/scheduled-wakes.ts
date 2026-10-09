@@ -1,12 +1,15 @@
 import { createHash } from "node:crypto";
-import { and, asc, desc, eq, gt, inArray, lte, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gt, inArray, lt, lte, or, sql } from "drizzle-orm";
 import {
   agentWakeupRequests,
   chatActions,
   chatConversations,
   chatEndpoints,
+  chatOutboundMessages,
+  chatOwnerApprovalBubbles,
   chatOwnerApprovalRequests,
   chatScheduledWakes,
+  issueThreadInteractions,
   issues,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
@@ -14,7 +17,7 @@ import { openwaEndpointPolicySchema, type ChatScheduledWakeKind } from "@tickern
 import { logger } from "../../middleware/logger.js";
 import type { IssueAssignmentWakeupDeps } from "../issue-assignment-wakeup.js";
 import type { OpenwaTimerHooks } from "./admission.js";
-import { recordOpenwaAudit } from "./audit.js";
+import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { reopenOpenwaConversationIssue } from "./conversation-status.js";
 import { OPENWA_WAKE_MAX_MESSAGES } from "./guidance.js";
 import { OPENWA_OWNER_ACTIVITY_TYPES, openwaChatSettings, openwaSenderRole, type OpenwaPolicySnapshot } from "./policy.js";
@@ -23,6 +26,7 @@ import type { OpenwaInboundEvent } from "./receiver.js";
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 export type OpenwaScheduledWakeDb = Db | DbTransaction;
 type ActionRow = typeof chatActions.$inferSelect;
+type ApprovalRequestRow = typeof chatOwnerApprovalRequests.$inferSelect;
 
 export const OPENWA_SCHEDULED_WAKE_ACTION_KIND = "scheduled_wakeup";
 export const OPENWA_SCHEDULED_WAKE_ACTOR = "openwa:scheduled-wake";
@@ -34,13 +38,23 @@ const FIRE_CONCURRENCY = 4;
 const RECENT_FIRED_CAP = 5_000;
 const RECENT_FIRED_TTL_MS = 24 * 60 * 60 * 1000;
 const RAW_KEYS = ["notifyName", "pushName"] as const;
+const HOUR_MS = 3_600_000;
+const APPROVAL_EXPIRY_EARLY_MS = 60_000;
 
 export function openwaScheduledWakeActionId(wakeId: string): string {
   return OPENWA_SCHEDULED_WAKE_ACTION_KIND + ":" + wakeId;
 }
 
 export function openwaApprovalReminderWakeId(requestId: string, index: number): string {
-  const hex = createHash("sha256").update("openwa-approval-reminder:" + requestId + ":" + index).digest("hex");
+  return seededWakeId("openwa-approval-reminder:" + requestId + ":" + index);
+}
+
+export function openwaApprovalExpiryWakeId(requestId: string, fireAt: Date): string {
+  return seededWakeId("openwa-approval-expiry:" + requestId + ":" + fireAt.getTime());
+}
+
+function seededWakeId(seed: string): string {
+  const hex = createHash("sha256").update(seed).digest("hex");
   const variant = ((parseInt(hex[16], 16) & 0x3) | 0x8).toString(16);
   return hex.slice(0, 8) + "-" + hex.slice(8, 12) + "-5" + hex.slice(13, 16) + "-" + variant + hex.slice(17, 20) + "-" + hex.slice(20, 32);
 }
@@ -169,7 +183,7 @@ export interface OpenwaScheduledWakes {
   armAbsence(event: OpenwaInboundEvent, absenceSeconds: number): Promise<{ outcome: "armed" | "attached"; wakeId: string; fireAt: Date }>;
   ownerActivity(chatKey: string, event: OpenwaInboundEvent): Promise<"cancelled" | "late" | "none">;
   hasPendingAbsence(chatKey: string): boolean;
-  track(rows: ReadonlyArray<{ id: string; fireAt: Date }>): void;
+  track(rows: ReadonlyArray<{ id: string; fireAt: Date; kind?: ChatScheduledWakeKind }>): void;
   forget(ids: readonly string[]): void;
   stop(): Promise<void>;
 }
@@ -250,6 +264,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
   const pendingAbsence = new Map<string, string>();
   const absenceChat = new Map<string, string>();
   const recentlyFired = new Map<string, { wakeId: string; fireAt: number; firedAt: number }>();
+  const pendingReminders = new Set<string>();
   const inFlight = new Set<Promise<void>>();
   const stats: OpenwaScheduledWakeStats = { armed: 0, attached: 0, cancelled: 0, claimed: 0, delivered: 0, failed: 0, timerArms: 0, timerFires: 0 };
   let loading: Promise<{ loaded: number; overdue: number }> | null = null;
@@ -300,6 +315,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
 
   function unschedule(key: string) {
     entries.delete(key);
+    if (key.startsWith("w:")) pendingReminders.delete(key.slice(2));
   }
 
   function forgetAbsence(wakeId: string) {
@@ -402,6 +418,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
       return { row, action: action ?? null };
     });
     forgetAbsence(wakeId);
+    pendingReminders.delete(wakeId);
     if (!claimed) return;
     stats.claimed++;
     if (claimed.row.kind === "owner_absent") rememberFired(claimed.row.chatKey, claimed.row.id, claimed.row.fireAt.getTime());
@@ -478,6 +495,8 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
       });
       return { status: "processed", result: { code: "owner_absent_admitted", messages: messages.length } };
     }
+    if (wakeKind === "approval_expiry")
+      return deliverApprovalExpiry(db, deps.heartbeat, { companyId, endpointId, wakeId, requestId: stringOrNull(payload.relatedId), now: clock.now() });
     return deliverApprovalReminder(db, deps.heartbeat, {
       companyId,
       endpointId,
@@ -490,6 +509,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
   }
 
   async function loadPending(): Promise<{ loaded: number; overdue: number }> {
+    await ensureApprovalExpiryWakes(db, { companyId, endpointId });
     const [wakes, actions] = await Promise.all([
       db
         .select({ id: chatScheduledWakes.id, kind: chatScheduledWakes.kind, chatKey: chatScheduledWakes.chatKey, fireAt: chatScheduledWakes.fireAt })
@@ -518,6 +538,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
     let overdue = 0;
     for (const wake of wakes) {
       if (wake.kind === "owner_absent") rememberAbsence(wake.chatKey, wake.id);
+      if (wake.kind === "approval_reminder") pendingReminders.add(wake.id);
       if (wake.fireAt.getTime() <= now) overdue++;
       schedule("w:" + wake.id, wake.fireAt.getTime());
     }
@@ -583,6 +604,7 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
     },
     async ownerActivity(chatKey, event) {
       const at = event.timestamp * 1000;
+      if (pendingReminders.size) await cancelApprovalRemindersAfterOwnerReply(db, { companyId, endpointId, chatKey, at: new Date(at) });
       if (!pendingAbsence.has(chatKey)) {
         const fired = recentlyFired.get(chatKey);
         if (!fired || at < fired.fireAt || clock.now() - fired.firedAt > RECENT_FIRED_TTL_MS || !deps.onLateOwnerActivity) return "none";
@@ -613,7 +635,10 @@ export function createOpenwaScheduledWakes(deps: OpenwaScheduledWakesDeps): Open
       return pendingAbsence.has(chatKey);
     },
     track(rows) {
-      for (const row of rows) schedule("w:" + row.id, row.fireAt.getTime());
+      for (const row of rows) {
+        if (row.kind === "approval_reminder") pendingReminders.add(row.id);
+        schedule("w:" + row.id, row.fireAt.getTime());
+      }
     },
     forget(ids) {
       for (const id of ids) unschedule("w:" + id);
@@ -653,7 +678,7 @@ export function createOpenwaTimerHooks(input: {
   };
 }
 
-/** Schedules reminders 1..maxReminders at reminderMinutes x k after createdAt; idempotent per request. */
+/** Schedules reminders 1..maxReminders at reminderMinutes x k after createdAt, before the pending expiry, plus the expiry wake; idempotent per request. */
 export async function scheduleApprovalReminders(
   db: OpenwaScheduledWakeDb,
   input: { companyId: string; endpointId: string; requestId: string; chatKey: string; createdAt: Date },
@@ -664,9 +689,9 @@ export async function scheduleApprovalReminders(
     .where(and(eq(chatEndpoints.companyId, input.companyId), eq(chatEndpoints.id, input.endpointId), eq(chatEndpoints.provider, "openwa")))
     .limit(1);
   if (!endpoint) throw new Error("OpenWA endpoint not found for approval reminders");
-  const { reminderMinutes, maxReminders } = openwaEndpointPolicySchema.parse(endpoint.policy ?? {}).approvals;
-  if (maxReminders < 1) return;
-  const rows = Array.from({ length: Math.min(maxReminders, OPENWA_MAX_APPROVAL_REMINDERS) }, (_, offset) => {
+  const { reminderMinutes, maxReminders, pendingTtlHours } = openwaEndpointPolicySchema.parse(endpoint.policy ?? {}).approvals;
+  const expiresAt = new Date(input.createdAt.getTime() + pendingTtlHours * HOUR_MS);
+  const reminders = Array.from({ length: Math.min(maxReminders, OPENWA_MAX_APPROVAL_REMINDERS) }, (_, offset) => {
     const reminderIndex = offset + 1;
     return {
       id: openwaApprovalReminderWakeId(input.requestId, reminderIndex),
@@ -678,55 +703,160 @@ export async function scheduleApprovalReminders(
       relatedId: input.requestId,
       payload: { version: 1, reminderIndex, maxReminders, reminderMinutes },
     };
-  });
+  }).filter((row) => row.fireAt < expiresAt);
+  const expiry = {
+    id: openwaApprovalExpiryWakeId(input.requestId, expiresAt),
+    companyId: input.companyId,
+    endpointId: input.endpointId,
+    chatKey: input.chatKey,
+    kind: "approval_expiry" as const,
+    fireAt: expiresAt,
+    relatedId: input.requestId,
+    payload: { version: 1, pendingTtlHours },
+  };
   const inserted = await db
     .insert(chatScheduledWakes)
-    .values(rows)
+    .values([...reminders, expiry])
     .onConflictDoNothing()
-    .returning({ id: chatScheduledWakes.id, fireAt: chatScheduledWakes.fireAt });
+    .returning({ id: chatScheduledWakes.id, fireAt: chatScheduledWakes.fireAt, kind: chatScheduledWakes.kind });
   activeOpenwaScheduledWakes(input.endpointId)?.track(inserted);
 }
 
-export async function cancelApprovalReminders(
+/** Gives every pending request exactly one pending expiry wake at createdAt + pendingTtlHours, moving existing ones when the TTL changed. */
+export async function ensureApprovalExpiryWakes(db: OpenwaScheduledWakeDb, input: { companyId: string; endpointId: string }): Promise<void> {
+  const [endpoint] = await db
+    .select({ policy: chatEndpoints.policy })
+    .from(chatEndpoints)
+    .where(and(eq(chatEndpoints.companyId, input.companyId), eq(chatEndpoints.id, input.endpointId), eq(chatEndpoints.provider, "openwa")))
+    .limit(1);
+  if (!endpoint) return;
+  const { pendingTtlHours } = openwaEndpointPolicySchema.parse(endpoint.policy ?? {}).approvals;
+  const requests = await db
+    .select({ id: chatOwnerApprovalRequests.id, createdAt: chatOwnerApprovalRequests.createdAt, originChatKey: chatOwnerApprovalRequests.originChatKey })
+    .from(chatOwnerApprovalRequests)
+    .where(
+      and(
+        eq(chatOwnerApprovalRequests.companyId, input.companyId),
+        eq(chatOwnerApprovalRequests.endpointId, input.endpointId),
+        eq(chatOwnerApprovalRequests.status, "pending"),
+      ),
+    );
+  if (!requests.length) return;
+  const wakes = await db
+    .select({ id: chatScheduledWakes.id, relatedId: chatScheduledWakes.relatedId, fireAt: chatScheduledWakes.fireAt })
+    .from(chatScheduledWakes)
+    .where(
+      and(
+        eq(chatScheduledWakes.companyId, input.companyId),
+        eq(chatScheduledWakes.endpointId, input.endpointId),
+        eq(chatScheduledWakes.kind, "approval_expiry"),
+        eq(chatScheduledWakes.state, "pending"),
+        inArray(chatScheduledWakes.relatedId, requests.map((request) => request.id)),
+      ),
+    );
+  const existing = new Map(wakes.map((wake) => [wake.relatedId, wake]));
+  const tracked: Array<{ id: string; fireAt: Date }> = [];
+  const missing = [];
+  for (const request of requests) {
+    const fireAt = new Date(request.createdAt.getTime() + pendingTtlHours * HOUR_MS);
+    const wake = existing.get(request.id);
+    if (!wake) {
+      missing.push({
+        id: openwaApprovalExpiryWakeId(request.id, fireAt),
+        companyId: input.companyId,
+        endpointId: input.endpointId,
+        chatKey: request.originChatKey,
+        kind: "approval_expiry" as const,
+        fireAt,
+        relatedId: request.id,
+        payload: { version: 1, pendingTtlHours },
+      });
+      continue;
+    }
+    if (wake.fireAt.getTime() === fireAt.getTime()) continue;
+    const moved = await db
+      .update(chatScheduledWakes)
+      .set({ fireAt, payload: { version: 1, pendingTtlHours }, updatedAt: new Date() })
+      .where(and(eq(chatScheduledWakes.id, wake.id), eq(chatScheduledWakes.state, "pending")))
+      .returning({ id: chatScheduledWakes.id, fireAt: chatScheduledWakes.fireAt });
+    tracked.push(...moved);
+  }
+  if (missing.length)
+    tracked.push(
+      ...(await db.insert(chatScheduledWakes).values(missing).onConflictDoNothing().returning({ id: chatScheduledWakes.id, fireAt: chatScheduledWakes.fireAt })),
+    );
+  activeOpenwaScheduledWakes(input.endpointId)?.track(tracked);
+}
+
+async function cancelRequestWakes(
   db: OpenwaScheduledWakeDb,
-  input: { companyId: string; endpointId: string; requestId: string },
-): Promise<void> {
-  const ids = Array.from({ length: OPENWA_MAX_APPROVAL_REMINDERS }, (_, offset) => openwaApprovalReminderWakeId(input.requestId, offset + 1));
+  input: { companyId: string; endpointId: string; requestIds: string[]; kinds: ChatScheduledWakeKind[] },
+): Promise<string[]> {
+  if (!input.requestIds.length) return [];
   const cancelled = await db
     .update(chatScheduledWakes)
     .set({ state: "cancelled", updatedAt: new Date() })
     .where(
       and(
-        inArray(chatScheduledWakes.id, ids),
         eq(chatScheduledWakes.companyId, input.companyId),
         eq(chatScheduledWakes.endpointId, input.endpointId),
-        eq(chatScheduledWakes.kind, "approval_reminder"),
+        inArray(chatScheduledWakes.relatedId, input.requestIds),
+        inArray(chatScheduledWakes.kind, input.kinds),
         eq(chatScheduledWakes.state, "pending"),
       ),
     )
     .returning({ id: chatScheduledWakes.id });
   activeOpenwaScheduledWakes(input.endpointId)?.forget(cancelled.map((row) => row.id));
+  return cancelled.map((row) => row.id);
 }
 
-async function deliverApprovalReminder(
-  db: Db,
-  heartbeat: Pick<IssueAssignmentWakeupDeps, "wakeup">,
-  input: { companyId: string; endpointId: string; wakeId: string; chatKey: string; requestId: string | null; reminderIndex: number; maxReminders: number },
-): Promise<Outcome> {
-  if (!input.requestId) return { status: "skipped", result: { code: "approval_request_missing" } };
-  const [request] = await db
-    .update(chatOwnerApprovalRequests)
-    .set({ reminderCount: sql`greatest(${chatOwnerApprovalRequests.reminderCount}, ${input.reminderIndex})`, updatedAt: new Date() })
+/** Cancels every pending reminder and expiry wake of a request that left pending. */
+export async function cancelApprovalReminders(
+  db: OpenwaScheduledWakeDb,
+  input: { companyId: string; endpointId: string; requestId: string },
+): Promise<void> {
+  await cancelRequestWakes(db, { ...input, requestIds: [input.requestId], kinds: ["approval_reminder", "approval_expiry"] });
+}
+
+/** Cancels the remaining reminders of pending requests created before an owner message in their origin chat or in a chat that got their bubble; the requests stay pending. */
+export async function cancelApprovalRemindersAfterOwnerReply(
+  db: OpenwaScheduledWakeDb,
+  input: { companyId: string; endpointId: string; chatKey: string; at: Date },
+): Promise<string[]> {
+  const bubbledHere = db
+    .select({ requestId: chatOwnerApprovalBubbles.requestId })
+    .from(chatOwnerApprovalBubbles)
+    .innerJoin(
+      chatOutboundMessages,
+      and(eq(chatOutboundMessages.companyId, chatOwnerApprovalBubbles.companyId), eq(chatOutboundMessages.id, chatOwnerApprovalBubbles.outboundMessageId)),
+    )
+    .where(
+      and(
+        eq(chatOwnerApprovalBubbles.companyId, input.companyId),
+        eq(chatOwnerApprovalBubbles.endpointId, input.endpointId),
+        eq(chatOutboundMessages.chatKey, input.chatKey),
+      ),
+    );
+  const requests = await db
+    .select({ id: chatOwnerApprovalRequests.id })
+    .from(chatOwnerApprovalRequests)
     .where(
       and(
         eq(chatOwnerApprovalRequests.companyId, input.companyId),
         eq(chatOwnerApprovalRequests.endpointId, input.endpointId),
-        eq(chatOwnerApprovalRequests.id, input.requestId),
         eq(chatOwnerApprovalRequests.status, "pending"),
+        lt(chatOwnerApprovalRequests.createdAt, input.at),
+        or(eq(chatOwnerApprovalRequests.originChatKey, input.chatKey), inArray(chatOwnerApprovalRequests.id, bubbledHere)),
       ),
-    )
-    .returning();
-  if (!request) return { status: "skipped", result: { code: "approval_not_pending" } };
+    );
+  if (!requests.length) return [];
+  await cancelRequestWakes(db, { ...input, requestIds: requests.map((request) => request.id), kinds: ["approval_reminder"] });
+  return requests.map((request) => request.id);
+}
+
+type ApprovalWakeTarget = { conversation: typeof chatConversations.$inferSelect; issue: typeof issues.$inferSelect & { assigneeAgentId: string } };
+
+async function approvalWakeTarget(db: Db, input: { companyId: string; endpointId: string }, request: ApprovalRequestRow): Promise<ApprovalWakeTarget | null> {
   const [endpoint] = await db
     .select({ providerAccountId: chatEndpoints.providerAccountId })
     .from(chatEndpoints)
@@ -759,11 +889,18 @@ async function deliverApprovalReminder(
         .where(and(eq(chatConversations.companyId, input.companyId), eq(chatConversations.id, request.originConversationId)))
         .limit(1);
   const target = current ?? origin;
-  if (!target || !target.issue.assigneeAgentId || ["backlog", "done", "cancelled"].includes(target.issue.status))
-    return { status: "skipped", result: { code: "approval_conversation_unavailable" } };
-  const agentId = target.issue.assigneeAgentId;
-  const idempotencyKey = "openwa-scheduled-wake:" + input.wakeId;
-  const openwa = { event: "approval_pending", triggerClass: "other", deliveryIds: [] as string[], approvalRequestId: request.id };
+  if (!target || !target.issue.assigneeAgentId || ["backlog", "done", "cancelled"].includes(target.issue.status)) return null;
+  return target as ApprovalWakeTarget;
+}
+
+async function wakeApprovalAgent(
+  db: Db,
+  heartbeat: Pick<IssueAssignmentWakeupDeps, "wakeup">,
+  input: { companyId: string; target: ApprovalWakeTarget; requestId: string; idempotencyKey: string; event: "approval_pending" | "approval_expired"; reason: string },
+): Promise<boolean> {
+  const { issue } = input.target;
+  const agentId = issue.assigneeAgentId;
+  const openwa = { event: input.event, triggerClass: "other", deliveryIds: [] as string[], approvalRequestId: input.requestId };
   const [existing] = await db
     .select({ id: agentWakeupRequests.id })
     .from(agentWakeupRequests)
@@ -771,28 +908,56 @@ async function deliverApprovalReminder(
       and(
         eq(agentWakeupRequests.companyId, input.companyId),
         eq(agentWakeupRequests.agentId, agentId),
-        eq(agentWakeupRequests.idempotencyKey, idempotencyKey),
+        eq(agentWakeupRequests.idempotencyKey, input.idempotencyKey),
       ),
     )
     .orderBy(asc(agentWakeupRequests.requestedAt))
     .limit(1);
-  if (!existing) {
-    await reopenOpenwaConversationIssue(db, {
-      companyId: input.companyId,
-      issueId: target.issue.id,
-      actorId: OPENWA_SCHEDULED_WAKE_ACTOR,
-      wake: "approval_pending",
-    });
-    await heartbeat.wakeup(agentId, {
-      source: "assignment",
-      triggerDetail: "system",
-      reason: "OpenWA approval request is still pending",
-      idempotencyKey,
-      requestedByActorType: "system",
-      requestedByActorId: OPENWA_SCHEDULED_WAKE_ACTOR,
-      payload: { issueId: target.issue.id, mutation: "openwa_approval_pending", taskKey: target.issue.identifier, openwa },
-      contextSnapshot: { issueId: target.issue.id, source: "chat:openwa", taskKey: target.issue.identifier, openwa },
-    });
+  if (existing) return false;
+  await reopenOpenwaConversationIssue(db, { companyId: input.companyId, issueId: issue.id, actorId: OPENWA_SCHEDULED_WAKE_ACTOR, wake: input.event });
+  await heartbeat.wakeup(agentId, {
+    source: "assignment",
+    triggerDetail: "system",
+    reason: input.reason,
+    idempotencyKey: input.idempotencyKey,
+    requestedByActorType: "system",
+    requestedByActorId: OPENWA_SCHEDULED_WAKE_ACTOR,
+    payload: { issueId: issue.id, mutation: "openwa_" + input.event, taskKey: issue.identifier, openwa },
+    contextSnapshot: { issueId: issue.id, source: "chat:openwa", taskKey: issue.identifier, openwa },
+  });
+  return true;
+}
+
+async function deliverApprovalReminder(
+  db: Db,
+  heartbeat: Pick<IssueAssignmentWakeupDeps, "wakeup">,
+  input: { companyId: string; endpointId: string; wakeId: string; chatKey: string; requestId: string | null; reminderIndex: number; maxReminders: number },
+): Promise<Outcome> {
+  if (!input.requestId) return { status: "skipped", result: { code: "approval_request_missing" } };
+  const [request] = await db
+    .update(chatOwnerApprovalRequests)
+    .set({ reminderCount: sql`greatest(${chatOwnerApprovalRequests.reminderCount}, ${input.reminderIndex})`, updatedAt: new Date() })
+    .where(
+      and(
+        eq(chatOwnerApprovalRequests.companyId, input.companyId),
+        eq(chatOwnerApprovalRequests.endpointId, input.endpointId),
+        eq(chatOwnerApprovalRequests.id, input.requestId),
+        eq(chatOwnerApprovalRequests.status, "pending"),
+      ),
+    )
+    .returning();
+  if (!request) return { status: "skipped", result: { code: "approval_not_pending" } };
+  const target = await approvalWakeTarget(db, input, request);
+  if (!target) return { status: "skipped", result: { code: "approval_conversation_unavailable" } };
+  const woke = await wakeApprovalAgent(db, heartbeat, {
+    companyId: input.companyId,
+    target,
+    requestId: request.id,
+    idempotencyKey: "openwa-scheduled-wake:" + input.wakeId,
+    event: "approval_pending",
+    reason: "OpenWA approval request is still pending",
+  });
+  if (woke)
     await recordOpenwaAudit(db, {
       companyId: input.companyId,
       endpointId: input.endpointId,
@@ -803,6 +968,97 @@ async function deliverApprovalReminder(
       conversationId: target.conversation.id,
       metadata: { requestId: request.id, reminderIndex: input.reminderIndex, maxReminders: input.maxReminders, wakeId: input.wakeId },
     });
-  }
   return { status: "processed", result: { code: "approval_pending_woken", issueId: target.issue.id, reminderIndex: input.reminderIndex } };
+}
+
+async function deliverApprovalExpiry(
+  db: Db,
+  heartbeat: Pick<IssueAssignmentWakeupDeps, "wakeup">,
+  input: { companyId: string; endpointId: string; wakeId: string; requestId: string | null; now: number },
+): Promise<Outcome> {
+  const requestId = input.requestId;
+  if (!requestId) return { status: "skipped", result: { code: "approval_request_missing" } };
+  const [endpoint] = await db
+    .select({ policy: chatEndpoints.policy })
+    .from(chatEndpoints)
+    .where(and(eq(chatEndpoints.companyId, input.companyId), eq(chatEndpoints.id, input.endpointId), eq(chatEndpoints.provider, "openwa")))
+    .limit(1);
+  if (!endpoint) return { status: "skipped", result: { code: "approval_endpoint_missing" } };
+  const { pendingTtlHours } = openwaEndpointPolicySchema.parse(endpoint.policy ?? {}).approvals;
+  const now = new Date(input.now);
+  const step = await db.transaction(async (tx): Promise<{ request: ApprovalRequestRow } | { code: string }> => {
+    const [request] = await tx
+      .select()
+      .from(chatOwnerApprovalRequests)
+      .where(
+        and(
+          eq(chatOwnerApprovalRequests.companyId, input.companyId),
+          eq(chatOwnerApprovalRequests.endpointId, input.endpointId),
+          eq(chatOwnerApprovalRequests.id, requestId),
+        ),
+      )
+      .for("update")
+      .limit(1);
+    if (!request) return { code: "approval_request_missing" };
+    if (request.status === "expired") return { request };
+    if (request.status !== "pending") return { code: "approval_not_pending" };
+    if (request.createdAt.getTime() + pendingTtlHours * HOUR_MS > now.getTime() + APPROVAL_EXPIRY_EARLY_MS) return { code: "approval_expiry_rescheduled" };
+    const [expired] = await tx
+      .update(chatOwnerApprovalRequests)
+      .set({ status: "expired", resolvedAt: now, updatedAt: now })
+      .where(and(eq(chatOwnerApprovalRequests.id, request.id), eq(chatOwnerApprovalRequests.status, "pending")))
+      .returning();
+    if (request.interactionId)
+      await tx
+        .update(issueThreadInteractions)
+        .set({
+          status: "expired",
+          result: { version: 1, outcome: "withdrawn", reason: "Expired after " + pendingTtlHours + " hours without an owner decision" },
+          resolvedByUserId: null,
+          resolvedByAgentId: null,
+          resolvedByRunId: null,
+          resolvedAt: now,
+          updatedAt: now,
+        })
+        .where(
+          and(
+            eq(issueThreadInteractions.id, request.interactionId),
+            eq(issueThreadInteractions.companyId, input.companyId),
+            eq(issueThreadInteractions.status, "pending"),
+          ),
+        );
+    await cancelApprovalReminders(tx, { companyId: input.companyId, endpointId: input.endpointId, requestId: request.id });
+    await recordOpenwaAudit(tx, {
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      kind: "approval_expired",
+      actorKind: "system",
+      actorRef: OPENWA_SCHEDULED_WAKE_ACTOR,
+      chatKey: request.originChatKey,
+      conversationId: request.originConversationId,
+      metadata: { requestId: request.id, pendingTtlHours, reminderCount: request.reminderCount, wakeId: input.wakeId },
+    });
+    await logOpenwaActivity(tx, {
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      action: "openwa.approval_expired",
+      details: { requestId: request.id, pendingTtlHours },
+    });
+    return { request: expired! };
+  });
+  if (!("request" in step)) {
+    if (step.code === "approval_expiry_rescheduled") await ensureApprovalExpiryWakes(db, input);
+    return { status: "skipped", result: { code: step.code } };
+  }
+  const target = await approvalWakeTarget(db, input, step.request);
+  if (!target) return { status: "processed", result: { code: "approval_expired", woken: false } };
+  await wakeApprovalAgent(db, heartbeat, {
+    companyId: input.companyId,
+    target,
+    requestId: step.request.id,
+    idempotencyKey: "openwa-approval-expired:" + step.request.id,
+    event: "approval_expired",
+    reason: "OpenWA approval request expired",
+  });
+  return { status: "processed", result: { code: "approval_expired_woken", issueId: target.issue.id } };
 }

@@ -17,6 +17,7 @@ describe("OpenWA tool catalog", () => {
       ["openwa_find", "read"],
       ["openwa_request_approval", "write"],
       ["openwa_approval_resolve", "write"],
+      ["openwa_approval_withdraw", "write"],
       ["openwa_stay_silent", "write"],
       ["openwa_handoff", "write"],
       ["openwa_catalog", "read"],
@@ -60,6 +61,12 @@ describe("OpenWA tool catalog", () => {
     expect(send.safeParse({ text: "hi", companyId: key, idempotencyKey: key }).success).toBe(false);
     expect(openwaTool("openwa_find")!.schema.safeParse({ query: "a", phone: "+628111" }).success).toBe(false);
     expect(z.toJSONSchema(openwaTool("openwa_handoff")!.schema)).toMatchObject({ required: ["triggerIds", "note"] });
+    const withdraw = openwaTool("openwa_approval_withdraw")!.schema;
+    expect(withdraw.safeParse({ requestId: key, reason: "Owner answered in the group" }).success).toBe(true);
+    expect(withdraw.safeParse({ requestId: key, reason: "Owner answered", ownerMessageRef: "false_x_ABC" }).success).toBe(true);
+    expect(withdraw.safeParse({ requestId: key }).success).toBe(false);
+    expect(withdraw.safeParse({ requestId: key, reason: " " }).success).toBe(false);
+    expect(withdraw.safeParse({ requestId: "nope", reason: "x" }).success).toBe(false);
     const call = openwaTool("openwa_call")!.schema;
     expect(call.safeParse({ operation: "MessageController_sendText", args: { chatId: "x", text: "y" }, idempotencyKey: key }).success).toBe(true);
     expect(call.safeParse({ operation: "MessageController_sendText", sessionId: "s" }).success).toBe(false);
@@ -115,6 +122,10 @@ describe("OpenWA tool catalog", () => {
     expect(config.schema.safeParse({ chatSettings: { activation: "maybe" } }).success).toBe(false);
     expect(config.schema.safeParse({ approvals: { createTask: false, reminderMinutes: 15 } }).success).toBe(true);
     expect(config.schema.safeParse({ approvals: { grantTtlHours: 2 } }).success).toBe(false);
+    expect(config.schema.safeParse({ approvals: { pendingTtlHours: 1 } }).success).toBe(true);
+    expect(config.schema.safeParse({ approvals: { pendingTtlHours: 168 } }).success).toBe(true);
+    expect(config.schema.safeParse({ approvals: { pendingTtlHours: 0 } }).success).toBe(false);
+    expect(config.schema.safeParse({ approvals: { pendingTtlHours: 169 } }).success).toBe(false);
     expect(config.schema.safeParse({ customInstructions: "x".repeat(8001) }).success).toBe(false);
     const properties = Object.keys((config.inputSchema.properties ?? {}) as Record<string, unknown>);
     for (const field of OPENWA_CONFIG_UI_ONLY_FIELDS) {

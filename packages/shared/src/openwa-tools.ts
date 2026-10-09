@@ -14,7 +14,8 @@ export type OpenwaSendKind = (typeof OPENWA_SEND_KINDS)[number];
 export type OpenwaToolRisk = "read" | "write";
 
 const chat = z.string().min(3).max(200).optional().describe("chatRef, group id or E.164 number; default: origin chat");
-const uuid = z.string().regex(/^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$/);
+const UUID_PATTERN = /^[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}$/;
+const uuid = z.string().refine((value) => UUID_PATTERN.test(value), "Expected a UUID");
 const e164 = z.string().regex(/^\+?[1-9]\d{6,14}$/);
 const messageId = z.string().min(1).max(200);
 const mention = z.string().regex(/^(\+?[1-9]\d{6,14}|openwa:[A-Za-z0-9-]{1,64}:\d{5,25}@(c\.us|lid))$/);
@@ -129,6 +130,16 @@ export const OPENWA_TOOLS = [
     },
   ),
   tool(
+    "approval_withdraw",
+    "write",
+    "Withdraw your pending approval request from this chat when the owner's reply decided it differently or made it moot. Sends and executes nothing; reminders stop.",
+    {
+      requestId: uuid,
+      reason: z.string().trim().min(1).max(500),
+      ownerMessageRef: messageId.optional(),
+    },
+  ),
+  tool(
     "stay_silent",
     "write",
     "Deliberately leave triggers unanswered: marks the listed (default all visible pending) triggers silenced.",
@@ -153,7 +164,7 @@ export const OPENWA_TOOLS = [
   tool(
     "endpoint_config",
     "write",
-    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears an override), approval toggles and reminders, or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin level stay in Paperclip.",
+    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears an override), approval toggles, reminders and pending lifetime, or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin level stay in Paperclip.",
     {
       senders: z
         .object({
@@ -182,6 +193,7 @@ export const OPENWA_TOOLS = [
           gatewayAdmin: z.boolean().optional(),
           reminderMinutes: z.number().int().min(1).max(1440).optional(),
           maxReminders: z.number().int().min(0).max(10).optional(),
+          pendingTtlHours: z.number().int().min(1).max(168).optional(),
         })
         .strict()
         .optional(),

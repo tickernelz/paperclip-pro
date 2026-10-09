@@ -41,6 +41,8 @@ const statusLabels: Record<ChatOwnerApprovalStatus, string> = {
   approved: "Approved",
   rejected: "Rejected",
   cancelled: "Cancelled",
+  expired: "Expired",
+  withdrawn: "Withdrawn",
 };
 
 const channelLabels: Record<ChatOwnerApprovalChannel, string> = { whatsapp: "WhatsApp", paperclip: "Paperclip" };
@@ -55,6 +57,8 @@ function alreadyResolvedMessage(error: ApiError): string {
   if (status === "approved") return "Another owner already approved this request. The list is refreshed.";
   if (status === "rejected") return "Another owner already rejected this request. The list is refreshed.";
   if (status === "cancelled") return "This request was cancelled before your decision. The list is refreshed.";
+  if (status === "expired") return "This request expired before your decision. The list is refreshed.";
+  if (status === "withdrawn") return "The agent withdrew this request before your decision. The list is refreshed.";
   return "This request was already resolved. The list is refreshed.";
 }
 
