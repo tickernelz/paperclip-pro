@@ -13,10 +13,13 @@ import {
   liveNowCollapsedStorageKey,
   useAboveViewportResizeCompensation,
 } from "./TasksLiveNowSection";
+import { classifyLiveNowHealth, countLiveNowHealth } from "./live-now/live-now-health";
 
-const mockIssuesApi = vi.hoisted(() => ({ get: vi.fn() }));
+const mockIssuesApi = vi.hoisted(() => ({ get: vi.fn(), addComment: vi.fn() }));
+const mockHeartbeatsApi = vi.hoisted(() => ({ cancel: vi.fn() }));
 
 vi.mock("../api/issues", () => ({ issuesApi: mockIssuesApi }));
+vi.mock("../api/heartbeats", () => ({ heartbeatsApi: mockHeartbeatsApi }));
 
 vi.mock("@/lib/router", () => ({
   Link: ({
@@ -99,6 +102,8 @@ beforeEach(() => {
   document.body.appendChild(container);
   localStorage.clear();
   mockIssuesApi.get.mockReset();
+  mockIssuesApi.addComment.mockReset();
+  mockHeartbeatsApi.cancel.mockReset();
   vi.stubGlobal("ResizeObserver", class { observe() {} unobserve() {} disconnect() {} });
 });
 
@@ -236,6 +241,214 @@ describe("TasksLiveNowSection", () => {
     flushSync(() => root!.unmount());
     render(<TasksLiveNowSection {...props} companyId="company-2" />);
     expect(liveRows()).toHaveLength(1);
+  });
+});
+
+const NOW = new Date("2026-10-08T10:30:00.000Z").getTime();
+const at = (msBeforeNow: number) => new Date(NOW - msBeforeNow).toISOString();
+
+function silence(level: "ok" | "suspicious" | "critical", ageMs: number): NonNullable<LiveRunForIssue["outputSilence"]> {
+  return {
+    lastOutputAt: at(ageMs),
+    lastOutputSeq: 3,
+    lastOutputStream: "stdout",
+    silenceStartedAt: at(ageMs),
+    silenceAgeMs: ageMs,
+    level,
+    suspicionThresholdMs: 5 * 60_000,
+    criticalThresholdMs: 15 * 60_000,
+    snoozedUntil: null,
+    evaluationIssueId: null,
+    evaluationIssueIdentifier: null,
+    evaluationIssueAssigneeAgentId: null,
+  };
+}
+
+const healthFixtures = {
+  justStarted: run({ id: "start", startedAt: at(10_000), createdAt: at(12_000) }),
+  queued: run({ id: "queued", status: "queued", startedAt: null, createdAt: at(5_000) }),
+  active: run({
+    id: "active",
+    startedAt: at(14 * 60_000),
+    currentToolName: "bash",
+    currentStatusMessage: "Running bash",
+    lastAssistantSnippet: "Rebasing before the push.",
+    lastEventAt: at(6_000),
+  }),
+  thinking: run({ id: "thinking", startedAt: at(6 * 60_000), currentStatusMessage: "Thinking", lastEventAt: at(20_000) }),
+  finishedTool: run({
+    id: "finished",
+    startedAt: at(6 * 60_000),
+    currentToolName: "fabric_exec",
+    currentStatusMessage: "Finished fabric_exec",
+    lastEventAt: at(30_000),
+  }),
+  quietBySilence: run({ id: "quiet-silence", startedAt: at(20 * 60_000), lastEventAt: at(6 * 60_000), outputSilence: silence("suspicious", 6 * 60_000) }),
+  quietByClock: run({ id: "quiet-clock", startedAt: at(20 * 60_000), currentToolName: "wait", lastEventAt: at(4 * 60_000) }),
+  stalledByWatchdog: run({ id: "stalled-watchdog", startedAt: at(40 * 60_000), lastEventAt: at(2 * 60_000), outputSilence: silence("critical", 19 * 60_000) }),
+  stalledByClock: run({ id: "stalled-clock", startedAt: at(60 * 60_000), lastEventAt: at(25 * 60_000) }),
+};
+
+describe("classifyLiveNowHealth", () => {
+  it.each([
+    ["justStarted", "starting", "Starting"],
+    ["queued", "starting", "Queued"],
+    ["active", "active", "Working"],
+    ["thinking", "thinking", "Thinking"],
+    ["finishedTool", "thinking", "Thinking"],
+    ["quietBySilence", "quiet", "Quiet 6m"],
+    ["quietByClock", "quiet", "Quiet 4m"],
+    ["stalledByWatchdog", "stalled", "Stalled 2m"],
+    ["stalledByClock", "stalled", "Stalled 25m"],
+  ] as const)("classifies the %s fixture as %s", (fixture, health, label) => {
+    expect(classifyLiveNowHealth(healthFixtures[fixture], NOW)).toMatchObject({ health, label });
+  });
+
+  it("counts working, quiet and stalled tasks", () => {
+    expect(countLiveNowHealth(["active", "thinking", "starting", "quiet", "stalled", "stalled"])).toEqual({
+      working: 3,
+      quiet: 1,
+      stalled: 2,
+    });
+  });
+});
+
+describe("Live now cards", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(NOW);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function setTextareaValue(textarea: HTMLTextAreaElement, value: string) {
+    const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!;
+    setter.call(textarea, value);
+    textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
+  it("shows the agent, health, current tool and latest snippet, with stalled tasks first", () => {
+    render(
+      <TasksLiveNowSection
+        companyId="company-1"
+        liveRuns={[
+          { ...healthFixtures.active, issueId: "issue-1" },
+          { ...healthFixtures.stalledByClock, issueId: "issue-2", agentId: "agent-2", agentName: "Operator" },
+        ]}
+        issues={[issue({ id: "issue-1", identifier: "ZHA-1" }), issue({ id: "issue-2", identifier: "ZHA-2" })]}
+      />,
+    );
+
+    const rows = liveRows();
+    expect(rows.map((row) => [row.dataset.liveNowIssueId, row.dataset.liveHealth])).toEqual([
+      ["issue-2", "stalled"],
+      ["issue-1", "active"],
+    ]);
+    const active = rows[1]!;
+    expect(active.querySelector("[data-slot='tasks-live-now-health']")?.textContent).toBe("Working");
+    expect(active.querySelector("[data-slot='tasks-live-now-status']")?.textContent).toContain("Running bash");
+    expect(active.querySelector("[data-slot='tasks-live-now-status'] svg")).not.toBeNull();
+    expect(active.querySelector("[data-slot='tasks-live-now-snippet']")?.textContent).toBe("Rebasing before the push.");
+    expect(container.querySelector("[data-slot='tasks-live-now-summary']")?.textContent).toContain("1 stalled");
+  });
+
+  it("links to the task and to the live run transcript", () => {
+    render(<TasksLiveNowSection companyId="company-1" liveRuns={[run({})]} issues={[issue({})]} />);
+
+    const row = liveRows()[0]!;
+    expect(row.querySelector("a[aria-label='Open ZHA-1']")?.getAttribute("href")).toBe("/issues/ZHA-1");
+    expect(row.querySelector("a[aria-label='Run transcript for Builder']")?.getAttribute("href")).toBe(
+      "/agents/agent-1/runs/run-1",
+    );
+  });
+
+  it("steers the running turn from the card composer", async () => {
+    mockIssuesApi.addComment.mockResolvedValue({ id: "comment-1", deliveredAs: "steered" });
+    render(<TasksLiveNowSection companyId="company-1" liveRuns={[run({})]} issues={[issue({})]} />);
+
+    const steer = liveRows()[0]!.querySelector<HTMLButtonElement>("button[aria-label='Steer Builder on ZHA-1']")!;
+    expect(steer.getAttribute("aria-expanded")).toBe("false");
+    flushSync(() => steer.click());
+    expect(steer.getAttribute("aria-expanded")).toBe("true");
+
+    const textarea = container.querySelector<HTMLTextAreaElement>("[data-slot='tasks-live-now-steer'] textarea")!;
+    expect(document.activeElement).toBe(textarea);
+    flushSync(() => setTextareaValue(textarea, "  check the failing test  "));
+    flushSync(() => container.querySelector<HTMLButtonElement>("[data-slot='tasks-live-now-steer'] button[type='submit']")!.click());
+
+    await waitFor(() => expect(container.querySelector("[data-slot='tasks-live-now-steer']")).toBeNull());
+    expect(mockIssuesApi.addComment).toHaveBeenCalledWith(
+      "issue-1",
+      "check the failing test",
+      undefined,
+      undefined,
+      undefined,
+      expect.any(String),
+      "steer",
+    );
+    expect(liveRows()[0]!.querySelector("[role='status']")?.textContent).toBe("Steered into Builder's turn");
+  });
+
+  it("asks for confirmation before stopping the run", async () => {
+    mockHeartbeatsApi.cancel.mockResolvedValue(undefined);
+    render(<TasksLiveNowSection companyId="company-1" liveRuns={[run({})]} issues={[issue({})]} />);
+
+    flushSync(() => liveRows()[0]!.querySelector<HTMLButtonElement>("button[aria-label=\"Stop Builder's run on ZHA-1\"]")!.click());
+    await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).not.toBeNull());
+    expect(mockHeartbeatsApi.cancel).not.toHaveBeenCalled();
+
+    const dialog = document.body.querySelector<HTMLElement>("[role='alertdialog']")!;
+    const cancel = [...dialog.querySelectorAll("button")].find((button) => button.textContent === "Keep running")!;
+    flushSync(() => cancel.click());
+    await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).toBeNull());
+    expect(mockHeartbeatsApi.cancel).not.toHaveBeenCalled();
+
+    flushSync(() => liveRows()[0]!.querySelector<HTMLButtonElement>("button[aria-label=\"Stop Builder's run on ZHA-1\"]")!.click());
+    await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).not.toBeNull());
+    const confirm = [...document.body.querySelectorAll<HTMLButtonElement>("[role='alertdialog'] button")].find(
+      (button) => button.textContent === "Stop run",
+    )!;
+    flushSync(() => confirm.click());
+    await waitFor(() => expect(mockHeartbeatsApi.cancel).toHaveBeenCalledWith("run-1"));
+  });
+
+  it("collapses to a strip of agent avatars that expands again on click", () => {
+    render(
+      <TasksLiveNowSection
+        companyId="company-1"
+        liveRuns={[
+          { ...healthFixtures.active, id: "r1", issueId: "issue-1", agentId: "agent-1", agentName: "Builder" },
+          { ...healthFixtures.thinking, id: "r2", issueId: "issue-1", agentId: "agent-2", agentName: "Reviewer" },
+          { ...healthFixtures.justStarted, id: "r3", issueId: "issue-2", agentId: "agent-1", agentName: "Builder" },
+          { ...healthFixtures.stalledByClock, id: "r4", issueId: "issue-3", agentId: "agent-3", agentName: "Operator" },
+        ]}
+        issues={[
+          issue({ id: "issue-1", identifier: "ZHA-1" }),
+          issue({ id: "issue-2", identifier: "ZHA-2" }),
+          issue({ id: "issue-3", identifier: "ZHA-3" }),
+        ]}
+      />,
+    );
+    expect(container.querySelector("[data-slot='tasks-live-now-avatars']")).toBeNull();
+
+    const toggle = container.querySelector<HTMLButtonElement>("section > button[aria-expanded]")!;
+    flushSync(() => toggle.click());
+
+    expect(liveRows()).toHaveLength(0);
+    const strip = container.querySelector("[data-slot='tasks-live-now-avatars']")!;
+    expect([...strip.querySelectorAll("[title]")].map((el) => el.getAttribute("title"))).toEqual([
+      "Operator",
+      "Builder",
+      "Reviewer",
+    ]);
+    expect(toggle.textContent).toContain("1 stalled");
+    expect(container.querySelector("[data-slot='tasks-live-now-count']")?.textContent).toBe("3");
+
+    flushSync(() => toggle.click());
+    expect(liveRows()).toHaveLength(3);
+    expect(container.querySelector("[data-slot='tasks-live-now-avatars']")).toBeNull();
   });
 });
 

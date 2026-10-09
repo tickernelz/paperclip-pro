@@ -238,6 +238,15 @@
   --status-task-icon-cancelled: #52585d;
   --status-task-icon-in_queue: var(--status-task-icon-in_progress); /* blocked shape, same mode-aware blue */
 
+  --live-health-starting: var(--muted-foreground);
+  --live-health-active: var(--status-task-icon-in_progress);
+  --live-health-thinking: var(--status-task-icon-in_review);
+  --live-health-quiet: var(--status-task-icon-todo);
+  --live-health-stalled: var(--status-task-icon-blocked);
+  --live-now-card-peek: 85%;
+  --live-now-sweep-height: 2px;
+  --live-now-sweep-width: 40%;
+
   --folder-color-indigo: #6366f1;
   --folder-color-violet: #8b5cf6;
   --folder-color-emerald: #10b981;
@@ -317,6 +326,8 @@
   --motion-ease-scroll-pill-out: cubic-bezier(0.7, 0, 0.84, 0);
   --motion-pane-glide: 320ms;           /* properties-pane maximize/restore glide */
   --motion-side-panel-tab: var(--motion-duration-fast);
+  --motion-live-now-sweep: 2.4s;
+  --motion-live-now-breathe: 2s;
 
   /* Portable side-panel geometry and hierarchy. These stay centralized so
      task, project, agent, and future hosts render the same Codex-like chrome. */
@@ -1544,6 +1555,65 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   .tc-stream-block-enter,
   .tc-live-ping {
     animation: none;
+  }
+}
+
+[data-live-health] { --live-health: var(--live-health-active); }
+[data-live-health="starting"] { --live-health: var(--live-health-starting); }
+[data-live-health="thinking"] { --live-health: var(--live-health-thinking); }
+[data-live-health="quiet"] { --live-health: var(--live-health-quiet); }
+[data-live-health="stalled"] { --live-health: var(--live-health-stalled); }
+
+.live-now-health-dot { background-color: var(--live-health); }
+.live-now-health-pill { background-color: color-mix(in oklab, var(--live-health) 14%, transparent); }
+.live-now-quote { border-color: color-mix(in oklab, var(--live-health) 55%, transparent); }
+.live-now-card[data-live-health="quiet"] { border-color: color-mix(in oklab, var(--live-health) 35%, var(--border)); }
+.live-now-card[data-live-health="stalled"] {
+  border-color: color-mix(in oklab, var(--live-health) 55%, var(--border));
+  background-color: color-mix(in oklab, var(--live-health) 4%, var(--card));
+}
+
+.live-now-sweep {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: var(--live-now-sweep-height);
+  overflow: hidden;
+  background-color: color-mix(in oklab, var(--live-health) 16%, transparent);
+}
+
+.live-now-sweep::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: var(--live-now-sweep-width);
+  background-image: linear-gradient(90deg, transparent, var(--live-health), transparent);
+  animation: live-now-sweep var(--motion-live-now-sweep) var(--motion-ease-standard) infinite;
+}
+
+.live-now-breathe {
+  animation: live-now-breathe var(--motion-live-now-breathe) ease-in-out infinite;
+}
+
+@keyframes live-now-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(250%); }
+}
+
+@keyframes live-now-breathe {
+  50% { opacity: 0.45; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-now-sweep::after,
+  .live-now-breathe {
+    animation: none;
+  }
+
+  .live-now-sweep::after {
+    width: 100%;
+    opacity: 0.6;
   }
 }
 
