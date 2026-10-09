@@ -303,6 +303,7 @@ describe("generated tool input contracts", () => {
     ).toEqual([
       "GET /agents/me/inbox/mine userId",
       "GET /companies/{}/issues/count attention",
+      "GET /companies/{}/issues/refs ids",
       "GET /companies/{}/pixels-office/timeline from,to",
       "GET /companies/{}/search/extract contains",
       "GET /plugins/{}/bridge/stream/{} companyId",
