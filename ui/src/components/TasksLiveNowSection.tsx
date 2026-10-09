@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { RefObject } from "react";
 import { useQueries } from "@tanstack/react-query";
 import { ChevronRight } from "lucide-react";
@@ -131,8 +131,9 @@ function writeCollapsed(companyId: string, collapsed: boolean): void {
   }
 }
 
-/** Keeps rows below the element still when it resizes while scrolled out of view above. */
-export function useAboveViewportResizeCompensation(ref: RefObject<HTMLElement | null>): void {
+/** Keeps rows below the element still when it resizes above the viewport; the returned callback exempts the next resize. */
+export function useAboveViewportResizeCompensation(ref: RefObject<HTMLElement | null>): () => void {
+  const skipNextResizeRef = useRef(false);
   useLayoutEffect(() => {
     const element = ref.current;
     if (!element || typeof ResizeObserver === "undefined") return;
@@ -147,7 +148,9 @@ export function useAboveViewportResizeCompensation(ref: RefObject<HTMLElement | 
     const observer = new ResizeObserver(() => {
       const bottom = bottomBelowViewportTop();
       const shift = bottom - lastBottom;
-      if (shift !== 0 && lastBottom <= 0) {
+      const skip = skipNextResizeRef.current;
+      skipNextResizeRef.current = false;
+      if (!skip && shift !== 0 && lastBottom <= 0) {
         if (container) container.scrollTop += shift;
         else window.scrollBy(0, shift);
         syncBottom();
@@ -162,6 +165,9 @@ export function useAboveViewportResizeCompensation(ref: RefObject<HTMLElement | 
       scrollTarget.removeEventListener("scroll", syncBottom);
     };
   }, [ref]);
+  return useCallback(() => {
+    skipNextResizeRef.current = true;
+  }, []);
 }
 
 interface TasksLiveNowSectionProps {
@@ -174,7 +180,7 @@ interface TasksLiveNowSectionProps {
 /** Collapsible board of tasks with a run in progress, pinned above the Tasks list. */
 export function TasksLiveNowSection({ companyId, liveRuns, issues, issueLinkState }: TasksLiveNowSectionProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
-  useAboveViewportResizeCompensation(rootRef);
+  const skipNextResizeCompensation = useAboveViewportResizeCompensation(rootRef);
   const [collapsed, setCollapsed] = useState(() => readCollapsed(companyId));
 
   const loadedById = useMemo(() => new Map(issues.map((issue) => [issue.id, issue])), [issues]);
@@ -239,6 +245,7 @@ export function TasksLiveNowSection({ companyId, liveRuns, issues, issueLinkStat
 
   const toggle = () => {
     const next = !collapsed;
+    skipNextResizeCompensation();
     setCollapsed(next);
     writeCollapsed(companyId, next);
   };

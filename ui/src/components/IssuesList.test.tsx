@@ -2702,6 +2702,86 @@ describe("IssuesList", () => {
       root.unmount();
     });
   });
+
+  it("does not scroll the list when the header above it grows while the list is at the top", async () => {
+    const observers: Array<() => void> = [];
+    vi.stubGlobal("ResizeObserver", class {
+      constructor(callback: () => void) {
+        observers.push(callback);
+      }
+      observe() {}
+      unobserve() {}
+      disconnect() {}
+    });
+    const main = document.createElement("main");
+    main.style.overflowY = "auto";
+    document.body.appendChild(main);
+    main.appendChild(container);
+    let scrollTop = 0;
+    Object.defineProperty(main, "clientHeight", { configurable: true, value: 600 });
+    Object.defineProperty(main, "scrollTop", {
+      configurable: true,
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = Math.max(0, value);
+      },
+    });
+    let headerHeight = 40;
+    const originalRect = HTMLElement.prototype.getBoundingClientRect;
+    const rectSpy = vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+      if (this === main) return new DOMRect(0, 0, 1000, 600);
+      if (this.dataset.issueRowId) {
+        const index = Array.from(container.querySelectorAll("[data-issue-row-id]")).indexOf(this);
+        return new DOMRect(0, 16 + headerHeight + index * 40 - scrollTop, 1000, 40);
+      }
+      return originalRect.call(this);
+    });
+    const issues = Array.from({ length: 30 }, (_, index) =>
+      createIssue({ id: `issue-${index}`, identifier: `PAP-${index}`, title: `Issue ${index}` }),
+    );
+    const list = (items: Issue[]) => (
+      <IssuesList
+        issues={items}
+        agents={[]}
+        projects={[]}
+        viewStateKey="paperclip:test-issues"
+        listHeader={<div data-testid="list-header">Live now</div>}
+        onUpdateIssue={() => undefined}
+      />
+    );
+    const { root, queryClient } = renderWithQueryClient(list(issues), container);
+    const rerender = (items: Issue[]) =>
+      act(() => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <TooltipProvider>{list(items)}</TooltipProvider>
+          </QueryClientProvider>,
+        );
+      });
+
+    try {
+      await waitForAssertion(() => {
+        expect(container.querySelectorAll("[data-issue-row-id]")).toHaveLength(30);
+      });
+      await flush();
+
+      headerHeight = 488;
+      act(() => {
+        for (const notify of observers) notify();
+      });
+      rerender(issues.map((issue) => ({ ...issue })));
+      await flush();
+
+      expect(main.scrollTop).toBe(0);
+    } finally {
+      act(() => {
+        root.unmount();
+      });
+      rectSpy.mockRestore();
+      vi.unstubAllGlobals();
+      main.remove();
+    }
+  });
 });
 
 describe("legacy issue age separators", () => {

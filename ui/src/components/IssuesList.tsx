@@ -1857,6 +1857,17 @@ function StreamlinedIssuesList({
     captureScrollAnchor();
   }, [budgetOrderedIssueIds, captureScrollAnchor, renderBudgetIdentity, renderedIssueRowLimit, viewState.viewMode]);
 
+  const listHeaderRef = useRef<HTMLDivElement | null>(null);
+  const showListHeader = Boolean(listHeader) && viewState.viewMode === "list" && !viewState.liveOnly
+    && normalizedIssueSearch.length === 0;
+  useLayoutEffect(() => {
+    const header = listHeaderRef.current;
+    if (!showListHeader || !header || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => captureScrollAnchor());
+    observer.observe(header);
+    return () => observer.disconnect();
+  }, [captureScrollAnchor, showListHeader]);
+
   const hasMoreRenderedRows = viewState.viewMode === "list" && renderedIssueRowLimit < filtered.length;
   const remainingIssueRowCount = Math.max(filtered.length - renderedIssueRowLimit, 0);
   const loadMoreIssueRows = useCallback(() => {
@@ -2299,9 +2310,7 @@ function StreamlinedIssuesList({
         )}
       />
 
-      {listHeader && viewState.viewMode === "list" && !viewState.liveOnly && normalizedIssueSearch.length === 0
-        ? listHeader
-        : null}
+      {showListHeader ? <div ref={listHeaderRef}>{listHeader}</div> : null}
       {(isLoading || externalObjectFilterLoading) && <PageSkeleton variant="issues-list" />}
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {remoteIssueSearchActive && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (

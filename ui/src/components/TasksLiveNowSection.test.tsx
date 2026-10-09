@@ -453,9 +453,11 @@ describe("Live now cards", () => {
 });
 
 describe("useAboveViewportResizeCompensation", () => {
+  let skipNextResize: () => void = () => undefined;
+
   function Probe() {
     const ref = useRef<HTMLDivElement | null>(null);
-    useAboveViewportResizeCompensation(ref);
+    skipNextResize = useAboveViewportResizeCompensation(ref);
     return <div ref={ref} data-testid="probe" />;
   }
 
@@ -508,6 +510,15 @@ describe("useAboveViewportResizeCompensation", () => {
     const { scroller, resizeAlreadyCorrected } = setup({ top: -300, height: 120 });
     resizeAlreadyCorrected(200);
     expect(scroller.scrollTop).toBe(580);
+  });
+
+  it("leaves a user toggle uncompensated and still compensates the next passive resize", () => {
+    const { scroller, resize } = setup({ top: -300, height: 120 });
+    skipNextResize();
+    resize(200);
+    expect(scroller.scrollTop).toBe(500);
+    resize(260);
+    expect(scroller.scrollTop).toBe(560);
   });
 
   it("leaves scrollTop alone while the section is visible", () => {
