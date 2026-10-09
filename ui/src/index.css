@@ -326,8 +326,8 @@
   --motion-ease-scroll-pill-out: cubic-bezier(0.7, 0, 0.84, 0);
   --motion-pane-glide: 320ms;           /* properties-pane maximize/restore glide */
   --motion-side-panel-tab: var(--motion-duration-fast);
-  --motion-live-now-sweep: 2.4s;
-  --motion-live-now-breathe: 2s;
+  --motion-live-now-sweep: 2400ms;
+  --motion-live-now-breathe: 2000ms;
 
   /* Portable side-panel geometry and hierarchy. These stay centralized so
      task, project, agent, and future hosts render the same Codex-like chrome. */

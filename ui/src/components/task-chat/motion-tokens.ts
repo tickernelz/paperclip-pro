@@ -69,6 +69,8 @@ export const MOTION_TOKENS: MotionTokenDef[] = [
   { name: "--motion-scrollbar-idle-delay", group: "States", kind: "time", min: 0, max: 2000, step: 10 },
   { name: "--motion-pane-glide", group: "States", kind: "time", min: 0, max: 1500, step: 10 },
   { name: "--motion-side-panel-tab", group: "States", kind: "time", min: 0, max: 1500, step: 10 },
+  { name: "--motion-live-now-sweep", group: "States", kind: "time", min: 0, max: 5000, step: 100 },
+  { name: "--motion-live-now-breathe", group: "States", kind: "time", min: 0, max: 5000, step: 100 },
 ];
 
 /** Common easing presets offered by the tweak panel's easing picker. */
