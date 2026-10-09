@@ -28,7 +28,6 @@ import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
-import { ensureApprovalExpiryWakes } from "./scheduled-wakes.js";
 import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
 import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 import { openwaAuditRetentionDays, recordOpenwaAudit } from "./audit.js";
@@ -939,8 +938,10 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
           { before: pick(before as unknown as Record<string, unknown>), after: pick(parsed.data as unknown as Record<string, unknown>) },
         );
       }
-      if (before.approvals.pendingTtlHours !== parsed.data.approvals.pendingTtlHours)
+      if (before.approvals.pendingTtlHours !== parsed.data.approvals.pendingTtlHours) {
+        const { ensureApprovalExpiryWakes } = await import("./scheduled-wakes.js");
         await ensureApprovalExpiryWakes(tx, { companyId: endpoint.companyId, endpointId: endpoint.id });
+      }
       return endpoint.policyRevision + 1;
     });
     return { policy: parsed.data, policyRevision: revision, inflightMode };
