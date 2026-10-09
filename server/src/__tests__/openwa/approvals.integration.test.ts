@@ -957,7 +957,7 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     expect(await grantsOf(second.requestId)).toHaveLength(1);
   }, 120_000);
 
-  it("lets the owning agent withdraw a pending request after the owner's reply; foreign chats, foreign agents and non-pending requests are refused", async () => {
+  it("lets an owner run or the requesting run withdraw a pending request; foreign chats, foreign agents and non-pending requests are refused", async () => {
     const t = await setup();
     const wakeA = await admitted(t, { chatId: jid(MEMBER_A), body: "minta izin buat task" });
     const runA = await runStart(t, wakeA);
@@ -1057,6 +1057,42 @@ describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake
     const third = await requestApproval(runA.binding, { message: "Third request" });
     expect(await executeOpenwaTool(db, runA.binding, "openwa_approval_withdraw", { requestId: third.requestId, reason: "Member cancelled the request" })).toEqual({
       requestId: third.requestId,
+      status: "withdrawn",
+    });
+  }, 120_000);
+
+  it("limits withdraw in a group to the run that created the request and owner runs; other member runs get owner_only", async () => {
+    const t = await setup();
+    t.gateway.groups.set(GROUP, { id: GROUP, name: "Tim Finance", participants: [{ id: jid(OWNER_PHONE) }, { id: jid(MEMBER_A) }, { id: jid(MEMBER_B) }] });
+    const mention = (phone: string, body: string) => ({ chatId: GROUP, author: jid(phone), body: "@" + OWN_PHONE + " " + body, extra: { mentionedIds: [jid(OWN_PHONE)] } });
+    const wakeA = await admitted(t, mention(MEMBER_A, "tolong buatkan task untuk invoice 42"));
+    const runA = await runStart(t, wakeA);
+    const first = await requestApproval(runA.binding);
+    const second = await requestApproval(runA.binding, { message: "Second request" });
+
+    const wakeB = await admitted(t, mention(MEMBER_B, "batalkan saja permintaan tadi"));
+    const runB = await runStart(t, wakeB);
+    expect(runB.openwa.triggerClass).toBe("other");
+    const memberB = await failure(executeOpenwaTool(db, runB.binding, "openwa_approval_withdraw", { requestId: first.requestId, reason: "Member B says cancel" }));
+    expect(memberB.status).toBe(403);
+    expect(codeOf(memberB)).toBe("owner_only");
+    const wakeA2 = await admitted(t, mention(MEMBER_A, "sudah tidak perlu"));
+    const laterRunA = await runStart(t, wakeA2);
+    const memberLater = await failure(executeOpenwaTool(db, laterRunA.binding, "openwa_approval_withdraw", { requestId: first.requestId, reason: "Later member run" }));
+    expect(memberLater.status).toBe(403);
+    expect(codeOf(memberLater)).toBe("owner_only");
+    expect(await requestRow(first.requestId)).toMatchObject({ status: "pending" });
+    expect(await db.select().from(chatAuditEntries).where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "approval_withdrawn")))).toEqual([]);
+
+    expect(await executeOpenwaTool(db, runA.binding, "openwa_approval_withdraw", { requestId: first.requestId, reason: "Requester cancelled" })).toEqual({
+      requestId: first.requestId,
+      status: "withdrawn",
+    });
+    const ownerWake = await admitted(t, mention(OWNER_PHONE, "yang kedua tidak usah"));
+    const ownerRun = await runStart(t, ownerWake);
+    expect(ownerRun.openwa.triggerClass).toBe("owner");
+    expect(await executeOpenwaTool(db, ownerRun.binding, "openwa_approval_withdraw", { requestId: second.requestId, reason: "Owner dropped it" })).toEqual({
+      requestId: second.requestId,
       status: "withdrawn",
     });
   }, 120_000);

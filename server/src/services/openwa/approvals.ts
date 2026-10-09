@@ -608,13 +608,14 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
   }
 }
 
-/** Moves a pending request from this chat (its origin chat or a chat that got its bubble) to withdrawn; never sends or executes anything. */
+/** Lets an owner run, or the run that created the request, withdraw a pending request reachable from this chat; never sends or executes anything. */
 export async function openwaApprovalWithdrawTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
   const requestId = String(args.requestId);
   const reason = String(args.reason).trim();
   const ownerMessageRef = str(args.ownerMessageRef);
   if (!ctx.runClass)
     throw new OpenwaToolError(403, "approval_not_authorized", "Only runs on the WhatsApp conversation issue can withdraw an approval request", { requestId });
+  const ownerRun = ctx.openwa?.triggerClass === "owner" && (await runOwnerPrincipal(ctx)) !== null;
   return ctx.db.transaction(async (tx) => {
     const [request] = await tx
       .select()
@@ -630,6 +631,8 @@ export async function openwaApprovalWithdrawTool(ctx: ToolContext, args: Args): 
       .limit(1);
     if (!request || !(await requestReachesChat(tx, request, ctx.origin.chatKey)))
       throw new OpenwaToolError(404, "not_found", "No approval request from this chat has that id", { requestId });
+    if (!ownerRun && request.requestedInRunId !== ctx.run.id)
+      throw new OpenwaToolError(403, "owner_only", "Only a run started by an owner's own messages, or the run that created this request, can withdraw it", { requestId });
     if (request.status !== "pending")
       throw new OpenwaToolError(409, "already_resolved", "This approval request is no longer pending", { requestId, requestStatus: request.status });
     const now = new Date();

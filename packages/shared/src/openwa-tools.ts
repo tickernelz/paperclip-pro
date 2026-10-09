@@ -132,7 +132,7 @@ export const OPENWA_TOOLS = [
   tool(
     "approval_withdraw",
     "write",
-    "Withdraw your pending approval request from this chat when the owner's reply decided it differently or made it moot. Sends and executes nothing; reminders stop.",
+    "Withdraw your pending approval request from this chat when the owner's reply decided it differently or made it moot. Only owner runs or the run that created the request may withdraw. Sends and executes nothing; reminders stop.",
     {
       requestId: uuid,
       reason: z.string().trim().min(1).max(500),

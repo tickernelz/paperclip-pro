@@ -267,8 +267,10 @@ of the person you answer.
    words in that owner run. When their reply answered it differently or made it
    irrelevant, close it with
    `openwa_approval_withdraw({requestId, reason, ownerMessageRef?})`: it sends
-   nothing, executes nothing and grants nothing. Never ask the owner again about
-   a request they already answered.
+   nothing, executes nothing and grants nothing. Only an owner run or the run
+   that created the request may withdraw it; a later member run gets 403
+   `owner_only`, so never withdraw because a member asked. Never ask the owner
+   again about a request they already answered.
 6. A pending request expires after the endpoint's `pendingTtlHours` (default
    24). You get one `approval_expired` wake: do not carry out the action; drop
    it or tell the requester once that the owner did not decide in time. An
