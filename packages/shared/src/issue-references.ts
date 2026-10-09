@@ -1,3 +1,5 @@
+import { isUuidLike } from "./agent-url-key.js";
+
 export const ISSUE_REFERENCE_IDENTIFIER_RE = /^[A-Z][A-Z0-9]*-\d+$/;
 
 export interface IssueReferenceMatch {
@@ -92,6 +94,21 @@ function trimTrailingPunctuation(token: string): string {
 export function normalizeIssueIdentifier(value: string): string | null {
   const trimmed = value.trim().toUpperCase();
   return ISSUE_REFERENCE_IDENTIFIER_RE.test(trimmed) ? trimmed : null;
+}
+
+/** Normalizes a comma-separated identifier/UUID list to deduplicated canonical refs, dropping unrecognized tokens. */
+export function parseIssueRefIds(raw: string): string[] {
+  const refs = new Set<string>();
+  for (const token of raw.split(",")) {
+    const identifier = normalizeIssueIdentifier(token);
+    if (identifier) {
+      refs.add(identifier);
+      continue;
+    }
+    const trimmed = token.trim();
+    if (isUuidLike(trimmed)) refs.add(trimmed.toLowerCase());
+  }
+  return Array.from(refs);
 }
 
 export function buildIssueReferenceHref(identifier: string): string {

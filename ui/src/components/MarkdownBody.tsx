@@ -13,6 +13,7 @@ import { mentionChipInlineStyle, parseMentionChipHref } from "../lib/mention-chi
 import { issuesApi } from "../api/issues";
 import { agentsApi } from "../api/agents";
 import { getCachedIssueDetail } from "../lib/issueDetailCache";
+import { useIssueRefStatus } from "../hooks/useIssueRefStatus";
 import { queryKeys } from "../lib/queryKeys";
 import { parseIssueReferenceFromHref, remarkLinkIssueReferences } from "../lib/issue-reference";
 import { remarkLinkCaseReferences } from "../lib/case-reference";
@@ -150,7 +151,7 @@ function MarkdownIssueLink({
 }) {
   const queryClient = useQueryClient();
   const [engaged, setEngaged] = useState(false);
-  const { data } = useQuery({
+  const { data, dataUpdatedAt } = useQuery({
     queryKey: queryKeys.issues.detail(issuePathId),
     // A transcript can mention dozens of tasks. Their full detail projections
     // are hover information, not prerequisites for reading this conversation.
@@ -159,14 +160,17 @@ function MarkdownIssueLink({
     queryFn: () => issuesApi.get(issuePathId),
     staleTime: 60_000,
   });
+  const { issueRef, updatedAt: refUpdatedAt, observe } = useIssueRefStatus(issuePathId);
+  const latest = data && (!issueRef || dataUpdatedAt > refUpdatedAt) ? data : (issueRef ?? data);
 
-  const identifier = data?.identifier ?? issuePathId;
-  const title = data?.title ?? identifier;
-  const status = data?.status;
+  const identifier = latest?.identifier ?? issuePathId;
+  const title = latest?.title ?? identifier;
+  const status = latest?.status;
   const issueLabel = title !== identifier ? `Issue ${identifier}: ${title}` : `Issue ${identifier}`;
 
   return (
     <Link
+      ref={observe}
       to={href}
       data-mention-kind="issue"
       onPointerEnter={() => setEngaged(true)}

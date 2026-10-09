@@ -376,6 +376,9 @@ export const queryKeys = {
         executionWorkspaceId,
       ] as const,
     detail: (id: string) => ["issues", "detail", id] as const,
+    refs: (companyId: string) => ["issues", "ref", companyId] as const,
+    ref: (companyId: string, ref: string) =>
+      ["issues", "ref", companyId, ref] as const,
     comments: (issueId: string) => ["issues", "comments", issueId] as const,
     commentsList: (issueId: string) =>
       ["issues", "comments", issueId, "list"] as const,

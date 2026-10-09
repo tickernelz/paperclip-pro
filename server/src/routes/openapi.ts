@@ -72,6 +72,7 @@ import {
   stalledReviewDecisionSchema,
   createIssueLabelSchema,
   issueCountQuerySchema,
+  issueRefsQuerySchema,
   addIssueCommentSchema,
   checkoutIssueSchema,
   linkIssueApprovalSchema,
@@ -10000,6 +10001,25 @@ registry.registerPath({
     401: r.unauthorized,
     403: r.forbidden,
     404: r.notFound,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/companies/{companyId}/issues/refs",
+  tags: ["issues"],
+  summary: "Resolve issue references to their current status",
+  description:
+    "Batch lookup behind live status icons on task mentions. Returns `[{ id, identifier, title, status }]` for the listed identifiers or UUIDs that exist in the company and that the caller may read; unknown, hidden, cross-company and restricted issues are omitted. At most 100 distinct refs per request.",
+  request: {
+    params: z.object({ companyId: z.string() }),
+    query: issueRefsQuerySchema,
+  },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
   },
 });
 

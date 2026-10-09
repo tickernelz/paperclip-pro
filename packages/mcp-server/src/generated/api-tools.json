@@ -1481,7 +1481,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18672",
+    "boardGuard": "assertBoard@issues.ts:18712",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14030,7 +14030,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17586",
+    "boardGuard": "assertBoard@issues.ts:17626",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24008,7 +24008,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16530",
+    "boardGuard": "assertBoard@issues.ts:16570",
     "authorityCapability": null,
     "parameters": [
       {
@@ -28189,6 +28189,48 @@
       {
         "name": "issueId",
         "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListIssueRefs",
+    "operationId": "GET /api/companies/{companyId}/issues/refs",
+    "method": "GET",
+    "path": "/companies/{companyId}/issues/refs",
+    "description": "Resolve issue references to their current status. Batch lookup behind live status icons on task mentions. Returns `[{ id, identifier, title, status }]` for the listed identifiers or UUIDs that exist in the company and that the caller may read; unknown, hidden, cross-company and restricted issues are omitted. At most 100 distinct refs per request.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "ids",
+        "in": "query",
         "required": true,
         "schema": {
           "type": "string"
@@ -35242,7 +35284,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9702",
+    "boardGuard": "assertBoard@issues.ts:9742",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37444,7 +37486,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9047",
+    "boardGuard": "assertBoard@issues.ts:9087",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37505,7 +37547,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16500",
+    "boardGuard": "assertBoard@issues.ts:16540",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39433,7 +39475,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18612",
+    "boardGuard": "assertBoard@issues.ts:18652",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39865,7 +39907,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17538",
+    "boardGuard": "assertBoard@issues.ts:17578",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43733,7 +43775,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10377",
+    "boardGuard": "assertBoard@issues.ts:10417",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43859,7 +43901,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16468",
+    "boardGuard": "assertBoard@issues.ts:16508",
     "authorityCapability": null,
     "parameters": [
       {

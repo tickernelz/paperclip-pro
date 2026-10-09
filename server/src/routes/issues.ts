@@ -1,5 +1,6 @@
 import { setIssueTitle } from "../services/issue-title.js";
 import { setIssueTitleSchema } from "@tickernelz/paperclip-pro-shared";
+import { ISSUE_REFS_MAX, issueRefsQuerySchema, parseIssueRefIds, type IssueRef } from "@tickernelz/paperclip-pro-shared";
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
 import { createIssueReadTiming } from "../services/issue-read-timing.js";
 import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
@@ -8691,6 +8692,45 @@ export function issueRoutes(
       identicalInFlightCount: coordinated.identicalInFlightCount,
     });
     res.json(coordinated.response.body);
+  });
+
+  router.get("/companies/:companyId/issues/refs", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    if (isTaskBridgeKeyActor(req)) {
+      res.status(403).json({
+        error: "Task bridge keys cannot use company-wide issue list APIs",
+      });
+      return;
+    }
+    const query = issueRefsQuerySchema.safeParse(req.query);
+    if (!query.success) {
+      res.status(400).json({
+        error: "ids must be a comma-separated list of issue identifiers or UUIDs",
+      });
+      return;
+    }
+    const refs = parseIssueRefIds(query.data.ids);
+    if (refs.length > ISSUE_REFS_MAX) {
+      res.status(400).json({
+        error: `ids accepts at most ${ISSUE_REFS_MAX} distinct issues`,
+      });
+      return;
+    }
+    const rows = await svc.listRefs(companyId, refs);
+    const readable = (await actorCanReadCompanyScope(req, companyId))
+      ? rows
+      : await filterIssuesForActor(req, rows);
+    res.json(
+      readable.map(
+        (row): IssueRef => ({
+          id: row.id,
+          identifier: row.identifier,
+          title: row.title,
+          status: row.status as IssueRef["status"],
+        }),
+      ),
+    );
   });
 
   router.get("/companies/:companyId/issues/count", async (req, res) => {

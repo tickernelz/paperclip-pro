@@ -18,6 +18,7 @@ import type {
   IssueQueuedCommentQueue,
   IssueDocument,
   IssueLabel,
+  IssueRef,
   IssueRecoveryAction,
   IssueRetryNowResponse,
   IssueRunModelOverrideUpdate,
@@ -240,6 +241,10 @@ export const issuesApi = {
     options
       ? api.get<Issue>(`/issues/${id}`, options)
       : api.get<Issue>(`/issues/${id}`),
+  refs: (companyId: string, refs: string[]) =>
+    api.get<IssueRef[]>(
+      `/companies/${companyId}/issues/refs?ids=${encodeURIComponent(refs.join(","))}`,
+    ),
   getRunnerGoal: (id: string, agentId?: string | null) => {
     const query = agentId ? `?agentId=${encodeURIComponent(agentId)}` : "";
     return api.get<RunnerGoalProjection>(`/issues/${id}/runner-goal${query}`);

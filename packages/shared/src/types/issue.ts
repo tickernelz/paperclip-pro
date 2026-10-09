@@ -940,6 +940,9 @@ export interface Issue {
   updatedAt: Date;
 }
 
+/** Minimal projection behind live status icons on task mentions. */
+export type IssueRef = Pick<Issue, "id" | "identifier" | "title" | "status">;
+
 export type CompactIssue = Pick<
   Issue,
   | "externalConversationState"

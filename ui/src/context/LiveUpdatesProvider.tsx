@@ -54,6 +54,7 @@ import {
   readIssueListPatchFromActivity,
   refreshInvalidatedLiveLists,
 } from "../lib/live-issue-list-cache";
+import { applyIssueRefActivity } from "../lib/issueRefStatus";
 import { extractCompanyPrefixFromPath, toCompanyRelativePath } from "../lib/company-routes";
 import { useLocation } from "../lib/router";
 import { agentRouteRef } from "../lib/utils";
@@ -1451,6 +1452,7 @@ function invalidateActivityQueries(
       );
     }
     invalidateIssueListsForActivity(queryClient, companyId);
+    applyIssueRefActivity(queryClient, companyId, payload);
     if (entityId) {
       const selfCommentActivity =
         (action === "issue.comment_added" ||

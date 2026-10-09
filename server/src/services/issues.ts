@@ -8586,6 +8586,30 @@ export function issueService(db: Db) {
       return getIssueByIdentifier(identifier);
     },
 
+    listRefs: async (companyId: string, refs: string[]) => {
+      const ids = refs.filter((ref) => isUuidLike(ref));
+      const identifiers = refs.filter((ref) => !isUuidLike(ref));
+      const matchers = [
+        ...(ids.length > 0 ? [inArray(issues.id, ids)] : []),
+        ...(identifiers.length > 0 ? [inArray(issues.identifier, identifiers)] : []),
+      ];
+      if (matchers.length === 0) return [];
+      return db
+        .select({
+          id: issues.id,
+          identifier: issues.identifier,
+          title: issues.title,
+          status: issues.status,
+          companyId: issues.companyId,
+          projectId: issues.projectId,
+          parentId: issues.parentId,
+          assigneeAgentId: issues.assigneeAgentId,
+          assigneeUserId: issues.assigneeUserId,
+        })
+        .from(issues)
+        .where(and(eq(issues.companyId, companyId), visibleIssueCondition(), or(...matchers)));
+    },
+
     getCurrentScheduledRetry: async (issueId: string) => {
       const issue = await db
         .select({ id: issues.id, companyId: issues.companyId })

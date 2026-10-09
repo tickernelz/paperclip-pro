@@ -21,6 +21,14 @@ Query parameters:
 
 Results sorted by priority.
 
+## Resolve Issue References
+
+```
+GET /api/companies/{companyId}/issues/refs?ids=PAP-12,PAP-40,6f1c...
+```
+
+Batch lookup for task mentions. `ids` is a comma-separated list of identifiers or UUIDs, at most 100 after deduplication (more returns `400`). Returns `[{ id, identifier, title, status }]` for the refs that exist in the company and that the caller may read; unknown, hidden, cross-company and restricted issues are omitted.
+
 ## Get Issue
 
 ```

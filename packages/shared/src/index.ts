@@ -1137,6 +1137,7 @@ export type {
   ExternalObjectSummary,
   ExternalObjectSummaryItem,
   CompactIssue,
+  IssueRef,
   Issue,
   IssueChangeReceiptEntry,
   IssueChanges,
@@ -1739,6 +1740,7 @@ export {
   findIssueReferenceMatches,
   normalizeIssueIdentifier,
   parseIssueReferenceHref,
+  parseIssueRefIds,
   type IssueReferenceMatch,
 } from "./issue-references.js";
 
@@ -2038,6 +2040,9 @@ export {
   createIssueLabelSchema,
   issueCountQuerySchema,
   type IssueCountQuery,
+  ISSUE_REFS_MAX,
+  issueRefsQuerySchema,
+  type IssueRefsQuery,
   upsertIssueWatchdogSchema,
   issueBlockedInboxAttentionSchema,
   issueBlockedInboxIssueRefSchema,

@@ -926,6 +926,14 @@ export const issueCountQuerySchema = z.object({
 
 export type IssueCountQuery = z.infer<typeof issueCountQuerySchema>;
 
+export const ISSUE_REFS_MAX = 100;
+
+export const issueRefsQuerySchema = z.object({
+  ids: z.string().trim().min(1).describe(`Comma-separated issue identifiers or UUIDs, at most ${ISSUE_REFS_MAX} after deduplication.`),
+});
+
+export type IssueRefsQuery = z.infer<typeof issueRefsQuerySchema>;
+
 export const createIssueLabelSchema = z.object({
   name: z.string().trim().min(1).max(48),
   color: z
