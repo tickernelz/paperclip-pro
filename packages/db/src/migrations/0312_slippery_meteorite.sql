@@ -1,6 +1,6 @@
-ALTER TABLE "chat_audit_entries" DROP CONSTRAINT "chat_audit_entries_kind_check";--> statement-breakpoint
-ALTER TABLE "chat_owner_approval_requests" DROP CONSTRAINT "chat_owner_approval_requests_status_check";--> statement-breakpoint
-ALTER TABLE "chat_scheduled_wakes" DROP CONSTRAINT "chat_scheduled_wakes_kind_check";--> statement-breakpoint
+ALTER TABLE "chat_audit_entries" DROP CONSTRAINT IF EXISTS "chat_audit_entries_kind_check";--> statement-breakpoint
+ALTER TABLE "chat_owner_approval_requests" DROP CONSTRAINT IF EXISTS "chat_owner_approval_requests_status_check";--> statement-breakpoint
+ALTER TABLE "chat_scheduled_wakes" DROP CONSTRAINT IF EXISTS "chat_scheduled_wakes_kind_check";--> statement-breakpoint
 ALTER TABLE "chat_audit_entries" ADD CONSTRAINT "chat_audit_entries_kind_check" CHECK ("chat_audit_entries"."kind" in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'approval_expired', 'approval_withdrawn', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read', 'run_failed'));--> statement-breakpoint
 ALTER TABLE "chat_owner_approval_requests" ADD CONSTRAINT "chat_owner_approval_requests_status_check" CHECK ("chat_owner_approval_requests"."status" in ('pending', 'approved', 'rejected', 'cancelled', 'expired', 'withdrawn'));--> statement-breakpoint
 ALTER TABLE "chat_scheduled_wakes" ADD CONSTRAINT "chat_scheduled_wakes_kind_check" CHECK ("chat_scheduled_wakes"."kind" in ('owner_absent', 'approval_reminder', 'approval_expiry'));
