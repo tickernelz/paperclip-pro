@@ -4943,7 +4943,7 @@ registry.registerPath({
   path: "/api/issues/{id}/share-link",
   tags: ["issues"],
   summary: "Create or return the public share link of an issue",
-  description: "Idempotent: returns the existing active link (200) or creates one (201). Anyone holding the URL can read the issue, its agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+  description: "Idempotent: returns the existing active link (200) or creates one (201). Requires issue read access only; another agent's checkout does not block it. Anyone holding the URL can read the issue, its agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
   request: { params: z.object({ id: z.string() }) },
   responses: { 200: r.ok(), 201: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
 });
@@ -4953,7 +4953,7 @@ registry.registerPath({
   path: "/api/issues/{id}/share-link",
   tags: ["issues"],
   summary: "Revoke the public share link of an issue",
-  description: "The old URL and every download under it stop working; creating a link again issues a new token.",
+  description: "Requires issue read access only; another agent's checkout does not block it. The old URL and every download under it stop working; creating a link again issues a new token.",
   request: { params: z.object({ id: z.string() }) },
   responses: { 204: r.noContent, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
 });

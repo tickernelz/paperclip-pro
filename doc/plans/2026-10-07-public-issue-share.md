@@ -89,8 +89,8 @@ Types and validators: `IssueShareLink`, `PublicIssueShareView`, `PublicIssueComm
 | Method and path | Actor | Purpose |
 |-----------------|-------|---------|
 | `GET /api/issues/:id/share-link` | board or agent with issue read | current active link or null |
-| `POST /api/issues/:id/share-link` | board, or agent allowed to mutate the issue | create or return the active link; `{ url, token, createdAt }` |
-| `DELETE /api/issues/:id/share-link` | board, or agent allowed to mutate the issue | revoke |
+| `POST /api/issues/:id/share-link` | board or agent with issue read | create or return the active link; `{ url, token, createdAt }` |
+| `DELETE /api/issues/:id/share-link` | board or agent with issue read | revoke |
 | `PATCH /api/issues/:id/comments/:commentId/public-share` | board only | set `public_share_visible` on a user comment |
 | `GET /api/public/share/:token` | none | projection of the shared issue |
 | `GET /api/public/share/:token/issues/:issueId` | none | projection of a one-hop issue (relations not navigable) |
@@ -98,7 +98,7 @@ Types and validators: `IssueShareLink`, `PublicIssueShareView`, `PublicIssueComm
 | `GET /api/public/share/:token/assets/:assetId/content` | none | work-product file download |
 | `GET /api/public/share/:token/issues/:issueId/documents/:key/pdf` | none | document PDF |
 
-Mutations follow the `POST /issues/:id/work-products` pattern (validate, company access, `assertAgentIssueMutationAllowed`, actor info) and write `issue.share_link_created`, `issue.share_link_revoked`, `issue.comment_public_share_updated` to the activity log. Routes are registered in `server/src/routes/openapi.ts`; `packages/mcp-server/src/generated/api-tools.json` is regenerated so agents get `create/get/revoke share link` tools.
+Create and revoke check company access and issue read (`assertIssueReadAllowed`), not the checkout or assignee lock, so any agent in the company that can read the issue may share or revoke it while another agent's run holds the checkout. They write `issue.share_link_created`, `issue.share_link_revoked`, `issue.comment_public_share_updated` to the activity log. Routes are registered in `server/src/routes/openapi.ts`; `packages/mcp-server/src/generated/api-tools.json` is regenerated so agents get `create/get/revoke share link` tools.
 
 ### UI
 

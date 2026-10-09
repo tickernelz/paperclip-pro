@@ -213,12 +213,13 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "POST /api/issues/{id}/share-link": {
     name: "paperclipCreateIssueShareLink",
     description:
-      "Create (or return the existing) public read-only link to an issue for an external requester. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+      "Create (or return the existing) public read-only link to an issue for an external requester. Any agent that can read the issue may call this, even while another agent's run holds its checkout. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
     toolset: "core",
   },
   "DELETE /api/issues/{id}/share-link": {
     name: "paperclipRevokeIssueShareLink",
-    description: "Revoke the public share link of an issue; the URL and every download under it stop working.",
+    description:
+      "Revoke the public share link of an issue; the URL and every download under it stop working. Any agent that can read the issue may revoke it, even while another agent's run holds its checkout.",
     toolset: "core",
   },
   "PATCH /api/work-products/{id}": {

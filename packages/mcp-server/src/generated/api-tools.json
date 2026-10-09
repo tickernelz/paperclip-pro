@@ -8292,7 +8292,7 @@
     "operationId": "POST /api/issues/{id}/share-link",
     "method": "POST",
     "path": "/issues/{issueId}/share-link",
-    "description": "Create (or return the existing) public read-only link to an issue for an external requester. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
+    "description": "Create (or return the existing) public read-only link to an issue for an external requester. Any agent that can read the issue may call this, even while another agent's run holds its checkout. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -8305,7 +8305,7 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertAgentIssueMutationAllowed",
+      "assertIssueReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -35605,7 +35605,7 @@
     "operationId": "DELETE /api/issues/{id}/share-link",
     "method": "DELETE",
     "path": "/issues/{issueId}/share-link",
-    "description": "Revoke the public share link of an issue; the URL and every download under it stop working.",
+    "description": "Revoke the public share link of an issue; the URL and every download under it stop working. Any agent that can read the issue may revoke it, even while another agent's run holds its checkout.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -35618,7 +35618,7 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertAgentIssueMutationAllowed",
+      "assertIssueReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],

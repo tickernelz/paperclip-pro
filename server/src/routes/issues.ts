@@ -10306,7 +10306,7 @@ export function issueRoutes(
       "Issue not found",
     );
     if (!issue) return;
-    if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
     const actor = getActorInfo(req);
     const { link, created } = await shareLinksSvc.create({
       issue,
@@ -10344,7 +10344,7 @@ export function issueRoutes(
       "Issue not found",
     );
     if (!issue) return;
-    if (!(await assertAgentIssueMutationAllowed(req, res, issue))) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
     const actor = getActorInfo(req);
     const revoked = await shareLinksSvc.revoke({
       issueId: issue.id,

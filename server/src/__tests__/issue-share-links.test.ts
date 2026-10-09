@@ -33,6 +33,7 @@ import { publicIssueShareRoutes } from "../routes/public-issue-share.js";
 import { errorHandler } from "../middleware/index.js";
 import { createInviteRateLimiter } from "../services/invite-rate-limit.js";
 import { issueService } from "../services/issues.js";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 
 const renderDocumentPdfMock = vi.hoisted(() => vi.fn(async () => Buffer.from("%PDF-share")));
 
@@ -333,6 +334,86 @@ describeEmbeddedPostgres("public issue share links", () => {
     const app = createApp(() => agent(seeded.otherCompanyId, seeded.otherAgentId, null));
     await request(app).post(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
     await request(app).get(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
+    await request(app).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
+  });
+
+  it("lets any company agent create and revoke a link while another agent's run holds the checkout", async () => {
+    const seeded = await seed();
+    const [holder] = await db
+      .insert(agents)
+      .values({ companyId: seeded.companyId, name: "Arif", adapterType: "process", adapterConfig: {}, status: "active" })
+      .returning();
+    const [holderRun] = await db
+      .insert(heartbeatRuns)
+      .values({ companyId: seeded.companyId, agentId: holder!.id, status: "running", startedAt: new Date(), contextSnapshot: { issueId: seeded.ids.root } })
+      .returning();
+    await db
+      .update(issues)
+      .set({ status: "in_progress", assigneeAgentId: holder!.id, checkoutRunId: holderRun!.id, executionRunId: holderRun!.id })
+      .where(eq(issues.id, seeded.ids.root));
+    const app = createApp(() => agent(seeded.companyId, seeded.agentId, seeded.runId));
+    const created = await request(app).post(`/api/issues/${seeded.ids.root}/share-link`).expect(201);
+    const fetched = await request(app).get(`/api/issues/${seeded.ids.root}/share-link`).expect(200);
+    expect(fetched.body.token).toBe(created.body.token);
+    await request(app).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(204);
+    await request(app).get(`/api/public/share/${created.body.token}`).expect(404);
+    const logged = await db
+      .select({ action: activityLog.action, agentId: activityLog.agentId })
+      .from(activityLog)
+      .where(eq(activityLog.entityId, seeded.ids.root));
+    expect(logged).toEqual(
+      expect.arrayContaining([
+        { action: "issue.share_link_created", agentId: seeded.agentId },
+        { action: "issue.share_link_revoked", agentId: seeded.agentId },
+      ]),
+    );
+    const [held] = await db
+      .select({ checkoutRunId: issues.checkoutRunId, assigneeAgentId: issues.assigneeAgentId })
+      .from(issues)
+      .where(eq(issues.id, seeded.ids.root));
+    expect(held).toEqual({ checkoutRunId: holderRun!.id, assigneeAgentId: holder!.id });
+    const boardApp = createApp(() => board(seeded.companyId));
+    await request(boardApp).post(`/api/issues/${seeded.ids.root}/share-link`).expect(201);
+    await request(boardApp).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(204);
+  });
+
+  it("rejects an agent that cannot read the issue", async () => {
+    const seeded = await seed();
+    const trustBoundary = {
+      mode: LOW_TRUST_REVIEW_PRESET,
+      companyId: seeded.companyId,
+      rootIssueId: seeded.ids.unrelated,
+      issueIds: [seeded.ids.unrelated],
+    };
+    const [restricted] = await db
+      .insert(agents)
+      .values({
+        companyId: seeded.companyId,
+        name: "Restricted",
+        adapterType: "process",
+        adapterConfig: {},
+        status: "active",
+        permissions: { trustPreset: LOW_TRUST_REVIEW_PRESET, authorizationPolicy: { trustBoundary } },
+      })
+      .returning();
+    const [restrictedRun] = await db
+      .insert(heartbeatRuns)
+      .values({
+        companyId: seeded.companyId,
+        agentId: restricted!.id,
+        status: "running",
+        startedAt: new Date(),
+        contextSnapshot: { issueId: seeded.ids.unrelated, executionPolicy: { authorizationPolicy: { trustBoundary } } },
+      })
+      .returning();
+    await share(seeded);
+    const app = createApp(() => agent(seeded.companyId, restricted!.id, restrictedRun!.id));
+    await request(app).get(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
+    await request(app).post(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
+    await request(app).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
+    const boardApp = createApp(() => board(seeded.companyId));
+    const still = await request(boardApp).get(`/api/issues/${seeded.ids.root}/share-link`).expect(200);
+    expect(still.body).not.toBeNull();
   });
 
   it("projects comments by the share rules and leaks no internal data", async () => {
