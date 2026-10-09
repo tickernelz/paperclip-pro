@@ -608,7 +608,18 @@ export async function openwaApprovalResolveTool(ctx: ToolContext, args: Args): P
   }
 }
 
-/** Lets an owner run, or the run that created the request, withdraw a pending request reachable from this chat; never sends or executes anything. */
+async function requestedBySameAgent(tx: DbOrTransaction, ctx: ToolContext, requestedInRunId: string | null): Promise<boolean> {
+  if (!requestedInRunId) return false;
+  if (requestedInRunId === ctx.run.id) return true;
+  const [run] = await tx
+    .select({ agentId: heartbeatRuns.agentId })
+    .from(heartbeatRuns)
+    .where(and(eq(heartbeatRuns.id, requestedInRunId), eq(heartbeatRuns.companyId, ctx.endpoint.companyId)))
+    .limit(1);
+  return run?.agentId === ctx.binding.agentId;
+}
+
+/** Lets an owner run, or any run of the agent that created the request, withdraw a pending request reachable from this chat; never sends or executes anything. */
 export async function openwaApprovalWithdrawTool(ctx: ToolContext, args: Args): Promise<Record<string, unknown>> {
   const requestId = String(args.requestId);
   const reason = String(args.reason).trim();
@@ -631,8 +642,8 @@ export async function openwaApprovalWithdrawTool(ctx: ToolContext, args: Args): 
       .limit(1);
     if (!request || !(await requestReachesChat(tx, request, ctx.origin.chatKey)))
       throw new OpenwaToolError(404, "not_found", "No approval request from this chat has that id", { requestId });
-    if (!ownerRun && request.requestedInRunId !== ctx.run.id)
-      throw new OpenwaToolError(403, "owner_only", "Only a run started by an owner's own messages, or the run that created this request, can withdraw it", { requestId });
+    if (!ownerRun && !(await requestedBySameAgent(tx, ctx, request.requestedInRunId)))
+      throw new OpenwaToolError(403, "owner_only", "Only a run started by an owner's own messages, or a run of the agent that created this request, can withdraw it", { requestId });
     if (request.status !== "pending")
       throw new OpenwaToolError(409, "already_resolved", "This approval request is no longer pending", { requestId, requestStatus: request.status });
     const now = new Date();

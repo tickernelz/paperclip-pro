@@ -485,10 +485,12 @@ targets the conversation issue, not a run.
   the WhatsApp conversation issue of the request's origin chat or of a chat that
   received its bubble (another chat gets 404 `not_found`; another agent, or a run
   off the conversation issue, gets 403). Only an owner-triggered run (the same
-  owner-run check as `openwa_approval_resolve`) or the exact run that created the
-  request may withdraw it; any other run, such as a group member's later message,
-  gets 403 `owner_only`, so a member cannot get an owner's pending approval
-  withdrawn. The request becomes `withdrawn`, its
+  owner-run check as `openwa_approval_resolve`) or any run of the agent that
+  created the request (same company and endpoint binding, any trigger class,
+  including a later member-triggered or scheduled wake run) may withdraw it; a
+  run of another agent gets 403 `owner_only`. The agent judges relevance on the
+  owner's behalf and never withdraws just because a group member asked. The
+  audit row records the actor run and its trigger class. The request becomes `withdrawn`, its
   reminders and expiry wake are cancelled, and audit `approval_withdrawn`
   (reason in content, `ownerMessageRef` in metadata) plus activity
   `openwa.approval_withdrawn` are written. Nothing is sent to WhatsApp, no grant
@@ -524,7 +526,7 @@ Every call is audited as `tool_called`.
 | `openwa_find` | read | Find contacts and chats by name or number, check a number, or resolve a LID (exactly one of `query`, `phone`, `lid`); query results page with `cursor`. |
 | `openwa_request_approval` | write | Ask the owners for categories; remind with `remindRequestId`. |
 | `openwa_approval_resolve` | write | Record the owner's decision (`approve`, `reject`, `clarify`) in an owner run of that owner's discussion; approve/reject need the owner's explicit words, else 409 `owner_decision_unclear`. |
-| `openwa_approval_withdraw` | write | Withdraw your own pending request from this chat (origin or bubble chat) with a `reason` and optional `ownerMessageRef`, only from an owner run or the run that created it (else 403 `owner_only`); sends and executes nothing, stops its reminders. |
+| `openwa_approval_withdraw` | write | Withdraw your own pending request from this chat (origin or bubble chat) with a `reason` and optional `ownerMessageRef`, only from an owner run or a run of the agent that created it (else 403 `owner_only`); sends and executes nothing, stops its reminders. |
 | `openwa_stay_silent` | write | Mark the listed (default all visible pending) triggers silenced. |
 | `openwa_handoff` | write | Hand owner triggers to a follow-up owner run with a note. |
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
