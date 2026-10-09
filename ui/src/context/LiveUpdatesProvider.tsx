@@ -24,6 +24,8 @@ import {
 } from "../lib/live-runs-cache";
 import type {
   Agent,
+  AttentionFeed,
+  AttentionItem,
   HeartbeatRun,
   Issue,
   IssueComment,
@@ -1329,6 +1331,59 @@ function invalidateHeartbeatProgressQueries(
   }
 }
 
+const ATTENTION_ENTITY_TYPES = new Set([
+  "approval",
+  "attention_source",
+  "budget_incident",
+  "decision",
+  "decision_queue",
+  "issue_recovery_action",
+  "join_request",
+]);
+
+const ATTENTION_ISSUE_ACTION_PREFIXES = [
+  "issue.blockers_",
+  "issue.dependency_recovery_",
+  "issue.disposition_repair_",
+  "issue.execution_recovery_",
+  "issue.interaction_",
+  "issue.recovery_action_",
+  "issue.stalled_review_",
+  "issue.thread_interaction_",
+];
+
+const ATTENTION_FAILED_RUN_STATUSES = new Set(["failed", "timed_out"]);
+
+function activityChangesAttention(
+  entityType: string | null,
+  action: string | null,
+  details: Record<string, unknown> | null,
+): boolean {
+  if (action?.startsWith("inbox.")) return true;
+  if (entityType && ATTENTION_ENTITY_TYPES.has(entityType)) return true;
+  if (entityType !== "issue" || !action) return false;
+  if (ATTENTION_ISSUE_ACTION_PREFIXES.some((prefix) => action.startsWith(prefix))) return true;
+  if (action === "issue.reviewers_updated" || action === "issue.status_decision_recorded") return true;
+  return (
+    (action === "issue.created" || action === "issue.updated") &&
+    (details?.status !== undefined || details?.blockedByIssueIds !== undefined)
+  );
+}
+
+function cachedAttentionIncludes(
+  queryClient: QueryClient,
+  companyId: string,
+  matches: (item: AttentionItem) => boolean,
+): boolean {
+  return queryClient
+    .getQueriesData<AttentionFeed>({ queryKey: queryKeys.attention(companyId) })
+    .some(([, feed]) => Array.isArray(feed?.items) && feed.items.some(matches));
+}
+
+function invalidateAttentionQueries(queryClient: QueryClient, companyId: string) {
+  queryClient.invalidateQueries({ queryKey: queryKeys.attention(companyId) });
+}
+
 function invalidateActivityQueries(
   queryClient: ReturnType<typeof useQueryClient>,
   companyId: string,
@@ -1355,6 +1410,14 @@ function invalidateActivityQueries(
     (actorType === "agent" &&
       !!currentActor.agentId &&
       actorId === currentActor.agentId);
+
+  if (activityChangesAttention(entityType, action, details)) {
+    invalidateAttentionQueries(queryClient, companyId);
+  }
+  if (entityType === "decision") {
+    queryClient.invalidateQueries({ queryKey: ["decisions", companyId] });
+    if (entityId) queryClient.invalidateQueries({ queryKey: queryKeys.decisions.detail(entityId) });
+  }
 
   if (action?.startsWith("ai_connection.") || action?.startsWith("connection_grant.")) {
     queryClient.invalidateQueries({ queryKey: ["ai-connections", companyId] });
@@ -1792,6 +1855,14 @@ function handleLiveEvent(
       });
     }
     invalidateVisibleIssueRunQueries(queryClient, pathname, payload, { runLifecycleEvent: true });
+    if (
+      (event.type === "heartbeat.run.status" &&
+        ATTENTION_FAILED_RUN_STATUSES.has(readString(payload.status) ?? "")) ||
+      (event.type === "heartbeat.run.queued" &&
+        cachedAttentionIncludes(queryClient, expectedCompanyId, (item) => item.sourceKind === "failed_run"))
+    ) {
+      invalidateAttentionQueries(queryClient, expectedCompanyId);
+    }
     if (event.type === "heartbeat.run.status") {
       const toast = buildRunStatusToast(payload, nameOf);
       if (toast && !suppressRunToast) {
@@ -1828,6 +1899,17 @@ function handleLiveEvent(
       queryClient.invalidateQueries({
         queryKey: queryKeys.agents.detail(agentId),
       });
+    if (
+      readString(payload.status) === "error" ||
+      (agentId &&
+        cachedAttentionIncludes(
+          queryClient,
+          expectedCompanyId,
+          (item) => item.sourceKind === "agent_error_alert" && item.subject?.id === agentId,
+        ))
+    ) {
+      invalidateAttentionQueries(queryClient, expectedCompanyId);
+    }
     const toast = buildAgentStatusToast(
       payload,
       nameOf,

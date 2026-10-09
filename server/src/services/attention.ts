@@ -528,6 +528,10 @@ function isNewToday(item: AttentionItem, now: number) {
   return ts > 0 && ts >= startOfUtcDay(now);
 }
 
+function isDeskBadgeItem(now: number) {
+  return (item: AttentionItem) => !item.shelf && (isNewToday(item, now) || isDecideNow(item, now));
+}
+
 function compareDecideItems(left: AttentionItem, right: AttentionItem, now: number) {
   const [leftBucket, leftDeadline] = decideOrder(left, now);
   const [rightBucket, rightDeadline] = decideOrder(right, now);
@@ -2024,7 +2028,7 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
         // today OR carry an explicit decide-by deadline due today/past. Counted
         // over the full ranked set (pre-pagination) so the sidebar badge stays
         // company-wide accurate even on a small first page.
-        deskBadgeCount: rankedItems.filter((item) => isNewToday(item, now) || isDecideNow(item, now)).length,
+        deskBadgeCount: rankedItems.filter(isDeskBadgeItem(now)).length,
         nextCursor,
         countsBySourceKind,
         items,

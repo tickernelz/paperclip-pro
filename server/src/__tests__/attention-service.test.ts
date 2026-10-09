@@ -2242,4 +2242,43 @@ describeEmbeddedPostgres("attention service", () => {
     }
     expect(byKey.get(`approval:${queueApprovalId}`)).toMatchObject({ shelf: true, retentionDays: 10 });
   });
+
+  it("keeps aging-shelf items out of the desk badge so it matches the Decisions desk", async () => {
+    const { companyId, workerId } = await seedCompany("ASB");
+    const now = Date.parse("2026-08-02T12:00:00.000Z");
+    const idleAt = new Date("2026-06-30T12:00:00.000Z");
+    const freshAt = new Date("2026-08-02T09:00:00.000Z");
+    const agingId = randomUUID();
+    const freshId = randomUUID();
+    await db.insert(approvals).values([
+      { id: agingId, title: "Aging overdue approval", at: idleAt },
+      { id: freshId, title: "Fresh approval", at: freshAt },
+    ].map((value) => ({
+      id: value.id,
+      companyId,
+      type: "request_board_approval",
+      requestedByAgentId: workerId,
+      status: "pending",
+      payload: { title: value.title },
+      createdAt: value.at,
+      updatedAt: value.at,
+    })));
+    await db.insert(decisionTriage).values({
+      companyId,
+      sourceKind: "approval",
+      sourceId: agingId,
+      decideBy: "today",
+      setByType: "user",
+      setByUserId: "board-user",
+    });
+
+    const feed = await attentionService(db, { now: () => now }).list(companyId, { userId: "board-user" });
+    const byId = new Map(feed.items.map((item) => [item.subject.id, item]));
+    expect(byId.get(agingId)).toMatchObject({ shelf: true, decideBy: "today" });
+    expect(byId.get(freshId)).toMatchObject({ shelf: false });
+    const deskItems = feed.items.filter((item) => !item.shelf);
+    expect(deskItems.map((item) => item.subject.id)).not.toContain(agingId);
+    expect(feed.deskBadgeCount).toBe(deskItems.length);
+    expect(feed.deskBadgeCount).toBe(2);
+  });
 });

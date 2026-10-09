@@ -1962,3 +1962,124 @@ describe("LiveUpdatesProvider queued comment refresh", () => {
   });
 });
 
+
+describe("LiveUpdatesProvider Decisions badge invalidation", () => {
+  const companyId = "company-1";
+  const badgeKey = queryKeys.attention(companyId);
+  const pageKey = [...queryKeys.attention(companyId), "with-dismissed", null, null];
+  const expiredKey = queryKeys.decisions.list(companyId, "expired");
+
+  function feed(items: Array<Record<string, unknown>> = []) {
+    return { companyId, generatedAt: "2026-10-09T00:00:00.000Z", totalCount: items.length, deskBadgeCount: 2, nextCursor: null, items };
+  }
+
+  function seed(items: Array<Record<string, unknown>> = []) {
+    const client = new QueryClient();
+    client.setQueryData(badgeKey, feed(items));
+    client.setQueryData(pageKey, feed(items));
+    client.setQueryData(expiredKey, []);
+    return client;
+  }
+
+  function dispatch(client: QueryClient, type: string, payload: Record<string, unknown>) {
+    __liveUpdatesTestUtils.handleLiveEvent(
+      client,
+      companyId,
+      "/PAP/dashboard",
+      { id: 1, companyId, type, createdAt: "2026-10-09T00:00:01.000Z", payload } as never,
+      () => null,
+      { cooldownHits: new Map(), suppressUntil: 0, observedRunOutcomes: new Set<string>() },
+      { userId: "user-1", agentId: null },
+    );
+  }
+
+  const stale = (client: QueryClient, key: readonly unknown[]) => client.getQueryState(key)?.isInvalidated === true;
+
+  it.each([
+    ["agent-created interaction", { entityType: "issue", entityId: "issue-1", action: "issue.thread_interaction_created", actorType: "agent", actorId: "agent-1" }],
+    ["answered interaction", { entityType: "issue", entityId: "issue-1", action: "issue.thread_interaction_answered", actorType: "user", actorId: "user-2" }],
+    ["expired interaction", { entityType: "issue", entityId: "issue-1", action: "issue.thread_interaction_expired", actorType: "system", actorId: "sweeper" }],
+    ["unblocked issue", { entityType: "issue", entityId: "issue-1", action: "issue.updated", details: { status: "todo" } }],
+    ["resolved blockers", { entityType: "issue", entityId: "issue-1", action: "issue.blockers_updated" }],
+    ["recovery action resolved", { entityType: "issue", entityId: "issue-1", action: "issue.recovery_action_resolved" }],
+    ["approved approval", { entityType: "approval", entityId: "approval-1", action: "approval.approved" }],
+    ["new approval", { entityType: "approval", entityId: "approval-1", action: "approval.created" }],
+    ["created decision", { entityType: "decision", entityId: "decision-1", action: "decision.created" }],
+    ["expired decision", { entityType: "decision", entityId: "decision-1", action: "decision.expired" }],
+    ["join request", { entityType: "join_request", entityId: "join-1", action: "join_request.created" }],
+    ["budget incident", { entityType: "budget_incident", entityId: "incident-1", action: "budget.hard_threshold_crossed" }],
+    ["triage change", { entityType: "attention_source", entityId: "approval:approval-1", action: "decision_triage.updated" }],
+    ["dismissal from another tab", { entityType: "company", entityId: companyId, action: "inbox.dismissed" }],
+  ])("refreshes the sidebar badge and the Decisions list after %s", (_label, payload) => {
+    const client = seed();
+    dispatch(client, "activity.logged", payload);
+    expect(stale(client, badgeKey)).toBe(true);
+    expect(stale(client, pageKey)).toBe(true);
+    client.clear();
+  });
+
+  it("updates a mounted badge count without a reload when an agent resolves the decision", async () => {
+    const client = new QueryClient();
+    const counts = [2, 1];
+    const queryFn = vi.fn(async () => ({ ...feed(), deskBadgeCount: counts.shift() ?? 1 }));
+    const observer = new QueryObserver(client, { queryKey: badgeKey, queryFn, staleTime: Infinity });
+    const unsubscribe = observer.subscribe(() => {});
+    await vi.waitFor(() => expect(observer.getCurrentResult().data?.deskBadgeCount).toBe(2));
+
+    dispatch(client, "activity.logged", { entityType: "issue", entityId: "issue-1", action: "issue.thread_interaction_cancelled", actorType: "agent", actorId: "agent-1" });
+
+    await vi.waitFor(() => expect(observer.getCurrentResult().data?.deskBadgeCount).toBe(1));
+    expect(queryFn).toHaveBeenCalledTimes(2);
+    unsubscribe();
+    client.clear();
+  });
+
+  it("refreshes the decision history curtains when a decision expires on the server timer", () => {
+    const client = seed();
+    dispatch(client, "activity.logged", { entityType: "decision", entityId: "decision-1", action: "decision.expired", actorType: "system", actorId: "decision-expiry-sweeper" });
+    expect(stale(client, expiredKey)).toBe(true);
+    client.clear();
+  });
+
+  it("leaves the badge alone for activity that cannot change a decision", () => {
+    const client = seed();
+    dispatch(client, "activity.logged", { entityType: "issue", entityId: "issue-1", action: "issue.comment_added" });
+    dispatch(client, "activity.logged", { entityType: "issue", entityId: "issue-1", action: "issue.updated", details: { title: "Renamed" } });
+    expect(stale(client, badgeKey)).toBe(false);
+    client.clear();
+  });
+
+  it("refreshes the badge when an agent enters or leaves error status", () => {
+    const entering = seed();
+    dispatch(entering, "agent.status", { agentId: "agent-1", status: "error" });
+    expect(stale(entering, badgeKey)).toBe(true);
+    entering.clear();
+
+    const leaving = seed([{ sourceKind: "agent_error_alert", subject: { kind: "agent", id: "agent-1" } }]);
+    dispatch(leaving, "agent.status", { agentId: "agent-1", status: "idle" });
+    expect(stale(leaving, badgeKey)).toBe(true);
+    leaving.clear();
+
+    const unrelated = seed();
+    dispatch(unrelated, "agent.status", { agentId: "agent-2", status: "running" });
+    expect(stale(unrelated, badgeKey)).toBe(false);
+    unrelated.clear();
+  });
+
+  it("refreshes the badge when a run fails or a newer run supersedes a failed-run card", () => {
+    const failing = seed();
+    dispatch(failing, "heartbeat.run.status", { runId: "run-1", agentId: "agent-1", status: "failed" });
+    expect(stale(failing, badgeKey)).toBe(true);
+    failing.clear();
+
+    const superseding = seed([{ sourceKind: "failed_run", subject: { kind: "run", id: "run-1" } }]);
+    dispatch(superseding, "heartbeat.run.queued", { runId: "run-2", agentId: "agent-1", status: "queued" });
+    expect(stale(superseding, badgeKey)).toBe(true);
+    superseding.clear();
+
+    const routine = seed();
+    dispatch(routine, "heartbeat.run.status", { runId: "run-3", agentId: "agent-1", status: "succeeded" });
+    expect(stale(routine, badgeKey)).toBe(false);
+    routine.clear();
+  });
+});
