@@ -725,3 +725,76 @@ describe("MarkdownBody", () => {
   });
 
 });
+
+describe("MarkdownBody plain agent name mentions", () => {
+  const YOGA_DEV = "11111111-1111-4111-8111-111111111111";
+  const YOGA = "22222222-2222-4222-8222-222222222222";
+  const AGENTS = [
+    { id: YOGA, name: "Yoga", status: "idle" },
+    { id: YOGA_DEV, name: "Yoga (Apollo Runtime Dev)", status: "running" },
+    { id: "33333333-3333-4333-8333-333333333333", name: "Twin", status: "idle" },
+    { id: "44444444-4444-4444-8444-444444444444", name: "Twin", status: "idle" },
+    { id: "55555555-5555-4555-8555-555555555555", name: "Gone", status: "terminated" },
+  ];
+
+  function renderWithAgents(markdown: string, agents: unknown[] | null = AGENTS) {
+    mockUseOptionalCompany.mockReturnValue({ companies: [{ issuePrefix: "PAP" }], selectedCompanyId: "company-1" });
+    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    if (agents) queryClient.setQueryData(queryKeys.agents.list("company-1"), agents);
+    return renderToStaticMarkup(
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <MarkdownBody>{markdown}</MarkdownBody>
+        </ThemeProvider>
+      </QueryClientProvider>,
+    );
+  }
+
+  it("renders a plain @Name exactly like the structured agent mention", () => {
+    const plain = renderWithAgents("@Yoga (Apollo Runtime Dev) bila Arif sudah siap");
+    const structured = renderWithAgents(`[@Yoga (Apollo Runtime Dev)](${buildAgentMentionHref(YOGA_DEV)}) bila Arif sudah siap`);
+    expect(plain).toContain(`href="/agents/${YOGA_DEV}"`);
+    expect(plain).toContain('data-mention-kind="agent"');
+    expect(plain).toContain("paperclip-mention-chip--agent");
+    expect(plain).toContain(">@Yoga (Apollo Runtime Dev)</a> bila Arif");
+    expect(plain).toBe(structured);
+  });
+
+  it("prefers the longest agent name and links shorter names on their own", () => {
+    const html = renderWithAgents("@Yoga (Apollo Runtime Dev), then @Yoga.");
+    expect(html).toContain(`href="/agents/${YOGA_DEV}"`);
+    expect(html).toContain(">@Yoga (Apollo Runtime Dev)</a>, then");
+    expect(html).toContain(`href="/agents/${YOGA}"`);
+    expect(html).toContain(">@Yoga</a>.");
+  });
+
+  it("requires a word boundary before @ and a terminator after the name", () => {
+    const html = renderWithAgents("mail yoga@Yoga.dev or ping x@Yoga and @Yogaa");
+    expect(html).not.toContain("/agents/");
+  });
+
+  it("does not link inside inline code or fenced code", () => {
+    const html = renderWithAgents("Use `@Yoga` here\n\n```\n@Yoga (Apollo Runtime Dev)\n```");
+    expect(html).not.toContain("/agents/");
+    expect(html).toContain("@Yoga (Apollo Runtime Dev)");
+  });
+
+  it("leaves an existing structured mention unchanged", () => {
+    const html = renderWithAgents(`[@Yoga](${buildAgentMentionHref(YOGA_DEV)}) and [docs @Yoga](https://example.com)`);
+    expect(html.match(/data-mention-kind="agent"/g)).toHaveLength(1);
+    expect(html).toContain(`href="/agents/${YOGA_DEV}"`);
+    expect(html).not.toContain(`href="/agents/${YOGA}"`);
+  });
+
+  it("keeps unknown, duplicate and terminated names plain", () => {
+    const html = renderWithAgents("@Nobody @Twin @Gone");
+    expect(html).not.toContain("/agents/");
+    expect(html).toContain("@Nobody @Twin @Gone");
+  });
+
+  it("keeps text plain when the agent list is not loaded", () => {
+    const html = renderWithAgents("@Yoga (Apollo Runtime Dev) bila Arif", null);
+    expect(html).not.toContain("/agents/");
+    expect(html).toContain("@Yoga (Apollo Runtime Dev) bila Arif");
+  });
+});

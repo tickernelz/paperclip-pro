@@ -17,6 +17,11 @@ import { useIssueRefStatus } from "../hooks/useIssueRefStatus";
 import { queryKeys } from "../lib/queryKeys";
 import { parseIssueReferenceFromHref, remarkLinkIssueReferences } from "../lib/issue-reference";
 import { remarkLinkCaseReferences } from "../lib/case-reference";
+import {
+  buildAgentNameMentionIndex,
+  remarkLinkAgentNameMentions,
+  type AgentNameMentionIndex,
+} from "../lib/agent-name-mentions";
 
 const CASE_HREF_RE = /^\/cases\/([A-Z][A-Z0-9]*-C\d+)$/i;
 
@@ -784,6 +789,20 @@ function MarkdownBodyImpl({
     () => (companies?.length ? companies.map((c) => c.issuePrefix) : undefined),
     [companies],
   );
+  const companyId = company?.selectedCompanyId;
+  const { data: companyAgents } = useQuery<Agent[]>({
+    queryKey: queryKeys.agents.list(companyId ?? "__none__"),
+    queryFn: () => agentsApi.list(companyId!),
+    enabled: false,
+  });
+  const agentNameIndexKey = useMemo(
+    () => JSON.stringify(buildAgentNameMentionIndex(companyAgents)),
+    [companyAgents],
+  );
+  const agentNameMentionIndex = useMemo(
+    () => JSON.parse(agentNameIndexKey) as AgentNameMentionIndex | null,
+    [agentNameIndexKey],
+  );
   const externalReferenceLookup = useMemo<MarkdownExternalReferenceMap | null>(() => {
     if (!externalReferences) return null;
     const lookup: MarkdownExternalReferenceMap = {};
@@ -807,6 +826,9 @@ function MarkdownBodyImpl({
     if (resolveWorkspaceFileRef) {
       plugins.push(createRemarkWorkspaceFileRefs(resolveWorkspaceFileRef));
     }
+    if (agentNameMentionIndex) {
+      plugins.push([remarkLinkAgentNameMentions, { index: agentNameMentionIndex }]);
+    }
     if (linkIssueReferences) {
       plugins.push([remarkLinkIssueReferences, { knownPrefixes }]);
     }
@@ -817,7 +839,7 @@ function MarkdownBodyImpl({
       plugins.push(remarkSoftBreaks);
     }
     return plugins;
-  }, [enableWikiLinks, wikiLinkRoot, resolveWikiLinkHref, resolveWorkspaceFileRef, linkIssueReferences, linkCaseReferences, knownPrefixes, softBreaks]);
+  }, [enableWikiLinks, wikiLinkRoot, resolveWikiLinkHref, resolveWorkspaceFileRef, agentNameMentionIndex, linkIssueReferences, linkCaseReferences, knownPrefixes, softBreaks]);
   const components = useMemo<Components>(() => {
     const map: Components = {
     p: ({ node: _node, style: paragraphStyle, children: paragraphChildren, ...paragraphProps }) => (
