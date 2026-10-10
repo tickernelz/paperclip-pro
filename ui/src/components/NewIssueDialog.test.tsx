@@ -2058,7 +2058,7 @@ describe("NewIssueDialog", () => {
       expect(node("composer-run-settings-range-thinking")?.getAttribute("max")).toBe("2");
       expect(node("composer-run-settings-range-provider")).toBeNull();
       expect(mockAgentsApi.batchAdapterConfigPreview).toHaveBeenCalledWith(["agent-1"]);
-      expect(node("composer-run-settings-model-value")?.textContent).toBe("agent-default");
+      expect(node("composer-run-settings-model-value")?.textContent).toBe("vendor/agent-default");
       await click("composer-run-settings-model-row");
       expect(node("composer-run-settings-model-option-vendor/deep")).not.toBeNull();
 

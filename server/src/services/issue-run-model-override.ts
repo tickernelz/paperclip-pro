@@ -192,6 +192,7 @@ function buildField(
         value: option.value,
         label: option.label,
         ...(option.group ? { group: option.group } : {}),
+        ...(option.name ? { name: option.name } : {}),
       })),
     agentDefault,
     override,

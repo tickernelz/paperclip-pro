@@ -37,7 +37,7 @@ const fakeAdapter = {
         type: "combobox" as const,
         default: "vendor/default-model",
         options: [
-          { value: "vendor/fast", label: "Fast", group: "vendor" },
+          { value: "vendor/fast", label: "Fast (vendor/fast)", group: "vendor", name: "Fast" },
           { value: "vendor/deep", label: "Deep", group: "vendor" },
         ],
       },
@@ -174,6 +174,12 @@ describeEmbeddedPostgres("per-task adapter model override routes", () => {
     expect(field(view, "model")?.override).toBeNull();
     expect(field(view, "model")?.effective).toBe("vendor/default-model");
     expect(field(view, "thinking")?.effective).toBe("low");
+    expect(field(view, "model")?.options[0]).toEqual({
+      value: "vendor/fast",
+      label: "Fast (vendor/fast)",
+      group: "vendor",
+      name: "Fast",
+    });
     expect(view.fields.map((entry) => entry.key)).toEqual(["model", "thinking"]);
   });
 

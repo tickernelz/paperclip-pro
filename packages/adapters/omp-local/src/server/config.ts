@@ -248,13 +248,15 @@ async function profileOptions(): Promise<ConfigFieldOption[]> {
   ];
 }
 
-function modelOptions(models: AdapterModel[]): ConfigFieldOption[] {
+/** Picker options for OMP models, grouped by provider and carrying the bare display name. */
+export function modelOptions(models: AdapterModel[]): ConfigFieldOption[] {
   return models.map((model) => {
-    const slash = model.id.indexOf("/");
+    const named = model.label !== model.id;
     return {
       value: model.id,
-      label: model.label === model.id ? model.id : `${model.label} (${model.id})`,
-      ...(slash > 0 ? { group: model.id.slice(0, slash) } : {}),
+      label: named ? `${model.label} (${model.id})` : model.id,
+      ...(model.provider ? { group: model.provider } : {}),
+      ...(named ? { name: model.label } : {}),
     };
   });
 }

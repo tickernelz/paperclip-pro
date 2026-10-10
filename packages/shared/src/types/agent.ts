@@ -346,6 +346,7 @@ export interface AgentAdapterConfigBatchOption {
   value: string;
   label: string;
   group?: string;
+  name?: string;
 }
 
 export interface AgentAdapterConfigBatchField {

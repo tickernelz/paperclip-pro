@@ -255,6 +255,7 @@ export interface AdapterExecutionContext {
 export interface AdapterModel {
   id: string;
   label: string;
+  provider?: string;
 }
 
 export type AdapterEnvironmentCheckLevel = "info" | "warn" | "error";
@@ -414,6 +415,8 @@ export interface ConfigFieldOption {
   value: string;
   /** Optional group key for categorizing options (e.g. provider name) */
   group?: string;
+  /** Display name without the value, for pickers that show the value beside it */
+  name?: string;
 }
 
 export interface ConfigFieldSchema {

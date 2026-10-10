@@ -93,6 +93,7 @@ function describeField(key: string, field: ConfigFieldSchema): AgentAdapterConfi
         value: option.value,
         label: option.label,
         ...(option.group ? { group: option.group } : {}),
+        ...(option.name ? { name: option.name } : {}),
       })),
   };
 }

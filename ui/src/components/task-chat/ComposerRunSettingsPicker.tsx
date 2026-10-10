@@ -27,9 +27,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import type { InlineEntityOption } from "@/components/InlineEntitySelector";
 import { ModelOverrideSubtaskRows } from "./ModelOverrideSubtaskRows";
 import {
+  describeModelValue,
+  groupModelOptions,
+  ModelOptionGroupHeader,
+  ModelOptionText,
+  modelOptionMatches,
+  ModelValueLabel,
+  modelValueText,
+} from "./model-option-display";
+import {
   AGENT_DEFAULT_LABEL,
   draftOverrideFields,
-  shortModelLabel,
+  RunSettingsSummary,
   triggerLabel,
   type TaskModelOverridePendingIssue,
 } from "./TaskModelOverrideControl";
@@ -348,13 +357,11 @@ export function ComposerRunSettingsPicker({
 
   const modelQuery = modelSearch.trim();
   const modelOptions = modelField?.options ?? [];
-  const filteredModels = modelQuery
-    ? modelOptions.filter((option) =>
-        `${option.label} ${option.value}`
-          .toLowerCase()
-          .includes(modelQuery.toLowerCase()),
-      )
-    : modelOptions;
+  const filteredModels = modelOptions.filter((option) => modelOptionMatches(option, modelQuery));
+  const modelSections = groupModelOptions(filteredModels);
+  const agentDefaultModel = modelField?.agentDefault
+    ? describeModelValue(modelField.agentDefault, modelOptions)
+    : null;
   const exactModelMatch = modelOptions.some((option) => option.value === modelQuery);
   const manualModelAvailable =
     Boolean(modelField?.freeText) && modelQuery.length > 0 && !exactModelMatch;
@@ -400,14 +407,20 @@ export function ComposerRunSettingsPicker({
         >
           <span className="min-w-0 flex-1">
             <span className="block text-xs text-muted-foreground">{modelField.label}</span>
-            <span
-              className="block truncate text-sm font-medium"
-              data-testid="composer-run-settings-model-value"
-            >
-              {modelField.effective
-                ? shortModelLabel(modelField.effective)
-                : AGENT_DEFAULT_LABEL}
-            </span>
+            {modelField.effective ? (
+              <ModelValueLabel
+                display={describeModelValue(modelField.effective, modelField.options)}
+                layout="stacked"
+                testId="composer-run-settings-model-value"
+              />
+            ) : (
+              <span
+                className="block truncate text-sm font-medium"
+                data-testid="composer-run-settings-model-value"
+              >
+                {AGENT_DEFAULT_LABEL}
+              </span>
+            )}
           </span>
           <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
         </button>
@@ -588,30 +601,46 @@ export function ComposerRunSettingsPicker({
           className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
           data-testid="composer-run-settings-model-default"
         >
-          <span className="min-w-0 flex-1 truncate">
-            {AGENT_DEFAULT_LABEL}
-            {modelField?.agentDefault
-              ? ` (${shortModelLabel(modelField.agentDefault)})`
-              : ""}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate">{AGENT_DEFAULT_LABEL}</span>
+            {agentDefaultModel ? (
+              <span
+                className="block truncate text-xs text-muted-foreground"
+                title={agentDefaultModel.id}
+                data-testid="composer-run-settings-model-default-value"
+              >
+                {modelValueText(agentDefaultModel)}
+              </span>
+            ) : null}
           </span>
           {!modelField?.override ? <Check className="size-4 shrink-0" aria-hidden /> : null}
         </button>
-        {filteredModels.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            role="option"
-            aria-selected={modelField?.override === option.value}
-            disabled={pending}
-            onClick={() => chooseModel(option.value)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
-            data-testid={`composer-run-settings-model-option-${option.value}`}
-          >
-            <span className="min-w-0 flex-1 truncate">{option.label}</span>
-            {modelField?.override === option.value ? (
-              <Check className="size-4 shrink-0" aria-hidden />
+        {modelSections.map((section) => (
+          <div key={section.provider ?? ""} role="group" aria-label={section.provider ?? undefined}>
+            {section.provider ? (
+              <ModelOptionGroupHeader
+                provider={section.provider}
+                testId={`composer-run-settings-model-group-${section.provider}`}
+              />
             ) : null}
-          </button>
+            {section.options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                role="option"
+                aria-selected={modelField?.override === option.value}
+                disabled={pending}
+                onClick={() => chooseModel(option.value)}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
+                data-testid={`composer-run-settings-model-option-${option.value}`}
+              >
+                <ModelOptionText option={option} />
+                {modelField?.override === option.value ? (
+                  <Check className="size-4 shrink-0" aria-hidden />
+                ) : null}
+              </button>
+            ))}
+          </div>
         ))}
         {filteredModels.length === 0 && !manualModelAvailable ? (
           <p className="px-2 py-2 text-xs text-muted-foreground">No catalog match.</p>
@@ -652,7 +681,7 @@ export function ComposerRunSettingsPicker({
           type="button"
           disabled={disabled}
           aria-label="Select assignee, model and thinking"
-          className="flex h-8 min-w-0 max-w-64 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+          className="flex h-8 min-w-0 max-w-80 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
           data-testid="task-chat-composer-assignee"
           data-slot="model-override-trigger"
           data-has-override={hasOverride ? "true" : "false"}
@@ -674,7 +703,7 @@ export function ComposerRunSettingsPicker({
             )}
             data-testid="task-chat-composer-run-summary"
           >
-            {summary}
+            {fields.length ? <RunSettingsSummary fields={fields} /> : AGENT_DEFAULT_LABEL}
           </span>
           {pending ? (
             <Loader2 className="size-3 shrink-0 animate-spin" aria-hidden />

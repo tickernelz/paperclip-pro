@@ -3526,7 +3526,7 @@ describe("composer run settings picker", () => {
       expect(
         document.querySelector('[data-testid="composer-run-settings-model-value"]')
           ?.textContent,
-      ).toBe("claude-sonnet-4"),
+      ).toBe("anthropic/claude-sonnet-4"),
     );
     const thinkingRange = () =>
       document.querySelector<HTMLInputElement>(
@@ -3595,7 +3595,7 @@ describe("composer run settings picker", () => {
       expect(
         document.querySelector('[data-testid="composer-run-settings-model-value"]')
           ?.textContent,
-      ).toBe("gpt-4.1"),
+      ).toBe("openai/gpt-4.1"),
     );
 
     await act(async () => {
@@ -3711,7 +3711,7 @@ describe("composer run settings picker", () => {
       expect(
         document.querySelector('[data-testid="composer-run-settings-model-value"]')
           ?.textContent,
-      ).toBe("claude-opus-5"),
+      ).toBe("anthropic/claude-opus-5"),
     );
     expect(
       document.querySelector<HTMLButtonElement>(
@@ -3762,7 +3762,7 @@ describe("composer run settings picker", () => {
       expect(
         document.querySelector('[data-testid="composer-run-settings-model-value"]')
           ?.textContent,
-      ).toBe("gpt-4.1"),
+      ).toBe("openai/gpt-4.1"),
     );
   });
 

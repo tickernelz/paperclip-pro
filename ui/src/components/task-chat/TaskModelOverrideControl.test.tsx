@@ -152,7 +152,7 @@ describe("per-task model override control", () => {
         node("task-chat-composer-model-override").getAttribute("data-has-override"),
       ).toBe("true"),
     );
-    expect(node("task-chat-composer-model-override").textContent).toContain("deep");
+    expect(node("task-chat-composer-model-override").textContent).toContain("Deep");
     expect(node("task-chat-composer-model-override").textContent).toContain("high");
   });
 
@@ -311,13 +311,111 @@ describe("per-task model override control", () => {
     const header = document.querySelector("[data-mobile-sheet-header]");
     expect(header).not.toBeNull();
     expect(header?.textContent).toContain("Task model");
-    expect(header?.textContent).toContain("deep");
+    expect(header?.textContent).toContain("Deep");
 
     await act(async () => {
       header?.querySelector<HTMLButtonElement>("[data-mobile-sheet-close]")?.click();
     });
 
     expect(document.querySelector('[data-testid="task-model-override-panel"]')).toBeNull();
+  });
+});
+
+function providerView(model: string | null = null): IssueRunModelOverrideView {
+  const base = view();
+  return {
+    ...base,
+    fields: base.fields.map((field) =>
+      field.key === "model"
+        ? {
+            ...field,
+            options: [
+              {
+                value: "sub2api-claude/claude-opus-5-5",
+                label: "Claude Opus 5.5 (sub2api-claude/claude-opus-5-5)",
+                group: "sub2api-claude",
+                name: "Claude Opus 5.5",
+              },
+              {
+                value: "sub2api-claude-kaitech/claude-opus-5-5",
+                label: "Claude Opus 5.5 (sub2api-claude-kaitech/claude-opus-5-5)",
+                group: "sub2api-claude-kaitech",
+                name: "Claude Opus 5.5",
+              },
+            ],
+            agentDefault: "sub2api-claude/claude-opus-5-5",
+            override: model,
+            effective: model ?? "sub2api-claude/claude-opus-5-5",
+          }
+        : field,
+    ),
+  };
+}
+
+function typeInto(input: HTMLInputElement, value: string) {
+  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+  setter.call(input, value);
+  input.dispatchEvent(new Event("input", { bubbles: true }));
+}
+
+describe("model display names and providers", () => {
+  it("shows the display name and provider on the trigger, with the full id as its title", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(providerView());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    const trigger = node("task-chat-composer-model-override");
+    expect(trigger.textContent).toContain("Claude Opus 5.5");
+    expect(trigger.textContent).toContain("sub2api-claude");
+    expect(trigger.querySelector('[title="sub2api-claude/claude-opus-5-5"]')).not.toBeNull();
+  });
+
+  it("renders the same model from two providers as distinct rows under their providers", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(providerView());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+    const own = node("task-model-override-option-model-sub2api-claude/claude-opus-5-5");
+    const other = node("task-model-override-option-model-sub2api-claude-kaitech/claude-opus-5-5");
+    expect(own.closest('[role="group"]')?.getAttribute("aria-label")).toBe("sub2api-claude");
+    expect(other.closest('[role="group"]')?.getAttribute("aria-label")).toBe("sub2api-claude-kaitech");
+    expect(node("task-model-override-group-model-sub2api-claude").textContent).toBe("sub2api-claude");
+    expect(own.textContent).toContain("Claude Opus 5.5");
+    expect(own.textContent).not.toBe(other.textContent);
+  });
+
+  it("names the agent default with its display name and provider", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(providerView());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+    expect(node("task-model-override-default-value-model").textContent).toBe(
+      "Claude Opus 5.5 · sub2api-claude",
+    );
+  });
+
+  it("shows the full id for a value the catalog does not list", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(providerView("my-gateway/claude-opus-5-5"));
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    expect(node("task-chat-composer-model-override").textContent).toContain(
+      "my-gateway/claude-opus-5-5",
+    );
+    await openPanel();
+    expect(node("task-model-override-effective-model").textContent).toBe("my-gateway/claude-opus-5-5");
+  });
+
+  it("finds options by provider", async () => {
+    vi.mocked(issuesApi.getModelOverride).mockResolvedValue(providerView());
+    await render();
+    await vi.waitFor(() => node("task-chat-composer-model-override"));
+    await openPanel();
+    await act(async () => {
+      typeInto(node<HTMLInputElement>("task-model-override-search-model"), "kaitech");
+    });
+    expect(
+      document.querySelector('[data-testid="task-model-override-option-model-sub2api-claude/claude-opus-5-5"]'),
+    ).toBeNull();
+    expect(node("task-model-override-option-model-sub2api-claude-kaitech/claude-opus-5-5")).toBeTruthy();
   });
 });
 

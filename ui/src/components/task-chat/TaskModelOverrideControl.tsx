@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState, type ReactNode } from "react";
+import { Fragment, useMemo, useRef, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import type {
@@ -17,25 +17,73 @@ import { useMobileSelectorModal } from "@/hooks/useMobileSelectorModal";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ModelOverrideSubtaskRows } from "./ModelOverrideSubtaskRows";
+import {
+  describeModelValue,
+  groupModelOptions,
+  ModelOptionGroupHeader,
+  ModelOptionText,
+  modelOptionMatches,
+  ModelValueLabel,
+  modelValueText,
+} from "./model-option-display";
 
 export const AGENT_DEFAULT_LABEL = "Agent default";
 
-export function shortModelLabel(value: string): string {
-  const slash = value.lastIndexOf("/");
-  return slash >= 0 ? value.slice(slash + 1) : value;
+function summarizeFields(
+  fields: IssueRunModelOverrideField[],
+  format: (field: IssueRunModelOverrideField, value: string) => string,
+): string {
+  const overridden = fields.filter((field) => field.override);
+  if (overridden.length > 0) {
+    return overridden.map((field) => format(field, field.override as string)).join(" · ");
+  }
+  const model = fields.find((field) => field.key === "model");
+  return model?.effective ? format(model, model.effective) : AGENT_DEFAULT_LABEL;
 }
 
 export function triggerLabel(fields: IssueRunModelOverrideField[]): string {
-  const parts = fields
-    .filter((field) => field.override)
-    .map((field) =>
-      field.key === "model"
-        ? shortModelLabel(field.override as string)
-        : (field.override as string),
-    );
-  if (parts.length > 0) return parts.join(" · ");
-  const effective = fields.find((field) => field.key === "model")?.effective;
-  return effective ? shortModelLabel(effective) : AGENT_DEFAULT_LABEL;
+  return summarizeFields(fields, (field, value) =>
+    field.key === "model" ? modelValueText(describeModelValue(value, field.options)) : value,
+  );
+}
+
+/** The trigger summary: the model's name with a provider badge, then the other overridden values. */
+export function RunSettingsSummary({
+  fields,
+  className,
+}: {
+  fields: IssueRunModelOverrideField[];
+  className?: string;
+}) {
+  const overridden = fields.filter((field) => field.override);
+  const model = fields.find((field) => field.key === "model");
+  const shown = overridden.length > 0
+    ? overridden.map((field) => ({ field, value: field.override as string }))
+    : model?.effective
+      ? [{ field: model, value: model.effective }]
+      : [];
+  if (shown.length === 0) {
+    return <span className={cn("truncate", className)}>{AGENT_DEFAULT_LABEL}</span>;
+  }
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1", className)} title={triggerTitle(fields)}>
+      {shown.map(({ field, value }, index) => (
+        <Fragment key={field.key}>
+          {index > 0 ? <span className="shrink-0" aria-hidden>·</span> : null}
+          {field.key === "model" ? (
+            <ModelValueLabel display={describeModelValue(value, field.options)} layout="inline" />
+          ) : (
+            <span className="shrink-0">{value}</span>
+          )}
+        </Fragment>
+      ))}
+    </span>
+  );
+}
+
+/** The trigger summary with full model ids, for tooltips. */
+export function triggerTitle(fields: IssueRunModelOverrideField[]): string {
+  return summarizeFields(fields, (_field, value) => value);
 }
 
 function FieldSection({
@@ -55,16 +103,14 @@ function FieldSection({
 }) {
   const [search, setSearch] = useState("");
   const query = search.trim();
-  const options = useMemo(() => {
-    const lowered = query.toLowerCase();
-    return lowered
-      ? field.options.filter(
-          (option) =>
-            option.value.toLowerCase().includes(lowered) ||
-            option.label.toLowerCase().includes(lowered),
-        )
-      : field.options;
-  }, [field.options, query]);
+  const sections = useMemo(
+    () => groupModelOptions(field.options.filter((option) => modelOptionMatches(option, query))),
+    [field.options, query],
+  );
+  const effective = field.effective ? describeModelValue(field.effective, field.options) : null;
+  const agentDefault = field.agentDefault
+    ? describeModelValue(field.agentDefault, field.options)
+    : null;
   const customValueAvailable =
     field.freeText &&
     query.length > 0 &&
@@ -90,22 +136,40 @@ function FieldSection({
             aria-expanded={open}
           >
             <span className="shrink-0 text-xs font-medium">{field.label}</span>
-            <span
-              className="min-w-0 truncate text-xs text-muted-foreground"
-              data-testid={`task-model-override-effective-${field.key}`}
-            >
-              {field.effective ?? AGENT_DEFAULT_LABEL}
-            </span>
+            {effective ? (
+              <ModelValueLabel
+                display={effective}
+                layout="inline"
+                className="justify-end text-xs text-muted-foreground"
+                testId={`task-model-override-effective-${field.key}`}
+              />
+            ) : (
+              <span
+                className="min-w-0 truncate text-xs text-muted-foreground"
+                data-testid={`task-model-override-effective-${field.key}`}
+              >
+                {AGENT_DEFAULT_LABEL}
+              </span>
+            )}
           </button>
         ) : (
           <>
-            <span className="text-xs font-medium">{field.label}</span>
-            <span
-              className="max-w-32 truncate text-xs text-muted-foreground"
-              data-testid={`task-model-override-effective-${field.key}`}
-            >
-              {field.effective ?? AGENT_DEFAULT_LABEL}
-            </span>
+            <span className="shrink-0 text-xs font-medium">{field.label}</span>
+            {effective ? (
+              <ModelValueLabel
+                display={effective}
+                layout="inline"
+                className="max-w-48 justify-end text-xs text-muted-foreground"
+                testId={`task-model-override-effective-${field.key}`}
+              />
+            ) : (
+              <span
+                className="max-w-32 truncate text-xs text-muted-foreground"
+                data-testid={`task-model-override-effective-${field.key}`}
+              >
+                {AGENT_DEFAULT_LABEL}
+              </span>
+            )}
           </>
         )}
       </div>
@@ -137,9 +201,17 @@ function FieldSection({
           className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
           data-testid={`task-model-override-default-${field.key}`}
         >
-          <span className="min-w-0 flex-1 truncate">
-            {AGENT_DEFAULT_LABEL}
-            {field.agentDefault ? ` (${shortModelLabel(field.agentDefault)})` : ""}
+          <span className="min-w-0 flex-1">
+            <span className="block truncate">{AGENT_DEFAULT_LABEL}</span>
+            {agentDefault ? (
+              <span
+                className="block truncate text-muted-foreground"
+                title={agentDefault.id}
+                data-testid={`task-model-override-default-value-${field.key}`}
+              >
+                {modelValueText(agentDefault)}
+              </span>
+            ) : null}
           </span>
           {field.override === null ? (
             <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
@@ -156,20 +228,30 @@ function FieldSection({
             <span className="min-w-0 flex-1 truncate">Use “{query}”</span>
           </button>
         ) : null}
-        {options.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            disabled={pending}
-            onClick={() => onSelect(field.key, option.value)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
-            data-testid={`task-model-override-option-${field.key}-${option.value}`}
-          >
-            <span className="min-w-0 flex-1 truncate">{option.label}</span>
-            {field.override === option.value ? (
-              <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        {sections.map((section) => (
+          <div key={section.provider ?? ""} role="group" aria-label={section.provider ?? undefined}>
+            {section.provider ? (
+              <ModelOptionGroupHeader
+                provider={section.provider}
+                testId={`task-model-override-group-${field.key}-${section.provider}`}
+              />
             ) : null}
-          </button>
+            {section.options.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                disabled={pending}
+                onClick={() => onSelect(field.key, option.value)}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
+                data-testid={`task-model-override-option-${field.key}-${option.value}`}
+              >
+                <ModelOptionText option={option} />
+                {field.override === option.value ? (
+                  <Check className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                ) : null}
+              </button>
+            ))}
+          </div>
         ))}
       </div>
       ) : null}
@@ -357,9 +439,13 @@ export function TaskModelOverrideControl({
           data-slot="model-override-trigger"
           data-has-override={hasOverride ? "true" : "false"}
         >
-          <span className={cn("truncate", mobile ? "max-w-20" : "max-w-40")}>
-            {noAgent ? AGENT_DEFAULT_LABEL : triggerLabel(fields)}
-          </span>
+          {noAgent ? (
+            <span className={cn("truncate", mobile ? "max-w-20" : "max-w-40")}>
+              {AGENT_DEFAULT_LABEL}
+            </span>
+          ) : (
+            <RunSettingsSummary fields={fields} className={mobile ? "max-w-28" : "max-w-56"} />
+          )}
           {pending ? (
             <Loader2 className="h-3 w-3 shrink-0 animate-spin" aria-hidden />
           ) : (

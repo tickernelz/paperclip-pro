@@ -110,6 +110,7 @@ export interface IssueRunModelOverrideOption {
   value: string;
   label: string;
   group?: string;
+  name?: string;
 }
 
 export interface IssueRunModelOverrideField {

@@ -170,7 +170,7 @@ export function parseOmpModelsOutput(stdout: string): AdapterModel[] {
     if (!provider || !modelId || !selector || seen.has(selector)) continue;
     seen.add(selector);
     const name = nonEmptyString(row.name);
-    models.push({ id: selector, label: name ?? selector });
+    models.push({ id: selector, label: name ?? selector, provider });
   }
   return models;
 }
