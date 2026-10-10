@@ -121,12 +121,12 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   const lastModel = await swipeToLastOption(page, picker, "Models");
   await expect(lastModel).toContainText("Touch Model 24");
   await lastModel.tap();
-  await expect(picker.getByTestId("composer-run-settings-model-value")).toHaveText("touch-model-24");
+  await expect(picker.getByTestId("composer-run-settings-model-value")).toHaveText("Touch Model 24");
   await picker.getByRole("button", { name: "Close Run settings picker", exact: true }).tap();
   await expect(picker).toBeHidden();
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
-  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("touch-model-24");
+  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 24");
   await expect(draft).toHaveText("Keep this touch selection draft");
 
   // Closing the nested picker preserves the outer composer draft and choices.
@@ -137,7 +137,7 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await expect(trigger).toBeFocused();
   await expect(draft).toHaveText("Keep this touch selection draft");
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
-  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("touch-model-24");
+  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 24");
   await expect(page.getByRole("button", { name: "Create task", exact: true })).toBeEnabled();
   await page.screenshot({ path: testInfo.outputPath("selected-mobile-assignee-and-model.png") });
 
@@ -146,10 +146,10 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await trigger.click();
   await modelRow.click();
   await picker.getByRole("searchbox", { name: "Search or paste a model ID" }).fill("Touch Model 01");
-  await picker.getByRole("option", { name: "Touch Model 01", exact: true }).click();
-  await expect(picker.getByTestId("composer-run-settings-model-value")).toHaveText("touch-model-01");
+  await picker.getByRole("option", { name: /^Touch Model 01/ }).click();
+  await expect(picker.getByTestId("composer-run-settings-model-value")).toHaveText("Touch Model 01");
   await modelRow.press("Escape");
   await expect(picker).toBeHidden();
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
-  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("touch-model-01");
+  await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 01");
 });

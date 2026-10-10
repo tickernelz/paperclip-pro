@@ -631,7 +631,7 @@ export function ComposerRunSettingsPicker({
                 aria-selected={modelField?.override === option.value}
                 disabled={pending}
                 onClick={() => chooseModel(option.value)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent disabled:opacity-50"
                 data-testid={`composer-run-settings-model-option-${option.value}`}
               >
                 <ModelOptionText option={option} />
