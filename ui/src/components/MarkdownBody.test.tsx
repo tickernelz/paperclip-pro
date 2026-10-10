@@ -792,6 +792,17 @@ describe("MarkdownBody plain agent name mentions", () => {
     expect(html).toContain("@Nobody @Twin @Gone");
   });
 
+  it("renders without a QueryClientProvider", () => {
+    mockUseOptionalCompany.mockReturnValue({ companies: [{ issuePrefix: "PAP" }], selectedCompanyId: "company-1" });
+    const html = renderToStaticMarkup(
+      <ThemeProvider>
+        <MarkdownBody>{"@Yoga (Apollo Runtime Dev) bila Arif"}</MarkdownBody>
+      </ThemeProvider>,
+    );
+    expect(html).toContain("@Yoga (Apollo Runtime Dev) bila Arif");
+    expect(html).not.toContain("/agents/");
+  });
+
   it("keeps text plain when the agent list is not loaded", () => {
     const html = renderWithAgents("@Yoga (Apollo Runtime Dev) bila Arif", null);
     expect(html).not.toContain("/agents/");

@@ -1,5 +1,5 @@
-import { isValidElement, memo, useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { isValidElement, memo, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
+import { hashKey, QueryClientContext, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, WrapText } from "lucide-react";
 import Markdown, { defaultUrlTransform, type Components, type Options } from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -57,6 +57,19 @@ import type {
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
 } from "@tickernelz/paperclip-pro-shared";
+
+const noCacheSubscription = () => () => {};
+
+function useCachedCompanyAgents(companyId: string | null | undefined): Agent[] | undefined {
+  const client = useContext(QueryClientContext);
+  const queryHash = companyId ? hashKey(queryKeys.agents.list(companyId)) : null;
+  const subscribe = useMemo(
+    () => (client && queryHash ? (notify: () => void) => client.getQueryCache().subscribe(notify) : noCacheSubscription),
+    [client, queryHash],
+  );
+  const read = () => (client && queryHash ? client.getQueryCache().get(queryHash)?.state.data as Agent[] | undefined : undefined);
+  return useSyncExternalStore(subscribe, read, read);
+}
 
 function MarkdownAgentMention({ agentId, children, style }: {
   agentId: string;
@@ -789,12 +802,7 @@ function MarkdownBodyImpl({
     () => (companies?.length ? companies.map((c) => c.issuePrefix) : undefined),
     [companies],
   );
-  const companyId = company?.selectedCompanyId;
-  const { data: companyAgents } = useQuery<Agent[]>({
-    queryKey: queryKeys.agents.list(companyId ?? "__none__"),
-    queryFn: () => agentsApi.list(companyId!),
-    enabled: false,
-  });
+  const companyAgents = useCachedCompanyAgents(company?.selectedCompanyId);
   const agentNameIndexKey = useMemo(
     () => JSON.stringify(buildAgentNameMentionIndex(companyAgents)),
     [companyAgents],
