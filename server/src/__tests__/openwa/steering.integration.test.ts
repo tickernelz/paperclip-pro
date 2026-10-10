@@ -366,7 +366,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(steeredText).toContain("endpoint owner");
     expect(steeredText).toContain("stays read_only");
     expect(steeredText).toContain("also deploy the fix to staging");
-    expect((await wakeRow(ownerLate.action.id)).status).toBe("cancelled");
+    await until(async () => ((await wakeRow(ownerLate.action.id)).status === "cancelled" ? true : null));
     const [memberAfter] = await db.select({ responsibleUserId: heartbeatRuns.responsibleUserId, activeIdentityContextId: heartbeatRuns.activeIdentityContextId })
       .from(heartbeatRuns).where(eq(heartbeatRuns.id, memberRun.id));
     expect(memberAfter).toEqual({ responsibleUserId: memberRun.responsibleUserId, activeIdentityContextId: memberRun.activeIdentityContextId });
@@ -481,7 +481,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     const text = await until(async () => steered.get(ownerRun.id)?.[0] ?? null);
     expect(text).toContain("and add a test for it");
     expect(text).not.toContain("stays read_only");
-    expect((await wakeRow(second.action.id)).status).toBe("cancelled");
+    await until(async () => ((await wakeRow(second.action.id)).status === "cancelled" ? true : null));
 
     await until(async () => nudgeClock.timers.size === 1);
     nudgeClock.advance(60_000);
@@ -518,7 +518,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     lateSteerTargets.get(ownerRun.id)!();
     const text = await until(async () => steered.get(ownerRun.id)?.find((entry) => entry.includes("and this second screenshot too")) ?? null);
     expect(text).toContain("WhatsApp message from an endpoint owner");
-    expect((await wakeRow(second.action.id)).status).toBe("cancelled");
+    await until(async () => ((await wakeRow(second.action.id)).status === "cancelled" ? true : null));
     await new Promise((resolve) => setTimeout(resolve, 1_500));
     expect(steered.get(ownerRun.id)!.filter((entry) => entry.includes("and this second screenshot too"))).toHaveLength(1);
     const steeredActivity = await db.select().from(activityLog)
@@ -693,12 +693,12 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(ownText).not.toContain(first.row.waMessageId!);
     expect(ownText).toContain(maskOpenwaPhoneNumber(MEMBER_PHONE));
     expect(ownText).not.toContain(MEMBER_PHONE);
-    expect((await wakeRow(own.action.id)).status).toBe("cancelled");
+    await until(async () => ((await wakeRow(own.action.id)).status === "cancelled" ? true : null));
     const owner = await admit(t, mention(OWNER_PHONE, "go ahead"));
     const ownerText = await until(async () => steered.get(grantRun.id)?.find((entry) => entry.includes("go ahead")) ?? null);
     expect(ownerText).toContain("endpoint owner");
     expect(ownerText).toContain("Message id: " + owner.row.waMessageId + ";");
-    expect((await wakeRow(owner.action.id)).status).toBe("cancelled");
+    await until(async () => ((await wakeRow(owner.action.id)).status === "cancelled" ? true : null));
     expect(steered.get(grantRun.id)!.some((entry) => entry.includes("use your tools for me too"))).toBe(false);
     expect((await wakeRow(outsider.action.id)).status).toBe("deferred_issue_execution");
     expect((await runContext(grantRun.id)).paperclipOpenwa).toMatchObject({ grantIds: [grant!.id], requesterPrincipalId });
@@ -726,7 +726,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       if (file) t.gateway.setMedia(GROUP, waMessageId, file);
       const admitted = await admit(t, { ...mention(sender, text), waMessageId, extra: { mentionedIds: [jid(OWN_PHONE)], ...extra } });
       const frame = await until(async () => steered.get(memberRun.id)?.find((entry) => entry.includes(text)) ?? null);
-      expect((await wakeRow(admitted.action.id)).status).toBe("cancelled");
+      await until(async () => ((await wakeRow(admitted.action.id)).status === "cancelled" ? true : null));
       expect(frame).toContain("Read every file before you answer");
       expect(frame).toContain("call openwa_get_media with its messageId");
       const [entry, ...rest] = JSON.parse(frame.slice(frame.lastIndexOf("\n") + 1)) as Array<Record<string, unknown> & { messageId: string; media: Array<Record<string, unknown>> }>;
