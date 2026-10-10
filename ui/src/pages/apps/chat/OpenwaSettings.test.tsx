@@ -288,6 +288,32 @@ describe("OpenWA settings", () => {
     await vi.waitFor(() => expect(mocks.api.updateOpenwaPolicy).toHaveBeenLastCalledWith("endpoint-1", { auditContentRetentionDays: 30 }));
   });
 
+  it("edits the endpoint burst window with the trigger defaults", async () => {
+    render();
+    await loaded();
+    const triggers = section("Triggers and replies");
+    const burst = field<HTMLInputElement>("#openwa-burst-window-seconds");
+    expect(burst.value).toBe("3");
+    expect(burst.min).toBe("0");
+    expect(burst.max).toBe("10");
+    expect(triggers.textContent).toContain("Burst window (seconds)");
+    expect(triggers.textContent).toContain("Messages sent within this many seconds of each other are answered together");
+    setValue(burst, "11");
+    click(button(triggers, "Save triggers"));
+    expect(field("#openwa-burst-window-seconds-error").textContent).toBeTruthy();
+    expect(mocks.api.updateOpenwaPolicy).not.toHaveBeenCalled();
+    setValue(burst, "6");
+    click(button(triggers, "Save triggers"));
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaPolicy).toHaveBeenLastCalledWith("endpoint-1", {
+        replyPolicy: policy.replyPolicy,
+        absenceSeconds: policy.absenceSeconds,
+        triggers: { ...policy.triggers, burstWindowSeconds: 6 },
+      }),
+    );
+    expect(mocks.api.updateOpenwaPolicy.mock.lastCall?.[1]).toMatchObject({ triggers: { burstWindowSeconds: 6 } });
+  });
+
   it("rejects over-long custom instructions and prefix with whitespace before saving", async () => {
     render();
     await loaded();
@@ -323,6 +349,8 @@ describe("OpenWA settings", () => {
     const chats = section("Chats");
     expect(chats.textContent).toContain("an owner is in this group");
     click(button(chats, "Edit"));
+    expect(chats.textContent).not.toContain("Burst window");
+    expect(chats.querySelector("input[id*='burst']")).toBeNull();
     expect(field<HTMLSelectElement>("#openwa-chat-activation").value).toBe("on");
     expect(field<HTMLSelectElement>("#openwa-chat-reply").value).toBe("ask_owner");
     setValue(field<HTMLInputElement>("#openwa-chat-absence"), "5");

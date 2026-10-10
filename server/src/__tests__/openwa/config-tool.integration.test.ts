@@ -121,6 +121,7 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
@@ -514,6 +515,35 @@ describe.sequential("openwa_endpoint_config (embedded Postgres + fake gateway)",
 
     const invalid = await rejection(executeOpenwaTool(db, binding, "openwa_endpoint_config", { chat: "not a chat", chatSettings: { activation: "on" } }));
     expect(invalid).toMatchObject({ status: 400, code: "invalid_target" });
+  }, 90_000);
+
+  it("reads and sets the endpoint burst window with before/after audit", async () => {
+    const t = await setup();
+    const c = await conversation(t, OWNER_DM);
+    const binding = await run(t, c, "owner", [], randomUUID());
+    const revision = (await endpointRow(t)).policyRevision;
+
+    expect(await executeOpenwaTool(db, binding, "openwa_endpoint_config", {})).toMatchObject({ burstWindowSeconds: 3 });
+    await expect(executeOpenwaTool(db, binding, "openwa_endpoint_config", { burstWindowSeconds: 11 })).rejects.toMatchObject({ name: "ZodError" });
+    await expect(executeOpenwaTool(db, binding, "openwa_endpoint_config", { chatSettings: { triggers: { burstWindowSeconds: 5 } } })).rejects.toMatchObject({ name: "ZodError" });
+
+    const result = await executeOpenwaTool(db, binding, "openwa_endpoint_config", { burstWindowSeconds: 5 });
+    expect(result).toMatchObject({ changed: { endpoint: ["burstWindowSeconds"] }, policyRevision: revision + 1, burstWindowSeconds: 5 });
+    expect(await executeOpenwaTool(db, binding, "openwa_endpoint_config", {})).toMatchObject({ policyRevision: revision + 1, burstWindowSeconds: 5 });
+    const policy = openwaEndpointPolicySchema.parse((await endpointRow(t)).policy);
+    expect(policy.triggers).toMatchObject({ burstWindowSeconds: 5, directMessage: true });
+
+    const audits = await db
+      .select()
+      .from(chatAuditEntries)
+      .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "config_changed")));
+    expect(audits).toHaveLength(1);
+    expect(audits[0]).toMatchObject({
+      actorKind: "agent",
+      runId: binding.runId,
+      metadata: { tool: "openwa_endpoint_config", scope: "endpoint", changed: ["triggers"] },
+      content: { before: { triggers: { burstWindowSeconds: 3 } }, after: { triggers: { burstWindowSeconds: 5 } } },
+    });
   }, 90_000);
 
   it("lets an owner run turn a group into a dedicated group that triggers on every message, and refuses a member run", async () => {

@@ -71,9 +71,10 @@ Its facts are set by the server and nothing in a message can change them.
   and role), `quoted`, `mentions` (`you` is your own number, `owner:"<name>"`
   an owner, others masked), `location`, `contact` and `media`.
   `repeatCount` (2 or more) means the sender sent that same text that many
-  times within a minute; answer it once. In a busy group one wake can carry
-  several members' messages that arrived within a few seconds: answer them
-  together, quoting each message you answer.
+  times within a minute; answer it once. One wake can carry several messages
+  of one chat sent within a few seconds of each other (the endpoint's burst
+  window), and later messages are steered into your run: answer them together,
+  quoting each message you answer.
 - `lastOutputSuppressed: true` means your previous final output in this chat
   was not published.
 
@@ -325,6 +326,9 @@ A gated call without approval fails with `approval_required` and its
   mention, is `chatSettings: {activation: "on", triggers: {allMessages: true}}`.
 - `approvals: {createTask?, externalTools?, crossChatSend?, waAdmin?, gatewayAdmin?, reminderMinutes?, maxReminders?, pendingTtlHours?}`:
   approval toggles, reminders and the pending request lifetime in hours (1 to 168).
+- `burstWindowSeconds`: 0 to 10 (default 3, 0 = off); messages of one chat sent
+  within this many seconds of each other are answered together in one run.
+  Endpoint only, not a per-chat setting.
 - `customInstructions`: the endpoint's custom instructions, applied from the
   next wake.
 

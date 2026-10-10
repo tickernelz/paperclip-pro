@@ -112,6 +112,7 @@ describe.sequential("OpenWA delegated task reports (embedded Postgres + fake gat
       storage,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: wira } as never, userId);

@@ -203,7 +203,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     }
   });
 
-  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock; storage?: boolean } = {}) {
+  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock; burstClock?: OpenwaScheduledWakeClock; storage?: boolean } = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -229,6 +229,8 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
+      ...(options.burstClock ? { openwaBurstWindowMs: undefined, openwaBurstClock: options.burstClock } : {}),
       ...(options.scheduledClock ? { openwaScheduledWakeClock: options.scheduledClock } : {}),
       ...(options.nudgeClock ? { openwaNudgeClock: options.nudgeClock } : {}),
       ...(options.storage ? { storage: createStorageService(createLocalDiskStorageProvider(path.join(scratch, "storage-" + companyId))) } : {}),
@@ -524,6 +526,92 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     expect(steeredActivity).toHaveLength(1);
     expect(steeredActivity[0]).toMatchObject({ actorType: "system", actorId: "openwa:steer", details: expect.objectContaining({ targetRunId: ownerRun.id }) });
     expect(((await runContext(ownerRun.id)).paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toContain(second.delivery.id);
+  }, 180_000);
+
+  async function steerOwnerBurst(count: number, runSteerable: "late" | "already") {
+    adapterMode.lateSteer = runSteerable === "late";
+    const t = await setup({ nudgeClock: new ManualClock() });
+    const bodies = Array.from({ length: count }, (_, index) => `burst part ${index + 1} of ${count}`);
+    const admitted: Array<Awaited<ReturnType<typeof admit>>> = [];
+    admitted.push(await admit(t, { chatId: jid(OWNER_PHONE), body: bodies[0]! }));
+    if (runSteerable === "already") await runningRun(t, admitted[0]!.action.id);
+    for (const body of bodies.slice(1)) admitted.push(await admit(t, { chatId: jid(OWNER_PHONE), body }));
+    const ownerRun = await runningRun(t, admitted[0]!.action.id);
+    if (runSteerable === "late") lateSteerTargets.get(ownerRun.id)!();
+
+    const later = admitted.slice(1);
+    const entries = await until(async () => {
+      const texts = steered.get(ownerRun.id) ?? [];
+      return later.every((entry) => texts.some((text) => text.includes(entry.row.body))) ? texts : null;
+    });
+    expect(entries).toHaveLength(later.length);
+    later.forEach((entry, index) => {
+      expect(entries[index]).toContain(entry.row.body);
+      expect(entries[index]).toContain(entry.row.waMessageId);
+      for (const other of admitted.filter((candidate) => candidate !== entry)) expect(entries[index]).not.toContain(other.row.waMessageId);
+    });
+    await until(async () => {
+      const deliveryIds = ((await runContext(ownerRun.id)).paperclipOpenwa as { deliveryIds: string[] }).deliveryIds;
+      return admitted.every((entry) => deliveryIds.includes(entry.delivery.id)) ? deliveryIds : null;
+    });
+
+    adapterMode.hold = false;
+    release(ownerRun.id);
+    await finishedRun(t, admitted[0]!.action.id);
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    const runs = await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(eq(heartbeatRuns.agentId, t.agentId));
+    expect(runs.map((run) => run.id)).toEqual([ownerRun.id]);
+    const pendingWakes = await db.select({ id: agentWakeupRequests.id, status: agentWakeupRequests.status }).from(agentWakeupRequests)
+      .where(and(eq(agentWakeupRequests.agentId, t.agentId), sql`${agentWakeupRequests.status} in ('queued', 'deferred_issue_execution', 'claimed')`));
+    expect(pendingWakes).toEqual([]);
+    for (const entry of later) expect(["cancelled", "coalesced"]).toContain((await wakeRow(entry.action.id)).status);
+    const steeredActivity = await db.select().from(activityLog)
+      .where(and(eq(activityLog.companyId, t.companyId), eq(activityLog.action, "issue.queued_comment_steered")));
+    expect(steeredActivity).toHaveLength(later.length);
+  }
+
+  it("steers both later messages of a three-message owner burst into the run that starts after the first, in order, with one run", async () => {
+    await steerOwnerBurst(3, "late");
+  }, 180_000);
+
+  it("steers both later messages of a three-message owner burst into an already steerable run, in order, with one run", async () => {
+    await steerOwnerBurst(3, "already");
+  }, 180_000);
+
+  it("steers every later message of a four-message owner burst into the starting run, in order, with one run", async () => {
+    await steerOwnerBurst(4, "late");
+  }, 180_000);
+
+  it("answers a three-message owner burst in one run carrying all three deliveries and steers a message sent after the run started", async () => {
+    const burstClock = new ManualClock();
+    burstClock.time = Date.now() + 3_600_000;
+    const t = await setup({ nudgeClock: new ManualClock(), burstClock });
+    const sent = ["first part", "second part", "third part"].map((body, index) => {
+      if (index) burstClock.advance(300);
+      return t.gateway.inbound({ chatId: jid(OWNER_PHONE), body });
+    });
+    const actions = await until(async () => {
+      await t.service.processPendingDeliveries();
+      const rows = await db.select().from(chatActions).where(and(eq(chatActions.companyId, t.companyId), eq(chatActions.kind, "inbound_wakeup"))).orderBy(asc(chatActions.createdAt));
+      const codes = rows.map((row) => (row.result as { code?: string } | null)?.code);
+      return rows.length === 3 && codes[0] === "openwa_burst_held" && codes.slice(1).every((code) => code === "openwa_burst_folded") ? rows : null;
+    });
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.agentId, t.agentId))).toEqual([]);
+    burstClock.advance(3_000);
+    const ownerRun = await runningRun(t, actions[0]!.id);
+    const deliveries = await db.select().from(chatDeliveries).where(eq(chatDeliveries.endpointId, t.endpointId)).orderBy(asc(chatDeliveries.createdAt));
+    expect(deliveries.map((row) => (row.normalizedEvent as { openwa: { waMessageId: string } }).openwa.waMessageId)).toEqual(sent.map((row) => row.waMessageId));
+    expect((captured.get(ownerRun.id)!.paperclipOpenwa as { deliveryIds: string[] }).deliveryIds).toEqual(deliveries.map((row) => row.id));
+
+    const late = await admit(t, { chatId: jid(OWNER_PHONE), body: "one more thing" });
+    const text = await until(async () => steered.get(ownerRun.id)?.find((entry) => entry.includes("one more thing")) ?? null);
+    expect(text).toContain(late.row.waMessageId);
+    adapterMode.hold = false;
+    release(ownerRun.id);
+    await finishedRun(t, actions[0]!.id);
+    await new Promise((resolve) => setTimeout(resolve, 1_500));
+    expect((await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(eq(heartbeatRuns.agentId, t.agentId))).map((run) => run.id)).toEqual([ownerRun.id]);
   }, 180_000);
 
   it("keeps an owner burst message queued for the next run when the starting run never becomes steerable", async () => {
@@ -914,6 +1002,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(restarted);
     t.service = restarted;

@@ -112,7 +112,7 @@ and its chat history remain on the gateway.
 ## Policy
 
 Settings are stored in the endpoint policy (`openwaEndpointPolicySchema`,
-`packages/shared/src/validators/chat-channels.ts:319`) and changed with
+`packages/shared/src/validators/chat-channels.ts:324`) and changed with
 `PATCH /api/chat-endpoints/:endpointId/openwa/policy`. Each change bumps
 `policy_revision`, applies to the next event, and is logged as
 `openwa.config_changed`. A concurrent change returns 409
@@ -199,7 +199,7 @@ chat from WhatsApp** lists the gateway's chats. Routes:
 A message that matches no rule is discarded in memory: nothing is written to
 Paperclip and it stays readable on the gateway through tools. Defaults come
 from the number mode (`openwaDefaultTriggerRules`,
-`packages/shared/src/validators/chat-channels.ts:286`); a chat's override wins.
+`packages/shared/src/validators/chat-channels.ts:289`); a chat's override wins.
 
 | Key | Settings label | `agent_number` | `owner_number` |
 | --- | --- | --- | --- |
@@ -217,6 +217,13 @@ case-insensitively. Keywords are comma-separated whole words, case-insensitive,
 up to 50 of 1 to 100 characters. In `owner_number` mode the agent number's own
 messages count only when typed on the phone. Control commands `/new`, `/close`
 and `/status` are accepted from owners, and from allowed senders in DMs.
+
+**Burst window (seconds)** (`triggers.burstWindowSeconds`, default 3, 0 to 10,
+0 turns it off; endpoint only, a chat cannot override it): messages sent within
+this many seconds of each other are answered together in one run; see
+**Message bursts** under [In-flight messages and progress](#in-flight-messages-and-progress).
+The agent can read and change it from an owner run with
+`openwa_endpoint_config` (`burstWindowSeconds`).
 
 ### Dedicated group (reply to every message)
 
@@ -536,7 +543,7 @@ Every call is audited as `tool_called`.
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
 | `openwa_describe` | read | Argument schema and gates of one operation. |
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
-| `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders and custom instructions; an empty call returns the current settings. |
+| `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders, the burst window and custom instructions; an empty call returns the current settings. |
 | `openwa_autonomy_window` | write | Owner runs only: open, close or list autonomy windows; while a window is open, plain confirmation cards in its issue trees are auto-accepted and audited (destructive ones still wait). |
 | `openwa_linked_list` | read | Owner runs only: list linked read-only numbers and their board-allowed chats. |
 | `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first; media messages carry `media.kind`. |
@@ -571,7 +578,7 @@ members get 403); other runs get `owner_only`.
 
 **WhatsApp configuration.** `openwa_endpoint_config` lets owner-class runs change
 sender lists, chat activation, per-chat triggers, absence, reply policy and note,
-approval toggles, reminders and custom instructions from WhatsApp; other runs get
+approval toggles, reminders, the burst window and custom instructions from WhatsApp; other runs get
 `owner_only`. Credentials, number mode, owners and the gateway admin level stay
 Paperclip-only (`ui_only_setting`). Every change bumps the policy revision and is
 audited with before and after values, attributed to the owner whose message
@@ -784,13 +791,20 @@ once stored; `pending` or `unavailable` otherwise, `too_large` with
 to call `openwa_get_media` with that message id for any item without a
 `localPath`.
 
-**Group bursts.** In a group with no queued or running run for the conversation, a
-member (`other`) trigger's wake is held for 5 s. Member triggers admitted in that
-window fold into the held wake (its `deliveryIds` grow; each folded trigger's own
-wake is settled `openwa_burst_folded` and activity records `openwa.burst_folded`),
-so the agent starts once with all of them. Owner triggers, DMs and approval events
-bypass the hold, and once a run is active the table above applies. A restart keeps
-the held wake durable; the delivery sweep dispatches it after the hold.
+**Message bursts.** Every normal message trigger (owner, member `other` and
+`grant`; DMs and groups alike) is batched per chat. When a chat has no queued or
+running run for its conversation, the first trigger's wake is held until no new
+trigger arrived in that chat for **Burst window (seconds)**
+(`triggers.burstWindowSeconds`, default 3, 0 turns batching off), and never longer
+than 10 s after the first trigger. Later triggers of the same trigger class fold
+into the held wake (its `deliveryIds` grow; each folded trigger's own wake is
+settled `openwa_burst_folded` and activity records `openwa.burst_folded`), so the
+agent starts once with all of them; a trigger of another class keeps its own wake.
+Approval replies and `approval_resolved`, control commands (`/new`, `/close`,
+`/status`) and `owner_absent` wakes are not batched and keep their timing. Messages
+that arrive once the run is queued or running are steered into it in arrival
+order, as the table above describes. A restart keeps the held wake durable; the
+delivery sweep dispatches it after the hold.
 
 If the agent cannot act on an owner message in its current profile, an
 `openwa_handoff` or an unanswered owner trigger produces a follow-up owner run after

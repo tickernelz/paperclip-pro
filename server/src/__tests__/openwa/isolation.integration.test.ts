@@ -108,6 +108,7 @@ describe.sequential("OpenWA company isolation and invite-link joins (embedded Po
       storage,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(service);
     return service;

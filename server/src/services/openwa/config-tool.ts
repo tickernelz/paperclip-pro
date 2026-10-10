@@ -16,6 +16,7 @@ type SenderList = "allow" | "deny";
 
 const RESULT_TEXT_LIMIT = 4000;
 const CHAT_SETTING_KEYS = ["activation", "triggers", "absenceSeconds", "replyPolicy", "note"] as const;
+const ENDPOINT_SETTING_KEYS = ["approvals", "burstWindowSeconds", "customInstructions"] as const;
 
 function record(value: unknown): Record<string, unknown> {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : {};
@@ -81,6 +82,7 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
     chat: { chatRef: chatRef(ctx, chat?.chatId ?? chatKey), configured: chat !== null, enabled: chat?.enabled ?? null, settings: chat?.settings ?? null },
     approvals: toggles,
     reminders: { reminderMinutes, maxReminders, pendingTtlHours },
+    burstWindowSeconds: policy.triggers.burstWindowSeconds,
     customInstructions: custom.length > RESULT_TEXT_LIMIT ? custom.slice(0, RESULT_TEXT_LIMIT).join("") + "…" : policy.customInstructions,
     ...(custom.length > RESULT_TEXT_LIMIT ? { customInstructionsTruncated: true } : {}),
   };
@@ -105,8 +107,10 @@ export async function openwaEndpointConfigTool(ctx: ToolContext, args: Args): Pr
   };
   const policyPatch: Record<string, unknown> = {
     ...(args.approvals !== undefined ? { approvals: args.approvals } : {}),
+    ...(args.burstWindowSeconds !== undefined ? { triggers: { burstWindowSeconds: args.burstWindowSeconds } } : {}),
     ...(args.customInstructions !== undefined ? { customInstructions: args.customInstructions } : {}),
   };
+  const endpointChanges = ENDPOINT_SETTING_KEYS.filter((key) => args[key] !== undefined);
   const rules = (key: "add" | "remove") =>
     (Array.isArray(senders[key]) ? (senders[key] as Array<{ list: SenderList; number: string; label?: string }>) : []).map((entry) => ({
       list: entry.list,
@@ -119,7 +123,7 @@ export async function openwaEndpointConfigTool(ctx: ToolContext, args: Args): Pr
   try {
     if (Object.keys(policyPatch).length) {
       await owners.updatePolicy(ctx.endpoint.id, policyPatch, null, origin);
-      changed.endpoint = Object.keys(policyPatch);
+      changed.endpoint = endpointChanges;
     }
     if (chatSettings) {
       await owners.putChat(ctx.endpoint.id, { chatId: target.chatId, settings: (current) => mergeChatSettings(current, chatSettings) }, null, origin);

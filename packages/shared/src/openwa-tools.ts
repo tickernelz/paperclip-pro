@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   OPENWA_CHAT_NOTE_MAX_LENGTH,
   OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH,
+  openwaBurstWindowSecondsSchema,
   openwaChatActivationSchema,
   openwaReplyPolicySchema,
   openwaTriggerOverridesSchema,
@@ -164,7 +165,7 @@ export const OPENWA_TOOLS = [
   tool(
     "endpoint_config",
     "write",
-    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears an override), approval toggles, reminders and pending lifetime, or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin level stay in Paperclip.",
+    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears), approval toggles, reminders, pending TTL, burst window or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin level stay in Paperclip.",
     {
       senders: z
         .object({
@@ -197,6 +198,7 @@ export const OPENWA_TOOLS = [
         })
         .strict()
         .optional(),
+      burstWindowSeconds: openwaBurstWindowSecondsSchema.optional(),
       customInstructions: z.string().max(OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH).optional(),
     },
   ),

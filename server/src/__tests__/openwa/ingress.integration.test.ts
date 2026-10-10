@@ -145,6 +145,7 @@ describe.sequential("OpenWA ingress (embedded Postgres + fake gateway)", () => {
         discordGatewayLeaseTtlMs: options.leaseTtlMs ?? 120_000,
         discordGatewayLeaseRenewalIntervalMs: options.renewalMs ?? 60_000,
         discordGatewayLeaseWaitMs: 200,
+        openwaBurstWindowMs: 0,
         openwaIngressHooks: {
           onInbound: async (event) => {
             inbound.push(event);

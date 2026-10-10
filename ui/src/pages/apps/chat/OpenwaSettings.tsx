@@ -441,12 +441,13 @@ function TriggerDefaultsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
   const [keywords, setKeywords] = useState(policy.triggers.keywords.join(", "));
   const [replyPolicy, setReplyPolicy] = useState(policy.replyPolicy);
   const [absence, setAbsence] = useState(String(policy.absenceSeconds));
+  const [burst, setBurst] = useState(String(policy.triggers.burstWindowSeconds));
   const state = usePolicySave(endpoint);
   const submit = () =>
     state.save({
       replyPolicy,
       absenceSeconds: wholeNumber(absence),
-      triggers: { ...triggers, keywords: keywordList(keywords) },
+      triggers: { ...triggers, keywords: keywordList(keywords), burstWindowSeconds: wholeNumber(burst) },
     });
   return (
     <SettingsSection
@@ -500,6 +501,16 @@ function TriggerDefaultsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
         />
         <FieldMessage id="openwa-keywords" error={fieldError(state.errors, "triggers.keywords")} />
       </div>
+      <NumberField
+        id="openwa-burst-window-seconds"
+        label="Burst window (seconds)"
+        help="Messages sent within this many seconds of each other are answered together"
+        value={burst}
+        min={0}
+        max={10}
+        error={fieldError(state.errors, "triggers.burstWindowSeconds")}
+        onChange={setBurst}
+      />
       <div className="grid gap-1">
         <label htmlFor="openwa-reply-policy" className="text-sm font-medium">Replies to non-owners</label>
         <select

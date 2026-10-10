@@ -133,6 +133,7 @@ describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake g
       heartbeat: { wakeup: vi.fn(async () => ({ accepted: true })) } as never,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
       storage: createStorageService(createLocalDiskStorageProvider(path.join(root, "storage"))),
     });
     services.push(service);

@@ -282,6 +282,9 @@ export const OPENWA_CHAT_NOTE_MAX_LENGTH = 2000;
 const openwaCommandPrefixSchema = z.string().trim().min(1).max(32).regex(/^\S+$/);
 const openwaKeywordsSchema = z.array(z.string().trim().min(1).max(100)).max(50);
 const openwaAbsenceSecondsSchema = z.number().int().min(10).max(86_400);
+export const OPENWA_DEFAULT_BURST_WINDOW_SECONDS = 3;
+export const OPENWA_BURST_MAX_WAIT_SECONDS = 10;
+export const openwaBurstWindowSecondsSchema = z.number().int().min(0).max(OPENWA_BURST_MAX_WAIT_SECONDS);
 
 export function openwaDefaultTriggerRules(numberMode: OpenwaNumberMode): OpenwaTriggerRules {
   const agentNumber = numberMode === "agent_number";
@@ -294,6 +297,7 @@ export function openwaDefaultTriggerRules(numberMode: OpenwaNumberMode): OpenwaT
     ownerMentionedAbsent: true,
     keywords: [],
     allMessages: false,
+    burstWindowSeconds: OPENWA_DEFAULT_BURST_WINDOW_SECONDS,
   };
 }
 
@@ -313,6 +317,7 @@ const openwaTriggerRulesInputSchema = z
     ownerMentionedAbsent: z.boolean().optional(),
     keywords: openwaKeywordsSchema.optional(),
     allMessages: z.boolean().optional(),
+    burstWindowSeconds: openwaBurstWindowSecondsSchema.optional(),
   })
   .strict();
 
@@ -379,11 +384,12 @@ export const openwaEndpointPolicySchema = z
         ownerMentionedAbsent: triggers.ownerMentionedAbsent ?? defaults.ownerMentionedAbsent,
         keywords: triggers.keywords ?? defaults.keywords,
         allMessages: triggers.allMessages ?? defaults.allMessages,
+        burstWindowSeconds: triggers.burstWindowSeconds ?? defaults.burstWindowSeconds,
       },
     };
   });
 
-export const openwaTriggerOverridesSchema = openwaTriggerRulesInputSchema;
+export const openwaTriggerOverridesSchema = openwaTriggerRulesInputSchema.omit({ burstWindowSeconds: true });
 
 export const openwaChatSettingsSchema = z
   .object({

@@ -26,6 +26,7 @@ import {
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
+import { OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -33,7 +34,6 @@ import { secretService } from "../../services/secrets.js";
 import { createOpenwaPolicyCache, OPENWA_POLICY_REVALIDATE_MS } from "../../services/openwa/policy.js";
 import { OPENWA_SPAM_MAX_TRIGGERS } from "../../services/openwa/admission.js";
 import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.js";
-import { OPENWA_GROUP_BURST_MS } from "../../services/openwa/steering.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "21111111-2222-4333-8444-555555555555";
@@ -189,15 +189,17 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       return { accepted: true } as never;
     });
     const runtime = new ChatSdkRuntime();
-    const service = chatChannelService(counted.db, {
+    const options: ChatChannelServiceOptions = {
       runtime,
       publicBaseUrl: "https://paperclip.example",
       heartbeat: { wakeup } as never,
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
       ...extra,
-    });
+    };
+    const service = chatChannelService(counted.db, options);
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
     const secret = await secretService(db).create(
@@ -237,7 +239,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
         setup: { step: "complete", testStartedAt: new Date(Date.now() - 60_000).toISOString() },
       })
       .where(eq(chatEndpoints.id, endpoint.id));
-    return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, counted, wakeup };
+    return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, counted, wakeup, options };
   }
 
   type Setup = Awaited<ReturnType<typeof setup>>;
@@ -748,10 +750,10 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     ]);
   }, 120_000);
 
-  it("holds a group's member wake for the burst window, folds later member triggers into it and lets owner triggers bypass it", async () => {
+  it("holds a group's member wake for the burst window, folds later member triggers into it and holds owner triggers in their own batch", async () => {
     const clock = new ManualClock();
     clock.time = Date.now() + 3_600_000;
-    const t = await setup({ openwaBurstClock: clock });
+    const t = await setup({ openwaBurstClock: clock, openwaBurstWindowMs: undefined });
     await addOwner(t, OWNER_PHONE);
     const members = ["628666000661", "628666000662", "628666000663", "628666000664"];
     const group = "120363000000000031@g.us";
@@ -785,20 +787,153 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     await send(t, { chatId: group, author: jid(OWNER_PHONE), body: "@" + OWN_PHONE + " owner here", extra: { mentionedIds: [jid(OWN_PHONE)] } });
     const ownerRow = (await settledDeliveries(t, 5)).at(-1)!;
     expect(ownerRow.triggerClass).toBe("owner");
-    await until(async () => (await wakeActions(t)).find((action) => action.deliveryId === ownerRow.id)?.status === "processed");
+    await until(async () => burstCode((await wakeActions(t)).find((action) => action.deliveryId === ownerRow.id)) === "openwa_burst_held");
     const ownerWake = (await wakeActions(t)).find((action) => action.deliveryId === ownerRow.id)!;
-    expect((ownerWake.result as { code?: string }).code).toBe("inbound_wakeup_durable");
     expect((ownerWake.payload as { openwa: { deliveryIds: string[] } }).openwa.deliveryIds).toEqual([ownerRow.id]);
-    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    expect(t.wakeup).not.toHaveBeenCalled();
 
-    clock.advance(OPENWA_GROUP_BURST_MS);
-    await until(async () => (await wakeActions(t))[0]?.status === "processed");
+    clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+    await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
     wakes = await wakeActions(t);
-    expect((wakes[0].result as { code?: string }).code).toBe("inbound_wakeup_durable");
+    expect(burstCode(wakes[0])).toBe("inbound_wakeup_durable");
     expect(t.wakeup).toHaveBeenCalledTimes(2);
-    const memberCall = t.wakeup.mock.calls.find((call) => call[1].durableChatRequest?.id === wakes[0].id)!;
-    expect(memberCall).toBeDefined();
-    expect((memberCall[1].contextSnapshot as { openwa?: { deliveryIds?: string[] } }).openwa?.deliveryIds).toEqual(rows.map((row) => row.id));
+    expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(rows.map((row) => row.id));
+    expect(wakeCallDeliveryIds(t, ownerWake.id)).toEqual([ownerRow.id]);
+  }, 120_000);
+
+  function burstCode(action: { result: unknown } | undefined) {
+    return (action?.result as { code?: string } | null | undefined)?.code;
+  }
+
+  function wakeCallDeliveryIds(t: Setup, actionId: string) {
+    const call = t.wakeup.mock.calls.find((entry) => entry[1].durableChatRequest?.id === actionId);
+    return (call?.[1].contextSnapshot as { openwa?: { deliveryIds?: string[] } } | undefined)?.openwa?.deliveryIds;
+  }
+
+  async function sendHeld(t: Setup, input: Parameters<FakeOpenwaGateway["inbound"]>[0]) {
+    const row = await send(t, input);
+    let delivery: typeof chatDeliveries.$inferSelect | undefined;
+    await until(async () => {
+      delivery = (await deliveries(t)).find((entry) => (entry.normalizedEvent as { openwa?: { waMessageId?: string } }).openwa?.waMessageId === row.waMessageId);
+      const action = delivery && (await wakeActions(t)).find((entry) => entry.deliveryId === delivery!.id);
+      return ["openwa_burst_held", "openwa_burst_folded"].includes(burstCode(action) ?? "");
+    });
+    return delivery!;
+  }
+
+  async function burstSetup(clock: ManualClock) {
+    const t = await setup({ openwaBurstClock: clock, openwaBurstWindowMs: undefined });
+    await addOwner(t, OWNER_PHONE);
+    await goLive(t);
+    return t;
+  }
+
+  async function settle(ms = 300) {
+    await new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
+  it("batches three owner messages sent 0.3 s apart into one wake that starts the burst window after the last, in order", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    const held = [];
+    for (const [index, body] of ["first part", "second part", "third part"].entries()) {
+      if (index) clock.advance(300);
+      held.push(await sendHeld(t, { chatId: jid(OWNER_PHONE), body }));
+    }
+    const wakes = await wakeActions(t);
+    expect(wakes.map((action) => [action.status, burstCode(action)])).toEqual([
+      ["issued", "openwa_burst_held"],
+      ["processed", "openwa_burst_folded"],
+      ["processed", "openwa_burst_folded"],
+    ]);
+    clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000 - 100);
+    await settle();
+    expect(t.wakeup).not.toHaveBeenCalled();
+    clock.advance(100);
+    await until(async () => (await wakeActions(t))[0]?.status === "processed");
+    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(held.map((delivery) => delivery.id));
+    await settle();
+    expect(t.wakeup).toHaveBeenCalledTimes(1);
+  }, 120_000);
+
+  it("starts a new batch for a message sent after the previous batch's quiet gap", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    const first = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "first request" });
+    clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+    await until(() => t.wakeup.mock.calls.length === 1);
+    clock.advance(5_000 - OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+    const second = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "a later request" });
+    const secondWake = (await wakeActions(t)).find((action) => action.deliveryId === second.id)!;
+    expect(burstCode(secondWake)).toBe("openwa_burst_held");
+    clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+    await until(() => t.wakeup.mock.calls.length === 2);
+    const [firstWake] = await wakeActions(t);
+    expect(wakeCallDeliveryIds(t, firstWake.id)).toEqual([first.id]);
+    expect(wakeCallDeliveryIds(t, secondWake.id)).toEqual([second.id]);
+  }, 120_000);
+
+  it("caps a burst of messages every 2 s at the maximum wait after the first", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    const held = [];
+    for (let index = 0; index < 5; index++) {
+      if (index) clock.advance(2_000);
+      held.push(await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "part " + index }));
+    }
+    clock.advance(OPENWA_BURST_MAX_WAIT_SECONDS * 1_000 - 8_000 - 100);
+    await settle();
+    expect(t.wakeup).not.toHaveBeenCalled();
+    clock.advance(100);
+    await until(() => t.wakeup.mock.calls.length === 1);
+    const [wake] = await wakeActions(t);
+    expect(wakeCallDeliveryIds(t, wake.id)).toEqual(held.map((delivery) => delivery.id));
+  }, 120_000);
+
+  it("starts each message's wake immediately when the endpoint burst window is 0", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await setup({ openwaBurstClock: clock, openwaBurstWindowMs: undefined });
+    await addOwner(t, OWNER_PHONE);
+    const [row] = await db.select({ policy: chatEndpoints.policy }).from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
+    const policy = (row.policy ?? {}) as Record<string, unknown>;
+    await db
+      .update(chatEndpoints)
+      .set({ policy: { ...policy, triggers: { ...((policy.triggers ?? {}) as Record<string, unknown>), burstWindowSeconds: 0 } } as never })
+      .where(eq(chatEndpoints.id, t.endpointId));
+    await goLive(t);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
+    await until(() => t.wakeup.mock.calls.length === 1);
+    await send(t, { chatId: jid(OWNER_PHONE), body: "second request" });
+    await until(() => t.wakeup.mock.calls.length === 2);
+    await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
+    expect((await wakeActions(t)).map((action) => burstCode(action))).toEqual(["inbound_wakeup_durable", "inbound_wakeup_durable"]);
+  }, 120_000);
+
+  it("dispatches one wake for a batch held across a restart", async () => {
+    const clock = new ManualClock();
+    const t = await burstSetup(clock);
+    const held = [await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "first part" })];
+    clock.advance(300);
+    held.push(await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "second part" }));
+    const [holder] = await wakeActions(t);
+    const retryAt = Date.parse((holder.result as { retryAt: string }).retryAt);
+    await t.service.shutdown();
+    const restarted = chatChannelService(t.counted.db, t.options);
+    services.push(restarted);
+    await restarted.processPendingDeliveries();
+    expect(t.wakeup).not.toHaveBeenCalled();
+    await until(async () => {
+      if (Date.now() > retryAt) await restarted.processPendingDeliveries();
+      return (await wakeActions(t))[0]?.status === "processed";
+    }, 30_000);
+    await settle();
+    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    expect(wakeCallDeliveryIds(t, holder.id)).toEqual(held.map((delivery) => delivery.id));
   }, 120_000);
 
   it("moves an in_review conversation issue back to in_progress before a member trigger wakes the agent", async () => {

@@ -913,6 +913,7 @@ const openwaEndpointPolicyResponseSchema = z
         ownerMentionedAbsent: z.boolean(),
         keywords: z.array(z.string()),
         allMessages: z.boolean(),
+        burstWindowSeconds: z.number().int(),
       })
       .strict(),
     absenceSeconds: z.number().int(),

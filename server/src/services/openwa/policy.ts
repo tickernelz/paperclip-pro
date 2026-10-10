@@ -166,6 +166,7 @@ export function openwaEffectiveTriggers(base: OpenwaTriggerRules, overrides: Ope
     ownerMentionedAbsent: overrides.ownerMentionedAbsent ?? base.ownerMentionedAbsent,
     keywords: overrides.keywords ?? base.keywords,
     allMessages: overrides.allMessages ?? base.allMessages,
+    burstWindowSeconds: base.burstWindowSeconds,
   };
 }
 

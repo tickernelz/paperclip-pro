@@ -1,7 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { agents, chatActions, chatConversations, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
-import { maskOpenwaPhoneNumber, type ChatInflightMode, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+import { agents, chatActions, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, type ChatInflightMode, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
 import { findActiveServerAdapter } from "../../adapters/registry.js";
 import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";
@@ -367,17 +367,23 @@ export async function steerOpenwaSystemText(input: { runId: string; text: string
   }
 }
 
-export const OPENWA_GROUP_BURST_MS = 5_000;
 export const OPENWA_BURST_HELD = "openwa_burst_held";
 export const OPENWA_BURST_FOLDED = "openwa_burst_folded";
+export const OPENWA_BURST_MAX_WAIT_MS = OPENWA_BURST_MAX_WAIT_SECONDS * 1_000;
 const ACTIVE_RUN_STATUSES = ["queued", "scheduled_retry", "running"];
+const OPENWA_BURST_TRIGGER_CLASSES: ReadonlySet<unknown> = new Set(["owner", "other", "grant"]);
 
 export type OpenwaBurstOutcome =
   | { kind: "dispatch" }
   | { kind: "held"; actionId: string; heldUntil: Date }
-  | { kind: "folded"; actionId: string; foldedInto: string; deliveryCount: number };
+  | { kind: "folded"; actionId: string; foldedInto: string; deliveryCount: number; heldUntil: Date };
 
-/** Holds a group member trigger's accepted wake for the burst window, or folds it into the conversation's held wake; owner triggers, DMs and busy conversations dispatch as before. */
+function openwaControlTrigger(normalizedEvent: unknown): boolean {
+  const openwa = record(record(normalizedEvent).openwa);
+  return Boolean(openwa.control) || (Array.isArray(openwa.rules) && openwa.rules.includes("control"));
+}
+
+/** Holds a normal OpenWA message trigger's wake until its chat is quiet for the burst window (at most the max wait after the first trigger), folding later same-class triggers into it; other events and busy conversations dispatch as before. */
 export async function holdOrFoldOpenwaBurstWake(
   db: Db,
   input: { companyId: string; endpointId: string; deliveryId: string; issueId: string; now: Date; windowMs: number },
@@ -397,14 +403,14 @@ export async function holdOrFoldOpenwaBurstWake(
       .for("update")
       .limit(1);
     const openwa = record(own?.payload.openwa);
-    if (!own?.conversationId || openwa.event !== "message" || openwa.triggerClass !== "other" || own.result !== null)
+    if (!own?.conversationId || openwa.event !== "message" || !OPENWA_BURST_TRIGGER_CLASSES.has(openwa.triggerClass) || own.result !== null)
       return { kind: "dispatch" };
-    const [conversation] = await tx
-      .select({ isDirectMessage: chatConversations.isDirectMessage })
-      .from(chatConversations)
-      .where(and(eq(chatConversations.companyId, input.companyId), eq(chatConversations.id, own.conversationId)))
+    const [delivery] = await tx
+      .select({ principalId: chatDeliveries.principalId, normalizedEvent: chatDeliveries.normalizedEvent })
+      .from(chatDeliveries)
+      .where(and(eq(chatDeliveries.companyId, input.companyId), eq(chatDeliveries.id, input.deliveryId)))
       .limit(1);
-    if (!conversation || conversation.isDirectMessage) return { kind: "dispatch" };
+    if (!delivery || openwaControlTrigger(delivery.normalizedEvent)) return { kind: "dispatch" };
     const [run] = await tx
       .select({ id: heartbeatRuns.id })
       .from(issues)
@@ -424,18 +430,21 @@ export async function holdOrFoldOpenwaBurstWake(
         sql`${chatActions.id} <> ${own.id}`,
         sql`${chatActions.result} ->> 'code' = ${OPENWA_BURST_HELD}`,
         sql`(${chatActions.result} ->> 'retryAt')::timestamptz > ${input.now.toISOString()}::timestamptz`,
-        sql`${chatActions.payload} -> 'openwa' ->> 'triggerClass' = 'other'`,
+        sql`${chatActions.payload} -> 'openwa' ->> 'triggerClass' = ${String(openwa.triggerClass)}`,
         sql`${chatActions.payload} -> 'openwa' ->> 'event' = 'message'`,
         sql`${chatActions.payload} ->> 'sessionGeneration' = ${String(own.payload.sessionGeneration)}`,
+        openwa.triggerClass === "grant"
+          ? sql`exists (select 1 from ${chatDeliveries} where ${chatDeliveries.id} = ${chatActions.deliveryId} and ${chatDeliveries.principalId} is not distinct from ${delivery.principalId})`
+          : undefined,
       ))
       .orderBy(chatActions.createdAt)
       .for("update")
       .limit(1);
     if (!holder) {
-      const heldUntil = new Date(input.now.getTime() + input.windowMs);
+      const heldUntil = new Date(input.now.getTime() + Math.min(input.windowMs, OPENWA_BURST_MAX_WAIT_MS));
       await tx
         .update(chatActions)
-        .set({ result: { code: OPENWA_BURST_HELD, retryAt: heldUntil.toISOString() }, updatedAt: new Date() })
+        .set({ result: { code: OPENWA_BURST_HELD, retryAt: heldUntil.toISOString(), heldSince: input.now.toISOString() }, updatedAt: new Date() })
         .where(eq(chatActions.id, own.id));
       return { kind: "held", actionId: own.id, heldUntil };
     }
@@ -445,9 +454,15 @@ export async function holdOrFoldOpenwaBurstWake(
       : [];
     const ownIds = Array.isArray(openwa.deliveryIds) ? openwa.deliveryIds.filter((id): id is string => typeof id === "string") : [input.deliveryId];
     const deliveryIds = [...new Set([...previous, ...ownIds])];
+    const heldSince = typeof holder.result?.heldSince === "string" ? Date.parse(holder.result.heldSince) : holder.createdAt.getTime();
+    const heldUntil = new Date(Math.min(input.now.getTime() + input.windowMs, heldSince + OPENWA_BURST_MAX_WAIT_MS));
     await tx
       .update(chatActions)
-      .set({ payload: { ...holder.payload, openwa: { ...holderOpenwa, deliveryIds } }, updatedAt: new Date() })
+      .set({
+        payload: { ...holder.payload, openwa: { ...holderOpenwa, deliveryIds } },
+        result: { code: OPENWA_BURST_HELD, retryAt: heldUntil.toISOString(), heldSince: new Date(heldSince).toISOString() },
+        updatedAt: new Date(),
+      })
       .where(eq(chatActions.id, holder.id));
     await tx
       .update(chatActions)
@@ -459,12 +474,12 @@ export async function holdOrFoldOpenwaBurstWake(
       action: "openwa.burst_folded",
       details: { wakeId: holder.id, deliveryId: input.deliveryId, deliveryCount: deliveryIds.length },
     });
-    return { kind: "folded", actionId: own.id, foldedInto: holder.id, deliveryCount: deliveryIds.length };
+    return { kind: "folded", actionId: own.id, foldedInto: holder.id, deliveryCount: deliveryIds.length, heldUntil };
   });
 }
 
-/** Ends a held burst so the conversation drain dispatches its wake; returns false when it was already released or dispatched. */
-export async function releaseOpenwaBurstWake(db: Db, input: { companyId: string; actionId: string }): Promise<boolean> {
+/** Ends a held burst whose quiet gap has elapsed so the conversation drain dispatches its wake; returns false while it is still held for a later trigger or once it was released or dispatched. */
+export async function releaseOpenwaBurstWake(db: Db, input: { companyId: string; actionId: string; now: Date }): Promise<boolean> {
   const released = await db
     .update(chatActions)
     .set({ result: { code: "openwa_burst_released" }, updatedAt: new Date() })
@@ -473,6 +488,7 @@ export async function releaseOpenwaBurstWake(db: Db, input: { companyId: string;
       eq(chatActions.id, input.actionId),
       eq(chatActions.status, "issued"),
       sql`${chatActions.result} ->> 'code' = ${OPENWA_BURST_HELD}`,
+      sql`(${chatActions.result} ->> 'retryAt')::timestamptz <= ${input.now.toISOString()}::timestamptz`,
     ))
     .returning({ id: chatActions.id });
   return released.length > 0;

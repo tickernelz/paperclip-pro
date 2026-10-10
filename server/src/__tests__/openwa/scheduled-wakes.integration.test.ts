@@ -268,6 +268,7 @@ describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)",
       discordGatewayLeaseTtlMs: 120_000,
       discordGatewayLeaseRenewalIntervalMs: 60_000,
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
       ...(clock ? { openwaScheduledWakeClock: clock } : {}),
     });
     services.push(service);

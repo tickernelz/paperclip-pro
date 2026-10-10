@@ -738,6 +738,7 @@ export interface OpenwaTriggerRules {
   ownerMentionedAbsent: boolean;
   keywords: string[];
   allMessages: boolean;
+  burstWindowSeconds: number;
 }
 
 export interface OpenwaEndpointPolicy {

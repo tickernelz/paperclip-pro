@@ -73,7 +73,6 @@ import { createOpenwaNudges, openwaNudgeWaiting, registerOpenwaRunStartListener 
 import {
   holdOrFoldOpenwaBurstWake,
   OPENWA_BURST_HELD,
-  OPENWA_GROUP_BURST_MS,
   openwaOwnerAbsentRunActive,
   releaseOpenwaBurstWake,
   steerOpenwaLateTranscript,
@@ -1580,7 +1579,7 @@ export interface ChatChannelServiceOptions {
   openwaScheduledWakeClock?: OpenwaScheduledWakeClock;
   openwaNudgeClock?: OpenwaScheduledWakeClock;
   openwaBurstClock?: OpenwaScheduledWakeClock;
-  openwaGroupBurstMs?: number;
+  openwaBurstWindowMs?: number;
   /** Test override for Discord Gateway leader-lease expiry. */
   discordGatewayLeaseTtlMs?: number;
   /** Test override for Discord Gateway leader-lease renewal cadence. */
@@ -3173,6 +3172,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     resolveNativeQuestion: options.resolveNativeQuestion,
   });
   const backgroundMessageTasks = new Set<Promise<void>>();
+  const openwaSteerWaits = new Map<string, Promise<void>>();
   const scheduledConversationDrains = new Map<string, number>();
   const openwaBurstClock = options.openwaBurstClock ?? openwaSystemClock;
   const openwaBurstTimers = new Set<unknown>();
@@ -8647,12 +8647,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
   }
 
-  async function steerAdmittedOpenwaTrigger(
-    action: typeof chatActions.$inferSelect,
-    issueId: string,
-    commentId: string,
-    deferred: boolean,
-  ) {
+  async function steerAdmittedOpenwaTrigger(action: typeof chatActions.$inferSelect, issueId: string, commentId: string) {
     const openwa = action.payload.openwa;
     if (!openwa || typeof openwa !== "object" || !action.conversationId) return;
     const wake = openwa as Record<string, unknown>;
@@ -8669,22 +8664,31 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       deliveryIds,
       storage: options.storage,
     };
-    let outcome;
-    try {
-      outcome = await steerOpenwaTrigger(db, input);
-    } catch (error) {
-      logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");
-      return;
+    const earlier = openwaSteerWaits.get(issueId);
+    if (!earlier) {
+      let outcome;
+      try {
+        outcome = await steerOpenwaTrigger(db, input);
+      } catch (error) {
+        logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger; it stays queued");
+        return;
+      }
+      if (!openwaSteerMayWaitForRun(outcome)) return;
     }
-    if (!deferred || !openwaSteerMayWaitForRun(outcome) || shuttingDown) return;
-    const pending = steerOpenwaTriggerWhenReady(db, { ...input, timeoutMs: OPENWA_STEER_READY_WAIT_MS, stopped: () => shuttingDown })
+    if (shuttingDown) return;
+    const pending = (earlier ?? Promise.resolve())
+      .then(() => steerOpenwaTriggerWhenReady(db, { ...input, timeoutMs: OPENWA_STEER_READY_WAIT_MS, stopped: () => shuttingDown }))
       .then((late) => {
         if (late.deliveredAs === "queued")
           logger.info({ actionId: action.id, issueId, reason: late.reason }, "OpenWA trigger stays queued after waiting for the starting run");
       })
       .catch((error) => logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger into its starting run; it stays queued"));
+    openwaSteerWaits.set(issueId, pending);
     backgroundMessageTasks.add(pending);
-    void pending.finally(() => backgroundMessageTasks.delete(pending));
+    void pending.finally(() => {
+      backgroundMessageTasks.delete(pending);
+      if (openwaSteerWaits.get(issueId) === pending) openwaSteerWaits.delete(issueId);
+    });
   }
 
   async function admitOpenwaLateOwner(input: OpenwaLateOwnerActivity, ownership: DiscordGatewayOwnership) {
@@ -14887,9 +14891,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const handle = openwaBurstClock.setTimer(() => {
       openwaBurstTimers.delete(handle);
       if (shuttingDown) return;
-      void releaseOpenwaBurstWake(db, { companyId, actionId })
-        .then(() => scheduleConversationDrain(endpointId, threadId))
-        .catch((error) => logger.warn({ actionId, error: redactError(error) }, "failed to release a held OpenWA group wake; the sweep dispatches it after its hold"));
+      void releaseOpenwaBurstWake(db, { companyId, actionId, now: new Date(openwaBurstClock.now()) })
+        .then((released) => {
+          if (released) scheduleConversationDrain(endpointId, threadId);
+        })
+        .catch((error) => logger.warn({ actionId, error: redactError(error) }, "failed to release a held OpenWA burst wake; the sweep dispatches it after its hold"));
     }, Math.max(0, heldUntil.getTime() - openwaBurstClock.now()));
     openwaBurstTimers.add(handle);
   }
@@ -14919,15 +14925,21 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       candidate.payload.openwa &&
       typeof candidate.payload.issueId === "string"
     ) {
+      const windowMs =
+        options.openwaBurstWindowMs ??
+        ((await openwaPolicies.get(candidate.companyId, candidate.endpointId))?.policy.triggers.burstWindowSeconds ?? 0) * 1_000;
       const burst = await holdOrFoldOpenwaBurstWake(db, {
         companyId: candidate.companyId,
         endpointId: candidate.endpointId,
         deliveryId,
         issueId: candidate.payload.issueId,
         now: new Date(openwaBurstClock.now()),
-        windowMs: options.openwaGroupBurstMs ?? OPENWA_GROUP_BURST_MS,
+        windowMs,
       });
-      if (burst.kind === "folded") return true;
+      if (burst.kind === "folded") {
+        await armOpenwaBurstRelease(candidate.companyId, candidate.endpointId, burst.foldedInto, deliveryId, burst.heldUntil);
+        return true;
+      }
       if (burst.kind === "held") {
         await armOpenwaBurstRelease(candidate.companyId, candidate.endpointId, burst.actionId, deliveryId, burst.heldUntil);
         return false;
@@ -15077,7 +15089,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const durable = await receipt();
       if (!durable) throw new Error("chat_inbound_wakeup_receipt_missing");
       if (context.endpoint.provider === "openwa" && (durable.status === "deferred_issue_execution" || durable.status === "coalesced"))
-        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId, durable.status === "deferred_issue_execution");
+        await steerAdmittedOpenwaTrigger(claimed, context.issue.id, request.commentId);
       await settle(receiptDeclined(durable) ? "failed" : "processed", {
         code: receiptDeclined(durable)
           ? `inbound_wakeup_${durable.status}`

@@ -185,6 +185,7 @@ describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake
       storage,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);

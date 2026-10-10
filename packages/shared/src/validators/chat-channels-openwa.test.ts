@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   chatInflightModeSchema,
+  OPENWA_DEFAULT_BURST_WINDOW_SECONDS,
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
 } from "./chat-channels.js";
@@ -45,6 +46,7 @@ describe("OpenWA endpoint policy", () => {
         ownerMentionedAbsent: true,
         keywords: [],
         allMessages: false,
+        burstWindowSeconds: 3,
       },
     });
   });
@@ -62,6 +64,7 @@ describe("OpenWA endpoint policy", () => {
         ownerMentionedAbsent: true,
         keywords: [],
         allMessages: false,
+        burstWindowSeconds: 3,
       },
     });
   });
@@ -84,6 +87,7 @@ describe("OpenWA endpoint policy", () => {
       ownerMentionedAbsent: true,
       keywords: ["deploy"],
       allMessages: false,
+      burstWindowSeconds: 3,
     });
   });
 
@@ -130,6 +134,16 @@ describe("OpenWA endpoint policy", () => {
     expect(policy.approvals.maxReminders).toBe(0);
   });
 
+  it("defaults the burst window to 3 seconds and accepts 0 to 10 whole seconds", () => {
+    expect(OPENWA_DEFAULT_BURST_WINDOW_SECONDS).toBe(3);
+    expect(openwaEndpointPolicySchema.parse({}).triggers.burstWindowSeconds).toBe(3);
+    expect(openwaEndpointPolicySchema.parse({ numberMode: "owner_number" }).triggers.burstWindowSeconds).toBe(3);
+    expect(openwaEndpointPolicySchema.parse({ triggers: { burstWindowSeconds: 0 } }).triggers.burstWindowSeconds).toBe(0);
+    expect(openwaEndpointPolicySchema.parse({ triggers: { burstWindowSeconds: 10 } }).triggers.burstWindowSeconds).toBe(10);
+    for (const burstWindowSeconds of [11, -1, 2.5, "3"])
+      expect(openwaEndpointPolicySchema.safeParse({ triggers: { burstWindowSeconds } }).success).toBe(false);
+  });
+
   it.each([
     [{ unknown: true }],
     [{ triggers: { mentionAll: true } }],
@@ -145,6 +159,11 @@ describe("OpenWA endpoint policy", () => {
 describe("OpenWA per-chat settings", () => {
   it("defaults activation to auto and leaves overrides absent", () => {
     expect(openwaChatSettingsSchema.parse({})).toEqual({ activation: "auto" });
+  });
+
+  it("keeps the burst window out of per-chat trigger overrides", () => {
+    expect(openwaChatSettingsSchema.safeParse({ triggers: { burstWindowSeconds: 3 } }).success).toBe(false);
+    expect(openwaChatSettingsSchema.safeParse({ triggers: { burstWindowSeconds: 0 } }).success).toBe(false);
   });
 
   it("accepts overrides within bounds", () => {

@@ -147,6 +147,7 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
       storage,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
+      openwaBurstWindowMs: 0,
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);

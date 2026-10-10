@@ -477,6 +477,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
     discordGatewayLeaseTtlMs: 120_000,
     discordGatewayLeaseRenewalIntervalMs: 60_000,
     discordGatewayLeaseWaitMs: 200,
+    openwaBurstWindowMs: 0,
   });
   instrumentation.instrumentStats(service.openwaAdmissionStats);
 

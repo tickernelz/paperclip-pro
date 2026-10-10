@@ -50,6 +50,8 @@ export function NumberField({
   value,
   error,
   disabled,
+  min,
+  max,
   onChange,
 }: {
   id: string;
@@ -58,6 +60,8 @@ export function NumberField({
   value: string;
   error?: string;
   disabled?: boolean;
+  min?: number;
+  max?: number;
   onChange: (value: string) => void;
 }) {
   return (
@@ -72,6 +76,8 @@ export function NumberField({
         inputMode="numeric"
         className="max-w-xs font-mono"
         value={value}
+        min={min}
+        max={max}
         disabled={disabled}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? id + "-error" : undefined}
