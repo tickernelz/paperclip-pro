@@ -98,8 +98,8 @@
     "test:lifecycle-baseline:typecheck": "tsc -p tests/lifecycle-baseline/tsconfig.json"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "agentmail": "^0.5.31",
+    "@playwright/test": "^1.64.0",
+    "agentmail": "^0.5.42",
     "cross-env": "^10.1.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
