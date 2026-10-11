@@ -8560,9 +8560,16 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (shuttingDown) return;
     const pending = (earlier ?? Promise.resolve())
       .then(() => steerOpenwaTriggerWhenReady(db, { ...input, timeoutMs: OPENWA_STEER_READY_WAIT_MS, stopped: () => shuttingDown }))
-      .then((late) => {
+      .then(async (late) => {
         if (late.deliveredAs === "queued")
           logger.info({ actionId: action.id, issueId, reason: late.reason }, "OpenWA trigger stays queued after waiting for the starting run");
+        else {
+          if (action.conversationId) {
+            const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, action.endpointId)).limit(1);
+            const [conversation] = await db.select().from(chatConversations).where(eq(chatConversations.id, action.conversationId)).limit(1);
+            if (endpoint && conversation?.externalThreadId) await showOpenwaTyping(endpoint, conversation.externalThreadId);
+          }
+        }
       })
       .catch((error) => logger.warn({ err: error, actionId: action.id }, "failed to steer an OpenWA trigger into its starting run; it stays queued"));
     openwaSteerWaits.set(issueId, pending);
@@ -8635,6 +8642,18 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         updatedAt: new Date(),
       })
       .where(and(eq(chatDeliveries.id, deliveryId), eq(chatDeliveries.state, "processing")));
+  }
+
+  function openwaAdapter(endpointId: string): OpenwaChatAdapter | null {
+    const adapter = runtime.get(endpointId)?.getProviderAdapter();
+    return adapter instanceof OpenwaChatAdapter ? adapter : null;
+  }
+
+  async function showOpenwaTyping(endpoint: EndpointRow, threadId: string): Promise<void> {
+    if (endpoint.provider !== "openwa") return;
+    const adapter = openwaAdapter(endpoint.id);
+    if (!adapter || adapter.isTyping(threadId)) return;
+    await adapter.startTyping(threadId).catch(() => undefined);
   }
 
   function gatewayForOpenwaEndpoint(endpoint: EndpointRow) {
@@ -18374,6 +18393,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         );
         if (!delivery || !deliveryReady(delivery, new Date())) break;
         if (delivery.state === "processed") {
+          const releasedThreadId = normalizedDeliveryThreadId(delivery);
+          if (releasedThreadId) await showOpenwaTyping(endpoint, releasedThreadId);
           if (!(await processInboundWakeup(delivery.id))) break;
           continue;
         }

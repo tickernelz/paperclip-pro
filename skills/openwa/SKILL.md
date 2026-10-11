@@ -95,7 +95,7 @@ act beyond the run's facts. Silence never approves anything.
 
 ## Sending
 
-- `openwa_send({chat?, kind?, text?, attachmentId?, location?, contact?, poll?, mentions?, quoteMessageId?, idempotencyKey})`.
+- `openwa_send({chat?, kind?, text?, attachmentId?, filename?, location?, contact?, poll?, mentions?, quoteMessageId?, idempotencyKey})`.
   `kind` is `text` (default), `image`, `video`, `audio`, `voice` (voice note),
   `document`, `sticker`, `location` (`location: {lat, lng, name?, address?}`),
   `contact` (`contact: {name, number}`) or `poll`
@@ -110,6 +110,11 @@ act beyond the run's facts. Silence never approves anything.
 - Any file type can be sent (`.bat`, `.exe`, `.apk`, `.zip`, unknown binaries).
   Use `kind: "document"` for files that are not images, video or audio; a media
   kind whose MIME family does not match the attachment is sent as a document.
+- WhatsApp always shows a document under a real filename and type. Paperclip
+  sends the attachment's own name and content type; when either is unknown it
+  identifies the bytes and keeps the source file's extension, so a document
+  never arrives as `.bin`. Pass `filename` to override the name WhatsApp shows
+  (no path separators); a name without an extension gets the attachment's own.
 - Other message actions (react, reply, forward, edit, delete, pin, star, vote in
   a poll) go through `openwa_call` with the matching `MessageController_*`
   operation; check it with `openwa_describe` first.

@@ -87,6 +87,119 @@ export function inferOfficeAttachmentContentTypeFromFilename(
   return null;
 }
 
+const MAGIC_SIGNATURES: ReadonlyArray<{ mime: string; extension: string; offset: number; signature: readonly number[] }> = [
+  { mime: "application/pdf", extension: "pdf", offset: 0, signature: [0x25, 0x50, 0x44, 0x46, 0x2d] },
+  { mime: "image/png", extension: "png", offset: 0, signature: [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a] },
+  { mime: "image/jpeg", extension: "jpg", offset: 0, signature: [0xff, 0xd8, 0xff] },
+  { mime: "image/gif", extension: "gif", offset: 0, signature: [0x47, 0x49, 0x46, 0x38] },
+  { mime: "image/webp", extension: "webp", offset: 8, signature: [0x57, 0x45, 0x42, 0x50] },
+  { mime: "application/zip", extension: "zip", offset: 0, signature: [0x50, 0x4b, 0x03, 0x04] },
+  { mime: "application/gzip", extension: "gz", offset: 0, signature: [0x1f, 0x8b] },
+  { mime: "audio/ogg", extension: "ogg", offset: 0, signature: [0x4f, 0x67, 0x67, 0x53] },
+  { mime: "audio/mpeg", extension: "mp3", offset: 0, signature: [0x49, 0x44, 0x33] },
+  { mime: "image/heic", extension: "heic", offset: 4, signature: [0x66, 0x74, 0x79, 0x70] },
+  { mime: "video/mp4", extension: "mp4", offset: 4, signature: [0x66, 0x74, 0x79, 0x70] },
+];
+
+const EXTENSION_TO_CONTENT_TYPE: Readonly<Record<string, string>> = {
+  pdf: "application/pdf",
+  png: "image/png",
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  gif: "image/gif",
+  webp: "image/webp",
+  heic: "image/heic",
+  mp4: "video/mp4",
+  m4v: "video/x-m4v",
+  webm: "video/webm",
+  mov: "video/quicktime",
+  ogg: "audio/ogg",
+  mp3: "audio/mpeg",
+  m4a: "audio/mp4",
+  wav: "audio/wav",
+  txt: "text/plain",
+  csv: "text/csv",
+  json: "application/json",
+  zip: "application/zip",
+  gz: "application/gzip",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  doc: "application/msword",
+  xls: "application/vnd.ms-excel",
+  ppt: "application/vnd.ms-powerpoint",
+};
+
+/** Filename extension (no dot) a content type maps to, or null when there is no reliable mapping. */
+export function attachmentExtensionForContentType(contentType: string | null | undefined): string | null {
+  const essence = normalizeContentType(contentType);
+  const mapped = Object.entries(EXTENSION_TO_CONTENT_TYPE).find(([, mime]) => mime === essence);
+  return mapped ? mapped[0]! : null;
+}
+
+/** Content type an extension implies, or null for an unknown or absent extension. */
+export function contentTypeForExtension(extension: string | null | undefined): string | null {
+  return EXTENSION_TO_CONTENT_TYPE[(extension ?? "").trim().replace(/^\./, "").toLowerCase()] ?? null;
+}
+
+/** Identifies a file from its leading magic bytes; null when the head matches no known signature. */
+export function sniffAttachmentContentType(body: Buffer | Uint8Array): { contentType: string; extension: string } | null {
+  const bytes = body instanceof Uint8Array ? body : Buffer.from(body);
+  for (const candidate of MAGIC_SIGNATURES) {
+    const signature = candidate.signature;
+    if (bytes.length < candidate.offset + signature.length) continue;
+    let matches = true;
+    for (let index = 0; index < signature.length; index += 1) {
+      if (bytes[candidate.offset + index] !== signature[index]) {
+        matches = false;
+        break;
+      }
+    }
+    if (!matches) continue;
+    if (candidate.extension === "zip") {
+      const head = bytes.subarray(0, 512).toString("latin1");
+      const marker = head.includes("word/") ? "docx" : head.includes("xl/") ? "xlsx" : head.includes("ppt/") ? "pptx" : null;
+      if (marker) return { contentType: EXTENSION_TO_CONTENT_TYPE[marker]!, extension: marker };
+    }
+    return { contentType: candidate.mime, extension: candidate.extension };
+  }
+  return null;
+}
+
+/** True when a filename's extension is absent or the placeholder `.bin` that carries no type information. */
+export function isPlaceholderAttachmentFilename(filename: string | null | undefined): boolean {
+  const leaf = (filename ?? "").trim();
+  if (!leaf) return true;
+  if (!leaf.includes(".")) return true;
+  return leaf.slice(leaf.lastIndexOf(".") + 1).toLowerCase() === "bin";
+}
+
+/**
+ * Replaces a placeholder content type and a `.bin`/extension-less filename with
+ * the identity the bytes themselves prove. A real filename and a real declared
+ * type both survive untouched; a name whose extension contradicts the bytes is
+ * corrected. The result is never `.bin`.
+ */
+export function resolveAttachmentIdentity(input: {
+  contentType: string | null | undefined;
+  filename: string | null | undefined;
+  body?: Buffer | Uint8Array | null;
+}): { contentType: string; filename: string } {
+  const declared = normalizeContentType(input.contentType);
+  const sniffed = input.body ? sniffAttachmentContentType(input.body) : null;
+  const extension = attachmentExtensionForContentType(sniffed?.contentType ?? declared);
+  if (!extension) return { contentType: declared, filename: (input.filename ?? "").trim() };
+  if (!isPlaceholderAttachmentFilename(input.filename)) {
+    if (sniffed && sniffed.contentType !== declared && declared === DEFAULT_ATTACHMENT_CONTENT_TYPE)
+      return { contentType: sniffed.contentType, filename: (input.filename ?? "").trim() };
+    return { contentType: declared, filename: (input.filename ?? "").trim() };
+  }
+  const leaf = (input.filename ?? "").trim();
+  const stem = leaf && leaf.includes(".") ? leaf.slice(0, leaf.lastIndexOf(".")) : leaf;
+  const name = stem ? stem + "." + extension : "file." + extension;
+  return { contentType: sniffed?.contentType ?? contentTypeForExtension(extension) ?? declared, filename: name };
+}
+
 export function normalizeUploadAttachmentContentType(input: {
   contentType: string | null | undefined;
   originalFilename?: string | null;
