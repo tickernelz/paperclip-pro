@@ -3,6 +3,7 @@ import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
 import {
   Check,
   ClipboardList,
+  Lock,
   MessageCircleQuestion,
   Paperclip,
   Plus,
@@ -11,6 +12,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMobileEntityPickerViewportStyle } from "@/hooks/useMobileEntityPickerViewportStyle";
 import { workModeMetaFor } from "@/lib/work-mode-meta";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { MobilePickerSheetHeader } from "@/components/ui/mobile-picker-sheet";
@@ -20,6 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface ComposerAddMenuProps {
   mode: IssueWorkMode;
@@ -27,6 +30,7 @@ interface ComposerAddMenuProps {
   onAttachFile?: () => void;
   attachDisabled?: boolean;
   onGoal?: () => void;
+  privacy?: { private: boolean; inherited?: string; onChange: (value: boolean) => void };
   disabled?: boolean;
   mobile?: boolean;
   triggerTestId?: string;
@@ -49,15 +53,17 @@ export function ComposerAddMenu({
   onAttachFile,
   attachDisabled,
   onGoal,
+  privacy,
   disabled,
   mobile = false,
   triggerTestId,
   menuTestId,
 }: ComposerAddMenuProps) {
   const [open, setOpen] = useState(false);
+  const mobileViewportStyle = useMobileEntityPickerViewportStyle();
   const goalFocusRef = useRef(false);
   useMobileViewportInsets(open, { sheet: true });
-  if (!onModeChange && !onAttachFile && !onGoal) return null;
+  if (!onModeChange && !onAttachFile && !onGoal && !privacy) return null;
   const actions: AddMenuAction[] = [
     ...(onAttachFile
       ? [
@@ -67,6 +73,19 @@ export function ComposerAddMenu({
             Icon: Paperclip,
             select: onAttachFile,
             disabled: attachDisabled,
+          },
+        ]
+      : []),
+    ...(privacy
+      ? [
+          {
+            id: "composer-add-private",
+            label: "Private task",
+            detail: privacy.inherited,
+            Icon: Lock,
+            select: () => privacy.onChange(!privacy.private),
+            selected: privacy.private,
+            disabled: Boolean(privacy.inherited),
           },
         ]
       : []),
@@ -212,4 +231,29 @@ export function ComposerModeChip({
       <X className="size-3.5" aria-hidden />
     </button>
   );
+}
+
+export function ComposerPrivacyChip({ inherited, onRemove, disabled }: { inherited?: string; onRemove: () => void; disabled?: boolean }) {
+  const [hintOpen, setHintOpen] = useState(false);
+  const explanation = inherited ?? "Only you and people you share with can read this task";
+  return <TooltipProvider><Tooltip open={hintOpen} onOpenChange={setHintOpen}>
+    <TooltipTrigger asChild>
+      <span className="inline-flex shrink-0" role={inherited ? "button" : undefined}
+        tabIndex={inherited ? 0 : undefined} aria-label={inherited ? explanation : undefined}
+        onClick={inherited ? (event) => { event.preventDefault(); setHintOpen(true); } : undefined}
+        onKeyDown={inherited ? (event) => {
+          if (event.key === "Enter" || event.key === " ") { event.preventDefault(); setHintOpen(true); }
+        } : undefined}>
+        <button type="button" onClick={onRemove} aria-label={inherited ? "Private task" : "Remove private task"}
+          title={explanation}
+          disabled={disabled || Boolean(inherited)} data-testid="composer-private-chip"
+          className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 text-xs font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          <Lock className="size-3.5" aria-hidden />
+          <span className="max-sm:sr-only">Private</span>
+          {!inherited ? <X className="size-3.5" aria-hidden /> : null}
+        </button>
+      </span>
+    </TooltipTrigger>
+    <TooltipContent className="max-w-xs">{explanation}</TooltipContent>
+  </Tooltip></TooltipProvider>;
 }

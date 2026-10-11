@@ -1,3 +1,4 @@
+import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
 import { and, asc, desc, eq, inArray, lte, sql } from "drizzle-orm";
 import { agents, agentWakeupRequests, authUsers, chatCompletionDeliveries as deliveries, chatTaskHandoffs as handoffs,
   heartbeatRuns, issueComments, issueDocuments, issueRelations, issues, type Db } from "@tickernelz/paperclip-pro-db";
@@ -91,19 +92,22 @@ export async function recordChatReassignment(tx: Connection, before: Issue, afte
 }
 
 /** Must run on the same transaction as status projection (including native arbitration). */
-export async function recordChatCompletion(tx: Connection, before: Issue, after: Issue) {
-  if (before.status === after.status) return;
+export async function recordChatCompletion(tx: Connection, before: Issue, after: Issue): Promise<boolean> {
+  if (before.status === after.status) return false;
   await tx.update(deliveries).set({ status: "superseded" }).where(and(eq(deliveries.taskId, after.id),
     eq(deliveries.companyId, after.companyId), inArray(deliveries.status, [...pending])));
-  if (!(OPENWA_COMPLETION_STATUSES as readonly string[]).includes(after.status)) return;
   const [handoff] = await tx.select().from(handoffs).where(and(eq(handoffs.taskId, after.id), eq(handoffs.companyId, after.companyId)));
-  if (!handoff) return;
+  if (!handoff) return false;
   if (handoff.channel === "openwa") {
+    if (!(OPENWA_COMPLETION_STATUSES as readonly string[]).includes(after.status)) return false;
     await tx.insert(deliveries).values({ companyId: after.companyId, taskId: after.id, statusVersion: after.statusVersion,
       nextAttemptAt: new Date(Date.now() + OPENWA_COMPLETION_COALESCE_MS) }).onConflictDoNothing();
-    return;
+    await notifyDeliveryWork(tx, DELIVERY_QUEUES.chatCompletion);
+    return true;
   }
-  if (after.status === "done") await tx.insert(deliveries).values({ companyId: after.companyId, taskId: after.id, statusVersion: after.statusVersion }).onConflictDoNothing();
+  await notifyDeliveryWork(tx, DELIVERY_QUEUES.chatCompletion);
+  await tx.insert(deliveries).values({ companyId: after.companyId, taskId: after.id, statusVersion: after.statusVersion }).onConflictDoNothing();
+  return true;
 }
 
 async function loadAudience(tx: Connection, deliveryId: string) {
@@ -437,5 +441,9 @@ export function chatCompletionDeliveryService(db: Db, heartbeat: { wakeup(agentI
       .orderBy(asc(deliveries.nextAttemptAt)).limit(100);
     for (const row of due) await deliver(row.id);
   }
-  return { deliver, sweepPending };
+  async function hasPending() {
+    return (await db.select({ id: deliveries.id }).from(deliveries)
+      .where(inArray(deliveries.status, [...pending])).limit(1)).length > 0;
+  }
+  return { deliver, sweepPending, hasPending };
 }

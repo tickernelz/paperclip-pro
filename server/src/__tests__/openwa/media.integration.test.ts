@@ -88,7 +88,7 @@ class FakeSttServer {
   }
 }
 
-describe.sequential("OpenWA media ingest and speech-to-text (embedded Postgres + fake gateway + fake STT)", () => {
+describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gateway + fake STT)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let root: string;

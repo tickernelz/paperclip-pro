@@ -85,7 +85,7 @@ function codeOf(error: HttpError): unknown {
   return (error.details as Record<string, unknown> | undefined)?.code;
 }
 
-describe.sequential("OpenWA owner approvals and grants (embedded Postgres + fake gateway)", () => {
+describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;

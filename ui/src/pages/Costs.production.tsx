@@ -263,12 +263,12 @@ export function Costs() {
     enabled: !!selectedCompanyId && customReady,
   });
 
-  const [expandedAgents, setExpandedAgents] = useState<Set<string>>(new Set());
+  const [expandedAgents, setExpandedAgents] = useState<Set<string | null>>(new Set());
   useEffect(() => {
     setExpandedAgents(new Set());
   }, [companyId, from, to]);
 
-  function toggleAgent(agentId: string) {
+  function toggleAgent(agentId: string | null) {
     setExpandedAgents((prev) => {
       const next = new Set(prev);
       if (next.has(agentId)) next.delete(agentId);
@@ -278,7 +278,7 @@ export function Costs() {
   }
 
   const agentModelRows = useMemo(() => {
-    const map = new Map<string, CostByAgentModel[]>();
+    const map = new Map<string | null, CostByAgentModel[]>();
     for (const row of spendData?.byAgentModel ?? []) {
       const rows = map.get(row.agentId) ?? [];
       rows.push(row);
@@ -743,7 +743,7 @@ export function Costs() {
                                 ) : (
                                   <span className="h-3 w-3 shrink-0" />
                                 )}
-                                <AgentIdentity agent={{ id: row.agentId, name: row.agentName ?? row.agentId, appearance: row.agentAppearance }} size="sm" />
+                                {row.agentId ? <AgentIdentity agent={{ id: row.agentId, name: row.agentName ?? row.agentId, appearance: row.agentAppearance }} size="sm" /> : <span className="font-medium">Paperclip services</span>}
                                 {row.agentStatus === "terminated" ? <StatusBadge status="terminated" /> : null}
                               </div>
                               <div className="text-right text-sm tabular-nums">

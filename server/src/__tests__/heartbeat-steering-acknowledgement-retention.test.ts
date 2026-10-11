@@ -47,7 +47,7 @@ vi.mock("../adapters/index.ts", async () => {
 });
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
-const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe.sequential : describe.skip;
+const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 describeEmbeddedPostgres("steering acknowledgements survive run finalization", () => {
   let db!: ReturnType<typeof createDb>;

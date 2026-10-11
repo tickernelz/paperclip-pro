@@ -47,6 +47,46 @@ import type {
 
 export type { IssueWorkMode };
 
+export type IssueVisibility = "open" | "private";
+/** Management hints for this task; never includes protected project/parent identity. */
+export interface IssuePrivacyConstraints {
+  publicBlockedBy: "parent" | "project" | null;
+  leavesPersonalProject: boolean;
+}
+export type IssueAccessGrantSubjectType = "user" | "agent";
+export type IssueAccessGrantSource = "explicit" | "assignment" | "project" | "owner";
+export type IssueAccessGrantAgentVisibility = "discoverable" | "private";
+
+export interface IssueAccessGrant {
+  id: string;
+  issueId: string;
+  subjectType: IssueAccessGrantSubjectType;
+  subjectId: string;
+  source: IssueAccessGrantSource;
+  /** Effective access inherited from a parent or private project; not revocable here. */
+  inherited?: boolean;
+  grantedByUserId: string | null;
+  grantedByAgentId: string | null;
+  createdAt: Date;
+  revokedAt: Date | null;
+  subjectDisplayName: string | null;
+  subjectAvatarUrl: string | null;
+  subjectInitials: string | null;
+  agentVisibility: IssueAccessGrantAgentVisibility | null;
+}
+
+/**
+ * Existence-only projection used when a readable issue references an issue the
+ * current principal cannot read. Edge projections may return this exact shape
+ * in place of an IssueRelationIssueSummary; direct reads and list/search rows
+ * never return locked stubs.
+ */
+export interface IssueLockedStub {
+  id: string;
+  identifier: string | null;
+  locked: true;
+}
+
 export interface IssueAncestorProject {
   id: string;
   name: string;
@@ -94,6 +134,22 @@ export interface IssueRunModelOverrideInheritanceState {
   subtaskScope: IssueRunModelOverrideSubtaskScope;
   inherited?: boolean;
   sourceIssueId?: string | null;
+}
+
+/**
+ * The task a run was executing when it created this issue, from recorded run
+ * provenance. Independent of the structural parent and of blockers. Only
+ * present when the viewer may read the source task and its run.
+ */
+export interface IssueCreationSource {
+  issue: {
+    id: string;
+    identifier: string | null;
+    title: string;
+    status: string;
+  };
+  run: { id: string; agentId: string };
+  agent: { id: string; name: string } | null;
 }
 
 export interface IssueAssigneeAdapterOverrides {
@@ -671,6 +727,7 @@ export interface IssueScheduledRetry {
 export type IssueRetryNowOutcome =
   | "promoted"
   | "already_promoted"
+  | "waiting"
   | "no_scheduled_retry"
   | "gate_suppressed";
 
@@ -858,7 +915,14 @@ export interface Issue {
   projectWorkspaceId: string | null;
   goalId: string | null;
   parentId: string | null;
+  /** Present on current API responses; optional for compatibility with older plugin payloads. */
+  visibility?: IssueVisibility;
+  privacyRootIssueId?: string | null;
+  /** Immediate task from which private access flows downward, including chat handoffs. */
+  privacyParentIssueId?: string | null;
   ancestors?: IssueAncestor[];
+  /** Detail responses only: access-checked creation provenance, or null. */
+  createdFrom?: IssueCreationSource | null;
   title: string;
   description: string | null;
   descriptionTruncated?: boolean;
@@ -953,6 +1017,8 @@ export type CompactIssue = Pick<
   | "projectWorkspaceId"
   | "goalId"
   | "parentId"
+  | "visibility"
+  | "privacyRootIssueId"
   | "title"
   | "description"
   | "status"
@@ -1025,6 +1091,9 @@ export interface IssueComment {
   companyId: string;
   issueId: string;
   authorType: IssueCommentAuthorType;
+  /** Server-generated receipt provenance; not writable by comment callers. */
+  origin?: "comment" | "fast_response";
+  fastResponseRequestId?: string | null;
   authorAgentId: string | null;
   authorUserId: string | null;
   /** Responsible user attribution. Legacy and plugin-provided comment values may omit it. */
@@ -1299,6 +1368,8 @@ export interface PaperclipQuestionSetQuestion {
   helpText?: string;
   required: boolean;
   answerMode: "single_select" | "multi_select" | "text";
+  /** Editable starting text, never an implicit or submitted answer. Text mode only. */
+  initialText?: string;
   options?: PaperclipQuestionSetOption[];
   customAnswer?: {
     enabled: true;

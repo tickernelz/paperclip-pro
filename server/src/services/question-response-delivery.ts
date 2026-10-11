@@ -1494,5 +1494,9 @@ export function questionResponseDeliveryService(
     });
   }
 
-  return { deliver, sweepPending, recordSteered };
+  async function hasPending() {
+    return (await db.select({ id: issueQuestionResponseDeliveries.id }).from(issueQuestionResponseDeliveries)
+      .where(inArray(issueQuestionResponseDeliveries.status, ["pending", "delivering"])).limit(1)).length > 0;
+  }
+  return { deliver, sweepPending, recordSteered, hasPending };
 }

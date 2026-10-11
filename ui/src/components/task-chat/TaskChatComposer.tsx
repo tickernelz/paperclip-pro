@@ -45,7 +45,6 @@ import {
 } from "@/components/MarkdownEditor";
 import { nextWorkMode } from "@/lib/work-mode-meta";
 import type { InlineEntityOption } from "@/components/InlineEntitySelector";
-import { ComposerAddMenu, ComposerModeChip } from "./ComposerAddMenu";
 import {
   ComposerRunSettingsPicker,
   type ComposerRunSettingsStaging,
@@ -77,6 +76,8 @@ import { TaskChatComposerTakeoverActionsContext } from "./TaskChatComposerTakeov
 
 import { TaskChatPausedTakeover, type TaskComposerPause } from "./TaskChatPausedTakeover";
 import { TaskChatComposerBar } from "./TaskChatComposerBar";
+import { ComposerAddMenu, ComposerModeChip, ComposerPrivacyChip } from "./ComposerAddMenu";
+import type { Agent, IssueAssigneeAdapterOverrides } from "@tickernelz/paperclip-pro-shared";
 
 /** Structurally identical to IssueChatThread's module-private CommentReassignment. */
 export interface CommentReassignment {
@@ -122,6 +123,7 @@ interface TaskChatComposerProps {
     details?: ReactNode;
     contextBar?: ReactNode;
     submitDisabled?: boolean;
+    privacy?: { private: boolean; inherited?: string; onChange: (value: boolean) => void };
     onSelectFiles: (files: File[]) => void;
     runSettings: ComposerRunSettingsStaging;
     runSettingsFooter?: ReactNode;
@@ -1610,6 +1612,7 @@ export function TaskChatComposer({
               <input ref={fileInputRef} type="file" className="hidden" multiple={Boolean(creation)} onChange={handleFileInputChange} />
             ) : null}
             <ComposerAddMenu
+              privacy={creation?.privacy}
               mode={pendingMode}
               onModeChange={!queuedEdit && onWorkModeChange ? changeMode : undefined}
               onAttachFile={canAcceptFiles ? () => fileInputRef.current?.click() : undefined}
@@ -1621,6 +1624,7 @@ export function TaskChatComposer({
               triggerTestId="task-chat-composer-add"
               menuTestId="task-chat-composer-add-menu"
             />
+            {creation?.privacy?.private ? <ComposerPrivacyChip inherited={creation.privacy.inherited} onRemove={() => creation.privacy!.onChange(false)} disabled={disabled} /> : null}
             {queuedEdit ? (
               <span className="px-1 text-xs font-medium text-muted-foreground">
                 {queuedEdit.stale

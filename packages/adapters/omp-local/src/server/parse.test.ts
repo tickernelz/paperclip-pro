@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { classifyOmpFailure } from "./failure.js";
-import { createOmpOutputAccumulator } from "./parse.js";
+import { createOmpJsonlParser, createOmpOutputAccumulator } from "./parse.js";
 
 const CAPTURED_TOOL_START = "{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_455341\",\"toolName\":\"bash\",\"args\":{\"command\":\"echo alpha\"},\"intent\":\"Echoing alpha string again\"}";
 const CAPTURED_TOOL_PROGRESS = "{\"type\":\"tool_execution_update\",\"toolCallId\":\"call_455341\",\"toolName\":\"bash\",\"args\":{\"command\":\"echo alpha\"},\"partialResult\":{\"content\":[{\"type\":\"text\",\"text\":\"alpha\\n\\n\\nWall time: 0.07 seconds\"}],\"details\":{\"timeoutSeconds\":300,\"wallTimeMs\":69.76190599999973}}}";
@@ -77,5 +77,51 @@ describe("createOmpOutputAccumulator retry exhaustion", () => {
     }));
 
     expect(accumulator.result().errors).toEqual(["tool crashed unexpectedly"]);
+  });
+});
+
+
+describe("createOmpJsonlParser accounting", () => {
+  const turnEnd = (usage: Record<string, number> | null) => JSON.stringify({
+    type: "turn_end",
+    message: { role: "assistant", provider: "tiprouter", model: "deepseek-v4.1-flash", content: [], ...(usage ? { usage } : {}) },
+  });
+  const agentEnd = JSON.stringify({ type: "agent_end", messages: [] });
+
+  it("retains partial usage without defaulting an absent counter to zero", () => {
+    const parser = createOmpJsonlParser();
+    const parsed = parser(turnEnd({ inputTokens: 10, outputTokens: 3 }) + "\n" + agentEnd);
+    expect(parsed.usage).toEqual({ inputTokens: 10, outputTokens: 3, cachedInputTokens: 0 });
+    expect(parsed.usageReported).toBe(true);
+    expect(parsed.usageComplete).toBe(true);
+  });
+
+  it("keeps usage incomplete when no terminal event closed the turn", () => {
+    const parser = createOmpJsonlParser();
+    expect(parser(turnEnd({ inputTokens: 10, outputTokens: 3 })).usageComplete).toBe(false);
+  });
+
+  it("distinguishes an absent cost from a reported zero", () => {
+    const parser = createOmpJsonlParser();
+    expect(parser(turnEnd({ inputTokens: 1, outputTokens: 1, costUsd: 0 }) + "\n" + agentEnd).costUsd).toBe(0);
+    expect(parser(turnEnd({ inputTokens: 1, outputTokens: 1 }) + "\n" + agentEnd).costUsd).toBeNull();
+  });
+
+  it("marks usage incomplete when a later record carries an invalid counter", () => {
+    const parser = createOmpJsonlParser();
+    const parsed = parser(turnEnd({ inputTokens: 10, outputTokens: 3 }) + "\n"
+      + JSON.stringify({ type: "turn_end", message: { role: "assistant", usage: { inputTokens: -1 } } })
+      + "\n" + agentEnd);
+    expect(parsed.usageReported).toBe(true);
+    expect(parsed.usageComplete).toBe(false);
+  });
+
+  it("replaces a repeated message snapshot instead of double-counting", () => {
+    const parser = createOmpJsonlParser();
+    const message = { role: "assistant", timestamp: 1, model: "m", usage: { inputTokens: 10, outputTokens: 3 } };
+    const parsed = parser(JSON.stringify({ type: "message_end", message })
+      + "\n" + JSON.stringify({ type: "message_end", message: { ...message, usage: { inputTokens: 10, outputTokens: 7 } } })
+      + "\n" + agentEnd);
+    expect(parsed.usage).toEqual({ inputTokens: 10, outputTokens: 7, cachedInputTokens: 0 });
   });
 });

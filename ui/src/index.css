@@ -99,6 +99,11 @@
   --native-select-caret-inset: calc(var(--spacing) * 3);
   --native-select-caret-stroke: 1.5px;
   --native-select-end-padding: calc(var(--spacing) * 9);
+  --composer-effort-track-height: calc(var(--spacing) * 3);
+  --composer-effort-thumb-size: calc(var(--spacing) * 7);
+  --composer-effort-hover-scale: 1.08;
+  --composer-effort-press-scale: 1.16;
+  --composer-effort-halo: 0 0 0 calc(var(--spacing) * 1.5) color-mix(in oklab, var(--tc-mode-ask) 14%, transparent);
   --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -229,6 +234,7 @@
      `in_queue` is the BLOCKED shape recoloured to the in_progress blue
      (replaces the bespoke teal "covered" state). Light values here; the
      `.dark` block below overrides the hues that need a mode-specific value. */
+  --sz-protocol-notice-icon: calc(var(--spacing) * 3.5);
   --status-task-icon-backlog: #52585d;   /* gray darkened — 7.21:1 on paper */
   --status-task-icon-todo: #cc7a00;       /* amber darkened — clears 3:1 */
   --status-task-icon-in_progress: var(--color-blue-600); /* matches nav dots and live labels */
@@ -3119,7 +3125,29 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
    * allow ui/src/components/onboarding/PillGuy.tsx — inline rendering of the approved pill-1 dormant/alive brand SVG assets; their fixed eye, body, tuft, and gradient fills are the illustration artwork rather than themeable interface colors
    * allow ui/src/components/ui/scroll-area.tsx — rounded-[inherit] is a CSS keyword, not a literal value; nothing to extract
    * allow ui/src/components/ui/dialog.tsx — tw-animate-css plugin utilities (zoom-in-[0.97], zoom-out-[0.97], slide-in-from-top-[1%], slide-out-to-top-[1%], animate-in, animate-out, fade-in-0, fade-out-0) are dead/no-op classes today (the tw-animate-css plugin is not installed and no matching @utility exists in this file; confirmed via grep of the built storybook-static CSS — none of these class names emit any rule); nothing to tokenize without visually changing a currently-inert class
-   * allow ui/src/components/ui/alert-dialog.tsx — same tw-animate-css dead-class situation as dialog.tsx (zoom-out-[0.97], zoom-in-[0.97])
+   * allow ui/src/components/ui/alert-dialog.tsx — same tw-animate-css dead-class situation as dialog.tsx
+
+/* Connection and recovery cards share one surface and spacing scale. */
+.task-context-notice {
+  padding: calc(var(--spacing) * 3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background-color: var(--muted);
+  color: var(--foreground);
+  font-size: var(--text-sm);
+  line-height: var(--text-sm--line-height);
+}
+
+/* The runner keeps one fixed-height activity row between commentary updates. */
+@keyframes runner-activity-roll-in {
+  from { transform: translateY(100%); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes runner-activity-roll-out {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-100%); opacity: 0; }
+}
+ — same tw-animate-css dead-class situation as dialog.tsx (zoom-out-[0.97], zoom-in-[0.97])
    * allow ui/src/components/ProjectWorkspaceSummaryCard.tsx — min-[420px]: is a Tailwind arbitrary BREAKPOINT variant (responsive container-query-style prefix), not a value applied to a property; the variant position cannot reference a CSS custom property, so it cannot be tokenized without changing Tailwind's own variant syntax
    * allow ui/src/components/FileTree.tsx — max-[480px]: arbitrary breakpoint variant (x2), same reasoning as min-[420px] above
    * allow ui/src/pages/RunTranscriptUxLab.tsx — first-party intentional one-off decoration (demo/UX-lab page): hero/card gradients + shadows reverted from singleton tokens per DECISION-SHEET.md B1 user ruling
@@ -3352,6 +3380,10 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   [data-mobile-entity-picker] [data-slot="entity-option"] {
     white-space: nowrap !important;
   }
+
+.agent-setup-trigger-logos[data-single="true"] {
+  width: var(--agent-setup-logo-size);
+}
 
   [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
   [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,

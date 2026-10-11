@@ -1,7 +1,7 @@
 import type { Request } from "express";
 import { AGENT_COMPANY_AUTHORITY_ROLES } from "@tickernelz/paperclip-pro-shared";
 import { forbidden } from "../errors.js";
-import { normalizeAgentPermissions } from "./agent-permissions.js";
+import { normalizeAgentPermissions } from "../lib/agent-permissions.js";
 
 const AUTHORITY_PERMISSION_KEYS = ["canCreateAgents", "canCreateSkills"] as const;
 

@@ -429,7 +429,7 @@ Notes:
 ```sh
 npx @tickernelz/paperclip-pro issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
 npx @tickernelz/paperclip-pro issue get <issue-id-or-identifier>
-npx @tickernelz/paperclip-pro issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high]
+npx @tickernelz/paperclip-pro issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high] [--parent-id <issue-id> | --standalone]
 npx @tickernelz/paperclip-pro issue update <issue-id> [--status in_progress] [--comment "..."]
 npx @tickernelz/paperclip-pro issue delete <issue-id> --yes
 npx @tickernelz/paperclip-pro issue comment <issue-id> --body "..." [--attachment-id <id...>] [--reopen]
@@ -444,6 +444,8 @@ npx @tickernelz/paperclip-pro issue checkout <issue-id> --agent-id <agent-id> [-
 npx @tickernelz/paperclip-pro issue release <issue-id>
 npx @tickernelz/paperclip-pro issue force-release <issue-id>
 ```
+
+`issue create` sent from an agent run bound to an ordinary execution task is parented under that task when `--parent-id` is omitted; pass `--standalone` to create intentionally top-level work (`parentId: null`). The two flags are mutually exclusive.
 
 Issue subresources are exposed as Paperclip API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
 

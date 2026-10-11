@@ -12,5 +12,11 @@
   "[Experimental] On overlapping /cases routes the server selects the handler by resource identity; use a pipeline case ID.",
   "[Experimental] Overlapping /cases routes select their handler by resource identity.",
   "[Experimental] Pipeline case resource.",
-  "[chat-channels] Requires connection-management access."
+  "[chat-channels] Requires connection-management access.",
+  "[voice-sessions] Agent keys and board API keys cannot act as a caller.",
+  "[voice-sessions] Caller ID grants no private access.",
+  "[voice-sessions] Ending your owned call remains available after losing task access.",
+  "[voice-sessions] Experimental Speko connection.",
+  "[voice-sessions] Media tokens are short-lived; durable provider credentials are never returned.",
+  "[voice-sessions] Requires a current authenticated board session (or local implicit board), company membership and current task/connection authority."
 ]

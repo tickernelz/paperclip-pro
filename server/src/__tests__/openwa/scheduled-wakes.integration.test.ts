@@ -200,7 +200,7 @@ describe("OpenWA deadline heap and timer hooks", () => {
   });
 });
 
-describe.sequential("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
+describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let secrets: string;

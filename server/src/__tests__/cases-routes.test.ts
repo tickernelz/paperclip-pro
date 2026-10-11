@@ -39,7 +39,7 @@ import { instanceSettingsService } from "../services/instance-settings.js";
 import type { StorageService } from "../storage/types.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
-const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe.sequential : describe.skip;
+const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
 type HttpMethod = "get" | "post" | "put" | "patch" | "delete";
 const HTTP_METHODS = { get: true, post: true, put: true, patch: true, delete: true } as const;

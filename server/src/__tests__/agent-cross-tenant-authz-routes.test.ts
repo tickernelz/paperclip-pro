@@ -374,7 +374,7 @@ function resetMockDefaults() {
   mockLogActivity.mockImplementation(async () => undefined);
 }
 
-describe.sequential("agent cross-tenant route authorization", () => {
+describe("agent cross-tenant route authorization", () => {
   beforeEach(() => {
     resetMockDefaults();
   });
@@ -842,7 +842,7 @@ describe.sequential("agent cross-tenant route authorization", () => {
   });
 });
 
-describe.sequential("agent lifecycle activity attribution", () => {
+describe("agent lifecycle activity attribution", () => {
   const ceoAgentId = "77777777-7777-4777-8777-777777777777";
   const ceoRunId = "88888888-8888-4888-8888-888888888888";
   const ceoKeyId = "99999999-9999-4999-8999-999999999999";

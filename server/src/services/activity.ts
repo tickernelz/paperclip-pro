@@ -1,6 +1,7 @@
+import { credentialAccessConnectionNameSql } from "./credential-access-visibility.js";
 import { executionProjectionsForRunRows } from "./execution-projection.js";
 import { jsonbRecordFields } from "./jsonb-projection.js";
-import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
@@ -28,6 +29,7 @@ export interface ActivityFilters {
   entityType?: string;
   entityId?: string;
   limit?: number;
+  readCondition?: SQL<boolean>;
 }
 
 export interface IssueActivityPage {
@@ -133,12 +135,29 @@ export function activityService(db: Db) {
     timeoutSource: "jsonb",
     timeoutFired: "jsonb",
   } as const;
-  const summarizedResultJson = sql<Record<string, unknown> | null>`
+
+  // A denied user needs the selected connection name to repair their task.
+  // Other readers need the connection existing human sharing permission.
+  const summarizedResultJson = (viewerUserId: string | null) => sql<Record<string, unknown> | null>`
+
     case
       when ${heartbeatRuns.resultJson} is null then null
       else ${jsonbRecordFields(heartbeatRuns.resultJson, resultFields, (result) => sql`jsonb_strip_nulls(jsonb_build_object(
         'conversationReset', ${result("conversationReset")},
-        'workspaceRestoreFailure', case when ${result("workspaceRestoreFailure")} #>> '{}'
+        'configurationIncomplete', case
+          when ${heartbeatRuns.resultJson} -> 'configurationIncomplete' ->> 'reason' = 'workspace_base_ref_unresolved'
+          then jsonb_build_object('reason', 'workspace_base_ref_unresolved')
+          when ${heartbeatRuns.errorCode} = 'configuration_incomplete'
+          and (${heartbeatRuns.resultJson} #>> '{configurationIncomplete,selectionFailure}' = 'ai_connection_credential_not_shared'
+            or ${heartbeatRuns.error} = 'This credential is not shared with the responsible user')
+          then jsonb_build_object(
+            'selectionFailure', case when ${heartbeatRuns.resultJson} #>> '{configurationIncomplete,selectionFailure}' = 'ai_connection_credential_not_shared'
+              then 'ai_connection_credential_not_shared' end,
+            'credentialAccess', jsonb_build_object(
+              'connectionName', ${credentialAccessConnectionNameSql(viewerUserId)}
+            )
+          ) end,
+        'workspaceRestoreFailure', case when ${heartbeatRuns.resultJson} ->> 'workspaceRestoreFailure'
           in ('restore_permission_denied', 'restore_lock_timeout', 'restore_unsafe_archive', 'restore_failed')
           then ${result("workspaceRestoreFailure")} end,
         'workspaceRestorePath', case when length(${result("workspaceRestorePath")} #>> '{}') <= 180
@@ -376,7 +395,7 @@ export function activityService(db: Db) {
         runId: heartbeatRuns.id,
         rowVersion: sql<string>`${heartbeatRuns}.xmin::text`,
         usageJson: summarizedUsageJson,
-        resultJson: summarizedResultJson,
+        resultJson: summarizedResultJson(null),
         context: jsonbRecordFields<RunJsonSummary["context"]>(heartbeatRuns.contextSnapshot, {
           wakeCommentIds: "jsonb",
           wakeCommentId: "text",
@@ -444,7 +463,7 @@ export function activityService(db: Db) {
             ...conditions,
             or(
               sql`${activityLog.entityType} != 'issue'`,
-              visibleIssueCondition(),
+              and(visibleIssueCondition(), filters.readCondition ?? sql<boolean>`true`),
             ),
           ),
         )
@@ -476,7 +495,7 @@ export function activityService(db: Db) {
       return page.limit === undefined ? query : query.limit(page.limit);
     },
 
-    runsForIssue: async (companyId: string, issueId: string) => {
+    runsForIssue: async (companyId: string, issueId: string, viewerUserId: string | null = null) => {
       scheduleRunLivenessBackfill(companyId, issueId);
       const runRows = await db
         .select({
@@ -492,6 +511,14 @@ export function activityService(db: Db) {
           invocationSource: heartbeatRuns.invocationSource,
           responsibleUserId: heartbeatRuns.responsibleUserId,
           errorCode: heartbeatRuns.errorCode,
+          error: sql<string | null>`case when ${heartbeatRuns.status} = 'failed'
+            and ${heartbeatRuns.errorCode} = 'native_provider_model_rejected'
+            then left(${heartbeatRuns.error}, 2000)
+            when ${heartbeatRuns.status} = 'failed'
+              and ${heartbeatRuns.error} = 'This credential is not shared with the responsible user'
+            then 'This credential is not shared with the responsible user' else null end`,
+          usageJson: summarizedUsageJson,
+          resultJson: summarizedResultJson(viewerUserId),
           logBytes: heartbeatRuns.logBytes,
           retryOfRunId: heartbeatRuns.retryOfRunId,
           scheduledRetryAt: heartbeatRuns.scheduledRetryAt,
@@ -702,7 +729,7 @@ export function activityService(db: Db) {
       const run = await db
         .select({
           companyId: heartbeatRuns.companyId,
-          contextSnapshot: heartbeatRuns.contextSnapshot,
+          issueId: heartbeatRuns.issueId,
         })
         .from(heartbeatRuns)
         .where(eq(heartbeatRuns.id, runId))
@@ -729,11 +756,7 @@ export function activityService(db: Db) {
         )
         .orderBy(issueIdAsText);
 
-      const context = run.contextSnapshot;
-      const contextIssueId =
-        context && typeof context === "object" && typeof (context as Record<string, unknown>).issueId === "string"
-          ? ((context as Record<string, unknown>).issueId as string)
-          : null;
+      const contextIssueId = run.issueId;
       if (!contextIssueId) return fromActivity;
       if (fromActivity.some((issue) => issue.issueId === contextIssueId)) return fromActivity;
 

@@ -397,6 +397,140 @@ export function createOmpOutputAccumulator(): OmpOutputAccumulator {
   return { push, result };
 }
 
+export interface OmpAccounting {
+  usage: ParsedOmpOutput["usage"] | null;
+  usageReported: boolean;
+  usageComplete: boolean;
+  costUsd: number | null;
+  provider: string | null;
+  model: string | null;
+}
+
+type AccountingTotals = UsageTotals;
+
+function readCounter(source: JsonObject, keys: string[]): { valid: boolean; value: number | null } {
+  for (const key of keys) {
+    if (!(key in source) || source[key] === undefined) continue;
+    const raw = source[key];
+    if (typeof raw !== "number" || !Number.isFinite(raw) || raw < 0) return { valid: false, value: null };
+    return { valid: true, value: raw };
+  }
+  return { valid: true, value: null };
+}
+
+function addAccounting(target: AccountingTotals, value: AccountingTotals): void {
+  target.inputTokens += value.inputTokens;
+  target.outputTokens += value.outputTokens;
+  target.cachedInputTokens += value.cachedInputTokens;
+  target.costUsd += value.costUsd;
+}
+
+export function createOmpJsonlParser() {
+  const messageUsage = new Map<string, AccountingTotals>();
+  const turnUsageKeys = new Set<string>();
+  const explicitUsage: AccountingTotals[] = [];
+  let sawAgentEnd = false;
+  let usageReported = false;
+  let invalidUsage = false;
+  let provider: string | null = null;
+  let model: string | null = null;
+
+  let currentCallCostSeen = false;
+  function readUsage(source: JsonObject): AccountingTotals | null {
+    const input = readCounter(source, ["inputTokens", "input"]);
+    const output = readCounter(source, ["outputTokens", "output"]);
+    const cached = readCounter(source, ["cachedInputTokens", "cacheRead"]);
+    const cacheWrite = readCounter(source, ["cacheWriteTokens", "cacheWrite", "cacheCreationInputTokens"]);
+    const costObject = object(source.cost);
+    const cost = costObject ? readCounter(costObject, ["total"]) : readCounter(source, ["costUsd"]);
+    if (!input.valid || !output.valid || !cached.valid || !cacheWrite.valid || !cost.valid) invalidUsage = true;
+    if (input.value === null && output.value === null && cached.value === null
+      && cacheWrite.value === null && cost.value === null) {
+      return null;
+    }
+    usageReported = true;
+    if (cost.value !== null) currentCallCostSeen = true;
+    return {
+      inputTokens: input.value ?? 0,
+      outputTokens: output.value ?? 0,
+      cachedInputTokens: cached.value ?? 0,
+      costUsd: cost.value ?? 0,
+    };
+  }
+
+  function readAssistantMessage(value: unknown): JsonObject | null {
+    const message = object(value);
+    if (!message || message.role !== "assistant") return null;
+    const messageProvider = string(message.provider).trim();
+    const messageModel = string(message.model).trim();
+    if (messageProvider) provider = messageProvider;
+    if (messageModel) model = messageModel;
+    return message;
+  }
+
+  return (stdout: string): OmpAccounting => {
+    currentCallCostSeen = false;
+    for (const rawLine of stdout.split(/\r?\n/)) {
+      const line = rawLine.trim();
+      if (!line) continue;
+      const event = parseOmpJsonLine(line);
+      if (!event) continue;
+      const type = string(event.type);
+      if (type === "agent_end") {
+        sawAgentEnd = true;
+        const messages = Array.isArray(event.messages) ? event.messages : [];
+        for (let index = messages.length - 1; index >= 0; index -= 1) {
+          const message = readAssistantMessage(messages[index]);
+          if (message) break;
+        }
+        continue;
+      }
+      if (type === "message_end" || type === "turn_end") {
+        const message = readAssistantMessage(event.message);
+        if (message) {
+          const usage = object(message.usage);
+          const totals = usage ? readUsage(usage) : null;
+          if (totals) {
+            messageUsage.set(messageKey(message), totals);
+            if (type === "turn_end") turnUsageKeys.add(messageKey(message));
+          }
+        }
+        continue;
+      }
+      if (type === "usage") {
+        const usage = object(event.usage) ?? event;
+        const totals = readUsage(usage);
+        if (totals) explicitUsage.push(totals);
+        continue;
+      }
+    }
+
+    const totals: AccountingTotals = { inputTokens: 0, outputTokens: 0, cachedInputTokens: 0, costUsd: 0 };
+    const selectedKeys = turnUsageKeys.size > 0 ? turnUsageKeys : new Set(messageUsage.keys());
+    for (const key of selectedKeys) {
+      const usage = messageUsage.get(key);
+      if (usage) addAccounting(totals, usage);
+    }
+    if (selectedKeys.size === 0) {
+      for (const usage of explicitUsage) addAccounting(totals, usage);
+    }
+    return {
+      usage: usageReported
+        ? {
+            inputTokens: totals.inputTokens,
+            outputTokens: totals.outputTokens,
+            cachedInputTokens: totals.cachedInputTokens,
+          }
+        : null,
+      usageReported,
+      usageComplete: usageReported && !invalidUsage && sawAgentEnd,
+      costUsd: sawAgentEnd && !currentCallCostSeen ? null : totals.costUsd,
+      provider,
+      model,
+    };
+  };
+}
+
 export function parseOmpJsonl(stdout: string): ParsedOmpOutput {
   const accumulator = createOmpOutputAccumulator();
   for (const rawLine of stdout.split(/\r?\n/)) accumulator.push(rawLine);

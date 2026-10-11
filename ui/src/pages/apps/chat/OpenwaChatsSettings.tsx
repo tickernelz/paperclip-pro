@@ -134,7 +134,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
         <ul className="divide-y divide-border border-y border-border">
           {configured.map((chat) => (
             <li key={chat.id} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-4">
-              <div className="flex min-w-0 items-center gap-2 sm:min-w-[8rem] sm:flex-1">
+              <div className="flex min-w-0 items-center gap-2 sm:min-w-32 sm:flex-1">
                 <p className="min-w-0 flex-1 truncate text-sm font-medium" title={chat.label}>
                   {chat.label}
                 </p>

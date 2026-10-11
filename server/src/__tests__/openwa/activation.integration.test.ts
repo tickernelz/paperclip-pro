@@ -55,7 +55,7 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 20
   }
 }
 
-describe.sequential("OpenWA activation through the owner test DM (embedded Postgres + fake gateway)", () => {
+describe("OpenWA activation through the owner test DM (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;

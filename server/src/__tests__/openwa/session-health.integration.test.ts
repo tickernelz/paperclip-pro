@@ -45,7 +45,7 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 20
   }
 }
 
-describe.sequential("OpenWA session_health wakes (embedded Postgres + fake gateway)", () => {
+describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;

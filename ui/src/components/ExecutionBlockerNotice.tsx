@@ -4,9 +4,11 @@ import { agentsApi } from "../api/agents";
 import { activityApi } from "../api/activity";
 import { queryKeys } from "../lib/queryKeys";
 import { Button } from "./ui/button";
+import { cn } from "../lib/utils";
 import { Link } from "../lib/router";
 
-export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried }: {
+export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried, className }: {
+  className?: string;
   companyId: string;
   issueId: string;
   blocker: ExecutionBlocker;
@@ -19,6 +21,7 @@ export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried 
   });
   const failedRun = runs?.find(run => run.runId === blocker.runId &&
     ["failed", "timed_out"].includes(run.status));
+  const modelRejected = failedRun?.errorCode === "native_provider_model_rejected";
   const requiresInspection = blocker.cause === "native_continuation_requires_reconciliation" ||
     blocker.cause === "native_session_cleanup_quarantined";
   const retry = useMutation({
@@ -32,9 +35,10 @@ export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried 
     },
   });
   return (
-    <div role="status" aria-label="Task recovery" className="mx-(--sz-execution-blocker-inline) my-(--sz-execution-blocker-block) flex flex-wrap items-center justify-between execution-blocker-notice border border-border bg-muted text-foreground">
+    <div role="status" aria-label="Task recovery" className={cn("task-context-notice flex flex-wrap items-center justify-between gap-2", className)}>
       <div className="min-w-0 flex-1 break-words">
-        <p>Recovery needed.{blocker.runError ? ` ${blocker.runError}` : ""}</p>
+        <p>{modelRejected ? "Model unavailable." : "Recovery needed."}{blocker.runError ? ` ${blocker.runError}` : ""}</p>
+        {modelRejected && <p>Choose a supported model or clear the task's model override, then retry.</p>}
         <p>{blocker.nextAction}</p>
         {Boolean(blocker.savedMessageCount) && (
           <p>{blocker.savedMessageCount} saved {blocker.savedMessageCount === 1 ? "message is" : "messages are"} waiting for recovery.</p>
@@ -45,7 +49,7 @@ export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried 
           <Link to={`/agents/${blocker.agentId}/runs/${blocker.runId}`}>Inspect run</Link>
         </Button>
       )}
-      {(!requiresInspection || blocker.canRetry) && blocker.agentId && blocker.runId &&
+      {!blocker.workspaceRepairRequired && (!requiresInspection || blocker.canRetry) && blocker.agentId && blocker.runId &&
         ((blocker.cause === "legacy_execution_requires_reconciliation" && failedRun) || blocker.canContinue || blocker.canRetry) && (
         <Button variant="outline" size="sm" disabled={retry.isPending} onClick={() => retry.mutate()}>
           {retry.isPending ? "Starting…" : blocker.canContinue ? "Continue" : "Retry"}

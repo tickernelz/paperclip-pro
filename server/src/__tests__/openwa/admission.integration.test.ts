@@ -101,7 +101,7 @@ function countingDb(db: Db) {
   return { db: proxy as Db, counts };
 }
 
-describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () => {
+describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let secrets: string;

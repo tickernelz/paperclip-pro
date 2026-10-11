@@ -6,9 +6,16 @@ async function json(response: APIResponse) {
   return response.json();
 }
 
-async function swipeToLastOption(page: Page, picker: Locator, listName: string) {
-  const list = picker.getByRole("listbox", { name: listName, exact: true });
-  const last = list.getByRole("option").last();
+async function swipeToLastOption(
+  page: Page,
+  picker: Locator,
+  listOrName: Locator | string,
+  lastOption?: Locator,
+) {
+  const list = typeof listOrName === "string"
+    ? picker.getByRole("listbox", { name: listOrName, exact: true })
+    : listOrName;
+  const last = lastOption ?? list.getByRole("option").last();
   await expect.poll(() => picker.evaluate((element) => element.getAnimations({ subtree: true })
     .every((animation) => animation.playState !== "running"))).toBe(true);
   // visualViewport resize updates React state after the browser viewport changes.
@@ -60,7 +67,7 @@ async function swipeToLastOption(page: Page, picker: Locator, listName: string) 
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-test("new-task assignee and model sheets scroll by touch and retain the selected values", async ({ page, request, browserName }, testInfo) => {
+test("new-task assignee, model, and project sheets scroll by touch and retain the selected values", async ({ page, request, browserName }, testInfo) => {
   test.skip(browserName !== "chromium", "Native touch drags use Chromium's input protocol.");
   test.setTimeout(120_000);
   const company = await json(await request.post("/api/companies", {
@@ -73,6 +80,9 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
         adapterType: "codex_local", adapterConfig: { model: "gpt-6-sol" },
         runtimeConfig: { heartbeat: { enabled: false } },
       },
+    }));
+    await json(await request.post(`/api/companies/${company.id}/projects`, {
+      data: { name: `Touch Project ${String(index).padStart(2, "0")}` },
     }));
   }
   // Keep the provider catalog deterministic; task UI, agents, and drafts are real.
@@ -120,6 +130,7 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await page.setViewportSize({ width: 390, height: 430 });
   const lastModel = await swipeToLastOption(page, picker, "Models");
   await expect(lastModel).toContainText("Touch Model 24");
+  await page.screenshot({ path: testInfo.outputPath("model-after-touch-scroll.png") });
   await lastModel.tap();
   await expect(picker.getByTestId("composer-run-settings-model-value")).toHaveText("Touch Model 24");
   await picker.getByRole("button", { name: "Close Run settings picker", exact: true }).tap();
@@ -127,6 +138,19 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
   await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 24");
+  await expect(draft).toHaveText("Keep this touch selection draft");
+
+  const projectTrigger = page.getByRole("button", { name: "Project", exact: true });
+  await projectTrigger.tap();
+  const projectPicker = page.locator('[data-mobile-entity-picker][aria-label="Select project"]');
+  await page.setViewportSize({ width: 390, height: 430 });
+  const projectList = projectPicker.locator("[data-mobile-entity-picker-list]");
+  const lastProject = await swipeToLastOption(page, projectPicker, projectList, projectList.getByRole("button").filter({ hasText: "Touch Project 22" }));
+  await page.screenshot({ path: testInfo.outputPath("project-after-touch-scroll.png") });
+  await lastProject.tap();
+  await expect(projectPicker).toBeHidden();
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('[data-slot="new-issue-compact-control"]').filter({ hasText: "Touch Project 22" })).toBeVisible();
   await expect(draft).toHaveText("Keep this touch selection draft");
 
   // Closing the nested picker preserves the outer composer draft and choices.
@@ -139,7 +163,7 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
   await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 24");
   await expect(page.getByRole("button", { name: "Create task", exact: true })).toBeEnabled();
-  await page.screenshot({ path: testInfo.outputPath("selected-mobile-assignee-and-model.png") });
+  await page.screenshot({ path: testInfo.outputPath("selected-mobile-picker-values.png") });
 
   // The desktop picker uses the same selected values and supports model search.
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -152,4 +176,84 @@ test("new-task assignee and model sheets scroll by touch and retain the selected
   await expect(picker).toBeHidden();
   await expect(page.getByTestId("task-chat-composer-assignee-label")).toHaveText("Touch Agent 22");
   await expect(page.getByTestId("task-chat-composer-run-summary")).toHaveText("Touch Model 01");
+});
+
+test.describe("desktop picker scrolling", () => {
+  test.use({ viewport: { width: 1280, height: 900 }, hasTouch: false, isMobile: false });
+
+  test("mouse wheels scroll nested model, assignee, and project lists without losing the draft", async ({ page, request }) => {
+    const company = await json(await request.post("/api/companies", {
+      data: { name: `Wheel pickers ${randomUUID()}` },
+    }));
+    for (let index = 1; index <= 22; index += 1) {
+      await json(await request.post(`/api/companies/${company.id}/agents`, {
+        data: {
+          name: `Wheel Agent ${String(index).padStart(2, "0")}`, role: "engineer",
+          adapterType: "codex_local", adapterConfig: { model: "gpt-6-sol" },
+          runtimeConfig: { heartbeat: { enabled: false } },
+        },
+      }));
+      await json(await request.post(`/api/companies/${company.id}/projects`, {
+        data: { name: `Wheel Project ${String(index).padStart(2, "0")}` },
+      }));
+    }
+    // Keep the provider catalog deterministic; task UI, agents, and drafts are real.
+    await page.route("**/api/agents/batch/adapter-config/preview", (route) => {
+      const { agentIds } = route.request().postDataJSON() as { agentIds: string[] };
+      return route.fulfill({
+        json: {
+          fields: [
+            {
+              key: "model", label: "Model", hint: null, freeText: true,
+              options: Array.from({ length: 24 }, (_, index) => ({
+                value: `wheel-model-${String(index + 1).padStart(2, "0")}`,
+                label: `Wheel Model ${String(index + 1).padStart(2, "0")}`,
+              })),
+            },
+          ],
+          agents: agentIds.map((agentId, index) => ({
+            agentId,
+            name: `Wheel Agent ${String(index + 1).padStart(2, "0")}`,
+            adapterType: "codex_local",
+            eligible: true,
+            reason: null,
+            current: { model: "gpt-6-sol", thinking: null },
+          })),
+        },
+      });
+    });
+    await page.goto(`/${company.issuePrefix}/dashboard`);
+    await page.getByRole("button", { name: "New Task", exact: true }).click();
+    const draft = page.getByRole("textbox", { name: "editable markdown" });
+    await draft.fill("Keep this mouse wheel selection draft");
+
+    const wheelToBottom = async (list: Locator) => {
+      await expect.poll(() => list.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+      const before = await list.evaluate((element) => element.scrollTop);
+      await list.hover();
+      await page.mouse.wheel(0, 2000);
+      await expect.poll(() => list.evaluate((element) => element.scrollTop)).toBeGreaterThan(before);
+    };
+    const runSettingsTrigger = page.getByRole("button", { name: "Select assignee, model and thinking", exact: true });
+    await runSettingsTrigger.click();
+    const runSettingsPanel = page.getByTestId("composer-run-settings-panel");
+    await wheelToBottom(runSettingsPanel.getByRole("listbox", { name: "Assignees", exact: true }));
+    await page.getByRole("option").filter({ hasText: "Wheel Agent 22" }).click();
+    await expect(page.getByTestId("task-chat-composer-assignee-label")).toContainText("Wheel Agent 22");
+
+    await runSettingsTrigger.click();
+    await page.getByRole("button", { name: "Choose exact model", exact: true }).click();
+    await wheelToBottom(runSettingsPanel.getByRole("listbox", { name: "Models", exact: true }));
+    await page.getByRole("option").filter({ hasText: "Wheel Model 24" }).click();
+    await runSettingsTrigger.press("Escape");
+    await expect(page.getByTestId("task-chat-composer-run-summary")).toContainText("Wheel Model 24");
+
+    await page.getByRole("button", { name: "Project", exact: true }).click();
+    const projectPicker = page.locator('[data-mobile-entity-picker][aria-label="Select project"]');
+    await wheelToBottom(projectPicker.locator("[data-mobile-entity-picker-list]"));
+    await projectPicker.getByRole("button").filter({ hasText: "Wheel Project 22" }).click();
+    await expect(projectPicker).toBeHidden();
+    await expect(page.locator('[data-slot="new-issue-compact-control"]').filter({ hasText: "Wheel Project 22" })).toBeVisible();
+    await expect(draft).toHaveText("Keep this mouse wheel selection draft");
+  });
 });

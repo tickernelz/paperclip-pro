@@ -156,6 +156,36 @@ describe("composer run settings model display", () => {
     );
   });
 
+it("keeps the run settings summary stable until the picker closes", async () => {
+    const staging = { values: { model: OWN } as Record<string, string | null>, hasValues: true, set: () => {}, clear: () => {} };
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={client}>
+          <ComposerRunSettingsPicker
+            companyId="company-1"
+            draft
+            assigneeValue="agent:fajar"
+            currentAssigneeValue="agent:fajar"
+            options={[{ id: "agent:fajar", label: "Fajar" }]}
+            onAssigneeChange={vi.fn()}
+            staging={staging}
+          />
+        </QueryClientProvider>,
+      );
+    });
+    await act(async () => {
+      node<HTMLButtonElement>("task-chat-composer-assignee").click();
+    });
+    const summary = () => node("task-chat-composer-run-summary").textContent;
+    expect(summary()).toContain("Claude Opus 5.5");
+    await openModels();
+    expect(summary()).toContain("Claude Opus 5.5");
+    await act(async () => {
+      node<HTMLButtonElement>("task-chat-composer-assignee").click();
+    });
+    expect(summary()).toContain("Claude Opus 5.5");
+  });
+
   it("shows the full id for a free-text value", async () => {
     await render("my-gateway/claude-opus-5-5");
     expect(node("composer-run-settings-model-value").textContent).toBe("my-gateway/claude-opus-5-5");

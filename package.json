@@ -14,6 +14,8 @@
     "dev:ui": "pnpm --filter @tickernelz/paperclip-pro-ui dev",
     "dev:mobile": "pnpm --filter @tickernelz/paperclip-pro-ui build && pnpm --filter @tickernelz/paperclip-pro-ui preview",
     "dev:both": "node scripts/dev-both.mjs",
+    "prototype:dot": "pnpm --filter @tickernelz/paperclip-pro-server exec tsx scripts/dot-runner-demo.ts",
+    "prototype:dot:live": "pnpm --filter @tickernelz/paperclip-pro-server exec tsx scripts/dot-runner-live.ts",
     "storybook": "pnpm --filter @tickernelz/paperclip-pro-ui storybook",
     "build-storybook": "pnpm --filter @tickernelz/paperclip-pro-ui build-storybook",
     "build": "pnpm run preflight:workspace-links && pnpm -r build",
@@ -72,6 +74,7 @@
     "test:e2e:runner:models:update": "node cli/node_modules/tsx/dist/cli.mjs tests/runner-e2e/openrouter-models-update.ts",
     "test:e2e:runner:history:publish": "node cli/node_modules/tsx/dist/cli.mjs tests/runner-e2e/history-publish.ts",
     "test:runner-recovery": "vitest run server/src/services/native-runtime/native-replacement-evidence.test.ts server/src/services/native-runtime/stopped-codex-turn.test.ts server/src/services/native-runtime/native-safe-replacement.test.ts",
+    "test:slack-connector": "node server/src/services/connectors/slack/evals/run-regressions.mjs",
     "test:e2e:browser-context": "playwright test --config tests/e2e/playwright-company-context.config.ts",
     "test:e2e:runner:browser-support": "playwright test --config tests/runner-e2e/playwright-support.config.ts",
     "test:e2e:runner:unit": "vitest run --config tests/runner-e2e/vitest.config.ts && node --test tests/runner-e2e/native-completion-checks.test.mjs tests/runner-e2e/native-completion-git-source.test.mjs tests/runner-e2e/native-completion-source-contract.test.mjs",
@@ -100,7 +103,7 @@
     "cross-env": "^10.1.0",
     "esbuild": "^0.28.2",
     "typescript": "^7.0.2",
-    "vitest": "^4.1.11"
+    "vitest": "^5.0.3"
   },
   "engines": {
     "node": ">=24.11.0"

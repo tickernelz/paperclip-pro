@@ -5,6 +5,7 @@ export const CHAT_PROVIDERS = [
   "discord",
   "microsoft-teams",
   "telegram",
+  "speko",
   "agentmail",
   "imessage-photon",
   "openwa",
@@ -159,6 +160,7 @@ export interface ChatEndpointBehaviorPolicy {
   /** Defaults to queue and is not exposed in the initial settings UI. */
   concurrency: ChatConcurrencyPolicy;
   allowDirectMessages: boolean;
+  requireAtMention: boolean;
   allowGroupChats: boolean;
   allowUnlinkedPeople: boolean;
 }
@@ -189,12 +191,29 @@ export interface SlackAppConfiguration {
 }
 
 export interface ChatEndpointSetupState {
+  slackSetupMethod?: "automatic" | "manual" | "existing";
+  slackRegistration?: import("../slack-app-manifest.js").SlackRegistrationState;
+  /** Provider-confirmed app icon outcome; configuration tokens are never retained. */
+  slackAvatar?: import("../slack-app-manifest.js").SlackAvatarState;
+  slackAccount?: import("../slack-app-manifest.js").SlackAccountState;
+  slackOAuthCallbackUri?: string | null;
   github?: {
-    stage: "connect" | "install" | "repositories" | "verify" | "identity" | "behavior" | "test";
+    stage: "setup" | "connect" | "install" | "repositories" | "verify" | "identity" | "behavior" | "test";
     appSlug?: string;
+    /** Verified by GitHub GET /app, distinct from draft ownership choices. */
+    appOwnerType?: "personal" | "organization";
+    appOwnerLogin?: string;
     installationUrl?: string;
     managementUrl?: string;
     registrationStatus?: "pending" | "completed" | "failed";
+    ownerType?: "personal" | "organization";
+    ownerLogin?: string;
+    appName?: string;
+    cloudRegistrationId?: string;
+    initialRepositoriesImported?: boolean;
+    repositorySelectionSaved?: boolean;
+    initialRepositoryImportPending?: boolean;
+    initialSetupPending?: boolean;
   };
   step: "choose_agent" | "provider_setup" | "test" | "complete";
   /** Server-generated boundary; only provider events at or after this time can complete setup. */
@@ -251,6 +270,7 @@ export interface ChatEndpoint {
   policyRevision?: number;
   inflightMode?: ChatInflightMode;
   allowDirectMessages: boolean;
+  requireAtMention: boolean;
   allowGroupChats: boolean;
   allowUnlinkedPeople: boolean;
   replyMode: "subscribed";
@@ -280,6 +300,14 @@ export interface ChatEndpointResource {
   createdAt: string;
   updatedAt: string;
   participants?: string[];
+}
+
+export interface GitHubRepositoryPage {
+  items: ChatEndpointResource[];
+  nextOffset: number | null;
+  totalCount: number;
+  enabledCount: number;
+  availableCount: number;
 }
 
 export interface ChatExternalPrincipal {
@@ -483,12 +511,15 @@ export interface CreateChatEndpointInput {
   assignedAgentId: string;
   applicationId?: string;
   name?: string;
+  slackApp?: SlackAppConfiguration;
 }
 
 export interface UpdateChatEndpointInput {
+  slackSetupMethod?: "automatic" | "manual" | "existing";
   slackApp?: SlackAppConfiguration;
   communicationInstructions?: string;
   allowDirectMessages?: boolean;
+  requireAtMention?: boolean;
   allowGroupChats?: boolean;
   allowUnlinkedPeople?: boolean;
 }

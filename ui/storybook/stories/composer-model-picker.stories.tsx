@@ -396,7 +396,7 @@ export const IntermediateWidthPlan: Story = {
     await expect(chip.height).toBe(capsule.height);
     await expect(Math.abs(send.top - capsule.top)).toBeLessThanOrEqual(1);
     await expect(send.left - capsule.right).toBeLessThanOrEqual(16);
-    await expect(screen.getByTestId("composer-model-popover")).toBeVisible();
+    await expect(screen.getByTestId("composer-run-settings-panel")).toBeVisible();
   },
 };
 
@@ -406,12 +406,12 @@ export const ProductionIntermediateWidthPlan: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
     const chip = screen.getByRole("button", { name: "Remove Plan mode" }).getBoundingClientRect();
-    const capsule = screen.getByTestId("task-chat-composer-selection").getBoundingClientRect();
+    const capsule = screen.getByTestId("task-chat-composer-assignee").getBoundingClientRect();
     const send = screen.getByRole("button", { name: "Send message" }).getBoundingClientRect();
     await expect(chip.height).toBe(capsule.height);
     await expect(Math.abs(send.top - capsule.top)).toBeLessThanOrEqual(1);
     await expect(send.left - capsule.right).toBeLessThanOrEqual(16);
-    await expect(screen.getByTestId("composer-model-popover")).toBeVisible();
+    await expect(screen.getByTestId("composer-run-settings-panel")).toBeVisible();
   },
 };
 
@@ -421,7 +421,7 @@ export const ProductionLongLabelsWide: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
     const assignee = screen.getByTestId("task-chat-composer-assignee-label");
-    const model = screen.getByTestId("task-chat-composer-model-label");
+    const model = screen.getByTestId("task-chat-composer-run-summary");
     await expect(assignee.scrollWidth).toBeLessThanOrEqual(assignee.clientWidth);
     await expect(model.scrollWidth).toBeLessThanOrEqual(model.clientWidth);
   },
@@ -433,7 +433,7 @@ export const ProductionLongLabelsConstrained: Story = {
   play: async ({ canvasElement }) => {
     const screen = within(canvasElement.ownerDocument.body);
     const assignee = screen.getByTestId("task-chat-composer-assignee-label");
-    const model = screen.getByTestId("task-chat-composer-model-label");
+    const model = screen.getByTestId("task-chat-composer-run-summary");
     await expect(assignee.scrollWidth > assignee.clientWidth || model.scrollWidth > model.clientWidth).toBe(true);
     await expect(screen.getByRole("button", { name: "Remove Plan mode" })).toBeVisible();
   },

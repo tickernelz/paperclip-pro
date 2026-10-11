@@ -4,55 +4,67 @@
 | --- | --- |
 | Upstream repository | https://github.com/paperclipai/paperclip |
 | Upstream branch | `master` |
-| Upstream commit merged | `81cd03b3b542ea4af291ef56d5084fbf6410eb9c` |
-| Previous merge base | `7b7c4d4172d6aac14919e2682b702ae87bc17653` |
-| Date | 2026-10-06 |
-| Fork branch | `sync/upstream-20261006` (from `origin/main` `93e85185c`) |
-| Fork merge commit | `dde142577813f8a0207e1fe02c8a9a760301cfcf` (parents: fork `c74245d68`, upstream-renamed `5c49b4529` whose parent is upstream `81cd03b3b`) |
-| Conflict decisions | [2026-10-06-conflicts.md](2026-10-06-conflicts.md) |
+| Upstream commit merged | `e733bddc45e00efb1819fffa8677f7b0d07802c5` |
+| Previous merge base | `81cd03b3b542ea4af291ef56d5084fbf6410eb9c` |
+| Date | 2026-10-11 |
+| Fork branch | `sync/upstream-20261011` (from `origin/main` `a814ecf73`) |
+| Fork merge commit | `MERGE_COMMIT_PLACEHOLDER` (parents: fork `a814ecf73`, upstream-renamed `d350bc9f6` whose parent is upstream `e733bddc4`) |
+| Conflict decisions | [2026-10-11-conflicts.md](2026-10-11-conflicts.md) |
 
-The next sync starts from `81cd03b3b542ea4af291ef56d5084fbf6410eb9c`: `git log 81cd03b3b..upstream/master`. `git merge-base HEAD upstream/master` should return that SHA.
+The next sync starts from `e733bddc45e00efb1819fffa8677f7b0d07802c5`: `git log e733bddc4..upstream/master`. `git merge-base HEAD upstream/master` should return that SHA.
 
 ## Migration renumbering
 
-Fork migrations end at `0290_dizzy_ultragirl`. Upstream migrations added after the merge base were renamed in upstream order, and each got a new journal `when` greater than the previous entry. The final snapshot `meta/0306_snapshot.json` was regenerated from the merged schema. Its `prevId` is the fork `0290` snapshot id `08c7961c-45c7-4153-9cf2-8596730f337a`. The intermediate upstream snapshots were not kept: the repo prunes all but the newest snapshots.
+Fork migrations end at `0314_chilly_triton` (snapshot id `2a5bfff1-10bb-4883-96d8-741a6b14fcef`). Upstream migrations added after the merge base were renamed in upstream order to `0315`..`0347`, each keeping its upstream adjective suffix and a new journal `when` strictly greater than the previous entry. The final snapshot `meta/0347_snapshot.json` was regenerated from the merged schema; its `prevId` is the fork `0314` snapshot id `2a5bfff1-10bb-4883-96d8-741a6b14fcef` and its own id is `0f9388f6-cfb7-498e-9106-dd562ec6474a`. The colliding upstream snapshots were not kept; the repo prunes all but the newest snapshots. The last upstream migration taken is `0332_little_night_nurse` (renamed `0347_little_night_nurse`).
 
 | Upstream | Fork |
 | --- | --- |
-| 0284_petite_genesis | 0291_petite_genesis |
-| 0285_heavy_oracle | 0292_heavy_oracle |
-| 0286_complete_alice | 0293_complete_alice |
-| 0287_serious_tinkerer | 0294_serious_tinkerer |
-| 0288_glorious_jamie_braddock | 0295_glorious_jamie_braddock |
-| 0289_drop_user_keyboard_shortcuts | 0296_drop_user_keyboard_shortcuts |
-| 0290_browser_use_cloud | 0297_browser_use_cloud |
-| 0291_conscious_secret_warriors | 0298_conscious_secret_warriors |
-| 0292_powerful_devos | 0299_powerful_devos |
-| 0293_broad_rattler | 0300_broad_rattler |
-| 0294_chilly_marvel_apes | 0301_chilly_marvel_apes |
-| 0295_public_captain_cross | 0302_public_captain_cross |
-| 0296_stiff_thaddeus_ross | 0303_stiff_thaddeus_ross |
-| 0297_foamy_swordsman | 0304_foamy_swordsman |
-| 0298_connection_agent_instructions | 0305_connection_agent_instructions |
-| 0299_absent_ser_duncan | 0306_absent_ser_duncan |
+| 0300_chunky_chamber | 0315_chunky_chamber |
+| 0301_lumpy_maria_hill | 0316_lumpy_maria_hill |
+| 0302_colossal_otto_octavius | 0317_colossal_otto_octavius |
+| 0303_supreme_garia | 0318_supreme_garia |
+| 0304_curvy_shadow_king | 0319_curvy_shadow_king |
+| 0305_chubby_vin_gonzales | 0320_chubby_vin_gonzales |
+| 0306_familiar_titania | 0321_familiar_titania |
+| 0307_cool_naoko | 0322_cool_naoko |
+| 0308_whole_steel_serpent | 0323_whole_steel_serpent |
+| 0309_loving_the_hood | 0324_loving_the_hood |
+| 0310_agent_commentary | 0325_agent_commentary |
+| 0311_mcp_file_transfers | 0326_mcp_file_transfers |
+| 0312_easy_eternity | 0327_easy_eternity |
+| 0313_private_task_access | 0328_private_task_access |
+| 0314_private_task_draft_assets | 0329_private_task_draft_assets |
+| 0315_rapid_emma_frost | 0330_rapid_emma_frost |
+| 0316_premium_slayback | 0331_premium_slayback |
+| 0317_messy_famine | 0332_messy_famine |
+| 0318_strong_blacklash | 0333_strong_blacklash |
+| 0319_heavy_captain_midlands | 0334_heavy_captain_midlands |
+| 0320_daily_onslaught | 0335_daily_onslaught |
+| 0321_acoustic_human_fly | 0336_acoustic_human_fly |
+| 0322_reflective_kree | 0337_reflective_kree |
+| 0323_petite_shockwave | 0338_petite_shockwave |
+| 0324_long_franklin_storm | 0339_long_franklin_storm |
+| 0325_aberrant_machine_man | 0340_aberrant_machine_man |
+| 0326_blushing_screwball | 0341_blushing_screwball |
+| 0327_sad_proteus | 0342_sad_proteus |
+| 0328_chunky_mentallo | 0343_chunky_mentallo |
+| 0329_free_wolf_cub | 0344_free_wolf_cub |
+| 0330_spooky_white_tiger | 0345_spooky_white_tiger |
+| 0331_panoramic_spyke | 0346_panoramic_spyke |
+| 0332_little_night_nurse | 0347_little_night_nurse |
 
-No upstream migration SQL had to be edited. Each one creates only objects the fork did not have, or already guards with `IF [NOT] EXISTS` or `duplicate_object`. Tests that read migration files by name were updated to the new names.
-
-## Fork behaviour to keep
-
-These fork features deliberately differ from upstream. Keep them when upstream touches the same code.
-
-| Feature | Code | Tests | Why |
-| --- | --- | --- | --- |
-| Ancestor handoff mention: a comment that mentions the assignee of a parent or ancestor task (plain `@Name`, `@FirstName`, or `agent://` link) is forwarded to the nearest ancestor that agent owns and wakes it with `issue_commented` (`source: comment.ancestor_handoff`). Every other mention stays context only, as upstream `2de43fc90` intends. | `routeAncestorHandoffMentions` in `server/src/routes/issues.ts` (both comment paths), `server/src/services/issue-ancestor-handoff.ts` | `issue-ancestor-handoff.test.ts`, `issue-ancestor-handoff-routes.test.ts`, the `ancestor assignee handoff` block in `issue-update-comment-wakeup-routes.test.ts` | Owner decision 2026-10-08: workers hand results back up the tree (ZHA-723 → ZHA-379 incident). |
+No upstream migration SQL had to be edited. Each one creates only objects the fork did not have, or already guards with `IF [NOT] EXISTS` or `duplicate_object`. `pnpm db:generate` emits only `meta/0347_snapshot.json` and no new SQL.
 
 ## Procedure
 
 1. `git fetch upstream`. Create the work branch from `origin/main` in its own worktree; never use the main checkout.
 2. Create a renamed copy of upstream: `git worktree add -b upstream-renamed <dir> upstream/master`. Copy in `scripts/fork/rename-to-paperclip-pro.mjs` from the fork, run it, remove the copied script, restore `pnpm-lock.yaml` and `skills-releases/`, then commit `chore(sync): apply fork package names to upstream`. That commit's parent is upstream, so the merge makes upstream an ancestor.
-3. `git merge --no-ff --no-commit upstream-renamed`. Re-render conflicts with `git checkout --conflict=diff3`. Resolve them per file: keep every fork feature (see [Fork behaviour to keep](#fork-behaviour-to-keep)) and add the upstream change on top. Record each real fork-vs-upstream decision in `doc/upstream-sync/<date>-conflicts.md`.
-4. Migrations: rename upstream migrations added after the merge base to the next free fork numbers, in upstream order. Rebuild `_journal.json` entries (idx, tag, increasing `when`). Drop conflicting upstream snapshots. Regenerate the newest snapshot from the merged schema with drizzle-kit `generateDrizzleJson`, using the last fork snapshot id as `prevId`. Gates: `check:migrations` and `src/migration-snapshot-drift.test.ts`.
-5. Regenerate derived files; never hand-merge them: `pnpm install --no-frozen-lockfile` for the lockfile, `node scripts/ingest-app-definitions.mjs --definitions-only` (then revert JSON definition drift, keeping only `app-definitions.generated.ts`), `packages/paperclip-runner` `generate-protocol-manifest.mjs`, `generate-capability-contract.mjs`, `generate-capability-inventory.mjs` (via the skill inventory), and `pnpm generate:mcp-tools`.
-6. Gates (no full suite locally): `pnpm -r typecheck`, `check:token-gates`, db `check:migrations`, `check:mcp-tools`, `check:module-boundaries`, `check-no-git-push`, `release-package-map check`, docs-lane suites, capability inventory/contract checks, ui build. Run targeted vitest on the files touched by conflicts plus `server/src/__tests__/openwa/*`, `stranded-reconciler-scope`, `openwa-authority`, `chat-channels.integration` and `packages/adapters/omp-local`.
-7. Migration apply test on throwaway embedded Postgres: (a) all migrations from scratch, (b) restore the newest `~/.paperclip-pro/instances/default/data/backups/*.sql.gz` and apply the pending fork migrations.
-8. Update this file with the new upstream SHA and the migration map.
+3. `git merge --no-ff --no-commit upstream-renamed`. Re-render conflicts with `git checkout --conflict=diff3`. Resolve them per file: keep every fork feature (see [2026-10-11-conflicts.md](2026-10-11-conflicts.md)) and add the upstream change on top.
+4. Migrations: rename upstream migrations added after the merge base to the next free fork numbers, in upstream order. Rebuild `_journal.json` entries (idx, tag, increasing `when`). Drop conflicting upstream snapshots. Regenerate the newest snapshot from the merged schema with drizzle-kit `generate`, using the last fork snapshot id as `prevId`; `generate` must then report "No schema changes". Gates: `check:migrations`.
+5. Regenerate derived files; never hand-merge them: `pnpm install --no-frozen-lockfile` for the lockfile, `pnpm generate:mcp-tools`, and the capability inventory (`packages/paperclip-runner/scripts/generate-capability-inventory.mjs`, which needs `PAPERCLIP_EVALS_ROOT`).
+6. Gates (no full suite locally): per-package `tsc --noEmit`, `check:token-gates`, db `check:migrations`, `check:mcp-tools`, `check:module-boundaries`, `check-no-git-push`, `release-package-map check`, docs-lane suites. Run targeted vitest on the files touched by conflicts plus `server/src/__tests__/openwa/*`, the heartbeat suites, and `packages/adapters/omp-local`.
+7. Update this file with the new upstream SHA and the migration map.
+
+## Prior syncs
+
+- 2026-10-06: upstream `81cd03b3b542ea4af291ef56d5084fbf6410eb9c`, merge commit `dde142577813f8a0207e1fe02c8a9a760301cfcf`, migrations `0284`..`0299` -> `0291`..`0306`. See [2026-10-06-conflicts.md](2026-10-06-conflicts.md).

@@ -261,6 +261,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
           <PluginSlotOutlet
+            errorBehavior="hidden"
             slotTypes={["sidebar"]}
             context={pluginContext}
             className="flex flex-col gap-0.5"
@@ -268,6 +269,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
             missingBehavior="placeholder"
           />
           <PluginLauncherOutlet
+            errorBehavior="hidden"
             placementZones={["sidebar"]}
             context={pluginContext}
             className="flex flex-col gap-0.5"
@@ -287,7 +289,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           </SidebarSection>
         ) : null}
 
-        {children}
+        {children ?? (streamlinedUiEnabled ? <SidebarAgents streamlined /> : null)}
 
         {streamlinedUiEnabled ? (
           <SidebarRecentTasks companyId={selectedCompanyId} liveIssueIds={liveIssueIds} />
@@ -310,6 +312,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
         )}
 
         <PluginSlotOutlet
+          errorBehavior="hidden"
           slotTypes={["sidebarPanel"]}
           context={pluginContext}
           className="flex flex-col gap-3"

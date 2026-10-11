@@ -1,6 +1,11 @@
 import { api } from "./client";
 import type {
   SlackAppConfiguration,
+  SlackRegistrationInput,
+  SlackRegistrationState,
+  SlackAvatarState,
+  SlackAccountState,
+  SlackInstallAuthorization,
   UpdateChatEndpointInput,
   PhotonProjectInspection,
   PhotonChannelConfiguration,
@@ -36,7 +41,7 @@ export type {
 } from "@tickernelz/paperclip-pro-shared";
 
 export type ChatProvider =
-  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "openwa";
+  "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "openwa" | "speko";
 export type ChatEndpointStatus =
   | "draft"
   | "verifying"
@@ -125,6 +130,7 @@ export interface ChatEndpoint {
   assignedAgentId: string;
   assignedAgentName: string;
   connectionId?: string | null;
+  sponsorUserId?: string | null;
   providerAccountId?: string | null;
   providerAccountLabel?: string | null;
   botLabel?: string | null;
@@ -135,6 +141,7 @@ export interface ChatEndpoint {
   policyRevision?: number;
   inflightMode?: ChatInflightMode;
   allowDirectMessages?: boolean;
+  requireAtMention?: boolean;
   allowGroupChats?: boolean;
   allowUnlinkedPeople: boolean;
   replyMode?: "subscribed" | "mention_each_reply" | null;
@@ -156,6 +163,11 @@ export interface ChatEndpoint {
     messagingEndpoint?: string | null;
     command?: string | null;
     slackApp?: SlackAppConfiguration;
+    slackSetupMethod?: "automatic" | "manual" | "existing";
+    slackRegistration?: SlackRegistrationState;
+    slackAvatar?: SlackAvatarState;
+    slackAccount?: SlackAccountState;
+    slackOAuthCallbackUri?: string | null;
     webhookVerifiedAt?: string | null;
     webhookSecretConfigured?: boolean;
     callbackSurfaces?: {
@@ -339,7 +351,7 @@ export const chatEndpointsApi = {
     api.get<ChatEndpoint>(`/chat-endpoints/${endpointId}`),
   create: (
     companyId: string,
-    input: { provider: ChatProvider; assignedAgentId: string },
+    input: { provider: ChatProvider; assignedAgentId: string; slackApp?: SlackAppConfiguration },
   ) => api.post<ChatEndpoint>(`/companies/${companyId}/chat-endpoints`, input),
   update: (
     endpointId: string,
@@ -354,6 +366,12 @@ export const chatEndpointsApi = {
       openwa?: OpenwaChannelConfiguration;
     },
   ) => api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/setup`, input),
+  createSlackApp: (endpointId: string, input: SlackRegistrationInput) =>
+    api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/slack/registration`, input),
+  installSlackApp: (endpointId: string) =>
+    api.post<SlackInstallAuthorization>(`/chat-endpoints/${endpointId}/slack/install`, {}),
+  resumeSlackInstallation: (endpointId: string) =>
+    api.post<ChatEndpoint>(`/chat-endpoints/${endpointId}/slack/resume`, {}),
   inspectPhoton: (endpointId: string, input: { projectId: string; projectSecret: string }) =>
     api.post<PhotonProjectInspection>(`/chat-endpoints/${endpointId}/photon/inspect`, input),
   inspectOpenwa: (endpointId: string, input: { baseUrl: string; apiKey: string; adminApiKey?: string }) =>

@@ -120,7 +120,7 @@ function expectedOutcome(operation: OpenwaOperation, config: Config): string {
   return "approval_required";
 }
 
-describe.sequential("OpenWA catalog, describe and call (embedded Postgres + fake gateway)", () => {
+describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let root: string;

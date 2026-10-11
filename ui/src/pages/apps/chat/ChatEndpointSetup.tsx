@@ -61,6 +61,7 @@ const providerNames: Record<ChatProvider, string> = {
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
   openwa: "OpenWA",
+  speko: "Speko",
 };
 
 const knownProviders = new Set(Object.keys(providerNames));
@@ -126,7 +127,7 @@ export function isChatEndpointRepairing(
   );
 }
 
-function ChatConnectionPurpose({ provider, onChat, onTools }: {
+export function ChatConnectionPurpose({ provider, onChat, onTools }: {
   provider: ChatProvider;
   onChat: () => void;
   onTools: () => void;

@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
 import os from "node:os";
 import path from "node:path";
+import { createUsageCheckpointLog } from "@tickernelz/paperclip-pro-adapter-utils/usage-checkpoint";
 import {
   inferOpenAiCompatibleBiller,
   type AdapterExecutionContext,
@@ -58,7 +59,9 @@ import {
   type PreparedOmpRuntimeConfig,
 } from "./config.js";
 import {
+  createOmpJsonlParser,
   createOmpOutputAccumulator,
+  type OmpAccounting,
   isOmpUnknownSessionError,
   parseOmpJsonLine,
   type ParsedOmpOutput,
@@ -175,6 +178,7 @@ type ProcessAttempt = {
   rpcProtocolVersion: number | null;
   stdoutTranscript: string;
   modelFallback: ReturnType<OmpModelFallbackTracker["snapshot"]> | null;
+  accounting: OmpAccounting;
 };
 
 function stringList(value: unknown, commaSeparated = false): string[] {
@@ -247,7 +251,9 @@ function configuredModelProvider(model: string): string | null {
 }
 
 function resolveBiller(env: Record<string, string>, provider: string | null): string {
-  return provider ?? inferOpenAiCompatibleBiller(env, null) ?? "unknown";
+  return provider === "openai"
+    ? inferOpenAiCompatibleBiller(env, "openai") ?? "unknown"
+    : provider ?? inferOpenAiCompatibleBiller(env, null) ?? "unknown";
 }
 
 function addWakeEnvironment(
@@ -573,7 +579,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     await ensureOmpSkills(config, preparedConfig.agentDir ?? undefined);
 
     const configuredEnv = parseObject(config.env);
-    const env: Record<string, string> = buildPaperclipEnv(agent, { sameHost: !remote });
+    const env: Record<string, string> = buildPaperclipEnv(agent, { sameHost: !remote }, ctx.agentIdentity);
     addWakeEnvironment(env, runId, context);
     const workspaceHints = Array.isArray(context.paperclipWorkspaces)
       ? context.paperclipWorkspaces.filter(
@@ -807,7 +813,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
                 errorCode: PAPERCLIP_MCP_UNAVAILABLE_CODE,
                 ...(mcpProbe.transient ? paperclipMcpUnavailableRecovery() : {}),
               }),
+          usageComplete: true,
           usageBasis: "per_run",
+          costStatus: "unpriced",
+          costUsd: null,
           sessionId: null,
           sessionParams: null,
           executionRecovery: { kind: "bootstrap", providerWorkStarted: false },
@@ -1049,6 +1058,26 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       const releaseSteerTarget = steerSession
         ? registerAdapterSteerTarget(runId, steerSession)
         : null;
+      const consumeAccounting = createOmpJsonlParser();
+      let retainedAccounting: OmpAccounting = consumeAccounting("");
+      const accountingLog = createUsageCheckpointLog(bufferedOnLog, ctx.onUsage ?? undefined, stdout => {
+        retainedAccounting = consumeAccounting(stdout);
+        const parsed = retainedAccounting;
+        const provider = parsed.provider ?? configuredModelProvider(asString(executionConfig.model, "").trim());
+        const model = parsed.model ?? (asString(executionConfig.model, "").trim() || null);
+        const hasCompleteAccounting = parsed.usageComplete || parsed.costUsd != null;
+        return {
+          usage: parsed.usageReported ? (parsed.usage ?? undefined) : undefined,
+          usageBasis: "per_run",
+          provider,
+          biller: resolveBiller(invocationEnv, provider),
+          billingType: "unknown",
+          model,
+          costUsd: parsed.costUsd,
+          costStatus: hasCompleteAccounting ? undefined : "unpriced",
+          complete: parsed.usageComplete,
+        };
+      });
       const launch = launchOmp(command, args);
       try {
         if (rpcActive && steerSession) {
@@ -1062,7 +1091,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             graceSec,
             prompt: prompts.userPrompt,
             runtimeTarget,
-            onLog: bufferedOnLog,
+            onLog: accountingLog,
             onSpawn: handleSpawn,
             onRuntimeProgress: ctx.onRuntimeProgress,
             session: steerSession,
@@ -1081,7 +1110,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
             graceSec,
             onSpawn: handleSpawn,
             onRuntimeProgress: ctx.onRuntimeProgress,
-            onLog: bufferedOnLog,
+            onLog: accountingLog,
             runLogTail: paperclipBridge?.runLogTail,
           });
         }
@@ -1090,6 +1119,11 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           await ingestLine(stdoutBuffer);
         }
         await logQueue;
+        await accountingLog.flush();
+        await accountingLog.flush({
+          complete: proc.exitCode === 0 && !proc.timedOut && !proc.signal
+            && (retainedAccounting.usageComplete || retainedAccounting.costUsd != null),
+        });
       } finally {
         releaseSteerTarget?.();
         if (ctx.signal && abortHandler) {
@@ -1114,6 +1148,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         rpcProtocolVersion,
         stdoutTranscript,
         modelFallback: fallbackTracker?.snapshot() ?? null,
+        accounting: retainedAccounting,
       };
     };
 
@@ -1171,6 +1206,10 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         : !attempt.sawProviderWork && failed
           ? { kind: "bootstrap", providerWorkStarted: false } as const
           : null;
+      const accounting = attempt.accounting;
+      const hasCompleteAccounting = accounting.usageComplete || accounting.costUsd != null;
+      const usageComplete = accounting.usageReported && hasCompleteAccounting
+        && !attempt.proc.timedOut && !attempt.proc.signal && attempt.proc.exitCode === 0;
       const result: AdapterExecutionResult & { usageBasis: "per_run" } = {
         exitCode: effectiveExitCode,
         signal: attempt.proc.signal,
@@ -1184,7 +1223,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         ...(failureContract.errorFamily ? { errorFamily: failureContract.errorFamily } : {}),
         ...(failureContract.retryNotBefore ? { retryNotBefore: failureContract.retryNotBefore } : {}),
         ...(executionRecovery ? { executionRecovery } : {}),
-        usage: attempt.parsed.usage,
+        usage: accounting.usageReported ? (accounting.usage ?? undefined) : undefined,
+        usageComplete,
         usageBasis: "per_run",
         sessionId: resolvedSessionId,
         sessionParams,
@@ -1193,8 +1233,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         biller: resolveBiller(invocationEnv, provider),
         model,
         billingType: "unknown",
-        costUsd: attempt.parsed.costUsd,
-        ...(attempt.parsed.costUsd > 0 ? { cacheAdjustedCostUsd: attempt.parsed.costUsd } : {}),
+        costUsd: accounting.costUsd,
+        ...(accounting.costUsd != null && accounting.costUsd > 0 ? { cacheAdjustedCostUsd: accounting.costUsd } : {}),
+        ...(hasCompleteAccounting ? {} : { costStatus: "unpriced" as const }),
         summary: attempt.parsed.finalMessage ?? attempt.parsed.messages.at(-1) ?? null,
         clearSession: retriedFresh && !resolvedSessionId,
         resultJson: {

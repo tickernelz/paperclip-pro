@@ -14,6 +14,7 @@ import { PanelProvider } from "./context/PanelContext";
 import { SidebarProvider } from "./context/SidebarContext";
 import { DialogProvider } from "./context/DialogContext";
 import { EditorAutocompleteProvider } from "./context/EditorAutocompleteContext";
+import { PrimaryAgentProvider } from "./context/PrimaryAgentProvider";
 import { ToastProvider } from "./context/ToastContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -73,6 +74,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
             <CompanyProvider>
               <EditorAutocompleteProvider>
                 <ToastProvider>
+                  <PrimaryAgentProvider>
                   <LiveUpdatesProvider>
                     <NotificationRuntime />
                     <TooltipProvider>
@@ -89,6 +91,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
                       </CompanyAwareBreadcrumbProvider>
                     </TooltipProvider>
                   </LiveUpdatesProvider>
+                  </PrimaryAgentProvider>
                 </ToastProvider>
               </EditorAutocompleteProvider>
             </CompanyProvider>

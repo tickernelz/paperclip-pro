@@ -88,7 +88,7 @@ class FakeSttServer {
 
 type WakeupOptions = Parameters<ChatChannelServiceOptions["heartbeat"]["wakeup"]>[1];
 
-describe.sequential("OpenWA round trip (embedded Postgres + fake gateway)", () => {
+describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;

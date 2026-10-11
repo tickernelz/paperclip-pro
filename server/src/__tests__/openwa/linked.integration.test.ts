@@ -70,7 +70,7 @@ async function rejection(promise: Promise<unknown>): Promise<OpenwaToolError> {
   throw new Error("expected an OpenWA tool error");
 }
 
-describe.sequential("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", () => {
+describe("OpenWA linked read-only numbers (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let root: string;

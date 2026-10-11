@@ -69,7 +69,7 @@ async function refusal(promise: Promise<unknown>): Promise<HttpError> {
   throw new Error("expected a typed refusal");
 }
 
-describe.sequential("OpenWA company isolation and invite-link joins (embedded Postgres + fake gateway)", () => {
+describe("OpenWA company isolation and invite-link joins (embedded Postgres + fake gateway)", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let root: string;

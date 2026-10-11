@@ -198,7 +198,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@activity.ts:335",
+    "boardGuard": "assertBoard@activity.ts:338",
     "authorityCapability": null,
     "parameters": [
       {
@@ -341,7 +341,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5638",
+    "boardGuard": "assertBoard@agents.ts:5313",
     "authorityCapability": null,
     "parameters": [
       {
@@ -419,6 +419,12 @@
         "type": "object",
         "properties": {
           "appId": {
+            "type": "string"
+          },
+          "clientId": {
+            "type": "string"
+          },
+          "clientSecret": {
             "type": "string"
           },
           "privateKey": {
@@ -551,7 +557,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1344",
+    "boardGuard": "assertBoard@companies.ts:1347",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1453,6 +1459,7 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
+      "assertRunReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -1491,7 +1498,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18712",
+    "boardGuard": "assertBoard@issues.ts:19527",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1582,7 +1589,7 @@
     "operationId": "POST /api/companies/{companyId}/ai-connections/local/check",
     "method": "POST",
     "path": "/companies/{companyId}/ai-connections/local/check",
-    "description": "Check the local operator's subscription sign-in without saving a connection",
+    "description": "Check an owned local subscription sign-in without saving a connection",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -1596,8 +1603,7 @@
     },
     "guards": [
       "assertAiConnectionCreateAccess",
-      "assertLocalLoginAvailable",
-      "assertLocalOperator"
+      "assertLocalLoginAvailable"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -1655,7 +1661,6 @@
             "enum": [
               "anthropic",
               "openai",
-              "openrouter",
               "xai"
             ]
           }
@@ -1800,7 +1805,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6605",
+    "boardGuard": "assertBoard@agents.ts:6312",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1847,6 +1852,67 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipCodeAiConnectionLocalAttempt",
+    "operationId": "POST /api/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
+    "method": "POST",
+    "path": "/companies/{companyId}/ai-connections/local/attempts/{sessionId}/code",
+    "description": "Submit the browser code for an owned local Claude sign-in",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "ai-connections"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "assertLocalLoginAvailable",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@ai-connections.ts:208",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "browserCode": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "browserCode"
+        ]
+      }
+    }
   },
   {
     "name": "paperclipCompleteConnectionIntent",
@@ -1953,6 +2019,56 @@
     }
   },
   {
+    "name": "paperclipConfirmChatEndpointIdentity",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/github/identity/confirm",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/github/identity/confirm",
+    "description": "Confirm the observed GitHub identity. Confirms only the signed-in configuring member's expiring observed identity and resumes the same setup draft.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "githubUserId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "githubUserId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipConfirmChatIdentityLink",
     "operationId": "POST /api/chat-identity-links/confirm",
     "method": "POST",
@@ -1970,7 +2086,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertIdentityLinkAccess"
+      "assertIdentityLinkAccess",
+      "assertIdentityProviderEnabled"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -2317,6 +2434,185 @@
     }
   },
   {
+    "name": "paperclipCreateAccountingInvoice",
+    "operationId": "POST /api/companies/{companyId}/accounting/invoices",
+    "method": "POST",
+    "path": "/companies/{companyId}/accounting/invoices",
+    "description": "Import normalized invoice evidence. Idempotent by company, biller, and external invoice ID. Conflicting reuse returns 409. Import atomically creates finance timeline events and does not reprice run costs. Company-scoped board write access is required; viewers and agents cannot mutate accounting.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "biller": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "externalId": {
+            "type": "string"
+          },
+          "lines": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "amountCents": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ]
+                },
+                "costEventId": {
+                  "type": "string"
+                },
+                "externalId": {
+                  "type": "string"
+                },
+                "kind": {
+                  "type": "string",
+                  "enum": [
+                    "inference",
+                    "fee",
+                    "credit"
+                  ]
+                },
+                "model": {
+                  "type": "string"
+                },
+                "occurredAt": {
+                  "type": "string"
+                },
+                "pricing": {
+                  "type": "object",
+                  "properties": {
+                    "cachedInputCentsPerMillion": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "cacheWriteCentsPerMillion": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "contextTier": {
+                      "type": "string",
+                      "enum": [
+                        "short",
+                        "long"
+                      ]
+                    },
+                    "evidence": {
+                      "type": "string"
+                    },
+                    "inputCentsPerMillion": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "outputCentsPerMillion": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "number"
+                        }
+                      ]
+                    },
+                    "serviceTier": {
+                      "type": "string"
+                    },
+                    "source": {
+                      "type": "string",
+                      "enum": [
+                        "provider_reported",
+                        "provider_invoice",
+                        "operator",
+                        "rate_card",
+                        "unknown"
+                      ]
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "providerRequestId": {
+                  "type": "string"
+                },
+                "runId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "amountCents",
+                "externalId",
+                "occurredAt"
+              ]
+            }
+          }
+        },
+        "required": [
+          "biller",
+          "currency",
+          "externalId",
+          "lines"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipCreateAdapterLoginSession",
     "operationId": "POST /api/companies/{companyId}/adapters/{type}/login-sessions",
     "method": "POST",
@@ -2404,7 +2700,6 @@
                 "enum": [
                   "anthropic",
                   "openai",
-                  "openrouter",
                   "xai"
                 ]
               }
@@ -2454,6 +2749,8 @@
       "assertFreshPaperclipRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
+      "assertNoAgentLocalAdapterHostCommandMutation",
+      "assertNoAgentProcessAdapterMutation",
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
@@ -2493,6 +2790,9 @@
                 "enum": [
                   "cap-v1"
                 ]
+              },
+              "customAvatarAssetId": {
+                "type": "string"
               },
               "paletteId": {
                 "type": "string",
@@ -2845,7 +3145,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -2883,7 +3184,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -2923,7 +3225,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -3008,6 +3311,8 @@
       "assertFreshPaperclipRunnerProvider",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
+      "assertNoAgentLocalAdapterHostCommandMutation",
+      "assertNoAgentProcessAdapterMutation",
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
@@ -3047,6 +3352,9 @@
                 "enum": [
                   "cap-v1"
                 ]
+              },
+              "customAvatarAssetId": {
+                "type": "string"
               },
               "paletteId": {
                 "type": "string",
@@ -3405,7 +3713,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -3443,7 +3752,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -3483,7 +3793,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -3633,7 +3944,66 @@
               "anthropic",
               "openai",
               "openrouter",
-              "xai"
+              "xai",
+              "google"
+            ]
+          },
+          "routing": {
+            "type": "object",
+            "properties": {
+              "auth": {
+                "type": "string",
+                "enum": [
+                  "bearer",
+                  "api_key",
+                  "none"
+                ]
+              },
+              "baseUrl": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "openrouter",
+                  "bedrock",
+                  "gateway",
+                  "local"
+                ]
+              },
+              "models": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "label": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id"
+                  ]
+                }
+              },
+              "protocol": {
+                "type": "string",
+                "enum": [
+                  "responses",
+                  "messages",
+                  "chat",
+                  "bedrock"
+                ]
+              },
+              "region": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "protocol"
             ]
           }
         },
@@ -3720,7 +4090,6 @@
             "enum": [
               "anthropic",
               "openai",
-              "openrouter",
               "xai"
             ]
           },
@@ -3760,7 +4129,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:195",
+    "boardGuard": "assertBoard@ai-connections.ts:163",
     "authorityCapability": null,
     "parameters": [
       {
@@ -3814,7 +4183,8 @@
                                 "anthropic",
                                 "openai",
                                 "openrouter",
-                                "xai"
+                                "xai",
+                                "google"
                               ]
                             }
                           },
@@ -3852,7 +4222,8 @@
                                 "anthropic",
                                 "openai",
                                 "openrouter",
-                                "xai"
+                                "xai",
+                                "google"
                               ]
                             }
                           },
@@ -3892,7 +4263,8 @@
                                 "anthropic",
                                 "openai",
                                 "openrouter",
-                                "xai"
+                                "xai",
+                                "google"
                               ]
                             }
                           },
@@ -4156,6 +4528,16 @@
           "notifyEnabled": {
             "type": "boolean"
           },
+          "reservationCents": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
           "scopeId": {
             "type": "string"
           },
@@ -4165,6 +4547,13 @@
               "company",
               "agent",
               "project"
+            ]
+          },
+          "unpricedUsagePolicy": {
+            "type": "string",
+            "enum": [
+              "block",
+              "allow"
             ]
           },
           "warnPercent": {
@@ -4179,7 +4568,6 @@
           }
         },
         "required": [
-          "amount",
           "scopeId",
           "scopeType"
         ]
@@ -4633,8 +5021,28 @@
               "discord",
               "microsoft-teams",
               "telegram",
+              "speko",
               "imessage-photon",
               "openwa"
+            ]
+          },
+          "slackApp": {
+            "type": "object",
+            "properties": {
+              "appName": {
+                "type": "string"
+              },
+              "botName": {
+                "type": "string"
+              },
+              "command": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "appName",
+              "botName",
+              "command"
             ]
           }
         },
@@ -4914,7 +5322,8 @@
       "idempotentHint": false
     },
     "guards": [
-      "assertIdentityLinkAccess"
+      "assertIdentityLinkAccess",
+      "assertIdentityProviderEnabled"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -4994,6 +5403,13 @@
           },
           "goalId": {
             "type": "string"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "open",
+              "private"
+            ]
           },
           "blockedByIssueIds": {
             "type": "array",
@@ -5644,7 +6060,7 @@
     "operationId": "POST /api/companies/{companyId}/cost-events",
     "method": "POST",
     "path": "/companies/{companyId}/cost-events",
-    "description": "Record a cost event",
+    "description": "Record a cost event. Amounts are USD cents, including fractional cents. Decimal strings preserve exact nanodollar precision. Reuse the idempotency key and original receipt on retries; conflicting reuse returns 409.",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -5704,12 +6120,20 @@
             "type": "integer"
           },
           "costCents": {
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
           },
           "costStatus": {
             "type": "string",
             "enum": [
               "reported",
+              "estimated",
               "unpriced"
             ]
           },
@@ -5717,6 +6141,9 @@
             "type": "string"
           },
           "heartbeatRunId": {
+            "type": "string"
+          },
+          "idempotencyKey": {
             "type": "string"
           },
           "inputTokens": {
@@ -5734,10 +6161,84 @@
           "outputTokens": {
             "type": "integer"
           },
+          "pricingProvenance": {
+            "type": "object",
+            "properties": {
+              "cachedInputCentsPerMillion": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "cacheWriteCentsPerMillion": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "contextTier": {
+                "type": "string",
+                "enum": [
+                  "short",
+                  "long"
+                ]
+              },
+              "evidence": {
+                "type": "string"
+              },
+              "inputCentsPerMillion": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "outputCentsPerMillion": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ]
+              },
+              "serviceTier": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string",
+                "enum": [
+                  "provider_reported",
+                  "provider_invoice",
+                  "operator",
+                  "rate_card",
+                  "unknown"
+                ]
+              },
+              "version": {
+                "type": "string"
+              }
+            }
+          },
           "projectId": {
             "type": "string"
           },
           "provider": {
+            "type": "string"
+          },
+          "providerRequestId": {
             "type": "string"
           }
         },
@@ -6774,6 +7275,47 @@
     }
   },
   {
+    "name": "paperclipCreateDotInvitation",
+    "operationId": "POST /api/companies/{companyId}/dot-invitations",
+    "method": "POST",
+    "path": "/companies/{companyId}/dot-invitations",
+    "description": "Create or resume a Dot invitation with company hire approval gates",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
     "name": "paperclipCreateEmailConnection",
     "operationId": "POST /api/companies/{companyId}/email/connections",
     "method": "POST",
@@ -7285,7 +7827,7 @@
     "operationId": "POST /api/companies/{companyId}/finance-events",
     "method": "POST",
     "path": "/companies/{companyId}/finance-events",
-    "description": "Record a finance event",
+    "description": "Record a finance event. Amounts accept exact decimal cents in the recorded currency. Credits use a nonnegative amount with direction credit. No currency conversion is inferred. Receipt-key conflicts return 409.",
     "toolset": "extended",
     "authority": "agent",
     "authoritySource": "default",
@@ -7326,7 +7868,14 @@
             "type": "string"
           },
           "amountCents": {
-            "type": "integer"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
           },
           "biller": {
             "type": "string"
@@ -7400,6 +7949,9 @@
             "type": "string"
           },
           "heartbeatRunId": {
+            "type": "string"
+          },
+          "idempotencyKey": {
             "type": "string"
           },
           "issueId": {
@@ -7621,7 +8173,9 @@
       "destructiveHint": false,
       "idempotentHint": false
     },
-    "guards": [],
+    "guards": [
+      "assertRunReadAllowed"
+    ],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -7688,7 +8242,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7604",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7329",
     "authorityCapability": null,
     "parameters": [
       {
@@ -7759,6 +8313,66 @@
         },
         "required": [
           "itemKey"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipCreateIssueAccessGrant",
+    "operationId": "POST /api/issues/{id}/access-grants",
+    "method": "POST",
+    "path": "/issues/{issueId}/access-grants",
+    "description": "Grant a user or agent access to a private issue subtree",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertIssueGrantSubjectExists",
+      "assertIssueReadAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string"
+          },
+          "subjectType": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ]
+          }
+        },
+        "required": [
+          "subjectId",
+          "subjectType"
         ]
       }
     }
@@ -8351,6 +8965,7 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -9217,6 +9832,67 @@
     }
   },
   {
+    "name": "paperclipCreateProjectAccessMember",
+    "operationId": "POST /api/projects/{id}/access-members",
+    "method": "POST",
+    "path": "/projects/{projectId}/access-members",
+    "description": "Add a project access member",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "projects"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCanManageProjectPrivacy",
+      "assertProjectReadAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@projects.ts:511",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "subjectId": {
+            "type": "string"
+          },
+          "subjectType": {
+            "type": "string",
+            "enum": [
+              "user",
+              "agent"
+            ]
+          }
+        },
+        "required": [
+          "subjectId",
+          "subjectType"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipCreateProjectWorkspace",
     "operationId": "POST /api/projects/{id}/workspaces",
     "method": "POST",
@@ -9236,6 +9912,7 @@
     "guards": [
       "assertNoAgentHostWorkspaceCommandMutation",
       "assertNoManagedSandboxWorkspacePath",
+      "assertProjectReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -11363,7 +12040,8 @@
               "mcp_remote",
               "rest_api",
               "local_stdio",
-              "chat_sdk"
+              "chat_sdk",
+              "voice"
             ]
           },
           "transportConfig": {
@@ -11494,7 +12172,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1848",
+    "boardGuard": "assertBoard@tool-access.ts:1840",
     "authorityCapability": null,
     "parameters": [
       {
@@ -11554,7 +12232,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2104",
+    "boardGuard": "assertBoard@tool-access.ts:2096",
     "authorityCapability": null,
     "parameters": [
       {
@@ -11820,7 +12498,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1796",
+    "boardGuard": "assertBoard@tool-access.ts:1788",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12525,6 +13203,67 @@
     }
   },
   {
+    "name": "paperclipCreateVoiceSession",
+    "operationId": "POST /api/companies/{companyId}/voice-sessions",
+    "method": "POST",
+    "path": "/companies/{companyId}/voice-sessions",
+    "description": "Create or resume a caller-bound voice session.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "endpointId": {
+            "type": "string"
+          },
+          "idempotencyKey": {
+            "type": "string"
+          },
+          "issueId": {
+            "type": "string"
+          },
+          "maxDurationSeconds": {
+            "type": "integer"
+          },
+          "newConversation": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "endpointId",
+          "idempotencyKey"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipDashboard",
     "operationId": "GET /api/companies/{companyId}/dashboard",
     "method": "GET",
@@ -12751,7 +13490,8 @@
     "guards": [
       "assertCompanyAccess",
       "getActorInfo",
-      "requireHumanUser"
+      "requireHumanUser",
+      "requireRead"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -12923,7 +13663,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:527",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:531",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12963,6 +13703,46 @@
     "parameters": [
       {
         "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteAgentDotBinding",
+    "operationId": "DELETE /api/companies/{companyId}/agents/{agentId}/dot-binding",
+    "method": "DELETE",
+    "path": "/companies/{companyId}/agents/{agentId}/dot-binding",
+    "description": "Revoke a Dot connection and fence its active Paperclip assignments",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -13047,7 +13827,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:234",
+    "boardGuard": "assertBoard@ai-connections.ts:199",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13092,7 +13872,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:202",
+    "boardGuard": "assertBoard@ai-connections.ts:170",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13756,7 +14536,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7742",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7467",
     "authorityCapability": null,
     "parameters": [
       {
@@ -13837,7 +14617,16 @@
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "ownerId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipDeleteIssue",
@@ -14040,7 +14829,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17626",
+    "boardGuard": "assertBoard@issues.ts:18441",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14339,12 +15128,58 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertProjectReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteProjectAccessMember",
+    "operationId": "DELETE /api/projects/{id}/access-members/{memberId}",
+    "method": "DELETE",
+    "path": "/projects/{projectId}/access-members/{memberId}",
+    "description": "Remove a project access member",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "projects"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCanManageProjectPrivacy",
+      "assertProjectReadAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@projects.ts:556",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "memberId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
       {
         "name": "projectId",
         "in": "path",
@@ -14373,6 +15208,7 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertProjectReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -14419,7 +15255,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1356",
+    "boardGuard": "assertBoard@companies.ts:1359",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14993,7 +15829,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1873",
+    "boardGuard": "assertBoard@tool-access.ts:1865",
     "authorityCapability": null,
     "parameters": [
       {
@@ -15045,7 +15881,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1823",
+    "boardGuard": "assertBoard@tool-access.ts:1815",
     "authorityCapability": null,
     "parameters": [
       {
@@ -15435,6 +16271,62 @@
     }
   },
   {
+    "name": "paperclipDotBindingAgent",
+    "operationId": "POST /api/companies/{companyId}/agents/{agentId}/dot-binding",
+    "method": "POST",
+    "path": "/companies/{companyId}/agents/{agentId}/dot-binding",
+    "description": "Create a one-use Dot pairing code as a company operator",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "dotUrl": {
+            "type": "string"
+          },
+          "replaceBindingId": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  {
     "name": "paperclipDuplicateToolPolicy",
     "operationId": "POST /api/companies/{companyId}/tools/policies/{policyId}/duplicate",
     "method": "POST",
@@ -15640,6 +16532,46 @@
     ]
   },
   {
+    "name": "paperclipEndVoiceSession",
+    "operationId": "POST /api/companies/{companyId}/voice-sessions/{sessionId}/end",
+    "method": "POST",
+    "path": "/companies/{companyId}/voice-sessions/{sessionId}/end",
+    "description": "End your call while preserving task work.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipEnsureMyFolder",
     "operationId": "POST /api/companies/{companyId}/folders/ensure-my",
     "method": "POST",
@@ -15781,6 +16713,59 @@
         "required": [
           "action"
         ]
+      }
+    }
+  },
+  {
+    "name": "paperclipEventTestAgentDotBinding",
+    "operationId": "POST /api/companies/{companyId}/agents/{agentId}/dot-binding/event-test",
+    "method": "POST",
+    "path": "/companies/{companyId}/agents/{agentId}/dot-binding/event-test",
+    "description": "Request a harmless Dot readiness challenge as a company operator",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "bindingId": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -16358,6 +17343,110 @@
     }
   },
   {
+    "name": "paperclipGetAccountingHealth",
+    "operationId": "GET /api/companies/{companyId}/accounting/health",
+    "method": "GET",
+    "path": "/companies/{companyId}/accounting/health",
+    "description": "Inspect pending receipts, unpriced charges, cancellation backlog, and held reservations. Company-scoped board access is required. Board viewers may inspect; agents cannot access operator accounting evidence.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAccountingInspect",
+    "operationId": "GET /api/companies/{companyId}/accounting/inspect",
+    "method": "GET",
+    "path": "/companies/{companyId}/accounting/inspect",
+    "description": "Independently compare ledger evidence and stored totals. Company-scoped board access is required. Board viewers may inspect; agents cannot access operator accounting evidence.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAccountingInvoice",
+    "operationId": "GET /api/companies/{companyId}/accounting/invoices/{invoiceId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/accounting/invoices/{invoiceId}",
+    "description": "Review exact invoice matches and unresolved differences. Company-scoped board access is required. Board viewers may inspect; agents cannot access operator accounting evidence.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "invoiceId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetActivity",
     "operationId": "GET /api/companies/{companyId}/activity",
     "method": "GET",
@@ -16566,10 +17655,7 @@
     "guards": [
       "assertAdapterTestEnvironmentForCompany",
       "assertCompanyAccess",
-      "assertEnvironmentSelectionForCompany",
-      "assertKnownAdapterType",
-      "assertManagedAiProjectAuth",
-      "requireServerAdapter"
+      "assertKnownAdapterType"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -16748,6 +17834,80 @@
     },
     "guards": [
       "assertCanReadConfigurations"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAgentDotBinding",
+    "operationId": "GET /api/companies/{companyId}/agents/{agentId}/dot-binding",
+    "method": "GET",
+    "path": "/companies/{companyId}/agents/{agentId}/dot-binding",
+    "description": "Read the experimental Dot agent connection and event readiness",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetAgentIdentity",
+    "operationId": "GET /api/agents/{id}/identity",
+    "method": "GET",
+    "path": "/agents/{agentId}/identity",
+    "description": "Get an agent's public cryptographic identity, or null before provisioning",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertAgentReadAllowed"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -17069,7 +18229,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:391",
+    "boardGuard": "assertBoard@ai-connections.ts:363",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17113,7 +18273,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:188",
+    "boardGuard": "assertBoard@ai-connections.ts:156",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17157,7 +18317,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:263",
+    "boardGuard": "assertBoard@ai-connections.ts:238",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17826,7 +18986,7 @@
     "description": "Get a chat endpoint. Returns a chat endpoint only when it belongs to a company accessible to the current board user; an inaccessible endpoint is reported as not found.",
     "toolset": "extended",
     "authority": "board",
-    "authoritySource": "registry",
+    "authoritySource": "handler",
     "tags": [
       "chat-channels"
     ],
@@ -17836,10 +18996,12 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertEndpointAccess"
+      "assertBoard",
+      "assertEndpointAccess",
+      "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": null,
+    "boardGuard": "assertBoard@chat-channels.ts:204",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18041,6 +19203,48 @@
     ]
   },
   {
+    "name": "paperclipGetChatEndpointGithubReview",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/github/reviews/{reviewId}",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/github/reviews/{reviewId}",
+    "description": "Get a GitHub review by ID. Returns a review only within this accessible company and endpoint, including reviews older than the newest list page.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "reviewId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetChatEndpointOpenwaHealth",
     "operationId": "GET /api/chat-endpoints/{endpointId}/openwa/health",
     "method": "GET",
@@ -18092,7 +19296,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertIdentityLinkAccess"
+      "assertIdentityLinkAccess",
+      "assertIdentityProviderEnabled"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -18133,7 +19338,7 @@
       "requireImportTransferRun"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:587",
+    "boardGuard": "assertBoard@companies.ts:590",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18168,7 +19373,7 @@
       "requireImportTransferRun"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:906",
+    "boardGuard": "assertBoard@companies.ts:909",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18213,6 +19418,48 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18247,6 +19494,48 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     ]
@@ -18283,6 +19572,48 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18317,6 +19648,48 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     ]
@@ -18353,6 +19726,125 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetCostByUser",
+    "operationId": "GET /api/companies/{companyId}/costs/by-user",
+    "method": "GET",
+    "path": "/companies/{companyId}/costs/by-user",
+    "description": "Cost report: by-user",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess",
+      "assertCompanyCostReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18387,6 +19879,48 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     ]
@@ -18423,6 +19957,48 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18458,6 +20034,48 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -18492,6 +20110,48 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     ]
@@ -18566,6 +20226,160 @@
     ]
   },
   {
+    "name": "paperclipGetDecisionModel",
+    "operationId": "GET /api/companies/{companyId}/decision-model",
+    "method": "GET",
+    "path": "/companies/{companyId}/decision-model",
+    "description": "Get decision settings, compatible connections, and manager capability",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "decision-models"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetDecisionModelAvailability",
+    "operationId": "GET /api/companies/{companyId}/decision-model/availability",
+    "method": "GET",
+    "path": "/companies/{companyId}/decision-model/availability",
+    "description": "Check local decision configuration and caller authorization without contacting a provider",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "decision-models"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetDecisionModelHistory",
+    "operationId": "GET /api/companies/{companyId}/decision-model/history",
+    "method": "GET",
+    "path": "/companies/{companyId}/decision-model/history",
+    "description": "List decision metadata and charges with authorized task links",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "decision-models"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetDecisionTraining",
     "operationId": "GET /api/companies/{companyId}/decision-training",
     "method": "GET",
@@ -18587,7 +20401,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@decision-training.ts:116",
+    "boardGuard": "assertBoard@decision-training.ts:127",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18660,7 +20474,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@decision-training.ts:164",
+    "boardGuard": "assertBoard@decision-training.ts:176",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18969,7 +20783,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertExecutionWorkspaceReadAllowed"
+      "assertExecutionWorkspaceReadAllowed",
+      "assertWorkspacePrivacy"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -19007,6 +20822,112 @@
     ],
     "permissions": [],
     "boardGuard": "probe:Only CEO agents can manage company export fidelity",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetFastResponse",
+    "operationId": "GET /api/companies/{companyId}/fast-response",
+    "method": "GET",
+    "path": "/companies/{companyId}/fast-response",
+    "description": "Get fast response settings and compatible shared API connections",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@fast-responses.ts:24",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetFastResponseAvailability",
+    "operationId": "GET /api/companies/{companyId}/fast-response/availability",
+    "method": "GET",
+    "path": "/companies/{companyId}/fast-response/availability",
+    "description": "Check fast response configuration without contacting the provider",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@fast-responses.ts:69",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetFastResponseHistory",
+    "operationId": "GET /api/companies/{companyId}/fast-response/history",
+    "method": "GET",
+    "path": "/companies/{companyId}/fast-response/history",
+    "description": "List fast response accounting and publication outcomes",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
       {
@@ -19109,7 +21030,9 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertRunTelemetryReadAllowed"
+      "assertRunReadAllowed",
+      "assertRunTelemetryReadAllowed",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -19143,6 +21066,7 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertRunReadAllowed",
       "assertRunTelemetryReadAllowed"
     ],
     "permissions": [],
@@ -19196,7 +21120,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7575",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7300",
     "authorityCapability": null,
     "parameters": [
       {
@@ -19280,7 +21204,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:192",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:196",
     "authorityCapability": null,
     "parameters": []
   },
@@ -19302,12 +21226,33 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrgAccess"
+      "assertBoardOrgAccess",
+      "assertCanManageInstanceSettings"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:300",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:304",
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "idleSleepSafety",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "1"
+          ]
+        }
+      },
+      {
+        "name": "ownerId",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipGetIssueActiveRun",
@@ -19463,7 +21408,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:674",
+    "boardGuard": "assertBoard@chat-channels.ts:780",
     "authorityCapability": null,
     "parameters": [
       {
@@ -20212,7 +22157,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -20246,7 +22192,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -20782,6 +22729,38 @@
     "parameters": [
       {
         "name": "pluginId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetPrimaryAgentMe",
+    "operationId": "GET /api/companies/{companyId}/primary-agent/me",
+    "method": "GET",
+    "path": "/companies/{companyId}/primary-agent/me",
+    "description": "Get my primary agent. Uses the authenticated board user's personal company preference. Active company viewers may manage their own preference. Agent credentials cannot access it. Setting a primary requires a visible, approved, non-terminated agent and rejoins that agent under existing membership rules. A cleared preference retains its initialization state.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -22167,7 +24146,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1529",
+    "boardGuard": "assertBoard@tool-access.ts:1521",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22202,7 +24181,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:868",
+    "boardGuard": "assertBoard@tool-access.ts:860",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22252,7 +24231,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1703",
+    "boardGuard": "assertBoard@tool-access.ts:1695",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22286,7 +24265,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2296",
+    "boardGuard": "assertBoard@tool-access.ts:2288",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22328,7 +24307,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2289",
+    "boardGuard": "assertBoard@tool-access.ts:2281",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22363,7 +24342,7 @@
       "assertBoardAnyToolPermission"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2129",
+    "boardGuard": "assertBoard@tool-access.ts:2121",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22405,7 +24384,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1902",
+    "boardGuard": "assertBoard@tool-access.ts:1894",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22452,7 +24431,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:836",
+    "boardGuard": "assertBoard@tool-access.ts:813",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22592,7 +24571,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2339",
+    "boardGuard": "assertBoard@tool-access.ts:2331",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22635,7 +24614,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2551",
+    "boardGuard": "assertBoard@tool-access.ts:2543",
     "authorityCapability": null,
     "parameters": [
       {
@@ -22673,7 +24652,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1244",
+    "boardGuard": "assertBoard@tool-access.ts:1236",
     "authorityCapability": null,
     "parameters": []
   },
@@ -22822,6 +24801,326 @@
       },
       {
         "name": "userSlug",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoiceCallback",
+    "operationId": "GET /api/companies/{companyId}/voice-callbacks/{endpointId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-callbacks/{endpointId}",
+    "description": "Read your own saved callback preference.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoiceHistory",
+    "operationId": "GET /api/companies/{companyId}/voice-history/{endpointId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-history/{endpointId}",
+    "description": "List your permitted completed and active calls.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoicePhone",
+    "operationId": "GET /api/companies/{companyId}/voice-phone/{endpointId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-phone/{endpointId}",
+    "description": "Inspect the company's existing Speko number inventory.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoicePhoneHistory",
+    "operationId": "GET /api/companies/{companyId}/voice-phone/{endpointId}/history",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-phone/{endpointId}/history",
+    "description": "List unapproved calls without private task bindings.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoicePhoneIncoming",
+    "operationId": "GET /api/companies/{companyId}/voice-phone/{endpointId}/incoming",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-phone/{endpointId}/incoming",
+    "description": "List current live calls awaiting authenticated approval.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoiceSession",
+    "operationId": "GET /api/companies/{companyId}/voice-sessions/{sessionId}",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-sessions/{sessionId}",
+    "description": "Inspect your current voice session.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoiceSessionNotification",
+    "operationId": "GET /api/companies/{companyId}/voice-sessions/{sessionId}/notification",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-sessions/{sessionId}/notification",
+    "description": "Check for an approved reply notification.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetVoiceSessionReport",
+    "operationId": "GET /api/companies/{companyId}/voice-sessions/{sessionId}/report",
+    "method": "GET",
+    "path": "/companies/{companyId}/voice-sessions/{sessionId}/report",
+    "description": "Read the safe transcript and separate provider charge.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sessionId",
         "in": "path",
         "required": true,
         "schema": {
@@ -23030,6 +25329,85 @@
         },
         "required": [
           "connectionId"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipImportAccountingProviderCost",
+    "operationId": "POST /api/companies/{companyId}/accounting/provider-costs/import",
+    "method": "POST",
+    "path": "/companies/{companyId}/accounting/provider-costs/import",
+    "description": "Import a scoped provider cost report. Reads up to 31 completed UTC days from OpenAI or Anthropic with a company admin credential. Requires explicit provider account and project/workspace identifiers. All pages validate before writing. Reimports append only the difference; run costs are not repriced. Report totals remain separate from invoices. Company-scoped board write access is required; viewers and agents cannot mutate accounting.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@costs.ts:443",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "accountId": {
+            "type": "string"
+          },
+          "from": {
+            "type": "string"
+          },
+          "provider": {
+            "type": "string",
+            "enum": [
+              "openai",
+              "anthropic"
+            ]
+          },
+          "scopeIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "secretId": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "accountId",
+          "from",
+          "provider",
+          "scopeIds",
+          "secretId",
+          "to"
         ]
       }
     }
@@ -23437,6 +25815,77 @@
     }
   },
   {
+    "name": "paperclipIncomingVoicePhone",
+    "operationId": "POST /api/companies/{companyId}/voice-phone/{endpointId}/incoming/{callId}",
+    "method": "POST",
+    "path": "/companies/{companyId}/voice-phone/{endpointId}/incoming/{callId}",
+    "description": "Approve or deny this exact live call.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "callId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "approvalCode": {
+            "type": "string"
+          },
+          "approve": {
+            "type": "boolean"
+          },
+          "issueId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "approvalCode",
+          "approve"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipInspectChatEndpointOpenwa",
     "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/inspect",
     "method": "POST",
@@ -23658,7 +26107,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:312",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:316",
     "authorityCapability": null,
     "parameters": [],
     "body": {
@@ -23738,6 +26187,49 @@
         "required": [
           "catalogSkillId"
         ]
+      }
+    }
+  },
+  {
+    "name": "paperclipInstallChatEndpointSlack",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/slack/install",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/slack/install",
+    "description": "Authorize installation of the saved Slack app. Requires a board session, company membership, connection-management permission, and the chat connector rollout gate. Secrets are never returned. Creation request IDs are idempotent; uncertain creation requires an explicit checked-no-app confirmation before a new attempt. OAuth installation is bound to the initiating actor/session and expires in ten minutes.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {}
       }
     }
   },
@@ -24018,7 +26510,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16570",
+    "boardGuard": "assertBoard@issues.ts:17385",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24194,6 +26686,73 @@
     }
   },
   {
+    "name": "paperclipLinkCostSubscription",
+    "operationId": "POST /api/companies/{companyId}/costs/subscriptions/{subscriptionId}/link",
+    "method": "POST",
+    "path": "/companies/{companyId}/costs/subscriptions/{subscriptionId}/link",
+    "description": "Link duplicate subscription accounts. Requires editing permission on both accounts in this company. Combines their usage, counts the fee once, and keeps the target price. Historical run IDs and price history are preserved.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCompanyCostReadAllowed",
+      "assertIssueCostReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "subscriptionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "expectedRevision": {
+            "type": "integer"
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "targetRevision": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "expectedRevision",
+          "targetId",
+          "targetRevision"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipLinkIntentChatEndpointPrincipal",
     "operationId": "POST /api/chat-endpoints/{endpointId}/principals/{principalId}/link-intent",
     "method": "POST",
@@ -24247,6 +26806,38 @@
         }
       }
     }
+  },
+  {
+    "name": "paperclipListAccountingInvoices",
+    "operationId": "GET /api/companies/{companyId}/accounting/invoices",
+    "method": "GET",
+    "path": "/companies/{companyId}/accounting/invoices",
+    "description": "List imported provider invoices. Company-scoped board access is required. Board viewers may inspect; agents cannot access operator accounting evidence.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipListAdapterModels",
@@ -24379,7 +26970,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4768",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4775",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24414,7 +27005,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdmin@access.ts:4695",
+    "boardGuard": "await assertInstanceAdmin@access.ts:4702",
     "authorityCapability": null,
     "parameters": []
   },
@@ -24654,7 +27245,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:181",
+    "boardGuard": "assertBoard@ai-connections.ts:149",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25027,7 +27618,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@browser-use.ts:120",
+    "boardGuard": "assertBoard@browser-use.ts:130",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25071,7 +27662,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@browser-use.ts:135",
+    "boardGuard": "assertBoard@browser-use.ts:145",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26075,6 +28666,64 @@
     ]
   },
   {
+    "name": "paperclipListChatEndpointRepositories",
+    "operationId": "GET /api/chat-endpoints/{endpointId}/github/repositories",
+    "method": "GET",
+    "path": "/chat-endpoints/{endpointId}/github/repositories",
+    "description": "Search a page of GitHub bot repositories. Company and endpoint-scoped repository access. Counts cover the whole connection; the search limits only returned rows.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "offset",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "search",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListChatEndpointResources",
     "operationId": "GET /api/chat-endpoints/{endpointId}/resources",
     "method": "GET",
@@ -26130,7 +28779,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:165",
+    "boardGuard": "assertBoard@chat-channels.ts:180",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26501,6 +29150,56 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
       }
     ]
   },
@@ -26523,7 +29222,8 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
-      "assertCompanyAccess"
+      "assertCompanyAccess",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -26535,6 +29235,82 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListCostSubscriptions",
+    "operationId": "GET /api/companies/{companyId}/costs/subscriptions",
+    "method": "GET",
+    "path": "/companies/{companyId}/costs/subscriptions",
+    "description": "Cost report: subscriptions",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyCostReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "from",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
+        }
+      },
+      {
+        "name": "period",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "month",
+            "all"
+          ]
+        }
+      },
+      {
+        "name": "to",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "string"
+            }
+          ]
         }
       }
     ]
@@ -26785,6 +29561,38 @@
         "name": "since",
         "in": "query",
         "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListDotInvitations",
+    "operationId": "GET /api/companies/{companyId}/dot-invitations",
+    "method": "GET",
+    "path": "/companies/{companyId}/dot-invitations",
+    "description": "Resume the signed-in operator's unfinished Dot invitation",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
         "schema": {
           "type": "string"
         }
@@ -27091,6 +29899,7 @@
       "assertExecutionWorkspaceReadAllowed",
       "assertRuntimeControlAvailable",
       "assertRuntimeManageAllowed",
+      "assertWorkspacePrivacy",
       "getActorInfo"
     ],
     "permissions": [],
@@ -27125,7 +29934,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertExecutionWorkspaceReadAllowed"
+      "assertExecutionWorkspaceReadAllowed",
+      "assertWorkspacePrivacy"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -27220,6 +30030,42 @@
         "required": false,
         "schema": {
           "type": "boolean"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListFastResponseModels",
+    "operationId": "GET /api/companies/{companyId}/fast-response/models",
+    "method": "GET",
+    "path": "/companies/{companyId}/fast-response/models",
+    "description": "List models for an authorized API connection",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@fast-responses.ts:51",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
         }
       }
     ]
@@ -27445,6 +30291,7 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertRunReadAllowed",
       "assertRunTelemetryReadAllowed"
     ],
     "permissions": [],
@@ -27480,7 +30327,8 @@
     },
     "guards": [
       "assertCompanyAccess",
-      "assertRunTelemetryReadAllowed"
+      "assertRunTelemetryReadAllowed",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -27580,7 +30428,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:305",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:328",
     "authorityCapability": null,
     "parameters": []
   },
@@ -27605,7 +30453,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:4151",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3797",
     "authorityCapability": null,
     "parameters": []
   },
@@ -27630,7 +30478,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:128",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:132",
     "authorityCapability": null,
     "parameters": []
   },
@@ -27652,6 +30500,40 @@
       "idempotentHint": true
     },
     "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListIssueAccessGrants",
+    "operationId": "GET /api/issues/{id}/access-grants",
+    "method": "GET",
+    "path": "/issues/{issueId}/access-grants",
+    "description": "List issue access grants",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertIssueReadAllowed"
+    ],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -28137,6 +31019,38 @@
     ]
   },
   {
+    "name": "paperclipListIssuePrivacyConstraints",
+    "operationId": "GET /api/issues/{id}/privacy-constraints",
+    "method": "GET",
+    "path": "/issues/{issueId}/privacy-constraints",
+    "description": "Get task privacy action constraints for an authorized manager. Returns action hints without disclosing protected parent or project identity. Visibility writes recheck the current rules under the privacy-tree lock.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListIssueQueuedComments",
     "operationId": "GET /api/issues/{id}/queued-comments",
     "method": "GET",
@@ -28266,7 +31180,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertIssueReadAllowed"
+      "assertIssueReadAllowed",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -28300,7 +31215,8 @@
       "idempotentHint": true
     },
     "guards": [
-      "assertBoardOrAgentAuthority"
+      "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -28449,7 +31365,8 @@
     },
     "guards": [
       "assertCompanyAccess",
-      "assertRunTelemetryReadAllowed"
+      "assertRunTelemetryReadAllowed",
+      "getActorInfo"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -29097,6 +32014,40 @@
     "parameters": []
   },
   {
+    "name": "paperclipListProjectAccessMembers",
+    "operationId": "GET /api/projects/{id}/access-members",
+    "method": "GET",
+    "path": "/projects/{projectId}/access-members",
+    "description": "List project access members",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "projects"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertProjectReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "projectId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListProjectRepositories",
     "operationId": "GET /api/companies/{companyId}/project-repositories",
     "method": "GET",
@@ -29147,7 +32098,9 @@
       "destructiveHint": false,
       "idempotentHint": true
     },
-    "guards": [],
+    "guards": [
+      "assertProjectReadAllowed"
+    ],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -29185,7 +32138,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7138",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6846",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30187,7 +33140,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1536",
+    "boardGuard": "assertBoard@tool-access.ts:1528",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30240,7 +33193,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1598",
+    "boardGuard": "assertBoard@tool-access.ts:1590",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30338,7 +33291,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1728",
+    "boardGuard": "assertBoard@tool-access.ts:1720",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30372,7 +33325,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1911",
+    "boardGuard": "assertBoard@tool-access.ts:1903",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30407,7 +33360,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1663",
+    "boardGuard": "assertBoard@tool-access.ts:1655",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30443,7 +33396,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2023",
+    "boardGuard": "assertBoard@tool-access.ts:2015",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30487,7 +33440,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1982",
+    "boardGuard": "assertBoard@tool-access.ts:1974",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30522,7 +33475,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1522",
+    "boardGuard": "assertBoard@tool-access.ts:1514",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30649,7 +33602,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2572",
+    "boardGuard": "assertBoard@tool-access.ts:2564",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30683,7 +33636,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2312",
+    "boardGuard": "assertBoard@tool-access.ts:2304",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30718,7 +33671,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2305",
+    "boardGuard": "assertBoard@tool-access.ts:2297",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30753,7 +33706,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2558",
+    "boardGuard": "assertBoard@tool-access.ts:2550",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30864,7 +33817,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2565",
+    "boardGuard": "assertBoard@tool-access.ts:2557",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30882,7 +33835,7 @@
     "operationId": "POST /api/companies/{companyId}/ai-connections/local",
     "method": "POST",
     "path": "/companies/{companyId}/ai-connections/local",
-    "description": "Verify and save the local operator's CLI subscription account",
+    "description": "Verify and save an owned local subscription sign-in",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -30896,8 +33849,7 @@
     },
     "guards": [
       "assertAiConnectionCreateAccess",
-      "assertLocalLoginAvailable",
-      "assertLocalOperator"
+      "assertLocalLoginAvailable"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -30955,7 +33907,6 @@
             "enum": [
               "anthropic",
               "openai",
-              "openrouter",
               "xai"
             ]
           }
@@ -31072,10 +34023,11 @@
     },
     "guards": [
       "assertBoard",
-      "assertRuntimeManageAllowed"
+      "assertRuntimeManageAllowed",
+      "assertWorkspacePrivacy"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@execution-workspaces.ts:187",
+    "boardGuard": "assertBoard@execution-workspaces.ts:198",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31505,7 +34457,7 @@
       "assertImportTargetAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:574",
+    "boardGuard": "assertBoard@companies.ts:577",
     "authorityCapability": null,
     "parameters": [],
     "body": {
@@ -31714,7 +34666,7 @@
       "assertImportTargetAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@companies.ts:1025",
+    "boardGuard": "assertBoard@companies.ts:1028",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31854,7 +34806,8 @@
     },
     "guards": [
       "assertCompanyAccess",
-      "requireHumanUser"
+      "requireHumanUser",
+      "requireRead"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -31918,6 +34871,7 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -32584,10 +35538,11 @@
     "guards": [
       "assertBoard",
       "assertRuntimeManageAllowed",
+      "assertWorkspacePrivacy",
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@execution-workspaces.ts:1053",
+    "boardGuard": "assertBoard@execution-workspaces.ts:1072",
     "authorityCapability": null,
     "parameters": [
       {
@@ -32791,6 +35746,40 @@
     "parameters": [
       {
         "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipRefreshCostSubscription",
+    "operationId": "POST /api/companies/{companyId}/costs/subscriptions/refresh",
+    "method": "POST",
+    "path": "/companies/{companyId}/costs/subscriptions/refresh",
+    "description": "Refresh connected subscription estimates in the background. Board members only. Probes only credentials the caller can use. Successful observations are cached for six hours; provider failures retain prior estimates. No inference requests, invoices, or budget charges are created.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCompanyCostReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -33075,7 +36064,7 @@
     "operationId": "POST /api/chat-endpoints/{endpointId}/github/registration",
     "method": "POST",
     "path": "/chat-endpoints/{endpointId}/github/registration",
-    "description": "Prepare GitHub App manifest registration. Creates expiring single-use state bound to the current user, company, endpoint, and trusted HTTPS origin. Return data contains the manifest and registration URL, never private App credentials. Response is not cached.",
+    "description": "Prepare GitHub App manifest registration. Starts or resumes a private App under a personal account or organization. Supplying ownerType uses the two-screen wizard and Cloud callbacks, including localhost; omitting it preserves legacy direct registration. State remains bound to the member, company, draft, connection, agent, and trusted origin. Credentials are never returned.",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -33112,10 +36101,85 @@
         "properties": {
           "name": {
             "type": "string"
+          },
+          "ownerLogin": {
+            "type": "string"
+          },
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "personal",
+              "organization"
+            ]
           }
         },
         "required": [
           "name"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipRegistrationChatEndpointSlack",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/slack/registration",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/slack/registration",
+    "description": "Create a Slack app for a saved draft. Requires a board session, company membership, connection-management permission, and the chat connector rollout gate. Secrets are never returned. Creation request IDs are idempotent; uncertain creation requires an explicit checked-no-app confirmation before a new attempt. OAuth installation is bound to the initiating actor/session and expires in ten minutes.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "confirmedNoAppCreated": {
+            "type": "boolean"
+          },
+          "credentials": {
+            "type": "object",
+            "properties": {
+              "configurationToken": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "configurationToken"
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "credentials",
+          "requestId"
         ]
       }
     }
@@ -33143,7 +36207,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:657",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:661",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33342,6 +36406,7 @@
     },
     "guards": [
       "assertBoardOrAgentAuthority",
+      "assertIssueReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -33475,7 +36540,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:604",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:608",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33599,6 +36664,60 @@
         },
         "required": [
           "policyIds"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipRepairAccounting",
+    "operationId": "POST /api/companies/{companyId}/accounting/repair",
+    "method": "POST",
+    "path": "/companies/{companyId}/accounting/repair",
+    "description": "Repair reviewed ledger projections. Requires an audit reason and the current inspection fingerprint. A stale inspection returns 409. Missing evidence is never invented. Company-scoped board write access is required; viewers and agents cannot mutate accounting.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "fingerprint": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "fingerprint",
+          "reason"
         ]
       }
     }
@@ -34547,6 +37666,7 @@
       "idempotentHint": false
     },
     "guards": [
+      "assertBoard",
       "assertBoardOrAgentAuthority",
       "assertCrossIssueInfluenceWithinRunCap",
       "assertInReviewReviewPath",
@@ -34631,10 +37751,28 @@
           "sourceIssueStatus": {
             "type": "string",
             "enum": [
+              "backlog",
               "todo",
-              "done",
+              "in_progress",
               "in_review",
-              "blocked"
+              "done",
+              "blocked",
+              "cancelled"
+            ]
+          },
+          "workspaceBaseRef": {
+            "type": "object",
+            "properties": {
+              "branch": {
+                "type": "string"
+              },
+              "requestedRef": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "branch",
+              "requestedRef"
             ]
           }
         },
@@ -34793,6 +37931,63 @@
         },
         "required": [
           "answers"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipRestartChatEndpointRegistration",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/github/registration/restart",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/github/registration/restart",
+    "description": "Renew an expired unconsumed GitHub registration. Connection managers must confirm that no App was created. Retries resume the same replacement registration; a claimed or uncertain exchange must use existing-App recovery.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "appNotCreated": {
+            "type": "boolean",
+            "enum": [
+              true
+            ]
+          },
+          "registrationId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "appNotCreated",
+          "registrationId"
         ]
       }
     }
@@ -35153,6 +38348,135 @@
     ]
   },
   {
+    "name": "paperclipResumeChatEndpointSlack",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/slack/resume",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/slack/resume",
+    "description": "Connect already-vaulted Slack installation credentials. Requires a board session, company membership, connection-management permission, and the chat connector rollout gate. Secrets are never returned. Creation request IDs are idempotent; uncertain creation requires an explicit checked-no-app confirmation before a new attempt. OAuth installation is bound to the initiating actor/session and expires in ten minutes.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  },
+  {
+    "name": "paperclipRetryAccounting",
+    "operationId": "POST /api/companies/{companyId}/accounting/retry",
+    "method": "POST",
+    "path": "/companies/{companyId}/accounting/retry",
+    "description": "Retry accounting for a company-owned run. Retries accounting only. Provider work is never re-executed; incomplete evidence remains pending. Company-scoped board write access is required; viewers and agents cannot mutate accounting.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "runId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "runId"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipRetryAgentLifecycle",
+    "operationId": "POST /api/agents/{id}/lifecycle/retry",
+    "method": "POST",
+    "path": "/agents/{agentId}/lifecycle/retry",
+    "description": "Retry an incomplete agent lifecycle step",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCanUpdateAgent",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:5586",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipRetryCaseAutomation",
     "operationId": "POST /api/cases/{caseId}/automation/retry",
     "method": "POST",
@@ -35294,7 +38618,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9742",
+    "boardGuard": "assertBoard@issues.ts:10170",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35387,7 +38711,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7667",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7392",
     "authorityCapability": null,
     "parameters": [
       {
@@ -35655,6 +38979,59 @@
     ]
   },
   {
+    "name": "paperclipRevokeIssueAccessGrant",
+    "operationId": "POST /api/issues/{id}/access-grants/{grantId}/revoke",
+    "method": "POST",
+    "path": "/issues/{issueId}/access-grants/{grantId}/revoke",
+    "description": "Revoke an issue access grant",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertIssueReadAllowed",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "grantId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {},
+        "required": []
+      }
+    }
+  },
+  {
     "name": "paperclipRevokeIssueShareLink",
     "operationId": "DELETE /api/issues/{id}/share-link",
     "method": "DELETE",
@@ -35766,6 +39143,9 @@
       "assertExternalInstructionsAdmin",
       "assertFreshPaperclipRunnerProvider",
       "assertKnownAdapterType",
+      "assertNoAgentAdapterConfigMutation",
+      "assertNoAgentLocalAdapterHostCommandMutation",
+      "assertNoAgentProcessAdapterMutation",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
       "getActorInfo"
@@ -36178,6 +39558,65 @@
     }
   },
   {
+    "name": "paperclipSetAgentAvatar",
+    "operationId": "PUT /api/companies/{companyId}/agents/{agentId}/avatar",
+    "method": "PUT",
+    "path": "/companies/{companyId}/agents/{agentId}/avatar",
+    "description": "Upload or reset an agent profile avatar. Board users require agent_config:update permission to change company agent avatars. Agents can update only their own avatar. Task bridge and skill test credentials cannot change profiles. Upload a base64 raster image, or null to restore the preset portrait. Stored avatars use company-scoped private assets.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "agentId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "imageBase64": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "imageBase64"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetAgentInstructionsBundleFile",
     "operationId": "PUT /api/agents/{id}/instructions-bundle/file",
     "method": "PUT",
@@ -36265,7 +39704,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:364",
+    "boardGuard": "assertBoard@ai-connections.ts:336",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36317,7 +39756,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@browser-use.ts:150",
+    "boardGuard": "assertBoard@browser-use.ts:160",
     "authorityCapability": null,
     "parameters": [
       {
@@ -36664,6 +40103,12 @@
                       "allowed_authors"
                     ]
                   },
+                  "issueOpened": {
+                    "type": "boolean"
+                  },
+                  "issueOpenedInstructions": {
+                    "type": "string"
+                  },
                   "minimumCommentSeverity": {
                     "type": "string",
                     "enum": [
@@ -36820,7 +40265,6 @@
                         }
                       },
                       "required": [
-                        "automaticReviews",
                         "githubUserId",
                         "kind",
                         "login",
@@ -36856,7 +40300,6 @@
                         }
                       },
                       "required": [
-                        "automaticReviews",
                         "githubUserId",
                         "kind",
                         "login",
@@ -36938,6 +40381,12 @@
                         "linked_authors",
                         "allowed_authors"
                       ]
+                    },
+                    "issueOpened": {
+                      "type": "boolean"
+                    },
+                    "issueOpenedInstructions": {
+                      "type": "string"
                     },
                     "minimumCommentSeverity": {
                       "type": "string",
@@ -37075,6 +40524,117 @@
     }
   },
   {
+    "name": "paperclipSetChatEndpointGithubAccess",
+    "operationId": "PUT /api/chat-endpoints/{endpointId}/github/repositories/access",
+    "method": "PUT",
+    "path": "/chat-endpoints/{endpointId}/github/repositories/access",
+    "description": "Enable or disable all GitHub bot repositories. Board connection managers only. Applies to every repository in this company-scoped endpoint regardless of search or pagination; unavailable repositories cannot be enabled.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "enabled"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetChatEndpointGithubDraft",
+    "operationId": "PUT /api/chat-endpoints/{endpointId}/github/draft",
+    "method": "PUT",
+    "path": "/chat-endpoints/{endpointId}/github/draft",
+    "description": "Save GitHub App setup choices. Saves the App name and ownership choice on the same assigned draft. Requires connection-management access; creates no provider resources.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "ownerLogin": {
+            "type": "string"
+          },
+          "ownerType": {
+            "type": "string",
+            "enum": [
+              "personal",
+              "organization"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "ownerType"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetChatEndpointGithubProgress",
     "operationId": "PUT /api/chat-endpoints/{endpointId}/github/progress",
     "method": "PUT",
@@ -37117,6 +40677,7 @@
           "stage": {
             "type": "string",
             "enum": [
+              "setup",
               "connect",
               "install",
               "repositories",
@@ -37397,6 +40958,69 @@
     }
   },
   {
+    "name": "paperclipSetDecisionModel",
+    "operationId": "PUT /api/companies/{companyId}/decision-model",
+    "method": "PUT",
+    "path": "/companies/{companyId}/decision-model",
+    "description": "Configure the company decision model as a connection manager",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "decision-models"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowBackground": {
+            "type": "boolean"
+          },
+          "connectionId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "grantId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connectionId",
+          "enabled",
+          "grantId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetDecisionTriage",
     "operationId": "PUT /api/companies/{companyId}/decision-triage/{sourceKind}/{sourceId}",
     "method": "PUT",
@@ -37475,6 +41099,73 @@
     }
   },
   {
+    "name": "paperclipSetFastResponse",
+    "operationId": "PUT /api/companies/{companyId}/fast-response",
+    "method": "PUT",
+    "path": "/companies/{companyId}/fast-response",
+    "description": "Configure the company fast response model",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@fast-responses.ts:42",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowSponsored": {
+            "type": "boolean"
+          },
+          "connectionId": {
+            "type": "string"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "grantId": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "connectionId",
+          "enabled",
+          "grantId",
+          "model"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSetIssueModelOverride",
     "operationId": "PUT /api/issues/{id}/model-override",
     "method": "PUT",
@@ -37496,7 +41187,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9087",
+    "boardGuard": "assertBoard@issues.ts:9497",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37557,7 +41248,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16540",
+    "boardGuard": "assertBoard@issues.ts:17355",
     "authorityCapability": null,
     "parameters": [
       {
@@ -37615,6 +41306,7 @@
       "idempotentHint": true
     },
     "guards": [
+      "assertMcpTaskParticipation",
       "getActorInfo"
     ],
     "permissions": [],
@@ -38075,6 +41767,54 @@
         },
         "required": [
           "path"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetPrimaryAgentMe",
+    "operationId": "PUT /api/companies/{companyId}/primary-agent/me",
+    "method": "PUT",
+    "path": "/companies/{companyId}/primary-agent/me",
+    "description": "Set my primary agent. Uses the authenticated board user's personal company preference. Active company viewers may manage their own preference. Agent credentials cannot access it. Setting a primary requires a visible, approved, non-terminated agent and rejoins that agent under existing membership rules. A cleared preference retains its initialization state.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "primaryAgentId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "primaryAgentId"
         ]
       }
     }
@@ -38990,7 +42730,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1764",
+    "boardGuard": "assertBoard@tool-access.ts:1756",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39054,7 +42794,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1921",
+    "boardGuard": "assertBoard@tool-access.ts:1913",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39246,6 +42986,40 @@
         ]
       }
     }
+  },
+  {
+    "name": "paperclipSetupChatEndpointGithub",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/github/setup",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/github/setup",
+    "description": "Advance GitHub App setup. Resumes credential delivery, installation discovery, repository import, and verification. Returns redacted progress or the required human action. Runtime execution is reported separately.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipSetupToolConnectionComposioApp",
@@ -39464,6 +43238,132 @@
     }
   },
   {
+    "name": "paperclipSetVoiceCallback",
+    "operationId": "PUT /api/companies/{companyId}/voice-callbacks/{endpointId}",
+    "method": "PUT",
+    "path": "/companies/{companyId}/voice-callbacks/{endpointId}",
+    "description": "Save your own number and callback consent.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "phoneNumber": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "phoneNumber"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetVoicePhone",
+    "operationId": "PUT /api/companies/{companyId}/voice-phone/{endpointId}",
+    "method": "PUT",
+    "path": "/companies/{companyId}/voice-phone/{endpointId}",
+    "description": "Configure private calls or restricted guest intake.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "voice-sessions"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "guestIntake": {
+            "type": "boolean"
+          },
+          "lowTrustEnvironmentId": {
+            "type": "string"
+          },
+          "numberId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "enabled",
+          "numberId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipSkipIssueInteraction",
     "operationId": "POST /api/issues/{id}/interactions/{interactionId}/skip",
     "method": "POST",
@@ -39485,7 +43385,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18652",
+    "boardGuard": "assertBoard@issues.ts:19467",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39542,7 +43442,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1569",
+    "boardGuard": "assertBoard@tool-access.ts:1561",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39586,7 +43486,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1715",
+    "boardGuard": "assertBoard@tool-access.ts:1707",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39828,6 +43728,40 @@
     }
   },
   {
+    "name": "paperclipStartChatEndpointGithubIdentity",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/github/identity/start",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/github/identity/start",
+    "description": "Authorize your identity with the dedicated GitHub App. Starts a member-bound OAuth authorization with PKCE. Does not grant bot execution access through personal credentials.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipStartToolConnection",
     "operationId": "POST /api/companies/{companyId}/tools/connections/{connectionId}/start-authorization",
     "method": "POST",
@@ -39917,7 +43851,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17578",
+    "boardGuard": "assertBoard@issues.ts:18393",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40302,6 +44236,12 @@
       "schema": {
         "type": "object",
         "properties": {
+          "purpose": {
+            "type": "string",
+            "enum": [
+              "idle"
+            ]
+          },
           "ttlMs": {
             "type": "integer"
           }
@@ -40370,6 +44310,41 @@
     "parameters": [
       {
         "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipTestDecisionModel",
+    "operationId": "POST /api/companies/{companyId}/decision-model/test",
+    "method": "POST",
+    "path": "/companies/{companyId}/decision-model/test",
+    "description": "Run the fixed billed three-question setup test as a connection manager",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "decision-models"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -40462,7 +44437,8 @@
                           "anthropic",
                           "openai",
                           "openrouter",
-                          "xai"
+                          "xai",
+                          "google"
                         ]
                       }
                     },
@@ -40500,7 +44476,8 @@
                           "anthropic",
                           "openai",
                           "openrouter",
-                          "xai"
+                          "xai",
+                          "google"
                         ]
                       }
                     },
@@ -40540,7 +44517,8 @@
                           "anthropic",
                           "openai",
                           "openrouter",
-                          "xai"
+                          "xai",
+                          "google"
                         ]
                       }
                     },
@@ -40624,6 +44602,42 @@
         }
       }
     }
+  },
+  {
+    "name": "paperclipTestFastResponse",
+    "operationId": "POST /api/companies/{companyId}/fast-response/test",
+    "method": "POST",
+    "path": "/companies/{companyId}/fast-response/test",
+    "description": "Generate a fixed billed fast response sample",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "fast-responses"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@fast-responses.ts:75",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipTestNotificationWebPush",
@@ -40728,7 +44742,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2808",
+    "boardGuard": "assertBoard@tool-access.ts:2800",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41503,7 +45517,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:460",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:464",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41554,7 +45568,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:497",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:501",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41610,6 +45624,8 @@
       "assertKnownAdapterType",
       "assertNoAgentAdapterConfigMutation",
       "assertNoAgentAuthorityEscalation",
+      "assertNoAgentLocalAdapterHostCommandMutation",
+      "assertNoAgentProcessAdapterMutation",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
       "getActorInfo"
@@ -41648,6 +45664,9 @@
                 "enum": [
                   "cap-v1"
                 ]
+              },
+              "customAvatarAssetId": {
+                "type": "string"
               },
               "paletteId": {
                 "type": "string",
@@ -41842,7 +45861,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -41880,7 +45900,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -41920,7 +45941,8 @@
                               "anthropic",
                               "openai",
                               "openrouter",
-                              "xai"
+                              "xai",
+                              "google"
                             ]
                           }
                         },
@@ -41967,18 +45989,11 @@
               }
             }
           },
-          "spentMonthlyCents": {
-            "type": "integer"
-          },
           "status": {
             "type": "string",
             "enum": [
-              "active",
               "paused",
               "idle",
-              "running",
-              "error",
-              "pending_approval",
               "terminated"
             ]
           },
@@ -42010,8 +46025,9 @@
       "idempotentHint": false
     },
     "guards": [
+      "assertBoard",
       "assertBoardOrAgentAuthority",
-      "getActorInfo"
+      "assertCompanyAccess"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -42740,6 +46756,9 @@
           "communicationInstructions": {
             "type": "string"
           },
+          "requireAtMention": {
+            "type": "boolean"
+          },
           "slackApp": {
             "type": "object",
             "properties": {
@@ -42757,6 +46776,14 @@
               "appName",
               "botName",
               "command"
+            ]
+          },
+          "slackSetupMethod": {
+            "type": "string",
+            "enum": [
+              "automatic",
+              "manual",
+              "existing"
             ]
           }
         }
@@ -42811,6 +46838,108 @@
             ]
           }
         }
+      }
+    }
+  },
+  {
+    "name": "paperclipUpdateCostSubscription",
+    "operationId": "PATCH /api/companies/{companyId}/costs/subscriptions/{subscriptionId}",
+    "method": "PATCH",
+    "path": "/companies/{companyId}/costs/subscriptions/{subscriptionId}",
+    "description": "Set a subscription price or end tracking. Owner only for personal subscriptions; connection managers for shared subscriptions. Appends price history from now. Expected revision prevents lost updates. Ending tracking does not cancel provider billing. Monthly estimates never change recorded charges or agent budgets.",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "costs"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCompanyCostReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "subscriptionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "amountCents": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "cadence": {
+            "type": "string",
+            "enum": [
+              "month",
+              "year"
+            ]
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "USD",
+              "EUR",
+              "GBP",
+              "CAD",
+              "AUD",
+              "CHF"
+            ]
+          },
+          "expectedRevision": {
+            "type": "integer"
+          },
+          "plan": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "ended",
+              "excluded"
+            ]
+          }
+        },
+        "required": [
+          "amountCents",
+          "cadence",
+          "currency",
+          "expectedRevision",
+          "plan",
+          "status"
+        ]
       }
     }
   },
@@ -43198,6 +47327,7 @@
     "guards": [
       "assertNoAgentHostWorkspaceCommandMutation",
       "assertRuntimeManageAllowed",
+      "assertWorkspacePrivacy",
       "getActorInfo"
     ],
     "permissions": [],
@@ -43520,7 +47650,13 @@
           "enableExternalObjects": {
             "type": "boolean"
           },
+          "enableFastResponses": {
+            "type": "boolean"
+          },
           "enableFirstTaskPlanProposal": {
+            "type": "boolean"
+          },
+          "enableGitHubReviewBots": {
             "type": "boolean"
           },
           "enableGoalsSidebarLink": {
@@ -43547,6 +47683,9 @@
           "enableNativeRunner": {
             "type": "boolean"
           },
+          "enableOpenAiDot": {
+            "type": "boolean"
+          },
           "enableOwnerInstanceAdmin": {
             "type": "boolean"
           },
@@ -43557,6 +47696,9 @@
             "type": "boolean"
           },
           "enablePixelsOffice": {
+            "type": "boolean"
+          },
+          "enablePublicMcp": {
             "type": "boolean"
           },
           "enableRunnerPreviewIngress": {
@@ -43785,7 +47927,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10417",
+    "boardGuard": "assertBoard@issues.ts:10934",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43911,7 +48053,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:16508",
+    "boardGuard": "assertBoard@issues.ts:17323",
     "authorityCapability": null,
     "parameters": [
       {
@@ -44556,8 +48698,10 @@
       "idempotentHint": false
     },
     "guards": [
+      "assertCanManageProjectPrivacy",
       "assertNoAgentHostWorkspaceCommandMutation",
       "assertProjectEnvironmentSelection",
+      "assertProjectReadAllowed",
       "getActorInfo"
     ],
     "permissions": [],
@@ -44643,6 +48787,7 @@
       "assertCanManageProjectWorkspaceRuntimeServices",
       "assertNoAgentHostWorkspaceCommandMutation",
       "assertNoManagedSandboxWorkspacePath",
+      "assertProjectReadAllowed",
       "assertRuntimeManageAllowed",
       "getActorInfo"
     ],
@@ -46239,7 +50384,8 @@
               "mcp_remote",
               "rest_api",
               "local_stdio",
-              "chat_sdk"
+              "chat_sdk",
+              "voice"
             ]
           },
           "transportConfig": {

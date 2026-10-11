@@ -38,8 +38,8 @@ export function AppsSidebar() {
     (tab) => !isExperimentalToolTab(tab.key) || smokeLabEnabled,
   );
 
-  if (pathname.endsWith("/apps/chat/connect")) return <ChatSetupSidebar />;
-  const chatDetail = pathname.match(/\/apps\/chat\/([^/]+)(?:\/(?:settings|access|reviews|conversations|activity|approvals|audit))?\/?$/);
+  if (pathname.endsWith("/apps/chat/connect")) return <ChatSetupSidebar NavItem={SidebarNavItem} />;
+  const chatDetail = pathname.match(/\/apps\/chat\/([^/]+)(?:\/(?:settings|access|conversations|activity|approvals|audit)|\/reviews(?:\/[^/]+)?)?\/?$/);
   if (chatDetail) return <ChatDetailSidebar endpointId={chatDetail[1]} NavItem={SidebarNavItem} />;
 
   return (

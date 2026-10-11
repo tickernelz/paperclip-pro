@@ -15,7 +15,7 @@ export interface SlackAvatarProps {
   avatarUrl: string;
 }
 
-/** Shared by Slack onboarding and its Settings page. Slack upload is manual. */
+/** Manual fallback shared by Slack onboarding and its Settings page. */
 export function SlackAvatarContent({
   agentName,
   appName,
@@ -155,6 +155,21 @@ export function SlackAvatarContent({
   );
 }
 
+
+export function SlackAvatarSettings(props: SlackAvatarProps) {
+  return (
+    <section className="space-y-4" aria-label="Slack avatar">
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold">Agent avatar</h2>
+        <p className="text-sm text-muted-foreground">
+          Use {props.agentName}’s avatar so your team recognizes the agent
+        </p>
+      </div>
+      <SlackAvatarContent {...props} compact />
+    </section>
+  );
+}
+
 export function SlackAvatarStep({
   uploaded,
   onUploaded,
@@ -200,19 +215,5 @@ export function SlackAvatarStep({
         </Button>
       </SetupWizardFooter>
     </div>
-  );
-}
-
-export function SlackAvatarSettings(props: SlackAvatarProps) {
-  return (
-    <section className="space-y-4" aria-label="Slack avatar">
-      <div className="space-y-1">
-        <h2 className="text-lg font-semibold">Agent avatar</h2>
-        <p className="text-sm text-muted-foreground">
-          Use {props.agentName}’s avatar so your team recognizes the agent
-        </p>
-      </div>
-      <SlackAvatarContent {...props} compact />
-    </section>
   );
 }
