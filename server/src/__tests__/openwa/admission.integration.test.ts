@@ -730,6 +730,11 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     return entries.filter((entry) => entry.kind === "trigger_filtered").map((entry) => (entry.metadata as { reason: string }).reason);
   }
 
+  async function filteredReasons(t: Setup, count: number) {
+    await until(async () => reasons(await audits(t)).length >= count);
+    return reasons(await audits(t));
+  }
+
   it("folds a member's repeated text into one trigger and rate-limits a member's distinct triggers; owners are exempt", async () => {
     const t = await setup();
     await addOwner(t, OWNER_PHONE);
@@ -740,7 +745,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const spam = await settledDeliveries(t, 1);
     expect(spam).toHaveLength(1);
     expect((spam[0].normalizedEvent as { openwa?: { repeatCount?: number } }).openwa?.repeatCount).toBe(8);
-    expect(reasons(await audits(t))).toEqual(Array(7).fill("duplicate"));
+    expect(await filteredReasons(t, 7)).toEqual(Array(7).fill("duplicate"));
     expect(
       (await audits(t)).filter((entry) => entry.kind === "trigger_filtered").map((entry) => (entry.metadata as { repeatCount: number }).repeatCount),
     ).toEqual([2, 3, 4, 5, 6, 7, 8]);
@@ -754,7 +759,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
       "question 2",
       "question 3",
     ]);
-    expect(reasons(await audits(t))).toEqual([...Array(7).fill("duplicate"), ...Array(3).fill("rate_limited")]);
+    expect(await filteredReasons(t, 10)).toEqual([...Array(7).fill("duplicate"), ...Array(3).fill("rate_limited")]);
     expect(t.service.openwaAdmissionStats).toMatchObject({ duplicates: 7, rateLimited: 3 });
 
     for (let index = 0; index < 8; index++) await send(t, { chatId: jid(OWNER_PHONE), body: "same owner text" });
