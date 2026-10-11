@@ -1,5 +1,5 @@
 import { schemaFieldSection } from "./config-sections";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 
 import type { AdapterConfigSchema, ConfigFieldSchema, CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
 
@@ -12,7 +12,9 @@ import {
   ToggleField,
 } from "../components/agent-config-primitives";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
+import { AGENT_FALLBACK_MODELS_MAX, readAgentFallbackModels } from "@tickernelz/paperclip-pro-shared";
 import { ChevronDown } from "lucide-react";
+import { ComboboxField, ModelListField } from "./model-picker-fields";
 
 // ── Select field (extracted to keep hooks at component top level) ──────
 function SelectField({
@@ -57,148 +59,6 @@ function SelectField({
 const inputClass =
   "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
 
-
-// ---------------------------------------------------------------------------
-// Combobox: type-to-filter dropdown with free text fallback
-// ---------------------------------------------------------------------------
-
-function ComboboxField({
-  value,
-  options,
-  onChange,
-  placeholder,
-}: {
-  value: string;
-  options: { label: string; value: string; group?: string }[];
-  onChange: (val: string) => void;
-  placeholder?: string;
-}) {
-  const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Sync filter with external value when it changes (e.g. provider switch resets model)
-  useEffect(() => {
-    setFilter("");
-  }, [value]);
-
-  const filtered = options.filter((opt) => {
-    if (!filter) return true;
-    const q = filter.toLowerCase();
-    return (
-      opt.value.toLowerCase().includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      (opt.group && opt.group.toLowerCase().includes(q))
-    );
-  });
-
-  const selectedOpt = options.find((o) => o.value === value);
-  const displayValue = filter || selectedOpt?.value || value || "";
-
-  // Group filtered options by `group` field if present
-  const grouped = new Map<string, typeof filtered>();
-  for (const opt of filtered) {
-    const g = opt.group ?? "";
-    if (!grouped.has(g)) grouped.set(g, []);
-    grouped.get(g)!.push(opt);
-  }
-
-  const select = useCallback(
-    (val: string) => {
-      onChange(val);
-      setOpen(false);
-      setFilter("");
-      inputRef.current?.blur();
-    },
-    [onChange],
-  );
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      // If exactly one match, select it. Otherwise commit the typed value.
-      if (filtered.length === 1) {
-        select(filtered[0].value);
-      } else if (filter) {
-        select(filter);
-      }
-    } else if (e.key === "Escape") {
-      setOpen(false);
-      setFilter("");
-    } else if (e.key === "ArrowDown" && !open) {
-      e.preventDefault();
-      setOpen(true);
-    }
-  };
-
-  return (
-    <div className="relative">
-      <div className="flex items-center gap-0">
-        <input
-          ref={inputRef}
-          type="text"
-          className="flex-1 rounded-l-md border border-r-0 border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 focus:z-10"
-          value={displayValue}
-          placeholder={placeholder ?? "Type or select..."}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            if (!open) setOpen(true);
-          }}
-          onFocus={() => {
-            if (!open) setOpen(true);
-          }}
-          onBlur={() => {
-            // Delay close to allow click on option to register
-            setTimeout(() => setOpen(false), 150);
-          }}
-          onKeyDown={handleKeyDown}
-        />
-        <Popover open={open && filtered.length > 0} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button className="rounded-r-md border border-border px-2 py-1.5 hover:bg-accent/50 transition-colors">
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-1 max-h-60 overflow-y-auto"
-            style={{ minWidth: 280 }}
-            align="start"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            {Array.from(grouped.entries()).map(([group, opts]) => (
-              <div key={group || "_ungrouped"}>
-                {group && (
-                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {group}
-                  </div>
-                )}
-                {opts.map((opt) => (
-                  <button
-                    key={opt.value}
-                    className={`flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50 ${
-                      opt.value === value ? "bg-accent" : ""
-                    }`}
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // prevent input blur
-                      select(opt.value);
-                    }}
-                  >
-                    <span className="truncate">{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            ))}
-            {filter && filtered.length === 0 && (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Use &quot;{filter}&quot; as custom value (press Enter)
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
-      </div>
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // SchemaConfigFields component
@@ -366,6 +226,13 @@ export function SchemaConfigFields({
     return eff("adapterConfig", field.key, (stored ?? getDefaultValue(field)) as string);
   }
 
+  function readPrimary(key: string): string | null {
+    const raw = isCreate
+      ? (values ? buildSchemaAdapterConfig(values)[key] : undefined)
+      : eff("adapterConfig", key, config[key]);
+    return typeof raw === "string" && raw.trim() ? raw.trim() : null;
+  }
+
   function writeValue(field: ConfigFieldSchema, value: unknown): void {
     if (isCreate) {
       const next = {
@@ -499,6 +366,24 @@ export function SchemaConfigFields({
                     value={currentVal}
                     options={comboboxOptions}
                     onChange={(v) => writeValue(field, v || undefined)}
+                    placeholder={field.hint}
+                  />
+                </Field>
+              );
+            }
+
+            case "combobox_list": {
+              const distinctFromKey = typeof field.meta?.distinctFromKey === "string" ? field.meta.distinctFromKey : null;
+              const maxItems = typeof field.meta?.maxItems === "number" ? field.meta.maxItems : AGENT_FALLBACK_MODELS_MAX;
+              return (
+                <Field key={field.key} label={field.label} hint={field.hint}>
+                  <ModelListField
+                    value={readAgentFallbackModels(readValue(field))}
+                    options={field.options ?? []}
+                    maxItems={maxItems}
+                    primary={distinctFromKey ? readPrimary(distinctFromKey) : null}
+                    onChange={(next) => writeValue(field, next.length > 0 ? next : undefined)}
+                    testId={`schema-config-list-${field.key}`}
                     placeholder={field.hint}
                   />
                 </Field>

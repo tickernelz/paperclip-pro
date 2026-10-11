@@ -1,6 +1,7 @@
 import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
 import type { TranscriptEntry } from "@/adapters";
 import { isRunLogOnlyProviderEvent } from "./run-log-only-events";
+import { describeModelFallbackEvent } from "@/lib/model-fallback";
 
 function record(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value)
@@ -693,6 +694,11 @@ export function nativeRunEventsToTranscript(events: readonly HeartbeatRunEvent[]
 
   const itemIdentityById = new Map<string, ItemIdentity>();
   for (const event of orderedEvents) {
+    const fallbackLine = describeModelFallbackEvent(event.eventType, event.payload);
+    if (fallbackLine) {
+      entries.push({ kind: "system", ts: timestamp(event, {}), text: event.message?.trim() || fallbackLine });
+      continue;
+    }
     const envelope = record(event.payload?.prpEvent);
     if (
       !envelope

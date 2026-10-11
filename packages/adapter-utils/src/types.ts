@@ -422,7 +422,7 @@ export interface ConfigFieldOption {
 export interface ConfigFieldSchema {
   key: string;
   label: string;
-  type: "text" | "select" | "toggle" | "number" | "textarea" | "combobox";
+  type: "text" | "select" | "toggle" | "number" | "textarea" | "combobox" | "combobox_list";
   options?: ConfigFieldOption[];
   default?: unknown;
   hint?: string;

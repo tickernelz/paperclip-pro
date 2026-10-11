@@ -927,6 +927,8 @@ export type {
   HeartbeatRun,
   HeartbeatRunEvent,
   HeartbeatRunStatusPhase,
+  RunModelFallbackReason,
+  RunModelFallbackState,
   ProviderTraceDebugRequest,
   ProviderTraceDirection,
   ProviderTraceDisposition,

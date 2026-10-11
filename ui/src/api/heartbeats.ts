@@ -6,6 +6,7 @@ import type {
   WorkspaceOperation,
   ProviderTraceFrame,
   ProviderTraceMetadata,
+  RunModelFallbackState,
 } from "@tickernelz/paperclip-pro-shared";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { api, type RequestOptions } from "./client";
@@ -82,6 +83,7 @@ export interface LiveRunForIssue {
   currentToolName?: string | null;
   lastAssistantSnippet?: string | null;
   lastEventAt?: string | null;
+  modelFallback?: RunModelFallbackState | null;
 }
 
 export interface WatchdogDecisionInput {

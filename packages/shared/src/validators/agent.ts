@@ -8,6 +8,7 @@ import {
   INBOX_MINE_ISSUE_STATUS_FILTER,
 } from "../constants.js";
 import { agentAdapterTypeSchema } from "../adapter-type.js";
+import { AGENT_FALLBACK_MODELS_MAX } from "../agent-fallback-models.js";
 import { envConfigSchema } from "./secret.js";
 import { trustAuthorizationPolicySchema, trustPresetSchema } from "./trust-policy.js";
 import { agentDesiredSkillSelectionSchema } from "./adapter-skills.js";
@@ -328,7 +329,13 @@ export const agentAdapterConfigBatchUpdateSchema = z
   .object({
     agentIds: agentAdapterConfigBatchIds,
     values: z
-      .record(z.string().min(1).max(64), z.string().trim().max(200).nullable())
+      .record(
+        z.string().min(1).max(64),
+        z.union([
+          z.string().trim().max(200),
+          z.array(z.string().trim().min(1).max(200)).max(AGENT_FALLBACK_MODELS_MAX),
+        ]).nullable(),
+      )
       .refine((values) => Object.keys(values).length > 0, {
         message: "Provide at least one adapter config value",
       }),

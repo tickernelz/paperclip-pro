@@ -61,6 +61,35 @@ function fakeAdapter(type: string, thinking: boolean): ServerAdapterModule {
   } as unknown as ServerAdapterModule;
 }
 
+const FALLBACK_ADAPTER_TYPE = "omp_local";
+
+function fakeFallbackAdapter(): ServerAdapterModule {
+  const options = [
+    { value: "vendor/fast", label: "Fast", group: "vendor", name: "Fast" },
+    { value: "vendor/deep", label: "Deep", group: "vendor", name: "Deep" },
+    { value: "other/backup", label: "Backup", group: "other", name: "Backup" },
+  ];
+  return {
+    type: FALLBACK_ADAPTER_TYPE,
+    execute: async () => {
+      throw new Error("not executed in this suite");
+    },
+    testEnvironment: async () => ({ status: "ok" as const, checks: [] }),
+    getConfigSchema: async () => ({
+      fields: [
+        { key: "model", label: "Model", type: "combobox" as const, options },
+        {
+          key: "fallbackModels",
+          label: "Fallback models",
+          type: "combobox_list" as const,
+          options,
+          meta: { maxItems: 5, distinctFromKey: "model" },
+        },
+      ],
+    }),
+  } as unknown as ServerAdapterModule;
+}
+
 describeEmbeddedPostgres("batch agent adapter config routes", () => {
   const ctx = useEmbeddedPostgres("paperclip-agent-config-batch-", {
     resetEach: async (db) => {
@@ -73,13 +102,17 @@ describeEmbeddedPostgres("batch agent adapter config routes", () => {
   beforeAll(() => {
     registerServerAdapter(fakeAdapter(ADAPTER_TYPE, true));
     registerServerAdapter(fakeAdapter(OTHER_ADAPTER_TYPE, false));
+    registerServerAdapter(fakeFallbackAdapter());
     invalidateAdapterConfigSchema(ADAPTER_TYPE);
     invalidateAdapterConfigSchema(OTHER_ADAPTER_TYPE);
+    invalidateAdapterConfigSchema(FALLBACK_ADAPTER_TYPE);
   });
 
   afterAll(() => {
     unregisterServerAdapter(ADAPTER_TYPE);
     unregisterServerAdapter(OTHER_ADAPTER_TYPE);
+    unregisterServerAdapter(FALLBACK_ADAPTER_TYPE);
+    invalidateAdapterConfigSchema(FALLBACK_ADAPTER_TYPE);
   });
 
   async function seedAgent(
@@ -224,6 +257,70 @@ describeEmbeddedPostgres("batch agent adapter config routes", () => {
       .expect(404);
     expect(await storedConfig(theirs)).toEqual({ model: "vendor/fast" });
     expect(await storedConfig(mine)).toEqual({});
+  });
+
+  it("previews the fallback list per agent and marks agents without fallback support", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Batch fallback preview");
+    const omp = await seedAgent(company, "Omp", { model: "vendor/fast", fallbackModels: ["vendor/deep"] }, FALLBACK_ADAPTER_TYPE);
+    const plain = await seedAgent(company, "Plain", { model: "vendor/fast" });
+    const res = await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config/preview")
+      .send({ agentIds: [omp, plain] })
+      .expect(200);
+    const preview = res.body as AgentAdapterConfigBatchPreview;
+    const field = preview.fields.find((entry) => entry.key === "fallbackModels");
+    expect(field?.list).toEqual({ maxItems: 5, distinctFromKey: "model" });
+    expect(preview.fields.map((entry) => entry.key)).toContain("model");
+    const ompTarget = preview.agents.find((agent) => agent.agentId === omp);
+    const plainTarget = preview.agents.find((agent) => agent.agentId === plain);
+    expect(ompTarget?.currentLists).toEqual({ fallbackModels: ["vendor/deep"] });
+    expect(ompTarget?.unsupportedKeys).toEqual([]);
+    expect(plainTarget?.unsupportedKeys).toEqual(["fallbackModels"]);
+  });
+
+  it("replaces the fallback list on every agent, dropping each agent's own primary and skipping unsupported adapters", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Batch fallback apply");
+    const fajar = await seedAgent(company, "Fajar", { model: "vendor/deep" }, FALLBACK_ADAPTER_TYPE);
+    const budi = await seedAgent(company, "Budi", { model: "vendor/fast" }, FALLBACK_ADAPTER_TYPE);
+    const citra = await seedAgent(company, "Citra", { model: "vendor/fast", fallbackModels: ["other/backup"] }, FALLBACK_ADAPTER_TYPE);
+    const plain = await seedAgent(company, "Plain", { model: "vendor/fast" });
+    const res = await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config")
+      .send({ agentIds: [fajar, budi, citra, plain], values: { fallbackModels: ["vendor/deep", "other/backup"] } })
+      .expect(200);
+    expect(await storedConfig(fajar)).toEqual({ model: "vendor/deep", fallbackModels: ["other/backup"] });
+    expect(await storedConfig(budi)).toEqual({ model: "vendor/fast", fallbackModels: ["vendor/deep", "other/backup"] });
+    expect(await storedConfig(citra)).toEqual({ model: "vendor/fast", fallbackModels: ["vendor/deep", "other/backup"] });
+    expect(await storedConfig(plain)).toEqual({ model: "vendor/fast" });
+    const results = res.body.results as Array<{ agentId: string; status: string; skippedKeys: string[]; droppedValues: Record<string, string[]> }>;
+    expect(results.find((entry) => entry.agentId === fajar)?.droppedValues).toEqual({ fallbackModels: ["vendor/deep"] });
+    expect(results.find((entry) => entry.agentId === plain)).toMatchObject({ status: "unchanged", skippedKeys: ["fallbackModels"] });
+    expect(res.body.updated).toBe(3);
+    for (const agentId of [fajar, budi, citra]) {
+      const rows = await auditRows(company.companyId, agentId);
+      expect(rows).toHaveLength(1);
+      expect((rows[0]?.details as { changedAdapterConfigKeys: string[] }).changedAdapterConfigKeys).toEqual(["fallbackModels"]);
+    }
+  });
+
+  it("clears the fallback list with null", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Batch fallback clear");
+    const agentId = await seedAgent(company, "Omp", { model: "vendor/fast", fallbackModels: ["vendor/deep"] }, FALLBACK_ADAPTER_TYPE);
+    await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config")
+      .send({ agentIds: [agentId], values: { fallbackModels: null } })
+      .expect(200);
+    expect(await storedConfig(agentId)).toEqual({ model: "vendor/fast" });
+  });
+
+  it("drops a new primary from an agent's existing fallback list when the batch changes the model", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Batch fallback model change");
+    const agentId = await seedAgent(company, "Omp", { model: "vendor/fast", fallbackModels: ["vendor/deep", "other/backup"] }, FALLBACK_ADAPTER_TYPE);
+    await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config")
+      .send({ agentIds: [agentId], values: { model: "vendor/deep" } })
+      .expect(200);
+    expect(await storedConfig(agentId)).toEqual({ model: "vendor/deep", fallbackModels: ["other/backup"] });
   });
 
   it("denies an agent actor without the company:agents capability", async () => {

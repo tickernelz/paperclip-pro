@@ -354,6 +354,46 @@ describe("Live now cards", () => {
     expect(container.querySelector("[data-slot='tasks-live-now-summary']")?.textContent).toContain("1 stalled");
   });
 
+  it("shows a model fallback badge only for a run on a fallback model", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({
+      ok: true,
+      json: async () => ({
+        fields: [{
+          key: "model",
+          label: "Model",
+          type: "combobox",
+          options: [{ value: "openai/gpt-5", label: "GPT-5 (openai/gpt-5)", group: "OpenAI", name: "GPT-5" }],
+        }],
+      }),
+    })));
+    render(
+      <TasksLiveNowSection
+        companyId="company-1"
+        liveRuns={[
+          run({
+            adapterType: "omp_local",
+            modelFallback: {
+              primaryModel: "anthropic/opus",
+              activeModel: "openai/gpt-5:high",
+              reason: "rate_limit",
+              switchedAt: "2026-10-08T10:01:00.000Z",
+            },
+          }),
+          run({ id: "run-2", issueId: "issue-2", agentId: "agent-2", agentName: "Operator", modelFallback: null }),
+        ]}
+        issues={[issue({ id: "issue-1", identifier: "ZHA-1" }), issue({ id: "issue-2", identifier: "ZHA-2" })]}
+      />,
+    );
+
+    const byIssue = (id: string) => liveRows().find((row) => row.dataset.liveNowIssueId === id)!;
+    await waitFor(() => {
+      expect(byIssue("issue-1").querySelector("[data-slot='live-now-model-fallback']")?.textContent).toBe(
+        "Fallback: GPT-5 · OpenAI (primary: rate limit)",
+      );
+    });
+    expect(byIssue("issue-2").querySelector("[data-slot='live-now-model-fallback']")).toBeNull();
+  });
+
   it("links to the task and to the live run transcript", () => {
     render(<TasksLiveNowSection companyId="company-1" liveRuns={[run({})]} issues={[issue({})]} />);
 

@@ -1326,6 +1326,8 @@ export type {
   HeartbeatRun,
   HeartbeatRunEvent,
   HeartbeatRunStatusPhase,
+  RunModelFallbackReason,
+  RunModelFallbackState,
   ProviderTraceDebugRequest,
   ProviderTraceDirection,
   ProviderTraceDisposition,
@@ -2914,3 +2916,14 @@ export { aiConnectionRouterSlug, aiConnectionRouterAppDefinition, aiConnectionRo
 export { isAppAggregator, aggregatorManagementUrl, aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema, type AggregatorAppSnapshot, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "./aggregator-apps.js";
 
 export * from "./connection-instructions.js";
+
+export {
+  AGENT_FALLBACK_MODELS_ADAPTER_TYPES,
+  AGENT_FALLBACK_MODELS_KEY,
+  AGENT_FALLBACK_MODELS_MAX,
+  adapterSupportsFallbackModels,
+  fitAgentFallbackModels,
+  readAgentFallbackModels,
+  validateAgentFallbackModels,
+  type AgentFallbackModelsValidation,
+} from "./agent-fallback-models.js";

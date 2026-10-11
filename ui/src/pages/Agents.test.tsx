@@ -1191,6 +1191,166 @@ describe("Agents", () => {
     ).toContain("Beta");
   });
 
+  async function openBulkFallbackDialog() {
+    mockAgentsApi.list.mockResolvedValue([
+      makeAgent({ id: "agent-1", name: "Alpha" }),
+      makeAgent({ id: "agent-2", name: "Beta", urlKey: "beta" }),
+      makeAgent({ id: "agent-3", name: "Gamma", urlKey: "gamma" }),
+    ]);
+    mockAgentsApi.batchAdapterConfigPreview.mockResolvedValue({
+      fields: [
+        {
+          key: "fallbackModels",
+          label: "Fallback models",
+          hint: null,
+          freeText: true,
+          options: [
+            { value: "vendor/deep", label: "Deep (vendor/deep)", group: "vendor", name: "Deep" },
+            { value: "vendor/fast", label: "Fast (vendor/fast)", group: "vendor", name: "Fast" },
+          ],
+          list: { maxItems: 5, distinctFromKey: "model" },
+        },
+      ],
+      agents: [
+        {
+          agentId: "agent-1", name: "Alpha", adapterType: "omp_local", eligible: true, reason: null,
+          current: { model: "vendor/deep" }, currentLists: { fallbackModels: [] },
+        },
+        {
+          agentId: "agent-2", name: "Beta", adapterType: "omp_local", eligible: true, reason: null,
+          current: { model: "vendor/other" }, currentLists: { fallbackModels: ["vendor/old"] },
+        },
+        {
+          agentId: "agent-3", name: "Gamma", adapterType: "codex_local", eligible: true, reason: null,
+          current: {}, unsupportedKeys: ["fallbackModels"],
+        },
+      ],
+    });
+    await renderAgentsList();
+    await act(async () => {
+      testId("agent-select-agent-1")?.click();
+      testId("agent-select-agent-2")?.click();
+      testId("agent-select-agent-3")?.click();
+    });
+    await flushReact();
+    await act(async () => {
+      testId("agents-bulk-model")?.click();
+    });
+    for (let attempt = 0; attempt < 20; attempt += 1) {
+      await flushReact();
+      if (document.querySelector('[data-testid="bulk-agent-config-field-fallbackModels"]')) break;
+    }
+  }
+
+  async function chooseBulkMode(value: string) {
+    const select = document.querySelector<HTMLSelectElement>('[data-testid="bulk-agent-config-field-fallbackModels"]')!;
+    await act(async () => {
+      select.value = value;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    await flushReact();
+  }
+
+  async function addBulkFallback(text: string) {
+    const input = document.querySelector<HTMLInputElement>(
+      '[data-testid="bulk-agent-config-list-fallbackModels-picker"] input',
+    )!;
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    await act(async () => {
+      input.focus();
+      setter.call(input, text);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    await act(async () => {
+      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    });
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-list-fallbackModels-add"]')!.click();
+    });
+    await flushReact();
+  }
+
+  async function submitBulkTwice() {
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')!.click();
+    });
+    await flushReact();
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')!.click();
+    });
+    await flushReact();
+    await flushReact();
+  }
+
+  it("replaces fallback models on every selected agent with a per-agent preview", async () => {
+    mockAgentsApi.batchAdapterConfig.mockResolvedValue({
+      updated: 2,
+      unchanged: 0,
+      results: [
+        {
+          agentId: "agent-1", name: "Alpha", status: "updated", changedKeys: ["fallbackModels"],
+          droppedValues: { fallbackModels: ["vendor/deep"] },
+        },
+        { agentId: "agent-2", name: "Beta", status: "updated", changedKeys: ["fallbackModels"] },
+        {
+          agentId: "agent-3", name: "Gamma", status: "unchanged", changedKeys: [],
+          skippedKeys: ["fallbackModels"],
+        },
+      ],
+    });
+    await openBulkFallbackDialog();
+    await chooseBulkMode("__list_replace");
+    expect(document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')?.disabled).toBe(true);
+
+    await addBulkFallback("vendor/fast");
+    await addBulkFallback("vendor/deep");
+
+    const alpha = document.querySelector('[data-testid="bulk-agent-config-list-preview-fallbackModels-agent-1"]')?.textContent;
+    expect(alpha).toContain("none → Fast · vendor");
+    expect(alpha).not.toContain("Fast · vendor, Deep");
+    expect(alpha).toContain("dropped for Alpha: same as primary");
+    const beta = document.querySelector('[data-testid="bulk-agent-config-list-preview-fallbackModels-agent-2"]')?.textContent;
+    expect(beta).toContain("vendor/old → Fast · vendor, Deep · vendor");
+    expect(beta).not.toContain("dropped");
+    expect(
+      document.querySelector('[data-testid="bulk-agent-config-list-preview-fallbackModels-agent-3"]'),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-testid="bulk-agent-config-list-skipped-fallbackModels"]')?.textContent,
+    ).toContain("Gamma");
+
+    await submitBulkTwice();
+
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(
+      ["agent-1", "agent-2", "agent-3"],
+      { fallbackModels: ["vendor/fast", "vendor/deep"] },
+    );
+    const results = document.querySelector('[data-testid="bulk-agent-config-results"]')?.textContent;
+    expect(results).toContain("skipped: Fallback models");
+    expect(results).toContain("Fallback models dropped (same as primary): vendor/deep");
+  });
+
+  it("clears fallback models with a null value", async () => {
+    mockAgentsApi.batchAdapterConfig.mockResolvedValue({
+      updated: 1,
+      unchanged: 0,
+      results: [{ agentId: "agent-2", name: "Beta", status: "updated", changedKeys: ["fallbackModels"] }],
+    });
+    await openBulkFallbackDialog();
+    await chooseBulkMode("__list_clear");
+
+    expect(
+      document.querySelector('[data-testid="bulk-agent-config-list-preview-fallbackModels-agent-2"]')?.textContent,
+    ).toContain("vendor/old → none");
+
+    await submitBulkTwice();
+
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(
+      ["agent-1", "agent-2", "agent-3"],
+      { fallbackModels: null },
+    );
+  });
+
   it("selects every filtered agent from the header checkbox", async () => {
     mockAgentsApi.list.mockResolvedValue([
       makeAgent({ id: "agent-1", name: "Alpha" }),

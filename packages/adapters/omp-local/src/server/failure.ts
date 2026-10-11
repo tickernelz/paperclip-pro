@@ -20,10 +20,28 @@ const RETRY_AFTER_SECONDS_RE = /\bretry[- ]?after["':\s]+(\d+(?:\.\d+)?)\b/i;
 const RETRY_IN_RE = /\btry again in (\d+(?:\.\d+)?)\s*(ms|milliseconds?|s|seconds?|m|minutes?|h|hours?)\b/i;
 const RETRY_AT_RE = /\bresets? at (\d{4}-\d{2}-\d{2}T[\d:.]+Z)\b/i;
 const REQUESTED_WAIT_RE = /\bprovider requested (\d+)\s*ms wait\b/i;
+const RETRY_AFTER_MS_RE = /\bretry-after-ms\s*[:=]\s*(\d+)\b/i;
+
+export type OmpFallbackReason = "rate_limit" | "upstream" | "refusal";
+
+/** Maps the error that made OMP switch models onto the fallback reason shown to operators. */
+export function classifyFallbackReason(text: string): OmpFallbackReason {
+  if (QUOTA_RE.test(text)) return "rate_limit";
+  if (REFUSAL_RE.test(text) && !TRANSIENT_RE.test(text)) return "refusal";
+  return "upstream";
+}
+
+/** Provider-requested wait parsed from an error message, in milliseconds. */
+export function retryDelayMsFromText(text: string): number | null {
+  const delay = retryDelayMs(text);
+  return delay !== null && Number.isFinite(delay) && delay > 0 ? Math.min(delay, 24 * 3_600_000) : null;
+}
 
 function retryDelayMs(text: string): number | null {
   const requested = REQUESTED_WAIT_RE.exec(text)?.[1];
   if (requested) return Number(requested);
+  const afterMs = RETRY_AFTER_MS_RE.exec(text)?.[1];
+  if (afterMs) return Number(afterMs);
   const after = RETRY_AFTER_SECONDS_RE.exec(text)?.[1];
   if (after) return Number(after) * 1000;
   const relative = RETRY_IN_RE.exec(text);

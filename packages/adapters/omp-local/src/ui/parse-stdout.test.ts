@@ -1,6 +1,24 @@
 import { describe, expect, it } from "vitest";
 import { parseOmpStdoutLine } from "./parse-stdout.js";
 
+describe("OMP model fallback lines", () => {
+  const ts = "2026-10-11T00:00:00.000Z";
+
+  it("maps retry_fallback_applied to a system line naming both models", () => {
+    expect(parseOmpStdoutLine(
+      JSON.stringify({ type: "retry_fallback_applied", from: "anthropic/opus:high", to: "openai/gpt-5:high", role: "default" }),
+      ts,
+    )).toEqual([{ kind: "system", ts, text: "Fallback: openai/gpt-5:high (from anthropic/opus:high)" }]);
+  });
+
+  it("maps retry_fallback_succeeded to a system line", () => {
+    expect(parseOmpStdoutLine(
+      JSON.stringify({ type: "retry_fallback_succeeded", model: "openai/gpt-5", role: "default" }),
+      ts,
+    )).toEqual([{ kind: "system", ts, text: "Fallback model openai/gpt-5 answered" }]);
+  });
+});
+
 const CAPTURED_OMP_TOOL_STREAM = [
   "{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_455335\",\"toolName\":\"bash\",\"args\":{\"command\":\"echo alpha\"},\"intent\":\"Echoing alpha string\"}",
   "{\"type\":\"tool_execution_start\",\"toolCallId\":\"call_455339\",\"toolName\":\"bash\",\"args\":{\"command\":\"echo beta\"},\"intent\":\"Echoing beta string\"}",

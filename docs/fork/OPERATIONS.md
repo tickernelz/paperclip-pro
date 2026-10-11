@@ -638,6 +638,42 @@ decision, or an agent actor holding `company:agents` (a `ceo`); every agent id i
 resolved through the company guard first, so a cross-company id is a 404 and a
 batch may never span companies.
 
+`fallbackModels` is the one list field. The preview lists it when any selected
+agent's adapter publishes it (today only `omp_local`), and each agent carries its
+`currentLists` and `unsupportedKeys`. In the dialog it is either replaced with an
+ordered list of up to 5 models or cleared. Per agent, a model equal to that
+agent's primary (its new `model` when the batch also sets one) is dropped and
+reported in `droppedValues`; agents whose adapter lacks the field are skipped and
+reported in `skippedKeys` instead of failing the batch. A batch that changes
+`model` also drops the new primary from an agent's existing fallback list.
+
+## Fallback models (`omp_local`)
+
+`adapterConfig.fallbackModels` holds up to 5 OMP selectors tried in order when the
+main model hits a rate limit or quota, an upstream failure (overload, 5xx, timeout,
+dropped connection) or a refusal. Auth and context-length errors never fall back,
+and the small, slow and planning models have no fallback. An empty list keeps the
+old behaviour. The list must not repeat a model or contain the primary; the
+single-agent and batch writes both validate it. Design notes:
+`doc/plans/2026-10-11-agent-fallback-models.md`.
+
+- Inside a run OMP does the switching. Each run's `--config` overlay adds
+  `retry.fallbackChains` keyed by the model the run starts on; OMP deep-merges
+  overlays, so the owner's own chains in `~/.omp/agent/config.yml` keep working.
+  OMP returns to the primary when its suppression expires.
+- Provider limits are shared, so cooldowns live in `model_cooldowns` per company and
+  selector. One is written when OMP reports a switch (its retry-after, else 5 min)
+  and when a run fails with quota or upstream errors. A new run starts on the
+  first model that is not cooling down; a task model override counts as the
+  primary and the agent list follows it.
+- A refusal is retried by Paperclip on the next model, without a cooldown. A quota
+  or upstream failure is retried on the next free model at the normal backoff; if
+  every model is cooling down the existing retry timing applies.
+- Each switch writes a `model.fallback` run event and an `issue.run_model_fallback`
+  activity row; Live now shows `Fallback: <model> · <provider> (primary: <reason>)`.
+  When every model has failed and the run gives up, a `model.fallback_exhausted`
+  event raises a Decisions item that clears once the agent has a successful run.
+
 ## Security: emptying allowedHostnames does not lock out the public host
 
 `auth.publicBaseUrl` is always folded into the hostname allow-list (`server/src/config.ts`), so `https://paperclip.zhafron.my.id` stays reachable even when `server.allowedHostnames` is empty. On 2026-09-24 a sign-up POST through the tunnel succeeded with `auth.disableSignUp=false` and `allowedHostnames=[]` for exactly this reason. Separately, the guard used to trust a client-supplied `X-Forwarded-Host`; that is fixed, and the header is now honoured only when `TRUST_PROXY` declares the peer trusted.

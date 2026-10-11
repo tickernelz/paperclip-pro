@@ -48,7 +48,10 @@ import type {
   IssueReviewPolicy,
 } from "@tickernelz/paperclip-pro-shared";
 import { badRequest } from "../errors.js";
-import { listAttentionExhaustedRuns } from "./attention-exhausted-runs.js";
+import {
+  listAttentionExhaustedRuns,
+  listAttentionModelFallbackExhaustedRuns,
+} from "./attention-exhausted-runs.js";
 import { budgetService } from "./budgets.js";
 import {
   BLOCKER_ATTENTION_MAX_DEPTH,
@@ -1720,7 +1723,9 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
       }
 
       const failedRows = await listAttentionExhaustedRuns(db, companyId);
-      const failedIssueIds = failedRows.map((row) => readRunIssueId(row.contextSnapshot));
+      const fallbackExhaustedRows = await listAttentionModelFallbackExhaustedRuns(db, companyId);
+      const fallbackExhaustedRunIds = new Set(fallbackExhaustedRows.map((row) => row.id));
+      const failedIssueIds = [...failedRows, ...fallbackExhaustedRows].map((row) => readRunIssueId(row.contextSnapshot));
       const failedAgentIds = [...new Set(failedRows.map((row) => row.agentId))];
       const oldestFailedRunCreatedAt = failedRows.reduce<Date | null>((oldest, row) => {
         if (!oldest || row.createdAt < oldest) return row.createdAt;
@@ -1764,7 +1769,7 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
         const issueId = readRunIssueId(run.contextSnapshot);
         const runKey = `${run.agentId}:${issueId ?? ""}`;
         const hasNewerRun = (latestRunCreatedAtByKey.get(runKey)?.getTime() ?? 0) > run.createdAt.getTime();
-        if (hasNewerRun) continue;
+        if (hasNewerRun || fallbackExhaustedRunIds.has(run.id)) continue;
 
         const issue = issueId ? failedIssueMap.get(issueId) ?? null : null;
         const dedupKey = `run:${run.id}`;
@@ -1808,6 +1813,54 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
             kind: "failed_run",
             agentName: run.agentName,
             failureReasonExcerpt: excerpt(run.error ?? run.exhaustionMessage ?? run.errorCode),
+            images: issueImages(failedImageMap, issueId),
+          },
+        }));
+      }
+
+      for (const run of fallbackExhaustedRows) {
+        const issueId = readRunIssueId(run.contextSnapshot);
+        const issue = issueId ? failedIssueMap.get(issueId) ?? null : null;
+        add(createItem({
+          companyId,
+          sourceKind: "failed_run",
+          subject: {
+            kind: "run",
+            id: run.id,
+            companyId,
+            title: `${run.agentName} ran out of fallback models`,
+            identifier: null,
+            status: run.status,
+            href: `/${prefix}/agents/${run.agentId}/runs/${run.id}`,
+            metadata: {
+              agentId: run.agentId,
+              agentName: run.agentName,
+              issueId,
+              errorCode: run.errorCode,
+              error: run.error,
+              retryExhaustedReason: run.exhaustionMessage,
+            },
+          },
+          whyNow: "Every model in the agent's fallback chain failed and the run gave up.",
+          decisionVerbs: decisionVerbs(
+            { id: "retry", label: "Retry", description: "Retry the failed run or issue." },
+            { id: "reassign", label: "Reassign", description: "Move the work to another owner." },
+            { id: "dismiss", label: "Dismiss", description: "Dismiss this failed-run attention row." },
+          ),
+          inlineResolvable: true,
+          entryRule: "run has a model.fallback_exhausted event.",
+          exitRule: "A later run of the same agent succeeds or the row is dismissed.",
+          dedupKey: `run:${run.id}`,
+          severity: "high",
+          activityAt: toIso(run.finishedAt ?? run.updatedAt ?? run.createdAt),
+          createdAt: toIso(run.createdAt),
+          updatedAt: toIso(run.updatedAt),
+          relatedIssue: issue ? issueSubject(prefix, issue) : null,
+          ...issueContext(issue),
+          detail: {
+            kind: "failed_run",
+            agentName: run.agentName,
+            failureReasonExcerpt: excerpt(run.exhaustionMessage ?? run.error ?? run.errorCode),
             images: issueImages(failedImageMap, issueId),
           },
         }));

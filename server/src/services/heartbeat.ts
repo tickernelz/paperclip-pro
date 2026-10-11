@@ -18,7 +18,7 @@ import {
 } from "./native-runtime/native-workspace-finalization-ownership.js";
 import { hasStopOnlyCleanup, settleStopOnlyCleanup } from "./sandbox-stop-and-retain.js";
 import { applyWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-result";
-import { hasWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-shared";
+import { hasWorkspaceRestoreFailure, type RunModelFallbackReason } from "@tickernelz/paperclip-pro-shared";
 import { externalConversationStateSql, nonIdleSlackIssueCondition } from "./slack-conversation-state.js";
 import { settleSlackConversation } from "./slack-conversation-lifecycle.js";
 import { publicChatTaskUrl } from "./chat-task-url.js";
@@ -44,6 +44,24 @@ import { aiConnectionRouterService, AiConnectionPoolExhausted, applyAiConnection
 import { aiConnectionSessionCompatibilityInputs, managedAiSessionIdentityCompatible } from "./ai-connection-session.js";
 import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
 import { buildIssueRunAdapterConfig } from "./issue-run-model-override.js";
+import {
+  MODEL_FALLBACK_ACTIVITY_ACTION,
+  MODEL_FALLBACK_DEFAULT_COOLDOWN_MS,
+  MODEL_FALLBACK_EVENT,
+  MODEL_FALLBACK_EXCLUDED_KEY,
+  MODEL_FALLBACK_EXHAUSTED_EVENT,
+  MODEL_FALLBACK_PRIMARY_KEY,
+  MODEL_FALLBACK_RESTORED_EVENT,
+  MODEL_FALLBACK_STATE_KEY,
+  modelFallbackEventMessage,
+  modelFallbackReasonForErrorFamily,
+  persistRunModelFallbackState,
+  planModelFallbackRetry,
+  prepareRunModelFallback,
+  readRunActiveModel,
+  recordModelCooldown,
+  type ModelFallbackRetryPlan,
+} from "./model-fallback.js";
 import { CONVERSATION_CONTINUATION_POLICY, claimedAdapterType, runUsedConversationAdapter, hasConversationContinuationPolicy, isConversationAdapter } from "./conversation-continuation.js";
 import { recordExecutionWait } from "./execution-wait.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext } from "./native-runtime/native-review-participant.js";
@@ -6295,6 +6313,7 @@ const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
 const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
 const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
+  "fallbackModels",
   "thinking",
   "thinkingEffort",
   "effort",
@@ -14411,6 +14430,161 @@ export function heartbeatService(
     });
   }
 
+  async function logRunModelFallbackActivity(
+    run: Pick<typeof heartbeatRuns.$inferSelect, "id" | "companyId" | "agentId">,
+    issueId: string | null,
+    details: { from: string; to: string; reason: RunModelFallbackReason; phase: "run_start" | "in_run" },
+  ) {
+    if (!issueId) return;
+    await logActivity(db, {
+      companyId: run.companyId,
+      actorType: "system",
+      actorId: "heartbeat",
+      agentId: run.agentId,
+      runId: run.id,
+      action: MODEL_FALLBACK_ACTIVITY_ACTION,
+      entityType: "issue",
+      entityId: issueId,
+      details: { runId: run.id, agentId: run.agentId, ...details },
+    });
+  }
+
+  async function applyRunModelFallback(
+    run: typeof heartbeatRuns.$inferSelect,
+    agent: typeof agents.$inferSelect,
+    config: Record<string, unknown>,
+    context: Record<string, unknown>,
+    options: { routerManaged: boolean; issueId: string | null },
+  ) {
+    const hadFallbackContext =
+      context[MODEL_FALLBACK_PRIMARY_KEY] !== undefined ||
+      context[MODEL_FALLBACK_STATE_KEY] !== undefined;
+    const prepared = await prepareRunModelFallback({
+      db,
+      companyId: run.companyId,
+      adapterType: agent.adapterType,
+      routerManaged: options.routerManaged,
+      config,
+      context,
+      now: new Date(),
+    });
+    if (!prepared) {
+      delete context[MODEL_FALLBACK_PRIMARY_KEY];
+      delete context[MODEL_FALLBACK_STATE_KEY];
+      if (hadFallbackContext) {
+        await persistRunModelFallbackState(db, run.id, { primary: null, state: null });
+      }
+      return;
+    }
+    const { selection, state } = prepared;
+    context[MODEL_FALLBACK_PRIMARY_KEY] = selection.primary;
+    context[MODEL_FALLBACK_STATE_KEY] = state;
+    await persistRunModelFallbackState(db, run.id, { primary: selection.primary, state });
+    if (!state) return;
+    await appendRunEvent(run, {
+      eventType: MODEL_FALLBACK_EVENT,
+      stream: "system",
+      level: "warn",
+      message: modelFallbackEventMessage({ to: state.activeModel, primary: state.primaryModel, reason: state.reason }),
+      payload: {
+        phase: "run_start",
+        from: selection.primary,
+        to: selection.start,
+        primary: selection.primary,
+        reason: state.reason,
+        retryAfterMs: null,
+      },
+    });
+    await logRunModelFallbackActivity(run, options.issueId, {
+      from: selection.primary,
+      to: selection.start,
+      reason: state.reason,
+      phase: "run_start",
+    });
+  }
+
+  async function handleAdapterModelFallbackEvent(
+    run: typeof heartbeatRuns.$inferSelect,
+    event: AdapterRuntimeEvent,
+  ) {
+    const payload = parseObject(event.payload);
+    const context = parseObject(run.contextSnapshot);
+    const primary = readNonEmptyString(context[MODEL_FALLBACK_PRIMARY_KEY]) ?? readNonEmptyString(payload.primary);
+    const issueId = readNonEmptyString(context.issueId);
+    if (event.eventType === MODEL_FALLBACK_RESTORED_EVENT) {
+      await persistRunModelFallbackState(db, run.id, { state: null });
+      return;
+    }
+    const from = readNonEmptyString(payload.from);
+    const to = readNonEmptyString(payload.to);
+    const reason = payload.reason === "rate_limit" || payload.reason === "upstream" || payload.reason === "refusal"
+      ? payload.reason
+      : "upstream";
+    if (!from || !to || !primary) return;
+    const now = new Date();
+    const retryAfterMs = typeof payload.retryAfterMs === "number" && payload.retryAfterMs > 0
+      ? payload.retryAfterMs
+      : MODEL_FALLBACK_DEFAULT_COOLDOWN_MS;
+    await recordModelCooldown(db, {
+      companyId: run.companyId,
+      selector: from,
+      until: new Date(now.getTime() + retryAfterMs),
+      reason,
+      sourceRunId: run.id,
+    });
+    await persistRunModelFallbackState(db, run.id, {
+      state: to === primary
+        ? null
+        : { primaryModel: primary, activeModel: to, reason, switchedAt: now.toISOString() },
+    });
+    await logRunModelFallbackActivity(run, issueId, { from, to, reason, phase: "in_run" });
+  }
+
+  async function noteModelFallbackRunFailure(run: typeof heartbeatRuns.$inferSelect) {
+    const context = parseObject(run.contextSnapshot);
+    if (!readNonEmptyString(context[MODEL_FALLBACK_PRIMARY_KEY])) return;
+    const reason = modelFallbackReasonForErrorFamily(readHeartbeatRunErrorFamily(run));
+    const active = readRunActiveModel(run);
+    if (!reason || reason === "refusal" || !active) return;
+    const now = new Date();
+    const retryNotBefore = readTransientRetryNotBeforeFromRun(run);
+    await recordModelCooldown(db, {
+      companyId: run.companyId,
+      selector: active,
+      until: retryNotBefore && retryNotBefore.getTime() > now.getTime()
+        ? retryNotBefore
+        : new Date(now.getTime() + MODEL_FALLBACK_DEFAULT_COOLDOWN_MS),
+      reason,
+      sourceRunId: run.id,
+    });
+  }
+
+  async function appendModelFallbackExhausted(
+    run: typeof heartbeatRuns.$inferSelect,
+    plan: ModelFallbackRetryPlan,
+  ) {
+    const [existing] = await db
+      .select({ id: heartbeatRunEvents.id })
+      .from(heartbeatRunEvents)
+      .where(and(
+        eq(heartbeatRunEvents.companyId, run.companyId),
+        eq(heartbeatRunEvents.runId, run.id),
+        eq(heartbeatRunEvents.eventType, MODEL_FALLBACK_EXHAUSTED_EVENT),
+      ))
+      .limit(1);
+    if (existing) return;
+    const context = parseObject(run.contextSnapshot);
+    const primary = readNonEmptyString(context[MODEL_FALLBACK_PRIMARY_KEY]) ?? plan.chain[0] ?? null;
+    const reason = modelFallbackReasonForErrorFamily(readHeartbeatRunErrorFamily(run));
+    await appendRunEvent(run, {
+      eventType: MODEL_FALLBACK_EXHAUSTED_EVENT,
+      stream: "system",
+      level: "error",
+      message: `Model fallback exhausted: ${plan.chain.join(" -> ")}; no further model will be tried`,
+      payload: { primary, tried: plan.chain, reason },
+    });
+  }
+
   async function appendRunEvent(
     run: typeof heartbeatRuns.$inferSelect,
     event: {
@@ -16119,11 +16293,32 @@ export function heartbeatService(
       transientRecovery?.errorFamily === "transient_upstream"
         ? resolveCodexTransientFallbackMode(nextAttempt)
         : null;
-    const transientRetryNotBefore = transientRecovery?.retryNotBefore ?? null;
+    const modelFallbackPlan =
+      retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON
+        ? await planModelFallbackRetry({
+            db,
+            run,
+            agentAdapterConfig: agent.adapterConfig,
+            now,
+          })
+        : null;
+    const transientRetryNotBefore =
+      modelFallbackPlan?.next && !modelFallbackPlan.next.cooling
+        ? null
+        : transientRecovery?.retryNotBefore ?? modelFallbackPlan?.next?.availableAt ?? null;
     const contextSnapshot = parseObject(run.contextSnapshot);
     const issueId = readNonEmptyString(contextSnapshot.issueId);
 
+    if (modelFallbackPlan && !modelFallbackPlan.next) {
+      await appendModelFallbackExhausted(run, modelFallbackPlan);
+      return {
+        outcome: "retry_exhausted" as const,
+        attempt: nextAttempt,
+        maxAttempts,
+      };
+    }
     if (!baseSchedule) {
+      if (modelFallbackPlan) await appendModelFallbackExhausted(run, modelFallbackPlan);
       const exhaustion = {
         retryReason,
         scheduledRetryAttempt: consumedAttempts,
@@ -16367,6 +16562,10 @@ export function heartbeatService(
             }
           : {}),
         ...(codexTransientFallbackMode ? { codexTransientFallbackMode } : {}),
+        [MODEL_FALLBACK_STATE_KEY]: undefined,
+        ...(modelFallbackPlan && modelFallbackPlan.excluded.length > 0
+          ? { [MODEL_FALLBACK_EXCLUDED_KEY]: modelFallbackPlan.excluded }
+          : {}),
       },
       "normal_model",
     );
@@ -22633,6 +22832,10 @@ export function heartbeatService(
         // preserving isolated mode and the mandatory sandbox preflight.
         ...(useIsolatedTaskDirectory ? { workspaceStrategy: { type: "project_primary" } } : {}),
       };
+      await applyRunModelFallback(run, agent, mergedConfig, context, {
+        routerManaged: requestedAiBinding?.mode === "router",
+        issueId,
+      });
       const configSnapshot = buildExecutionWorkspaceConfigSnapshot(
         mergedConfig,
         selectedEnvironmentId,
@@ -24546,6 +24749,11 @@ export function heartbeatService(
             message: event.message,
             payload: event.payload,
           });
+          if (eventType === MODEL_FALLBACK_EVENT || eventType === MODEL_FALLBACK_RESTORED_EVENT) {
+            await handleAdapterModelFallbackEvent(currentRun, { ...event, eventType }).catch((err) => {
+              logger.warn({ err, runId: currentRun.id }, "failed to record the run's model fallback");
+            });
+          }
         };
 
         const adapter = getServerAdapter(agent.adapterType);
@@ -26931,6 +27139,15 @@ export function heartbeatService(
           } else if (
             outcome === "failed" &&
             readTransientRecoveryContractFromRun(livenessRun)
+          ) {
+            await noteModelFallbackRunFailure(livenessRun).catch((err) => {
+              logger.warn({ err, runId: livenessRun.id }, "failed to record the model cooldown");
+            });
+            await scheduleBoundedRetryForRun(livenessRun, agent);
+          } else if (
+            outcome === "failed" &&
+            readHeartbeatRunErrorFamily(livenessRun) === "model_refusal" &&
+            readNonEmptyString(parseObject(livenessRun.contextSnapshot)[MODEL_FALLBACK_PRIMARY_KEY])
           ) {
             await scheduleBoundedRetryForRun(livenessRun, agent);
           } else if (

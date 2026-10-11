@@ -70,6 +70,7 @@ import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-ut
 import { runToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
+import { createOmpModelFallbackTracker, ompFallbackChain, type OmpModelFallbackTracker } from "./model-fallback.js";
 import { writeOmpToolGuardExtension, type OmpToolGuardExtension } from "./tool-guard.js";
 import { prependPythonPath, writeOmpPythonEnvBridge, type OmpPythonEnvBridge } from "./python-env.js";
 import {
@@ -173,6 +174,7 @@ type ProcessAttempt = {
   rpcPromptError: string | null;
   rpcProtocolVersion: number | null;
   stdoutTranscript: string;
+  modelFallback: ReturnType<OmpModelFallbackTracker["snapshot"]> | null;
 };
 
 function stringList(value: unknown, commaSeparated = false): string[] {
@@ -766,6 +768,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       graceSec,
     });
 
+    const fallbackChain = ompFallbackChain(executionConfig);
     const rpcActive = ompRpcSteeringEnabled(executionConfig) && adapterExecutionTargetSupportsLiveStdin(runtimeTarget);
     const mcpToolsets = paperclipMcpToolsets(executionConfig);
     const mcpEnabled = asBoolean(executionConfig.paperclipMcp, true);
@@ -951,11 +954,19 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       };
       const reporter = createOmpProgressReporter(ctx.onRuntimeProgress, ctx.onEvent);
       const accumulator = createOmpOutputAccumulator();
+      const fallbackTracker = fallbackChain
+        ? createOmpModelFallbackTracker({
+            primary: asString(context.paperclipPrimaryModel, "").trim() || fallbackChain.key,
+            start: fallbackChain.key,
+            emit: ctx.onEvent,
+          })
+        : null;
       const ingestLine = async (line: string): Promise<void> => {
         const trimmed = line.trim();
         if (!trimmed) return;
         const event = parseOmpJsonLine(trimmed);
         accumulator.push(trimmed, event);
+        await fallbackTracker?.ingest(event);
         try {
           await reporter.ingest(trimmed, event);
         } catch {
@@ -1102,6 +1113,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         rpcPromptError,
         rpcProtocolVersion,
         stdoutTranscript,
+        modelFallback: fallbackTracker?.snapshot() ?? null,
       };
     };
 
@@ -1189,6 +1201,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
           ...(executionRecovery?.kind === "interrupted"
             ? { executionCancellation: { state: "acknowledged" } }
             : {}),
+          ...(attempt.modelFallback ? { modelFallback: attempt.modelFallback } : {}),
           stdout: attempt.stdoutTranscript,
           stderr: attempt.proc.stderr,
           errors: rpcPromptError ? [...attempt.parsed.errors, rpcPromptError] : attempt.parsed.errors,

@@ -118,6 +118,26 @@ describe("provider notice presentation", () => {
 });
 
 describe("nativeRunEventsToTranscript", () => {
+  it("shows model fallback run events as system lines", () => {
+    const createdAt = new Date("2026-08-25T18:00:05.000Z");
+    const entries = nativeRunEventsToTranscript([
+      event(5, "model.fallback", {}, {
+        level: "warn",
+        message: "Fallback: openai/gpt-5 (primary anthropic/opus: rate limit)",
+        payload: { phase: "in_run", from: "anthropic/opus", to: "openai/gpt-5", primary: "anthropic/opus", reason: "rate_limit", retryAfterMs: null },
+        createdAt,
+      }),
+      event(6, "model.fallback_restored", {}, {
+        payload: { from: "openai/gpt-5", to: "anthropic/opus" },
+        createdAt,
+      }),
+    ]);
+    expect(entries).toEqual([
+      { kind: "system", ts: createdAt.toISOString(), text: "Fallback: openai/gpt-5 (primary anthropic/opus: rate limit)" },
+      { kind: "system", ts: createdAt.toISOString(), text: "Fallback ended: back on anthropic/opus" },
+    ]);
+  });
+
   describe("accepted response-wake authority", () => {
     function fixture() {
       const result = {

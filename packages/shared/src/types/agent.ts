@@ -355,6 +355,7 @@ export interface AgentAdapterConfigBatchField {
   hint: string | null;
   freeText: boolean;
   options: AgentAdapterConfigBatchOption[];
+  list?: { maxItems: number; distinctFromKey: string | null };
 }
 
 export interface AgentAdapterConfigBatchTarget {
@@ -364,6 +365,8 @@ export interface AgentAdapterConfigBatchTarget {
   eligible: boolean;
   reason: string | null;
   current: Record<string, string | null>;
+  currentLists?: Record<string, string[]>;
+  unsupportedKeys?: string[];
 }
 
 export interface AgentAdapterConfigBatchPreview {
@@ -376,6 +379,8 @@ export interface AgentAdapterConfigBatchResultEntry {
   name: string;
   status: "updated" | "unchanged";
   changedKeys: string[];
+  skippedKeys?: string[];
+  droppedValues?: Record<string, string[]>;
 }
 
 export interface AgentAdapterConfigBatchResult {

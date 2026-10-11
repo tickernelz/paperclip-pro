@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, MessageSquare, ScrollText, Square } from "lucide-react";
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -24,6 +24,8 @@ import {
   withIssueDetailHeaderSeed,
 } from "../../lib/issueDetailBreadcrumb";
 import { describeDeliveryDowngrade } from "../../lib/message-delivery-command";
+import { formatModelFallbackLabel } from "../../lib/model-fallback";
+import { useConfigSchema } from "../../adapters/schema-config-fields";
 import { queryKeys } from "../../lib/queryKeys";
 import { cn, formatDurationMs } from "../../lib/utils";
 import { AgentAvatar } from "../AgentAvatar";
@@ -166,6 +168,9 @@ export function LiveNowCard({
             <span aria-hidden="true" className="live-now-health-dot size-1.5 shrink-0 rounded-full" />
             <span className="truncate">{signal.label}</span>
           </span>
+          {primary.modelFallback ? (
+            <LiveNowModelFallbackPill adapterType={primary.adapterType} fallback={primary.modelFallback} />
+          ) : null}
         </div>
       </div>
 
@@ -312,6 +317,26 @@ export function LiveNowCard({
         </AlertDialogContent>
       </AlertDialog>
     </li>
+  );
+}
+
+function LiveNowModelFallbackPill({
+  adapterType,
+  fallback,
+}: {
+  adapterType: string;
+  fallback: RunModelFallbackState;
+}) {
+  const schema = useConfigSchema(adapterType);
+  const options = schema?.fields.find((field) => field.key === "model")?.options ?? [];
+  return (
+    <span
+      data-slot="live-now-model-fallback"
+      title={`${fallback.activeModel} (primary ${fallback.primaryModel})`}
+      className="live-now-health-pill ml-1.5 mt-1 inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-xs font-medium text-foreground"
+    >
+      <span className="min-w-0 break-words">{formatModelFallbackLabel(fallback, options)}</span>
+    </span>
   );
 }
 

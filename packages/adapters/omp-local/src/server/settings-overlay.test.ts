@@ -66,6 +66,45 @@ describe("OMP settings overlay", () => {
     expect(compaction({ experimentalContextManagement: false })).toEqual({ experimentalContextManagement: false });
   });
 
+  it("injects the agent's fallback chain keyed by the run model, primary first", () => {
+    const overlay = buildOmpSettingsOverlay({
+      model: "anthropic/claude-opus",
+      fallbackModels: ["openai/gpt-5", " anthropic/claude-opus ", "google/gemini", "openai/gpt-5", ""],
+    });
+    expect(overlay.retry).toEqual({
+      modelFallback: true,
+      fallbackRevertPolicy: "cooldown-expiry",
+      fallbackChains: { "anthropic/claude-opus": ["openai/gpt-5", "google/gemini"] },
+    });
+  });
+
+  it("leaves retry settings untouched when the agent has no fallback models", () => {
+    for (const config of [{}, { model: "anthropic/claude-opus" }, { model: "anthropic/claude-opus", fallbackModels: [] }, { fallbackModels: ["openai/gpt-5"] }]) {
+      expect(buildOmpSettingsOverlay(config)).not.toHaveProperty("retry");
+    }
+  });
+
+  it("keeps the owner's other fallback chains when OMP deep-merges the overlay", () => {
+    const deepMerge = (base: Record<string, unknown>, overrides: Record<string, unknown>): Record<string, unknown> => {
+      const result = { ...base };
+      for (const [key, override] of Object.entries(overrides)) {
+        const baseValue = base[key];
+        result[key] = override && typeof override === "object" && !Array.isArray(override) &&
+          baseValue && typeof baseValue === "object" && !Array.isArray(baseValue)
+          ? deepMerge(baseValue as Record<string, unknown>, override as Record<string, unknown>)
+          : override;
+      }
+      return result;
+    };
+    const userConfig = { retry: { fallbackChains: { web: ["web/perplexity", "web/exa"] } } };
+    const overlay = parseYaml(renderOmpSettingsOverlay({ model: "a/primary", fallbackModels: ["b/backup"] })) as Record<string, unknown>;
+    const merged = deepMerge(userConfig, overlay) as { retry: { fallbackChains: Record<string, string[]> } };
+    expect(merged.retry.fallbackChains).toEqual({
+      web: ["web/perplexity", "web/exa"],
+      "a/primary": ["b/backup"],
+    });
+  });
+
   it("compares OMP versions against the context-management minimum", () => {
     expect(ompVersionAtLeast("omp/18.4.2\n", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(true);
     expect(ompVersionAtLeast("omp/18.1.16", OMP_CONTEXT_MANAGEMENT_MIN_VERSION)).toBe(true);

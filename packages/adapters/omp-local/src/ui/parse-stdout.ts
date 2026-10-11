@@ -419,6 +419,18 @@ function parseOmpEvent(
       return message ? [{ kind: "system", ts, text: message }] : raw();
     }
 
+    if (type === "retry_fallback_applied") {
+      const to = asString(parsed.to);
+      const from = asString(parsed.from);
+      if (!to) return raw();
+      return [{ kind: "system", ts, text: from ? `Fallback: ${to} (from ${from})` : `Fallback: ${to}` }];
+    }
+
+    if (type === "retry_fallback_succeeded") {
+      const model = asString(parsed.model);
+      return model ? [{ kind: "system", ts, text: `Fallback model ${model} answered` }] : raw();
+    }
+
     if (type === "auto_retry_end") {
       if (typeof parsed.success !== "boolean") return raw();
       if (parsed.success) return [];

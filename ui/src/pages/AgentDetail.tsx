@@ -128,6 +128,7 @@ import {
 import { buildPermissionsForTrustPreset, getTrustPreset } from "../lib/trust-policy-ui";
 import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@tickernelz/paperclip-pro-adapter-utils";
 import { agentRouteRef } from "../lib/utils";
+import { describeModelFallbackEvent } from "../lib/model-fallback";
 import {
   isStarred,
   resourceMembershipState,
@@ -4582,6 +4583,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                 ?? (evt.level ? levelColors[evt.level] : null)
                 ?? (evt.stream ? streamColors[evt.stream] : null)
                 ?? "text-foreground";
+              const line = evt.message || describeModelFallbackEvent(evt.eventType, evt.payload);
 
               return (
                 <div key={evt.id} className="flex gap-2">
@@ -4592,8 +4594,8 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                     {evt.stream ? `[${evt.stream}]` : ""}
                   </span>
                   <span className={cn("break-all", color)}>
-                    {evt.message
-                      ? redactPathText(evt.message, censorUsernameInLogs)
+                    {line
+                      ? redactPathText(line, censorUsernameInLogs)
                       : evt.payload
                         ? JSON.stringify(redactPathValue(evt.payload, censorUsernameInLogs))
                         : ""}

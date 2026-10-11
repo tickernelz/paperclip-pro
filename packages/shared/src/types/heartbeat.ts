@@ -289,6 +289,16 @@ export interface ChatFailedRunRetryResponse {
     "queued" | "deferred" | "running" | "succeeded" | "failed" | "cancelled";
 }
 
+export type RunModelFallbackReason = "rate_limit" | "upstream" | "refusal";
+
+/** Model a run is using when it is not on its primary model. */
+export interface RunModelFallbackState {
+  primaryModel: string;
+  activeModel: string;
+  reason: RunModelFallbackReason;
+  switchedAt: string;
+}
+
 export interface HeartbeatRunEvent {
   id: number;
   companyId: string;

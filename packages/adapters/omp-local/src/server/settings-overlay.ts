@@ -7,6 +7,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { asBoolean } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { stringify as stringifyYaml } from "yaml";
+import { ompFallbackChain } from "./model-fallback.js";
 
 export interface OmpSettingsOverlay {
   path: string;
@@ -17,6 +18,7 @@ export const OMP_CONTEXT_MANAGEMENT_MIN_VERSION = "18.1.16";
 
 export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record<string, unknown> {
   const noPrewalk = asBoolean(config.noPrewalk, false);
+  const fallback = ompFallbackChain(config);
   return {
     advisor: { enabled: asBoolean(config.advisor, false) },
     prewalk: { enabled: noPrewalk ? false : asBoolean(config.prewalk, false) },
@@ -25,6 +27,15 @@ export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record
     task: { maxRecursionDepth: 0 },
     compaction: { experimentalContextManagement: asBoolean(config.experimentalContextManagement, true) },
     omitThinking: !asBoolean(config.printThoughts, true),
+    ...(fallback
+      ? {
+          retry: {
+            modelFallback: true,
+            fallbackRevertPolicy: "cooldown-expiry",
+            fallbackChains: { [fallback.key]: fallback.chain },
+          },
+        }
+      : {}),
   };
 }
 

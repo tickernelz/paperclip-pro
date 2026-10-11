@@ -11,7 +11,7 @@ import { toolConnections } from "@tickernelz/paperclip-pro-db";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { defaultAiConnectionForHire } from "../services/agent-ai-connection-default.js";
 import { assertAiConnectionCreateAccess, canInstallSharedAiConnectionForNewAgent, responsibleUserForAiRequest, validateAiApiKey } from "./ai-connections.js";
-import { isAiConnectionCompatible } from "@tickernelz/paperclip-pro-shared";
+import { isAiConnectionCompatible, type RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
 import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSkills, isConnectorSkill } from "../services/connector-runtime.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { canRetryStoppedRun } from "../services/cancelled-native-startup.js";
@@ -82,6 +82,7 @@ import { agentInstructionsBundleMode, deriveBundleState } from "../services/agen
 import {
   buildAgentAdapterConfigBatchPreview,
   planAgentAdapterConfigBatch,
+  type AgentAdapterConfigBatchValue,
 } from "../services/agent-adapter-config-batch.js";
 import {
   agentService,
@@ -101,6 +102,7 @@ import {
   workspaceOperationService,
 } from "../services/index.js";
 import { badRequest, conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
+import { normalizeAgentFallbackModelsConfig } from "../services/model-fallback.js";
 import { ONBOARDING_FIRST_TASK_SKILL_KEY, PAPERCLIP_CORE_SKILL_KEYS } from "../services/company-skills.js";
 import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
 import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
@@ -2485,9 +2487,14 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown>;
     constraintAdapterConfig?: Record<string, unknown>;
   }): Promise<Record<string, unknown>> {
+    const adapterConfig = normalizeAgentFallbackModelsConfig(
+      input.adapterType,
+      input.adapterConfig,
+      input.constraintAdapterConfig,
+    );
     const normalizedAdapterConfig = await secretsSvc.normalizeAdapterConfigForPersistence(
       input.companyId,
-      input.adapterConfig,
+      adapterConfig,
       {
         strictMode: strictSecretsMode,
         adapterType: input.adapterType ?? null,
@@ -5537,7 +5544,7 @@ export function agentRoutes(
     async (req, res) => {
       const targets = await loadAgentBatchTargets(req, res, req.body.agentIds);
       if (!targets) return;
-      const values = req.body.values as Record<string, string | null>;
+      const values = req.body.values as Record<string, AgentAdapterConfigBatchValue>;
       assertNoAgentAdapterConfigMutation(req, values, "values");
       for (const agent of targets) {
         assertExternalInstructionsAdmin(req, agent);
@@ -5568,6 +5575,8 @@ export function agentRoutes(
             name: entry.agent.name,
             status: "unchanged" as const,
             changedKeys: [],
+            skippedKeys: entry.skippedKeys,
+            droppedValues: entry.droppedValues,
           });
           continue;
         }
@@ -5613,6 +5622,8 @@ export function agentRoutes(
           name: entry.agent.name,
           status: "updated" as const,
           changedKeys: entry.changedKeys,
+          skippedKeys: entry.skippedKeys,
+          droppedValues: entry.droppedValues,
         });
       }
       res.json({
@@ -7175,6 +7186,7 @@ export function agentRoutes(
       triggerDetail: heartbeatRuns.triggerDetail,
       contextCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'commentId'`.as("contextCommentId"),
       contextWakeCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`.as("contextWakeCommentId"),
+      modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'paperclipModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
       startedAt: heartbeatRuns.startedAt,
       finishedAt: heartbeatRuns.finishedAt,
       createdAt: heartbeatRuns.createdAt,
@@ -7836,6 +7848,7 @@ export function agentRoutes(
         triggerDetail: heartbeatRuns.triggerDetail,
         contextCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'commentId'`.as("contextCommentId"),
         contextWakeCommentId: sql<string | null>`${heartbeatRuns.contextSnapshot} ->> 'wakeCommentId'`.as("contextWakeCommentId"),
+        modelFallback: sql<RunModelFallbackState | null>`case when ${heartbeatRuns.status} in ('queued', 'running') then nullif(${heartbeatRuns.contextSnapshot} -> 'paperclipModelFallback', 'null'::jsonb) else null end`.as("modelFallback"),
         startedAt: heartbeatRuns.startedAt,
         finishedAt: heartbeatRuns.finishedAt,
         createdAt: heartbeatRuns.createdAt,
