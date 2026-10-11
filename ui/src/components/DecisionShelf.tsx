@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Loader2, Sun } from "lucide-react";
 import type { Agent, AttentionItem } from "@tickernelz/paperclip-pro-shared";
 import { decisionQueuesApi } from "../api/decisionQueues";
+import type { LiveRunForIssue } from "../api/heartbeats";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";
 import { attentionIdleDays } from "../lib/attention";
@@ -58,6 +59,8 @@ export function AgingItemRow({
   onToggleExpand,
   onDismiss,
   onSnooze,
+  liveRuns,
+  onRetried,
 }: {
   item: AttentionItem;
   companyId: string;
@@ -69,6 +72,8 @@ export function AgingItemRow({
   onToggleExpand: (item: AttentionItem) => void;
   onDismiss: (item: AttentionItem) => void;
   onSnooze: (item: AttentionItem, snoozedUntil: string) => void;
+  liveRuns?: readonly LiveRunForIssue[];
+  onRetried?: (item: AttentionItem) => void;
 }) {
   const queryClient = useQueryClient();
   const { pushToast } = useToastActions();
@@ -117,6 +122,8 @@ export function AgingItemRow({
         agents={agents}
         showTriage
         currentUserId={currentUserId}
+        liveRuns={liveRuns}
+        onRetried={onRetried}
       />
     </div>
   );

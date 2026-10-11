@@ -13,6 +13,7 @@ import { WhatNeedsMe } from "@/pages/WhatNeedsMe";
 import { DecisionQueuePage } from "@/pages/DecisionQueuePage";
 import { AttentionQueueRow } from "@/components/AttentionQueueRow";
 import type { DecisionQueueDto } from "@/api/decisionQueues";
+import type { LiveRunForIssue } from "@/api/heartbeats";
 import { queryKeys } from "@/lib/queryKeys";
 
 // The company id the Storybook providers select (see .storybook/preview.tsx).
@@ -585,6 +586,95 @@ export const CardTriageStrip: Story = {
           onDismiss={() => {}}
           onSnooze={() => {}}
         />
+      </div>
+    </PrimeDeskFixtures>
+  ),
+};
+
+const RETRY_AGENTS: Agent[] = [
+  { id: "agent-bayu", name: "Bayu (Kaitech Dev)", status: "error", pauseReason: null },
+  { id: "agent-wira", name: "Wira", status: "paused", pauseReason: "manual" },
+] as unknown as Agent[];
+const RETRY_AGENT_MAP = new Map(RETRY_AGENTS.map((agent) => [agent.id, agent]));
+
+function retryIssue(identifier: string, assigneeAgentId: string): AttentionItem["relatedIssue"] {
+  return {
+    kind: "issue",
+    id: `issue-${identifier}`,
+    companyId,
+    title: "Kaitech discovery engine",
+    identifier,
+    status: "blocked",
+    href: `/ZHA/issues/${identifier}`,
+    metadata: { assigneeAgentId, assigneeUserId: null },
+  };
+}
+
+function failedRunRow(id: string, identifier: string, agentId: string, agentName: string): AttentionItem {
+  return item(id, "failed_run", "high", `${agentName} run failed`, "Run failed after automatic retries were exhausted.", {
+    subject: {
+      kind: "run",
+      id: `run-${id}`,
+      companyId,
+      title: `${agentName} run failed`,
+      identifier: null,
+      status: "failed",
+      href: `/ZHA/agents/${agentId}/runs/run-${id}`,
+      metadata: { agentId, agentName, issueId: `issue-${identifier}`, error: "503 No available accounts" },
+    },
+    decisionVerbs: [],
+    detail: { kind: "failed_run", agentName, failureReasonExcerpt: "503 No available accounts", images: [] },
+    relatedIssue: retryIssue(identifier, agentId),
+  });
+}
+
+function recoveryRow(id: string, identifier: string, agentId: string): AttentionItem {
+  const nextAction = "Board operator: inspect the evidence, repair the runtime if appropriate, then explicitly retry the original owner, reassign, or intentionally resolve the task.";
+  return item(id, "recovery_action", "high", nextAction, "Recovery action escalated to a human owner.", {
+    subject: {
+      kind: "recovery_action",
+      id: `recovery-${id}`,
+      companyId,
+      title: nextAction,
+      identifier: null,
+      status: "escalated",
+      href: `/ZHA/issues/${identifier}`,
+      metadata: { kind: "stranded", cause: "run_failed", ownerType: "board", sourceIssueId: `issue-${identifier}` },
+    },
+    decisionVerbs: [],
+    detail: { kind: "generic", summaryExcerpt: nextAction, images: [] },
+    relatedIssue: retryIssue(identifier, agentId),
+  });
+}
+
+const RETRY_ROWS: AttentionItem[] = [
+  failedRunRow("retry-ready", "ZHA-1442", "agent-bayu", "Bayu (Kaitech Dev)"),
+  recoveryRow("recovery-ready", "ZHA-1451", "agent-bayu"),
+  failedRunRow("retry-paused", "ZHA-1452", "agent-wira", "Wira"),
+  recoveryRow("recovery-live", "ZHA-1453", "agent-bayu"),
+];
+
+const RETRY_LIVE_RUNS = [
+  { id: "run-live", agentId: "agent-bayu", agentName: "Bayu (Kaitech Dev)", issueId: "issue-ZHA-1453", status: "running" },
+] as unknown as LiveRunForIssue[];
+
+/** Failed-run and recovery cards with Retry beside Open: ready, paused owner, and live-run states. */
+export const RetryCards: Story = {
+  render: () => (
+    <PrimeDeskFixtures>
+      <div className="max-w-3xl space-y-2 p-6">
+        {RETRY_ROWS.map((row) => (
+          <AttentionQueueRow
+            key={row.id}
+            item={row}
+            companyId={companyId}
+            agentMap={RETRY_AGENT_MAP}
+            liveRuns={RETRY_LIVE_RUNS}
+            expanded={false}
+            onToggleExpand={() => {}}
+            onDismiss={() => {}}
+          />
+        ))}
       </div>
     </PrimeDeskFixtures>
   ),

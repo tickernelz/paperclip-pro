@@ -50,6 +50,8 @@ import {
 import { AttentionInteractionResolver } from "./AttentionInteractionResolver";
 import { DecisionResolver } from "./DecisionResolver";
 import { StalledReviewActions } from "./StalledReviewActions";
+import { AttentionRetryButton } from "./AttentionRetryButton";
+import type { LiveRunForIssue } from "../api/heartbeats";
 import { readIssueReviewPolicyMetadata } from "../lib/review-policy";
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -97,6 +99,8 @@ interface AttentionQueueRowProps {
   currentUserId?: string | null;
   userLabelMap?: ReadonlyMap<string, string> | null;
   selected?: boolean;
+  liveRuns?: readonly LiveRunForIssue[];
+  onRetried?: (item: AttentionItem) => void;
 }
 
 /**
@@ -121,6 +125,8 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   currentUserId,
   userLabelMap,
   selected = false,
+  liveRuns,
+  onRetried,
 }: AttentionQueueRowProps) {
   const meta = sourceMeta(item.sourceKind);
   // Colour + glyph are borrowed wholesale from the task status system, so a
@@ -166,6 +172,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   const audience = describeAttentionResolverAudience(item);
   const showOpen = !inline && !!href;
   const showRestore = isHidden && !!onRestore;
+  const showRetry = !isHidden && (item.sourceKind === "failed_run" || item.sourceKind === "recovery_action");
   // An expanded inline row hands its footer to the resolver, which owns the
   // decision verbs — so the toggle rides alongside them on one row rather than
   // stranding a lone "See less" under the buttons. That makes the collapsed
@@ -197,7 +204,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
    */
   const renderFooter = ({ compact }: { compact: boolean }) => {
     const showCompact = compactActions.length > 0 && (compact || !expanded);
-    if (!toggle && !showCompact && !showOpen && !showRestore) return null;
+    if (!toggle && !showCompact && !showOpen && !showRestore && !showRetry) return null;
     return (
       <div className="flex flex-wrap items-center justify-between gap-2" data-attention-actions="true">
         {toggle ?? <span />}
@@ -209,6 +216,17 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
               companyId={companyId}
               audience={audience}
               onOpen={() => onToggleExpand(item)}
+            />
+          )}
+
+          {showRetry && (
+            <AttentionRetryButton
+              item={item}
+              companyId={companyId}
+              agentMap={agentMap}
+              liveRuns={liveRuns}
+              onRetried={onRetried}
+              className={ACTION_BTN}
             />
           )}
 

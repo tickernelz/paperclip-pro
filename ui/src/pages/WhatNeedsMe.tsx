@@ -5,6 +5,8 @@ import type { Agent, AttentionItem, AttentionSubject } from "@tickernelz/papercl
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { attentionApi } from "../api/attention";
 import { agentsApi } from "../api/agents";
+import { heartbeatsApi } from "../api/heartbeats";
+import { usePublishSharedQueryData, useSharedPollingQuery } from "@/hooks/useSharedPolling";
 import { authApi } from "../api/auth";
 import { decisionsApi } from "../api/decisions";
 import { useCompany } from "../context/CompanyContext";
@@ -61,6 +63,10 @@ const ATTENTION_ROW_RENDER_BATCH_SIZE = 100;
 const ATTENTION_SCROLL_LOAD_THRESHOLD_PX = 480;
 const DECISION_HISTORY_VISIBLE_LIMIT = 50;
 const DECISION_HISTORY_QUERY_LIMIT = DECISION_HISTORY_VISIBLE_LIMIT + 1;
+
+function offersRetry(item: AttentionItem) {
+  return item.sourceKind === "failed_run" || item.sourceKind === "recovery_action";
+}
 
 export function decisionHistoryQueryEnabled(companyId: string | null | undefined, open: boolean) {
   return Boolean(companyId && open);
@@ -172,6 +178,23 @@ export function WhatNeedsMe() {
     queryFn: () => agentsApi.list(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
+
+  const liveRunsQueryKey = queryKeys.liveRuns(selectedCompanyId!);
+  const sharedLiveRuns = useSharedPollingQuery({
+    companyId: selectedCompanyId,
+    resourceKey: "live-runs",
+    queryKey: liveRunsQueryKey,
+    enabled: !!selectedCompanyId,
+    refetchInterval: false,
+    leaderOnly: true,
+  });
+  const { data: liveRuns, dataUpdatedAt: liveRunsUpdatedAt } = useQuery({
+    queryKey: liveRunsQueryKey,
+    queryFn: () => heartbeatsApi.liveRunsForCompany(selectedCompanyId!),
+    enabled: sharedLiveRuns.enabled,
+    refetchInterval: sharedLiveRuns.refetchInterval,
+  });
+  usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
 
   // Decision history — decided / expired decisions leave the open attention
   // feed (entryRule = open only), so we fetch them directly for the curtains.
@@ -449,6 +472,10 @@ export function WhatNeedsMe() {
     },
     [snooze],
   );
+  const handleRetried = useCallback((item: AttentionItem) => {
+    setPendingHide((prev) => new Set(prev).add(item.id));
+    setExpandedId((previous) => (previous === item.id ? null : previous));
+  }, []);
   const handleRestore = useCallback(
     (item: AttentionItem) => {
       setPendingRestore((prev) => new Set(prev).add(item.id));
@@ -616,6 +643,8 @@ export function WhatNeedsMe() {
                                   showTriage
                                   currentUserId={currentUserId}
                                   selected={selectionFromKeyboard && selectedAttentionId === item.id}
+                                  liveRuns={offersRetry(item) ? liveRuns : undefined}
+                                  onRetried={handleRetried}
                                 />
                               </div>
                             </Fragment>
@@ -701,6 +730,8 @@ export function WhatNeedsMe() {
                   onToggleExpand={handleToggleExpand}
                   onDismiss={handleDismiss}
                   onSnooze={handleSnooze}
+                  liveRuns={offersRetry(item) ? liveRuns : undefined}
+                  onRetried={handleRetried}
                 />
               ))}
             </Curtain>
