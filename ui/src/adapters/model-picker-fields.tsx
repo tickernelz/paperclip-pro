@@ -1,146 +1,290 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { validateAgentFallbackModels } from "@tickernelz/paperclip-pro-shared";
+import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from "react";
+import { validateAgentFallbackModels, type IssueRunModelOverrideOption } from "@tickernelz/paperclip-pro-shared";
+import { ArrowDown, ArrowUp, Check, ChevronDown, Plus, Search, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Button } from "../components/ui/button";
-import { describeModelValue, ModelValueLabel } from "../components/task-chat/model-option-display";
-import { ArrowDown, ArrowUp, ChevronDown, X } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  describeModelValue,
+  groupModelOptions,
+  ModelOptionGroupHeader,
+  ModelOptionText,
+  modelOptionMatches,
+  ModelValueLabel,
+} from "../components/task-chat/model-option-display";
 
-/** Type-to-filter option picker that also accepts free text. */
-export function ComboboxField({
-  value,
+type PickerOption = IssueRunModelOverrideOption;
+
+/** Search box placeholder for model pickers. */
+export const MODEL_SEARCH_PLACEHOLDER = "Search models or paste an ID";
+const VALUE_SEARCH_PLACEHOLDER = "Search or type a value";
+
+const triggerClass =
+  "flex w-full min-w-0 items-center gap-2 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
+
+function isPrintableKey(event: KeyboardEvent): boolean {
+  return event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey;
+}
+
+function OptionSearchList({
   options,
-  onChange,
-  placeholder,
+  selected,
+  query,
+  onQueryChange,
+  onSelect,
+  searchPlaceholder,
+  label,
+  note,
+  testId,
 }: {
-  value: string;
-  options: { label: string; value: string; group?: string }[];
-  onChange: (val: string) => void;
-  placeholder?: string;
+  options: readonly PickerOption[];
+  selected: string | null;
+  query: string;
+  onQueryChange: (query: string) => void;
+  onSelect: (value: string) => void;
+  searchPlaceholder: string;
+  label: string;
+  note?: (value: string) => string | null;
+  testId: string;
 }) {
-  const [open, setOpen] = useState(false);
-  const [filter, setFilter] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
+  const listId = useId();
+  const trimmed = query.trim();
+  const sections = groupModelOptions(options.filter((option) => modelOptionMatches(option, trimmed)));
+  const listed = sections.flatMap((section) => section.options.map((option) => option.value));
+  const custom = trimmed && !options.some((option) => option.value === trimmed) ? trimmed : null;
+  const choices = custom ? [...listed, custom] : listed;
+  const [active, setActive] = useState(() => Math.max(0, selected ? choices.indexOf(selected) : 0));
+  const activeIndex = choices.length === 0 ? -1 : Math.min(active, choices.length - 1);
+  const optionId = (index: number) => `${listId}-option-${index}`;
 
   useEffect(() => {
-    setFilter("");
-  }, [value]);
-
-  const filtered = options.filter((opt) => {
-    if (!filter) return true;
-    const q = filter.toLowerCase();
-    return (
-      opt.value.toLowerCase().includes(q) ||
-      opt.label.toLowerCase().includes(q) ||
-      (opt.group && opt.group.toLowerCase().includes(q))
-    );
+    if (activeIndex < 0) return;
+    document.getElementById(optionId(activeIndex))?.scrollIntoView?.({ block: "nearest" });
   });
 
-  const selectedOpt = options.find((o) => o.value === value);
-  const displayValue = filter || selectedOpt?.value || value || "";
-
-  const grouped = new Map<string, typeof filtered>();
-  for (const opt of filtered) {
-    const g = opt.group ?? "";
-    if (!grouped.has(g)) grouped.set(g, []);
-    grouped.get(g)!.push(opt);
-  }
-
-  const select = useCallback(
-    (val: string) => {
-      onChange(val);
-      setOpen(false);
-      setFilter("");
-      inputRef.current?.blur();
-    },
-    [onChange],
-  );
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      if (filtered.length === 1) {
-        select(filtered[0].value);
-      } else if (filter) {
-        select(filter);
-      }
-    } else if (e.key === "Escape") {
-      setOpen(false);
-      setFilter("");
-    } else if (e.key === "ArrowDown" && !open) {
-      e.preventDefault();
-      setOpen(true);
+  const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      if (choices.length === 0) return;
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      setActive((activeIndex + step + choices.length) % choices.length);
+    } else if (event.key === "Home" || event.key === "End") {
+      if (choices.length === 0) return;
+      event.preventDefault();
+      setActive(event.key === "Home" ? 0 : choices.length - 1);
+    } else if (event.key === "Enter") {
+      event.preventDefault();
+      const choice = choices[activeIndex];
+      if (choice !== undefined) onSelect(choice);
     }
   };
 
+  const optionRow = (value: string, index: number, body: ReactNode) => (
+    <div
+      key={value}
+      id={optionId(index)}
+      role="option"
+      aria-selected={value === selected}
+      data-active={index === activeIndex ? "true" : undefined}
+      data-testid={`${testId}-option`}
+      data-value={value}
+      onMouseDown={(event) => event.preventDefault()}
+      onMouseMove={() => {
+        if (index !== activeIndex) setActive(index);
+      }}
+      onClick={() => onSelect(value)}
+      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm data-[active=true]:bg-accent"
+    >
+      {body}
+    </div>
+  );
+
   return (
-    <div className="relative">
-      <div className="flex items-center gap-0">
+    <div className="flex flex-col">
+      <div className="relative border-b border-border">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <input
-          ref={inputRef}
           type="text"
-          className="flex-1 rounded-l-md border border-r-0 border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 focus:z-10"
-          value={displayValue}
-          placeholder={placeholder ?? "Type or select..."}
-          onChange={(e) => {
-            setFilter(e.target.value);
-            if (!open) setOpen(true);
-          }}
-          onFocus={() => {
-            if (!open) setOpen(true);
-          }}
-          onBlur={() => {
-            setTimeout(() => setOpen(false), 150);
+          role="combobox"
+          aria-expanded="true"
+          aria-controls={listId}
+          aria-autocomplete="list"
+          aria-activedescendant={activeIndex >= 0 ? optionId(activeIndex) : undefined}
+          aria-label={`Search ${label}`}
+          autoComplete="off"
+          spellCheck={false}
+          placeholder={searchPlaceholder}
+          value={query}
+          onChange={(event) => {
+            onQueryChange(event.target.value);
+            setActive(0);
           }}
           onKeyDown={handleKeyDown}
+          className="h-9 w-full bg-transparent pl-8 pr-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          data-testid={`${testId}-search`}
         />
-        <Popover open={open && filtered.length > 0} onOpenChange={setOpen}>
-          <PopoverTrigger asChild>
-            <button className="rounded-r-md border border-border px-2 py-1.5 hover:bg-accent/50 transition-colors">
-              <ChevronDown className="h-3 w-3 text-muted-foreground" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="p-1 max-h-60 overflow-y-auto"
-            style={{ minWidth: 280 }}
-            align="start"
-            onOpenAutoFocus={(e) => e.preventDefault()}
-          >
-            {Array.from(grouped.entries()).map(([group, opts]) => (
-              <div key={group || "_ungrouped"}>
-                {group && (
-                  <div className="px-2 py-1 text-xs font-medium text-muted-foreground">
-                    {group}
-                  </div>
-                )}
-                {opts.map((opt) => (
-                  <button
-                    key={opt.value}
-                    className={`flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50 ${
-                      opt.value === value ? "bg-accent" : ""
-                    }`}
-                    onMouseDown={(e) => {
-                      e.preventDefault(); // prevent input blur
-                      select(opt.value);
-                    }}
-                  >
-                    <span className="truncate">{opt.label}</span>
-                  </button>
-                ))}
-              </div>
-            ))}
-            {filter && filtered.length === 0 && (
-              <div className="px-2 py-1.5 text-sm text-muted-foreground">
-                Use &quot;{filter}&quot; as custom value (press Enter)
-              </div>
-            )}
-          </PopoverContent>
-        </Popover>
+      </div>
+      <div
+        id={listId}
+        role="listbox"
+        aria-label={label}
+        className="max-h-72 overflow-y-auto overscroll-contain p-1"
+        data-testid={`${testId}-listbox`}
+      >
+        {sections.map((section) => (
+          <div key={section.provider ?? ""} role="group" aria-label={section.provider ?? undefined}>
+            {section.provider ? (
+              <ModelOptionGroupHeader provider={section.provider} testId={`${testId}-group-${section.provider}`} />
+            ) : null}
+            {section.options.map((option) => {
+              const index = choices.indexOf(option.value);
+              const reason = note?.(option.value) ?? null;
+              return optionRow(
+                option.value,
+                index,
+                <>
+                  <ModelOptionText option={option} />
+                  {reason ? <span className="shrink-0 text-xs text-muted-foreground">{reason}</span> : null}
+                  {option.value === selected ? <Check className="size-4 shrink-0" aria-hidden="true" /> : null}
+                </>,
+              );
+            })}
+          </div>
+        ))}
+        {custom
+          ? optionRow(
+              custom,
+              choices.length - 1,
+              <>
+                <Plus className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <span className="min-w-0 flex-1 truncate">
+                  Use <span className="font-mono text-xs">{custom}</span>
+                </span>
+                {note?.(custom) ? <span className="shrink-0 text-xs text-muted-foreground">{note(custom)}</span> : null}
+              </>,
+            )
+          : null}
+        {choices.length === 0 ? (
+          <p className="px-2 py-2 text-xs text-muted-foreground">
+            {options.length === 0 ? "No options yet. Type a value to use it." : "No match."}
+          </p>
+        ) : null}
       </div>
     </div>
   );
 }
 
-type ModelListOption = { label: string; value: string; group?: string; name?: string };
+/** Select-style picker over provider-grouped options that also accepts a typed value. */
+export function ComboboxField({
+  value,
+  options,
+  onChange,
+  label,
+  emptyLabel = "Not set",
+  searchPlaceholder = VALUE_SEARCH_PLACEHOLDER,
+  clearable = true,
+  disablePortal,
+  testId = "combobox-field",
+}: {
+  value: string;
+  options: readonly PickerOption[];
+  onChange: (value: string) => void;
+  label: string;
+  emptyLabel?: string;
+  searchPlaceholder?: string;
+  clearable?: boolean;
+  disablePortal?: boolean;
+  testId?: string;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const listed = options.some((option) => option.value === value);
+  const display = value || listed ? describeModelValue(value, options) : null;
+
+  const changeOpen = (next: boolean) => {
+    setOpen(next);
+    if (!next) setQuery("");
+  };
+
+  return (
+    <div className="relative min-w-0" data-testid={testId}>
+      <Popover open={open} onOpenChange={changeOpen}>
+        <PopoverTrigger asChild>
+          <button
+            type="button"
+            role="combobox"
+            aria-haspopup="listbox"
+            aria-expanded={open}
+            aria-label={label}
+            title={value || undefined}
+            className={triggerClass}
+            onKeyDown={(event) => {
+              if (open) return;
+              if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+                event.preventDefault();
+                changeOpen(true);
+              } else if (isPrintableKey(event)) {
+                event.preventDefault();
+                setQuery(event.key);
+                setOpen(true);
+              }
+            }}
+            data-testid={`${testId}-trigger`}
+          >
+            {display ? (
+              <ModelValueLabel display={display} layout="inline" className="flex-1" testId={`${testId}-value`} />
+            ) : (
+              <span className="min-w-0 flex-1 truncate text-muted-foreground" data-testid={`${testId}-value`}>
+                {emptyLabel}
+              </span>
+            )}
+            {clearable && value ? <span className="w-5 shrink-0" aria-hidden="true" /> : null}
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          </button>
+        </PopoverTrigger>
+        <PopoverContent
+          align="start"
+          disablePortal={disablePortal}
+          className="w-(--radix-popover-trigger-width) min-w-72 p-0"
+        >
+          <OptionSearchList
+            options={options}
+            selected={value || null}
+            query={query}
+            onQueryChange={setQuery}
+            onSelect={(next) => {
+              onChange(next);
+              changeOpen(false);
+            }}
+            searchPlaceholder={searchPlaceholder}
+            label={label}
+            testId={testId}
+          />
+        </PopoverContent>
+      </Popover>
+      {clearable && value ? (
+        <button
+          type="button"
+          aria-label={`Clear ${label}`}
+          onClick={() => onChange("")}
+          className="absolute right-8.5 top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          data-testid={`${testId}-clear`}
+        >
+          <X className="size-3.5" aria-hidden="true" />
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+/** Label-row counter for a model list, such as "1/5". */
+export function ModelListCount({ count, max }: { count: number; max: number }) {
+  return (
+    <span className="text-xs tabular-nums text-muted-foreground" data-testid="model-list-count">
+      · {count}/{max}
+    </span>
+  );
+}
 
 /** Ordered model selector list with add, remove and reorder, validated before every change. */
 export function ModelListField({
@@ -149,22 +293,30 @@ export function ModelListField({
   maxItems,
   primary,
   onChange,
+  label,
+  disablePortal,
   testId,
-  placeholder,
 }: {
   value: readonly string[];
-  options: ModelListOption[];
+  options: readonly PickerOption[];
   maxItems: number;
   primary: string | null;
   onChange: (next: string[]) => void;
+  label: string;
+  disablePortal?: boolean;
   testId: string;
-  placeholder?: string;
 }) {
-  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const [error, setError] = useState<string | null>(null);
   const full = value.length >= maxItems;
   const current = validateAgentFallbackModels([...value], primary);
   const shownError = error ?? (current.ok ? null : current.message);
+
+  const changeOpen = (next: boolean) => {
+    setOpen(next && !full);
+    if (!next) setQuery("");
+  };
 
   const commit = (next: string[]): boolean => {
     const result = validateAgentFallbackModels(next, primary);
@@ -181,16 +333,6 @@ export function ModelListField({
     return true;
   };
 
-  const add = () => {
-    const entry = draft.trim();
-    if (!entry) return;
-    if (full) {
-      setError(`Pick at most ${maxItems} fallback models.`);
-      return;
-    }
-    if (commit([...value, entry])) setDraft("");
-  };
-
   const move = (index: number, offset: number) => {
     const target = index + offset;
     if (target < 0 || target >= value.length) return;
@@ -199,77 +341,105 @@ export function ModelListField({
     commit(next);
   };
 
+  const note = (candidate: string) => {
+    if (primary && candidate === primary) return "Main model";
+    return value.includes(candidate) ? "Added" : null;
+  };
+
   return (
-    <div className="space-y-2" data-testid={testId}>
+    <div className="space-y-1.5" data-testid={testId}>
       {value.length > 0 ? (
-        <ol className="space-y-1">
+        <ol className="divide-y divide-border overflow-hidden rounded-md border border-border" aria-label={label}>
           {value.map((entry, index) => (
             <li
               key={entry}
               data-testid={`${testId}-item`}
-              className="flex items-center gap-2 rounded-md border border-border px-2 py-1 text-sm"
+              className="flex min-w-0 items-center gap-2 py-1 pl-2.5 pr-1 text-sm"
             >
-              <span className="w-4 shrink-0 text-xs tabular-nums text-muted-foreground">{index + 1}</span>
+              <span className="w-4 shrink-0 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
+                {index + 1}
+              </span>
               <ModelValueLabel display={describeModelValue(entry, options)} layout="inline" className="flex-1" />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                aria-label={`Move ${entry} up`}
-                disabled={index === 0}
-                onClick={() => move(index, -1)}
-              >
-                <ArrowUp aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                aria-label={`Move ${entry} down`}
-                disabled={index === value.length - 1}
-                onClick={() => move(index, 1)}
-              >
-                <ArrowDown aria-hidden="true" />
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon-xs"
-                aria-label={`Remove ${entry}`}
-                onClick={() => commit(value.filter((_, at) => at !== index))}
-              >
-                <X aria-hidden="true" />
-              </Button>
+              <div className="flex shrink-0 items-center">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`Move ${entry} up`}
+                  disabled={index === 0}
+                  onClick={() => move(index, -1)}
+                >
+                  <ArrowUp aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`Move ${entry} down`}
+                  disabled={index === value.length - 1}
+                  onClick={() => move(index, 1)}
+                >
+                  <ArrowDown aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`Remove ${entry}`}
+                  onClick={() => commit(value.filter((_, at) => at !== index))}
+                >
+                  <X aria-hidden="true" />
+                </Button>
+              </div>
             </li>
           ))}
         </ol>
       ) : null}
-      <div className="flex items-center gap-2">
-        <div className="min-w-0 flex-1" data-testid={`${testId}-picker`}>
-          <ComboboxField
-            value={draft}
-            options={options}
-            onChange={(next) => {
-              setError(null);
-              setDraft(next);
-            }}
-            placeholder={placeholder}
-          />
-        </div>
-        <Button
-          type="button"
-          variant="outline"
-          size="xs"
-          data-testid={`${testId}-add`}
-          disabled={full || !draft.trim()}
-          onClick={add}
-        >
-          Add
-        </Button>
+      <div data-testid={`${testId}-picker`}>
+        <Popover open={open} onOpenChange={changeOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              aria-haspopup="listbox"
+              aria-expanded={open}
+              disabled={full}
+              className={cn(triggerClass, "border-dashed text-muted-foreground hover:text-foreground")}
+              onKeyDown={(event) => {
+                if (open || !isPrintableKey(event)) return;
+                event.preventDefault();
+                setQuery(event.key);
+                changeOpen(true);
+              }}
+              data-testid={`${testId}-add`}
+            >
+              <Plus className="size-4 shrink-0" aria-hidden="true" />
+              <span className="min-w-0 flex-1 truncate">
+                {full ? `Limit of ${maxItems} reached. Remove one to add another.` : "Add fallback model"}
+              </span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            align="start"
+            disablePortal={disablePortal}
+            className="w-(--radix-popover-trigger-width) min-w-72 p-0"
+          >
+            <OptionSearchList
+              options={options}
+              selected={null}
+              query={query}
+              onQueryChange={setQuery}
+              onSelect={(entry) => {
+                commit([...value, entry]);
+                changeOpen(false);
+              }}
+              searchPlaceholder={MODEL_SEARCH_PLACEHOLDER}
+              label={label}
+              note={note}
+              testId={`${testId}-add`}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
-      <p className="text-xs text-muted-foreground">
-        {value.length} of {maxItems}
-      </p>
       {shownError ? (
         <p role="alert" className="text-xs text-destructive" data-testid={`${testId}-error`}>
           {shownError}

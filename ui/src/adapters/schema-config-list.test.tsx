@@ -4,6 +4,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AdapterConfigSchema, CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
 import { SchemaConfigFields, buildSchemaAdapterConfig, invalidateConfigSchemaCache } from "./schema-config-fields";
+import userEvent from "@testing-library/user-event";
 import { TooltipProvider } from "../components/ui/tooltip";
 import { defaultCreateValues } from "../components/agent-config-defaults";
 
@@ -103,18 +104,15 @@ async function render(node: React.ReactNode) {
 }
 
 async function pick(text: string) {
-  const input = q<HTMLInputElement>('[data-testid="schema-config-list-fallbackModels-picker"] input')!;
-  const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+  const user = userEvent.setup();
   await act(async () => {
-    input.focus();
-    setter.call(input, text);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
+    await user.click(q<HTMLButtonElement>('[data-testid="schema-config-list-fallbackModels-add"]')!);
   });
   await act(async () => {
-    input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+    await user.keyboard(text);
   });
   await act(async () => {
-    q<HTMLButtonElement>('[data-testid="schema-config-list-fallbackModels-add"]')!.click();
+    await user.keyboard("{Enter}");
   });
 }
 
@@ -131,9 +129,12 @@ describe("combobox_list schema field", () => {
       <CreateHarness initial={{ ...defaultCreateValues, model: "anthropic/opus", adapterSchemaValues: {} }} onValues={onValues} />,
     );
     expect(container.textContent).toContain("Fallback models");
+    expect(q('[data-testid="model-list-count"]')?.textContent).toBe("· 0/5");
 
     await pick("openai/gpt");
     await pick("custom/free-text");
+    expect(q('[data-testid="model-list-count"]')?.textContent).toBe("· 2/5");
+    expect(q('[data-testid="model-list-count"]')?.parentElement?.textContent).toContain("Fallback models");
 
     expect(items()).toHaveLength(2);
     expect(items()[0]).toContain("GPT");
@@ -189,8 +190,9 @@ describe("combobox_list schema field", () => {
     expect(items()).toHaveLength(5);
     onMark.mockClear();
 
-    await pick("e/5");
-    expect(q<HTMLButtonElement>('[data-testid="schema-config-list-fallbackModels-add"]')?.disabled).toBe(true);
+    const add = q<HTMLButtonElement>('[data-testid="schema-config-list-fallbackModels-add"]')!;
+    expect(add.disabled).toBe(true);
+    expect(add.textContent).toContain("Limit of 5 reached");
     expect(onMark).not.toHaveBeenCalled();
     expect(items()).toHaveLength(5);
   });

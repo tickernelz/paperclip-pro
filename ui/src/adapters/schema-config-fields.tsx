@@ -14,7 +14,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { AGENT_FALLBACK_MODELS_MAX, readAgentFallbackModels } from "@tickernelz/paperclip-pro-shared";
 import { ChevronDown } from "lucide-react";
-import { ComboboxField, ModelListField } from "./model-picker-fields";
+import { ComboboxField, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "./model-picker-fields";
 
 // ── Select field (extracted to keep hooks at component top level) ──────
 function SelectField({
@@ -366,7 +366,11 @@ export function SchemaConfigFields({
                     value={currentVal}
                     options={comboboxOptions}
                     onChange={(v) => writeValue(field, v || undefined)}
-                    placeholder={field.hint}
+                    label={field.label}
+                    searchPlaceholder={
+                      field.meta?.providerModels || /model/i.test(field.key) ? MODEL_SEARCH_PLACEHOLDER : undefined
+                    }
+                    testId={`schema-config-combobox-${field.key}`}
                   />
                 </Field>
               );
@@ -375,16 +379,22 @@ export function SchemaConfigFields({
             case "combobox_list": {
               const distinctFromKey = typeof field.meta?.distinctFromKey === "string" ? field.meta.distinctFromKey : null;
               const maxItems = typeof field.meta?.maxItems === "number" ? field.meta.maxItems : AGENT_FALLBACK_MODELS_MAX;
+              const entries = readAgentFallbackModels(readValue(field));
               return (
-                <Field key={field.key} label={field.label} hint={field.hint}>
+                <Field
+                  key={field.key}
+                  label={field.label}
+                  hint={field.hint}
+                  aside={<ModelListCount count={entries.length} max={maxItems} />}
+                >
                   <ModelListField
-                    value={readAgentFallbackModels(readValue(field))}
+                    value={entries}
                     options={field.options ?? []}
                     maxItems={maxItems}
                     primary={distinctFromKey ? readPrimary(distinctFromKey) : null}
                     onChange={(next) => writeValue(field, next.length > 0 ? next : undefined)}
+                    label={field.label}
                     testId={`schema-config-list-${field.key}`}
-                    placeholder={field.hint}
                   />
                 </Field>
               );

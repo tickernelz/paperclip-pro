@@ -1168,10 +1168,23 @@ describe("Agents", () => {
 
     const select = document.querySelector<HTMLSelectElement>('[data-testid="bulk-agent-config-field-model"]')!;
     await act(async () => {
-      select.value = "vendor/deep";
+      select.value = "__custom";
       select.dispatchEvent(new Event("change", { bubbles: true }));
     });
     await flushReact();
+    await act(async () => {
+      document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-custom-model-trigger"]')!.click();
+    });
+    await flushReact();
+    await act(async () => {
+      document
+        .querySelector<HTMLElement>('[data-testid="bulk-agent-config-custom-model-option"][data-value="vendor/deep"]')!
+        .click();
+    });
+    await flushReact();
+    expect(
+      document.querySelector('[data-testid="bulk-agent-config-custom-model-value"]')?.textContent,
+    ).toBe("Deep");
 
     const submit = document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-submit"]')!;
     await act(async () => { submit.click(); });
@@ -1252,20 +1265,14 @@ describe("Agents", () => {
   }
 
   async function addBulkFallback(text: string) {
-    const input = document.querySelector<HTMLInputElement>(
-      '[data-testid="bulk-agent-config-list-fallbackModels-picker"] input',
-    )!;
-    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
-    await act(async () => {
-      input.focus();
-      setter.call(input, text);
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    await act(async () => {
-      input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
-    });
     await act(async () => {
       document.querySelector<HTMLButtonElement>('[data-testid="bulk-agent-config-list-fallbackModels-add"]')!.click();
+    });
+    await flushReact();
+    await act(async () => {
+      document
+        .querySelector<HTMLElement>(`[data-testid="bulk-agent-config-list-fallbackModels-add-option"][data-value="${text}"]`)!
+        .click();
     });
     await flushReact();
   }

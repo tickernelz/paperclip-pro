@@ -18,6 +18,7 @@ import type {
   EnvBinding,
   EnvSecretRefBinding,
   Environment,
+  IssueRunModelOverrideOption,
 } from "@tickernelz/paperclip-pro-shared";
 import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter, isValidBrowserCode, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
 import type { AdapterModel } from "../api/agents";
@@ -42,7 +43,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { FolderOpen, Heart, ChevronDown, X, Copy, Check, ExternalLink, Loader2, TriangleAlert, Bug } from "lucide-react";
+import { FolderOpen, Heart, ChevronDown, X, Copy, Check, ExternalLink, Loader2, TriangleAlert, Bug, Search } from "lucide-react";
 import { asBoolean, asFiniteNumber, asObject, cn } from "../lib/utils";
 import { copyTextToClipboard } from "../lib/clipboard";
 import {
@@ -59,6 +60,14 @@ import {
 } from "../lib/adapter-test-environment";
 import { environmentDisplayLabel } from "../lib/managed-sandbox-environment";
 import { adapterCuratesModelOrder, extractModelName, extractProviderId } from "../lib/model-utils";
+import { MODEL_SEARCH_PLACEHOLDER } from "../adapters/model-picker-fields";
+import {
+  describeModelValue,
+  ModelOptionGroupHeader,
+  ModelOptionText,
+  modelOptionMatches,
+  ModelValueLabel,
+} from "./task-chat/model-option-display";
 import { queryKeys } from "../lib/queryKeys";
 import { useCompany } from "../context/CompanyContext";
 import {
@@ -3717,6 +3726,17 @@ function ExperimentalBadge() {
   );
 }
 
+function modelPickerOption(model: AdapterModel, groupByProvider: boolean): IssueRunModelOverrideOption {
+  const provider = model.provider ?? (groupByProvider ? extractProviderId(model.id) : null);
+  const name = model.label !== model.id ? model.label : groupByProvider ? extractModelName(model.id) : null;
+  return {
+    value: model.id,
+    label: model.label,
+    ...(provider ? { group: provider } : {}),
+    ...(name ? { name } : {}),
+  };
+}
+
 export function ModelDropdown({
   models,
   value,
@@ -3759,7 +3779,6 @@ export function ModelDropdown({
 }) {
   const [modelSearch, setModelSearch] = useState("");
   const [detectingModel, setDetectingModel] = useState(false);
-  const selected = models.find((m) => m.id === value);
   const manualModel = modelSearch.trim();
   const canCreateManualModel = Boolean(
     creatable &&
@@ -3779,22 +3798,32 @@ export function ModelDropdown({
   const filteredModels = useMemo(() => {
     return models.filter((m) => {
       if (promotedModelIds.has(m.id)) return false;
-      if (!modelSearch.trim()) return true;
-      const q = modelSearch.toLowerCase();
-      const provider = extractProviderId(m.id) ?? "";
-      return (
-        m.id.toLowerCase().includes(q) ||
-        m.label.toLowerCase().includes(q) ||
-        provider.toLowerCase().includes(q)
+      const provider = extractProviderId(m.id);
+      return modelOptionMatches(
+        { ...modelPickerOption(m, groupByProvider), ...(provider && !m.provider ? { group: provider } : {}) },
+        modelSearch,
       );
     });
-  }, [models, modelSearch, promotedModelIds]);
+  }, [models, modelSearch, promotedModelIds, groupByProvider]);
+  const pickerOptions = useMemo(
+    () => new Map(models.map((model) => [model.id, modelPickerOption(model, groupByProvider)])),
+    [models, groupByProvider],
+  );
+  const selectedDisplay = value ? describeModelValue(value, [...pickerOptions.values()]) : null;
   const groupedModels = useMemo(() => {
+    if (!groupByProvider && filteredModels.some((model) => model.provider)) {
+      const map = new Map<string, AdapterModel[]>();
+      for (const model of filteredModels) {
+        const provider = model.provider ?? "other";
+        map.set(provider, [...(map.get(provider) ?? []), model]);
+      }
+      return Array.from(map.entries()).map(([provider, entries]) => ({ provider, entries }));
+    }
     if (!groupByProvider) {
       // A hand-ordered list (newest release of each family first, older releases at the end) is
       // shown as the adapter ordered it; a discovered list has no stable order, so sort it.
       const entries = preserveOrder ? filteredModels : [...filteredModels].sort((a, b) => a.id.localeCompare(b.id));
-      return [{ provider: "models", entries }];
+      return [{ provider: null as string | null, entries }];
     }
     const map = new Map<string, AdapterModel[]>();
     for (const model of filteredModels) {
@@ -3836,21 +3865,29 @@ export function ModelDropdown({
         }}
       >
         <PopoverTrigger asChild>
-          <button type="button" className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
-            <span className={cn(!value && "text-muted-foreground")}>
-              {selected
-                ? selected.label
-                : value
-                  || (allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model")}
-            </span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <button
+            type="button"
+            aria-label="Model"
+            className="flex w-full min-w-0 items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-accent/50"
+            data-testid="model-dropdown-trigger"
+          >
+            {selectedDisplay ? (
+              <ModelValueLabel display={selectedDisplay} layout="inline" className="flex-1" />
+            ) : (
+              <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                {allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model"}
+              </span>
+            )}
+            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-(--radix-popover-trigger-width) p-1" align="start">
-          <div className="relative mb-1">
+          <div className="relative -mx-1 -mt-1 mb-1 border-b border-border">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input
-              className="w-full px-2 py-1.5 pr-6 text-xs bg-transparent outline-none border-b border-border placeholder:text-muted-foreground/50"
-              placeholder={creatable ? "Search models... (type to create)" : "Search models..."}
+              aria-label="Search models"
+              className="h-9 w-full bg-transparent pl-8 pr-7 text-sm outline-none placeholder:text-muted-foreground"
+              placeholder={creatable ? MODEL_SEARCH_PLACEHOLDER : "Search models"}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
               autoFocus
@@ -3858,7 +3895,8 @@ export function ModelDropdown({
             {modelSearch && (
               <button
                 type="button"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                aria-label="Clear search"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 onClick={() => setModelSearch("")}
               >
                 <svg aria-hidden="true" focusable="false" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3912,9 +3950,9 @@ export function ModelDropdown({
                 onOpenChange(false);
               }}
             >
-              <span className="block w-full text-left truncate font-mono text-xs" title={value}>
-                {models.find((m) => m.id === value)?.label ?? value}
-              </span>
+              {selectedDisplay ? (
+                <ModelValueLabel display={selectedDisplay} layout="inline" className="flex-1" />
+              ) : null}
               <Badge variant="outline" className="ml-auto text-(length:--text-nano) px-1.5 bg-green-500/15 text-green-400 border-green-500/20">
                 current
               </Badge>
@@ -3995,18 +4033,16 @@ export function ModelDropdown({
               </button>
             )}
             {groupedModels.map((group) => (
-              <div key={group.provider} className="mb-1 last:mb-0">
-                {groupByProvider && (
-                  <div className="px-2 py-1 text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
-                    {group.provider} ({group.entries.length})
-                  </div>
+              <div key={group.provider ?? ""} className="mb-1 last:mb-0">
+                {group.provider && (
+                  <ModelOptionGroupHeader provider={group.provider} testId={`model-dropdown-group-${group.provider}`} />
                 )}
                 {group.entries.map((m) => (
                   <button
                     type="button"
                     key={m.id}
                     className={cn(
-                      "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-left text-sm rounded hover:bg-accent/50",
                       m.id === value && "bg-accent",
                     )}
                     onClick={() => {
@@ -4014,9 +4050,8 @@ export function ModelDropdown({
                       onOpenChange(false);
                     }}
                   >
-                    <span className="block w-full text-left truncate" title={m.id}>
-                      {groupByProvider ? extractModelName(m.id) : m.label}
-                    </span>
+                    <ModelOptionText option={pickerOptions.get(m.id) ?? modelPickerOption(m, groupByProvider)} />
+                    {m.id === value ? <Check className="size-4 shrink-0" aria-hidden="true" /> : null}
                   </button>
                 ))}
               </div>

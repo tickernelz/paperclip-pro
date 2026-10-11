@@ -51,6 +51,7 @@ export interface AgentKey {
 export interface AdapterModel {
   id: string;
   label: string;
+  provider?: string;
 }
 
 export interface DetectedAdapterModel {

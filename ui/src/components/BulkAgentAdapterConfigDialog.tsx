@@ -16,18 +16,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { InlineBanner } from "@/components/InlineBanner";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";
-import { ModelListField } from "@/adapters/model-picker-fields";
+import { ComboboxField, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "@/adapters/model-picker-fields";
 import { describeModelValue, modelValueText } from "@/components/task-chat/model-option-display";
 
 const UNCHANGED = "__unchanged";
 const AGENT_DEFAULT = "__agent_default";
 const LIST_REPLACE = "__list_replace";
 const LIST_CLEAR = "__list_clear";
+const PICKED = "__custom";
 
 type BatchValue = string | string[] | null;
 
@@ -151,7 +151,7 @@ export function BulkAgentAdapterConfigDialog({
         continue;
       }
       const text = freeText[key]?.trim();
-      next[key] = selection === "__custom" ? (text ?? "") : selection;
+      next[key] = selection === PICKED ? (text ?? "") : selection;
     }
     return next;
   }, [selections, freeText, lists, listKeys]);
@@ -256,9 +256,15 @@ export function BulkAgentAdapterConfigDialog({
             )}
             {(preview.data?.fields ?? []).map((field) => field.list ? (
               <div key={field.key} className="space-y-1">
-                <label className="text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
-                  {field.label}
-                </label>
+                <div className="flex items-center gap-1.5">
+                  <label className="text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
+                    {field.label}
+                  </label>
+                  {selections[field.key] === LIST_REPLACE && (
+                    <ModelListCount count={lists[field.key]?.length ?? 0} max={field.list.maxItems} />
+                  )}
+                </div>
+                {field.hint && <p className="text-xs text-muted-foreground">{field.hint}</p>}
                 <select
                   id={`bulk-field-${field.key}`}
                   className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
@@ -283,8 +289,9 @@ export function BulkAgentAdapterConfigDialog({
                       return typeof value === "string" && value.trim() ? value.trim() : null;
                     })()}
                     onChange={(next) => setLists((current) => ({ ...current, [field.key]: next }))}
+                    label={field.label}
+                    disablePortal
                     testId={`bulk-agent-config-list-${field.key}`}
-                    placeholder={field.hint ?? "Exact selector"}
                   />
                 )}
                 {(selections[field.key] === LIST_REPLACE || selections[field.key] === LIST_CLEAR) && (
@@ -299,9 +306,10 @@ export function BulkAgentAdapterConfigDialog({
               </div>
             ) : (
               <div key={field.key} className="space-y-1">
-                <label className="text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
+                <label className="block text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
                   {field.label}
                 </label>
+                {field.hint && <p className="text-xs text-muted-foreground">{field.hint}</p>}
                 <select
                   id={`bulk-field-${field.key}`}
                   className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
@@ -313,21 +321,26 @@ export function BulkAgentAdapterConfigDialog({
                 >
                   <option value={UNCHANGED}>Leave unchanged</option>
                   <option value={AGENT_DEFAULT}>Clear (use adapter default)</option>
-                  {field.options.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                  {field.freeText && <option value="__custom">Custom value…</option>}
+                  {field.freeText ? (
+                    <option value={PICKED}>Set to…</option>
+                  ) : (
+                    field.options.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))
+                  )}
                 </select>
-                {selections[field.key] === "__custom" && (
-                  <Input
-                    data-testid={`bulk-agent-config-custom-${field.key}`}
+                {selections[field.key] === PICKED && (
+                  <ComboboxField
                     value={freeText[field.key] ?? ""}
-                    placeholder={field.hint ?? "Exact selector"}
-                    onChange={(event) =>
-                      setFreeText((current) => ({ ...current, [field.key]: event.target.value }))
-                    }
+                    options={field.options}
+                    onChange={(next) => setFreeText((current) => ({ ...current, [field.key]: next }))}
+                    label={field.label}
+                    emptyLabel="Choose a value"
+                    searchPlaceholder={MODEL_SEARCH_PLACEHOLDER}
+                    disablePortal
+                    testId={`bulk-agent-config-custom-${field.key}`}
                   />
                 )}
               </div>

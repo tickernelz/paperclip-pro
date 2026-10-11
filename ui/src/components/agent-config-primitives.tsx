@@ -87,11 +87,12 @@ export function HintIcon({ text }: { text: string }) {
   );
 }
 
-export function Field({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode; configSection?: import("../adapters/types").AdapterConfigSection }) {
+export function Field({ label, hint, aside, children }: { label: string; hint?: string; aside?: React.ReactNode; children: React.ReactNode; configSection?: import("../adapters/types").AdapterConfigSection }) {
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1">
         <label className="text-xs text-muted-foreground">{label}</label>
+        {aside}
         {hint && <HintIcon text={hint} />}
       </div>
       {children}

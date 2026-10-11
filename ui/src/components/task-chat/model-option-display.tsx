@@ -25,9 +25,26 @@ export function describeModelValue(
   return { name, provider, id: value };
 }
 
-/** The option's display name, without its id. */
+const TRAILING_PARENTHETICAL = /\s*\(([^()]+)\)\s*$/;
+
+function nameTokens(text: string): string[] {
+  return text.toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+}
+
+/** Drops a trailing "(tag)" from a name when the tag only repeats words of the provider id. */
+export function withoutProviderTag(name: string, provider: string | null | undefined): string {
+  if (!provider) return name;
+  const match = TRAILING_PARENTHETICAL.exec(name);
+  const stripped = match ? name.slice(0, match.index).trim() : "";
+  if (!match || !stripped) return name;
+  const providerWords = new Set(nameTokens(provider));
+  const tagWords = nameTokens(match[1]!);
+  return tagWords.length > 0 && tagWords.every((word) => providerWords.has(word)) ? stripped : name;
+}
+
+/** The option's display name, without its id or a provider tag that repeats its group. */
 export function optionDisplayName(option: IssueRunModelOverrideOption): string {
-  return option.name ?? option.label;
+  return withoutProviderTag(option.name ?? option.label, option.group);
 }
 
 /** One-line text for a value, naming the provider when it is known. */
@@ -87,12 +104,12 @@ export function ModelValueLabel({
   }
   return (
     <span className={cn("flex min-w-0 items-center gap-1.5", className)} title={display.id}>
-      <span className="min-w-0 truncate" data-testid={testId}>
+      <span className="max-w-full shrink-0 truncate" data-testid={testId}>
         {display.name}
       </span>
       {display.provider ? (
         <span
-          className="max-w-(--sz-12rem) shrink-0 truncate rounded border border-border px-1 text-(length:--text-micro) leading-4 text-muted-foreground"
+          className="min-w-8 max-w-(--sz-12rem) truncate rounded border border-border px-1 text-(length:--text-micro) leading-4 text-muted-foreground"
           data-testid={providerTestId}
         >
           {display.provider}
@@ -108,8 +125,8 @@ export function ModelOptionText({ option }: { option: IssueRunModelOverrideOptio
   return (
     <span className="min-w-0 flex-1" title={option.value}>
       <span className="block truncate">{name}</span>
-      {name !== option.value ? (
-        <span className="block truncate text-xs text-muted-foreground">{option.value}</span>
+      {option.value && name !== option.value ? (
+        <span className="block truncate font-mono text-xs text-muted-foreground">{option.value}</span>
       ) : null}
     </span>
   );
