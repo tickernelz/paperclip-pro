@@ -16998,6 +16998,46 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             },
             { tx: taskTx, activityPublications: inboundActivityPublications },
           );
+          const senderName = thread.isDM ? openwaDecoration?.sender.name : null;
+          const senderPhone = openwaDecoration?.sender.phone;
+          if (senderName && senderPhone) {
+            const titleInput = {
+              providerLabel: PROVIDER_LABELS[taskEndpoint.provider],
+              surfaceKind,
+              firstMessage: message.text,
+              sessionGeneration: conversation.sessionGeneration,
+              startedAt: issue.createdAt,
+            };
+            const maskedTitle = chatConversationTitle({ ...titleInput, who: maskOpenwaPhoneNumber(senderPhone) });
+            const namedTitle = chatConversationTitle({ ...titleInput, who: senderName });
+            if (issue.title === maskedTitle && namedTitle !== maskedTitle) {
+              const [retitled] = await taskTx
+                .update(issues)
+                .set({ title: namedTitle, updatedAt: new Date() })
+                .where(and(eq(issues.companyId, taskEndpoint.companyId), eq(issues.id, issue.id), eq(issues.title, maskedTitle)))
+                .returning({ id: issues.id });
+              if (retitled)
+                await logActivity(
+                  taskTx as Db,
+                  {
+                    companyId: taskEndpoint.companyId,
+                    actorType: "system",
+                    actorId: "chat:openwa",
+                    action: "issue.updated",
+                    entityType: "issue",
+                    entityId: issue.id,
+                    details: {
+                      identifier: issue.identifier,
+                      title: namedTitle,
+                      source: "chat:openwa",
+                      endpointId: taskEndpoint.id,
+                      _previous: { title: maskedTitle },
+                    },
+                  },
+                  inboundActivityPublications,
+                );
+            }
+          }
         } else if (issue.status === "done" || issue.status === "cancelled") {
           await issuesSvc.update(
             issue.id,

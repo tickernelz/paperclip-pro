@@ -87,6 +87,7 @@ export class FakeOpenwaGateway {
   readonly chats: Array<{ id: string; name?: string }> = [];
   readonly lids = new Map<string, string | null>();
   strictQuotes = false;
+  catchUpPages = 0;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
   readonly reactions: Array<{ chatId: string; messageId: string; emoji: string }> = [];
@@ -566,6 +567,7 @@ export class FakeOpenwaGateway {
   }
 
   private listMessages(query: Record<string, string>, reply: (status: number, body: unknown) => void): void {
+    if (!query.chatId) this.catchUpPages++;
     let rows = [...this.rows].sort((a, b) => b.sequence - a.sequence);
     if (query.chatId) rows = rows.filter((row) => row.chatId === query.chatId);
     if (query.after) {

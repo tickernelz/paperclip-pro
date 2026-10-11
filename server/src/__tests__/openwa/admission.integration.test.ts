@@ -26,7 +26,7 @@ import {
   toolConnections,
   type Db,
 } from "@tickernelz/paperclip-pro-db";
-import { OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/paperclip-pro-shared";
+import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -258,6 +258,7 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const result = await t.service.reconcileProviderRuntimes();
     expect(result.local).toBe(1);
     await t.gateway.waitForSubscription();
+    await until(() => t.gateway.catchUpPages > 0);
   }
 
   function handled(t: Setup) {
@@ -458,6 +459,32 @@ describe.sequential("OpenWA admission (embedded Postgres + fake gateway)", () =>
     const rows = await conversations(t);
     const titles = await db.select({ id: issues.id, title: issues.title }).from(issues).where(inArray(issues.id, rows.map((row) => row.issueId)));
     expect(titles.map((row) => row.title).sort()).toEqual(["OpenWA: Dina Owner", "OpenWA: Ops Room"]);
+  }, 120_000);
+
+  it("retitles a DM task named by masked number once the contact name arrives, unless the title was edited", async () => {
+    const t = await setup({ openwaBurstWindowMs: 3_000 });
+    await addOwner(t, OWNER_PHONE);
+    await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + ALLOWED_PHONE }, t.userId);
+    t.gateway.inbound({ chatId: jid(OWNER_PHONE), body: "halo", emit: false });
+    t.gateway.inbound({ chatId: jid(ALLOWED_PHONE), body: "permisi", emit: false });
+    await goLive(t);
+    await settledDeliveries(t, 2);
+    const titleOf = async (phone: string) => {
+      const conversation = (await conversations(t)).find((row) => row.externalConversationId?.includes(phone));
+      const [row] = await db.select({ id: issues.id, title: issues.title }).from(issues).where(eq(issues.id, conversation!.issueId));
+      return row;
+    };
+    expect((await titleOf(OWNER_PHONE)).title).toBe("OpenWA: " + maskOpenwaPhoneNumber(OWNER_PHONE));
+    const edited = await titleOf(ALLOWED_PHONE);
+    expect(edited.title).toBe("OpenWA: " + maskOpenwaPhoneNumber(ALLOWED_PHONE));
+    await db.update(issues).set({ title: "Allowed customer onboarding" }).where(eq(issues.id, edited.id));
+
+    await send(t, { chatId: jid(OWNER_PHONE), body: "masih di sana?", extra: { notifyName: "Dina Owner" } });
+    await send(t, { chatId: jid(ALLOWED_PHONE), body: "halo lagi", extra: { notifyName: "Ali Allowed" } });
+    await settledDeliveries(t, 4);
+    expect((await titleOf(OWNER_PHONE)).title).toBe("OpenWA: Dina Owner");
+    expect((await titleOf(ALLOWED_PHONE)).title).toBe("Allowed customer onboarding");
+    expect(await conversations(t)).toHaveLength(2);
   }, 120_000);
 
   it("recognises the agent's LID in group mentions and joins", async () => {
