@@ -33,6 +33,34 @@ export const Default: StoryObj = {
   render: () => <ConnectModelPreview />,
 };
 
+export const OmpChecking: StoryObj = {
+  render: () => <ConnectModelPreview ompStatus={{ kind: "checking" }} />,
+};
+
+export const OmpNotInstalled: StoryObj = {
+  render: () => <ConnectModelPreview ompStatus={{ kind: "missing" }} />,
+};
+
+export const OmpNotWorking: StoryObj = {
+  render: () => (
+    <ConnectModelPreview
+      ompStatus={{ kind: "broken", reason: "The configured command did not complete `--version` successfully." }}
+    />
+  ),
+};
+
+export const OmpWithoutModels: StoryObj = {
+  render: () => <ConnectModelPreview ompStatus={{ kind: "no-models", version: "18.9.0" }} />,
+};
+
+export const OmpModelChosen: StoryObj = {
+  render: () => <ConnectModelPreview initialModel="anthropic/claude-sonnet-4-5" />,
+};
+
+export const AnotherAdapterExpanded: StoryObj = {
+  render: () => <ConnectModelPreview initialOtherAdaptersOpen control="link" />,
+};
+
 /** Node 2941:8291 — a source picked, credentials left on the subscription. */
 export const SubscriptionSelected: StoryObj = {
   render: () => <ConnectModelPreview initialSourceId="claude_local" />,

@@ -9,7 +9,7 @@ import { SavedProviderKeySelect, useSavedProviderKeys } from "./onboarding/Saved
 import { randomAgentAppearance, resolveAgentAppearance, agentAppearanceSchema } from "@tickernelz/paperclip-pro-shared";
 import { OnboardingCharacter } from "./onboarding/OnboardingCharacter";
 import { useEffect, useState, useMemo, useRef } from "react";
-import type { ComponentType, CSSProperties } from "react";
+import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import type {
@@ -19,7 +19,7 @@ import type {
   Environment,
   InstanceSettings,
 } from "@tickernelz/paperclip-pro-shared";
-import { AGENT_ROLES, AGENT_ROLE_LABELS, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_ROLES, AGENT_ROLE_LABELS, ADAPTER_AUTH_MISSING_CHECK_CODE, AGENT_FALLBACK_MODELS_KEY } from "@tickernelz/paperclip-pro-shared";
 import { AdapterLoginPanel } from "./AgentConfigForm";
 import {
   CONNECT_SOURCE_NAMES,
@@ -131,6 +131,8 @@ import { ModelSourceTiles, type CredentialMode } from "./onboarding/ModelSourceT
 import { CredentialModeLink } from "./onboarding/CredentialModeLink";
 import { FooterNav, type FooterPrimaryIcon } from "./onboarding/FooterNav";
 import { OnboardingHeading } from "./onboarding/OnboardingPrimitives";
+import { AnotherAdapterDisclosure, OmpSetupCard } from "./onboarding/OmpSetupCard";
+import { OMP_ADAPTER_TYPE, useOmpSetup } from "./onboarding/omp-setup";
 import { DEFAULT_AGENT_ROLE } from "../lib/onboarding-agent-role";
 import { capsuleHeroMotion, capsuleRoomEnter, capsuleRoomExit, heroRoomArrival, heroRoomMotion, ledeMotion, stepContentMotion, titleSwapMotion } from "./onboarding/onboarding-motion";
 import { Badge } from "@/components/ui/badge";
@@ -269,6 +271,25 @@ function ModelSourceMark({
   const brand = MODEL_SOURCE_BRAND_MARKS[type];
   if (!brand) return <Fallback className="size-full" />;
   return <img src={brand} alt="" className="size-full" />;
+}
+
+function OtherAdapterChoices({
+  behindDisclosure,
+  open,
+  onOpenChange,
+  children,
+}: {
+  behindDisclosure: boolean;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  children: ReactNode;
+}) {
+  if (!behindDisclosure) return <>{children}</>;
+  return (
+    <AnotherAdapterDisclosure open={open} onOpenChange={onOpenChange}>
+      {children}
+    </AnotherAdapterDisclosure>
+  );
 }
 
 // Exported so tests write/read the exact key the component uses, instead of
@@ -643,7 +664,8 @@ function OnboardingWizardInner({
   const [forceUnsetAnthropicApiKey, setForceUnsetAnthropicApiKey] =
     useState(false);
   const [unsetAnthropicLoading, setUnsetAnthropicLoading] = useState(false);
-  const [showMoreAdapters, setShowMoreAdapters] = useState(false);
+  const [otherAdaptersOpen, setOtherAdaptersOpen] = useState(false);
+  const [fallbackModels, setFallbackModels] = useState<string[]>([]);
   /**
    * Whether the connect step is asking for a subscription sign-in or an API key.
    *
@@ -763,6 +785,7 @@ function OnboardingWizardInner({
   const managedSubscriptionRef = useRef<{ companyId: string; binding: AiConnectionBinding } | null>(null);
   const managedProvider = aiProviderForAdapter(adapterType);
   function managedBindingForStep(): AiConnectionBinding | undefined {
+    if (adapterType === OMP_ADAPTER_TYPE) return undefined;
     if (credentialMode === "api") return selectedApiKey?.aiConnection ?? (
       !selectedApiKey && apiKeySecretRef.current?.companyId === createdCompanyId && apiKeySecretRef.current.envKey === apiKeyEnvKeyFor(adapterType)
         ? apiKeySecretRef.current.aiConnection : undefined);
@@ -931,7 +954,7 @@ function OnboardingWizardInner({
       : ["agents", "none", "adapter-models", adapterType, null],
     queryFn: () => agentsApi.adapterModels(createdCompanyId!, adapterType, { environmentId: null }),
     // Models are picked on step 4 (Connect a model).
-    enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 4
+    enabled: Boolean(createdCompanyId) && effectiveOnboardingOpen && step === 4 && adapterType !== OMP_ADAPTER_TYPE
   });
   const getCapabilities = useAdapterCapabilities();
   const adapterCaps = getCapabilities(adapterType);
@@ -1133,7 +1156,7 @@ function OnboardingWizardInner({
   // Build adapter grids dynamically from the UI registry + display metadata.
   // External/plugin adapters automatically appear with generic defaults, and
   // server-disabled types are filtered out.
-  const { recommendedAdapters, moreAdapters } = useMemo(() => {
+  const { recommendedAdapters, moreAdapters, ompOffered } = useMemo(() => {
     const all = listUIAdapters()
       .filter((a) =>
         !ONBOARDING_EXCLUDED_ADAPTER_TYPES.has(a.type) &&
@@ -1145,8 +1168,33 @@ function OnboardingWizardInner({
     return {
       recommendedAdapters: all.filter((a) => a.recommended),
       moreAdapters: all.filter((a) => !a.recommended),
+      ompOffered: all.some((a) => a.type === OMP_ADAPTER_TYPE),
     };
   }, [disabledTypes]);
+
+  const ompSelected = ompOffered && adapterType === OMP_ADAPTER_TYPE;
+  const ompSetup = useOmpSetup(createdCompanyId, effectiveOnboardingOpen && step === 4 && ompSelected);
+  const ompContinueReady = ompSelected && ompSetup.status.kind === "ready" && model.trim().length > 0;
+
+  useEffect(() => {
+    if (step !== 4 || !ompOffered || sourcePicked || adapterType === OMP_ADAPTER_TYPE) return;
+    setAdapterType(OMP_ADAPTER_TYPE);
+    setModel("");
+  }, [step, ompOffered, sourcePicked, adapterType]);
+
+  function chooseOmp() {
+    if (adapterType === OMP_ADAPTER_TYPE) return;
+    unwindConnectStep();
+    setConnectPhase("idle");
+    setSourcePicked(false);
+    setAdapterType(OMP_ADAPTER_TYPE);
+    setModel("");
+  }
+
+  function changeOtherAdaptersOpen(open: boolean) {
+    setOtherAdaptersOpen(open);
+    if (!open) chooseOmp();
+  }
 
   /**
    * A source chosen from the visible row. Read off the row rather than off
@@ -1367,7 +1415,11 @@ function OnboardingWizardInner({
    */
   const connectSourceLabel = CONNECT_SOURCE_NAMES[adapterType] ?? adapterType;
   const connectCta: { label: string; icon: FooterPrimaryIcon; disabled: boolean } =
-    connectProgress
+    ompSelected
+      ? loading
+        ? { label: "Creating agent", icon: "spinner", disabled: true }
+        : { label: "Continue", icon: "arrow", disabled: !ompContinueReady }
+      : connectProgress
       ? { label: adapterEnvLoading ? "Testing…" : connectProgress, icon: "spinner", disabled: true }
       : connectPhase === "waiting"
       ? { label: "Waiting for code", icon: "spinner", disabled: true }
@@ -1428,6 +1480,10 @@ function OnboardingWizardInner({
    * it is meant to start, against a source with no credential.
    */
   function handleConnectStepPrimary() {
+    if (ompSelected) {
+      if (ompContinueReady) void handleGiveHeartbeat();
+      return;
+    }
     // Mid-sequence the button belongs to the sign-in, not to the step.
     if (connectPhase === "ready" && connectStepNeedsLogin) {
       if (connectAuthUrl) window.open(connectAuthUrl, "_blank", "noreferrer,noopener");
@@ -1817,6 +1873,10 @@ function OnboardingWizardInner({
 
   function buildAdapterConfig(bindApiKey = false): Record<string, unknown> {
     const adapter = getUIAdapter(adapterType);
+    if (adapterType === OMP_ADAPTER_TYPE) {
+      const ompConfig = adapter.buildAdapterConfig({ ...defaultCreateValues, adapterType, model: model.trim() });
+      return fallbackModels.length > 0 ? { ...ompConfig, [AGENT_FALLBACK_MODELS_KEY]: fallbackModels } : ompConfig;
+    }
     const config = adapter.buildAdapterConfig({
       ...defaultCreateValues,
       adapterType,
@@ -2089,7 +2149,7 @@ function OnboardingWizardInner({
       // hire describe it the same way — as a reference. A failure here stops the
       // hire rather than falling through to a configuration with no credential.
       let apiKeyStored = false;
-      if (credentialMode === "api" && !selectedApiKey && apiKey.trim()) {
+      if (adapterType !== OMP_ADAPTER_TYPE && credentialMode === "api" && !selectedApiKey && apiKey.trim()) {
         apiKeyStored = await storeApiKeyUserSecret(createdCompanyId);
         if (!apiKeyStored || !isCurrent()) return;
       }
@@ -2324,8 +2384,7 @@ function OnboardingWizardInner({
       else if (
         step === 4 &&
         agentName.trim() &&
-        connectStepReady &&
-        !connectStepLoggingIn
+        (ompSelected ? ompContinueReady : connectStepReady && !connectStepLoggingIn)
       )
         handleConnectStepPrimary();
       else if (step === 5) handleLaunchToDashboard();
@@ -2575,7 +2634,9 @@ function OnboardingWizardInner({
                       <p className="pt-2 text-base leading-relaxed text-muted-foreground">
                         <motion.span key={step} {...titleSwapMotion} className="inline-block">
                           {step === 4
-                            ? "Paperclip works with your subscription or API keys."
+                            ? ompOffered
+                              ? "Your agent runs on OMP. Pick the model it should use."
+                              : "Paperclip works with your subscription or API keys."
                             : `${agentName.trim() || "Your first agent"} is ready to work!`}
                         </motion.span>
                       </p>
@@ -2660,7 +2721,27 @@ function OnboardingWizardInner({
 
               {/* Step 4: Connect a model — adapter + model + env check (capsule above) */}
               {step === 4 && (
-                <motion.div key="step-4" {...stepContentMotion} exit={stepHandoff ? stepContentMotion.exit : undefined} className="space-y-8">
+                <motion.div key="step-4" {...stepContentMotion} exit={stepHandoff ? stepContentMotion.exit : undefined} className="space-y-6">
+                  {ompOffered ? (
+                    <OmpSetupCard
+                      selected={ompSelected}
+                      onSelect={chooseOmp}
+                      status={ompSetup.status}
+                      rechecking={ompSetup.rechecking}
+                      onCheckAgain={ompSetup.recheck}
+                      options={ompSetup.options}
+                      model={ompSelected ? model : ""}
+                      onModelChange={setModel}
+                      fallbackModels={fallbackModels}
+                      onFallbackModelsChange={setFallbackModels}
+                    />
+                  ) : null}
+                  <OtherAdapterChoices
+                    behindDisclosure={ompOffered}
+                    open={otherAdaptersOpen}
+                    onOpenChange={changeOtherAdaptersOpen}
+                  >
+                  <div className="space-y-8">
                   <div>
                     {/* Sources come from `recommendedAdapters`, not a list
                         written here — that filter is `recommended` in the
@@ -2984,13 +3065,24 @@ function OnboardingWizardInner({
                                 ? `${effectiveAdapterCommand} -p "Respond with hello." --output-format stream-json`
                               : adapterType === "opencode_local"
                                 ? `${effectiveAdapterCommand} run --format json "Respond with hello."`
+                              : adapterType === OMP_ADAPTER_TYPE
+                                ? `${effectiveAdapterCommand} models --json`
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
-                          <p className="text-muted-foreground">
-                            Prompt:{" "}
-                            <span className="font-mono">Respond with hello.</span>
-                          </p>
-                          {adapterType === "cursor" ||
+                          {adapterType !== OMP_ADAPTER_TYPE && (
+                            <p className="text-muted-foreground">
+                              Prompt:{" "}
+                              <span className="font-mono">Respond with hello.</span>
+                            </p>
+                          )}
+                          {adapterType === OMP_ADAPTER_TYPE ? (
+                            <p className="text-muted-foreground">
+                              If no models are listed, run{" "}
+                              <span className="font-mono">omp setup</span> or sign in to a provider with{" "}
+                              <span className="font-mono">/login</span> inside{" "}
+                              <span className="font-mono">omp</span>, then retry.
+                            </p>
+                          ) : adapterType === "cursor" ||
                           adapterType === "codex_local" ||
                           adapterType === "gemini_local" ||
                           adapterType === "kimi_local" ||
@@ -3052,6 +3144,8 @@ function OnboardingWizardInner({
                       />
                     </div>
                   )}
+                  </div>
+                  </OtherAdapterChoices>
                 </motion.div>
               )}
               </AnimatePresence>

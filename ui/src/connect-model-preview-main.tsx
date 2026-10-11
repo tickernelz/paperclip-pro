@@ -30,6 +30,11 @@ import "./index.css";
  */
 const STATES = {
   default: {},
+  checking: { ompStatus: { kind: "checking" } },
+  missing: { ompStatus: { kind: "missing" } },
+  "no-models": { ompStatus: { kind: "no-models", version: "18.9.0" } },
+  chosen: { initialModel: "anthropic/claude-sonnet-4-5" },
+  other: { initialOtherAdaptersOpen: true },
   subscription: { initialSourceId: "claude_local" },
   api: { initialSourceId: "claude_local", initialUseApiKeys: true },
 } as const;

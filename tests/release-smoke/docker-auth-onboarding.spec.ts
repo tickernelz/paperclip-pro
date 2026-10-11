@@ -163,6 +163,7 @@ test.describe("Docker authenticated onboarding smoke", () => {
       page.getByRole("heading", { name: "Connect a model" })
     ).toBeVisible({ timeout: 20_000 });
 
+    await page.getByRole("button", { name: "Use another adapter" }).click();
     await page
       .getByRole("button", { name: "Use API key instead", exact: true })
       .click();

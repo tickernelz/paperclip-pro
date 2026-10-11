@@ -94,6 +94,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   //
   // Waited on for enabled rather than visible: it is already on screen, and
   // clicking a disabled button raises nothing and does nothing.
+  await page.getByRole("button", { name: "Use another adapter" }).click();
   const source = page.getByRole("radio").first();
   await source.waitFor({ timeout: 30_000 });
   await source.click();

@@ -1,5 +1,5 @@
 import { AgentCharacter } from "../AgentCharacter";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MotionConfig } from "motion/react";
 
 import { Checkbox } from "../ui/checkbox";
@@ -12,6 +12,8 @@ import {
   type ModelSource,
 } from "./ModelSourceTiles";
 import { OnboardingHeading } from "./OnboardingPrimitives";
+import { AnotherAdapterDisclosure, OmpSetupCard } from "./OmpSetupCard";
+import { ompModelOptions, type OmpSetupStatus } from "./omp-setup";
 import { PillGuy } from "./PillGuy";
 import { SleepingZs } from "./SleepingZs";
 import { Stepper } from "./Stepper";
@@ -19,13 +21,6 @@ import { Stepper } from "./Stepper";
 /**
  * A prototype of the connect step, from the PCLP-Onboarding file (nodes
  * 2941:8291 and 2933:4592).
- *
- * A mock, not the shipped step. The wizard's real step 4 puts two adapter cards
- * over an advanced-settings disclosure and probes the environment before
- * hiring; none of that is wired up here. What is here is the part the design is
- * actually asking a question about — how the row of sources reads as you point
- * at it, pick one, and flip the whole row between subscription and API
- * credentials — so it can be judged before any of that machinery is moved.
  *
  * It lives in `components/` rather than beside a story because two surfaces
  * render it: the Storybook stories, and the standalone
@@ -35,6 +30,16 @@ import { Stepper } from "./Stepper";
  * Nothing here reaches a backend, and it needs none of the app's providers —
  * every piece it composes is presentational.
  */
+
+const PREVIEW_OMP_MODELS = ompModelOptions([
+  { id: "anthropic/claude-opus-4-5", label: "Claude Opus 4.5", provider: "anthropic" },
+  { id: "anthropic/claude-sonnet-4-5", label: "Claude Sonnet 4.5", provider: "anthropic" },
+  { id: "openai-codex/gpt-5.5", label: "GPT-5.5", provider: "openai-codex" },
+  { id: "openai-codex/gpt-5.5-mini", label: "GPT-5.5 mini", provider: "openai-codex" },
+  { id: "openrouter/deepseek/deepseek-v3.2", label: "DeepSeek V3.2", provider: "openrouter" },
+]);
+
+const PREVIEW_OMP_READY: OmpSetupStatus = { kind: "ready", version: "18.9.0" };
 
 /**
  * The two sources the step offers, matching the shipped step's own list.
@@ -75,20 +80,44 @@ export function ConnectModelPreview({
   initialSourceId = null,
   initialUseApiKeys = false,
   control = "checkbox",
+  ompStatus = PREVIEW_OMP_READY,
+  initialModel = "",
+  initialOtherAdaptersOpen = false,
 }: {
   initialSourceId?: string | null;
   initialUseApiKeys?: boolean;
   control?: CredentialControl;
+  ompStatus?: OmpSetupStatus;
+  initialModel?: string;
+  initialOtherAdaptersOpen?: boolean;
 }) {
   const [selectedId, setSelectedId] = useState<string | null>(initialSourceId);
   const [useApiKeys, setUseApiKeys] = useState(initialUseApiKeys);
+  const [otherAdaptersOpen, setOtherAdaptersOpen] = useState(initialOtherAdaptersOpen || initialSourceId !== null);
+  const [status, setStatus] = useState<OmpSetupStatus>(ompStatus);
+  const [rechecking, setRechecking] = useState(false);
+  const [model, setModel] = useState(initialModel);
+  const [fallbackModels, setFallbackModels] = useState<string[]>([]);
+  const recheckTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const mode: CredentialMode = useApiKeys ? "api" : "subscription";
+  const ompSelected = selectedId === null;
+
+  useEffect(() => () => clearTimeout(recheckTimer.current), []);
+
+  const checkAgain = () => {
+    setRechecking(true);
+    clearTimeout(recheckTimer.current);
+    recheckTimer.current = setTimeout(() => {
+      setRechecking(false);
+      setStatus(PREVIEW_OMP_READY);
+    }, 900);
+  };
 
   return (
     // The arc's own convention: OS-level reduced motion neutralises the
     // movement, and every piece below still arrives in its final state.
     <MotionConfig reducedMotion="user">
-      <div className="w-(--sz-560px) max-w-full p-10">
+      <div className="w-(--sz-560px) max-w-full p-6 sm:p-10">
         {/* Connect is the arc's second step. `Stepper` carries its own bottom
             margin, which is the gap the frame wants under the dots. */}
         <Stepper step={2} />
@@ -107,44 +136,65 @@ export function ConnectModelPreview({
           <OnboardingHeading
             center
             title="Connect a model"
-            lede="Paperclip works with your existing subscription or API keys."
+            lede="Your agent runs on OMP. Pick the model it should use."
           />
         </div>
 
-        <div className="space-y-2 pt-12">
-          <ModelSourceTiles
-            label="Model source"
-            sources={MODEL_SOURCES}
-            mode={mode}
-            selectedId={selectedId}
-            onSelect={setSelectedId}
+        <div className="space-y-6 pt-12">
+          <OmpSetupCard
+            selected={ompSelected}
+            onSelect={() => setSelectedId(null)}
+            status={status}
+            rechecking={rechecking}
+            onCheckAgain={checkAgain}
+            options={PREVIEW_OMP_MODELS}
+            model={ompSelected ? model : ""}
+            onModelChange={setModel}
+            fallbackModels={fallbackModels}
+            onFallbackModelsChange={setFallbackModels}
           />
 
-          {control === "link" ? (
-            <CredentialModeLink
-              mode={mode}
-              onChange={(next) => setUseApiKeys(next === "api")}
-            />
-          ) : (
-            <label className="flex cursor-pointer items-start gap-2.5 px-3 py-2">
-              <Checkbox
-                className="mt-0.5"
-                checked={useApiKeys}
-                onCheckedChange={(checked) => setUseApiKeys(checked === true)}
+          <AnotherAdapterDisclosure
+            open={otherAdaptersOpen}
+            onOpenChange={(open) => {
+              setOtherAdaptersOpen(open);
+              if (!open) setSelectedId(null);
+            }}
+          >
+            <div className="space-y-2">
+              <ModelSourceTiles
+                label="Model source"
+                sources={MODEL_SOURCES}
+                mode={mode}
+                selectedId={selectedId}
+                onSelect={setSelectedId}
               />
-              <span className="text-sm font-medium text-foreground">
-                Use API keys instead
-              </span>
-            </label>
-          )}
+
+              {control === "link" ? (
+                <CredentialModeLink
+                  mode={mode}
+                  onChange={(next) => setUseApiKeys(next === "api")}
+                />
+              ) : (
+                <label className="flex cursor-pointer items-start gap-2.5 px-3 py-2">
+                  <Checkbox
+                    className="mt-0.5"
+                    checked={useApiKeys}
+                    onCheckedChange={(checked) => setUseApiKeys(checked === true)}
+                  />
+                  <span className="text-sm font-medium text-foreground">
+                    Use API keys instead
+                  </span>
+                </label>
+              )}
+            </div>
+          </AnotherAdapterDisclosure>
         </div>
 
-        {/* The CTA has nothing to connect until a source is picked, so it stays
-            disabled rather than failing on press. */}
         <FooterNav
           onBack={() => {}}
-          primaryLabel="Connect"
-          primaryDisabled={selectedId === null}
+          primaryLabel={ompSelected ? "Continue" : "Connect"}
+          primaryDisabled={ompSelected ? status.kind !== "ready" || !model : false}
           onPrimary={() => {}}
         />
       </div>

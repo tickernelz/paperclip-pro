@@ -276,6 +276,7 @@ test.describe("Onboarding wizard", () => {
 
     // Step 4 (Connect a model). By role rather than by label, because which
     // adapters the row offers depends on the registry this environment reports.
+    await page.getByRole("button", { name: "Use another adapter" }).click();
     const source = page.getByRole("radio").first();
     await source.waitFor({ timeout: 30_000 });
 
@@ -283,7 +284,7 @@ test.describe("Onboarding wizard", () => {
     // and the button has nothing to do until there is a source to do it with.
     const cardInstruction = page.getByText("then come back and enter authorization code");
     await expect(cardInstruction).toHaveCount(0);
-    await expect(page.getByRole("button", { name: "Next", exact: true })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeDisabled();
 
     // Answering the row is what starts the sign-in — this is the ordering the
     // step exists to enforce, since a hire here would file an agent with no
@@ -478,6 +479,7 @@ test.describe("Onboarding wizard", () => {
     await page.locator("#onboarding-agent-name").fill("Ada");
     await page.getByRole("button", { name: "Next" }).click();
 
+    await page.getByRole("button", { name: "Use another adapter" }).click();
     const source = page.getByRole("radio").first();
     await source.waitFor({ timeout: 30_000 });
 
@@ -582,6 +584,7 @@ test.describe("Onboarding wizard", () => {
     await page.locator("#onboarding-agent-name").fill("Ada");
     await page.getByRole("button", { name: "Next" }).click();
 
+    await page.getByRole("button", { name: "Use another adapter" }).click();
     const source = page.getByRole("radio").first();
     await source.waitFor({ timeout: 30_000 });
     await source.click();

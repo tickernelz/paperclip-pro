@@ -582,6 +582,11 @@ describe("OnboardingWizard — which step it lands on", () => {
      * the tiles carry whatever it happens to return.
      */
     async function pickModelSource() {
+      const otherAdapters = [...document.body.querySelectorAll("button")].find(
+        (b) => b.textContent?.trim() === "Use another adapter",
+      );
+      expect(otherAdapters, "the real registry carries OMP, so the tiles sit behind the disclosure").toBeTruthy();
+      await press(otherAdapters!);
       const tiles = [...document.body.querySelectorAll("button[aria-checked]")];
       expect(tiles.length, "the connect step should offer a source").toBeGreaterThan(0);
       await press(tiles[0]!);

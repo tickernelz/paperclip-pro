@@ -90,6 +90,7 @@ async function runOnboardingWizard(page: Page, companyName: string) {
   // — the row is a question, not a confirmation — so the CTA is disabled until
   // a tile is pressed. By role rather than by label: which adapters the tiles
   // offer depends on the registry this environment reports.
+  await page.getByRole("button", { name: "Use another adapter" }).click();
   const source = page.getByRole("radio").first();
   await source.waitFor({ timeout: 30_000 });
   await source.click();

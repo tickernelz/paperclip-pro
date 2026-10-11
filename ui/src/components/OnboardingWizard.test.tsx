@@ -3,6 +3,7 @@
 import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // --- Mocks (hoisted so vi.mock factories can close over them) ----------------
@@ -3396,6 +3397,238 @@ describe("OnboardingWizard restore-gate (stale localStorage across accounts)", (
       expect(document.body.textContent).toContain(
         "Sign in to Claude then come back and enter authorization code",
       );
+
+      await act(async () => root.unmount());
+    });
+  });
+
+  describe("the connect step steers new installs to OMP", () => {
+    const OMP_MISSING = {
+      adapterType: "omp_local",
+      status: "fail" as const,
+      checks: [
+        { code: "omp_cwd_valid", level: "info" as const, message: "Working directory is valid: /srv" },
+        {
+          code: "omp_command_unresolvable",
+          level: "error" as const,
+          message: "The configured OMP command is not executable in this environment.",
+        },
+      ],
+      testedAt: new Date().toISOString(),
+    };
+    const OMP_INSTALLED = {
+      adapterType: "omp_local",
+      status: "pass" as const,
+      checks: [{ code: "omp_version_ok", level: "info" as const, message: "OMP command is ready: omp/18.9.0" }],
+      testedAt: new Date().toISOString(),
+    };
+    const OMP_MODELS = [
+      { id: "anthropic/claude-sonnet-4-5", label: "Claude Sonnet 4.5", provider: "anthropic" },
+      { id: "openai-codex/gpt-5.5", label: "GPT-5.5", provider: "openai-codex" },
+    ];
+    let ompProbe: typeof OMP_MISSING | typeof OMP_INSTALLED = OMP_INSTALLED;
+    let ompModels: typeof OMP_MODELS = OMP_MODELS;
+
+    beforeEach(() => {
+      ompProbe = OMP_INSTALLED;
+      ompModels = OMP_MODELS;
+      mockEnvironmentsApi.list.mockReset();
+      mockEnvironmentsApi.list.mockResolvedValue([
+        { id: "env-sandbox-1", driver: "sandbox", status: "active", config: { provider: "daytona" }, metadata: {} },
+      ]);
+      mockEnvironmentsApi.capabilities.mockReset();
+      mockEnvironmentsApi.capabilities.mockResolvedValue(
+        getEnvironmentCapabilities([], { sandboxProviders: { daytona: { supportsLoginPty: true } } }),
+      );
+      mockInstanceSettingsApi.get.mockReset();
+      mockInstanceSettingsApi.get.mockResolvedValue({ defaultEnvironmentId: "env-sandbox-1" });
+      mockAgentsApi.getAdapterAuthSignal.mockReset();
+      mockAgentsApi.getAdapterAuthSignal.mockResolvedValue({ status: "present" });
+      mockAgentsApi.testEnvironment.mockImplementation((async (_companyId: string, type: string) =>
+        type === "omp_local"
+          ? ompProbe
+          : { adapterType: type, status: "pass", checks: [], testedAt: new Date().toISOString() }) as never);
+      mockAgentsApi.adapterModels.mockReset();
+      mockAgentsApi.adapterModels.mockImplementation((async (_companyId: string, type: string) =>
+        type === "omp_local" ? ompModels : []) as never);
+      mockAdapterRegistry.list = [{ type: "claude_local" }, { type: "codex_local" }, { type: "omp_local" }];
+    });
+
+    async function openConnectStep() {
+      mockCompany.companies = [{ id: "company-new", name: "Initech", issuePrefix: "INI" }];
+      mockCompany.loading = false;
+      mockCompaniesApi.list.mockResolvedValue(mockCompany.companies);
+      window.localStorage.setItem(
+        ONBOARDING_STORAGE_KEY,
+        JSON.stringify({
+          step: 4,
+          companyName: "Initech",
+          agentName: "Ada",
+          createdCompanyId: "company-new",
+          adapterType: "claude_local",
+        }),
+      );
+      mockDialog.onboardingOptions = {};
+      const { root, queryClient } = render();
+      await act(async () => {
+        root.render(
+          <QueryClientProvider client={queryClient}>
+            <OnboardingWizard />
+          </QueryClientProvider>,
+        );
+      });
+      for (let i = 0; i < 8; i++) await flushReact();
+      expect(document.body.textContent).toContain("Connect a model");
+      return { root };
+    }
+
+    const ompCard = () => document.body.querySelector<HTMLElement>('[data-testid="omp-setup"]');
+    const buttonNamed = (name: string) =>
+      [...document.body.querySelectorAll("button")].find((b) => b.textContent?.trim() === name);
+    const ompProbeCalls = () =>
+      mockAgentsApi.testEnvironment.mock.calls.filter((call) => (call as unknown[])[1] === "omp_local");
+
+    async function click(el: Element) {
+      await act(async () => {
+        el.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      });
+      for (let i = 0; i < 8; i++) await flushReact();
+    }
+
+    it("offers OMP as the one recommended choice and hides every other adapter behind a disclosure", async () => {
+      const { root } = await openConnectStep();
+
+      const card = ompCard();
+      expect(card, "the OMP card should lead the step").toBeTruthy();
+      expect(card!.textContent).toContain("Recommended");
+      expect(card!.textContent).toContain("Paperclip Pro is tuned for OMP");
+      expect(card!.querySelector('button[aria-pressed="true"]'), "OMP should be the selected choice").toBeTruthy();
+      expect(document.body.querySelectorAll('[role="radio"]').length, "other adapters stay collapsed").toBe(0);
+      expect(JSON.parse(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}").adapterType).toBe("omp_local");
+
+      const toggle = buttonNamed("Use another adapter");
+      expect(toggle, "the disclosure should be offered").toBeTruthy();
+      expect(toggle!.getAttribute("aria-expanded")).toBe("false");
+      await click(toggle!);
+      expect(toggle!.getAttribute("aria-expanded")).toBe("true");
+      const tiles = [...document.body.querySelectorAll('[role="radio"]')].map((t) => t.textContent ?? "");
+      expect(tiles.length).toBe(2);
+      expect(tiles.some((label) => label.includes("Claude"))).toBe(true);
+      expect(tiles.some((label) => label.includes("OpenAI"))).toBe(true);
+
+      await act(async () => root.unmount());
+    });
+
+    it("shows the install guide when OMP is missing, and Check again re-detects without leaving the step", async () => {
+      ompProbe = OMP_MISSING;
+      const { root } = await openConnectStep();
+
+      const guide = document.body.querySelector('[data-testid="omp-setup-install-guide"]');
+      expect(guide, "a missing omp should show the install guide").toBeTruthy();
+      expect(guide!.textContent).toContain("curl -fsSL https://omp.sh/install | sh");
+      expect(guide!.textContent).toContain("bun install -g @oh-my-pi/pi-coding-agent");
+      expect(guide!.textContent).toContain("irm https://omp.sh/install.ps1 | iex");
+      expect(guide!.textContent).toContain("~/.omp/agent");
+      expect(guide!.querySelectorAll('button[aria-label^="Copy command"]').length).toBe(3);
+      expect(guide!.querySelector('a[href="https://omp.sh"]')).toBeTruthy();
+      expect(buttonNamed("Continue")?.disabled).toBe(true);
+      expect(ompProbeCalls()).toHaveLength(1);
+      expect((ompProbeCalls()[0] as unknown[])[2]).toEqual({ adapterConfig: {}, environmentId: null });
+
+      ompProbe = OMP_INSTALLED;
+      await click(buttonNamed("Check again")!);
+      for (let i = 0; i < 6; i++) await flushReact();
+
+      expect(ompProbeCalls()).toHaveLength(2);
+      expect(mockAgentsApi.adapterModels).toHaveBeenCalledWith("company-new", "omp_local", {
+        environmentId: null,
+        refresh: true,
+      });
+      expect(document.body.querySelector('[data-testid="omp-setup-install-guide"]')).toBeNull();
+      expect(document.body.querySelector('[data-testid="omp-setup-installed"]')?.textContent).toContain(
+        "OMP 18.9.0 installed",
+      );
+      expect(document.body.querySelector('[data-testid="omp-setup-model-trigger"]')).toBeTruthy();
+      expect(document.body.textContent).toContain("Connect a model");
+      expect(mockAgentsApi.hire).not.toHaveBeenCalled();
+
+      await act(async () => root.unmount());
+    });
+
+    it("shows the provider guide when OMP is installed but lists no models", async () => {
+      ompModels = [];
+      const { root } = await openConnectStep();
+
+      const guide = document.body.querySelector('[data-testid="omp-setup-provider-guide"]');
+      expect(guide, "an empty model list should show the provider guide").toBeTruthy();
+      expect(guide!.textContent).toContain("Configure a provider in OMP");
+      expect(guide!.textContent).toContain("omp setup");
+      expect(guide!.textContent).toContain("OMP 18.9.0 installed");
+      expect(buttonNamed("Check again")).toBeTruthy();
+      expect(document.body.querySelector('[data-testid="omp-setup-model-trigger"]')).toBeNull();
+      expect(buttonNamed("Continue")?.disabled).toBe(true);
+
+      await act(async () => root.unmount());
+    });
+
+    it("keeps Continue disabled until a model is picked, then hires OMP with that model", async () => {
+      const user = userEvent.setup();
+      const { root } = await openConnectStep();
+
+      expect(buttonNamed("Continue")?.disabled, "no silent default model").toBe(true);
+      await act(async () => {
+        await user.click(document.body.querySelector('[data-testid="omp-setup-model-trigger"]')!);
+      });
+      const options = [...document.body.querySelectorAll('[data-testid="omp-setup-model-option"]')];
+      expect(options.map((option) => option.getAttribute("data-value"))).toEqual([
+        "anthropic/claude-sonnet-4-5",
+        "openai-codex/gpt-5.5",
+      ]);
+      await act(async () => {
+        await user.click(options[0]!);
+      });
+      for (let i = 0; i < 4; i++) await flushReact();
+      expect(document.body.querySelector('[data-testid="omp-setup-model-value"]')?.textContent).toContain(
+        "Claude Sonnet 4.5",
+      );
+      expect(buttonNamed("Continue")?.disabled).toBe(false);
+
+      await click(buttonNamed("Continue")!);
+      for (let i = 0; i < 6; i++) await flushReact();
+
+      expect(mockAdapterBuild.buildAdapterConfig).toHaveBeenCalledWith(
+        expect.objectContaining({ adapterType: "omp_local", model: "anthropic/claude-sonnet-4-5" }),
+      );
+      expect(mockAgentsApi.hire).toHaveBeenCalledTimes(1);
+      const hire = (mockAgentsApi.hire.mock.calls[0] as unknown[])[1] as Record<string, unknown>;
+      expect(hire.adapterType).toBe("omp_local");
+      expect((hire.runtimeConfig as Record<string, unknown>).aiConnection).toBeUndefined();
+
+      await act(async () => root.unmount());
+    });
+
+    it("keeps today's flow for an adapter picked under 'Use another adapter'", async () => {
+      const { root } = await openConnectStep();
+
+      await click(buttonNamed("Use another adapter")!);
+      const claude = [...document.body.querySelectorAll('[role="radio"]')].find((t) =>
+        /Claude/.test(t.textContent ?? ""),
+      );
+      await click(claude!);
+      for (let i = 0; i < 6; i++) await flushReact();
+
+      expect(ompCard()!.querySelector('button[aria-pressed="false"]'), "OMP should step aside").toBeTruthy();
+      expect(document.body.querySelector('[data-testid="omp-setup-model-choice"]')).toBeNull();
+      const connect = buttonNamed("Connect");
+      expect(connect, "the other source keeps its Connect action").toBeTruthy();
+      await click(connect!);
+      for (let i = 0; i < 6; i++) await flushReact();
+
+      expect(mockAgentsApi.hire).toHaveBeenCalledTimes(1);
+      expect(((mockAgentsApi.hire.mock.calls[0] as unknown[])[1] as Record<string, unknown>).adapterType).toBe(
+        "claude_local",
+      );
+      expect(mockAgentsApi.startClaudeSetupTokenLogin).not.toHaveBeenCalled();
 
       await act(async () => root.unmount());
     });
