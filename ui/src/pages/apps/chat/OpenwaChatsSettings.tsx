@@ -42,6 +42,7 @@ const replyLabels: Record<OpenwaReplyPolicy, string> = {
 
 const replyPresetLabel = "Dedicated group: reply to every message";
 const replyPresetShortLabel = "Reply to all";
+const replyPresetCompactLabel = "Reply to all messages";
 
 function activationDetail(chat: Pick<OpenwaChat, "type" | "enabled" | "ownerPresent">, numberMode: OpenwaEndpointPolicy["numberMode"]): string {
   const state = chat.enabled ? "active" : "inactive";
@@ -83,7 +84,7 @@ function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pe
       onClick={onApply}
     >
       <span className="sm:hidden">{replyPresetShortLabel}</span>
-      <span className="hidden sm:inline">{replyPresetLabel}</span>
+      <span className="hidden sm:inline">{replyPresetCompactLabel}</span>
     </Button>
   );
 }
@@ -133,7 +134,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
         <ul className="divide-y divide-border border-y border-border">
           {configured.map((chat) => (
             <li key={chat.id} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-4">
-              <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+              <div className="flex min-w-0 items-center gap-2 sm:min-w-[8rem] sm:flex-1">
                 <p className="min-w-0 flex-1 truncate text-sm font-medium" title={chat.label}>
                   {chat.label}
                 </p>
@@ -141,7 +142,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                   {activationLabels[chat.settings.activation]}
                 </Badge>
               </div>
-              <div className="flex min-w-0 items-center gap-2 sm:w-72 sm:flex-none">
+              <div className="flex min-w-0 items-center gap-2 sm:flex-1">
                 <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={chatMetaText(chat, policy.numberMode)}>
                   <ChatMetaLine chat={chat} policy={policy} />
                 </p>
@@ -149,7 +150,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                   {activationLabels[chat.settings.activation]}
                 </Badge>
               </div>
-              <div className="flex flex-wrap items-center gap-2 sm:flex-none sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                 {chat.type === "group_chat" ? (
                   <DedicatedGroupToggle
                     chat={chat}
