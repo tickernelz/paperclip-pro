@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { agents, userCompanyPreferences, type Db } from "@paperclipai/db";
-import type { PrimaryAgentPreference } from "@paperclipai/shared";
+import { agents, userCompanyPreferences, type Db } from "@tickernelz/paperclip-pro-db";
+import type { PrimaryAgentPreference } from "@tickernelz/paperclip-pro-shared";
 import { notFound, unprocessable } from "../errors.js";
 import { persistActivity, publishActivity } from "./activity-log.js";
 import { resourceMembershipService } from "./resource-memberships.js";

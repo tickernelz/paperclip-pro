@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { isUuidLike } from "@paperclipai/shared";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { emailApi } from "@/api/email";
 import { Button } from "@/components/ui/button";
 import { AgentMailCredentialField } from "./AgentMailCredentialField";

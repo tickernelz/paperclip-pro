@@ -38,7 +38,7 @@ import {
   toolConnections,
   chatVoiceSessions, chatVoiceReplies, chatVoiceToolCalls,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   PrpStructuredRunResult,
   PrpTerminalState,
@@ -69,7 +69,7 @@ import { questionResponseDeliveryValues } from "../question-response-delivery.js
 import { resolveExternalChatQuestionResponse } from "./external-chat-question-response.js";
 import { materializeExternalChatQuestionResponseInput } from "./external-chat-question-response-input.js";
 import * as nativeInteractionBridge from "./native-interaction-bridge.js";
-import { defaultGitHubReviewPolicy, type AskUserQuestionsInteraction } from "@paperclipai/shared";
+import { defaultGitHubReviewPolicy, type AskUserQuestionsInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";

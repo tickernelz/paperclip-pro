@@ -10,7 +10,7 @@ import {
   buildRoutineMentionHref,
   buildSkillMentionHref,
   buildUserMentionHref,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { NewIssueDialog } from "@/components/NewIssueDialog";
 import { useCompany } from "@/context/CompanyContext";

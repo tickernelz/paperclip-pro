@@ -11,7 +11,7 @@ async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "cursor-public-setup-")));
   roots.push(root);
   await mkdir(join(root, "dist/vendor/paperclip-runner/cli"), { recursive: true });
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(root, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   await writeFile(join(root, "dist/index.js"), "throw new Error('must not import server');");
   const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-cursor.cjs");
   await writeFile(provisioner, "fixture");

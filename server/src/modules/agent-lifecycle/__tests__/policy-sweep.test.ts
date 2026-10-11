@@ -1,4 +1,4 @@
-import { agents, companies, createDb, type Db } from "@paperclipai/db";
+import { agents, companies, createDb, type Db } from "@tickernelz/paperclip-pro-db";
 import { asc, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { startAgentLifecycle } from "../index.js";

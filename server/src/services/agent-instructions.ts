@@ -2,7 +2,7 @@ import { inspectAgentFile, fileHash, agentFilePath, MAX_AGENT_FILE_BYTES } from 
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { agentInstructionHeads, agents, type Db } from "@paperclipai/db";
+import { agentInstructionHeads, agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { instructionPath, assertInstructionPathSafe, instructionBytes, readInstructionBytes } from "./agent-instruction-files.js";
 import { notFound, unprocessable } from "../errors.js";
 import { resolveHomeAwarePath, resolvePaperclipInstanceRoot } from "../home-paths.js";

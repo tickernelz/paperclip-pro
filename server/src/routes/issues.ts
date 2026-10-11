@@ -2,7 +2,7 @@ import { parseObject } from "../adapters/utils.js";
 import { enqueueFastResponse } from "../services/fast-responses.js";
 import { hasRequiredWorkspaceRecovery, LEGACY_WORKSPACE_RECOVERY_SCHEMA } from "../services/workspace-restore-recovery-state.js";
 import { monitorPoliciesEqual, applyActorMonitorScheduledBy, assertCanManageIssueMonitor, summarizeIssueMonitor } from "../services/issue-monitors.js";
-import type { IssuePrivacyConstraints } from "@paperclipai/shared";
+import type { IssuePrivacyConstraints } from "@tickernelz/paperclip-pro-shared";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
 import {
   loadCreationSourceAgent,
@@ -11,16 +11,16 @@ import {
 } from "../services/issue-creation-source.js";
 import { activeIssueInteractionCondition, readTaskQuestionContext } from "../services/issue-question-context.js";
 import { setIssueTitle } from "../services/issue-title.js";
-import { setIssueTitleSchema } from "@paperclipai/shared";
+import { setIssueTitleSchema } from "@tickernelz/paperclip-pro-shared";
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
 import { createIssueReadTiming } from "../services/issue-read-timing.js";
-import { isNativeWorkspaceExportRepairCause } from "@paperclipai/shared";
+import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
 import { retryNativeWorkspaceExport } from "../services/native-runtime/native-workspace-export-retry.js";
 import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractionResponse } from "../services/queued-interaction-response.js";
 import { deliverConversationComments, isConversation } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
-import { requiresExecutionReconciliation } from "@paperclipai/shared";
+import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import {
   validateExecutionReconciliation,
   markExecutionReconciliation,
@@ -37,7 +37,7 @@ import { Router, type Request, type Response } from "express";
 import multer from "multer";
 import { z } from "zod";
 import { and, asc, desc, eq, inArray, isNull, notInArray, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { ChatChannelService } from "../services/chat-channels.js";
 import {
   activityLog,
@@ -70,7 +70,7 @@ import {
   projectWorkspaces,
   projectAccessMembers,
   projects,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   addIssueCommentSchema,
   acceptIssueThreadInteractionSchema,
@@ -157,8 +157,8 @@ import {
   issueWriteDenialResponse,
   type IssueWriteDenialCode,
   type IssueWriteDenialContext,
-} from "@paperclipai/shared";
-import { trackAgentTaskCompleted } from "@paperclipai/shared/telemetry";
+} from "@tickernelz/paperclip-pro-shared";
+import { trackAgentTaskCompleted } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { isUniqueViolation } from "../db-errors.js";
 import type { StorageService } from "../storage/types.js";

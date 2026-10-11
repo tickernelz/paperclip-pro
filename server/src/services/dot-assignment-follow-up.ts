@@ -1,5 +1,5 @@
 import { and, eq, gt, gte, inArray, isNull, sql } from "drizzle-orm";
-import { dotAgentBindings, dotMailboxItems, dotRunnerAssignments, dotRunnerOperations, agentWakeupRequests, heartbeatRuns, issueComments, type Db } from "@paperclipai/db";
+import { dotAgentBindings, dotMailboxItems, dotRunnerAssignments, dotRunnerOperations, agentWakeupRequests, heartbeatRuns, issueComments, type Db } from "@tickernelz/paperclip-pro-db";
 import { queuedCommentIdsFromWakePayload, withQueuedCommentIdsInWakePayload } from "./issue-queued-comment-queue.js";
 
 /** Call inside the issue admission transaction, while its execution lock is held.

@@ -25,8 +25,8 @@ controls retain their configured values.
 The CLI exposes the same surface:
 
 ```sh
-pnpm paperclipai instance settings:experimental
-npx paperclipai instance settings:experimental:update --payload-json '{...}'
+pnpm paperclip-pro instance settings:experimental
+npx @tickernelz/paperclip-pro instance settings:experimental:update --payload-json '{...}'
 ```
 
 Those commands change the same opt-in settings that the UI manages.

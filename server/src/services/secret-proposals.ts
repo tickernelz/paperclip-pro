@@ -1,7 +1,7 @@
 import { updateAgentConfigurationInTransaction } from "./agent-configuration-transaction.js";
-import { withAgentAppearance } from "@paperclipai/shared";
+import { withAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { and, count, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   companySecretBindings,
@@ -12,8 +12,8 @@ import {
   issues,
   userSecretDeclarations,
   userSecretDefinitions,
-} from "@paperclipai/db";
-import type { SecretProvider } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import type { SecretProvider } from "@tickernelz/paperclip-pro-shared";
 import { badRequest, conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { getSecretProvider } from "../secrets/provider-registry.js";
 import { agentService } from "./agents.js";

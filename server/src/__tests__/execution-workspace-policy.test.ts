@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   issueExecutionWorkspaceSettingsSchema,
   projectExecutionWorkspacePolicySchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   applyDefaultIsolatedExecutionWorkspacePolicy,
   buildExecutionWorkspaceAdapterConfig,

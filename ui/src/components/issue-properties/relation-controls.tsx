@@ -1,5 +1,5 @@
 import { useState, type MouseEvent } from "react";
-import type { Issue, IssueLockedStub } from "@paperclipai/shared";
+import type { Issue, IssueLockedStub } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { LockedIssueChip, isLockedIssueStub } from "../LockedIssueChip";
 import { Button } from "@/components/ui/button";

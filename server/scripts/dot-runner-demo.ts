@@ -9,7 +9,7 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import express from "express";
-import { activityLog, authUsers, companies, companyMemberships, createDb, issues, startEmbeddedPostgresTestDatabase } from "@paperclipai/db";
+import { activityLog, authUsers, companies, companyMemberships, createDb, issues, startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db";
 import { DotHarnessDriver } from "../../packages/paperclip-runner/src/drivers/dot/dot-harness-driver.js";
 import { HarnessDriverBackend } from "../../packages/paperclip-runner/src/backends/harness-driver-backend.js";
 import { publicMcpIngressRoutes } from "../src/routes/public-mcp.js";

@@ -1,5 +1,5 @@
 import { pgTable, uuid, text, timestamp, jsonb, integer, boolean, uniqueIndex, index } from 'drizzle-orm/pg-core';
-import type { SkillPackageInspection } from '@paperclipai/shared';
+import type { SkillPackageInspection } from '@tickernelz/paperclip-pro-shared';
 import { companies } from './companies.js';
 import { companySkills } from './company_skills.js';
 import { toolConnections } from './tool_access.js';

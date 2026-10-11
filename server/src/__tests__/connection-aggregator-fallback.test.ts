@@ -1,6 +1,6 @@
 import Ajv2020 from "ajv/dist/2020.js";
 import { requestHumanInputAction } from "../../../packages/paperclip-runner/src/protocol-actions/request-human-input.js";
-import { questionSetToAskUserQuestionsPayload } from "@paperclipai/shared";
+import { questionSetToAskUserQuestionsPayload } from "@tickernelz/paperclip-pro-shared";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -22,7 +22,7 @@ import {
   toolProfiles,
   toolProfileBindings,
   toolConnectionInstalls,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

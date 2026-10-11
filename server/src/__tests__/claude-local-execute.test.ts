@@ -2,8 +2,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { AdapterRuntimeMcpServer } from "@paperclipai/adapter-utils";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterRuntimeMcpServer } from "@tickernelz/paperclip-pro-adapter-utils";
+import { runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { buildPaperclipTaskMarkdown } from "../services/heartbeat.js";
 import {
   claudeCommandSupportsEffortFlag,
@@ -11,7 +11,7 @@ import {
   execute,
   resetClaudeCliCapabilitiesCacheForTests,
   sessionCodec,
-} from "@paperclipai/adapter-claude-local/server";
+} from "@tickernelz/paperclip-pro-adapter-claude-local/server";
 
 async function writeFailingClaudeCommand(
   commandPath: string,

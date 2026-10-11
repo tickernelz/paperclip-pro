@@ -2,7 +2,7 @@
 /**
  * Screenshot utility for Paperclip UI.
  *
- * Reads the board token from ~/.paperclip/auth.json and injects it as a
+ * Reads the board token from ~/.paperclip-pro/auth.json and injects it as a
  * Bearer header so Playwright can access authenticated pages.
  *
  * Usage:
@@ -53,7 +53,7 @@ function loadBoardToken() {
 
 const cred = loadBoardToken();
 if (!cred) {
-  console.error("No board token found in ~/.paperclip/auth.json");
+  console.error("No board token found in ~/.paperclip-pro/auth.json");
   process.exit(1);
 }
 

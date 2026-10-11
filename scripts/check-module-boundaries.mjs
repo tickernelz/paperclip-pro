@@ -9,7 +9,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const defaultServerSrc = resolve(repoRoot, "server/src");
 const defaultModulesRoot = resolve(defaultServerSrc, "modules");
 const layerNames = new Set(["domain", "application", "adapters"]);
-const databasePackages = ["@paperclipai/db", "drizzle-orm", "embedded-postgres", "postgres"];
+const databasePackages = ["@tickernelz/paperclip-pro-db", "drizzle-orm", "embedded-postgres", "postgres"];
 const configurationTransactionCallers = new Set([
   "services/secret-proposals.ts", "services/connection-intents.ts", "services/dot-runner-broker.ts",
   "services/public-mcp/oauth.ts", "services/agent-profile-avatar.ts", "services/agent-instruction-revisions.ts", "services/company-skills.ts",

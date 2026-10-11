@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Agent, AiConnectionList, AiConnectionPool, AiConnectionRouterSelection, AiRuntimeConnectionBinding, Issue } from "@paperclipai/shared";
+import type { Agent, AiConnectionList, AiConnectionPool, AiConnectionRouterSelection, AiRuntimeConnectionBinding, Issue } from "@tickernelz/paperclip-pro-shared";
 import { AiConnectionField } from "@/components/ai-connections/AiConnectionField";
 import { AiConnectionPoolRunDetails } from "@/components/ai-connections/AiConnectionPoolRunDetails";
 import { IssueMonitorBanner, IssueMonitorComposerStrip } from "@/components/IssueMonitorBanner";

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import { assets, agentConfigRevisions, agentTaskSessions, agentRuntimeState, type Db } from "@paperclipai/db";
-import { normalizeAgentUrlKey } from "@paperclipai/shared";
-import { normalizePaperclipRunnerAdapterConfig } from "@paperclipai/adapter-utils/server-utils";
+import { assets, agentConfigRevisions, agentTaskSessions, agentRuntimeState, type Db } from "@tickernelz/paperclip-pro-db";
+import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
+import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { agentRecordQueries, type UpdateAgentOptions, type AgentConfigurationPatch, type AgentConfigurationRecord, isPlainRecord, buildConfigSnapshot,
   hasConfigPatchFields, changedPendingApprovalConfigFields, diffConfigSnapshot } from "../lib/agent-records.js";

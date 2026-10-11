@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { IssueAttachment } from "@paperclipai/shared";
+import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
 import { TaskSidePanel } from "@/components/task-side-panel/TaskSidePanel";
 import { queryKeys } from "@/lib/queryKeys";
 import { createIssue } from "../fixtures/paperclipData";

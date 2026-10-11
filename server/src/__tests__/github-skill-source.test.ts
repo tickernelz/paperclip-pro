@@ -1,7 +1,7 @@
 import { githubFixture } from "./helpers/github-skills.js";
 import { describe, expect, it, vi } from 'vitest';
 import { scanGitHubSkills, previewGitHubSkillFile, parseSkillRepository } from '../services/github-skill-source.js';
-import { skillSourceDiscoverySchema, skillSourcePreviewSchema, type SkillSourceScanUpdate } from '@paperclipai/shared';
+import { skillSourceDiscoverySchema, skillSourcePreviewSchema, type SkillSourceScanUpdate } from '@tickernelz/paperclip-pro-shared';
 import { skillFileBytes } from '../services/skill-snapshot.js';
 
 const sha = 'a'.repeat(40);

@@ -6,7 +6,7 @@ import {
   type GitHubReviewAssessment,
   type GitHubReviewEventContext,
   type GitHubIssueEventContext,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   githubManualMessagePrompt,
   githubConfiguredInstructionSources,

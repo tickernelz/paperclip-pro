@@ -13,8 +13,8 @@
 
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { authUsers, companyMemberships, type Db } from "@paperclipai/db";
-import type { WorkspaceReadiness, WorkspaceReadinessProbeResult } from "@paperclipai/shared";
+import { authUsers, companyMemberships, type Db } from "@tickernelz/paperclip-pro-db";
+import type { WorkspaceReadiness, WorkspaceReadinessProbeResult } from "@tickernelz/paperclip-pro-shared";
 import {
   deriveWorkspaceHandoffKey,
   deriveWorkspaceReadinessToken,

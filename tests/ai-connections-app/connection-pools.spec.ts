@@ -1,5 +1,5 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import type { AiConnectionList, AiConnectionPool, AppDefinition } from "@paperclipai/shared";
+import type { AiConnectionList, AiConnectionPool, AppDefinition } from "@tickernelz/paperclip-pro-shared";
 
 // Exercise the full shipped app and an installed router, with real persistence.
 // No browser routes, credentials, providers, or pool APIs are mocked. Opt in

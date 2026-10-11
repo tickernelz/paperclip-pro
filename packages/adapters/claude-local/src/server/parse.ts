@@ -1,11 +1,11 @@
-import type { UsageSummary } from "@paperclipai/adapter-utils";
+import type { UsageSummary } from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   asString,
   asNumber,
   asBoolean,
   parseObject,
   parseJson,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 // The legacy login-prompt markers. The Claude CLI prints these words when it
 // asks the user to log in. The detector matches them against any probe output

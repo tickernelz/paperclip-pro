@@ -13,7 +13,7 @@ root:
 import {
   CapabilitySemanticDispatcher,
   createCapabilityProviderNeutralBinding,
-} from "@paperclipai/paperclip-runner";
+} from "@tickernelz/paperclip-pro-paperclip-runner";
 
 const dispatcher = new CapabilitySemanticDispatcher(mockPort, {
   scenario: {

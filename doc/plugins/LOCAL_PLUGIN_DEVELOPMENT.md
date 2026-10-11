@@ -18,10 +18,10 @@ pause controls, and consistent audits instead of hidden daemon behavior.
 
 ```bash
 # 1. Start Paperclip locally
-pnpm paperclipai run
+pnpm paperclip-pro run
 
 # 2. Scaffold a plugin outside the Paperclip repo
-paperclipai plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
+paperclip-pro plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 
 # 3. Install dependencies and start the watch build
 cd ~/dev/paperclip-plugins/hello-plugin
@@ -29,11 +29,11 @@ pnpm install
 pnpm dev
 
 # 4. In another terminal, install the plugin from its absolute path
-paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin
+paperclip-pro plugin install ~/dev/paperclip-plugins/hello-plugin
 
 # 5. Confirm it loaded
-paperclipai plugin list
-paperclipai plugin inspect acme.hello-plugin
+paperclip-pro plugin list
+paperclip-pro plugin inspect acme.hello-plugin
 ```
 
 That's the loop. The rest of this page explains what each step does and what to expect when you edit code.
@@ -41,7 +41,7 @@ That's the loop. The rest of this page explains what each step does and what to 
 ### 1. Start Paperclip
 
 ```bash
-pnpm paperclipai run
+pnpm paperclip-pro run
 ```
 
 Paperclip listens on `http://127.0.0.1:3100` by default. The CLI talks to that server, so leave it running.
@@ -57,10 +57,10 @@ Paperclip listens on `http://127.0.0.1:3100` by default. The CLI talks to that s
 ### 2. Scaffold the plugin
 
 ```bash
-paperclipai plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
+paperclip-pro plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 ```
 
-This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@paperclipai/plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@tickernelz/paperclip-pro-plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -86,7 +86,7 @@ If your plugin has UI and you want a browser-side dev server with hot module rep
 ### 4. Install from the absolute path
 
 ```bash
-paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin
+paperclip-pro plugin install ~/dev/paperclip-plugins/hello-plugin
 ```
 
 The CLI auto-detects local paths (anything that looks absolute, starts with `./`, `../`, or `~`, or resolves to an existing folder relative to the current directory) and sends `{ isLocalPath: true }` to `POST /api/plugins/install` with the resolved absolute path. If you want to be explicit, pass `--local`.
@@ -103,15 +103,15 @@ Keep `pnpm dev` running in /Users/you/dev/paperclip-plugins/hello-plugin;
 Paperclip watches rebuilt dist output and reloads the plugin worker.
 ```
 
-Read that first line. If the API URL, version, or mode is not the instance you expect, stop and re-point the CLI (see [Targeting a branch / issue-workspace runtime](#targeting-a-branch--issue-workspace-runtime)) before trusting the result. Pass `--no-verify-target` to skip the probe, or run `paperclipai plugin target` to see the same diagnostics without installing anything.
+Read that first line. If the API URL, version, or mode is not the instance you expect, stop and re-point the CLI (see [Targeting a branch / issue-workspace runtime](#targeting-a-branch--issue-workspace-runtime)) before trusting the result. Pass `--no-verify-target` to skip the probe, or run `paperclip-pro plugin target` to see the same diagnostics without installing anything.
 
-Relative paths are resolved against the current working directory, so `paperclipai plugin install .` from inside the plugin folder works too.
+Relative paths are resolved against the current working directory, so `paperclip-pro plugin install .` from inside the plugin folder works too.
 
 ### 5. Inspect
 
 ```bash
-paperclipai plugin list
-paperclipai plugin inspect acme.hello-plugin
+paperclip-pro plugin list
+paperclip-pro plugin inspect acme.hello-plugin
 ```
 
 `list` shows plugin key, status, version, and short error. `inspect` prints the same record with the full last error if there is one. Both accept `--json` if you want to script against them.
@@ -135,28 +135,28 @@ The CLI resolves the API base URL in this order (highest priority first):
 3. the active CLI context profile's `apiBase`,
 4. inferred default `http://<PAPERCLIP_SERVER_HOST|localhost>:<PAPERCLIP_SERVER_PORT|config.server.port|3100>`.
 
-So the API URL is explicit and overridable — the gap was never that you *couldn't* point at a branch server, it was that nothing told you which server you ended up on. `paperclipai plugin target` and the pre-install probe close that gap.
+So the API URL is explicit and overridable — the gap was never that you *couldn't* point at a branch server, it was that nothing told you which server you ended up on. `paperclip-pro plugin target` and the pre-install probe close that gap.
 
 ### Run the branch service and install into it
 
 ```bash
 # 1. From the branch checkout (e.g. an issue worktree), run that branch's server.
 #    Pick a port that does not collide with any control-plane instance.
-PAPERCLIP_SERVER_PORT=3120 pnpm dev          # or: pnpm paperclipai run
+PAPERCLIP_SERVER_PORT=3120 pnpm dev          # or: pnpm paperclip-pro run
 
 # 2. Confirm the CLI will talk to that exact branch service before installing.
-paperclipai plugin target --api-base http://127.0.0.1:3120
+paperclip-pro plugin target --api-base http://127.0.0.1:3120
 # Target Paperclip: http://127.0.0.1:3120
 #   health: status=ok  version=<branch-version>  mode=local_trusted  exposure=private
 
 # 3. Install the local-path plugin into that service (not the default host).
-paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin \
+paperclip-pro plugin install ~/dev/paperclip-plugins/hello-plugin \
   --api-base http://127.0.0.1:3120
 
 # Prefer setting it once for the shell instead of repeating --api-base:
 export PAPERCLIP_API_URL=http://127.0.0.1:3120
-paperclipai plugin target
-paperclipai plugin install ~/dev/paperclip-plugins/hello-plugin
+paperclip-pro plugin target
+paperclip-pro plugin install ~/dev/paperclip-plugins/hello-plugin
 ```
 
 `plugin target` and the install-time probe both read `GET /api/health`, which returns the server `version`, `deploymentMode`, and `deploymentExposure`. Compare that `version` against the branch you expect to be running. If the diagnostics show a different URL, an unexpected version, or `health: unreachable`, you are about to test against the wrong instance — fix the target before reading anything into the plugin's behavior.
@@ -196,21 +196,21 @@ The package's own build scripts still own compilation. Paperclip does not compil
 Both go through the same install endpoint, but they mean different things:
 
 - **Local path plugins are trusted local code.** Paperclip executes worker code from disk under the same trust boundary as the rest of the running instance. This is meant for developing or operating a plugin against a checkout you control. There is no signature check, no sandboxing of worker code, and no provenance metadata beyond the path. Do not install local-path plugins you did not write.
-- **npm packages are the deployable artifact.** `paperclipai plugin install @acme/plugin-foo` (optionally `--version 1.2.3`) installs from your configured npm registry, version-pins, and produces an install record that other operators can reproduce. Ship plugins this way.
+- **npm packages are the deployable artifact.** `paperclip-pro plugin install @acme/plugin-foo` (optionally `--version 1.2.3`) installs from your configured npm registry, version-pins, and produces an install record that other operators can reproduce. Ship plugins this way.
 
 When you are done iterating locally, publish the package and reinstall the npm-package form so the install reflects what you will ship.
 
 ## Common things to do next
 
-- **Restart cleanly:** `paperclipai plugin disable <key>` pauses the plugin without removing it. `paperclipai plugin enable <key>` brings it back. `paperclipai plugin uninstall <key>` removes the install record; add `--force` to also purge plugin state and settings.
-- **Browse examples:** `paperclipai plugin examples` lists the bundled example plugins that ship with the repo, each with a ready-to-run `paperclipai plugin install <path>` line.
-- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@paperclipai/plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
+- **Restart cleanly:** `paperclip-pro plugin disable <key>` pauses the plugin without removing it. `paperclip-pro plugin enable <key>` brings it back. `paperclip-pro plugin uninstall <key>` removes the install record; add `--force` to also purge plugin state and settings.
+- **Browse examples:** `paperclip-pro plugin examples` lists the bundled example plugins that ship with the repo, each with a ready-to-run `paperclip-pro plugin install <path>` line.
+- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@tickernelz/paperclip-pro-plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
 - **Routine-first automation:** If your plugin should produce periodic issue work, prefer managed routines and `ctx.routines.managed` reconciliation over custom process loops or unobserved cron code.
 
 ## Troubleshooting
 
-- **`Plugin install returned no plugin record` or `error` status.** Run `paperclipai plugin inspect <key>` for the last error. The most common causes are (1) the plugin has not built yet — run `pnpm dev` or `pnpm build` first, (2) the `paperclipPlugin` entries in `package.json` point at files that do not exist on disk, or (3) the manifest failed validation. Bundled repo plugins may auto-build once during install, but external local-path plugins still require you to build them yourself. The Paperclip server log has the full validation error.
+- **`Plugin install returned no plugin record` or `error` status.** Run `paperclip-pro plugin inspect <key>` for the last error. The most common causes are (1) the plugin has not built yet — run `pnpm dev` or `pnpm build` first, (2) the `paperclipPlugin` entries in `package.json` point at files that do not exist on disk, or (3) the manifest failed validation. Bundled repo plugins may auto-build once during install, but external local-path plugins still require you to build them yourself. The Paperclip server log has the full validation error.
 - **Edits do not seem to reload.** Confirm `pnpm dev` is still running and writing to `dist/`. If you renamed entry files, update the `paperclipPlugin.manifest` / `paperclipPlugin.worker` / `paperclipPlugin.ui` fields in `package.json` so the watcher targets them.
 - **Worker restarts but UI is stale.** Hard-reload the page. If you want HMR, run `pnpm dev:ui` and set `devUiUrl` in your manifest to `http://127.0.0.1:4177` during development.
 - **Path arguments fail on Windows.** Quote paths that contain spaces, and prefer absolute paths over `~`-prefixed paths in non-bash shells.
-- **Plugin behaves as if a route or field is missing (e.g. `API route not found`, empty data, or a fallback path triggering unexpectedly).** You are probably installed into a Paperclip instance that does not run your branch code. Run `paperclipai plugin target` and compare the reported API URL and `version` against the branch service you meant to test. See [Targeting a branch / issue-workspace runtime](#targeting-a-branch--issue-workspace-runtime) to run the branch server and point the CLI at it explicitly.
+- **Plugin behaves as if a route or field is missing (e.g. `API route not found`, empty data, or a fallback path triggering unexpectedly).** You are probably installed into a Paperclip instance that does not run your branch code. Run `paperclip-pro plugin target` and compare the reported API URL and `version` against the branch service you meant to test. See [Targeting a branch / issue-workspace runtime](#targeting-a-branch--issue-workspace-runtime) to run the branch server and point the CLI at it explicitly.

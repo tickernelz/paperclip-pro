@@ -17,11 +17,11 @@ records all ten local and all ten remote gates, including cleanup. The final
 public installed-package smoke is recorded separately there. The historical
 results below retain their own identities and limits.
 
-The public installation path is `paperclipai runtime setup cursor`. It explicitly
+The public installation path is `paperclip-pro runtime setup cursor`. It explicitly
 downloads the pinned CLI `2026.09.26-dd393fe`, applies the source-owned patch, and
 verifies the complete runtime closure. npm installation does not download Cursor.
 Run setup as the OS user that runs Paperclip. Local assets live in that account's
-`~/.paperclip/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, independently of
+`~/.paperclip-pro/runtimes/cursor/<platform>-<arch>/<closure-sha256>`, independently of
 npm directory ownership and isolated provider HOME/XDG settings. Existing image
 assets remain authoritative; an invalid packaged runtime cannot fall back to the
 user cache. Release assembly and runtime loading reject stale Cursor profile or

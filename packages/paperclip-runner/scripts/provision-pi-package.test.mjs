@@ -13,7 +13,7 @@ test("public server tar layout carries a self-contained host provisioner and exa
   t.after(() => rm(root, { recursive: true, force: true }));
   const pkg = join(root, "package"); const cli = join(pkg, "dist/vendor/paperclip-runner/cli");
   await mkdir(cli, { recursive: true });
-  await writeFile(join(pkg, "package.json"), '{"name":"@paperclipai/server","type":"module"}');
+  await writeFile(join(pkg, "package.json"), '{"name":"@tickernelz/paperclip-pro-server","type":"module"}');
   await writeFile(join(pkg, "dist/index.js"), 'throw new Error("do not start the server");');
   await writeFile(join(cli, "acpx-runtime-sidecar.cjs"), "// layout fixture only");
   await bundlePiProvisioner({ outputRoot: cli });
@@ -53,10 +53,10 @@ test("public server tar layout carries a self-contained host provisioner and exa
 test("explicit CLI setup passes only network settings to its real child and enables Node proxy handling", async t => {
   const root = await mkdtemp(join(tmpdir(), "paperclip-pi-setup-environment-"));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const server = join(root, "node_modules/@paperclipai/server");
+  const server = join(root, "node_modules/@tickernelz/paperclip-pro-server");
   const cli = join(server, "dist/vendor/paperclip-runner/cli");
   await mkdir(cli, { recursive: true });
-  await writeFile(join(server, "package.json"), JSON.stringify({ name: "@paperclipai/server", type: "module", exports: "./dist/index.js" }));
+  await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server", type: "module", exports: "./dist/index.js" }));
   await writeFile(join(server, "dist/index.js"), "throw Error('server must not start')");
   // A capture child models the public layout only. It cannot download or launch Pi.
   await writeFile(join(cli, "provision-pi.cjs"), `const assert=require('node:assert/strict');

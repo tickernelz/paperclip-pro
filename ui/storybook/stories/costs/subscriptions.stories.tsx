@@ -2,7 +2,7 @@ import { useLayoutEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import { monthlySubscriptionCents, type SubscriptionCostReport } from "@paperclipai/shared";
+import { monthlySubscriptionCents, type SubscriptionCostReport } from "@tickernelz/paperclip-pro-shared";
 import { Costs } from "@/pages/Costs";
 
 function fixture(): SubscriptionCostReport {

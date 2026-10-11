@@ -12,10 +12,10 @@ import {
   unitsToCents,
   usdToUnits,
   type AiConnectionMetadata,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { priceCodexReceipt } from "./codex-pricing.js";
 import { priceAnthropicReceipt } from "./anthropic-pricing.js";
-import type { AdapterUsageCheckpoint } from "@paperclipai/adapter-utils";
+import type { AdapterUsageCheckpoint } from "@tickernelz/paperclip-pro-adapter-utils";
 import type { DecisionProviderReceipt } from "./decision-model-provider.js";
 
 const SYSTEM = `Return only a brief positive acknowledgement as plain text in the assigned assistant's voice and the user's language.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Route, Routes, useNavigate, useParams } from "@/lib/router";
-import { aiConnectionRouterAppDefinition, aiConnectionRouterSlug, getAppStoreDefinition, type AiConnectionList, type AiConnectionPool, type ToolApplication, type ToolConnection } from "@paperclipai/shared";
+import { aiConnectionRouterAppDefinition, aiConnectionRouterSlug, getAppStoreDefinition, type AiConnectionList, type AiConnectionPool, type ToolApplication, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
 import { Browse } from "@/pages/apps/Browse";
 import { AppsConnect } from "@/pages/apps/AppsConnect";
 import { AppDetail } from "@/pages/apps/AppDetail";

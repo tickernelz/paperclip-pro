@@ -1,5 +1,5 @@
-import { AGENT_ADAPTER_TYPES } from "@paperclipai/shared";
-import { isAdapterExecutionPhase } from "@paperclipai/adapter-utils/execution-phase";
+import { AGENT_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { isAdapterExecutionPhase } from "@tickernelz/paperclip-pro-adapter-utils/execution-phase";
 import { MAX_EXECUTION_PHASE_ELAPSED_MS } from "./adapter-execution-phase.js";
 
 export interface AdapterStopContext {

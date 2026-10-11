@@ -1,5 +1,5 @@
-import type { IssueExecutionPolicy, IssueExecutionStageParticipant, IssueExecutionStagePrincipal } from "@paperclipai/shared";
-import { issueExecutionPolicySchema } from "@paperclipai/shared";
+import type { IssueExecutionPolicy, IssueExecutionStageParticipant, IssueExecutionStagePrincipal } from "@tickernelz/paperclip-pro-shared";
+import { issueExecutionPolicySchema } from "@tickernelz/paperclip-pro-shared";
 import { parseAssigneeValue } from "./assignees";
 import { createUuid as newId } from "./uuid";
 

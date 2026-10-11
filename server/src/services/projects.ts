@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, gt, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   projects,
   projectAccessMembers,
@@ -11,7 +11,7 @@ import {
   plugins,
   projectWorkspaces,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   deriveProjectUrlKey,
   hasNonAsciiContent,
@@ -29,7 +29,7 @@ import {
   type WorkspaceRuntimeService,
   type PluginManagedProjectDeclaration,
   type PluginManagedProjectResolution,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { unprocessable } from "../errors.js";
 import { listCurrentRuntimeServicesForProjectWorkspaces } from "./workspace-runtime-read-model.js";
 import { parseProjectExecutionWorkspacePolicy } from "./execution-workspace-policy.js";
@@ -822,7 +822,7 @@ export function projectService(db: Db, options: { captureWorkspaceUpdates?: bool
             resourceKey: input.projectKey,
             companyId: input.companyId,
             projectId: project?.id ?? existingBinding.resourceId,
-            project: project as import("@paperclipai/shared").Project | null,
+            project: project as import("@tickernelz/paperclip-pro-shared").Project | null,
             status: input.reset ? "reset" : "resolved",
           };
         }
@@ -856,7 +856,7 @@ export function projectService(db: Db, options: { captureWorkspaceUpdates?: bool
           resourceKey: input.projectKey,
           companyId: input.companyId,
           projectId: hydrated?.id ?? project.id,
-          project: hydrated as import("@paperclipai/shared").Project | null,
+          project: hydrated as import("@tickernelz/paperclip-pro-shared").Project | null,
           status: "relinked",
         };
       }
@@ -895,12 +895,12 @@ export function projectService(db: Db, options: { captureWorkspaceUpdates?: bool
         resourceKey: input.projectKey,
         companyId: input.companyId,
         projectId: hydrated?.id ?? project.id,
-        project: hydrated as import("@paperclipai/shared").Project | null,
+        project: hydrated as import("@tickernelz/paperclip-pro-shared").Project | null,
         status: "created",
       };
     },
 
-    createWithRepositories: async (companyId: string, data: Parameters<typeof createProject>[1], repositories: import("@paperclipai/shared").ProjectRepository[]): Promise<ProjectWithGoals> => {
+    createWithRepositories: async (companyId: string, data: Parameters<typeof createProject>[1], repositories: import("@tickernelz/paperclip-pro-shared").ProjectRepository[]): Promise<ProjectWithGoals> => {
       return db.transaction(async (tx) => {
         const service = projectService(tx as unknown as Db, { captureWorkspaceUpdates: false });
         const project = await service.create(companyId, data);
@@ -911,7 +911,7 @@ export function projectService(db: Db, options: { captureWorkspaceUpdates?: bool
       });
     },
 
-    replaceRepositories: async (projectId: string, repositories: import("@paperclipai/shared").ProjectRepository[]): Promise<ProjectWithGoals | null> => {
+    replaceRepositories: async (projectId: string, repositories: import("@tickernelz/paperclip-pro-shared").ProjectRepository[]): Promise<ProjectWithGoals | null> => {
       return db.transaction(async (tx) => {
         const [project] = await tx.select().from(projects).where(eq(projects.id, projectId)).for("update");
         if (!project) return null;

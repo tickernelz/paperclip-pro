@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import { forbidden } from "../errors.js";
 import { submitAgentCommentary } from "../services/agent-commentary.js";
 import { assertCompanyAccess } from "./authz.js";

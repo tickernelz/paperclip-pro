@@ -1,7 +1,7 @@
 import { hireApprovalService as approvalRecords, type HireDecisionTarget } from "./adapters/approvals.js";
-import { agents } from "@paperclipai/db";
+import { agents } from "@tickernelz/paperclip-pro-db";
 import { and, asc, eq, gt, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { LifecycleEffects } from "./adapters/effects.js";
 export type { LifecycleEffects } from "./adapters/effects.js";
 import { updateAgentConfiguration } from "./adapters/configuration.js";

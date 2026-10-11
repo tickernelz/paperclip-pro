@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { approvals, type Db } from "@paperclipai/db";
+import { approvals, type Db } from "@tickernelz/paperclip-pro-db";
 import { notFound, unprocessable } from "../errors.js";
 
 export const resolvableApprovalStatuses = ["pending", "revision_requested"];

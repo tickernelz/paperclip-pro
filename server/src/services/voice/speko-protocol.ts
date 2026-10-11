@@ -1,6 +1,6 @@
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
-import { respondIssueThreadInteractionSchema } from "@paperclipai/shared";
+import { respondIssueThreadInteractionSchema } from "@tickernelz/paperclip-pro-shared";
 
 export const SPEKO_CALLBACK_LIMIT = 64 * 1024;
 export const SPEKO_CALLBACK_TOLERANCE_SECONDS = 300;

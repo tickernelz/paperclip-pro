@@ -1,5 +1,5 @@
-import type { PaperclipTurnContext } from "@paperclipai/adapter-utils/server-utils";
-import { resolvePaperclipRunnerCursorMode, resolvePaperclipRunnerPiThinkingLevel } from "@paperclipai/adapter-utils";
+import type { PaperclipTurnContext } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { resolvePaperclipRunnerCursorMode, resolvePaperclipRunnerPiThinkingLevel } from "@tickernelz/paperclip-pro-adapter-utils";
 import { createHash } from "node:crypto";
 import { buildNativeContinuationPrompt } from "./native-continuation.js";
 import type {
@@ -24,7 +24,7 @@ import {
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,
   selectPaperclipPromptSections,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 const NATIVE_GITHUB_ATTACHMENT_RECOVERY_GUIDANCE = [
   "## GitHub attachment recovery navigation",

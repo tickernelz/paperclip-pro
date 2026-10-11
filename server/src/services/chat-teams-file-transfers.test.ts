@@ -27,7 +27,7 @@ import {
   startEmbeddedPostgresTestDatabase,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   installTeamsFileConsentHook,
   restoreTeamsFileConsentBinding,

@@ -6,11 +6,11 @@ import { DELIVERY_QUEUES, subscribeDeliveryWork } from "../services/delivery-wor
 import { aiConnectionService } from "../services/ai-connections.js";
 import { fastResponseService } from "../services/fast-responses.js";
 import { fastResponseReceipt } from "../services/fast-response-provider.js";
-import { fastResponseRequests } from "@paperclipai/db";
-import { chatSlackRegistrations, toolOauthStates } from "@paperclipai/db";
-import { buildSlackAppManifest } from "@paperclipai/shared";
+import { fastResponseRequests } from "@tickernelz/paperclip-pro-db";
+import { chatSlackRegistrations, toolOauthStates } from "@tickernelz/paperclip-pro-db";
+import { buildSlackAppManifest } from "@tickernelz/paperclip-pro-shared";
 import { toolAccessService } from "../services/tool-access.js";
-import { toolActionRequests, toolInvocations } from "@paperclipai/db";
+import { toolActionRequests, toolInvocations } from "@tickernelz/paperclip-pro-db";
 import { GitHubPublicationLeaseLost, withGitHubPublicationLease } from "../services/chat-github-publication-lease.js";
 import { secretService } from "../services/secrets.js";
 import { githubChatWizardService } from "../services/chat-github-wizard.js";
@@ -24,7 +24,7 @@ import { githubAutomaticReviewEvent } from "../services/chat-github-events.js";
 import { githubBotToolsForSession, syncGitHubBotTools } from "../services/chat-github-tools.js";
 import { resolveGitHubOperationCredentials } from "../services/github-operation-credentials.js";
 import { initializeRunIdentity } from "../services/run-identity.js";
-import { chatGitHubRegistrations, chatGitHubReviews, chatGitHubConfigurations, toolCatalogEntries } from "@paperclipai/db";
+import { chatGitHubRegistrations, chatGitHubReviews, chatGitHubConfigurations, toolCatalogEntries } from "@tickernelz/paperclip-pro-db";
 import { AsyncLocalStorage } from "node:async_hooks";
 import * as cloudRuntimeIdentity from "../services/cloud-runtime-identity.js";
 import {
@@ -103,9 +103,9 @@ import {
   environmentLeases,
   principalPermissionGrants,
   toolConnections,
-} from "@paperclipai/db";
-import { defaultGitHubReviewPolicy, type ChatProvider } from "@paperclipai/shared";
-import { isPaperclipExternalChatTurn } from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-db";
+import { defaultGitHubReviewPolicy, type ChatProvider } from "@tickernelz/paperclip-pro-shared";
+import { isPaperclipExternalChatTurn } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import type { Attachment, Author, Message, Thread } from "chat";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
@@ -2020,9 +2020,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const url = String(input);
       const supplemental = await supplementalProviderFetch?.(input, init);
       if (supplemental) return supplemental;
-      const list = /\/repos\/paperclipai\/paperclip\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
-      const reply = /\/repos\/paperclipai\/paperclip\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
-      const item = /\/repos\/paperclipai\/paperclip\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
+      const list = /\/repos\/paperclip-pro\/paperclip\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
+      const reply = /\/repos\/paperclip-pro\/paperclip\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
+      const item = /\/repos\/paperclip-pro\/paperclip\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
       if (item) {
         const comment = responseComments.get(Number(item[2]));
         if (!comment) return Response.json({ message: "Not Found" }, { status: 404 });
@@ -2324,7 +2324,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const injected = await skill("injected");
       const foreign = await skill("foreign", other.companyId);
       // Use the production link format, including the slash picker identity.
-      const { buildSkillMentionHref } = await import("@paperclipai/shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
       const ref = (s: typeof common) => `[/skill](${buildSkillMentionHref(s.id, s.slug)})`;
       const saved = await f.management.configuration(f.endpoint.id, "owner-user");
       await f.management.saveConfiguration(f.endpoint.id, { expectedRevision: saved.revision, configuration: {
@@ -3321,7 +3321,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         stateHash: randomUUID(),
         trustedOrigin: "https://reviews.example.test",
         ownerType: "organization",
-        ownerLogin: "paperclipai",
+        ownerLogin: "paperclip-pro",
         appName: "Reviewer",
         status: "failed",
         expiresAt: new Date(),
@@ -3661,7 +3661,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           stateHash: randomUUID(),
           trustedOrigin: "https://reviews.example.test",
           ownerType: "organization",
-          ownerLogin: "paperclipai",
+          ownerLogin: "paperclip-pro",
           status: "completed",
           expiresAt: new Date(Date.now() + 60_000),
         });
@@ -4614,7 +4614,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("admits opt-in signed issue events without PR checks, deduplicates them and rechecks revoked policy", async () => {
       const f = await reviewBotFixture();
-      const { buildSkillMentionHref } = await import("@paperclipai/shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
       const [skill] = await db.insert(companySkills).values({
         companyId: f.companyId, key: `company/${f.companyId}/automatic-playbook`,
         slug: "automatic-playbook", name: "Automatic playbook", markdown: "# Automatic playbook",
@@ -4687,7 +4687,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("admits signed PR events into an ordinary assigned task and deduplicates delivery", async () => {
       const f = await reviewBotFixture();
-      const { buildSkillMentionHref } = await import("@paperclipai/shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
       const [skill] = await db.insert(companySkills).values({
         companyId: f.companyId, key: `company/${f.companyId}/automatic-playbook`,
         slug: "automatic-playbook", name: "Automatic playbook", markdown: "# Automatic playbook",
@@ -7118,7 +7118,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   });
 
   it.each(["cancelled", "paused", "blocked", "closed-workspace"] as const)("does not bypass %s task guards from the Slack Board composer or its outbox", async (guard) => {
-    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@paperclipai/db");
+    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@tickernelz/paperclip-pro-db");
     const fixture = await seedCompany();
     const { callbacks, endpoint, service, wakeup, runtime } = await configuredSlackEndpoint(fixture);
     const channel = makeThread({ channelId: "CGUARD", id: "slack:CGUARD:8100.1", name: "guard" });
@@ -7225,7 +7225,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   }, 15_000);
 
   it("refreshes Slack tool guidance without restoring disabled catalog policies", async () => {
-    const { SLACK_TOOLS } = await import("@paperclipai/shared");
+    const { SLACK_TOOLS } = await import("@tickernelz/paperclip-pro-shared");
     const { syncSlackBotTools } = await import("../services/connectors/slack-catalog.js");
     const fixture = await seedCompany();
     const { endpoint } = await configuredSlackEndpoint(fixture);
@@ -7557,7 +7557,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await rejected;
     await expect(oauth.status(fixture.companyId, endpoint.id, "owner-user")).resolves.toMatchObject({ connected: false });
     await expect(oauth.status(randomUUID(), endpoint.id, "owner-user")).rejects.toThrow("not found");
-    const { toolProfiles, toolProfileBindings } = await import("@paperclipai/db");
+    const { toolProfiles, toolProfileBindings } = await import("@tickernelz/paperclip-pro-db");
     const [slackProfile] = await db.select().from(toolProfiles).where(and(eq(toolProfiles.companyId, fixture.companyId), eq(toolProfiles.profileKey, `slack-bot:${endpoint.id}`)));
     const [removedBinding] = await db.delete(toolProfileBindings).where(and(eq(toolProfileBindings.profileId, slackProfile.id), eq(toolProfileBindings.targetId, binding.agentId))).returning();
     await expect(resolveConnectorAssignments(db, recovered)).resolves.toEqual([]);
@@ -8892,7 +8892,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     expect(observedIssuer).toBe(appId);
     expect(configured).toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclipai",
+      providerAccountId: "paperclip-pro",
       botExternalId: "789",
       botUsername: "maya-paperclip[bot]",
       setup: { step: "test", webhookVerifiedAt: expect.any(String) },
@@ -9457,7 +9457,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       ),
     ).resolves.toMatchObject({
       status: "verifying",
-      providerAccountId: "paperclipai",
+      providerAccountId: "paperclip-pro",
       botExternalId: "991124",
       botUsername: "maya-selectable-events[bot]",
     });

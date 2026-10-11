@@ -7,14 +7,14 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash, randomUUID } from "node:crypto";
-import { parseFrontmatterMarkdown } from "@paperclipai/shared";
+import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared";
 import { fileURLToPath } from "node:url";
 import type {
   AdapterBillingType,
   AdapterExecutionContext,
   AdapterExecutionResult,
   UsageSummary,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   adapterExecutionTargetSessionIdentity,
   describeAdapterExecutionTarget,
@@ -37,7 +37,7 @@ import {
   type PreparedAdapterExecutionTargetRuntime,
   type ReferencedSourceIgnoreResolution,
   type SandboxAdditionalSource,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { captureLocalProcess, capturedProcessExited, killCapturedLocalProcess } from "./local-process-control.js";
 import type { DuplexLossReason } from "../duplex-observability.js";
 import { DUPLEX_CHANNEL_LOST_ERROR_CODE } from "../bridge-transport-contract.js";
@@ -85,8 +85,8 @@ import {
   rewriteWorkspaceCwdEnvVarsForExecution,
   shapePaperclipWorkspaceEnvForExecution,
   type PaperclipSkillEntry,
-} from "@paperclipai/adapter-utils/server-utils";
-import { shellQuote } from "@paperclipai/adapter-utils/ssh";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 import { createEphemeralSessionEnvironmentStore } from "./ephemeral-session-environment.js";
 import {
   createAcpRuntime,
@@ -273,7 +273,7 @@ export interface AcpxEngineBillingIdentity {
  * credential/home helpers (`copyBackCodexAuth`, `stageCodexHomeForSync`,
  * `prepareClaudeConfigSeed`, the Gemini skills stager, …) live in the adapter
  * packages, and the shared engine — which lives *inside*
- * `@paperclipai/adapter-utils`, a dependency of those packages — cannot import
+ * `@tickernelz/paperclip-pro-adapter-utils`, a dependency of those packages — cannot import
  * them without a circular dependency. So the engine exposes this seam and each
  * adapter supplies it, reusing the exact same vetted helpers (no duplication of
  * the security-critical copy-back path).
@@ -799,7 +799,7 @@ export async function referencedSourceContentSignature(
 }
 
 function defaultPaperclipInstanceDir(): string {
-  const home = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip");
+  const home = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro");
   const instanceId = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
   return resolvePaperclipInstanceRootForAdapter({
     homeDir: home,

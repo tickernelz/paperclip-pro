@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import { and, asc, eq, sql } from "drizzle-orm";
 import { WebSocketServer } from "ws";
-import { FAST_RESPONSE_AGENT_GUIDANCE } from "@paperclipai/shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
@@ -29,7 +29,7 @@ import {
   nativeRunFinalizations,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { runningProcesses } from "../adapters/index.js";
 import { heartbeatService } from "../services/heartbeat.ts";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";

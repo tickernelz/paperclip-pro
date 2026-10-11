@@ -1,6 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PrimaryAgentPreference } from "@paperclipai/shared";
+import type { PrimaryAgentPreference } from "@tickernelz/paperclip-pro-shared";
 import { agentsApi } from "@/api/agents";
 import { primaryAgentApi } from "@/api/primaryAgent";
 import { PrimaryAgentPresentationProvider } from "@/components/primary-agent/PrimaryAgentPresentation";

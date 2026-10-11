@@ -90,7 +90,7 @@ export async function configure(opts: {
   const configPath = resolveConfigPath(opts.config);
 
   if (!configExists(opts.config)) {
-    p.log.error("No config file found. Run `paperclipai onboard` first.");
+    p.log.error("No config file found. Run `paperclip-pro onboard` first.");
     p.outro("");
     process.exitCode = 1;
     return;

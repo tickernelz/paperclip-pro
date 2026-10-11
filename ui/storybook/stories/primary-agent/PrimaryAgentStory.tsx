@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import type { Decorator } from "@storybook/react-vite";
-import type { Agent, Issue, ResourceMemberships } from "@paperclipai/shared";
+import type { Agent, Issue, ResourceMemberships } from "@tickernelz/paperclip-pro-shared";
 import { Layout } from "@/components/Layout";
 import { Layout as ClassicLayout } from "@/components/Layout.production";
 import { SidebarAgents } from "@/components/SidebarAgents";

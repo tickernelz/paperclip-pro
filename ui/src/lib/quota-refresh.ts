@@ -1,4 +1,4 @@
-import type { ProviderQuotaResult } from "@paperclipai/shared";
+import type { ProviderQuotaResult } from "@tickernelz/paperclip-pro-shared";
 
 const invalidCredentials = new Set([
   "credentials_unavailable",

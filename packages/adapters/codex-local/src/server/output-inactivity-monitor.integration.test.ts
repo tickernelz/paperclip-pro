@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
+import { runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   CODEX_OUTPUT_INACTIVITY_MONITOR_SIGTERM_GRACE_MS,
   createCodexOutputInactivityMonitor,

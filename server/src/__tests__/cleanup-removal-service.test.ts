@@ -18,7 +18,7 @@ import {
   issueReadStates,
   issues,
   routines,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

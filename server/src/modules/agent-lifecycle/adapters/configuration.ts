@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import { agents, type Db } from "@paperclipai/db";
+import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { agentRecordQueries, AGENT_CONFIGURATION_FIELDS, jsonEqual, type AgentConfigurationPatch, type UpdateAgentOptions } from "../../../lib/agent-records.js";
 import type { ActivityPublication } from "../../../types/activity-publication.js";
 import { AgentLifecycleConflict } from "../domain/policy.js";

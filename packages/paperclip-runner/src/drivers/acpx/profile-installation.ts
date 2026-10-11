@@ -13,7 +13,7 @@ export async function verifyAcpxProfileInstallation(profile: QualifiedAcpxProfil
   if (profile.agent === "cursor") {
     try { return await verifyCursorInstallation(profile); }
     catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") throw Object.assign(new Error("Cursor runtime assets are missing. Run paperclipai runtime setup cursor on this execution host."), { code: "CURSOR_RUNTIME_MISSING", retryable: false });
+      if ((error as NodeJS.ErrnoException).code === "ENOENT") throw Object.assign(new Error("Cursor runtime assets are missing. Run paperclip-pro runtime setup cursor on this execution host."), { code: "CURSOR_RUNTIME_MISSING", retryable: false });
       throw error;
     }
   }

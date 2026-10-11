@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, companyMemberships, connectionGrants, createDb, issues, toolApplications, toolCatalogEntries, toolConnections, toolConnectionAppSnapshots } from "@paperclipai/db";
-import { composioAppSetupSchema } from "@paperclipai/shared";
+import { agents, companies, companyMemberships, connectionGrants, createDb, issues, toolApplications, toolCatalogEntries, toolConnections, toolConnectionAppSnapshots } from "@tickernelz/paperclip-pro-db";
+import { composioAppSetupSchema } from "@tickernelz/paperclip-pro-shared";
 import { composioAppAccounts, composioAppSetupResult } from "../services/composio-app-setup.js";
 import { toolAccessService } from "../services/tool-access.js";
 import { toolAccessPolicyService } from "../services/tool-access-policy.js";
@@ -246,7 +246,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
 
   it("shares a lease between concurrent syncs and bounds provider batches", async () => {
-    const { COMPOSIO_APP_TOOLKITS } = await import("@paperclipai/shared/aggregator-app-catalog");
+    const { COMPOSIO_APP_TOOLKITS } = await import("@tickernelz/paperclip-pro-shared/aggregator-app-catalog");
     const names = ["circleback_mcp", ...COMPOSIO_APP_TOOLKITS.filter(name => name !== "circleback_mcp").slice(0, 35)];
     const f = await fixture(names); f.activate();
     let release!: () => void;

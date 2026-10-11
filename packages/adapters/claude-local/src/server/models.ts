@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { AdapterModel } from "@paperclipai/adapter-utils";
+import type { AdapterModel } from "@tickernelz/paperclip-pro-adapter-utils";
 import { models as DIRECT_MODELS } from "../index.js";
 import { sortClaudeModels } from "./model-order.js";
 

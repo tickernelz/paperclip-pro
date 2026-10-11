@@ -1,12 +1,12 @@
-import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@paperclipai/shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/paperclip-pro-shared";
 import { enqueueFastResponse, supersedeFastResponse } from "../services/fast-responses.js";
 import { Router } from "express";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
-import type { DeploymentMode } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
 import { instanceSettingsService, issueService } from "../services/index.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";
 

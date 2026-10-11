@@ -1,12 +1,12 @@
 import { trackIdleWork } from "../services/task-admission.js";
 import { Router, type Request } from "express";
-import { companies, type Db } from "@paperclipai/db";
+import { companies, type Db } from "@tickernelz/paperclip-pro-db";
 import {
   patchInstanceSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceGeneralSettingsSchema,
   startTaskDrainRequestSchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { conflict, forbidden } from "../errors.js";
 import {
   cloudTenantPrimaryCompanyId,

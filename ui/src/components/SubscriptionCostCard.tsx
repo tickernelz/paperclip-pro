@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import { SUBSCRIPTION_CURRENCIES, centsToUsd, usdToCents, type SubscriptionAccountReport, type SubscriptionCostReport, type SubscriptionUsage } from "@paperclipai/shared";
+import { SUBSCRIPTION_CURRENCIES, centsToUsd, usdToCents, type SubscriptionAccountReport, type SubscriptionCostReport, type SubscriptionUsage } from "@tickernelz/paperclip-pro-shared";
 import { subscriptionsApi } from "../api/subscriptions";
 import { formatCents, formatDateTime, formatTokens, providerDisplayName } from "../lib/utils";
 import { Button } from "./ui/button";

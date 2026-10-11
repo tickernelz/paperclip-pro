@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { callProjectTool, projectToolDefinitions } from "../services/project-tools.js";
 import { assertCompanyAccess } from "./authz.js";

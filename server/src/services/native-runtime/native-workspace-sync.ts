@@ -3,15 +3,15 @@ import { createReadStream } from "node:fs";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { environmentLeases, heartbeatRuns } from "@paperclipai/db";
-import type { EnvironmentLease } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { environmentLeases, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import type { EnvironmentLease } from "@tickernelz/paperclip-pro-shared";
 import {
   prepareAdapterExecutionTargetRuntime,
   type AdapterExecutionTarget,
   type PreparedAdapterExecutionTargetRuntime,
-} from "@paperclipai/adapter-utils/execution-target";
-import { disposeGitWorkspaceSnapshot, type GitWorkspaceSnapshot } from "@paperclipai/adapter-utils/git-workspace-sync";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { disposeGitWorkspaceSnapshot, type GitWorkspaceSnapshot } from "@tickernelz/paperclip-pro-adapter-utils/git-workspace-sync";
 import {
   directorySnapshotSha256,
   disposeDirectorySnapshot,
@@ -20,12 +20,12 @@ import {
   serializeDirectorySnapshot,
   type DirectorySnapshot,
   type SerializedDirectorySnapshot,
-} from "@paperclipai/adapter-utils/workspace-restore-merge";
+} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import type {
   WorkspaceDurableSeedPaths,
   WorkspaceInboundMode,
-} from "@paperclipai/adapter-utils/sandbox-managed-runtime";
-import { assertWorkspaceManifestDiskSpace, isPathManifest, manifestFileSha256, readManifestRecords, type PathManifest, type WorkspacePaths } from "@paperclipai/adapter-utils/workspace-manifest";
+} from "@tickernelz/paperclip-pro-adapter-utils/sandbox-managed-runtime";
+import { assertWorkspaceManifestDiskSpace, isPathManifest, manifestFileSha256, readManifestRecords, type PathManifest, type WorkspacePaths } from "@tickernelz/paperclip-pro-adapter-utils/workspace-manifest";
 import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
 import { parseObject } from "../../adapters/utils.js";
 import type { NativeRestartRecoveryClaim } from "./native-restart-recovery.js";
@@ -793,7 +793,7 @@ async function finalizePreparedRuntime(input: {
   await input.runtime.restoreWorkspace();
   await input.assertOwnership?.();
   const finalSnapshot =
-    await import("@paperclipai/adapter-utils/workspace-restore-merge").then(
+    await import("@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge").then(
       ({ captureDirectorySnapshot }) =>
         captureDirectorySnapshot(input.descriptor.binding.localCwd, {
           exclude: input.runtime.workspaceSyncSnapshot?.baseline.exclude ?? [],

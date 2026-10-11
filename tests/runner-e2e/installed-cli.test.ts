@@ -13,10 +13,10 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 const hash = (value: string) => createHash("sha256").update(value).digest("hex");
 async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "e2e-installed-cli-"))); roots.push(root);
-  const cli = join(root, "node_modules/paperclipai"); const server = join(root, "node_modules/@paperclipai/server");
+  const cli = join(root, "node_modules/paperclip-pro"); const server = join(root, "node_modules/@tickernelz/paperclip-pro-server");
   await mkdir(join(cli, "dist"), { recursive: true }); await mkdir(join(server, "dist"), { recursive: true });
-  await writeFile(join(cli, "package.json"), JSON.stringify({ name: "paperclipai", version: "1.2.3", type: "module", bin: { paperclipai: "./dist/index.js" } }));
-  await writeFile(join(server, "package.json"), JSON.stringify({ name: "@paperclipai/server", version: "1.2.3", type: "module", exports: { ".": { import: "./dist/index.js" } } }));
+  await writeFile(join(cli, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro", version: "1.2.3", type: "module", bin: { paperclipai: "./dist/index.js" } }));
+  await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server", version: "1.2.3", type: "module", exports: { ".": { import: "./dist/index.js" } } }));
   await writeFile(join(cli, "dist/index.js"), "// installed public CLI"); await writeFile(join(server, "dist/index.js"), "// installed public server");
   const env = { PAPERCLIP_RUNNER_E2E_INSTALLED_CLI: join(cli, "dist/index.js"), PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256: hash("// installed public CLI"), PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT: server, PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_SHA256: hash("// installed public server") };
   return { root, cli, server, env };
@@ -53,7 +53,7 @@ it("rejects linked entrypoints and source-export package identities", async () =
   await rm(join(f.cli, "dist/index.js")); await symlink(join(other.cli, "dist/index.js"), join(f.cli, "dist/index.js"));
   await expect(verifyInstalledCli(f.env, [cells[0]!])).rejects.toThrow("canonical and unlinked");
   await rm(join(f.cli, "dist/index.js")); await writeFile(join(f.cli, "dist/index.js"), "// installed public CLI");
-  await writeFile(join(f.server, "package.json"), JSON.stringify({ name: "@paperclipai/server", version: "1.2.3", exports: { ".": "./src/index.ts" } }));
+  await writeFile(join(f.server, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server", version: "1.2.3", exports: { ".": "./src/index.ts" } }));
   await expect(verifyInstalledCli(f.env, [cells[0]!])).rejects.toThrow("public package identity");
 });
 it("keeps installed proof inputs out of the production server environment", async () => {

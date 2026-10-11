@@ -2,7 +2,7 @@ import { readTaskQuestionContext } from "../issue-question-context.js";
 import { isConversation } from "../agent-conversations.js";
 import { and, desc, eq, isNull } from "drizzle-orm";
 
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   documentRevisions,
@@ -11,7 +11,7 @@ import {
   issueComments,
   issueDocuments,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   PaperclipSemanticDispatcher,
   type PaperclipJsonValue,

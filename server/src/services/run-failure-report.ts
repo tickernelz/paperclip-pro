@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { agents, heartbeatRuns, type Db } from "@paperclipai/db";
+import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
 import { captureRunFailure, type RunFailureStatus } from "../sentry.js";
 import {
   collectRunFailureDiagnostics,
@@ -11,7 +11,7 @@ import {
 } from "./run-failure-diagnostics.js";
 import { logger } from "../middleware/logger.js";
 import { isUnexpectedRunCancellation } from "./run-cancellation.js";
-import { readConnectionFailure, type ConnectionFailure } from "@paperclipai/adapter-utils/connection-failure";
+import { readConnectionFailure, type ConnectionFailure } from "@tickernelz/paperclip-pro-adapter-utils/connection-failure";
 import { isAiConnectionConfigurationReason } from "./ai-connection-configuration-failure.js";
 
 type HeartbeatRun = typeof heartbeatRuns.$inferSelect;

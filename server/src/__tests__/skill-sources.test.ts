@@ -5,7 +5,7 @@ import { promises as fs } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { companies, companySkills, companySkillVersions, createDb } from '@paperclipai/db';
+import { companies, companySkills, companySkillVersions, createDb } from '@tickernelz/paperclip-pro-db';
 import { eq, sql } from 'drizzle-orm';
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from './helpers/embedded-postgres.js';
 import { unprocessable } from '../errors.js';

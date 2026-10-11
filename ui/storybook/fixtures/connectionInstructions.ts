@@ -1,4 +1,4 @@
-import { defaultConnectionAgentInstructions, getConnectableAppDefinition, instanceExperimentalSettingsSchema } from "@paperclipai/shared";
+import { defaultConnectionAgentInstructions, getConnectableAppDefinition, instanceExperimentalSettingsSchema } from "@tickernelz/paperclip-pro-shared";
 import type { QueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
 import { storybookAgents } from "./paperclipData";

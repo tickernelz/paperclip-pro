@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { companies, createDb, issues } from "@paperclipai/db";
+import { companies, createDb, issues } from "@tickernelz/paperclip-pro-db";
 import { buildExecutionPolicy } from "../../../ui/src/lib/issue-execution-policy.ts";
 import { normalizeIssueExecutionPolicy } from "../services/issue-execution-policy.js";
 import { issueService } from "../services/issues.js";

@@ -1,6 +1,6 @@
-import { centsToUsd, usdToCents } from "@paperclipai/shared";
+import { centsToUsd, usdToCents } from "@tickernelz/paperclip-pro-shared";
 import { useEffect, useId, useState } from "react";
-import type { BudgetPolicySummary } from "@paperclipai/shared";
+import type { BudgetPolicySummary } from "@tickernelz/paperclip-pro-shared";
 import { AlertTriangle, PauseCircle, ShieldAlert, Wallet } from "lucide-react";
 import { cn, formatCents } from "../lib/utils";
 import { Button } from "@/components/ui/button";

@@ -4,22 +4,22 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { type Db, companySecrets, connectionGrants } from "@paperclipai/db";
+import { type Db, companySecrets, connectionGrants } from "@tickernelz/paperclip-pro-db";
 import {
   AI_CONNECTION_CAPABILITIES,
   aiConnectionMetadataSchema, aiRoutingHarness,
   type AiConnectionBinding,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { managedProviderRouting } from "./ai-provider-routing.js";
 import { aiConnectionService } from "./ai-connections.js";
 import { subscriptionService } from "./subscriptions.js";
 import { refreshSubscriptionConnection } from "./subscription-refresh.js";
 import { secretService } from "./secrets.js";
-import { decideCodexAuthMerge, withAccountHomeSecretMutationLock } from "@paperclipai/adapter-codex-local/server";
-import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@paperclipai/adapter-utils/workspace-restore-merge";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@paperclipai/adapter-utils/execution-target";
-import { decideGrokAuthMerge } from "@paperclipai/adapter-grok-local/server";
+import { decideCodexAuthMerge, withAccountHomeSecretMutationLock } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { decideGrokAuthMerge } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
 
 export function isAiConnectionBusy(error: unknown): error is HttpError {
   return error instanceof HttpError && error.status === 422 &&

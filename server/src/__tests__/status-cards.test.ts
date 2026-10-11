@@ -18,13 +18,13 @@ import {
   issues,
   statusCards,
   statusCardUpdates,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   defaultStatusCardRefreshPolicy,
   LOW_TRUST_REVIEW_PRESET,
   STATUS_CARD_AGENT_MAX_CARDS,
   STATUS_CARD_AGENT_MAX_INTEREST_PROMPT_LENGTH,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { errorHandler } from "../middleware/index.js";
 import { statusCardRoutes } from "../routes/status-cards.js";
 import { withBuiltInAgentMarker } from "../lib/built-in-agent-metadata.js";

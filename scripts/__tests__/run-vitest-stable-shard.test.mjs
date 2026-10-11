@@ -174,10 +174,10 @@ test("workspaces-c runs the db project alone and workspaces-b no longer carries 
   // (PR runs 38084171761, 38083084276 and 38083020834, 2026-10-10), so it
   // runs in its own lane. The PR and release matrices both carry that lane.
   const workspacesC = dryRunJson(["--mode", "general", "--group", "general-workspaces-c"]);
-  assert.deepEqual(workspacesC.workspaceProjects, ["@paperclipai/db"]);
+  assert.deepEqual(workspacesC.workspaceProjects, ["@tickernelz/paperclip-pro-db"]);
   assert.equal(workspacesC.workspacesVitestShard, null);
   const workspacesB = dryRunJson(["--mode", "general", "--group", "general-workspaces-b"]);
-  assert.ok(!workspacesB.workspaceProjects.includes("@paperclipai/db"), "db must not run twice");
+  assert.ok(!workspacesB.workspaceProjects.includes("@tickernelz/paperclip-pro-db"), "db must not run twice");
   assert.ok(workspacesB.workspaceProjects.length > 0, "workspaces-b must still run its other projects");
   for (const workflow of ["pr-trusted.yml", "release-verify.yml"]) {
     const entries = matrixEntries(readFileSync(path.join(repoRoot, ".github", "workflows", workflow), "utf8"));
@@ -513,7 +513,7 @@ test("the PR vitest lane wrapper runs the native-runner group exactly on the fin
 });
 
 const lineShardFile = path.join(repoRoot, "server/src/__tests__/chat-channels.integration.test.ts");
-const caseAt = (line, name) => ({ name, file: lineShardFile, projectName: "@paperclipai/server", location: { line, column: 3 } });
+const caseAt = (line, name) => ({ name, file: lineShardFile, projectName: "@tickernelz/paperclip-pro-server", location: { line, column: 3 } });
 
 test("test-line shards cover nested and parameterized cases exactly once without splitting a source line", () => {
   const cases = [caseAt(10, "suite > nested > first"), caseAt(10, "suite > nested > second"),

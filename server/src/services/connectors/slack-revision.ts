@@ -10,7 +10,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 
 /** Only authorization fields participate: receiving messages must not reset sessions. */
 export async function slackAuthorizationRevision(

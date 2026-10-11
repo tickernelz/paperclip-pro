@@ -5,7 +5,7 @@ import { ChatSetupSidebar } from "@/components/chat/ChatSetupNavigation";
 import { ChatSetupSidebarProvider } from "@/context/ChatSetupSidebarContext";
 import { type ChatEndpoint } from "@/api/chatEndpoints";
 import { storybookAgents, storybookAuthSession } from "./paperclipData";
-import { defaultSlackAppConfiguration } from "@paperclipai/shared";
+import { defaultSlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
 
 export type SlackSetupScenario = "choose" | "create" | "manual" | "install" | "declined" | "uncertain" | "manifest_pending" | "recovery" | "verify" | "avatar_failed" | "welcome_failed" | "success";
 

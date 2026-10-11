@@ -16,7 +16,7 @@ import {
 import {
   compareCents,
   hasWorkspaceRestoreFailure,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { nonIdleSlackIssueCondition } from "../slack-conversation-state.js";
 import { readQueuedInteractionResponse } from "../queued-interaction-response.js";
 import {
@@ -49,7 +49,7 @@ import {
   unadmittedChatWakeupCondition,
 } from "../durable-chat-wakeup.js";
 import { agentService } from "../agents.js";
-import { normalizeLegacyRunnerProvider } from "@paperclipai/adapter-utils";
+import { normalizeLegacyRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
 import { randomUUID } from "node:crypto";
 import {
   and,
@@ -67,8 +67,8 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentWakeupRequests,
@@ -86,7 +86,7 @@ import {
   issueRelations,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   conflict,
   HttpError,
@@ -150,7 +150,7 @@ import {
   type AgentOrgRow,
 } from "../agent-invokability.js";
 import { isHeartbeatWakeOnDemandEnabled } from "../heartbeat-policy.js";
-import { isUuidLike } from "@paperclipai/shared";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { retryChatControlAdmission } from "../chat-control-admission-retry.js";
 
 import type { HeartbeatServiceOptions } from "../heartbeat.js";

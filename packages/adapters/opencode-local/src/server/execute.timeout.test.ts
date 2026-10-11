@@ -2,14 +2,14 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@paperclipai/adapter-utils";
-import type { RunProcessResult } from "@paperclipai/adapter-utils/server-utils";
+import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { RunProcessResult } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 const mocks = vi.hoisted(() => ({
   process: vi.fn(), restore: vi.fn(), stop: vi.fn(),
 }));
-vi.mock("@paperclipai/adapter-utils/execution-target", async (importOriginal) => ({
-  ...await importOriginal<typeof import("@paperclipai/adapter-utils/execution-target")>(),
+vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>(),
   ensureAdapterExecutionTargetRuntimeCommandInstalled: vi.fn(),
   ensureAdapterExecutionTargetCommandResolvable: vi.fn(),
   prepareAdapterExecutionTargetRuntime: vi.fn(async () => ({
@@ -81,7 +81,7 @@ describe("OpenCode timeout reporting", () => {
   });
 
   it("retains real local deadline and termination behavior without claiming provider origin", async () => {
-    const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>("@paperclipai/adapter-utils/execution-target");
+    const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>("@tickernelz/paperclip-pro-adapter-utils/execution-target");
     mocks.process.mockImplementation(actual.runAdapterExecutionTargetProcess);
     const command = path.join(dir, "fixture-opencode");
     await fs.writeFile(command, "#!/usr/bin/env node\nsetInterval(() => {}, 1000);\n", { mode: 0o755 });

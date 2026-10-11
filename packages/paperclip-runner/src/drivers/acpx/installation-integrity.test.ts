@@ -57,12 +57,12 @@ describe("ACPX installation integrity", () => {
   it.each([false, true])("admits only the declared qualified Codex platform in its npm-hoisted slot (published platform declaration: %s)", async (publishedDeclaration) => {
     const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-codex-npm-hoist-")));
     temporaryDirectories.push(parent);
-    const root = join(parent, "node_modules/@paperclipai/server");
+    const root = join(parent, "node_modules/@tickernelz/paperclip-pro-server");
     const runtime = join(root, "node_modules/@openai/codex/package.json");
     const platformRoot = join(parent, "node_modules/@openai/codex-linux-x64");
     const platform = join(platformRoot, "package.json");
     const alias = "npm:@openai/codex@0.160.0-linux-x64";
-    const selected = { name: "@paperclipai/server", optionalDependencies: { "@openai/codex-linux-x64": alias } };
+    const selected = { name: "@tickernelz/paperclip-pro-server", optionalDependencies: { "@openai/codex-linux-x64": alias } };
     const runtimeMetadata = { name: "@openai/codex", version: "0.160.0", ...(!publishedDeclaration && { optionalDependencies: selected.optionalDependencies }) };
     const platformMetadata = { name: "@openai/codex", version: "0.160.0-linux-x64", os: ["linux"], cpu: ["x64"] };
     await mkdir(dirname(runtime), { recursive: true });
@@ -103,7 +103,7 @@ describe("ACPX installation integrity", () => {
   it.each([false, true])("retains Codex executable version and byte admission for the hoisted platform (stale bundled alias: %s)", async (staleBundledAlias) => {
     const parent = await realpath(await mkdtemp(join(tmpdir(), "paperclip-codex-npm-admission-")));
     temporaryDirectories.push(parent);
-    const root = join(parent, "node_modules/@paperclipai/server");
+    const root = join(parent, "node_modules/@tickernelz/paperclip-pro-server");
     const bridge = join(root, "node_modules/@agentclientprotocol/codex-acp");
     const runtime = join(bridge, "node_modules/@openai/codex");
     const platformRoot = join(parent, "node_modules/@openai/codex-linux-x64");
@@ -112,7 +112,7 @@ describe("ACPX installation integrity", () => {
     await Promise.all([mkdir(runtime, { recursive: true }), mkdir(dirname(native), { recursive: true })]);
     const command = 'process.stdout.write("unexecuted fixture");';
     await Promise.all([
-      writeFile(join(root, "package.json"), JSON.stringify({ name: "@paperclipai/server", optionalDependencies })),
+      writeFile(join(root, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server", optionalDependencies })),
       writeFile(join(bridge, "package.json"), JSON.stringify({ name: "@agentclientprotocol/codex-acp", version: "1.6.2", bin: "server.js" })),
       writeFile(join(bridge, "server.js"), command),
       writeFile(join(runtime, "package.json"), JSON.stringify({ name: "@openai/codex", version: "0.160.0" })),

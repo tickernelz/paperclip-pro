@@ -4,7 +4,7 @@ import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { and, eq } from "drizzle-orm";
-import { authUsers, companyMemberships, activityLog, agents, companies, createDb, heartbeatRuns, issues } from "@paperclipai/db";
+import { authUsers, companyMemberships, activityLog, agents, companies, createDb, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { documentService } from "../documents.js";
 import { issueService } from "../issues.js";

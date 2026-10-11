@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
 import { ArrowRight, Crown, Loader2 } from "lucide-react";
-import type { Agent } from "@paperclipai/shared";
+import type { Agent } from "@tickernelz/paperclip-pro-shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";

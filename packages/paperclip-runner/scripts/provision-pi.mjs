@@ -32,7 +32,7 @@ export async function provisionPackageRoot(entrypoint) {
     if (!before.isFile() || before.size > 65536n || before.nlink !== 1n) throw new Error("Pi setup package manifest is invalid");
     const bytes = await handle.readFile(); const after = await handle.stat({ bigint: true }); const named = await lstat(manifest, { bigint: true });
     if (before.ino !== after.ino || before.dev !== after.dev || before.ctimeNs !== after.ctimeNs || before.mtimeNs !== after.mtimeNs || bytes.length !== Number(before.size) || named.ino !== before.ino || named.dev !== before.dev) throw new Error("Pi setup package manifest changed");
-    const expected = vendored ? "@paperclipai/server" : "@paperclipai/paperclip-runner";
+    const expected = vendored ? "@tickernelz/paperclip-pro-server" : "@tickernelz/paperclip-pro-paperclip-runner";
     if (JSON.parse(bytes.toString()).name !== expected) throw new Error("Pi setup package identity does not match its layout");
   } finally { await handle.close(); }
   return { root, manifest, cli, assetRoot: vendored ? resolve(cli, "..") : root };
@@ -70,7 +70,7 @@ export async function provisionPi(entrypoint, checkCancelled = () => {}) {
     temporary = await mkdtemp(join(parent, ".setup-private-"));
     temporaryIdentity = await lstat(temporary, { bigint: true });
     const stagingRoot = join(temporary, "package"); await mkdir(stagingRoot, { mode: 0o700 });
-    await writeFile(join(stagingRoot, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }), { flag: "wx", mode: 0o600 });
+    await writeFile(join(stagingRoot, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }), { flag: "wx", mode: 0o600 });
     const stagedOutput = join(stagingRoot, "provider-assets/pi", target);
     const inputs = join(cli, "pi-provision-inputs");
     await materializePiDistribution({ outputRoot: stagedOutput, checkCancelled, inputs: {
@@ -124,7 +124,7 @@ export async function provisionPi(entrypoint, checkCancelled = () => {}) {
 }
 if (process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url) {
   const args = process.argv.slice(2);
-  if (args.length) throw new Error("Usage: paperclipai runtime setup pi (explicit host-platform installation; no model calls)");
+  if (args.length) throw new Error("Usage: paperclip-pro runtime setup pi (explicit host-platform installation; no model calls)");
   // Preserve the same closed network allowlist as the explicit CLI command.
   // Never forward provider keys, HOME config, NODE_OPTIONS or npm configuration.
   const environment = provisionEnvironment();

@@ -20,7 +20,7 @@ import {
   startEmbeddedPostgresTestDatabase,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { discordPaperclipCommandDefinition } from "./chat-discord-command-registration.js";
 import {
   readRegisteredDiscordCommandRegistration,

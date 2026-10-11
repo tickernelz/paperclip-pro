@@ -3,7 +3,7 @@ import type {
   ToolRiskLevel,
   ToolConnectionHealthStatus,
   ToolPolicyDecision,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";

@@ -39,13 +39,13 @@ ARG PAPERCLIP_RUNNER_LOCK_SHA256=440f0ccd8a383b32a576dc53b4191d73bb03a91ba0dabfa
 RUN export PNPM_WORKERS="$(node -p 'require("node:os").availableParallelism()')" \
     && printf '%s  pnpm-lock.yaml\n' "${PAPERCLIP_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
     && sha256sum -c /tmp/provider-lock.sha256 \
-    && pnpm install --frozen-lockfile --filter '@paperclipai/paperclip-runner...'
+    && pnpm install --frozen-lockfile --filter '@tickernelz/paperclip-pro-paperclip-runner...'
 ARG PAPERCLIP_RUNNER_SOURCE_REVISION
 # Optional qualification assets; this never promotes candidate profiles.
 ARG PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS=
 RUN test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
 RUN export PNPM_WORKERS="$(node -p 'require("node:os").availableParallelism()')" \
-    && pnpm --filter @paperclipai/paperclip-runner build:typescript \
+    && pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:typescript \
     && PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_RUNNER_SOURCE_REVISION}" \
       node packages/paperclip-runner/scripts/build-provider-pack.mjs /provider-pack \
         "--candidate-providers=${PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS}" \

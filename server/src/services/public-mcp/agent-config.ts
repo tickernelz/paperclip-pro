@@ -1,5 +1,5 @@
-import { codexLocalReasoningEffortsForModel, DEFAULT_CODEX_LOCAL_MODEL } from "@paperclipai/adapter-codex-local";
-import { claudeLocalReasoningEffortsForModel, DEFAULT_CLAUDE_LOCAL_MODEL } from "@paperclipai/adapter-claude-local";
+import { codexLocalReasoningEffortsForModel, DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { claudeLocalReasoningEffortsForModel, DEFAULT_CLAUDE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-claude-local";
 import { unprocessable } from "../../errors.js";
 
 function effortSettings(adapterType: string, config: Record<string, unknown>) {

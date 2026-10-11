@@ -3,13 +3,13 @@ import type { heartbeatService } from "./heartbeat.js";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { and, asc, eq, gt, inArray, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
-import { DOT_AGENT_TOOL_GUIDANCE, setAgentAvatarSchema, type SetAgentAvatarInput } from "@paperclipai/shared";
+import { DOT_AGENT_TOOL_GUIDANCE, setAgentAvatarSchema, type SetAgentAvatarInput } from "@tickernelz/paperclip-pro-shared";
 import { setAgentProfileAvatar } from "./agent-profile-avatar.js";
 import { consumeDotHistoryReceipt } from "./dot-assignment-follow-up.js";
 import { getStorageService } from "../storage/index.js";
 import { agents, companies, heartbeatRuns, issues, agentWakeupRequests, nativeRunFinalizations, mcpOauthGrants,
   mcpEventSubscriptions, dotAgentBindings as bindings, dotRunnerAssignments as assignments,
-  dotRunnerOperations as operations, dotMailboxItems as mailbox, type Db } from "@paperclipai/db";
+  dotRunnerOperations as operations, dotMailboxItems as mailbox, type Db } from "@tickernelz/paperclip-pro-db";
 import { externalOperationDigest, type DotBindingSnapshot, type ExternalProviderPort, type ExternalProviderOperation } from "../vendor/paperclip-runner/index.js";
 import { McpOAuthError, type McpPrincipal } from "./public-mcp/oauth.js";
 import type { PublicMcpToolExtension } from "./public-mcp/dot-runner.js";

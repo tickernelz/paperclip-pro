@@ -6,7 +6,7 @@ import { toolsApi } from "@/api/tools";
 import { useNavigate } from "@/lib/router";
 import { AiConnectionAccountControls } from "./AiConnectionAccountControls";
 import { AiConnectionUsagePanel } from "./AiConnectionUsagePanel";
-import type { ToolConnection, AiConnectionMetadata } from "@paperclipai/shared";
+import type { ToolConnection, AiConnectionMetadata } from "@tickernelz/paperclip-pro-shared";
 import { aiMethodLabel } from "./model";
 
 export function ManagedAiConnectionRow({

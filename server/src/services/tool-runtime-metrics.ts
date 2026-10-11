@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import { toolRuntimeMetricCounters } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { toolRuntimeMetricCounters } from "@tickernelz/paperclip-pro-db";
 
 export const TOOL_RUNTIME_AUDIT_WRITE_FAILURE_METRIC = "audit_write_failed";
 

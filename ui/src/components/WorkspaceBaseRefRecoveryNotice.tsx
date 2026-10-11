@@ -1,5 +1,5 @@
 import { useId, useRef, useState } from "react";
-import { isValidExistingBranchName } from "@paperclipai/shared";
+import { isValidExistingBranchName } from "@tickernelz/paperclip-pro-shared";
 import { Check, ChevronDown, GitBranch, Loader2, TriangleAlert } from "lucide-react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";

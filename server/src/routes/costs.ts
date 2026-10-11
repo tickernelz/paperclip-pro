@@ -1,16 +1,16 @@
 import { importProviderDailyCosts } from "../services/provider-billing-import.js";
-import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@paperclipai/shared";
+import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/paperclip-pro-shared";
 import { subscriptionService } from "../services/subscriptions.js";
 import { subscriptionCostReport } from "../services/subscription-report.js";
 import { refreshCompanySubscriptions } from "../services/subscription-refresh.js";
 import { canManageAiConnections } from "./ai-connections.js";
-import { importProviderCostsSchema } from "@paperclipai/shared";
+import { importProviderCostsSchema } from "@tickernelz/paperclip-pro-shared";
 import { accountingIntegrityService } from "../services/accounting-integrity.js";
 import { billingReconciliationService } from "../services/billing-reconciliation.js";
-import { adjustCostSchema, importBillingInvoiceSchema, repairAccountingSchema, retryAccountingSchema } from "@paperclipai/shared";
+import { adjustCostSchema, importBillingInvoiceSchema, repairAccountingSchema, retryAccountingSchema } from "@tickernelz/paperclip-pro-shared";
 import { Router } from "express";
 import { z } from "zod";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   createCostEventSchema,
   createFinanceEventSchema,
@@ -18,7 +18,7 @@ import {
   resolveBudgetIncidentSchema,
   updateBudgetSchema,
   upsertBudgetPolicySchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { validate } from "../middleware/validate.js";
 import {
   budgetService,

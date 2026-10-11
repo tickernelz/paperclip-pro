@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   agents, agentWakeupRequests, approvals, companies, completionContracts, createDb, heartbeatRuns, issueApprovals,
   issueComments, issueQuestionResponseDeliveries, issueThreadInteractions, issueWorkProducts, issues, statusDecisions,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { readTaskQuestionContext } from "../issue-question-context.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";

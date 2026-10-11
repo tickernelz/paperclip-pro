@@ -61,7 +61,7 @@ export async function verifyPiInstallation(profile: AcpxReleaseProfile): Promise
   };
   try { await assertDirectories(); }
   catch (error) {
-    if ((error as NodeJS.ErrnoException).code === "ENOENT") throw new Error("Pi runtime is not installed on this host; run paperclipai runtime setup pi before selecting Pi");
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") throw new Error("Pi runtime is not installed on this host; run paperclip-pro runtime setup pi before selecting Pi");
     throw error;
   }
   const metadataPath = join(assets, "pi-distribution.json");

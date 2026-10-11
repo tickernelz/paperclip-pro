@@ -1,7 +1,7 @@
 import { connectionIntentService } from "./connection-intents.js";
 import { isAiConnectionConfigurationFailure } from "./ai-auth-failure.js";
 import { and, eq, isNull, lte, asc, notInArray, desc, sql } from "drizzle-orm";
-import { connectionIntentDeliveries, issueThreadInteractions, issues, agentWakeupRequests, companyMemberships, heartbeatRuns, chatConversations, chatEndpoints, type Db } from "@paperclipai/db";
+import { connectionIntentDeliveries, issueThreadInteractions, issues, agentWakeupRequests, companyMemberships, heartbeatRuns, chatConversations, chatEndpoints, type Db } from "@tickernelz/paperclip-pro-db";
 import type { heartbeatService } from "./heartbeat.js";
 import { issueService } from "./issues.js";
 import { issueRecoveryActionService } from "./issue-recovery-actions.js";

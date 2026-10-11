@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { and, eq, sql } from "drizzle-orm";
 import express from "express";
 import request from "supertest";
-import { activityLog, agentApiKeys, agentCommentary, agents, authUsers, companyMemberships, heartbeatRuns, issues, nativeRunResults } from "@paperclipai/db";
+import { activityLog, agentApiKeys, agentCommentary, agents, authUsers, companyMemberships, heartbeatRuns, issues, nativeRunResults } from "@tickernelz/paperclip-pro-db";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { submitAgentCommentary } from "../services/agent-commentary.js";

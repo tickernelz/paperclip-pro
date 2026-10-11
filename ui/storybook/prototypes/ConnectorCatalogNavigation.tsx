@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { ChevronLeft, ChevronRight, Search, X } from "lucide-react";
-import { CONNECTABLE_APP_DEFINITIONS, getAppStoreDefinition, type ToolApplication, type ToolConnection } from "@paperclipai/shared";
-import { AGGREGATOR_APP_CATALOG, aggregatorAppIdentity, type AggregatorAppCatalogEntry } from "@paperclipai/shared/aggregator-app-catalog";
+import { CONNECTABLE_APP_DEFINITIONS, getAppStoreDefinition, type ToolApplication, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import { AGGREGATOR_APP_CATALOG, aggregatorAppIdentity, type AggregatorAppCatalogEntry } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";

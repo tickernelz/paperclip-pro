@@ -1,14 +1,14 @@
 {
-  "name": "@paperclipai/skills-catalog",
+  "name": "@tickernelz/paperclip-pro-skills-catalog",
   "version": "0.3.1",
   "license": "MIT",
-  "homepage": "https://github.com/paperclipai/paperclip",
+  "homepage": "https://github.com/tickernelz/paperclip-pro",
   "bugs": {
-    "url": "https://github.com/paperclipai/paperclip/issues"
+    "url": "https://github.com/tickernelz/paperclip-pro/issues"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/paperclipai/paperclip",
+    "url": "https://github.com/tickernelz/paperclip-pro",
     "directory": "packages/skills-catalog"
   },
   "type": "module",
@@ -49,7 +49,7 @@
     "validate": "node ../../cli/node_modules/tsx/dist/cli.mjs scripts/validate-catalog.ts"
   },
   "dependencies": {
-    "@paperclipai/shared": "workspace:*"
+    "@tickernelz/paperclip-pro-shared": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0"

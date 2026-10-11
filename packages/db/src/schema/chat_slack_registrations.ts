@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { check, foreignKey, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
-import type { SlackRegistrationStatus } from "@paperclipai/shared";
+import type { SlackRegistrationStatus } from "@tickernelz/paperclip-pro-shared";
 import { chatEndpoints } from "./chat_channels.js";
 
 /** App provisioning is distinct from installation and runtime credentials. No plaintext secrets. */

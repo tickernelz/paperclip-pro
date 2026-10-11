@@ -16,12 +16,12 @@ import {
   type ReceiptReactionPayload,
 } from "./chat-receipt-reactions.js";
 import { fastResponseService, enqueueFastResponse, fastResponseSourceCurrent, fastResponseTurnQueued } from "./fast-responses.js";
-import { fastResponseRequests } from "@paperclipai/db";
+import { fastResponseRequests } from "@tickernelz/paperclip-pro-db";
 import { chatCredentialMutationLease, CREDENTIAL_MUTATION_LEASE_TTL_MS, type CredentialMutationLeaseGuard } from "./chat-credential-mutation-lease.js";
 import type { AgentAvatarRequest } from "./agent-avatars.js";
 import { slackChatRegistrationService, slackRegistrationProjection } from "./chat-slack-registration.js";
-import { chatSlackRegistrations } from "@paperclipai/db";
-import { SLACK_CHAT_BOT_SCOPES } from "@paperclipai/shared";
+import { chatSlackRegistrations } from "@tickernelz/paperclip-pro-db";
+import { SLACK_CHAT_BOT_SCOPES } from "@tickernelz/paperclip-pro-shared";
 import { authorizationService, canActorReadIssuePrivacy, canPublishIssueToChatAudience } from "./authorization.js";
 import { withSlackBoardLease } from "./slack-board-lease.js";
 import { mirrorSlackBoardComment, slackBoardReplyBindings } from "./slack-board-messages.js";
@@ -48,8 +48,8 @@ import {
   githubMessageAddressesAnotherBot,
 } from "./chat-github-events.js";
 import { githubReviewPrompt, githubManualMessagePrompt, GITHUB_CONFIGURED_SKILL_GUIDANCE } from "./chat-github-review-policy.js";
-import { chatGitHubConfigurations, chatGitHubRegistrations, chatGitHubReviews } from "@paperclipai/db";
-import type { GitHubReviewEventContext, GitHubIssueEventContext, GitHubAutomaticEventContext, GitHubReviewPolicy } from "@paperclipai/shared";
+import { chatGitHubConfigurations, chatGitHubRegistrations, chatGitHubReviews } from "@tickernelz/paperclip-pro-db";
+import type { GitHubReviewEventContext, GitHubIssueEventContext, GitHubAutomaticEventContext, GitHubReviewPolicy } from "@tickernelz/paperclip-pro-shared";
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { githubResponseCommentService } from "./chat-github-response-comments.js";
 import { githubChatWizardService } from "./chat-github-wizard.js";
@@ -68,12 +68,12 @@ import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./ph
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
 import { PhotonAnswerValidationError, nativePhotonInteraction, publishPhotonPrompt, photonResponseCommand, parsePhotonQuestionAnswer, type PhotonPromptReceipt, type PhotonInteractionBinding, type PhotonDraft } from "./photon/interactions.js";
 import { validateNativeQuestionResponseInput } from "./native-runtime/native-question-bridge.js";
-import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@paperclipai/shared";
+import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@paperclipai/shared";
+import { photonChannelConfigurationSchema, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
-import { defaultSlackAppConfiguration } from "@paperclipai/shared";
+import { defaultSlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
 import {
   createHash,
   createHmac,
@@ -113,7 +113,7 @@ import {
   teamsConversationId,
 } from "./chat-control-chronology.js";
 import { retryChatControlAdmission } from "./chat-control-admission-retry.js";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   createDurableChatWakeupRequest,
   assertDurableChatWakeupReceipt,
@@ -155,7 +155,7 @@ import {
   joinRequests,
   toolApplications,
   toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ChatAdapterCapabilities,
   ChatEndpointCallbackSurfaces,
@@ -171,7 +171,7 @@ import type {
   SafeChatPublicationPayload,
   ToolCredentialSecretRef,
   UpdateChatEndpointInput,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   isAgentStatusInvokable,
   CHAT_PROVIDERS,
@@ -179,7 +179,7 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   LOW_TRUST_REVIEW_PRESET_VERSION,
   LOW_TRUST_REVIEW_RAW_OUTPUT_DISPOSITION,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   formatAttachmentSize,
   isAllowedContentType,
@@ -29651,7 +29651,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     action: "mark_delivered" | "retry_anyway" | "cancel",
     userId: string,
     fileTransfer?: {
-      phase: import("@paperclipai/shared").ChatFileTransferPhase;
+      phase: import("@tickernelz/paperclip-pro-shared").ChatFileTransferPhase;
       version: number;
     },
   ) {

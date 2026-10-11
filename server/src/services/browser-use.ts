@@ -17,14 +17,14 @@ import {
   heartbeatRuns,
   agents,
   costEvents,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   BROWSER_USE_IDLE_MS,
   type BrowserUseControl,
   type BrowserUseSettings,
   type BrowserUseViewportRequest,
   type TaskBrowser,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   browserUseClient,
   browserUseCostCap,

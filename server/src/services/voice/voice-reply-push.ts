@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, eq, gt, inArray, isNull, lt, sql } from "drizzle-orm";
-import { chatActions, chatEndpoints, chatPublications, chatVoiceReplies, chatVoiceSessions, type Db } from "@paperclipai/db";
+import { chatActions, chatEndpoints, chatPublications, chatVoiceReplies, chatVoiceSessions, type Db } from "@tickernelz/paperclip-pro-db";
 import { instanceSettingsService } from "../instance-settings.js";
 import { HttpError } from "../../errors.js";
 import { createSpekoProvider, SpekoProviderError } from "./speko-provider.js";

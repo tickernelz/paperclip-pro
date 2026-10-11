@@ -4,4 +4,4 @@ export {
   label,
   models,
   type,
-} from "@paperclipai/hermes-paperclip-adapter/gateway";
+} from "@tickernelz/paperclip-pro-hermes-paperclip-adapter/gateway";

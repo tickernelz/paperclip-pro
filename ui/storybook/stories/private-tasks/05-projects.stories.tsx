@@ -1,4 +1,4 @@
-import type { Project } from "@paperclipai/shared";
+import type { Project } from "@tickernelz/paperclip-pro-shared";
 import { useEffect, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";

@@ -3,13 +3,13 @@ import {
   ISSUE_DETAIL_CONTENT_MEASURE,
   scheduleIssueDetailPaintMeasure,
 } from "@/lib/issue-detail-performance";
-import { hasWorkspaceRestoreFailure } from "@paperclipai/shared";
+import { hasWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-shared";
 import { workspaceRestoreMarkerDetail } from "@/lib/workspace-restore-marker";
 import { credentialAccessNotice } from "@/lib/credential-access-notice";
-import type { ActivityEvent, IssueQueuedCommentQueue, TaskBrowser } from "@paperclipai/shared";
+import type { ActivityEvent, IssueQueuedCommentQueue, TaskBrowser } from "@tickernelz/paperclip-pro-shared";
 import { useProjectCreatedItems } from "@/hooks/useProjectCreatedItems";
 import { skillCreatedItems } from "@/components/task-chat/skill-created-items";
-import { requiresExecutionReconciliation } from "@paperclipai/shared";
+import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import { TaskChatExpansionState } from "@/components/task-chat/expansion-state";
 import { TaskChatScrollReady } from "@/components/task-chat/scroll-navigation";
 import {
@@ -93,7 +93,7 @@ import type {
   FeedbackVoteValue,
   IssueDocument,
   IssueThreadInteraction,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   TaskChatThreadView,
   taskChatContentKey,

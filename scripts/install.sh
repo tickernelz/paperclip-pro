@@ -6,7 +6,7 @@ MIN_NODE_MINOR=11
 MIN_NODE_PATCH=0
 MIN_NODE_VERSION="${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}.${MIN_NODE_PATCH}"
 DEFAULT_NODE_MAJOR=24
-PAPERCLIP_PACKAGE="paperclipai"
+PAPERCLIP_PACKAGE="@tickernelz/paperclip-pro"
 PUBLIC_NPM_REGISTRY="https://registry.npmjs.org"
 HOMEBREW_INSTALL_COMMIT="99e13e96cbbdc1ac1ac09c0a40b450bf219ef3aa"
 HOMEBREW_INSTALL_SHA256="99287f194a8b3c9e6b0203a11a5fa54518be57209343e6bb954dec4635796d9d"
@@ -53,7 +53,7 @@ Every option also has a PAPERCLIP_INSTALL_* environment equivalent, for example
 PAPERCLIP_INSTALL_VERSION=2026.722.0 and PAPERCLIP_INSTALL_NO_PROMPT=1.
 
 To install from a git branch, tag, or commit, use the Paperclip CLI directly:
-npx paperclipai install --ref <ref>
+npx @tickernelz/paperclip-pro install --ref <ref>
 EOF
 }
 
@@ -165,7 +165,7 @@ if [ "$CANARY" = "1" ] && [ -n "$VERSION" ]; then
 fi
 
 if [ -n "$REF" ] || [ -n "$REPO" ]; then
-  fail "git-ref installs are not supported by install.sh; run 'npx paperclipai install --ref <ref>' instead"
+  fail "git-ref installs are not supported by install.sh; run 'npx @tickernelz/paperclip-pro install --ref <ref>' instead"
 fi
 
 if { [ ! -t 0 ] || [ ! -t 1 ]; } && [ "$NO_PROMPT" != "1" ]; then
@@ -373,7 +373,7 @@ INSTALL_ARGS=(install)
 [ "$NO_PROMPT" = "1" ] && INSTALL_ARGS+=(--yes)
 ensure_temp_dir
 NPM_USERCONFIG="$TEMP_DIR/npmrc"
-printf 'registry=%s\n@paperclipai:registry=%s\n' "$PUBLIC_NPM_REGISTRY" "$PUBLIC_NPM_REGISTRY" >"$NPM_USERCONFIG"
+printf 'registry=%s\n@tickernelz:registry=%s\n' "$PUBLIC_NPM_REGISTRY" "$PUBLIC_NPM_REGISTRY" >"$NPM_USERCONFIG"
 chmod 600 "$NPM_USERCONFIG"
 NPM_ENV=(env "NPM_CONFIG_REGISTRY=$PUBLIC_NPM_REGISTRY" "npm_config_registry=$PUBLIC_NPM_REGISTRY" "NPM_CONFIG_USERCONFIG=$NPM_USERCONFIG" "npm_config_userconfig=$NPM_USERCONFIG")
 INSTALL_COMMAND=("${NPM_ENV[@]}" npx --yes "--registry=$PUBLIC_NPM_REGISTRY" "$PACKAGE_SPEC" "${INSTALL_ARGS[@]}")
@@ -394,17 +394,17 @@ if [ "$INSTALL_SERVICE" = "1" ]; then
 fi
 
 if [ "$NO_ONBOARD" = "0" ] && [ -t 0 ] && [ -t 1 ]; then
-  if command -v paperclipai >/dev/null 2>&1; then
-    exec paperclipai onboard
-  elif [ -x "${HOME:-}/.local/bin/paperclipai" ]; then
-    exec "${HOME}/.local/bin/paperclipai" onboard
+  if command -v paperclip-pro >/dev/null 2>&1; then
+    exec paperclip-pro onboard
+  elif [ -x "${HOME:-}/.local/bin/paperclip-pro" ]; then
+    exec "${HOME}/.local/bin/paperclip-pro" onboard
   else
-    fail "Paperclip was installed, but 'paperclipai' is not available on PATH. Open a new shell and run 'paperclipai onboard'."
+    fail "Paperclip was installed, but 'paperclip-pro' is not available on PATH. Open a new shell and run 'paperclip-pro onboard'."
   fi
 fi
 
 if [ "$NO_ONBOARD" = "0" ]; then
-  log "Installation complete. Next: paperclipai onboard"
+  log "Installation complete. Next: paperclip-pro onboard"
 else
   log "Installation complete."
 fi

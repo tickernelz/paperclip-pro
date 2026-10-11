@@ -10,7 +10,7 @@
  * ~/.hermes/config.yaml at runtime.
  */
 
-import type { CreateConfigValues } from "@paperclipai/adapter-utils";
+import type { CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
 
 import {
   DEFAULT_TIMEOUT_SEC,

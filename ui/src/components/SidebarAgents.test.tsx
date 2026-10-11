@@ -3,7 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Agent, ResourceMemberships } from "@paperclipai/shared";
+import type { Agent, ResourceMemberships } from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SidebarAgents } from "./SidebarAgents";
 import { queryKeys } from "../lib/queryKeys";

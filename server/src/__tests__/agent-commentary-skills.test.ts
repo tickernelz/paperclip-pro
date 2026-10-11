@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { ensureCodexSkillsInjected, listCodexSkills } from "@paperclipai/adapter-codex-local/server";
-import { listClaudeSkills } from "@paperclipai/adapter-claude-local/server";
-import { readPaperclipRuntimeSkillEntries, resolveLegacyPaperclipDesiredSkillNames } from "@paperclipai/adapter-utils/server-utils";
+import { ensureCodexSkillsInjected, listCodexSkills } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { listClaudeSkills } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { readPaperclipRuntimeSkillEntries, resolveLegacyPaperclipDesiredSkillNames } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { prepareClaudePromptBundle } from "../../../packages/adapters/claude-local/src/server/prompt-cache.js";
 import { stageCodexHomeForSync } from "../../../packages/adapters/codex-local/src/server/codex-home.js";
 

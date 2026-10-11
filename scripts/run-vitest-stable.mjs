@@ -21,26 +21,26 @@ const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const serverScriptsDir = path.join(repoRoot, "server", "scripts");
 const nonServerProjects = [
-  "@paperclipai/shared",
-  "@paperclipai/skills-catalog",
-  "@paperclipai/db",
-  "@paperclipai/adapter-utils",
-  "@paperclipai/adapter-claude-local",
-  "@paperclipai/adapter-codex-local",
-  "@paperclipai/adapter-cursor-cloud",
-  "@paperclipai/adapter-cursor-local",
-  "@paperclipai/adapter-gemini-local",
-  "@paperclipai/adapter-grok-local",
-  "@paperclipai/hermes-paperclip-adapter",
-  "@paperclipai/adapter-kimi-local",
-  "@paperclipai/adapter-openclaw-gateway",
-  "@paperclipai/adapter-opencode-local",
-  "@paperclipai/adapter-pi-local",
-  "@paperclipai/plugin-daytona",
-  "@paperclipai/plugin-sdk",
-  "@paperclipai/create-paperclip-plugin",
-  "@paperclipai/ui",
-  "paperclipai",
+  "@tickernelz/paperclip-pro-shared",
+  "@tickernelz/paperclip-pro-skills-catalog",
+  "@tickernelz/paperclip-pro-db",
+  "@tickernelz/paperclip-pro-adapter-utils",
+  "@tickernelz/paperclip-pro-adapter-claude-local",
+  "@tickernelz/paperclip-pro-adapter-codex-local",
+  "@tickernelz/paperclip-pro-adapter-cursor-cloud",
+  "@tickernelz/paperclip-pro-adapter-cursor-local",
+  "@tickernelz/paperclip-pro-adapter-gemini-local",
+  "@tickernelz/paperclip-pro-adapter-grok-local",
+  "@tickernelz/paperclip-pro-hermes-paperclip-adapter",
+  "@tickernelz/paperclip-pro-adapter-kimi-local",
+  "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
+  "@tickernelz/paperclip-pro-adapter-opencode-local",
+  "@tickernelz/paperclip-pro-adapter-pi-local",
+  "@tickernelz/paperclip-pro-plugin-daytona",
+  "@tickernelz/paperclip-pro-plugin-sdk",
+  "@tickernelz/paperclip-pro-create-paperclip-plugin",
+  "@tickernelz/paperclip-pro-ui",
+  "paperclip-pro",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -118,7 +118,7 @@ function excludedServerSuites(groupName) {
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
 const generalWorkspacesCGroupName = "general-workspaces-c";
-const generalWorkspacesAProjects = ["@paperclipai/ui", "paperclipai"];
+const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "paperclip-pro"];
 // The db project runs in its own lane. Its vitest invocation took 168-250s
 // of a 436-513s workspaces-b job (PR runs 38084171761, 38083084276 and
 // 38083020834, 2026-10-10), which made workspaces-b the slowest check once
@@ -128,7 +128,7 @@ const generalWorkspacesAProjects = ["@paperclipai/ui", "paperclipai"];
 // slow suites on one runner. Splitting by project is deterministic and
 // leaves the remaining projects at ~265-275s of vitest time, roughly level
 // with this lane.
-const generalWorkspacesCProjects = ["@paperclipai/db"];
+const generalWorkspacesCProjects = ["@tickernelz/paperclip-pro-db"];
 const generalWorkspacesBProjects = nonServerProjects.filter(
   (project) => !generalWorkspacesAProjects.includes(project) && !generalWorkspacesCProjects.includes(project),
 );
@@ -388,7 +388,7 @@ function runVitest(args, label, testShard = null) {
     ...process.env,
     NODE_ENV: "test",
     PAPERCLIP_TEST_HOST_HOME: process.env.PAPERCLIP_TEST_HOST_HOME
-      ?? (process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip")),
+      ?? (process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro")),
     PAPERCLIP_HOME: path.join(testRoot, "h"),
     // Config discovery otherwise prefers the checkout's .paperclip/config.json
     // over PAPERCLIP_HOME, importing preview scheduling policy into unit tests.
@@ -468,13 +468,13 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {
   if (groupName === generalChatGroupName) {
-    runVitest(["--project", "@paperclipai/server", ...serializedServerVitestArgs, chatSuite],
+    runVitest(["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, chatSuite],
       "chat integration test shard", { index: shardIndex ?? 0, count: shardCount ?? 1 });
     return;
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@paperclipai/server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
       "native runner vertical-slice suite",
     );
     return;
@@ -499,7 +499,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       runVitest(
         [
           "--project",
-          "@paperclipai/server",
+          "@tickernelz/paperclip-pro-server",
           ...serializedServerVitestArgs,
           ...shardFiles,
         ],
@@ -515,7 +515,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@tickernelz/paperclip-pro-server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -556,7 +556,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     runVitest(
       [
         "--project",
-        "@paperclipai/server",
+        "@tickernelz/paperclip-pro-server",
         routeTest.repoPath,
         "--pool=forks",
         "--isolate",

@@ -1,9 +1,9 @@
 import { createHash } from "node:crypto";
 import { and, asc, count, inArray, eq, gt, gte, isNotNull, isNull, lt, lte, or, sql } from "drizzle-orm";
 import { z } from "zod";
-import { companies, activityLog, issueComments, heartbeatRuns, dotMailboxItems, dotAgentBindings, dotRunnerAssignments, mcpEventAdmissions as admissions, mcpEventDeliveries as deliveries, mcpEventSubscriptions as subscriptions, type Db } from "@paperclipai/db";
+import { companies, activityLog, issueComments, heartbeatRuns, dotMailboxItems, dotAgentBindings, dotRunnerAssignments, mcpEventAdmissions as admissions, mcpEventDeliveries as deliveries, mcpEventSubscriptions as subscriptions, type Db } from "@tickernelz/paperclip-pro-db";
 import { dotRunnerBroker } from "../dot-runner-broker.js";
-import { ISSUE_STATUSES } from "@paperclipai/shared";
+import { ISSUE_STATUSES } from "@tickernelz/paperclip-pro-shared";
 import { localEncryptedProvider } from "../../secrets/local-encrypted-provider.js";
 import { logActivity } from "../activity-log.js";
 import { logger } from "../../middleware/logger.js";

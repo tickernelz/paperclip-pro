@@ -1,5 +1,5 @@
-import type { Db, agents, heartbeatRuns, issues } from "@paperclipai/db";
-import type { IssueExecutionWorkspaceSettings, ProjectExecutionWorkspacePolicy } from "@paperclipai/shared";
+import type { Db, agents, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import type { IssueExecutionWorkspaceSettings, ProjectExecutionWorkspacePolicy } from "@tickernelz/paperclip-pro-shared";
 import { parseObject } from "../../adapters/utils.js";
 import { logger } from "../../middleware/logger.js";
 import { parseNativeExecutionInput } from "../../vendor/paperclip-runner/index.js";

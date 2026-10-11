@@ -27,14 +27,14 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   environmentLeases,
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { logger } from "../../middleware/logger.js";
 import {
   claimNativeRestartRecoveries,

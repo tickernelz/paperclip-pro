@@ -2,7 +2,7 @@ import {
   aiRoutingBaseUrl,
   aiRoutingModel,
   type AiProviderRouting,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 /** Projects one authoritative connection into an isolated harness environment. */
 export function managedProviderRouting(

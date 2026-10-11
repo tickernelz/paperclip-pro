@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";
-import type { IssueQueuedCommentEntry, IssueQueuedCommentQueue } from "@paperclipai/shared";
+import type { IssueQueuedCommentEntry, IssueQueuedCommentQueue } from "@tickernelz/paperclip-pro-shared";
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { TaskChatQueuedMessages } from "@/components/task-chat/TaskChatQueuedMessages";
 import { composerAgentAppearance, composerAgents } from "../prototypes/composer-model-picker/fixtures";

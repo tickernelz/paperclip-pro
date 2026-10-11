@@ -1,4 +1,4 @@
-import type { heartbeatRuns } from "@paperclipai/db";
+import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 
 type Run = Pick<typeof heartbeatRuns.$inferSelect, "status" | "startedAt" | "finishedAt" | "runtimeMode" | "errorCode" | "error" | "resultJson">;
 const SOURCES = ["operator", "queued_message", "shutdown", "provider", "transport", "control_plane", "unknown"] as const;

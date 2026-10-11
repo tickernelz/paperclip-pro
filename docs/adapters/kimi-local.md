@@ -67,7 +67,7 @@ Desired Paperclip skills are delivered from a dedicated per-run directory passed
 
 ### Control-plane skill
 
-`paperclipai agent local-cli <agentRef> -C <companyId>` installs the Paperclip control-plane skills into `~/.kimi-code/skills` (honoring `KIMI_CODE_HOME`), alongside the existing `~/.codex/skills` and `~/.claude/skills` targets. Kimi auto-discovers this home on every run, so the agent has the control-plane API reference (issue/comment/interaction routes) from turn one rather than rediscovering endpoints by trial and error. Pass `--no-install-skills` to skip. This is independent of the per-run `--skills-dir` delivery above, which only applies when an agent has explicitly configured skills.
+`paperclip-pro agent local-cli <agentRef> -C <companyId>` installs the Paperclip control-plane skills into `~/.kimi-code/skills` (honoring `KIMI_CODE_HOME`), alongside the existing `~/.codex/skills` and `~/.claude/skills` targets. Kimi auto-discovers this home on every run, so the agent has the control-plane API reference (issue/comment/interaction routes) from turn one rather than rediscovering endpoints by trial and error. Pass `--no-install-skills` to skip. This is independent of the per-run `--skills-dir` delivery above, which only applies when an agent has explicitly configured skills.
 
 ## Environment Test
 

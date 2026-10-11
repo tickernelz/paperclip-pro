@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { afterAll, describe, expect, it } from "vitest";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInput } from "../../../packages/paperclip-runner/src/contracts/native-execution.js";
 import type { PersistedNativeSession } from "../../../packages/paperclip-runner/src/contracts/native-session-backend.js";

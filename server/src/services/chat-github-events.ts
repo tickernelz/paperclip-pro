@@ -9,14 +9,14 @@ import {
   chatIdentityLinks,
   companyMemberships,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   githubCommitSchema,
   githubIdSchema,
   type GitHubReviewEventContext,
   type GitHubIssueEventContext,
   type GitHubAutomaticEventContext,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   effectiveGitHubReviewPolicy,
   githubReviewSchedulingDecision,

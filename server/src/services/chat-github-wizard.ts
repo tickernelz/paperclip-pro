@@ -9,12 +9,12 @@ import {
   companyMemberships,
   toolConnections,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   GitHubAppRegistrationInput,
   GitHubAppWizardState,
   GitHubAppCloudState,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { badRequest, conflict, forbidden, notFound } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import {

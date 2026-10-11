@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { createDb } from "@paperclipai/db";
-import { sha256HexOfBytes } from "@paperclipai/shared/portability-hash";
+import { createDb } from "@tickernelz/paperclip-pro-db";
+import { sha256HexOfBytes } from "@tickernelz/paperclip-pro-shared/portability-hash";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

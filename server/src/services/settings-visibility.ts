@@ -1,4 +1,4 @@
-import { parseHiddenSettingsList } from "@paperclipai/shared";
+import { parseHiddenSettingsList } from "@tickernelz/paperclip-pro-shared";
 import { logger } from "../middleware/logger.js";
 
 /**

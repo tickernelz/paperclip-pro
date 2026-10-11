@@ -32,7 +32,7 @@ The selected new cases do not cover the entire existing 63-case/model `public-mc
 
 ## Actual clients, independent of model evals
 
-The local disposable instance was created with `paperclipai test-drive`, then configured for authenticated sign-in. No worktree database clone was used.
+The local disposable instance was created with `paperclip-pro test-drive`, then configured for authenticated sign-in. No worktree database clone was used.
 
 - **Codex CLI 0.153.4:** native OAuth/CIMD; read organization and agents, updated EXP-1, wrote the report document. A first attempt with a ChatGPT login could not use Mini, so the authorized API provider was used. A noninteractive approval-disabled attempt correctly refused mutation; explicitly approved only the two fixture mutation tools for that invocation.
 - **Claude Code 2.1.245:** Paperclip device OAuth and the credential-protected stdio bridge. A later conversation read Codex's report, performed a revision-checked update, and read it back. Revision 2 preserved the original body and appended its own verification line.

@@ -6,7 +6,7 @@ import {
   chatEndpoints, chatExternalPrincipals, chatIdentityLinks, chatMessageLinks,
   companies, companyMemberships, createDb, issueComments, issues,
   toolApplications, toolConnections,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   registerServerAdapter, unregisterServerAdapter, type AdapterExecutionContext,
 } from "../adapters/index.js";

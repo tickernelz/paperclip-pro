@@ -13,7 +13,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type {
   AiConnectionBinding,
   AiManagedConnectionSummary,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { ProviderCatalogReview } from "../prototypes/provider-routing/ConnectionCatalog";
 import { ReviewFrame } from "../prototypes/provider-routing/shared";

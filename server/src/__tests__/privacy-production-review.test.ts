@@ -7,7 +7,7 @@ import request from "supertest";
 import WebSocket from "ws";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { workspaceOperations, agents, approvals, assets, chatEndpoints, chatExternalPrincipals, chatConversations, chatIdentityLinks, chatDeliveries, toolApplications, toolConnections, executionWorkspaces, authUsers, companies, companyMemberships, createDb, heartbeatRuns, issueAccessGrants, issues, projectAccessMembers, projects, startEmbeddedPostgresTestDatabase } from "@paperclipai/db";
+import { workspaceOperations, agents, approvals, assets, chatEndpoints, chatExternalPrincipals, chatConversations, chatIdentityLinks, chatDeliveries, toolApplications, toolConnections, executionWorkspaces, authUsers, companies, companyMemberships, createDb, heartbeatRuns, issueAccessGrants, issues, projectAccessMembers, projects, startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db";
 import { authorizationService, canPublishIssueToChatAudience, canActorReadIssuePrivacy, issueReadSqlCondition, canActorReadProjectPrivacy, projectReadSqlCondition, canActorReadApproval, approvalReadSqlCondition, canActorReadExecutionWorkspace, type AuthorizationActor } from "../services/authorization.js";
 
 import { canActorReadWorkspaceOperation } from "../services/heartbeat-run-privacy.js";

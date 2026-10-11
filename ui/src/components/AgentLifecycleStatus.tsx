@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi } from "../api/agents";
 import { queryKeys } from "../lib/queryKeys";
-import type { Agent, AgentLifecycleState } from "@paperclipai/shared";
+import type { Agent, AgentLifecycleState } from "@tickernelz/paperclip-pro-shared";
 import { Loader2 } from "lucide-react";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";

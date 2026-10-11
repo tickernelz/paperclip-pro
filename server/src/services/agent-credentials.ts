@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { agents, type Db } from "@paperclipai/db";
+import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { collectSecretRefs, collectUserSecretRefs, syncAgentAdapterEnvBindings } from "./agent-secret-bindings.js";
 import { logActivity } from "./activity-log.js";
 import { claudeOAuthBindingsMatchExactly, claudeOAuthClaimRejectedError,

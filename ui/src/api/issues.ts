@@ -1,5 +1,5 @@
-import type { SetIssueTitle } from "@paperclipai/shared";
-import type { ExecutionReconciliation } from "@paperclipai/shared";
+import type { SetIssueTitle } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
 import type {
   AcceptedPlanDecompositionSummary,
   AskUserQuestionsAnswer,
@@ -39,7 +39,7 @@ import type {
   ReleaseIssueTreeHoldResponse,
   UpsertIssueWatchdog,
   UpsertIssueDocument,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api, ApiError, detachInflightGet, type RequestOptions } from "./client";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";
 

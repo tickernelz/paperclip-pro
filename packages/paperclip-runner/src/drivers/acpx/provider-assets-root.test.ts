@@ -21,7 +21,7 @@ it("uses one fixed provider directory for source, compiled and bundled runner la
 
 it("resolves descriptor sidecars only through the runner-bound canonical package manifest", async () => {
   const path = await root();
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   expect(resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "pi")).toMatch(/provider-assets\/pi$/);
@@ -36,7 +36,7 @@ it("resolves the public server bundle without repository paths or candidate over
   const vendored = join(await realpath(path), "dist/vendor/paperclip-runner");
   await mkdir(join(vendored, "cli"), { recursive: true });
   await writeFile(join(vendored, "cli/acpx-runtime-sidecar.cjs"), "// bundled sidecar");
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   expect(resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "cursor")).toBe(join(vendored, "provider-assets/cursor"));
@@ -51,7 +51,7 @@ it("rejects a server bundle redirected outside its published package", async () 
   const path = await root(); const outside = await root();
   await mkdir(join(path, "dist/vendor"), { recursive: true });
   await symlink(outside, join(path, "dist/vendor/paperclip-runner"));
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   expect(() => resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "cursor")).toThrow("escaped");
@@ -59,11 +59,11 @@ it("rejects a server bundle redirected outside its published package", async () 
 
 it("rejects external manifests, links, asset escapes and incomplete authority", async () => {
   const path = await root(); const outside = await root();
-  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(outside, "package.json"));
   expect(() => resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "copilot")).toThrow("escapes");
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/paperclip-runner" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-paperclip-runner" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   await mkdir(join(path, "provider-assets"));
   await symlink(outside, join(path, "provider-assets/copilot"));
@@ -74,7 +74,7 @@ it("rejects external manifests, links, asset escapes and incomplete authority", 
 
 async function serverFixture() {
   const path = await root();
-  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(path, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   await mkdir(join(path, "dist/vendor/paperclip-runner/cli"), { recursive: true });
   await writeFile(join(path, "dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs"), "// bundled sidecar");
   return path;
@@ -94,7 +94,7 @@ it("rejects an unrelated server manifest, escaped vendor sidecar and linked mani
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", path);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
   await mkdir(join(path, "nested"));
-  await writeFile(join(path, "nested/package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(path, "nested/package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "nested/package.json"));
   expect(() => resolveRunnerProviderAssetsRoot("file:///proc/self/fd/18", "pi")).toThrow("outside its package root");
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", join(path, "package.json"));
@@ -104,7 +104,7 @@ it("rejects an unrelated server manifest, escaped vendor sidecar and linked mani
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", undefined);
   vi.stubEnv("PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", undefined);
   await rm(join(path, "package.json"));
-  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@paperclipai/server" }));
+  await writeFile(join(outside, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-server" }));
   await symlink(join(outside, "package.json"), join(path, "package.json"));
   expect(() => resolveRunnerProviderAssetsRoot(pathToFileURL(join(path, "dist/vendor/paperclip-runner/drivers/acpx/pi-installation.js")).href, "pi")).toThrow();
 });

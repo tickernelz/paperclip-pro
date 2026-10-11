@@ -1,4 +1,4 @@
-import { signalDatabaseWork, subscribeDatabaseWork } from "@paperclipai/db";
+import { signalDatabaseWork, subscribeDatabaseWork } from "@tickernelz/paperclip-pro-db";
 
 /** Topics for existing durable queues; register intent before their writes. */
 export const DELIVERY_QUEUES = {

@@ -23,7 +23,7 @@ import { randomUUID } from "node:crypto";
 import { beginIdleTrackedWork, readTaskDrain, trackIdleWork } from "./task-admission.js";
 import { EventEmitter } from "node:events";
 import { createInterface, type Interface as ReadlineInterface } from "node:readline";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
 import {
   JSONRPC_VERSION,
   JSONRPC_ERROR_CODES,
@@ -44,7 +44,7 @@ import {
   DUPLEX_CHANNEL_EXIT_NOTIFICATION,
   encodeChannelBytes,
   decodeChannelBytes,
-} from "@paperclipai/plugin-sdk";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
 import type {
   JsonRpcId,
   PluginInvocationContext,
@@ -58,8 +58,8 @@ import type {
   WorkerToHostMethodName,
   WorkerToHostMethods,
   InitializeParams,
-} from "@paperclipai/plugin-sdk";
-import { getActiveStepContext } from "@paperclipai/adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
+import { getActiveStepContext } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
 import {
   isLoginCommandKey,
   validateLoginSessionHome,

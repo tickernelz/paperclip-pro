@@ -22,7 +22,7 @@ import type {
   RemoteSecretImportPreviewResult,
   RemoteSecretImportResult,
   RemoteSecretImportRowResult,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { ApiError } from "../../api/client";
 import {
   secretsApi,

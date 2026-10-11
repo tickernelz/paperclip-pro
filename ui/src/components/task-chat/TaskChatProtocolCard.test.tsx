@@ -12,7 +12,7 @@ import type {
   TaskChatProviderActivityFamily,
   TaskChatRuntimeRequestDecision,
 } from "./task-chat-model";
-import type { HeartbeatRunEvent, IssueWorkProduct } from "@paperclipai/shared";
+import type { HeartbeatRunEvent, IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
 import { nativeRunEventsToTranscript } from "../transcript/native-run-events";
 import { transcriptToTaskChatItems } from "./transcript-adapter";
 import { IssueGalleryContext } from "@/context/IssueGalleryContext";

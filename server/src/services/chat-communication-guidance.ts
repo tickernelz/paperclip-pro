@@ -1,5 +1,5 @@
 import { SPEKO_COMMUNICATION_GUIDANCE } from "./voice/speko-skill.js";
-import type { ChatProvider } from "@paperclipai/shared";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
 import { slackTaskUpdateGuidance } from "./connectors/slack/task-update-guidance.js";
 
 // Presentation guidance only. Task execution and permissions belong to the

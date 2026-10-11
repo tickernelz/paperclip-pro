@@ -5,7 +5,7 @@ import type {
   WorkspaceFileListMode,
   WorkspaceFileListResponse,
   WorkspaceFileSelector,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api, type RequestOptions } from "./client";
 
 export interface FileResourceQuery {

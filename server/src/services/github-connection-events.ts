@@ -1,5 +1,5 @@
 import { dispatchGitHubBotCloudEvent } from "./chat-github-cloud-ingress.js";
-import { chatEndpoints } from "@paperclipai/db";
+import { chatEndpoints } from "@tickernelz/paperclip-pro-db";
 import { randomUUID } from "node:crypto";
 import {
   connectionEventDeliveries,
@@ -7,7 +7,7 @@ import {
   externalObjects,
   toolConnections,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, sql } from "drizzle-orm";
 import {
   logActivity,

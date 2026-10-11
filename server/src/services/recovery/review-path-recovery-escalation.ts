@@ -1,5 +1,5 @@
 import { and, desc, eq, getTableColumns, or, sql } from "drizzle-orm";
-import { agents, heartbeatRuns, issues, type Db } from "@paperclipai/db";
+import { agents, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
 import { isWaitingConversation } from "../agent-conversations.js";
 import { logActivity, publishActivity, type ActivityPublication } from "../activity-log.js";
 import { issueRecoveryActionService } from "../issue-recovery-actions.js";

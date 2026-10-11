@@ -1,6 +1,6 @@
 import { createPublicKey, verify } from "node:crypto";
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   canonicalJson,
   parseInspectionQuery,
@@ -8,7 +8,7 @@ import {
   INSPECTION_PERMIT_TYPE,
   INSPECTION_HEADER,
   type InspectionPermit,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { StorageService } from "../storage/types.js";
 import { getCloudRuntimeIdentity } from "../services/cloud-runtime-identity.js";
 import { customerSuccessRunAuthority } from "../services/customer-success-authority.js";

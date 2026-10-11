@@ -371,7 +371,7 @@ function hasPublishedCodexPlatformDeclaration(resolver: AcpxPackageJsonResolver,
   const selected = readResolverPackageJson(authority.manifest);
   const runtime = readResolverPackageJson(runtimeManifest);
   const declarations = selected.optionalDependencies as Record<string, unknown> | undefined;
-  return selected.name === "@paperclipai/server"
+  return selected.name === "@tickernelz/paperclip-pro-server"
     && runtime.name === QUALIFIED_CODEX_LINUX_X64_RUNTIME.runtimePackageName
     && runtime.version === QUALIFIED_CODEX_LINUX_X64_RUNTIME.runtimePackageVersion
     && runtime.optionalDependencies === undefined
@@ -388,7 +388,7 @@ function isDeclaredHoistedCodexPlatform(root: string, manifest: string, issuer: 
     const selected = readResolverPackageJson(manifest);
     const runtime = readResolverPackageJson(issuer);
     const optional = (value: Record<string, unknown>) => value.optionalDependencies as Record<string, unknown> | undefined;
-    if (selected.name !== "@paperclipai/server" || runtime.name !== qualified.runtimePackageName
+    if (selected.name !== "@tickernelz/paperclip-pro-server" || runtime.name !== qualified.runtimePackageName
       || runtime.version !== qualified.runtimePackageVersion
       || optional(selected)?.[packageName] !== qualified.dependencyDeclaration
       || (runtime.optionalDependencies !== undefined && optional(runtime)?.[packageName] !== qualified.dependencyDeclaration)) return false;

@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import { agents, companies, type Db } from "@paperclipai/db";
-import type { AdapterEnvironmentTestResult } from "@paperclipai/adapter-utils";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE, aiRuntimeConnectionBindingSchema } from "@paperclipai/shared";
-import { isForbiddenConfigEnvKey, parseObject } from "@paperclipai/adapter-utils/server-utils";
+import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
+import type { AdapterEnvironmentTestResult } from "@tickernelz/paperclip-pro-adapter-utils";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
+import { isForbiddenConfigEnvKey, parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { requireServerAdapter } from "../adapters/index.js";
 import { agentEnvironmentTestService } from "./agent-environment-test.js";
 import { aiConnectionRouterService } from "./ai-connection-router.js";

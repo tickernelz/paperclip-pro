@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, ne, or, sql } from "drizzle-orm";
-import { agentWakeupRequests, type Db } from "@paperclipai/db";
+import { agentWakeupRequests, type Db } from "@tickernelz/paperclip-pro-db";
 
 export interface NativeChildCompletionRecipient {
   companyId: string;

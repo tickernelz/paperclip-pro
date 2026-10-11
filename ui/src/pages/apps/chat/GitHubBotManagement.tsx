@@ -10,7 +10,7 @@ import {
 import type {
   GitHubChatConfiguration,
   GitHubTaskReview,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   githubChatApi,
   type GitHubConfigurationRecord,

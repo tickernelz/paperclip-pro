@@ -2,8 +2,8 @@ import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
   UsageSummary,
-} from "@paperclipai/adapter-utils";
-import type { ConnectionFailure } from "@paperclipai/adapter-utils/connection-failure";
+} from "@tickernelz/paperclip-pro-adapter-utils";
+import type { ConnectionFailure } from "@tickernelz/paperclip-pro-adapter-utils/connection-failure";
 import {
   asNumber,
   asString,
@@ -13,7 +13,7 @@ import {
   isPaperclipRecoveryWakePayload,
   stringifyPaperclipWakePayload,
   paperclipWakeCommentsArePromptOwned,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import {
   ADAPTER_TYPE,
   DEFAULT_EVENT_RECONNECT_MS,

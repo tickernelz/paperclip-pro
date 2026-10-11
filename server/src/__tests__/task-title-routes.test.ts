@@ -11,8 +11,8 @@ vi.mock("chat", async importOriginal => {
   };
 });
 import { and, eq } from "drizzle-orm";
-import { activityLog, externalObjectMentions, heartbeatRuns, issues } from "@paperclipai/db";
-import { createChildIssueSchema, createIssueSchema, setIssueTitleSchema } from "@paperclipai/shared";
+import { activityLog, externalObjectMentions, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import { createChildIssueSchema, createIssueSchema, setIssueTitleSchema } from "@tickernelz/paperclip-pro-shared";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";
 import { issueService } from "../services/issues.js";
 import { externalObjectService } from "../services/external-objects.js";

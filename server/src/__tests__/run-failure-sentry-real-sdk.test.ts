@@ -6,14 +6,14 @@ import path from "node:path";
 import { buildHeartbeatRunStopMetadata, mergeHeartbeatRunStopMetadata } from "../services/heartbeat-stop-metadata.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { collectRunFailureDiagnostics, sanitizeRunFailureDiagnostics } from "../services/run-failure-diagnostics.js";
-import type { heartbeatRuns } from "@paperclipai/db";
+import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import {
   preserveWorkspaceRestoreErrorDiagnostic,
   withWorkspaceRestoreDiagnostics,
   withWorkspaceRestoreStep,
   withWorkspaceRestoreGitCommand,
-} from "@paperclipai/adapter-utils/workspace-restore-diagnostics";
-import { createWorkspaceRestoreTeardown } from "@paperclipai/adapter-utils/workspace-restore-teardown";
+} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-diagnostics";
+import { createWorkspaceRestoreTeardown } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-teardown";
 
 // Sentry is an optional peer. When installed, exercise the real SDK with an
 // in-memory transport, including its context behavior without an OTel manager.
@@ -43,7 +43,7 @@ afterEach(async () => {
   vi.unstubAllEnvs();
   vi.doUnmock("@sentry/node");
   vi.doUnmock("../peer-version-check.js");
-  vi.doUnmock("@paperclipai/adapter-utils/execution-target");
+  vi.doUnmock("@tickernelz/paperclip-pro-adapter-utils/execution-target");
   vi.resetModules();
 });
 
@@ -74,8 +74,8 @@ describe.skipIf(!sentryPackage)("run failure context with the real Sentry SDK", 
     }));
     // Only external execution/setup seams are replaced. The real adapter owns
     // the message/policy, and the real finalization/collector/SDK send the event.
-    vi.doMock("@paperclipai/adapter-utils/execution-target", async (importOriginal) => ({
-      ...await importOriginal<typeof import("@paperclipai/adapter-utils/execution-target")>(),
+    vi.doMock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => ({
+      ...await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>(),
       ensureAdapterExecutionTargetRuntimeCommandInstalled: vi.fn(),
       ensureAdapterExecutionTargetCommandResolvable: vi.fn(),
       prepareAdapterExecutionTargetRuntime: vi.fn(async () => ({
@@ -88,7 +88,7 @@ describe.skipIf(!sentryPackage)("run failure context with the real Sentry SDK", 
     }));
     vi.resetModules();
     try {
-      const { execute } = await import("@paperclipai/adapter-opencode-local/server");
+      const { execute } = await import("@tickernelz/paperclip-pro-adapter-opencode-local/server");
       const { sentryReady, captureRunFailure, captureException } = await import("../sentry.js");
       await sentryReady;
       const result = await execute({

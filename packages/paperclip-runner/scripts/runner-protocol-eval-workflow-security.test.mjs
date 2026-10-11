@@ -62,7 +62,7 @@ test("pull request CI builds the canonical Evalbook viewer", async () => {
 
   assert.match(
     buildJob,
-    /name: Build Runner Evalbook viewer[\s\S]*pnpm --filter @paperclipai\/paperclip-runner build:issue-thread/u,
+    /name: Build Runner Evalbook viewer[\s\S]*pnpm --filter @tickernelz\/paperclip-pro-paperclip-runner build:issue-thread/u,
   );
 });
 
@@ -89,10 +89,10 @@ test("resolves both repositories immutably and bounds total matrix concurrency",
   assert.match(authorize, /\^\[0-9a-f\]\{40\}\$/u);
   assert.match(
     authorize,
-    /repos\/paperclipai\/paperclip-evals\/commits\/\$EVALS_SHA/u,
+    /repos\/paperclip-pro\/paperclip-evals\/commits\/\$EVALS_SHA/u,
   );
   assert.match(authorize, /COMMITPERCLIP_KEY/u);
-  assert.match(authorize, /GH_REPO: paperclipai\/paperclip-evals/u);
+  assert.match(authorize, /GH_REPO: paperclip-pro\/paperclip-evals/u);
   assert.match(
     authorize,
     /GH_TOKEN: \$\{\{ steps\.evals_token\.outputs\.value \}\}/u,
@@ -110,7 +110,7 @@ test("resolves both repositories immutably and bounds total matrix concurrency",
   assert.match(catalog, /max_parallel_per_shard/u);
   const privateCheckouts = [
     ...workflow.matchAll(
-      /repository: paperclipai\/paperclip-evals[\s\S]*?persist-credentials: false/gmu,
+      /repository: paperclip-pro\/paperclip-evals[\s\S]*?persist-credentials: false/gmu,
     ),
   ];
   assert.equal(privateCheckouts.length, 3);
@@ -123,7 +123,7 @@ test("resolves both repositories immutably and bounds total matrix concurrency",
   for (const tokenStep of privateTokenSteps) {
     assert.match(
       tokenStep.groups.body,
-      /^ {10}GH_REPO: paperclipai\/paperclip-evals$/mu,
+      /^ {10}GH_REPO: paperclip-pro\/paperclip-evals$/mu,
       "every private-eval token must be minted from the eval repository installation",
     );
   }
@@ -137,7 +137,7 @@ test("resolves both repositories immutably and bounds total matrix concurrency",
   assert.match(workflow, /matrix_1/u);
   assert.match(
     workflow,
-    /pnpm --filter @paperclipai\/paperclip-runner deploy --prod/u,
+    /pnpm --filter @tickernelz\/paperclip-pro-paperclip-runner deploy --prod/u,
   );
   assert.match(
     workflow,
@@ -191,7 +191,7 @@ test("publishes only the separately sanitized Evalbook through trusted OIDC code
   assert.match(publisher, /url: \$\{\{ steps\.publish\.outputs\.report_url \}\}/u);
   assert.match(publisher, /Publish versioned report and refresh the root index\n\s+id: publish/u);
   assert.doesNotMatch(publisher, /(?:OPENAI|ANTHROPIC|OPENROUTER)_API_KEY/u);
-  assert.doesNotMatch(publisher, /paperclipai\/paperclip-evals/u);
+  assert.doesNotMatch(publisher, /paperclip-pro\/paperclip-evals/u);
   assert.doesNotMatch(publisher, /downloaded-runner-protocol-evals/u);
 });
 

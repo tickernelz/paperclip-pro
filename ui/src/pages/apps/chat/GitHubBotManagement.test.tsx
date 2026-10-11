@@ -8,7 +8,7 @@ import {
   buildSkillMentionHref,
   type GitHubChatConfiguration,
   type GitHubTaskReview,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { ChatEndpointDetail } from "./ChatEndpointDetail";
 import { GitHubReviewList, orderedGitHubReviews } from "./GitHubBotManagement";
 import { GitHubPolicyEditor } from "./GitHubBotConfiguration";

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { costEvents, agents, companies, createDb, heartbeatRuns } from "@paperclipai/db";
+import { costEvents, agents, companies, createDb, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

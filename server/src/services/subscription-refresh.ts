@@ -1,5 +1,5 @@
 import { and, eq, lt, or, isNull } from "drizzle-orm";
-import { aiSubscriptions, aiSubscriptionConnections, type Db } from "@paperclipai/db";
+import { aiSubscriptions, aiSubscriptionConnections, type Db } from "@tickernelz/paperclip-pro-db";
 import { aiConnectionService } from "./ai-connections.js";
 import { subscriptionService, type SubscriptionConnection } from "./subscriptions.js";
 import { probeSubscriptionIdentity } from "./subscription-identity.js";

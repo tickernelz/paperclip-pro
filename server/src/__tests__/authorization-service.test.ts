@@ -15,8 +15,8 @@ import {
   projectAccessMembers,
   projects,
   userInboxAgentPolicies,
-} from "@paperclipai/db";
-import { LOW_TRUST_REVIEW_PRESET, type PermissionKey } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { LOW_TRUST_REVIEW_PRESET, type PermissionKey } from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

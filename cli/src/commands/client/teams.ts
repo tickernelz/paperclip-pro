@@ -8,7 +8,7 @@ import type {
   CatalogTeamImportOptions,
   CatalogTeamSourcePolicy,
   InstalledCatalogTeam,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   addCommonClientOptions,
   apiPath,

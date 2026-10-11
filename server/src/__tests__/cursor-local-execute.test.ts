@@ -2,15 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
-import { execute } from "@paperclipai/adapter-cursor-local/server";
+import { runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { execute } from "@tickernelz/paperclip-pro-adapter-cursor-local/server";
 
 // These fixtures verify command discovery, environment and real CLI execution.
 // Callback bridge startup/teardown has its own execution-target coverage; starting
 // that server here adds unrelated process and polling work to command assertions.
-vi.mock("@paperclipai/adapter-utils/execution-target", async () => {
-  const actual = await vi.importActual<typeof import("@paperclipai/adapter-utils/execution-target")>(
-    "@paperclipai/adapter-utils/execution-target",
+vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async () => {
+  const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>(
+    "@tickernelz/paperclip-pro-adapter-utils/execution-target",
   );
   return {
     ...actual,

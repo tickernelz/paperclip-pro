@@ -1,4 +1,4 @@
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import { eq, inArray } from "drizzle-orm";
 import { createAgentLifecycle, scheduleAgentLifecycle } from "./agent-lifecycle.js";
 import { agentLifecycleCompanyDeletion } from "../modules/agent-lifecycle/company-deletion.js";
@@ -38,7 +38,7 @@ import {
   routineTriggers,
   routineRevisions,
   routines,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 
 export async function deleteCompany(db: Db, id: string) {
   const lifecycle = createAgentLifecycle(db);

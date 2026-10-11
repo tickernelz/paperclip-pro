@@ -27,13 +27,13 @@ import {
   issues,
   projects,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   githubCommitSchema,
   type GitHubAutomaticEventContext,
   type GitHubReviewEventContext,
   type GitHubReviewPolicy,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { HttpError, conflict, forbidden, notFound } from "../errors.js";
 import {
   githubBotRepositoryToken,

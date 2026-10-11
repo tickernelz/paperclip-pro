@@ -5,7 +5,7 @@ import type {
   RunnerGoalAction,
   RunnerGoalActionRequest,
   RunnerGoalProjection,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { issuesApi } from "@/api/issues";
 import { useCompanyLiveEvent } from "@/context/LiveUpdatesProvider";
 import { queryKeys } from "@/lib/queryKeys";

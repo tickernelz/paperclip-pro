@@ -2,7 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { Readable } from "node:stream";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { activityLog, agents, assets, companies, createDb, heartbeatRuns, issueAttachments, issues, runnerApiResponseReservations } from "@paperclipai/db";
+import { activityLog, agents, assets, companies, createDb, heartbeatRuns, issueAttachments, issues, runnerApiResponseReservations } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import type { StorageService } from "../../storage/types.js";
 import { TaskAttachmentReadCache } from "./runner-task-attachments.js";

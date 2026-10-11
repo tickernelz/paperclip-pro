@@ -33,9 +33,9 @@ Do this for every public package that Paperclip publishes.
 
 At minimum that includes:
 
-- `paperclipai`
-- `@paperclipai/server`
-- `@paperclipai/ui`
+- `paperclip-pro`
+- `@tickernelz/paperclip-pro-server`
+- `@tickernelz/paperclip-pro-ui`
 - public packages under `packages/`
 
 ### 2.1. In npm, open each package settings page
@@ -262,11 +262,11 @@ After setup:
 Install-path check:
 
 ```bash
-npm install --prefix "$(mktemp -d)" paperclipai@canary --no-audit --no-fund
+npm install --prefix "$(mktemp -d)" @tickernelz/paperclip-pro@canary --no-audit --no-fund
 ```
 
 The release script runs this clean-prefix install after publishing every workspace
-package dependency-first and publishing `paperclipai` last. A package that is not
+package dependency-first and publishing `paperclip-pro` last. A package that is not
 yet registry-visible stops the train before the channel entrypoint can advance.
 
 ## 12. Verify the Stable Workflow

@@ -1,5 +1,5 @@
-import type { Db } from "@paperclipai/db";
-import { issues, heartbeatRuns } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { issues, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { canActorReadExecutionWorkspace, type AuthorizationActor, type AuthorizationDecision } from "./authorization.js";
 

@@ -13,7 +13,7 @@ import {
   createHeartbeatScheduling,
   formatIssueIdentifierLink,
 } from "./heartbeat/scheduling.js";
-import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@paperclipai/shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/paperclip-pro-shared";
 import { agentExecutionsHaveStopped } from "./agent-execution-stop.js";
 import {
   cancelHeartbeatNativeRun,
@@ -240,7 +240,7 @@ import {
 } from "./chat-completion-delivery.js";
 import { AgentDirectoryReuseInvalidatedError, isAgentDirectoryCopy } from "./agent-directory-working-copies.js";
 
-import type { PaperclipTurnContext } from "@paperclipai/adapter-utils/server-utils";
+import type { PaperclipTurnContext } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 import {
   NativeWorkspaceFinalizationBusyError,
@@ -259,7 +259,7 @@ import {
   prepareConversationTurn,
   settleConversationTurn,
 } from "./agent-conversations.js";
-import { withAdapterExecutionPhase } from "@paperclipai/adapter-utils/execution-phase";
+import { withAdapterExecutionPhase } from "@tickernelz/paperclip-pro-adapter-utils/execution-phase";
 import { getConversationConfirmationContext } from "./conversation-confirmation-context.js";
 import {
   recordNativeLocalProcessStop,
@@ -280,7 +280,7 @@ import {
   isAiConnectionBusy,
   AI_AUTH_ENV_KEYS,
 } from "./ai-connection-runtime.js";
-import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema, type AiConnectionRouterSelection } from "@paperclipai/shared";
+import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema, type AiConnectionRouterSelection } from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionRouterService, AiConnectionPoolExhausted, applyAiConnectionRouterTaskSettings } from "./ai-connection-router.js";
 import { aiConnectionSessionCompatibilityInputs, managedAiSessionIdentityCompatible } from "./ai-connection-session.js";
 import {
@@ -301,7 +301,7 @@ import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation, StaleExecutionContinuationError } from "./execution-continuation.js";
-import { renderPaperclipWakePrompt } from "@paperclipai/adapter-utils/server-utils";
+import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 import {
   initializeRunIdentity,
@@ -314,7 +314,7 @@ import {
   cleanupGitHubOperationLaunchers,
   prepareGitHubExecutionEnvironment,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@paperclipai/adapter-utils/execution-target";
+} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { agentInstructionWorkingCopyService, collectStoppedInstructionCopyWithRetries, instructionWorkingCopyGuidance } from "./agent-instruction-working-copies.js";
 
 import fs from "node:fs/promises";
@@ -335,12 +335,12 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   CHAT_PROVIDERS,
   ISSUE_DISPOSITION_REPAIR_RETRY_REASON,
   isEnvironmentDriverSupportedForAdapter,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentConfigRevisions,
@@ -353,7 +353,7 @@ import {
   nativeRunFinalizations,
   projects,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { HttpError, notFound } from "../errors.js";
 
 import { logger } from "../middleware/logger.js";
@@ -419,7 +419,7 @@ import {
   isNativeRunnerOwnershipHeld,
   NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE,
 } from "./native-runtime/native-runner-ownership.js";
-import { trackAgentFirstHeartbeat } from "@paperclipai/shared/telemetry";
+import { trackAgentFirstHeartbeat } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import {
   emitAgentTaskRun,
@@ -555,7 +555,7 @@ import { createRunSecretRedactionRegistry } from "./run-secret-redaction.js";
 
 import {
   readPaperclipSkillSyncPreference,
-} from "@paperclipai/adapter-utils/server-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 
 import { environmentService } from "./environments.js";
 

@@ -45,7 +45,7 @@ import {
   chatEndpointResources,
   issueAttachments,
   assets,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import {
   chatChannelService,

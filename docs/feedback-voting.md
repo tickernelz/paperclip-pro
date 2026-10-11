@@ -26,20 +26,20 @@ When a vote is marked for sharing, Paperclip immediately tries to upload the tra
 ### Quick report (terminal)
 
 ```bash
-pnpm paperclipai feedback report
+pnpm paperclip-pro feedback report
 ```
 
 Shows a color-coded summary: vote counts, per-trace details with reasons, and export statuses.
 
 ```bash
 # Installed CLI
-paperclipai feedback report
+paperclip-pro feedback report
 
 # Point to a different server or company
-npx paperclipai feedback report --api-base http://127.0.0.1:3000 --company-id <company-id>
+npx @tickernelz/paperclip-pro feedback report --api-base http://127.0.0.1:3000 --company-id <company-id>
 
 # Include raw payload dumps in the report
-pnpm paperclipai feedback report --payloads
+pnpm paperclip-pro feedback report --payloads
 ```
 
 ### API endpoints
@@ -89,7 +89,7 @@ The trace endpoints accept query parameters:
 ### Export to files + zip
 
 ```bash
-pnpm paperclipai feedback export
+pnpm paperclip-pro feedback export
 ```
 
 Creates a timestamped directory with:
@@ -112,7 +112,7 @@ Exports are full by default. `traces/` keeps the Paperclip envelope, while `full
 
 ```bash
 # Custom server and output directory
-npx paperclipai feedback export --api-base http://127.0.0.1:3000 --company-id <company-id> --out ./my-export
+npx @tickernelz/paperclip-pro feedback export --api-base http://127.0.0.1:3000 --company-id <company-id> --out ./my-export
 ```
 
 ### Reading an exported trace

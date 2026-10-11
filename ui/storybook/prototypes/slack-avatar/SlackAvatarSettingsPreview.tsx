@@ -3,7 +3,7 @@ import { ChatCommunicationInstructions } from "@/pages/apps/chat/ChatCommunicati
 import { Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SlackAvatarSettings } from "@/pages/apps/chat/SlackAvatarStep";
-import { appearanceForPalette } from "@paperclipai/shared";
+import { appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 
 const avatar = agentAvatarUrl(appearanceForPalette("flamingo-jade"), 512, 1, "rest", false, "paperclip-dark");

@@ -1,11 +1,11 @@
 import { createHash, randomBytes } from "node:crypto";
 import { and, eq, gte, inArray, lt, sql } from "drizzle-orm";
-import { agents, costEvents, type Db } from "@paperclipai/db";
+import { agents, costEvents, type Db } from "@tickernelz/paperclip-pro-db";
 import {
   agentAppearanceSchema, resolveAgentAppearance, agentAvatarUrl,
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS, agentRuntimeConfigSchema, getAgentWorkEligibility,
   normalizeAgentUrlKey, type AgentEligibilityAgent,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { REDACTED_EVENT_VALUE, sanitizeRecord } from "../redaction.js";
 import { normalizeAgentPermissions } from "./agent-permissions.js";

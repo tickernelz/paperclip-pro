@@ -1,8 +1,8 @@
 import { createHash } from "node:crypto";
 import { and, desc, eq, sql } from "drizzle-orm";
 
-import type { Db } from "@paperclipai/db";
-import { completionContracts } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { completionContracts } from "@tickernelz/paperclip-pro-db";
 import type { NativeCompletionSource, StrictCompletionContractInput } from "../../vendor/paperclip-runner/index.js";
 
 import { nativeSha256 } from "./canonical.js";

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createClientMetadataResolver, mcpRedirectMatches } from "../services/public-mcp/client-metadata.js";
-import { mcpInvitation, mcpSetupMarkdown } from "@paperclipai/shared";
+import { mcpInvitation, mcpSetupMarkdown } from "@tickernelz/paperclip-pro-shared";
 import { renderMcpSetup } from "../services/public-mcp/setup.js";
 
 const id = "https://assistant.example/client.json";

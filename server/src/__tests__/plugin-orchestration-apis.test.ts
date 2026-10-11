@@ -27,7 +27,7 @@ import {
   pluginManagedResources,
   plugins,
   projects,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -335,7 +335,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@paperclipai/plugin-llm-wiki",
+      packageName: "@tickernelz/paperclip-pro-plugin-llm-wiki",
       version: "0.1.0",
       manifestJson: {
         id: "paperclipai.plugin-llm-wiki",

@@ -1,7 +1,7 @@
 import { and, eq, or, sql } from "drizzle-orm";
 import { agents, agentApiKeys, agentRuntimeState, agentTaskSessions, agentWakeupRequests, activityLog,
   budgetReservations, heartbeatRunEvents, heartbeatRuns, issueExecutionDecisions, issues, issueComments,
-  principalPermissionGrants, type Db } from "@paperclipai/db";
+  principalPermissionGrants, type Db } from "@tickernelz/paperclip-pro-db";
 import { conflict } from "../errors.js";
 import { issueThreadInteractionService } from "./issue-thread-interactions.js";
 

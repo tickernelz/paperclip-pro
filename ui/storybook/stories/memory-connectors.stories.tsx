@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, waitFor, within } from "storybook/test";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { getConnectableAppDefinition, MEMORY_CONNECTOR_IDS, INSTANCE_FEATURE_KEYS, instanceExperimentalSettingsSchema, type MemoryConnectorId } from "@paperclipai/shared";
+import { getConnectableAppDefinition, MEMORY_CONNECTOR_IDS, INSTANCE_FEATURE_KEYS, instanceExperimentalSettingsSchema, type MemoryConnectorId } from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { ConnectionSetupCompletionScreen, ConnectionSetupFlow, OAuthConnectStateScreen } from "@/features/connections/ConnectionSetupFlow";
 import { ConnectorCard } from "@/pages/apps/Browse";

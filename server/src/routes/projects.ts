@@ -1,14 +1,14 @@
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
-import { activityLog } from "@paperclipai/db";
+import { activityLog } from "@tickernelz/paperclip-pro-db";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { persistActivity, publishActivity } from "../services/activity-log.js";
 import { z } from "zod";
 import { normalizeProjectRepositoryUrl, resolveProjectRepositorySelection } from "../services/project-repositories.js";
 import { toolAccessService } from "../services/tool-access.js";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@paperclipai/db";
-import { agents, authUsers, companyMemberships, instanceUserRoles, projectAccessMembers } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { agents, authUsers, companyMemberships, instanceUserRoles, projectAccessMembers } from "@tickernelz/paperclip-pro-db";
 import { inArray } from "drizzle-orm";
 import {
   addProjectAccessMemberSchema,
@@ -24,9 +24,9 @@ import {
   updateProjectSchema,
   updateProjectWorkspaceSchema,
   workspaceRuntimeControlTargetSchema,
-} from "@paperclipai/shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@paperclipai/shared";
-import { trackProjectCreated } from "@paperclipai/shared/telemetry";
+} from "@tickernelz/paperclip-pro-shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@tickernelz/paperclip-pro-shared";
+import { trackProjectCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { accessService, projectService, logActivity, workspaceOperationService } from "../services/index.js";
 import { conflict, forbidden, unprocessable } from "../errors.js";
@@ -67,7 +67,7 @@ export function projectRoutes(db: Db) {
     return context;
   }
 
-  async function selectedRepositories(req: Request, companyId: string, ids: string[], existing: import("@paperclipai/shared").ProjectWorkspace[] = []) {
+  async function selectedRepositories(req: Request, companyId: string, ids: string[], existing: import("@tickernelz/paperclip-pro-shared").ProjectWorkspace[] = []) {
     const viewer = await repositoryViewer(req);
     if (!ids.length) return [];
     const available = await toolAccessService(db).listProjectRepositories(companyId, viewer.userId, viewer.localTrusted);

@@ -20,7 +20,7 @@ vi.mock("../sentry.js", () => ({ captureException: captureExceptionMock }));
 vi.mock("../telemetry.js", () => ({
   getTelemetryClient: () => telemetryMocks.client,
 }));
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
   trackErrorHandlerCrash: telemetryMocks.trackErrorHandlerCrash,
 }));
 

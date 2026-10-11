@@ -2,11 +2,11 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@paperclipai/adapter-utils";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
 
 const processResult = vi.hoisted(() => vi.fn());
-vi.mock("@paperclipai/adapter-utils/execution-target", async (original) => ({
-  ...await original<typeof import("@paperclipai/adapter-utils/execution-target")>(),
+vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (original) => ({
+  ...await original<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>(),
   runAdapterExecutionTargetProcess: processResult,
 }));
 
@@ -251,7 +251,7 @@ describe("CLI adapter accounting on timeout", () => {
 describe("incremental protocol accounting", () => {
   it.each(["turn.failed", "error", "turn.started"])("saves an unpriced Codex %s checkpoint before exposing its log", async (type) => {
     const { createCodexJsonlParser } = await import("../../../packages/adapters/codex-local/src/server/parse.js");
-    const { createUsageCheckpointLog } = await import("@paperclipai/adapter-utils/usage-checkpoint");
+    const { createUsageCheckpointLog } = await import("@tickernelz/paperclip-pro-adapter-utils/usage-checkpoint");
     const consume = createCodexJsonlParser();
     const order: string[] = [];
     const saved = vi.fn(async () => { order.push("receipt"); });

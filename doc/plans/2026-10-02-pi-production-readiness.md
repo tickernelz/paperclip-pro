@@ -1946,7 +1946,7 @@ is claimed. No automatic paid retry, fallback key, model change, workflow edit,
 or lockfile commit occurs.
 
 Normal installed Mac-to-Linux authority now passes the documented
-`paperclipai runtime import-remote` path. The companion comes from immutable
+`paperclip-pro runtime import-remote` path. The companion comes from immutable
 image `sha256:342f1fd5cb8cabfa2242f38f4f686608b28b6536aa879c54b0cb0da6fba9ef47`,
 contains 24,352 inventoried entries, and has manifest SHA256
 `2c9d337c7d3753db6b8c44c5b347e195a2544b574670af7f32e5dfaffc0b4017`.
@@ -2633,9 +2633,9 @@ the database status. Drain or recover recorded cleanup before rolling back to
 a release that cannot interpret its metadata, and preserve the provider handle
 and receipts throughout that operation.
 
-1. Record `paperclipai --version`, the prior CLI/server package versions, the
+1. Record `paperclip-pro --version`, the prior CLI/server package versions, the
    current company configuration and the exact retained package set. Run
-   `paperclipai db:backup --json` against the intended instance. Retain the
+   `paperclip-pro db:backup --json` against the intended instance. Retain the
    reported backup path and size. Record the backup file SHA256 before updating.
    Drain active native runs on every platform before updating. On Linux, also
    drain before crossing between ctime-based and kernel-birth receipts. Never
@@ -2647,9 +2647,9 @@ and receipts throughout that operation.
    separately reviewed install procedure rather than this npm version command.
 
    ```sh
-   paperclipai update --version "$PI_RELEASE_VERSION" --dry-run --json
-   paperclipai update --version "$PI_RELEASE_VERSION"
-   paperclipai runtime setup pi
+   paperclip-pro update --version "$PI_RELEASE_VERSION" --dry-run --json
+   paperclip-pro update --version "$PI_RELEASE_VERSION"
+   paperclip-pro runtime setup pi
    ```
 
 3. For Daytona, select the exact image in the completed release qualification
@@ -2662,7 +2662,7 @@ and receipts throughout that operation.
    platform-specific manifest digests are evidence, not published release assets.
 
    ```sh
-   paperclipai runtime import-remote "$PI_RELEASE_COMPANION" --sha256 "$PI_RELEASE_COMPANION_SHA256"
+   paperclip-pro runtime import-remote "$PI_RELEASE_COMPANION" --sha256 "$PI_RELEASE_COMPANION_SHA256"
    ```
 
 4. After all release gates pass, begin with one operator-owned Linux Pi company using profile 18,
@@ -2690,8 +2690,8 @@ platform. On Linux, also drain before crossing the process-birth format change.
 Preserve terminal and cleanup evidence.
 
 ```sh
-paperclipai update --rollback --dry-run --json
-paperclipai update --rollback
+paperclip-pro update --rollback --dry-run --json
+paperclip-pro update --rollback
 ```
 
 The CLI restores the retained prior managed payload and restarts an active

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { heartbeatRuns, issues, issueThreadInteractions, issueApprovals, type Db } from "@paperclipai/db";
+import { heartbeatRuns, issues, issueThreadInteractions, issueApprovals, type Db } from "@tickernelz/paperclip-pro-db";
 import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 

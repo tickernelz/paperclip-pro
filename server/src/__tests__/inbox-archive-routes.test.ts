@@ -16,8 +16,8 @@ import {
   issues,
   principalPermissionGrants,
   userInboxAgentPolicies,
-} from "@paperclipai/db";
-import { LOW_TRUST_REVIEW_PRESET } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { issueService } from "../services/issues.js";

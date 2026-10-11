@@ -13,7 +13,7 @@ completed local and fresh Daytona proof for those capabilities.
 Accepted planning succeeds while the task waits for explicit user direction.
 Acceptance does not start implementation.
 
-Install with `paperclipai runtime setup cursor`. Configure company secret bindings
+Install with `paperclip-pro runtime setup cursor`. Configure company secret bindings
 for `CURSOR_API_KEY` or `CURSOR_AUTH_TOKEN` and select the model explicitly.
 Agent is the default mode; Plan and Ask are explicit alternatives. Missing assets,
 credentials, model availability and entitlement are diagnosed without substituting
@@ -83,7 +83,7 @@ The tracked lockfile was not changed.
 | macOS ARM64 daemon | `816c6603b4ef05ab29cc22a8b6cae9989469a8233bdedc3c97aae22a0c1c6abc` |
 | macOS x64 daemon | `372524b322f1200f1708288d0497195477ecf984e21dd32f3ddc2f2038465199` |
 | Linux x64 daemon | `d5a22554c922087f122ceeb0e7527529221c41af171b37315469c838dede0288` |
-| Public `paperclipai` tarball | `14a96c7de0c20cde231782f54ce0df76c1d6a81512f0c5b38a08ec8e8786631a` |
+| Public `paperclip-pro` tarball | `14a96c7de0c20cde231782f54ce0df76c1d6a81512f0c5b38a08ec8e8786631a` |
 | Public server tarball | `6e66d37c3ee4d61b66bbc5f2515550a246d8afc8a10b5425c064f5ec3f661d66` |
 | Public Daytona plugin tarball | `a6cf4e9070503757be0505d6a1a8df219dca493f801831b3cc1ca83a185d07db` |
 
@@ -97,7 +97,7 @@ publish an npm release or deploy production.
 
 Clean public-package installation passed on macOS ARM64, macOS x64 through
 Rosetta, and Linux x64. Normal npm lifecycle scripts ran; Cursor remained absent
-until explicit `paperclipai runtime setup cursor`. Setup verified the pinned
+until explicit `paperclip-pro runtime setup cursor`. Setup verified the pinned
 closure, and normal resolution launched each platform's packaged daemon without
 candidate or asset overrides. The x64 Mac proof covers installation and daemon
 startup under Rosetta, not a separate native Intel live campaign. The public
@@ -379,7 +379,7 @@ installed configuration probe also passed without credentials.
 | `cursor-v11-268497-installed-local-file-edit-validate-01` | `b9a0180c1a96cf0fd0448cc69d6f47a5de8d258e` | 8/8 matchers, cleanup pass | `26cdd34a8b7c3dc19f0afd3cf94c22e1700bad217d2af92877aeb10dbe1f58bc` |
 | `cursor-v11-268497-installed-daytona-hello-complete-02` | `327f6df095d38f0e2213cb4572376e01d4629946` | 6/6 matchers, cleanup pass | `7f2f23d1c5dec8e030866781cc09e06990d5149758c0d467df49e63366b29dd1` |
 
-These launch the actual installed `paperclipai/dist/index.js` from its consumer
+These launch the actual installed `@tickernelz/paperclip-pro/dist/index.js` from its consumer
 root. The server removes qualification admission, native binary paths, provider
 pack overrides, repository executables and TypeScript loader injection. Credentials
 use company secret bindings. The Daytona plugin is a compiled public npm package
@@ -745,7 +745,7 @@ Public release packaging now selects the daemon beside its own compiled module,
 including the server's vendored layout, and verifies its actual executable
 architecture. Release assembly requires one source revision and all three
 independently built daemons. Run
-`pnpm --filter @paperclipai/paperclip-runner stage:release-binaries /path/to/manifest.json`
+`pnpm --filter @tickernelz/paperclip-pro-paperclip-runner stage:release-binaries /path/to/manifest.json`
 with a JSON manifest containing `sourceRevision` and `platforms`, whose exact
 keys are `darwin-arm64`, `darwin-x64`, and `linux-x64`; each entry contains an
 absolute artifact `path` and `sha256:<64 hex digits>` digest. Assembly verifies

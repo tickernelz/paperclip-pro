@@ -82,7 +82,7 @@ test("chaos verification isolates callers that verify the same source commit", (
 test("canary reuses exact-source proof while stable keeps full verification", () => {
   const releaseWorkflow = readWorkflow("release.yml");
   const canary = releaseWorkflow.split("  verify_canary:\n")[1].split("\n  publish_canary:")[0];
-  assert.match(canary, /github\.repository == 'paperclipai\/paperclip' && github\.event_name == 'push' && github\.ref == 'refs\/heads\/master'/);
+  assert.match(canary, /github\.repository == 'paperclip-pro\/paperclip' && github\.event_name == 'push' && github\.ref == 'refs\/heads\/master'/);
   assert.match(canary, /actions: read/);
   assert.match(canary, /ref: \$\{\{ github\.sha \}\}/);
   assert.match(canary, /SOURCE_SHA: \$\{\{ github\.sha \}\}/);
@@ -452,7 +452,7 @@ test("release smoke workflow extends the container readiness budget for CI", () 
     "utf8",
   );
 
-  // CI containers cold-install paperclipai and embedded postgres, so the
+  // CI containers cold-install paperclip-pro and embedded postgres, so the
   // workflow must extend the harness's local-default readiness budget.
   assert.match(smokeWorkflow, /SMOKE_READY_TIMEOUT_SECONDS=\d+/);
   const ciBudget = Number(
@@ -488,7 +488,7 @@ test("release verify workflow covers the same split test surface as stable PR ve
     .flatMap(([, checks]) => checks.split(" "));
   assert.deepEqual(runnerChecks, runnerScripts["check:all"].split(" && ")
     .map((command) => command.replace(/^pnpm run /, "")));
-  assert.match(verifyWorkflow, /pnpm --filter @paperclipai\/paperclip-runner "\$check"/);
+  assert.match(verifyWorkflow, /pnpm --filter @tickernelz\/paperclip-pro-paperclip-runner "\$check"/);
   assert.match(verifyWorkflow, /runner_workflow_evals:/);
   assert.match(verifyWorkflow, /runner_chaos_evals:/);
   assert.match(
@@ -722,7 +722,7 @@ test("direct Grok qualification installs the pinned binary and scopes the select
   const workflow = readWorkflow("runner-protocol-live-evals.yml");
   assert.ok(workflow.includes("XAI_API_KEY: ${{ matrix.credentialName == 'XAI_API_KEY' && secrets.XAI_API_KEY || '' }}"));
   assert.ok(workflow.includes("if [ -f packages/paperclip-runner/scripts/provision-grok.mjs ]; then"));
-  assert.ok(workflow.indexOf("sudo node packages/paperclip-runner/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok") < workflow.indexOf("pnpm --filter @paperclipai/paperclip-runner deploy --prod"));
+  assert.ok(workflow.indexOf("sudo node packages/paperclip-runner/scripts/provision-grok.mjs /opt/paperclip/providers/grok/1.0.13/grok") < workflow.indexOf("pnpm --filter @tickernelz/paperclip-pro-paperclip-runner deploy --prod"));
   assert.ok(workflow.includes("PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: ${{ matrix.credentialName == 'PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET' && secrets.GROK_AUTH_JSON || '' }}"));
   assert.equal((workflow.match(/secrets\.GROK_AUTH_JSON/gu) ?? []).length, 1);
 });
@@ -753,7 +753,7 @@ test("canary startup refreshes an incomplete dependency publication, then onboar
   assert.equal(onboarding.length, 1);
   for (const call of installs) {
     assert.equal(call.args[0], "install");
-    assert.ok(call.args.includes("paperclipai@2026.1009.0-canary.1"));
+    assert.ok(call.args.includes("@tickernelz/paperclip-pro@2026.1009.0-canary.1"));
     assert.ok(call.args.includes("--no-package-lock"));
     assert.ok(call.args.includes("--no-save"));
   }
@@ -834,18 +834,18 @@ test("nested ETARGET output does not retry a final authentication or network fai
 });
 
 const exactCanary = "2026.1009.0-canary.1";
-const canaryTarball = `https://registry.npmjs.org/@paperclipai/server/-/server-${exactCanary}.tgz`;
-const tarballFailure = (url = canaryTarball, prefix = "npm error") => `${prefix} code E404\n${prefix} 404 Not Found - GET ${url} - Not found\n${prefix} 404\n${prefix} 404  The requested resource '@paperclipai/server@${url}' could not be found or you do not have permission to access it.\n`;
+const canaryTarball = `https://registry.npmjs.org/@tickernelz/paperclip-pro-server/-/server-${exactCanary}.tgz`;
+const tarballFailure = (url = canaryTarball, prefix = "npm error") => `${prefix} code E404\n${prefix} 404 Not Found - GET ${url} - Not found\n${prefix} 404\n${prefix} 404  The requested resource '@tickernelz/paperclip-pro-server@${url}' could not be found or you do not have permission to access it.\n`;
 
 function tarballProof({ config = {}, manifest = {}, status = 200, redirected = false, responseUrl, rawBody } = {}) {
   const calls = [];
   const dist = { tarball: canaryTarball, integrity: `sha512-${Buffer.alloc(64).toString("base64")}`, ...manifest.dist };
-  const data = { name: "@paperclipai/server", version: exactCanary, ...manifest, dist };
+  const data = { name: "@tickernelz/paperclip-pro-server", version: exactCanary, ...manifest, dist };
   return { calls, options: {
     signal: new AbortController().signal, prefix: "/fixture/install", env: {},
     runConfig: async (command, args, options) => {
       calls.push({ kind: "config", command, args, options });
-      return { code: 0, stdout: "registry=https://registry.npmjs.org/\n@paperclipai:registry=undefined\n", ...config };
+      return { code: 0, stdout: "registry=https://registry.npmjs.org/\n@tickernelz:registry=undefined\n", ...config };
     },
     fetchMetadata: async (url, options) => {
       calls.push({ kind: "metadata", url, options });
@@ -859,7 +859,7 @@ test("exact published tarball proof uses quiet effective config and fresh public
     const fixture = tarballProof();
     assert.equal(await canRetryPublishedTarball404(tarballFailure(canaryTarball, prefix), exactCanary, fixture.options), true);
     const [config, metadata] = fixture.calls;
-    assert.deepEqual(config.args, ["config", "get", "registry", "@paperclipai:registry", "--prefix", "/fixture/install"]);
+    assert.deepEqual(config.args, ["config", "get", "registry", "@tickernelz:registry", "--prefix", "/fixture/install"]);
     assert.equal(config.options.env, fixture.options.env);
     assert.equal(config.options.quiet, true);
     assert.equal(config.options.captureStdout, true);
@@ -884,10 +884,10 @@ test("mixed npm errors and noncanonical or unreleased tarballs never read config
     ...[
       canaryTarball + "?token=fixture", canaryTarball + "#fragment", canaryTarball.replace("npmjs.org/", "npmjs.org:443/"),
       canaryTarball.replace("npmjs.org/", "npmjs.org.example.invalid/"), canaryTarball.replace("npmjs.org/", "fixture@npmjs.org/"),
-      canaryTarball.replace("https:", "http:"), canaryTarball.replace("@paperclipai/server", "%40paperclipai%2Fserver"),
-      canaryTarball.replace("@paperclipai/server", "@paperclipai/../server"), canaryTarball.replace(exactCanary, "2026.1009.0-canary.2"),
-      "https://registry.npmjs.org/@paperclipai/not-released/-/not-released-2026.1009.0-canary.1.tgz",
-      "https://registry.npmjs.org/@paperclipai/plugin-createos/-/plugin-createos-2026.1009.0-canary.1.tgz",
+      canaryTarball.replace("https:", "http:"), canaryTarball.replace("@tickernelz/paperclip-pro-server", "%40paperclipai%2Fserver"),
+      canaryTarball.replace("@tickernelz/paperclip-pro-server", "@tickernelz/paperclip-pro-../server"), canaryTarball.replace(exactCanary, "2026.1009.0-canary.2"),
+      "https://registry.npmjs.org/@tickernelz/paperclip-pro-not-released/-/not-released-2026.1009.0-canary.1.tgz",
+      "https://registry.npmjs.org/@tickernelz/paperclip-pro-plugin-createos/-/plugin-createos-2026.1009.0-canary.1.tgz",
       "https://registry.npmjs.org/%40paperclipai%2Fserver/2026.1009.0-canary.1",
     ].map((url) => tarballFailure(url)),
   ];
@@ -905,13 +905,13 @@ test("mixed npm errors and noncanonical or unreleased tarballs never read config
 
 test("effective registry authority respects scope precedence and rejects unknown or private config", async () => {
   const configs = [
-    [{ stdout: "registry=https://registry.example.invalid/\n@paperclipai:registry=https://registry.npmjs.org/\n" }, true],
-    [{ stdout: "registry=undefined\n@paperclipai:registry=https://registry.npmjs.org/\n" }, true],
-    [{ stdout: "registry=https://registry.npmjs.org/\n@paperclipai:registry=https://registry.example.invalid/\n" }, false],
-    [{ stdout: "registry=https://registry.example.invalid/\n@paperclipai:registry=undefined\n" }, false],
-    [{ stdout: "registry=undefined\n@paperclipai:registry=undefined\n" }, false],
-    [{ stdout: "registry=https://registry.npmjs.org/\n@paperclipai:registry=\n" }, false],
-    [{ stdout: "registry=https://fixture:secret@registry.npmjs.org/\n@paperclipai:registry=undefined\n" }, false],
+    [{ stdout: "registry=https://registry.example.invalid/\n@tickernelz:registry=https://registry.npmjs.org/\n" }, true],
+    [{ stdout: "registry=undefined\n@tickernelz:registry=https://registry.npmjs.org/\n" }, true],
+    [{ stdout: "registry=https://registry.npmjs.org/\n@tickernelz:registry=https://registry.example.invalid/\n" }, false],
+    [{ stdout: "registry=https://registry.example.invalid/\n@tickernelz:registry=undefined\n" }, false],
+    [{ stdout: "registry=undefined\n@tickernelz:registry=undefined\n" }, false],
+    [{ stdout: "registry=https://registry.npmjs.org/\n@tickernelz:registry=\n" }, false],
+    [{ stdout: "registry=https://fixture:secret@registry.npmjs.org/\n@tickernelz:registry=undefined\n" }, false],
     [{ stdout: "unexpected output\n" }, false], [{ code: 1 }, false], [{ signal: "SIGTERM" }, false], [{ outputTruncated: true }, false],
   ];
   for (const [config, expected] of configs) {
@@ -925,7 +925,7 @@ test("metadata must identify the exact published artifact with valid SHA512 synt
   const fixtures = [
     { status: 404 }, { status: 401 }, { status: 403 }, { status: 302 }, { redirected: true },
     { responseUrl: "https://registry.example.invalid/metadata" }, { rawBody: "not json" },
-    { manifest: { name: "@paperclipai/shared" } }, { manifest: { version: "2026.1009.0-canary.2" } },
+    { manifest: { name: "@tickernelz/paperclip-pro-shared" } }, { manifest: { version: "2026.1009.0-canary.2" } },
     { manifest: { dist: { tarball: canaryTarball + "?query=1" } } },
     ...[undefined, "", "sha512-A===", `sha256-${Buffer.alloc(32).toString("base64")}`, `sha512-${Buffer.alloc(64).toString("base64")} extra`]
       .map((integrity) => ({ manifest: { dist: { integrity } } })),
@@ -1003,8 +1003,8 @@ test("real npm effective registry reads isolated prefix, user, and environment c
   try {
     for (const [user, project, override, expected] of [
       ["registry=https://registry.npmjs.org/\n", "", undefined, true],
-      ["registry=https://registry.example.invalid/\n", "@paperclipai:registry=https://registry.npmjs.org/\n", undefined, true],
-      ["registry=https://registry.npmjs.org/\n", "@paperclipai:registry=https://registry.example.invalid/\n", undefined, false],
+      ["registry=https://registry.example.invalid/\n", "@tickernelz:registry=https://registry.npmjs.org/\n", undefined, true],
+      ["registry=https://registry.npmjs.org/\n", "@tickernelz:registry=https://registry.example.invalid/\n", undefined, false],
       ["registry=https://registry.npmjs.org/\n", "", "https://registry.example.invalid/", false],
     ]) {
       writeFileSync(path.join(root, "user.npmrc"), user);

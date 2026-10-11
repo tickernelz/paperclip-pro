@@ -1,7 +1,7 @@
 import type { LifecycleEffects } from "./effects.js";
 import { randomUUID } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
-import { agents, agentApiKeys, type Db } from "@paperclipai/db";
+import { agents, agentApiKeys, type Db } from "@tickernelz/paperclip-pro-db";
 import { conflict, notFound } from "../../../errors.js";
 import { agentRecordQueries, type CreateAgentOptions, type CreateAgentData } from "../../../lib/agent-records.js";
 

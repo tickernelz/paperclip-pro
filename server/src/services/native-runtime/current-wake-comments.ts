@@ -1,15 +1,15 @@
 import { createHash } from "node:crypto";
 
 import { and, asc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   assets,
   heartbeatRuns,
   issueAttachments,
   issueComments,
   issues,
-} from "@paperclipai/db";
-import type { SourceTrustMetadata } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import type { SourceTrustMetadata } from "@tickernelz/paperclip-pro-shared";
 
 import { createRunSecretRedactionRegistry } from "../run-secret-redaction.js";
 import { sanitizeQuarantinedCommentForHigherTrust } from "../source-trust.js";

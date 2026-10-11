@@ -7,7 +7,7 @@ import {
   type FastResponseTestResult,
   type UpdateFastResponse,
   type AiProvider,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { fastResponsesApi } from "@/api/fast-responses";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

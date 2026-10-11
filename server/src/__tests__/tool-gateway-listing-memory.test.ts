@@ -17,9 +17,9 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolMcpGatewayTokens,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { eq } from "drizzle-orm";
-import type { ToolAccessDecisionInput } from "@paperclipai/shared";
+import type { ToolAccessDecisionInput } from "@tickernelz/paperclip-pro-shared";
 import {
   createToolAccessDecisionCache,
   toolAccessPolicyService,

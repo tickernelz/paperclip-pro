@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { IssueAttachment, IssueWorkProduct } from "@paperclipai/shared";
+import type { IssueAttachment, IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
 import { IssuePropertiesArtifactsTab } from "@/components/issue-properties/IssuePropertiesArtifactsTab";
 import { RichWorkProductCard } from "@/components/task-chat/RichWorkProductCard";
 import { ImageGalleryModal, type GalleryMediaItem } from "@/components/ImageGalleryModal";

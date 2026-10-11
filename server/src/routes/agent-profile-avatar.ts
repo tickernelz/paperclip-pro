@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@paperclipai/db";
-import { setAgentAvatarSchema } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { setAgentAvatarSchema } from "@tickernelz/paperclip-pro-shared";
 import { z } from "zod";
 import type { StorageService } from "../storage/types.js";
 import { forbidden } from "../errors.js";

@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { heartbeatRunEvents, type Db } from "@paperclipai/db";
+import { heartbeatRunEvents, type Db } from "@tickernelz/paperclip-pro-db";
 import type { PrpEvent } from "../../vendor/paperclip-runner/index.js";
 import { nativeProviderLifecycle, type LifecycleRecord } from "./provider-lifecycle.js";
 

@@ -18,7 +18,7 @@ export function resolveCodexCommand(
       } catch (error) {
         if ((error as NodeJS.ErrnoException).code !== "MODULE_NOT_FOUND") throw error;
         // pnpm can retain the bridge inside its declared adapter dependency.
-        const adapter = runnerRequire.resolve("@paperclipai/adapter-codex-local/server");
+        const adapter = runnerRequire.resolve("@tickernelz/paperclip-pro-adapter-codex-local/server");
         bridgeManifest = createRequire(adapter).resolve("@agentclientprotocol/codex-acp/package.json");
       }
       manifestPath = createRequire(bridgeManifest).resolve("@openai/codex/package.json");

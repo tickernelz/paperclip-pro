@@ -13,8 +13,8 @@ import type {
   PluginSpan,
   PluginSyncFileMapping,
   PluginSyncOperation,
-} from "@paperclipai/plugin-sdk";
-import { recordEnvironmentSyncError, withEnvironmentSyncTransferStep } from "@paperclipai/plugin-sdk";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
+import { recordEnvironmentSyncError, withEnvironmentSyncTransferStep } from "@tickernelz/paperclip-pro-plugin-sdk";
 import { getPluginTracer } from "./plugin.js";
 
 const execFileAsync = promisify(execFile);

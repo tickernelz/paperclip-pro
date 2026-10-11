@@ -4,8 +4,8 @@ import { activeIssueInteractionCondition } from "../issue-question-context.js";
 import { isConversation } from "../agent-conversations.js";
 import { hasPendingNativeChildCompletion, type NativeChildCompletionRecipient } from "./native-child-completion-delivery.js";
 import { and, asc, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
-import type { CreateIssueThreadInteraction } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { CreateIssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import {
   agentWakeupRequests,
   agents,
@@ -22,7 +22,7 @@ import {
   statusDecisions,
   workAssessments,
   workspaceOperations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   NATIVE_STATUS_ARBITER_POLICY_VERSION,
   type NativeStatusDecision,

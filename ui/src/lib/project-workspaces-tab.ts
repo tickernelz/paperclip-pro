@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace, Issue, Project } from "@paperclipai/shared";
+import type { ExecutionWorkspace, Issue, Project } from "@tickernelz/paperclip-pro-shared";
 
 type ProjectWorkspaceLike = Pick<Project, "workspaces" | "primaryWorkspace">;
 

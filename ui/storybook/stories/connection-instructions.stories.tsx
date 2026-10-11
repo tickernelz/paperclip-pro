@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";
 import { useQueryClient } from "@tanstack/react-query";
-import { getConnectableAppDefinition } from "@paperclipai/shared";
+import { getConnectableAppDefinition } from "@tickernelz/paperclip-pro-shared";
 import { Route, Routes, useNavigate } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { PluginLauncherProvider } from "@/plugins/launchers";

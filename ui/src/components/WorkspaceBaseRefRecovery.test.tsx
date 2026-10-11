@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { Issue, IssueCommentMetadata } from "@paperclipai/shared";
+import type { Issue, IssueCommentMetadata } from "@tickernelz/paperclip-pro-shared";
 import { WorkspaceBaseRefRecoveryProvider, useWorkspaceBaseRefRecovery } from "./WorkspaceBaseRefRecovery";
 import { WorkspaceBaseRefRecoveryNotice } from "./WorkspaceBaseRefRecoveryNotice";
 

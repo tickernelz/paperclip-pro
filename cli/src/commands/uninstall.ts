@@ -29,8 +29,8 @@ function otherServiceDefinitions(platform: NodeJS.Platform, userHomeDir: string,
     ? systemdServiceName(instanceId)
     : `${launchdServiceName(instanceId)}.plist`;
   const pattern = platform === "linux"
-    ? /^paperclipai(?:-.+)?\.service$/
-    : /^ing\.paperclip\.paperclipai(?:\..+)?\.plist$/;
+    ? /^paperclip-pro(?:-.+)?\.service$/
+    : /^ing\.paperclip\.paperclip-pro(?:\..+)?\.plist$/;
   return fs.readdirSync(directory)
     .filter((name) => name !== currentName && pattern.test(name))
     .map((name) => path.join(directory, name));

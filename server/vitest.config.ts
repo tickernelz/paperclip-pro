@@ -6,13 +6,13 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@paperclipai\/paperclip-runner\/live$/,
+        find: /^@tickernelz\/paperclip-pro-paperclip-runner\/live$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/live/index.ts", import.meta.url),
         ),
       },
       {
-        find: /^@paperclipai\/paperclip-runner$/,
+        find: /^@tickernelz\/paperclip-pro-paperclip-runner$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/index.ts", import.meta.url),
         ),

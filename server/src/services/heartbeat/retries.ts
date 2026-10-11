@@ -28,14 +28,14 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   agentWakeupRequests,
   executionWorkspaces,
   heartbeatRuns,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   HttpError,
   notFound,

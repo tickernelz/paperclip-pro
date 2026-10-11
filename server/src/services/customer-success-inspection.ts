@@ -2,13 +2,13 @@ import fs from "node:fs/promises";
 import { constants } from "node:fs";
 import { and, eq, getTableColumns, type SQL } from "drizzle-orm";
 import type { AnyPgTable, AnyPgColumn } from "drizzle-orm/pg-core";
-import * as schema from "@paperclipai/db";
-import type { Db } from "@paperclipai/db";
+import * as schema from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   MAX_INSPECTION_BYTES,
   type InspectionQuery,
   type InspectionResource,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { StorageService } from "../storage/types.js";
 import { HttpError, notFound, unprocessable } from "../errors.js";
 import { redactAgentAdapterConfig, redactEventPayload } from "../redaction.js";

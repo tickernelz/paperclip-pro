@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@paperclipai/shared";
-import { createTestHarness } from "@paperclipai/plugin-sdk/testing";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import { createTestHarness } from "@tickernelz/paperclip-pro-plugin-sdk/testing";
 
 describe("plugin SDK test harness", () => {
   it("returns scoped execution workspace metadata with the read capability", async () => {

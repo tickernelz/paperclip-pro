@@ -3,8 +3,8 @@ import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 type NativeProvider = "cursor" | "copilot" | "pi";
-const RUNNER_PACKAGE_NAME = "@paperclipai/paperclip-runner";
-const SERVER_PACKAGE_NAME = "@paperclipai/server";
+const RUNNER_PACKAGE_NAME = "@tickernelz/paperclip-pro-paperclip-runner";
+const SERVER_PACKAGE_NAME = "@tickernelz/paperclip-pro-server";
 function assertServerVendorLayout(root: string): void {
   const sidecar = join(root, "dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs");
   for (const part of ["dist", "dist/vendor", "dist/vendor/paperclip-runner", "dist/vendor/paperclip-runner/cli"]) {
@@ -39,7 +39,7 @@ export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: Nat
         || bytes.length !== Number(before.size) || realpathSync(manifest) !== canonicalManifest) throw new Error("Runner provider manifest changed during admission");
       const value = JSON.parse(bytes.toString("utf8")) as { name?: unknown };
       if (canonicalManifest !== join(packageRoot, "package.json")) throw new Error("Runner provider manifest is outside its package root");
-      if (value?.name === "@paperclipai/server") {
+      if (value?.name === "@tickernelz/paperclip-pro-server") {
         assertServerVendorLayout(packageRoot);
         // runnerd derives this binding from the verified sidecar in the public
         // server package. Images may carry assets alongside that bundle; local

@@ -1,4 +1,4 @@
-import { heartbeatRuns, nativeRunFinalizations, nativeRunResults, type Db } from "@paperclipai/db";
+import { heartbeatRuns, nativeRunFinalizations, nativeRunResults, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq, exists } from "drizzle-orm";
 
 /**

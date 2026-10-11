@@ -7,11 +7,11 @@ import {
   resolvePaperclipRunnerCursorMode,
   resolvePaperclipRunnerPiThinkingLevel,
   type PaperclipRunnerProvider,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   codexLocalReasoningEffortsForModel,
   isCodexLocalKnownModel,
-} from "@paperclipai/adapter-codex-local";
+} from "@tickernelz/paperclip-pro-adapter-codex-local";
 import {
   AGENTCORE_QUALIFIED_MODEL,
   CLAUDE_MANAGED_QUALIFIED_MODEL,

@@ -39,8 +39,8 @@ describe("Codex security configuration", () => {
       const pathDirectory = join(pathOnlyRoot, "bin");
       const pathCommand = join(pathDirectory, "codex");
       const commandEnvironment = { PATH: pathDirectory };
-      const issuer = join(root, "node_modules/@paperclipai/server/dist/vendor/paperclip-runner/drivers/codex/codex-command.js");
-      const adapter = join(root, "node_modules/@paperclipai/adapter-codex-local");
+      const issuer = join(root, "node_modules/@tickernelz/paperclip-pro-server/dist/vendor/paperclip-runner/drivers/codex/codex-command.js");
+      const adapter = join(root, "node_modules/@tickernelz/paperclip-pro-adapter-codex-local");
       const bridge = join(adapter, "node_modules/@agentclientprotocol/codex-acp");
       const codex = join(bridge, "node_modules/@openai/codex");
       const executable = join(codex, "bin/codex.js");
@@ -102,7 +102,7 @@ describe("Codex security configuration", () => {
         assert.throws(() => resolveCodexCommand(pathOnlyIssuer, commandEnvironment), /runtime unavailable/);
         mkdirSync(dirname(issuer), { recursive: true });
         mkdirSync(join(codex, "bin"), { recursive: true });
-        writeFileSync(join(adapter, "package.json"), JSON.stringify({ name: "@paperclipai/adapter-codex-local", exports: { "./server": "./server.js" } }));
+        writeFileSync(join(adapter, "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-adapter-codex-local", exports: { "./server": "./server.js" } }));
         writeFileSync(join(adapter, "server.js"), "");
         writeFileSync(join(bridge, "package.json"), JSON.stringify({ name: "@agentclientprotocol/codex-acp", version: "1.6.2" }));
         writeFileSync(join(codex, "package.json"), JSON.stringify(metadata));
@@ -155,14 +155,14 @@ describe("Codex security configuration", () => {
 
         // npm installs the host alias declared by the published server while
         // its bundled JS wrapper deliberately omits optionalDependencies.
-        const server = join(root, "node_modules/@paperclipai/server");
+        const server = join(root, "node_modules/@tickernelz/paperclip-pro-server");
         const serverManifest = join(server, "package.json");
         const normalized = join(server, "node_modules/@openai/codex");
         const normalizedManifest = join(normalized, "package.json");
         const normalizedCommand = join(normalized, "bin/codex.js");
         const publishedBridgeManifest = join(server, "node_modules/@agentclientprotocol/codex-acp/package.json");
         const publishedBridgeMetadata = { name: "@agentclientprotocol/codex-acp", version: "1.6.2" };
-        const serverMetadata = { name: "@paperclipai/server", dependencies: { "@agentclientprotocol/codex-acp": "1.6.2" },
+        const serverMetadata = { name: "@tickernelz/paperclip-pro-server", dependencies: { "@agentclientprotocol/codex-acp": "1.6.2" },
           optionalDependencies: metadata.optionalDependencies };
         const normalizedMetadata = { ...metadata, optionalDependencies: undefined };
         mkdirSync(dirname(normalizedCommand), { recursive: true });

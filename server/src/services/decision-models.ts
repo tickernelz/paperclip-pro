@@ -3,12 +3,12 @@ import { and, desc, eq, gte, lt, lte, or, sql } from "drizzle-orm";
 import {
   agents, authUsers, budgetPolicies, budgetReservations, companies, companyMemberships, companyDecisionModels, costEvents,
   decisionInvocations, heartbeatRuns, issues, projects, companySecrets, type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   DECISION_MODELS, decisionProviderForConnection, decisionRequestSchema, updateDecisionModelSchema,
   centsToUnits, unitsToCents, type DecisionAvailability, type DecisionConnectionChoice, type DecisionHistoryEntry,
   type DecisionModelSettings, type DecisionProvider, type DecisionRequest, type DecisionResult, type DecisionUnavailableReason, type UpdateDecisionModel,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { HttpError, forbidden, unprocessable } from "../errors.js";
 import { aiConnectionService } from "./ai-connections.js";
 import { accessService } from "./access.js";

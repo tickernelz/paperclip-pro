@@ -16,11 +16,11 @@ Implementation: [CLI entry point](../cli/src/index.ts), [instance settings](../u
 
 ### `operator-cli`
 
-Use `paperclipai install`, `run`, `service`, `doctor`, `configure`, `channels`, or `update --help` for the intended operation.
+Use `paperclip-pro install`, `run`, `service`, `doctor`, `configure`, `channels`, or `update --help` for the intended operation.
 
 ### `settings-backup`
 
-Use currently visible instance settings for experiments/access and `paperclipai db:backup --help` for one-off backup. Some legacy general-settings URLs redirect.
+Use currently visible instance settings for experiments/access and `paperclip-pro db:backup --help` for one-off backup. Some legacy general-settings URLs redirect.
 
 ## Driving it
 

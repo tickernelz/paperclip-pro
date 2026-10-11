@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import { createLifecycleWorker } from "../application/worker.js";
 import type { LifecycleAgent, LifecycleStore, LifecycleDriver } from "../application/ports.js";
 import { startAgentLifecycle } from "../index.js";

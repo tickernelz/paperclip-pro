@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { runChildProcess } from "@paperclipai/adapter-utils/server-utils";
-import { testEnvironment } from "@paperclipai/adapter-cursor-local/server";
+import { runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { testEnvironment } from "@tickernelz/paperclip-pro-adapter-cursor-local/server";
 
 async function writeFakeAgentCommand(binDir: string, argsCapturePath: string): Promise<string> {
   const commandPath = path.join(binDir, "agent");

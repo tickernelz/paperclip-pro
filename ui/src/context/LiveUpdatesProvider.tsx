@@ -1,4 +1,4 @@
-import { resolveAgentAppearance } from "@paperclipai/shared";
+import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import {
   createContext,
@@ -29,7 +29,7 @@ import type {
   Issue,
   IssueComment,
   LiveEvent,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { RunForIssue } from "../api/activity";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import type { CompanyUserDirectoryResponse } from "../api/access";

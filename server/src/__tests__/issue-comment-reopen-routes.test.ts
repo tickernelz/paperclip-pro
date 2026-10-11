@@ -116,7 +116,7 @@ const mockRunnerGoalService = vi.hoisted(() => ({
   act: vi.fn(),
 }));
 
-vi.mock("@paperclipai/shared/telemetry", () => ({
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
   trackAgentTaskCompleted: vi.fn(),
   trackErrorHandlerCrash: vi.fn(),
 }));

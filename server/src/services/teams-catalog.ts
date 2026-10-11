@@ -1,7 +1,7 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type {
   CatalogManifest,
   CatalogTeam,
@@ -19,9 +19,9 @@ import type {
   CompanyPortabilityPreview,
   CompanyPortabilityPreviewResult,
   CompanyPortabilitySource,
-} from "@paperclipai/shared";
-import { normalizeAgentUrlKey } from "@paperclipai/shared";
-import { parseFrontmatterMarkdown } from "@paperclipai/shared/frontmatter";
+} from "@tickernelz/paperclip-pro-shared";
+import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
+import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared/frontmatter";
 import { conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
 import { companyPortabilityService } from "./company-portability.js";
@@ -164,7 +164,7 @@ async function statCatalogManifest() {
     }
   }
   throw new Error(
-    `Teams catalog manifest not found. Checked: ${catalogPackageRootCandidates.map((root) => path.join(root, "generated/catalog.json")).join(", ")}. Run pnpm --filter @paperclipai/teams-catalog build:manifest.`,
+    `Teams catalog manifest not found. Checked: ${catalogPackageRootCandidates.map((root) => path.join(root, "generated/catalog.json")).join(", ")}. Run pnpm --filter @tickernelz/paperclip-pro-teams-catalog build:manifest.`,
   );
 }
 

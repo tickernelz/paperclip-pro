@@ -7,7 +7,7 @@ import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { agentIdentityKeys, agents, companies, createDb, closeRegisteredClients, ensurePostgresDatabase, runDatabaseBackup, runDatabaseRestore, type Db } from "@paperclipai/db";
+import { agentIdentityKeys, agents, companies, createDb, closeRegisteredClients, ensurePostgresDatabase, runDatabaseBackup, runDatabaseRestore, type Db } from "@tickernelz/paperclip-pro-db";
 import { resolveWorktreeSeedPlan } from "../../../cli/src/commands/worktree-lib.js";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentIdentityService, supportsManagedAgentIdentity } from "../services/agent-identity.js";

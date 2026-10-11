@@ -1,6 +1,6 @@
-import type { AdapterEnvironmentCheck } from "@paperclipai/adapter-utils";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@paperclipai/adapter-utils/execution-target";
+import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import {
   CODEX_CHATGPT_MODEL_REJECTION_RE,
   codexCliVersionAtLeast,

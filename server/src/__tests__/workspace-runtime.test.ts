@@ -22,7 +22,7 @@ import {
   projects,
   workspaceOperations,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { eq } from "drizzle-orm";
 import {
   buildExecutionWorkspaceAdapterConfig,
@@ -76,9 +76,9 @@ import {
   deriveViteHmrPort,
   type Environment,
   type EnvironmentLease,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { resolvePaperclipConfigPath } from "../paths.ts";
-import type { WorkspaceOperation } from "@paperclipai/shared";
+import type { WorkspaceOperation } from "@tickernelz/paperclip-pro-shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import { deriveWorktreeInstanceId } from "../services/workspace-instance-cleanup.ts";
 import {
@@ -685,7 +685,7 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
   it("relinks stale server workspace dependencies inside the current repo root", async () => {
     const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-"));
     const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-stale-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@tickernelz");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
     const stalePackageDir = path.join(staleRoot, "db");
 
@@ -698,32 +698,32 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@tickernelz/paperclip-pro-server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@tickernelz/paperclip-pro-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
       "utf8",
     );
-    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));
+    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
-    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "db"))).toBe(await fs.realpath(expectedPackageDir));
+    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "paperclip-pro-db"))).toBe(await fs.realpath(expectedPackageDir));
   });
 
   it("skips relinking when server workspace dependencies already point at the repo", async () => {
     const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-current-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@tickernelz");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
 
     await fs.mkdir(path.join(repoRoot, "server"), { recursive: true });
@@ -734,19 +734,19 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@tickernelz/paperclip-pro-server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@tickernelz/paperclip-pro-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
       "utf8",
     );
-    await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "db"));
+    await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
   });
@@ -754,7 +754,7 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
   it("skips relinking outside linked git worktrees", async () => {
     const repoRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-non-worktree-"));
     const staleRoot = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-links-non-worktree-stale-"));
-    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@paperclipai");
+    const serverNodeModulesScopeDir = path.join(repoRoot, "server", "node_modules", "@tickernelz");
     const expectedPackageDir = path.join(repoRoot, "packages", "db");
     const stalePackageDir = path.join(staleRoot, "db");
 
@@ -767,27 +767,27 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@paperclipai/server",
+        name: "@tickernelz/paperclip-pro-server",
         dependencies: {
-          "@paperclipai/db": "workspace:*",
+          "@tickernelz/paperclip-pro-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@paperclipai/db" }),
+      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
       "utf8",
     );
-    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "db"));
+    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
-    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "db"))).toBe(await fs.realpath(stalePackageDir));
+    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "paperclip-pro-db"))).toBe(await fs.realpath(stalePackageDir));
   });
 });
 
@@ -2311,7 +2311,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 1",
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--prod=false\" ] && [ \"$3\" = \"--frozen-lockfile\" ]; then",
@@ -2380,10 +2380,10 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 0",
           "fi",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  echo \"simulated init failure\" >&2",
           "  exit 42",
           "fi",
@@ -2474,10 +2474,10 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 0",
           "fi",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  mkdir -p \"$PWD/.paperclip\"",
           "  printf '%s\\n' '{\"database\":{\"embeddedPostgresDataDir\":\"'$PWD'/.paperclip/runtime/db\"}}' > \"$PWD/.paperclip/config.json\"",
           "  printf '%s\\n' \"PAPERCLIP_HOME=$PWD/.paperclip/runtime\" \"PAPERCLIP_INSTANCE_ID=healthy\" \"PAPERCLIP_CONFIG=$PWD/.paperclip/config.json\" > \"$PWD/.paperclip/.env\"",
@@ -2547,7 +2547,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclipai\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 1",
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--prod=false\" ] && [ \"$3\" = \"--frozen-lockfile\" ]; then",

@@ -11,7 +11,7 @@ import type {
   RoutineRevisionSnapshotTriggerV1,
   RoutineVariable,
   SecretVersionSelector,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   routinesApi,
   type RestoreRoutineRevisionResponse,

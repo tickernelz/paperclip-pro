@@ -6,7 +6,7 @@ import {
   type GitHubChatConfiguration,
   type GitHubReviewPolicy,
   type GitHubAllowedPerson,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { accessApi } from "@/api/access";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { githubChatApi } from "@/api/githubChat";

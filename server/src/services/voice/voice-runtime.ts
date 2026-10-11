@@ -1,5 +1,5 @@
 import { ThreadImpl, type Adapter, type Thread } from "chat";
-import type { ChatProvider } from "@paperclipai/shared";
+import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
 import type { ChatSdkEndpointRuntime } from "../chat-sdk-runtime.js";
 import { createPaperclipChatSdkState, type ChatSdkStatePersistence } from "../chat-sdk-state.js";
 

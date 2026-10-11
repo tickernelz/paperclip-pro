@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { appearanceForPalette, agentAvatarUrl, legacyAgentAppearance } from "@paperclipai/shared";
+import { appearanceForPalette, agentAvatarUrl, legacyAgentAppearance } from "@tickernelz/paperclip-pro-shared";
 import { applyMentionChipDecoration, clearMentionChipDecoration, mentionChipInlineStyle, parseMentionChipHref } from "./mention-chips";
 
 describe("agent mention avatars", () => {

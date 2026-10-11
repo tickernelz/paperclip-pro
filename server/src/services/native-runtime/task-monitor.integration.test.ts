@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { activityLog, agents, authUsers, companyMemberships, companies, createDb, heartbeatRuns, issues } from "@paperclipai/db";
-import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@paperclipai/shared";
+import { activityLog, agents, authUsers, companyMemberships, companies, createDb, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/paperclip-pro-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";
 import { buildIssueMonitorTriggeredPatch, normalizeIssueExecutionPolicy } from "../issue-execution-policy.js";

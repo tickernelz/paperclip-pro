@@ -1,4 +1,4 @@
-import type { AgentAppearance, AgentLifecycleState, AgentLifecycleOperation } from "@paperclipai/shared";
+import type { AgentAppearance, AgentLifecycleState, AgentLifecycleOperation } from "@tickernelz/paperclip-pro-shared";
 import {
   type AnyPgColumn,
   pgTable,

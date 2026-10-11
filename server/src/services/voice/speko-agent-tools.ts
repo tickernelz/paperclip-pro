@@ -3,7 +3,7 @@ import { and, eq, isNull, sql } from "drizzle-orm";
 import { forbidden, HttpError } from "../../errors.js";
 import { authorizationService } from "../authorization.js";
 import { captureRunIdentity } from "../run-identity.js";
-import { chatVoiceCallbacks, instanceUserRoles, companyMemberships } from "@paperclipai/db";
+import { chatVoiceCallbacks, instanceUserRoles, companyMemberships } from "@tickernelz/paperclip-pro-db";
 import type { VoiceCaller } from "./voice-session-store.js";
 import { z } from "zod";
 import { instanceSettingsService } from "../instance-settings.js";
@@ -47,7 +47,7 @@ import {
   toolProfileEntries,
   toolProfileBindings,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ToolGatewayDescriptor,
   ToolGatewaySession,

@@ -15,7 +15,7 @@ import {
   issues,
   projects,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { customerSuccessRoutes } from "../routes/customer-success.js";
 import { agentIdentityService } from "../services/agent-identity.js";
 import { createLocalAgentJwt } from "../agent-auth-jwt.js";

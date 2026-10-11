@@ -35,7 +35,7 @@ import {
   joinRequests,
   projects,
   projectWorkspaces,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

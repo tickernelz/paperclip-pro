@@ -9,7 +9,7 @@ import {
   deriveViteHmrPort,
   RUNTIME_EXPOSURE_APP_PORT_MAX,
   RUNTIME_EXPOSURE_APP_PORT_MIN,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 import type { BrokerClient, BrokerListenerRequest } from "./runtime-exposure/broker-client.js";
 import {

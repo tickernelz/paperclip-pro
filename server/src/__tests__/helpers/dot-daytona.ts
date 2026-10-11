@@ -2,9 +2,9 @@ import { createRequire } from "node:module";
 import { createHash, randomUUID } from "node:crypto";
 import { readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
-import type { AdapterSandboxExecutionTarget } from "@paperclipai/adapter-utils";
-import type { CommandManagedRuntimeRunner } from "@paperclipai/adapter-utils/command-managed-runtime";
-import { shellQuote } from "@paperclipai/adapter-utils/ssh";
+import type { AdapterSandboxExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
+import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
 
 /** Opt-in, bounded live fixture. Every invocation owns and deletes its sandbox. */
 export async function startDotDaytona(localRoot: string) {

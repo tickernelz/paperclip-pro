@@ -1,4 +1,4 @@
-# @paperclipai/plugin-kubernetes (alpha)
+# @tickernelz/paperclip-pro-plugin-kubernetes (alpha)
 
 First-party Paperclip sandbox-provider plugin for Kubernetes.
 
@@ -20,13 +20,13 @@ First-party Paperclip sandbox-provider plugin for Kubernetes.
 ## Installation
 
 ```bash
-paperclipai plugin install @paperclipai/plugin-kubernetes
+paperclip-pro plugin install @tickernelz/paperclip-pro-plugin-kubernetes
 ```
 
 Or, for local development:
 
 ```bash
-paperclipai plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
+paperclip-pro plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
 ```
 
 ## Backends

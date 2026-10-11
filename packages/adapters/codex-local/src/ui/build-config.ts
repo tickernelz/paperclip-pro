@@ -9,7 +9,7 @@ import {
   resolvePaperclipRunnerPiThinkingLevel,
   PAPERCLIP_RUNNER_ACPX_PROFILES,
   type CreateConfigValues,
-} from "@paperclipai/adapter-utils";
+} from "@tickernelz/paperclip-pro-adapter-utils";
 import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "../index.js";
 
 function parseCommaArgs(value: string): string[] {

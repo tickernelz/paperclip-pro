@@ -1,5 +1,5 @@
-import * as codexAdapter from "@paperclipai/adapter-codex-local/server";
-import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@paperclipai/adapter-utils/workspace-restore-merge";
+import * as codexAdapter from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
@@ -8,8 +8,8 @@ import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { activityLog, agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, plugins, principalPermissionGrants, toolConnectionInstalls } from "@paperclipai/db";
-import { type AiConnectionBinding, type AiConnectionPoolMember, type PaperclipPluginManifestV1 } from "@paperclipai/shared";
+import { activityLog, agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, plugins, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
+import { type AiConnectionBinding, type AiConnectionPoolMember, type PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/index.js";

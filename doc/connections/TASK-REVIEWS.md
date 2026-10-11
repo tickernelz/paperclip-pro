@@ -98,7 +98,7 @@ settings come from the existing runner catalog. This flag does not expand the
 normal hosted/Daytona matrix. The fixture MCP provider is real HTTP but is not
 Notion; live Notion evidence must be reported separately.
 
-For a real Notion test, start `paperclipai test-drive` from this checkout using
+For a real Notion test, start `paperclip-pro test-drive` from this checkout using
 valid provider credentials, verify its process checkout/port ownership, connect
 Notion normally, set an available read-only search/list action to Ask human, and
 perform the same approve/decline/always-allow journeys for all four profiles.
@@ -108,7 +108,7 @@ credentials or account/provider access are untested dependencies, never a pass.
 ## Storybook
 
 ```sh
-pnpm --filter @paperclipai/ui exec storybook dev -p 6018 -c storybook/.storybook --no-open --ci
+pnpm --filter @tickernelz/paperclip-pro-ui exec storybook dev -p 6018 -c storybook/.storybook --no-open --ci
 ```
 
 Open **Chat & Comments / Connection Reviews**. The production task thread/card and

@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import type { CompanySkillVersionFileInventoryEntry } from '@paperclipai/shared';
+import type { CompanySkillVersionFileInventoryEntry } from '@tickernelz/paperclip-pro-shared';
 
 export function skillFileBytes(file: { content: string; encoding?: string }): Buffer {
   return Buffer.from(file.content, file.encoding === 'base64' ? 'base64' : 'utf8');

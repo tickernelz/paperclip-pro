@@ -1,172 +1,172 @@
 [
   {
     "dir": "packages/adapter-utils",
-    "name": "@paperclipai/adapter-utils",
+    "name": "@tickernelz/paperclip-pro-adapter-utils",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/claude-local",
-    "name": "@paperclipai/adapter-claude-local",
+    "name": "@tickernelz/paperclip-pro-adapter-claude-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/codex-local",
-    "name": "@paperclipai/adapter-codex-local",
+    "name": "@tickernelz/paperclip-pro-adapter-codex-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-cloud",
-    "name": "@paperclipai/adapter-cursor-cloud",
+    "name": "@tickernelz/paperclip-pro-adapter-cursor-cloud",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/cursor-local",
-    "name": "@paperclipai/adapter-cursor-local",
+    "name": "@tickernelz/paperclip-pro-adapter-cursor-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/gemini-local",
-    "name": "@paperclipai/adapter-gemini-local",
+    "name": "@tickernelz/paperclip-pro-adapter-gemini-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/grok-local",
-    "name": "@paperclipai/adapter-grok-local",
+    "name": "@tickernelz/paperclip-pro-adapter-grok-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/hermes",
-    "name": "@paperclipai/hermes-paperclip-adapter",
+    "name": "@tickernelz/paperclip-pro-hermes-paperclip-adapter",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/hermes-gateway",
-    "name": "@paperclipai/adapter-hermes-gateway",
+    "name": "@tickernelz/paperclip-pro-adapter-hermes-gateway",
     "publishFromCi": false
   },
   {
     "dir": "packages/adapters/kimi-local",
-    "name": "@paperclipai/adapter-kimi-local",
+    "name": "@tickernelz/paperclip-pro-adapter-kimi-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/opencode-local",
-    "name": "@paperclipai/adapter-opencode-local",
+    "name": "@tickernelz/paperclip-pro-adapter-opencode-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/pi-local",
-    "name": "@paperclipai/adapter-pi-local",
+    "name": "@tickernelz/paperclip-pro-adapter-pi-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/openclaw-gateway",
-    "name": "@paperclipai/adapter-openclaw-gateway",
+    "name": "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
     "publishFromCi": true
   },
   {
     "dir": "packages/shared",
-    "name": "@paperclipai/shared",
+    "name": "@tickernelz/paperclip-pro-shared",
     "publishFromCi": true
   },
   {
     "dir": "packages/skills-catalog",
-    "name": "@paperclipai/skills-catalog",
+    "name": "@tickernelz/paperclip-pro-skills-catalog",
     "publishFromCi": true
   },
   {
     "dir": "packages/teams-catalog",
-    "name": "@paperclipai/teams-catalog",
+    "name": "@tickernelz/paperclip-pro-teams-catalog",
     "publishFromCi": true
   },
   {
     "dir": "packages/db",
-    "name": "@paperclipai/db",
+    "name": "@tickernelz/paperclip-pro-db",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sdk",
-    "name": "@paperclipai/plugin-sdk",
+    "name": "@tickernelz/paperclip-pro-plugin-sdk",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/plugin-workspace-diff",
-    "name": "@paperclipai/plugin-workspace-diff",
+    "name": "@tickernelz/paperclip-pro-plugin-workspace-diff",
     "publishFromCi": true
   },
   {
     "dir": "server",
-    "name": "@paperclipai/server",
+    "name": "@tickernelz/paperclip-pro-server",
     "publishFromCi": true
   },
   {
     "dir": "cli",
-    "name": "paperclipai",
+    "name": "@tickernelz/paperclip-pro",
     "publishFromCi": true
   },
   {
     "dir": "packages/mcp-server",
-    "name": "@paperclipai/mcp-server",
+    "name": "@tickernelz/paperclip-pro-mcp-server",
     "publishFromCi": true
   },
   {
     "dir": "packages/google-sheets-mcp-server",
-    "name": "@paperclipai/google-sheets-mcp-server",
+    "name": "@tickernelz/paperclip-pro-google-sheets-mcp-server",
     "publishFromCi": false
   },
   {
     "dir": "packages/kv-demo-mcp-server",
-    "name": "@paperclipai/kv-demo-mcp-server",
+    "name": "@tickernelz/paperclip-pro-kv-demo-mcp-server",
     "publishFromCi": false
   },
   {
     "dir": "packages/plugins/create-paperclip-plugin",
-    "name": "@paperclipai/create-paperclip-plugin",
+    "name": "@tickernelz/paperclip-pro-create-paperclip-plugin",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
-    "name": "@paperclipai/plugin-cloudflare-sandbox",
+    "name": "@tickernelz/paperclip-pro-plugin-cloudflare-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/createos",
-    "name": "@paperclipai/plugin-createos",
+    "name": "@tickernelz/paperclip-pro-plugin-createos",
     "publishFromCi": false
   },
   {
     "dir": "packages/plugins/sandbox-providers/daytona",
-    "name": "@paperclipai/plugin-daytona",
+    "name": "@tickernelz/paperclip-pro-plugin-daytona",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/exe-dev",
-    "name": "@paperclipai/plugin-exe-dev",
+    "name": "@tickernelz/paperclip-pro-plugin-exe-dev",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/e2b",
-    "name": "@paperclipai/plugin-e2b",
+    "name": "@tickernelz/paperclip-pro-plugin-e2b",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/modal",
-    "name": "@paperclipai/plugin-modal",
+    "name": "@tickernelz/paperclip-pro-plugin-modal",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/kubernetes",
-    "name": "@paperclipai/plugin-kubernetes",
+    "name": "@tickernelz/paperclip-pro-plugin-kubernetes",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/novita",
-    "name": "@paperclipai/plugin-novita-sandbox",
+    "name": "@tickernelz/paperclip-pro-plugin-novita-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "ui",
-    "name": "@paperclipai/ui",
+    "name": "@tickernelz/paperclip-pro-ui",
     "publishFromCi": true
   }
 ]

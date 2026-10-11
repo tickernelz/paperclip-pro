@@ -36,7 +36,7 @@ Fresh-worktree preparation (use the repository's pinned pnpm version):
 
 ```sh
 pnpm install --no-frozen-lockfile
-pnpm --filter '@paperclipai/server^...' --filter '!@paperclipai/paperclip-runner' --filter '!@paperclipai/ui' build
+pnpm --filter '@tickernelz/paperclip-pro-server^...' --filter '!@tickernelz/paperclip-pro-paperclip-runner' --filter '!@tickernelz/paperclip-pro-ui' build
 ```
 
 The local callback uses an injected transport restricted to one fixed synthetic
@@ -204,8 +204,8 @@ and [app review](https://developers.openai.com/plugins/deploy/app-review).
 ## Verification
 
 ```sh
-pnpm --filter @paperclipai/paperclip-runner exec vitest run src/drivers/dot/dot-harness-driver.test.ts
-pnpm --filter @paperclipai/server exec vitest run src/__tests__/public-mcp.test.ts
+pnpm --filter @tickernelz/paperclip-pro-paperclip-runner exec vitest run src/drivers/dot/dot-harness-driver.test.ts
+pnpm --filter @tickernelz/paperclip-pro-server exec vitest run src/__tests__/public-mcp.test.ts
 pnpm prototype:dot
 ```
 

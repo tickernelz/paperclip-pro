@@ -36,8 +36,8 @@ export function mcpSetupSteps(serverUrl: string, assistant: AssistantClient) {
       { text: "Choose OAuth / browser sign-in. Approve the connection in Paperclip, then select the connector in your conversation. If custom connectors are unavailable, use a supported local client. Verify the connected account and organization before doing work." },
     ];
     case "headless": return [
-      { text: "Use a Paperclip CLI version with `mcp login --device` support. This needs no callback listener; it prints a verification URL and user code, then waits for human approval.", code: `paperclipai mcp login --device --url ${quoted}` },
-      { text: "After approval, configure a local stdio MCP server running the command below. Credentials stay in the CLI's private credential store. Do not copy tokens or device codes into chat or project configuration.", code: `paperclipai mcp proxy --url ${quoted}` },
+      { text: "Use a Paperclip CLI version with `mcp login --device` support. This needs no callback listener; it prints a verification URL and user code, then waits for human approval.", code: `paperclip-pro mcp login --device --url ${quoted}` },
+      { text: "After approval, configure a local stdio MCP server running the command below. Credentials stay in the CLI's private credential store. Do not copy tokens or device codes into chat or project configuration.", code: `paperclip-pro mcp proxy --url ${quoted}` },
       { text: "The user code is for the human to verify the request. The private device code remains inside the CLI. After connecting, call paperclip_connection to verify the account and organization." },
     ];
     default: return [

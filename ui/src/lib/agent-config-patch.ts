@@ -1,4 +1,4 @@
-import { ADAPTER_AGNOSTIC_KEYS, type Agent } from "@paperclipai/shared";
+import { ADAPTER_AGNOSTIC_KEYS, type Agent } from "@tickernelz/paperclip-pro-shared";
 
 export interface AgentConfigOverlay {
   identity: Record<string, unknown>;

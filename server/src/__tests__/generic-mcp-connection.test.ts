@@ -34,9 +34,9 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRuntimeSlots,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { and, eq, sql } from "drizzle-orm";
-import { APP_DEFINITIONS, MCP_CONFIG_HELP_PROMPT } from "@paperclipai/shared";
+import { APP_DEFINITIONS, MCP_CONFIG_HELP_PROMPT } from "@tickernelz/paperclip-pro-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

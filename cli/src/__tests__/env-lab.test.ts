@@ -134,10 +134,10 @@ describe("env-lab cleanup command hint", () => {
   it("never restores the unsafe pnpm invocation forms", () => {
     const command = buildEnvLabCleanupCommand();
 
-    // The bare `pnpm paperclipai` script form is unsafe. The `pnpm exec` form
+    // The bare `pnpm paperclip-pro` script form is unsafe. The `pnpm exec` form
     // does not resolve the CLI binary. Keep both out of the hint.
-    expect(command).not.toContain("pnpm paperclipai");
-    expect(command).not.toContain("pnpm exec paperclipai");
+    expect(command).not.toContain("pnpm paperclip-pro");
+    expect(command).not.toContain("pnpm exec paperclip-pro");
   });
 
   // A checkout path can hold shell metacharacters. A contributor copies the hint

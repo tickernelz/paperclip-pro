@@ -7,7 +7,7 @@ import { Identity } from "../Identity";
 import { paperclipHumanAvatarUrl } from "@/lib/issue-chat-human-author";
 import { useCallback, useContext, useState, type ReactNode } from "react";
 import { useEmailComment } from "@/components/EmailMessageCard";
-import type { IssueAttachment } from "@paperclipai/shared";
+import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
 import { IssueGalleryContext } from "@/context/IssueGalleryContext";
 import { cn } from "@/lib/utils";
 import { useStreamlinedTaskChatPresentation } from "./presentation-mode";

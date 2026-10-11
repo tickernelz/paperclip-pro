@@ -3,7 +3,7 @@ import type {
   Agent,
   ToolCallEvent,
   ToolConnectionLifecycleEvent,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { ActivityPanel } from "@/pages/apps/app-detail/ActivityPanel";
 import type { ActivityPanelProps } from "@/pages/apps/app-detail/types";
 

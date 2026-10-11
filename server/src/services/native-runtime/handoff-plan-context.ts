@@ -1,5 +1,5 @@
 import { and, desc, eq, lte } from "drizzle-orm";
-import { documentRevisions, heartbeatRuns, issueDocuments, issues, issueThreadInteractions, type Db } from "@paperclipai/db";
+import { documentRevisions, heartbeatRuns, issueDocuments, issues, issueThreadInteractions, type Db } from "@tickernelz/paperclip-pro-db";
 
 import { canActorReadIssuePrivacy, type AuthorizationActor } from "../authorization.js";
 

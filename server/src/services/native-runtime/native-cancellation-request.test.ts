@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { assertCancellationRequest, cancellationIntentId, cancellationRequestId, claimCancellationRequest } from "./native-cancellation-request.js";
-import { heartbeatRuns, type Db } from "@paperclipai/db";
+import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
 const id = "11111111-1111-4111-8111-111111111111";
 describe("caller-bound native cancellation", () => {
   it.each([null, "", " x", {}, [], 1, `${id} `, "not-a-uuid"])("rejects malformed request %j", value => {

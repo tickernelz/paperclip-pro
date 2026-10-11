@@ -14,11 +14,11 @@ import type {
   ChatPublicationSummary,
   ChatActivityItem,
   ChatFileTransferResolutionPrecondition,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 export type {
   ChatPublicationSummary,
   ChatActivityItem,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 export type ChatProvider =
   "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "speko";
@@ -130,7 +130,7 @@ export interface ChatEndpoint {
   conversations?: ChatConversation[];
   activity?: ChatActivityItem[];
   setup?: {
-    github?: import("@paperclipai/shared").ChatEndpointSetupState["github"];
+    github?: import("@tickernelz/paperclip-pro-shared").ChatEndpointSetupState["github"];
     step: string;
     testStartedAt?: string | null;
     testSkipped?: boolean;

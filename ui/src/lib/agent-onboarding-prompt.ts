@@ -1,4 +1,4 @@
-import { EXTERNAL_AGENT_TOOL_GUIDANCE } from "@paperclipai/shared/external-agent-guidance";
+import { EXTERNAL_AGENT_TOOL_GUIDANCE } from "@tickernelz/paperclip-pro-shared/external-agent-guidance";
 
 export type AgentOnboardingPromptInput = {
   onboardingTextUrl: string;
@@ -20,13 +20,13 @@ export function buildAgentOnboardingPrompt(input: AgentOnboardingPromptInput) {
       ? `No candidate URLs are available. Ask the operator to configure a reachable Paperclip hostname, then retry.
 Suggested steps for the operator:
 - choose a hostname that resolves to the Paperclip host from your runtime
-- run: npx paperclipai allowed-hostname <host>
+- run: npx @tickernelz/paperclip-pro allowed-hostname <host>
 - restart Paperclip
 - verify with: curl -fsS http://<host>:3100/api/health
 - regenerate this agent onboarding prompt`
       : `If none are reachable, ask the operator to add a reachable Paperclip hostname, restart, and retry.
 Suggested command for the operator:
-- npx paperclipai allowed-hostname <host>
+- npx @tickernelz/paperclip-pro allowed-hostname <host>
 Then verify with: curl -fsS <base-url>/api/health`;
 
   const resolutionLine = resolutionTestUrl

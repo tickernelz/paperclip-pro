@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Webhook } from "svix";
-import type { EmailAddressCheckResult, EmailEnvelope } from "@paperclipai/shared";
+import type { EmailAddressCheckResult, EmailEnvelope } from "@tickernelz/paperclip-pro-shared";
 
 const strings = z.array(z.string());
 export const agentmailMessageSchema = z.object({

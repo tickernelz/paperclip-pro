@@ -70,7 +70,7 @@ Folder: `ui/storybook/stories/external-agent-invite/`.
 
 The shared presentation lives in `ui/src/components/new-agent/ExternalAgentInviteContent.tsx`. Storybook alone supplies timers and fixture credentials at `.example` URLs. It uses the live Dot prompt unchanged, including automatic readiness testing. The prompt optionally asks Dot to upload its own avatar using `paperclip_dot_set_avatar`; avatar availability does not block pairing. Hermes and Other reuse the production invitation builder without modifications.
 
-Run `pnpm --filter @paperclipai/ui storybook`, then open the journey group. Copying in the interactive Dot story advances simulated checks; the fixed-state stories remain still for inspection. These stories illustrate the live UX with simulated connection evidence; they do not prove a live cloud pairing.
+Run `pnpm --filter @tickernelz/paperclip-pro-ui storybook`, then open the journey group. Copying in the interactive Dot story advances simulated checks; the fixed-state stories remain still for inspection. These stories illustrate the live UX with simulated connection evidence; they do not prove a live cloud pairing.
 
 ## Managed implementation and qualification
 

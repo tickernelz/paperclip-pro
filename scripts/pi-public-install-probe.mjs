@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Run in a credential-free public npm consumer after `paperclipai runtime setup pi`.
+// Run in a credential-free public npm consumer after `paperclip-pro runtime setup pi`.
 // Use the server's normal packaged daemon resolver; never submit a prompt.
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, realpath, rm } from 'node:fs/promises';
@@ -16,7 +16,7 @@ assert.equal(process.env.PAPERCLIP_RUNNER_BINARY, undefined);
 assert.equal(process.env.NODE_OPTIONS, undefined);
 assert.equal(process.env.NODE_PATH, undefined);
 const server = await realpath(serverDirectory);
-assert.equal(JSON.parse(await readFile(join(server, 'package.json'), 'utf8')).name, '@paperclipai/server');
+assert.equal(JSON.parse(await readFile(join(server, 'package.json'), 'utf8')).name, '@tickernelz/paperclip-pro-server');
 const { resolvePaperclipRunnerBinary } = await import(pathToFileURL(join(server, 'dist/services/native-runtime/native-codex-runner.js')));
 const { createCapabilityRunnerdCodexTransport } = await import(pathToFileURL(join(server, 'dist/vendor/paperclip-runner/live/runnerd-codex-transport.js')));
 const { QUALIFIED_ACPX_PROFILES } = await import(pathToFileURL(join(server, 'dist/vendor/paperclip-runner/drivers/acpx/qualified-profiles.js')));

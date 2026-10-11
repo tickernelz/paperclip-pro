@@ -1,12 +1,12 @@
-import type { ProviderQuotaResult } from "@paperclipai/shared";
-import { redactDiagnosticText } from "@paperclipai/adapter-utils";
+import type { ProviderQuotaResult } from "@tickernelz/paperclip-pro-shared";
+import { redactDiagnosticText } from "@tickernelz/paperclip-pro-adapter-utils";
 import { listServerAdapters } from "../adapters/registry.js";
 import { logger } from "../middleware/logger.js";
 import { createHash } from "node:crypto";
 import { eq, inArray, and } from "drizzle-orm";
-import { companySecrets, companySecretVersions, userSecretDefinitions, type Db } from "@paperclipai/db";
-import { fetchCodexQuota } from "@paperclipai/adapter-codex-local/server";
-import { fetchClaudeQuota } from "@paperclipai/adapter-claude-local/server";
+import { companySecrets, companySecretVersions, userSecretDefinitions, type Db } from "@tickernelz/paperclip-pro-db";
+import { fetchCodexQuota } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { fetchClaudeQuota } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
 import { aiConnectionService } from "./ai-connections.js";
 
 const accountRequests = new Map<string, { expires: number; result: Promise<ProviderQuotaResult> }>();

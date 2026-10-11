@@ -1,5 +1,5 @@
-import type { AgentLifecycleRequest, AgentLifecycleResult } from "@paperclipai/shared";
-import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@paperclipai/shared";
+import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
+import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@tickernelz/paperclip-pro-shared";
 /**
  * `definePlugin` — the top-level helper for authoring a Paperclip plugin.
  *
@@ -13,7 +13,7 @@ import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@paper
  * @example
  * ```ts
  * // dist/worker.ts
- * import { definePlugin } from "@paperclipai/plugin-sdk";
+ * import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {
@@ -573,7 +573,7 @@ export interface PaperclipPlugin {
  *
  * @example
  * ```ts
- * import { definePlugin } from "@paperclipai/plugin-sdk";
+ * import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
  *
  * export default definePlugin({
  *   async setup(ctx) {

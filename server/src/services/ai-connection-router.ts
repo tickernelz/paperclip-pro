@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, ne, sql } from "drizzle-orm";
-import { aiConnectionPools, aiConnectionRouterCursors, aiConnectionTaskPins, companySecrets, connectionGrants, instanceSettings, plugins, toolApplications, toolConnections, toolConnectionInstalls, type Db } from "@paperclipai/db";
-import { aiConnectionRouterAppDefinition, aiConnectionRouterSlug, aiConnectionPoolConfigSchema, isAiConnectionCompatible, type AiConnectionPool, type AiConnectionPoolMember, type AiConnectionRouterRequest, type AiConnectionRouterSelection, type AiConnectionPoolSaveInput, type AiConnectionUsage } from "@paperclipai/shared";
-import { isCodexLocalKnownModel, codexLocalReasoningEffortsForModel } from "@paperclipai/adapter-codex-local";
-import { models as claudeModels, claudeLocalReasoningEffortsForModel } from "@paperclipai/adapter-claude-local";
-import { models as grokModels, grokLocalReasoningEffortsForModel } from "@paperclipai/adapter-grok-local";
+import { aiConnectionPools, aiConnectionRouterCursors, aiConnectionTaskPins, companySecrets, connectionGrants, instanceSettings, plugins, toolApplications, toolConnections, toolConnectionInstalls, type Db } from "@tickernelz/paperclip-pro-db";
+import { aiConnectionRouterAppDefinition, aiConnectionRouterSlug, aiConnectionPoolConfigSchema, isAiConnectionCompatible, type AiConnectionPool, type AiConnectionPoolMember, type AiConnectionRouterRequest, type AiConnectionRouterSelection, type AiConnectionPoolSaveInput, type AiConnectionUsage } from "@tickernelz/paperclip-pro-shared";
+import { isCodexLocalKnownModel, codexLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { models as claudeModels, claudeLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-claude-local";
+import { models as grokModels, grokLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-grok-local";
 import { aiConnectionService } from "./ai-connections.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { logActivity } from "./activity-log.js";

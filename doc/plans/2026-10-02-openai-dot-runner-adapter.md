@@ -869,7 +869,7 @@ pnpm -r typecheck
 pnpm test:run
 pnpm build
 pnpm check:token-gates # when UI changes are present
-pnpm --filter @paperclipai/paperclip-runner verify
+pnpm --filter @tickernelz/paperclip-pro-paperclip-runner verify
 ```
 
 Browser/product suites are opt-in and required for the onboarding/live acceptance

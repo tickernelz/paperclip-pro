@@ -1,4 +1,4 @@
-import type { IssueComment } from "@paperclipai/shared";
+import type { IssueComment } from "@tickernelz/paperclip-pro-shared";
 import { storybookAgents } from "../../fixtures/paperclipData";
 import type { CompanyUserProfile } from "@/lib/company-members";
 

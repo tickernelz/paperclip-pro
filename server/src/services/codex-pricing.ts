@@ -1,5 +1,5 @@
-import { centsToUsd, unitsToCents, usdToUnits } from "@paperclipai/shared";
-import type { AdapterUsageCheckpoint } from "@paperclipai/adapter-utils";
+import { centsToUsd, unitsToCents, usdToUnits } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterUsageCheckpoint } from "@tickernelz/paperclip-pro-adapter-utils";
 
 // Immutable, reviewed rate card. Existing receipts retain their selected rates.
 // https://developers.openai.com/api/docs/pricing (retrieved 2026-09-30)

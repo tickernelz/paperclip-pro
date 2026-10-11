@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@paperclipai/shared";
+import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@tickernelz/paperclip-pro-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, Globe, Paperclip, Plug, Terminal } from "lucide-react";
 import { publicMcpApi } from "@/api/publicMcp";

@@ -4,7 +4,7 @@ import type {
   ConnectionGrant,
   ConnectionGrantStatus,
   ToolConnectionCredentialPolicy,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 /**
  * Canonical user-facing vocabulary for connection identity (PAP-17835).

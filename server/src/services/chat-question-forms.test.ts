@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AskUserQuestionsInteraction } from "@paperclipai/shared";
+import type { AskUserQuestionsInteraction } from "@tickernelz/paperclip-pro-shared";
 import { modalToAdaptiveCard } from "@chat-adapter/teams/modals";
 import { modalToDiscordPayload } from "@chat-adapter/discord";
 import {

@@ -3,7 +3,7 @@ set -euo pipefail
 
 base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip}"
+paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip-pro}"
 paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
 default_source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
 paperclip_dir="$worktree_cwd/.paperclip"
@@ -176,18 +176,18 @@ run_isolated_worktree_init() {
     return
   fi
 
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        pnpm paperclipai worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        pnpm paperclip-pro worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
+  if command -v paperclip-pro >/dev/null 2>&1; then
     (
       cd "$worktree_cwd" &&
-        paperclipai worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
+        paperclip-pro worktree init --force --no-seed --seed-mode minimal --name "$worktree_name" --instance "$worktree_instance_id" --from-config "$source_config_path"
     )
     return
   fi
@@ -196,7 +196,7 @@ run_isolated_worktree_init() {
 }
 
 paperclipai_command_available() {
-  if command -v pnpm >/dev/null 2>&1 && pnpm paperclipai --help >/dev/null 2>&1; then
+  if command -v pnpm >/dev/null 2>&1 && pnpm paperclip-pro --help >/dev/null 2>&1; then
     return 0
   fi
 
@@ -204,7 +204,7 @@ paperclipai_command_available() {
     return 0
   fi
 
-  if command -v paperclipai >/dev/null 2>&1; then
+  if command -v paperclip-pro >/dev/null 2>&1; then
     return 0
   fi
 
@@ -661,17 +661,17 @@ if [[ -n "$source_config_path" ]]; then
         if [[ "$init_exit_code" -eq 127 ]]; then
           # Every CLI candidate was unusable (e.g. an unhealthy base install that
           # the repair could not fix); degrade instead of stranding the run.
-          echo "No usable paperclipai CLI found; writing isolated fallback config without DB seeding." >&2
+          echo "No usable paperclip-pro CLI found; writing isolated fallback config without DB seeding." >&2
           write_fallback_worktree_config
         else
           # A CLI that ran and failed signals a real problem; do not paper over
           # it with an unseeded fallback config.
-          echo "paperclipai worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
+          echo "paperclip-pro worktree init failed (exit $init_exit_code); failing provisioning instead of writing an unseeded fallback config." >&2
           exit "$init_exit_code"
         fi
       fi
     else
-      echo "paperclipai worktree init unavailable; writing isolated fallback config without DB seeding." >&2
+      echo "paperclip-pro worktree init unavailable; writing isolated fallback config without DB seeding." >&2
       write_fallback_worktree_config
     fi
     created_worktree_config=1

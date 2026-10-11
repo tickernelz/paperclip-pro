@@ -1,7 +1,7 @@
 import { createDeliveryWorkCoordinator } from "./delivery-work-coordinator.js";
 import { DELIVERY_QUEUES, notifyDeliveryWork } from "./delivery-work-notifications.js";
 import { fastResponseService, enqueueFastResponse, fastResponseSourceCurrent, fastResponseTurnQueued } from "./fast-responses.js";
-import { fastResponseRequests } from "@paperclipai/db";
+import { fastResponseRequests } from "@tickernelz/paperclip-pro-db";
 import { HttpError } from "../errors.js";
 import { createHash, randomUUID } from "node:crypto";
 import WebSocket from "ws";
@@ -30,8 +30,8 @@ import {
   toolProfileBindings,
   companyMemberships,
   instanceUserRoles,
-} from "@paperclipai/db";
-import { compareCents } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-db";
+import { compareCents } from "@tickernelz/paperclip-pro-shared";
 import type {
   AgentPermissions,
   EmailEndpointSetupInput,
@@ -40,7 +40,7 @@ import type {
   EmailThreadSummary,
   EmailPublicationSummary,
   EmailEnvelope,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { badRequest, conflict, forbidden, notFound } from "../errors.js";
 import { environmentService } from "./environments.js";
 import { resolveExecutionWorkspaceEnvironmentId } from "./execution-workspace-policy.js";

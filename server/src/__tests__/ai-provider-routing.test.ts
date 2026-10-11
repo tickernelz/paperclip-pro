@@ -3,7 +3,7 @@ import {
   aiProviderRoutingSchema,
   createAiConnectionSchema,
   isAiConnectionCompatible,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { managedProviderRouting } from "../services/ai-provider-routing.js";
 
 describe("provider routing", () => {

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { activityLog, agents, authUsers, companies, companyMemberships, createDb, documents, documentRevisions, heartbeatRuns,
-  issueComments, issueDocuments, issues, issueThreadInteractions } from "@paperclipai/db";
+  issueComments, issueDocuments, issues, issueThreadInteractions } from "@tickernelz/paperclip-pro-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
@@ -10,7 +10,7 @@ import { pendingNativeGovernance } from "../services/native-runtime/native-run-f
 import { getConversationConfirmationContext } from "../services/conversation-confirmation-context.js";
 
 const { resolvedTelemetry } = vi.hoisted(() => ({ resolvedTelemetry: vi.fn() }));
-vi.mock("@paperclipai/shared/telemetry", async importOriginal => ({
+vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async importOriginal => ({
   ...await importOriginal<Record<string, unknown>>(), trackInteractionResolved: resolvedTelemetry, trackInteractionCreated: vi.fn(),
 }));
 vi.mock("../telemetry.js", async importOriginal => ({

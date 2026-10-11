@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { type BrowserUseControl, type TaskBrowser } from "@paperclipai/shared";
+import { type BrowserUseControl, type TaskBrowser } from "@tickernelz/paperclip-pro-shared";
 import { browserUseApi } from "@/api/browser-use";
 import { Button } from "@/components/ui/button";
 import { Globe, LoaderCircle } from "lucide-react";

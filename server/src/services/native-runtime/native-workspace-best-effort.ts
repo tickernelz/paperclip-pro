@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@paperclipai/db";
-import { classifyWorkspaceRestoreFailure } from "@paperclipai/adapter-utils/workspace-restore-merge";
+import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { classifyWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { logger } from "../../middleware/logger.js";
 

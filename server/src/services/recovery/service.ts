@@ -1,7 +1,7 @@
 import { isAgentAwaitingSetup } from "../../modules/agent-lifecycle/index.js";
 import { isAiAuthenticationBlocked } from "../ai-auth-failure.js";
 import { hasCommittedNativePlanWait } from "../native-runtime/native-plan-wait.js";
-import { isNativeWorkspaceExportRepairCause } from "@paperclipai/shared";
+import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
 import { settleSlackConversation } from "../slack-conversation-lifecycle.js";
 import { externalConversationStateSql } from "../slack-conversation-state.js";
 import { isIssueReviewPathRecoveryRun } from "./review-path-recovery.js";
@@ -31,7 +31,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   hasCommittedNativeBoardResponseWait,
   readNativeBoardResponseWaitSource,
@@ -44,7 +44,7 @@ import {
   requiresExecutionReconciliation,
   type IssueCommentMetadata,
   type IssueCommentPresentation,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentTaskSessions,
@@ -67,7 +67,7 @@ import {
   statusDecisions,
   routines,
   workAssessments,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { parseObject, asBoolean, asNumber } from "../../adapters/utils.js";
 import { runningProcesses } from "../../adapters/index.js";
 import {

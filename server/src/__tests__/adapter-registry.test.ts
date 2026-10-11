@@ -1,6 +1,6 @@
 import { probeAcpxClaudeInstallation, probeAcpxPiInstallation } from "../vendor/paperclip-runner/live/index.js";
 import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
-import { buildSandboxNpmInstallCommand } from "@paperclipai/adapter-utils";
+import { buildSandboxNpmInstallCommand } from "@tickernelz/paperclip-pro-adapter-utils";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
 import {

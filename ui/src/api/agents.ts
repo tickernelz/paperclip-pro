@@ -1,4 +1,4 @@
-import type { AgentPublicIdentity } from "@paperclipai/shared";
+import type { AgentPublicIdentity } from "@tickernelz/paperclip-pro-shared";
 import type {
   Agent,
   ConnectionIntentInteraction,
@@ -35,8 +35,8 @@ import type {
   AgentConfigRevision,
   ClearAgentErrorResponse,
   AgentApiKeyScope,
-} from "@paperclipai/shared";
-import { isUuidLike, normalizeAgentUrlKey } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike, normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
 import { ApiError, api } from "./client";
 
 export interface AgentKey {
@@ -111,7 +111,7 @@ function agentPath(id: string, companyId?: string, suffix = "") {
 
 export const agentsApi = {
   setAvatar: (companyId: string, agentId: string, imageBase64: string | null) =>
-    api.put<{ agentId: string; appearance: import("@paperclipai/shared").AgentAppearance; avatarUrl: string }>(`/companies/${companyId}/agents/${agentId}/avatar`, { imageBase64 }),
+    api.put<{ agentId: string; appearance: import("@tickernelz/paperclip-pro-shared").AgentAppearance; avatarUrl: string }>(`/companies/${companyId}/agents/${agentId}/avatar`, { imageBase64 }),
   getIdentity: (id: string, companyId?: string) =>
     api.get<AgentPublicIdentity | null>(agentPath(id, companyId, "/identity")),
   adoptAiConnection: (agentId: string, interactionId: string, connectionId: string, companyId: string) =>
@@ -253,7 +253,7 @@ export const agentsApi = {
     type: string,
     data: {
       adapterConfig: Record<string, unknown>;
-      aiConnection?: import("@paperclipai/shared").AiRuntimeConnectionBinding;
+      aiConnection?: import("@tickernelz/paperclip-pro-shared").AiRuntimeConnectionBinding;
       agentId?: string;
       testCredentials?: Record<string, string>;
       environmentId?: string | null;
@@ -314,7 +314,7 @@ export const agentsApi = {
   startAdapterAuthLogin: (
     companyId: string,
     type: string,
-    data: { environmentId: string; ttlSeconds?: number; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
+    data: { environmentId: string; ttlSeconds?: number; aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent },
   ) =>
     api.post<AdapterAuthSessionResponse>(
       `/companies/${encodeURIComponent(companyId)}/adapters/${encodeURIComponent(type)}/login-sessions`,
@@ -357,7 +357,7 @@ export const agentsApi = {
     ),
   startClaudeSetupTokenLogin: (
     companyId: string,
-    data: { environmentId: string; overwrite?: ClaudeSetupTokenOverwrite; aiConnection?: import("@paperclipai/shared").AiConnectionLoginIntent },
+    data: { environmentId: string; overwrite?: ClaudeSetupTokenOverwrite; aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent },
   ) =>
     api.post<ClaudeSetupTokenSessionOwnerResponse>(
       `/companies/${encodeURIComponent(companyId)}/setup-token-login-sessions`,

@@ -1,4 +1,4 @@
-import type { CostByUserReport } from "@paperclipai/shared";
+import type { CostByUserReport } from "@tickernelz/paperclip-pro-shared";
 import { CostAmount } from "./CostAmount";
 import { Identity } from "./Identity";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";

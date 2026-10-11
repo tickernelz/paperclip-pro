@@ -1,4 +1,4 @@
-import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@paperclipai/shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/paperclip-pro-shared";
 import {
   persistActivity,
   publishActivity,
@@ -15,7 +15,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 
 import { sanitizeQuarantinedCommentForHigherTrust } from "./source-trust.js";
 

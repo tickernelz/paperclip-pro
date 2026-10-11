@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { IssueAttachment } from "@paperclipai/shared";
+import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
 import { Routes, Route } from "@/lib/router";
 import { Layout } from "@/components/Layout";
 import { TaskChatBubble } from "@/components/task-chat/TaskChatBubble";

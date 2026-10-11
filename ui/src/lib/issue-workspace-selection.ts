@@ -1,4 +1,4 @@
-import type { ExecutionWorkspaceMode, Issue } from "@paperclipai/shared";
+import type { ExecutionWorkspaceMode, Issue } from "@tickernelz/paperclip-pro-shared";
 import {
   defaultExecutionWorkspaceModeForProject,
   issueExecutionWorkspaceModeForExistingWorkspace,

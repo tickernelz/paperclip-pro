@@ -1,4 +1,4 @@
-import { hasWorkspaceRestoreFailure, safeWorkspaceRestorePath } from "@paperclipai/shared";
+import { hasWorkspaceRestoreFailure, safeWorkspaceRestorePath } from "@tickernelz/paperclip-pro-shared";
 import type { AdapterExecutionResult } from "./types.js";
 import { classifyWorkspaceRestoreFailure } from "./workspace-restore-merge.js";
 import { getWorkspaceRestoreDiagnostic, withWorkspaceRestoreDiagnosticCapture } from "./workspace-restore-diagnostics.js";

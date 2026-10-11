@@ -4,7 +4,7 @@ import express from "express";
 import request from "supertest";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
-import { createDb, authUsers, companies, companyMemberships, agents, dotAgentBindings, dotMailboxItems, mcpEventSubscriptions, mcpOauthGrants, mcpOauthRequests, mcpOauthTokens } from "@paperclipai/db";
+import { createDb, authUsers, companies, companyMemberships, agents, dotAgentBindings, dotMailboxItems, mcpEventSubscriptions, mcpOauthGrants, mcpOauthRequests, mcpOauthTokens } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { createPublicMcpOAuth, publicMcpConfig, hashMcpSecret, DEVICE_GRANT } from "../services/public-mcp/oauth.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

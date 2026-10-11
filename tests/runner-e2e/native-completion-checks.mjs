@@ -229,7 +229,7 @@ export function main(args = process.argv.slice(2)) {
   }
   const sdk = runCommand(process.execPath, [join(root, "scripts/ensure-plugin-build-deps.mjs")], env, 5 * 60_000);
   report.setup.sdkExitCode = sdk.status; report.setup.evidence.push(capture(output, "setup-sdk", sdk));
-  const runner = sdk.status === 0 ? runCommand("pnpm", ["--filter", "@paperclipai/paperclip-runner", "build:typescript"], env) : null;
+  const runner = sdk.status === 0 ? runCommand("pnpm", ["--filter", "@tickernelz/paperclip-pro-paperclip-runner", "build:typescript"], env) : null;
   report.setup.runnerTypeScriptExitCode = runner?.status ?? null;
   report.setup.evidence.push(capture(output, "setup-runner-typescript", runner));
   const hosted = env.GITHUB_ACTIONS === "true";

@@ -1,10 +1,10 @@
 import type { CurrentBoardAccess } from "../api/access";
-import type { Issue, Project } from "@paperclipai/shared";
+import type { Issue, Project } from "@tickernelz/paperclip-pro-shared";
 import type {
   IssueAccessGrant,
   IssueAccessGrantAgentVisibility,
   IssueAccessGrantSource,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 /**
  * Client mirror of the server's `issueGrantAgentVisibility`

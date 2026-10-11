@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ActivityEvent } from "@paperclipai/shared";
+import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
 import {
   addCommonClientOptions,
   apiPath,

@@ -8,8 +8,8 @@ export function installedReleaseLaunch(cliPath: string) {
   const root = path.resolve(path.dirname(cli), "..");
   const manifest = JSON.parse(readFileSync(path.join(root, "package.json"), "utf8"));
   if (path.basename(cli) !== "index.js" || path.basename(path.dirname(cli)) !== "dist" ||
-      manifest.name !== "paperclipai" || typeof manifest.version !== "string") {
-    throw new Error("Installed release must use paperclipai/dist/index.js from its public package");
+      manifest.name !== "paperclip-pro" || typeof manifest.version !== "string") {
+    throw new Error("Installed release must use @tickernelz/paperclip-pro/dist/index.js from its public package");
   }
   return { cli, cwd: root, args: [cli, "onboard", "--yes", "--run"], version: manifest.version };
 }
@@ -18,9 +18,9 @@ export function installedReleaseLaunch(cliPath: string) {
 export function installedReleaseDaytonaPlugin(cliPath: string, installedPluginPath?: string, expectedVersion?: string): string {
   const cli = installedReleaseLaunch(cliPath);
   if (installedPluginPath && !path.isAbsolute(installedPluginPath)) throw new Error("Installed Daytona plugin path must be absolute");
-  const plugin = realpathSync(installedPluginPath ?? path.join(path.dirname(cli.cwd), "@paperclipai/plugin-daytona"));
+  const plugin = realpathSync(installedPluginPath ?? path.join(path.dirname(cli.cwd), "@tickernelz/paperclip-pro-plugin-daytona"));
   const manifest = JSON.parse(readFileSync(path.join(plugin, "package.json"), "utf8"));
-  if (manifest.name !== "@paperclipai/plugin-daytona" ||
+  if (manifest.name !== "@tickernelz/paperclip-pro-plugin-daytona" ||
       manifest.paperclipPlugin?.manifest !== "./dist/manifest.js" ||
       manifest.paperclipPlugin?.worker !== "./dist/worker.js" ||
       manifest.exports?.["."]?.import !== "./dist/index.js") {

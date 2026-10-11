@@ -1,6 +1,6 @@
 import { createAgentLifecycle } from "./agent-lifecycle.js";
 import { and, eq, isNull, ne } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
   companies,
@@ -8,14 +8,14 @@ import {
   pluginManagedResources,
   plugins,
   activityLog,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   Agent,
   PaperclipPluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
-} from "@paperclipai/shared";
-import { isUuidLike } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { conflict, forbidden, notFound } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";

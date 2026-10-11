@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import * as identity from "./cloud-runtime-identity.js";
 import { createCloudWarmStandby } from "./cloud-warm-standby.js";
 

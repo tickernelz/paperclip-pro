@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@paperclipai/plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
 
 const PLUGIN_ID = "paperclip.kubernetes-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0-alpha.1";
@@ -47,7 +47,7 @@ const manifest: PaperclipPluginManifestV1 = {
           },
           imageRegistry: {
             type: "string",
-            description: "Override the default registry for agent runtime images (default: ghcr.io/paperclipai).",
+            description: "Override the default registry for agent runtime images (default: ghcr.io/paperclip-pro).",
           },
           imageAllowList: {
             type: "array",

@@ -1,4 +1,4 @@
-import { instanceExperimentalSettingsSchema, type InstanceExperimentalSettingsWithManaged, type McpConnection, type McpConnectionRequest } from "@paperclipai/shared";
+import { instanceExperimentalSettingsSchema, type InstanceExperimentalSettingsWithManaged, type McpConnection, type McpConnectionRequest } from "@tickernelz/paperclip-pro-shared";
 import { fn } from "storybook/test";
 
 // Local portrait fixture keeps avatar previews independent of third-party image hosts.

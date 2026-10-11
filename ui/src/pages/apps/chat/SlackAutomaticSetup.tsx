@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { ExternalLink, Loader2 } from "lucide-react";
-import { slackRegistrationErrorMessage } from "@paperclipai/shared";
+import { slackRegistrationErrorMessage } from "@tickernelz/paperclip-pro-shared";
 import { chatEndpointsApi, type ChatEndpoint } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

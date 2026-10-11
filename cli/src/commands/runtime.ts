@@ -13,7 +13,7 @@ export async function resolvePiProvisioner(serverUrl: string): Promise<string> {
   const root = resolve(dirname(entry), "..");
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);
-  if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@paperclipai/server") throw new Error("Pi setup server package identity is invalid");
+  if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@tickernelz/paperclip-pro-server") throw new Error("Pi setup server package identity is invalid");
   const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-pi.cjs");
   if (await realpath(provisioner) !== provisioner || !(await lstat(provisioner)).isFile()) throw new Error("Pi setup entrypoint escapes its server package");
   return provisioner;
@@ -37,7 +37,7 @@ export function buildPiSetupEnvironment(source: NodeJS.ProcessEnv = process.env)
 }
 
 export async function setupPiRuntime(): Promise<void> {
-  const provisioner = await resolvePiProvisioner(import.meta.resolve("@paperclipai/server"));
+  const provisioner = await resolvePiProvisioner(import.meta.resolve("@tickernelz/paperclip-pro-server"));
   // Only explicit setup downloads. Enable Node's proxy handling for the helper;
   // provider keys, npm configuration, HOME and Node injection remain excluded.
   const child = spawn(process.execPath, ["--use-env-proxy", provisioner], {
@@ -67,14 +67,14 @@ export async function resolveCursorProvisioner(serverUrl: string): Promise<strin
   const root = resolve(dirname(entry), "..");
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);
-  if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@paperclipai/server") throw new Error("Cursor setup server package identity is invalid");
+  if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@tickernelz/paperclip-pro-server") throw new Error("Cursor setup server package identity is invalid");
   const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-cursor.cjs");
   if (await realpath(provisioner) !== provisioner || !(await lstat(provisioner)).isFile()) throw new Error("Cursor setup entrypoint escapes its server package");
   return provisioner;
 }
 
 export async function setupCursorRuntime(): Promise<void> {
-  const provisioner = await resolveCursorProvisioner(import.meta.resolve("@paperclipai/server"));
+  const provisioner = await resolveCursorProvisioner(import.meta.resolve("@tickernelz/paperclip-pro-server"));
   const child = spawn(process.execPath, [provisioner], {
     stdio: "inherit", env: { PATH: process.env.PATH ?? "/usr/bin:/bin", LANG: "C.UTF-8" },
   });
@@ -100,7 +100,7 @@ export function registerRuntimeCommands(program: Command): void {
     .description("Import a verified Linux Pi companion into the installed server (no downloads)")
     .requiredOption("--sha256 <digest>", "SHA256 of companion.json from the trusted release")
     .action(async (directory: string, options: { sha256: string }) => {
-      const modulePath = await resolveRemoteCompanionImporter(import.meta.resolve("@paperclipai/server"));
+      const modulePath = await resolveRemoteCompanionImporter(import.meta.resolve("@tickernelz/paperclip-pro-server"));
       const importer = await import(pathToFileURL(modulePath).href) as { importRemotePiCompanion(input: { directory: string; sha256: string; checkCancelled: () => void }): Promise<unknown> };
       let cancelled = false;
       const cancel = () => { cancelled = true; };
@@ -116,6 +116,6 @@ export function registerRuntimeCommands(program: Command): void {
     .action(async (provider: string) => {
       if (provider === "pi") await setupPiRuntime();
       else if (provider === "cursor") await setupCursorRuntime();
-      else throw new Error("Supported runtime setup: paperclipai runtime setup pi or cursor");
+      else throw new Error("Supported runtime setup: paperclip-pro runtime setup pi or cursor");
     });
 }

@@ -6,7 +6,7 @@
   "vendor": "2026.09.26-dd393fe",
   "nativePatch": "paperclip-cursor-usage-v4",
   "acpxPatchSha256": "00d6af17216cb0cad902b48633eb19bf0ec6b05837a984cb24661fca593f09c1",
-  "publicSetup": "paperclipai runtime setup cursor",
+  "publicSetup": "paperclip-pro runtime setup cursor",
   "assets": "public-server-and-provider-pack",
   "modes": [
     "agent",

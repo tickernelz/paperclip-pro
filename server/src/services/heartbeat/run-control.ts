@@ -64,10 +64,10 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   type EnvironmentLeaseStatus,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agentWakeupRequests,
   companies,
@@ -77,7 +77,7 @@ import {
   issueRecoveryActions,
   issues,
   nativeRunFinalizations,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   conflict,
   HttpError,
@@ -103,7 +103,7 @@ import {
 import { terminateLocalService } from "../local-service-supervisor.js";
 import { deriveCommentId } from "../../modules/run-dispatch/index.js";
 import { WakeQueueApplicationError } from "../../modules/wake-queue/index.js";
-import { isUuidLike } from "@paperclipai/shared";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import {
   type ProviderResourceDisposition,
 } from "../environment-runtime.js";

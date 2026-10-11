@@ -4,7 +4,7 @@ import path from "node:path";
 import { gzipSync } from "node:zlib";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { sql } from "drizzle-orm";
-import { createDb, ensurePostgresDatabase, getEmbeddedPostgresTestSupport, runDatabaseBackup, runDatabaseRestore, startEmbeddedPostgresTestDatabase } from "@paperclipai/db";
+import { createDb, ensurePostgresDatabase, getEmbeddedPostgresTestSupport, runDatabaseBackup, runDatabaseRestore, startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db";
 import { clearIdleBackupWakeRequired, idleBackupWakeMarker, markIdleBackupWakeRequired, verifyIdleDatabaseBackup } from "../services/idle-database-backup.js";
 
 let directory: string;

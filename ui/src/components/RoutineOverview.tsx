@@ -4,8 +4,8 @@ import type {
   IssueStatus,
   RoutineRunSummary,
   RoutineTrigger,
-} from "@paperclipai/shared";
-import { ISSUE_PRIORITIES, ISSUE_STATUSES } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { ISSUE_PRIORITIES, ISSUE_STATUSES } from "@tickernelz/paperclip-pro-shared";
 import { CalendarClock, Clock3, Play, Repeat, UserRound } from "lucide-react";
 import { IssueRow } from "@/components/IssueRow";
 import { MarkdownBody } from "@/components/MarkdownBody";

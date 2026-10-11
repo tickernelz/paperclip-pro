@@ -1,7 +1,7 @@
 import type {
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { Clock } from "lucide-react";
 import {
   externalObjectStatusIcon,

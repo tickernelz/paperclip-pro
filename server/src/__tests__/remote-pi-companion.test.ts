@@ -22,7 +22,7 @@ const canonical = (v: any): string => Array.isArray(v) ? `[${v.map(canonical).jo
 async function fixture() {
   const root = realpathSync(mkdtempSync(join(tmpdir(), "paperclip-companion-"))); roots.push(root);
   const source = "a".repeat(40); const serverRoot = join(root, "server"); const directory = join(root, "release");
-  mkdirSync(join(serverRoot, "dist"), { recursive: true }); writeFileSync(join(serverRoot, "package.json"), '{"name":"@paperclipai/server"}'); writeFileSync(join(serverRoot, "dist/build-info.json"), JSON.stringify({ commit: source }));
+  mkdirSync(join(serverRoot, "dist"), { recursive: true }); writeFileSync(join(serverRoot, "package.json"), '{"name":"@tickernelz/paperclip-pro-server"}'); writeFileSync(join(serverRoot, "dist/build-info.json"), JSON.stringify({ commit: source }));
   mkdirSync(join(directory, "bin"), { recursive: true }); mkdirSync(join(directory, "provider-pack"));
   // Synthetic ELF header; these tests never launch it or claim native qualification.
   const elf = Buffer.alloc(128); Buffer.from([127, 69, 76, 70, 2, 1]).copy(elf); elf.writeUInt16LE(62, 18); writeFileSync(join(directory, "bin/paperclip-runnerd"), elf, { mode: 0o755 });

@@ -4,7 +4,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
-import { PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES } from "@paperclipai/shared";
+import { PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES } from "@tickernelz/paperclip-pro-shared";
 import { resolvePaperclipHomeDir } from "../config/home.js";
 
 const deviceGrant = "urn:ietf:params:oauth:grant-type:device_code";
@@ -196,7 +196,7 @@ export async function mcpAccessToken(raw: string) {
   const file = credentialPath(resource);
   return withMcpCredentialLock(file, async () => {
     const credential = await readCredential(file);
-    if (!credential || credential.resource !== resource || credential.issuer !== new URL(resource).origin) throw new Error("Connect first with paperclipai mcp login --device --url <MCP URL>.");
+    if (!credential || credential.resource !== resource || credential.issuer !== new URL(resource).origin) throw new Error("Connect first with paperclip-pro mcp login --device --url <MCP URL>.");
     if (credential.expiresAt > Date.now() + 30_000) return credential.accessToken;
     if (!credential.refreshToken) throw new Error("Paperclip access expired. Sign in again.");
     // Validate issuer discovery again before sending a stored credential.

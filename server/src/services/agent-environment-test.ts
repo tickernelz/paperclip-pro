@@ -1,8 +1,8 @@
-import type { Db } from "@paperclipai/db";
-import type { AdapterExecutionTarget } from "@paperclipai/adapter-utils/execution-target";
-import type { AdapterEnvironmentCheck } from "@paperclipai/adapter-utils";
-import { parseObject } from "@paperclipai/adapter-utils/server-utils";
-import { aiRoutingHarness, ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, type AiConnectionBinding } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
+import { parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { aiRoutingHarness, ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
 import { requireServerAdapter } from "../adapters/index.js";
 import { forbidden, HttpError, unprocessable } from "../errors.js";
 import { instanceSettingsService } from "./instance-settings.js";

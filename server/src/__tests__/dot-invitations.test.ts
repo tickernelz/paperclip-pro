@@ -11,7 +11,7 @@ import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it, vi } from "vitest";
-import { createDb, agents, approvals, principalPermissionGrants, authUsers, companies, companyMemberships, dotAgentBindings, activityLog } from "@paperclipai/db";
+import { createDb, agents, approvals, principalPermissionGrants, authUsers, companies, companyMemberships, dotAgentBindings, activityLog } from "@tickernelz/paperclip-pro-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { dotInvitationService } from "../services/dot-invitations.js";
 import { dotRunnerBroker } from "../services/dot-runner-broker.js";

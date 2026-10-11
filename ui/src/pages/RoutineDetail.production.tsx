@@ -68,7 +68,7 @@ import type {
   RoutineDetail as RoutineDetailType,
   RoutineEnvConfig,
   RoutineVariable,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 
 const LAST_SECTION_STORAGE_KEY = "paperclip.routineLastSection";
 

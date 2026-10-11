@@ -4,7 +4,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { UserProfileResponse } from "@paperclipai/shared";
+import type { UserProfileResponse } from "@tickernelz/paperclip-pro-shared";
 import { queryKeys } from "../lib/queryKeys";
 import { UserProfile } from "./UserProfile";
 

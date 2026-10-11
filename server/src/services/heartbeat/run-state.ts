@@ -12,11 +12,11 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   type BillingType,
   type CostStatus,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
   agentConfigRevisions,
@@ -25,7 +25,7 @@ import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { notFound } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getServerAdapter } from "../../adapters/index.js";
@@ -48,8 +48,8 @@ import {
   hasSessionCompactionThresholds,
   resolveSessionCompactionPolicy,
   type SessionCompactionPolicy,
-} from "@paperclipai/adapter-utils";
-import { isUuidLike } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-adapter-utils";
+import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { isUnsafeSessionWorkspaceCwd } from "../session-workspace-cwd.js";
 
 export const EXECUTION_REVIEW_PARTICIPANT_RECOVERY_WAKE_REASON =

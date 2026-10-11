@@ -1,5 +1,5 @@
-import type { Db, chatEndpoints } from "@paperclipai/db";
-import { chatEndpoints as endpoints } from "@paperclipai/db";
+import type { Db, chatEndpoints } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints as endpoints } from "@tickernelz/paperclip-pro-db";
 import { and, eq, sql } from "drizzle-orm";
 import type { SealedConnectorEvents } from "./paperclip-cloud-connector.js";
 

@@ -8,7 +8,7 @@ import {
   type AiConnectionBinding,
   type AiProvider,
   type AiManagedConnectionSummary,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { AiConnectionSelect } from "./AiConnectionSelect";
 import { AiProviderSetup } from "./AiProviderSetup";

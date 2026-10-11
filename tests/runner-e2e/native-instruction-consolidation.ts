@@ -250,7 +250,7 @@ export function validateNativeInstructionMeasurement(measurement: {
 export function prepareNativeInstructionPreflight(directory: string) {
   const source = sourceReceipt();
   const build = (script: string, file: string) => {
-    const log = execFileSync("pnpm", ["--filter", "@paperclipai/paperclip-runner", script], {
+    const log = execFileSync("pnpm", ["--filter", "@tickernelz/paperclip-pro-paperclip-runner", script], {
       cwd: root, timeout: 10 * 60_000, env: nativeCompletionPreflightEnvironment(process.env), maxBuffer: 8 * 1024 * 1024,
     });
     writeFileSync(join(directory, file), log);

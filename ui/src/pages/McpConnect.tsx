@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, Paperclip } from "lucide-react";
 import { Link, useParams } from "@/lib/router";
-import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@paperclipai/shared";
+import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@tickernelz/paperclip-pro-shared";
 import { deriveInitials, Identity } from "@/components/Identity";
 import { assistantConnectionDisplayName } from "./apps/connection-owner";
 import { Button } from "@/components/ui/button";

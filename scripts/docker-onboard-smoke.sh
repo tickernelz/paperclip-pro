@@ -24,7 +24,7 @@ SMOKE_PROVIDER_MOCK="${SMOKE_PROVIDER_MOCK:-true}"
 PAPERCLIP_PUBLIC_URL="${PAPERCLIP_PUBLIC_URL:-http://localhost:${HOST_PORT}}"
 SMOKE_AUTO_BOOTSTRAP="${SMOKE_AUTO_BOOTSTRAP:-true}"
 # Seconds to wait for /api/health after the container starts. The container
-# cold-installs paperclipai from npm and initializes embedded postgres before
+# cold-installs paperclip-pro from npm and initializes embedded postgres before
 # it can serve health, so CI callers with no warm caches need far more than
 # the local default.
 SMOKE_READY_TIMEOUT_SECONDS="${SMOKE_READY_TIMEOUT_SECONDS:-90}"
@@ -158,7 +158,7 @@ generate_bootstrap_invite_url() {
       -e PAPERCLIP_PUBLIC_URL="$PAPERCLIP_PUBLIC_URL" \
       -e PAPERCLIP_HOME="/paperclip" \
       "$CONTAINER_NAME" bash -lc \
-      'timeout 20s npx --yes "paperclipai@${PAPERCLIPAI_VERSION}" auth bootstrap-ceo --data-dir "$PAPERCLIP_HOME" --base-url "$PAPERCLIP_PUBLIC_URL"' \
+      'timeout 20s npx --yes "@tickernelz/paperclip-pro@${PAPERCLIPAI_VERSION}" auth bootstrap-ceo --data-dir "$PAPERCLIP_HOME" --base-url "$PAPERCLIP_PUBLIC_URL"' \
       2>&1
   )"; then
     bootstrap_status=0

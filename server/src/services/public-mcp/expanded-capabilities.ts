@@ -5,7 +5,7 @@ import {
   aiRuntimeConnectionBindingSchema, createProjectSchema, updateProjectSchema,
   companySkillCreateSchema, companySkillUpdateSchema, companySkillFileUpdateSchema,
   createIssueWorkProductSchema, updateIssueWorkProductSchema,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { McpApiError, company, task, requestId, pathId, object, pick, rows, taskFields, documentFields, type Capability } from "./contracts.js";
 
 const agent = { ...company, agentId: z.uuid() };

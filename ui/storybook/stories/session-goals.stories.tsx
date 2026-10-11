@@ -5,7 +5,7 @@ import type {
   RunnerGoalPendingAction,
   RunnerGoalProjection,
   RunnerGoalStatus,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   RunnerGoalWidget,
   type RunnerGoalControl,

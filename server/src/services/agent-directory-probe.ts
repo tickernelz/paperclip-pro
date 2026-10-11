@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import childProcess from "node:child_process";
-import type { DirectorySnapshot } from "@paperclipai/adapter-utils/workspace-restore-merge";
+import type { DirectorySnapshot } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 
 /** Only for a live unchanged-turn observation. Never a save or stop receipt. */
 export function agentDirectoryBaselineDigest(snapshot: DirectorySnapshot): string {

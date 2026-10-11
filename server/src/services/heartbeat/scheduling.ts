@@ -6,14 +6,14 @@ import {
   agentTaskSessions,
   agentSessionGoalActions,
   agents,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   type IssueExecutionMonitorPolicy,
   type IssueExecutionMonitorClearReason,
   type IssueExecutionMonitorRecoveryPolicy,
   PROVIDER_QUOTA_MONITOR_SERVICE_NAME,
   isUuidLike,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import {
   and,
   eq,
@@ -50,7 +50,7 @@ import {
 import { logger } from "../../middleware/logger.js";
 import { failRunnerGoalAction } from "../runner-goals.js";
 import { evaluateAgentInvokability } from "../agent-invokability.js";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { issueService } from "../issues.js";
 import type { createHeartbeatQueue } from "./queue.js";
 import type { createHeartbeatRetries, HeartbeatRetryDependencies } from "./retries.js";

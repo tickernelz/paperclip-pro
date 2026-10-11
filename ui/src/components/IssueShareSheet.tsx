@@ -11,7 +11,7 @@ import {
   RotateCcw,
   UserPlus,
 } from "lucide-react";
-import type { IssueAccessGrant, IssueAccessGrantSource } from "@paperclipai/shared";
+import type { IssueAccessGrant, IssueAccessGrantSource } from "@tickernelz/paperclip-pro-shared";
 import {
   AlertDialog,
   AlertDialogAction,

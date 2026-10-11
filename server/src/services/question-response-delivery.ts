@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agentWakeupRequests,
   agents,
@@ -10,11 +10,11 @@ import {
   issueQuestionResponseDeliveries,
   issues,
   issueThreadInteractions,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   AskUserQuestionsInteraction,
   PaperclipQuestionSetPayload,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { PaperclipQuestionResponse } from "../vendor/paperclip-runner/index.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { getTelemetryClient } from "../telemetry.js";

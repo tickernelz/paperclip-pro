@@ -23,7 +23,7 @@ Model work is bounded to the test events; periodic autonomous heartbeats stay of
 - Fresh company: GitHub Animals E2E, ID `7bcde5de-f859-42ea-9cb8-32d6bf3e2998`.
 - Local instance: `http://127.0.0.1:3110`.
 - Retained data: `/private/tmp/paperclip-github-e2e-20261007`.
-- Start through the supported `paperclipai test-drive` CLI; use trycloudflare for
+- Start through the supported `paperclip-pro test-drive` CLI; use trycloudflare for
   a narrowly exposed test endpoint. Do not expose a trusted full-control board.
 - Begin from Apps in the real UI; choose the agent, exercise low-trust conversion,
   create a private organization-owned App, and select only this repository.
@@ -101,7 +101,7 @@ Independent proof is saved in `live-e2e-proof.json`. The live acceptance results
 - Animal Bot: `4be7066f-130b-4bfd-9a1a-740d52fe5080`. Real UI agent selection and
   one-click low-trust conversion passed. Agent instructions request 5/5 reviews
   and random ASCII animals through task-bound bot tools.
-- Draft `d5918d73-be6a-46b7-bf89-01e396c84ce8` retains organization `paperclipai`
+- Draft `d5918d73-be6a-46b7-bf89-01e396c84ce8` retains organization `paperclip-pro`
   and suggested name `Animal Bot E2E 20261007` after reload/restart.
 - Cloud enrollment for **http://localhost:3110** is approved. Human sign-in and access confirmation completed. Installation selected only the designated test repository, and the dedicated App identity was linked and confirmed.
 - Existing Daytona environment `49bd3525-7d3b-4edf-b719-95e48431ea06` uses the
@@ -203,7 +203,7 @@ Added manager-only renewal of an expired, unconsumed Cloud registration after an
 
 ### Browser POST diagnosis and current consent handoff
 
-The initial scripted manifest form repeatedly reached GitHub's 500 page before creation. A loopback-only diagnostic using an ordinary HTML form reached the creation confirmation with the identical manifest, under both numeric loopback and localhost origins. No permission or manifest-field workaround was needed. Changed the real wizard to a mounted native POST form; verified that Continue to GitHub now reaches **Create GitHub App for paperclipai**. Fresh API preparation submits the mounted form with requestSubmit, guarded against duplicate effect execution. Wizard regression suite: 17 passing tests.
+The initial scripted manifest form repeatedly reached GitHub's 500 page before creation. A loopback-only diagnostic using an ordinary HTML form reached the creation confirmation with the identical manifest, under both numeric loopback and localhost origins. No permission or manifest-field workaround was needed. Changed the real wizard to a mounted native POST form; verified that Continue to GitHub now reaches **Create GitHub App for paperclip-pro**. Fresh API preparation submits the mounted form with requestSubmit, guarded against duplicate effect execution. Wizard regression suite: 17 passing tests.
 
 An action-time browser confirmation is pending for the exact private App, designated smoke repository, read contents/metadata and write issues/pull requests/checks, with webhook events routed through the staging Cloud gateway. Earlier blanket approval does not meet the browser tool's action-time access requirement. No App creation, repository installation, or real GitHub bot publication has occurred. The exact draft and approved enrollment are retained; the native model/task smoke remains qualified separately.
 
@@ -329,7 +329,7 @@ earlier full-suite failure and outstanding current-head CI/review still apply.
 ### Custom App identity and branding qualification
 
 The live bot is the dedicated **Animal Bot E2E 20261007** App owned by
-`paperclipai`, not the shared Paperclip App. Its verified GitHub author is
+`paperclip-pro`, not the shared Paperclip App. Its verified GitHub author is
 `animal-bot-e2e-20261007[bot]`; the human mention is
 `@animal-bot-e2e-20261007`. The published review's GitHub author and App fields
 agree with the saved endpoint identity.
@@ -549,7 +549,7 @@ two introductory App-creation paragraphs were removed.
 
 Verification: 38 focused wizard/repository metadata tests passed. Shared build,
 UI and server typechecks, UI, server and Storybook builds, and token gates passed. In the
-retained test drive, `paperclipai` appeared from the existing connected App;
+retained test drive, `paperclip-pro` appeared from the existing connected App;
 selecting it hid the redundant Organization field. **Another organization**
 accepted `test` and enabled Continue. No GitHub registration was submitted.
 The production Storybook journey covers known organizations and manual entry.

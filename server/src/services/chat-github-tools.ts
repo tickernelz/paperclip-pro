@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { githubReviewAssessmentSchema } from "@paperclipai/shared";
+import { githubReviewAssessmentSchema } from "@tickernelz/paperclip-pro-shared";
 import { and, eq, isNull } from "drizzle-orm";
 import {
   chatDeliveries,
@@ -16,7 +16,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   type Db,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ToolGatewayDescriptor,
   ToolGatewaySession,

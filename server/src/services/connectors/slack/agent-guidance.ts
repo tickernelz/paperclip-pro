@@ -1,4 +1,4 @@
-import { slackAppConfigurationSchema } from "@paperclipai/shared";
+import { slackAppConfigurationSchema } from "@tickernelz/paperclip-pro-shared";
 import { slackTaskUpdateGuidance } from "./task-update-guidance.js";
 
 // Per-turn routing guidance, including resumed CLI sessions. This describes

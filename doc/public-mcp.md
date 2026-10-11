@@ -136,8 +136,8 @@ installation requires the separate deployment and submission work below.
 With a CLI build that includes this feature:
 
 ```sh
-paperclipai mcp login --device --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
-paperclipai mcp proxy --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+paperclip-pro mcp login --device --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
+paperclip-pro mcp proxy --url https://YOUR-PAPERCLIP-HOST/mcp/paperclip
 ```
 
 Add `--company <organization UUID>` to login to restrict the consent choice.
@@ -147,7 +147,7 @@ inside the CLI. Configure the second command as a local stdio MCP server in a ho
 without native device support. Do not copy tokens into chat or MCP configuration.
 
 The CLI stores credentials separately under `$PAPERCLIP_HOME/mcp` (default
-`~/.paperclip/mcp`), with a private directory and files, atomic replacement and a
+`~/.paperclip-pro/mcp`), with a private directory and files, atomic replacement and a
 cross-process refresh mutex. It forwards only to the exact bound resource and
 rejects redirects. A failed write is never retried automatically because it may
 already have completed. Revoke access from Connections when finished.

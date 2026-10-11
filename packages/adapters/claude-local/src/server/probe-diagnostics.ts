@@ -1,4 +1,4 @@
-import type { AdapterEnvironmentCheck } from "@paperclipai/adapter-utils";
+import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
 
 /**
  * The fixed label a Test result shows when the probe runs on the local

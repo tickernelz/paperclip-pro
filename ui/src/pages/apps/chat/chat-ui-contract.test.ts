@@ -1,4 +1,4 @@
-import { buildSlackAppManifest } from "@paperclipai/shared";
+import { buildSlackAppManifest } from "@tickernelz/paperclip-pro-shared";
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
@@ -262,7 +262,7 @@ describe("chat connector UI contract", () => {
     expect(setup).not.toContain("managed Microsoft app");
     expect(setup).toContain("endpoint.providerAccountId && !repairing");
     expect(setup).not.toContain('field("webhookSecret"');
-    expect(setup).not.toContain("@paperclipai/teams-connect");
+    expect(setup).not.toContain("@tickernelz/paperclip-pro-teams-connect");
     expect(setup).not.toContain("Copy setup command");
     expect(setup).not.toContain("Add {agentName} to Slack");
     expect(setup).not.toContain("Create in GitHub");

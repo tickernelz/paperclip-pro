@@ -8,7 +8,7 @@ import {
   environments,
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   createDbSetupTokenCleanupStore,
   SetupTokenSessionService,

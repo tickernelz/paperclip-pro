@@ -1,5 +1,5 @@
 import { stripVTControlCharacters } from "node:util";
-import { asString, parseObject, parseJson } from "@paperclipai/adapter-utils/server-utils";
+import { asString, parseObject, parseJson } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { normalizeCursorStreamLine } from "../shared/stream.js";
 
 /** Select diagnostics without mistaking Cursor's trace-file notice for an error. */

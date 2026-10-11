@@ -1,12 +1,12 @@
-import { updateFastResponseSchema } from "@paperclipai/shared";
-import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@paperclipai/shared";
+import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
+import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/paperclip-pro-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import {
   experimentalApiPaths,
   experimentalApiQueries,
 } from "./experimental-api-paths.js";
 import { Router } from "express";
-import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@paperclipai/shared";
+import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/paperclip-pro-shared";
 import { z } from "zod";
 import {
   gitHubRepositoryPageQuerySchema,
@@ -321,13 +321,13 @@ import {
   resolveChatPublicationSchema,
   replaceChatEndpointResourcesSchema,
   updateChatEndpointSchema,
-} from "@paperclipai/shared";
-import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@paperclipai/shared/aggregator-apps";
-import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@paperclipai/shared/composio-app-setup";
+} from "@tickernelz/paperclip-pro-shared";
+import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@tickernelz/paperclip-pro-shared/composio-app-setup";
 import {
   COMPANY_IMPORT_TRANSFERS_API_PATH,
   companyImportTransferDeclarationSchema,
-} from "@paperclipai/shared/company-import-transfer";
+} from "@tickernelz/paperclip-pro-shared/company-import-transfer";
 
 type JsonSchema = Record<string, unknown>;
 type OpenApiResponse = Record<string, unknown>;

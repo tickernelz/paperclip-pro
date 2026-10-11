@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { CostByAgent } from "@paperclipai/shared";
+import type { CostByAgent } from "@tickernelz/paperclip-pro-shared";
 import { formatCents } from "../lib/utils";
 import { CostEstimateLabel } from "./CostEstimateLabel";
 

@@ -1,5 +1,5 @@
 import { quotaUnavailableMessage } from "@/lib/quota-refresh";
-import type { QuotaWindow } from "@paperclipai/shared";
+import type { QuotaWindow } from "@tickernelz/paperclip-pro-shared";
 import { cn, quotaSourceDisplayName } from "@/lib/utils";
 
 interface CodexSubscriptionPanelProps {

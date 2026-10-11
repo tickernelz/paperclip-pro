@@ -17,8 +17,8 @@ import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, asc, eq } from "drizzle-orm";
-import { type ExecutionWorkspace } from "@paperclipai/shared";
-import { heartbeatRuns, projectWorkspaces } from "@paperclipai/db";
+import { type ExecutionWorkspace } from "@tickernelz/paperclip-pro-shared";
+import { heartbeatRuns, projectWorkspaces } from "@tickernelz/paperclip-pro-db";
 import { getStartupTracer } from "../../instrumentation.js";
 import { createHostDuplexObservabilityRecorder } from "../duplex-observability-recorder.js";
 import { incrementToolRuntimeMetricCounter } from "../tool-runtime-metrics.js";
@@ -45,12 +45,12 @@ import {
   resolveEffectiveWorkspaceStrategyType,
 } from "../execution-workspace-policy.js";
 import { evaluateExecutionAllowlist } from "../execution-allowlist.js";
-import type { Db, agents } from "@paperclipai/db";
+import type { Db, agents } from "@tickernelz/paperclip-pro-db";
 import type {
   Environment,
   IssueExecutionWorkspaceSettings,
   ProjectExecutionWorkspacePolicy,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import type { NativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
 import type { NativeRunHistoricalSpan } from "../native-runtime/native-run-trace.js";
 import type { NativeRestartRecoveryClaim } from "../native-runtime/index.js";

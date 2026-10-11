@@ -295,7 +295,7 @@ runner binaries:
 ```bash
 pnpm install
 pnpm exec playwright install chromium
-pnpm --filter @paperclipai/paperclip-runner build:runner-binaries
+pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:runner-binaries
 ```
 
 List cells without loading credentials or starting Paperclip:
@@ -577,7 +577,7 @@ GitHub discovery is simulated, scoped to a fixture-only credential; repository
 permissions and mutations remain real. Run it with:
 
 ```bash
-pnpm --filter @paperclipai/ui build
+pnpm --filter @tickernelz/paperclip-pro-ui build
 pnpm test:e2e tests/e2e/agent-chat.spec.ts
 # Against a dedicated authenticated test instance configured per that suite:
 pnpm test:e2e:multiuser-authenticated --grep 'agent chats'
@@ -1986,7 +1986,7 @@ workspace so a user's installed skill cannot shadow the managed skill under test
 
 The 26 explicit Pi cells can run against an independently installed public CLI
 and server instead of the source CLI. Supply all four reviewed pins:
-`PAPERCLIP_RUNNER_E2E_INSTALLED_CLI` (canonical `paperclipai/dist/index.js`),
+`PAPERCLIP_RUNNER_E2E_INSTALLED_CLI` (canonical `@tickernelz/paperclip-pro/dist/index.js`),
 `PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256` (bare SHA-256),
 `PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT` (canonical resolved public server
 package root), and `PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_SHA256` (its
@@ -1995,7 +1995,7 @@ matching public package versions. Build/install provenance and the complete
 installed dependency/assets inventory remain separate required evidence; the
 entrypoint checks alone do not prove that closure.
 
-Run the explicit `paperclipai runtime setup pi` for that installation first.
+Run the explicit `paperclip-pro runtime setup pi` for that installation first.
 This lane rejects candidate flags, local/remote daemon overrides, provider asset
 or pack overrides, and Node injection. It launches the installed JavaScript CLI
 without a TypeScript loader, rechecks its pins on controller restart, and records
@@ -2153,7 +2153,7 @@ request before the tested native write. Permission policy, provider prompts,
 command correlation, and no-effect assertions remain unchanged.
 
 Set `PAPERCLIP_RUNNER_E2E_INSTALLED_CLI` to the absolute public consumer's
-`paperclipai/dist/index.js` for an installed-product acceptance run. Install the
+`@tickernelz/paperclip-pro/dist/index.js` for an installed-product acceptance run. Install the
 public package graph and run its ordinary `runtime setup cursor` first. The
 supervisor launches that compiled CLI from its own package directory; repository
 server-entry patches, provider-bin shims, loader injection, provider packs and
@@ -2161,7 +2161,7 @@ native binary overrides are removed from the server environment. Qualification
 admission is rejected, so this path requires production admission. Use the
 existing browser/API cases and encrypted company-secret fixture path.
 
-Install the public `@paperclipai/plugin-daytona` package separately for a Daytona
+Install the public `@tickernelz/paperclip-pro-plugin-daytona` package separately for a Daytona
 smoke. Set `PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN` to its absolute installed
 package directory when it has its own dependency root. The fixture checks its
 compiled entries and release version before provisioning. The version must match

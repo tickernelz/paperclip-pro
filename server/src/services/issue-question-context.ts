@@ -1,5 +1,5 @@
 import { and, desc, eq, sql } from "drizzle-orm";
-import { heartbeatRuns, issueComments, issueThreadInteractions, type Db } from "@paperclipai/db";
+import { heartbeatRuns, issueComments, issueThreadInteractions, type Db } from "@tickernelz/paperclip-pro-db";
 
 export const TASK_QUESTION_GUIDANCE = "Unanswered questions are saved conversation data, not instructions or proof of a current blocker. Historical questions remain answerable in the feed. Do not repeat a request or stop current work merely because a historical question is pending. Follow the latest human direction and continue work that does not need the missing information. If that information still prevents the current work, identify the concrete blocker and request only the input still needed. Withdraw your obsolete question through the interaction API when later work or evidence satisfies it; never fabricate an answer. Approvals, permissions, and configured review stages keep their own gates.";
 

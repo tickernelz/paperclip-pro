@@ -6,7 +6,7 @@ import { z } from "zod";
 import { type PublicMcpEvents } from "../services/public-mcp/events.js";
 import type { PublicMcpToolExtension } from "../services/public-mcp/dot-runner.js";
 import { McpEventError } from "../services/public-mcp/event-webhooks.js";
-import { DOT_RUNNER_MCP_PATH, DOT_RUNNER_MCP_SCOPES, PUBLIC_MCP_SCOPES, mcpConsentSchema, mcpInvitation, mcpSetupUrl } from "@paperclipai/shared";
+import { DOT_RUNNER_MCP_PATH, DOT_RUNNER_MCP_SCOPES, PUBLIC_MCP_SCOPES, mcpConsentSchema, mcpInvitation, mcpSetupUrl } from "@tickernelz/paperclip-pro-shared";
 import { renderMcpSetup, mcpSetupMarkdown } from "../services/public-mcp/setup.js";
 import { DEVICE_GRANT, McpOAuthError, type PublicMcpOAuth } from "../services/public-mcp/oauth.js";
 import { McpApiError, McpCapabilityError, publicMcpCapabilities, type createPublicMcpExecutor } from "../services/public-mcp/capabilities.js";

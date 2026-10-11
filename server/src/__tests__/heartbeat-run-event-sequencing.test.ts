@@ -6,7 +6,7 @@ import {
   createDb,
   heartbeatRunEvents,
   heartbeatRuns,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import {
   allocateHeartbeatRunEventSeq,
   appendHeartbeatRunEvent,

@@ -13,7 +13,7 @@ import { fileURLToPath } from 'node:url';
 
 const ISSUE_PATTERNS = [
   /(?:fixes|closes|resolves|refs)\s+#\d+/i,
-  /(?:^|[\s(])https:\/\/github\.com\/paperclipai\/paperclip\/issues\/\d+(?=$|[\s),:;!?]|[.](?![\w-]))/i,
+  /(?:^|[\s(])https:\/\/github\.com\/paperclip-pro\/paperclip\/issues\/\d+(?=$|[\s),:;!?]|[.](?![\w-]))/i,
   /(?<!\w)#\d+/,
 ];
 

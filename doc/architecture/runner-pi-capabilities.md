@@ -212,7 +212,7 @@ Its host Pi installation is not a Linux provider pack. The operator imports a
 release companion once, before launching agents:
 
 ```sh
-paperclipai runtime import-remote /path/to/release/linux-x64 --sha256 MANIFEST_SHA256
+paperclip-pro runtime import-remote /path/to/release/linux-x64 --sha256 MANIFEST_SHA256
 ```
 
 Obtain `MANIFEST_SHA256` from the trusted release channel, separately from the
@@ -225,7 +225,7 @@ are rejected. This command performs no network requests or model calls and does
 not run the Linux executable on the Mac.
 
 The destination is the private `remote-companions/linux-x64` directory beneath
-the actual installed `@paperclipai/server` package. It must be writable by the
+the actual installed `@tickernelz/paperclip-pro-server` package. It must be writable by the
 operator, outside the task workspace, and protected with the same host access
 controls as the server installation. It is not an agent workspace or a remote
 image's self-reported authority. An existing different or damaged installation
@@ -1166,7 +1166,7 @@ passes. Restart and refreshed hello are held until this defect is repaired.
 
 ## Explicit host installation
 
-For a published local Paperclip installation, run `paperclipai runtime setup pi`
+For a published local Paperclip installation, run `paperclip-pro runtime setup pi`
 with the same installed CLI and account that owns the server package. This is an
 explicit download and verification step; npm installation and agent launch never
 perform it automatically. It installs only this host's supported platform

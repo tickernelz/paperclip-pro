@@ -136,7 +136,7 @@ function registerModuleMocks() {
   vi.doMock("../services/skill-sources.js", () => ({ skillSourceService: () => mockSkillSourceService }));
   vi.doMock("../routes/authz.js", async () => vi.importActual("../routes/authz.js"));
 
-  vi.doMock("@paperclipai/shared/telemetry", () => ({
+  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
     trackSkillImported: mockTrackSkillImported,
     trackErrorHandlerCrash: vi.fn(),
   }));

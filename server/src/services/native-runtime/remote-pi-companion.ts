@@ -74,7 +74,7 @@ export async function inventoryRemoteCompanion(root: string, check = checkpoints
 }
 async function installedIdentity(serverRoot: string, check: Checkpoint) {
   require(process.platform === "darwin" || process.platform === "linux", "companion import supports macOS and Linux controllers");
-  await directory(serverRoot); const pkg = JSON.parse((await readOwned(join(serverRoot, "package.json"), 65536, check, true)).toString()); require(pkg.name === "@paperclipai/server", "public server package required");
+  await directory(serverRoot); const pkg = JSON.parse((await readOwned(join(serverRoot, "package.json"), 65536, check, true)).toString()); require(pkg.name === "@tickernelz/paperclip-pro-server", "public server package required");
   const source = JSON.parse((await readOwned(join(serverRoot, "dist/build-info.json"), 65536, check, true)).toString()).commit;
   require(typeof source === "string" && /^[a-f0-9]{40}$/u.test(source), "installed build source is missing");
   const profile = QUALIFIED_ACPX_PROFILES.pi; require(profile.qualificationStatus !== "pending", "Pi is not qualified");

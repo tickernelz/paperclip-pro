@@ -7,7 +7,7 @@ import type {
   StatusCard,
   StatusCardSummaryRevision,
   StatusCardUpdate,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
 export interface StatusCardDryRun {

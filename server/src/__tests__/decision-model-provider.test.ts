@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { DECISION_MODELS, DECISION_TEST_REQUEST, decisionProviderForConnection } from "@paperclipai/shared";
+import { DECISION_MODELS, DECISION_TEST_REQUEST, decisionProviderForConnection } from "@tickernelz/paperclip-pro-shared";
 import { decisionReceipt, runDecisionProvider } from "../services/decision-model-provider.js";
 
 function openaiResponse() {

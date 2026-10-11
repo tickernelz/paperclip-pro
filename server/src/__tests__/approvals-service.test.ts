@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { approvalService } from "../services/approvals.ts";
-import { companies } from "@paperclipai/db";
+import { companies } from "@tickernelz/paperclip-pro-db";
 
 vi.mock("../services/budgets.js", async importOriginal => ({
   ...await importOriginal<typeof import("../services/budgets.js")>(),

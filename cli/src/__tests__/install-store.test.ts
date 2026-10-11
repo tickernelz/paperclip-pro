@@ -22,6 +22,7 @@ import {
   type InstallManifest,
   type InstallRecord,
 } from "../install-store.js";
+import { resolveServiceShimPath } from "../services/service-manager.js";
 
 function record(payloadPath: string, version: string): InstallRecord {
   return {
@@ -118,12 +119,12 @@ describe("managed install store", () => {
     expect(addManagedPathBlock(rcPath)).toBe(false);
     fs.chmodSync(rcPath, 0o640);
     expect(removeManagedPathBlock(rcPath)).toBe(true);
-    expect(fs.readFileSync(rcPath, "utf8")).not.toContain("paperclipai managed PATH");
+    expect(fs.readFileSync(rcPath, "utf8")).not.toContain("paperclip-pro managed PATH");
     expect(fs.statSync(rcPath).mode & 0o777).toBe(0o640);
   });
 
   it("uses the pinned Node for child tools even with an older node first on the service PATH", () => {
-    const entrypoint = path.join(paths.currentPath, "node_modules", "paperclipai", "dist", "index.js");
+    const entrypoint = path.join(paths.currentPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
     fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
     fs.writeFileSync(entrypoint, `console.log(require("node:child_process").execFileSync("node", ["-p", "process.execPath"], {encoding: "utf8"}).trim())`);
     const oldBin = path.join(root, "old-bin");
@@ -176,7 +177,7 @@ describe("managed install store", () => {
   it("reports managed provenance only for the payload selected by current", () => {
     const manifestPayload = payloadPathFor(paths, "npm", "1.0.0");
     const currentPayload = payloadPathFor(paths, "npm", "2.0.0");
-    const executable = path.join(manifestPayload, "node_modules", "paperclipai", "dist", "index.js");
+    const executable = path.join(manifestPayload, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
     fs.mkdirSync(path.dirname(executable), { recursive: true });
     fs.writeFileSync(executable, "");
     fs.mkdirSync(currentPayload, { recursive: true });
@@ -226,5 +227,22 @@ describe("managed install store", () => {
     fs.writeFileSync(paths.shimPath, `# ${MANAGED_SHIM_MARKER}\n`);
     fs.linkSync(paths.shimPath, path.join(root, "linked-shim"));
     expect(() => writeManagedShim(paths)).toThrow("multiply linked shim");
+  });
+
+  it("places the shim where PAPERCLIP_SHIM_PATH points, matching the service manager", () => {
+    const override = path.join(root, "isolated", "bin", "paperclip-pro");
+    const previous = process.env.PAPERCLIP_SHIM_PATH;
+    process.env.PAPERCLIP_SHIM_PATH = override;
+    try {
+      expect(resolveInstallStorePaths({ homeDir: path.join(root, "home") }).shimPath).toBe(override);
+      expect(resolveServiceShimPath(path.join(root, "home"))).toBe(override);
+    } finally {
+      if (previous === undefined) delete process.env.PAPERCLIP_SHIM_PATH;
+      else process.env.PAPERCLIP_SHIM_PATH = previous;
+    }
+
+    expect(resolveInstallStorePaths({ homeDir: path.join(root, "home") }).shimPath).toBe(
+      path.join(root, "home", ".local", "bin", "paperclip-pro"),
+    );
   });
 });

@@ -23,7 +23,7 @@ async function fixture(vendored = true) {
   const root = await realpath(await mkdtemp(join(tmpdir(), "pi-provision-"))); roots.push(root);
   const cli = join(root, vendored ? "dist/vendor/paperclip-runner/cli" : "dist/cli");
   await mkdir(cli, { recursive: true });
-  await writeFile(join(root, "package.json"), JSON.stringify({ name: vendored ? "@paperclipai/server" : "@paperclipai/paperclip-runner" }));
+  await writeFile(join(root, "package.json"), JSON.stringify({ name: vendored ? "@tickernelz/paperclip-pro-server" : "@tickernelz/paperclip-pro-paperclip-runner" }));
   const entry = join(cli, "provision-pi.cjs"); await writeFile(entry, "fixture");
   const assetRoot = vendored ? join(root, "dist/vendor/paperclip-runner") : root;
   return { root, cli, entry, assetRoot, parent: join(assetRoot, "provider-assets/pi"), output: join(assetRoot, "provider-assets/pi", `${process.platform}-${process.arch}`) };
@@ -35,7 +35,7 @@ it("rejects wrong package, linked entrypoint and escaping asset roots before mat
   const f = await fixture(); const other = await fixture();
   await writeFile(join(f.root, "package.json"), '{"name":"foreign"}');
   await expect(provisionPi(f.entry)).rejects.toThrow("identity");
-  await writeFile(join(f.root, "package.json"), '{"name":"@paperclipai/server"}');
+  await writeFile(join(f.root, "package.json"), '{"name":"@tickernelz/paperclip-pro-server"}');
   await rm(f.entry); await symlink(other.entry, f.entry);
   await expect(provisionPi(f.entry)).rejects.toThrow("linked");
   await rm(f.entry); await writeFile(f.entry, "fixture"); await symlink(other.root, join(f.assetRoot, "provider-assets"));

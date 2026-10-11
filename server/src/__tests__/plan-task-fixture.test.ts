@@ -5,7 +5,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { agents, companies, createDb, heartbeatRuns } from "@paperclipai/db";
+import { agents, companies, createDb, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { companySkillRoutes } from "../routes/company-skills.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/error-handler.js";

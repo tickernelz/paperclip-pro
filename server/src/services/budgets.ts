@@ -1,6 +1,6 @@
-import { compareCents, normalizeCents } from "@paperclipai/shared";
+import { compareCents, normalizeCents } from "@tickernelz/paperclip-pro-shared";
 import { and, desc, eq, gte, inArray, lt, ne, sql, or, isNull, type SQL } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 
 import {
   agents,
@@ -12,7 +12,7 @@ import {
   heartbeatRuns,
   nativeRunFinalizations,
   projects,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   BudgetIncident,
   BudgetIncidentResolutionInput,
@@ -25,7 +25,7 @@ import type {
   BudgetScopeType,
   BudgetThresholdType,
   BudgetWindowKind,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { HttpError, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { withAccountingTransaction } from "./accounting-transaction.js";

@@ -3,7 +3,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
-import type { agents, Db, projectWorkspaces } from "@paperclipai/db";
+import type { agents, Db, projectWorkspaces } from "@tickernelz/paperclip-pro-db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   ensureManagedProjectWorkspace as legacyEnsureManagedProjectWorkspace,

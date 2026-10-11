@@ -1,13 +1,13 @@
 import { and, eq } from "drizzle-orm";
-import { runnerApiResponseReservations, heartbeatRuns, issues, issueAttachments } from "@paperclipai/db";
+import { runnerApiResponseReservations, heartbeatRuns, issues, issueAttachments } from "@tickernelz/paperclip-pro-db";
 import { authorizationService } from "../services/authorization.js";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
 import { Router, type Request, type Response } from "express";
 import multer from "multer";
 import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
-import type { Db } from "@paperclipai/db";
-import { ASSET_NAMESPACE_RULE, isUuidLike, createAssetImageMetadataSchema } from "@paperclipai/shared";
+import type { Db } from "@tickernelz/paperclip-pro-db";
+import { ASSET_NAMESPACE_RULE, isUuidLike, createAssetImageMetadataSchema } from "@tickernelz/paperclip-pro-shared";
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import {

@@ -1,6 +1,6 @@
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
-import type { IssueLockedStub, IssueRelationIssueSummary } from "@paperclipai/shared";
+import type { IssueLockedStub, IssueRelationIssueSummary } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { cn } from "../lib/utils";
 import { LockedIssueChip, isLockedIssueStub } from "./LockedIssueChip";

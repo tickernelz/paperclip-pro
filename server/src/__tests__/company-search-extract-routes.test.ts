@@ -6,7 +6,7 @@ import type {
   CompanySearchExtractResponse,
   CompanySearchQuery,
   CompanySearchResponse,
-} from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
 import { issueRoutes } from "../routes/issues.js";
 import { createCompanySearchRateLimiter } from "../services/company-search-rate-limit.js";
 

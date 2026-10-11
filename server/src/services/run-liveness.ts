@@ -1,5 +1,5 @@
 import { isAiAuthenticationRepairable } from "./ai-auth-failure.js";
-import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@paperclipai/shared";
+import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@tickernelz/paperclip-pro-shared";
 
 export type RunLivenessActionability =
   | "runnable"

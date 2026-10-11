@@ -1,5 +1,5 @@
 import { createAgentLifecycle } from "./agent-lifecycle.js";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   activityLog,
   agentTaskSessions as agentTaskSessionsTable,
@@ -13,7 +13,7 @@ import {
   pluginLogs,
   principalPermissionGrants,
   projects as projectsTable,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import { eq, and, like, desc, inArray, sql, isNull, isNotNull, gt, lte } from "drizzle-orm";
 import type {
   HostServices,
@@ -27,9 +27,9 @@ import type {
   PluginIssueAssigneeSummary,
   PluginIssueOrchestrationSummary,
   PluginExecutionWorkspaceMetadata,
-} from "@paperclipai/plugin-sdk";
-import type { CreateIssueThreadInteraction, InviteJoinType, IssueDocumentSummary, IssueRelationIssueSummary, PermissionKey, PrincipalType } from "@paperclipai/shared";
-import { pluginOperationIssueOriginKind } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { CreateIssueThreadInteraction, InviteJoinType, IssueDocumentSummary, IssueRelationIssueSummary, PermissionKey, PrincipalType } from "@tickernelz/paperclip-pro-shared";
+import { pluginOperationIssueOriginKind } from "@tickernelz/paperclip-pro-shared";
 import { companyService } from "./companies.js";
 import { agentService } from "./agents.js";
 import { projectService } from "./projects.js";
@@ -87,11 +87,11 @@ import {
   type IssuePrivacyRow,
 } from "./authorization.js";
 import { redactEventPayload, sanitizeRecord } from "../redaction.js";
-import type { WorkerHostCallContext } from "@paperclipai/plugin-sdk";
+import type { WorkerHostCallContext } from "@tickernelz/paperclip-pro-plugin-sdk";
 import {
   normalizeProviderFamily,
   SANDBOX_STARTUP_SPAN_ATTRS,
-} from "@paperclipai/adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
 import { recordProviderPluginSpan, type ParsedTraceparent } from "../instrumentation.js";
 
 // ---------------------------------------------------------------------------
@@ -710,7 +710,7 @@ export function buildHostServices(
   notifyWorker?: (method: string, params: unknown) => void,
   options: {
     pluginWorkerManager?: PluginWorkerManager;
-    manifest?: import("@paperclipai/shared").PaperclipPluginManifestV1;
+    manifest?: import("@tickernelz/paperclip-pro-shared").PaperclipPluginManifestV1;
     heartbeatRuntimeEnv?: Record<string, string | undefined>;
   } = {},
 ): HostServices & { dispose(): void } {
@@ -1710,7 +1710,7 @@ export function buildHostServices(
         await scopedBus.emit(params.name, params.companyId, params.payload);
       },
       async subscribe(params: { eventPattern: string; filter?: Record<string, unknown> | null }) {
-        const handler = async (event: import("@paperclipai/plugin-sdk").PluginEvent) => {
+        const handler = async (event: import("@tickernelz/paperclip-pro-plugin-sdk").PluginEvent) => {
           if (notifyWorker) {
             notifyWorker("onEvent", { event });
           }

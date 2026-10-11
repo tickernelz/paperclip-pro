@@ -6,7 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { promisify } from "node:util";
 import { and, asc, desc, eq, gt, inArray, isNull, lte, ne, or, sql } from "drizzle-orm";
-import type { Db } from "@paperclipai/db";
+import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   executionWorkspaces,
   heartbeatRuns,
@@ -16,7 +16,7 @@ import {
   projects,
   projectWorkspaces,
   workspaceRuntimeServices,
-} from "@paperclipai/db";
+} from "@tickernelz/paperclip-pro-db";
 import type {
   ExecutionWorkspace,
   ExecutionWorkspaceDeliveryState,
@@ -34,8 +34,8 @@ import type {
   WorkspaceOverviewQuery,
   GitWorktreeBranchAncestryVerdict,
   IssueRecoveryAction,
-} from "@paperclipai/shared";
-import { deriveProjectUrlKey, WORKSPACE_OVERVIEW_LINKED_ISSUE_LIMIT } from "@paperclipai/shared";
+} from "@tickernelz/paperclip-pro-shared";
+import { deriveProjectUrlKey, WORKSPACE_OVERVIEW_LINKED_ISSUE_LIMIT } from "@tickernelz/paperclip-pro-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import {
