@@ -22,6 +22,7 @@ const mockAgentsApi = vi.hoisted(() => ({
   org: vi.fn(),
   batchAdapterConfigPreview: vi.fn(),
   batchAdapterConfig: vi.fn(),
+  adapterModels: vi.fn(),
 }));
 
 const mockBuiltInAgentsApi = vi.hoisted(() => ({
@@ -326,6 +327,8 @@ describe("Agents", () => {
         reports: [],
       },
     ]);
+    mockAgentsApi.batchAdapterConfigPreview.mockResolvedValue({ fields: [], agents: [] });
+    mockAgentsApi.adapterModels.mockResolvedValue([]);
     mockBuiltInAgentsApi.list.mockResolvedValue([]);
     mockEnvironmentsApi.list.mockResolvedValue([
       makeEnvironment({ id: "env-daytona" }),
@@ -394,7 +397,7 @@ describe("Agents", () => {
     }
   });
 
-  it("shows the configured model beside the adapter on the all agents page", async () => {
+  it("shows the configured model without the raw adapter label on the all agents page", async () => {
     root = createRoot(container);
     await act(async () => {
       root!.render(
@@ -408,8 +411,8 @@ describe("Agents", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("codex_local");
-    expect(container.textContent).toContain("gpt-5.4");
+    expect(container.textContent).not.toContain("codex_local");
+    expect(container.querySelector('[data-testid="agent-model-agent-1"]')?.textContent).toContain("gpt-5.4");
 
     // The heartbeat cell must render on a single line so full dates like
     // "Apr 30, 2026" never wrap (PAP-85 defect #2).
@@ -1000,7 +1003,7 @@ describe("Agents", () => {
     // In narrower containers metadata is hidden and the title flexes (`flex-1`)
     // instead, so the shrink-0 trailing actions can't squeeze the agent name
     // to zero width on mobile.
-    const titleCell = container.querySelector(".\\@5xl\\:w-56");
+    const titleCell = container.querySelector(".\\@5xl\\:w-44");
     expect(titleCell).not.toBeNull();
     expect(titleCell?.textContent).toContain("Alpha");
     expect(titleCell?.classList.contains("flex-1")).toBe(true);

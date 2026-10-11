@@ -1,6 +1,6 @@
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useAgentChatEnabled } from "../hooks/useAgentChatEnabled";
-import { useState, useEffect, useMemo, lazy, Suspense } from "react";
+import { useState, useEffect, useMemo, lazy, Suspense, type ReactNode } from "react";
 import { Link, useNavigate, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi, type OrgNode } from "../api/agents";
@@ -40,6 +40,12 @@ import {
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
+import {
+  AGENT_MODEL_COLUMN_CLASSES,
+  AgentModelColumns,
+  AgentModelSummary,
+} from "../components/agents-table/AgentModelCells";
+import { useAgentModelSettings } from "../components/agents-table/use-agent-model-settings";
 
 const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 
@@ -286,6 +292,11 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
     refetchInterval: sharedRuns.refetchInterval,
   });
   usePublishSharedQueryData(sharedRuns, runs, runsUpdatedAt);
+  const listedAgents = useMemo(
+    () => (agents ?? []).filter((agent) => !HIDDEN_AGENT_STATUSES.has(agent.status)),
+    [agents],
+  );
+  const modelSettings = useAgentModelSettings(selectedCompanyId ?? null, listedAgents, effectiveView === "list");
   const membershipsQuery = useResourceMemberships(selectedCompanyId);
   const membershipMutation = useResourceMembershipMutation(selectedCompanyId);
 
@@ -405,7 +416,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       <EntityRow
         key={agent.id}
         title={agent.name}
-        titleClassName="flex-1 @5xl:flex-none @5xl:w-56"
+        titleClassName="flex-1 @5xl:flex-none @5xl:w-44"
         titleTextClassName="truncate"
         subtitleClassName="truncate"
         subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
@@ -437,11 +448,13 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
             )}
           </div>
         )}
-        secondaryRow={builtInCluster && (
-          <div className="@5xl:hidden flex flex-wrap items-center gap-1.5">
+        secondaryRow={(
+          <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+            <AgentModelSummary agent={agent} controller={modelSettings} />
             {builtInCluster}
           </div>
         )}
+        secondaryRowClassName="@5xl:hidden pl-17"
         meta={
           <div className="flex items-center gap-3">
             {builtInCluster && (
@@ -449,11 +462,12 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                 {builtInCluster}
               </div>
             )}
-            <div className="hidden @5xl:flex items-center gap-3">
+            <div className="hidden @5xl:flex items-center gap-2">
               <AgentMetaColumns
                 agent={agent}
                 environment={resolveRenderedEnvironment(agent.id)}
                 showEnvironment={showEnvironmentColumn}
+                modelColumns={<AgentModelColumns agent={agent} controller={modelSettings} />}
               />
             </div>
           </div>
@@ -620,6 +634,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       {/* List view */}
       {effectiveView === "list" && filtered.length > 0 && (
         <div>
+          <AgentsTableHeader showEnvironment={showEnvironmentColumn} />
           {filtered.map(renderAgentRow)}
         </div>
       )}
@@ -860,16 +875,18 @@ function AgentMetaColumns({
   agent,
   environment,
   showEnvironment,
+  modelColumns,
 }: {
   agent: Agent;
   environment: EnvironmentDescriptor;
   showEnvironment: boolean;
+  modelColumns?: ReactNode;
 }) {
   const model = getConfiguredModel(agent);
   const adapterLabel = getAdapterLabel(agent.adapterType);
   return (
     <>
-      <div className="w-44 min-w-0 leading-tight">
+      {modelColumns ?? <div className="w-44 min-w-0 leading-tight">
         <div
           className="truncate font-mono text-xs text-muted-foreground"
           title={model ?? undefined}
@@ -879,7 +896,7 @@ function AgentMetaColumns({
         <div className="truncate font-mono text-(length:--text-micro) text-muted-foreground/70" title={adapterLabel}>
           {adapterLabel}
         </div>
-      </div>
+      </div>}
       {showEnvironment && (
         <div className="w-44 min-w-0 leading-tight">
           <div className="truncate text-xs text-muted-foreground" title={environment.title}>
@@ -894,6 +911,31 @@ function AgentMetaColumns({
         {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "—"}
       </span>
     </>
+  );
+}
+
+function AgentsTableHeader({ showEnvironment }: { showEnvironment: boolean }) {
+  return (
+    <EntityRow
+      title="Agent"
+      titleClassName="flex-none w-44"
+      className="hidden @5xl:flex py-1.5 text-xs font-medium text-muted-foreground"
+      leading={(
+        <div className="flex items-center gap-2" aria-hidden="true">
+          <span className="block size-4" />
+          <span className="block size-8" />
+        </div>
+      )}
+      meta={(
+        <div className="flex items-center gap-2" data-testid="agents-table-header">
+          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.model, "px-1.5")}>Model</span>
+          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.fallbacks, "px-1.5")}>Fallback models</span>
+          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.effort, "px-1.5")}>Effort</span>
+          {showEnvironment && <span className="w-44">Environment</span>}
+          <span className="w-24 text-right">Last active</span>
+        </div>
+      )}
+    />
   );
 }
 

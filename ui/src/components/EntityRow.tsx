@@ -38,6 +38,7 @@ interface EntityRowProps {
    * behind `hidden xl:flex` so wide layouts are unchanged.
    */
   secondaryRow?: ReactNode;
+  secondaryRowClassName?: string;
 }
 
 export function EntityRow({
@@ -58,6 +59,7 @@ export function EntityRow({
   reserveSubtitleSpace,
   titlePriority,
   secondaryRow,
+  secondaryRowClassName,
 }: EntityRowProps) {
   const isClickable = !!(to || onClick);
   const shellClasses = cn(
@@ -129,7 +131,7 @@ export function EntityRow({
   const body = secondaryRow ? (
     <>
       <div className="flex items-center gap-3">{content}</div>
-      <div className="mt-1 pl-5">{secondaryRow}</div>
+      <div className={cn("mt-1 pl-5", secondaryRowClassName)}>{secondaryRow}</div>
     </>
   ) : (
     content

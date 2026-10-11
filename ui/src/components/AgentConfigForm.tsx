@@ -18,7 +18,6 @@ import type {
   EnvBinding,
   EnvSecretRefBinding,
   Environment,
-  IssueRunModelOverrideOption,
 } from "@tickernelz/paperclip-pro-shared";
 import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter, isValidBrowserCode, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
 import type { AdapterModel } from "../api/agents";
@@ -59,8 +58,8 @@ import {
   resolveManagedSandboxEnvironmentId,
 } from "../lib/adapter-test-environment";
 import { environmentDisplayLabel } from "../lib/managed-sandbox-environment";
-import { adapterCuratesModelOrder, extractModelName, extractProviderId } from "../lib/model-utils";
-import { MODEL_SEARCH_PLACEHOLDER } from "../adapters/model-picker-fields";
+import { adapterCuratesModelOrder, extractProviderId } from "../lib/model-utils";
+import { MODEL_SEARCH_PLACEHOLDER, modelPickerOption } from "../adapters/model-picker-fields";
 import {
   describeModelValue,
   ModelOptionGroupHeader,
@@ -3724,17 +3723,6 @@ function ExperimentalBadge() {
       Experimental
     </span>
   );
-}
-
-function modelPickerOption(model: AdapterModel, groupByProvider: boolean): IssueRunModelOverrideOption {
-  const provider = model.provider ?? (groupByProvider ? extractProviderId(model.id) : null);
-  const name = model.label !== model.id ? model.label : groupByProvider ? extractModelName(model.id) : null;
-  return {
-    value: model.id,
-    label: model.label,
-    ...(provider ? { group: provider } : {}),
-    ...(name ? { name } : {}),
-  };
 }
 
 export function ModelDropdown({

@@ -4,6 +4,8 @@ import { ArrowDown, ArrowUp, Check, ChevronDown, Plus, Search, X } from "lucide-
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Button } from "../components/ui/button";
 import { cn } from "@/lib/utils";
+import type { AdapterModel } from "@/api/agents";
+import { extractModelName, extractProviderId } from "@/lib/model-utils";
 import {
   describeModelValue,
   groupModelOptions,
@@ -26,7 +28,20 @@ function isPrintableKey(event: KeyboardEvent): boolean {
   return event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey;
 }
 
-function OptionSearchList({
+/** Maps an adapter catalog model onto a picker option, optionally grouping by the id's provider prefix. */
+export function modelPickerOption(model: AdapterModel, groupByProvider: boolean): PickerOption {
+  const provider = model.provider ?? (groupByProvider ? extractProviderId(model.id) : null);
+  const name = model.label !== model.id ? model.label : groupByProvider ? extractModelName(model.id) : null;
+  return {
+    value: model.id,
+    label: model.label,
+    ...(provider ? { group: provider } : {}),
+    ...(name ? { name } : {}),
+  };
+}
+
+/** Searchable, provider-grouped option list shared by the model pickers. */
+export function OptionSearchList({
   options,
   selected,
   query,
