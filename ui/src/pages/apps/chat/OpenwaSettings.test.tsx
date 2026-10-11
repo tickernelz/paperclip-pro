@@ -425,7 +425,9 @@ describe("OpenWA settings", () => {
     const chats = section("Chats");
     const rows = Array.from(chats.querySelectorAll("li"));
     const label = "Dedicated group: reply to every message";
-    expect(rows.map((row) => Array.from(row.querySelectorAll("button")).some((node) => node.textContent?.trim() === label))).toEqual([true, false]);
+    expect(
+      rows.map((row) => Array.from(row.querySelectorAll("button")).some((node) => node.getAttribute("aria-label") === label)),
+    ).toEqual([true, false]);
     click(button(chats, label));
     await vi.waitFor(() =>
       expect(mocks.api.updateOpenwaChat).toHaveBeenCalledWith("endpoint-1", {
@@ -436,7 +438,9 @@ describe("OpenWA settings", () => {
     );
     click(button(chats, "Add a chat from WhatsApp"));
     await vi.waitFor(() => expect(chats.textContent).toContain("Fresh group"));
-    const picked = Array.from(chats.querySelectorAll('ul[aria-label="Gateway chats"] button')).find((node) => node.textContent?.trim() === label) as HTMLButtonElement;
+    const picked = Array.from(chats.querySelectorAll('ul[aria-label="Gateway chats"] button')).find(
+      (node) => node.getAttribute("aria-label") === label,
+    ) as HTMLButtonElement;
     click(picked);
     await vi.waitFor(() =>
       expect(mocks.api.updateOpenwaChat).toHaveBeenLastCalledWith("endpoint-1", {
@@ -445,5 +449,54 @@ describe("OpenWA settings", () => {
         settings: { activation: "on", triggers: { allMessages: true } },
       }),
     );
+  });
+
+  it("shows each chat name and stacks the row instead of squeezing the meta line", async () => {
+    const longGroup = {
+      id: "res-long",
+      chatId: "120363000000000004@g.us",
+      chatKey: "120363000000000004@g.us",
+      type: "group_chat",
+      label: "Operations coordination and vendor escalation follow-ups 2026",
+      availability: "available",
+      enabled: true,
+      settings: { activation: "auto" },
+      ownerPresent: true,
+      participantCount: 11,
+    };
+    mocks.api.listOpenwaChats.mockResolvedValue([longGroup]);
+    mocks.api.updateOpenwaChat.mockResolvedValue({});
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Operations coordination"));
+    const chats = section("Chats");
+    const row = chats.querySelector("li")!;
+    const name = row.querySelector("p")!;
+    expect(name.textContent).toBe("Operations coordination and vendor escalation follow-ups 2026");
+    expect(name.getAttribute("title")).toBe("Operations coordination and vendor escalation follow-ups 2026");
+    expect(row.textContent).toContain("active · an owner is in this group · 11 members");
+    expect(chats.querySelector("li")!.className).toContain("sm:flex");
+  });
+
+  it("replaces the preset button with an applied badge once the chat replies to every message", async () => {
+    const group = {
+      id: "res-applied",
+      chatId: "120363000000000005@g.us",
+      chatKey: "120363000000000005@g.us",
+      type: "group_chat",
+      label: "Wira dedicated",
+      availability: "available",
+      enabled: true,
+      settings: { activation: "on", triggers: { allMessages: true } },
+      ownerPresent: true,
+      participantCount: 11,
+    };
+    mocks.api.listOpenwaChats.mockResolvedValue([group]);
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Wira dedicated"));
+    const chats = section("Chats");
+    const label = "Dedicated group: reply to every message";
+    expect(button(chats, label)).toBeUndefined();
+    expect(chats.textContent).toContain("Replies to all");
+    expect(button(chats, "Edit")).toBeTruthy();
   });
 });

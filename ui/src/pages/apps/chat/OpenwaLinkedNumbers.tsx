@@ -157,8 +157,8 @@ function LinkedNumberRow({ endpointId, linked, onUnlinked }: { endpointId: strin
   });
   return (
     <li className="space-y-2 py-2">
-      <div className="flex items-center gap-3">
-        <div className="min-w-0 flex-1">
+      <div className="space-y-2 sm:flex sm:items-center sm:gap-3">
+        <div className="min-w-0">
           <p className="truncate text-sm font-medium">{linked.label}</p>
           <p className="text-xs text-muted-foreground">
             {[linked.phoneMasked, linked.status === "active" ? "Read-only" : "Unavailable: link it again", linked.allowedChats.length + " chats allowed"]
@@ -166,12 +166,14 @@ function LinkedNumberRow({ endpointId, linked, onUnlinked }: { endpointId: strin
               .join(" · ")}
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => setPicking((value) => !value)}>
-          {picking ? "Close chats" : "Choose chats"}
-        </Button>
-        <Button size="icon-sm" variant="ghost" aria-label={"Unlink " + linked.label} disabled={unlink.isPending} onClick={() => setConfirming(true)}>
-          <Trash2 className="size-4" />
-        </Button>
+        <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
+          <Button size="sm" variant="outline" className="shrink-0" onClick={() => setPicking((value) => !value)}>
+            {picking ? "Close chats" : "Choose chats"}
+          </Button>
+          <Button size="icon-sm" variant="ghost" aria-label={"Unlink " + linked.label} disabled={unlink.isPending} onClick={() => setConfirming(true)}>
+            <Trash2 className="size-4" />
+          </Button>
+        </div>
       </div>
       {confirming ? (
         <div role="alertdialog" aria-label={"Unlink " + linked.label + "?"} className="flex flex-wrap items-center gap-2 rounded-md border border-border p-2">

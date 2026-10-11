@@ -10,6 +10,7 @@ import {
   type OpenwaReplyPolicy,
 } from "@tickernelz/paperclip-pro-shared";
 import { chatEndpointsApi, type OpenwaChat } from "@/api/chatEndpoints";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -39,12 +40,52 @@ const replyLabels: Record<OpenwaReplyPolicy, string> = {
   owner_absent_only: "Only while owners are away",
 };
 
+const replyPresetLabel = "Dedicated group: reply to every message";
+const replyPresetShortLabel = "Reply to all";
+
 function activationDetail(chat: Pick<OpenwaChat, "type" | "enabled" | "ownerPresent">, numberMode: OpenwaEndpointPolicy["numberMode"]): string {
   const state = chat.enabled ? "active" : "inactive";
   if (numberMode === "owner_number") return state;
   if (chat.type === "group_chat" && chat.ownerPresent !== null)
     return state + (chat.ownerPresent ? " · an owner is in this group" : " · no owner in this group");
   return state;
+}
+
+function isDedicatedGroup(settings: OpenwaChatSettings): boolean {
+  return settings.activation === "on" && settings.triggers?.allMessages === true;
+}
+
+function chatMetaText(chat: OpenwaChat, numberMode: OpenwaEndpointPolicy["numberMode"]): string {
+  const parts = [activationDetail(chat, numberMode)];
+  if (chat.participantCount !== null) parts.push(chat.participantCount + " members");
+  return parts.join(" · ");
+}
+
+function ChatMetaLine({ chat, policy }: { chat: OpenwaChat; policy: OpenwaEndpointPolicy }) {
+  return <span className="text-xs text-muted-foreground">{chatMetaText(chat, policy.numberMode)}</span>;
+}
+
+function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pending: boolean; onApply: () => void }) {
+  if (isDedicatedGroup(chat.settings)) {
+    return (
+      <Badge variant="secondary" title={replyPresetLabel} aria-label={replyPresetLabel}>
+        Replies to all
+      </Badge>
+    );
+  }
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      disabled={pending}
+      title={replyPresetLabel}
+      aria-label={replyPresetLabel}
+      onClick={onApply}
+    >
+      <span className="sm:hidden">{replyPresetShortLabel}</span>
+      <span className="hidden sm:inline">{replyPresetLabel}</span>
+    </Button>
+  );
 }
 
 export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string; policy: OpenwaEndpointPolicy }) {
@@ -91,27 +132,35 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
       ) : (
         <ul className="divide-y divide-border border-y border-border">
           {configured.map((chat) => (
-            <li key={chat.id} className="flex items-center gap-3 py-2">
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-medium">{chat.label}</p>
-                <p className="text-xs text-muted-foreground">
-                  {activationLabels[chat.settings.activation]} · {activationDetail(chat, policy.numberMode)}
-                  {chat.participantCount !== null ? " · " + chat.participantCount + " members" : ""}
+            <li key={chat.id} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-4">
+              <div className="flex min-w-0 items-center gap-2 sm:flex-1">
+                <p className="min-w-0 flex-1 truncate text-sm font-medium" title={chat.label}>
+                  {chat.label}
                 </p>
+                <Badge variant={chat.enabled ? "secondary" : "outline"} className="sm:hidden">
+                  {activationLabels[chat.settings.activation]}
+                </Badge>
               </div>
-              {chat.type === "group_chat" ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  disabled={dedicate.isPending || (chat.settings.activation === "on" && chat.settings.triggers?.allMessages === true)}
-                  onClick={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
-                >
-                  Dedicated group: reply to every message
+              <div className="flex min-w-0 items-center gap-2 sm:w-72 sm:flex-none">
+                <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={chatMetaText(chat, policy.numberMode)}>
+                  <ChatMetaLine chat={chat} policy={policy} />
+                </p>
+                <Badge variant={chat.enabled ? "secondary" : "outline"} className="hidden sm:inline-flex">
+                  {activationLabels[chat.settings.activation]}
+                </Badge>
+              </div>
+              <div className="flex flex-wrap items-center gap-2 sm:flex-none sm:justify-end">
+                {chat.type === "group_chat" ? (
+                  <DedicatedGroupToggle
+                    chat={chat}
+                    pending={dedicate.isPending}
+                    onApply={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
+                  />
+                ) : null}
+                <Button size="sm" variant="outline" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
+                  Edit
                 </Button>
-              ) : null}
-              <Button size="sm" variant="outline" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
-                Edit
-              </Button>
+              </div>
             </li>
           ))}
         </ul>
@@ -131,7 +180,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
         />
       ) : null}
       <div className="space-y-2">
-        <Button size="sm" variant="outline" onClick={() => setPicking((value) => !value)}>
+        <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setPicking((value) => !value)}>
           {picking ? "Hide gateway chats" : "Add a chat from WhatsApp"}
         </Button>
         {picking ? (
@@ -146,31 +195,38 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
           ) : (
             <ul aria-label="Gateway chats" className="max-h-80 divide-y divide-border overflow-y-auto border-y border-border">
               {unconfigured.map((chat) => (
-                <li key={chat.chatId} className="flex items-center gap-3 py-2">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm">{chat.name}</p>
+                <li key={chat.chatId} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-3">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm" title={chat.name}>
+                      {chat.name}
+                    </p>
                     <p className="text-xs text-muted-foreground">{chat.isGroup ? "Group" : "Direct chat"}</p>
                   </div>
-                  {chat.isGroup ? (
+                  <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
+                    {chat.isGroup ? (
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={dedicate.isPending}
+                        title={replyPresetLabel}
+                        aria-label={replyPresetLabel}
+                        onClick={() => dedicate.mutate({ chatId: chat.chatId, label: chat.name, settings: null })}
+                      >
+                        <span className="sm:hidden">{replyPresetShortLabel}</span>
+                        <span className="hidden sm:inline">{replyPresetLabel}</span>
+                      </Button>
+                    ) : null}
                     <Button
                       size="sm"
                       variant="ghost"
-                      disabled={dedicate.isPending}
-                      onClick={() => dedicate.mutate({ chatId: chat.chatId, label: chat.name, settings: null })}
+                      onClick={() => {
+                        setEditing({ chatId: chat.chatId, label: chat.name, draft: chatDraft(chat.name, { activation: chat.activation }) });
+                        setPicking(false);
+                      }}
                     >
-                      Dedicated group: reply to every message
+                      Configure
                     </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => {
-                      setEditing({ chatId: chat.chatId, label: chat.name, draft: chatDraft(chat.name, { activation: chat.activation }) });
-                      setPicking(false);
-                    }}
-                  >
-                    Configure
-                  </Button>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -254,7 +310,7 @@ function ChatEditor({
         <legend className="text-sm font-medium">Trigger overrides</legend>
         <div className="grid gap-2 sm:grid-cols-2">
           {triggerRows.map((row) => (
-            <div key={row.key} className="grid grid-cols-2 items-center gap-2">
+            <div key={row.key} className="grid grid-cols-1 items-center gap-1 sm:grid-cols-2 sm:gap-2">
               <label htmlFor={"openwa-chat-trigger-" + row.key} className="text-xs">{row.label}</label>
               <select
                 id={"openwa-chat-trigger-" + row.key}
@@ -328,8 +384,8 @@ function ChatEditor({
       {errors.form ? <p role="alert" className="text-xs text-destructive">{errors.form}</p> : null}
       {errors.chatId ? <p role="alert" className="text-xs text-destructive">{errors.chatId}</p> : null}
       <div className="flex items-center justify-between gap-2">
-        <Button size="sm" variant="ghost" onClick={onClose}>Cancel</Button>
-        <Button size="sm" disabled={save.isPending} onClick={submit}>{save.isPending ? "Saving…" : "Save chat"}</Button>
+        <Button size="sm" variant="ghost" className="shrink-0" onClick={onClose}>Cancel</Button>
+        <Button size="sm" className="shrink-0" disabled={save.isPending} onClick={submit}>{save.isPending ? "Saving…" : "Save chat"}</Button>
       </div>
     </div>
   );
