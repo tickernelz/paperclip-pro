@@ -664,7 +664,8 @@ function OnboardingWizardInner({
   const [forceUnsetAnthropicApiKey, setForceUnsetAnthropicApiKey] =
     useState(false);
   const [unsetAnthropicLoading, setUnsetAnthropicLoading] = useState(false);
-  const [otherAdaptersOpen, setOtherAdaptersOpen] = useState(false);
+  const [otherAdapterChosen, setOtherAdapterChosen] = useState(saved?.otherAdapterChosen === true);
+  const [otherAdaptersOpen, setOtherAdaptersOpen] = useState(otherAdapterChosen);
   const [fallbackModels, setFallbackModels] = useState<string[]>([]);
   /**
    * Whether the connect step is asking for a subscription sign-in or an API key.
@@ -928,7 +929,7 @@ function OnboardingWizardInner({
       step, companyName,
       agentName, agentAppearance, agentRole, adapterType, cwd, model, command, args, url,
       // The mode, never the key: this blob is localStorage.
-      credentialMode, credentialModeChoice,
+      credentialMode, credentialModeChoice, otherAdapterChosen,
       createdCompanyId, createdCompanyPrefix, createdAgentId,
       createdCompanyGoalId, createdProjectId, createdIssueRef,
     };
@@ -936,7 +937,7 @@ function OnboardingWizardInner({
   }, [
     effectiveOnboardingOpen, step, companyName,
     agentName, agentAppearance, agentRole, adapterType, cwd, model, command, args, url,
-    credentialMode, credentialModeChoice,
+    credentialMode, credentialModeChoice, otherAdapterChosen,
     createdCompanyId, createdCompanyPrefix, createdAgentId,
     createdCompanyGoalId, createdProjectId, createdIssueRef,
   ]);
@@ -1177,12 +1178,13 @@ function OnboardingWizardInner({
   const ompContinueReady = ompSelected && ompSetup.status.kind === "ready" && model.trim().length > 0;
 
   useEffect(() => {
-    if (step !== 4 || !ompOffered || sourcePicked || adapterType === OMP_ADAPTER_TYPE) return;
+    if (step !== 4 || !ompOffered || otherAdapterChosen || sourcePicked || adapterType === OMP_ADAPTER_TYPE) return;
     setAdapterType(OMP_ADAPTER_TYPE);
     setModel("");
-  }, [step, ompOffered, sourcePicked, adapterType]);
+  }, [step, ompOffered, otherAdapterChosen, sourcePicked, adapterType]);
 
   function chooseOmp() {
+    setOtherAdapterChosen(false);
     if (adapterType === OMP_ADAPTER_TYPE) return;
     unwindConnectStep();
     setConnectPhase("idle");
@@ -1683,6 +1685,9 @@ function OnboardingWizardInner({
     setAgentAppearance(randomAgentAppearance());
     setAgentRole(DEFAULT_AGENT_ROLE);
     setAdapterType("claude_local");
+    setOtherAdapterChosen(false);
+    setOtherAdaptersOpen(false);
+    setFallbackModels([]);
     setModel("");
     setCommand("");
     setArgs("");
@@ -2770,6 +2775,7 @@ function OnboardingWizardInner({
                       onSelect={(id) => {
                         if (connectPhase !== "idle") return;
                         autoConnectStartedRef.current = false;
+                        setOtherAdapterChosen(true);
                         setSourcePicked(true);
                         setAdapterType(id);
                         if (id === "opencode_local") setModel(DEFAULT_OPENCODE_LOCAL_MODEL);

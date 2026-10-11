@@ -3454,7 +3454,7 @@ describe("OnboardingWizard restore-gate (stale localStorage across accounts)", (
       mockAdapterRegistry.list = [{ type: "claude_local" }, { type: "codex_local" }, { type: "omp_local" }];
     });
 
-    async function openConnectStep() {
+    async function openConnectStep(overrides: Record<string, unknown> = {}) {
       mockCompany.companies = [{ id: "company-new", name: "Initech", issuePrefix: "INI" }];
       mockCompany.loading = false;
       mockCompaniesApi.list.mockResolvedValue(mockCompany.companies);
@@ -3466,6 +3466,7 @@ describe("OnboardingWizard restore-gate (stale localStorage across accounts)", (
           agentName: "Ada",
           createdCompanyId: "company-new",
           adapterType: "claude_local",
+          ...overrides,
         }),
       );
       mockDialog.onboardingOptions = {};
@@ -3607,6 +3608,29 @@ describe("OnboardingWizard restore-gate (stale localStorage across accounts)", (
       await act(async () => root.unmount());
     });
 
+    it("resumes a running sign-in for an adapter picked under 'Use another adapter' after a reload", async () => {
+      mockAgentsApi.getAdapterAuthSignal.mockResolvedValue({ status: "absent" });
+      mockAgentsApi.getActiveClaudeSetupTokenLoginSession.mockResolvedValue({
+        sessionId: "claude-session-1",
+        environmentId: "env-sandbox-1",
+        status: "waiting_for_user",
+        expiresAt: null,
+        failure: null,
+        panelMode: "submitted_browser_code",
+        prompt: { authorizationUrl: "https://claude.ai/oauth/authorize?code=true" },
+      });
+      const { root } = await openConnectStep({ otherAdapterChosen: true });
+      for (let i = 0; i < 10; i++) await flushReact();
+
+      expect(JSON.parse(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}").adapterType).toBe("claude_local");
+      expect(buttonNamed("Use another adapter")?.getAttribute("aria-expanded")).toBe("true");
+      expect(ompCard()!.querySelector('button[aria-pressed="false"]')).toBeTruthy();
+      expect(mockAgentsApi.startClaudeSetupTokenLogin).not.toHaveBeenCalled();
+      expect(document.body.textContent).toContain("Sign in to Claude then come back and enter authorization code");
+
+      await act(async () => root.unmount());
+    });
+
     it("keeps today's flow for an adapter picked under 'Use another adapter'", async () => {
       const { root } = await openConnectStep();
 
@@ -3628,6 +3652,7 @@ describe("OnboardingWizard restore-gate (stale localStorage across accounts)", (
       expect(((mockAgentsApi.hire.mock.calls[0] as unknown[])[1] as Record<string, unknown>).adapterType).toBe(
         "claude_local",
       );
+      expect(JSON.parse(window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}").otherAdapterChosen).toBe(true);
       expect(mockAgentsApi.startClaudeSetupTokenLogin).not.toHaveBeenCalled();
 
       await act(async () => root.unmount());
