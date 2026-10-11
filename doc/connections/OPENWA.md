@@ -681,7 +681,12 @@ only as data and never execute them.
 `video`, `audio` and `voice` are used only when the attachment's MIME family
 matches (SVG is never sent as an image); any other file is sent as a WhatsApp
 document with its original filename and MIME type. Task files published to a
-WhatsApp conversation are always sent as documents. The size cap is the same
+WhatsApp conversation are always sent as documents. A received document whose
+name and type the sender's client left unset is identified from its bytes before
+storing, so a forwarded PDF arrives as a real `.pdf` and never as `.bin`; a file
+with no known signature keeps the source file's own extension. `openwa_send`
+takes an optional `filename` (no path separators) to override the name WhatsApp
+shows for a document send. The size cap is the same
 instance attachment size limit; WhatsApp itself refuses documents over 100 MB. Location and
 contact cards arrive as structured data. Media of non-trigger messages is never
 fetched unless the agent asks. Media items carry the sender's `filename` when

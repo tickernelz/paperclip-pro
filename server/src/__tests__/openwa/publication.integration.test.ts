@@ -4,7 +4,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { Readable } from "node:stream";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { and, eq } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   agents,
   assets,
@@ -929,10 +929,44 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect(t.gateway.typing.every((entry) => entry.chatId === MEMBER)).toBe(true);
   }, 90_000);
 
-  it("does not show typing when the endpoint toggle is off", async () => {
-    const t = await setup({ typingIndicator: false });
+  it("shows typing again when a burst-held wake is released into the run", async () => {
+    const t = await setup();
     const c = await conversation(t, MEMBER);
-    await expect(t.adapter.startTyping(c.threadId)).rejects.toThrow(/typing is not active/);
+    const first = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const [before] = await db.select({ event: chatDeliveries.normalizedEvent }).from(chatDeliveries).where(eq(chatDeliveries.id, first.id));
+    await db.update(chatDeliveries).set({ normalizedEvent: { ...(before!.event as Record<string, unknown>), conversation: { externalThreadId: c.threadId } } }).where(eq(chatDeliveries.id, first.id));
+    await db.insert(chatActions).values({
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      conversationId: c.id,
+      deliveryId: first.id,
+      kind: "inbound_wakeup",
+      providerActionId: "inbound_wakeup:" + first.id,
+      status: "issued",
+      payload: { version: 1, openwa: { event: "message", triggerClass: "other", deliveryIds: [first.id] } },
+    });
+    await db.update(chatActions).set({ status: "issued", result: null }).where(eq(chatActions.deliveryId, first.id));
+    const run = await runOutput(t, c, { triggerClass: "other", body: "x", deliveryIds: [first.id], status: "running" });
+    await db.update(chatDeliveries).set({ state: "processed" }).where(eq(chatDeliveries.id, first.id));
+    t.adapter.typingRefreshMs = 20_000;
+    await t.service.processPendingDeliveries(25);
+    await until(() => t.gateway.typing.some((entry) => entry.state === "typing" && entry.chatId === MEMBER));
+    expect(t.adapter.isTyping(c.threadId)).toBe(true);
+    await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, run.runId));
+    await t.service.processPendingPublications(25);
+    await until(() => t.gateway.typing.some((entry) => entry.state === "paused"));
+    expect(t.adapter.isTyping(c.threadId)).toBe(false);
+  }, 90_000);
+
+  it("does not show typing for a chat whose run will not reply", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const silent = await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    await db.update(chatDeliveries).set({ answerState: "silenced" }).where(eq(chatDeliveries.id, silent.id));
+    await db.update(chatActions).set({ status: "issued", result: null }).where(eq(chatActions.deliveryId, silent.id));
+    await t.service.processPendingDeliveries(25);
+    await new Promise((resolve) => setTimeout(resolve, 300));
     expect(t.gateway.typing).toHaveLength(0);
   }, 90_000);
 });
+

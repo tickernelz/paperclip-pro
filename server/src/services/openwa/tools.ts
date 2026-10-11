@@ -26,7 +26,7 @@ import {
   type OpenwaSendKind,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import { DEFAULT_ATTACHMENT_CONTENT_TYPE, getMaxAttachmentBytes, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
+import { DEFAULT_ATTACHMENT_CONTENT_TYPE, attachmentExtensionForContentType, getMaxAttachmentBytes, resolveAttachmentIdentity, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
 import { HttpError, forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getStorageService } from "../../storage/index.js";
@@ -723,10 +723,15 @@ async function attachmentBase64(ctx: ToolContext, attachmentId: string, storage:
   const data = Buffer.concat(chunks);
   if (createHash("sha256").update(data).digest("hex") !== row.asset.sha256)
     throw new OpenwaToolError(422, "attachment_unavailable", "Attachment changed before sending");
+  const identity = resolveAttachmentIdentity({
+    contentType: row.asset.contentType,
+    filename: row.asset.originalFilename,
+    body: data,
+  });
   return {
     base64: data.toString("base64"),
-    mimetype: row.asset.contentType || DEFAULT_ATTACHMENT_CONTENT_TYPE,
-    filename: row.asset.originalFilename ?? "attachment",
+    mimetype: identity.contentType,
+    filename: identity.filename || "attachment",
   };
 }
 
@@ -753,6 +758,11 @@ function safeText(text: string): string {
 export function messageIdOf(result: unknown): OpenwaSendResult {
   const data = record(result);
   return { messageId: String(data.messageId ?? ""), timestamp: Number(data.timestamp ?? 0) };
+}
+
+function attachmentSuffix(mimetype: string): string {
+  const extension = attachmentExtensionForContentType(mimetype);
+  return extension ? "." + extension : "";
 }
 
 async function planSends(ctx: ToolContext, args: Args, target: Target, quote: string | null): Promise<{ sends: OpenwaPlannedSend[]; text: string | null; kind: OpenwaSendKind }> {
@@ -877,7 +887,16 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
     };
   }
   const media = await attachmentBase64(ctx, String(args.attachmentId), handle.storage);
-  const gatewayKind = openwaGatewayMediaKind(kind, media.mimetype);
+  const override = typeof args.filename === "string" ? args.filename.replaceAll("\\", "/").split("/").pop()?.trim() : null;
+  const identity = override
+    ? resolveAttachmentIdentity({
+        contentType: media.mimetype,
+        filename: override.includes(".") ? override : override + attachmentSuffix(media.mimetype),
+        body: Buffer.from(media.base64, "base64"),
+      })
+    : { contentType: media.mimetype, filename: media.filename };
+  const named = { base64: media.base64, mimetype: identity.contentType, filename: identity.filename };
+  const gatewayKind = openwaGatewayMediaKind(kind, named.mimetype);
   const sentKind: OpenwaSendKind = gatewayKind === "document" ? "document" : kind;
   const prefix = prefixFor(ctx);
   const captionSource = args.text ? markdownToWhatsapp(openwaMentionText(safeText(String(args.text)), mentions)) : mentions.length ? mentions.map((mention) => mention.token).join(" ") : "";
@@ -895,9 +914,9 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
           gateway.sendMedia({
             kind: gatewayKind,
             chatId,
-            base64: media.base64,
-            mimetype: media.mimetype,
-            filename: media.filename,
+            base64: named.base64,
+            mimetype: named.mimetype,
+            filename: named.filename,
             ...(caption && sentKind !== "sticker" ? { caption } : {}),
             ...(sentKind === "voice" ? { ptt: true } : {}),
             ...withQuote(0),

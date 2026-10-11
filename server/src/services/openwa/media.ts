@@ -15,6 +15,7 @@ import {
   isAllowedContentType,
   normalizeContentType,
   normalizeUploadAttachmentContentType,
+  resolveAttachmentIdentity,
 } from "../../attachment-types.js";
 import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";
@@ -774,10 +775,14 @@ export function openwaMediaService(db: Db, options: OpenwaMediaServiceOptions = 
       return { ...item, ...failure, ...(failure.reason === "too_large" ? { limitBytes: maxBytes() } : {}) };
     }
     if (downloaded.body.length === 0) return { ...item, reason: "empty" };
-    const filename =
-      item.filename ?? sanitizeFilename(downloaded.filename) ?? fallbackFilename(descriptor.kind, declaredMime ?? normalizeContentType(downloaded.contentType), scope.waMessageId);
+    const identity = resolveAttachmentIdentity({
+      contentType: declaredMime ?? downloaded.contentType,
+      filename: item.filename ?? sanitizeFilename(downloaded.filename) ?? fallbackFilename(descriptor.kind, declaredMime ?? normalizeContentType(downloaded.contentType), scope.waMessageId),
+      body: downloaded.body,
+    });
+    const filename = identity.filename;
     const contentType = normalizeUploadAttachmentContentType({
-      contentType: declaredMime && declaredMime !== "application/octet-stream" ? declaredMime : downloaded.contentType,
+      contentType: identity.contentType,
       originalFilename: filename,
       isAllowedContentType,
     });

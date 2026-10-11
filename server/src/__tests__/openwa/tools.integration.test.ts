@@ -1015,6 +1015,57 @@ describe.sequential("OpenWA agent tools (embedded Postgres + fake gateway)", () 
     expect(t.gateway.documents.at(-1)).toMatchObject({ filename: "bundle.zip", mimetype: "application/zip", caption: expect.stringContaining("the bundle"), content: zip.toString("utf8") });
   });
 
+  it("sends a PDF whose stored name is a placeholder .bin as a real PDF document", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const row = t.gateway.inbound({ chatId: MEMBER, body: "", emit: false });
+    t.gateway.setMedia(MEMBER, row.waMessageId!, { body: Buffer.from("%PDF-1.7 report"), contentType: "application/octet-stream" });
+    const stored = await executeOpenwaTool(db, binding, "openwa_get_media", { messageId: row.waMessageId });
+    const [item] = stored.media as Array<Record<string, unknown>>;
+    expect(item).toMatchObject({ status: "stored", mime: "application/pdf", size: 15 });
+    expect(String(item!.filename).endsWith(".bin")).toBe(false);
+    expect(String(item!.filename).endsWith(".pdf")).toBe(true);
+
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "document", attachmentId: item!.attachmentId, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.documents.at(-1)).toMatchObject({ chatId: MEMBER, mimetype: "application/pdf", content: "%PDF-1.7 report" });
+    expect(t.gateway.documents.at(-1)!.filename.endsWith(".pdf")).toBe(true);
+  });
+
+  it("keeps an unknown file's real extension and never sends .bin", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "firmware.bin", contentType: "application/octet-stream", body: Buffer.from([0x4d, 0x5a, 0x00, 0xff, 0x13, 0x37]) });
+    const [asset] = await db.insert(assets).values({ companyId: t.companyId, provider: put.provider, objectKey: put.objectKey, contentType: put.contentType, byteSize: put.byteSize, sha256: put.sha256, originalFilename: put.originalFilename }).returning();
+    const [attachment] = await db.insert(issueAttachments).values({ companyId: t.companyId, issueId: c.issueId, assetId: asset!.id }).returning();
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "document", attachmentId: attachment!.id, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.documents.at(-1)).toMatchObject({ filename: "firmware.bin", mimetype: "application/octet-stream" });
+  });
+
+  it("sends an attachment with no name under the attachment's real extension", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: null, contentType: "application/octet-stream", body: Buffer.from("%PDF-1.7 nameless") });
+    const [asset] = await db.insert(assets).values({ companyId: t.companyId, provider: put.provider, objectKey: put.objectKey, contentType: put.contentType, byteSize: put.byteSize, sha256: put.sha256, originalFilename: null }).returning();
+    const [attachment] = await db.insert(issueAttachments).values({ companyId: t.companyId, issueId: c.issueId, assetId: asset!.id }).returning();
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "document", attachmentId: attachment!.id, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.documents.at(-1)).toMatchObject({ mimetype: "application/pdf", content: "%PDF-1.7 nameless" });
+    expect(t.gateway.documents.at(-1)!.filename.endsWith(".pdf")).toBe(true);
+  });
+
+  it("uses the filename argument as the document name WhatsApp shows", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    const binding = await run(t, c, { triggerClass: "owner" });
+    const put = await storage.putFile({ companyId: t.companyId, namespace: "issues/" + c.issueId, originalFilename: "output.txt", contentType: "text/plain", body: Buffer.from("quarterly numbers") });
+    const [asset] = await db.insert(assets).values({ companyId: t.companyId, provider: put.provider, objectKey: put.objectKey, contentType: put.contentType, byteSize: put.byteSize, sha256: put.sha256, originalFilename: put.originalFilename }).returning();
+    const [attachment] = await db.insert(issueAttachments).values({ companyId: t.companyId, issueId: c.issueId, assetId: asset!.id }).returning();
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { kind: "document", attachmentId: attachment!.id, filename: "Panduan Pengguna erp_discovery.pdf", idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.documents.at(-1)).toMatchObject({ filename: "Panduan Pengguna erp_discovery.pdf", mimetype: "text/plain" });
+  });
+
   it("still rejects types outside an operator's PAPERCLIP_ALLOWED_ATTACHMENT_TYPES restriction", async () => {
     vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
     try {
