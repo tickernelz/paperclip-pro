@@ -8,7 +8,7 @@
 | Previous merge base | `81cd03b3b542ea4af291ef56d5084fbf6410eb9c` |
 | Date | 2026-10-11 |
 | Fork branch | `sync/upstream-20261011` (from `origin/main` `a814ecf73`) |
-| Fork merge commit | `MERGE_COMMIT_PLACEHOLDER` (parents: fork `a814ecf73`, upstream-renamed `d350bc9f6` whose parent is upstream `e733bddc4`) |
+| Fork merge commit | `550692270407cd5431cd0eb040e208e8fed4ceda` (parents: fork `a814ecf73`, upstream-renamed `d350bc9f6` whose parent is upstream `e733bddc4`) |
 | Conflict decisions | [2026-10-11-conflicts.md](2026-10-11-conflicts.md) |
 
 The next sync starts from `e733bddc45e00efb1819fffa8677f7b0d07802c5`: `git log e733bddc4..upstream/master`. `git merge-base HEAD upstream/master` should return that SHA.
