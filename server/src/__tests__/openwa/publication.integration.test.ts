@@ -43,6 +43,7 @@ import { secretService } from "../../services/secrets.js";
 import { OpenwaChatAdapter, openwaThreadId } from "../../services/openwa/adapter.js";
 import { createOpenwaGatewayClient } from "../../services/openwa/gateway.js";
 import { openwaChatKey, sendThroughRegistry } from "../../services/openwa/outbound.js";
+import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.js";
 import { readOpenwaRunContext } from "../../services/openwa/authority.js";
 import { markTriggersAnswered, readOpenwaLastOutput } from "../../services/openwa/publication.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
@@ -51,6 +52,32 @@ const SESSION_ID = "22222222-3333-4444-8555-666666666666";
 const OWN_PHONE = "628111000999";
 const MEMBER = "628222000777@c.us";
 const GROUP = "120363000000000777@g.us";
+class ManualBurstClock implements OpenwaScheduledWakeClock {
+  time = Date.now();
+  private seq = 0;
+  private readonly timers = new Map<number, { at: number; fire: () => void }>();
+  now() {
+    return this.time;
+  }
+  setTimer(fire: () => void, delayMs: number) {
+    const id = ++this.seq;
+    this.timers.set(id, { at: this.time + delayMs, fire });
+    return id;
+  }
+  clearTimer(handle: unknown) {
+    this.timers.delete(handle as number);
+  }
+  advance(ms: number) {
+    this.time += ms;
+    for (const [id, timer] of [...this.timers]) {
+      if (timer.at > this.time) continue;
+      this.timers.delete(id);
+      timer.fire();
+    }
+  }
+}
+
+
 const CREDENTIAL = "sk-proj-ABCDEFGHIJKLMNOPQRSTUVWX";
 
 async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15_000): Promise<void> {
@@ -89,7 +116,7 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
-  async function setup(policy: Record<string, unknown> = {}) {
+  async function setup(policy: Record<string, unknown> = {}, options: { burstClock?: OpenwaScheduledWakeClock; burstWindowMs?: number } = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -135,7 +162,8 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
       storage,
       scheduleDeferredWork: () => {},
       discordGatewayLeaseWaitMs: 200,
-      openwaBurstWindowMs: 0,
+      ...(options.burstWindowMs !== undefined ? { openwaBurstWindowMs: options.burstWindowMs } : { openwaBurstWindowMs: 0 }),
+      ...(options.burstClock ? { openwaBurstClock: options.burstClock } : {}),
     });
     services.push(service);
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
@@ -929,33 +957,80 @@ describe.sequential("OpenWA publication (embedded Postgres + fake gateway)", () 
     expect(t.gateway.typing.every((entry) => entry.chatId === MEMBER)).toBe(true);
   }, 90_000);
 
-  it("shows typing again when a burst-held wake is released into the run", async () => {
+  it("shows typing within a second of releasing a burst-held three message batch", async () => {
+    const clock = new ManualBurstClock();
+    const t = await setup({}, { burstClock: clock, burstWindowMs: 3_000 });
+    const c = await conversation(t, MEMBER);
+    const [first, second, third] = [
+      await trigger(t, c, { triggerClass: "other", role: "allowed" }),
+      await trigger(t, c, { triggerClass: "other", role: "allowed" }),
+      await trigger(t, c, { triggerClass: "other", role: "allowed" }),
+    ];
+    for (const triggerRow of [first, second, third]) {
+      const [row] = await db.select({ event: chatDeliveries.normalizedEvent }).from(chatDeliveries).where(eq(chatDeliveries.id, triggerRow.id));
+      await db.update(chatDeliveries).set({ normalizedEvent: { ...(row!.event as Record<string, unknown>), conversation: { externalThreadId: c.threadId } } }).where(eq(chatDeliveries.id, triggerRow.id));
+      await db.insert(chatActions).values({
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        conversationId: c.id,
+        deliveryId: triggerRow.id,
+        kind: "inbound_wakeup",
+        providerActionId: "inbound_wakeup:" + triggerRow.id,
+        status: "issued",
+        payload: { version: 1, issueId: c.issueId, agentId: t.agentId, commentId: randomUUID(), requestedByActorId: randomUUID(), requestedByActorType: "system", sessionGeneration: 1, openwa: { event: "message", triggerClass: "other", deliveryIds: [triggerRow.id] } },
+      });
+    }
+    t.adapter.typingRefreshMs = 20_000;
+    await t.service.processPendingDeliveries(25);
+    const [held] = await db.select({ result: chatActions.result }).from(chatActions).where(eq(chatActions.deliveryId, first.id)).limit(1);
+    expect(held!.result).toMatchObject({ code: "openwa_burst_held" });
+    expect(t.gateway.typing.filter((entry) => entry.state === "typing" && entry.chatId === MEMBER).length).toBeGreaterThanOrEqual(1);
+    await runOutput(t, c, { triggerClass: "other", body: "x", deliveryIds: [first.id, second.id, third.id], status: "running" });
+    const releasedAt = Date.now();
+    clock.advance(3_000);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    await t.service.processPendingDeliveries(25);
+    await until(() => t.adapter.isTyping(c.threadId));
+    expect(Date.now() - releasedAt).toBeLessThan(1_000);
+    expect(t.gateway.typing.filter((entry) => entry.state === "typing" && entry.chatId === MEMBER).length).toBeGreaterThanOrEqual(1);
+    const [live] = await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(and(eq(heartbeatRuns.companyId, t.companyId), eq(heartbeatRuns.status, "running"))).limit(1);
+    await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, live!.id));
+    await t.service.processPendingPublications(25);
+    await until(() => t.gateway.typing.some((entry) => entry.state === "paused"));
+    expect(t.adapter.isTyping(c.threadId)).toBe(false);
+  }, 90_000);
+
+  it("refreshes typing when a trigger is steered into a live run", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);
-    const first = await trigger(t, c, { triggerClass: "other", role: "allowed" });
-    const [before] = await db.select({ event: chatDeliveries.normalizedEvent }).from(chatDeliveries).where(eq(chatDeliveries.id, first.id));
-    await db.update(chatDeliveries).set({ normalizedEvent: { ...(before!.event as Record<string, unknown>), conversation: { externalThreadId: c.threadId } } }).where(eq(chatDeliveries.id, first.id));
+    const first = await trigger(t, c, { triggerClass: "owner", role: "owner" });
+    const run = await runOutput(t, c, { triggerClass: "owner", body: "x", deliveryIds: [first.id], status: "running" });
+    t.adapter.typingRefreshMs = 20_000;
+    await t.adapter.startTyping(c.threadId);
+    await until(() => t.gateway.typing.some((entry) => entry.state === "typing" && entry.chatId === MEMBER));
+    const steered = await trigger(t, c, { triggerClass: "owner", role: "owner" });
+    const [row] = await db.select({ event: chatDeliveries.normalizedEvent }).from(chatDeliveries).where(eq(chatDeliveries.id, steered.id));
+    await db.update(chatDeliveries).set({ normalizedEvent: { ...(row!.event as Record<string, unknown>), conversation: { externalThreadId: c.threadId } } }).where(eq(chatDeliveries.id, steered.id));
     await db.insert(chatActions).values({
       companyId: t.companyId,
       endpointId: t.endpointId,
       conversationId: c.id,
-      deliveryId: first.id,
+      deliveryId: steered.id,
       kind: "inbound_wakeup",
-      providerActionId: "inbound_wakeup:" + first.id,
+      providerActionId: "inbound_wakeup:" + steered.id,
       status: "issued",
-      payload: { version: 1, openwa: { event: "message", triggerClass: "other", deliveryIds: [first.id] } },
+      payload: { version: 1, issueId: c.issueId, agentId: t.agentId, commentId: randomUUID(), requestedByActorId: randomUUID(), requestedByActorType: "system", openwa: { event: "message", triggerClass: "owner", deliveryIds: [steered.id] } },
     });
-    await db.update(chatActions).set({ status: "issued", result: null }).where(eq(chatActions.deliveryId, first.id));
-    const run = await runOutput(t, c, { triggerClass: "other", body: "x", deliveryIds: [first.id], status: "running" });
-    await db.update(chatDeliveries).set({ state: "processed" }).where(eq(chatDeliveries.id, first.id));
-    t.adapter.typingRefreshMs = 20_000;
+    await db.update(chatDeliveries).set({ state: "processed" }).where(eq(chatDeliveries.id, steered.id));
+    const before = t.gateway.typing.length;
     await t.service.processPendingDeliveries(25);
-    await until(() => t.gateway.typing.some((entry) => entry.state === "typing" && entry.chatId === MEMBER));
+    await new Promise((resolve) => setTimeout(resolve, 100));
     expect(t.adapter.isTyping(c.threadId)).toBe(true);
+    expect(t.gateway.typing.every((entry) => entry.chatId === MEMBER)).toBe(true);
+    expect(t.gateway.typing.filter((entry) => entry.state === "typing").length).toBeGreaterThanOrEqual(1);
     await db.update(heartbeatRuns).set({ status: "succeeded" }).where(eq(heartbeatRuns.id, run.runId));
     await t.service.processPendingPublications(25);
     await until(() => t.gateway.typing.some((entry) => entry.state === "paused"));
-    expect(t.adapter.isTyping(c.threadId)).toBe(false);
   }, 90_000);
 
   it("does not show typing for a chat whose run will not reply", async () => {
