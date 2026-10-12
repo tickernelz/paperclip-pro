@@ -1129,7 +1129,7 @@ importers:
         specifier: ^1.4.2
         version: 1.8.0
       socket.io-client:
-        specifier: ^4
+        specifier: ^4.8.4
         version: 4.8.4
       ssh2:
         specifier: ^1.17.0
@@ -8010,6 +8010,7 @@ packages:
 
   opencode-ai@1.18.34:
     resolution: {integrity: sha512-9WUS2T0t4HHDVzXvuwTHF0nvhXvZ9mQ0r+ozCvKdJu0LVoQpOzqAW4qWTC3ygNc5Oedcc7j+Oct24JYlQYnySA==}
+    cpu: [arm64, x64]
     os: [darwin, linux, win32]
     hasBin: true
 

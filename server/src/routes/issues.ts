@@ -33,7 +33,7 @@ import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractio
 import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
-import { registerOpenwaCommentSteering, OPENWA_STEER_ACTOR_ID, type OpenwaCommentSteerRequest, type OpenwaSystemSteerActor } from "../services/openwa/steering.js";
+import { registerOpenwaCommentSteering, type OpenwaCommentSteerRequest, type OpenwaSystemSteerActor } from "../services/openwa/steering.js";
 import {
   openwaApprovalOwnerUserIds,
   openwaApprovalRequestIdOf,
@@ -18139,7 +18139,7 @@ export function issueRoutes(
     if (!target) {
       return {
         deliveredAs: "queued",
-        steeringUnavailable: input.requested === "queue" ? "not_requested" : "no_active_run",
+        steeringUnavailable: input.requested === "steer" ? "no_active_run" : "not_requested",
       };
     }
     if (input.actor.actorType === "agent") {
@@ -18388,66 +18388,15 @@ export function issueRoutes(
     postedComment: steerPostedCommentWithDefault,
     liveRunStarted: async (runId) => {
       const [run] = await db
-        .select({
-          companyId: heartbeatRuns.companyId,
-          contextSnapshot: heartbeatRuns.contextSnapshot,
-          responsibleUserId: heartbeatRuns.responsibleUserId,
-        })
+        .select({ companyId: heartbeatRuns.companyId, contextSnapshot: heartbeatRuns.contextSnapshot })
         .from(heartbeatRuns)
         .where(eq(heartbeatRuns.id, runId))
         .limit(1);
       const issueId = readNonEmptyString(readObject(run?.contextSnapshot).issueId);
       if (!run || !issueId) return;
       await steerDeferredInteractionResponses({ companyId: run.companyId, issueId });
-      await steerQueuedCommentsIntoRun({
-        companyId: run.companyId,
-        issueId,
-        runId,
-        responsibleUserId: run.responsibleUserId,
-      });
     },
   });
-
-  async function steerQueuedCommentsIntoRun(input: {
-    companyId: string;
-    issueId: string;
-    runId: string;
-    responsibleUserId: string | null;
-  }): Promise<void> {
-    const actor: QueueActor = {
-      actorType: "system",
-      actorId: OPENWA_STEER_ACTOR_ID,
-      agentId: null,
-      runId: null,
-      agentApiKeyId: null,
-      onBehalfOfUserId: input.responsibleUserId,
-    };
-    const issue = await svc.getById(input.issueId);
-    if (!issue || issue.companyId !== input.companyId) return;
-    const queue = await buildQueuedCommentQueue({
-      executor: db,
-      issue,
-      activeRun: { id: input.runId, status: "running" } as Awaited<ReturnType<typeof resolveActiveIssueRun>>,
-      actor,
-      steeringDisposition: "temporarily_unavailable",
-    }).catch((err) => {
-      logger.warn({ err, issueId: issue.id, runId: input.runId }, "failed to read the queued-comment queue when a run started");
-      return null;
-    });
-    if (!queue || queue.protocol !== "paperclip_runner_v1" || !queue.queueId || !queue.targetRunId) return;
-    for (const entry of queue.entries) {
-      await steerQueuedCommentWithRetry({
-        issue,
-        actor,
-        commentId: entry.comment.id,
-        target: { queueId: queue.queueId, targetRunId: queue.targetRunId, revision: queue.revision },
-        targetIsServerResolved: true,
-      }).catch((err) => logger.warn(
-        { err, issueId: issue.id, runId: input.runId, commentId: entry.comment.id },
-        "failed to steer a message that queued before the run registered",
-      ));
-    }
-  }
 
   async function logQueuedCommentSteered(input: {
     issue: { id: string; companyId: string };
