@@ -30070,6 +30070,14 @@
         "schema": {
           "type": "string"
         }
+      },
+      {
+        "name": "connectionId",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
       }
     ]
   },
