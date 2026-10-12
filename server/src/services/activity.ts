@@ -591,6 +591,7 @@ export function activityService(db: Db) {
           invocationSource: row.invocationSource,
           responsibleUserId: row.responsibleUserId,
           errorCode: row.errorCode,
+          error: row.error,
           usageJson: json?.usageJson ?? null,
           resultJson: json?.resultJson ?? null,
           logBytes: row.logBytes,
