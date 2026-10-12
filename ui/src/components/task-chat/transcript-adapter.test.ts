@@ -292,6 +292,69 @@ function toolCall(name: string, input?: unknown): TranscriptEntry {
   } as TranscriptEntry;
 }
 
+describe("xd:// device dispatch rows", () => {
+  const opts = { runId: "run-1", running: false };
+  const DEVICE_PAYLOAD = JSON.stringify({
+    code: "const r = await omp.bash({cmd: 'git status'}); return r.output;",
+  });
+
+  function toolRow(entries: TranscriptEntry[]) {
+    return transcriptToTaskChatItems(entries, opts).find(
+      (item) => item.kind === "tool",
+    );
+  }
+
+  it("names a settled device write after the tool it dispatched", () => {
+    const row = toolRow([toolCall("write", { content: DEVICE_PAYLOAD })]);
+    expect(row?.kind === "tool" && row.rawName).toBe("fabric_exec");
+    expect(row?.kind === "tool" && row.name).toBe("Fabric exec");
+  });
+
+  it("names a streaming device write after its device path", () => {
+    const row = toolRow([
+      toolCall("write", { path: "xd://fabric_exec", content: "{}" }),
+    ]);
+    expect(row?.kind === "tool" && row.rawName).toBe("fabric_exec");
+  });
+
+  it("keeps the dispatched payload out of the row target", () => {
+    const row = toolRow([toolCall("write", { content: DEVICE_PAYLOAD })]);
+    const target = row?.kind === "tool" ? (row.target ?? "") : "";
+    expect(target).not.toContain("omp.bash");
+    expect(target).not.toContain("git status");
+  });
+
+  it("leaves an ordinary file write alone", () => {
+    const row = toolRow([
+      toolCall("write", { path: "./src/x.ts", content: "hello" }),
+    ]);
+    expect(row?.kind === "tool" && row.rawName).toBe("write");
+    expect(row?.kind === "tool" && row.target).toBe("./src/x.ts");
+  });
+
+  it("leaves OMP's own resolution devices alone", () => {
+    for (const device of ["resolve", "reject", "propose", "report_issue"]) {
+      const row = toolRow([
+        toolCall("write", { path: `xd://${device}`, content: "because" }),
+      ]);
+      expect(row?.kind === "tool" && row.rawName).toBe("write");
+    }
+  });
+
+  it("leaves a non-fabric device payload alone", () => {
+    const row = toolRow([
+      toolCall("write", { content: '{"issueId": "ZHA-1", "comment": "hi"}' }),
+    ]);
+    expect(row?.kind === "tool" && row.rawName).toBe("write");
+  });
+
+  it("leaves a top-level fabric_exec call alone", () => {
+    const row = toolRow([toolCall("fabric_exec", { code: "return 1" })]);
+    expect(row?.kind === "tool" && row.rawName).toBe("fabric_exec");
+    expect(row?.kind === "tool" && row.target).toBe("code: return 1");
+  });
+});
+
 describe("splitTranscriptAtAnchors", () => {
   const assistant = (ts: string, text: string): TranscriptEntry =>
     ({ kind: "assistant", ts, channel: "progress", text }) as TranscriptEntry;

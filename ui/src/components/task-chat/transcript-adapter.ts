@@ -151,6 +151,43 @@ const TARGET_KEYS = [
 
 const TARGET_MAX = 96;
 
+/** OMP `xd://` device transport tools: harness plumbing, not agent tools. */
+const XD_DEVICE_PATH_RE = /^xd:\/\/([A-Za-z0-9_]+)$/;
+const XD_RESERVED_DEVICES: Record<string, true> = {
+  resolve: true,
+  reject: true,
+  propose: true,
+  report_issue: true,
+};
+
+function xdDeviceFromPath(value: unknown): string | null {
+  if (typeof value !== "string") return null;
+  const match = XD_DEVICE_PATH_RE.exec(value.trim());
+  if (!match) return null;
+  return match[1]! in XD_RESERVED_DEVICES ? null : match[1]!;
+}
+
+/** Tool a `write xd://<tool>` dispatch invoked, or null for a file write. */
+function xdDeviceToolName(
+  name: string | undefined | null,
+  input: unknown,
+): string | null {
+  if (name?.trim() !== "write") return null;
+  if (input == null || typeof input !== "object") return null;
+  const record = input as Record<string, unknown>;
+  const fromPath = xdDeviceFromPath(record.path);
+  if (fromPath) return fromPath;
+  if (typeof record.path === "string" || !("content" in record)) return null;
+  return fabricDeviceFromPayload(record.content);
+}
+
+const FABRIC_PAYLOAD_HINT = /"code"\s*:\s*"[\s\S]{0,400}?omp\./;
+
+function fabricDeviceFromPayload(content: unknown): string | null {
+  if (typeof content !== "string") return null;
+  return FABRIC_PAYLOAD_HINT.test(content) ? "fabric_exec" : null;
+}
+
 function clip(text: string, max: number): string {
   const oneLine = text.replace(/\s+/g, " ").trim();
   return oneLine.length > max ? `${oneLine.slice(0, max - 1)}…` : oneLine;
@@ -782,12 +819,16 @@ export function transcriptToTaskChatItems(
           }
           lastToolIndex = existingIndex!;
         } else {
+          const dispatchedTool = xdDeviceToolName(entry.name, entry.input);
+          const callName = dispatchedTool ?? entry.name;
           items.push({
             id: `${runId}:tool:${toolCallId}`,
             kind: "tool",
-            name: toolDisplayName(entry.name),
-            rawName: entry.name ?? undefined,
-            target: summarizeToolInput(entry.input),
+            name: toolDisplayName(callName),
+            rawName: callName ?? undefined,
+            target: dispatchedTool
+              ? undefined
+              : summarizeToolInput(entry.input),
             status: "in_progress",
           });
           toolIndexById.set(toolCallId, items.length - 1);
