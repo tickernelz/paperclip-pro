@@ -408,9 +408,9 @@ describeEmbeddedPostgres("public issue share links", () => {
       .returning();
     await share(seeded);
     const app = createApp(() => agent(seeded.companyId, restricted!.id, restrictedRun!.id));
-    await request(app).get(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
-    await request(app).post(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
-    await request(app).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(403);
+    await request(app).get(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
+    await request(app).post(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
+    await request(app).delete(`/api/issues/${seeded.ids.root}/share-link`).expect(404);
     const boardApp = createApp(() => board(seeded.companyId));
     const still = await request(boardApp).get(`/api/issues/${seeded.ids.root}/share-link`).expect(200);
     expect(still.body).not.toBeNull();

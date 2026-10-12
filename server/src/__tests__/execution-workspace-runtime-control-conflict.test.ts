@@ -51,6 +51,12 @@ vi.mock("node:child_process", async () => ({
   spawn: mockSpawn,
 }));
 
+vi.mock("../../../packages/adapters/omp-local/src/server/models.js", async () => ({
+  ...(await vi.importActual<typeof import("../../../packages/adapters/omp-local/src/server/models.js")>("../../../packages/adapters/omp-local/src/server/models.js")),
+  listOmpModels: async () => [],
+  refreshOmpModels: async () => [],
+}));
+
 vi.mock("../telemetry.js", () => ({ getTelemetryClient: mockGetTelemetryClient }));
 
 vi.mock("../services/index.js", () => ({

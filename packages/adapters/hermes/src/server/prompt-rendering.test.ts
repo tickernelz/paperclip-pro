@@ -239,19 +239,12 @@ test("keeps current runtime identity in the user turn without repeating static A
     paperclipApiUrl: "http://paperclip.local/api",
   });
 
-  expect(prompt).toContain("Use `$PAPERCLIP_API_URL`, `$PAPERCLIP_API_KEY`, and `$PAPERCLIP_RUN_ID`");
-  expect(prompt).toContain("Displayed command logs may redact secrets");
-  expect(prompt).toContain('-H "Authorization: Bearer $PAPERCLIP_API_KEY"');
-  expect(prompt).toContain('-H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID"');
-  expect(prompt).toContain("body=$(cat <<'MD'");
-  expect(prompt).toContain("jq -n --arg status done --arg comment \"$body\"");
-  expect(prompt).toContain("--data-binary @-");
-  expect(prompt).not.toContain("Authorization: Bearer <");
   expect(prompt).not.toMatch(/paperclip[A-Z]/);
   expect(prompt).toContain("- Agent ID: agent-1");
   expect(prompt).toContain("- Company ID: company-1");
   expect(prompt).toContain("- Run ID: run-1");
   expect(prompt).toContain("- API base: http://paperclip.local/api");
+  expect(prompt).not.toContain("Safe multiline update pattern:");
 });
 
 test("preserves custom prompt templates while exposing runtime and wake variables", () => {
