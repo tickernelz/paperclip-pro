@@ -13326,6 +13326,7 @@ for (const [method, path, query] of [
     limit: z.coerce.number().int().min(1).optional(),
   })],
   ["get", "/api/tool-gateway/audit", z.object({ gateway: z.string().optional() })],
+  ["get", "/api/companies/{companyId}/fast-response/models", z.object({ connectionId: z.string() })],
 ] as const) {
   registry.declareQuery(method, path, query);
 }
