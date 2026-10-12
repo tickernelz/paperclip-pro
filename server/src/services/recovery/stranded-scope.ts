@@ -32,8 +32,9 @@ function asRecord(value: unknown): Record<string, unknown> {
 
 export function isAssigneeLifecycleBlocked(
   invokability: AgentInvokability | null | undefined,
+  pauseReason?: string | null,
 ): boolean {
-  if (!invokability || invokability.invokable) return false;
+  if (!invokability || invokability.invokable || pauseReason === "budget") return false;
   return (
     invokability.reason === "paused" || invokability.reason === "pending_approval"
   );
@@ -64,12 +65,13 @@ export function isStaleContinuationContextSetupFailure(
 
 export function classifyStrandedScopeExemption(input: {
   invokability: AgentInvokability | null | undefined;
+  pauseReason?: string | null;
   unresolvedBlockerCount: number;
   latestRun: StrandedScopeRun;
   hasQueuedWake?: boolean;
   operatorCancelled?: boolean;
 }): StrandedScopeExemption | null {
-  if (isAssigneeLifecycleBlocked(input.invokability)) {
+  if (isAssigneeLifecycleBlocked(input.invokability, input.pauseReason)) {
     return "assignee_not_schedulable";
   }
   if (input.unresolvedBlockerCount > 0) return "unresolved_blockers";

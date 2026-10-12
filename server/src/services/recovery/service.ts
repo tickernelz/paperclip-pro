@@ -4047,24 +4047,28 @@ export function recoveryService(
 
   async function getAssigneeInvokability(
     issue: typeof issues.$inferSelect,
-  ): Promise<AgentInvokability | null> {
+  ): Promise<{ invokability: AgentInvokability; pauseReason: string | null } | null> {
     if (!issue.assigneeAgentId) return null;
     const assignee = await getAgent(issue.assigneeAgentId);
     if (!assignee || assignee.companyId !== issue.companyId) return null;
-    return evaluateAgentInvokabilityFromDb(db, assignee);
+    return {
+      invokability: await evaluateAgentInvokabilityFromDb(db, assignee),
+      pauseReason: assignee.pauseReason ?? null,
+    };
   }
 
   async function strandedEscalationExemption(
     issue: typeof issues.$inferSelect,
     latestRun: LatestIssueRun,
   ): Promise<StrandedScopeExemption | null> {
-    const [invokability, unresolvedBlockerIds, hasQueuedWake] = await Promise.all([
+    const [assignee, unresolvedBlockerIds, hasQueuedWake] = await Promise.all([
       getAssigneeInvokability(issue),
       existingUnresolvedBlockerIssueIds(issue.companyId, issue.id),
       latestRun ? Promise.resolve(false) : hasQueuedIssueWake(issue.companyId, issue.id),
     ]);
     return classifyStrandedScopeExemption({
-      invokability,
+      invokability: assignee?.invokability,
+      pauseReason: assignee?.pauseReason,
       unresolvedBlockerCount: unresolvedBlockerIds.length,
       latestRun,
       hasQueuedWake,
@@ -4726,7 +4730,7 @@ export function recoveryService(
           } else {
             result.skipped += 1;
           }
-        } else if (isAssigneeLifecycleBlocked(agentInvokability)) {
+        } else if (isAssigneeLifecycleBlocked(agentInvokability, agent?.pauseReason)) {
           result.assigneeNotSchedulableExempted += 1;
         } else {
           const updated = await escalateStrandedAssignedIssue({
@@ -5152,7 +5156,7 @@ export function recoveryService(
           !participantLatestRun ||
           !isTerminalIssueRun(participantLatestRun)
         ) {
-          if (!agentInvokable && isAssigneeLifecycleBlocked(agentInvokability)) {
+          if (!agentInvokable && isAssigneeLifecycleBlocked(agentInvokability, agent?.pauseReason)) {
             result.assigneeNotSchedulableExempted += 1;
             return;
           }
