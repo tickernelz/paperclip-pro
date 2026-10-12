@@ -410,7 +410,11 @@ export async function runOmpRpcSession(
 
   const send = async (frame: Record<string, unknown>): Promise<void> => {
     if (channel.closed) return;
-    await channel.write(`${JSON.stringify(frame)}\n`);
+    try {
+      await channel.write(`${JSON.stringify(frame)}\n`);
+    } catch (error) {
+      if (!(error instanceof Error && error.message === "live_stdin_channel_closed")) throw error;
+    }
   };
 
   const requestIdleCheck = async (): Promise<void> => {
