@@ -52,6 +52,11 @@ function issueRunIdCondition(companyId: string, issueId: string) {
     where issue_run.company_id = ${companyId}
       and issue_run.context_snapshot ->> 'issueId' = ${issueId}
     union
+    select scoped_run.id
+    from ${heartbeatRuns} scoped_run
+    where scoped_run.company_id = ${companyId}
+      and scoped_run.issue_id = ${issueId}
+    union
     select ${activityLog.runId}
     from ${activityLog}
     where ${activityLog.companyId} = ${companyId}
@@ -69,7 +74,6 @@ type RunJsonSummary = {
   runId: string;
   rowVersion: string;
   usageJson: Record<string, unknown> | null;
-  resultJson: Record<string, unknown> | null;
   context: {
     wakeCommentIds: string[] | null;
     wakeCommentId: string | null;
@@ -395,7 +399,6 @@ export function activityService(db: Db) {
         runId: heartbeatRuns.id,
         rowVersion: sql<string>`${heartbeatRuns}.xmin::text`,
         usageJson: summarizedUsageJson,
-        resultJson: summarizedResultJson(null),
         context: jsonbRecordFields<RunJsonSummary["context"]>(heartbeatRuns.contextSnapshot, {
           wakeCommentIds: "jsonb",
           wakeCommentId: "text",
@@ -517,7 +520,6 @@ export function activityService(db: Db) {
             when ${heartbeatRuns.status} = 'failed'
               and ${heartbeatRuns.error} = 'This credential is not shared with the responsible user'
             then 'This credential is not shared with the responsible user' else null end`,
-          usageJson: summarizedUsageJson,
           resultJson: summarizedResultJson(viewerUserId),
           logBytes: heartbeatRuns.logBytes,
           retryOfRunId: heartbeatRuns.retryOfRunId,
@@ -593,7 +595,7 @@ export function activityService(db: Db) {
           errorCode: row.errorCode,
           error: row.error,
           usageJson: json?.usageJson ?? null,
-          resultJson: json?.resultJson ?? null,
+          resultJson: row.resultJson ?? null,
           logBytes: row.logBytes,
           retryOfRunId: row.retryOfRunId,
           scheduledRetryAt: row.scheduledRetryAt,
@@ -662,7 +664,7 @@ export function activityService(db: Db) {
       const [exhaustionRows, leaseRows, executionByRunId, [savedPlan]] = await Promise.all([
         exhaustionRowsQuery,
         leaseRowsQuery,
-        executionProjectionsForRunRows(db, companyId, executionRuns),
+        executionProjectionsForRunRows(db, companyId, executionRuns, new Date(), { retryDatabaseReads: true }),
         savedPlanQuery,
       ]);
       const retryExhaustedReasonByRunId = new Map<string, string>();

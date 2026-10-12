@@ -138,9 +138,10 @@ describe("execution projection read retries", () => {
     const result = await activityService(test.db).runsForIssue(companyId, issueId);
     expect(result).toMatchObject([{ runId, execution: { phase: "waiting_for_answer" } }]);
     expect(test.count("issue_thread_interactions")).toBe(3);
-    for (const key of ["run_list", "liveness_backfill", "heartbeat_runs", "native_run_finalizations", "environment_leases", "issue_recovery_actions"]) {
+    for (const key of ["run_list", "liveness_backfill", "native_run_finalizations", "environment_leases", "issue_recovery_actions"]) {
       expect(test.count(key)).toBe(1);
     }
+    expect(test.count("heartbeat_runs")).toBe(0);
     // One retry-exhaustion lookup plus the independent backfill's event count.
     expect(test.count("heartbeat_run_events")).toBe(2);
     expect(test.update).toHaveBeenCalledTimes(1);

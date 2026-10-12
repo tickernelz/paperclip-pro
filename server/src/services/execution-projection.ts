@@ -55,14 +55,8 @@ export async function executionProjectionsForRuns(
   now = new Date(),
   options: { retryDatabaseReads?: boolean } = {},
 ) {
-  const projections = new Map<string, ExecutionProjection>();
-  if (!runIds.length) return projections;
-  // Opt in only with a pooled Db outside a transaction. Issue enrichment also
-  // calls this helper with a transaction, whose failed reads must not replay.
-  const read = <T>(query: () => Promise<T>) => options.retryDatabaseReads
-    ? retryIdempotentDatabaseOperation(query)
-    : query();
-  const runs = await read(async () => db
+  if (!runIds.length) return new Map<string, ExecutionProjection>();
+  const runs = await readExecutionProjection(options, async () => db
     .select(executionRunColumns)
     .from(heartbeatRuns)
     .where(
@@ -71,6 +65,42 @@ export async function executionProjectionsForRuns(
         inArray(heartbeatRuns.id, runIds),
       ),
     ));
+  return projectExecutionRuns(db, companyId, runIds, runs, now, options);
+}
+
+function readExecutionProjection<T>(
+  options: { retryDatabaseReads?: boolean },
+  query: () => Promise<T>,
+) {
+  // Opt in only with a pooled Db outside a transaction. Issue enrichment also
+  // calls this helper with a transaction, whose failed reads must not replay.
+  return options.retryDatabaseReads
+    ? retryIdempotentDatabaseOperation(query)
+    : query();
+}
+
+/** Projects runs already loaded with `executionRunColumns`. */
+export async function executionProjectionsForRunRows(
+  db: Db,
+  companyId: string,
+  runs: ExecutionProjectionRun[],
+  now = new Date(),
+  options: { retryDatabaseReads?: boolean } = {},
+) {
+  if (!runs.length) return new Map<string, ExecutionProjection>();
+  return projectExecutionRuns(db, companyId, runs.map((run) => run.id), runs, now, options);
+}
+
+async function projectExecutionRuns(
+  db: Db,
+  companyId: string,
+  runIds: string[],
+  runs: ExecutionProjectionRun[],
+  now: Date,
+  options: { retryDatabaseReads?: boolean },
+) {
+  const projections = new Map<string, ExecutionProjection>();
+  const read = <T>(query: () => Promise<T>) => readExecutionProjection(options, query);
   const coordinators = await read(async () => db
     .select()
     .from(nativeRunFinalizations)
@@ -124,94 +154,6 @@ export async function executionProjectionsForRuns(
           ),
         )
         .orderBy(desc(issueRecoveryActions.updatedAt)))
-    : [];
-  const coordinatorByRun = new Map(coordinators.map((row) => [row.runId, row]));
-  for (const run of runs) {
-    const issueId = run.nativeIssueId ?? text(run.contextSnapshot?.issueId);
-    const matching = recovery.filter(
-      (row) =>
-        row.issueId === issueId &&
-        (row.status !== "resolved" || row.evidence.executionReconciliation || row.evidence.automaticRecovery) &&
-        (row.evidence.runId === run.id || row.evidence.sourceRunId === run.id),
-    );
-    const action =
-      matching.find((row) => row.status !== "resolved") ?? matching[0];
-    projections.set(
-      run.id,
-      projectExecution(
-        run,
-        coordinatorByRun.get(run.id),
-        pending.filter((row) => row.issueId === issueId),
-        action,
-        now,
-      ),
-    );
-  }
-  return projections;
-}
-/** Projects runs already loaded with `executionRunColumns`. */
-export async function executionProjectionsForRunRows(
-  db: Db,
-  companyId: string,
-  runs: ExecutionProjectionRun[],
-  now = new Date(),
-) {
-  const projections = new Map<string, ExecutionProjection>();
-  if (!runs.length) return projections;
-  const runIds = runs.map((run) => run.id);
-  const coordinators = await db
-    .select()
-    .from(nativeRunFinalizations)
-    .where(
-      and(
-        eq(nativeRunFinalizations.companyId, companyId),
-        inArray(nativeRunFinalizations.runId, runIds),
-      ),
-    );
-  const issueIds = [
-    ...new Set(
-      runs
-        .map((run) => run.nativeIssueId ?? text(run.contextSnapshot?.issueId))
-        .filter((id): id is string => !!id),
-    ),
-  ];
-  const pending = issueIds.length
-    ? await db
-        .select({
-          issueId: issueThreadInteractions.issueId,
-          kind: issueThreadInteractions.kind,
-        })
-        .from(issueThreadInteractions)
-        .where(
-          and(
-            eq(issueThreadInteractions.companyId, companyId),
-            inArray(issueThreadInteractions.issueId, issueIds),
-            eq(issueThreadInteractions.status, "pending"),
-          ),
-        )
-    : [];
-  const recovery = issueIds.length
-    ? await db
-        .select({
-          issueId: issueRecoveryActions.sourceIssueId,
-          cause: issueRecoveryActions.cause,
-          nextAction: issueRecoveryActions.nextAction,
-          evidence: issueRecoveryActions.evidence,
-          status: issueRecoveryActions.status,
-        })
-        .from(issueRecoveryActions)
-        .where(
-          and(
-            eq(issueRecoveryActions.companyId, companyId),
-            inArray(issueRecoveryActions.sourceIssueId, issueIds),
-            inArray(issueRecoveryActions.status, [
-              "active",
-              "escalated",
-              "resolved",
-            ]),
-          ),
-        )
-        .orderBy(desc(issueRecoveryActions.updatedAt))
     : [];
   const coordinatorByRun = new Map(coordinators.map((row) => [row.runId, row]));
   for (const run of runs) {
