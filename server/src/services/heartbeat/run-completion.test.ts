@@ -10,6 +10,7 @@ import { createHeartbeatLifecycle, type HeartbeatLifecycleDependencies } from ".
 import { createHeartbeatRunPreparation, ConfigurationIncompleteFailure } from "./run-preparation.js";
 import { createHeartbeatRunState, getAdapterSessionCodec } from "./run-state.js";
 import { buildEffectiveRunSessionConfigMetadata } from "./workspaces.js";
+import { LegacyControllerLeaseLostError } from "../legacy-controller-lease.js";
 import { createHeartbeatRunCompletion, type CompleteHeartbeatRunInput, type FailHeartbeatRunInput, type HeartbeatRunCompletionDependencies } from "./run-completion.js";
 
 vi.mock("../live-events.js", () => ({ publishLiveEvent: vi.fn() }));
@@ -153,6 +154,18 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
       expect((await read(f.run.id)).sessionIdAfter).toBe("provider-session");
       expect(f.deps.finalizeAgentStatus).toHaveBeenCalledWith(f.agent.id, "cancelled", expect.any(String), expect.any(Object));
     } else expect(f.deps.finalizeAgentStatus).not.toHaveBeenCalled();
+  });
+
+  it("records a controller-lease stop as a Paperclip control-plane cancellation, not an unexplained exit", async () => {
+    const f = await fixture();
+    Object.assign(f.input.adapterResult, { exitCode: 130, errorMessage: "OMP exited with code 130." });
+    f.controller.abort(new LegacyControllerLeaseLostError());
+    await f.completion.completeRun(f.input);
+    const saved = await read(f.run.id);
+    expect(saved).toMatchObject({ status: "cancelled", errorCode: "controller_lease_lost",
+      resultJson: { cancellation: { source: "control_plane", expected: false, initiator: { type: "system" } } } });
+    expect(saved.error).toContain("controller lease");
+    expect(String((saved.resultJson as { cancellation: { reason: string } }).cancellation.reason)).not.toContain("without a recorded cancellation request");
   });
 
   it("does not publish or overwrite a conflicting terminal transition that wins the compare-and-set", async () => {

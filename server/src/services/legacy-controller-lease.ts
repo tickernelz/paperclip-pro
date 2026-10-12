@@ -78,6 +78,22 @@ export async function reclaimLegacyControllerLease(
   return Boolean(reclaimed);
 }
 
+export const LEGACY_CONTROLLER_LEASE_LOST_CODE = "controller_lease_lost";
+
+export class LegacyControllerLeaseLostError extends Error {
+  readonly code = LEGACY_CONTROLLER_LEASE_LOST_CODE;
+  constructor() {
+    super("Legacy controller lease lost");
+    this.name = "LegacyControllerLeaseLostError";
+  }
+}
+
+export function isLegacyControllerLeaseLoss(reason: unknown): reason is LegacyControllerLeaseLostError {
+  return reason instanceof LegacyControllerLeaseLostError;
+}
+
+type ReclaimOutcome = "owned" | "lost" | "unknown";
+
 export function watchLegacyControllerLease(db: Db, run: Run, controller: AbortController) {
   if (run.runtimeMode === "native" || !run.controllerBootId) {
     return { stop() {}, async assertOwned(_stage?: "dispatching") {} };
@@ -85,38 +101,55 @@ export function watchLegacyControllerLease(db: Db, run: Run, controller: AbortCo
   let stopped = false;
   let pending = false;
   let recovering = false;
+  let unconfirmedSince: number | null = null;
+  let ownershipChecks = 0;
   let expiresAt = run.controllerLeaseExpiresAt?.getTime() ?? 0;
   let deadline = setTimeout(() => onDeadline(), Math.max(0, expiresAt - Date.now()));
   deadline.unref();
-  const abortLost = () => { if (!stopped) controller.abort(new Error("Legacy controller lease lost")); };
-  const armDeadline = (from: number) => {
+  const abortLost = () => {
+    if (stopped || controller.signal.aborted) return;
+    logger.error({ runId: run.id }, "legacy controller lease lost; stopping the run");
+    controller.abort(new LegacyControllerLeaseLostError());
+  };
+  const schedule = (delayMs: number) => {
     clearTimeout(deadline);
-    expiresAt = from + LEGACY_CONTROLLER_LEASE_MS;
-    deadline = setTimeout(() => onDeadline(), Math.max(0, expiresAt - Date.now()));
+    deadline = setTimeout(() => onDeadline(), Math.max(0, delayMs));
     deadline.unref();
   };
-  const boundedReclaim = () => new Promise<boolean>((resolve) => {
-    const bound = setTimeout(() => resolve(false), LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS);
+  const armDeadline = (from: number) => {
+    expiresAt = from + LEGACY_CONTROLLER_LEASE_MS;
+    schedule(expiresAt - Date.now());
+  };
+  const boundedReclaim = () => new Promise<ReclaimOutcome>((resolve) => {
+    const bound = setTimeout(() => resolve("unknown"), LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS);
     bound.unref();
     reclaimLegacyControllerLease(db, run).then(
-      (owned) => { clearTimeout(bound); resolve(owned); },
-      () => { clearTimeout(bound); resolve(false); },
+      (owned) => { clearTimeout(bound); resolve(owned ? "owned" : "lost"); },
+      () => { clearTimeout(bound); resolve("unknown"); },
     );
   });
-  const reclaimOrAbort = async () => {
+  const settleReclaim = async (failClosed: boolean) => {
     if (stopped || controller.signal.aborted) return false;
     const overdueMs = Math.max(0, Date.now() - expiresAt);
-    const reclaimed = await boundedReclaim();
+    const outcome = await boundedReclaim();
     if (stopped) return false;
-    if (!reclaimed) { abortLost(); return false; }
-    logger.warn({ runId: run.id, overdueMs }, "legacy controller lease overdue; reclaimed");
-    armDeadline(Date.now());
-    return true;
+    if (outcome === "owned") {
+      logger.warn({ runId: run.id, overdueMs }, "legacy controller lease overdue; reclaimed");
+      unconfirmedSince = null;
+      armDeadline(Date.now());
+      return true;
+    }
+    if (outcome === "lost" || failClosed) { abortLost(); return false; }
+    unconfirmedSince ??= Date.now();
+    logger.warn({ runId: run.id, overdueMs, unconfirmedMs: Date.now() - unconfirmedSince },
+      "legacy controller lease could not be confirmed; keeping the live run and retrying");
+    schedule(LEGACY_CONTROLLER_RENEW_MS);
+    return false;
   };
   const onDeadline = () => {
     if (recovering || stopped) return;
     recovering = true;
-    void reclaimOrAbort().finally(() => { recovering = false; });
+    void settleReclaim(ownershipChecks > 0).finally(() => { recovering = false; });
   };
   const assertOwned = async (stage?: "dispatching") => {
     if (stopped) return;
@@ -128,24 +161,36 @@ export function watchLegacyControllerLease(db: Db, run: Run, controller: AbortCo
       controller.signal.addEventListener("abort", onAbort, { once: true });
     });
     let renewed: boolean;
+    ownershipChecks += 1;
     try {
       renewed = await Promise.race([renewLegacyControllerLease(db, run, stage), aborted]);
     } finally {
+      ownershipChecks -= 1;
       controller.signal.removeEventListener("abort", onAbort);
     }
     if (stopped) return;
     if (!renewed) {
-      await reclaimOrAbort();
+      await settleReclaim(true);
       controller.signal.throwIfAborted();
       return;
     }
     controller.signal.throwIfAborted();
+    unconfirmedSince = null;
     if (!stopped) armDeadline(startedAt);
+  };
+  const renewInBackground = async () => {
+    const startedAt = Date.now();
+    const renewed = await renewLegacyControllerLease(db, run).catch(() => false);
+    if (stopped || controller.signal.aborted) return;
+    if (renewed) { unconfirmedSince = null; armDeadline(startedAt); return; }
+    if (recovering) return;
+    recovering = true;
+    try { await settleReclaim(false); } finally { recovering = false; }
   };
   const timer = setInterval(() => {
     if (pending || stopped) return;
     pending = true;
-    void assertOwned().catch(() => reclaimOrAbort()).finally(() => { pending = false; });
+    void renewInBackground().finally(() => { pending = false; });
   }, LEGACY_CONTROLLER_RENEW_MS);
   timer.unref();
   return { assertOwned, stop() { stopped = true; clearInterval(timer); clearTimeout(deadline); } };

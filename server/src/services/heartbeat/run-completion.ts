@@ -9,6 +9,7 @@ import { CONFIGURATION_INCOMPLETE_FAILURE_CODE, ConfigurationIncompleteFailure }
 import { isWorkspaceValidationFailedRun, isWorkspaceValidationFailure, attachPaperclipSessionMetadataToSessionParams } from "./workspaces.js";
 import { preserveWorkspaceRestoreRecoveryMetadataSql } from "../legacy-workspace-restore-recovery.js";
 import { cancellationResultJson, readRunCancellation } from "../run-cancellation.js";
+import { isLegacyControllerLeaseLoss, LEGACY_CONTROLLER_LEASE_LOST_CODE } from "../legacy-controller-lease.js";
 import { accountRunCost } from "../run-cost-accounting.js";
 import { isConversation, settleConversationTurn } from "../agent-conversations.js";
 import { legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
@@ -69,6 +70,9 @@ type Agent = typeof agents.$inferSelect;
 type RunState = ReturnType<typeof createHeartbeatRunState>;
 type IssueContext = Awaited<ReturnType<ReturnType<typeof createHeartbeatRunPreparation>["getIssueExecutionContext"]>> | null;
 type TaskSession = Awaited<ReturnType<RunState["getTaskSession"]>> | null;
+
+const CONTROLLER_LEASE_LOST_MESSAGE =
+  "Paperclip stopped this run because its controller lease passed to another server process or the run was already finalized.";
 
 /** Completion persists terminal outcomes; the executor retains dispatch and cleanup ownership. */
 export interface HeartbeatRunCompletionDependencies extends Pick<RunState,
@@ -459,8 +463,11 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
       usageBasis: adapterResult.usageBasis ?? null,
     });
     const normalizedUsage = sessionUsageResolution.normalizedUsage;
-    const runErrorMessage =
-      outcome === "cancelled"
+    const controllerLeaseLost = outcome === "cancelled" && !paperclipCancellationRecorded &&
+      !isHeartbeatRunTerminalStatus(latestRun?.status) && isLegacyControllerLeaseLoss(signal.reason);
+    const runErrorMessage = controllerLeaseLost
+      ? CONTROLLER_LEASE_LOST_MESSAGE
+      : outcome === "cancelled"
         ? redactCurrentUserText(latestRun?.error ?? adapterResult.errorMessage ?? "Cancelled", currentUserRedactionOptions)
         : outcome === "succeeded"
           ? null
@@ -473,7 +480,7 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
             );
     const recordedResponsibleUserDenialCode =
       normalizeResponsibleUserDenialCode(latestRun?.errorCode);
-    const runErrorCode =
+    const runErrorCode = controllerLeaseLost ? LEGACY_CONTROLLER_LEASE_LOST_CODE :
       processLossErrorCode ??
       (outcome === "timed_out"
         ? "timeout"
@@ -594,6 +601,10 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
             ...parseObject(adapterResult.resultJson),
             ...(adapterResult.executionRecovery
               ? { executionRecovery: adapterResult.executionRecovery }
+              : {}),
+            ...(controllerLeaseLost
+              ? { cancellation: { source: "control_plane", expected: false, initiator: { type: "system" },
+                  reason: CONTROLLER_LEASE_LOST_MESSAGE, recordedAt: new Date().toISOString() } }
               : {}),
             configFreshness: configFreshnessResultMetadata,
           },

@@ -4,7 +4,7 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, companies, createDb, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../__tests__/helpers/embedded-postgres.js";
 import { heartbeatService } from "./heartbeat.js";
-import { hasLiveLegacyController, legacyControllerBootId, legacyControllerClaim,
+import { hasLiveLegacyController, isLegacyControllerLeaseLoss, legacyControllerBootId, legacyControllerClaim,
   LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS, reclaimLegacyControllerLease,
   renewLegacyControllerLease, revokeExpiredLegacyController, watchLegacyControllerLease } from "./legacy-controller-lease.js";
 
@@ -169,5 +169,48 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it("leaves native controller ownership to the native coordinator", () => {
     expect(legacyControllerClaim("native")).toEqual({});
+  });
+});
+
+describe("legacy controller watchdog under an unresponsive database", () => {
+  function scriptedDb() {
+    const state = { mode: "hang" as "hang" | "owned" | "lost", writes: 0 };
+    const db = { update: () => ({ set: () => ({ where: () => ({ returning: () => {
+      state.writes += 1;
+      if (state.mode === "hang") return new Promise(() => {});
+      return Promise.resolve(state.mode === "owned" ? [{ id: "run" }] : []);
+    } }) }) }) } as unknown as ReturnType<typeof createDb>;
+    return { state, db };
+  }
+  const stalledRun = () => ({ id: randomUUID(), companyId: randomUUID(), runtimeMode: "legacy", status: "running",
+    controllerBootId: legacyControllerBootId, controllerLeaseExpiresAt: new Date(Date.now() - 65_000) }) as unknown as typeof heartbeatRuns.$inferSelect;
+
+  it("keeps a live run whose re-claim cannot be confirmed, and stops it once loss is proven", async () => {
+    vi.useFakeTimers();
+    const { state, db } = scriptedDb();
+    const controller = new AbortController();
+    const watch = watchLegacyControllerLease(db, stalledRun(), controller);
+    try {
+      await vi.advanceTimersByTimeAsync(LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS * 6 + 1);
+      expect(controller.signal.aborted).toBe(false);
+      expect(state.writes).toBeGreaterThan(2);
+      state.mode = "lost";
+      await vi.advanceTimersByTimeAsync(LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS * 2 + 1);
+      expect(controller.signal.aborted).toBe(true);
+      expect(isLegacyControllerLeaseLoss(controller.signal.reason)).toBe(true);
+    } finally { watch.stop(); vi.useRealTimers(); }
+  });
+
+  it("resumes normal renewal when the database answers again", async () => {
+    vi.useFakeTimers();
+    const { state, db } = scriptedDb();
+    const controller = new AbortController();
+    const watch = watchLegacyControllerLease(db, stalledRun(), controller);
+    try {
+      await vi.advanceTimersByTimeAsync(LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS + 1);
+      state.mode = "owned";
+      await vi.advanceTimersByTimeAsync(LEGACY_CONTROLLER_RECLAIM_TIMEOUT_MS * 9);
+      expect(controller.signal.aborted).toBe(false);
+    } finally { watch.stop(); vi.useRealTimers(); }
   });
 });
