@@ -85,6 +85,13 @@ Kept unless noted. These change behaviour without an opt-in and are reported to 
 | Heartbeat module split | `heartbeat.ts` extracted into `heartbeat/*` | kept | upstream layout adopted as the base; every fork feature re-applied inside the new modules (see the rows above) |
 | `check:token-gates` gate 2 on `min-w-[8rem]` | pre-existing fork violation on `origin/main`, surfaced by this sync's gate run | fixed | tokenised to `sm:min-w-32`; no visual change (8rem = Tailwind `w-32`) |
 | `ModelDropdown` `presentation` / `loadingModels` props | upstream removed them from the component contract | kept | upstream component is authoritative; both call sites updated |
+| Issue read denials answer 404 | `assertIssueReadAllowed` returns 404 instead of 403 (document PDF, share links) | kept | existence is not disclosed to an actor that cannot read the issue |
+| Agent budget PATCH | `/agents/:id/budgets` writes the budget policy instead of `agents.update` | kept | budget policy is the source of truth upstream; fork CEO authority check kept |
+| Task question guidance | every issue task markdown carries the question guidance block | kept | upstream prompt contract |
+| Hermes user turn | runtime identity only, no static API examples | kept | upstream prompt contract |
+| Budget pause and stranded work | upstream pauses budget-blocked agents in `getInvocationBlock` | kept, fork exemption narrowed | a `pauseReason: budget` pause no longer counts as a lifecycle hold, so budget-blocked work escalates to a board recovery action |
+| Public MCP upload limit | fixed at module load | changed | reads the live `getMaxAttachmentBytes()` (saved setting, env, 100 MB default) |
+| Agent identity env for every local adapter | upstream exports `PAPERCLIP_AGENT_*` identity keys | kept | restored where the fork signature adaptation dropped it |
 
 Reverted (not taken):
 
@@ -95,3 +102,25 @@ Reverted (not taken):
 | Reset the session whenever the configured model changes | upstream applies the model-change reset to every adapter | the fork resumes `omp_local` sessions across model/thinking switches (`11fbd8364`); the reset is now skipped for `MODEL_SWITCHING_RESUME_ADAPTER_TYPES` |
 | Require `.git` metadata for any project workspace | upstream inlined the git checks behind `workspaceExpectation` | the fork supports `local_path` and `non_git_path` project workspaces; the check is gated on `git_worktree` strategy or `git_repo` source type |
 | Drop `enqueueProcessLossRetry` from the run-completion dependency | upstream's completion module has no process-loss retry | the fork's recovery wiring needs it; it is composed into the `recovery` object at the `createHeartbeatRunCompletion` call site |
+| Assignee-only routine mutations for agents | upstream lets only the assignee agent read revisions/annotations and mutate a routine | the fork gives every agent `work:routines` authority (3598e7304) |
+| Head/tail run-log chunk compaction | upstream cuts chunks across lines | the fork keeps each JSON log line parseable for the transcript view |
+
+## CI repair after the merge (2026-10-12)
+
+CI run 38179223365 on `8249d94a1` failed almost every job. The main cause: 28 files in `550692270` were byte-identical to the fork side although upstream had changed them, and several fork hunks were not re-applied inside modules upstream extracted (`heartbeat/*`, `agent-lifecycle`). Each file was re-merged from base `5c49b4529`, fork `a814ecf73` and upstream `d350bc9f6`.
+
+| File | Decision | Reason |
+| --- | --- | --- |
+| 28 re-merged files (acpx-engine execute, prepare-bundled-package, AgentConfigForm, MarkdownBody, NewIssueDialog, IssueDetail, ChatEndpointDetail/Setup, native-session-executor, tool-access-service, chat-channels.integration, openapi-routes and other tests) | combine | upstream hunks restored; fork additions (OpenWA, steering, CEO authority, run settings, share control) kept |
+| ui/src/pages/apps/chat/SlackAvatarStep.tsx (+ slack-avatar-progress.ts, its stories) | upstream | supersedes the row above: once ChatEndpointSetup carries upstream's Slack flow, the fork `SlackAvatarStep` has no caller, so the file follows upstream |
+| scripts/run-vitest-stable.mjs, scripts/__tests__/run-vitest-stable-shard.test.mjs, packages/paperclip-runner/scripts/run-pr-vitest-lane.mjs | fork | tied to the fork's single `ci.yml`; upstream's `workspaces-c` split and extra native-runner suites target `pr-trusted.yml`/`release-verify.yml`, which the fork does not ship. Upstream's new adapter projects (cursor-cloud, cursor-local, gemini-local, hermes, kimi-local, pi-local) were added to the fork lanes |
+| server/src/routes/assets.ts | combine | upstream per-issue/run/draft authorization, then the fork `serveAssetContent`; the merged inline copy never piped the body |
+| server/src/services/heartbeat/task-markdown.ts | combine | fork MCP-tool plan revision and attachment wording, OpenWA excluded from generic chat file delivery |
+| server/src/services/heartbeat.ts, heartbeat/{queue,recovery,run-completion,run-state}.ts, heartbeat/local-cli-admission.ts | combine | fork instance-wide local CLI cap, process-gone continuation with deferred-comment adoption, process-loss conversation retries, service drain, `interrupted` status and shutdown settle timeout re-wired into the extracted modules |
+| server/src/services/heartbeat/run-log.ts | fork | line-aware JSON-preserving chunk compaction |
+| server/src/services/activity.ts | combine | upstream bounded `error`, scoped `issue_id` runs and viewer-aware result summary; fork cached usage/context summaries |
+| server/src/services/issues.ts | fork | bare task search matches title, identifier and description only |
+| server/src/services/chat-completion-delivery.ts | fork | web-chat handoffs notify only on `done` |
+| server/src/middleware/auth.ts | combine | upstream idle tracking; the deferred `next` resumes in the caller's AsyncLocalStorage so one OpenWA grant covers a request |
+| packages/adapters/*/src/server/execute.ts, server/src/adapters/process/execute.ts | upstream | agent identity passed to `buildPaperclipEnv` again |
+| ui/src/lib/vite-sw-build-id.ts | combine | stamping skipped when no bundle was generated, so a failed build reports its real error |
