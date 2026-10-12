@@ -2059,9 +2059,9 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const url = String(input);
       const supplemental = await supplementalProviderFetch?.(input, init);
       if (supplemental) return supplemental;
-      const list = /\/repos\/paperclip-pro\/paperclip\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
-      const reply = /\/repos\/paperclip-pro\/paperclip\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
-      const item = /\/repos\/paperclip-pro\/paperclip\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
+      const list = /\/repos\/paperclipai\/paperclip\/(issues|pulls)\/([1-9][0-9]*)\/comments(?:\?.*)?$/.exec(url);
+      const reply = /\/repos\/paperclipai\/paperclip\/pulls\/([1-9][0-9]*)\/comments\/[1-9][0-9]*\/replies$/.exec(url);
+      const item = /\/repos\/paperclipai\/paperclip\/(issues|pulls)\/comments\/([1-9][0-9]*)$/.exec(url);
       if (item) {
         const comment = responseComments.get(Number(item[2]));
         if (!comment) return Response.json({ message: "Not Found" }, { status: 404 });
@@ -3360,7 +3360,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         stateHash: randomUUID(),
         trustedOrigin: "https://reviews.example.test",
         ownerType: "organization",
-        ownerLogin: "paperclip-pro",
+        ownerLogin: "paperclipai",
         appName: "Reviewer",
         status: "failed",
         expiresAt: new Date(),
@@ -3700,7 +3700,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           stateHash: randomUUID(),
           trustedOrigin: "https://reviews.example.test",
           ownerType: "organization",
-          ownerLogin: "paperclip-pro",
+          ownerLogin: "paperclipai",
           status: "completed",
           expiresAt: new Date(Date.now() + 60_000),
         });

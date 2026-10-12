@@ -54,7 +54,7 @@ export { CHAT_RUN_PRESENTATION_AUTHORIZATION_REASON };
 // Only upgraded GitHub bots have the task-scoped response tools. Legacy
 // connections retain automatic progress and final-answer publication.
 function allowsAutomaticRunPublication() {
-  return or(and(ne(chatEndpoints.provider, "github"), ne(chatEndpoints.provider, "openwa")), notExists(
+  return or(ne(chatEndpoints.provider, "github"), notExists(
     sql`(select 1 from ${chatGitHubConfigurations}
       where ${chatGitHubConfigurations.companyId} = ${chatEndpoints.companyId}
         and ${chatGitHubConfigurations.endpointId} = ${chatEndpoints.id})`,
@@ -341,6 +341,7 @@ async function enqueueSafeNativeChatProgress(
           eq(chatEndpoints.companyId, chatConversations.companyId),
           eq(chatEndpoints.id, chatConversations.endpointId),
           eq(chatEndpoints.publicationMode, "automatic"),
+          ne(chatEndpoints.provider, "openwa"),
           allowsAutomaticRunPublication(),
           eq(chatEndpoints.assignedAgentId, heartbeatRuns.agentId),
         ),

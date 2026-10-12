@@ -9979,7 +9979,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ) {
       throw unprocessable("Unsupported chat endpoint setup action");
     }
-    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider)) {
+    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider) && !(endpoint.provider === "github" && endpoint.setup.github?.cloudRegistrationId)) {
       throw unprocessable(
         `A public HTTPS Paperclip URL is required before connecting ${PROVIDER_LABELS[endpoint.provider]}`,
       );
@@ -10296,6 +10296,9 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   } as InternalSetupState,
                 }
               : {
+                  healthMessage: waitingForSlackConfiguration
+                    ? "Finish provider webhook configuration"
+                    : "Waiting for a test conversation",
                   lastEventAt: null,
                   setup: {
                     ...current.setup,
@@ -10870,6 +10873,15 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       })
       .returning();
     if (!resolveLink) return { principal, userId: null, linkedDenied: false };
+    if (endpoint.provider === "speko") {
+      try {
+        const authorization = await db.transaction((tx) => voiceStore.authorizePrincipal(tx, endpoint.companyId, endpoint.id, externalId));
+        return { principal, userId: authorization.userId, linkedDenied: false };
+      } catch (error) {
+        if (!(error instanceof HttpError && [403, 404].includes(error.status))) throw error;
+        return { principal, userId: null, linkedDenied: true };
+      }
+    }
     const link = await db
       .select({
         userId: chatIdentityLinks.paperclipUserId,
@@ -10950,6 +10962,16 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (endpoint.provider === "openwa") {
       const openwa = await openwaPrincipalAuthorization(tx, endpoint, principalId, openwaContext);
       return { allowed: openwa.allowed, linkedDenied: false, userId: openwa.userId };
+    }
+    if (endpoint.provider === "speko") {
+      const principal = await tx.select({ externalId: chatExternalPrincipals.externalId }).from(chatExternalPrincipals)
+        .where(and(eq(chatExternalPrincipals.id, principalId), eq(chatExternalPrincipals.companyId, endpoint.companyId), eq(chatExternalPrincipals.provider, "speko"))).then((rows) => rows[0]);
+      if (!principal) return { allowed: false, linkedDenied: true, userId: null };
+      try { return await voiceStore.authorizePrincipal(tx as import("./voice/voice-session-store.js").VoiceTransaction, endpoint.companyId, endpoint.id, principal.externalId); }
+      catch (error) {
+        if (!(error instanceof HttpError && [403, 404].includes(error.status))) throw error;
+        return { allowed: false, linkedDenied: true, userId: null };
+      }
     }
     const githubAccess = await githubChatPrincipalAccess(tx, endpoint, principalId);
     if (githubAccess) return githubAccess;
@@ -17013,7 +17035,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                 .then((rows) => rows[0] ?? null);
         if (!issue) throw notFound("Bound task not found");
           const [assignedAgentTrust] = taskEndpoint.provider === "github" ? await taskTx.select({ permissions: agents.permissions }).from(agents).where(and(eq(agents.companyId, taskEndpoint.companyId), eq(agents.id, taskEndpoint.assignedAgentId))) : [];
-        if (endpoint.provider !== "openwa" && (!taskUserId || (githubAutomatic && !principalResolution.userId) || assignedAgentTrust?.permissions?.trustPreset === LOW_TRUST_REVIEW_PRESET)) {
+        if (endpoint.provider !== "openwa" && (!taskUserId || ((githubAutomatic || githubIssue) && !principalResolution.userId) || assignedAgentTrust?.permissions?.trustPreset === LOW_TRUST_REVIEW_PRESET)) {
             const reviewPreset = {
               id: LOW_TRUST_REVIEW_PRESET,
               version: LOW_TRUST_REVIEW_PRESET_VERSION,
@@ -17397,7 +17419,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           : await lockCurrentPrincipalAuthorization(tx, currentEndpoint, principalResolution.principal.id);
         const automaticContext = githubAutomatic?.context ?? githubIssue?.context;
         const automaticAdmission = automaticContext ? await githubAutomaticAdmission(tx, currentEndpoint, automaticContext) : null;
-        if (automaticContext && !automaticAdmission?.allowed) currentPrincipalAuthorization.allowed = false;
         if (automaticContext && !automaticAdmission?.allowed) currentPrincipalAuthorization.allowed = false;
         if (automaticAdmission?.allowed) currentPrincipalAuthorization.userId = automaticAdmission.responsibleUserId ?? null;
         const endpointStillAllowed =
@@ -29062,20 +29083,17 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     // chat_actions as their outbox. Reconcile them before inbound deliveries
     // so a crashed processing claim is quarantined before the delivery worker
     // could otherwise replay it.
-    const actionRecovery = onlyDeliveryId
+    const actionRecovery = onlyDeliveryId || !maintenance
       ? null
       : Promise.allSettled([
-          processPendingSlackBoardMessages(limit),
+          processPendingChatMaintenance(limit),
           processPendingGitHubWebhookIngress(limit),
           processPendingProviderEffects(limit),
+          processPendingSlackBoardMessages(limit),
+          processPendingSlackTaskStarts(limit),
           processPendingReceiptReactions(limit),
           processPendingSlackSessionStops(limit),
-          processPendingTelegramMaintenance(limit),
-          // Slack task starts are an action-backed outbox. Queued work may
-          // post once; provider-confirmed rows perform Paperclip-only
-          // admission; a stale in-flight post is quarantined as unknown.
-          processPendingSlackTaskStarts(limit),
-          processFailedChatRunRetries(limit),
+          slackRegistration.processPendingVerificationMessages(limit),
           processPendingOpenwaApprovalWakes(db, limit),
           processPendingOpenwaSessionHealthWakes(db, limit),
           processPendingOpenwaFollowups(db, limit),
@@ -40051,8 +40069,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     linked: openwaLinked,
   });
 
-      voice.unregisterAgentTools();
-      unregisterGitHubCloudIngress();
   const unregisterSlackTaskAuthority = registerSlackTaskAuthority(db, async (binding) => {
     if (!(await instanceSettingsService(db).getExperimental()).enableChatConnectors)
       throw forbidden("Chat connectors are disabled");
