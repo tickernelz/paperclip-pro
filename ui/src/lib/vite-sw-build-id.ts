@@ -55,6 +55,7 @@ export function serviceWorkerBuildIdPlugin(
 ): Plugin {
   const serviceWorkerFileName = options.serviceWorkerFileName ?? "sw.js";
   let buildId: string | null = null;
+  let bundleGenerated = false;
   let outDir = "dist";
 
   return {
@@ -64,6 +65,7 @@ export function serviceWorkerBuildIdPlugin(
       outDir = config.build.outDir;
     },
     generateBundle(_options, bundle) {
+      bundleGenerated = true;
       const entry = Object.values(bundle).find(
         (chunk) => chunk.type === "chunk" && chunk.isEntry,
       );
@@ -72,6 +74,7 @@ export function serviceWorkerBuildIdPlugin(
       }
     },
     closeBundle() {
+      if (!bundleGenerated) return;
       const swPath = path.resolve(outDir, serviceWorkerFileName);
       const source = fs.readFileSync(swPath, "utf8");
       const stamped = stampServiceWorkerBuildId(source, buildId ?? "build");

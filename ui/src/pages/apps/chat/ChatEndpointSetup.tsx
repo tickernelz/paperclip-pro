@@ -61,7 +61,6 @@ const providerNames: Record<ChatProvider, string> = {
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
   openwa: "OpenWA",
-  speko: "Speko",
 };
 
 const knownProviders = new Set(Object.keys(providerNames));

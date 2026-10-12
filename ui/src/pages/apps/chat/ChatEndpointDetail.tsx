@@ -82,7 +82,6 @@ const providerNames: Record<ChatProvider, string> = {
   telegram: "Telegram",
   "imessage-photon": "iMessage Photon",
   openwa: "OpenWA",
-  speko: "Speko",
 };
 
 const providerLifecycleGuidance: Record<
@@ -131,10 +130,6 @@ const providerLifecycleGuidance: Record<
       "Reconnect verifies this same BotFather bot and automatically refreshes its Paperclip webhook and command menu.",
     remove:
       "Paperclip archives the endpoint and queues durable removal of its Telegram webhook and command menu. After Telegram confirms that cleanup, Paperclip retires the saved token. The BotFather bot and its chat memberships remain until you remove them in Telegram.",
-  },
-  speko: {
-    reconnect: "Reconnect verifies this same Speko workspace token and refreshes its Paperclip callback registration.",
-    remove: "Paperclip archives the endpoint, removes its Paperclip callback, and retires the saved token. The Speko workspace keeps its own history.",
   },
 };
 

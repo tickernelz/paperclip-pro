@@ -65471,15 +65471,15 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
               eq(chatDeliveries.state, "filtered"),
             ),
           ),
-        ),
-    ).resolves.toEqual([
-      {
-        eventKind: "message_updated",
-        redactedError:
-          "Message edit arrived after the provider message was deleted",
-        state: "filtered",
-      },
-    ]);
+      ).resolves.toEqual([
+        {
+          eventKind: "message_updated",
+          redactedError:
+            "Message edit arrived after the provider message was deleted",
+          state: "filtered",
+        },
+      ]);
+    });
     await expect(
       db
         .select({ body: issueComments.body })
