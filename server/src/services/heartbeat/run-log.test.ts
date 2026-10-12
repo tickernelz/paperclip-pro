@@ -139,9 +139,9 @@ describe("heartbeat run-log chunk formatting", () => {
     expect(compactRunLogChunk(chunk)).toBe(chunk);
   });
 
-  it("keeps the existing head, tail, and omission count for a custom limit", () => {
-    expect(compactRunLogChunk(`${"x".repeat(95)}tail!`, 20)).toBe(
-      `${"x".repeat(12)}\n[paperclip truncated run log chunk: omitted 83 chars]\ntail!`,
+  it("keeps the line head, tail, and omission count for a custom limit", () => {
+    expect(compactRunLogChunk(`${"x".repeat(995)}tail!`, 600)).toBe(
+      `${"x".repeat(360)}[paperclip truncated run log chunk: omitted 490 chars]${"x".repeat(145)}tail!`,
     );
   });
 
