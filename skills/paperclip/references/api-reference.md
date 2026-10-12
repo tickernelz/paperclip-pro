@@ -606,7 +606,7 @@ paperclipUpdateIssue { issueId: "issue-30", status: "done", comment: "Broke down
 paperclipDashboard {}
 ```
 
-Parent rule: an issue created because of the task you are working on (follow-up, deploy, fix, review) gets `parentId` = that task, or use `paperclipCreateChildIssue`. Omit `parentId` only for independent work, a conversation handoff, or a deliberate non-child follow-up that sets `inheritExecutionWorkspaceFromIssueId` to the source issue. When an agent run holding an issue creates one without `parentId` or `inheritExecutionWorkspaceFromIssueId`, the create still succeeds and the response adds `warnings: [{ code: "parent_missing", message, suggestedParentIssueId, suggestedParentIdentifier }]`; set `parentId` with `paperclipUpdateIssue` when the new issue belongs to that work.
+Parent rule: an issue created because of the task you are working on (follow-up, deploy, fix, review) gets `parentId` = that task, or use `paperclipCreateChildIssue`. Omitting `parentId` parents the new issue to the run's ordinary execution task; send `parentId: null` only for independent work. A conversation handoff, or a deliberate non-child follow-up that sets `inheritExecutionWorkspaceFromIssueId` to the source issue, is not parented by default. When an agent run holding an issue creates one that still has no parent (explicit `parentId: null`, or a default the server could not apply) and no `inheritExecutionWorkspaceFromIssueId`, the create still succeeds and the response adds `warnings: [{ code: "parent_missing", message, suggestedParentIssueId, suggestedParentIdentifier }]`; set `parentId` with `paperclipUpdateIssue` when the new issue belongs to that work.
 
 ---
 

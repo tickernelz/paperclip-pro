@@ -379,7 +379,7 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
       const response = await request(createApp(actor))
         .post(`/api/companies/${companyId}/issues`)
-        .send({ title: "Deploy the fix" })
+        .send({ title: "Deploy the fix", parentId: null })
         .expect(201);
 
       expect(response.body.parentId).toBeNull();
@@ -401,11 +401,11 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
       const first = await request(app)
         .post(`/api/companies/${companyId}/issues`)
-        .send({ title: "Review the change", idempotencyKey: "run:review" })
+        .send({ title: "Review the change", parentId: null, idempotencyKey: "run:review" })
         .expect(201);
       const replay = await request(app)
         .post(`/api/companies/${companyId}/issues`)
-        .send({ title: "Review the change", idempotencyKey: "run:review" })
+        .send({ title: "Review the change", parentId: null, idempotencyKey: "run:review" })
         .expect(200);
 
       expect(first.body.warnings?.[0]).toMatchObject({ code: "parent_missing", suggestedParentIssueId: working.id });
@@ -437,11 +437,11 @@ describeEmbeddedPostgres("issue create deduplication routes", () => {
 
       const boardReplay = await request(app)
         .post(`/api/companies/${companyId}/issues`)
-        .send({ title: "rotate the staging  certificate" })
+        .send({ title: "rotate the staging  certificate", parentId: null })
         .expect(200);
       const otherAgentReplay = await request(app)
         .post(`/api/companies/${companyId}/issues`)
-        .send({ title: "Audit the billing export" })
+        .send({ title: "Audit the billing export", parentId: null })
         .expect(200);
 
       expect(boardReplay.body).toMatchObject({ id: boardIssue.id, deduplicationReason: "recent_open_title" });

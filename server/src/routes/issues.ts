@@ -13045,7 +13045,9 @@ export function issueRoutes(
       // its structural parent when the agent omits `parentId`. An explicit
       // `parentId: null` is an intentional standalone task and is honored.
       const runDelegationParentId =
-        !watchdogProductBugFollowUp && rawCreateBody.parentId === undefined
+        !watchdogProductBugFollowUp &&
+        rawCreateBody.parentId === undefined &&
+        !rawCreateBody.inheritExecutionWorkspaceFromIssueId
           ? await resolveRunDelegationParentDefault(
               req,
               companyId,
