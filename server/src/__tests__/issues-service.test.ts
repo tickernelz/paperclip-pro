@@ -4081,6 +4081,37 @@ describeEmbeddedPostgres("issueService.create workspace inheritance", () => {
     ]);
   });
 
+  it("createChild with reviewOfParent blocks the parent on the review child", async () => {
+    const companyId = randomUUID();
+    const parentIssueId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Paperclip",
+      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false,
+    });
+    await db.insert(issues).values({
+      id: parentIssueId,
+      companyId,
+      title: "Work under review",
+      status: "in_progress",
+      priority: "medium",
+    });
+
+    const { issue: child, parentBlockerAdded } = await svc.createChild(parentIssueId, {
+      title: "Review the work",
+      status: "todo",
+      description: "Review it.",
+      reviewOfParent: true,
+    });
+
+    expect(parentBlockerAdded).toBe(true);
+    const parentRelations = await svc.getRelationSummaries(parentIssueId);
+    expect(parentRelations.blockedBy).toEqual([
+      expect.objectContaining({ id: child.id }),
+    ]);
+  });
+
   it("createChild preserves strategy-only workspace intent without realizing the parent workspace", async () => {
     const companyId = randomUUID();
     const projectId = randomUUID();

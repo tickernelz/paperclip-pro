@@ -1973,6 +1973,7 @@ type IssueCreateInput = Omit<typeof issues.$inferInsert, "companyId" | "title" |
 type IssueChildCreateInput = IssueCreateInput & {
   acceptanceCriteria?: string[];
   blockParentUntilDone?: boolean;
+  reviewOfParent?: boolean;
   executionWorkspaceInheritanceMode?: "linkage" | "strategy_only";
   actorAgentId?: string | null;
   actorUserId?: string | null;
@@ -9565,12 +9566,14 @@ export function issueService(db: Db) {
 
       const {
         acceptanceCriteria,
-        blockParentUntilDone,
+        blockParentUntilDone: blockParentRequested,
+        reviewOfParent,
         executionWorkspaceInheritanceMode = "linkage",
         actorAgentId,
         actorUserId,
         ...issueData
       } = data;
+      const blockParentUntilDone = blockParentRequested || reviewOfParent === true;
 
       const inheritStrategyOnly =
         executionWorkspaceInheritanceMode === "strategy_only";

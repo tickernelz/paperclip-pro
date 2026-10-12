@@ -889,6 +889,7 @@ export const createChildIssueSchema = withCreateIssueStatusDefault(
         .max(20)
         .optional(),
       blockParentUntilDone: z.boolean().optional().default(false),
+      reviewOfParent: z.boolean().optional(),
     }),
 ).superRefine(requireBlockedStatusForUnblockDescriptor).superRefine(requireTitleOrDescription);
 

@@ -1498,7 +1498,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19530",
+    "boardGuard": "assertBoard@issues.ts:19538",
     "authorityCapability": null,
     "parameters": [
       {
@@ -5351,7 +5351,7 @@
     "operationId": "POST /api/issues/{id}/children",
     "method": "POST",
     "path": "/issues/{issueId}/children",
-    "description": "Create a child issue under an existing issue. This is the default for work arising from the issue you hold (follow-up, deploy, fix, review, delegated or parallel work): pass that issue as issueId. The child inherits the parent execution workspace.",
+    "description": "Create a child issue under an existing issue. This is the default for work arising from the issue you hold (follow-up, deploy, fix, review, delegated or parallel work): pass that issue as issueId. The child inherits the parent execution workspace. To ask another agent to review work on the issue you are assigned, set reviewOfParent: true: the child then blocks your issue, you keep it, and the request is allowed even when that agent created an open ancestor (otherwise 409 delegation_cycle).",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -5976,6 +5976,9 @@
             }
           },
           "blockParentUntilDone": {
+            "type": "boolean"
+          },
+          "reviewOfParent": {
             "type": "boolean"
           }
         },
@@ -14829,7 +14832,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18444",
+    "boardGuard": "assertBoard@issues.ts:18452",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26510,7 +26513,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17388",
+    "boardGuard": "assertBoard@issues.ts:17396",
     "authorityCapability": null,
     "parameters": [
       {
@@ -38618,7 +38621,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10170",
+    "boardGuard": "assertBoard@issues.ts:10173",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41187,7 +41190,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9497",
+    "boardGuard": "assertBoard@issues.ts:9500",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41248,7 +41251,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17358",
+    "boardGuard": "assertBoard@issues.ts:17366",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43385,7 +43388,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19470",
+    "boardGuard": "assertBoard@issues.ts:19478",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43851,7 +43854,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18396",
+    "boardGuard": "assertBoard@issues.ts:18404",
     "authorityCapability": null,
     "parameters": [
       {
@@ -47927,7 +47930,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10934",
+    "boardGuard": "assertBoard@issues.ts:10937",
     "authorityCapability": null,
     "parameters": [
       {
@@ -48053,7 +48056,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17326",
+    "boardGuard": "assertBoard@issues.ts:17334",
     "authorityCapability": null,
     "parameters": [
       {

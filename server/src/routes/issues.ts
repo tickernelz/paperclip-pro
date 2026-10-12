@@ -2105,9 +2105,9 @@ const INVALID_AGENT_IN_REVIEW_DISPOSITION_MESSAGE =
   "or schedule an issue monitor for an external review/check. After creating one of those review paths, retry the status update.";
 
 const AGENT_REVIEW_SUBTASK_INSTRUCTION =
-  "Create a review subtask with paperclipCreateChildIssue assigned to the reviewer with a self-contained description " +
-  "(full instructions, acceptance criteria, and the material to review), add that subtask id to blockedByIssueIds on this issue, " +
-  "then set status to in_review. You stay the assignee and are woken when the review subtask is done.";
+  "Create a review subtask with paperclipCreateChildIssue on this issue with reviewOfParent: true, assigned to the reviewer, with a self-contained description " +
+  "(full instructions, acceptance criteria, and the material to review); reviewOfParent adds the subtask to blockedByIssueIds on this issue. " +
+  "Then set status to in_review. You stay the assignee and are woken when the review subtask is done.";
 
 const AGENT_REVIEW_HANDOFF_REQUIRES_SUBTASK_MESSAGE =
   "agent_review_handoff_requires_subtask: Agents cannot hand this task to a reviewer through review or approval stages they authored themselves. " +
@@ -8024,10 +8024,12 @@ export function issueRoutes(
     actorAgentId: string | null | undefined;
     parentIssueId: string | null | undefined;
     assigneeAgentId: string | null | undefined;
+    reviewOfHeldParent?: boolean;
   }) {
     if (input.actorType !== "agent") return;
     if (input.assigneeAgentId === input.actorAgentId) return;
     if (!input.parentIssueId || !input.assigneeAgentId) return;
+    if (input.reviewOfHeldParent) return;
     const ancestor = await svc.findOpenAncestorCreatedByAgent(
       input.parentIssueId,
       input.assigneeAgentId,
@@ -8035,7 +8037,8 @@ export function issueRoutes(
     if (!ancestor) return;
     throw conflict(
       `Delegation cycle: ${ancestor.identifier ?? "an ancestor issue"} in this chain was created by the agent this child would be assigned to. ` +
-        "Complete the remaining work in your own issue, leave the child unassigned, or escalate to a board operator — do not delegate the work back to the agent that delegated it to you.",
+        "Complete the remaining work in your own issue, leave the child unassigned, or escalate to a board operator — do not delegate the work back to the agent that delegated it to you. " +
+        "To ask that agent to review work on an issue you are assigned, call paperclipCreateChildIssue on that issue with reviewOfParent: true and a self-contained review description; the child then blocks your issue and you keep it.",
       {
         code: "delegation_cycle",
         ancestorIssueId: ancestor.id,
@@ -13575,6 +13578,10 @@ export function issueRoutes(
         actorAgentId: req.actor.agentId,
         parentIssueId: parent.id,
         assigneeAgentId: normalizedAssigneeAgentId ?? null,
+        reviewOfHeldParent:
+          sanitizedBody.reviewOfParent === true &&
+          Boolean(req.actor.agentId) &&
+          parent.assigneeAgentId === req.actor.agentId,
       });
       const createBody = {
         ...sanitizedBody,
@@ -13694,6 +13701,7 @@ export function issueRoutes(
           ...(Array.isArray(req.body.blockedByIssueIds)
             ? { blockedByIssueIds: req.body.blockedByIssueIds }
             : {}),
+          ...(createBody.reviewOfParent === true ? { reviewOfParent: true } : {}),
           ...(parentBlockerAdded ? { parentBlockerAdded: true } : {}),
           ...(serializationContext
             ? {

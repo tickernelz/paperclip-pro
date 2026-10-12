@@ -306,8 +306,66 @@ describe("agent delegation cycle guard", () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toContain("Delegation cycle");
     expect(res.body.details).toMatchObject({ code: "delegation_cycle" });
+    expect(res.body.error).toContain("paperclipCreateChildIssue");
+    expect(res.body.error).toContain("reviewOfParent: true");
     expect(mockIssueService.createChild).not.toHaveBeenCalled();
     expect(mockIssueService.findOpenAncestorCreatedByAgent).toHaveBeenCalledWith(parent.id, IDLE_AGENT_ID);
+  });
+
+  it("allows the agent holding the parent to request a review from the creator of an open ancestor", async () => {
+    const parent = makeIssue({ assigneeAgentId: AGENT_ACTOR_ID });
+    mockIssueService.getById.mockResolvedValue(parent);
+    mockIssueService.findOpenAncestorCreatedByAgent.mockResolvedValue({
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      identifier: "PAP-100",
+      parentId: null,
+      createdByAgentId: IDLE_AGENT_ID,
+      status: "blocked",
+    });
+    mockIssueService.createChild.mockResolvedValue({
+      issue: makeIssue({ id: "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee", parentId: parent.id, assigneeAgentId: IDLE_AGENT_ID }),
+      parentBlockerAdded: true,
+    });
+
+    const res = await request(createApp(agentActor()))
+      .post(`/api/issues/${parent.id}/children`)
+      .send({
+        title: "Review PAP-999",
+        description: "Review the finished change",
+        assigneeAgentId: IDLE_AGENT_ID,
+        reviewOfParent: true,
+      });
+
+    expect(res.status).toBe(201);
+    expect(mockIssueService.createChild).toHaveBeenCalledWith(
+      parent.id,
+      expect.objectContaining({ assigneeAgentId: IDLE_AGENT_ID, reviewOfParent: true }),
+    );
+  });
+
+  it("still refuses a review request from an agent that does not hold the parent", async () => {
+    const parent = makeIssue({ assigneeAgentId: null });
+    mockIssueService.getById.mockResolvedValue(parent);
+    mockIssueService.findOpenAncestorCreatedByAgent.mockResolvedValue({
+      id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+      identifier: "PAP-100",
+      parentId: null,
+      createdByAgentId: IDLE_AGENT_ID,
+      status: "in_progress",
+    });
+
+    const res = await request(createApp(agentActor()))
+      .post(`/api/issues/${parent.id}/children`)
+      .send({
+        title: "Hand it back",
+        description: "Bounce dressed as review",
+        assigneeAgentId: IDLE_AGENT_ID,
+        reviewOfParent: true,
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.details).toMatchObject({ code: "delegation_cycle" });
+    expect(mockIssueService.createChild).not.toHaveBeenCalled();
   });
 
   it("allows the same child when no open ancestor was created by the assignee", async () => {
