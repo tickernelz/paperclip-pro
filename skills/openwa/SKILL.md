@@ -270,8 +270,10 @@ anew.
    either put the items in one task with a checklist or ask once with scope
    `requester` and say the count in `proposedAction`; never ask again after the
    first call. You write `messageToOwners`;
-   it goes as one WhatsApp bubble to each owner approval chat. Then tell the
-   requester you asked.
+   it goes as one WhatsApp bubble to each owner approval chat, or to the
+   chat's owner report group when the guidance names one. Then tell the
+   requester you asked. Never ask for approval by writing in a team or project
+   group: this tool is the only way to ask.
 2. Owners answer by replying to that bubble (quoting it) or in the OpenWA
    Approvals tab. A quoted owner reply starts an `approval_reply` run of class
    `owner`. Treat it as a conversation: when the owner asks a question, objects
@@ -315,6 +317,19 @@ anew.
 A gated call without approval fails with `approval_required` and its
 `category`; do not retry it. Live grants are listed in the wake `policy.grants`.
 
+## Reporting to the owner
+
+A chat may have an owner report group (Settings, Chats, **Report to owner
+via**), shown in the guidance as "Owner reports for this chat go to the group
+...". Then approval requests, owner_absent questions, reminders, any
+`openwa_send` to an owner's number and completion reports owed to the owner go
+to that group automatically: keep using the same tools and never pick the
+group or the owner's direct chat yourself. The receipt of a routed send has
+`ownerReportChat: true`. Owners answer there by quoting the bubble or with an
+unquoted ok/ya/jangan for the newest pending request; that starts the
+`approval_reply` run in the group, and the approved action runs in the origin
+chat. Replies meant for the origin chat stay in it.
+
 ## Owner-only configuration
 
 `openwa_endpoint_config` works only in owner-triggered runs; every other run gets
@@ -323,12 +338,17 @@ A gated call without approval fails with `approval_required` and its
 - `senders: {add?: [{list, number, label?}], remove?: [{list, number}]}` with
   `list` `allow` or `deny` and an E.164 `number`. A denylisted number is ignored
   from its next message on.
-- `chat` plus `chatSettings: {activation?, triggers?, absenceSeconds?, replyPolicy?, note?}`
+- `chat` plus `chatSettings: {activation?, triggers?, absenceSeconds?, replyPolicy?, note?, ownerReportChat?}`
   for one chat (default: the origin chat). `activation` is `auto`, `on` or
   `off`; `replyPolicy` is `allowed`, `ask_owner` or `owner_absent_only`; `null`
   clears an override. `triggers` replaces the chat's trigger overrides, so keep
   the ones it has. A dedicated group, where you handle every message without a
   mention, is `chatSettings: {activation: "on", triggers: {allMessages: true}}`.
+  `ownerReportChat` (a group chatRef or id, found with `openwa_find`) sends the
+  chat's owner reports and approval requests to that group, for example when
+  the owner says "laporan grup ini ke [BOT] DCM"; `null` returns to the owner's
+  direct chat. The group must have an owner as member and this number active in
+  it, otherwise the call fails with `invalid_arguments`.
 - `approvals: {createTask?, externalTools?, crossChatSend?, waAdmin?, gatewayAdmin?, reminderMinutes?, maxReminders?, pendingTtlHours?}`:
   approval toggles, reminders and the pending request lifetime in hours (1 to 168).
 - `burstWindowSeconds`: 0 to 10 (default 3, 0 = off); messages of one chat sent

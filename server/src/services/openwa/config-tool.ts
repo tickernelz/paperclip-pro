@@ -15,7 +15,7 @@ type Args = Record<string, unknown>;
 type SenderList = "allow" | "deny";
 
 const RESULT_TEXT_LIMIT = 4000;
-const CHAT_SETTING_KEYS = ["activation", "triggers", "absenceSeconds", "replyPolicy", "note"] as const;
+const CHAT_SETTING_KEYS = ["activation", "triggers", "absenceSeconds", "replyPolicy", "note", "ownerReportChatKey"] as const;
 const ENDPOINT_SETTING_KEYS = ["approvals", "burstWindowSeconds", "customInstructions"] as const;
 
 function record(value: unknown): Record<string, unknown> {
@@ -53,6 +53,15 @@ function mergeChatSettings(current: OpenwaChatSettings | null, patch: Record<str
   return parsed.data;
 }
 
+function ownerReportPatch(ctx: ToolContext, patch: Record<string, unknown>): Record<string, unknown> {
+  if (!("ownerReportChat" in patch)) return patch;
+  const { ownerReportChat, ...rest } = patch;
+  if (ownerReportChat === null) return { ...rest, ownerReportChatKey: null };
+  const target = resolveTarget(ctx, ownerReportChat);
+  if (!target.isGroup) throw new OpenwaToolError(400, "invalid_arguments", "ownerReportChat must be a group chatRef or group id; null reports to the owner's direct chat");
+  return { ...rest, ownerReportChatKey: target.chatKey };
+}
+
 function toolError(error: unknown): unknown {
   if (!(error instanceof HttpError) || error instanceof OpenwaToolError) return error;
   if (error.status === 409) return new OpenwaToolError(409, "config_conflict", error.message);
@@ -72,6 +81,8 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
   ]);
   const policy = openwaEndpointPolicySchema.parse(endpoint?.policy ?? {});
   const chat = chats.find((entry) => entry.chatKey === chatKey) ?? null;
+  const reportKey = chat?.settings.ownerReportChatKey ?? null;
+  const reportChat = reportKey ? (chats.find((entry) => entry.chatKey === reportKey) ?? null) : null;
   const custom = [...policy.customInstructions];
   const { reminderMinutes, maxReminders, pendingTtlHours, grantTtlHours: _grantTtlHours, ...toggles } = policy.approvals;
   const envelope = {
@@ -79,7 +90,13 @@ async function view(ctx: ToolContext, chatKey: string, changed: Record<string, u
     policyRevision: endpoint?.policyRevision ?? ctx.endpoint.policyRevision,
     senderPolicyMode: policy.senderPolicyMode,
     groupMemberReplies: policy.groupMemberReplies,
-    chat: { chatRef: chatRef(ctx, chat?.chatId ?? chatKey), configured: chat !== null, enabled: chat?.enabled ?? null, settings: chat?.settings ?? null },
+    chat: {
+      chatRef: chatRef(ctx, chat?.chatId ?? chatKey),
+      configured: chat !== null,
+      enabled: chat?.enabled ?? null,
+      settings: chat?.settings ?? null,
+      ownerReportChat: reportKey ? { chatRef: chatRef(ctx, reportChat?.chatId ?? reportKey), label: reportChat?.label ?? null } : null,
+    },
     approvals: toggles,
     reminders: { reminderMinutes, maxReminders, pendingTtlHours },
     burstWindowSeconds: policy.triggers.burstWindowSeconds,
@@ -95,7 +112,7 @@ export async function openwaEndpointConfigTool(ctx: ToolContext, args: Args): Pr
   assertOpenwaConfigOwnerRun(ctx);
   const owners = openwaToolOwners(ctx.db);
   const senders = record(args.senders);
-  const chatSettings = args.chatSettings === undefined ? null : record(args.chatSettings);
+  const chatSettings = args.chatSettings === undefined ? null : ownerReportPatch(ctx, record(args.chatSettings));
   if (args.chat !== undefined && !chatSettings) throw new OpenwaToolError(400, "invalid_arguments", "chat selects the chat for chatSettings");
   const target = resolveTarget(ctx, args.chat);
   const origin: OpenwaAgentConfigOrigin = {

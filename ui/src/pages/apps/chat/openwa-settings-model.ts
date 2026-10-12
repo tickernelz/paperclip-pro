@@ -42,6 +42,7 @@ export const AUDIT_KIND_LABELS: Record<ChatAuditEntryKind, string> = {
   session_health: "Session health",
   linked_read: "Linked number read",
   run_failed: "Run failed",
+  owner_report_fallback: "Owner report sent to direct chat",
 };
 
 export function mergeOpenwaPolicy(policy: OpenwaEndpointPolicy, patch: OpenwaEndpointPolicyInput): Record<string, unknown> {
@@ -154,6 +155,7 @@ export interface ChatDraft {
   prefix: string;
   keywordsOverride: boolean;
   keywords: string;
+  ownerReportChatKey: string;
 }
 
 function choice(value: boolean | undefined): TriggerChoice {
@@ -180,6 +182,7 @@ export function chatDraft(label: string, settings: OpenwaChatSettings): ChatDraf
     prefix: triggers.commandPrefix?.prefix ?? "",
     keywordsOverride: triggers.keywords !== undefined,
     keywords: (triggers.keywords ?? []).join(", "),
+    ownerReportChatKey: settings.ownerReportChatKey ?? "",
   };
 }
 
@@ -204,7 +207,22 @@ export function chatSettingsInput(draft: ChatDraft): OpenwaChatSettingsInput {
     ...(absence === undefined ? {} : { absenceSeconds: absence }),
     ...(draft.replyPolicy === "inherit" ? {} : { replyPolicy: draft.replyPolicy }),
     ...(draft.note.trim() ? { note: draft.note } : {}),
+    ...(draft.ownerReportChatKey ? { ownerReportChatKey: draft.ownerReportChatKey } : {}),
   };
+}
+
+export interface OwnerReportGroupOption {
+  chatKey: string;
+  label: string;
+}
+
+export function ownerReportGroupOptions(
+  chats: ReadonlyArray<{ chatKey: string; label: string; type: string; availability: string; ownerPresent: boolean | null }>,
+  chatKey: string,
+): OwnerReportGroupOption[] {
+  return chats
+    .filter((chat) => chat.type === "group_chat" && chat.availability === "available" && chat.ownerPresent === true && chat.chatKey !== chatKey)
+    .map((chat) => ({ chatKey: chat.chatKey, label: chat.label }));
 }
 
 export function openwaDedicatedGroupSettings(current: OpenwaChatSettings | null): OpenwaChatSettings {

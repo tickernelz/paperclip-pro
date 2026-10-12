@@ -33,7 +33,8 @@ import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
 import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { instanceSettingsService } from "../instance-settings.js";
-import { claimOpenwaCompletionReport, isOpenwaCompletionTurn, settleOpenwaCompletionReport } from "../chat-completion-delivery.js";
+import { claimOpenwaCompletionReport, isOpenwaCompletionTurn, openwaCompletionOwedToOwner, settleOpenwaCompletionReport } from "../chat-completion-delivery.js";
+import { openwaOwnerReportRoute } from "./owner-report.js";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { openwaApprovalResolveTool, openwaApprovalWithdrawTool, openwaRequestApprovalTool } from "./approvals.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
@@ -287,6 +288,7 @@ export interface Target {
   isGroup: boolean;
   isOrigin: boolean;
   number: string | null;
+  ownerReport?: true;
 }
 
 export interface ToolContext {
@@ -669,7 +671,7 @@ async function assertNotApprovalOrigin(ctx: ToolContext, target: Target): Promis
 
 async function assertSendAllowed(ctx: ToolContext, target: Target, heldGrant: string | null, quote: string | null): Promise<string | null> {
   await assertNotApprovalOrigin(ctx, target);
-  if (!target.isOrigin) {
+  if (!target.isOrigin && !(ctx.completion && target.ownerReport)) {
     if (heldGrant && (await openwaHeldGrantValid(ctx.db, { companyId: ctx.endpoint.companyId, grantId: heldGrant }))) return null;
     try {
       return await assertOpenwaRunMay(ctx.db, ctx.run, "cross_chat_send");
@@ -927,6 +929,20 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
   };
 }
 
+async function ownerReportTarget(ctx: ToolContext, target: Target): Promise<Target> {
+  const owed = ctx.completion
+    ? target.isOrigin && (await openwaCompletionOwedToOwner(ctx.db, { companyId: ctx.endpoint.companyId, runId: ctx.run.id, issueId: ctx.binding.issueId }))
+    : !target.isOrigin && !target.isGroup && target.number !== null && (await ownerPrincipal(ctx, target.number));
+  if (!owed) return target;
+  const route = await openwaOwnerReportRoute(ctx.db, ctx.endpoint, ctx.origin.chatKey, {
+    source: ctx.completion ? "task_completion" : "send",
+    runId: ctx.run.id,
+    conversationId: ctx.conversation.id,
+  });
+  if (!route || route.chatKey === ctx.origin.chatKey) return target;
+  return { chatId: route.chatId, chatKey: route.chatKey, isGroup: true, isOrigin: false, number: null, ownerReport: true };
+}
+
 async function precheckNumber(ctx: ToolContext, target: Target): Promise<Target> {
   if (target.isOrigin || target.isGroup || !target.number) return target;
   const [known] = await ctx.db
@@ -1000,14 +1016,14 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     if (ctx.completion) await settleOpenwaCompletionReport(ctx.db, { companyId: ctx.endpoint.companyId, actionId: action.id, delivered });
   };
   try {
-    target = await precheckNumber(ctx, target);
+    target = await precheckNumber(ctx, await ownerReportTarget(ctx, target));
   } catch (error) {
     await releaseReport(false);
     throw error;
   }
   ctx.audit.chatKey = target.chatKey;
   const heldGrant = typeof action.payload.grantId === "string" ? action.payload.grantId : null;
-  const quote = ctx.completion ? null : await resolveQuote(ctx, target, args.quoteMessageId);
+  const quote = ctx.completion || target.ownerReport ? null : await resolveQuote(ctx, target, args.quoteMessageId);
   const consumedGrant = await assertSendAllowed(ctx, target, heldGrant, quote);
   if (consumedGrant) await setOpenwaWriteGrant(ctx.db, action.id, consumedGrant);
   const releaseGrant = async () => {
@@ -1068,6 +1084,7 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
     messageIds: outcome.messageIds,
     chatRef: chatRef(ctx, target.chatId),
     answeredTriggerIds,
+    ...(target.ownerReport ? { ownerReportChat: true } : {}),
     ...(quote && !quoteDropped ? { quotedMessageId: quote } : {}),
     ...(quoteDropped ? { quoteDropped: true } : {}),
   };

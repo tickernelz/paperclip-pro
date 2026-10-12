@@ -40903,6 +40903,9 @@
               "note": {
                 "type": "string"
               },
+              "ownerReportChatKey": {
+                "type": "string"
+              },
               "replyPolicy": {
                 "type": "string",
                 "enum": [

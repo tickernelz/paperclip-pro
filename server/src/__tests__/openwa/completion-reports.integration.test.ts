@@ -42,6 +42,15 @@ import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 const SESSION_ID = "44444444-5555-4666-8777-888888888888";
 const OWN_PHONE = "628111000777";
 const OWNER_DM = "628999000111@c.us";
+const PROJECT = "120363000000000777@g.us";
+const BOT_GROUP = "120363000000000778@g.us";
+
+interface ConversationOptions {
+  chatId?: string;
+  settings?: Record<string, unknown>;
+  creatorTriggerClass?: "owner" | "other";
+  groups?: Array<{ chatId: string; label: string; ownerPresent: boolean }>;
+}
 
 async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
@@ -88,7 +97,9 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
     return id;
   }
 
-  async function setup(policy: Record<string, unknown> = {}) {
+  async function setup(policy: Record<string, unknown> = {}, options: ConversationOptions = {}) {
+    const chatId = options.chatId ?? OWNER_DM;
+    const isGroup = chatId.endsWith("@g.us");
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -158,7 +169,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
     await gateway.waitForSubscription();
     await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, endpoint.id)))[0]!.status === "active");
 
-    const threadId = openwaThreadId({ sessionId: SESSION_ID, chatId: OWNER_DM, isGroup: false });
+    const threadId = openwaThreadId({ sessionId: SESSION_ID, chatId, isGroup });
     const [conversationIssue] = await db
       .insert(issues)
       .values({ companyId, title: "WhatsApp owner", status: "in_progress", assigneeAgentId: wira })
@@ -168,15 +179,27 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       .values({
         companyId,
         endpointId: endpoint.id,
-        type: "direct_message",
+        type: isGroup ? "group_chat" : "direct_message",
         providerResourceId: threadId,
-        label: OWNER_DM,
+        label: chatId,
+        availability: "available",
+        enabled: true,
+        settings: options.settings ?? {},
+        metadata: { chatKey: openwaChatKey(chatId) },
+      })
+      .returning();
+    for (const group of options.groups ?? [])
+      await db.insert(chatEndpointResources).values({
+        companyId,
+        endpointId: endpoint.id,
+        type: "group_chat",
+        providerResourceId: openwaThreadId({ sessionId: SESSION_ID, chatId: group.chatId, isGroup: true }),
+        label: group.label,
         availability: "available",
         enabled: true,
         settings: {},
-        metadata: { chatKey: openwaChatKey(OWNER_DM) },
-      })
-      .returning();
+        metadata: { chatKey: group.chatId, ownerPresent: group.ownerPresent },
+      });
     await db.insert(chatConversations).values({
       companyId,
       endpointId: endpoint.id,
@@ -184,8 +207,8 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       issueId: conversationIssue!.id,
       externalConversationId: threadId,
       externalThreadId: threadId,
-      externalLabel: OWNER_DM,
-      isDirectMessage: true,
+      externalLabel: chatId,
+      isDirectMessage: !isGroup,
     });
     const conversationId = conversationIssue!.id;
 
@@ -196,7 +219,11 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       agentId: wira,
       status: "running",
       startedAt: new Date(Date.now() - 30_000),
-      contextSnapshot: { source: "chat:openwa", issueId: conversationId },
+      contextSnapshot: {
+        source: "chat:openwa",
+        issueId: conversationId,
+        ...(options.creatorTriggerClass ? { paperclipOpenwa: { triggerClass: options.creatorTriggerClass } } : {}),
+      },
     });
 
     const wakeup = vi.fn(async (agentId: string, options: any) => {
@@ -476,5 +503,44 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
     expect(t.gateway.sends).toHaveLength(1);
     const [handoff] = await db.select().from(chatTaskHandoffs).where(and(eq(chatTaskHandoffs.taskId, task.id), eq(chatTaskHandoffs.companyId, t.companyId)));
     expect(handoff).toMatchObject({ channel: "openwa" });
+  }, 60_000);
+
+  async function reportTarget(creatorTriggerClass: "owner" | "other") {
+    const t = await setup({}, {
+      chatId: PROJECT,
+      settings: { activation: "on", ownerReportChatKey: BOT_GROUP },
+      creatorTriggerClass,
+      groups: [{ chatId: BOT_GROUP, label: "[BOT] DCM Paperclip", ownerPresent: true }],
+    });
+    const task = await t.delegate("Fix invoice 42");
+    const [handoff] = await db.select().from(chatTaskHandoffs).where(eq(chatTaskHandoffs.taskId, task.id));
+    await t.svc.update(task.id, { status: "done" });
+    await t.makeDue();
+    await t.deliveries.sweepPending();
+    const [run] = await t.wakeRuns();
+    const turn = await t.startTurn(run!);
+    const sent = await t.send(turn.runId, "Selesai: " + task.identifier);
+    return { t, handoff: handoff!, turn, sent };
+  }
+
+  it("(d) a task the owner asked for in a project group reports to that group's owner report group", async () => {
+    const { t, handoff, turn, sent } = await reportTarget("owner");
+    expect(handoff).toMatchObject({ channel: "openwa", reportToOwner: true });
+    expect(turn.guidance!.markdown).toContain("This completion report is owed to the owner");
+    expect(turn.guidance!.markdown).toContain("[BOT] DCM Paperclip");
+    expect(sent).toMatchObject({ state: "delivered", ownerReportChat: true, chatRef: "openwa:" + SESSION_ID + ":" + BOT_GROUP });
+    expect(t.gateway.sends.map((send) => send.chatId)).toEqual([BOT_GROUP]);
+    const again = await t.send(turn.runId, "Laporan lagi").catch((error) => error);
+    expect((again as OpenwaToolError).code).toBe("completion_already_reported");
+    expect(t.gateway.sends).toHaveLength(1);
+  }, 60_000);
+
+  it("(d, negative control) a member-requested task still reports in the project group", async () => {
+    const { t, handoff, turn, sent } = await reportTarget("other");
+    expect(handoff).toMatchObject({ channel: "openwa", reportToOwner: false });
+    expect(turn.guidance!.markdown).not.toContain("This completion report is owed to the owner");
+    expect(sent).toMatchObject({ state: "delivered", chatRef: "openwa:" + SESSION_ID + ":" + PROJECT });
+    expect((sent as Record<string, unknown>).ownerReportChat).toBeUndefined();
+    expect(t.gateway.sends.map((send) => send.chatId)).toEqual([PROJECT]);
   }, 60_000);
 });

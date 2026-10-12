@@ -120,6 +120,9 @@ describe("OpenWA tool catalog", () => {
     expect(config.schema.safeParse({ senders: { add: [{ list: "block", number: "+628111222333" }] } }).success).toBe(false);
     expect(config.schema.safeParse({ chatSettings: { activation: "on", replyPolicy: null, note: null, triggers: { keywords: ["invoice"] } } }).success).toBe(true);
     expect(config.schema.safeParse({ chatSettings: { activation: "maybe" } }).success).toBe(false);
+    expect(config.schema.safeParse({ chat: "120363000000000511@g.us", chatSettings: { ownerReportChat: "120363000000000512@g.us" } }).success).toBe(true);
+    expect(config.schema.safeParse({ chatSettings: { ownerReportChat: null } }).success).toBe(true);
+    expect(config.schema.safeParse({ chatSettings: { ownerReportChatKey: "120363000000000512@g.us" } }).success).toBe(false);
     expect(config.schema.safeParse({ approvals: { createTask: false, reminderMinutes: 15 } }).success).toBe(true);
     expect(config.schema.safeParse({ approvals: { grantTtlHours: 2 } }).success).toBe(false);
     expect(config.schema.safeParse({ approvals: { pendingTtlHours: 1 } }).success).toBe(true);

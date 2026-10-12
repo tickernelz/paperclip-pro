@@ -31,6 +31,7 @@ import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./po
 import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
 import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 import { openwaAuditRetentionDays, recordOpenwaAudit } from "./audit.js";
+import { assertOpenwaOwnerReportChat } from "./owner-report.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 type DbOrTransaction = Db | DbTransaction;
@@ -800,6 +801,9 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
       const before = existing ? openwaChatSettingsSchema.safeParse(existing.settings ?? {}) : null;
       const beforeSettings: OpenwaChatSettings = before?.success ? before.data : { activation: "auto" };
       const settings = typeof input.settings === "function" ? input.settings(existing ? beforeSettings : null) : input.settings;
+      const reportChatKey = settings.ownerReportChatKey ?? null;
+      if (reportChatKey && reportChatKey !== (existing ? (beforeSettings.ownerReportChatKey ?? null) : null))
+        await assertOpenwaOwnerReportChat(tx, endpoint, openwaChatKey(input.chatId), reportChatKey);
       const enabled = isGroup
         ? openwaGroupEnabled(policy, settings, existing?.metadata.ownerPresent === true)
         : settings.activation !== "off";

@@ -49,11 +49,16 @@ async function handoffSource(tx: Connection, companyId: string, runId: string, a
   return source ? { run, source } : null;
 }
 
-async function recordOpenwaHandoff(tx: Connection, task: Issue, source: Issue, agentId: string) {
+function ownerTriggeredRun(run: Run): boolean {
+  const openwa = run.contextSnapshot?.paperclipOpenwa;
+  return Boolean(openwa && typeof openwa === "object" && (openwa as Record<string, unknown>).triggerClass === "owner");
+}
+
+async function recordOpenwaHandoff(tx: Connection, task: Issue, source: Issue, run: Run) {
   if (source.id === task.id || source.conversationAgentId) return;
-  if ((await openwaBinding(tx, task.companyId, source.id))?.assignedAgentId !== agentId) return;
-  await tx.insert(handoffs).values({ taskId: task.id, companyId: task.companyId, conversationId: source.id, agentId,
-    sessionGeneration: source.conversationSessionGeneration, channel: "openwa" }).onConflictDoNothing();
+  if ((await openwaBinding(tx, task.companyId, source.id))?.assignedAgentId !== run.agentId) return;
+  await tx.insert(handoffs).values({ taskId: task.id, companyId: task.companyId, conversationId: source.id, agentId: run.agentId,
+    sessionGeneration: source.conversationSessionGeneration, channel: "openwa", reportToOwner: ownerTriggeredRun(run) }).onConflictDoNothing();
 }
 
 export async function recordChatHandoff(tx: Connection, task: Issue, actorRunId: string | null | undefined) {
@@ -62,7 +67,7 @@ export async function recordChatHandoff(tx: Connection, task: Issue, actorRunId:
   if (!found || found.source.id === task.id) return;
   const { run, source } = found;
   if (!source.conversationAgentId) {
-    if (task.assigneeAgentId !== run.agentId) await recordOpenwaHandoff(tx, task, source, run.agentId);
+    if (task.assigneeAgentId !== run.agentId) await recordOpenwaHandoff(tx, task, source, run);
     return;
   }
   if (source.conversationAgentId !== run.agentId ||
@@ -88,7 +93,7 @@ export async function recordChatReassignment(tx: Connection, before: Issue, afte
   if (!actorAgentId || !actorRunId || after.conversationAgentId || !after.assigneeAgentId ||
     after.assigneeAgentId === before.assigneeAgentId || after.assigneeAgentId === actorAgentId) return;
   const found = await handoffSource(tx, after.companyId, actorRunId, actorAgentId);
-  if (found) await recordOpenwaHandoff(tx, after, found.source, actorAgentId);
+  if (found) await recordOpenwaHandoff(tx, after, found.source, found.run);
 }
 
 /** Must run on the same transaction as status projection (including native arbitration). */
@@ -195,6 +200,14 @@ export async function isOpenwaCompletionTurn(db: Connection, input: { companyId:
       inArray(deliveries.status, ["queued", "delivered"]), eq(handoffs.channel, "openwa"), eq(handoffs.conversationId, input.issueId)))
     .limit(1);
   return Boolean(row);
+}
+
+export async function openwaCompletionOwedToOwner(db: Connection, input: { companyId: string; runId: string; issueId: string }) {
+  const rows = await db.select({ reportToOwner: handoffs.reportToOwner }).from(deliveries)
+    .innerJoin(handoffs, and(eq(handoffs.taskId, deliveries.taskId), eq(handoffs.companyId, deliveries.companyId)))
+    .where(and(eq(deliveries.companyId, input.companyId), eq(deliveries.targetRunId, input.runId),
+      inArray(deliveries.status, ["queued", "delivered"]), eq(handoffs.channel, "openwa"), eq(handoffs.conversationId, input.issueId)));
+  return rows.length > 0 && rows.every(row => row.reportToOwner);
 }
 
 /** Reserves the run's one origin-chat report for a send action; "reported" when another send already owns it. */

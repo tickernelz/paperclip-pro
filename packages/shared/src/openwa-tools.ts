@@ -103,7 +103,7 @@ export const OPENWA_TOOLS = [
   tool(
     "request_approval",
     "write",
-    "Ask the endpoint owners to approve categories for this chat's requester. You write messageToOwners (markdown, one WhatsApp bubble per owner chat); owners approve by replying to it or in the OpenWA Approvals tab. Remind with remindRequestId plus messageToOwners only. Silence never approves.",
+    "Ask the endpoint owners to approve categories for this chat's requester. You write messageToOwners (markdown, one WhatsApp bubble per owner chat); owners approve by replying to it or in the OpenWA Approvals tab. Remind: remindRequestId + messageToOwners. Silence never approves.",
     {
       categories: z.array(z.enum(GRANT_CATEGORIES)).min(1).max(GRANT_CATEGORIES.length).optional(),
       scope: z.enum(["one_action", "requester"]).optional(),
@@ -124,7 +124,7 @@ export const OPENWA_TOOLS = [
   tool(
     "approval_resolve",
     "write",
-    "Record the owner's decision on an approval request. Only in an owner run started by that owner's reply to the request bubble or their follow-ups in the same chat. approve/reject need the owner's explicit words (else 409 owner_decision_unclear); clarify keeps it pending while you discuss.",
+    "Record the owner's decision on an approval request. Only in an owner run started by that owner's reply to the bubble or follow-ups in that chat. approve/reject need the owner's explicit words (else 409 owner_decision_unclear); clarify keeps it pending while you discuss.",
     {
       requestId: uuid,
       decision: z.enum(["approve", "reject", "clarify"]),
@@ -144,7 +144,7 @@ export const OPENWA_TOOLS = [
   tool(
     "stay_silent",
     "write",
-    "Deliberately leave triggers unanswered: marks the listed (default all visible pending) triggers silenced.",
+    "Leave triggers unanswered: marks the listed (default: all visible pending) triggers silenced.",
     { triggerIds: triggerIds.optional() },
   ),
   tool(
@@ -166,7 +166,7 @@ export const OPENWA_TOOLS = [
   tool(
     "endpoint_config",
     "write",
-    "Owner-triggered runs only: change sender allow/deny lists, one chat's settings (default origin chat; null clears), approval toggles, reminders, pending TTL, burst window or custom instructions. Empty call reads them. Credentials, number mode, owners and gateway admin stay in Paperclip.",
+    "Owner-triggered runs only: change sender lists, one chat's settings (default origin chat; null clears), approvals, reminders, pending TTL, burst window, custom instructions. Empty call reads them. Credentials, number mode, owners, gateway admin stay in Paperclip.",
     {
       senders: z
         .object({
@@ -183,6 +183,7 @@ export const OPENWA_TOOLS = [
           absenceSeconds: z.number().int().min(10).max(86_400).nullable().optional(),
           replyPolicy: openwaReplyPolicySchema.nullable().optional(),
           note: z.string().max(OPENWA_CHAT_NOTE_MAX_LENGTH).nullable().optional(),
+          ownerReportChat: z.string().nullable().optional(),
         })
         .strict()
         .optional(),

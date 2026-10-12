@@ -194,6 +194,43 @@ chat from WhatsApp** lists the gateway's chats. Routes:
 `GET /api/chat-endpoints/:endpointId/openwa/gateway-chats` (`limit` 1 to 500, default
 100; `offset`).
 
+### Report to owner via
+
+Each chat has **Report to owner via** (`settings.ownerReportChatKey`):
+**Direct chat (default)** (unset or `null`) or a group picked from the chats
+list, normally a private group that holds only an owner and the agent number
+(for example `[BOT] DCM Paperclip`). It keeps each project's owner traffic in
+its own group instead of the owner's direct chat.
+
+- Everything owed to the owner that starts in that chat goes to the chosen
+  group: approval bubbles from `openwa_request_approval` (owner_absent
+  questions included) and their reminders, any `openwa_send` the agent
+  addresses to an owner's number (reports, escalations, failure notices), and
+  the `task_completion` report of tasks handed off by an owner-triggered run of
+  that chat (the owner asked for the work there, so the report is owed to the
+  owner rather than the chat; tasks requested by members still report in the
+  chat). Replies meant for the chat itself are unchanged. The agent does not
+  choose the destination; the run guidance names the group and the tools route
+  there.
+- Owners answer in the group exactly as in a direct chat: a reply quoting the
+  bubble starts the `approval_reply` run, and an owner's unquoted message that
+  opens with a decision word (ok, ya, jangan, …) answers the newest request
+  still pending in that group. The approved action then runs in the origin
+  chat.
+- Saving refuses a destination that is not a group of this endpoint, that is
+  the chat itself, where no owner is a member (`ownerPresent`), or where the
+  agent number is no longer active (422 `openwa_owner_report_chat_invalid`).
+  The **Report to owner via** select lists only eligible groups by name, and
+  the chat row shows `owner reports to <group>`.
+- If the group becomes unusable later (the number left it, no owner remains),
+  sends fall back to the default delivery (the owner's direct chat, or the
+  origin chat for a completion report) and the audit log gets an
+  `owner_report_fallback` entry with the destination and reason.
+- From WhatsApp, an owner can ask for it ("laporan grup ini ke [BOT] DCM");
+  the owner run calls `openwa_endpoint_config` with
+  `{chat: "<project group>@g.us", chatSettings: {ownerReportChat: "<bot group>@g.us"}}`
+  (`null` returns to the direct chat).
+
 ### Trigger rules
 
 A message that matches no rule is discarded in memory: nothing is written to
@@ -402,7 +439,9 @@ The agent asks with `openwa_request_approval` (categories, scope, summary,
 proposed action and an agent-written `messageToOwners`, up to 3500 characters).
 The server records the request and sends one bubble per owner approval chat (the
 agent number's DM with each owner, or the owner's self-chat in `owner_number`
-mode). Silence never approves. When the run's triggers need
+mode), or a single bubble to the origin chat's owner report group when one is
+set (see [Report to owner via](#report-to-owner-via)). The agent never asks
+for approval by writing in a group. Silence never approves. When the run's triggers need
 `reply_outside_allowlist`, the server adds that category to the request and
 records it as auto-added (audit `approval_requested` metadata `autoAdded`); its
 grant is always `one_action`, even on a `requester` request. A run that asks
@@ -543,7 +582,7 @@ Every call is audited as `tool_called`.
 | `openwa_catalog` | read | List gateway operations with category, availability and gate; filter by category or text. |
 | `openwa_describe` | read | Argument schema and gates of one operation. |
 | `openwa_call` | write | Run one catalog operation; non-read operations need an `idempotencyKey`. |
-| `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings, approval toggles, reminders, the burst window and custom instructions; an empty call returns the current settings. |
+| `openwa_endpoint_config` | write | Owner runs only: change sender lists, chat activation and per-chat settings (owner report group included), approval toggles, reminders, the burst window and custom instructions; an empty call returns the current settings. |
 | `openwa_autonomy_window` | write | Owner runs only: open, close or list autonomy windows; while a window is open, plain confirmation cards in its issue trees are auto-accepted and audited (destructive ones still wait). |
 | `openwa_linked_list` | read | Owner runs only: list linked read-only numbers and their board-allowed chats. |
 | `openwa_linked_read` | read | Owner runs only: read one allowed chat of a linked number live, newest first; media messages carry `media.kind`. |
@@ -577,8 +616,8 @@ from a current endpoint owner (`self_session_requires_confirmation`; other board
 members get 403); other runs get `owner_only`.
 
 **WhatsApp configuration.** `openwa_endpoint_config` lets owner-class runs change
-sender lists, chat activation, per-chat triggers, absence, reply policy and note,
-approval toggles, reminders, the burst window and custom instructions from WhatsApp; other runs get
+sender lists, chat activation, per-chat triggers, absence, reply policy, note and
+owner report group (`ownerReportChat`), approval toggles, reminders, the burst window and custom instructions from WhatsApp; other runs get
 `owner_only`. Credentials, number mode, owners and the gateway admin level stay
 Paperclip-only (`ui_only_setting`). Every change bumps the policy revision and is
 audited with before and after values, attributed to the owner whose message
@@ -867,7 +906,9 @@ of the task's siblings and parent.
   and the link; for cancelled tasks, whether to continue or take another route;
   for blocked tasks, what blocks it and which decision is needed.
 - The run may send exactly one message, only to the origin chat, never quoting
-  (a quote is dropped). It marks no trigger answered. A second send fails with
+  (a quote is dropped). When every reported task was handed off by an
+  owner-triggered run and the chat has an owner report group, that one message
+  goes to the group instead (`chat_task_handoffs.report_to_owner`). It marks no trigger answered. A second send fails with
   `completion_already_reported`, a send elsewhere with
   `completion_report_origin_only`. The send is reserved on the outbox row
   before the gateway call, so a run that fails or retries after a send (even

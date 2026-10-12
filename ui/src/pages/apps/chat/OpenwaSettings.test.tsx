@@ -382,6 +382,66 @@ describe("OpenWA settings", () => {
     );
   });
 
+  it("picks an owner report group by name, saves it and shows it on the chat row", async () => {
+    const project = {
+      id: "res-project",
+      chatId: "120363000000000511@g.us",
+      chatKey: "120363000000000511@g.us",
+      type: "group_chat",
+      label: "Tim DCM",
+      availability: "available",
+      enabled: true,
+      settings: { activation: "auto" },
+      ownerPresent: true,
+      participantCount: 6,
+    };
+    const bot = { ...project, id: "res-bot", chatId: "120363000000000512@g.us", chatKey: "120363000000000512@g.us", label: "[BOT] DCM Paperclip", participantCount: 2 };
+    const vendor = { ...project, id: "res-vendor", chatId: "120363000000000513@g.us", chatKey: "120363000000000513@g.us", label: "Vendor chat", ownerPresent: false };
+    const left = { ...project, id: "res-left", chatId: "120363000000000514@g.us", chatKey: "120363000000000514@g.us", label: "Old group", availability: "unavailable" };
+    const direct = { ...project, id: "res-dm", chatId: "628555000555@c.us", chatKey: "628555000555@c.us", type: "direct_message", label: "Supplier", ownerPresent: null };
+    mocks.api.listOpenwaChats.mockResolvedValue([project, bot, vendor, left, direct]);
+    mocks.api.updateOpenwaChat.mockResolvedValue({});
+    render();
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("Tim DCM"));
+    const chats = section("Chats");
+    const projectRow = Array.from(chats.querySelectorAll("li")).find((row) => row.textContent?.includes("Tim DCM"))!;
+    click(button(projectRow, "Edit"));
+    const select = field<HTMLSelectElement>("#openwa-chat-owner-report");
+    expect(container.querySelector("label[for='openwa-chat-owner-report']")!.textContent).toBe("Report to owner via");
+    expect(select.value).toBe("");
+    expect(Array.from(select.options).map((option) => [option.value, option.textContent])).toEqual([
+      ["", "Direct chat (default)"],
+      ["120363000000000512@g.us", "[BOT] DCM Paperclip"],
+    ]);
+    setValue(select, "120363000000000512@g.us");
+    click(button(chats, "Save chat"));
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaChat).toHaveBeenCalledWith("endpoint-1", {
+        chatId: "120363000000000511@g.us",
+        label: "Tim DCM",
+        settings: { activation: "auto", ownerReportChatKey: "120363000000000512@g.us" },
+      }),
+    );
+
+    mocks.api.listOpenwaChats.mockResolvedValue([{ ...project, settings: { activation: "auto", ownerReportChatKey: "120363000000000512@g.us" } }, bot]);
+    await act(async () => {
+      await client.invalidateQueries();
+    });
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("owner reports to [BOT] DCM Paperclip"));
+    const savedRow = Array.from(section("Chats").querySelectorAll("li")).find((row) => row.textContent?.includes("Tim DCM"))!;
+    click(button(savedRow, "Edit"));
+    expect(field<HTMLSelectElement>("#openwa-chat-owner-report").value).toBe("120363000000000512@g.us");
+    setValue(field<HTMLSelectElement>("#openwa-chat-owner-report"), "");
+    click(button(section("Chats"), "Save chat"));
+    await vi.waitFor(() =>
+      expect(mocks.api.updateOpenwaChat).toHaveBeenLastCalledWith("endpoint-1", {
+        chatId: "120363000000000511@g.us",
+        label: "Tim DCM",
+        settings: { activation: "auto" },
+      }),
+    );
+  });
+
   it("builds dedicated-group settings by turning the chat on and adding allMessages to the existing overrides", () => {
     expect(openwaDedicatedGroupSettings(null)).toEqual({ activation: "on", triggers: { allMessages: true } });
     expect(

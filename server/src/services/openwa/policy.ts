@@ -131,10 +131,19 @@ export interface OpenwaApprovalReplyCandidate {
 /** A current owner quoting a message in any chat (D37); admission confirms the quote is an approval bubble. */
 export function detectApprovalReply(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot): OpenwaApprovalReplyCandidate | null {
   if (!event.quoted || event.quoted.id.startsWith("false_")) return null;
+  const owner = openwaApprovalReplyOwner(event, snapshot);
+  return owner ? { quotedMessageId: event.quoted.id, owner } : null;
+}
+
+export function openwaApprovalReplyOwner(event: OpenwaInboundEvent, snapshot: OpenwaPolicySnapshot): OpenwaSnapshotOwner | null {
   if (event.event === "message.sent" && !event.phoneTyped) return null;
   if (event.phoneTyped && snapshot.policy.numberMode !== "owner_number") return null;
-  const owner = openwaSenderOwner(snapshot, event);
-  return owner ? { quotedMessageId: event.quoted.id, owner } : null;
+  return openwaSenderOwner(snapshot, event);
+}
+
+export function openwaIsOwnerReportChat(snapshot: OpenwaPolicySnapshot, chatKey: string): boolean {
+  for (const chat of snapshot.chats.values()) if (chat.settings.ownerReportChatKey === chatKey) return true;
+  return false;
 }
 
 export function openwaDigits(value: string | null | undefined): string | null {

@@ -1,4 +1,4 @@
-import { index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
+import { boolean, index, integer, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { issues } from "./issues.js";
 import { agents } from "./agents.js";
@@ -13,6 +13,7 @@ export const chatTaskHandoffs = pgTable("chat_task_handoffs", {
   agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
   sessionGeneration: integer("session_generation").notNull(),
   channel: text("channel").$type<"board" | "openwa">().notNull().default("board"),
+  reportToOwner: boolean("report_to_owner").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, t => ({ sourceIdx: index("chat_task_handoffs_source_idx").on(t.companyId, t.conversationId) }));
 

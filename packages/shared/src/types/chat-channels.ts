@@ -754,6 +754,7 @@ export const CHAT_AUDIT_ENTRY_KINDS = [
   "session_health",
   "linked_read",
   "run_failed",
+  "owner_report_fallback",
 ] as const;
 export type ChatAuditEntryKind = (typeof CHAT_AUDIT_ENTRY_KINDS)[number];
 
@@ -817,6 +818,7 @@ export interface OpenwaChatSettings {
   absenceSeconds?: number;
   replyPolicy?: OpenwaReplyPolicy;
   note?: string;
+  ownerReportChatKey?: string | null;
 }
 
 export interface OpenwaWakeRequestPayload {

@@ -23,7 +23,9 @@ import {
   chatSettingsInput,
   openwaChatSettingsErrors,
   openwaDedicatedGroupSettings,
+  ownerReportGroupOptions,
   type ChatDraft,
+  type OwnerReportGroupOption,
   type FieldErrors,
   type TriggerChoice,
 } from "./openwa-settings-model";
@@ -56,14 +58,16 @@ function isDedicatedGroup(settings: OpenwaChatSettings): boolean {
   return settings.activation === "on" && settings.triggers?.allMessages === true;
 }
 
-function chatMetaText(chat: OpenwaChat, numberMode: OpenwaEndpointPolicy["numberMode"]): string {
+function chatMetaText(chat: OpenwaChat, numberMode: OpenwaEndpointPolicy["numberMode"], labels: ReadonlyMap<string, string>): string {
   const parts = [activationDetail(chat, numberMode)];
   if (chat.participantCount !== null) parts.push(chat.participantCount + " members");
+  const reportKey = chat.settings.ownerReportChatKey;
+  if (reportKey) parts.push("owner reports to " + (labels.get(reportKey) ?? reportKey));
   return parts.join(" · ");
 }
 
-function ChatMetaLine({ chat, policy }: { chat: OpenwaChat; policy: OpenwaEndpointPolicy }) {
-  return <span className="text-xs text-muted-foreground">{chatMetaText(chat, policy.numberMode)}</span>;
+function ChatMetaLine({ text }: { text: string }) {
+  return <span className="text-xs text-muted-foreground">{text}</span>;
 }
 
 function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pending: boolean; onApply: () => void }) {
@@ -114,6 +118,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
     },
   });
   const configured = chats.data ?? [];
+  const labels = new Map(configured.map((chat) => [chat.chatKey, chat.label]));
   const unconfigured = (gatewayChats.data ?? []).filter((chat) => !chat.configured);
   return (
     <SettingsSection
@@ -143,8 +148,8 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                 </Badge>
               </div>
               <div className="flex min-w-0 items-center gap-2 sm:flex-1">
-                <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={chatMetaText(chat, policy.numberMode)}>
-                  <ChatMetaLine chat={chat} policy={policy} />
+                <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={chatMetaText(chat, policy.numberMode, labels)}>
+                  <ChatMetaLine text={chatMetaText(chat, policy.numberMode, labels)} />
                 </p>
                 <Badge variant={chat.enabled ? "secondary" : "outline"} className="hidden sm:inline-flex">
                   {activationLabels[chat.settings.activation]}
@@ -177,6 +182,8 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
           endpointId={endpointId}
           chatId={editing.chatId}
           initial={editing.draft}
+          reportGroups={ownerReportGroupOptions(configured, editing.chatId.toLowerCase())}
+          reportLabels={labels}
           onClose={() => setEditing(null)}
         />
       ) : null}
@@ -242,11 +249,15 @@ function ChatEditor({
   endpointId,
   chatId,
   initial,
+  reportGroups,
+  reportLabels,
   onClose,
 }: {
   endpointId: string;
   chatId: string;
   initial: ChatDraft;
+  reportGroups: OwnerReportGroupOption[];
+  reportLabels: ReadonlyMap<string, string>;
   onClose: () => void;
 }) {
   const queryClient = useQueryClient();
@@ -275,6 +286,11 @@ function ChatEditor({
   const setTrigger = (key: keyof ChatDraft["triggers"], value: TriggerChoice) =>
     setDraft((current) => ({ ...current, triggers: { ...current.triggers, [key]: value } }));
   const triggerRows = [...OPENWA_TRIGGER_RULES.map((rule) => ({ key: rule.key, label: rule.label })), { key: "commandPrefix" as const, label: "Command prefix" }];
+  const staleReportGroup =
+    draft.ownerReportChatKey && !reportGroups.some((group) => group.chatKey === draft.ownerReportChatKey)
+      ? { chatKey: draft.ownerReportChatKey, label: (reportLabels.get(draft.ownerReportChatKey) ?? draft.ownerReportChatKey) + " (unavailable)" }
+      : null;
+  const reportOptions = staleReportGroup ? [...reportGroups, staleReportGroup] : reportGroups;
   return (
     <div aria-label={"Settings for " + initial.label} className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
       <p className="text-sm font-semibold">{initial.label}</p>
@@ -306,6 +322,25 @@ function ChatEditor({
             ))}
           </select>
         </div>
+      </div>
+      <div className="grid gap-1">
+        <label htmlFor="openwa-chat-owner-report" className="text-sm font-medium">Report to owner via</label>
+        <select
+          id="openwa-chat-owner-report"
+          className={openwaSelectClass + " sm:max-w-sm"}
+          value={draft.ownerReportChatKey}
+          aria-invalid={fieldError(errors, "ownerReportChatKey") ? true : undefined}
+          onChange={(event) => setDraft((current) => ({ ...current, ownerReportChatKey: event.target.value }))}
+        >
+          <option value="">Direct chat (default)</option>
+          {reportOptions.map((group) => (
+            <option key={group.chatKey} value={group.chatKey}>{group.label}</option>
+          ))}
+        </select>
+        <p className="text-xs text-muted-foreground">
+          Approval requests, owner questions and reports that start in this chat go here. Only groups with an owner present are listed.
+        </p>
+        <FieldMessage id="openwa-chat-owner-report" error={fieldError(errors, "ownerReportChatKey")} />
       </div>
       <fieldset className="space-y-2">
         <legend className="text-sm font-medium">Trigger overrides</legend>

@@ -178,8 +178,18 @@ describe("OpenWA per-chat settings", () => {
     ).toMatchObject({ activation: "on", absenceSeconds: 300, replyPolicy: "owner_absent_only" });
   });
 
+  it("stores an owner report group as a lowercase group chat key, or null for the direct chat", () => {
+    expect(openwaChatSettingsSchema.parse({ ownerReportChatKey: "120363000000000512@G.US" })).toEqual({
+      activation: "auto",
+      ownerReportChatKey: "120363000000000512@g.us",
+    });
+    expect(openwaChatSettingsSchema.parse({ ownerReportChatKey: null })).toEqual({ activation: "auto", ownerReportChatKey: null });
+  });
+
   it.each([
     [{ activation: "maybe" }],
+    [{ ownerReportChatKey: "628333000511@c.us" }],
+    [{ ownerReportChatKey: "" }],
     [{ note: "n".repeat(2001) }],
     [{ absenceSeconds: 5 }],
     [{ replyPolicy: "never" }],

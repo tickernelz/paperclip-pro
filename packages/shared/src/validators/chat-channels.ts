@@ -407,6 +407,12 @@ export const openwaEndpointPolicySchema = z
 
 export const openwaTriggerOverridesSchema = openwaTriggerRulesInputSchema.omit({ burstWindowSeconds: true });
 
+export const openwaGroupChatKeySchema = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .regex(/^[a-z0-9._-]{1,128}@g\.us$/, "Choose a WhatsApp group");
+
 export const openwaChatSettingsSchema = z
   .object({
     activation: openwaChatActivationSchema.default("auto"),
@@ -414,6 +420,7 @@ export const openwaChatSettingsSchema = z
     absenceSeconds: openwaAbsenceSecondsSchema.optional(),
     replyPolicy: openwaReplyPolicySchema.optional(),
     note: multilineTextSchema.pipe(z.string().trim().max(OPENWA_CHAT_NOTE_MAX_LENGTH)).optional(),
+    ownerReportChatKey: openwaGroupChatKeySchema.nullable().optional(),
   })
   .strict();
 

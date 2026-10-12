@@ -14,16 +14,19 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import type { ChatSdkMessageTrigger } from "../chat-sdk-runtime.js";
 import { openwaThreadId, type OpenwaChatAdapter } from "./adapter.js";
-import { findOpenwaApprovalBubble, type OpenwaApprovalRequestStatus } from "./approvals.js";
+import { findNewestPendingOpenwaApprovalBubble, findOpenwaApprovalBubble, type OpenwaApprovalBubbleMatch, type OpenwaApprovalRequestStatus } from "./approvals.js";
+import { openwaOwnerMessageDecision } from "./approval-discussions.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaIngressHooks } from "./ingress.js";
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import {
   classifyOpenwaEvent,
   detectApprovalReply,
+  openwaApprovalReplyOwner,
   openwaChatSettings,
   openwaDigits,
   openwaGroupEnabled,
+  openwaIsOwnerReportChat,
   openwaLearnOwnerLid,
   openwaOwnerAmong,
   openwaParticipantJids,
@@ -630,6 +633,29 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     if (!outbound || outbound.source !== "approval") return false;
     const bubble = await findOpenwaApprovalBubble(db, outbound);
     if (!bubble) return false;
+    await admitApprovalAnswer(runtime, snapshot, event, owner, bubble, quotedMessageId);
+    return true;
+  }
+
+  async function admitOwnerReportAnswer(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent): Promise<boolean> {
+    if (event.chatKind !== "group" || event.quoted || openwaOwnerMessageDecision(event.body) === null) return false;
+    if (!openwaIsOwnerReportChat(snapshot, event.chatKey)) return false;
+    const owner = openwaApprovalReplyOwner(event, snapshot);
+    if (!owner) return false;
+    const bubble = await findNewestPendingOpenwaApprovalBubble(db, { companyId: snapshot.companyId, endpointId: snapshot.endpointId, chatKey: event.chatKey });
+    if (!bubble) return false;
+    await admitApprovalAnswer(runtime, snapshot, event, owner, bubble, null);
+    return true;
+  }
+
+  async function admitApprovalAnswer(
+    runtime: OpenwaAdmissionRuntime,
+    snapshot: OpenwaPolicySnapshot,
+    event: OpenwaInboundEvent,
+    owner: OpenwaApprovalReplyCandidate["owner"],
+    bubble: OpenwaApprovalBubbleMatch,
+    quotedMessageId: string | null,
+  ): Promise<void> {
     if (event.isLidSender && event.senderPhone && !owner.lids.has(event.senderJid.toLowerCase())) await learnLid(snapshot, event);
     const adapter = runtime.adapter();
     if (!adapter) throw new Error("OpenWA adapter unavailable for admission");
@@ -648,7 +674,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       dedupeKey: event.dedupeKey,
       phoneTyped: event.phoneTyped,
       sender: { jid: event.senderJid, phone: event.senderPhone, name: senderName(event) },
-      quoted: { id: quotedMessageId, body: event.quoted?.body ?? null, fromAgent: true },
+      quoted: quotedMessageId ? { id: quotedMessageId, body: event.quoted?.body ?? null, fromAgent: true } : null,
       mentionedIds: [...event.mentionedIds],
       location: event.location,
       contact: event.contact,
@@ -661,7 +687,6 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     stats.approvalReplies++;
     stats.admitted++;
     await runtime.admit({ threadId, message, trigger: triggerFor(event.chatKind, true), decoration });
-    return true;
   }
 
   async function onInbound(runtime: OpenwaAdmissionRuntime, event: OpenwaInboundEvent, ctx: OpenwaInboundContext): Promise<void> {
@@ -671,7 +696,10 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       return;
     }
     const approvalCandidate = detectApprovalReply(event, snapshot);
-    if (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) {
+    if (
+      (approvalCandidate && (await admitApprovalReply(runtime, snapshot, event, approvalCandidate))) ||
+      (!approvalCandidate && (await admitOwnerReportAnswer(runtime, snapshot, event)))
+    ) {
       await deps.timers?.onOwnerActivity?.(event.chatKey, event, ctx);
       return;
     }

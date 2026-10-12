@@ -35,6 +35,7 @@ import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { formatOpenwaPublication } from "./format.js";
 import { OpenwaGatewayError } from "./gateway.js";
 import { maskOpenwaDigits } from "./guidance.js";
+import { openwaOwnerReportRoute } from "./owner-report.js";
 import { openwaApprovalDiscussions, openwaOwnerDecisionText, openwaOwnerMessagesSince, openwaRequestMessages } from "./approval-discussions.js";
 import { openwaChatKey, type OpenwaOutboundRecord, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, openwaCurrentOwners, type OpenwaCurrentOwner } from "./owners.js";
@@ -160,6 +161,35 @@ export async function findOpenwaApprovalBubble(
   return { requestId: row.requestId, outboundMessageId: outbound.id, chatKey: outbound.chatKey, requestStatus: row.status === "pending" ? "pending" : "resolved" };
 }
 
+export async function findNewestPendingOpenwaApprovalBubble(
+  db: DbOrTransaction,
+  input: { companyId: string; endpointId: string; chatKey: string },
+): Promise<OpenwaApprovalBubbleMatch | null> {
+  const [row] = await db
+    .select({ requestId: chatOwnerApprovalBubbles.requestId, outboundMessageId: chatOwnerApprovalBubbles.outboundMessageId })
+    .from(chatOwnerApprovalBubbles)
+    .innerJoin(
+      chatOutboundMessages,
+      and(eq(chatOutboundMessages.companyId, chatOwnerApprovalBubbles.companyId), eq(chatOutboundMessages.id, chatOwnerApprovalBubbles.outboundMessageId)),
+    )
+    .innerJoin(
+      chatOwnerApprovalRequests,
+      and(eq(chatOwnerApprovalRequests.companyId, chatOwnerApprovalBubbles.companyId), eq(chatOwnerApprovalRequests.id, chatOwnerApprovalBubbles.requestId)),
+    )
+    .where(
+      and(
+        eq(chatOwnerApprovalBubbles.companyId, input.companyId),
+        eq(chatOwnerApprovalBubbles.endpointId, input.endpointId),
+        eq(chatOutboundMessages.chatKey, input.chatKey),
+        eq(chatOutboundMessages.state, "sent"),
+        eq(chatOwnerApprovalRequests.status, "pending"),
+      ),
+    )
+    .orderBy(desc(chatOwnerApprovalBubbles.createdAt))
+    .limit(1);
+  return row ? { requestId: row.requestId, outboundMessageId: row.outboundMessageId, chatKey: input.chatKey, requestStatus: "pending" } : null;
+}
+
 async function serverWakeRecord(ctx: ToolContext) {
   const [run] = await ctx.db
     .select({ wakeupRequestId: heartbeatRuns.wakeupRequestId })
@@ -210,14 +240,19 @@ interface PlannedBubble {
   chatKey: string;
 }
 
-function plannedBubbles(owners: OpenwaCurrentOwner[]): PlannedBubble[] {
+async function plannedBubbles(ctx: ToolContext, owners: OpenwaCurrentOwner[]): Promise<PlannedBubble[]> {
   const byChat = new Map<string, PlannedBubble>();
   for (const owner of owners) {
     if (!owner.digits) continue;
     const chatId = owner.digits + "@c.us";
     if (!byChat.has(chatId)) byChat.set(chatId, { owner, chatId, chatKey: openwaChatKey(chatId) });
   }
-  return [...byChat.values()];
+  const direct = [...byChat.values()];
+  if (!direct.length) return direct;
+  const route = await openwaOwnerReportRoute(ctx.db, ctx.endpoint, ctx.origin.chatKey, { source: "approval", runId: ctx.run.id, conversationId: ctx.conversation.id });
+  if (!route) return direct;
+  const owner = direct.find((bubble) => route.participants.includes(bubble.chatKey))?.owner ?? direct[0]!.owner;
+  return [{ owner, chatId: route.chatId, chatKey: route.chatKey }];
 }
 
 function bubbleText(ctx: ToolContext, markdown: string): string {
@@ -357,7 +392,7 @@ export async function openwaRequestApprovalTool(ctx: ToolContext, args: Args): P
     return { requestId: priorRequestId, actionId: action.id, state: "uncertain", bubbles: await bubbleStates(ctx, priorRequestId) };
   }
   const owners = await openwaCurrentOwners(ctx.db, ctx.endpoint);
-  const planned = plannedBubbles(owners);
+  const planned = await plannedBubbles(ctx, owners);
   if (!planned.length) throw new OpenwaToolError(409, "no_owner_chat", "No current owner has a WhatsApp number to receive the request");
   const body = bubbleText(ctx, String(args.messageToOwners));
   const { registry } = await ctx.runtime();

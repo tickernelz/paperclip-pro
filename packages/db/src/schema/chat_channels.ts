@@ -1363,7 +1363,7 @@ export const chatAuditEntries = pgTable(
   (table) => [
     check(
       "chat_audit_entries_kind_check",
-      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'approval_expired', 'approval_withdrawn', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read', 'run_failed')`,
+      sql`${table.kind} in ('trigger_admitted', 'trigger_filtered', 'message_sent', 'publication_suppressed', 'tool_called', 'approval_requested', 'approval_reminded', 'approval_resolved', 'approval_cancelled', 'approval_expired', 'approval_withdrawn', 'config_changed', 'group_added', 'group_left', 'session_health', 'linked_read', 'run_failed', 'owner_report_fallback')`,
     ),
     check(
       "chat_audit_entries_actor_kind_check",
