@@ -5,6 +5,7 @@ import {
   planModelFallbackRetry,
 } from "../model-fallback.js";
 import { createRunModelFallback } from "./run-model-fallback.js";
+import { isHeartbeatRunTerminalStatus } from "./run-lifecycle.js";
 import {
   WORKSPACE_VALIDATION_FAILURE_CODE,
   isWorkspaceValidationFailedRun,
@@ -428,6 +429,28 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
   } = dependencies;
   const runModelFallback = createRunModelFallback({ db, appendRunEvent });
 
+  async function releaseExecutionLockForBlockedDependencies(
+    run: typeof heartbeatRuns.$inferSelect,
+    issueId: string,
+  ) {
+    if (!isHeartbeatRunTerminalStatus(run.status)) return;
+    await db
+      .update(issues)
+      .set({
+        executionRunId: null,
+        executionAgentNameKey: null,
+        executionLockedAt: null,
+        updatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(issues.companyId, run.companyId),
+          eq(issues.id, issueId),
+          eq(issues.executionRunId, run.id),
+        ),
+      );
+  }
+
   async function scheduleBoundedRetryForRun(
     run: typeof heartbeatRuns.$inferSelect,
     agent: typeof agents.$inferSelect,
@@ -643,6 +666,9 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
             ...gate.details,
           },
         });
+        if (gate.errorCode === "issue_dependencies_blocked" && gate.issueId) {
+          await releaseExecutionLockForBlockedDependencies(run, gate.issueId);
+        }
         return {
           outcome: "not_scheduled" as const,
           reason: gate.reason,
