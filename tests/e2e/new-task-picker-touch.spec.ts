@@ -237,15 +237,17 @@ test.describe("desktop picker scrolling", () => {
     const runSettingsTrigger = page.getByRole("button", { name: "Select assignee, model and thinking", exact: true });
     await runSettingsTrigger.click();
     const runSettingsPanel = page.getByTestId("composer-run-settings-panel");
+    await runSettingsPanel.getByTestId("composer-run-settings-assignee-row").click();
     await wheelToBottom(runSettingsPanel.getByRole("listbox", { name: "Assignees", exact: true }));
     await page.getByRole("option").filter({ hasText: "Wheel Agent 22" }).click();
+    await expect(runSettingsPanel.getByRole("listbox", { name: "Assignees", exact: true })).toBeHidden();
     await expect(page.getByTestId("task-chat-composer-assignee-label")).toContainText("Wheel Agent 22");
 
-    await runSettingsTrigger.click();
-    await page.getByRole("button", { name: "Choose exact model", exact: true }).click();
+    await runSettingsPanel.getByRole("button", { name: "Choose exact model", exact: true }).click();
     await wheelToBottom(runSettingsPanel.getByRole("listbox", { name: "Models", exact: true }));
     await page.getByRole("option").filter({ hasText: "Wheel Model 24" }).click();
-    await runSettingsTrigger.press("Escape");
+    await page.keyboard.press("Escape");
+    await expect(runSettingsPanel).toBeHidden();
     await expect(page.getByTestId("task-chat-composer-run-summary")).toContainText("Wheel Model 24");
 
     await page.getByRole("button", { name: "Project", exact: true }).click();

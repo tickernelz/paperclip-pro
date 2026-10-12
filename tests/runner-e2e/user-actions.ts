@@ -70,11 +70,15 @@ export async function createTaskThroughUi(input: {
     await input.page.getByTestId(input.workMode === "planning" ? "composer-add-plan" : "composer-add-ask").click();
   }
   await dialog
-    .getByRole("button", { name: "Select assignee", exact: true })
+    .getByRole("button", { name: "Select assignee, model and thinking", exact: true })
     .click();
+  const runSettings = input.page.getByTestId("composer-run-settings-panel");
+  await runSettings.getByTestId("composer-run-settings-assignee-row").click();
   await input.page.getByRole("searchbox", { name: "Search assignees", exact: true }).fill(input.agentName);
   await input.page.getByRole("option").filter({ has: input.page.getByText(input.agentName, { exact: true }) }).click();
   await expect(input.page.getByRole("searchbox", { name: "Search assignees", exact: true })).toBeHidden();
+  await input.page.keyboard.press("Escape");
+  await expect(runSettings).toBeHidden();
   if (input.projectName) {
     // Selecting the assignee advances focus to this selector and opens it.
     // Focus is idempotent here; clicking would toggle an already-open popover

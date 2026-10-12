@@ -23,8 +23,10 @@ for (const persistent of [false, true]) {
     await page.getByRole("link", { name: "Tasks", exact: true }).click();
     await page.getByRole("button", { name: "New Task", exact: true }).last().click();
     await page.getByRole("textbox", { name: "editable markdown" }).fill(title);
-    await page.getByRole("button", { name: "Select assignee", exact: true }).click();
+    await page.getByRole("button", { name: "Select assignee, model and thinking", exact: true }).click();
+    await page.getByTestId("composer-run-settings-assignee-row").click();
     await page.getByRole("option").filter({ hasText: fixture.agentName }).click();
+    await page.keyboard.press("Escape");
     // Let the closing popover unmount before clicking another popover trigger.
     await expect(page.getByRole("searchbox", { name: "Search assignees", includeHidden: true })).toHaveCount(0);
     // The preceding popover's focus restoration can consume the first click.
