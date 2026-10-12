@@ -96,15 +96,16 @@ export async function recordChatCompletion(tx: Connection, before: Issue, after:
   if (before.status === after.status) return false;
   await tx.update(deliveries).set({ status: "superseded" }).where(and(eq(deliveries.taskId, after.id),
     eq(deliveries.companyId, after.companyId), inArray(deliveries.status, [...pending])));
+  if (!(OPENWA_COMPLETION_STATUSES as readonly string[]).includes(after.status)) return false;
   const [handoff] = await tx.select().from(handoffs).where(and(eq(handoffs.taskId, after.id), eq(handoffs.companyId, after.companyId)));
   if (!handoff) return false;
   if (handoff.channel === "openwa") {
-    if (!(OPENWA_COMPLETION_STATUSES as readonly string[]).includes(after.status)) return false;
     await tx.insert(deliveries).values({ companyId: after.companyId, taskId: after.id, statusVersion: after.statusVersion,
       nextAttemptAt: new Date(Date.now() + OPENWA_COMPLETION_COALESCE_MS) }).onConflictDoNothing();
     await notifyDeliveryWork(tx, DELIVERY_QUEUES.chatCompletion);
     return true;
   }
+  if (after.status !== "done") return false;
   await notifyDeliveryWork(tx, DELIVERY_QUEUES.chatCompletion);
   await tx.insert(deliveries).values({ companyId: after.companyId, taskId: after.id, statusVersion: after.statusVersion }).onConflictDoNothing();
   return true;

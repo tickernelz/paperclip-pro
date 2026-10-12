@@ -1,3 +1,4 @@
+import { AsyncLocalStorage } from "node:async_hooks";
 import { createHash, timingSafeEqual } from "node:crypto";
 import type { Request, RequestHandler, Response } from "express";
 import { and, eq, isNull } from "drizzle-orm";
@@ -556,7 +557,8 @@ export function actorMiddleware(db: Db, opts: ActorMiddlewareOptions): RequestHa
     let continueRequest: (() => void) | undefined;
     try {
       await authenticate(req, res, (error?: unknown) => {
-        continueRequest = () => next(error);
+        const resume = AsyncLocalStorage.snapshot();
+        continueRequest = () => resume(() => next(error));
       });
     } finally {
       finish();

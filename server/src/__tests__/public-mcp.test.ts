@@ -5,7 +5,7 @@ import { createPublicMcpTransfers } from "../services/public-mcp/file-transfers.
 import { projectRoutes } from "../routes/projects.js";
 import { agentRoutes } from "../routes/agents.js";
 import { companySkillRoutes } from "../routes/company-skills.js";
-import { MAX_ATTACHMENT_BYTES } from "../attachment-types.js";
+import { getMaxAttachmentBytes, setAttachmentLimitSetting } from "../attachment-types.js";
 import { mcpAttachmentUploads, mcpFileTickets, principalPermissionGrants, heartbeatRuns, issueAccessGrants } from "@tickernelz/paperclip-pro-db";
 import { createHmac, createHash, randomBytes, randomUUID } from "node:crypto";
 import express, { type Request } from "express";
@@ -917,7 +917,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     const f = await expandedFixture();
     try {
       const args = { taskId: f.issue.id, requestId: randomUUID(), filename: "data.json", contentType: "application/json", byteSize: 2, sha256: createHash("sha256").update("{}").digest("hex") };
-      await expect(f.call("paperclip_get_upload_url", { ...args, byteSize: MAX_ATTACHMENT_BYTES + 1 })).rejects.toThrow();
+      await expect(f.call("paperclip_get_upload_url", { ...args, byteSize: getMaxAttachmentBytes() + 1 })).rejects.toThrow();
       await expect(f.call("paperclip_get_upload_url", { ...args, filename: "../escape" })).rejects.toThrow();
       const prepared = await f.call("paperclip_get_upload_url", args);
       const url = new URL(prepared.url as string);
@@ -940,12 +940,14 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       const app = express(); app.use(f.transfers.router);
       const put = (body: Buffer, type = "text/plain") => request(app).put(url.pathname + url.search).set("Content-Type", type).send(body);
       expect((await put(bytes.subarray(0, 4))).status).toBe(403);
-      expect((await put(Buffer.alloc(MAX_ATTACHMENT_BYTES + 1))).status).toBe(413);
+      setAttachmentLimitSetting(1);
+      expect((await put(Buffer.alloc(getMaxAttachmentBytes() + 1))).status).toBe(413);
+      setAttachmentLimitSetting(null);
       expect((await put(bytes, "video/mp4")).status).toBe(403);
       expect((await f.call("paperclip_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(0);
       expect((await put(bytes)).status).toBe(200);
       expect((await f.call("paperclip_list_deliverables", { taskId: f.issue.id })).attachments).toHaveLength(1);
-    } finally { await f.cleanup(); }
+    } finally { setAttachmentLimitSetting(null); await f.cleanup(); }
   });
 
   it("rejects authority lost during storage and safely reclaims the orphaned object", async () => {

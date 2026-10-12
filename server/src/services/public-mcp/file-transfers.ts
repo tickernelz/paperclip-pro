@@ -16,7 +16,7 @@ const lifetime = 10 * 60_000;
 const uploadSchema = z.object({ ...task, requestId,
   filename: z.string().trim().min(1).max(240).regex(/^[^/\\\x00-\x1f\x7f]+$/),
   contentType: z.string().min(1).max(150).regex(/^[a-z0-9.+-]+\/[a-z0-9.+-]+$/).refine(isAllowedContentType, "Unsupported attachment content type"),
-  byteSize: z.number().int().min(1).max(getMaxAttachmentBytes()),
+  byteSize: z.number().int().min(1).refine((value) => value <= getMaxAttachmentBytes(), "File exceeds the attachment size limit"),
   sha256: z.string().regex(/^[a-f0-9]{64}$/).describe("SHA-256 of the exact file bytes. The upload must match this digest and byteSize."),
 }).strict();
 const attachmentFields = ["id", "issueId", "originalFilename", "contentType", "byteSize", "sha256", "createdAt"];
@@ -95,7 +95,7 @@ export function createPublicMcpTransfers(db: Db, oauth: PublicMcpOAuth, api: Api
   });
   router.put("/mcp/files/upload", async (req, res, next) => {
     await authorize(req.query.ticket, true); next();
-  }, express.raw({ type: () => true, limit: getMaxAttachmentBytes() }), async (req, res) => {
+  }, (req, res, next) => express.raw({ type: () => true, limit: getMaxAttachmentBytes() })(req, res, next), async (req, res) => {
     const { row, principal } = await authorize(req.query.ticket, true);
     const bytes = req.body;
     if (!Buffer.isBuffer(bytes)) throw unavailable();

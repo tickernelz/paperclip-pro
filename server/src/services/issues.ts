@@ -8250,7 +8250,7 @@ export function issueService(db: Db) {
       const issueSource = db.select(issueListSelect).from(issues);
       const searchedSource = hasSearch
         ? issueSource.innerJoin(sql`(
-            ${taskSearchCtes(companyId, taskSearch, true, and(...conditions), filters?.readCondition)}
+            ${taskSearchCtes(companyId, taskSearch, false, and(...conditions), filters?.readCondition)}
             SELECT m.id, ${taskSearchScore(taskSearch)} AS score FROM matched m
           ) task_search`, sql`task_search.id = ${issues.id}`)
         : issueSource;
