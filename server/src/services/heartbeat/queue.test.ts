@@ -57,6 +57,11 @@ function callbacks(db: Db) {
     resumeQueuedCommentInterrupt: vi.fn(async () => undefined),
     resumeSavedLegacyComments: vi.fn(async () => undefined),
     formatIssueIdentifierLink: (_identifier: string | null, fallback: string) => fallback,
+    localCliAdmission: {
+      runtimeEnv: {},
+      snapshotRunningLocalCliRuns: async () => new Map<string, number | null>(),
+      scheduleLocalStartBypassSweep: vi.fn(),
+    },
     sweepPendingCleanupLeases: vi.fn<HeartbeatQueueDependencies["sweepPendingCleanupLeases"]>(),
   } satisfies HeartbeatQueueDependencies;
 }

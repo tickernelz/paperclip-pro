@@ -518,7 +518,9 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
           ? "cancelled"
           : outcome === "timed_out"
             ? "timed_out"
-            : "failed";
+            : outcome === "interrupted"
+              ? "interrupted"
+              : "failed";
 
     const cacheAdjustedCostUsd = adapterResult.costUsdExact != null && adapterResult.cacheAdjustedCostUsd == null
       ? null : resolveCacheAdjustedCostUsd(adapterResult);

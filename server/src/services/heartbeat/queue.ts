@@ -155,6 +155,16 @@ import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import { retryChatControlAdmission } from "../chat-control-admission-retry.js";
 
 import type { HeartbeatServiceOptions } from "../heartbeat.js";
+import {
+  clearLocalCliRunStarting,
+  countLocalCliRunsStarting,
+  isLocalCliAdapterType,
+  markLocalCliRunStarting,
+  mergeLocalCliStartReservations,
+  resolveLocalStartWaitBypassMs,
+  resolveMaxConcurrentLocalRuns,
+  resolveMaxConcurrentLocalStarts,
+} from "./local-cli-admission.js";
 import type { createHeartbeatRunState } from "./run-state.js";
 import type { createHeartbeatRunPreparation } from "./run-preparation.js";
 import type { HeartbeatRetryDependencies } from "./retries.js";
@@ -207,6 +217,11 @@ export interface HeartbeatQueueDependencies extends Pick<HeartbeatRetryDependenc
   resumeQueuedCommentInterrupt: (companyId: string, queueId: string) => Promise<unknown>;
   resumeSavedLegacyComments: (companyId: string, queueId: string) => Promise<unknown>;
   formatIssueIdentifierLink: (identifier: string | null, fallback: string) => string;
+  localCliAdmission: {
+    runtimeEnv: Record<string, string | undefined>;
+    snapshotRunningLocalCliRuns: () => Promise<Map<string, number | null>>;
+    scheduleLocalStartBypassSweep: (dueAtMs: number) => void;
+  };
 }
 
 const HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT = AGENT_DEFAULT_MAX_CONCURRENT_RUNS;
@@ -387,6 +402,7 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
     isSameTaskScope,
     runTaskKey,
     filterZombieCoalesceTarget,
+    localCliAdmission,
   } = dependencies;
 
   function parseHeartbeatPolicy(agent: typeof agents.$inferSelect) {
@@ -1918,11 +1934,25 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
       }
       const policy = parseHeartbeatPolicy(agent);
       const runningCount = await countRunningRunsForAgent(agentId);
-      const availableSlots = Math.max(
+      let availableSlots = Math.max(
         0,
         policy.maxConcurrentRuns - runningCount,
       );
+      const localCliAgent = isLocalCliAdapterType(agent.adapterType);
+      const maxLocalRuns = resolveMaxConcurrentLocalRuns(localCliAdmission.runtimeEnv);
+      let localCliInFlight: Map<string, number | null> | null = null;
+      if (availableSlots > 0 && localCliAgent) {
+        localCliInFlight = await localCliAdmission.snapshotRunningLocalCliRuns();
+        const localRunSlots = Math.max(
+          0,
+          maxLocalRuns -
+            mergeLocalCliStartReservations(localCliInFlight).size,
+        );
+        availableSlots = Math.min(availableSlots, localRunSlots);
+      }
       if (availableSlots <= 0) return [];
+      const maxLocalStarts = resolveMaxConcurrentLocalStarts(localCliAdmission.runtimeEnv);
+      const localStartWaitBypassMs = resolveLocalStartWaitBypassMs(localCliAdmission.runtimeEnv);
 
       const queuedRuns = await db
         .select()
@@ -2013,10 +2043,29 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
       const claimedRuns: Array<typeof heartbeatRuns.$inferSelect> = [];
       for (const queuedRun of prioritizedRuns) {
         if (claimedRuns.length >= availableSlots) break;
+        if (localCliAgent) {
+          const now = Date.now();
+          const inFlight = mergeLocalCliStartReservations(
+            localCliInFlight ?? new Map(),
+          );
+          if (inFlight.size >= maxLocalRuns) break;
+          const waitedMs = now - queuedRun.createdAt.getTime();
+          if (
+            waitedMs < localStartWaitBypassMs &&
+            countLocalCliRunsStarting(inFlight, now) >= maxLocalStarts
+          ) {
+            localCliAdmission.scheduleLocalStartBypassSweep(
+              queuedRun.createdAt.getTime() + localStartWaitBypassMs,
+            );
+            continue;
+          }
+          markLocalCliRunStarting(queuedRun.id, now);
+        }
         let claimed: typeof heartbeatRuns.$inferSelect | null;
         try {
           claimed = await claimQueuedRun(queuedRun, companyAgents, deferredPostCommitEffects);
         } catch (err) {
+          if (localCliAgent) clearLocalCliRunStarting(queuedRun.id);
           if (isPermanentClaimRejection(err)) {
             rejectedClaims.push({ run: queuedRun, err });
             continue;
@@ -2028,7 +2077,11 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
           );
           continue;
         }
-        if (claimed) claimedRuns.push(claimed);
+        if (!claimed) {
+          if (localCliAgent) clearLocalCliRunStarting(queuedRun.id);
+          continue;
+        }
+        claimedRuns.push(claimed);
       }
       if (claimedRuns.length === 0) return [];
 

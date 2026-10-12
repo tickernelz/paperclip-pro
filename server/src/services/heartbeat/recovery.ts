@@ -19,7 +19,11 @@ import {
 } from "../legacy-execution-recovery.js";
 import { setTimeout as delay } from "node:timers/promises";
 import { randomUUID } from "node:crypto";
-import { markShutdownTerminatedRun, DEFAULT_SHUTDOWN_EXECUTOR_SETTLE_TIMEOUT_MS } from "../heartbeat-shutdown-signal.js";
+import {
+  beginHeartbeatServerShutdown,
+  markShutdownTerminatedRun,
+  DEFAULT_SHUTDOWN_EXECUTOR_SETTLE_TIMEOUT_MS,
+} from "../heartbeat-shutdown-signal.js";
 import {
   PROCESS_LOSS_RETRY_REASON,
   PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS,
@@ -402,6 +406,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     run: typeof heartbeatRuns.$inferSelect,
     agent: typeof agents.$inferSelect,
     now: Date,
+    opts?: { wakeReason?: string },
   ) {
     // Completion deliveries own their durable bounded retry and reply identity.
     // A second process-loss retry would compete for the same outbox input.
@@ -414,6 +419,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       return null;
     const scheduled = await scheduleBoundedRetryForRun(run, agent, {
       now,
+      wakeReason: opts?.wakeReason,
       retryReason: PROCESS_LOSS_RETRY_REASON,
       maxAttempts: PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS,
       delayMs: PROCESS_LOSS_CONTINUATION_DELAY_MS,
@@ -477,6 +483,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     now = new Date(),
   ) {
     enterShutdown();
+    beginHeartbeatServerShutdown(signal);
     const idleSessions = await closeIdleWarmNativeSessionsForRestart();
     if (idleSessions.failed > 0) {
       logger.warn({ idleSessions }, "idle native sessions could not checkpoint before controller shutdown");
@@ -534,6 +541,29 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       ...intent,
       previousServerVersion: intent.previousServerVersion ?? serverVersion,
     };
+
+    if (process.platform === "linux" && runtimeEnv.PAPERCLIP_SERVICE_MANAGED === "1") {
+      const drainRunIds = snapshotRuns.map((run) => run.runId);
+      await writeHotRestartShutdownSnapshot({
+        intent: intentWithVersion,
+        signal,
+        activeRuns: snapshotRuns,
+        drainReason: "service_stop_kills_children",
+        drainRunIds,
+        capturedAt: now,
+      });
+      logger.warn(
+        { signal, previousServerPid: intent.previousServerPid, drainRunIds },
+        "systemd stops every process left in the service cgroup; draining live runs into process-loss continuations instead of adopting them",
+      );
+      return {
+        mode: "service_drain_required" as const,
+        skipDrain: false as const,
+        activeRunIds: drainRunIds,
+        drainRunIds,
+        drainReason: "service_stop_kills_children" as const,
+      };
+    }
 
     const serverStdioRuns = activeRuns.filter(isServerStdioBoundHotRestartRun);
     if (serverStdioRuns.length > 0) {
@@ -1074,6 +1104,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     now = new Date(),
     runIds: readonly string[] | null = null,
   ) {
+    beginHeartbeatServerShutdown(signal);
     const selectedRunIds = runIds ? [...new Set(runIds)] : null;
     if (selectedRunIds?.length === 0) {
       return {
