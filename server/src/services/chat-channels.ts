@@ -14912,7 +14912,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     const handle = openwaBurstClock.setTimer(() => {
       openwaBurstTimers.delete(handle);
       if (shuttingDown) return;
-      void releaseOpenwaBurstWake(db, { companyId, actionId, now: new Date(openwaBurstClock.now()) })
+      void releaseOpenwaBurstWake(db, { companyId, actionId, now: new Date(Math.max(openwaBurstClock.now(), heldUntil.getTime())) })
         .then((released) => {
           if (released) scheduleConversationDrain(endpointId, threadId);
         })
@@ -39768,6 +39768,20 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         const at = new Date(row.at).getTime();
         next = next === null ? at : Math.min(next, at);
       }
+    }
+    const [held] = await db.select({ at: sql<string | null>`min((${chatActions.result}->>'retryAt')::timestamptz)` })
+      .from(chatActions)
+      .innerJoin(chatDeliveries, and(eq(chatDeliveries.id, chatActions.deliveryId), eq(chatDeliveries.companyId, chatActions.companyId)))
+      .where(and(
+        eq(chatActions.kind, "inbound_wakeup"),
+        eq(chatActions.status, "issued"),
+        sql`${chatActions.result}->>'code' = ${OPENWA_BURST_HELD}`,
+        eq(chatDeliveries.state, "processed"),
+        sql`not exists (select 1 from chat_endpoints e where e.id = ${chatActions.endpointId} and e.status in ('paused', 'attention'))`,
+      ));
+    if (held?.at != null) {
+      const at = new Date(held.at).getTime();
+      next = next === null ? at : Math.min(next, at);
     }
     return next;
   }

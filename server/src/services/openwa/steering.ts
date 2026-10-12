@@ -5,6 +5,7 @@ import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, type ChatInflight
 import { findActiveServerAdapter } from "../../adapters/registry.js";
 import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";
+import { notifyChatDeliveryWork } from "../chat-work-notifications.js";
 import {
   getNativeSessionSteeringState,
   hasLiveAdapterSteering,
@@ -446,6 +447,7 @@ export async function holdOrFoldOpenwaBurstWake(
         .update(chatActions)
         .set({ result: { code: OPENWA_BURST_HELD, retryAt: heldUntil.toISOString(), heldSince: input.now.toISOString() }, updatedAt: new Date() })
         .where(eq(chatActions.id, own.id));
+      await notifyChatDeliveryWork(tx);
       return { kind: "held", actionId: own.id, heldUntil };
     }
     const holderOpenwa = record(holder.payload.openwa);

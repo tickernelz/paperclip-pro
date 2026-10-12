@@ -53,6 +53,9 @@ import {
   scheduleOpenwaRunRetryForRun,
 } from "../../services/openwa/followups.ts";
 import { recordOpenwaLateTranscript, takeOpenwaLateTranscripts } from "../../services/openwa/late-transcripts.ts";
+import { markTriggersAnswered } from "../../services/openwa/publication.ts";
+import { createDeliveryWorkCoordinator } from "../../services/delivery-work-coordinator.ts";
+import { registerChatDeliveryWork } from "../../services/chat-delivery-work.ts";
 import { registerOpenwaCommentSteering, steerOpenwaLateTranscript } from "../../services/openwa/steering.ts";
 import { resolveChatRunPresentationAuthorizationReason } from "../../services/chat-run-publications.ts";
 import { OPENWA_APPROVAL_WAKE_ACTION_KIND } from "../../services/openwa/approvals.ts";
@@ -82,6 +85,39 @@ async function until<T>(probe: () => Promise<T | null | undefined | false>, time
     if (Date.now() > deadline) throw new Error("condition not reached");
     await new Promise((resolve) => setTimeout(resolve, 25));
   }
+}
+
+class EarlyFiringClock implements OpenwaScheduledWakeClock {
+  private reading: number | null = null;
+  private lastRead = Date.now();
+  now() {
+    this.lastRead = this.reading ?? Date.now();
+    return this.lastRead;
+  }
+  setTimer(fire: () => void, delayMs: number) {
+    const deadline = this.lastRead + delayMs;
+    return setTimeout(() => {
+      this.reading = deadline - 1;
+      try {
+        fire();
+      } finally {
+        this.reading = null;
+      }
+    }, delayMs);
+  }
+  clearTimer(handle: unknown) {
+    clearTimeout(handle as ReturnType<typeof setTimeout>);
+  }
+}
+
+class LostTimerClock implements OpenwaScheduledWakeClock {
+  now() {
+    return Date.now();
+  }
+  setTimer() {
+    return null;
+  }
+  clearTimer() {}
 }
 
 class ManualClock implements OpenwaScheduledWakeClock {
@@ -203,7 +239,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     }
   });
 
-  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock; burstClock?: OpenwaScheduledWakeClock; storage?: boolean } = {}) {
+  async function setup(options: { scheduledClock?: OpenwaScheduledWakeClock; nudgeClock?: OpenwaScheduledWakeClock; burstClock?: OpenwaScheduledWakeClock; storage?: boolean; maxConcurrentRuns?: number } = {}) {
     const gateway = new FakeOpenwaGateway({ sessionId: SESSION_ID, ownPhone: OWN_PHONE });
     await gateway.start();
     gateways.push(gateway);
@@ -217,7 +253,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     });
     await db.insert(agents).values({
       id: agentId, companyId, name: "OpenWA Agent", role: "engineer", status: "idle",
-      adapterType: ADAPTER_TYPE, adapterConfig: {}, runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } }, permissions: {},
+      adapterType: ADAPTER_TYPE, adapterConfig: {}, runtimeConfig: { heartbeat: { maxConcurrentRuns: options.maxConcurrentRuns ?? 1 } }, permissions: {},
     });
     await db.insert(authUsers).values({ id: userId, name: "Owner", email: userId + "@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() });
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "owner" });
@@ -1151,5 +1187,67 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     });
     expect(audits[0]).toMatchObject({ runId: failed.id, metadata: { reason: "approval_event", event: "approval_reply" } });
     expect(await runRetryActions(t)).toHaveLength(0);
+  }, 120_000);
+
+  const LAB = "120363000000000888@g.us";
+
+  async function memberMentionWhileBusyInAnotherChat(t: Setup) {
+    t.gateway.groups.set(LAB, { id: LAB, name: "Research Lab", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(OTHER_MEMBER_PHONE) }] });
+    const ownerA = await admit(t, mention(OWNER_PHONE, "fix the invoice export"));
+    const ownerRun = await runningRun(t, ownerA.action.id);
+    const row = t.gateway.inbound({ chatId: LAB, author: jid(OTHER_MEMBER_PHONE), body: "@" + OWN_PHONE + " ada", extra: { mentionedIds: [jid(OWN_PHONE)] } });
+    const byMessage = sql`${chatDeliveries.normalizedEvent} -> 'openwa' ->> 'waMessageId' = ${row.waMessageId}`;
+    const delivery = await until(async () => {
+      const [found] = await db.select().from(chatDeliveries).where(and(eq(chatDeliveries.endpointId, t.endpointId), byMessage));
+      return found?.state === "processed" ? found : null;
+    });
+    expect(delivery).toMatchObject({ eventKind: "mention", triggerClass: "other", principalRole: "outside_allowlist", answerState: "pending" });
+    expect(delivery.conversationId).not.toBe(ownerA.delivery.conversationId);
+    const woken = await until(async () => {
+      const [action] = await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, delivery.id), eq(chatActions.kind, "inbound_wakeup")));
+      if (action?.status !== "processed") return null;
+      const [wake] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, action.id));
+      return wake ? { action, wake } : null;
+    }, 15_000);
+    const memberRun = await runningRun(t, woken.action.id);
+    expect(memberRun.id).not.toBe(ownerRun.id);
+    const context = await runContext(memberRun.id);
+    expect(context.issueId).toBe(woken.action.payload.issueId);
+    expect(context.issueId).not.toBe(ownerA.action.payload.issueId);
+    expect((context.paperclipOpenwa as { triggerClass: string; deliveryIds: string[] })).toMatchObject({ triggerClass: "other", deliveryIds: [delivery.id] });
+    expect(steered.get(ownerRun.id)).toBeUndefined();
+    expect((await runContext(ownerRun.id)).paperclipOpenwa).toMatchObject({ deliveryIds: [ownerA.delivery.id] });
+    const answered = await markTriggersAnswered(db, {
+      companyId: t.companyId,
+      endpointId: t.endpointId,
+      conversationId: delivery.conversationId!,
+      chatKey: LAB,
+      quotedMessageId: row.waMessageId,
+      runClass: "other",
+      visibleBefore: new Date(),
+      deliveryIds: [delivery.id],
+    });
+    expect(answered).toEqual([delivery.id]);
+    const [after] = await db.select({ answerState: chatDeliveries.answerState }).from(chatDeliveries).where(eq(chatDeliveries.id, delivery.id));
+    expect(after!.answerState).toBe("answered");
+    adapterMode.hold = false;
+    release(ownerRun.id);
+    release(memberRun.id);
+  }
+
+  it("wakes a member's mention in another group while the agent works an owner run, when the burst timer fires a millisecond before its deadline", async () => {
+    const t = await setup({ burstClock: new EarlyFiringClock(), maxConcurrentRuns: 2 });
+    await memberMentionWhileBusyInAnotherChat(t);
+  }, 120_000);
+
+  it("lets the inbound delivery sweep dispatch a held member wake whose in-process release timer never ran", async () => {
+    const t = await setup({ burstClock: new LostTimerClock(), maxConcurrentRuns: 2 });
+    const coordinator = createDeliveryWorkCoordinator({ owner: db, canRun: () => true, onError: () => undefined });
+    try {
+      await registerChatDeliveryWork(coordinator, t.service, () => true).ready;
+      await memberMentionWhileBusyInAnotherChat(t);
+    } finally {
+      await coordinator.stop();
+    }
   }, 120_000);
 });
