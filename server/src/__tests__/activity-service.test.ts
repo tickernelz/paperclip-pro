@@ -20,6 +20,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { activityService } from "../services/activity.ts";
+import { issueReadSqlCondition } from "../services/authorization.ts";
 import { issueService } from "../services/issues.ts";
 import { documentService } from "../services/documents.ts";
 
@@ -306,7 +307,55 @@ describeEmbeddedPostgres("activity service", () => {
     expect(nextPage.map((row) => row.id)).toEqual([newestFirst[2].id]);
   });
 
-  it("returns compact usage and result summaries for issue runs", async () => {
+  it("filters company activity rows whose entity is a private issue", async () => {
+    const companyId = randomUUID();
+    const privateIssueId = randomUUID();
+    const openIssueId = randomUUID();
+    await db.insert(companies).values({
+      id: companyId,
+      name: "Private activity",
+      issuePrefix: `A${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+    });
+    await db.insert(issues).values([
+      {
+        id: privateIssueId,
+        companyId,
+        title: "Confidential activity",
+        status: "todo",
+        priority: "medium",
+        visibility: "private",
+        privacyRootIssueId: privateIssueId,
+        responsibleUserId: "private-owner",
+      },
+      {
+        id: openIssueId,
+        companyId,
+        title: "Open activity",
+        status: "todo",
+        priority: "medium",
+      },
+    ]);
+    await db.insert(activityLog).values([
+      { companyId, actorType: "system", actorId: "system", action: "private.changed", entityType: "issue", entityId: privateIssueId },
+      { companyId, actorType: "system", actorId: "system", action: "open.changed", entityType: "issue", entityId: openIssueId },
+    ]);
+    const actor = {
+      type: "board" as const,
+      userId: "non-member",
+      companyIds: [companyId],
+      source: "session" as const,
+      isInstanceAdmin: false,
+    };
+
+    const rows = await activityService(db).list({
+      companyId,
+      readCondition: await issueReadSqlCondition(db, actor),
+    });
+    expect(rows.map((row) => row.action)).toContain("open.changed");
+    expect(rows.map((row) => row.action)).not.toContain("private.changed");
+  });
+
+  it.each([null, "native_provider_model_rejected", "adapter_failed"])("returns compact issue runs with bounded model rejection details: %s", async (errorCode) => {
     const companyId = randomUUID();
     const agentId = randomUUID();
     const issueId = randomUUID();
@@ -331,12 +380,25 @@ describeEmbeddedPostgres("activity service", () => {
       permissions: {},
     });
 
+    await db.insert(issues).values({
+      id: issueId,
+      companyId,
+      title: "Summarize a completed run",
+      status: "done",
+      priority: "medium",
+      assigneeAgentId: agentId,
+    });
+
     await db.insert(heartbeatRuns).values({
       id: runId,
       companyId,
       agentId,
+      scopeKind: "issue",
+      issueId,
       invocationSource: "assignment",
-      status: "succeeded",
+      status: errorCode ? "failed" : "succeeded",
+      errorCode,
+      error: "provider-error".repeat(200),
       contextSnapshot: { issueId },
       usageJson: {
         inputTokens: 11,
@@ -348,6 +410,7 @@ describeEmbeddedPostgres("activity service", () => {
       },
       resultJson: {
         conversationReset: true,
+        configurationIncomplete: { reason: "workspace_base_ref_unresolved", requestedRef: "main", fetchError: "private diagnostic" },
         billing_type: "metered",
         total_cost_usd: 0.42,
         stopReason: "timeout",
@@ -371,6 +434,7 @@ describeEmbeddedPostgres("activity service", () => {
       agentId,
       invocationSource: "assignment",
       contextIssueId: issueId,
+      error: errorCode === "native_provider_model_rejected" ? "provider-error".repeat(200).slice(0, 2000) : null,
     });
     expect(runs[0]?.usageJson).toEqual({
       inputTokens: 11,
@@ -388,6 +452,7 @@ describeEmbeddedPostgres("activity service", () => {
     });
     expect(runs[0]?.resultJson).toEqual({
       conversationReset: true,
+      configurationIncomplete: { reason: "workspace_base_ref_unresolved" },
       billingType: "metered",
       billing_type: "metered",
       costUsd: 0.42,
@@ -448,6 +513,8 @@ describeEmbeddedPostgres("activity service", () => {
       id: runId,
       companyId,
       agentId,
+      scopeKind: "issue",
+      issueId,
       invocationSource: "assignment",
       status: "succeeded",
       startedAt: new Date("2026-04-18T20:00:00.000Z"),
@@ -542,6 +609,8 @@ describeEmbeddedPostgres("activity service", () => {
         id: runId,
         companyId,
         agentId,
+        scopeKind: "issue",
+        issueId,
         invocationSource: "assignment",
         status: "succeeded",
         startedAt: new Date("2026-04-18T20:00:00.000Z"),
@@ -557,6 +626,8 @@ describeEmbeddedPostgres("activity service", () => {
         id: otherRunId,
         companyId,
         agentId,
+        scopeKind: "issue",
+        issueId,
         invocationSource: "assignment",
         status: "succeeded",
         startedAt: new Date("2026-04-18T20:05:00.000Z"),
@@ -664,6 +735,8 @@ describeEmbeddedPostgres("activity service", () => {
       id: runId,
       companyId,
       agentId,
+      scopeKind: "issue",
+      issueId,
       invocationSource: "assignment",
       status: "succeeded",
       startedAt: new Date("2026-04-18T20:10:00.000Z"),

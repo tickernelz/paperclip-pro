@@ -234,7 +234,7 @@ test("keeps authoritative parent and ancestor context from task markdown", () =>
   expect(prompt).not.toContain("check the issue body or comments for references");
 });
 
-test("renders safe Paperclip API examples from environment variables with multiline update preservation", () => {
+test("keeps current runtime identity in the user turn without repeating static API examples", () => {
   const prompt = buildPrompt(baseContext(), {
     paperclipApiUrl: "http://paperclip.local/api",
   });
@@ -248,6 +248,10 @@ test("renders safe Paperclip API examples from environment variables with multil
   expect(prompt).toContain("--data-binary @-");
   expect(prompt).not.toContain("Authorization: Bearer <");
   expect(prompt).not.toMatch(/paperclip[A-Z]/);
+  expect(prompt).toContain("- Agent ID: agent-1");
+  expect(prompt).toContain("- Company ID: company-1");
+  expect(prompt).toContain("- Run ID: run-1");
+  expect(prompt).toContain("- API base: http://paperclip.local/api");
 });
 
 test("preserves custom prompt templates while exposing runtime and wake variables", () => {
@@ -277,7 +281,7 @@ test("preserves custom prompt templates while exposing runtime and wake variable
   expect(prompt).toContain('"reason":"issue_assigned"');
   expect(prompt).toContain("## Paperclip Wake Payload");
   expect(prompt).toContain("Issue description:\n```text\nUse the wake payload as runtime authority.\n```");
-  expect(prompt).not.toContain("Paperclip runtime identity:");
+  expect(prompt).toContain("Paperclip runtime identity:");
 });
 
 test("keeps historical task markdown available to custom templates while automatic context uses assignment markdown", () => {

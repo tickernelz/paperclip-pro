@@ -110,7 +110,7 @@ async function createApp(storage: ReturnType<typeof createStorageService>) {
     };
     next();
   });
-  app.use("/api", assetRoutes({} as any, storage));
+  app.use("/api", assetRoutes({ select: () => ({ from: () => ({ leftJoin: () => ({ where: async () => [] }), where: async () => [] }) }) } as any, storage));
   const { errorHandler } = await vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js");
   app.use(errorHandler);
   return app;
