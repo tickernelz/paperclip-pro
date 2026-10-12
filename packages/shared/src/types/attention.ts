@@ -260,6 +260,45 @@ export interface AttentionItem {
   resolverAudience?: AttentionResolverAudience | null;
 }
 
+export interface PendingDecisionOption {
+  id: string;
+  label: string;
+  description: string | null;
+}
+
+export interface PendingDecisionQuestion {
+  id: string;
+  prompt: string;
+  selectionMode: "single" | "multi";
+  options: PendingDecisionOption[];
+}
+
+export interface PendingDecision {
+  source: "interaction" | "approval" | "decision";
+  id: string;
+  kind: string;
+  issueId: string | null;
+  issueIdentifier: string | null;
+  issueTitle: string | null;
+  title: string | null;
+  prompt: string | null;
+  options: PendingDecisionOption[];
+  questions: PendingDecisionQuestion[];
+  humanOnly: boolean;
+  requestedByAgentId: string | null;
+  requestedByAgentName: string | null;
+  requestedByUserId: string | null;
+  createdAt: string;
+  href: string | null;
+  relayable: boolean;
+  relayBlockedReason: string | null;
+}
+
+export interface PendingDecisionList {
+  companyId: string;
+  items: PendingDecision[];
+}
+
 export interface AttentionFeed {
   companyId: string;
   generatedAt: string;

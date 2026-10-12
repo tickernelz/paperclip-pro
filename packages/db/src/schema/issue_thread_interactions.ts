@@ -1,6 +1,7 @@
 import type {
   IssueThreadInteractionCanonicalResolverPolicy,
   IssueThreadInteractionEffectiveResolverPolicySource,
+  IssueThreadInteractionOwnerRelay,
   IssueThreadInteractionPayload,
   IssueThreadInteractionResolverPolicyProvenance,
   IssueThreadInteractionResult,
@@ -55,6 +56,7 @@ export const issueThreadInteractions = pgTable(
     payload: jsonb("payload").$type<IssueThreadInteractionPayload>().notNull(),
     result: jsonb("result").$type<IssueThreadInteractionResult>(),
     resolvedAt: timestamp("resolved_at", { withTimezone: true }),
+    resolutionRelay: jsonb("resolution_relay").$type<IssueThreadInteractionOwnerRelay>(),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   },

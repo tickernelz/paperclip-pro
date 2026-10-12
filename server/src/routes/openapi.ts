@@ -224,6 +224,7 @@ import {
   resolveConfirmationFromCommentSchema,
   rejectIssueThreadInteractionSchema,
   respondIssueThreadInteractionSchema,
+  answerDecisionForOwnerSchema,
   skipIssueThreadInteractionSchema,
   submitIssueThreadInteractionVerdictsSchema,
   withdrawIssueThreadInteractionSchema,
@@ -6836,6 +6837,16 @@ registry.registerPath({
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
 });
 
+registry.registerPath({
+  method: "get",
+  path: "/api/companies/{companyId}/pending-decisions",
+  tags: ["inbox"],
+  summary: "List decisions waiting on a human",
+  description: "The Decisions-desk cards, board approvals and agent decisions still waiting for a person, limited to issues the caller can read. Each item has its issue, card kind, prompt, options or questions, requester, link, and whether an agent may relay the owner's answer with paperclipAnswerDecisionForOwner (relayBlockedReason says why not).",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
 // ─── Decisions ──────────────────────────────────────────────────────────────
 
 // Decision queues and triage
@@ -8863,6 +8874,27 @@ registry.registerPath({
     401: r.unauthorized,
     404: r.notFound,
     422: { description: "Invalid answer, or a note sent by a non-user actor" },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/issues/{id}/interactions/{interactionId}/answer-for-owner",
+  tags: ["issues"],
+  summary: "Relay a board user's own answer to a card",
+  description: "Agent runs only. Submits the answer a board user gave in their own message (an owner WhatsApp message, or their board comment) that started this run, through the same answer route the board UI uses, recorded as that user's answer and relayed by this agent. ownerMessageRef must be that message's id. One message answers one card unless it names each card. Use only when the owner's words explicitly decide this card; human-only cards included.",
+  request: {
+    params: z.object({ id: z.string(), interactionId: z.string() }),
+    body: jsonBody(answerDecisionForOwnerSchema),
+  },
+  responses: {
+    200: r.ok(),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: { description: "owner_confirmation_required: the run was not started by the owner's own message, the owner is not linked, or the message was already used" },
+    404: r.notFound,
+    409: { description: "The card is already resolved or expired" },
+    422: { description: "The answer does not fit the card, or the card is a governed action that must be decided in Paperclip" },
   },
 });
 

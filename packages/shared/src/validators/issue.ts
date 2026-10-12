@@ -2295,6 +2295,37 @@ export type SubmitIssueThreadInteractionVerdicts = z.infer<
   typeof submitIssueThreadInteractionVerdictsSchema
 >;
 
+export const answerDecisionForOwnerSchema = z
+  .object({
+    ownerMessageRef: z.string().trim().min(1).max(200),
+    decision: z.enum(["approve", "reject"]).optional(),
+    optionIds: z.array(z.string().trim().min(1).max(120)).min(1).max(REQUEST_CHECKBOX_CONFIRMATION_OPTION_LIMIT).optional(),
+    answers: z.array(z.object({
+      questionId: z.string().trim().min(1).max(160),
+      optionIds: z.array(z.string().trim().min(1).max(160)).max(129),
+      otherText: z.string().max(100000).optional(),
+    }).strict()).min(1).max(20).optional(),
+    verdicts: z.array(z.object({
+      id: z.string().trim().min(1).max(120),
+      verdict: requestItemVerdictValueSchema,
+      reason: z.string().trim().max(4000).nullable().optional(),
+    }).strict()).min(1).max(REQUEST_ITEM_VERDICTS_ITEM_LIMIT).optional(),
+    reason: z.string().trim().max(4000).optional(),
+    note: z.string().trim().max(INTERACTION_NOTE_MAX_LENGTH).optional(),
+  })
+  .strict()
+  .superRefine((value, ctx) => {
+    const shapes = [value.decision !== undefined, value.answers !== undefined, value.verdicts !== undefined].filter(Boolean).length;
+    if (shapes !== 1) ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Give exactly one of decision, answers or verdicts" });
+    if (value.optionIds !== undefined && value.decision !== "approve")
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["optionIds"], message: "optionIds apply only to decision approve" });
+    if (value.reason !== undefined && value.decision !== "reject")
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["reason"], message: "reason applies only to decision reject" });
+    if (value.optionIds && new Set(value.optionIds).size !== value.optionIds.length)
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["optionIds"], message: "optionIds must be unique" });
+  });
+export type AnswerDecisionForOwner = z.infer<typeof answerDecisionForOwnerSchema>;
+
 export const linkIssueApprovalSchema = z.object({
   approvalId: z.string().guid(),
 });

@@ -2,8 +2,9 @@ import { Router } from "express";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { AttentionSortMode } from "@tickernelz/paperclip-pro-shared";
 import { attentionService } from "../services/attention.js";
+import { listPendingDecisions } from "../services/owner-decision-relay.js";
 import { badRequest } from "../errors.js";
-import { assertBoard, assertCompanyAccess } from "./authz.js";
+import { assertBoard, assertBoardOrAgent, assertCompanyAccess } from "./authz.js";
 
 function optionalQueryString(value: unknown, field: string) {
   if (value === undefined) return undefined;
@@ -53,6 +54,17 @@ export function attentionRoutes(db: Db) {
       limit,
     });
     res.json(feed);
+  });
+
+  router.get("/companies/:companyId/pending-decisions", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoardOrAgent(req);
+    const userId = req.actor.type === "board" ? (req.actor.userId ?? null) : (req.actor.onBehalfOfUserId ?? null);
+    res.set("Cache-Control", "no-store").json({
+      companyId,
+      items: await listPendingDecisions(db, { companyId, actor: req.actor, userId }),
+    });
   });
 
   return router;

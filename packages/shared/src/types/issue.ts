@@ -1282,6 +1282,17 @@ export interface IssueThreadInteractionActorFields {
   resolvedByUserId?: string | null;
 }
 
+export type IssueThreadInteractionOwnerRelayChannel = "whatsapp" | "paperclip";
+
+export interface IssueThreadInteractionOwnerRelay {
+  channel: IssueThreadInteractionOwnerRelayChannel;
+  ownerUserId: string;
+  relayedByAgentId: string;
+  runId: string;
+  ownerMessageRef: string;
+  relayedAt: string;
+}
+
 export interface SuggestedTaskDraft {
   clientKey: string;
   parentClientKey?: string | null;
@@ -1723,6 +1734,7 @@ export interface IssueThreadInteractionBase extends IssueThreadInteractionActorF
   createdAt: Date | string;
   updatedAt: Date | string;
   resolvedAt?: Date | string | null;
+  resolutionRelay?: IssueThreadInteractionOwnerRelay | null;
 }
 
 export interface SuggestTasksInteraction extends IssueThreadInteractionBase {

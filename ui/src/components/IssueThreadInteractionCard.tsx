@@ -3958,6 +3958,10 @@ export function IssueThreadInteractionCard({
       : null;
   // P4: audit-visible distinction between agent and human resolution.
   const resolvedByAgent = Boolean(interaction.resolvedByAgentId);
+  const ownerRelay = interaction.resolutionRelay ?? null;
+  const ownerRelayAgentLabel = ownerRelay
+    ? resolveActorLabel({ agentId: ownerRelay.relayedByAgentId, agentMap, currentUserId, userLabelMap })
+    : null;
   const autonomyWindowResolution =
     interaction.kind === "request_confirmation" && interaction.status === "accepted"
       ? interaction.result?.resolutionDetails ?? null
@@ -4238,6 +4242,18 @@ export function IssueThreadInteractionCard({
               autonomy window ({resolveActorLabel({ userId: autonomyWindowResolution.grantedByUserId, currentUserId, userLabelMap })}, until{" "}
               {formatClockTime(autonomyWindowResolution.expiresAt)})
             </span>
+            {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
+          </div>
+        ) : ownerRelay && resolvedByLabel ? (
+          <div
+            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            data-testid="interaction-owner-relay-footer"
+          >
+            Answered by <span className="font-medium text-foreground">{resolvedByLabel}</span>
+            {ownerRelay.channel === "whatsapp" ? " via WhatsApp" : " via a Paperclip message"}
+            {" (relayed by "}
+            <span className="font-medium text-foreground">{ownerRelayAgentLabel ?? "an agent"}</span>
+            {")"}
             {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
           </div>
         ) : resolvedByLabel && !isToolAction && !connectionAuthorization ? (

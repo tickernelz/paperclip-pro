@@ -1283,6 +1283,31 @@ describe("IssueThreadInteractionCard tool-action card", () => {
     expect(host.querySelector('[data-testid="interaction-resolved-footer"]')).toBeNull();
   });
 
+  it("credits the owner and the relaying agent when an owner's WhatsApp answer was relayed", () => {
+    const host = renderCard({
+      interaction: {
+        ...agentResolvedRequestConfirmationInteraction,
+        resolvedByAgentId: null,
+        resolvedByUserId: "user-zhafron",
+        resolutionRelay: {
+          channel: "whatsapp",
+          ownerUserId: "user-zhafron",
+          relayedByAgentId: "agent-wira",
+          runId: "33333333-3333-4333-8333-333333333333",
+          ownerMessageRef: "false_1234@lid_3EB0",
+          relayedAt: "2026-10-12T03:00:00.000Z",
+        },
+      },
+      userLabelMap: new Map([["user-zhafron", "Zhafron"]]),
+      agentMap: new Map([["agent-wira", { name: "Wira" } as Agent]]),
+    });
+
+    const footer = host.querySelector('[data-testid="interaction-owner-relay-footer"]');
+    expect(footer?.textContent).toContain("Answered by Zhafron via WhatsApp (relayed by Wira)");
+    expect(host.querySelector('[data-testid="interaction-resolved-footer"]')).toBeNull();
+    expect(host.querySelector('[data-testid="interaction-resolved-by-agent-chip"]')).toBeNull();
+  });
+
   it("renders a withdrawn footer with the withdrawer, reason, and agent chip", () => {
     const host = renderCard({
       interaction: withdrawnRequestConfirmationInteraction,

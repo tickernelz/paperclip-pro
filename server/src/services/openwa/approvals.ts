@@ -718,9 +718,22 @@ async function requestReachesChat(tx: DbOrTransaction, request: RequestRow, chat
 
 /** The single owner principal behind this owner-class run's triggers in its own chat; null otherwise. */
 async function runOwnerPrincipal(ctx: ToolContext): Promise<string | null> {
-  const deliveryIds = ctx.openwa?.deliveryIds ?? [];
+  return openwaOwnerPrincipalOfDeliveries(ctx.db, {
+    companyId: ctx.endpoint.companyId,
+    endpointId: ctx.endpoint.id,
+    conversationId: ctx.conversation.id,
+    chatKey: ctx.origin.chatKey,
+    deliveryIds: ctx.openwa?.deliveryIds ?? [],
+  });
+}
+
+export async function openwaOwnerPrincipalOfDeliveries(
+  db: DbOrTransaction,
+  input: { companyId: string; endpointId: string; conversationId: string; chatKey: string; deliveryIds: readonly string[] },
+): Promise<string | null> {
+  const deliveryIds = input.deliveryIds;
   if (!deliveryIds.length) return null;
-  const rows = await ctx.db
+  const rows = await db
     .select({
       principalId: chatDeliveries.principalId,
       triggerClass: chatDeliveries.triggerClass,
@@ -730,9 +743,9 @@ async function runOwnerPrincipal(ctx: ToolContext): Promise<string | null> {
     .from(chatDeliveries)
     .where(
       and(
-        eq(chatDeliveries.companyId, ctx.endpoint.companyId),
-        eq(chatDeliveries.endpointId, ctx.endpoint.id),
-        eq(chatDeliveries.conversationId, ctx.conversation.id),
+        eq(chatDeliveries.companyId, input.companyId),
+        eq(chatDeliveries.endpointId, input.endpointId),
+        eq(chatDeliveries.conversationId, input.conversationId),
         inArray(chatDeliveries.id, deliveryIds.slice(0, 50)),
       ),
     );
@@ -740,7 +753,7 @@ async function runOwnerPrincipal(ctx: ToolContext): Promise<string | null> {
   const principals = new Set<string>();
   for (const row of rows) {
     if (!row.principalId || row.triggerClass !== "owner" || row.principalRole !== "owner") return null;
-    if (openwaChatKey(str(record(row.normalizedEvent.openwa).chatKey) ?? "") !== ctx.origin.chatKey) return null;
+    if (openwaChatKey(str(record(row.normalizedEvent.openwa).chatKey) ?? "") !== input.chatKey) return null;
     principals.add(row.principalId);
   }
   return principals.size === 1 ? [...principals][0]! : null;

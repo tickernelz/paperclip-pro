@@ -853,6 +853,7 @@ const READ_ONLY_REST_ALLOW: readonly RestRule[] = [
   { method: "POST", path: /^\/api\/companies\/[^/]+\/slack\/tasks\/[^/]+\/tools$/i },
   { method: "PUT", path: /^\/api\/companies\/[^/]+\/slack\/endpoints\/[^/]+\/search$/i },
   { method: "POST", path: /^\/api\/mcp\/project-tools$/i },
+  { method: "POST", path: /^\/api\/issues\/[^/]+\/interactions\/[^/]+\/answer-for-owner$/i },
 ];
 
 const CREATE_TASK_REST: readonly { method: string; path: RegExp }[] = [

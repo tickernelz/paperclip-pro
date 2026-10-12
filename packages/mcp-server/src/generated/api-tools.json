@@ -379,6 +379,81 @@
     }
   },
   {
+    "name": "paperclipAnswerDecisionForOwner",
+    "operationId": "POST /api/issues/{id}/interactions/{interactionId}/answer-for-owner",
+    "method": "POST",
+    "path": "/issues/{issueId}/interactions/{interactionId}/answer-for-owner",
+    "description": "Submit the owner's explicit answer to one card from the run their own message (ownerMessageRef) started. advanced: answers, verdicts, note.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCrossIssueInfluenceWithinRunCap"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "interactionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "advanced": true,
+      "schema": {
+        "type": "object",
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ]
+          },
+          "optionIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "ownerMessageRef": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ownerMessageRef"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipAppChatEndpointGithub",
     "operationId": "POST /api/chat-endpoints/{endpointId}/github/app",
     "method": "POST",
@@ -1498,7 +1573,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19538",
+    "boardGuard": "assertBoard@issues.ts:19660",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14832,7 +14907,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18452",
+    "boardGuard": "assertBoard@issues.ts:18464",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18458,7 +18533,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@attention.ts:21",
+    "boardGuard": "assertBoard@attention.ts:22",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26513,7 +26588,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17396",
+    "boardGuard": "assertBoard@issues.ts:17408",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31502,6 +31577,41 @@
     "permissions": [
       "users:manage_permissions"
     ],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipListPendingDecisions",
+    "operationId": "GET /api/companies/{companyId}/pending-decisions",
+    "method": "GET",
+    "path": "/companies/{companyId}/pending-decisions",
+    "description": "List Decisions-desk items waiting on a human, human-only cards included, with prompt and options.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "inbox"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoardOrAgent",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
     "parameters": [
@@ -38654,7 +38764,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10173",
+    "boardGuard": "assertBoard@issues.ts:10185",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41223,7 +41333,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9500",
+    "boardGuard": "assertBoard@issues.ts:9512",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41284,7 +41394,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17366",
+    "boardGuard": "assertBoard@issues.ts:17378",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43421,7 +43531,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19478",
+    "boardGuard": "assertBoard@issues.ts:19600",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43887,7 +43997,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18404",
+    "boardGuard": "assertBoard@issues.ts:18416",
     "authorityCapability": null,
     "parameters": [
       {
@@ -47982,7 +48092,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10937",
+    "boardGuard": "assertBoard@issues.ts:10949",
     "authorityCapability": null,
     "parameters": [
       {
@@ -48108,7 +48218,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17334",
+    "boardGuard": "assertBoard@issues.ts:17346",
     "authorityCapability": null,
     "parameters": [
       {

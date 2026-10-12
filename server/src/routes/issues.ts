@@ -14,6 +14,16 @@ import { setIssueTitle } from "../services/issue-title.js";
 import { setIssueTitleSchema } from "@tickernelz/paperclip-pro-shared";
 import { ISSUE_REFS_MAX, issueRefsQuerySchema, parseIssueRefIds, type IssueRef } from "@tickernelz/paperclip-pro-shared";
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
+import {
+  OWNER_CONFIRMATION_REQUIRED_CODE,
+  claimOwnerRelay,
+  dispatchAsOwner,
+  markOwnerRelayApplied,
+  ownerRelayTarget,
+  releaseOwnerRelay,
+  resolveOwnerRelayAuthority,
+} from "../services/owner-decision-relay.js";
+import { boardAuthService } from "../services/board-auth.js";
 import { createIssueReadTiming } from "../services/issue-read-timing.js";
 import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
 import { retryNativeWorkspaceExport } from "../services/native-runtime/native-workspace-export-retry.js";
@@ -134,6 +144,8 @@ import {
   rejectIssueThreadInteractionSchema,
   restoreIssueDocumentRevisionSchema,
   respondIssueThreadInteractionSchema,
+  answerDecisionForOwnerSchema,
+  type AnswerDecisionForOwner,
   stalledReviewDecisionSchema,
   submitIssueThreadInteractionVerdictsSchema,
   updateIssueWorkProductSchema,
@@ -19249,6 +19261,116 @@ export function issueRoutes(
       await steerInteractionResponse({ issueId: issue.id, interaction, actor });
 
       res.json(interaction);
+    },
+  );
+
+  router.post(
+    "/issues/:id/interactions/:interactionId/answer-for-owner",
+    validate(answerDecisionForOwnerSchema),
+    async (req, res) => {
+      if (req.actor.type !== "agent" || !req.actor.agentId || !req.actor.runId) {
+        throw forbidden("Only an agent run can relay an owner's answer; board users answer the card directly", {
+          code: OWNER_CONFIRMATION_REQUIRED_CODE,
+          reason: "not_owner_triggered",
+        });
+      }
+      const agentId = req.actor.agentId;
+      const runId = req.actor.runId;
+      const issue = await getAccessibleResource(
+        req,
+        res,
+        svc.getById(req.params.id as string),
+        "Issue not found",
+      );
+      if (!issue) return;
+      const interactionSvc = issueThreadInteractionService(db);
+      const current = await interactionSvc.getForIssue(issue, req.params.interactionId as string);
+      if (current.status !== "pending") {
+        throw conflict(`This card is already ${current.status}`, {
+          code: "interaction_already_resolved",
+          interactionStatus: current.status,
+        });
+      }
+      const answer = req.body as AnswerDecisionForOwner;
+      const target = ownerRelayTarget(current, answer);
+      const authority = await resolveOwnerRelayAuthority(db, {
+        companyId: issue.companyId,
+        agentId,
+        runId,
+        ownerMessageRef: answer.ownerMessageRef,
+      });
+      if (!(await assertCrossIssueInfluenceWithinRunCap(req, res, issue, "interaction_resolution"))) return;
+      const claimId = await claimOwnerRelay(db, {
+        companyId: issue.companyId,
+        issueId: issue.id,
+        interactionId: current.id,
+        issueIdentifier: issue.identifier ?? null,
+        cardCreatedAt: new Date(current.createdAt),
+        authority,
+        agentId,
+        runId,
+      });
+      let outcome: { status: number; body: unknown };
+      try {
+        const access = await boardAuthService(db).resolveBoardAccess(authority.ownerUserId);
+        outcome = await dispatchAsOwner(router, req, {
+          url: `/issues/${issue.id}/interactions/${current.id}/${target.action}`,
+          body: target.body,
+          actor: {
+            type: "board",
+            userId: authority.ownerUserId,
+            userName: access.user?.name ?? null,
+            userEmail: access.user?.email ?? null,
+            companyIds: access.companyIds,
+            memberships: access.memberships,
+            isInstanceAdmin: access.isInstanceAdmin,
+            sessionId: null,
+            runId,
+            source: "session",
+          },
+        });
+      } catch (error) {
+        await releaseOwnerRelay(db, claimId);
+        throw error;
+      }
+      if (outcome.status >= 400) {
+        await releaseOwnerRelay(db, claimId);
+        res.status(outcome.status).json(outcome.body);
+        return;
+      }
+      const relay = {
+        channel: authority.channel,
+        ownerUserId: authority.ownerUserId,
+        relayedByAgentId: agentId,
+        runId,
+        ownerMessageRef: authority.ownerMessageRef,
+        relayedAt: new Date().toISOString(),
+      };
+      await markOwnerRelayApplied(db, { companyId: issue.companyId, interactionId: current.id, relay });
+      const resolved = await interactionSvc.getForIssue(issue, current.id);
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        runId,
+        action: "issue.thread_interaction_owner_relayed",
+        entityType: "issue",
+        entityId: issue.id,
+        details: {
+          identifier: issue.identifier,
+          interactionId: current.id,
+          interactionKind: current.kind,
+          interactionStatus: resolved.status,
+          answerAction: target.action,
+          ownerUserId: relay.ownerUserId,
+          relayedByAgentId: agentId,
+          runId,
+          ownerMessageRef: relay.ownerMessageRef,
+          channel: relay.channel,
+        },
+      });
+      res.json(resolved);
     },
   );
 

@@ -298,7 +298,7 @@ describe("generated Paperclip API tools", () => {
     const { listing } = paperclipToolCatalog(makeClient(), ["core"], false);
     const serialized = JSON.stringify(listing.tools);
     expect(serialized).not.toContain('"$schema":');
-    expect(Buffer.byteLength(serialized)).toBeLessThan(48_000);
+    expect(Buffer.byteLength(serialized)).toBeLessThan(49_000);
     const updateIssue = listing.tools.find((tool) => tool.name === "paperclipUpdateIssue");
     expect(updateIssue?.inputSchema.required).toEqual(["issueId"]);
     const properties = updateIssue?.inputSchema.properties as Record<string, unknown>;

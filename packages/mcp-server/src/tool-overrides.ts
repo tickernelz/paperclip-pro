@@ -122,6 +122,19 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
       "List issue-thread interactions with their status. Use to check whether a question, confirmation, or plan approval you raised is still pending.",
     toolset: "core",
   },
+  "GET /api/companies/{companyId}/pending-decisions": {
+    name: "paperclipListPendingDecisions",
+    description:
+      "List Decisions-desk items waiting on a human, human-only cards included, with prompt and options.",
+    toolset: "core",
+  },
+  "POST /api/issues/{id}/interactions/{interactionId}/answer-for-owner": {
+    name: "paperclipAnswerDecisionForOwner",
+    description:
+      "Submit the owner's explicit answer to one card from the run their own message (ownerMessageRef) started. advanced: answers, verdicts, note.",
+    toolset: "core",
+    bodyFields: ["ownerMessageRef", "decision", "optionIds", "reason"],
+  },
   "POST /api/issues/{id}/interactions/{interactionId}/withdraw": {
     name: "paperclipWithdrawIssueInteraction",
     description:
