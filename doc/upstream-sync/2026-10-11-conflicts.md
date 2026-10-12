@@ -92,6 +92,7 @@ Kept unless noted. These change behaviour without an opt-in and are reported to 
 | Budget pause and stranded work | upstream pauses budget-blocked agents in `getInvocationBlock` | kept, fork exemption narrowed | a `pauseReason: budget` pause no longer counts as a lifecycle hold, so budget-blocked work escalates to a board recovery action |
 | Public MCP upload limit | fixed at module load | changed | reads the live `getMaxAttachmentBytes()` (saved setting, env, 100 MB default) |
 | Agent identity env for every local adapter | upstream exports `PAPERCLIP_AGENT_*` identity keys | kept | restored where the fork signature adaptation dropped it |
+| Agent issue create without parentId | upstream #15762 parents it to the run's ordinary task; `parentId: null` keeps it standalone | kept | `parent_missing` now fires only for explicit null or a default that cannot apply; skill parent rule updated |
 
 Reverted (not taken):
 
@@ -124,3 +125,11 @@ CI run 38179223365 on `8249d94a1` failed almost every job. The main cause: 28 fi
 | server/src/middleware/auth.ts | combine | upstream idle tracking; the deferred `next` resumes in the caller's AsyncLocalStorage so one OpenWA grant covers a request |
 | packages/adapters/*/src/server/execute.ts, server/src/adapters/process/execute.ts | upstream | agent identity passed to `buildPaperclipEnv` again |
 | ui/src/lib/vite-sw-build-id.ts | combine | stamping skipped when no bundle was generated, so a failed build reports its real error |
+| ui/src/index.css | combine | supersedes the hand-built union above: that union spliced fork rules into the token-allowlist block comment (Tailwind CssSyntaxError). Rebuilt with `git merge-file` (conflict-free, all 165 fork-added lines present); upstream's `.task-context-notice` rename replaces `.execution-blocker-notice` |
+| scripts/run-vitest-stable.mjs (chat shard) | upstream | `chatSuiteRunLine` ported: Vitest 5 `list` and `run` disagree on multi-line `it.each` lines |
+| server/src/services/heartbeat/{queue,retries}.ts | fork | interaction answers pass the dependency gate (`dependencyBlockedInteraction`); a refused dependency-blocked retry releases the execution lock (06af6befe, 30dba9d48) |
+| server/src/services/chat-channels.ts, chat-run-publications.ts | combine | stray construction-scope shutdown hunk removed (it unregistered GitHub Cloud ingress and voice tools on boot); upstream Cloud GitHub URL exemption, maintenance and Slack verification processors, speko principal branches restored; OpenWA stays excluded from automatic progress publications |
+| server/src/routes/issues.ts (create) | combine | upstream default parent (#15762) taken; `inheritExecutionWorkspaceFromIssueId` follow-ups stay parentless |
+| packages/adapters/omp-local/src/server/rpc-session.ts | fork | idle checks that race an unbound stdin channel are ignored instead of rejecting unhandled |
+| tests/e2e/new-task-picker-touch.spec.ts, tests/runner-e2e/{user-actions,plan-task-ui}.ts, tests/e2e/workspace-bootstrap/recovery.spec.ts | combine | upstream specs drive the fork run-settings picker (assignee row behind "Choose assignee") |
+| packages/adapters/pi-local/src/server/execute.remote.test.ts | fork | pi-local now runs in fork lanes; fork prompt keeps "Execution contract:" as decided on 2026-10-06 |
