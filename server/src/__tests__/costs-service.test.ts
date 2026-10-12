@@ -369,11 +369,6 @@ describe("cost routes", () => {
   });
 
   it("lets a ceo agent update a same-company agent budget", async () => {
-    mockAgentService.update.mockResolvedValueOnce({
-      id: "agent-1",
-      companyId: "company-1",
-      budgetMonthlyCents: 2500,
-    });
     const app = createAppWithActor({
       type: "agent",
       agentId: "agent-2",
@@ -387,7 +382,11 @@ describe("cost routes", () => {
       .send({ budgetMonthlyCents: 2500 });
 
     expect(res.status).toBe(200);
-    expect(mockAgentService.update).toHaveBeenCalledWith("agent-1", { budgetMonthlyCents: 2500 });
+    expect(mockBudgetService.upsertPolicy).toHaveBeenCalledWith(
+      "company-1",
+      expect.objectContaining({ scopeType: "agent", scopeId: "agent-1", amount: 2500 }),
+      null,
+    );
   });
 
   it("allows authorized board users to update an agent budget and budget policy", async () => {

@@ -251,13 +251,13 @@ describe("issue document PDF route", () => {
     });
   });
 
-  it("returns 403 and never renders for an actor outside the authorization boundary", async () => {
+  it("returns 404 and never renders for an actor outside the authorization boundary", async () => {
     mockAccessService.decide.mockResolvedValue({ allowed: false, explanation: "Denied by test mock" });
 
     const app = await createApp();
     const res = await request(app).get(`/api/issues/${ISSUE_ID}/documents/internal-status/pdf`);
 
-    expect(res.status).toBe(403);
+    expect(res.status).toBe(404);
     expect(mockRenderDocumentPdf).not.toHaveBeenCalled();
   });
 
