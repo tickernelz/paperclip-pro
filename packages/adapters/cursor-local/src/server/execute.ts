@@ -282,7 +282,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
 
   const envConfig = parseObject(config.env);
   let env: Record<string, string> = {
-    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
+    ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }, ctx.agentIdentity),
     ...buildRuntimeToolsEnv(ctx.runtimeTools),
   };
   env.PAPERCLIP_RUN_ID = runId;

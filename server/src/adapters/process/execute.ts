@@ -44,7 +44,7 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
   const cwd = asString(config.cwd, process.cwd());
   const envConfig = parseObject(config.env);
   const env: Record<string, string> = {
-    ...buildPaperclipEnv(agent, { sameHost: true }),
+    ...buildPaperclipEnv(agent, { sameHost: true }, ctx.agentIdentity),
     ...buildRuntimeToolsEnv(ctx.runtimeTools),
   };
   for (const [k, v] of Object.entries(envConfig)) {
