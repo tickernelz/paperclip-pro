@@ -728,7 +728,7 @@ describe("pi remote execution", () => {
     const userPrompt = args.at(-1) ?? "";
     expect(systemPrompt).toContain("You are agent agent-1 (Pi Builder).");
     expect(systemPrompt).toContain("Connection tools:");
-    expect(systemPrompt).not.toContain("Execution contract:");
+    expect(systemPrompt).toContain("Execution contract:");
     expect(userPrompt).not.toContain("Execution contract:");
   });
 
@@ -773,7 +773,7 @@ describe("pi remote execution", () => {
     expect(systemPrompt).toContain("Loaded instructions for this run.");
     expect(systemPrompt).toContain("You are agent agent-1 (Pi Builder).");
     expect(systemPrompt).toContain("Connection tools:");
-    expect(systemPrompt).not.toContain("Execution contract:");
+    expect(systemPrompt).toContain("Execution contract:");
     expect(userPrompt).not.toContain("CUSTOM POLICY run-instructions-policy");
     expect(userPrompt).not.toContain("Execution contract:");
   });
