@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { ZodError } from "zod";
 import { HttpError } from "../errors.js";
+import { foreignKeyViolationConstraint } from "../db-errors.js";
 import { trackErrorHandlerCrash } from "@tickernelz/paperclip-pro-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { captureException } from "../sentry.js";
@@ -228,6 +229,20 @@ export function errorHandler(
           },
     );
     return;
+  }
+
+  if (req.method === "POST" && /\/(companies\/[^/]+\/issues|issues\/[^/]+\/children)\/?$/.test(req.path)) {
+    const constraint = foreignKeyViolationConstraint(err);
+    if (constraint !== undefined) {
+      res.status(422).json({
+        error: constraint
+          ? `A referenced record does not exist in this company (${constraint}).`
+          : "A referenced record does not exist in this company.",
+        code: "reference_not_found",
+        ...(constraint ? { constraint } : {}),
+      });
+      return;
+    }
   }
 
   const zodIssues = readZodIssues(err);

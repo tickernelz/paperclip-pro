@@ -191,8 +191,8 @@ const support = await getEmbeddedPostgresTestSupport();
       ]) {
         const result = await create(path, fields);
         const hiddenProject = fields.projectId !== f.projectId && path.startsWith("/api/companies/");
-        expect(result.status, JSON.stringify(result.body)).toBe(hiddenProject ? 404 : 403);
-        expect(result.body.error).toMatch(hiddenProject ? /^Project not found$/ : /outside.*boundary|cannot assign work to board users|different company/i);
+        expect(result.status, JSON.stringify(result.body)).toBe(hiddenProject ? 422 : 403);
+        expect(result.body.error).toMatch(hiddenProject ? /^Project \S+ was not found in this company/ : /outside.*boundary|cannot assign work to board users|different company/i);
       }
     }
     const after = await server.db.select({ id: issues.id }).from(issues).where(eq(issues.companyId, f.companyId));
@@ -235,8 +235,8 @@ const support = await getEmbeddedPostgresTestSupport();
       });
       const denied = await response.json();
       const hiddenProject = path.startsWith("/api/companies/");
-      expect(response.status, JSON.stringify(denied)).toBe(hiddenProject ? 404 : 403);
-      expect(denied.error).toMatch(hiddenProject ? /^Project not found$/ : /outside.*boundary/i);
+      expect(response.status, JSON.stringify(denied)).toBe(hiddenProject ? 422 : 403);
+      expect(denied.error).toMatch(hiddenProject ? /^Project \S+ was not found in this company/ : /outside.*boundary/i);
     }
     await expect(call(f, "create_task", { title: "Native root cannot escape", projectId: outside.id,
       idempotencyKey: "root-outside", status: "backlog" })).rejects.toThrow(/outside.*boundary/);

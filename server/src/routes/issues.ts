@@ -13179,17 +13179,18 @@ export function issueRoutes(
     }
     if (createBody.projectId) {
       const selectedProject = await projectsSvc.getById(createBody.projectId);
-      if (!selectedProject || selectedProject.companyId !== companyId) {
-        res.status(404).json({ error: "Project not found" });
-        return;
-      }
-      const projectDecision = await access.decide({
-        actor: req.actor,
-        action: "project:read",
-        resource: { type: "project", companyId, projectId: selectedProject.id },
-      });
-      if (!projectDecision.allowed) {
-        res.status(404).json({ error: "Project not found" });
+      const projectDecision = selectedProject && selectedProject.companyId === companyId
+        ? await access.decide({
+          actor: req.actor,
+          action: "project:read",
+          resource: { type: "project", companyId, projectId: selectedProject.id },
+        })
+        : null;
+      if (!projectDecision?.allowed) {
+        res.status(422).json({
+          error: `Project ${createBody.projectId} was not found in this company. Use paperclipListProjects to get the exact id.`,
+          code: "project_not_found",
+        });
         return;
       }
     }

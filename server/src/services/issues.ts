@@ -7342,6 +7342,39 @@ export function issueService(db: Db) {
     return workspace;
   }
 
+  async function assertIssueRefsInCompany(
+    companyId: string,
+    projectId: string | null | undefined,
+    goalId: string | null | undefined,
+  ) {
+    if (projectId) {
+      const project = await db
+        .select({ id: projects.id })
+        .from(projects)
+        .where(and(eq(projects.id, projectId), eq(projects.companyId, companyId)))
+        .then((rows) => rows[0] ?? null);
+      if (!project) {
+        throw unprocessable(
+          `Project ${projectId} was not found in this company. Use paperclipListProjects to get the exact id.`,
+          { code: "project_not_found", projectId },
+        );
+      }
+    }
+    if (goalId) {
+      const goal = await db
+        .select({ id: goals.id })
+        .from(goals)
+        .where(and(eq(goals.id, goalId), eq(goals.companyId, companyId)))
+        .then((rows) => rows[0] ?? null);
+      if (!goal) {
+        throw unprocessable(
+          `Goal ${goalId} was not found in this company. Use paperclipListGoals to get the exact id.`,
+          { code: "goal_not_found", goalId },
+        );
+      }
+    }
+  }
+
   async function assertValidExecutionWorkspace(
     companyId: string,
     projectId: string | null | undefined,
@@ -10037,6 +10070,7 @@ export function issueService(db: Db) {
       if (data.assigneeUserId) {
         await assertAssignableUser(companyId, data.assigneeUserId);
       }
+      await assertIssueRefsInCompany(companyId, issueData.projectId, issueData.goalId);
       if (
         data.status === "in_progress" &&
         !data.assigneeAgentId &&

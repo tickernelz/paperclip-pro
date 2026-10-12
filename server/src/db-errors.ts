@@ -41,6 +41,19 @@ export function isUniqueViolation(error: unknown, constraintName?: string): bool
  * that carries the code is reachable only through `cause`. This helper walks
  * the `cause` chain, the same way `isUniqueViolation` does.
  */
+export function foreignKeyViolationConstraint(error: unknown): string | null | undefined {
+  let current: unknown = error;
+  for (let depth = 0; depth < MAX_CAUSE_DEPTH && current && typeof current === "object"; depth += 1) {
+    const candidate = current as { code?: unknown; constraint?: unknown; constraint_name?: unknown; cause?: unknown };
+    if (candidate.code === FOREIGN_KEY_VIOLATION) {
+      const constraint = candidate.constraint ?? candidate.constraint_name;
+      return typeof constraint === "string" ? constraint : null;
+    }
+    current = candidate.cause;
+  }
+  return undefined;
+}
+
 export function isForeignKeyViolation(error: unknown): boolean {
   let current: unknown = error;
   for (let depth = 0; depth < MAX_CAUSE_DEPTH && current && typeof current === "object"; depth += 1) {
