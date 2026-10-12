@@ -7660,6 +7660,14 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/instance/settings/local-run-limits",
+  tags: ["instance"],
+  summary: "Get the local CLI run limits in force and where each comes from",
+  responses: { 200: r.ok(), 401: r.unauthorized },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/instance/settings/experimental",
   tags: ["instance"],
   summary: "Get experimental instance settings",

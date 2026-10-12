@@ -98,7 +98,7 @@ Operator environment — `PATH` entries for adapter binaries, provider API keys,
 
 | Variable | Default | Bounds | Meaning |
 | --- | --- | --- | --- |
-| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 10 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 20 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. The three local run limits can also be set under Settings → General; a variable set here overrides that setting. |
 | `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
 | `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase, so a hung boot cannot block the gate forever. |
 | `PAPERCLIP_PDF_CHROMIUM_PATH` | unset | — | Chromium-family executable used for PDF export. `PUPPETEER_EXECUTABLE_PATH` and `CHROME_PATH` are also consulted. |

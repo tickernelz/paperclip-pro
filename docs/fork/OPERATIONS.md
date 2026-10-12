@@ -406,9 +406,26 @@ two caps at the queued-run claim point (`server/src/services/heartbeat.ts`,
 `startNextQueuedRunForAgent`), and the board shows anything held back as
 "Waiting to start".
 
+The limits are set in the board under **Settings → General → Local run limits**
+(stored as `general.localRuns` in instance settings, written with
+`PATCH /api/instance/settings/general` by an instance admin and logged as
+`instance.settings.general_updated`). Each value resolves in this order:
+
+1. the environment variable below, when it is set to a number (operators win;
+   the settings page shows that field read-only with the variable name);
+2. the value saved in Settings;
+3. the built-in default.
+
+`GET /api/instance/settings/local-run-limits` returns the value in force for
+each limit, its source (`env`, `setting` or `default`) and the variable that
+overrides it. Admission reads the saved settings on every claim decision, so a
+change applies to the next queued run without a restart. Lowering a limit never
+stops runs that are already running; it only holds new admissions until the
+count drops below it.
+
 | Variable | Default | Bounds | Meaning |
 | --- | --- | --- | --- |
-| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 10 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
+| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 20 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
 | `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
 | `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
 

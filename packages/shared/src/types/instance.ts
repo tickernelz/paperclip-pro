@@ -58,6 +58,32 @@ export const DEFAULT_ATTACHMENT_RETENTION: AttachmentRetentionSettings = {
   closedTasks: { enabled: false, afterDays: 90 },
 };
 
+/** Saved local CLI run limits; null leaves the built-in default in force. */
+export interface LocalRunLimitsSettings {
+  maxConcurrentRuns: number | null;
+  maxConcurrentStarts: number | null;
+  startWaitBypassSec: number | null;
+}
+
+export const DEFAULT_LOCAL_RUN_LIMITS_SETTINGS: LocalRunLimitsSettings = {
+  maxConcurrentRuns: null,
+  maxConcurrentStarts: null,
+  startWaitBypassSec: null,
+};
+
+export type LocalRunLimitKey = keyof LocalRunLimitsSettings;
+
+export type LocalRunLimitSource = "env" | "setting" | "default";
+
+/** A local CLI run limit in force right now, where it came from, and the variable that overrides it. */
+export interface EffectiveLocalRunLimit {
+  value: number;
+  source: LocalRunLimitSource;
+  envVar: string;
+}
+
+export type EffectiveLocalRunLimits = Record<LocalRunLimitKey, EffectiveLocalRunLimit>;
+
 export type AttachmentLimitSource = "setting" | "env" | "default";
 
 /** The upload size ceiling in force right now and where it came from. */
@@ -146,6 +172,7 @@ export interface InstanceGeneralSettings {
   speechToText: SpeechToTextSettings;
   attachmentMaxMegabytes: number | null;
   attachmentRetention: AttachmentRetentionSettings;
+  localRuns: LocalRunLimitsSettings;
 }
 
 export interface InstanceExperimentalSettings {

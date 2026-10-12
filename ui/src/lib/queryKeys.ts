@@ -661,6 +661,7 @@ export const queryKeys = {
   instance: {
     settings: ["instance", "settings"] as const,
     generalSettings: ["instance", "general-settings"] as const,
+    localRunLimits: ["instance", "local-run-limits"] as const,
     experimentalSettings: ["instance", "experimental-settings"] as const,
     attachmentRetention: ["instance", "attachment-retention"] as const,
   },

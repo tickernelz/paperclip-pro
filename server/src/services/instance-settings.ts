@@ -15,6 +15,7 @@ import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_ATTACHMENT_RETENTION,
+  DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
   DEFAULT_MESSAGE_DELIVERY,
   PAPERCLIP_CLOUD_MANAGED_BY,
   SPEECH_TO_TEXT_DEFAULTS,
@@ -225,6 +226,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
       speechToText: parsed.data.speechToText ?? SPEECH_TO_TEXT_DEFAULTS,
       attachmentMaxMegabytes: parsed.data.attachmentMaxMegabytes ?? null,
       attachmentRetention: parsed.data.attachmentRetention ?? DEFAULT_ATTACHMENT_RETENTION,
+      localRuns: parsed.data.localRuns ?? DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
       // Absent => unrestricted; only carry through an explicit policy.
       ...(parsed.data.executionMode ? { executionMode: parsed.data.executionMode } : {}),
     };
@@ -237,6 +239,7 @@ function normalizeGeneralSettings(raw: unknown): InstanceGeneralSettings {
     speechToText: SPEECH_TO_TEXT_DEFAULTS,
     attachmentMaxMegabytes: null,
     attachmentRetention: DEFAULT_ATTACHMENT_RETENTION,
+    localRuns: DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
   };
 }
 

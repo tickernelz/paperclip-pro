@@ -151,7 +151,7 @@ import {
   type AgentOrgRow,
 } from "../agent-invokability.js";
 import { isHeartbeatWakeOnDemandEnabled } from "../heartbeat-policy.js";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike, type EffectiveLocalRunLimits } from "@tickernelz/paperclip-pro-shared";
 import { retryChatControlAdmission } from "../chat-control-admission-retry.js";
 
 import type { HeartbeatServiceOptions } from "../heartbeat.js";
@@ -161,9 +161,6 @@ import {
   isLocalCliAdapterType,
   markLocalCliRunStarting,
   mergeLocalCliStartReservations,
-  resolveLocalStartWaitBypassMs,
-  resolveMaxConcurrentLocalRuns,
-  resolveMaxConcurrentLocalStarts,
 } from "./local-cli-admission.js";
 import type { createHeartbeatRunState } from "./run-state.js";
 import type { createHeartbeatRunPreparation } from "./run-preparation.js";
@@ -218,7 +215,7 @@ export interface HeartbeatQueueDependencies extends Pick<HeartbeatRetryDependenc
   resumeSavedLegacyComments: (companyId: string, queueId: string) => Promise<unknown>;
   formatIssueIdentifierLink: (identifier: string | null, fallback: string) => string;
   localCliAdmission: {
-    runtimeEnv: Record<string, string | undefined>;
+    resolveLimits: () => Promise<EffectiveLocalRunLimits>;
     snapshotRunningLocalCliRuns: () => Promise<Map<string, number | null>>;
     scheduleLocalStartBypassSweep: (dueAtMs: number) => void;
   };
@@ -1959,9 +1956,12 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
         policy.maxConcurrentRuns - runningCount,
       );
       const localCliAgent = isLocalCliAdapterType(agent.adapterType);
-      const maxLocalRuns = resolveMaxConcurrentLocalRuns(localCliAdmission.runtimeEnv);
+      const localRunLimits = localCliAgent && availableSlots > 0
+        ? await localCliAdmission.resolveLimits()
+        : null;
+      const maxLocalRuns = localRunLimits?.maxConcurrentRuns.value ?? 0;
       let localCliInFlight: Map<string, number | null> | null = null;
-      if (availableSlots > 0 && localCliAgent) {
+      if (localRunLimits) {
         localCliInFlight = await localCliAdmission.snapshotRunningLocalCliRuns();
         const localRunSlots = Math.max(
           0,
@@ -1971,8 +1971,8 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
         availableSlots = Math.min(availableSlots, localRunSlots);
       }
       if (availableSlots <= 0) return [];
-      const maxLocalStarts = resolveMaxConcurrentLocalStarts(localCliAdmission.runtimeEnv);
-      const localStartWaitBypassMs = resolveLocalStartWaitBypassMs(localCliAdmission.runtimeEnv);
+      const maxLocalStarts = localRunLimits?.maxConcurrentStarts.value ?? 0;
+      const localStartWaitBypassMs = (localRunLimits?.startWaitBypassSec.value ?? 0) * 1000;
 
       const queuedRuns = await db
         .select()
@@ -2063,7 +2063,7 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
       const claimedRuns: Array<typeof heartbeatRuns.$inferSelect> = [];
       for (const queuedRun of prioritizedRuns) {
         if (claimedRuns.length >= availableSlots) break;
-        if (localCliAgent) {
+        if (localRunLimits) {
           const now = Date.now();
           const inFlight = mergeLocalCliStartReservations(
             localCliInFlight ?? new Map(),

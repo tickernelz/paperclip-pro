@@ -12,6 +12,7 @@ const mockHealthApi = vi.hoisted(() => ({ get: vi.fn() }));
 const mockInstanceSettingsApi = vi.hoisted(() => ({
   getGeneral: vi.fn(),
   updateGeneral: vi.fn(),
+  getLocalRunLimits: vi.fn(),
 }));
 const mockNavigateTopLevel = vi.hoisted(() => vi.fn());
 
@@ -61,6 +62,11 @@ describe("InstanceGeneralSettings sign-out", () => {
       backupRetention: { dailyDays: 7, weeklyWeeks: 4, monthlyMonths: 1 },
     });
     mockInstanceSettingsApi.updateGeneral.mockResolvedValue(undefined);
+    mockInstanceSettingsApi.getLocalRunLimits.mockResolvedValue({
+      maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
+      maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
+      startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
+    });
     mockAuthApi.signOut.mockResolvedValue({ success: true });
   });
 

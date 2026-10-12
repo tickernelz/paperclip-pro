@@ -13,6 +13,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { heartbeatService, markLocalCliRunStarting } from "../services/heartbeat.ts";
+import { instanceSettingsService } from "../services/instance-settings.ts";
 import { runningProcesses } from "../adapters/index.ts";
 import { isOmpStartupComplete } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
 
@@ -548,5 +549,99 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
 
     await drainEverything(heartbeat);
     expect(await countRuns(companyId, "failed")).toBe(0);
+  }, 90_000);
+
+  function envWithoutLocalRunLimits(overrides: Record<string, string> = {}) {
+    const env: Record<string, string | undefined> = { ...process.env, ...overrides };
+    for (const key of [
+      "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
+      "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
+      "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
+    ]) {
+      if (!(key in overrides)) delete env[key];
+    }
+    return env;
+  }
+
+  async function saveLocalRunLimits(localRuns: {
+    maxConcurrentRuns: number | null;
+    maxConcurrentStarts: number | null;
+    startWaitBypassSec: number | null;
+  }) {
+    await instanceSettingsService(db).updateGeneral({ localRuns });
+  }
+
+  it("admits only as many local runs as the saved setting allows, and applies a raised setting without a restart", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 4);
+    await saveLocalRunLimits({ maxConcurrentRuns: 2, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    try {
+      const heartbeat = heartbeatService(db, { runtimeEnv: envWithoutLocalRunLimits() });
+
+      await wakeAll(heartbeat, seeded);
+      expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 2)).toBe(true);
+      await settle(600);
+      expect(await countRuns(companyId, "running")).toBe(2);
+      expect(await countRuns(companyId, "queued")).toBe(2);
+
+      await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+      await heartbeat.resumeQueuedRuns();
+      expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 3)).toBe(true);
+      await settle(600);
+      expect(await countRuns(companyId, "running")).toBe(3);
+      expect(await countRuns(companyId, "queued")).toBe(1);
+
+      await drainEverything(heartbeat);
+      expect(await countRuns(companyId, "failed")).toBe(0);
+      expect(await countRuns(companyId, "cancelled")).toBe(0);
+    } finally {
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+    }
+  }, 90_000);
+
+  it("never stops running local runs when the saved setting is lowered", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 4);
+    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    try {
+      const heartbeat = heartbeatService(db, { runtimeEnv: envWithoutLocalRunLimits() });
+
+      await wakeAll(heartbeat, seeded);
+      expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 3)).toBe(true);
+
+      await saveLocalRunLimits({ maxConcurrentRuns: 1, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+      await heartbeat.resumeQueuedRuns();
+      await settle(600);
+      expect(await countRuns(companyId, "running")).toBe(3);
+      expect(await countRuns(companyId, "queued")).toBe(1);
+      expect(await countRuns(companyId, "cancelled")).toBe(0);
+
+      await drainEverything(heartbeat);
+      expect(await countRuns(companyId, "failed")).toBe(0);
+    } finally {
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+    }
+  }, 90_000);
+
+  it("lets the environment variable override the saved setting", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 3);
+    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    try {
+      const heartbeat = heartbeatService(db, {
+        runtimeEnv: envWithoutLocalRunLimits({ PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" }),
+      });
+
+      await wakeAll(heartbeat, seeded);
+      expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 1)).toBe(true);
+      await settle(600);
+      expect(await countRuns(companyId, "running")).toBe(1);
+      expect(await countRuns(companyId, "queued")).toBe(2);
+
+      await drainEverything(heartbeat);
+      expect(await countRuns(companyId, "failed")).toBe(0);
+    } finally {
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+    }
   }, 90_000);
 });

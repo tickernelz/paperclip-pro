@@ -611,6 +611,124 @@ describe("instance settings routes", () => {
     expect(mockLogActivity).toHaveBeenCalledTimes(2);
   });
 
+  it("rejects out-of-range local run limits before updating general settings", async () => {
+    const app = await createApp({
+      type: "board",
+      userId: "local-board",
+      source: "local_implicit",
+      isInstanceAdmin: true,
+    });
+
+    const res = await request(app)
+      .patch("/api/instance/settings/general")
+      .send({ localRuns: { maxConcurrentRuns: 65, maxConcurrentStarts: 4, startWaitBypassSec: 120 } });
+
+    expect(res.status).toBe(400);
+    expect(mockInstanceSettingsService.updateGeneral).not.toHaveBeenCalled();
+    expect(mockLogActivity).not.toHaveBeenCalled();
+  });
+
+  it("saves local run limits and logs the change for every company", async () => {
+    const app = await createApp({
+      type: "board",
+      userId: "local-board",
+      source: "local_implicit",
+      isInstanceAdmin: true,
+    });
+    const localRuns = { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120 };
+
+    const res = await request(app).patch("/api/instance/settings/general").send({ localRuns });
+
+    expect(res.status).toBe(200);
+    expect(mockInstanceSettingsService.updateGeneral).toHaveBeenCalledWith({ localRuns });
+    expect(mockLogActivity).toHaveBeenCalledTimes(2);
+    expect(mockLogActivity.mock.calls[0]?.[1]).toMatchObject({
+      action: "instance.settings.general_updated",
+      details: { changedKeys: ["localRuns"] },
+    });
+  });
+
+  it("rejects non-admin board users from changing local run limits", async () => {
+    const app = await createApp({
+      type: "board",
+      userId: "user-1",
+      source: "session",
+      isInstanceAdmin: false,
+      companyIds: ["company-1"],
+    });
+
+    const res = await request(app)
+      .patch("/api/instance/settings/general")
+      .send({ localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120 } });
+
+    expect(res.status).toBe(403);
+    expect(mockInstanceSettingsService.updateGeneral).not.toHaveBeenCalled();
+  });
+
+  describe("local run limits in force", () => {
+    const envKeys = [
+      "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
+      "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
+      "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
+    ] as const;
+    const savedEnv: Record<string, string | undefined> = {};
+
+    beforeEach(() => {
+      for (const key of envKeys) {
+        savedEnv[key] = process.env[key];
+        delete process.env[key];
+      }
+    });
+
+    afterEach(() => {
+      for (const key of envKeys) {
+        if (savedEnv[key] === undefined) delete process.env[key];
+        else process.env[key] = savedEnv[key];
+      }
+    });
+
+    it("reports the saved setting, the default, and an environment override", async () => {
+      process.env.PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS = "6";
+      mockInstanceSettingsService.getGeneral.mockResolvedValue({
+        censorUsernameInLogs: false,
+        feedbackDataSharingPreference: "prompt",
+        localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec: null },
+      });
+      const app = await createApp({
+        type: "board",
+        userId: "user-1",
+        source: "session",
+        isInstanceAdmin: false,
+        companyIds: ["company-1"],
+      });
+
+      const res = await request(app).get("/api/instance/settings/local-run-limits");
+
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual({
+        maxConcurrentRuns: { value: 2, source: "setting", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
+        maxConcurrentStarts: { value: 6, source: "env", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
+        startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
+      });
+    });
+
+    it("rejects signed-in users without company access", async () => {
+      const app = await createApp({
+        type: "board",
+        userId: "user-2",
+        source: "session",
+        isInstanceAdmin: false,
+        companyIds: [],
+        memberships: [],
+      });
+
+      const res = await request(app).get("/api/instance/settings/local-run-limits");
+
+      expect(res.status).toBe(403);
+      expect(mockInstanceSettingsService.getGeneral).not.toHaveBeenCalled();
+    });
+  });
+
   it("allows non-admin board users to read general settings", async () => {
     const app = await createApp({
       type: "board",

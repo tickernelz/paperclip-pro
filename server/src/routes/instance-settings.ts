@@ -17,6 +17,7 @@ import {
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { readIdleSleepSafety } from "../services/idle-sleep-safety.js";
 import { readIdleLocalWork } from "../services/idle-local-work.js";
+import { resolveLocalRunLimits } from "../services/heartbeat/local-cli-admission.js";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import { validate } from "../middleware/validate.js";
 import { logger } from "../middleware/logger.js";
@@ -251,6 +252,11 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       res.json(updated.general);
     },
   );
+
+  router.get("/instance/settings/local-run-limits", async (req, res) => {
+    assertBoardOrgAccess(req);
+    res.json(resolveLocalRunLimits(process.env, (await svc.getGeneral()).localRuns));
+  });
 
   router.get("/instance/settings/experimental", async (req, res) => {
     // Experimental settings are readable by any authenticated org member

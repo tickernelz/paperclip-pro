@@ -21207,7 +21207,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:196",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:197",
     "authorityCapability": null,
     "parameters": []
   },
@@ -21233,7 +21233,7 @@
       "assertCanManageInstanceSettings"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:304",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:310",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30439,7 +30439,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:328",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:334",
     "authorityCapability": null,
     "parameters": []
   },
@@ -30469,6 +30469,31 @@
     "parameters": []
   },
   {
+    "name": "paperclipListInstanceSettingLocalLimits",
+    "operationId": "GET /api/instance/settings/local-run-limits",
+    "method": "GET",
+    "path": "/instance/settings/local-run-limits",
+    "description": "Get the local CLI run limits in force and where each comes from",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "instance"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoardOrgAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:257",
+    "authorityCapability": null,
+    "parameters": []
+  },
+  {
     "name": "paperclipListInstanceSettings",
     "operationId": "GET /api/instance/settings",
     "method": "GET",
@@ -30489,7 +30514,7 @@
       "assertBoardOrgAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:132",
+    "boardGuard": "assertBoardOrgAccess@instance-settings.ts:133",
     "authorityCapability": null,
     "parameters": []
   },
@@ -47887,6 +47912,25 @@
               "allowed",
               "not_allowed",
               "prompt"
+            ]
+          },
+          "localRuns": {
+            "type": "object",
+            "properties": {
+              "maxConcurrentRuns": {
+                "type": "integer"
+              },
+              "maxConcurrentStarts": {
+                "type": "integer"
+              },
+              "startWaitBypassSec": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "maxConcurrentRuns",
+              "maxConcurrentStarts",
+              "startWaitBypassSec"
             ]
           },
           "speechToText": {

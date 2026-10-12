@@ -8,6 +8,7 @@ import type { createWakeQueue } from "../../modules/wake-queue/index.js";
 import { createHeartbeatRunState } from "./run-state.js";
 import { createHeartbeatRunPreparation } from "./run-preparation.js";
 import { createHeartbeatQueue, type HeartbeatQueueDependencies } from "./queue.js";
+import { resolveLocalRunLimits } from "./local-cli-admission.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;
 function callbacks(db: Db) {
@@ -58,7 +59,7 @@ function callbacks(db: Db) {
     resumeSavedLegacyComments: vi.fn(async () => undefined),
     formatIssueIdentifierLink: (_identifier: string | null, fallback: string) => fallback,
     localCliAdmission: {
-      runtimeEnv: {},
+      resolveLimits: vi.fn(async () => resolveLocalRunLimits({})),
       snapshotRunningLocalCliRuns: async () => new Map<string, number | null>(),
       scheduleLocalStartBypassSweep: vi.fn(),
     },

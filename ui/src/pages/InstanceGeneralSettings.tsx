@@ -8,12 +8,14 @@ import {
   DEFAULT_BACKUP_RETENTION,
   DEFAULT_ATTACHMENT_RETENTION,
   SPEECH_TO_TEXT_DEFAULTS,
+  DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
 } from "@tickernelz/paperclip-pro-shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { ModeBadge } from "@/components/access/ModeBadge";
 import { FilesAndStorageSection } from "@/components/FilesAndStorageSection";
+import { LocalRunLimitsSection } from "@/components/LocalRunLimitsSection";
 import { Button } from "../components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
@@ -90,11 +92,13 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   const showSpeechToText = !hiddenSettings.has("instance.general.speechToText");
   const speechToText: SpeechToTextSettings = generalQuery.data?.speechToText ?? SPEECH_TO_TEXT_DEFAULTS;
   const showSignOut = !hiddenSettings.has("instance.general.signOut");
+  const localRuns = generalQuery.data?.localRuns ?? DEFAULT_LOCAL_RUN_LIMITS_SETTINGS;
   const visibleTopics = [
     ...(showCensorUsernameInLogs ? ["log display"] : []),
     ...(showBackupRetention ? ["backup retention"] : []),
     ...(showFeedbackDataSharing ? ["data sharing"] : []),
     ...(showSpeechToText ? ["speech-to-text"] : []),
+    "local run limits",
     "files and storage",
   ];
   const topicSummary = visibleTopics.length > 2
@@ -295,6 +299,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           onSave={(next) => updateGeneralMutation.mutate({ speechToText: next })}
         />
       )}
+
+      <LocalRunLimitsSection
+        key={JSON.stringify(localRuns)}
+        value={localRuns}
+        disabled={signOutMutation.isPending}
+      />
 
       <FilesAndStorageSection
         attachmentMaxMegabytes={generalQuery.data?.attachmentMaxMegabytes ?? null}

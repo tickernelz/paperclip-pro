@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
   instanceExperimentalSettingsSchema,
+  instanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
+  patchInstanceGeneralSettingsSchema,
 } from "./instance.js";
 
 describe("instance experimental settings validators", () => {
@@ -198,5 +200,44 @@ describe("instance experimental settings validators", () => {
     ).toEqual({
       enableApps: true,
     });
+  });
+});
+
+describe("instance local run limit validators", () => {
+  const limits = { maxConcurrentRuns: 20, maxConcurrentStarts: 4, startWaitBypassSec: 120 };
+
+  it("defaults every saved local run limit to null", () => {
+    expect(instanceGeneralSettingsSchema.parse({}).localRuns).toEqual({
+      maxConcurrentRuns: null,
+      maxConcurrentStarts: null,
+      startWaitBypassSec: null,
+    });
+  });
+
+  it("accepts in-range and null limits in a patch", () => {
+    expect(patchInstanceGeneralSettingsSchema.parse({ localRuns: limits })).toEqual({ localRuns: limits });
+    expect(
+      patchInstanceGeneralSettingsSchema.parse({
+        localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600 },
+      }),
+    ).toEqual({ localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600 } });
+  });
+
+  it.each([
+    { maxConcurrentRuns: 0 },
+    { maxConcurrentRuns: 65 },
+    { maxConcurrentStarts: 0 },
+    { maxConcurrentStarts: 65 },
+    { startWaitBypassSec: 0 },
+    { startWaitBypassSec: 3601 },
+    { maxConcurrentRuns: 2.5 },
+  ])("rejects out-of-range or fractional values: %o", (override) => {
+    expect(patchInstanceGeneralSettingsSchema.safeParse({ localRuns: { ...limits, ...override } }).success).toBe(false);
+  });
+
+  it("rejects unknown limit keys", () => {
+    expect(
+      patchInstanceGeneralSettingsSchema.safeParse({ localRuns: { ...limits, maxConcurrentHosts: 3 } }).success,
+    ).toBe(false);
   });
 });

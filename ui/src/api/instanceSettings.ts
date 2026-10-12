@@ -2,6 +2,7 @@ import type {
   AttachmentRetentionReport,
   AttachmentRetentionSettings,
   AttachmentRetentionStatus,
+  EffectiveLocalRunLimits,
   InstanceExperimentalSettingsWithManaged,
   InstanceGeneralSettings,
   InstanceSettings,
@@ -20,6 +21,8 @@ export const instanceSettingsApi = {
     api.get<InstanceGeneralSettings>("/instance/settings/general"),
   updateGeneral: (patch: PatchInstanceGeneralSettings) =>
     api.patch<InstanceGeneralSettings>("/instance/settings/general", patch),
+  getLocalRunLimits: () =>
+    api.get<EffectiveLocalRunLimits>("/instance/settings/local-run-limits"),
   getExperimental: () =>
     api.get<InstanceExperimentalSettingsWithManaged>("/instance/settings/experimental"),
   updateExperimental: (patch: PatchInstanceExperimentalSettings) =>

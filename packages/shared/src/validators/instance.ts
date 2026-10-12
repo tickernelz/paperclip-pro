@@ -14,8 +14,17 @@ import {
   ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN,
   ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX,
   DEFAULT_ATTACHMENT_RETENTION,
+  DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
   type InstanceMessageDelivery,
 } from "../types/instance.js";
+import {
+  INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
+  INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
+  INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
+  INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
+  INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
+  INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
+} from "../constants.js";
 import { feedbackDataSharingPreferenceSchema } from "./feedback.js";
 import { shapeWithoutDefaults } from "./partial.js";
 
@@ -107,6 +116,29 @@ export const attachmentRetentionSettingsSchema = z
   })
   .strict();
 
+export const localRunLimitsSettingsSchema = z
+  .object({
+    maxConcurrentRuns: z
+      .number()
+      .int()
+      .min(INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN)
+      .max(INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX)
+      .nullable(),
+    maxConcurrentStarts: z
+      .number()
+      .int()
+      .min(INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN)
+      .max(INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX)
+      .nullable(),
+    startWaitBypassSec: z
+      .number()
+      .int()
+      .min(INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN)
+      .max(INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX)
+      .nullable(),
+  })
+  .strict();
+
 export const instanceGeneralSettingsSchema = z.object({
   censorUsernameInLogs: z.boolean().default(false),
   feedbackDataSharingPreference: feedbackDataSharingPreferenceSchema.default(
@@ -117,6 +149,7 @@ export const instanceGeneralSettingsSchema = z.object({
   speechToText: speechToTextSettingsSchema.default(SPEECH_TO_TEXT_DEFAULTS),
   attachmentMaxMegabytes: attachmentMaxMegabytesSchema.nullable().default(null),
   attachmentRetention: attachmentRetentionSettingsSchema.default(DEFAULT_ATTACHMENT_RETENTION),
+  localRuns: localRunLimitsSettingsSchema.default(DEFAULT_LOCAL_RUN_LIMITS_SETTINGS),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
   // Kubernetes sandbox provider and denies local/ssh execution (cloud_tenant).
   executionMode: z.enum(["kubernetes", "any"]).optional(),

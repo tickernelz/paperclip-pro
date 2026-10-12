@@ -582,9 +582,7 @@ import {
   mergeLocalCliStartReservations,
   readLocalCliRunStartingAt,
   reportsStartupComplete,
-  resolveLocalStartWaitBypassMs,
-  resolveMaxConcurrentLocalRuns,
-  resolveMaxConcurrentLocalStarts,
+  resolveLocalRunLimits,
 } from "./heartbeat/local-cli-admission.js";
 
 import {
@@ -690,9 +688,7 @@ export {
   mergeLocalCliStartReservations,
   readLocalCliRunStartingAt,
   reportsStartupComplete,
-  resolveLocalStartWaitBypassMs,
-  resolveMaxConcurrentLocalRuns,
-  resolveMaxConcurrentLocalStarts,
+  resolveLocalRunLimits,
 };
 
 // Routes and the scheduler construct separate heartbeatService instances, but
@@ -1088,6 +1084,8 @@ export function heartbeatService(
     enabled: (await instanceSettings.getGeneral()).censorUsernameInLogs,
   });
   const runtimeEnv = options.runtimeEnv ?? process.env;
+  const readLocalRunLimits = async () =>
+    resolveLocalRunLimits(runtimeEnv, (await instanceSettings.getGeneral()).localRuns);
   const inWorktreeRuntime = isTruthyRuntimeEnvValue(
     runtimeEnv.PAPERCLIP_IN_WORKTREE,
   );
@@ -1565,7 +1563,7 @@ export function heartbeatService(
     runTaskKey,
     filterZombieCoalesceTarget,
     localCliAdmission: {
-      runtimeEnv,
+      resolveLimits: readLocalRunLimits,
       snapshotRunningLocalCliRuns,
       scheduleLocalStartBypassSweep,
     },
@@ -2158,7 +2156,7 @@ export function heartbeatService(
 
   async function dispatchQueuedLocalCliRuns(excludeAgentId: string | null) {
     const slots =
-      resolveMaxConcurrentLocalRuns(runtimeEnv) -
+      (await readLocalRunLimits()).maxConcurrentRuns.value -
       (await countRunningLocalCliRuns());
     if (slots <= 0) return;
     const cutoff = await getWorktreeExecutionCutoff();

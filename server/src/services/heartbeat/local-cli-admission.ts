@@ -9,6 +9,10 @@ import {
   INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
   INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
   LOCAL_CLI_ADAPTER_TYPES,
+  type EffectiveLocalRunLimit,
+  type EffectiveLocalRunLimits,
+  type LocalRunLimitKey,
+  type LocalRunLimitsSettings,
 } from "@tickernelz/paperclip-pro-shared";
 
 const localCliRunStarts = new Map<string, { at: number; signalled: boolean }>();
@@ -21,52 +25,67 @@ export function isLocalCliAdapterType(adapterType: string | null | undefined) {
   return adapterType ? LOCAL_CLI_ADAPTER_TYPE_SET.has(adapterType) : false;
 }
 
-function resolveBoundedEnvInteger(
-  raw: string | undefined,
-  fallback: number,
-  min: number,
-  max: number,
-) {
+const LOCAL_RUN_LIMIT_SPECS = {
+  maxConcurrentRuns: {
+    envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
+    fallback: INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
+    min: INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
+    max: INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
+  },
+  maxConcurrentStarts: {
+    envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
+    fallback: INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
+    min: INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
+    max: INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
+  },
+  startWaitBypassSec: {
+    envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
+    fallback: INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
+    min: INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
+    max: INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
+  },
+} as const satisfies Record<
+  LocalRunLimitKey,
+  { envVar: string; fallback: number; min: number; max: number }
+>;
+
+function readBoundedEnvInteger(raw: string | undefined, min: number, max: number) {
   const trimmed = raw?.trim();
-  if (!trimmed) return fallback;
+  if (!trimmed) return null;
   const parsed = Math.floor(Number(trimmed));
-  if (!Number.isFinite(parsed)) return fallback;
+  if (!Number.isFinite(parsed)) return null;
   return Math.max(min, Math.min(max, parsed));
 }
 
-export function resolveMaxConcurrentLocalRuns(
+function resolveLocalRunLimit(
+  key: LocalRunLimitKey,
   env: Record<string, string | undefined>,
-) {
-  return resolveBoundedEnvInteger(
-    env.PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS,
-    INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
-    INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN,
-    INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
-  );
+  saved: LocalRunLimitsSettings | null | undefined,
+): EffectiveLocalRunLimit {
+  const spec = LOCAL_RUN_LIMIT_SPECS[key];
+  const fromEnv = readBoundedEnvInteger(env[spec.envVar], spec.min, spec.max);
+  if (fromEnv !== null) return { value: fromEnv, source: "env", envVar: spec.envVar };
+  const fromSetting = saved?.[key];
+  if (
+    typeof fromSetting === "number" &&
+    Number.isInteger(fromSetting) &&
+    fromSetting >= spec.min &&
+    fromSetting <= spec.max
+  ) {
+    return { value: fromSetting, source: "setting", envVar: spec.envVar };
+  }
+  return { value: spec.fallback, source: "default", envVar: spec.envVar };
 }
 
-export function resolveMaxConcurrentLocalStarts(
+export function resolveLocalRunLimits(
   env: Record<string, string | undefined>,
-) {
-  return resolveBoundedEnvInteger(
-    env.PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS,
-    INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
-    INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MIN,
-    INSTANCE_MAX_CONCURRENT_LOCAL_STARTS_MAX,
-  );
-}
-
-export function resolveLocalStartWaitBypassMs(
-  env: Record<string, string | undefined>,
-) {
-  return (
-    resolveBoundedEnvInteger(
-      env.PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC,
-      INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
-      INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
-      INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
-    ) * 1000
-  );
+  saved?: LocalRunLimitsSettings | null,
+): EffectiveLocalRunLimits {
+  return {
+    maxConcurrentRuns: resolveLocalRunLimit("maxConcurrentRuns", env, saved),
+    maxConcurrentStarts: resolveLocalRunLimit("maxConcurrentStarts", env, saved),
+    startWaitBypassSec: resolveLocalRunLimit("startWaitBypassSec", env, saved),
+  };
 }
 
 export function markLocalCliRunStarting(runId: string, at = Date.now()) {

@@ -113,6 +113,11 @@ export type {
   AttachmentRetentionSettings,
   AttachmentLimitSource,
   EffectiveAttachmentLimit,
+  LocalRunLimitsSettings,
+  LocalRunLimitKey,
+  LocalRunLimitSource,
+  EffectiveLocalRunLimit,
+  EffectiveLocalRunLimits,
   AttachmentRetentionRule,
   AttachmentRetentionRuleSummary,
   AttachmentRetentionReport,
@@ -148,6 +153,7 @@ export {
   ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN,
   ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX,
   DEFAULT_ATTACHMENT_RETENTION,
+  DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
   PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./instance.js";
 export {

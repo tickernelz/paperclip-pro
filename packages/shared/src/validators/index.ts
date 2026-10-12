@@ -43,6 +43,7 @@ export {
   speechToTextSettingsSchema,
   attachmentMaxMegabytesSchema,
   attachmentRetentionSettingsSchema,
+  localRunLimitsSettingsSchema,
   messageDeliverySchema,
   type MessageDeliveryRequest,
   MESSAGE_DELIVERY_LITERALS,
