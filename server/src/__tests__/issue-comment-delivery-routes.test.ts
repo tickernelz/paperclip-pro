@@ -414,6 +414,63 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(queue.body.entries).toHaveLength(0);
   });
 
+  it("steers a message that queued before the adapter registered its steer target", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    const adapterSteer = vi.fn(
+      async (_input: { turnId: string; message: { role: "user"; text: string }; correlationId?: string }) => undefined,
+    );
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Arrived while the adapter was still starting" })
+      .expect(201);
+    expect(posted.body).toMatchObject({ deliveredAs: "queued" });
+    expect(adapterSteer).not.toHaveBeenCalled();
+
+    const queued = await request(app(seeded.companyId))
+      .get(`/api/issues/${seeded.issueId}/queued-comments`)
+      .expect(200);
+    expect(queued.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(posted.body.id);
+
+    const release = registerAdapterSteerTarget(seeded.runId, {
+      capabilities: async () => ({ steering: true }),
+      snapshot: async () => ({ activeTurnId: "omp-rpc-turn:late-start" }),
+      steer: adapterSteer,
+    });
+    try {
+      await vi.waitFor(() => expect(adapterSteer).toHaveBeenCalledTimes(1), { timeout: 10_000 });
+      expect(adapterSteer.mock.calls[0]![0]).toMatchObject({
+        turnId: "omp-rpc-turn:late-start",
+        correlationId: posted.body.id,
+      });
+      await vi.waitFor(async () => {
+        const drained = await request(app(seeded.companyId))
+          .get(`/api/issues/${seeded.issueId}/queued-comments`)
+          .expect(200);
+        expect(drained.body.entries).toHaveLength(0);
+      }, { timeout: 10_000 });
+    } finally {
+      release();
+    }
+  });
+
+  it("does not report a downgrade for an explicitly queued comment", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-delivery" });
+    keepRunAlive(seeded.runId);
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "/queue hold this for the next turn" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued" });
+    expect(posted.body.steeringUnavailable).toBe("not_requested");
+    expect(steerNativeSessionMock).not.toHaveBeenCalled();
+  });
+
   it("keeps the same board comment queued when deliver is queue", async () => {
     const seeded = await seedActiveRun();
     await seedDispatchIdentity(seeded);
