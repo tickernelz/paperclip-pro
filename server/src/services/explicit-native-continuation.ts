@@ -68,6 +68,15 @@ export async function undeliveredLegacyUserCommentIds(
   return commentIds.filter(id => valid.has(id));
 }
 
+export interface ExplicitContinuationOwnerRelay {
+  channel: string;
+  ownerUserId: string;
+  relayedByAgentId: string;
+  runId: string;
+  ownerMessageRef: string;
+  relayedAt: string;
+}
+
 /** Called under the issue lock, in the transaction that creates the new turn.
  * A user request authorizes a new conversation, not replay of the failed run.
  * Unknown action outcomes and all prior records stay intact.
@@ -81,6 +90,7 @@ export async function admitExplicitNativeContinuation(input: {
   queuedCommentInterruptId?: string;
   /** Internal delivery of an unconsumed, user-authored saved queue entry. */
   queuedCommentRequestId?: string;
+  ownerRelay?: ExplicitContinuationOwnerRelay;
   dryRun?: boolean;
   onBlocked?: (reason: string, message: string) => void;
 }): Promise<{ previousRunId: string; commentId: string | null; failedRunId?: string } | null> {
@@ -302,7 +312,8 @@ export async function admitExplicitNativeContinuation(input: {
     ...(comment ? { commentUpdatedAt: comment.updatedAt.toISOString(),
       commentBodyHash: createHash("sha256").update(comment.body).digest("hex") } : {}),
     ...(queuedInterrupt ? { queuedCommentInterruptId: input.queuedCommentInterruptId } : {}),
-    ...(queuedRequest ? { queuedCommentRequestId: input.queuedCommentRequestId } : {}), runId: input.successorRunId,
+    ...(queuedRequest ? { queuedCommentRequestId: input.queuedCommentRequestId } : {}),
+    ...(comment && input.ownerRelay?.ownerUserId === actorId ? { ownerRelay: input.ownerRelay } : {}), runId: input.successorRunId,
     previousRunId: previous.id, recordedAt: new Date().toISOString() };
   for (const runId of cancelledStartupIds) {
     await db.update(nativeRunFinalizations).set({
@@ -320,7 +331,7 @@ export async function admitExplicitNativeContinuation(input: {
   }).where(and(eq(nativeRunFinalizations.companyId, companyId), inArray(nativeRunFinalizations.runId, nativeSources.map(run => run.id))));
   for (const action of actions) {
     await db.update(issueRecoveryActions).set({
-      status: "resolved", outcome: "cancelled", resolvedAt: new Date(), updatedAt: new Date(),
+      status: "resolved", outcome: "restored", resolvedAt: new Date(), updatedAt: new Date(),
       nextAction: "The user started a fresh conversation turn. Prior action outcomes remain recorded.",
       resolutionNote: "The user continued after the prior execution stopped. No action outcomes were inferred.",
       wakePolicy: null, monitorPolicy: null,

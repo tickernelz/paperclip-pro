@@ -16,6 +16,8 @@ import { ISSUE_REFS_MAX, issueRefsQuerySchema, parseIssueRefIds, type IssueRef }
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
 import {
   OWNER_CONFIRMATION_REQUIRED_CODE,
+  OWNER_CONTINUATION_RELAYED_ACTION,
+  assertOwnerContinuationAllowed,
   claimOwnerRelay,
   dispatchAsOwner,
   markOwnerRelayApplied,
@@ -146,6 +148,8 @@ import {
   respondIssueThreadInteractionSchema,
   answerDecisionForOwnerSchema,
   type AnswerDecisionForOwner,
+  continueIssueForOwnerSchema,
+  type ContinueIssueForOwner,
   stalledReviewDecisionSchema,
   submitIssueThreadInteractionVerdictsSchema,
   updateIssueWorkProductSchema,
@@ -19375,6 +19379,87 @@ export function issueRoutes(
   );
 
   router.post(
+    "/issues/:id/continue-for-owner",
+    validate(continueIssueForOwnerSchema),
+    async (req, res) => {
+      if (req.actor.type !== "agent" || !req.actor.agentId || !req.actor.runId) {
+        throw forbidden("Only an agent run can relay an owner's continuation request; board users comment on the issue directly", {
+          code: OWNER_CONFIRMATION_REQUIRED_CODE,
+          reason: "not_owner_triggered",
+        });
+      }
+      const agentId = req.actor.agentId;
+      const runId = req.actor.runId;
+      const issue = await getAccessibleResource(req, res, svc.getById(req.params.id as string), "Issue not found");
+      if (!issue) return;
+      const { ownerMessageRef } = req.body as ContinueIssueForOwner;
+      const authority = await resolveOwnerRelayAuthority(db, { companyId: issue.companyId, agentId, runId, ownerMessageRef });
+      await assertOwnerContinuationAllowed(db, {
+        companyId: issue.companyId,
+        issueId: issue.id,
+        issueIdentifier: issue.identifier ?? null,
+        authority,
+      });
+      if (!(await assertCrossIssueInfluenceWithinRunCap(req, res, issue, "comment"))) return;
+      const relay = {
+        channel: authority.channel,
+        ownerUserId: authority.ownerUserId,
+        relayedByAgentId: agentId,
+        runId,
+        ownerMessageRef: authority.ownerMessageRef,
+        relayedAt: new Date().toISOString(),
+      };
+      const access = await boardAuthService(db).resolveBoardAccess(authority.ownerUserId);
+      req.ownerContinuationRelay = relay;
+      let outcome: { status: number; body: unknown };
+      try {
+        outcome = await dispatchAsOwner(router, req, {
+          url: `/issues/${issue.id}/comments`,
+          body: { body: authority.ownerText },
+          actor: {
+            type: "board",
+            userId: authority.ownerUserId,
+            userName: access.user?.name ?? null,
+            userEmail: access.user?.email ?? null,
+            companyIds: access.companyIds,
+            memberships: access.memberships,
+            isInstanceAdmin: access.isInstanceAdmin,
+            sessionId: null,
+            source: "session",
+          },
+        });
+      } finally {
+        req.ownerContinuationRelay = undefined;
+      }
+      if (outcome.status >= 400) {
+        res.status(outcome.status).json(outcome.body);
+        return;
+      }
+      const comment = outcome.body as { id: string };
+      await logActivity(db, {
+        companyId: issue.companyId,
+        actorType: "agent",
+        actorId: agentId,
+        agentId,
+        runId,
+        action: OWNER_CONTINUATION_RELAYED_ACTION,
+        entityType: "issue",
+        entityId: issue.id,
+        details: {
+          identifier: issue.identifier,
+          ownerUserId: relay.ownerUserId,
+          relayedByAgentId: agentId,
+          runId,
+          ownerMessageRef: relay.ownerMessageRef,
+          channel: relay.channel,
+          commentId: comment.id,
+        },
+      });
+      res.status(201).json({ comment, relay });
+    },
+  );
+
+  router.post(
     "/issues/:id/interactions/:interactionId/verdicts",
     validate(submitIssueThreadInteractionVerdictsSchema),
     async (req, res) => {
@@ -20972,6 +21057,8 @@ export function issueRoutes(
             return null;
           })) ?? currentIssue;
         const assigneeId = wakeIssueSnapshot.assigneeAgentId;
+        const ownerRelay = req.ownerContinuationRelay && req.actor.type === "board" &&
+          req.actor.userId === req.ownerContinuationRelay.ownerUserId ? req.ownerContinuationRelay : undefined;
         const actorIsAgent = actor.actorType === "agent";
         const selfComment =
           (actorIsAgent && actor.actorId === assigneeId) ||
@@ -21007,6 +21094,7 @@ export function issueRoutes(
               },
               requestedByActorType: actor.actorType,
               requestedByActorId: actor.actorId,
+              ...(ownerRelay ? { ownerRelay } : {}),
               contextSnapshot: {
                 issueId: currentIssue.id,
                 taskId: currentIssue.id,
@@ -21044,6 +21132,7 @@ export function issueRoutes(
               },
               requestedByActorType: actor.actorType,
               requestedByActorId: actor.actorId,
+              ...(ownerRelay ? { ownerRelay } : {}),
               contextSnapshot: {
                 issueId: currentIssue.id,
                 taskId: currentIssue.id,

@@ -2326,6 +2326,11 @@ export const answerDecisionForOwnerSchema = z
   });
 export type AnswerDecisionForOwner = z.infer<typeof answerDecisionForOwnerSchema>;
 
+export const continueIssueForOwnerSchema = z
+  .object({ ownerMessageRef: z.string().trim().min(1).max(200) })
+  .strict();
+export type ContinueIssueForOwner = z.infer<typeof continueIssueForOwnerSchema>;
+
 export const linkIssueApprovalSchema = z.object({
   approvalId: z.string().guid(),
 });

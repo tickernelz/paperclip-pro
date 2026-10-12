@@ -50,6 +50,14 @@ declare global {
         agentId: string;
         runId: string | null;
       };
+      ownerContinuationRelay?: {
+        channel: string;
+        ownerUserId: string;
+        relayedByAgentId: string;
+        runId: string;
+        ownerMessageRef: string;
+        relayedAt: string;
+      };
     }
   }
 }

@@ -15,7 +15,7 @@ import {
   type Db,
 } from "@tickernelz/paperclip-pro-db";
 import { conflict } from "../errors.js";
-import { buildExecutionContinuation } from "./execution-continuation.js";
+import { buildExecutionContinuation, UNVERIFIED_ACTIONS_NOT_REPEATED_NOTE } from "./execution-continuation.js";
 import {
   EXECUTION_RECONCILIATION_CAUSES,
   type ExecutionReconciliation,
@@ -510,7 +510,7 @@ export async function settleUnrecoverableExecutions(
         const note = current
           ? hasWorkspaceRestoreFailure(run.resultJson)
             ? "Workspace repair required. Verify safe staging or repair before continuing. Saved work and approval decisions remain in force."
-            : "Automatic recovery stopped. Recorded work is preserved; actions with unverified outcomes will not be repeated."
+            : UNVERIFIED_ACTIONS_NOT_REPEATED_NOTE
           : "Recovery closed because the task's owner, execution, or status changed. No work was replayed.";
         let nativeFailureBlock = action.evidence.nativeFailureBlock;
         let nativeBootstrapFailureBlock = action.evidence.nativeBootstrapFailureBlock;

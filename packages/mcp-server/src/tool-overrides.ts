@@ -135,6 +135,12 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     toolset: "core",
     bodyFields: ["ownerMessageRef", "decision", "optionIds", "reason"],
   },
+  "POST /api/issues/{id}/continue-for-owner": {
+    name: "paperclipContinueIssueForOwner",
+    description:
+      "Continue a 'Recovery needed' issue on the owner's explicit request, from the run their own message (ownerMessageRef) started.",
+    toolset: "core",
+  },
   "POST /api/issues/{id}/interactions/{interactionId}/withdraw": {
     name: "paperclipWithdrawIssueInteraction",
     description:

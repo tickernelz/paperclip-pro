@@ -1,4 +1,5 @@
 import { spekoToolsForSession } from "../voice/speko-agent-tools.js";
+import type { ExplicitContinuationOwnerRelay } from "../explicit-native-continuation.js";
 import { githubConfiguredInstructionSources } from "../chat-github-review-policy.js";
 import { CONFIGURED_ENVIRONMENT_KEYS } from "../../vendor/paperclip-runner/index.js";
 import { ASSIGNED_MCP_SERVER_NAME } from "../mcp-tool-names.js";
@@ -817,6 +818,7 @@ export interface WakeupOptions {
   queuedCommentRequestId?: string;
   /** Exact failed run selected by an authenticated board Retry request. */
   failedRunId?: string | null;
+  ownerRelay?: ExplicitContinuationOwnerRelay;
   durableChatRequest?: DurableChatWakeupRequest;
   /** Server-owned Dot admission receipt; never accepted from API payloads. */
   durableDotRequest?: {

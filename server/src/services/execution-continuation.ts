@@ -101,6 +101,9 @@ export function projectHumanInteractionResponse(row: {
     resolvedAt: row.resolvedAt.toISOString(), result: response };
 }
 
+export const UNVERIFIED_ACTIONS_NOT_REPEATED_NOTE =
+  "Automatic recovery stopped. Recorded work is preserved; actions with unverified outcomes will not be repeated.";
+
 const PENDING_QUEUED_WAKE_STATUSES = ["deferred_issue_execution", "queued"];
 
 const DISCARDED_QUEUED_COMMENT_ACTIONS = [
@@ -495,12 +498,14 @@ export async function buildExecutionContinuation(input: {
   return {
     ...(interruptedRunId ? { interruptedRunId } : {}),
     ...(resumeDelta ? { resumeDelta } : {}),
-    recoveryOutcomes: reconciliations
-      .filter((row) => row.evidence.executionReconciliation)
-      .map((row) => ({
-        recoveryActionId: row.id,
-        decision: row.evidence.executionReconciliation,
-      })),
+    recoveryOutcomes: reconciliations.flatMap((row) => {
+      if (row.evidence.executionReconciliation) return [{ recoveryActionId: row.id, decision: row.evidence.executionReconciliation }];
+      const automatic = object(row.evidence.automaticRecovery);
+      return automatic.replay === "explicit_user_continuation" && automatic.policy === "preserve_without_replay_v1"
+        ? [{ recoveryActionId: row.id, decision: { continuation: "explicit_user_message", sourceRunId: automatic.runId ?? null,
+            actionOutcome: automatic.actionOutcome ?? "unknown", note: UNVERIFIED_ACTIONS_NOT_REPEATED_NOTE } }]
+        : [];
+    }),
     version: 1,
     companyId,
     issueId,

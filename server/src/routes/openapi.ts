@@ -225,6 +225,7 @@ import {
   rejectIssueThreadInteractionSchema,
   respondIssueThreadInteractionSchema,
   answerDecisionForOwnerSchema,
+  continueIssueForOwnerSchema,
   skipIssueThreadInteractionSchema,
   submitIssueThreadInteractionVerdictsSchema,
   withdrawIssueThreadInteractionSchema,
@@ -8895,6 +8896,27 @@ registry.registerPath({
     404: r.notFound,
     409: { description: "The card is already resolved or expired" },
     422: { description: "The answer does not fit the card, or the card is a governed action that must be decided in Paperclip" },
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/issues/{id}/continue-for-owner",
+  tags: ["issues"],
+  summary: "Relay a board user's own request to continue a recovery-held issue",
+  description: "Agent runs only. When an issue shows 'Recovery needed' (execution stopped and automatic recovery is held), posts the owner's own message that started this run (an owner WhatsApp message, or their board comment) as that owner's comment, relayed by this agent. A board user's own message is the explicit continuation request: the hold is resolved and the message starts a new run; actions with unverified outcomes are not repeated. ownerMessageRef must be that message's id, sent after the run stopped. One message continues one held issue.",
+  request: {
+    params: z.object({ id: z.string() }),
+    body: jsonBody(continueIssueForOwnerSchema),
+  },
+  responses: {
+    201: { description: "The owner's comment was posted; the held issue continues with it" },
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: { description: "owner_confirmation_required: the run was not started by the owner's own message, the message predates the stop, names other issues, or was already used" },
+    404: r.notFound,
+    409: { description: "execution_recovery_not_held: the issue is not held by execution recovery" },
+    422: { description: "The owner's message has no text" },
   },
 });
 

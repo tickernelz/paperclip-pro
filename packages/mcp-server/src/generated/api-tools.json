@@ -1573,7 +1573,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19660",
+    "boardGuard": "assertBoard@issues.ts:19745",
     "authorityCapability": null,
     "parameters": [
       {
@@ -2389,6 +2389,57 @@
             ]
           }
         }
+      }
+    }
+  },
+  {
+    "name": "paperclipContinueIssueForOwner",
+    "operationId": "POST /api/issues/{id}/continue-for-owner",
+    "method": "POST",
+    "path": "/issues/{issueId}/continue-for-owner",
+    "description": "Continue a 'Recovery needed' issue on the owner's explicit request, from the run their own message (ownerMessageRef) started.",
+    "toolset": "core",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "issues"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertCrossIssueInfluenceWithinRunCap",
+      "assertOwnerContinuationAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "ownerMessageRef": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ownerMessageRef"
+        ]
       }
     }
   },
@@ -14907,7 +14958,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18464",
+    "boardGuard": "assertBoard@issues.ts:18468",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26588,7 +26639,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17408",
+    "boardGuard": "assertBoard@issues.ts:17412",
     "authorityCapability": null,
     "parameters": [
       {
@@ -38764,7 +38815,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10185",
+    "boardGuard": "assertBoard@issues.ts:10189",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41336,7 +41387,7 @@
       "assertIssueWriteInfluenceAllowed"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:9512",
+    "boardGuard": "assertBoard@issues.ts:9516",
     "authorityCapability": null,
     "parameters": [
       {
@@ -41397,7 +41448,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17378",
+    "boardGuard": "assertBoard@issues.ts:17382",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43534,7 +43585,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:19600",
+    "boardGuard": "assertBoard@issues.ts:19685",
     "authorityCapability": null,
     "parameters": [
       {
@@ -44000,7 +44051,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:18416",
+    "boardGuard": "assertBoard@issues.ts:18420",
     "authorityCapability": null,
     "parameters": [
       {
@@ -48095,7 +48146,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:10949",
+    "boardGuard": "assertBoard@issues.ts:10953",
     "authorityCapability": null,
     "parameters": [
       {
@@ -48221,7 +48272,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@issues.ts:17346",
+    "boardGuard": "assertBoard@issues.ts:17350",
     "authorityCapability": null,
     "parameters": [
       {

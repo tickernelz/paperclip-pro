@@ -1,12 +1,14 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import type { Request, RequestHandler, Response } from "express";
 import {
+  activityLog,
   agents,
   chatConversations,
   chatDeliveries,
   chatEndpoints,
   heartbeatRuns,
   issueComments,
+  issueRecoveryActions,
   issueThreadInteractionOwnerRelays,
   issueThreadInteractions,
   type Db,
@@ -20,9 +22,10 @@ import type {
   PendingDecisionOption,
   PendingDecisionQuestion,
 } from "@tickernelz/paperclip-pro-shared";
-import { HttpError, unprocessable } from "../errors.js";
+import { conflict, HttpError, unprocessable } from "../errors.js";
 import { attentionService } from "./attention.js";
 import { boardAuthService } from "./board-auth.js";
+import { executionBlockerPredicate, getExecutionBlocker } from "./execution-blocker.js";
 import { openwaOwnerPrincipalOfDeliveries } from "./openwa/approvals.js";
 import { readOpenwaRunContext } from "./openwa/authority.js";
 import { openwaChatKey } from "./openwa/outbound.js";
@@ -41,7 +44,9 @@ type OwnerRelayDenial =
   | "owner_not_member"
   | "message_predates_card"
   | "card_not_named"
-  | "owner_message_consumed";
+  | "owner_message_consumed"
+  | "message_predates_stop"
+  | "issue_not_named";
 
 function ownerConfirmationRequired(reason: OwnerRelayDenial, message: string) {
   return new HttpError(403, message, { code: OWNER_CONFIRMATION_REQUIRED_CODE, reason, remediation: OWNER_RELAY_REMEDIATION });
@@ -240,6 +245,66 @@ export async function claimOwnerRelay(
     );
   }
   return claim.id;
+}
+
+export const OWNER_CONTINUATION_RELAYED_ACTION = "issue.execution_recovery_owner_relayed";
+
+export async function assertOwnerContinuationAllowed(
+  db: Db,
+  input: { companyId: string; issueId: string; issueIdentifier: string | null; authority: OwnerRelayAuthority },
+) {
+  const blocker = await getExecutionBlocker(db, input.companyId, input.issueId);
+  if (!blocker?.recoveryActionId) {
+    throw conflict("This issue is not held by execution recovery; send the owner's message as a normal comment", {
+      code: "execution_recovery_not_held",
+    });
+  }
+  const holds = await db
+    .select({ evidence: issueRecoveryActions.evidence })
+    .from(issueRecoveryActions)
+    .where(and(eq(issueRecoveryActions.companyId, input.companyId), eq(issueRecoveryActions.sourceIssueId, input.issueId), executionBlockerPredicate()));
+  const sourceRunIds = holds.flatMap((hold) => {
+    const runId = str(hold.evidence.runId) ?? str(hold.evidence.sourceRunId);
+    return runId ? [runId] : [];
+  });
+  const stopped = sourceRunIds.length
+    ? await db
+        .select({ finishedAt: heartbeatRuns.finishedAt })
+        .from(heartbeatRuns)
+        .where(and(eq(heartbeatRuns.companyId, input.companyId), sql`${heartbeatRuns.id}::text in (${sql.join(sourceRunIds.map((id) => sql`${id}`), sql`, `)})`))
+    : [];
+  const stoppedAt = Math.max(0, ...stopped.map((run) => run.finishedAt?.getTime() ?? 0));
+  if (input.authority.messageAt.getTime() <= stoppedAt) {
+    throw ownerConfirmationRequired("message_predates_stop", "The owner's message was sent before the run stopped, so it cannot ask to continue after it");
+  }
+  const text = input.authority.ownerText.toLowerCase();
+  const identifier = input.issueIdentifier?.toLowerCase() ?? null;
+  const prefix = identifier?.split("-")[0];
+  if (identifier && prefix) {
+    const escaped = prefix.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const named = new Set([...text.matchAll(new RegExp("\\b" + escaped + "-(\\d+)\\b", "g"))].map((match) => prefix + "-" + match[1]));
+    if (named.size > 0 && !named.has(identifier)) {
+      throw ownerConfirmationRequired("issue_not_named", "The owner's message names other issues, not this one");
+    }
+  }
+  if (!input.authority.ownerText.trim()) {
+    throw unprocessable("The owner's message has no text to continue the issue with", { code: "owner_message_empty" });
+  }
+  const [used] = await db
+    .select({ id: activityLog.id })
+    .from(activityLog)
+    .where(
+      and(
+        eq(activityLog.companyId, input.companyId),
+        eq(activityLog.action, OWNER_CONTINUATION_RELAYED_ACTION),
+        sql`${activityLog.details}->>'channel' = ${input.authority.channel}`,
+        sql`${activityLog.details}->>'ownerMessageRef' = ${input.authority.ownerMessageRef}`,
+      ),
+    )
+    .limit(1);
+  if (used) {
+    throw ownerConfirmationRequired("owner_message_consumed", "This owner message already continued a held issue");
+  }
 }
 
 export async function releaseOwnerRelay(db: Db, claimId: string) {

@@ -403,6 +403,17 @@ Then confirm in the chat exactly what you submitted.
   approval requests) stay with their own controls; say so and link them.
 - Members and non-owner runs cannot relay; tell them the owner must answer.
 
+An issue that shows "Recovery needed" (execution stopped; comments wait behind
+"Waiting for execution recovery") resumes only on a person's explicit request.
+Your own comment there only queues. When the owner's own message explicitly asks
+to continue such an issue, call `paperclipContinueIssueForOwner` with `issueId`
+and `ownerMessageRef` set to that message's `id`. The server posts the owner's
+message as their comment, relayed by you; that resolves the hold and starts a new
+run, and actions with unverified outcomes are not repeated. The message must be
+sent after the run stopped and must not name only other issues; one message
+continues one issue. A 409 `execution_recovery_not_held` means the issue is not
+held: comment normally.
+
 ## Linked numbers (owner runs only)
 
 The board may link other WhatsApp numbers on the same gateway, such as an
