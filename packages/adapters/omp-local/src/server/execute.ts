@@ -255,7 +255,7 @@ function modelEffortOverrides(config: Record<string, unknown>): Record<string, s
   return overrides;
 }
 
-/** Per-model effort when the agent set one, else the agent-wide thinking level. */
+/** The fallback's own effort when the run starts on a fallback, else the agent's thinking level. */
 export function resolveOmpThinking(config: Record<string, unknown>, model: string): string {
   const perModel = modelEffortOverrides(config)[model];
   if (perModel) return perModel;

@@ -12,26 +12,15 @@ import {
   ToggleField,
 } from "../components/agent-config-primitives";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
-import { AGENT_FALLBACK_MODELS_MAX, readAgentFallbackModels } from "@tickernelz/paperclip-pro-shared";
+import {
+  AGENT_FALLBACK_EFFORTS_KEY,
+  AGENT_FALLBACK_MODELS_MAX,
+  fitAgentFallbackEfforts,
+  readAgentFallbackEfforts,
+  readAgentFallbackModels,
+} from "@tickernelz/paperclip-pro-shared";
 import { ChevronDown } from "lucide-react";
-import { ComboboxField, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "./model-picker-fields";
-
-const EFFORT_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max", "auto"] as const;
-
-function effortOptionsFor(field: ConfigFieldSchema, selector: string): Array<{ value: string; label: string }> {
-  const efforts = field.options?.find((option) => option.value === selector)?.efforts;
-  const levels = efforts?.length ? efforts : [...EFFORT_LEVELS];
-  return levels.map((value) => ({ value, label: value }));
-}
-
-function wroteModelEfforts(previous: unknown, selector: string, effort: string | null): Record<string, string> | undefined {
-  const map = typeof previous === "object" && previous !== null && !Array.isArray(previous)
-    ? { ...(previous as Record<string, unknown>) }
-    : {};
-  if (effort) map[selector] = effort;
-  else delete map[selector];
-  return Object.keys(map).length > 0 ? (map as Record<string, string>) : undefined;
-}
+import { ComboboxField, keepsEffort, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "./model-picker-fields";
 
 // ── Select field (extracted to keep hooks at component top level) ──────
 function SelectField({
@@ -250,6 +239,14 @@ export function SchemaConfigFields({
     return typeof raw === "string" && raw.trim() ? raw.trim() : null;
   }
 
+  function writeValues(entries: Record<string, unknown>): void {
+    if (isCreate) {
+      set?.({ adapterSchemaValues: { ...values?.adapterSchemaValues, ...entries } });
+      return;
+    }
+    for (const [key, value] of Object.entries(entries)) mark("adapterConfig", key, value);
+  }
+
   function writeValue(field: ConfigFieldSchema, value: unknown): void {
     if (isCreate) {
       const next = {
@@ -295,6 +292,7 @@ export function SchemaConfigFields({
     <>
       {schema.fields
         .filter((field) => !hideModel || field.key !== "model")
+        .filter((field) => field.key !== "thinking" || !schema.fields.some((f) => f.key === "model" && f.type === "combobox"))
         .filter((field) => !section || schemaFieldSection(field.key) === section)
         .filter((field) => !(field.type === "select" && /permissionMode/i.test(field.key) && (field.options?.length ?? 0) <= 1))
         .filter((field) => fieldMatchesVisibleWhen(field, readValue, schema))
@@ -377,54 +375,29 @@ export function SchemaConfigFields({
                   }));
                 }
               }
-              const isModelKey = field.key === "model";
-              const modelEfforts = isModelKey && currentVal
-                ? effortOptionsFor(field, currentVal)
-                : null;
-              const setModelEffort = (effort: string | null): void => {
-                if (!isModelKey || !currentVal) return;
-                const key = "modelEfforts";
-                const effortsField = schema.fields.find((f) => f.key === key);
-                const previous = readValue(effortsField ?? field);
-                writeValue(effortsField ?? { ...field, key }, wroteModelEfforts(previous, currentVal, effort));
-              };
-              const currentEffort = isModelKey && currentVal
-                ? String((readValue(schema.fields.find((f) => f.key === "modelEfforts") ?? field) as Record<string, unknown> | undefined)?.[currentVal] ?? "")
-                : "";
+              const thinkingField = field.key === "model" ? schema.fields.find((f) => f.key === "thinking") : undefined;
+              const thinkingValue = thinkingField ? String(readValue(thinkingField) ?? "") : "";
               return (
                 <Field key={field.key} label={field.label} hint={field.hint}>
-                  <div className={isModelKey ? "flex items-start gap-2" : undefined}>
-                    <div className={isModelKey ? "min-w-0 flex-1" : "w-full"}>
-                      <ComboboxField
-                        value={currentVal}
-                        options={comboboxOptions}
-                        onChange={(v) => {
-                          writeValue(field, v || undefined);
-                          if (isModelKey) {
-                            const effortsField = schema.fields.find((f) => f.key === "modelEfforts");
-                            const previous = readValue(effortsField ?? field);
-                            if (v && currentVal && v !== currentVal) {
-                              writeValue(effortsField ?? { ...field, key: "modelEfforts" }, wroteModelEfforts(previous, currentVal, null));
-                            }
-                          }
-                        }}
-                        label={field.label}
-                        searchPlaceholder={
-                          field.meta?.providerModels || /model/i.test(field.key) ? MODEL_SEARCH_PLACEHOLDER : undefined
-                        }
-                        testId={`schema-config-combobox-${field.key}`}
-                      />
-                    </div>
-                    {isModelKey && currentVal ? (
-                      <div className="w-32 shrink-0">
-                        <SelectField
-                          value={currentEffort}
-                          options={modelEfforts ?? []}
-                          onChange={(v) => setModelEffort(v || null)}
-                        />
-                      </div>
-                    ) : null}
-                  </div>
+                  <ComboboxField
+                    value={currentVal}
+                    options={comboboxOptions}
+                    onChange={(v) => {
+                      if (thinkingField && !keepsEffort(thinkingValue, v, comboboxOptions)) {
+                        writeValues({ [field.key]: v || undefined, [thinkingField.key]: undefined });
+                      } else {
+                        writeValue(field, v || undefined);
+                      }
+                    }}
+                    label={field.label}
+                    searchPlaceholder={
+                      field.meta?.providerModels || /model/i.test(field.key) ? MODEL_SEARCH_PLACEHOLDER : undefined
+                    }
+                    testId={`schema-config-combobox-${field.key}`}
+                    effort={thinkingField
+                      ? { value: thinkingValue || null, onChange: (effort) => writeValue(thinkingField, effort ?? undefined), defaultLabel: "Auto" }
+                      : undefined}
+                  />
                 </Field>
               );
             }
@@ -434,15 +407,16 @@ export function SchemaConfigFields({
               const maxItems = typeof field.meta?.maxItems === "number" ? field.meta.maxItems : AGENT_FALLBACK_MODELS_MAX;
               const entries = readAgentFallbackModels(readValue(field));
               const modelOptions = field.options ?? [];
-              const effortsByModel = new Map(modelOptions.filter((option) => option.efforts?.length).map((option) => [option.value, option.efforts!]));
               const isFallbackModels = field.key === "fallbackModels";
-              const effortsField = schema.fields.find((f) => f.key === "modelEfforts");
-              const currentEfforts = (isFallbackModels && effortsField
-                ? (readValue(effortsField) as Record<string, unknown> | undefined)
-                : undefined) ?? {};
+              const effortsField: ConfigFieldSchema = { key: AGENT_FALLBACK_EFFORTS_KEY, label: "Fallback efforts", type: "text" };
+              const currentEfforts = isFallbackModels ? readAgentFallbackEfforts(readValue(effortsField)) : {};
+              const effortsValue = (efforts: Record<string, string>) => (Object.keys(efforts).length > 0 ? efforts : undefined);
+              const writeEfforts = (efforts: Record<string, string>): void => writeValue(effortsField, effortsValue(efforts));
               const setFallbackEffort = (selector: string, effort: string | null): void => {
-                if (!isFallbackModels || !effortsField) return;
-                writeValue(effortsField, wroteModelEfforts(currentEfforts, selector, effort));
+                const next = { ...currentEfforts };
+                if (effort) next[selector] = effort;
+                else delete next[selector];
+                writeEfforts(next);
               };
               return (
                 <Field
@@ -457,21 +431,15 @@ export function SchemaConfigFields({
                     maxItems={maxItems}
                     primary={distinctFromKey ? readPrimary(distinctFromKey) : null}
                     onChange={(next) => {
-                      writeValue(field, next.length > 0 ? next : undefined);
-                      if (isFallbackModels && effortsField) {
-                        const dropped = entries.filter((entry) => !next.includes(entry));
-                        let latest = currentEfforts;
-                        for (const selector of dropped) {
-                          latest = wroteModelEfforts(latest, selector, null) ?? {};
-                        }
-                        writeValue(effortsField, Object.keys(latest).length > 0 ? latest : undefined);
-                      }
+                      writeValues({
+                        [field.key]: next.length > 0 ? next : undefined,
+                        ...(isFallbackModels ? { [AGENT_FALLBACK_EFFORTS_KEY]: effortsValue(fitAgentFallbackEfforts(currentEfforts, next)) } : {}),
+                      });
                     }}
                     label={field.label}
                     testId={`schema-config-list-${field.key}`}
-                    effortsByModel={effortsByModel}
-                    currentEfforts={currentEfforts as Record<string, string>}
-                    onEffortChange={setFallbackEffort}
+                    currentEfforts={currentEfforts}
+                    onEffortChange={isFallbackModels ? setFallbackEffort : undefined}
                   />
                 </Field>
               );

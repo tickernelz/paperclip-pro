@@ -102,12 +102,24 @@ the agent can still resume it when it needs the raw history.
 
 ## 4.2 Per-model effort
 
-`omp_local` resolves the thinking level per model. Each model selector in
-`adapterConfig.modelEfforts` overrides the agent-wide `thinking` for runs that
-start on that model, and fallback chains carry the selector with an effort
-suffix (`provider/model:high`) so a mid-run fallback keeps its own level. The
-agent settings UI lists each model's accepted levels from the adapter catalog
-and only offers those.
+`omp_local` resolves the thinking level per model, and the agent settings UI
+pairs the level with the model it belongs to: one input shows the model and its
+effort together, both for the main model and for every fallback row. A model
+lists the levels its own catalog entry accepts; a model whose catalog entry
+lists none gets no effort input at all; a hand-typed selector offers the full
+OMP set.
+
+- The main model's level is the agent-wide `thinking` value. It is the level
+  every run starts on.
+- `adapterConfig.modelEfforts` maps a fallback selector to the level OMP uses
+  when a run starts on that fallback. Entries are kept only for selectors still
+  on the fallback list, so removing a fallback removes its level too.
+- Fallback chains carry the selector with an effort suffix
+  (`provider/model:high`), so a mid-run fallback keeps its own level. When a run
+  starts on a cooling-down fallback, the primary's `thinking` rides along as
+  that primary's suffix for the rest of the run.
+- A task's own model/thinking override wins over a stored fallback level for the
+  model it picks.
 
 Use session reset when:
 

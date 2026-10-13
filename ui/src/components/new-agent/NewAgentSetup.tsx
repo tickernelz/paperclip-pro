@@ -50,6 +50,7 @@ import {
 } from "@/lib/provider-credential";
 import { defaultCreateValues } from "../agent-config-defaults";
 import { ModelDropdown } from "../AgentConfigForm";
+import { keepsEffort, modelPickerOption } from "@/adapters/model-picker-fields";
 import { Field, ToggleField } from "../agent-config-primitives";
 import { SecretPicker } from "../environment-variables-editor/SecretPicker";
 import { Button } from "../ui/button";
@@ -363,6 +364,10 @@ function Setup({
         : {}),
     };
     const config = getUIAdapter(adapterType).buildAdapterConfig(values);
+    if (adapterType === "omp_local") {
+      delete config.thinkingEffort;
+      if (effort) config.thinking = effort;
+    }
     if (isRunner)
       Object.assign(config, {
         provider: (runnerProvider === "claude" || runnerProvider === "grok") ? "acpx" : runnerProvider,
@@ -872,13 +877,10 @@ function Setup({
                                 value={model}
                                 onChange={(value) => {
                                   setModel(connectionModels?.resolveModel(value) ?? value);
-                                  if (
-                                    effort &&
-                                    !setupEfforts(adapterType, value).includes(
-                                      effort,
-                                    )
-                                  )
-                                    setEffort("");
+                                  const dropEffort = adapterType === "omp_local"
+                                    ? !keepsEffort(effort, value, (models.data ?? []).map((entry) => modelPickerOption(entry, false)))
+                                    : Boolean(effort) && !setupEfforts(adapterType, value).includes(effort);
+                                  if (dropEffort) setEffort("");
                                   const nextProvider = value.split("/")[0];
                                   if (
                                     multiProvider &&
@@ -898,9 +900,12 @@ function Setup({
                                 creatable
                                 groupByProvider={multiProvider && !connectionModels}
                                 preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(brandType)}
+                                effort={adapterType === "omp_local"
+                                  ? { value: effort || null, onChange: (next) => { setEffort(next ?? ""); resetTest(); } }
+                                  : undefined}
                               />
                             )}
-                            {efforts.length > 0 && (
+                            {efforts.length > 0 && adapterType !== "omp_local" && (
                               <Field label="Thinking effort">
                                 <NativeSelect
                                   aria-label="Thinking effort"

@@ -174,7 +174,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
   }
 
   it("starts on the first non-cooling candidate after OMP reports a fallback, then back on the primary after expiry", async () => {
-    const target = await seed({ model: PRIMARY, fallbackModels: [BACKUP, SECOND] });
+    const target = await seed({ model: PRIMARY, thinking: "high", fallbackModels: [BACKUP, SECOND], modelEfforts: { [BACKUP]: "low" } });
     behaviors.set(target.agentId, [
       async (ctx) => {
         await ctx.onEvent?.({
@@ -205,6 +205,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     const second = await runOnce(target);
     expect(second.seen.config.model).toBe(BACKUP);
     expect(second.seen.config.fallbackModels).toEqual([SECOND, PRIMARY]);
+    expect(second.seen.config.modelEfforts).toEqual({ [BACKUP]: "low", [PRIMARY]: "high" });
     expect(second.seen.context.paperclipModelFallback).toMatchObject({
       primaryModel: PRIMARY,
       activeModel: BACKUP,

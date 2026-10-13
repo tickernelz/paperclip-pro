@@ -1,8 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { useQueries, useQueryClient } from "@tanstack/react-query";
 import {
+  AGENT_FALLBACK_EFFORTS_KEY,
   AGENT_FALLBACK_MODELS_KEY,
+  fitAgentFallbackEfforts,
   fitAgentFallbackModels,
+  readAgentFallbackEfforts,
   readAgentFallbackModels,
   type Agent,
   type AgentAdapterConfigBatchFailure,
@@ -18,8 +21,13 @@ import { queryKeys } from "@/lib/queryKeys";
 
 export const AGENT_EFFORT_KEY = "thinking";
 
-export type AgentModelSettingKey = "model" | typeof AGENT_FALLBACK_MODELS_KEY | typeof AGENT_EFFORT_KEY;
-export type AgentModelSettingValue = string | string[] | null;
+export type AgentModelSettingKey =
+  | "model"
+  | typeof AGENT_FALLBACK_MODELS_KEY
+  | typeof AGENT_EFFORT_KEY
+  | typeof AGENT_FALLBACK_EFFORTS_KEY;
+export type AgentModelSettingValue = string | string[] | Record<string, string> | null;
+export type AgentModelSettingValues = Partial<Record<AgentModelSettingKey, AgentModelSettingValue>>;
 
 export interface AgentModelSettings {
   modelField: AgentAdapterConfigBatchField | null;
@@ -29,18 +37,21 @@ export interface AgentModelSettings {
   model: string | null;
   fallbacks: string[];
   effort: string | null;
+  fallbackEfforts: Record<string, string>;
 }
 
 export interface AgentModelSettingsController {
   settingsFor: (agent: Agent) => AgentModelSettings;
   isPending: (agentId: string, key: AgentModelSettingKey) => boolean;
   save: (agent: Agent, key: AgentModelSettingKey, value: AgentModelSettingValue) => void;
+  saveMany: (agent: Agent, key: AgentModelSettingKey, values: AgentModelSettingValues) => void;
 }
 
 const SETTING_LABELS: Record<AgentModelSettingKey, string> = {
   model: "Model",
   [AGENT_FALLBACK_MODELS_KEY]: "Fallback models",
   [AGENT_EFFORT_KEY]: "Effort",
+  [AGENT_FALLBACK_EFFORTS_KEY]: "Fallback effort",
 };
 
 const UNDO_WINDOW_MS = 5000;
@@ -67,11 +78,20 @@ function catalogKey(adapterType: string, provider: string | undefined): string {
 
 function settingValues(config: Record<string, unknown>): Record<AgentModelSettingKey, AgentModelSettingValue> {
   const fallbacks = readAgentFallbackModels(config[AGENT_FALLBACK_MODELS_KEY]);
+  const efforts = readAgentFallbackEfforts(config[AGENT_FALLBACK_EFFORTS_KEY]);
   return {
     model: readString(config, "model"),
     [AGENT_FALLBACK_MODELS_KEY]: fallbacks.length > 0 ? fallbacks : null,
     [AGENT_EFFORT_KEY]: readString(config, AGENT_EFFORT_KEY),
+    [AGENT_FALLBACK_EFFORTS_KEY]: Object.keys(efforts).length > 0 ? efforts : null,
   };
+}
+
+function isEmptyValue(value: AgentModelSettingValue | undefined): boolean {
+  if (value === null || value === undefined) return true;
+  if (Array.isArray(value)) return value.length === 0;
+  if (typeof value === "object") return Object.keys(value).length === 0;
+  return false;
 }
 
 function applyValues(
@@ -80,7 +100,7 @@ function applyValues(
 ): Record<string, unknown> {
   const next = { ...config };
   for (const [key, value] of Object.entries(values)) {
-    if (value === null || value === undefined || (Array.isArray(value) && value.length === 0)) delete next[key];
+    if (isEmptyValue(value)) delete next[key];
     else next[key] = value;
   }
   if (next[AGENT_FALLBACK_MODELS_KEY] !== undefined) {
@@ -88,10 +108,17 @@ function applyValues(
     if (fitted.list.length > 0) next[AGENT_FALLBACK_MODELS_KEY] = fitted.list;
     else delete next[AGENT_FALLBACK_MODELS_KEY];
   }
+  const efforts = fitAgentFallbackEfforts(next[AGENT_FALLBACK_EFFORTS_KEY], readAgentFallbackModels(next[AGENT_FALLBACK_MODELS_KEY]));
+  if (Object.keys(efforts).length > 0) next[AGENT_FALLBACK_EFFORTS_KEY] = efforts;
+  else delete next[AGENT_FALLBACK_EFFORTS_KEY];
   return next;
 }
 
 function sameValue(left: AgentModelSettingValue, right: AgentModelSettingValue): boolean {
+  if (isEmptyValue(left) && isEmptyValue(right)) return true;
+  if ((left && typeof left === "object" && !Array.isArray(left)) || (right && typeof right === "object" && !Array.isArray(right))) {
+    return JSON.stringify(left ?? {}) === JSON.stringify(right ?? {});
+  }
   if (Array.isArray(left) || Array.isArray(right)) {
     const a = Array.isArray(left) ? left : [];
     const b = Array.isArray(right) ? right : [];
@@ -195,6 +222,7 @@ export function useAgentModelSettings(
         model: readString(config, "model"),
         fallbacks: readAgentFallbackModels(config[AGENT_FALLBACK_MODELS_KEY]),
         effort: readString(config, AGENT_EFFORT_KEY),
+        fallbackEfforts: readAgentFallbackEfforts(config[AGENT_FALLBACK_EFFORTS_KEY]),
       };
     },
     [fieldsByType, optionsByCatalog],
@@ -231,10 +259,16 @@ export function useAgentModelSettings(
 
   const describe = useCallback(
     (agent: Agent, key: AgentModelSettingKey, value: AgentModelSettingValue): string => {
-      if (value === null || (Array.isArray(value) && value.length === 0)) return "default";
+      if (isEmptyValue(value)) return "default";
       if (key === AGENT_EFFORT_KEY) return String(value);
+      if (value && typeof value === "object" && !Array.isArray(value)) {
+        const options = settingsFor(agent).modelOptions;
+        return Object.entries(value)
+          .map(([selector, level]) => `${modelValueText(describeModelValue(selector, options))} · ${level}`)
+          .join(", ");
+      }
       const options = settingsFor(agent).modelOptions;
-      const list = Array.isArray(value) ? value : [value];
+      const list = Array.isArray(value) ? value : [String(value)];
       return list.map((entry) => modelValueText(describeModelValue(entry, options))).join(", ");
     },
     [settingsFor],
@@ -244,7 +278,7 @@ export function useAgentModelSettings(
     async (
       agent: Agent,
       key: AgentModelSettingKey,
-      values: Partial<Record<AgentModelSettingKey, AgentModelSettingValue>>,
+      values: AgentModelSettingValues,
       undoable: boolean,
     ) => {
       const pendingId = `${agent.id}:${key}`;
@@ -259,9 +293,7 @@ export function useAgentModelSettings(
         );
         if (changedKeys.length > 0) {
           const label = SETTING_LABELS[key];
-          const restore = Object.fromEntries(changedKeys.map((changed) => [changed, before[changed]])) as Partial<
-            Record<AgentModelSettingKey, AgentModelSettingValue>
-          >;
+          const restore = Object.fromEntries(changedKeys.map((changed) => [changed, before[changed]])) as AgentModelSettingValues;
           pushToast(
             undoable
               ? {
@@ -288,16 +320,26 @@ export function useAgentModelSettings(
     [companyId, describe, pushToast, queryClient, readAgentConfig, setPendingKey, writeAgentConfig],
   );
 
-  const save = useCallback(
-    (agent: Agent, key: AgentModelSettingKey, value: AgentModelSettingValue) => {
-      const normalized = Array.isArray(value) && value.length === 0 ? null : value;
-      if (sameValue(settingValues(asConfig(agent))[key], normalized)) return;
-      void apply(agent, key, { [key]: normalized }, true);
+  const saveMany = useCallback(
+    (agent: Agent, key: AgentModelSettingKey, values: AgentModelSettingValues) => {
+      const current = settingValues(asConfig(agent));
+      const changed: AgentModelSettingValues = {};
+      for (const [entry, value] of Object.entries(values) as [AgentModelSettingKey, AgentModelSettingValue][]) {
+        const normalized = isEmptyValue(value) ? null : value;
+        if (!sameValue(current[entry], normalized)) changed[entry] = normalized;
+      }
+      if (Object.keys(changed).length === 0) return;
+      void apply(agent, key, changed, true);
     },
     [apply],
   );
 
+  const save = useCallback(
+    (agent: Agent, key: AgentModelSettingKey, value: AgentModelSettingValue) => saveMany(agent, key, { [key]: value }),
+    [saveMany],
+  );
+
   const isPending = useCallback((agentId: string, key: AgentModelSettingKey) => Boolean(pending[`${agentId}:${key}`]), [pending]);
 
-  return { settingsFor, isPending, save };
+  return { settingsFor, isPending, save, saveMany };
 }

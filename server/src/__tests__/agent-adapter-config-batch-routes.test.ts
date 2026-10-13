@@ -323,6 +323,25 @@ describeEmbeddedPostgres("batch agent adapter config routes", () => {
     expect(await storedConfig(agentId)).toEqual({ model: "vendor/deep", fallbackModels: ["other/backup"] });
   });
 
+  it("stores fallback efforts only for listed fallbacks and prunes one whose model leaves the list", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Batch fallback efforts");
+    const agentId = await seedAgent(company, "Omp", { model: "vendor/fast", fallbackModels: ["vendor/deep", "other/backup"] }, FALLBACK_ADAPTER_TYPE);
+    await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config")
+      .send({ agentIds: [agentId], values: { modelEfforts: { "vendor/deep": "high", "vendor/fast": "low" } } })
+      .expect(200);
+    expect(await storedConfig(agentId)).toEqual({
+      model: "vendor/fast",
+      fallbackModels: ["vendor/deep", "other/backup"],
+      modelEfforts: { "vendor/deep": "high" },
+    });
+    await request(appFor(company.actor))
+      .post("/api/agents/batch/adapter-config")
+      .send({ agentIds: [agentId], values: { fallbackModels: ["other/backup"] } })
+      .expect(200);
+    expect(await storedConfig(agentId)).toEqual({ model: "vendor/fast", fallbackModels: ["other/backup"] });
+  });
+
   it("denies an agent actor without the company:agents capability", async () => {
     const company = await seedCompanyWithBoardAccess(ctx.db, "Batch agent actor");
     const target = await seedAgent(company, "Target");

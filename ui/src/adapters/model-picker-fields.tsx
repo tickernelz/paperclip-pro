@@ -201,6 +201,7 @@ export function ComboboxField({
   clearable = true,
   disablePortal,
   testId = "combobox-field",
+  effort,
 }: {
   value: string;
   options: readonly PickerOption[];
@@ -211,6 +212,8 @@ export function ComboboxField({
   clearable?: boolean;
   disablePortal?: boolean;
   testId?: string;
+  /** When set, the trigger shows "model · effort" and the popover leads with the model's effort chips. */
+  effort?: { value: string | null; onChange: (effort: string | null) => void; defaultLabel?: string };
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -248,12 +251,20 @@ export function ComboboxField({
             data-testid={`${testId}-trigger`}
           >
             {display ? (
-              <ModelValueLabel display={display} layout="inline" className="flex-1" testId={`${testId}-value`} />
+              <ModelValueLabel display={display} layout="inline" className="min-w-0 flex-1" testId={`${testId}-value`} />
             ) : (
               <span className="min-w-0 flex-1 truncate text-muted-foreground" data-testid={`${testId}-value`}>
                 {emptyLabel}
               </span>
             )}
+            {effort && value && showsEffortControl(effort.value, value, options) ? (
+              <span
+                className={cn("shrink-0 text-xs", effort.value ? "text-foreground" : "text-muted-foreground")}
+                data-testid={`${testId}-effort-value`}
+              >
+                · {effort.value ?? effort.defaultLabel ?? "Default effort"}
+              </span>
+            ) : null}
             {clearable && value ? <span className="w-5 shrink-0" aria-hidden="true" /> : null}
             <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
           </button>
@@ -263,6 +274,18 @@ export function ComboboxField({
           disablePortal={disablePortal}
           className="w-(--radix-popover-trigger-width) min-w-72 p-0"
         >
+          {effort && value && showsEffortControl(effort.value, value, options) ? (
+            <EffortHeader>
+              <EffortChips
+                levels={effortLevelsFor(value, options)}
+                value={effort.value}
+                onChange={effort.onChange}
+                defaultLabel={effort.defaultLabel ?? "Default"}
+                label={`Thinking effort for ${label}`}
+                testId={`${testId}-effort`}
+              />
+            </EffortHeader>
+          ) : null}
           <OptionSearchList
             options={options}
             selected={value || null}
@@ -293,6 +316,142 @@ export function ComboboxField({
   );
 }
 
+/** OMP thinking levels offered when the catalog lists none for a model. */
+export const OMP_EFFORT_LEVELS: readonly string[] = ["off", "minimal", "low", "medium", "high", "xhigh", "max"];
+
+/** The effort levels a model accepts: its catalog levels, none for a listed model without levels, the full OMP list for a typed selector. */
+export function effortLevelsFor(selector: string | null | undefined, options: readonly PickerOption[]): readonly string[] {
+  if (!selector) return [];
+  const listed = options.find((option) => option.value === selector);
+  if (!listed) return OMP_EFFORT_LEVELS;
+  return listed.efforts ?? [];
+}
+
+/** Whether to show an effort control: the model accepts levels, or one is already set and must stay visible. */
+export function showsEffortControl(
+  value: string | null | undefined,
+  selector: string | null | undefined,
+  options: readonly PickerOption[],
+): boolean {
+  return effortLevelsFor(selector, options).length > 0 || Boolean(value);
+}
+
+/** Whether an effort survives a switch to `selector`. */
+export function keepsEffort(effort: string | null | undefined, selector: string | null | undefined, options: readonly PickerOption[]): boolean {
+  return !effort || effortLevelsFor(selector, options).includes(effort);
+}
+
+/** One row of effort chips; "Default" clears the level. */
+export function EffortChips({
+  levels,
+  value,
+  onChange,
+  defaultLabel = "Default",
+  label,
+  testId,
+}: {
+  levels: readonly string[];
+  value: string | null;
+  onChange: (effort: string | null) => void;
+  defaultLabel?: string;
+  label: string;
+  testId: string;
+}) {
+  const unsupported = value && !levels.includes(value) ? value : null;
+  const chips: Array<{ value: string | null; text: string; muted?: boolean }> = [
+    { value: null, text: defaultLabel },
+    ...levels.map((level) => ({ value: level, text: level })),
+    ...(unsupported ? [{ value: unsupported, text: unsupported, muted: true }] : []),
+  ];
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap gap-1" data-testid={testId}>
+      {chips.map((chip) => {
+        const selected = (chip.value ?? null) === (value ?? null);
+        return (
+          <button
+            key={chip.value ?? ""}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            title={chip.muted ? "Not listed for this model" : undefined}
+            onClick={() => onChange(chip.value)}
+            data-testid={`${testId}-${chip.value ?? "default"}`}
+            className={cn(
+              "rounded-md border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+              selected
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
+              chip.muted && !selected && "line-through",
+            )}
+          >
+            {chip.text}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+function EffortHeader({ children }: { children: ReactNode }) {
+  return (
+    <div className="space-y-1.5 border-b border-border px-2.5 py-2">
+      <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+      {children}
+    </div>
+  );
+}
+
+/** Compact effort button for a model row; opens the same chip row. */
+export function EffortButton({
+  levels,
+  value,
+  onChange,
+  label,
+  testId,
+  disablePortal,
+}: {
+  levels: readonly string[];
+  value: string | null;
+  onChange: (effort: string | null) => void;
+  label: string;
+  testId: string;
+  disablePortal?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label={label}
+          className={cn(
+            "inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border px-1.5 text-xs transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
+            !value && "text-muted-foreground",
+          )}
+          data-testid={testId}
+        >
+          {value ?? "Default"}
+          <ChevronDown className="size-3 text-muted-foreground" aria-hidden="true" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" disablePortal={disablePortal} className="w-auto max-w-72 p-0">
+        <EffortHeader>
+          <EffortChips
+            levels={levels}
+            value={value}
+            onChange={(next) => {
+              onChange(next);
+              setOpen(false);
+            }}
+            label={label}
+            testId={`${testId}-chips`}
+          />
+        </EffortHeader>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 /** Label-row counter for a model list, such as "1/5". */
 export function ModelListCount({ count, max }: { count: number; max: number }) {
   return (
@@ -312,7 +471,6 @@ export function ModelListField({
   label,
   disablePortal,
   testId,
-  effortsByModel,
   currentEfforts,
   onEffortChange,
 }: {
@@ -324,9 +482,7 @@ export function ModelListField({
   label: string;
   disablePortal?: boolean;
   testId: string;
-  /** Effort levels per model selector; entries without one get no effort cell. */
-  effortsByModel?: ReadonlyMap<string, readonly string[]>;
-  /** Currently saved per-model efforts. */
+  /** Saved effort per fallback selector; rows show an effort button when `onEffortChange` is set. */
   currentEfforts?: Readonly<Record<string, string>>;
   onEffortChange?: (selector: string, effort: string | null) => void;
 }) {
@@ -384,19 +540,15 @@ export function ModelListField({
                 {index + 1}
               </span>
               <ModelValueLabel display={describeModelValue(entry, options)} layout="inline" className="flex-1" />
-              {effortsByModel?.get(entry)?.length && onEffortChange ? (
-                <select
-                  aria-label={`Effort for ${entry}`}
-                  data-testid={`${testId}-effort`}
-                  value={currentEfforts?.[entry] ?? ""}
-                  onChange={(event) => onEffortChange(entry, event.target.value || null)}
-                  className="h-7 shrink-0 rounded-md border border-border bg-transparent px-1.5 text-xs"
-                >
-                  <option value="">Default</option>
-                  {effortsByModel.get(entry)!.map((level) => (
-                    <option key={level} value={level}>{level}</option>
-                  ))}
-                </select>
+              {onEffortChange && showsEffortControl(currentEfforts?.[entry], entry, options) ? (
+                <EffortButton
+                  levels={effortLevelsFor(entry, options)}
+                  value={currentEfforts?.[entry] ?? null}
+                  onChange={(effort) => onEffortChange(entry, effort)}
+                  label={`Thinking effort for ${entry}`}
+                  testId={`${testId}-effort`}
+                  disablePortal={disablePortal}
+                />
               ) : null}
               <div className="flex shrink-0 items-center">
                 <Button

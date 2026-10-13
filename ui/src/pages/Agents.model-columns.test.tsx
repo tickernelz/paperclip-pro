@@ -98,8 +98,8 @@ const HAIKU = "anthropic/claude-haiku-5";
 const SONNET = "anthropic/claude-sonnet-5";
 
 const CATALOG = [
-  { id: OPUS, label: "Claude Opus 5.5", provider: "kaitech" },
-  { id: GPT, label: "GPT-5", provider: "kaitech" },
+  { id: OPUS, label: "Claude Opus 5.5", provider: "kaitech", thinking: ["low", "medium", "high", "xhigh", "max"] },
+  { id: GPT, label: "GPT-5", provider: "kaitech", thinking: ["minimal", "low", "medium", "high"] },
   { id: MINI, label: "GPT-5 mini", provider: "openai" },
   { id: GLM, label: "GLM 5", provider: "zai" },
   { id: FLASH, label: "Gemini 3 Flash", provider: "google" },
@@ -288,7 +288,6 @@ describe("Agents table model columns", () => {
     expect(byTestId("agent-fallbacks-agent-codex")).toBeNull();
     expect(byTestId("agent-effort-agent-codex")).toBeNull();
     expect($('[aria-label="Fallback models not available"]')?.textContent).toBe("—");
-    expect($('[aria-label="Effort not available"]')?.textContent).toBe("—");
     expect($('[aria-label="Model for Gamma"]')).toBeNull();
     expect($('[aria-label="Edit models for Gamma"]')).toBeNull();
     expect($('[aria-label="Edit models for Alpha"]')).not.toBeNull();
@@ -314,6 +313,62 @@ describe("Agents table model columns", () => {
     expect(byTestId("agent-fallbacks-agent-omp-overflow")).toBeNull();
     expect(toastsText()).toContain("Saved");
     expect(byTestId("toast-action")?.textContent).toBe("Undo");
+  });
+
+  it("picks the main model's effort from its own levels inside the model popover", async () => {
+    const user = userEvent.setup();
+    await renderPage([alpha({ model: OPUS, fallbackModels: [GPT], thinking: "high" }), gamma]);
+    expect(byTestId("agent-model-agent-omp")?.textContent).toContain("high");
+
+    await act(async () => { await user.click(byTestId("agent-model-agent-omp")!); });
+    const chips = [...document.querySelectorAll('[data-testid="agent-effort-chips-agent-omp"] [role="radio"]')].map((chip) => chip.textContent);
+    expect(chips).toEqual(["Default", "low", "medium", "high", "xhigh", "max"]);
+
+    mockAgentsApi.list.mockResolvedValue([alpha({ model: OPUS, fallbackModels: [GPT], thinking: "xhigh" }), gamma]);
+    await act(async () => { await user.click(byTestId("agent-effort-chips-agent-omp-xhigh")!); });
+    await settle();
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(["agent-omp"], { thinking: "xhigh" });
+    expect(byTestId("agent-model-agent-omp")?.textContent).toContain("xhigh");
+  });
+
+  it("clears the main effort when the new model does not list it", async () => {
+    const user = userEvent.setup();
+    await renderPage([alpha({ model: OPUS, thinking: "xhigh" }), gamma]);
+    await act(async () => { await user.click(byTestId("agent-model-agent-omp")!); });
+    await act(async () => {
+      await user.click($(`[data-testid="agent-model-picker-agent-omp-option"][data-value="${GPT}"]`)!);
+    });
+    await settle();
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(["agent-omp"], { model: GPT, thinking: null });
+  });
+
+  it("sets a fallback's own effort from the fallback editor and skips models without levels", async () => {
+    const user = userEvent.setup();
+    await renderPage([alpha({ model: OPUS, fallbackModels: [GPT, MINI], thinking: "high" }), gamma]);
+    await act(async () => { await user.click(byTestId("agent-fallbacks-agent-omp")!); });
+    const effortButtons = document.querySelectorAll('[data-testid="agent-fallbacks-editor-agent-omp-effort"]');
+    expect(effortButtons).toHaveLength(1);
+    await act(async () => { await user.click(effortButtons[0]!); });
+    const levels = [...document.querySelectorAll('[data-testid="agent-fallbacks-editor-agent-omp-effort-chips"] [role="radio"]')].map((chip) => chip.textContent);
+    expect(levels).toEqual(["Default", "minimal", "low", "medium", "high"]);
+    await act(async () => { await user.click(byTestId("agent-fallbacks-editor-agent-omp-effort-chips-minimal")!); });
+    await settle();
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(["agent-omp"], { modelEfforts: { [GPT]: "minimal" } });
+  });
+
+  it("keeps a stored fallback effort visible on a model whose catalog lists no levels", async () => {
+    const user = userEvent.setup();
+    await renderPage([
+      alpha({ model: OPUS, fallbackModels: [MINI], thinking: "high", modelEfforts: { [MINI]: "low" } }),
+      gamma,
+    ]);
+    await act(async () => { await user.click(byTestId("agent-fallbacks-agent-omp")!); });
+    const button = byTestId("agent-fallbacks-editor-agent-omp-effort");
+    expect(button?.textContent).toContain("low");
+    await act(async () => { await user.click(button!); });
+    await act(async () => { await user.click(byTestId("agent-fallbacks-editor-agent-omp-effort-chips-default")!); });
+    await settle();
+    expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(["agent-omp"], { modelEfforts: null });
   });
 
   it("undo restores every value the save changed through the same path", async () => {

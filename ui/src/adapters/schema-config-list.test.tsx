@@ -153,19 +153,21 @@ describe("combobox_list schema field", () => {
       />,
     );
     expect(items()).toHaveLength(3);
+    const lastList = () => onMark.mock.calls.filter(([key]) => key === "fallbackModels").at(-1)?.[1];
 
     await clickLabel("Move custom/x up");
-    expect(onMark).toHaveBeenLastCalledWith("fallbackModels", ["openai/gpt", "custom/x", "google/gemini"]);
+    expect(lastList()).toEqual(["openai/gpt", "custom/x", "google/gemini"]);
 
     await clickLabel("Move openai/gpt down");
-    expect(onMark).toHaveBeenLastCalledWith("fallbackModels", ["custom/x", "openai/gpt", "google/gemini"]);
+    expect(lastList()).toEqual(["custom/x", "openai/gpt", "google/gemini"]);
 
     await clickLabel("Remove openai/gpt");
-    expect(onMark).toHaveBeenLastCalledWith("fallbackModels", ["custom/x", "google/gemini"]);
+    expect(lastList()).toEqual(["custom/x", "google/gemini"]);
 
     await clickLabel("Remove custom/x");
     await clickLabel("Remove google/gemini");
-    expect(onMark).toHaveBeenLastCalledWith("fallbackModels", undefined);
+    expect(lastList()).toBeUndefined();
+    expect(onMark).toHaveBeenLastCalledWith("modelEfforts", undefined);
     expect(items()).toHaveLength(0);
   });
 

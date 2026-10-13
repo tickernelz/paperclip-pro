@@ -172,7 +172,7 @@ export const agentsApi = {
     api.post<AgentAdapterConfigBatchPreview>("/agents/batch/adapter-config/preview", {
       agentIds,
     }),
-  batchAdapterConfig: (agentIds: string[], values: Record<string, string | string[] | null>) =>
+  batchAdapterConfig: (agentIds: string[], values: Record<string, string | string[] | Record<string, string> | null>) =>
     api.post<AgentAdapterConfigBatchResult>("/agents/batch/adapter-config", {
       agentIds,
       values,

@@ -2,8 +2,11 @@ import { and, eq, gt, inArray, sql } from "drizzle-orm";
 import { heartbeatRuns, modelCooldowns, type Db } from "@tickernelz/paperclip-pro-db";
 import { unprocessable } from "../errors.js";
 import {
+  AGENT_FALLBACK_EFFORTS_KEY,
   AGENT_FALLBACK_MODELS_KEY,
   adapterSupportsFallbackModels,
+  fitAgentFallbackEfforts,
+  readAgentFallbackEfforts,
   readAgentFallbackModels,
   validateAgentFallbackModels,
   type RunModelFallbackReason,
@@ -82,14 +85,22 @@ export function normalizeAgentFallbackModelsConfig(
   adapterConfig: Record<string, unknown>,
   baseAdapterConfig?: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (!Object.hasOwn(adapterConfig, AGENT_FALLBACK_MODELS_KEY)) return adapterConfig;
   if (!adapterSupportsFallbackModels(adapterType ?? "")) return adapterConfig;
-  const primary = text(adapterConfig.model) || text(baseAdapterConfig?.model);
-  const validation = validateAgentFallbackModels(adapterConfig[AGENT_FALLBACK_MODELS_KEY], primary);
-  if (!validation.ok) throw unprocessable(validation.message, { key: AGENT_FALLBACK_MODELS_KEY });
+  const touchesList = Object.hasOwn(adapterConfig, AGENT_FALLBACK_MODELS_KEY);
+  if (!touchesList && !Object.hasOwn(adapterConfig, AGENT_FALLBACK_EFFORTS_KEY)) return adapterConfig;
   const next = { ...adapterConfig };
-  if (validation.value.length === 0) delete next[AGENT_FALLBACK_MODELS_KEY];
-  else next[AGENT_FALLBACK_MODELS_KEY] = validation.value;
+  let fallbacks = readAgentFallbackModels(baseAdapterConfig?.[AGENT_FALLBACK_MODELS_KEY]);
+  if (touchesList) {
+    const primary = text(adapterConfig.model) || text(baseAdapterConfig?.model);
+    const validation = validateAgentFallbackModels(adapterConfig[AGENT_FALLBACK_MODELS_KEY], primary);
+    if (!validation.ok) throw unprocessable(validation.message, { key: AGENT_FALLBACK_MODELS_KEY });
+    fallbacks = validation.value;
+    if (fallbacks.length === 0) delete next[AGENT_FALLBACK_MODELS_KEY];
+    else next[AGENT_FALLBACK_MODELS_KEY] = fallbacks;
+  }
+  const efforts = fitAgentFallbackEfforts(adapterConfig[AGENT_FALLBACK_EFFORTS_KEY], fallbacks);
+  if (Object.keys(efforts).length === 0) delete next[AGENT_FALLBACK_EFFORTS_KEY];
+  else next[AGENT_FALLBACK_EFFORTS_KEY] = efforts;
   return next;
 }
 
@@ -243,6 +254,13 @@ export async function prepareRunModelFallback(input: {
   if (!selection) return null;
   input.config.model = selection.start;
   input.config.fallbackModels = selection.overlayChain;
+  const primaryEffort = text(input.config.thinking);
+  if (selection.start !== selection.primary && primaryEffort) {
+    input.config[AGENT_FALLBACK_EFFORTS_KEY] = {
+      ...readAgentFallbackEfforts(input.config[AGENT_FALLBACK_EFFORTS_KEY]),
+      [selection.primary]: primaryEffort,
+    };
+  }
   const state: RunModelFallbackState | null = selection.reason
     ? {
         primaryModel: selection.primary,

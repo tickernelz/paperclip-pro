@@ -333,6 +333,7 @@ export const agentAdapterConfigBatchUpdateSchema = z
         z.union([
           z.string().trim().max(200),
           z.array(z.string().trim().min(1).max(200)).max(AGENT_FALLBACK_MODELS_MAX),
+          z.record(z.string().trim().min(1).max(200), z.string().trim().min(1).max(32)),
         ]).nullable(),
       )
       .refine((values) => Object.keys(values).length > 0, {

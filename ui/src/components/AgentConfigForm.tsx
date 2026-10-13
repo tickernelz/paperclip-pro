@@ -64,7 +64,7 @@ import {
 } from "../lib/adapter-test-environment";
 import { environmentDisplayLabel } from "../lib/managed-sandbox-environment";
 import { adapterCuratesModelOrder, extractProviderId } from "../lib/model-utils";
-import { MODEL_SEARCH_PLACEHOLDER, modelPickerOption } from "../adapters/model-picker-fields";
+import { EffortChips, effortLevelsFor, keepsEffort, MODEL_SEARCH_PLACEHOLDER, modelPickerOption, showsEffortControl } from "../adapters/model-picker-fields";
 import {
   describeModelValue,
   ModelOptionGroupHeader,
@@ -1296,7 +1296,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         : adapterType === "opencode_local"
           ? "variant"
           : adapterType === "grok_local" ? "reasoningEffort"
-          : adapterType === "pi_local" ? "thinking" : "effort";
+          : adapterType === "pi_local" || adapterType === "omp_local" ? "thinking" : "effort";
   const thinkingEffortOptions =
     adapterType === "codex_local"
       ? codexReasoningEffortOptions(currentModelId, "Auto").map((option) => ({
@@ -1317,8 +1317,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     label: id === "xhigh" ? "X-High" : id[0].toUpperCase() + id.slice(1),
                   }))]
                 : claudeThinkingEffortOptions;
+  const mergesEffortIntoModel = adapterType === "omp_local";
   const currentThinkingEffort = isCreate
-    ? val!.thinkingEffort
+    ? mergesEffortIntoModel ? String(val!.adapterSchemaValues?.thinking ?? "") : val!.thinkingEffort
     : adapterType === "codex_local"
       ? eff(
           "adapterConfig",
@@ -1332,7 +1333,19 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           : eff("adapterConfig", thinkingEffortKey, String(config[thinkingEffortKey] ?? ""));
   const showThinkingEffort = adapterType !== "gemini_local"
     && adapterType !== "cursor_cloud"
-    && adapterType !== "paperclip_runner";
+    && adapterType !== "paperclip_runner"
+    && !mergesEffortIntoModel;
+  const setThinkingEffort = (effort: string | null) => {
+    if (isCreate) {
+      if (mergesEffortIntoModel) {
+        set!({ adapterSchemaValues: { ...val!.adapterSchemaValues, thinking: effort ?? undefined } });
+      } else {
+        set!({ thinkingEffort: effort ?? "" });
+      }
+      return;
+    }
+    mark("adapterConfig", thinkingEffortKey, effort || undefined);
+  };
   const codexSearchEnabled = adapterType === "codex_local"
     ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
     : false;
@@ -1756,7 +1769,11 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 models={models}
                 loadingModels={connectionModels?.isLoading ?? fetchingModels}
                 value={currentModelId}
+                effort={mergesEffortIntoModel ? { value: currentThinkingEffort || null, onChange: setThinkingEffort } : undefined}
                 onChange={(v) => {
+                  if (mergesEffortIntoModel && !keepsEffort(currentThinkingEffort, v, models.map((model) => modelPickerOption(model, false)))) {
+                    setThinkingEffort(null);
+                  }
                   const supportedEfforts = setupEfforts(adapterType, v);
                   const clearUnsupportedEffort = ["codex_local", "claude_local", "grok_local"].includes(adapterType)
                     && Boolean(currentThinkingEffort)
@@ -3789,6 +3806,7 @@ export function ModelDropdown({
   emptyDetectHint,
   defaultLabel,
   presentation = "searchable",
+  effort,
 }: {
   models: AdapterModel[];
   value: string;
@@ -3811,6 +3829,8 @@ export function ModelDropdown({
   emptyDetectHint?: string;
   defaultLabel?: string;
   presentation?: "searchable" | "native";
+  /** When set, the trigger reads "model · effort" and the popover leads with that model's effort chips. */
+  effort?: { value: string | null; onChange: (effort: string | null) => void };
 }) {
   const [modelSearch, setModelSearch] = useState("");
   const [enteringCustomModel, setEnteringCustomModel] = useState(false);
@@ -3949,16 +3969,37 @@ export function ModelDropdown({
             data-testid="model-dropdown-trigger"
           >
             {selectedDisplay ? (
-              <ModelValueLabel display={selectedDisplay} layout="inline" className="flex-1" />
+              <ModelValueLabel display={selectedDisplay} layout="inline" className="min-w-0 flex-1" />
             ) : (
               <span className="min-w-0 flex-1 truncate text-muted-foreground">
                 {allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model"}
               </span>
             )}
+            {effort && value && showsEffortControl(effort.value, value, [...pickerOptions.values()]) ? (
+              <span
+                className={cn("shrink-0 text-xs", effort.value ? "text-foreground" : "text-muted-foreground")}
+                data-testid="model-dropdown-effort-value"
+              >
+                · {effort.value ?? "Auto effort"}
+              </span>
+            ) : null}
             <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-(--radix-popover-trigger-width) p-1" align="start">
+          {effort && value && showsEffortControl(effort.value, value, [...pickerOptions.values()]) ? (
+            <div className="-mx-1 -mt-1 mb-1 space-y-1.5 border-b border-border px-2.5 py-2">
+              <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+              <EffortChips
+                levels={effortLevelsFor(value, [...pickerOptions.values()])}
+                value={effort.value}
+                onChange={effort.onChange}
+                defaultLabel="Auto"
+                label="Thinking effort"
+                testId="model-dropdown-effort"
+              />
+            </div>
+          ) : null}
           <div className="relative -mx-1 -mt-1 mb-1 border-b border-border">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
             <input

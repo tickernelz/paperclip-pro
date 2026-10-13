@@ -1,4 +1,5 @@
 export const AGENT_FALLBACK_MODELS_KEY = "fallbackModels";
+export const AGENT_FALLBACK_EFFORTS_KEY = "modelEfforts";
 export const AGENT_FALLBACK_MODELS_MAX = 5;
 export const AGENT_FALLBACK_MODELS_ADAPTER_TYPES: readonly string[] = ["omp_local"];
 
@@ -66,4 +67,26 @@ export function fitAgentFallbackModels(
     list.push(trimmed);
   }
   return { list: list.slice(0, AGENT_FALLBACK_MODELS_MAX), dropped };
+}
+
+/** Reads stored per-fallback efforts leniently: trimmed selector to trimmed level. */
+export function readAgentFallbackEfforts(value: unknown): Record<string, string> {
+  if (value === null || typeof value !== "object" || Array.isArray(value)) return {};
+  const efforts: Record<string, string> = {};
+  for (const [selector, effort] of Object.entries(value as Record<string, unknown>)) {
+    const key = selector.trim();
+    const level = typeof effort === "string" ? effort.trim() : "";
+    if (key && level) efforts[key] = level;
+  }
+  return efforts;
+}
+
+/** Keeps only the efforts of models still on the fallback list. */
+export function fitAgentFallbackEfforts(value: unknown, fallbacks: readonly string[]): Record<string, string> {
+  const efforts = readAgentFallbackEfforts(value);
+  const fitted: Record<string, string> = {};
+  for (const selector of fallbacks) {
+    if (efforts[selector]) fitted[selector] = efforts[selector];
+  }
+  return fitted;
 }

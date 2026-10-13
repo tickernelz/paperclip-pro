@@ -101,4 +101,26 @@ describe("agent fallback model validation", () => {
     const config = { model: "a/x", fallbackModels: ["a/x"] };
     expect(normalizeAgentFallbackModelsConfig("claude_local", config)).toBe(config);
   });
+
+  it("keeps fallback efforts only for models still on the list", () => {
+    expect(normalizeAgentFallbackModelsConfig("omp_local", {
+      model: "a/x",
+      thinking: "high",
+      fallbackModels: ["b/y"],
+      modelEfforts: { "b/y": "low", "c/z": "max", "a/x": "xhigh" },
+    })).toEqual({ model: "a/x", thinking: "high", fallbackModels: ["b/y"], modelEfforts: { "b/y": "low" } });
+  });
+
+  it("drops the effort map when its fallback list is emptied", () => {
+    expect(normalizeAgentFallbackModelsConfig("omp_local", { model: "a/x", fallbackModels: [], modelEfforts: { "b/y": "low" } }))
+      .toEqual({ model: "a/x" });
+  });
+
+  it("prunes an effort-only update against the stored fallback list", () => {
+    expect(normalizeAgentFallbackModelsConfig(
+      "omp_local",
+      { modelEfforts: { "b/y": "low", "c/z": "max" } },
+      { model: "a/x", fallbackModels: ["c/z"] },
+    )).toEqual({ modelEfforts: { "c/z": "max" } });
+  });
 });

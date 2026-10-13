@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { aiRoutingModel, type AiConnectionBinding, type AiProviderRouting } from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
-import { agentsApi } from "@/api/agents";
+import { agentsApi, type AdapterModel } from "@/api/agents";
 import { queryKeys } from "@/lib/queryKeys";
 
 export function useConnectionModels(
@@ -35,14 +35,18 @@ export function useConnectionModels(
   const effectiveRouting: AiProviderRouting | undefined = routing ?? (openRouter
     ? { kind: "openrouter", protocol: "chat", auth: "bearer", models: [] }
     : undefined);
-  const modelOptions = discover
-    ? (catalog.data ?? []).map((m) => ({ ...m, id: harness === "opencode_local" ? m.id : m.id.replace(/^openrouter\//, "") }))
-    : routing?.models ?? [];
+  const modelOptions: AdapterModel[] = discover
+    ? (catalog.data ?? []).map((m) => ({
+        ...m,
+        id: harness === "opencode_local" ? m.id : m.id.replace(/^openrouter\//, ""),
+      }))
+    : (routing?.models ?? []).map((m) => ({ id: m.id, label: m.label ?? m.id }));
   return effectiveRouting
     ? {
         models: modelOptions.map((m) => ({
           id: aiRoutingModel(effectiveRouting, harness, m.id),
           label: m.label ?? m.id,
+          ...(m.thinking?.length ? { thinking: m.thinking } : {}),
         })),
         isLoading: discover && catalog.isLoading,
         error: discover ? catalog.error : null,

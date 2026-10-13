@@ -36,6 +36,33 @@ describe("per-task model override in the run execution config", () => {
     });
   });
 
+  it("keeps a task's own thinking when it picks a model that also has a fallback effort", () => {
+    const built = buildIssueRunAdapterConfig(
+      {
+        model: "vendor/agent-default",
+        thinking: "low",
+        fallbackModels: ["vendor/task-model", "vendor/other"],
+        modelEfforts: { "vendor/task-model": "max", "vendor/other": "minimal" },
+      },
+      { adapterConfig: { model: "vendor/task-model", thinking: "medium" } },
+    );
+    expect(built.config.thinking).toBe("medium");
+    expect(built.config.modelEfforts).toEqual({ "vendor/other": "minimal" });
+  });
+
+  it("keeps the fallback effort when the task picks the model without a thinking level", () => {
+    const built = buildIssueRunAdapterConfig(
+      {
+        model: "vendor/agent-default",
+        thinking: "low",
+        fallbackModels: ["vendor/task-model"],
+        modelEfforts: { "vendor/task-model": "max" },
+      },
+      { adapterConfig: { model: "vendor/task-model" } },
+    );
+    expect(built.config.modelEfforts).toEqual({ "vendor/task-model": "max" });
+  });
+
   it("reports only the model override in the run context snapshot", () => {
     const built = buildIssueRunAdapterConfig(agentConfig, {
       adapterConfig: {

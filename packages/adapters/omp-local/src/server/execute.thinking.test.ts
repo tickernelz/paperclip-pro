@@ -1,29 +1,27 @@
 import { describe, expect, it } from "vitest";
 import { buildOmpArgs } from "./execute.js";
 
-describe("buildOmpArgs per-model thinking", () => {
+describe("buildOmpArgs thinking level", () => {
   const base = { context: {}, systemPrompt: "", userPrompt: "", sessionDir: "/tmp/s", resumeSessionId: null, omitProfile: true, effectiveProfile: null, settingsOverlayPath: null, mcpExtensionPath: null, toolGuardExtensionPath: null, rpc: false };
-
-  it("keeps the agent-wide level when no per-model override matches", () => {
-    const args = buildOmpArgs({ ...base, config: { thinking: "high", modelEfforts: { "other/model": "low" } } });
+  const thinkingOf = (config: Record<string, unknown>) => {
+    const args = buildOmpArgs({ ...base, config });
     const at = args.indexOf("--thinking");
-    expect(args[at + 1]).toBe("high");
+    return at < 0 ? null : args[at + 1];
+  };
+
+  it("runs the main model at the agent's thinking level", () => {
+    expect(thinkingOf({ model: "a/x", thinking: "high", modelEfforts: { "b/y": "low" } })).toBe("high");
   });
 
-  it("uses the active model's own effort over the agent-wide level", () => {
-    const args = buildOmpArgs({ ...base, config: { model: "a/x", thinking: "high", modelEfforts: { "a/x": "low", "b/y": "xhigh" } } });
-    const at = args.indexOf("--thinking");
-    expect(args[at + 1]).toBe("low");
+  it("uses a fallback's own effort when the run starts on that fallback", () => {
+    expect(thinkingOf({ model: "b/y", thinking: "high", modelEfforts: { "b/y": "xhigh" } })).toBe("xhigh");
   });
 
-  it("does not inherit another model's override", () => {
-    const args = buildOmpArgs({ ...base, config: { model: "a/x", thinking: "high", modelEfforts: { "b/y": "xhigh" } } });
-    const at = args.indexOf("--thinking");
-    expect(args[at + 1]).toBe("high");
+  it("keeps the thinking level for a fallback with no effort of its own", () => {
+    expect(thinkingOf({ model: "c/z", thinking: "high", modelEfforts: { "b/y": "xhigh" } })).toBe("high");
   });
 
-  it("passes a bare model with no thinking entry untouched", () => {
-    const args = buildOmpArgs({ ...base, config: { model: "a/x" } });
-    expect(args).not.toContain("--thinking");
+  it("omits --thinking when nothing sets a level", () => {
+    expect(thinkingOf({ model: "a/x" })).toBeNull();
   });
 });

@@ -6,6 +6,7 @@ import type {
   IssueRunModelOverrideSubtaskScope,
   IssueRunModelOverrideView,
 } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_FALLBACK_EFFORTS_KEY, readAgentFallbackEfforts } from "@tickernelz/paperclip-pro-shared";
 import type { AdapterConfigSchema, ConfigFieldSchema } from "../adapters/types.js";
 import {
   AdapterConfigFieldValueError,
@@ -125,10 +126,16 @@ export function buildIssueRunAdapterConfig(
   issueOverrides: { adapterConfig: Record<string, unknown> | null } | null,
 ): IssueRunAdapterConfig {
   const issueAdapterConfig = issueOverrides?.adapterConfig ?? null;
-  return {
-    config: { ...workspaceManagedConfig, ...(issueAdapterConfig ?? {}) },
-    modelOverride: readIssueRunModelOverride({ adapterConfig: issueAdapterConfig }),
-  };
+  const modelOverride = readIssueRunModelOverride({ adapterConfig: issueAdapterConfig });
+  const config: Record<string, unknown> = { ...workspaceManagedConfig, ...(issueAdapterConfig ?? {}) };
+  const runModel = nonEmptyString(config.model);
+  const efforts = readAgentFallbackEfforts(config[AGENT_FALLBACK_EFFORTS_KEY]);
+  if (modelOverride.thinking && runModel && efforts[runModel]) {
+    delete efforts[runModel];
+    if (Object.keys(efforts).length > 0) config[AGENT_FALLBACK_EFFORTS_KEY] = efforts;
+    else delete config[AGENT_FALLBACK_EFFORTS_KEY];
+  }
+  return { config, modelOverride };
 }
 
 function findField(
@@ -193,6 +200,7 @@ function buildField(
         label: option.label,
         ...(option.group ? { group: option.group } : {}),
         ...(option.name ? { name: option.name } : {}),
+        ...(option.efforts?.length ? { efforts: option.efforts } : {}),
       })),
     agentDefault,
     override,

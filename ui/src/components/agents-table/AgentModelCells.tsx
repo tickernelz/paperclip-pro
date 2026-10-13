@@ -1,12 +1,21 @@
 import { useState, type KeyboardEvent, type MouseEvent, type ReactNode } from "react";
-import { AGENT_FALLBACK_MODELS_KEY, AGENT_FALLBACK_MODELS_MAX, type Agent } from "@tickernelz/paperclip-pro-shared";
+import {
+  AGENT_FALLBACK_EFFORTS_KEY,
+  AGENT_FALLBACK_MODELS_KEY,
+  AGENT_FALLBACK_MODELS_MAX,
+  fitAgentFallbackEfforts,
+  type Agent,
+} from "@tickernelz/paperclip-pro-shared";
 import { Loader2, Pencil } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
   ComboboxField,
+  EffortChips,
+  effortLevelsFor,
+  keepsEffort,
   MODEL_SEARCH_PLACEHOLDER,
+  showsEffortControl,
   ModelListCount,
   ModelListField,
   OptionSearchList,
@@ -19,16 +28,13 @@ import {
   type AgentModelSettingsController,
 } from "./use-agent-model-settings";
 
-const EFFORT_DEFAULT = "__adapter_default";
-
 const cellTriggerClass =
   "flex w-full min-w-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent aria-busy:cursor-progress";
 
 /** Column widths shared by the agents table header and its rows. */
 export const AGENT_MODEL_COLUMN_CLASSES = {
-  model: "w-44 min-w-0",
+  model: "w-56 min-w-0",
   fallbacks: "w-48 min-w-0",
-  effort: "w-20 min-w-0",
 } as const;
 
 function keepRowStill(event: MouseEvent<HTMLElement>) {
@@ -79,18 +85,11 @@ function FallbackChip({ index, display }: { index: number; display: ReturnType<t
   );
 }
 
-function effortOptions(settings: AgentModelSettings): { value: string; label: string }[] {
-  const options = (settings.effortField?.options ?? []).map((option) => ({ value: option.value, label: option.label }));
-  if (settings.effort && !options.some((option) => option.value === settings.effort)) {
-    options.push({ value: settings.effort, label: settings.effort });
-  }
-  return options;
-}
-
 function ModelCell({ agent, settings, controller }: CellProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const pending = controller.isPending(agent.id, "model");
+  const effortPending = controller.isPending(agent.id, AGENT_EFFORT_KEY);
   const display = settings.model ? describeModelValue(settings.model, settings.modelOptions) : null;
   if (!settings.modelField) {
     return display ? (
@@ -119,14 +118,35 @@ function ModelCell({ agent, settings, controller }: CellProps) {
             data-testid={`agent-model-${agent.id}`}
           >
             {display ? (
-              <ModelValueLabel display={display} layout="inline" className="flex-1" />
+              <ModelValueLabel display={display} layout="inline" className="min-w-0 flex-1" />
             ) : (
               <span className="min-w-0 flex-1 truncate text-muted-foreground">Adapter default</span>
             )}
-            <CellAffordance pending={pending} />
+            {settings.effortField && showsEffortControl(settings.effort, settings.model, settings.modelOptions) ? (
+              <span
+                className={cn("shrink-0 text-xs", settings.effort ? "text-foreground" : "text-muted-foreground")}
+                data-testid={`agent-effort-${agent.id}`}
+              >
+                {settings.effort ?? "default"}
+              </span>
+            ) : null}
+            <CellAffordance pending={pending || effortPending} />
           </button>
         </PopoverTrigger>
         <PopoverContent align="start" className="w-(--sz-22rem) max-w-(--radix-popover-content-available-width) p-0">
+          {settings.effortField && showsEffortControl(settings.effort, settings.model, settings.modelOptions) ? (
+            <div className="space-y-1.5 border-b border-border px-2.5 py-2">
+              <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+              <EffortChips
+                levels={effortLevelsFor(settings.model, settings.modelOptions)}
+                value={settings.effort}
+                onChange={(next) => controller.save(agent, AGENT_EFFORT_KEY, next)}
+                defaultLabel="Default"
+                label={`Effort for ${agent.name}`}
+                testId={`agent-effort-chips-${agent.id}`}
+              />
+            </div>
+          ) : null}
           <OptionSearchList
             options={settings.modelOptions}
             selected={settings.model}
@@ -134,7 +154,8 @@ function ModelCell({ agent, settings, controller }: CellProps) {
             onQueryChange={setQuery}
             onSelect={(next) => {
               changeOpen(false);
-              controller.save(agent, "model", next);
+              const dropEffort = Boolean(settings.effortField) && !keepsEffort(settings.effort, next, settings.modelOptions);
+              controller.saveMany(agent, "model", dropEffort ? { model: next, [AGENT_EFFORT_KEY]: null } : { model: next });
             }}
             searchPlaceholder={MODEL_SEARCH_PLACEHOLDER}
             label={`Model for ${agent.name}`}
@@ -205,68 +226,22 @@ function FallbackEditor({ agent, settings, controller, pending }: CellProps & { 
           options={settings.modelOptions}
           maxItems={maxItems}
           primary={settings.model}
-          onChange={(next) => controller.save(agent, AGENT_FALLBACK_MODELS_KEY, next)}
+          onChange={(next) => controller.saveMany(agent, AGENT_FALLBACK_MODELS_KEY, {
+            [AGENT_FALLBACK_MODELS_KEY]: next,
+            [AGENT_FALLBACK_EFFORTS_KEY]: fitAgentFallbackEfforts(settings.fallbackEfforts, next),
+          })}
           label={field.label}
           testId={`agent-fallbacks-editor-${agent.id}`}
+          currentEfforts={settings.fallbackEfforts}
+          onEffortChange={(selector, effort) => {
+            const next = { ...settings.fallbackEfforts };
+            if (effort) next[selector] = effort;
+            else delete next[selector];
+            controller.save(agent, AGENT_FALLBACK_EFFORTS_KEY, next);
+          }}
         />
       </div>
     </>
-  );
-}
-
-function EffortSelect({
-  agent,
-  settings,
-  controller,
-  triggerClassName,
-  children,
-}: CellProps & { triggerClassName: string; children: ReactNode }) {
-  const pending = controller.isPending(agent.id, AGENT_EFFORT_KEY);
-  return (
-    <Select
-      value={settings.effort ?? EFFORT_DEFAULT}
-      onValueChange={(next) => controller.save(agent, AGENT_EFFORT_KEY, next === EFFORT_DEFAULT ? null : next)}
-    >
-      <SelectTrigger
-        size="sm"
-        className={triggerClassName}
-        aria-label={`Effort for ${agent.name}`}
-        aria-busy={pending || undefined}
-        data-testid={`agent-effort-${agent.id}`}
-      >
-        {children}
-        {pending ? <Loader2 className="size-3 shrink-0 animate-spin text-muted-foreground" aria-hidden="true" /> : null}
-      </SelectTrigger>
-      <SelectContent position="popper" align="start">
-        <SelectItem value={EFFORT_DEFAULT}>Adapter default</SelectItem>
-        {effortOptions(settings).map((option) => (
-          <SelectItem key={option.value} value={option.value}>
-            {option.label}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
-  );
-}
-
-function EffortCell({ agent, settings, controller }: CellProps) {
-  if (!settings.effortField) return <EmptyValue label="Effort" />;
-  return (
-    <RowIsolation>
-      <EffortSelect
-        agent={agent}
-        settings={settings}
-        controller={controller}
-        triggerClassName={cn(
-          cellTriggerClass,
-          "h-auto cursor-pointer border-transparent bg-transparent shadow-none md:text-xs dark:bg-transparent [&>svg:last-child]:hidden",
-        )}
-      >
-        <span className={cn("min-w-0 flex-1 truncate", !settings.effort && "text-muted-foreground")}>
-          {settings.effort ?? "default"}
-        </span>
-      </EffortSelect>
-    </RowIsolation>
   );
 }
 
@@ -286,9 +261,6 @@ export function AgentModelColumns({ agent, controller }: { agent: Agent; control
       </div>
       <div className={AGENT_MODEL_COLUMN_CLASSES.fallbacks}>
         <FallbacksCell agent={agent} settings={settings} controller={controller} />
-      </div>
-      <div className={AGENT_MODEL_COLUMN_CLASSES.effort}>
-        <EffortCell agent={agent} settings={settings} controller={controller} />
       </div>
     </>
   );
@@ -344,6 +316,9 @@ export function AgentModelSummary({ agent, controller }: { agent: Agent; control
                   searchPlaceholder={MODEL_SEARCH_PLACEHOLDER}
                   clearable={false}
                   testId={`agent-model-summary-model-${agent.id}`}
+                  effort={settings.effortField
+                    ? { value: settings.effort, onChange: (next) => controller.save(agent, AGENT_EFFORT_KEY, next) }
+                    : undefined}
                 />
               </div>
             ) : null}
@@ -355,21 +330,6 @@ export function AgentModelSummary({ agent, controller }: { agent: Agent; control
                   controller={controller}
                   pending={controller.isPending(agent.id, AGENT_FALLBACK_MODELS_KEY)}
                 />
-              </div>
-            ) : null}
-            {settings.effortField ? (
-              <div className="space-y-1">
-                <span className="text-xs font-medium">Effort</span>
-                <EffortSelect
-                  agent={agent}
-                  settings={settings}
-                  controller={controller}
-                  triggerClassName="w-full justify-between text-sm"
-                >
-                  <span className={cn("truncate", !settings.effort && "text-muted-foreground")}>
-                    {settings.effort ?? "Adapter default"}
-                  </span>
-                </EffortSelect>
               </div>
             ) : null}
           </PopoverContent>

@@ -847,9 +847,8 @@ function AgentsTableHeader({ showEnvironment }: { showEnvironment: boolean }) {
       )}
       meta={(
         <div className="flex items-center gap-2" data-testid="agents-table-header">
-          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.model, "px-1.5")}>Model</span>
+          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.model, "px-1.5")}>Model · effort</span>
           <span className={cn(AGENT_MODEL_COLUMN_CLASSES.fallbacks, "px-1.5")}>Fallback models</span>
-          <span className={cn(AGENT_MODEL_COLUMN_CLASSES.effort, "px-1.5")}>Effort</span>
           {showEnvironment && <span className="w-44">Environment</span>}
           <span className="w-24 text-right">Last active</span>
         </div>

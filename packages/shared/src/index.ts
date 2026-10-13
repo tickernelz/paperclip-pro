@@ -2966,11 +2966,14 @@ export * from "./connection-instructions.js";
 
 
 export {
+  AGENT_FALLBACK_EFFORTS_KEY,
   AGENT_FALLBACK_MODELS_ADAPTER_TYPES,
   AGENT_FALLBACK_MODELS_KEY,
   AGENT_FALLBACK_MODELS_MAX,
   adapterSupportsFallbackModels,
+  fitAgentFallbackEfforts,
   fitAgentFallbackModels,
+  readAgentFallbackEfforts,
   readAgentFallbackModels,
   validateAgentFallbackModels,
   type AgentFallbackModelsValidation,

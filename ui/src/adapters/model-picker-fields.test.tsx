@@ -4,11 +4,11 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { ComboboxField, ModelListField } from "./model-picker-fields";
+import { ComboboxField, effortLevelsFor, keepsEffort, ModelListField, OMP_EFFORT_LEVELS } from "./model-picker-fields";
 
 const OPTIONS = [
-  { value: "sub2api-claude/claude-opus-5-5", label: "Claude Opus 5.5 (sub2api) (sub2api-claude/claude-opus-5-5)", group: "sub2api-claude", name: "Claude Opus 5.5 (sub2api)" },
-  { value: "sub2api-claude-kaitech/claude-opus-5-5", label: "Claude Opus 5.5 (sub2api-kaitech) (sub2api-claude-kaitech/claude-opus-5-5)", group: "sub2api-claude-kaitech", name: "Claude Opus 5.5 (sub2api-kaitech)" },
+  { value: "sub2api-claude/claude-opus-5-5", label: "Claude Opus 5.5 (sub2api) (sub2api-claude/claude-opus-5-5)", group: "sub2api-claude", name: "Claude Opus 5.5 (sub2api)", efforts: ["low", "medium", "high", "xhigh", "max"] },
+  { value: "sub2api-claude-kaitech/claude-opus-5-5", label: "Claude Opus 5.5 (sub2api-kaitech) (sub2api-claude-kaitech/claude-opus-5-5)", group: "sub2api-claude-kaitech", name: "Claude Opus 5.5 (sub2api-kaitech)", efforts: ["low", "medium", "high"] },
   { value: "openrouter/openai/gpt-6", label: "GPT-6 (openrouter/openai/gpt-6)", group: "openrouter", name: "GPT-6" },
 ];
 
@@ -184,6 +184,23 @@ describe("ComboboxField", () => {
     await act(async () => { await user.click($('[data-testid="model-clear"]')!); });
     expect(onValue).toHaveBeenLastCalledWith("");
     expect($('[data-testid="model-value"]')?.textContent).toBe("Not set");
+  });
+});
+
+describe("effort levels per model", () => {
+  it("reads a listed model's own levels and gives a typed selector the full list", () => {
+    expect(effortLevelsFor(OPUS, OPTIONS)).toEqual(["low", "medium", "high", "xhigh", "max"]);
+    expect(effortLevelsFor(OPUS_KAITECH, OPTIONS)).toEqual(["low", "medium", "high"]);
+    expect(effortLevelsFor(GPT, OPTIONS)).toEqual([]);
+    expect(effortLevelsFor("typed/selector", OPTIONS)).toEqual(OMP_EFFORT_LEVELS);
+  });
+
+  it("drops an effort the target model does not accept, but keeps one it does", () => {
+    expect(keepsEffort("xhigh", OPUS, OPTIONS)).toBe(true);
+    expect(keepsEffort("xhigh", OPUS_KAITECH, OPTIONS)).toBe(false);
+    expect(keepsEffort("xhigh", GPT, OPTIONS)).toBe(false);
+    expect(keepsEffort("xhigh", "typed/selector", OPTIONS)).toBe(true);
+    expect(keepsEffort(null, GPT, OPTIONS)).toBe(true);
   });
 });
 

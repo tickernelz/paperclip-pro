@@ -5,9 +5,12 @@ import type {
   AgentAdapterConfigBatchTarget,
 } from "@tickernelz/paperclip-pro-shared";
 import {
+  AGENT_FALLBACK_EFFORTS_KEY,
   AGENT_FALLBACK_MODELS_KEY,
   AGENT_FALLBACK_MODELS_MAX,
+  fitAgentFallbackEfforts,
   fitAgentFallbackModels,
+  readAgentFallbackEfforts,
   readAgentFallbackModels,
 } from "@tickernelz/paperclip-pro-shared";
 import type { ConfigFieldSchema } from "../adapters/types.js";
@@ -37,7 +40,7 @@ const PROVIDER_LOCKED_ADAPTER_TYPES: Record<string, true> = {
   paperclip_runner: true,
 };
 
-export type AgentAdapterConfigBatchValue = string | string[] | null;
+export type AgentAdapterConfigBatchValue = string | string[] | Record<string, string> | null;
 
 export interface AgentAdapterConfigBatchAgent {
   id: string;
@@ -128,6 +131,7 @@ function describeField(key: string, field: ConfigFieldSchema): AgentAdapterConfi
         label: option.label,
         ...(option.group ? { group: option.group } : {}),
         ...(option.name ? { name: option.name } : {}),
+        ...(option.efforts?.length ? { efforts: option.efforts } : {}),
       })),
     ...(list ? { list } : {}),
   };
@@ -247,7 +251,24 @@ export async function planAgentAdapterConfigBatch(
     const skippedKeys: string[] = [];
     const droppedValues: Record<string, string[]> = {};
     const pendingLists: Array<[string, ConfigFieldSchema, AgentAdapterConfigBatchValue]> = [];
+    let effortsValue: AgentAdapterConfigBatchValue | undefined;
     for (const [key, value] of Object.entries(values)) {
+      if (key === AGENT_FALLBACK_EFFORTS_KEY) {
+        if (!listFields[AGENT_FALLBACK_MODELS_KEY]) {
+          skippedKeys.push(key);
+          continue;
+        }
+        if (value !== null && (typeof value !== "object" || Array.isArray(value))) {
+          failures.push({ agentId: agent.id, name: agent.name, key, message: "Fallback efforts map each fallback model to an effort level." });
+          continue;
+        }
+        effortsValue = value;
+        continue;
+      }
+      if (typeof value === "object" && value !== null && !Array.isArray(value)) {
+        failures.push({ agentId: agent.id, name: agent.name, key, message: `"${key}" takes a single value or a list.` });
+        continue;
+      }
       if (listKeysInBatch.has(key)) {
         const listField = listFields[key];
         if (!listField) {
@@ -327,6 +348,18 @@ export async function planAgentAdapterConfigBatch(
       if (sameList(adapterConfig[key], fitted.list)) continue;
       adapterConfig[key] = fitted.list;
       changedKeys.push(key);
+    }
+    if (listFields[AGENT_FALLBACK_MODELS_KEY]) {
+      const previous = readAgentFallbackEfforts(adapterConfig[AGENT_FALLBACK_EFFORTS_KEY]);
+      const efforts = fitAgentFallbackEfforts(
+        effortsValue === undefined ? previous : effortsValue,
+        readAgentFallbackModels(adapterConfig[AGENT_FALLBACK_MODELS_KEY]),
+      );
+      if (JSON.stringify(efforts) !== JSON.stringify(previous) || (Object.keys(efforts).length === 0 && adapterConfig[AGENT_FALLBACK_EFFORTS_KEY] !== undefined)) {
+        if (Object.keys(efforts).length === 0) delete adapterConfig[AGENT_FALLBACK_EFFORTS_KEY];
+        else adapterConfig[AGENT_FALLBACK_EFFORTS_KEY] = efforts;
+        changedKeys.push(AGENT_FALLBACK_EFFORTS_KEY);
+      }
     }
     entries.push({ agent, adapterConfig, changedKeys: changedKeys.sort(), skippedKeys, droppedValues });
   }
