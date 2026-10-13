@@ -5,7 +5,7 @@ import {
   type ActivityPublication,
 } from "./activity-log.js";
 import type { NativeStatusDecision } from "./native-runtime/status-arbiter.js";
-import { and, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import {
   agentTaskSessions,
   agentWakeupRequests,
@@ -205,7 +205,7 @@ export async function prepareConversationTurn(
           and(
             eq(agentTaskSessions.companyId, issue.companyId),
             eq(agentTaskSessions.agentId, issue.conversationAgentId!),
-            eq(agentTaskSessions.taskKey, issue.id),
+            inArray(agentTaskSessions.taskKey, issueTaskKeyAliases(issue)),
           ),
         );
     }
@@ -492,6 +492,10 @@ export async function undeliveredConversationComments(
     .limit(100);
 }
 
+function issueTaskKeyAliases(issue: { id: string; identifier?: string | null }) {
+  return [...new Set([issue.identifier ?? issue.id, issue.id])];
+}
+
 /** A user's /new resumes this chat without replaying the stopped turn. */
 export async function resumeConversationForReset(db: Db, comment: typeof issueComments.$inferSelect) {
   if (!comment.authorUserId || !isConversationReset(comment.body)) return;
@@ -522,7 +526,12 @@ export async function resumeConversationForReset(db: Db, comment: typeof issueCo
 /** Serialize durable outbox delivery across API servers; the normal wake queue owns execution. */
 export async function deliverConversationComments(
   db: Db,
-  issue: { id: string; companyId: string; conversationAgentId: string | null },
+  issue: {
+    id: string;
+    identifier?: string | null;
+    companyId: string;
+    conversationAgentId: string | null;
+  },
   enqueue: (
     agentId: string,
     options: {
@@ -562,7 +571,7 @@ export async function deliverConversationComments(
           payload: { issueId: issue.id, commentId: comment.id },
           contextSnapshot: {
             issueId: issue.id,
-            taskKey: issue.id,
+            taskKey: issue.identifier ?? issue.id,
             commentId: comment.id,
             wakeCommentId: comment.id,
             wakeCommentIds: [comment.id],

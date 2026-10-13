@@ -129,9 +129,11 @@ import {
   createHeartbeatRunPreparation,
   hasInteractionContinuationWakeContext,
   isInteractionResolutionWakePayload,
+  canonicalIssueTaskKey,
 } from "./heartbeat/run-preparation.js";
 export {
   ConfigurationIncompleteFailure,
+  canonicalIssueTaskKey,
   resolveExecutionRunAdapterConfig,
   extractMentionedSkillIdsFromSources,
   applyRunScopedMentionedSkillKeys,
@@ -2523,12 +2525,17 @@ export function heartbeatService(
           );
         }
       }
-      const taskKey = deriveTaskKeyWithHeartbeatFallback(context, null);
+      const requestedTaskKey = deriveTaskKeyWithHeartbeatFallback(context, null);
       const sessionCodec = getAdapterSessionCodec(agent.adapterType);
       const issueId = readNonEmptyString(context.issueId);
       let issueContext = issueId
         ? await getIssueExecutionContext(agent.companyId, issueId)
         : null;
+      const taskKey = canonicalIssueTaskKey(
+        requestedTaskKey,
+        issueId,
+        issueContext?.identifier,
+      );
       const issueDependencyReadiness = issueId
         ? await issuesSvc
             .listDependencyReadiness(agent.companyId, [issueId])
@@ -4251,6 +4258,17 @@ export function heartbeatService(
         delete context.paperclipSessionHandoffMarkdown;
         delete context.paperclipSessionRotationReason;
         delete context.paperclipPreviousSessionId;
+        const resumedSessionId =
+          previousSessionDisplayId ?? runtimeSessionIdForAdapter;
+        if (taskKey && resumedSessionId && taskSessionForRun) {
+          runtimeWorkspaceWarnings.push(
+            `Resuming saved session ${resumedSessionId} for task "${taskKey}".`,
+          );
+        } else if (taskKey && !taskSession) {
+          runtimeWorkspaceWarnings.push(
+            `No saved session for task "${taskKey}"; starting a fresh session.`,
+          );
+        }
       }
 
       const taskSessionCredentialCompatible = !managedAiRuntime || managedAiSessionIdentityCompatible(

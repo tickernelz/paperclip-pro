@@ -17,6 +17,7 @@ import {
   buildEffectiveRunWorkspaceConfigMetadata,
   buildWorkspaceConfigFreshnessOperation,
   deriveTaskKeyWithHeartbeatFallback,
+  canonicalIssueTaskKey,
   formatRuntimeWorkspaceWarningLog,
   mergeExecutionWorkspaceMetadataForPersistence,
   mergeCoalescedContextSnapshot,
@@ -2661,6 +2662,41 @@ describe("effective run session config freshness", () => {
       expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
     });
 
+    it("resumes an omp_local session when only run-scoped connector delivery changes", async () => {
+      const connectorEntry = (source: string) => ({
+        key: "connector-openwa",
+        runtimeName: "openwa",
+        source,
+        sourceStatus: "available",
+      });
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig({
+          paperclipRuntimeSkills: [connectorEntry("/assets/bundles/aaa")],
+          paperclipConnectorSkillDigest: "digest-a",
+          paperclipSkillSync: { desiredSkillEntries: [{ key: "connector-openwa", versionId: null }] },
+        }),
+        next: ompConfig({
+          paperclipRuntimeSkills: [connectorEntry("/assets/bundles/bbb")],
+          paperclipConnectorSkillDigest: "digest-b",
+          paperclipSkillSync: { desiredSkillEntries: [] },
+        }),
+      });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
+    });
+
+    it("still resets an omp_local session when a session-defining adapter setting changes", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig({ noPty: false }),
+        next: ompConfig({ noPty: true }),
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig"]);
+    });
+
     it("still resets an omp_local session when its instructions change", async () => {
       const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-model-switch-"));
       const instructionsPath = path.join(root, "AGENTS.md");
@@ -3010,6 +3046,46 @@ describe("normalizeSessionParams", () => {
   it("preserves a non-empty object", () => {
     const params = { sessionId: "thread-1" };
     expect(normalizeSessionParams(params)).toBe(params);
+  });
+});
+
+describe("canonicalIssueTaskKey", () => {
+  it("maps an issue-id task key onto its identifier", () => {
+    expect(
+      canonicalIssueTaskKey(
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        "ZHA-1507",
+      ),
+    ).toBe("ZHA-1507");
+  });
+
+  it("leaves an identifier task key untouched", () => {
+    expect(
+      canonicalIssueTaskKey(
+        "ZHA-1507",
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        "ZHA-1507",
+      ),
+    ).toBe("ZHA-1507");
+  });
+
+  it("keeps non-issue task keys and missing identifiers", () => {
+    expect(
+      canonicalIssueTaskKey(
+        "status-card:abc",
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        "ZHA-1507",
+      ),
+    ).toBe("status-card:abc");
+    expect(
+      canonicalIssueTaskKey(
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        "f6733413-db16-4550-8eb6-eac700a39ea6",
+        null,
+      ),
+    ).toBe("f6733413-db16-4550-8eb6-eac700a39ea6");
+    expect(canonicalIssueTaskKey(null, "issue-id", "ZHA-1")).toBeNull();
   });
 });
 
@@ -3452,12 +3528,14 @@ describe("parseSessionCompactionPolicy", () => {
       maxSessionRuns: 0,
       maxRawInputTokens: 0,
       maxSessionAgeHours: 0,
+      maxSessionBytes: 0,
     });
     expect(parseSessionCompactionPolicy(buildAgent("claude_local"))).toEqual({
       enabled: true,
       maxSessionRuns: 0,
       maxRawInputTokens: 0,
       maxSessionAgeHours: 0,
+      maxSessionBytes: 0,
     });
   });
 
@@ -3467,12 +3545,14 @@ describe("parseSessionCompactionPolicy", () => {
       maxSessionRuns: 200,
       maxRawInputTokens: 2_000_000,
       maxSessionAgeHours: 72,
+      maxSessionBytes: 0,
     });
     expect(parseSessionCompactionPolicy(buildAgent("opencode_local"))).toEqual({
       enabled: true,
       maxSessionRuns: 200,
       maxRawInputTokens: 2_000_000,
       maxSessionAgeHours: 72,
+      maxSessionBytes: 0,
     });
   });
 
@@ -3493,6 +3573,30 @@ describe("parseSessionCompactionPolicy", () => {
       maxSessionRuns: 25,
       maxRawInputTokens: 500_000,
       maxSessionAgeHours: 0,
+      maxSessionBytes: 0,
+    });
+  });
+
+  it("rotates omp_local on session file size while keeping its native compaction", () => {
+    expect(parseSessionCompactionPolicy(buildAgent("omp_local"))).toEqual({
+      enabled: true,
+      maxSessionRuns: 0,
+      maxRawInputTokens: 0,
+      maxSessionAgeHours: 0,
+      maxSessionBytes: 4 * 1024 * 1024,
+    });
+    expect(
+      parseSessionCompactionPolicy(
+        buildAgent("omp_local", {
+          heartbeat: { sessionCompaction: { maxSessionBytes: 4096 } },
+        }),
+      ),
+    ).toEqual({
+      enabled: true,
+      maxSessionRuns: 0,
+      maxRawInputTokens: 0,
+      maxSessionAgeHours: 0,
+      maxSessionBytes: 4096,
     });
   });
 });

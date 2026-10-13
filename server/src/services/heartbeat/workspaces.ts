@@ -83,6 +83,7 @@ import {
   resolveExecutionWorkspaceMode,
 } from "../execution-workspace-policy.js";
 import { isUnsafeSessionWorkspaceCwd } from "../session-workspace-cwd.js";
+import { isConnectorSkill } from "../connector-runtime.js";
 import { assertLowTrustWorkspaceIsolation } from "../low-trust-runtime-containment.js";
 import type { TrustPresetResolution } from "../trust-preset-resolver.js";
 import {
@@ -2284,6 +2285,23 @@ const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
   "paperclipConnectorSkillDigest",
 ] as const;
 
+function withoutConnectorDeliverySkills(runtimeSkills: unknown) {
+  if (!Array.isArray(runtimeSkills)) return runtimeSkills;
+  return runtimeSkills.filter((entry) => {
+    if (typeof entry !== "object" || entry === null) return true;
+    const key = (entry as Record<string, unknown>).key;
+    return typeof key !== "string" || !isConnectorSkill(key);
+  });
+}
+
+function withoutResumeNeutralAdapterConfigKeys(
+  config: Record<string, unknown>,
+): Record<string, unknown> {
+  const next = { ...config };
+  for (const key of RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS) delete next[key];
+  return next;
+}
+
 const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_AI_CREDENTIAL_IDENTITY_KEY,
   SESSION_CONFIGURED_MODEL_KEY,
@@ -3002,7 +3020,7 @@ function buildSessionConfigCategoryValues(input: {
       routine: { env: input.routineEnv },
     },
     secrets: sanitizedSecretManifest,
-    runtimeSkills: input.runtimeSkills,
+    runtimeSkills: withoutConnectorDeliverySkills(input.runtimeSkills),
   } satisfies Record<EffectiveRunSessionConfigCategory, unknown>;
 }
 
@@ -3029,9 +3047,11 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
   const resumesAcrossModelSwitch = adapterResumesAcrossModelSwitch(input.adapterType);
   const categoryValues = buildSessionConfigCategoryValues({
     adapterType: input.adapterType,
-    effectiveAdapterConfig: resumesAcrossModelSwitch
-      ? withoutModelSwitchKeys(managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome))
-      : managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome),
+    effectiveAdapterConfig: withoutResumeNeutralAdapterConfigKeys(
+      resumesAcrossModelSwitch
+        ? withoutModelSwitchKeys(managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome))
+        : managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome),
+    ),
     agentRuntimeConfig: input.agentRuntimeConfig,
     instructions,
     issueOverrides: resumesAcrossModelSwitch

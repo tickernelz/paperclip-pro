@@ -1281,6 +1281,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
 
     expect(run.status).toBe("issue_created");
     expect(run.linkedIssueId).toBeTruthy();
+    const [createdIssue] = await db
+      .select({ identifier: issues.identifier })
+      .from(issues)
+      .where(eq(issues.id, run.linkedIssueId!));
     expect(wakeups).toEqual([
       {
         agentId,
@@ -1288,10 +1292,10 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
           source: "assignment",
           triggerDetail: "system",
           reason: "issue_assigned",
-          payload: { issueId: run.linkedIssueId, mutation: "create" },
+          payload: { issueId: run.linkedIssueId, taskKey: createdIssue!.identifier, mutation: "create" },
           requestedByActorType: undefined,
           requestedByActorId: null,
-          contextSnapshot: { issueId: run.linkedIssueId, source: "routine.dispatch" },
+          contextSnapshot: { issueId: run.linkedIssueId, source: "routine.dispatch", taskKey: createdIssue!.identifier },
         },
       },
     ]);

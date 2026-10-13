@@ -237,6 +237,35 @@ describe.skipIf(!support.supported)("heartbeat run completion boundary", () => {
     expect(f.deps.upsertTaskSession).not.toHaveBeenCalled();
   });
 
+  it("keeps the saved task session when a failed run reports no session", async () => {
+    const f = await fixture();
+    await f.deps.upsertTaskSession({
+      companyId: f.agent.companyId, agentId: f.agent.id, adapterType: f.agent.adapterType,
+      taskKey: "completion-task", sessionParamsJson: { sessionId: "saved-session" },
+      sessionDisplayId: "saved-session", lastRunId: null, lastError: null,
+    });
+    f.deps.upsertTaskSession.mockClear();
+    Object.assign(f.input.adapterResult, {
+      exitCode: 1, errorMessage: "spawn E2BIG",
+      sessionId: null, sessionParams: null, sessionDisplayId: null,
+    });
+    await f.completion.completeRun(f.input);
+    expect((await read(f.run.id)).status).toBe("failed");
+    expect(f.deps.clearTaskSessions).not.toHaveBeenCalled();
+    expect(f.deps.upsertTaskSession).not.toHaveBeenCalled();
+    expect((await f.deps.getTaskSession(f.agent.companyId, f.agent.id, f.agent.adapterType, "completion-task"))?.sessionDisplayId).toBe("saved-session");
+  });
+
+  it("still clears a succeeded run that reports no session", async () => {
+    const f = await fixture();
+    Object.assign(f.input.adapterResult, {
+      sessionId: null, sessionParams: null, sessionDisplayId: null,
+    });
+    await f.completion.completeRun(f.input);
+    expect((await read(f.run.id)).status).toBe("succeeded");
+    expect(f.deps.clearTaskSessions).toHaveBeenCalledWith(f.run.companyId, f.agent.id, { taskKey: "completion-task", adapterType: "process", expectedRunId: f.run.id });
+  });
+
   it("redacts execution failures, retains restore evidence and resumes the latest checkpoint", async () => {
     const f = await fixture();
     const failure = f.failure(new Error("private-identity-material crashed"));
