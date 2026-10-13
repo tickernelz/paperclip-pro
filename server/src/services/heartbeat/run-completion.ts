@@ -567,6 +567,9 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
         runtimeForAdapter.sessionDisplayId == null,
       sessionRotated: sessionCompaction.rotate,
       sessionRotationReason: sessionCompaction.reason,
+      ...(adapterResult.sessionBytes != null
+        ? { sessionBytes: adapterResult.sessionBytes }
+        : {}),
       configFreshness: configFreshnessResultMetadata,
       provider:
         readNonEmptyString(adapterResult.provider) ?? "unknown",
@@ -1040,11 +1043,13 @@ export function createHeartbeatRunCompletion(db: Db, dependencies: HeartbeatRunC
         },
         normalizedUsage,
       );
-      if (taskKey) {
-        if (
-          adapterResult.clearSession ||
-          (!nextSessionState.params && !nextSessionState.displayId)
-        ) {
+      const sessionUnavailable =
+        adapterResult.clearSession ||
+        (!nextSessionState.params && !nextSessionState.displayId);
+      const failedRunKeepsSavedSession =
+        sessionUnavailable && finalizedRun.status !== "succeeded";
+      if (taskKey && !failedRunKeepsSavedSession) {
+        if (sessionUnavailable) {
           await clearTaskSessions(agent.companyId, agent.id, {
             taskKey,
             adapterType: agent.adapterType,

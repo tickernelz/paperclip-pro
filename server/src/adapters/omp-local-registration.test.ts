@@ -53,6 +53,7 @@ describe("omp_local builtin adapter registration", () => {
       maxSessionRuns: 0,
       maxRawInputTokens: 0,
       maxSessionAgeHours: 0,
+      maxSessionBytes: 4 * 1024 * 1024,
     });
   });
 });

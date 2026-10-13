@@ -193,6 +193,40 @@ describePostgres("heartbeat run state database wiring", () => {
     expect(decision.handoffMarkdown).not.toContain("omit this");
   });
 
+  it("rotates a session whose file exceeds the size threshold and carries the handoff", async () => {
+    const { companyId, agent, issue, state } = await fixture();
+    const [run] = await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id, invocationSource: "assignment", sessionIdAfter: "sized",
+      usageJson: { sessionBytes: 4096 },
+      resultJson: { summary: "Continue the oversized session" },
+    }).returning();
+    const decision = await state.evaluateSessionCompaction({
+      agent: { ...agent, runtimeConfig: { heartbeat: { sessionCompaction: { maxSessionBytes: 4096 } } } },
+      sessionId: "sized", issueId: issue.id,
+    });
+    expect(decision).toMatchObject({
+      rotate: true,
+      reason: "session file reached 4,096 bytes (threshold 4,096)",
+      previousRunId: run.id,
+    });
+    expect(decision.handoffMarkdown).toContain("Continue the oversized session");
+    expect(decision.handoffMarkdown).toContain("Previous session: sized");
+  });
+
+  it("keeps resuming a session below the size threshold", async () => {
+    const { companyId, agent, issue, state } = await fixture();
+    await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id, invocationSource: "assignment", sessionIdAfter: "small",
+      usageJson: { sessionBytes: 1024 },
+    }).returning();
+    const decision = await state.evaluateSessionCompaction({
+      agent: { ...agent, runtimeConfig: { heartbeat: { sessionCompaction: { maxSessionBytes: 4096 } } } },
+      sessionId: "small", issueId: issue.id,
+    });
+    expect(decision.rotate).toBe(false);
+    expect(decision.reason).toBeNull();
+  });
+
   it.each(["superseded", "cancelled"] as const)("fences %s conversation session writes and clears", async (scenario) => {
     const { companyId, agent, issue, state } = await fixture();
     await db.update(issues).set({

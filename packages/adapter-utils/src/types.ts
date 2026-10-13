@@ -161,6 +161,7 @@ export interface AdapterExecutionResult {
    */
   referencedProjectStagingFailures?: Array<{ projectId: string; error: string }>;
   summary?: string | null;
+  sessionBytes?: number | null;
   clearSession?: boolean;
   question?: {
     prompt: string;

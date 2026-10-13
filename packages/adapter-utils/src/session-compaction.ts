@@ -3,6 +3,7 @@ export interface SessionCompactionPolicy {
   maxSessionRuns: number;
   maxRawInputTokens: number;
   maxSessionAgeHours: number;
+  maxSessionBytes: number;
 }
 
 export type NativeContextManagement = "confirmed" | "likely" | "unknown" | "none";
@@ -25,6 +26,7 @@ const DEFAULT_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   maxSessionRuns: 200,
   maxRawInputTokens: 2_000_000,
   maxSessionAgeHours: 72,
+  maxSessionBytes: 0,
 };
 
 // Adapters with native context management still participate in session resume,
@@ -34,6 +36,15 @@ const ADAPTER_MANAGED_SESSION_POLICY: SessionCompactionPolicy = {
   maxSessionRuns: 0,
   maxRawInputTokens: 0,
   maxSessionAgeHours: 0,
+  maxSessionBytes: 0,
+};
+
+const OMP_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
+  enabled: true,
+  maxSessionRuns: 0,
+  maxRawInputTokens: 0,
+  maxSessionAgeHours: 0,
+  maxSessionBytes: 4 * 1024 * 1024,
 };
 
 export const LEGACY_SESSIONED_ADAPTER_TYPES = new Set([
@@ -103,7 +114,7 @@ export const ADAPTER_SESSION_MANAGEMENT: Record<string, AdapterSessionManagement
   omp_local: {
     supportsSessionResume: true,
     nativeContextManagement: "confirmed",
-    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
+    defaultSessionCompaction: OMP_SESSION_COMPACTION_POLICY,
   },
 };
 
@@ -157,11 +168,13 @@ export function readSessionCompactionOverride(runtimeConfig: unknown): Partial<S
   const maxSessionRuns = readNumber(compaction.maxSessionRuns);
   const maxRawInputTokens = readNumber(compaction.maxRawInputTokens);
   const maxSessionAgeHours = readNumber(compaction.maxSessionAgeHours);
+  const maxSessionBytes = readNumber(compaction.maxSessionBytes);
 
   if (enabled !== undefined) explicit.enabled = enabled;
   if (maxSessionRuns !== undefined) explicit.maxSessionRuns = maxSessionRuns;
   if (maxRawInputTokens !== undefined) explicit.maxRawInputTokens = maxRawInputTokens;
   if (maxSessionAgeHours !== undefined) explicit.maxSessionAgeHours = maxSessionAgeHours;
+  if (maxSessionBytes !== undefined) explicit.maxSessionBytes = maxSessionBytes;
 
   return explicit;
 }
@@ -185,6 +198,7 @@ export function resolveSessionCompactionPolicy(
       maxSessionRuns: explicitOverride.maxSessionRuns ?? basePolicy.maxSessionRuns,
       maxRawInputTokens: explicitOverride.maxRawInputTokens ?? basePolicy.maxRawInputTokens,
       maxSessionAgeHours: explicitOverride.maxSessionAgeHours ?? basePolicy.maxSessionAgeHours,
+      maxSessionBytes: explicitOverride.maxSessionBytes ?? basePolicy.maxSessionBytes,
     },
     adapterSessionManagement,
     explicitOverride,
@@ -198,7 +212,12 @@ export function resolveSessionCompactionPolicy(
 
 export function hasSessionCompactionThresholds(policy: Pick<
   SessionCompactionPolicy,
-  "maxSessionRuns" | "maxRawInputTokens" | "maxSessionAgeHours"
+  "maxSessionRuns" | "maxRawInputTokens" | "maxSessionAgeHours" | "maxSessionBytes"
 >) {
-  return policy.maxSessionRuns > 0 || policy.maxRawInputTokens > 0 || policy.maxSessionAgeHours > 0;
+  return (
+    policy.maxSessionRuns > 0 ||
+    policy.maxRawInputTokens > 0 ||
+    policy.maxSessionAgeHours > 0 ||
+    policy.maxSessionBytes > 0
+  );
 }

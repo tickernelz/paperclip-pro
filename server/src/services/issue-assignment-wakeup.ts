@@ -24,7 +24,12 @@ export interface IssueAssignmentWakeupDeps {
 
 export function queueIssueAssignmentWakeup(input: {
   heartbeat: IssueAssignmentWakeupDeps;
-  issue: { id: string; assigneeAgentId: string | null; status: string };
+  issue: {
+    id: string;
+    identifier?: string | null;
+    assigneeAgentId: string | null;
+    status: string;
+  };
   reason: string;
   mutation: string;
   contextSource: string;
@@ -44,6 +49,9 @@ export function queueIssueAssignmentWakeup(input: {
 }) {
   if (!input.issue.assigneeAgentId || input.issue.status === "backlog") return;
 
+  const taskKey =
+    input.taskKey?.trim() || input.issue.identifier?.trim() || input.issue.id;
+
   return input.heartbeat
     .wakeup(input.issue.assigneeAgentId, {
       source: "assignment",
@@ -52,7 +60,7 @@ export function queueIssueAssignmentWakeup(input: {
       payload: {
         issueId: input.issue.id,
         mutation: input.mutation,
-        ...(input.taskKey ? { taskKey: input.taskKey } : {}),
+        taskKey,
         ...(input.wakeCommentId ? { wakeCommentId: input.wakeCommentId } : {}),
         ...(input.extraWakeContext ?? {}),
       },
@@ -65,7 +73,7 @@ export function queueIssueAssignmentWakeup(input: {
       contextSnapshot: {
         issueId: input.issue.id,
         source: input.contextSource,
-        ...(input.taskKey ? { taskKey: input.taskKey } : {}),
+        taskKey,
         ...(input.wakeCommentId ? { wakeCommentId: input.wakeCommentId } : {}),
         ...(input.wakeCommentId && input.attachmentOmissionReasons
           ? {

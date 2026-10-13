@@ -1335,6 +1335,10 @@ export function createHeartbeatRunState(db: Db) {
     // separate cache counter when the writer explicitly saved exclusive input.
     const latestRawInputTokens = (latestRawUsage?.inputTokens ?? 0) +
       (latestRun?.usageJson?.rawInputIncludesCached === false ? latestRawUsage?.cachedInputTokens ?? 0 : 0);
+    const latestSessionBytes =
+      typeof latestRun?.usageJson?.sessionBytes === "number"
+        ? latestRun.usageJson.sessionBytes
+        : null;
     const sessionAgeHours =
       latestRun && oldestRun
         ? Math.max(
@@ -1346,7 +1350,15 @@ export function createHeartbeatRunState(db: Db) {
         : 0;
 
     let reason: string | null = null;
-    if (policy.maxSessionRuns > 0 && runs.length > policy.maxSessionRuns) {
+    if (
+      policy.maxSessionBytes > 0 &&
+      latestSessionBytes !== null &&
+      latestSessionBytes >= policy.maxSessionBytes
+    ) {
+      reason =
+        `session file reached ${formatCount(latestSessionBytes)} bytes ` +
+        `(threshold ${formatCount(policy.maxSessionBytes)})`;
+    } else if (policy.maxSessionRuns > 0 && runs.length > policy.maxSessionRuns) {
       reason = `session exceeded ${policy.maxSessionRuns} runs`;
     } else if (
       policy.maxRawInputTokens > 0 &&

@@ -1573,6 +1573,18 @@ export function deriveTaskKey(
   );
 }
 
+export function canonicalIssueTaskKey(
+  taskKey: string | null,
+  issueId: string | null | undefined,
+  issueIdentifier: string | null | undefined,
+) {
+  if (!taskKey) return taskKey;
+  const id = readNonEmptyString(issueId);
+  const identifier = readNonEmptyString(issueIdentifier);
+  if (!id || !identifier || taskKey !== id) return taskKey;
+  return identifier;
+}
+
 function mergeWakeCommentIds(...values: Array<unknown>): string[] {
   const merged: string[] = [];
   const append = (value: unknown) => {

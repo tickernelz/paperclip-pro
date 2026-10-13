@@ -401,6 +401,23 @@ function buildOmpArgs(input: {
 const OMP_HEARTBEAT_PROMPT_TEMPLATE =
   "You are agent {{agent.id}} ({{agent.name}}). Continue your Paperclip work under the execution contract in your system prompt.";
 
+async function findOmpSessionFile(sessionDir: string, sessionId: string) {
+  const entries = await fs.readdir(sessionDir).catch(() => [] as string[]);
+  const match = entries.find((entry) => entry.endsWith(`${sessionId}.jsonl`));
+  return match ? path.join(sessionDir, match) : null;
+}
+
+async function readOmpSessionBytes(
+  sessionDir: string,
+  sessionId: string | null,
+) {
+  if (!sessionId) return null;
+  const file = await findOmpSessionFile(sessionDir, sessionId);
+  if (!file) return null;
+  const stats = await fs.stat(file).catch(() => null);
+  return stats?.isFile() ? stats.size : null;
+}
+
 async function buildPrompts(input: {
   config: Record<string, unknown>;
   context: Record<string, unknown>;
@@ -1266,6 +1283,14 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
       return result;
     };
 
+    const attachSessionBytes = async (result: AdapterExecutionResult) => {
+      result.sessionBytes = await readOmpSessionBytes(
+        sessionDir,
+        result.sessionId ?? null,
+      );
+      return result;
+    };
+
     const initial = await runAttempt(canResume ? savedSessionId : null);
     const initialFailed = !initial.proc.timedOut && (
       (initial.proc.exitCode ?? 0) !== 0 || initial.parsed.errors.length > 0
@@ -1280,9 +1305,9 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
         `[paperclip] OMP session "${savedSessionId}" is unavailable; retrying once with a fresh session.\n`,
       );
       const retry = await runAttempt(null);
-      return toResult(retry, true, initial);
+      return attachSessionBytes(toResult(retry, true, initial));
     }
-    return toResult(initial, false);
+    return attachSessionBytes(toResult(initial, false));
   } finally {
     try {
       try {

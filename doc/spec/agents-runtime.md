@@ -72,11 +72,33 @@ Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run conte
 
 Paperclip stores resumable session state per `(agent, taskKey, adapterType)`.
 `taskKey` is derived from wakeup context (`taskKey`, `taskId`, or `issueId`).
+When the wake names an issue, the key is canonicalised onto the issue
+identifier, so an issue-id key and its identifier resolve to one session.
 
 - A heartbeat for the same task key reuses the previous session for that task.
 - Different task keys for the same agent keep separate session state.
 - If restore fails, adapters should retry once with a fresh session and continue.
+- A run that fails without reporting a session id keeps the saved session, so a
+  transient spawn or provider failure does not silently drop the agent's context.
 - You can reset all sessions for an agent or reset one task session by task key.
+
+Each run logs whether it resumed or started a session and why, as
+`Resuming saved session <id> for task "<key>"`, `No saved session for task
+"<key>"; starting a fresh session.`, or `Starting a fresh session because
+<reason>`.
+
+## 4.1 Session rotation
+
+Rotation thresholds are adapter defaults that an agent can override under
+`runtimeConfig.heartbeat.sessionCompaction`:
+
+- `maxSessionRuns`, `maxRawInputTokens`, `maxSessionAgeHours`
+- `maxSessionBytes`: size of the persisted session file, when the adapter can
+  measure it. `omp_local` rotates at 4 MiB by default.
+
+A rotation is not a plain reset. Paperclip keeps the previous session id in the
+handoff note, so the agent can still resume the old transcript when it needs the
+raw history.
 
 Use session reset when:
 

@@ -59,6 +59,7 @@ export const sessionManagement: AdapterSessionManagement = {
     maxSessionRuns: 0,
     maxRawInputTokens: 0,
     maxSessionAgeHours: 0,
+    maxSessionBytes: 4 * 1024 * 1024,
   },
 };
 
