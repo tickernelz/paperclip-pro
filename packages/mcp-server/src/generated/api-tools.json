@@ -306,6 +306,12 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
                 }
               ]
             }
