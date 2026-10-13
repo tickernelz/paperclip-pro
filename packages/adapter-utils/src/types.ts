@@ -298,6 +298,8 @@ export interface AdapterModel {
   id: string;
   label: string;
   provider?: string;
+  /** Reasoning efforts this model accepts, lowest to highest. Absent when the model exposes no levels. */
+  thinking?: string[];
 }
 
 export type AdapterEnvironmentCheckLevel = "info" | "warn" | "error";
@@ -459,6 +461,8 @@ export interface ConfigFieldOption {
   group?: string;
   /** Display name without the value, for pickers that show the value beside it */
   name?: string;
+  /** Reasoning efforts this option accepts, lowest to highest. Absent when the option exposes no levels. */
+  efforts?: string[];
 }
 
 export interface ConfigFieldSchema {

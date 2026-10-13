@@ -257,6 +257,7 @@ export function modelOptions(models: AdapterModel[]): ConfigFieldOption[] {
       label: named ? `${model.label} (${model.id})` : model.id,
       ...(model.provider ? { group: model.provider } : {}),
       ...(named ? { name: model.label } : {}),
+      ...(model.thinking?.length ? { efforts: model.thinking } : {}),
     };
   });
 }

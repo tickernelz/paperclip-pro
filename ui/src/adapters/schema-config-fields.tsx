@@ -16,6 +16,23 @@ import { AGENT_FALLBACK_MODELS_MAX, readAgentFallbackModels } from "@tickernelz/
 import { ChevronDown } from "lucide-react";
 import { ComboboxField, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "./model-picker-fields";
 
+const EFFORT_LEVELS = ["off", "minimal", "low", "medium", "high", "xhigh", "max", "auto"] as const;
+
+function effortOptionsFor(field: ConfigFieldSchema, selector: string): Array<{ value: string; label: string }> {
+  const efforts = field.options?.find((option) => option.value === selector)?.efforts;
+  const levels = efforts?.length ? efforts : [...EFFORT_LEVELS];
+  return levels.map((value) => ({ value, label: value }));
+}
+
+function wroteModelEfforts(previous: unknown, selector: string, effort: string | null): Record<string, string> | undefined {
+  const map = typeof previous === "object" && previous !== null && !Array.isArray(previous)
+    ? { ...(previous as Record<string, unknown>) }
+    : {};
+  if (effort) map[selector] = effort;
+  else delete map[selector];
+  return Object.keys(map).length > 0 ? (map as Record<string, string>) : undefined;
+}
+
 // ── Select field (extracted to keep hooks at component top level) ──────
 function SelectField({
   value,
@@ -360,18 +377,54 @@ export function SchemaConfigFields({
                   }));
                 }
               }
+              const isModelKey = field.key === "model";
+              const modelEfforts = isModelKey && currentVal
+                ? effortOptionsFor(field, currentVal)
+                : null;
+              const setModelEffort = (effort: string | null): void => {
+                if (!isModelKey || !currentVal) return;
+                const key = "modelEfforts";
+                const effortsField = schema.fields.find((f) => f.key === key);
+                const previous = readValue(effortsField ?? field);
+                writeValue(effortsField ?? { ...field, key }, wroteModelEfforts(previous, currentVal, effort));
+              };
+              const currentEffort = isModelKey && currentVal
+                ? String((readValue(schema.fields.find((f) => f.key === "modelEfforts") ?? field) as Record<string, unknown> | undefined)?.[currentVal] ?? "")
+                : "";
               return (
                 <Field key={field.key} label={field.label} hint={field.hint}>
-                  <ComboboxField
-                    value={currentVal}
-                    options={comboboxOptions}
-                    onChange={(v) => writeValue(field, v || undefined)}
-                    label={field.label}
-                    searchPlaceholder={
-                      field.meta?.providerModels || /model/i.test(field.key) ? MODEL_SEARCH_PLACEHOLDER : undefined
-                    }
-                    testId={`schema-config-combobox-${field.key}`}
-                  />
+                  <div className={isModelKey ? "flex items-start gap-2" : undefined}>
+                    <div className={isModelKey ? "min-w-0 flex-1" : "w-full"}>
+                      <ComboboxField
+                        value={currentVal}
+                        options={comboboxOptions}
+                        onChange={(v) => {
+                          writeValue(field, v || undefined);
+                          if (isModelKey) {
+                            const effortsField = schema.fields.find((f) => f.key === "modelEfforts");
+                            const previous = readValue(effortsField ?? field);
+                            if (v && currentVal && v !== currentVal) {
+                              writeValue(effortsField ?? { ...field, key: "modelEfforts" }, wroteModelEfforts(previous, currentVal, null));
+                            }
+                          }
+                        }}
+                        label={field.label}
+                        searchPlaceholder={
+                          field.meta?.providerModels || /model/i.test(field.key) ? MODEL_SEARCH_PLACEHOLDER : undefined
+                        }
+                        testId={`schema-config-combobox-${field.key}`}
+                      />
+                    </div>
+                    {isModelKey && currentVal ? (
+                      <div className="w-32 shrink-0">
+                        <SelectField
+                          value={currentEffort}
+                          options={modelEfforts ?? []}
+                          onChange={(v) => setModelEffort(v || null)}
+                        />
+                      </div>
+                    ) : null}
+                  </div>
                 </Field>
               );
             }
@@ -380,6 +433,17 @@ export function SchemaConfigFields({
               const distinctFromKey = typeof field.meta?.distinctFromKey === "string" ? field.meta.distinctFromKey : null;
               const maxItems = typeof field.meta?.maxItems === "number" ? field.meta.maxItems : AGENT_FALLBACK_MODELS_MAX;
               const entries = readAgentFallbackModels(readValue(field));
+              const modelOptions = field.options ?? [];
+              const effortsByModel = new Map(modelOptions.filter((option) => option.efforts?.length).map((option) => [option.value, option.efforts!]));
+              const isFallbackModels = field.key === "fallbackModels";
+              const effortsField = schema.fields.find((f) => f.key === "modelEfforts");
+              const currentEfforts = (isFallbackModels && effortsField
+                ? (readValue(effortsField) as Record<string, unknown> | undefined)
+                : undefined) ?? {};
+              const setFallbackEffort = (selector: string, effort: string | null): void => {
+                if (!isFallbackModels || !effortsField) return;
+                writeValue(effortsField, wroteModelEfforts(currentEfforts, selector, effort));
+              };
               return (
                 <Field
                   key={field.key}
@@ -389,12 +453,25 @@ export function SchemaConfigFields({
                 >
                   <ModelListField
                     value={entries}
-                    options={field.options ?? []}
+                    options={modelOptions}
                     maxItems={maxItems}
                     primary={distinctFromKey ? readPrimary(distinctFromKey) : null}
-                    onChange={(next) => writeValue(field, next.length > 0 ? next : undefined)}
+                    onChange={(next) => {
+                      writeValue(field, next.length > 0 ? next : undefined);
+                      if (isFallbackModels && effortsField) {
+                        const dropped = entries.filter((entry) => !next.includes(entry));
+                        let latest = currentEfforts;
+                        for (const selector of dropped) {
+                          latest = wroteModelEfforts(latest, selector, null) ?? {};
+                        }
+                        writeValue(effortsField, Object.keys(latest).length > 0 ? latest : undefined);
+                      }
+                    }}
                     label={field.label}
                     testId={`schema-config-list-${field.key}`}
+                    effortsByModel={effortsByModel}
+                    currentEfforts={currentEfforts as Record<string, string>}
+                    onEffortChange={setFallbackEffort}
                   />
                 </Field>
               );

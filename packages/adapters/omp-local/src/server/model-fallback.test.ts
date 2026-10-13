@@ -38,6 +38,10 @@ describe("OMP model fallback tracker", () => {
   it("builds the chain from config and strips thinking suffixes only", () => {
     expect(ompFallbackChain({ model: "a/x", fallbackModels: ["b/y", "a/x", "b/y"] })).toEqual({ key: "a/x", chain: ["b/y"] });
     expect(ompFallbackChain({ model: "a/x", fallbackModels: [] })).toBeNull();
+    expect(ompFallbackChain({ model: "a/x", fallbackModels: ["b/y", "c/z"], modelEfforts: { "b/y": "xhigh", "c/z": "low" } })).toEqual({ key: "a/x", chain: ["b/y:xhigh", "c/z:low"] });
+    expect(ompFallbackChain({ model: "a/x", fallbackModels: ["b/y:high"], modelEfforts: { "b/y": "low" } })).toEqual({ key: "a/x", chain: ["b/y:high"] });
+    expect(ompFallbackChain({ model: "a/x", fallbackModels: ["b/y"], modelEfforts: {} })).toEqual({ key: "a/x", chain: ["b/y"] });
+    expect(stripOmpThinkingSuffix("b/y:xhigh")).toBe("b/y");
     expect(stripOmpThinkingSuffix("ollama/llama3:8b")).toBe("ollama/llama3:8b");
     expect(stripOmpThinkingSuffix("a/x:xhigh")).toBe("a/x");
   });

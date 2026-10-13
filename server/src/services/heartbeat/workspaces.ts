@@ -2247,6 +2247,7 @@ const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
 const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
   "fallbackModels",
+  "modelEfforts",
   "thinking",
   "thinkingEffort",
   "effort",

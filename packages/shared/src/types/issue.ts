@@ -167,6 +167,8 @@ export interface IssueRunModelOverrideOption {
   label: string;
   group?: string;
   name?: string;
+  /** Reasoning efforts this model accepts, lowest to highest. Absent when the model exposes no levels. */
+  efforts?: string[];
 }
 
 export interface IssueRunModelOverrideField {
