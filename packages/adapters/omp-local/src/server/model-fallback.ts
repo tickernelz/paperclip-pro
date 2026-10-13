@@ -24,15 +24,30 @@ export function stripOmpThinkingSuffix(selector: string): string {
   return selector.trim().replace(THINKING_SUFFIX_RE, "");
 }
 
+function effortOverrides(config: Record<string, unknown>): Record<string, unknown> {
+  const raw = config.modelEfforts;
+  return raw !== null && typeof raw === "object" && !Array.isArray(raw) ? raw as Record<string, unknown> : {};
+}
+
+/** A fallback carries its own effort as an OMP selector suffix, so a mid-run switch does not inherit the primary level. */
+function withEffortSuffix(selector: string, efforts: Record<string, unknown>): string {
+  if (THINKING_SUFFIX_RE.test(selector)) return selector;
+  const effort = text(efforts[selector]);
+  return effort ? `${selector}:${effort}` : selector;
+}
+
 /** The ordered fallback chain for the run's model, or null when the agent has none. */
 export function ompFallbackChain(config: Record<string, unknown>): { key: string; chain: string[] } | null {
   const key = text(config.model);
   if (!key || !Array.isArray(config.fallbackModels)) return null;
+  const efforts = effortOverrides(config);
   const chain: string[] = [];
   for (const entry of config.fallbackModels) {
     const selector = text(entry);
-    if (!selector || selector === key || chain.includes(selector)) continue;
-    chain.push(selector);
+    if (!selector || selector === key) continue;
+    const suffixed = withEffortSuffix(selector, efforts);
+    if (chain.includes(suffixed)) continue;
+    chain.push(suffixed);
   }
   return chain.length > 0 ? { key, chain } : null;
 }

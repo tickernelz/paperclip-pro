@@ -97,9 +97,17 @@ Rotation thresholds are adapter defaults that an agent can override under
 - `maxSessionBytes`: size of the persisted session file, when the adapter can
   measure it. `omp_local` rotates at 4 MiB by default.
 
-A rotation is not a plain reset. Paperclip keeps the previous session id in the
-handoff note, so the agent can still resume the old transcript when it needs the
-raw history.
+A rotation is not a plain reset. The handoff note names the previous session so
+the agent can still resume it when it needs the raw history.
+
+## 4.2 Per-model effort
+
+`omp_local` resolves the thinking level per model. Each model selector in
+`adapterConfig.modelEfforts` overrides the agent-wide `thinking` for runs that
+start on that model, and fallback chains carry the selector with an effort
+suffix (`provider/model:high`) so a mid-run fallback keeps its own level. The
+agent settings UI lists each model's accepted levels from the adapter catalog
+and only offers those.
 
 Use session reset when:
 

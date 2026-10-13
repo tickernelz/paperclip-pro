@@ -244,6 +244,24 @@ function stringsOnly(env: NodeJS.ProcessEnv | Record<string, unknown>): Record<s
   );
 }
 
+function modelEffortOverrides(config: Record<string, unknown>): Record<string, string> {
+  const raw = config.modelEfforts;
+  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
+  const overrides: Record<string, string> = {};
+  for (const [selector, effort] of Object.entries(raw as Record<string, unknown>)) {
+    const level = asString(effort, "").trim();
+    if (selector.trim() && level) overrides[selector.trim()] = level;
+  }
+  return overrides;
+}
+
+/** Per-model effort when the agent set one, else the agent-wide thinking level. */
+export function resolveOmpThinking(config: Record<string, unknown>, model: string): string {
+  const perModel = modelEffortOverrides(config)[model];
+  if (perModel) return perModel;
+  return (asString(config.thinking, "") || asString(config.thinkingEffort, "") || asString(config.effort, "")).trim();
+}
+
 function configuredModelProvider(model: string): string | null {
   if (!model || model.startsWith("@")) return null;
   const separator = model.indexOf("/");
@@ -280,7 +298,7 @@ function addWakeEnvironment(
   if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
 }
 
-function buildOmpArgs(input: {
+export function buildOmpArgs(input: {
   config: Record<string, unknown>;
   context?: Record<string, unknown>;
   cwd?: string;
@@ -301,7 +319,7 @@ function buildOmpArgs(input: {
   if (baseSystemPrompt) args.push("--system-prompt", baseSystemPrompt);
   args.push("--append-system-prompt", input.systemPrompt);
   const model = asString(config.model, "").trim();
-  const thinking = (asString(config.thinking, "") || asString(config.thinkingEffort, "") || asString(config.effort, "")).trim();
+  const thinking = resolveOmpThinking(config, model);
   const profile = input.effectiveProfile ?? "";
   const smol = asString(config.smolModel, "").trim();
   const slow = asString(config.slowModel, "").trim();

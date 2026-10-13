@@ -11,6 +11,23 @@ const catalog = JSON.stringify({
 });
 
 describe("omp model options", () => {
+  it("surfaces the per-model thinking levels from the catalog", () => {
+    const envelope = JSON.stringify({
+      models: [
+        { provider: "p", id: "m1", selector: "p/m1", name: "M1", thinking: ["minimal", "high", "xhigh"] },
+        { provider: "p", id: "m2", selector: "p/m2", name: "M2" },
+      ],
+    });
+    expect(parseOmpModelsOutput(envelope)).toEqual([
+      { id: "p/m1", label: "M1", provider: "p", thinking: ["minimal", "high", "xhigh"] },
+      { id: "p/m2", label: "M2", provider: "p" },
+    ]);
+    expect(modelOptions(parseOmpModelsOutput(envelope))).toEqual([
+      { value: "p/m1", label: "M1 (p/m1)", name: "M1", group: "p", efforts: ["minimal", "high", "xhigh"] },
+      { value: "p/m2", label: "M2 (p/m2)", name: "M2", group: "p" },
+    ]);
+  });
+
   it("keeps the provider from the catalog row", () => {
     expect(parseOmpModelsOutput(catalog)).toEqual([
       { id: "sub2api-claude/claude-opus-5-5", label: "Claude Opus 5.5", provider: "sub2api-claude" },

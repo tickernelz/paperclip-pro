@@ -28,7 +28,7 @@ function isPrintableKey(event: KeyboardEvent): boolean {
   return event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey;
 }
 
-/** Maps an adapter catalog model onto a picker option, optionally grouping by the id's provider prefix. */
+/** Maps an adapter catalog model onto a picker option, optionally grouping by the id's provider prefix and carrying its efforts. */
 export function modelPickerOption(model: AdapterModel, groupByProvider: boolean): PickerOption {
   const provider = model.provider ?? (groupByProvider ? extractProviderId(model.id) : null);
   const name = model.label !== model.id ? model.label : groupByProvider ? extractModelName(model.id) : null;
@@ -37,6 +37,7 @@ export function modelPickerOption(model: AdapterModel, groupByProvider: boolean)
     label: model.label,
     ...(provider ? { group: provider } : {}),
     ...(name ? { name } : {}),
+    ...(model.thinking?.length ? { efforts: model.thinking } : {}),
   };
 }
 
@@ -311,6 +312,9 @@ export function ModelListField({
   label,
   disablePortal,
   testId,
+  effortsByModel,
+  currentEfforts,
+  onEffortChange,
 }: {
   value: readonly string[];
   options: readonly PickerOption[];
@@ -320,6 +324,11 @@ export function ModelListField({
   label: string;
   disablePortal?: boolean;
   testId: string;
+  /** Effort levels per model selector; entries without one get no effort cell. */
+  effortsByModel?: ReadonlyMap<string, readonly string[]>;
+  /** Currently saved per-model efforts. */
+  currentEfforts?: Readonly<Record<string, string>>;
+  onEffortChange?: (selector: string, effort: string | null) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -375,6 +384,20 @@ export function ModelListField({
                 {index + 1}
               </span>
               <ModelValueLabel display={describeModelValue(entry, options)} layout="inline" className="flex-1" />
+              {effortsByModel?.get(entry)?.length && onEffortChange ? (
+                <select
+                  aria-label={`Effort for ${entry}`}
+                  data-testid={`${testId}-effort`}
+                  value={currentEfforts?.[entry] ?? ""}
+                  onChange={(event) => onEffortChange(entry, event.target.value || null)}
+                  className="h-7 shrink-0 rounded-md border border-border bg-transparent px-1.5 text-xs"
+                >
+                  <option value="">Default</option>
+                  {effortsByModel.get(entry)!.map((level) => (
+                    <option key={level} value={level}>{level}</option>
+                  ))}
+                </select>
+              ) : null}
               <div className="flex shrink-0 items-center">
                 <Button
                   type="button"

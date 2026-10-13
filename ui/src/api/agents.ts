@@ -53,6 +53,8 @@ export interface AdapterModel {
   id: string;
   label: string;
   provider?: string;
+  /** Reasoning efforts this model accepts, lowest to highest. Absent when the model exposes no levels. */
+  thinking?: string[];
 }
 
 export interface DetectedAdapterModel {

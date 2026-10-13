@@ -3,6 +3,7 @@ import { deriveTaskKey } from "./run-preparation.js";
 const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
   "fallbackModels",
+  "modelEfforts",
   "thinking",
   "thinkingEffort",
   "effort",
