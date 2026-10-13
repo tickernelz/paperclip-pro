@@ -3050,42 +3050,22 @@ describe("normalizeSessionParams", () => {
 });
 
 describe("canonicalIssueTaskKey", () => {
-  it("maps an issue-id task key onto its identifier", () => {
-    expect(
-      canonicalIssueTaskKey(
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        "ZHA-1507",
-      ),
-    ).toBe("ZHA-1507");
+  const issueId = "f6733413-db16-4550-8eb6-eac700a39ea6";
+
+  it("maps an identifier task key onto the issue id", () => {
+    expect(canonicalIssueTaskKey("ZHA-1507", issueId, "ZHA-1507")).toBe(issueId);
+    expect(canonicalIssueTaskKey("zha-1507", issueId, "ZHA-1507")).toBe(issueId);
   });
 
-  it("leaves an identifier task key untouched", () => {
-    expect(
-      canonicalIssueTaskKey(
-        "ZHA-1507",
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        "ZHA-1507",
-      ),
-    ).toBe("ZHA-1507");
+  it("leaves an issue-id task key untouched", () => {
+    expect(canonicalIssueTaskKey(issueId, issueId, "ZHA-1507")).toBe(issueId);
   });
 
-  it("keeps non-issue task keys and missing identifiers", () => {
-    expect(
-      canonicalIssueTaskKey(
-        "status-card:abc",
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        "ZHA-1507",
-      ),
-    ).toBe("status-card:abc");
-    expect(
-      canonicalIssueTaskKey(
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        "f6733413-db16-4550-8eb6-eac700a39ea6",
-        null,
-      ),
-    ).toBe("f6733413-db16-4550-8eb6-eac700a39ea6");
-    expect(canonicalIssueTaskKey(null, "issue-id", "ZHA-1")).toBeNull();
+  it("keeps non-issue task keys and missing issue context", () => {
+    expect(canonicalIssueTaskKey("status-card:abc", issueId, "ZHA-1507")).toBe("status-card:abc");
+    expect(canonicalIssueTaskKey(issueId, issueId, null)).toBe(issueId);
+    expect(canonicalIssueTaskKey("ZHA-1507", null, "ZHA-1507")).toBe("ZHA-1507");
+    expect(canonicalIssueTaskKey(null, issueId, "ZHA-1507")).toBeNull();
   });
 });
 

@@ -1581,8 +1581,8 @@ export function canonicalIssueTaskKey(
   if (!taskKey) return taskKey;
   const id = readNonEmptyString(issueId);
   const identifier = readNonEmptyString(issueIdentifier);
-  if (!id || !identifier || taskKey !== id) return taskKey;
-  return identifier;
+  if (!id || !identifier) return taskKey;
+  return taskKey.toUpperCase() === identifier.toUpperCase() ? id : taskKey;
 }
 
 function mergeWakeCommentIds(...values: Array<unknown>): string[] {

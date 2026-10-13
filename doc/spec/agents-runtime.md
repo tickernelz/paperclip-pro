@@ -72,8 +72,9 @@ Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run conte
 
 Paperclip stores resumable session state per `(agent, taskKey, adapterType)`.
 `taskKey` is derived from wakeup context (`taskKey`, `taskId`, or `issueId`).
-When the wake names an issue, the key is canonicalised onto the issue
-identifier, so an issue-id key and its identifier resolve to one session.
+When the wake names an issue, the key is canonicalised onto the issue id, so
+the identifier used by chat wakes and the id used by assignment wakes resolve
+to one session.
 
 - A heartbeat for the same task key reuses the previous session for that task.
 - Different task keys for the same agent keep separate session state.
