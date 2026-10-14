@@ -2428,6 +2428,46 @@ describe("effective run session config freshness", () => {
     }
   });
 
+  it("reuses a task session when only skill delivery details change", async () => {
+    const skill = (overrides: Record<string, unknown> = {}) => ({
+      key: "paperclip",
+      runtimeName: "paperclip",
+      source: "/tmp/paperclip/runtime-skills/paperclip",
+      versionId: null,
+      currentVersionId: "skill-version-1",
+      sourceStatus: "available",
+      missingDetail: null,
+      ...overrides,
+    });
+    const first = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [skill()] });
+
+    for (const delivery of [
+      skill({ source: "/tmp/paperclip/runtime-context-assets/bundles/other-digest" }),
+      skill({ sourceStatus: "missing", missingDetail: "The selected skill version produced no files." }),
+    ]) {
+      const next = await buildSessionConfigMetadata({ adapterType: "omp_local", runtimeSkills: [delivery] });
+      expect(resolveTaskSessionConfigFreshness({
+        hasTaskSession: true,
+        adapterType: "omp_local",
+        configuredModel: "gpt-5.4-mini",
+        taskSessionParams: sessionParamsWithConfigMetadata(first),
+        configMetadata: next,
+      }).reset).toBe(false);
+    }
+
+    const upgraded = await buildSessionConfigMetadata({
+      adapterType: "omp_local",
+      runtimeSkills: [skill({ currentVersionId: "skill-version-2" })],
+    });
+    expect(resolveTaskSessionConfigFreshness({
+      hasTaskSession: true,
+      adapterType: "omp_local",
+      configuredModel: "gpt-5.4-mini",
+      taskSessionParams: sessionParamsWithConfigMetadata(first),
+      configMetadata: upgraded,
+    }).reset).toBe(true);
+  });
+
   it("reuses managed AI sessions across temporary credential homes while preserving configuration boundaries", async () => {
     const config = (home: string) => ({
       model: "gpt-5.4-mini",
@@ -3563,7 +3603,7 @@ describe("parseSessionCompactionPolicy", () => {
       maxSessionRuns: 0,
       maxRawInputTokens: 0,
       maxSessionAgeHours: 0,
-      maxSessionBytes: 4 * 1024 * 1024,
+      maxSessionBytes: 16 * 1024 * 1024,
     });
     expect(
       parseSessionCompactionPolicy(

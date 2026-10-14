@@ -2303,6 +2303,27 @@ function withoutResumeNeutralAdapterConfigKeys(
   return next;
 }
 
+/**
+ * Skill delivery fields are realized per run: the absolute source path, its
+ * transient availability and any materialization error change without the
+ * skill set or its versions changing. Fingerprinting only identity and
+ * versions keeps a delivery hiccup from restarting every task session.
+ */
+function stableRuntimeSkillEntries(runtimeSkills: unknown) {
+  const entries = withoutConnectorDeliverySkills(runtimeSkills);
+  if (!Array.isArray(entries)) return entries;
+  return entries.map((entry) => {
+    if (typeof entry !== "object" || entry === null) return entry;
+    const record = entry as Record<string, unknown>;
+    return {
+      key: record.key ?? null,
+      runtimeName: record.runtimeName ?? null,
+      versionId: record.versionId ?? null,
+      currentVersionId: record.currentVersionId ?? null,
+    };
+  });
+}
+
 const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_AI_CREDENTIAL_IDENTITY_KEY,
   SESSION_CONFIGURED_MODEL_KEY,
@@ -3021,7 +3042,7 @@ function buildSessionConfigCategoryValues(input: {
       routine: { env: input.routineEnv },
     },
     secrets: sanitizedSecretManifest,
-    runtimeSkills: withoutConnectorDeliverySkills(input.runtimeSkills),
+    runtimeSkills: stableRuntimeSkillEntries(input.runtimeSkills),
   } satisfies Record<EffectiveRunSessionConfigCategory, unknown>;
 }
 
@@ -3046,12 +3067,16 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
     input.effectiveAdapterConfig,
   );
   const resumesAcrossModelSwitch = adapterResumesAcrossModelSwitch(input.adapterType);
+  const sessionFingerprintAdapterConfig = managedAiSessionFingerprintConfig(
+    input.effectiveAdapterConfig,
+    input.managedAiHome,
+  );
   const categoryValues = buildSessionConfigCategoryValues({
     adapterType: input.adapterType,
     effectiveAdapterConfig: withoutResumeNeutralAdapterConfigKeys(
       resumesAcrossModelSwitch
-        ? withoutModelSwitchKeys(managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome))
-        : managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome),
+        ? withoutModelSwitchKeys(sessionFingerprintAdapterConfig)
+        : sessionFingerprintAdapterConfig,
     ),
     agentRuntimeConfig: input.agentRuntimeConfig,
     instructions,
@@ -3080,8 +3105,8 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
   });
   const resumeAdapterConfig = {
     ...(resumesAcrossModelSwitch
-      ? withoutModelSwitchKeys(managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome))
-      : managedAiSessionFingerprintConfig(input.effectiveAdapterConfig, input.managedAiHome)),
+      ? withoutModelSwitchKeys(sessionFingerprintAdapterConfig)
+      : sessionFingerprintAdapterConfig),
   };
   for (const key of RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS) delete resumeAdapterConfig[key];
   const { resume: resumeFingerprint } =

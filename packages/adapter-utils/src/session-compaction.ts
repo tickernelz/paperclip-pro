@@ -44,7 +44,7 @@ const OMP_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   maxSessionRuns: 0,
   maxRawInputTokens: 0,
   maxSessionAgeHours: 0,
-  maxSessionBytes: 4 * 1024 * 1024,
+  maxSessionBytes: 16 * 1024 * 1024,
 };
 
 export const LEGACY_SESSIONED_ADAPTER_TYPES = new Set([

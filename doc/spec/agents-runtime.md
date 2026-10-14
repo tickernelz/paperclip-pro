@@ -95,7 +95,7 @@ Rotation thresholds are adapter defaults that an agent can override under
 
 - `maxSessionRuns`, `maxRawInputTokens`, `maxSessionAgeHours`
 - `maxSessionBytes`: size of the persisted session file, when the adapter can
-  measure it. `omp_local` rotates at 4 MiB by default.
+  measure it. `omp_local` rotates at 16 MiB by default.
 
 A rotation is not a plain reset. The handoff note names the previous session so
 the agent can still resume it when it needs the raw history.
