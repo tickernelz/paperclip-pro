@@ -279,7 +279,10 @@ export function ComboboxField({
               <EffortChips
                 levels={effortLevelsFor(value, options)}
                 value={effort.value}
-                onChange={effort.onChange}
+                onChange={(next) => {
+                  effort.onChange(next);
+                  changeOpen(false);
+                }}
                 defaultLabel={effort.defaultLabel ?? "Default"}
                 label={`Thinking effort for ${label}`}
                 testId={`${testId}-effort`}
@@ -293,7 +296,7 @@ export function ComboboxField({
             onQueryChange={setQuery}
             onSelect={(next) => {
               onChange(next);
-              changeOpen(false);
+              if (!(effort && effortLevelsFor(next, options).length > 0)) changeOpen(false);
             }}
             searchPlaceholder={searchPlaceholder}
             label={label}
@@ -539,7 +542,12 @@ export function ModelListField({
               <span className="w-4 shrink-0 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
                 {index + 1}
               </span>
-              <ModelValueLabel display={describeModelValue(entry, options)} layout="inline" className="flex-1" />
+              <ModelValueLabel
+                display={describeModelValue(entry, options)}
+                layout="inline"
+                className="min-w-0 flex-1"
+                truncateName
+              />
               {onEffortChange && showsEffortControl(currentEfforts?.[entry], entry, options) ? (
                 <EffortButton
                   levels={effortLevelsFor(entry, options)}

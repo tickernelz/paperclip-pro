@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  AGENT_FALLBACK_EFFORTS_KEY,
+  fitAgentFallbackEfforts,
   fitAgentFallbackModels,
+  readAgentFallbackEfforts,
   type AgentAdapterConfigBatchFailure,
   type AgentAdapterConfigBatchField,
   type AgentAdapterConfigBatchResult,
@@ -20,7 +23,14 @@ import { InlineBanner } from "@/components/InlineBanner";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";
-import { ComboboxField, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "@/adapters/model-picker-fields";
+import {
+  ComboboxField,
+  EffortChips,
+  effortLevelsFor,
+  MODEL_SEARCH_PLACEHOLDER,
+  ModelListCount,
+  ModelListField,
+} from "@/adapters/model-picker-fields";
 import { describeModelValue, modelValueText } from "@/components/task-chat/model-option-display";
 
 const UNCHANGED = "__unchanged";
@@ -29,7 +39,10 @@ const LIST_REPLACE = "__list_replace";
 const LIST_CLEAR = "__list_clear";
 const PICKED = "__custom";
 
-type BatchValue = string | string[] | null;
+type BatchValue = string | string[] | Record<string, string> | null;
+
+/** The main model's level travels as the agent's thinking value, not as a per-model entry. */
+const PRIMARY_EFFORT_KEY = "thinking";
 
 function listPrimary(
   field: AgentAdapterConfigBatchField,
@@ -113,6 +126,9 @@ export function BulkAgentAdapterConfigDialog({
   const [selections, setSelections] = useState<Record<string, string>>({});
   const [freeText, setFreeText] = useState<Record<string, string>>({});
   const [lists, setLists] = useState<Record<string, string[]>>({});
+  const [fallbackEfforts, setFallbackEfforts] = useState<Record<string, string>>({});
+  /** The main model's level for this batch; undefined means "leave the agent's own value alone". */
+  const [modelEffort, setModelEffort] = useState<string | null | undefined>(undefined);
   const [confirming, setConfirming] = useState(false);
   const [result, setResult] = useState<AgentAdapterConfigBatchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -138,12 +154,34 @@ export function BulkAgentAdapterConfigDialog({
     [preview.data],
   );
 
+  const fields = useMemo(() => preview.data?.fields ?? [], [preview.data]);
+  const modelField = useMemo(() => fields.find((field) => field.key === "model") ?? null, [fields]);
+  const thinkingField = useMemo(() => fields.find((field) => field.key === "thinking") ?? null, [fields]);
+  /** The harness publishes per-model levels, so the level is chosen beside the model instead of on its own field. */
+  const mergesEffort = Boolean(
+    modelField && thinkingField && modelField.options.some((option) => option.efforts?.length),
+  );
+  const visibleFields = useMemo(
+    () => (mergesEffort && thinkingField ? fields.filter((field) => field.key !== thinkingField.key) : fields),
+    [fields, mergesEffort, thinkingField],
+  );
+  /** The concrete model this batch would set on the model field, if any. */
+  const selectedModel = useMemo(() => {
+    if (!modelField) return null;
+    const selection = selections[modelField.key];
+    if (!selection || selection === UNCHANGED || selection === AGENT_DEFAULT) return null;
+    const value = selection === PICKED ? freeText[modelField.key] : selection;
+    return value?.trim() ? value.trim() : null;
+  }, [modelField, selections, freeText]);
+
   const values = useMemo(() => {
     const next: Record<string, BatchValue> = {};
     for (const [key, selection] of Object.entries(selections)) {
       if (selection === UNCHANGED) continue;
       if (listKeys.has(key)) {
-        next[key] = selection === LIST_CLEAR ? null : (lists[key] ?? []);
+        const list = selection === LIST_CLEAR ? [] : (lists[key] ?? []);
+        next[key] = selection === LIST_CLEAR ? null : list;
+        next[AGENT_FALLBACK_EFFORTS_KEY] = fitAgentFallbackEfforts(fallbackEfforts, list);
         continue;
       }
       if (selection === AGENT_DEFAULT) {
@@ -153,14 +191,28 @@ export function BulkAgentAdapterConfigDialog({
       const text = freeText[key]?.trim();
       next[key] = selection === PICKED ? (text ?? "") : selection;
     }
+    if (mergesEffort && thinkingField && modelEffort !== undefined) {
+      next[thinkingField.key] = modelEffort;
+    }
+    for (const [key, value] of Object.entries(next)) {
+      if (key === AGENT_FALLBACK_EFFORTS_KEY && Object.keys(value as Record<string, string>).length === 0) delete next[key];
+    }
     return next;
-  }, [selections, freeText, lists, listKeys]);
+  }, [selections, freeText, lists, listKeys, fallbackEfforts, mergesEffort, thinkingField, modelEffort]);
 
-  const isIncomplete = (value: BatchValue) => value === "" || (Array.isArray(value) && value.length === 0);
+  const isIncomplete = (value: BatchValue) =>
+    value === "" ||
+    (Array.isArray(value) && value.length === 0) ||
+    (typeof value === "object" && value !== null && Object.keys(value).length === 0);
   const pendingKeys = Object.keys(values).filter((key) => !isIncomplete(values[key] ?? null));
-  const fieldLabel = (key: string) => preview.data?.fields.find((field) => field.key === key)?.label ?? key;
+  const fieldLabel = (key: string) =>
+    preview.data?.fields.find((field) => field.key === key)?.label
+    ?? (key === AGENT_FALLBACK_EFFORTS_KEY ? "Fallback effort" : key);
   const describeValue = (key: string, value: BatchValue) => {
     if (Array.isArray(value)) return value.join(", ");
+    if (typeof value === "object" && value !== null) {
+      return Object.entries(value).map(([selector, level]) => `${selector}=${level}`).join(", ");
+    }
     if (value !== null) return value;
     return listKeys.has(key) ? "cleared" : "adapter default";
   };
@@ -192,7 +244,9 @@ export function BulkAgentAdapterConfigDialog({
     if (!next) {
       setSelections({});
       setFreeText({});
-    setLists({});
+      setLists({});
+      setFallbackEfforts({});
+      setModelEffort(undefined);
       setConfirming(false);
       setResult(null);
       setError(null);
@@ -254,7 +308,7 @@ export function BulkAgentAdapterConfigDialog({
                 the same harness.
               </InlineBanner>
             )}
-            {(preview.data?.fields ?? []).map((field) => field.list ? (
+            {visibleFields.map((field) => field.list ? (
               <div key={field.key} className="space-y-1">
                 <div className="flex items-center gap-1.5">
                   <label className="text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
@@ -288,10 +342,22 @@ export function BulkAgentAdapterConfigDialog({
                       const value = key ? values[key] : null;
                       return typeof value === "string" && value.trim() ? value.trim() : null;
                     })()}
-                    onChange={(next) => setLists((current) => ({ ...current, [field.key]: next }))}
+                    onChange={(next) => {
+                      setLists((current) => ({ ...current, [field.key]: next }));
+                      setFallbackEfforts((current) => fitAgentFallbackEfforts(current, next));
+                    }}
                     label={field.label}
                     disablePortal
                     testId={`bulk-agent-config-list-${field.key}`}
+                    currentEfforts={fallbackEfforts}
+                    onEffortChange={(selector, effort) => {
+                      setFallbackEfforts((current) => {
+                        const next = { ...current };
+                        if (effort) next[selector] = effort;
+                        else delete next[selector];
+                        return next;
+                      });
+                    }}
                   />
                 )}
                 {(selections[field.key] === LIST_REPLACE || selections[field.key] === LIST_CLEAR) && (
@@ -341,6 +407,13 @@ export function BulkAgentAdapterConfigDialog({
                     searchPlaceholder={MODEL_SEARCH_PLACEHOLDER}
                     disablePortal
                     testId={`bulk-agent-config-custom-${field.key}`}
+                    effort={mergesEffort && modelField?.key === field.key
+                      ? {
+                          value: modelEffort ?? null,
+                          onChange: (next) => setModelEffort(next),
+                          defaultLabel: "Adapter default",
+                        }
+                      : undefined}
                   />
                 )}
               </div>

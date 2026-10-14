@@ -140,7 +140,10 @@ function ModelCell({ agent, settings, controller }: CellProps) {
               <EffortChips
                 levels={effortLevelsFor(settings.model, settings.modelOptions)}
                 value={settings.effort}
-                onChange={(next) => controller.save(agent, AGENT_EFFORT_KEY, next)}
+                onChange={(next) => {
+                  controller.save(agent, AGENT_EFFORT_KEY, next);
+                  changeOpen(false);
+                }}
                 defaultLabel="Default"
                 label={`Effort for ${agent.name}`}
                 testId={`agent-effort-chips-${agent.id}`}
@@ -153,7 +156,8 @@ function ModelCell({ agent, settings, controller }: CellProps) {
             query={query}
             onQueryChange={setQuery}
             onSelect={(next) => {
-              changeOpen(false);
+              const levels = effortLevelsFor(next, settings.modelOptions);
+              if (!(settings.effortField && levels.length > 0)) changeOpen(false);
               const dropEffort = Boolean(settings.effortField) && !keepsEffort(settings.effort, next, settings.modelOptions);
               controller.saveMany(agent, "model", dropEffort ? { model: next, [AGENT_EFFORT_KEY]: null } : { model: next });
             }}

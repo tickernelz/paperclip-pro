@@ -3993,7 +3993,10 @@ export function ModelDropdown({
               <EffortChips
                 levels={effortLevelsFor(value, [...pickerOptions.values()])}
                 value={effort.value}
-                onChange={effort.onChange}
+                onChange={(next) => {
+                  effort.onChange(next);
+                  onOpenChange(false);
+                }}
                 defaultLabel="Auto"
                 label="Thinking effort"
                 testId="model-dropdown-effort"
@@ -4165,7 +4168,7 @@ export function ModelDropdown({
                     )}
                     onClick={() => {
                       onChange(m.id);
-                      onOpenChange(false);
+                      if (!(effort && effortLevelsFor(m.id, [...pickerOptions.values()]).length > 0)) onOpenChange(false);
                     }}
                   >
                     <ModelOptionText option={pickerOptions.get(m.id) ?? modelPickerOption(m, groupByProvider)} />

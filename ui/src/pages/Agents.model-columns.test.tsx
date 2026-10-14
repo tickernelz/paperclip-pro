@@ -342,6 +342,19 @@ describe("Agents table model columns", () => {
     expect(mockAgentsApi.batchAdapterConfig).toHaveBeenCalledWith(["agent-omp"], { model: GPT, thinking: null });
   });
 
+  it("keeps the fallback row's provider readable next to its effort control", async () => {
+    const user = userEvent.setup();
+    await renderPage([alpha({ model: OPUS, fallbackModels: [GLM], thinking: "high" }), gamma]);
+    await act(async () => { await user.click(byTestId("agent-fallbacks-agent-omp")!); });
+    const item = byTestId("agent-fallbacks-editor-agent-omp-item")!;
+    const name = item.querySelector<HTMLElement>('[class*="truncate"]')!;
+    const provider = item.querySelector<HTMLElement>('[class*="max-w-"]')!;
+    expect(provider.textContent).toBe("zai");
+    expect(provider.className).toContain("shrink-0");
+    expect(name.className).toContain("flex-1");
+    expect(item.textContent).toContain("GLM 5");
+  });
+
   it("sets a fallback's own effort from the fallback editor and skips models without levels", async () => {
     const user = userEvent.setup();
     await renderPage([alpha({ model: OPUS, fallbackModels: [GPT, MINI], thinking: "high" }), gamma]);

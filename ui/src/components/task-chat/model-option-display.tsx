@@ -81,11 +81,14 @@ export function ModelValueLabel({
   layout,
   testId,
   className,
+  truncateName = false,
 }: {
   display: ModelValueDisplay;
   layout: "stacked" | "inline";
   testId?: string;
   className?: string;
+  /** Inline rows that sit beside other controls: the name truncates so the provider badge stays readable. */
+  truncateName?: boolean;
 }) {
   const providerTestId = testId ? `${testId}-provider` : undefined;
   if (layout === "stacked") {
@@ -104,12 +107,18 @@ export function ModelValueLabel({
   }
   return (
     <span className={cn("flex min-w-0 items-center gap-1.5", className)} title={display.id}>
-      <span className="max-w-full shrink-0 truncate" data-testid={testId}>
+      <span
+        className={cn("truncate", truncateName ? "min-w-0 flex-1" : "max-w-full shrink-0")}
+        data-testid={testId}
+      >
         {display.name}
       </span>
       {display.provider ? (
         <span
-          className="min-w-8 max-w-(--sz-12rem) truncate rounded border border-border px-1 text-(length:--text-micro) leading-4 text-muted-foreground"
+          className={cn(
+            "max-w-(--sz-12rem) truncate rounded border border-border px-1 text-(length:--text-micro) leading-4 text-muted-foreground",
+            truncateName ? "shrink-0" : "min-w-8",
+          )}
           data-testid={providerTestId}
         >
           {display.provider}
