@@ -2243,6 +2243,10 @@ const SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY =
 const SESSION_CONFIG_RESUME_FINGERPRINT_KEY =
   "__paperclipConfigResumeFingerprint";
 
+/** Per-key digests of the adapterConfig value, so a reset can name the key that changed. */
+const SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY =
+  "__paperclipAdapterConfigKeyFingerprints";
+
 const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
 const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
@@ -2332,6 +2336,7 @@ const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_CONFIG_CATEGORIES_KEY,
   SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY,
   SESSION_CONFIG_RESUME_FINGERPRINT_KEY,
+  SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY,
 ]);
 
 const WORKSPACE_CONFIG_FINGERPRINT_METADATA_KEY = "configFingerprint";
@@ -2373,6 +2378,8 @@ export type EffectiveRunSessionConfigMetadata = {
   categories: EffectiveRunSessionConfigCategory[];
   categoryFingerprints: Record<EffectiveRunSessionConfigCategory, string>;
   resumeFingerprint: string;
+  /** Adapter config key to its canonical digest. */
+  adapterConfigKeyFingerprints: Record<string, string>;
   fingerprints: EffectiveRunConfigFingerprints;
 };
 
@@ -2649,6 +2656,33 @@ const WORKSPACE_REPLACEMENT_CONFIG_CATEGORIES =
     "realization",
   ]);
 
+const MAX_NAMED_CHANGED_KEYS = 4;
+function parseStoredKeyFingerprints(value: unknown) {
+  const parsed = parseObject(value);
+  const out: Record<string, string> = {};
+  for (const [key, fingerprint] of Object.entries(parsed)) {
+    const resolved = readNonEmptyString(fingerprint);
+    if (resolved) out[key] = resolved;
+  }
+  return out;
+}
+
+/** Names the changed adapter config keys, or null when the session stored no per-key digests. */
+function describeChangedAdapterConfigKeys(input: {
+  previous: Record<string, string>;
+  next: Record<string, string>;
+}) {
+  if (Object.keys(input.previous).length === 0) return null;
+  const changed = Object.keys({ ...input.previous, ...input.next })
+    .filter((key) => input.previous[key] !== input.next[key])
+    .sort();
+  if (changed.length === 0) return null;
+  const shown = changed.slice(0, MAX_NAMED_CHANGED_KEYS);
+  const rest = changed.length - shown.length;
+  const suffix = rest > 0 ? " and " + rest + " more" : "";
+  return shown.join(", ") + suffix;
+}
+
 function parseStoredConfigCategoryFingerprints(value: unknown) {
   const parsed = parseObject(value);
   const out: Partial<Record<EffectiveRunSessionConfigCategory, string>> = {};
@@ -2694,6 +2728,9 @@ export function readConfigFingerprintFromSessionParams(
     categories: readConfigCategoriesFromSessionParams(sessionParams),
     categoryFingerprints: parseStoredConfigCategoryFingerprints(
       sessionParams[SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY],
+    ),
+    adapterConfigKeyFingerprints: parseStoredKeyFingerprints(
+      sessionParams[SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY],
     ),
     resumeFingerprint: readNonEmptyString(
       sessionParams[SESSION_CONFIG_RESUME_FINGERPRINT_KEY],
@@ -3121,12 +3158,20 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
       subcategories: ["resume"] as const,
       secretManifest,
     });
+  const adapterConfigCategoryValue = parseObject(categoryValues.adapterConfig);
+  const adapterConfigKeyFingerprints = createEffectiveRunConfigSubcategoryFingerprints({
+    category: "session",
+    value: adapterConfigCategoryValue,
+    subcategories: Object.keys(adapterConfigCategoryValue).sort(),
+    secretManifest,
+  });
   return {
     version: EFFECTIVE_RUN_CONFIG_FINGERPRINT_VERSION,
     fingerprint: fingerprints.sessionFingerprint.fingerprint,
     categories: [...EFFECTIVE_RUN_SESSION_CONFIG_CATEGORIES],
     categoryFingerprints,
     resumeFingerprint,
+    adapterConfigKeyFingerprints,
     fingerprints,
   };
 }
@@ -3394,6 +3439,8 @@ export function attachPaperclipSessionMetadataToSessionParams(
     next[SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY] =
       configMetadata.categoryFingerprints;
     next[SESSION_CONFIG_RESUME_FINGERPRINT_KEY] = configMetadata.resumeFingerprint;
+    next[SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY] =
+      configMetadata.adapterConfigKeyFingerprints;
   }
   return next;
 }
@@ -3530,8 +3577,17 @@ export function resolveTaskSessionConfigFreshness(input: {
           nextResumeFingerprint: input.configMetadata.resumeFingerprint,
         })
       ) {
+        const categories = describeEffectiveRunConfigCategories(changedCategories);
+        const namedKeys = changedCategories.includes("adapterConfig")
+          ? describeChangedAdapterConfigKeys({
+              previous: storedConfig.adapterConfigKeyFingerprints,
+              next: input.configMetadata.adapterConfigKeyFingerprints,
+            })
+          : null;
         reasons.push(
-          `effective run configuration changed: ${describeEffectiveRunConfigCategories(changedCategories)}`,
+          "effective run configuration changed: "
+            + categories
+            + (namedKeys ? " (" + namedKeys + ")" : ""),
         );
       }
     }

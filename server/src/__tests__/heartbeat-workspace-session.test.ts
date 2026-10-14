@@ -2416,6 +2416,7 @@ function sessionParamsWithConfigMetadata(
     __paperclipConfigFingerprintVersion: metadata.version,
     __paperclipConfigCategories: metadata.categories,
     __paperclipConfigCategoryFingerprints: metadata.categoryFingerprints,
+    __paperclipAdapterConfigKeyFingerprints: metadata.adapterConfigKeyFingerprints,
   };
 }
 
@@ -2769,6 +2770,59 @@ describe("effective run session config freshness", () => {
       expect(decision.changedCategories).toEqual(["instructions"]);
     });
 
+    it("names the adapter config key that changed", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig(),
+        next: ompConfig({ smolModel: "vendor/smol" }),
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig"]);
+      expect(decision.reasons).toEqual([
+        "effective run configuration changed: adapter config (smolModel)",
+      ]);
+    });
+
+    it("names only the keys that changed when several are present", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig(),
+        next: ompConfig({ smolModel: "vendor/smol", slowModel: "vendor/slow" }),
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.reasons).toEqual([
+        "effective run configuration changed: adapter config (slowModel, smolModel)",
+      ]);
+    });
+
+    it("keeps the category-only reason for sessions stored before the per-key digests existed", async () => {
+      const base = await buildSessionConfigMetadata({
+        adapterType: "omp_local",
+        effectiveAdapterConfig: ompConfig(),
+      });
+      const next = await buildSessionConfigMetadata({
+        adapterType: "omp_local",
+        effectiveAdapterConfig: ompConfig({ smolModel: "vendor/smol" }),
+      });
+      const legacyParams = { ...sessionParamsWithConfigMetadata(base) };
+      delete legacyParams.__paperclipAdapterConfigKeyFingerprints;
+
+      const decision = resolveTaskSessionConfigFreshness({
+        hasTaskSession: true,
+        adapterType: "omp_local",
+        configuredModel: "sub2api-claude/claude-opus-5-5",
+        taskSessionParams: legacyParams,
+        configMetadata: next,
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.reasons).toEqual([
+        "effective run configuration changed: adapter config",
+      ]);
+    });
+
     it("still resets an omp_local session when another adapter setting changes", async () => {
       const decision = await freshness({
         adapterType: "omp_local",
@@ -2778,7 +2832,6 @@ describe("effective run session config freshness", () => {
 
       expect(decision.reset).toBe(true);
       expect(decision.changedCategories).toEqual(["adapterConfig"]);
-      expect(decision.reasons).toEqual(["effective run configuration changed: adapter config"]);
     });
 
     it("keeps resetting claude_local sessions when the configured model changes", async () => {
@@ -2789,10 +2842,9 @@ describe("effective run session config freshness", () => {
       });
 
       expect(decision.reset).toBe(true);
-      expect(decision.reasons).toEqual([
+      expect(decision.reasons).toContain(
         'configured model changed from "claude-opus-5-5" to "claude-sonnet-5"',
-        "effective run configuration changed: adapter config",
-      ]);
+      );
     });
   });
 
@@ -3041,6 +3093,7 @@ describe("stripPaperclipSessionMetadataFromSessionParams", () => {
         __paperclipConfigFingerprintVersion: 1,
         __paperclipConfigCategories: ["adapterConfig"],
         __paperclipConfigCategoryFingerprints: { adapterConfig: "v1:sha256:def" },
+        __paperclipAdapterConfigKeyFingerprints: { command: "v1:sha256:ghi" },
       }),
     ).toEqual({
       sessionId: "thread-1",
