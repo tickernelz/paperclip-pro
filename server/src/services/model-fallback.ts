@@ -17,6 +17,20 @@ export const MODEL_FALLBACK_DEFAULT_COOLDOWN_MS = 5 * 60_000;
 export const MODEL_FALLBACK_STATE_KEY = "paperclipModelFallback";
 export const MODEL_FALLBACK_PRIMARY_KEY = "paperclipPrimaryModel";
 export const MODEL_FALLBACK_EXCLUDED_KEY = "paperclipModelFallbackExcluded";
+/** Per-model attempt counts carried by a retry lineage, so a fresh wake always starts over. */
+export const MODEL_FALLBACK_ATTEMPTS_KEY = "paperclipModelAttempts";
+/** The model a retry must start on, decided by the lineage that produced it. */
+export const MODEL_FALLBACK_FORCED_MODEL_KEY = "paperclipForcedModel";
+/** Why the lineage left the primary, carried so a fallback run reports it. */
+export const MODEL_FALLBACK_REASON_KEY = "paperclipFallbackReason";
+/** The primary model is tried twice before the chain moves on. */
+export const MODEL_FALLBACK_PRIMARY_ATTEMPTS = 2;
+/** The primary retry follows its failure closely so a blip does not look like an outage. */
+export const MODEL_FALLBACK_PRIMARY_RETRY_DELAY_MS = 5_000;
+/** Every later step of the chain waits one bounded interval. */
+export const MODEL_FALLBACK_STEP_DELAY_MS = 30_000;
+/** Attempts the lineage may consume, carried so recovery stops escalating once it is spent. */
+export const MODEL_FALLBACK_BUDGET_KEY = "paperclipModelAttemptBudget";
 export const MODEL_FALLBACK_EVENT = "model.fallback";
 export const MODEL_FALLBACK_RESTORED_EVENT = "model.fallback_restored";
 export const MODEL_FALLBACK_EXHAUSTED_EVENT = "model.fallback_exhausted";
@@ -36,11 +50,20 @@ export interface RunModelSelection {
   reason: RunModelFallbackReason | null;
 }
 
-export interface ModelFallbackRetryPlan {
+export interface ModelFallbackStepPlan {
   chain: string[];
-  excluded: string[];
-  next: { selector: string; cooling: boolean; availableAt: Date | null } | null;
+  attempts: Record<string, number>;
+  /** The model the next attempt must start on, or null when the chain is spent. */
+  start: string | null;
+  /** True when the primary gets its immediate second try instead of the chain advancing. */
+  fastRetry: boolean;
+  /** Attempts the whole lineage may consume, primary retry included. */
+  maxAttempts: number;
+  /** When a cooled model becomes eligible again, for reporting only. */
+  availableAt: Date | null;
 }
+
+export type ModelFallbackRetryPlan = ModelFallbackStepPlan;
 
 const REASON_LABELS: Record<RunModelFallbackReason, string> = {
   rate_limit: "rate limit",
@@ -118,57 +141,47 @@ function isCooling(cooldowns: Map<string, ModelCooldown>, selector: string, now:
   return Boolean(cooldown && cooldown.until.getTime() > now.getTime());
 }
 
-/** Picks the model a run starts on and the order OMP may fall back through. */
-export function selectRunModel(input: {
-  primary: string;
-  fallbackModels: unknown;
-  excluded: readonly string[];
-  cooldowns: Map<string, ModelCooldown>;
-  now: Date;
-}): RunModelSelection | null {
-  const primary = input.primary.trim();
-  if (!primary) return null;
-  const chain = buildModelChain(primary, input.fallbackModels);
-  if (chain.length < 2) return null;
-  const eligible = chain.filter((selector) => !input.excluded.includes(selector));
-  if (eligible.length === 0) {
-    return { primary, chain, start: primary, overlayChain: chain.slice(1), reason: null };
-  }
-  const free = eligible.filter((selector) => !isCooling(input.cooldowns, selector, input.now));
-  const start = free[0] ?? [...eligible].sort(
-    (left, right) =>
-      (input.cooldowns.get(left)?.until.getTime() ?? 0) - (input.cooldowns.get(right)?.until.getTime() ?? 0),
-  )[0]!;
-  const rest = eligible.filter((selector) => selector !== start);
-  const overlayChain = [
-    ...rest.filter((selector) => free.includes(selector)),
-    ...rest.filter((selector) => !free.includes(selector)),
-  ];
-  const reason = start === primary
-    ? null
-    : input.excluded.includes(primary)
-      ? "refusal"
-      : input.cooldowns.get(primary)?.reason ?? "rate_limit";
-  return { primary, chain, start, overlayChain, reason };
+/** Attempts one selector may consume inside a lineage: the primary twice, every fallback once. */
+export function modelFallbackAttemptLimit(selector: string, primary: string): number {
+  return selector === primary ? MODEL_FALLBACK_PRIMARY_ATTEMPTS : 1;
 }
 
-/** The candidate a Paperclip retry would start on after the given exclusions and cooldowns. */
-export function nextModelFallbackCandidate(input: {
-  chain: readonly string[];
-  excluded: readonly string[];
-  cooldowns: Map<string, ModelCooldown>;
-  now: Date;
-}): { selector: string; cooling: boolean; availableAt: Date | null } | null {
-  const eligible = input.chain.filter((selector) => !input.excluded.includes(selector));
-  if (eligible.length === 0) return null;
-  const free = eligible.find((selector) => !isCooling(input.cooldowns, selector, input.now));
-  if (free) return { selector: free, cooling: false, availableAt: null };
-  const earliest = [...eligible].sort(
-    (left, right) =>
-      (input.cooldowns.get(left)?.until.getTime() ?? 0) - (input.cooldowns.get(right)?.until.getTime() ?? 0),
-  )[0]!;
-  return { selector: earliest, cooling: true, availableAt: input.cooldowns.get(earliest)?.until ?? null };
+/** Attempts a whole lineage may consume: every chain entry tried to its own limit. */
+export function modelFallbackAttemptBudget(chain: readonly string[], primary: string): number {
+  return chain.reduce((total, selector) => total + modelFallbackAttemptLimit(selector, primary), 0);
 }
+
+/** Decides the model for the next attempt; null start means the chain is spent. */
+export function planModelFallbackStep(input: {
+  chain: readonly string[];
+  primary: string;
+  active: string;
+  reason: RunModelFallbackReason;
+  attempts: Readonly<Record<string, number>>;
+  now: Date;
+}): ModelFallbackStepPlan {
+  const chain = [...input.chain];
+  const attempts: Record<string, number> = { ...input.attempts };
+  attempts[input.active] = (attempts[input.active] ?? 0) + 1;
+  const exhausted = (selector: string) =>
+    (attempts[selector] ?? 0) >= modelFallbackAttemptLimit(selector, input.primary);
+  const retriesPrimary =
+    input.reason !== "refusal" &&
+    input.active === input.primary &&
+    !exhausted(input.primary);
+  const start = retriesPrimary
+    ? input.primary
+    : chain.find((selector) => selector !== input.active && !exhausted(selector)) ?? null;
+  return {
+    chain,
+    attempts,
+    start,
+    fastRetry: retriesPrimary,
+    maxAttempts: modelFallbackAttemptBudget(chain, input.primary),
+    availableAt: null,
+  };
+}
+
 
 /** Active cooldowns for the given selectors in one company. */
 export async function loadModelCooldowns(
@@ -242,32 +255,26 @@ export async function prepareRunModelFallback(input: {
   const primary = text(input.config.model);
   const chain = primary ? buildModelChain(primary, input.config.fallbackModels) : [];
   if (chain.length < 2) return null;
-  const excluded = stringList(input.context[MODEL_FALLBACK_EXCLUDED_KEY]);
-  const cooldowns = await loadModelCooldowns(input.db, input.companyId, chain, input.now);
-  const selection = selectRunModel({
-    primary,
-    fallbackModels: input.config.fallbackModels,
-    excluded,
-    cooldowns,
-    now: input.now,
-  });
-  if (!selection) return null;
-  input.config.model = selection.start;
-  input.config.fallbackModels = selection.overlayChain;
+  const forced = text(input.context[MODEL_FALLBACK_FORCED_MODEL_KEY]);
+  const start = forced && chain.includes(forced) ? forced : primary;
+  input.config.model = start;
+  input.config.fallbackModels = chain.filter((selector) => selector !== start);
+  const overlayChain = input.config.fallbackModels as string[];
+  const reason: RunModelFallbackReason | null = start === primary
+    ? null
+    : isReason(input.context[MODEL_FALLBACK_REASON_KEY])
+      ? (input.context[MODEL_FALLBACK_REASON_KEY] as RunModelFallbackReason)
+      : "upstream";
   const primaryEffort = text(input.config.thinking);
-  if (selection.start !== selection.primary && primaryEffort) {
+  if (start !== primary && primaryEffort) {
     input.config[AGENT_FALLBACK_EFFORTS_KEY] = {
       ...readAgentFallbackEfforts(input.config[AGENT_FALLBACK_EFFORTS_KEY]),
-      [selection.primary]: primaryEffort,
+      [primary]: primaryEffort,
     };
   }
-  const state: RunModelFallbackState | null = selection.reason
-    ? {
-        primaryModel: selection.primary,
-        activeModel: selection.start,
-        reason: selection.reason,
-        switchedAt: input.now.toISOString(),
-      }
+  const selection: RunModelSelection = { primary, chain, start, overlayChain, reason };
+  const state: RunModelFallbackState | null = reason
+    ? { primaryModel: primary, activeModel: start, reason, switchedAt: input.now.toISOString() }
     : null;
   return { selection, state };
 }
@@ -308,12 +315,44 @@ export async function planModelFallbackRetry(input: {
   if (!primary) return null;
   const chain = buildModelChain(primary, asRecord(input.agentAdapterConfig).fallbackModels);
   if (chain.length < 2) return null;
-  const refused = asRecord(input.run.resultJson).errorFamily === "model_refusal" ? readRunActiveModel(input.run) : null;
-  const excluded = [...new Set([...stringList(context[MODEL_FALLBACK_EXCLUDED_KEY]), ...(refused ? [refused] : [])])];
+  const reason = modelFallbackReasonForErrorFamily(asRecord(input.run.resultJson).errorFamily);
+  if (!reason) return null;
+  const active = readRunActiveModel(input.run) ?? primary;
+  if (!chain.includes(active)) return null;
+  const step = planModelFallbackStep({
+    chain,
+    primary,
+    active,
+    reason,
+    attempts: readModelFallbackAttempts(context[MODEL_FALLBACK_ATTEMPTS_KEY]),
+    now: input.now,
+  });
   const cooldowns = await loadModelCooldowns(input.db, input.run.companyId, chain, input.now);
-  return { chain, excluded, next: nextModelFallbackCandidate({ chain, excluded, cooldowns, now: input.now }) };
+  const availableAt = step.start ? null : cooldowns.get(primary)?.until ?? null;
+  return { ...step, availableAt };
 }
 
+/** Attempts a run lineage may spend: its recorded model budget, else the adapter-agnostic budget. */
+export function readModelFallbackAttemptBudget(
+  contextSnapshot: Record<string, unknown> | null | undefined,
+  unbudgetedAttempts: number,
+): number {
+  const recorded = contextSnapshot?.[MODEL_FALLBACK_BUDGET_KEY];
+  if (typeof recorded !== "number" || !Number.isFinite(recorded) || recorded <= 0) return unbudgetedAttempts;
+  return Math.floor(recorded);
+}
+
+/** Reads a lineage attempt map leniently: non-negative integer counts per selector. */
+export function readModelFallbackAttempts(value: unknown): Record<string, number> {
+  const record = asRecord(value);
+  const attempts: Record<string, number> = {};
+  for (const [selector, count] of Object.entries(record)) {
+    if (typeof count !== "number" || !Number.isFinite(count) || count < 0) continue;
+    const key = selector.trim();
+    if (key) attempts[key] = Math.floor(count);
+  }
+  return attempts;
+}
 /** Run-event message for a model switch. */
 export function modelFallbackEventMessage(input: { to: string; primary: string; reason: RunModelFallbackReason }): string {
   return `Fallback: ${input.to} (primary ${input.primary}: ${modelFallbackReasonLabel(input.reason)})`;

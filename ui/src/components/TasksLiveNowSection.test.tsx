@@ -387,9 +387,9 @@ describe("Live now cards", () => {
 
     const byIssue = (id: string) => liveRows().find((row) => row.dataset.liveNowIssueId === id)!;
     await waitFor(() => {
-      expect(byIssue("issue-1").querySelector("[data-slot='live-now-model-fallback']")?.textContent).toBe(
-        "Fallback: GPT-5 · OpenAI (primary: rate limit)",
-      );
+      const badge = byIssue("issue-1").querySelector("[data-slot='live-now-model-fallback']");
+      expect(badge?.textContent).toContain("GPT-5 · OpenAI");
+      expect(badge?.querySelector(".text-muted-foreground")?.textContent).toBe(" · primary: rate limit");
     });
     expect(byIssue("issue-2").querySelector("[data-slot='live-now-model-fallback']")).toBeNull();
   });

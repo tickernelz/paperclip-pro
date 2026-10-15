@@ -1,7 +1,13 @@
 import { deriveTaskKeyWithHeartbeatFallback } from "./run-state.js";
 import {
-  MODEL_FALLBACK_EXCLUDED_KEY,
+  modelFallbackReasonForErrorFamily,
+  MODEL_FALLBACK_ATTEMPTS_KEY,
+  MODEL_FALLBACK_BUDGET_KEY,
+  MODEL_FALLBACK_FORCED_MODEL_KEY,
+  MODEL_FALLBACK_PRIMARY_RETRY_DELAY_MS,
+  MODEL_FALLBACK_REASON_KEY,
   MODEL_FALLBACK_STATE_KEY,
+  MODEL_FALLBACK_STEP_DELAY_MS,
   planModelFallbackRetry,
 } from "../model-fallback.js";
 import { createRunModelFallback } from "./run-model-fallback.js";
@@ -482,25 +488,41 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       opts?.retryReason ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON;
     const wakeReason =
       opts?.wakeReason ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_WAKE_REASON;
+    const modelFallbackPlan =
+      retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON
+        ? await planModelFallbackRetry({
+            db,
+            run,
+            agentAdapterConfig: agent.adapterConfig,
+            now,
+          })
+        : null;
     const maxAttempts = Math.max(
       0,
       Math.floor(
-        opts?.maxAttempts ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+        opts?.maxAttempts ?? modelFallbackPlan?.maxAttempts ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
       ),
     );
     const consumedAttempts = retryReason === PROCESS_LOSS_RETRY_REASON
       ? processLossContinuationCount(run)
       : executionRetryAttemptCount(run, retryReason);
     const nextAttempt = consumedAttempts + 1;
+    const fallbackDelayMs =
+      modelFallbackPlan && opts?.delayMs == null
+        ? modelFallbackPlan.fastRetry
+          ? MODEL_FALLBACK_PRIMARY_RETRY_DELAY_MS
+          : MODEL_FALLBACK_STEP_DELAY_MS
+        : null;
+    const effectiveDelayMs = opts?.delayMs ?? fallbackDelayMs;
     const computedBaseSchedule =
-      opts?.delayMs != null
+      effectiveDelayMs != null
         ? nextAttempt <= maxAttempts
           ? {
               attempt: nextAttempt,
-              baseDelayMs: Math.max(0, Math.floor(opts.delayMs)),
-              delayMs: Math.max(0, Math.floor(opts.delayMs)),
+              baseDelayMs: Math.max(0, Math.floor(effectiveDelayMs)),
+              delayMs: Math.max(0, Math.floor(effectiveDelayMs)),
               dueAt: new Date(
-                now.getTime() + Math.max(0, Math.floor(opts.delayMs)),
+                now.getTime() + Math.max(0, Math.floor(effectiveDelayMs)),
               ),
               maxAttempts,
             }
@@ -524,26 +546,15 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       transientRecovery?.errorFamily === "transient_upstream"
         ? resolveCodexTransientFallbackMode(nextAttempt)
         : null;
-    const modelFallbackPlan =
-      retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON
-        ? await planModelFallbackRetry({
-            db,
-            run,
-            agentAdapterConfig: agent.adapterConfig,
-            now,
-          })
-        : null;
     const transientRetryNotBefore =
-      modelFallbackPlan?.next && !modelFallbackPlan.next.cooling
-        ? null
-        : transientRecovery?.retryNotBefore ?? modelFallbackPlan?.next?.availableAt ?? null;
+      transientRecovery?.retryNotBefore ?? modelFallbackPlan?.availableAt ?? null;
     const contextSnapshot = parseObject(run.contextSnapshot);
     // A retry inherits the durable authorization scope of its source run. Do
     // not promote an untrusted or legacy contextSnapshot.issueId into a new
     // issue binding: that could either violate the FK or misclassify history.
     const issueId = run.scopeKind === "issue" ? run.issueId : null;
 
-    if (modelFallbackPlan && !modelFallbackPlan.next) {
+    if (modelFallbackPlan && !modelFallbackPlan.start) {
       await runModelFallback.appendModelFallbackExhausted(run, modelFallbackPlan);
       return {
         outcome: "retry_exhausted" as const,
@@ -798,8 +809,17 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
           : {}),
         ...(codexTransientFallbackMode ? { codexTransientFallbackMode } : {}),
         [MODEL_FALLBACK_STATE_KEY]: undefined,
-        ...(modelFallbackPlan && modelFallbackPlan.excluded.length > 0
-          ? { [MODEL_FALLBACK_EXCLUDED_KEY]: modelFallbackPlan.excluded }
+        ...(modelFallbackPlan
+          ? {
+              [MODEL_FALLBACK_ATTEMPTS_KEY]: modelFallbackPlan.attempts,
+              [MODEL_FALLBACK_BUDGET_KEY]: modelFallbackPlan.maxAttempts,
+              ...(modelFallbackPlan.start
+                ? {
+                    [MODEL_FALLBACK_FORCED_MODEL_KEY]: modelFallbackPlan.start,
+                    [MODEL_FALLBACK_REASON_KEY]: modelFallbackReasonForErrorFamily(readHeartbeatRunErrorFamily(run)),
+                  }
+                : {}),
+            }
           : {}),
       },
       "normal_model",

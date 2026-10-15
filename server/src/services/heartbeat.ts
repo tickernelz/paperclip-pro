@@ -54,6 +54,7 @@ import {
   isProcessAlive,
   createHeartbeatRecovery,
 } from "./heartbeat/recovery.js";
+import { readModelFallbackAttemptBudget } from "./model-fallback.js";
 import {
   BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
   isWorkspaceBusyDeferral,
@@ -1197,7 +1198,10 @@ export function heartbeatService(
     transientRetryBudgetSpent: (run) =>
       PROCESS_LOSS_ERROR_CODES[run.errorCode ?? ""]
         ? processLossContinuationCount(run) >= PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS
-        : executionFailureRetryCount(run) >= BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+        : executionFailureRetryCount(run) >= readModelFallbackAttemptBudget(
+            run.contextSnapshot,
+            BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+          ),
     continueProcessGoneRun,
   });
   const runDispatch = createRunDispatch(db, {

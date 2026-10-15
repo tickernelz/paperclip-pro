@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { ArrowUpRight, MessageSquare, ScrollText, Square } from "lucide-react";
+import { ArrowUpRight, MessageSquare, ScrollText, Square, TriangleAlert } from "lucide-react";
 import type { Issue, RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
 import { Link } from "@/lib/router";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -24,7 +24,8 @@ import {
   withIssueDetailHeaderSeed,
 } from "../../lib/issueDetailBreadcrumb";
 import { describeDeliveryDowngrade } from "../../lib/message-delivery-command";
-import { formatModelFallbackLabel } from "../../lib/model-fallback";
+import { describeFallbackModel, modelFallbackReasonLabel } from "../../lib/model-fallback";
+import { modelValueText } from "../task-chat/model-option-display";
 import { useConfigSchema } from "../../adapters/schema-config-fields";
 import { queryKeys } from "../../lib/queryKeys";
 import { cn, formatDurationMs } from "../../lib/utils";
@@ -333,9 +334,13 @@ function LiveNowModelFallbackPill({
     <span
       data-slot="live-now-model-fallback"
       title={`${fallback.activeModel} (primary ${fallback.primaryModel})`}
-      className="live-now-health-pill ml-1.5 mt-1 inline-flex max-w-full items-center rounded-full px-2 py-0.5 text-xs font-medium text-foreground"
+      className="ml-1.5 mt-1 inline-flex max-w-full items-start gap-1.5 rounded-md border border-amber-500/25 bg-amber-500/10 px-2 py-1 text-left text-xs font-medium leading-snug text-amber-800 dark:text-amber-200"
     >
-      <span className="min-w-0 break-words">{formatModelFallbackLabel(fallback, options)}</span>
+      <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-amber-500 dark:text-amber-400" />
+      <span className="min-w-0 whitespace-normal break-words">
+        {modelValueText(describeFallbackModel(fallback.activeModel, options))}
+        <span className="text-muted-foreground">{" · primary: "}{modelFallbackReasonLabel(fallback.reason)}</span>
+      </span>
     </span>
   );
 }

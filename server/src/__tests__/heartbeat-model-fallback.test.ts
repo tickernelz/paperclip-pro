@@ -173,7 +173,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     return db.select().from(modelCooldowns).where(eq(modelCooldowns.companyId, companyId));
   }
 
-  it("starts on the first non-cooling candidate after OMP reports a fallback, then back on the primary after expiry", async () => {
+  it("stays on the primary for the next wake after OMP reports an in-run fallback, whatever cooldown it left", async () => {
     const target = await seed({ model: PRIMARY, thinking: "high", fallbackModels: [BACKUP, SECOND], modelEfforts: { [BACKUP]: "low" } });
     behaviors.set(target.agentId, [
       async (ctx) => {
@@ -203,45 +203,64 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     expect(activity[0]!.details).toMatchObject({ from: PRIMARY, to: BACKUP, reason: "rate_limit", phase: "in_run" });
 
     const second = await runOnce(target);
-    expect(second.seen.config.model).toBe(BACKUP);
-    expect(second.seen.config.fallbackModels).toEqual([SECOND, PRIMARY]);
-    expect(second.seen.config.modelEfforts).toEqual({ [BACKUP]: "low", [PRIMARY]: "high" });
-    expect(second.seen.context.paperclipModelFallback).toMatchObject({
-      primaryModel: PRIMARY,
-      activeModel: BACKUP,
-      reason: "rate_limit",
-    });
+    expect(second.run.status).toBe("succeeded");
+    expect(second.seen.config.model).toBe(PRIMARY);
+    expect(second.seen.config.fallbackModels).toEqual([BACKUP, SECOND]);
+    expect(second.seen.config.modelEfforts).toEqual({ [BACKUP]: "low" });
+    expect(second.seen.context.paperclipModelFallback ?? null).toBeNull();
     const startEvents = await db.select().from(heartbeatRunEvents).where(and(
       eq(heartbeatRunEvents.runId, second.run.id),
       eq(heartbeatRunEvents.eventType, "model.fallback"),
     ));
-    expect(startEvents).toHaveLength(1);
-    expect(startEvents[0]!.payload).toMatchObject({ phase: "run_start", from: PRIMARY, to: BACKUP });
-
-    await db.update(modelCooldowns).set({ cooldownUntil: new Date(Date.now() - 1_000) }).where(eq(modelCooldowns.companyId, target.companyId));
-    const third = await runOnce(target);
-    expect(third.seen.config.model).toBe(PRIMARY);
-    expect(third.seen.context.paperclipModelFallback ?? null).toBeNull();
+    expect(startEvents).toHaveLength(0);
+    const [stillCooling] = await cooldownRows(target.companyId);
+    expect(stillCooling!.selector).toBe(PRIMARY);
+    expect(stillCooling!.cooldownUntil.getTime()).toBeGreaterThan(Date.now());
+    const activityAfterSecond = await db.select().from(activityLog).where(and(
+      eq(activityLog.companyId, target.companyId),
+      eq(activityLog.action, "issue.run_model_fallback"),
+    ));
+    expect(activityAfterSecond).toHaveLength(1);
   }, 60_000);
 
-  it("retries a quota failure on the next candidate at the base backoff instead of the primary's reset time", async () => {
+  it("retries a quota failure on the same primary at the fast delay, then advances to the fallback at the step delay", async () => {
     const target = await seed({ model: PRIMARY, fallbackModels: [BACKUP] });
-    behaviors.set(target.agentId, [failure("provider_quota", "2030-04-22T21:00:00.000Z")]);
+    behaviors.set(target.agentId, [failure("provider_quota"), failure("provider_quota")]);
     const failed = await runOnce(target);
     expect(failed.run.status).toBe("failed");
+    expect(failed.seen.config.model).toBe(PRIMARY);
     await expect.poll(() => cooldownRows(target.companyId).then((rows) => rows.length), { timeout: 5_000 }).toBe(1);
     const [cooldown] = await cooldownRows(target.companyId);
     expect(cooldown).toMatchObject({ selector: PRIMARY, reason: "rate_limit" });
-    expect(cooldown!.cooldownUntil.toISOString()).toBe("2030-04-22T21:00:00.000Z");
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
-    const retry = await retryOf(failed.run.id);
-    expect(retry!.scheduledRetryAt!.getTime()).toBeLessThan(Date.now() + 60 * 60_000);
-    expect((retry!.contextSnapshot as Record<string, unknown>).providerQuotaRetryNotBefore).toBeUndefined();
+    const primaryRetry = await retryOf(failed.run.id);
+    const primaryRetryContext = primaryRetry!.contextSnapshot as Record<string, unknown>;
+    expect(primaryRetryContext.paperclipForcedModel).toBe(PRIMARY);
+    expect(primaryRetryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1 });
+    expect(primaryRetryContext.paperclipModelAttemptBudget).toBe(3);
+    expect(primaryRetryContext).not.toHaveProperty("paperclipModelFallbackExcluded");
+    const primaryRetryDelayMs = primaryRetry!.scheduledRetryAt!.getTime() - Date.now();
+    expect(primaryRetryDelayMs).toBeGreaterThan(3_000);
+    expect(primaryRetryDelayMs).toBeLessThan(30_000);
 
-    await promoteAndResume(retry!.scheduledRetryAt!);
-    const finished = await waitForRun(heartbeat, retry!.id);
+    await promoteAndResume(primaryRetry!.scheduledRetryAt!);
+    const secondPrimaryAttempt = await waitForRun(heartbeat, primaryRetry!.id);
+    expect(secondPrimaryAttempt?.status).toBe("failed");
+    expect(captured.get(primaryRetry!.id)?.config.model).toBe(PRIMARY);
+    await expect.poll(() => retryOf(primaryRetry!.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
+    const fallbackRetry = await retryOf(primaryRetry!.id);
+    const fallbackRetryContext = fallbackRetry!.contextSnapshot as Record<string, unknown>;
+    expect(fallbackRetryContext.paperclipForcedModel).toBe(BACKUP);
+    expect(fallbackRetryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 2 });
+    const fallbackRetryDelayMs = fallbackRetry!.scheduledRetryAt!.getTime() - Date.now();
+    expect(fallbackRetryDelayMs).toBeGreaterThan(20_000);
+    expect(fallbackRetryDelayMs).toBeLessThan(60_000);
+    expect(fallbackRetry!.scheduledRetryAt!.getTime()).toBeLessThan(cooldown!.cooldownUntil.getTime());
+
+    await promoteAndResume(fallbackRetry!.scheduledRetryAt!);
+    const finished = await waitForRun(heartbeat, fallbackRetry!.id);
+    expect(captured.get(fallbackRetry!.id)?.config.model).toBe(BACKUP);
     expect(finished?.status).toBe("succeeded");
-    expect(captured.get(retry!.id)?.config.model).toBe(BACKUP);
   }, 60_000);
 
   it("retries a refusal on the next candidate without a company cooldown", async () => {
@@ -249,16 +268,30 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     behaviors.set(target.agentId, [failure("model_refusal")]);
     const failed = await runOnce(target);
     expect(failed.run.status).toBe("failed");
+    expect(failed.seen.config.model).toBe(PRIMARY);
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const retry = await retryOf(failed.run.id);
-    expect((retry!.contextSnapshot as Record<string, unknown>).paperclipModelFallbackExcluded).toEqual([PRIMARY]);
+    const retryContext = retry!.contextSnapshot as Record<string, unknown>;
+    expect(retryContext.paperclipForcedModel).toBe(BACKUP);
+    expect(retryContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1 });
+    expect(retryContext.paperclipFallbackReason).toBe("refusal");
+    expect(retryContext).not.toHaveProperty("paperclipModelFallbackExcluded");
+    const refusalRetryDelayMs = retry!.scheduledRetryAt!.getTime() - Date.now();
+    expect(refusalRetryDelayMs).toBeGreaterThan(20_000);
+    expect(refusalRetryDelayMs).toBeLessThan(60_000);
     expect(await cooldownRows(target.companyId)).toHaveLength(0);
 
     await promoteAndResume(retry!.scheduledRetryAt!);
     const finished = await waitForRun(heartbeat, retry!.id);
     expect(captured.get(retry!.id)?.config.model).toBe(BACKUP);
-    expect(captured.get(retry!.id)?.config.fallbackModels).toEqual([]);
+    expect(captured.get(retry!.id)?.config.fallbackModels).toEqual([PRIMARY]);
     expect(finished?.status).toBe("succeeded");
+    const startEvents = await db.select().from(heartbeatRunEvents).where(and(
+      eq(heartbeatRunEvents.runId, retry!.id),
+      eq(heartbeatRunEvents.eventType, "model.fallback"),
+    ));
+    expect(startEvents).toHaveLength(1);
+    expect(startEvents[0]!.payload).toMatchObject({ phase: "run_start", from: PRIMARY, to: BACKUP, reason: "refusal" });
   }, 60_000);
 
   it("keeps the existing retry timing when every candidate is cooling down", async () => {
@@ -295,32 +328,46 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     expect(refused.run.status).toBe("failed");
     await new Promise((resolve) => setTimeout(resolve, 300));
     const refusalRetry = await retryOf(refused.run.id);
-    expect((refusalRetry?.contextSnapshot as Record<string, unknown> | undefined)?.paperclipModelFallbackExcluded).toBeUndefined();
+    const refusalContext = refusalRetry?.contextSnapshot as Record<string, unknown> | undefined;
+    expect(refusalContext?.paperclipForcedModel).toBeUndefined();
+    expect(refusalContext?.paperclipModelAttempts).toBeUndefined();
     expect(await cooldownRows(refusal.companyId)).toHaveLength(0);
   }, 60_000);
 
   it("raises an attention item when the chain is exhausted and clears it after a later success", async () => {
     const target = await seed({ model: PRIMARY, fallbackModels: [BACKUP] });
-    behaviors.set(target.agentId, [failure("model_refusal"), failure("model_refusal")]);
+    behaviors.set(target.agentId, [failure("model_refusal"), failure("model_refusal"), failure("model_refusal")]);
     const failed = await runOnce(target);
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
-    const retry = await retryOf(failed.run.id);
-    await promoteAndResume(retry!.scheduledRetryAt!);
-    const exhausted = await waitForRun(heartbeat, retry!.id);
+    const fallbackRun = await retryOf(failed.run.id);
+    expect((fallbackRun!.contextSnapshot as Record<string, unknown>).paperclipForcedModel).toBe(BACKUP);
+    await promoteAndResume(fallbackRun!.scheduledRetryAt!);
+    const fallbackAttempt = await waitForRun(heartbeat, fallbackRun!.id);
+    expect(fallbackAttempt?.status).toBe("failed");
+    expect(captured.get(fallbackRun!.id)?.config.model).toBe(BACKUP);
+
+    await expect.poll(() => retryOf(fallbackRun!.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
+    const primaryRun = await retryOf(fallbackRun!.id);
+    const primaryRunContext = primaryRun!.contextSnapshot as Record<string, unknown>;
+    expect(primaryRunContext.paperclipForcedModel).toBe(PRIMARY);
+    expect(primaryRunContext.paperclipModelAttempts).toEqual({ [PRIMARY]: 1, [BACKUP]: 1 });
+    expect(primaryRunContext.paperclipModelAttemptBudget).toBe(3);
+    await promoteAndResume(primaryRun!.scheduledRetryAt!);
+    const exhausted = await waitForRun(heartbeat, primaryRun!.id);
     expect(exhausted?.status).toBe("failed");
-    expect(captured.get(retry!.id)?.config.model).toBe(BACKUP);
+    expect(captured.get(primaryRun!.id)?.config.model).toBe(PRIMARY);
     await expect.poll(async () => {
       const rows = await db.select().from(heartbeatRunEvents).where(and(
-        eq(heartbeatRunEvents.runId, retry!.id),
+        eq(heartbeatRunEvents.runId, primaryRun!.id),
         eq(heartbeatRunEvents.eventType, "model.fallback_exhausted"),
       ));
       return rows.length;
     }, { timeout: 5_000 }).toBe(1);
-    expect(await retryOf(retry!.id)).toBeNull();
+    expect(await retryOf(primaryRun!.id)).toBeNull();
 
     const attention = attentionService(db);
     const before = await attention.list(target.companyId);
-    const item = before.items.find((entry) => entry.subject.kind === "run" && entry.subject.id === retry!.id);
+    const item = before.items.find((entry) => entry.subject.kind === "run" && entry.subject.id === primaryRun!.id);
     expect(item?.sourceKind).toBe("failed_run");
     expect(item?.whyNow).toContain("fallback");
 
@@ -336,6 +383,6 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     const later = await runOnce({ agentId: target.agentId, issueId: otherIssueId });
     expect(later.run.status).toBe("succeeded");
     const after = await attention.list(target.companyId);
-    expect(after.items.some((entry) => entry.subject.kind === "run" && entry.subject.id === retry!.id)).toBe(false);
+    expect(after.items.some((entry) => entry.subject.kind === "run" && entry.subject.id === primaryRun!.id)).toBe(false);
   }, 60_000);
 });

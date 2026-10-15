@@ -1,84 +1,78 @@
 import { describe, expect, it } from "vitest";
 import { buildIssueRunAdapterConfig } from "./issue-run-model-override.js";
 import {
-  nextModelFallbackCandidate,
+  modelFallbackAttemptBudget,
+  modelFallbackAttemptLimit,
   normalizeAgentFallbackModelsConfig,
-  selectRunModel,
-  type ModelCooldown,
+  planModelFallbackStep,
+  readModelFallbackAttempts,
 } from "./model-fallback.js";
 
 const now = new Date("2026-10-11T10:00:00.000Z");
 
-function cooling(entries: Array<[string, string]>): Map<string, ModelCooldown> {
-  return new Map(entries.map(([selector, until]) => [selector, { selector, until: new Date(until), reason: "rate_limit" as const }]));
-}
+describe("fallback lineage", () => {
+  const step = (input: {
+    active: string;
+    reason?: "rate_limit" | "upstream" | "refusal";
+    attempts?: Record<string, number>;
+    chain?: string[];
+  }) =>
+    planModelFallbackStep({
+      chain: input.chain ?? ["a/x", "b/y", "c/z"],
+      primary: "a/x",
+      active: input.active,
+      reason: input.reason ?? "upstream",
+      attempts: input.attempts ?? {},
+      now,
+    });
 
-describe("run model selection", () => {
-  it("returns nothing when the agent has no fallback models", () => {
-    expect(selectRunModel({ primary: "a/x", fallbackModels: [], excluded: [], cooldowns: new Map(), now })).toBeNull();
-    expect(selectRunModel({ primary: "a/x", fallbackModels: undefined, excluded: [], cooldowns: new Map(), now })).toBeNull();
+  it("gives the primary one fast retry before the chain moves on", () => {
+    const first = step({ active: "a/x" });
+    expect(first).toMatchObject({ start: "a/x", fastRetry: true });
+    expect(first.attempts).toEqual({ "a/x": 1 });
   });
 
-  it("uses a task override as the primary with the agent chain after it, minus duplicates", () => {
+  it("falls back to the first model that has not failed once the primary is spent", () => {
+    const second = step({ active: "a/x", attempts: { "a/x": 1 } });
+    expect(second).toMatchObject({ start: "b/y", fastRetry: false });
+    expect(second.attempts).toEqual({ "a/x": 2 });
+  });
+
+  it("never retries a fallback: one failure advances to the next model", () => {
+    expect(step({ active: "b/y", attempts: { "a/x": 2 } })).toMatchObject({ start: "c/z", fastRetry: false });
+    expect(step({ active: "c/z", attempts: { "a/x": 2, "b/y": 1 } })).toMatchObject({ start: null, fastRetry: false });
+  });
+
+  it("moves straight past a refusal without retrying that model", () => {
+    expect(step({ active: "a/x", reason: "refusal" })).toMatchObject({ start: "b/y", fastRetry: false });
+  });
+
+  it("budgets one attempt per chain entry plus the primary retry", () => {
+    expect(step({ active: "a/x" }).maxAttempts).toBe(4);
+    expect(modelFallbackAttemptBudget(["a/x", "b/y"], "a/x")).toBe(3);
+    expect(modelFallbackAttemptLimit("a/x", "a/x")).toBe(2);
+    expect(modelFallbackAttemptLimit("b/y", "a/x")).toBe(1);
+  });
+
+  it("keeps a task override as the primary with the agent chain after it", () => {
     const { config } = buildIssueRunAdapterConfig(
       { model: "a/agent", fallbackModels: ["b/one", "c/override", "d/two"] },
       { adapterConfig: { model: "c/override" } },
     );
-    const selection = selectRunModel({
+    const plan = planModelFallbackStep({
+      chain: ["c/override", "b/one", "d/two"],
       primary: String(config.model),
-      fallbackModels: config.fallbackModels,
-      excluded: [],
-      cooldowns: new Map(),
+      active: String(config.model),
+      reason: "rate_limit",
+      attempts: {},
       now,
     });
-    expect(selection).toMatchObject({ primary: "c/override", start: "c/override", chain: ["c/override", "b/one", "d/two"], reason: null });
-    expect(selection?.overlayChain).toEqual(["b/one", "d/two"]);
+    expect(plan.chain).toEqual(["c/override", "b/one", "d/two"]);
+    expect(plan.start).toBe("c/override");
   });
 
-  it("starts on the first non-cooling candidate and keeps cooling ones last for OMP", () => {
-    const selection = selectRunModel({
-      primary: "a/x",
-      fallbackModels: ["b/y", "c/z"],
-      excluded: [],
-      cooldowns: cooling([["a/x", "2026-10-11T10:05:00.000Z"], ["b/y", "2026-10-11T10:03:00.000Z"]]),
-      now,
-    });
-    expect(selection).toMatchObject({ start: "c/z", overlayChain: ["a/x", "b/y"], reason: "rate_limit" });
-    const partlyFree = selectRunModel({
-      primary: "a/x",
-      fallbackModels: ["b/y", "c/z"],
-      excluded: [],
-      cooldowns: cooling([["a/x", "2026-10-11T10:05:00.000Z"]]),
-      now,
-    });
-    expect(partlyFree).toMatchObject({ start: "b/y", overlayChain: ["c/z", "a/x"] });
-  });
-
-  it("returns to the primary once its cooldown has expired", () => {
-    const selection = selectRunModel({
-      primary: "a/x",
-      fallbackModels: ["b/y"],
-      excluded: [],
-      cooldowns: cooling([["a/x", "2026-10-11T09:59:00.000Z"]]),
-      now,
-    });
-    expect(selection).toMatchObject({ start: "a/x", reason: null });
-  });
-
-  it("skips refused selectors and reports refusal when the primary was refused", () => {
-    const selection = selectRunModel({ primary: "a/x", fallbackModels: ["b/y"], excluded: ["a/x"], cooldowns: new Map(), now });
-    expect(selection).toMatchObject({ start: "b/y", overlayChain: [], reason: "refusal" });
-  });
-
-  it("picks the earliest-expiring candidate when all are cooling", () => {
-    const cooldowns = cooling([["a/x", "2026-10-11T10:30:00.000Z"], ["b/y", "2026-10-11T10:10:00.000Z"]]);
-    expect(selectRunModel({ primary: "a/x", fallbackModels: ["b/y"], excluded: [], cooldowns, now })?.start).toBe("b/y");
-    expect(nextModelFallbackCandidate({ chain: ["a/x", "b/y"], excluded: [], cooldowns, now })).toEqual({
-      selector: "b/y",
-      cooling: true,
-      availableAt: new Date("2026-10-11T10:10:00.000Z"),
-    });
-    expect(nextModelFallbackCandidate({ chain: ["a/x", "b/y"], excluded: ["a/x", "b/y"], cooldowns, now })).toBeNull();
+  it("reads a lineage attempt map leniently", () => {
+    expect(readModelFallbackAttempts({ "a/x": 2, "b/y": "1", "": 3, "c/z": -1 })).toEqual({ "a/x": 2 });
   });
 });
 
