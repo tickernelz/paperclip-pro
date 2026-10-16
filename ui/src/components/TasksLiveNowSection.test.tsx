@@ -394,6 +394,50 @@ describe("Live now cards", () => {
     expect(byIssue("issue-2").querySelector("[data-slot='live-now-model-fallback']")).toBeNull();
   });
 
+  it("takes a task back to the primary model from the card", async () => {
+    render(
+      <TasksLiveNowSection
+        companyId="company-1"
+        liveRuns={[
+          run({
+            adapterType: "omp_local",
+            modelFallback: {
+              primaryModel: "anthropic/opus",
+              activeModel: "openai/gpt-5:high",
+              reason: "rate_limit",
+              switchedAt: "2026-10-08T10:01:00.000Z",
+            },
+          }),
+          run({ id: "run-2", issueId: "issue-2", agentId: "agent-2", agentName: "Operator", modelFallback: null }),
+        ]}
+        issues={[issue({ id: "issue-1", identifier: "ZHA-1" }), issue({ id: "issue-2", identifier: "ZHA-2" })]}
+      />,
+    );
+
+    const byIssue = (id: string) => liveRows().find((row) => row.dataset.liveNowIssueId === id)!;
+    expect(byIssue("issue-2").querySelector("[data-slot='restore-primary-model']")).toBeNull();
+
+    const control = byIssue("issue-1").querySelector<HTMLElement>("[data-slot='restore-primary-model']")!;
+    expect(control.textContent).toContain("Back to primary model");
+    flushSync(() => control.querySelector<HTMLButtonElement>("button")!.click());
+    await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).not.toBeNull());
+    expect(mockHeartbeatsApi.cancel).not.toHaveBeenCalled();
+
+    const confirm = [...document.body.querySelectorAll<HTMLButtonElement>("[role='alertdialog'] button")].find(
+      (button) => button.textContent === "Stop and switch",
+    )!;
+    flushSync(() => confirm.click());
+    await waitFor(() => expect(mockHeartbeatsApi.cancel).toHaveBeenCalledWith("run-1"));
+    expect(mockIssuesApi.addComment).toHaveBeenCalledWith(
+      "issue-1",
+      "Kembali ke model utama.",
+      undefined,
+      undefined,
+      undefined,
+      expect.any(String),
+    );
+  });
+
   it("links to the task and to the live run transcript", () => {
     render(<TasksLiveNowSection companyId="company-1" liveRuns={[run({})]} issues={[issue({})]} />);
 

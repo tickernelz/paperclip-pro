@@ -16,7 +16,6 @@ import {
 export const MODEL_FALLBACK_DEFAULT_COOLDOWN_MS = 5 * 60_000;
 export const MODEL_FALLBACK_STATE_KEY = "paperclipModelFallback";
 export const MODEL_FALLBACK_PRIMARY_KEY = "paperclipPrimaryModel";
-export const MODEL_FALLBACK_EXCLUDED_KEY = "paperclipModelFallbackExcluded";
 /** Per-model attempt counts carried by a retry lineage, so a fresh wake always starts over. */
 export const MODEL_FALLBACK_ATTEMPTS_KEY = "paperclipModelAttempts";
 /** The model a retry must start on, decided by the lineage that produced it. */

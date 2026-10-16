@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RotateCcw } from "lucide-react";
 import type { RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
@@ -6,6 +7,16 @@ import { issuesApi } from "../../api/issues";
 import { queryKeys } from "../../lib/queryKeys";
 import { cn } from "../../lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export interface RestorePrimaryModelRun {
   id: string;
@@ -32,6 +43,7 @@ export function RestorePrimaryModelControl({
   className?: string;
 }) {
   const queryClient = useQueryClient();
+  const [confirming, setConfirming] = useState(false);
   const fallback = run?.modelFallback ?? null;
   const restore = useMutation({
     mutationFn: async () => {
@@ -72,17 +84,39 @@ export function RestorePrimaryModelControl({
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
-          restore.mutate();
+          setConfirming(true);
         }}
       >
         <RotateCcw aria-hidden="true" />
-        {restore.isPending ? "Restoring…" : "Primary model"}
+        {restore.isPending ? "Restoring…" : "Back to primary model"}
       </Button>
       {restore.error ? (
         <span role="alert" className="text-xs text-destructive">
           {errorMessage(restore.error, "Couldn’t restore the primary model.")}
         </span>
       ) : null}
+      <AlertDialog open={confirming} onOpenChange={setConfirming}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Back to the primary model{task}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This stops the run on {fallback.activeModel} now, so any unsaved work in that turn is lost, and wakes the
+              assignee again on {fallback.primaryModel}.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep running</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setConfirming(false);
+                restore.mutate();
+              }}
+            >
+              Stop and switch
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </span>
   );
 }

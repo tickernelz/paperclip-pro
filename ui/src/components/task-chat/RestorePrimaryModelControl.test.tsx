@@ -52,12 +52,6 @@ async function waitFor(assertion: () => void) {
   throw lastError;
 }
 
-function click(target: Element) {
-  flushSync(() => {
-    target.dispatchEvent(new MouseEvent("click", { bubbles: true, cancelable: true }));
-  });
-}
-
 function control(issueId = "issue-7", runId = "run-9") {
   return (
     <RestorePrimaryModelControl
@@ -67,6 +61,22 @@ function control(issueId = "issue-7", runId = "run-9") {
       taskLabel="ZHA-1"
     />
   );
+}
+
+function trigger(): HTMLButtonElement {
+  return container.querySelector<HTMLButtonElement>('[data-slot="restore-primary-model"] button')!;
+}
+
+function dialogButton(label: string): HTMLButtonElement {
+  const dialog = document.body.querySelector<HTMLElement>("[role='alertdialog']")!;
+  return [...dialog.querySelectorAll<HTMLButtonElement>("button")].find(
+    (button) => button.textContent === label,
+  )!;
+}
+
+async function openDialog() {
+  flushSync(() => trigger().click());
+  await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).not.toBeNull());
 }
 
 beforeEach(() => {
@@ -91,6 +101,26 @@ describe("RestorePrimaryModelControl", () => {
     expect(container.querySelector('[data-slot="restore-primary-model"]')).toBeNull();
   });
 
+  it("asks before stopping the fallback run", async () => {
+    render(control());
+    expect(trigger().getAttribute("aria-label")).toBe("Back to the primary model on ZHA-1");
+    await openDialog();
+    expect(document.body.querySelector("[role='alertdialog']")?.textContent).toContain(
+      "Back to the primary model on ZHA-1?",
+    );
+    expect(mockHeartbeatsApi.cancel).not.toHaveBeenCalled();
+    expect(mockIssuesApi.addComment).not.toHaveBeenCalled();
+  });
+
+  it("does not stop the run when the confirmation is dismissed", async () => {
+    render(control());
+    await openDialog();
+    flushSync(() => dialogButton("Keep running").click());
+    await waitFor(() => expect(document.body.querySelector("[role='alertdialog']")).toBeNull());
+    expect(mockHeartbeatsApi.cancel).not.toHaveBeenCalled();
+    expect(mockIssuesApi.addComment).not.toHaveBeenCalled();
+  });
+
   it("cancels the fallback run, then wakes the assignee back to the primary model", async () => {
     const calls: string[] = [];
     mockHeartbeatsApi.cancel.mockImplementation(async (runId: string) => {
@@ -101,9 +131,8 @@ describe("RestorePrimaryModelControl", () => {
     });
 
     render(control());
-    const button = container.querySelector("button");
-    expect(button?.getAttribute("aria-label")).toBe("Back to the primary model on ZHA-1");
-    click(button!);
+    await openDialog();
+    flushSync(() => dialogButton("Stop and switch").click());
 
     await waitFor(() => expect(calls.length).toBe(2));
     expect(calls).toEqual([
@@ -124,7 +153,8 @@ describe("RestorePrimaryModelControl", () => {
   it("reports a failed restore instead of stopping the run silently", async () => {
     mockHeartbeatsApi.cancel.mockRejectedValue(new Error("Run already finished."));
     render(control());
-    click(container.querySelector("button")!);
+    await openDialog();
+    flushSync(() => dialogButton("Stop and switch").click());
     await waitFor(() =>
       expect(container.querySelector('[role="alert"]')?.textContent).toBe("Run already finished."),
     );

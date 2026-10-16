@@ -478,7 +478,7 @@ describe("IssuesList", () => {
 
     const fallbackRow = container.querySelector("[data-issue-row-id='fell-back']");
     const control = fallbackRow?.querySelector("[data-slot='restore-primary-model'] button");
-    expect(control?.textContent).toContain("Primary model");
+    expect(control?.textContent).toContain("Back to primary model");
     expect(control?.getAttribute("aria-label")).toBe("Back to the primary model on ZHA-1");
     expect(
       container.querySelector("[data-issue-row-id='on-primary'] [data-slot='restore-primary-model']"),

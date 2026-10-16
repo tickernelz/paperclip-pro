@@ -25,6 +25,7 @@ import {
 } from "../../lib/issueDetailBreadcrumb";
 import { describeDeliveryDowngrade } from "../../lib/message-delivery-command";
 import { describeFallbackModel, modelFallbackReasonLabel } from "../../lib/model-fallback";
+import { RestorePrimaryModelControl } from "../task-chat/RestorePrimaryModelControl";
 import { modelValueText } from "../task-chat/model-option-display";
 import { useConfigSchema } from "../../adapters/schema-config-fields";
 import { queryKeys } from "../../lib/queryKeys";
@@ -280,6 +281,13 @@ export function LiveNowCard({
             <MessageSquare aria-hidden="true" />
             Steer
           </Button>
+          <RestorePrimaryModelControl
+            className="ml-auto"
+            issueId={entry.issueId}
+            run={primary}
+            companyId={companyId}
+            taskLabel={identifier}
+          />
           <Button
             type="button"
             variant="ghost"

@@ -4725,7 +4725,7 @@ describe("TaskChatThread composer execution controls", () => {
     render(<TaskChatThread comments={[]} onAdd={async () => {}} issueId="issue-1" issueStatus="in_progress"
       activeRun={fallbackRun} liveRuns={[fallbackRun]} />);
     const control = container.querySelector('[data-slot="restore-primary-model"] button');
-    expect(control?.textContent).toContain("Primary model");
+    expect(control?.textContent).toContain("Back to primary model");
     expect(control?.getAttribute("aria-label")).toBe("Back to the primary model");
   });
 });
