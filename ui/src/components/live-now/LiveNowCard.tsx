@@ -250,7 +250,7 @@ export function LiveNowCard({
       ) : null}
 
       <div className="mt-auto pt-2.5">
-        <div className="flex items-center gap-0.5 border-t border-border px-1.5 py-1.5">
+        <div className="flex flex-wrap items-center gap-0.5 border-t border-border px-1.5 py-1.5">
           <Link
             to={taskPath}
             state={detailState}
