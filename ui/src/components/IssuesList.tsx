@@ -59,7 +59,8 @@ import {
 } from "../lib/inbox";
 import { cn, formatDurationMs, formatTokens } from "../lib/utils";
 import { SHOW_TASK_PRIORITY_UI } from "../lib/ui-flags";
-import { collectSubtreeLiveCounts } from "../lib/liveIssueIds";
+import { collectSubtreeLiveCounts, isLiveIssueRun } from "../lib/liveIssueIds";
+import type { LiveRunForIssue } from "../api/heartbeats";
 import {
   InboxIssueMetaLeading,
   InboxIssueTrailingColumns,
@@ -74,6 +75,7 @@ import { Identity } from "./Identity";
 import { IssueGroupHeader } from "./IssueGroupHeader";
 import { IssueFiltersPopover } from "./IssueFiltersPopover";
 import { IssueRow, type IssueRowPresentation } from "./IssueRow";
+import { RestorePrimaryModelControl } from "./task-chat/RestorePrimaryModelControl";
 import { CollectionToolbar, type CollectionToolbarProps } from "./CollectionToolbar";
 import { IssuesList as LegacyIssuesList } from "./LegacyIssuesList";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
@@ -112,6 +114,26 @@ const ISSUE_BOARD_COLUMN_RESULT_LIMIT = 200;
 type IssuesListNavEntry =
   | { type: "group"; key: string; collapsed: boolean }
   | { type: "issue"; issue: Issue; hasChildren: boolean; expanded: boolean; budgetOrdinal: number };
+
+function runStartMs(run: Pick<LiveRunForIssue, "startedAt" | "createdAt">): number {
+  const time = new Date(run.startedAt ?? run.createdAt).getTime();
+  return Number.isFinite(time) ? time : 0;
+}
+
+function fallbackRunsByIssueId(
+  liveRuns: readonly LiveRunForIssue[] | null | undefined,
+  issues: readonly Issue[],
+): Map<string, LiveRunForIssue> {
+  const statusByIssueId = new Map(issues.map((issue) => [issue.id, issue.status]));
+  const byIssueId = new Map<string, LiveRunForIssue>();
+  for (const run of liveRuns ?? []) {
+    if (!run.issueId || !run.modelFallback) continue;
+    if (!isLiveIssueRun(run, statusByIssueId.get(run.issueId))) continue;
+    const existing = byIssueId.get(run.issueId);
+    if (!existing || runStartMs(run) > runStartMs(existing)) byIssueId.set(run.issueId, run);
+  }
+  return byIssueId;
+}
 
 function issuesListNavEntryKey(entry: IssuesListNavEntry): string {
   return entry.type === "group" ? `group:${entry.key}` : `issue:${entry.issue.id}`;
@@ -572,6 +594,7 @@ interface IssuesListProps {
   agents?: Agent[];
   projects?: ProjectOption[];
   liveIssueIds?: Set<string>;
+  liveRuns?: readonly LiveRunForIssue[] | null;
   projectId?: string;
   viewStateKey: string;
   issueLinkState?: unknown;
@@ -800,6 +823,7 @@ function StreamlinedIssuesList({
   agents,
   projects,
   liveIssueIds,
+  liveRuns,
   projectId,
   viewStateKey,
   issueLinkState,
@@ -1233,6 +1257,7 @@ function StreamlinedIssuesList({
     () => collectSubtreeLiveCounts(issues, liveIssueIds ?? new Set<string>()),
     [issues, liveIssueIds],
   );
+  const fallbackRunByIssueId = useMemo(() => fallbackRunsByIssueId(liveRuns, issues), [issues, liveRuns]);
   const visibleTrailingIssueColumns = useMemo(
     () => issueTrailingColumns.filter((column) =>
       visibleIssueColumnSet.has(column)
@@ -2478,6 +2503,16 @@ function StreamlinedIssuesList({
                     </button>
                   ) : null;
 
+                  const fallbackRun = fallbackRunByIssueId.get(issue.id) ?? null;
+                  const restorePrimaryModel = fallbackRun ? (
+                    <RestorePrimaryModelControl
+                      issueId={issue.id}
+                      run={fallbackRun}
+                      companyId={selectedCompanyId}
+                      taskLabel={issue.identifier ?? issue.id.slice(0, 8)}
+                    />
+                  ) : undefined;
+
                   return (
                     <div
                       key={issue.id}
@@ -2571,6 +2606,7 @@ function StreamlinedIssuesList({
                             checklistStepNumber={checklistStepNumber}
                           />
                         ) : undefined}
+                        actions={restorePrimaryModel}
                         showIdentifier={visibleIssueColumnSet.has("id") && availableIssueColumnSet.has("id")}
                         mobileLeading={
                           hasChildren ? (
@@ -2613,7 +2649,7 @@ function StreamlinedIssuesList({
                           </>
                         ) : undefined}
                         mobileTitleMeta={rowPresentation === "task" ? issueActivityTimestamp(issue) : undefined}
-                        mobileMeta={rowPresentation === "legacy" ? issueActivityText(issue).toLowerCase() : undefined}
+                        mobileMeta={rowPresentation === "legacy" ? issueActivityText(issue).toLowerCase() : restorePrimaryModel}
                         trailingMeta={rowPresentation === "task"
                           && visibleIssueColumnSet.has("updated")
                           && availableIssueColumnSet.has("updated")

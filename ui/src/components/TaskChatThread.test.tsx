@@ -4709,4 +4709,23 @@ describe("TaskChatThread composer execution controls", () => {
     render(<TaskChatThread comments={[]} onAdd={async () => {}} issueStatus="todo" onCancelRun={vi.fn()} />);
     expect(container.querySelector('[data-testid="task-chat-composer-stop"]')).toBeNull();
   });
+  it("offers the way back to the primary model only while the live run is on a fallback", () => {
+    const run = {
+      id: "task-run", status: "running", invocationSource: "issue", triggerDetail: null,
+      startedAt: "2026-09-09T12:00:00Z", finishedAt: null, createdAt: "2026-09-09T12:00:00Z",
+      agentId: "agent-1", agentName: "Alex", adapterType: "claude_local",
+    };
+    render(<TaskChatThread comments={[]} onAdd={async () => {}} issueId="issue-1" issueStatus="in_progress"
+      activeRun={run} liveRuns={[run]} />);
+    expect(container.querySelector('[data-slot="restore-primary-model"]')).toBeNull();
+    const fallbackRun = { ...run, modelFallback: {
+      primaryModel: "openai/gpt-5", activeModel: "openrouter/qwen3",
+      reason: "rate_limit" as const, switchedAt: "2026-10-16T10:00:00Z",
+    } };
+    render(<TaskChatThread comments={[]} onAdd={async () => {}} issueId="issue-1" issueStatus="in_progress"
+      activeRun={fallbackRun} liveRuns={[fallbackRun]} />);
+    const control = container.querySelector('[data-slot="restore-primary-model"] button');
+    expect(control?.textContent).toContain("Primary model");
+    expect(control?.getAttribute("aria-label")).toBe("Back to the primary model");
+  });
 });

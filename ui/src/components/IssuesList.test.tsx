@@ -2,6 +2,7 @@
 
 import { createRoot } from "react-dom/client";
 import { flushSync } from "react-dom";
+import type { LiveRunForIssue } from "../api/heartbeats";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue, Project } from "@tickernelz/paperclip-pro-shared";
@@ -137,6 +138,8 @@ vi.mock("./IssueRow", () => ({
     treeGuides,
     showIdentifier,
     trailingMeta,
+    actions,
+    mobileMeta,
   }: {
     issue: Issue;
     desktopMetaLeading?: ReactNode;
@@ -152,6 +155,8 @@ vi.mock("./IssueRow", () => ({
     treeGuides?: number;
     showIdentifier?: boolean;
     trailingMeta?: ReactNode;
+    actions?: ReactNode;
+    mobileMeta?: ReactNode;
   }) => (
     <div
       data-testid="issue-row"
@@ -173,6 +178,8 @@ vi.mock("./IssueRow", () => ({
       {desktopMetaLeading}
       {desktopTrailing}
       {trailingMeta}
+      {actions}
+      {mobileMeta}
       {checklistDependencyChips}
     </div>
   ),
@@ -248,6 +255,29 @@ function createIssue(overrides: Partial<Issue> = {}): Issue {
     isUnreadForMe: false,
     ...overrides,
     workMode: overrides.workMode ?? "standard",
+  };
+}
+
+const FALLBACK_STATE = {
+  primaryModel: "openai/gpt-5",
+  activeModel: "openrouter/qwen3",
+  reason: "rate_limit" as const,
+  switchedAt: "2026-10-16T10:00:00.000Z",
+};
+
+function liveRun(overrides: Partial<LiveRunForIssue>): LiveRunForIssue {
+  return {
+    id: "run-1",
+    status: "running",
+    invocationSource: "assignment",
+    triggerDetail: null,
+    startedAt: "2026-10-16T10:00:00.000Z",
+    finishedAt: null,
+    createdAt: "2026-10-16T10:00:00.000Z",
+    agentId: "agent-1",
+    agentName: "Builder",
+    adapterType: "process",
+    ...overrides,
   };
 }
 
@@ -415,6 +445,44 @@ describe("IssuesList", () => {
       expect(row?.getAttribute("data-presentation")).toBeNull();
       expect(container.querySelector("[data-testid='kanban-board']")).toBeNull();
     });
+
+    act(() => root.unmount());
+  });
+
+  it("offers the way back to the primary model only on a row whose live run fell back", async () => {
+    const { root } = renderWithQueryClient(
+      <IssuesList
+        issues={[
+          createIssue({ id: "fell-back", identifier: "ZHA-1", title: "Running on a fallback model" }),
+          createIssue({ id: "on-primary", identifier: "ZHA-2", title: "Running on its primary model" }),
+        ]}
+        isLoading={false}
+        agents={[]}
+        projects={[]}
+        liveIssueIds={new Set(["fell-back", "on-primary"])}
+        liveRuns={[
+          liveRun({ id: "run-fallback", issueId: "fell-back", modelFallback: FALLBACK_STATE }),
+          liveRun({ id: "run-primary", issueId: "on-primary", modelFallback: null }),
+        ]}
+        viewStateKey="paperclip:restore-primary-model"
+        rowPresentation="task"
+        toolbarPresentation="collection"
+        onUpdateIssue={() => undefined}
+      />,
+      container,
+    );
+
+    await waitForAssertion(() => {
+      expect(container.querySelectorAll("[data-issue-row-id]")).toHaveLength(2);
+    });
+
+    const fallbackRow = container.querySelector("[data-issue-row-id='fell-back']");
+    const control = fallbackRow?.querySelector("[data-slot='restore-primary-model'] button");
+    expect(control?.textContent).toContain("Primary model");
+    expect(control?.getAttribute("aria-label")).toBe("Back to the primary model on ZHA-1");
+    expect(
+      container.querySelector("[data-issue-row-id='on-primary'] [data-slot='restore-primary-model']"),
+    ).toBeNull();
 
     act(() => root.unmount());
   });

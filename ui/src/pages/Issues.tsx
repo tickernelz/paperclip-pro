@@ -314,6 +314,7 @@ function OrganizationIssues({
       agents={agents}
       projects={projects}
       liveIssueIds={liveIssueIds}
+      liveRuns={liveRuns}
       viewStateKey="paperclip:issues-view"
       rowPresentation={issuesPresentation.rowPresentation}
       toolbarPresentation={issuesPresentation.toolbarPresentation}

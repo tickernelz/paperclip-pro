@@ -65,6 +65,7 @@ import {
   TaskChatLiveRunPill,
   toolCountSummaryFromEntries,
 } from "@/components/task-chat/TaskChatLiveRunPill";
+import { RestorePrimaryModelControl } from "@/components/task-chat/RestorePrimaryModelControl";
 import type {
   TaskChatInteractionItem,
   TaskChatItem,
@@ -3229,6 +3230,12 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                 concealed={!historyRevealed}
               >
                 {composerAccessory}
+                <RestorePrimaryModelControl
+                  issueId={issueId}
+                  run={liveRun}
+                  companyId={companyId}
+                  className="self-start"
+                />
                 {tailTurnStatus ? (
                   <TaskChatTurnStatusIsland model={tailTurnStatus} />
                 ) : null}
