@@ -1592,12 +1592,14 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
         terminalSummary: IssueSummaryRow | IssueSubjectRow;
         state: "stalled" | "needs_attention";
       }>();
+      const ownerRoutedBlockedIssueIds = new Set<string>();
 
       for (const issue of typedBlockedIssues) {
         const descriptor = issue.unblockDescriptor;
         const humanOwnerMatches = descriptor?.owner === "board"
           || (descriptor?.owner && "userId" in descriptor.owner && descriptor.owner.userId === options.userId);
         if (descriptor && humanOwnerMatches && isProspectiveBlockedTransition(issue)) {
+          ownerRoutedBlockedIssueIds.add(issue.id);
           const issueSummary = blockedIssueSummaries.get(issue.id) ?? null;
           add(createItem({
             companyId,
@@ -1630,6 +1632,7 @@ export function attentionService(db: Db, serviceOptions: AttentionServiceOptions
         if (blockerAttention.blockingTreeLive) continue;
         const issueSummary = blockedIssueSummaries.get(issue.id) ?? null;
         const terminalIssueId = blockerAttention.terminalBlockerIssueId ?? issue.id;
+        if (terminalIssueId === issue.id && ownerRoutedBlockedIssueIds.has(issue.id)) continue;
         const terminalSummary = terminalBlockerSummaries.get(terminalIssueId)
           ?? (terminalIssueId === issue.id ? issueSummary ?? issue : null);
         if (!terminalSummary) continue;

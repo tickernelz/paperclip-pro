@@ -1547,6 +1547,85 @@ describeEmbeddedPostgres("attention service", () => {
     expect(feed.items.filter((item) => item.sourceKind === "blocker_attention")).toEqual([]);
   });
 
+  it("raises a blocked issue whose only blocker is done even without an unblock descriptor or transition stamp", async () => {
+    const { companyId } = await seedCompany("ATD");
+    const blockedId = await insertIssue({
+      companyId,
+      identifier: "ATD-1",
+      title: "Waiting on finished work",
+      status: "blocked",
+      updatedAt: new Date(Date.now() - 60 * 60 * 1000),
+    });
+    const blockerId = await insertIssue({ companyId, identifier: "ATD-2", title: "Finished blocker", status: "done" });
+    await db.insert(issueRelations).values({ companyId, issueId: blockerId, relatedIssueId: blockedId, type: "blocks" });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+    const rows = feed.items.filter((item) => item.sourceKind === "blocker_attention" && item.subject.id === blockedId);
+
+    expect(rows).toHaveLength(1);
+  });
+
+  it("raises a blocked issue with no blocker and no unblock descriptor once it is older than the stranded threshold", async () => {
+    const { companyId } = await seedCompany("ATN");
+    const staleId = await insertIssue({
+      companyId,
+      identifier: "ATN-1",
+      title: "Stranded by recovery",
+      status: "blocked",
+      blockedTransitionAt: new Date(Date.now() - 30 * 60 * 1000),
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000),
+    });
+    const legacyId = await insertIssue({
+      companyId,
+      identifier: "ATN-2",
+      title: "Stranded before transition stamping",
+      status: "blocked",
+      updatedAt: new Date(Date.now() - 30 * 60 * 1000),
+    });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+    const subjects = feed.items.filter((item) => item.sourceKind === "blocker_attention").map((item) => item.subject.id);
+
+    expect(subjects).toEqual(expect.arrayContaining([staleId, legacyId]));
+  });
+
+  it("raises a blocked issue whose only blocker was cancelled through the cancelled blocker", async () => {
+    const { companyId } = await seedCompany("ATK");
+    const blockedId = await insertIssue({
+      companyId,
+      identifier: "ATK-1",
+      title: "Waiting on abandoned work",
+      status: "blocked",
+      updatedAt: new Date(Date.now() - 60 * 60 * 1000),
+    });
+    const blockerId = await insertIssue({ companyId, identifier: "ATK-2", title: "Abandoned blocker", status: "cancelled" });
+    await db.insert(issueRelations).values({ companyId, issueId: blockerId, relatedIssueId: blockedId, type: "blocks" });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+    const rows = feed.items.filter((item) => item.sourceKind === "blocker_attention");
+
+    expect(rows.map((item) => [item.subject.id, item.relatedIssue?.id])).toEqual([[blockerId, blockedId]]);
+  });
+
+  it("raises nothing for an old blocked issue whose blocker is still open and progressing", async () => {
+    const { companyId } = await seedCompany("ATP");
+    const old = new Date(Date.now() - 60 * 60 * 1000);
+    const blockedId = await insertIssue({
+      companyId,
+      identifier: "ATP-1",
+      title: "Waiting on live work",
+      status: "blocked",
+      blockedTransitionAt: old,
+      updatedAt: old,
+    });
+    const blockerId = await insertIssue({ companyId, identifier: "ATP-2", title: "Live blocker", status: "in_progress" });
+    await db.insert(issueRelations).values({ companyId, issueId: blockerId, relatedIssueId: blockedId, type: "blocks" });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+
+    expect(feed.items.filter((item) => item.sourceKind === "blocker_attention")).toEqual([]);
+  });
+
   it("emits one terminal-blocker row with a cycle-safe transitive blocked-work count", async () => {
     const { companyId } = await seedCompany("ATC");
     const terminalId = await insertIssue({
@@ -1661,6 +1740,25 @@ describeEmbeddedPostgres("attention service", () => {
     );
 
     expect(row?.detail).toMatchObject({ kind: "blocker", blockingIssue: null });
+  });
+
+  it("shows one blocker row for a blocked issue that already carries a human-owned unblock descriptor", async () => {
+    const { companyId } = await seedCompany("ATO");
+    const transitionAt = new Date(Date.now() - 30 * 60 * 1000);
+    const issueId = await insertIssue({
+      companyId,
+      identifier: "ATO-1",
+      title: "Stranded run needs a board decision",
+      status: "blocked",
+      unblockDescriptor: { owner: "board", action: "Retry the original owner, reassign, or resolve the task." },
+      blockedTransitionAt: transitionAt,
+      updatedAt: transitionAt,
+    });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+    const rows = feed.items.filter((item) => item.sourceKind === "blocker_attention" && item.subject.id === issueId);
+
+    expect(rows.map((item) => item.dedupKey)).toEqual([`blocked-owner:${issueId}:${transitionAt.toISOString()}`]);
   });
 
   it("does not route pre-rollout human unblock descriptors", async () => {

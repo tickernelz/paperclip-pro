@@ -2,7 +2,11 @@ import { CONVERSATION_CONTINUATION_POLICY, runUsedConversationAdapter } from "..
 import { isAgentAwaitingSetup } from "../../modules/agent-lifecycle/index.js";
 import { isAiAuthenticationBlocked } from "../ai-auth-failure.js";
 import { hasCommittedNativePlanWait } from "../native-runtime/native-plan-wait.js";
-import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
+import {
+  isNativeWorkspaceExportRepairCause,
+  type IssueRecoveryAction,
+  type IssueUnblockDescriptor,
+} from "@tickernelz/paperclip-pro-shared";
 import { settleSlackConversation } from "../slack-conversation-lifecycle.js";
 import { externalConversationStateSql } from "../slack-conversation-state.js";
 import { isIssueReviewPathRecoveryRun } from "./review-path-recovery.js";
@@ -289,6 +293,20 @@ export function shouldRouteRecoveryToOriginalAgent(
 }
 
 type StrandedPreviousStatus = "todo" | "in_progress" | "in_review";
+
+function strandedRecoveryUnblockDescriptor(
+  action: Pick<
+    IssueRecoveryAction,
+    "ownerType" | "ownerAgentId" | "ownerUserId" | "returnOwnerAgentId" | "nextAction"
+  >,
+): IssueUnblockDescriptor {
+  if (action.ownerUserId) return { owner: { userId: action.ownerUserId }, action: action.nextAction };
+  if (action.ownerAgentId) return { owner: { agentId: action.ownerAgentId }, action: action.nextAction };
+  if (action.ownerType === "system" && action.returnOwnerAgentId) {
+    return { owner: { agentId: action.returnOwnerAgentId }, action: action.nextAction };
+  }
+  return { owner: "board", action: action.nextAction };
+}
 
 type SuccessfulRunHandoffRecoveryEvidence = {
   sourceRunId: string | null;
@@ -4152,6 +4170,7 @@ export function recoveryService(
     const updated = await issuesSvc.update(input.issue.id, {
       status: "blocked",
       blockedByIssueIds: blockerIds,
+      unblockDescriptor: strandedRecoveryUnblockDescriptor(recoveryAction),
     });
     if (!updated) return null;
     if (isProviderQuotaWait) return updated;

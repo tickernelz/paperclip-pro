@@ -481,4 +481,28 @@ describeEmbeddedPostgres("stranded reconciler scope", () => {
       "stranded_assigned_issue",
     );
   });
+
+  it("records why a stranded issue is blocked and when it entered blocked", async () => {
+    const { companyId, coderId, issueId } = await seedCompany({ issueStatus: "in_progress" });
+    await seedRun({
+      companyId,
+      agentId: coderId,
+      issueId,
+      status: "failed",
+      errorCode: "issue_continuation_failed",
+      retryReason: "issue_continuation_needed",
+    });
+    const before = new Date();
+
+    const result = await recoveryService(db, { enqueueWakeup: vi.fn(async () => null) }).reconcileStrandedAssignedIssues();
+
+    expect(result.escalated).toBe(1);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    const [action] = await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, issueId));
+    expect(issue?.status).toBe("blocked");
+    expect(issue?.blockedTransitionAt?.getTime()).toBeGreaterThanOrEqual(before.getTime() - 1000);
+    expect(action?.ownerType).toBe("board");
+    expect(issue?.unblockDescriptor).toEqual({ owner: "board", action: action?.nextAction });
+    expect(issue?.unblockDescriptor?.action).toMatch(/\S/);
+  });
 });
