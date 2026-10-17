@@ -185,12 +185,20 @@ describe("runner task reassignment", () => {
     expect(f.stopTaskForReassignment).not.toHaveBeenCalled();
   });
 
-  it("respects protected assignment policies instead of inheriting board authority", async () => {
+  it("respects protected assignment policies for a caller below CEO", async () => {
     const f = await fixture();
+    await db.update(agents).set({ role: "cto" }).where(eq(agents.id, f.agentId));
     await db.update(agents).set({ permissions: { authorizationPolicy: { protectedAgent: { blockAssignment: true } } } }).where(eq(agents.id, f.nextId));
     await expect(f.authority.execute(f.call)).rejects.toThrow();
     expect((await f.target()).assigneeAgentId).toBe(f.agentId);
     expect(f.stopTaskForReassignment).not.toHaveBeenCalled();
+  });
+
+  it("lets a CEO caller reassign past a protected assignment policy, as the owner can", async () => {
+    const f = await fixture();
+    await db.update(agents).set({ permissions: { authorizationPolicy: { protectedAgent: { blockAssignment: true } } } }).where(eq(agents.id, f.nextId));
+    await f.authority.execute(f.call);
+    expect((await f.target()).assigneeAgentId).toBe(f.nextId);
   });
 
   it("rejects writes after the caller loses its run binding", async () => {
