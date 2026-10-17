@@ -17,6 +17,7 @@ import {
   instanceSettings,
   issueComments,
   issues,
+  issueThreadInteractions,
   runIdentityContexts,
 } from "@tickernelz/paperclip-pro-db";
 import { runningProcesses } from "../adapters/index.js";
@@ -38,6 +39,7 @@ import type * as NativeSessionExecutor from "../services/native-runtime/native-s
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
 import { queuedCommentIdsFromWakePayload } from "../services/issue-queued-comment-queue.js";
 import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { createOmpRpcSteerSession } from "../../../packages/adapters/omp-local/src/server/rpc-session.js";
 import type * as Services from "../services/index.js";
 import {
   getEmbeddedPostgresTestSupport,
@@ -1148,6 +1150,283 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
     expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(
       posted.body.id,
     );
+  });
+
+  function startingOmpSession(runId: string) {
+    steerNativeSessionMock.mockImplementation((input) => executorActual.steer!(input));
+    const session = createOmpRpcSteerSession();
+    const written: Array<Record<string, unknown>> = [];
+    session.setWriter(async (data) => {
+      written.push(JSON.parse(data) as Record<string, unknown>);
+    });
+    const release = registerAdapterSteerTarget(runId, session);
+    return {
+      session,
+      written,
+      stop() {
+        release();
+        session.close();
+      },
+    };
+  }
+
+  it("steers a comment posted before the run's first OMP turn exactly once when that turn starts", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const omp = startingOmpSession(seeded.runId);
+    const client = app(seeded.companyId);
+    try {
+      const posted = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Posted while OMP is still starting" })
+        .expect(201);
+      expect(posted.body).toMatchObject({ deliveredAs: "queued" });
+      expect(omp.written).toEqual([]);
+
+      omp.session.observeFrame({ type: "agent_start" });
+      omp.session.observeFrame({ type: "turn_start" });
+      await vi.waitFor(() => expect(omp.written).toHaveLength(1));
+      expect(omp.written[0]).toEqual({
+        id: posted.body.id,
+        type: "steer",
+        message: "Posted while OMP is still starting",
+      });
+      omp.session.observeFrame({ type: "response", id: posted.body.id, command: "steer", success: true });
+
+      await vi.waitFor(async () => {
+        const queue = await request(client)
+          .get(`/api/issues/${seeded.issueId}/queued-comments`)
+          .expect(200);
+        expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).not.toContain(
+          posted.body.id,
+        );
+      });
+      const steered = await db
+        .select({ details: activityLog.details })
+        .from(activityLog)
+        .where(
+          and(
+            eq(activityLog.action, "issue.queued_comment_steered"),
+            eq(activityLog.entityId, seeded.issueId),
+          ),
+        );
+      expect(steered).toHaveLength(1);
+      expect(steered[0]?.details).toMatchObject({
+        commentId: posted.body.id,
+        targetRunId: seeded.runId,
+        duplicate: false,
+      });
+      const [run] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, seeded.runId));
+      expect(
+        (run?.resultJson as Record<string, Record<string, unknown>> | null)?.queuedSteeringAcknowledgements?.[posted.body.id],
+      ).toMatchObject({ status: "acknowledged" });
+      omp.session.observeFrame({ type: "agent_end" });
+      omp.session.observeFrame({ type: "turn_start" });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(omp.written).toHaveLength(1);
+    } finally {
+      omp.stop();
+    }
+  });
+
+  it("leaves a comment posted before the first OMP turn queued when the run ends without a turn", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const omp = startingOmpSession(seeded.runId);
+    const client = app(seeded.companyId);
+    try {
+      const posted = await request(client)
+        .post(`/api/issues/${seeded.issueId}/comments`)
+        .send({ body: "Posted to a run that never starts a turn" })
+        .expect(201);
+      expect(posted.body).toMatchObject({ deliveredAs: "queued" });
+      omp.stop();
+      omp.session.observeFrame({ type: "turn_start" });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(omp.written).toEqual([]);
+      const queue = await request(client)
+        .get(`/api/issues/${seeded.issueId}/queued-comments`)
+        .expect(200);
+      expect(queue.body.entries.map((entry: { comment: { id: string } }) => entry.comment.id)).toContain(
+        posted.body.id,
+      );
+    } finally {
+      omp.stop();
+    }
+  });
+
+  async function insertPendingQuestion(seeded: SeededActiveRun) {
+    const interactionId = randomUUID();
+    await db.insert(issueThreadInteractions).values({
+      id: interactionId,
+      companyId: seeded.companyId,
+      issueId: seeded.issueId,
+      kind: "ask_user_questions",
+      status: "pending",
+      createdByAgentId: seeded.agentId,
+      sourceRunId: seeded.runId,
+      continuationPolicy: "wake_assignee",
+      requestedResolverPolicy: "human_only",
+      effectiveResolverPolicy: "human_only",
+      resolverPolicyProvenance: "explicit",
+      payload: {
+        version: 1,
+        questions: [
+          {
+            id: "runtime",
+            prompt: "Which runtime?",
+            selectionMode: "single",
+            required: true,
+            options: [
+              { id: "node", label: "Node.js" },
+              { id: "python", label: "Python" },
+            ],
+          },
+        ],
+      },
+    });
+    return interactionId;
+  }
+
+  async function steeredActivityFor(issueId: string, commentId: string) {
+    const rows = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.action, "issue.queued_comment_steered"), eq(activityLog.entityId, issueId)));
+    return rows.filter((row) => (row.details as Record<string, unknown> | null)?.commentId === commentId);
+  }
+
+  it("steers an answer posted before the run's first OMP turn exactly once when that turn starts", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const interactionId = await insertPendingQuestion(seeded);
+    const omp = startingOmpSession(seeded.runId);
+    const client = app(seeded.companyId);
+    try {
+      await request(client)
+        .post(`/api/issues/${seeded.issueId}/interactions/${interactionId}/respond`)
+        .send({ answers: [{ questionId: "runtime", optionIds: ["node"] }] })
+        .expect(200);
+      expect(omp.written).toEqual([]);
+      expect(await steeredActivityFor(seeded.issueId, interactionId)).toEqual([]);
+
+      omp.session.observeFrame({ type: "agent_start" });
+      omp.session.observeFrame({ type: "turn_start" });
+      await vi.waitFor(() => expect(omp.written).toHaveLength(1));
+      expect(omp.written[0]).toMatchObject({ id: interactionId, type: "steer" });
+      expect(String(omp.written[0]?.message)).toContain("Node.js");
+      omp.session.observeFrame({ type: "response", id: interactionId, command: "steer", success: true });
+
+      await vi.waitFor(async () => {
+        const steered = await steeredActivityFor(seeded.issueId, interactionId);
+        expect(steered).toHaveLength(1);
+        expect(steered[0]?.details).toMatchObject({ targetRunId: seeded.runId, duplicate: false });
+      });
+      omp.session.observeFrame({ type: "agent_end" });
+      omp.session.observeFrame({ type: "turn_start" });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(omp.written).toHaveLength(1);
+      expect(await steeredActivityFor(seeded.issueId, interactionId)).toHaveLength(1);
+    } finally {
+      omp.stop();
+    }
+  });
+
+  it("leaves an answer posted before the first OMP turn unsteered when the run ends without a turn", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    const interactionId = await insertPendingQuestion(seeded);
+    const omp = startingOmpSession(seeded.runId);
+    const client = app(seeded.companyId);
+    try {
+      await request(client)
+        .post(`/api/issues/${seeded.issueId}/interactions/${interactionId}/respond`)
+        .send({ answers: [{ questionId: "runtime", optionIds: ["node"] }] })
+        .expect(200);
+      omp.stop();
+      omp.session.observeFrame({ type: "turn_start" });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(omp.written).toEqual([]);
+      expect(await steeredActivityFor(seeded.issueId, interactionId)).toEqual([]);
+    } finally {
+      omp.stop();
+    }
+  });
+
+  async function queueReasonRows(issueId: string) {
+    const rows = await db
+      .select({ details: activityLog.details })
+      .from(activityLog)
+      .where(and(eq(activityLog.action, "issue.queued_comment_queued"), eq(activityLog.entityId, issueId)));
+    return rows.map((row) => row.details);
+  }
+
+  it("records why a default-delivery comment stayed queued when the steered turn already ended", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockRejectedValue(
+      new NativeSessionSteeringError("steering_stale_turn", "The target turn is no longer active."),
+    );
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Arrived between turns" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "steering_failed" });
+    expect(await queueReasonRows(seeded.issueId)).toEqual([
+      {
+        commentId: posted.body.id,
+        targetRunId: seeded.runId,
+        reason: "steering_failed",
+        errorCode: "steering_stale_turn",
+      },
+    ]);
+  });
+
+  it("records no_active_run without a target when an explicit steer finds nothing running", async () => {
+    const seeded = await seedActiveRun();
+    await db
+      .update(heartbeatRuns)
+      .set({ status: "succeeded", finishedAt: new Date() })
+      .where(eq(heartbeatRuns.id, seeded.runId));
+    await db.update(issues).set({ executionRunId: null }).where(eq(issues.id, seeded.issueId));
+
+    const posted = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Nobody is running", deliver: "steer" })
+      .expect(201);
+
+    expect(posted.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "no_active_run" });
+    expect(await queueReasonRows(seeded.issueId)).toEqual([
+      { commentId: posted.body.id, targetRunId: null, reason: "no_active_run", errorCode: null },
+    ]);
+  });
+
+  it("records no queue reason for an explicit queue or the assignee's own narration", async () => {
+    const seeded = await seedActiveRun();
+    await seedDispatchIdentity(seeded);
+    keepRunAlive(seeded.runId);
+    steerNativeSessionMock.mockResolvedValue({ turnId: "turn-delivery" });
+    const agentRunId = await seedAgentAuthoredRun(seeded);
+
+    const held = await request(app(seeded.companyId))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Hold this for the next turn", deliver: "queue" })
+      .expect(201);
+    expect(held.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "not_requested" });
+    const narration = await request(app(seeded.companyId, { agentId: seeded.agentId, runId: agentRunId }))
+      .post(`/api/issues/${seeded.issueId}/comments`)
+      .send({ body: "Status update from the run" })
+      .expect(201);
+    expect(narration.body).toMatchObject({ deliveredAs: "queued", steeringUnavailable: "board_only" });
+
+    expect(await queueReasonRows(seeded.issueId)).toEqual([]);
   });
 
   function registerLiveSteerTarget(

@@ -757,6 +757,32 @@ describe("OMP RPC steering session", () => {
     void session.snapshot().then((value) => expect(value.activeTurnId).toBeNull());
   });
 
+  it("signals a turn-active waiter once, immediately when a turn is already active, and never after close", async () => {
+    const session = createOmpRpcSteerSession();
+    const beforeTurn = vi.fn();
+    const cancelled = vi.fn();
+    session.onceTurnActive(beforeTurn);
+    session.onceTurnActive(cancelled)();
+    session.observeFrame({ type: "agent_start" });
+    session.observeFrame({ type: "turn_start" });
+    expect(beforeTurn).toHaveBeenCalledTimes(1);
+
+    const duringTurn = vi.fn();
+    session.onceTurnActive(duringTurn);
+    expect(duringTurn).not.toHaveBeenCalled();
+    await Promise.resolve();
+    expect(duringTurn).toHaveBeenCalledTimes(1);
+
+    session.observeFrame({ type: "agent_end", isTerminal: true });
+    const afterClose = vi.fn();
+    session.onceTurnActive(afterClose);
+    session.close();
+    session.observeFrame({ type: "turn_start" });
+    expect(afterClose).not.toHaveBeenCalled();
+    expect(cancelled).not.toHaveBeenCalled();
+    expect(beforeTurn).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects a steer for a turn other than the active one", async () => {
     const session = createOmpRpcSteerSession();
     session.setWriter(async () => {});

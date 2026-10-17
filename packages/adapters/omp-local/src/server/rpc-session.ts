@@ -170,6 +170,7 @@ export interface OmpRpcSteerSession {
   close(): void;
   capabilities(): Promise<{ steering: boolean }>;
   snapshot(): Promise<{ activeTurnId: string | null }>;
+  onceTurnActive(listener: () => void): () => void;
   steer(input: {
     turnId: string;
     message: { role: "user"; text: string };
@@ -191,6 +192,7 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
   let closed = false;
   let activeTurnId: string | null = null;
   const pending = new Map<string, PendingAck>();
+  const turnStartListeners = new Set<() => void>();
 
   const failAll = (error: Error) => {
     for (const entry of pending.values()) {
@@ -210,7 +212,16 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
     observeFrame(frame) {
       const type = typeof frame.type === "string" ? frame.type : "";
       if (type === "agent_start" || type === "turn_start") {
-        activeTurnId ??= `omp-rpc-turn:${randomUUID()}`;
+        if (activeTurnId !== null || closed) return;
+        activeTurnId = `omp-rpc-turn:${randomUUID()}`;
+        const listeners = [...turnStartListeners];
+        turnStartListeners.clear();
+        for (const listener of listeners) {
+          try {
+            listener();
+          } catch {
+          }
+        }
         return;
       }
       if (type === "agent_end" && frame.isTerminal !== false) {
@@ -244,6 +255,7 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
       closed = true;
       writer = null;
       activeTurnId = null;
+      turnStartListeners.clear();
       failAll(new Error("omp_rpc_session_closed"));
     },
     async capabilities() {
@@ -251,6 +263,22 @@ export function createOmpRpcSteerSession(): OmpRpcSteerSession {
     },
     async snapshot() {
       return { activeTurnId };
+    },
+    onceTurnActive(listener) {
+      if (closed) return () => undefined;
+      if (activeTurnId !== null) {
+        let cancelled = false;
+        queueMicrotask(() => {
+          if (!cancelled && !closed) listener();
+        });
+        return () => {
+          cancelled = true;
+        };
+      }
+      turnStartListeners.add(listener);
+      return () => {
+        turnStartListeners.delete(listener);
+      };
     },
     async steer(input) {
       if (closed || !writer) {

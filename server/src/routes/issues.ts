@@ -1,5 +1,6 @@
 import { parseObject } from "../adapters/utils.js";
 import { enqueueFastResponse } from "../services/fast-responses.js";
+import { deferUntilAdapterTurnActive } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
 import { hasRequiredWorkspaceRecovery, LEGACY_WORKSPACE_RECOVERY_SCHEMA } from "../services/workspace-restore-recovery-state.js";
 import { monitorPoliciesEqual, applyActorMonitorScheduledBy, assertCanManageIssueMonitor, summarizeIssueMonitor } from "../services/issue-monitors.js";
 import type { IssuePrivacyConstraints } from "@tickernelz/paperclip-pro-shared";
@@ -18098,6 +18099,29 @@ export function issueRoutes(
     boardUserId: string | null;
     wakeDispatch: Promise<unknown>;
   }): Promise<IssueCommentDelivery> {
+    const queued = async (
+      steeringUnavailable: IssueCommentDeliveryReason,
+      detail: { targetRunId?: string; errorCode?: string | null } = {},
+    ): Promise<IssueCommentDelivery> => {
+      if (steeringUnavailable !== "not_requested") {
+        try {
+          await logQueuedCommentQueued({
+            issue: input.issue,
+            actor: input.actor,
+            commentId: input.commentId,
+            targetRunId: detail.targetRunId ?? null,
+            reason: steeringUnavailable,
+            errorCode: detail.errorCode ?? null,
+          });
+        } catch (err) {
+          logger.warn(
+            { err, issueId: input.issue.id, commentId: input.commentId, reason: steeringUnavailable },
+            "failed to record the queue reason for a posted comment",
+          );
+        }
+      }
+      return { deliveredAs: "queued", steeringUnavailable };
+    };
     const effective =
       input.requested ??
       (await instanceSettings.getGeneral()).defaultMessageDelivery;
@@ -18105,7 +18129,7 @@ export function issueRoutes(
       return { deliveredAs: "queued", steeringUnavailable: "not_requested" };
     }
     if (input.actor.actorType !== "agent" && !input.boardUserId) {
-      return { deliveredAs: "queued", steeringUnavailable: "board_only" };
+      return queued("board_only");
     }
     if (
       input.actor.actorType === "agent" &&
@@ -18121,7 +18145,7 @@ export function issueRoutes(
         );
         return false;
       });
-      if (!maySteer) return { deliveredAs: "queued", steeringUnavailable: "conversation_order" };
+      if (!maySteer) return queued("conversation_order");
     }
     try {
       await input.wakeDispatch;
@@ -18133,14 +18157,11 @@ export function issueRoutes(
     }
     const resolved = await resolveQueuedSteeringTarget(input);
     if (resolved.kind === "unavailable") {
-      return { deliveredAs: "queued", steeringUnavailable: resolved.reason };
+      return queued(resolved.reason);
     }
     const target = resolved.kind === "target" ? resolved.target : null;
     if (!target) {
-      return {
-        deliveredAs: "queued",
-        steeringUnavailable: input.requested === "steer" ? "no_active_run" : "not_requested",
-      };
+      return queued(input.requested === "steer" ? "no_active_run" : "not_requested");
     }
     if (input.actor.actorType === "agent") {
       const blocked = await agentSteeringBlock({
@@ -18149,7 +18170,7 @@ export function issueRoutes(
         actorAgentId: input.actor.agentId ?? null,
         targetRunId: target.targetRunId,
       });
-      if (blocked) return { deliveredAs: "queued", steeringUnavailable: blocked };
+      if (blocked) return queued(blocked, { targetRunId: target.targetRunId });
     }
     let steered: QueuedCommentSteerReceipt;
     try {
@@ -18161,10 +18182,17 @@ export function issueRoutes(
         targetIsServerResolved: true,
       });
     } catch (error) {
-      return {
-        deliveredAs: "queued",
-        steeringUnavailable: steeringUnavailableFromError(error),
-      };
+      if (steeringErrorCode(error) === "steering_stale_turn") {
+        deferUntilAdapterTurnActive(target.targetRunId, async () => {
+          const issue = await svc.getById(input.issue.id);
+          if (!issue || issue.companyId !== input.issue.companyId) return;
+          await resolveMessageDeliveryDisposition({ ...input, issue, wakeDispatch: Promise.resolve() });
+        });
+      }
+      return queued(steeringUnavailableFromError(error), {
+        targetRunId: target.targetRunId,
+        errorCode: steeringErrorCode(error),
+      });
     }
     try {
       await logQueuedCommentSteered({
@@ -18200,6 +18228,7 @@ export function issueRoutes(
     if (actor.actorType !== "user") return false;
     if (!["accepted", "answered", "rejected"].includes(interaction.status)) return false;
     let steered: { targetRunId: string; receipt: QueuedCommentSteerReceipt } | null = null;
+    let targetRunId: string | null = null;
     const issue = await svc.getById(input.issueId).catch(() => null);
     if (!issue?.assigneeAgentId) return false;
     try {
@@ -18208,6 +18237,7 @@ export function issueRoutes(
       if (issue.conversationAgentId && (await conversationMessageWaiting(issue, null))) return false;
       const resolved = await resolveQueuedSteeringTarget({ issue, commentId: interaction.id, actor });
       if (resolved.kind !== "target") return false;
+      targetRunId = resolved.target.targetRunId;
       steered = {
         targetRunId: resolved.target.targetRunId,
         receipt: await steerQueuedCommentWithRetry({
@@ -18219,6 +18249,22 @@ export function issueRoutes(
         }),
       };
     } catch (err) {
+      if (targetRunId && steeringErrorCode(err) === "steering_stale_turn") {
+        deferUntilAdapterTurnActive(targetRunId, async () => {
+          const [current] = await db
+            .select()
+            .from(issueThreadInteractions)
+            .where(
+              and(
+                eq(issueThreadInteractions.id, interaction.id),
+                eq(issueThreadInteractions.companyId, interaction.companyId),
+              ),
+            )
+            .limit(1);
+          if (!current || current.issueId !== input.issueId) return;
+          await steerInteractionResponse({ ...input, interaction: current });
+        });
+      }
       logger.warn(
         { err, issueId: issue.id, interactionId: interaction.id, code: steeringErrorCode(err) },
         "interaction response stays queued because steering was refused",
@@ -18421,6 +18467,33 @@ export function issueRoutes(
         targetRunId: input.targetRunId,
         turnId: input.turnId,
         duplicate: input.duplicate,
+      },
+    });
+  }
+
+  async function logQueuedCommentQueued(input: {
+    issue: { id: string; companyId: string };
+    actor: QueueActor;
+    commentId: string;
+    targetRunId: string | null;
+    reason: IssueCommentDeliveryReason;
+    errorCode: string | null;
+  }) {
+    await logActivity(db, {
+      companyId: input.issue.companyId,
+      actorType: input.actor.actorType,
+      actorId: input.actor.actorId,
+      agentId: input.actor.agentId,
+      runId: input.actor.runId,
+      agentApiKeyId: input.actor.agentApiKeyId,
+      action: "issue.queued_comment_queued",
+      entityType: "issue",
+      entityId: input.issue.id,
+      details: {
+        commentId: input.commentId,
+        targetRunId: input.targetRunId,
+        reason: input.reason,
+        errorCode: input.errorCode,
       },
     });
   }
