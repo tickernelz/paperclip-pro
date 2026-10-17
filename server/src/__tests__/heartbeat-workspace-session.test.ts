@@ -2417,6 +2417,7 @@ function sessionParamsWithConfigMetadata(
     __paperclipConfigCategories: metadata.categories,
     __paperclipConfigCategoryFingerprints: metadata.categoryFingerprints,
     __paperclipAdapterConfigKeyFingerprints: metadata.adapterConfigKeyFingerprints,
+    __paperclipConfigResumeNeutralCategoryFingerprints: metadata.resumeNeutralCategoryFingerprints,
   };
 }
 
@@ -2845,6 +2846,191 @@ describe("effective run session config freshness", () => {
 
       expect(decision.reset).toBe(true);
       expect(decision.changedCategories).toEqual(["instructions"]);
+    });
+
+    describe("a new agent config revision", () => {
+      type MetadataInput = Partial<Parameters<typeof buildEffectiveRunSessionConfigMetadata>[0]>;
+      const revision = (id: string, changedKeys: string[], configRevisionAt: string) => ({
+        id,
+        changedKeys,
+        configRevisionAt,
+      });
+      const skill = (key: string, currentVersionId: string) => ({
+        key,
+        runtimeName: key,
+        source: `/tmp/paperclip/runtime-skills/${key}`,
+        versionId: null,
+        currentVersionId,
+        sourceStatus: "available",
+        missingDetail: null,
+      });
+
+      async function revisionEdit(input: {
+        adapterType: string;
+        first?: MetadataInput;
+        next?: MetadataInput;
+        legacySession?: boolean;
+      }) {
+        const base = await buildSessionConfigMetadata({
+          adapterType: input.adapterType,
+          effectiveAdapterConfig: ompConfig(),
+          agentConfigRevision: revision("revision-1", ["adapterConfig"], "2026-10-16T00:00:00.000Z"),
+          ...input.first,
+        });
+        const next = await buildSessionConfigMetadata({
+          adapterType: input.adapterType,
+          effectiveAdapterConfig: ompConfig(),
+          agentConfigRevision: revision("revision-2", ["adapterConfig"], "2026-10-17T00:00:00.000Z"),
+          ...input.next,
+        });
+        const taskSessionParams: Record<string, unknown> = sessionParamsWithConfigMetadata(
+          base,
+          "sub2api-claude/claude-opus-5-5",
+        );
+        if (input.legacySession) delete taskSessionParams.__paperclipConfigResumeNeutralCategoryFingerprints;
+        return resolveTaskSessionConfigFreshness({
+          hasTaskSession: true,
+          adapterType: input.adapterType,
+          configuredModel: "sub2api-claude/claude-opus-5-5",
+          taskSessionParams,
+          configMetadata: next,
+        });
+      }
+
+      it("resumes an omp_local session when a skill sync writes a new config revision", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          first: {
+            effectiveAdapterConfig: ompConfig({ paperclipSkillSync: { desiredSkills: ["paperclip"] } }),
+            runtimeSkills: [skill("paperclip", "skill-version-1")],
+          },
+          next: {
+            effectiveAdapterConfig: ompConfig({ paperclipSkillSync: { desiredSkills: ["paperclip", "reviewer"] } }),
+            runtimeSkills: [skill("paperclip", "skill-version-1"), skill("reviewer", "skill-version-1")],
+          },
+        });
+
+        expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["adapter", "runtimeSkills"] });
+      });
+
+      it("resumes an omp_local session when a new config revision changes only heartbeat scheduling", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          first: { agentRuntimeConfig: { heartbeat: { enabled: true, intervalSec: 300 } } },
+          next: {
+            agentRuntimeConfig: { heartbeat: { enabled: true, intervalSec: 3600, maxConcurrentRuns: 2 } },
+            agentConfigRevision: revision("revision-2", ["runtimeConfig"], "2026-10-17T00:00:00.000Z"),
+          },
+        });
+
+        expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["adapter", "agentRuntimeConfig"] });
+      });
+
+      it("still resets an omp_local session when a new config revision changes a model-bearing setting", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          next: { effectiveAdapterConfig: ompConfig({ smolModel: "vendor/smol" }) },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter", "adapterConfig"]);
+        expect(decision.reasons).toEqual([
+          "effective run configuration changed: adapter, adapter config (smolModel)",
+        ]);
+      });
+
+      it("still resets an omp_local session when a new config revision changes the AI connection binding", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          first: { agentRuntimeConfig: { heartbeat: { enabled: true }, aiConnection: { mode: "router", connectionId: "pool-1" } } },
+          next: {
+            agentRuntimeConfig: { heartbeat: { enabled: true }, aiConnection: { mode: "router", connectionId: "pool-2" } },
+            agentConfigRevision: revision("revision-2", ["runtimeConfig"], "2026-10-17T00:00:00.000Z"),
+          },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter", "agentRuntimeConfig"]);
+      });
+
+      it("still resets an omp_local session when a new config revision changes a runtime setting other than heartbeat", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          first: { agentRuntimeConfig: { heartbeat: { enabled: true } } },
+          next: {
+            agentRuntimeConfig: { heartbeat: { enabled: true }, debug: { providerTrace: "raw" } },
+            agentConfigRevision: revision("revision-2", ["runtimeConfig"], "2026-10-17T00:00:00.000Z"),
+          },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter", "agentRuntimeConfig"]);
+      });
+
+      it("still resets an omp_local session when a new config revision changes its secrets", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          next: {
+            secretManifest: [
+              {
+                configPath: "env.OPENAI_API_KEY",
+                envKey: "OPENAI_API_KEY",
+                secretId: "secret-1",
+                bindingId: "binding-1",
+                secretKey: "openai-api-key",
+                version: 8,
+                provider: "local_encrypted",
+                outcome: "success",
+              },
+            ],
+          },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter", "secrets"]);
+      });
+
+      it("still resets an omp_local session when a new config revision changes its environment", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          next: {
+            environment: {
+              selectionSource: "default",
+              selectedEnvironmentId: "environment-2",
+              selectedEnvironment: { id: "environment-2", driver: "local", configRevisionAt: "2026-10-17T00:00:00.000Z" },
+            },
+            environmentEnv: { ENVIRONMENT_FLAG: "disabled" },
+          },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter", "environment", "envBindings"]);
+      });
+
+      it("still resets an omp_local session when its agent identity key changes", async () => {
+        const decision = await revisionEdit({
+          adapterType: "omp_local",
+          first: { agentIdentityKeyId: "identity-key-1" },
+          next: { agentIdentityKeyId: "identity-key-2" },
+        });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter"]);
+      });
+
+      it("resets an omp_local session stored before revision-neutral fingerprints existed", async () => {
+        const decision = await revisionEdit({ adapterType: "omp_local", legacySession: true });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter"]);
+      });
+
+      it("keeps resetting claude_local sessions when only the config revision changes", async () => {
+        const decision = await revisionEdit({ adapterType: "claude_local" });
+
+        expect(decision.reset).toBe(true);
+        expect(decision.changedCategories).toEqual(["adapter"]);
+      });
     });
 
     it("names the adapter config key that changed", async () => {

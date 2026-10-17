@@ -2247,6 +2247,19 @@ const SESSION_CONFIG_RESUME_FINGERPRINT_KEY =
 const SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY =
   "__paperclipAdapterConfigKeyFingerprints";
 
+const SESSION_CONFIG_RESUME_NEUTRAL_CATEGORY_FINGERPRINTS_KEY =
+  "__paperclipConfigResumeNeutralCategoryFingerprints";
+
+const RESUME_NEUTRALIZED_SESSION_CONFIG_CATEGORIES = [
+  "adapter",
+  "agentRuntimeConfig",
+] as const satisfies readonly EffectiveRunSessionConfigCategory[];
+
+type ResumeNeutralizedSessionConfigCategory =
+  (typeof RESUME_NEUTRALIZED_SESSION_CONFIG_CATEGORIES)[number];
+
+const SCHEDULING_AGENT_RUNTIME_CONFIG_KEYS = ["heartbeat"] as const;
+
 const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
 const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
@@ -2337,6 +2350,7 @@ const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
   SESSION_CONFIG_CATEGORY_FINGERPRINTS_KEY,
   SESSION_CONFIG_RESUME_FINGERPRINT_KEY,
   SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY,
+  SESSION_CONFIG_RESUME_NEUTRAL_CATEGORY_FINGERPRINTS_KEY,
 ]);
 
 const WORKSPACE_CONFIG_FINGERPRINT_METADATA_KEY = "configFingerprint";
@@ -2380,6 +2394,7 @@ export type EffectiveRunSessionConfigMetadata = {
   resumeFingerprint: string;
   /** Adapter config key to its canonical digest. */
   adapterConfigKeyFingerprints: Record<string, string>;
+  resumeNeutralCategoryFingerprints: Record<ResumeNeutralizedSessionConfigCategory, string>;
   fingerprints: EffectiveRunConfigFingerprints;
 };
 
@@ -2731,6 +2746,9 @@ export function readConfigFingerprintFromSessionParams(
     ),
     adapterConfigKeyFingerprints: parseStoredKeyFingerprints(
       sessionParams[SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY],
+    ),
+    resumeNeutralCategoryFingerprints: parseStoredKeyFingerprints(
+      sessionParams[SESSION_CONFIG_RESUME_NEUTRAL_CATEGORY_FINGERPRINTS_KEY],
     ),
     resumeFingerprint: readNonEmptyString(
       sessionParams[SESSION_CONFIG_RESUME_FINGERPRINT_KEY],
@@ -3165,6 +3183,19 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
     subcategories: Object.keys(adapterConfigCategoryValue).sort(),
     secretManifest,
   });
+  const adapterWithoutRevision: Record<string, unknown> = { ...categoryValues.adapter };
+  delete adapterWithoutRevision.agentConfigRevision;
+  const runtimeConfigWithoutScheduling = { ...parseObject(input.agentRuntimeConfig) };
+  for (const key of SCHEDULING_AGENT_RUNTIME_CONFIG_KEYS) delete runtimeConfigWithoutScheduling[key];
+  const resumeNeutralCategoryFingerprints = createEffectiveRunConfigSubcategoryFingerprints({
+    category: "session",
+    value: {
+      adapter: adapterWithoutRevision,
+      agentRuntimeConfig: runtimeConfigWithoutScheduling,
+    },
+    subcategories: RESUME_NEUTRALIZED_SESSION_CONFIG_CATEGORIES,
+    secretManifest,
+  });
   return {
     version: EFFECTIVE_RUN_CONFIG_FINGERPRINT_VERSION,
     fingerprint: fingerprints.sessionFingerprint.fingerprint,
@@ -3172,6 +3203,7 @@ export async function buildEffectiveRunSessionConfigMetadata(input: {
     categoryFingerprints,
     resumeFingerprint,
     adapterConfigKeyFingerprints,
+    resumeNeutralCategoryFingerprints,
     fingerprints,
   };
 }
@@ -3441,6 +3473,8 @@ export function attachPaperclipSessionMetadataToSessionParams(
     next[SESSION_CONFIG_RESUME_FINGERPRINT_KEY] = configMetadata.resumeFingerprint;
     next[SESSION_CONFIG_ADAPTER_CONFIG_KEY_FINGERPRINTS_KEY] =
       configMetadata.adapterConfigKeyFingerprints;
+    next[SESSION_CONFIG_RESUME_NEUTRAL_CATEGORY_FINGERPRINTS_KEY] =
+      configMetadata.resumeNeutralCategoryFingerprints;
   }
   return next;
 }
@@ -3495,13 +3529,19 @@ function sessionCanResumeAcross(input: {
   changedCategories: readonly EffectiveRunSessionConfigCategory[];
   storedResumeFingerprint: string | null;
   nextResumeFingerprint: string;
+  storedResumeNeutralCategoryFingerprints: Partial<Record<EffectiveRunSessionConfigCategory, string>>;
+  nextResumeNeutralCategoryFingerprints: Partial<Record<EffectiveRunSessionConfigCategory, string>>;
 }) {
   if (!input.processLossContinuation) {
     return (
       input.adapterType != null &&
       PROMPT_REAPPLIED_ON_RESUME_ADAPTER_TYPES.has(input.adapterType) &&
       input.changedCategories.every(
-        (category) => RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true,
+        (category) =>
+          RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true ||
+          (input.storedResumeNeutralCategoryFingerprints[category] != null &&
+            input.storedResumeNeutralCategoryFingerprints[category] ===
+              input.nextResumeNeutralCategoryFingerprints[category]),
       )
     );
   }
@@ -3588,6 +3628,8 @@ export function resolveTaskSessionConfigFreshness(input: {
           changedCategories,
           storedResumeFingerprint: storedConfig.resumeFingerprint,
           nextResumeFingerprint: input.configMetadata.resumeFingerprint,
+          storedResumeNeutralCategoryFingerprints: storedConfig.resumeNeutralCategoryFingerprints,
+          nextResumeNeutralCategoryFingerprints: input.configMetadata.resumeNeutralCategoryFingerprints,
         })
       ) {
         const categories = describeEffectiveRunConfigCategories(changedCategories);
