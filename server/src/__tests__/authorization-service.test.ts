@@ -1126,7 +1126,7 @@ describeEmbeddedPostgres("authorization service", () => {
     const project = await createProject(db, company.id, "Allowed");
     const targetAgent = await createAgent(db, company.id);
     const actorAgent = await createAgent(db, company.id, {
-      role: "ceo",
+      role: "cto",
       permissions: {
         trustPreset: LOW_TRUST_REVIEW_PRESET,
         authorizationPolicy: {
@@ -1973,7 +1973,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it("preserves legacy CEO agent creator authority", async () => {
+  it("grants agent creation to a CEO agent as owner-equivalent authority", async () => {
     const company = await createCompany(db, "Legacy");
     const actorAgent = await createAgent(db, company.id, { role: "ceo" });
 
@@ -1985,7 +1985,110 @@ describeEmbeddedPostgres("authorization service", () => {
 
     expect(decision).toMatchObject({
       allowed: true,
-      reason: "allow_legacy_agent_creator",
+      reason: "allow_agent_role_ceo",
+    });
+  });
+
+  describe("owner-equivalent CEO agents", () => {
+    async function ceoFixture(status = "idle") {
+      const company = await createCompany(db, "OwnerCeo");
+      const otherCompany = await createCompany(db, "OwnerCeoOther");
+      const ceo = await createAgent(db, company.id, { role: " CEO " });
+      await db.update(agents).set({ status }).where(eq(agents.id, ceo.id));
+      const engineer = await createAgent(db, company.id, { role: "engineer" });
+      const target = await createAgent(db, company.id);
+      const foreignTarget = await createAgent(db, otherCompany.id);
+      const userId = `viewer-${randomUUID()}`;
+      await db.insert(companyMemberships).values({
+        companyId: company.id, principalType: "user", principalId: userId, membershipRole: "viewer", status: "active",
+      });
+      const actorFor = (agentId: string, extra: Partial<AuthorizationActor> = {}): AuthorizationActor => ({
+        type: "agent", agentId, companyId: company.id, source: "agent_jwt", onBehalfOfUserId: userId, ...extra,
+      });
+      return { company, otherCompany, ceo, engineer, target, foreignTarget, actorFor };
+    }
+
+    it("allows every action inside its own company without the responsible-user intersection", async () => {
+      const f = await ceoFixture();
+      const authz = authorizationService(db);
+      for (const action of ["agent_config:read", "agent_instructions:update", "agents:configure", "skill_config:update", "secrets:read", "decision_queue:manage", "users:manage_permissions"] as const) {
+        const actor = f.actorFor(f.ceo.id);
+        const decision = await authz.decide({
+          actor,
+          action,
+          resource: { type: "agent", companyId: f.company.id, agentId: f.target.id },
+          scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+        });
+        expect(decision, action).toMatchObject({ allowed: true, reason: "allow_agent_role_ceo" });
+        expect(actor.exercisedAgentAuthority).toMatchObject({ capability: "company:owner", reason: "agent_role_ceo", companyId: f.company.id });
+      }
+    });
+
+    it("keeps today's denial for a non-CEO agent on the same resource", async () => {
+      const f = await ceoFixture();
+      const ceoDecision = await authorizationService(db).decide({
+        actor: f.actorFor(f.ceo.id),
+        action: "agent_instructions:update",
+        resource: { type: "agent", companyId: f.company.id, agentId: f.target.id },
+        scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+      });
+      expect(ceoDecision).toMatchObject({ allowed: true, reason: "allow_agent_role_ceo" });
+      const decision = await authorizationService(db).decide({
+        actor: f.actorFor(f.engineer.id),
+        action: "agent_instructions:update",
+        resource: { type: "agent", companyId: f.company.id, agentId: f.target.id },
+        scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+      });
+      expect(decision.allowed).toBe(false);
+    });
+
+    it("denies a resource in another company", async () => {
+      const f = await ceoFixture();
+      await expect(authorizationService(db).decide({
+        actor: f.actorFor(f.ceo.id),
+        action: "agent_config:read",
+        resource: { type: "agent", companyId: f.company.id, agentId: f.target.id },
+      })).resolves.toMatchObject({ allowed: true, reason: "allow_agent_role_ceo" });
+      const decision = await authorizationService(db).decide({
+        actor: f.actorFor(f.ceo.id),
+        action: "agent_config:read",
+        resource: { type: "agent", companyId: f.otherCompany.id, agentId: f.foreignTarget.id },
+      });
+      expect(decision).toMatchObject({ allowed: false, reason: "deny_company_boundary" });
+    });
+
+    it("keeps scoped-key and inactive CEO limits", async () => {
+      const f = await ceoFixture();
+      const authz = authorizationService(db);
+      const resource = { type: "agent" as const, companyId: f.company.id, agentId: f.target.id };
+      await expect(authz.decide({
+        actor: f.actorFor(f.ceo.id),
+        action: "agent_instructions:update",
+        resource,
+        scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+      })).resolves.toMatchObject({ allowed: true, reason: "allow_agent_role_ceo" });
+      const skillTest = await authz.decide({
+        actor: f.actorFor(f.ceo.id, { keyScope: { kind: "skill_test", issueId: randomUUID() } }),
+        action: "agent_instructions:update",
+        resource,
+        scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+      });
+      expect(skillTest.allowed).toBe(false);
+      const taskBridge = await authz.decide({
+        actor: f.actorFor(f.ceo.id, { keyId: randomUUID(), keyScope: { kind: "task_bridge" } }),
+        action: "agent_instructions:update",
+        resource,
+        scope: { targetAgentId: f.target.id, requiresChangeGrant: true },
+      });
+      expect(taskBridge.allowed).toBe(false);
+      const paused = await ceoFixture("paused");
+      const pausedDecision = await authz.decide({
+        actor: paused.actorFor(paused.ceo.id),
+        action: "agent_instructions:update",
+        resource: { type: "agent", companyId: paused.company.id, agentId: paused.target.id },
+        scope: { targetAgentId: paused.target.id, requiresChangeGrant: true },
+      });
+      expect(pausedDecision.reason).not.toBe("allow_agent_role_ceo");
     });
   });
 

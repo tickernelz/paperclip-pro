@@ -192,6 +192,8 @@ function companyACeoActor() {
   return {
     type: "agent",
     agentId: ceoAgentId,
+    agentRole: "ceo",
+    agentStatus: "idle",
     companyId: companyAId,
     source: "agent_key",
     runId: "run-1",
@@ -345,7 +347,7 @@ describe("company route cross-company authorization", () => {
     assertNoTargetMutationSideEffects();
   });
 
-  it("allows a same-company CEO to use CEO-safe company routes without allowing board-only lifecycle routes", async () => {
+  it("allows a same-company CEO owner-equivalent access to company routes, including lifecycle routes", async () => {
     const app = await createApp(companyACeoActor());
 
     await request(app).get(`/api/companies/${companyAId}`).expect(200);
@@ -356,12 +358,10 @@ describe("company route cross-company authorization", () => {
     await request(app).post(`/api/companies/${companyAId}/imports/preview`).send(importRequest(companyAId)).expect(200);
     await request(app).post(`/api/companies/${companyAId}/imports/apply`).send(importRequest(companyAId)).expect(200);
 
-    const archive = await request(app).post(`/api/companies/${companyAId}/archive`).send({});
-    expect(archive.status).toBe(403);
-    expect(archive.body.error).toContain("Board access required");
-    const remove = await request(app).delete(`/api/companies/${companyAId}`);
-    expect(remove.status).toBe(403);
-    expect(remove.body.error).toContain("Board access required");
+    await request(app).post(`/api/companies/${companyAId}/archive`).send({}).expect(200);
+    await request(app).delete(`/api/companies/${companyAId}`).expect(200);
+    const crossCompany = await request(app).post(`/api/companies/${companyBId}/archive`).send({});
+    expect(crossCompany.status).toBe(403);
   });
 
   it("covers board actor access for non-member, viewer, active member, local trusted board, and instance admin without target membership", async () => {

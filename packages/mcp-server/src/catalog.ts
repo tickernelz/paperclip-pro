@@ -58,7 +58,7 @@ function listingKey(
 ): string {
   const base = `${[...toolsets].sort().join(",")}|${management ? "management" : "agent"}|${annotations ? "annotated" : "lean"}`;
   if (!management || !surface) return base;
-  return `${base}|${[...surface.capabilities].sort().join(",")}|${[...surface.permissionKeys].sort().join(",")}`;
+  return `${base}|${surface.companyOwner ? "owner" : "member"}|${[...surface.capabilities].sort().join(",")}|${[...surface.permissionKeys].sort().join(",")}`;
 }
 
 function toListingEntries(definitions: ReadonlyArray<ToolDefinition>, annotations: boolean) {

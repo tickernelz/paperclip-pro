@@ -595,7 +595,7 @@ function routeSourceSlices(): RouteSlice[] {
   return slices;
 }
 
-const BOARD_GUARDS = /^\s*(await\s+)?(assertBoard|assertInstanceAdmin|assertBoardOrgAccess)\s*\(/;
+const BOARD_GUARDS = /^\s*(await\s+)?(assertBoard|assertInstanceAdmin|assertInstanceAdminUser|assertBoardOrgAccess)\s*\(/;
 const ANY_GUARD = /\b(assert[A-Z]\w*|require[A-Z]\w*|hasCompanyAccess|getActorInfo)\s*\(/g;
 
 export function routeGuardEvidence(): Map<string, RouteGuardEvidence> {

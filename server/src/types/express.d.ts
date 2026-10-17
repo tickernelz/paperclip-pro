@@ -16,6 +16,7 @@ declare global {
         userEmail?: string | null;
         agentId?: string;
         agentRole?: string | null;
+        agentStatus?: string | null;
         agentPermissions?: Record<string, unknown> | null;
         companyId?: string;
         exercisedAgentAuthority?: {

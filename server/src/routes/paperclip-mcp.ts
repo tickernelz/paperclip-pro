@@ -1,7 +1,7 @@
 import { Router, type Request } from "express";
 import { agents, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
-import { agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
+import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
 import {
   OpenwaMcpToolError,
   paperclipToolCatalog,
@@ -76,7 +76,7 @@ export function paperclipMcpRoutes(db: Db) {
     }
 
     const [agent] = await db
-      .select({ role: agents.role })
+      .select({ role: agents.role, status: agents.status })
       .from(agents)
       .where(and(eq(agents.id, agentId), eq(agents.companyId, companyId)))
       .limit(1);
@@ -103,7 +103,17 @@ export function paperclipMcpRoutes(db: Db) {
       return { sub: agentId, company_id: companyId, run_id: signedRunId, responsible_user_id: responsibleUserId };
     };
     const { definitions, listing } = paperclipToolCatalog(client, toolsets, management, {
-      boardSurface: { capabilities, permissionKeys: new Set(grants.map((row) => row.permissionKey)) },
+      boardSurface: {
+        capabilities,
+        permissionKeys: new Set(grants.map((row) => row.permissionKey)),
+        companyOwner: isCompanyOwnerAgent({
+          type: "agent",
+          agentId,
+          agentRole: agent?.role ?? null,
+          agentStatus: agent?.status ?? null,
+          keyScope: req.actor.keyScope ?? null,
+        }),
+      },
       runtimeConnections: {
         search: async (input) => connections.search(runClaims(), input.query),
         request: async (input) => connections.request(runClaims(), input.service),

@@ -1,5 +1,6 @@
 import type { Request } from "express";
 import { forbidden } from "../errors.js";
+import { isCompanyOwnerAgentActor } from "./authz.js";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -68,7 +69,7 @@ function collectExecutionWorkspaceConfigCommandPaths(raw: unknown, prefix: strin
 }
 
 export function assertNoAgentHostWorkspaceCommandMutation(req: Request, paths: string[]) {
-  if (req.actor.type !== "agent" || paths.length === 0) return;
+  if (req.actor.type !== "agent" || paths.length === 0 || isCompanyOwnerAgentActor(req)) return;
   throw forbidden(
     `Agent keys cannot modify host-executed workspace commands (${paths.join(", ")}).`,
   );

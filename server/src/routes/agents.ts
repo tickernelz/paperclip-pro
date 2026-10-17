@@ -124,7 +124,7 @@ import { normalizeAgentFallbackModelsConfig } from "../services/model-fallback.j
 import { ONBOARDING_FIRST_TASK_SKILL_KEY, PAPERCLIP_CORE_SKILL_KEYS } from "../services/company-skills.js";
 import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
 import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
-import { assertAuthenticated, assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { assertAuthenticated, assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, buildActorSecretContext, getAccessibleResource, getActorInfo, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";
 import { toCompactIssue } from "./issues.js";
 import { runAdapterLoginStartSpine } from "./adapter-login-route-spine.js";
 import { isLoginCommandSupportedAdapterType } from "../services/login-command.js";
@@ -1947,6 +1947,20 @@ export function agentRoutes(
     return Math.max(AGENT_MIN_MAX_CONCURRENT_RUNS, Math.min(AGENT_MAX_MAX_CONCURRENT_RUNS, Math.floor(configured)));
   }
 
+  function withStoredMaxConcurrentRuns(
+    nextRuntimeConfig: Record<string, unknown>,
+    previousRuntimeConfig: unknown,
+  ): Record<string, unknown> {
+    const nextHeartbeat = asRecord(nextRuntimeConfig.heartbeat);
+    if (nextHeartbeat && hasOwn(nextHeartbeat, "maxConcurrentRuns")) return nextRuntimeConfig;
+    const storedHeartbeat = asRecord(asRecord(previousRuntimeConfig)?.heartbeat);
+    if (!storedHeartbeat || !hasOwn(storedHeartbeat, "maxConcurrentRuns")) return nextRuntimeConfig;
+    return {
+      ...nextRuntimeConfig,
+      heartbeat: { ...(nextHeartbeat ?? {}), maxConcurrentRuns: storedHeartbeat.maxConcurrentRuns },
+    };
+  }
+
   async function assertAgentKeepsMaxConcurrentRuns(
     req: Request,
     target: { id: string; companyId: string },
@@ -1954,7 +1968,7 @@ export function agentRoutes(
     previousRuntimeConfig: unknown,
     surface: "agent.patch" | "agent.config_rollback",
   ): Promise<void> {
-    if (req.actor.type !== "agent") return;
+    if (req.actor.type !== "agent" || isCompanyOwnerAgentActor(req)) return;
     const currentValue = effectiveMaxConcurrentRuns(previousRuntimeConfig);
     const requestedValue = effectiveMaxConcurrentRuns(nextRuntimeConfig);
     if (currentValue === requestedValue) return;
@@ -2586,7 +2600,7 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown> | null | undefined,
     path = "adapterConfig",
   ) {
-    if (req.actor.type !== "agent" || !adapterConfig) return;
+    if (req.actor.type !== "agent" || !adapterConfig || isCompanyOwnerAgentActor(req)) return;
     const changedSensitiveKeys = KNOWN_INSTRUCTIONS_BUNDLE_KEYS
       .filter((key) => adapterConfig[key] !== undefined)
       .map((key) => `${path}.${key}`);
@@ -2614,7 +2628,7 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown>,
     path = "adapterConfig",
   ) {
-    if (req.actor.type === "agent" && ["dotAttachmentAccess", "dotWorkspaceAccess", "dotBindingId"].some(key => hasOwn(adapterConfig, key)))
+    if (req.actor.type === "agent" && !isCompanyOwnerAgentActor(req) && ["dotAttachmentAccess", "dotWorkspaceAccess", "dotBindingId"].some(key => hasOwn(adapterConfig, key)))
       throw forbidden("Only an operator can configure Dot attachment access, workspace access, or pairing.");
     assertNoAgentInstructionsConfigMutation(req, adapterConfig, path);
     assertNoAgentHostWorkspaceCommandMutation(
@@ -2624,7 +2638,7 @@ export function agentRoutes(
   }
 
   function assertNoAgentProcessAdapterMutation(req: Request, adapterType: string, mutatesConfiguration: boolean) {
-    if (req.actor.type !== "agent" || adapterType !== "process" || !mutatesConfiguration) return;
+    if (req.actor.type !== "agent" || adapterType !== "process" || !mutatesConfiguration || isCompanyOwnerAgentActor(req)) return;
     throw forbidden("Agent keys cannot configure host-executed process adapters.");
   }
 
@@ -2675,7 +2689,7 @@ export function agentRoutes(
     adapterConfig: Record<string, unknown>,
     allowPlainCredentials = false,
   ) {
-    if (req.actor.type !== "agent" || !adapterType.endsWith("_local")) return;
+    if (req.actor.type !== "agent" || !adapterType.endsWith("_local") || isCompanyOwnerAgentActor(req)) return;
     const changedKeys = LOCAL_ADAPTER_HOST_COMMAND_KEYS.filter((key) =>
       adapterConfig[key] !== undefined &&
       (key !== "env" || !containsOnlyLocalAdapterCredentialRefs(adapterType, adapterConfig.env, allowPlainCredentials)),
@@ -4792,7 +4806,7 @@ export function agentRoutes(
         res.status(403).json({ error: "Forbidden" });
         return;
       }
-      if (actorAgent.role !== "ceo") {
+      if (!isCompanyOwnerAgentActor(req)) {
         res.status(403).json({ error: "Only CEO can manage permissions" });
         return;
       }
@@ -4846,7 +4860,7 @@ export function agentRoutes(
   });
 
   router.patch("/agents/:id/instructions-path", validate(updateAgentInstructionsPathSchema), async (req, res) => {
-    if (req.actor.type !== "board") {
+    if (req.actor.type !== "board" && !isCompanyOwnerAgentActor(req)) {
       throw forbidden("Only board-authenticated callers can manage instructions path or bundle configuration");
     }
 
@@ -5455,6 +5469,9 @@ export function agentRoutes(
         existing.runtimeConfig,
       );
       requestedRuntimeConfig = req.actor.source === "mcp_oauth" ? { ...existing.runtimeConfig, ...runtimeConfig } : runtimeConfig;
+      if (req.actor.type === "agent" && !isCompanyOwnerAgentActor(req)) {
+        requestedRuntimeConfig = withStoredMaxConcurrentRuns(requestedRuntimeConfig, existing.runtimeConfig);
+      }
       await assertAgentKeepsMaxConcurrentRuns(
         req,
         existing,
@@ -5985,7 +6002,7 @@ export function agentRoutes(
     const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!agent) return;
 
-    if (req.actor.type === "agent") {
+    if (req.actor.type === "agent" && !isCompanyOwnerAgentActor(req)) {
       if (req.actor.agentId !== id) {
         res.status(403).json({ error: "Agent can only invoke itself" });
         return;
@@ -6262,7 +6279,7 @@ export function agentRoutes(
     const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
     if (!agent) return;
 
-    if (req.actor.type === "agent") {
+    if (req.actor.type === "agent" && !isCompanyOwnerAgentActor(req)) {
       if (req.actor.agentId !== id) {
         res.status(403).json({ error: "Agent can only invoke itself" });
         return;

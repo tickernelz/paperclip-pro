@@ -204,6 +204,8 @@ describe("POST /companies/:companyId/openclaw/invite-prompt", () => {
     const app = createApp(
       {
         type: "agent",
+        agentRole: "ceo",
+        agentStatus: "idle",
         agentId: "agent-1",
         companyId: "company-1",
         source: "agent_key",

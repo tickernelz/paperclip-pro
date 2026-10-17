@@ -44,6 +44,7 @@ export const BOARD_ONLY_GUARDS: Readonly<Record<string, true>> = {
   assertIdentityLinkAccess: true,
   assertImportTargetAccess: true,
   assertInstanceAdmin: true,
+  assertInstanceAdminUser: true,
   assertLocalOperator: true,
   assertPluginBridgeScope: true,
   assertToolAppMutationAccess: true,
@@ -53,6 +54,13 @@ export const BOARD_ONLY_GUARDS: Readonly<Record<string, true>> = {
   assertToolsRuntimeManage: true,
   requireBoardUser: true,
   requireBoardUserId: true,
+};
+
+export const OWNER_AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
+  assertBoard: true,
+  assertBoardOrgAccess: true,
+  assertCanManageCompanyMember: true,
+  assertInstanceAdmin: true,
 };
 
 export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
@@ -88,6 +96,7 @@ export function classifiedGuards(): string[] {
 export type BoardSurfaceContext = {
   capabilities: readonly string[];
   permissionKeys: ReadonlySet<string>;
+  companyOwner?: boolean;
 };
 
 const IMPLICIT_MEMBER_PERMISSION_KEYS: ReadonlySet<string> = new Set(
@@ -107,6 +116,11 @@ export function boardToolAdvertised(
   context: BoardSurfaceContext,
 ): boolean {
   if (spec.authority !== "board") return true;
+  if (context.companyOwner) {
+    return !spec.guards.some(
+      (guard) => BOARD_ONLY_GUARDS[guard] === true && OWNER_AGENT_ADMITTING_GUARDS[guard] !== true,
+    );
+  }
   if (spec.authoritySource === "handler") return false;
   if (spec.guards.some((guard) => BOARD_ONLY_GUARDS[guard] === true)) return false;
   if (!spec.guards.some((guard) => AGENT_ADMITTING_GUARDS[guard] === true)) return false;

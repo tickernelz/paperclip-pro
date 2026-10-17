@@ -68,7 +68,7 @@ import {
 import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import type { StorageService } from "../storage/types.js";
-import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, getActorInfo, hasCompanyAccess } from "./authz.js";
+import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, getActorInfo, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";
 import { COMPANY_IMPORT_ROUTE_PATH } from "./company-import-paths.js";
 
 // A company import can arrive one of two ways on the import + preview routes:
@@ -325,8 +325,8 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     companyId: string,
     input: { include?: { agents?: boolean }; agents?: string[] },
   ) {
-    const instanceAdmin = req.actor.type === "board"
-      && (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin === true);
+    const instanceAdmin = isCompanyOwnerAgentActor(req) || (req.actor.type === "board"
+      && (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin === true));
     const includesAgents = input.agents && input.agents.length > 0
       ? true
       : input.include?.agents ?? true;
@@ -372,7 +372,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     if (!actorAgent || actorAgent.companyId !== companyId) {
       throw forbidden("Agent key cannot access another company");
     }
-    if (actorAgent.role !== "ceo") {
+    if (!isCompanyOwnerAgentActor(req)) {
       throw forbidden(`Only CEO agents can manage ${capability}`);
     }
   }
@@ -1244,13 +1244,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     await assertSameCompanyCeoAgentOrBoard(req, companyId, "company settings");
 
     const actor = getActorInfo(req);
-    let body: Record<string, unknown>;
-
-    if (req.actor.type === "agent") {
-      body = updateCompanyBrandingSchema.parse(req.body);
-    } else {
-      body = updateCompanySchema.parse(req.body);
-    }
+    let body: Record<string, unknown> = updateCompanySchema.parse(req.body);
 
     const existingCompany = await svc.getById(companyId);
     if (!existingCompany) {
@@ -1258,18 +1252,21 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
       return;
     }
 
-    if (req.actor.type !== "agent") {
-      if (body.feedbackDataSharingEnabled === true && !existingCompany.feedbackDataSharingEnabled) {
-        body = {
-          ...body,
-          feedbackDataSharingConsentAt: new Date(),
-          feedbackDataSharingConsentByUserId: req.actor.userId ?? "local-board",
-          feedbackDataSharingTermsVersion:
-            typeof body.feedbackDataSharingTermsVersion === "string" && body.feedbackDataSharingTermsVersion.length > 0
-              ? body.feedbackDataSharingTermsVersion
-              : DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
-        };
+    if (body.feedbackDataSharingEnabled === true && !existingCompany.feedbackDataSharingEnabled) {
+      const consentUserId = req.actor.type === "agent" ? req.actor.onBehalfOfUserId?.trim() || null : req.actor.userId ?? "local-board";
+      if (!consentUserId) {
+        res.status(422).json({ error: "Feedback data sharing consent requires a responsible user" });
+        return;
       }
+      body = {
+        ...body,
+        feedbackDataSharingConsentAt: new Date(),
+        feedbackDataSharingConsentByUserId: consentUserId,
+        feedbackDataSharingTermsVersion:
+          typeof body.feedbackDataSharingTermsVersion === "string" && body.feedbackDataSharingTermsVersion.length > 0
+            ? body.feedbackDataSharingTermsVersion
+            : DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
+      };
     }
 
     const transitionsToArchived =

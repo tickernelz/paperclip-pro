@@ -2,6 +2,7 @@ import type { Request, Response } from "express";
 import {
   agentAuthorityReason,
   agentRoleHasAuthority,
+  isCompanyOwnerAgent,
   type AgentAuthorityCapability,
   type SecretBindingTargetType,
 } from "@tickernelz/paperclip-pro-shared";
@@ -34,13 +35,34 @@ export function assertAuthenticated(req: Request) {
   }
 }
 
+export function isCompanyOwnerAgentActor(req: Request): boolean {
+  return isCompanyOwnerAgent(req.actor);
+}
+
+function recordCompanyOwnerAuthority(req: Request) {
+  if (req.agentAuthority || !req.actor.agentId || !req.actor.companyId) return;
+  req.agentAuthority = {
+    capability: "company:owner",
+    reason: "agent_role_ceo",
+    companyId: req.actor.companyId,
+    agentId: req.actor.agentId,
+    runId: req.actor.runId ?? null,
+  };
+}
+
 export function assertBoard(req: Request) {
-  if (req.actor.type !== "board") {
-    throw forbidden("Board access required");
+  if (req.actor.type === "board") return;
+  if (isCompanyOwnerAgent(req.actor)) {
+    recordCompanyOwnerAuthority(req);
+    return;
   }
+  throw forbidden("Board access required");
 }
 
 export function hasBoardOrgAccess(req: Request) {
+  if (isCompanyOwnerAgent(req.actor)) {
+    return true;
+  }
   if (req.actor.type !== "board") {
     return false;
   }
@@ -153,7 +175,7 @@ export function recordAgentAuthority(
 
 export function assertInstanceAdmin(req: Request) {
   assertBoard(req);
-  if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) {
+  if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin || isCompanyOwnerAgent(req.actor)) {
     return;
   }
   throw forbidden("Instance admin access required");
@@ -164,7 +186,7 @@ export function assertCompanyAccess(req: Request, companyId: string) {
   if (req.actor.type === "agent" && req.actor.companyId !== companyId) {
     throw forbidden("Agent key cannot access another company");
   }
-  if (req.actor.type === "agent" && req.actor.onBehalfOfUserId?.trim()) {
+  if (req.actor.type === "agent" && req.actor.onBehalfOfUserId?.trim() && !isCompanyOwnerAgent(req.actor)) {
     const membership = req.actor.onBehalfOfMemberships?.find(
       (item) => item.companyId === companyId && item.status === "active",
     );

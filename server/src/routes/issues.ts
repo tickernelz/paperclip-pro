@@ -298,6 +298,7 @@ import {
   getAccessibleResource,
   getActorInfo,
   hasAgentAuthority,
+  isCompanyOwnerAgentActor,
 } from "./authz.js";
 import {
   assertNoAgentHostWorkspaceCommandMutation,
@@ -3818,7 +3819,7 @@ export function issueRoutes(
     issue: { id: string; identifier?: string | null; companyId: string },
     kind: CrossIssueInfluenceKind,
   ) {
-    if (req.actor.type !== "agent") return true;
+    if (req.actor.type !== "agent" || isCompanyOwnerAgentActor(req)) return true;
     if (!req.actor.agentId || !req.actor.runId)
       throw crossIssueInfluenceRunContextError();
 
@@ -4161,7 +4162,7 @@ export function issueRoutes(
       executionPolicy?: unknown;
     } | null,
   ) {
-    if (req.actor.type !== "agent") return false;
+    if (req.actor.type !== "agent" || isCompanyOwnerAgentActor(req)) return false;
     const resolution = await resolveAgentTrustForIssue(
       {
         agentId: req.actor.agentId,
@@ -5895,7 +5896,7 @@ export function issueRoutes(
     options: { allowVisibleIssueWrite?: boolean } = {},
   ) {
     if (!(await assertIssueReadAllowed(req, res, issue))) return false;
-    if (req.actor.type !== "agent") return true;
+    if (req.actor.type !== "agent" || isCompanyOwnerAgentActor(req)) return true;
     const actorAgentId = req.actor.agentId;
     if (!actorAgentId) {
       res.status(403).json({ error: "Agent authentication required" });
@@ -10654,7 +10655,7 @@ export function issueRoutes(
                 agentId: actor.agentId ?? null,
                 userId: actor.actorType === "user" ? actor.actorId : null,
               },
-              allowBoardOverride: req.actor.type === "board" && req.actor.source !== "mcp_oauth",
+              allowBoardOverride: (req.actor.type === "board" && req.actor.source !== "mcp_oauth") || isCompanyOwnerAgentActor(req),
               commentBody: resolutionNote ?? null,
             });
             Object.assign(updateFields, transition.patch);
@@ -14542,7 +14543,7 @@ export function issueRoutes(
         ...updateFields
       } = req.body;
       if (requestedModelOverride !== undefined) {
-        if (req.actor.type === "agent") {
+        if (req.actor.type === "agent" && !isCompanyOwnerAgentActor(req)) {
           res.status(403).json({
             error: "Agents cannot change the per-task model override",
           });
@@ -14809,7 +14810,7 @@ export function issueRoutes(
           });
           return;
         }
-        if (req.actor.type !== "board") {
+        if (req.actor.type !== "board" && !isCompanyOwnerAgentActor(req)) {
           res.status(403).json({
             error:
               "Only board users can interrupt active runs from issue comments",
@@ -14926,7 +14927,7 @@ export function issueRoutes(
           agentId: actor.agentId ?? null,
           userId: actor.actorType === "user" ? actor.actorId : null,
         },
-        allowBoardOverride: req.actor.type === "board" && req.actor.source !== "mcp_oauth",
+        allowBoardOverride: (req.actor.type === "board" && req.actor.source !== "mcp_oauth") || isCompanyOwnerAgentActor(req),
         commentBody,
         reviewRequest: reviewRequest === undefined ? undefined : reviewRequest,
         monitorExplicitlyUpdated:
@@ -15007,6 +15008,7 @@ export function issueRoutes(
         const owner = descriptor.owner;
         if (
           req.actor.type === "agent" &&
+          !isCompanyOwnerAgentActor(req) &&
           (owner === "board" || "userId" in owner)
         ) {
           throw forbidden(
@@ -15031,6 +15033,7 @@ export function issueRoutes(
             );
           if (
             req.actor.type === "agent" &&
+            !isCompanyOwnerAgentActor(req) &&
             req.actor.agentId !== owner.agentId
           ) {
             throw forbidden(
@@ -20618,7 +20621,7 @@ export function issueRoutes(
       }
 
       if (interruptRequested) {
-        if (req.actor.type !== "board") {
+        if (req.actor.type !== "board" && !isCompanyOwnerAgentActor(req)) {
           res.status(403).json({
             error:
               "Only board users can interrupt active runs from issue comments",

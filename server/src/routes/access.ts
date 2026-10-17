@@ -100,7 +100,7 @@ import {
   collapseDuplicatePendingHumanJoinRequests,
   findReusableHumanJoinRequest,
 } from "../lib/join-request-dedupe.js";
-import { assertAuthenticated, assertCompanyAccess, getActorInfo, recordAgentAuthority } from "./authz.js";
+import { assertAuthenticated, assertCompanyAccess, getActorInfo, isCompanyOwnerAgentActor, recordAgentAuthority } from "./authz.js";
 import {
   AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
   agentRoleHasAuthority,
@@ -1170,6 +1170,14 @@ async function loadCompanyAccessSummary(
   access: ReturnType<typeof accessService>,
   companyId: string,
 ) {
+  if (isCompanyOwnerAgentActor(req)) {
+    return {
+      currentUserRole: "owner" as const,
+      canManageMembers: true,
+      canInviteUsers: true,
+      canApproveJoinRequests: true,
+    };
+  }
   if (req.actor.type !== "board") {
     return {
       currentUserRole: null,
@@ -1273,6 +1281,7 @@ async function resolveActorHumanRole(
   access: ReturnType<typeof accessService>,
   companyId: string,
 ): Promise<HumanCompanyMembershipRole | null> {
+  if (isCompanyOwnerAgentActor(req)) return "owner";
   if (req.actor.type !== "board") return null;
   if (isLocalImplicit(req) || req.actor.isInstanceAdmin) return "owner";
   const userId = req.actor.userId ?? null;
@@ -1294,7 +1303,7 @@ async function getProtectedMemberReason(
   },
 ): Promise<string | null> {
   if (member.principalType !== "user") return "Only human company members can be removed.";
-  if (req.actor.type !== "board") return "Board access is required to remove members.";
+  if (req.actor.type !== "board" && !isCompanyOwnerAgentActor(req)) return "Board access is required to remove members.";
   if (member.principalId === req.actor.userId) return "You cannot remove yourself.";
   const isTargetInstanceAdmin = opts?.instanceAdminUserIds
     ? opts.instanceAdminUserIds.has(member.principalId)
@@ -2674,7 +2683,7 @@ export function accessRoutes(
     next();
   });
 
-  async function assertInstanceAdmin(req: Request) {
+  async function assertInstanceAdminUser(req: Request) {
     if (req.actor.type !== "board") throw unauthorized();
     if (isLocalImplicit(req)) return;
     const allowed = await access.isInstanceAdmin(req.actor.userId);
@@ -3013,6 +3022,10 @@ export function accessRoutes(
     permissionKey: any
   ) {
     assertCompanyAccess(req, companyId);
+    if (isCompanyOwnerAgentActor(req)) {
+      recordAgentAuthority(req, "company:owner", companyId);
+      return;
+    }
     if (req.actor.type === "agent") {
       if (!req.actor.agentId) throw forbidden();
       if (
@@ -3052,7 +3065,7 @@ export function accessRoutes(
       if (!actorAgent || actorAgent.companyId !== companyId) {
         throw forbidden("Agent key cannot access another company");
       }
-      if (actorAgent.role !== "ceo") {
+      if (!isCompanyOwnerAgentActor(req)) {
         throw forbidden("Only CEO agents can generate OpenClaw invite prompts");
       }
       return;
@@ -4149,7 +4162,7 @@ export function accessRoutes(
       .then((rows) => rows[0] ?? null);
     if (!invite) throw notFound("Invite not found");
     if (invite.inviteType === "bootstrap_ceo") {
-      await assertInstanceAdmin(req);
+      await assertInstanceAdminUser(req);
     } else {
       if (!invite.companyId) throw conflict("Invite is missing company scope");
       await assertCompanyPermission(req, invite.companyId, "users:invite");
@@ -4690,7 +4703,7 @@ export function accessRoutes(
   router.post(
     "/admin/users/:userId/promote-instance-admin",
     async (req, res) => {
-      await assertInstanceAdmin(req);
+      await assertInstanceAdminUser(req);
       assertAccessAdminVisible();
       const userId = req.params.userId as string;
       const result = await access.promoteInstanceAdmin(userId);
@@ -4699,7 +4712,7 @@ export function accessRoutes(
   );
 
   router.get("/admin/users", async (req, res) => {
-    await assertInstanceAdmin(req);
+    await assertInstanceAdminUser(req);
     assertAccessAdminVisible();
     const query = searchAdminUsersQuerySchema.parse(req.query);
     const needle = query.query.trim().toLowerCase();
@@ -4762,7 +4775,7 @@ export function accessRoutes(
   router.post(
     "/admin/users/:userId/demote-instance-admin",
     async (req, res) => {
-      await assertInstanceAdmin(req);
+      await assertInstanceAdminUser(req);
       assertAccessAdminVisible();
       const userId = req.params.userId as string;
       const removed = await access.demoteInstanceAdmin(userId);
@@ -4772,7 +4785,7 @@ export function accessRoutes(
   );
 
   router.get("/admin/users/:userId/company-access", async (req, res) => {
-    await assertInstanceAdmin(req);
+    await assertInstanceAdminUser(req);
     assertAccessAdminVisible();
     const userId = req.params.userId as string;
     res.json(await loadUserCompanyAccessResponse(db, access, userId));
@@ -4782,7 +4795,7 @@ export function accessRoutes(
     "/admin/users/:userId/company-access",
     validate(updateUserCompanyAccessSchema),
     async (req, res) => {
-      await assertInstanceAdmin(req);
+      await assertInstanceAdminUser(req);
       assertAccessAdminVisible();
       const userId = req.params.userId as string;
       await access.setUserCompanyAccess(

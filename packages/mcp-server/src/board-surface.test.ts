@@ -167,6 +167,20 @@ describe("boardToolAdvertised", () => {
     ).toBe(false);
   });
 
+  it("advertises board tools to an owner-equivalent CEO agent unless a guard still rejects it", () => {
+    const owner: BoardSurfaceContext = { ...CEO, companyOwner: true };
+    const boardGuarded = spec({
+      authoritySource: "handler",
+      guards: ["assertBoard", "assertCompanyAccess"],
+      boardGuard: "assertBoard@agents.ts:1",
+    });
+    expect(boardToolAdvertised(boardGuarded, owner)).toBe(true);
+    expect(boardToolAdvertised(spec({ guards: ["assertInstanceAdmin"] }), owner)).toBe(true);
+    expect(boardToolAdvertised(boardGuarded, CEO)).toBe(false);
+    expect(boardToolAdvertised(spec({ guards: ["assertBoard", "requireBoardUserId"] }), owner)).toBe(false);
+    expect(boardToolAdvertised(spec({ guards: ["assertInstanceAdminUser"] }), owner)).toBe(false);
+  });
+
   it("withholds a board tool that no agent-admitting guard reaches", () => {
     expect(boardToolAdvertised(spec({ guards: ["assertAuthenticated"] }), CEO)).toBe(false);
   });

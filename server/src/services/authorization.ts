@@ -34,6 +34,8 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   agentAuthorityReason,
   agentRoleHasAuthority,
+  isCompanyOwnerAgent,
+  isCompanyOwnerAgentRole,
   extractAgentMentionIds,
   trustPresetSchema,
   lowTrustBoundarySchema,
@@ -65,6 +67,7 @@ export type AuthorizationActor =
     agentId?: string | null;
     companyId?: string | null;
     agentRole?: string | null;
+    agentStatus?: string | null;
     exercisedAgentAuthority?: {
       capability: AgentAuthorityCapability;
       reason: AgentAuthorityReason;
@@ -670,7 +673,7 @@ export async function canActorReadIssuePrivacy(db: Db | DbTransaction, actor: Au
 /** Filter every externally reachable task query with the same privacy predicate. */
 export async function issueReadSqlCondition(db: Db | DbTransaction, actor: AuthorizationActor): Promise<SQL<boolean>> {
   if (issuePrivacyMode() !== "enforce") return sql<boolean>`true`;
-  if (actor.source === "local_implicit" || actor.isInstanceAdmin) return sql<boolean>`true`;
+  if (actor.source === "local_implicit" || actor.isInstanceAdmin || isCompanyOwnerAgent(actor)) return sql<boolean>`true`;
   if (actor.type === "board" && !actor.ignoreInstanceAdmin && actor.source !== "cloud_tenant"
     && await db.select({ id: instanceUserRoles.id }).from(instanceUserRoles)
       .where(and(eq(instanceUserRoles.userId, actor.userId ?? ""), eq(instanceUserRoles.role, "instance_admin")))
@@ -681,7 +684,7 @@ export async function issueReadSqlCondition(db: Db | DbTransaction, actor: Autho
 /** SQL equivalent used for project list/search pushdown. */
 export async function projectReadSqlCondition(db: Db | DbTransaction, actor: AuthorizationActor): Promise<SQL<boolean>> {
   if (issuePrivacyMode() !== "enforce") return sql<boolean>`true`;
-  if (actor.source === "local_implicit" || actor.isInstanceAdmin) return sql<boolean>`true`;
+  if (actor.source === "local_implicit" || actor.isInstanceAdmin || isCompanyOwnerAgent(actor)) return sql<boolean>`true`;
   if (
     actor.type === "board"
     && !actor.ignoreInstanceAdmin
@@ -2679,12 +2682,46 @@ export function authorizationService(db: Db | DbTransaction) {
     return input.action !== "agent_instructions:update" && responsibleUserAuthzShadowMode() ? agentDecision : denied;
   }
 
+  async function decideCompanyOwnerAgent(input: {
+    actor: AuthorizationActor;
+    action: AuthorizationAction;
+    resource: AuthorizationResource;
+  }): Promise<AuthorizationDecision | null> {
+    const { actor } = input;
+    if (actor.type !== "agent" || !actor.agentId || !actor.companyId) return null;
+    if (actor.keyScope && actor.keyScope.kind !== "standard") return null;
+    if (actor.agentRole != null && !isCompanyOwnerAgentRole(actor.agentRole)) return null;
+    if (companyIdForResource(input.resource) !== actor.companyId) return null;
+    const actorAgent = await loadAgent(actor.agentId);
+    if (!actorAgent || actorAgent.companyId !== actor.companyId) return null;
+    const candidate = {
+      type: "agent",
+      agentId: actorAgent.id,
+      agentRole: actorAgent.role,
+      agentStatus: actorAgent.status,
+      keyScope: actor.keyScope ?? null,
+    };
+    if (!isCompanyOwnerAgent(candidate)) return null;
+    actor.exercisedAgentAuthority = {
+      capability: "company:owner",
+      reason: "agent_role_ceo",
+      companyId: actor.companyId,
+    };
+    return allow({
+      action: input.action,
+      reason: "allow_agent_role_ceo",
+      explanation: "Allowed as owner-equivalent CEO agent access inside its own company.",
+    });
+  }
+
   async function decide(input: {
     actor: AuthorizationActor;
     action: AuthorizationAction;
     resource: AuthorizationResource;
     scope?: Record<string, unknown> | null;
   }): Promise<AuthorizationDecision> {
+    const ownerDecision = await decideCompanyOwnerAgent(input);
+    if (ownerDecision) return ownerDecision;
     const agentDecision = await decideBase(input);
     const intersectedDecision = await applyResponsibleUserIntersection(input, agentDecision);
     if (

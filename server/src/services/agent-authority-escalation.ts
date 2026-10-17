@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { AGENT_COMPANY_AUTHORITY_ROLES } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_COMPANY_AUTHORITY_ROLES, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
 import { forbidden } from "../errors.js";
 import { normalizeAgentPermissions } from "../lib/agent-permissions.js";
 
@@ -32,7 +32,7 @@ export function assertNoAgentAuthorityEscalation(input: {
   target: AgentAuthorityWriteTarget;
 }) {
   const { req, write, target } = input;
-  if (req.actor.type !== "agent") return;
+  if (req.actor.type !== "agent" || isCompanyOwnerAgent(req.actor)) return;
   const actorAgentId = req.actor.agentId ?? null;
   if (!actorAgentId) {
     throw forbidden("Agent authentication required");

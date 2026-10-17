@@ -39,6 +39,7 @@ afterAll(async () => {
 async function fixture() {
   const companyId = randomUUID();
   const managerId = randomUUID();
+  const ceoId = randomUUID();
   const workerId = randomUUID();
   const userId = `owner-${companyId}`;
   await db.insert(companies).values({ id: companyId, name: "Concurrency cap test", issuePrefix: `C${companyId.slice(0, 7)}`, defaultResponsibleUserId: userId });
@@ -48,17 +49,30 @@ async function fixture() {
     { companyId, principalType: "user", principalId: userId, permissionKey: "agents:configure" },
     { companyId, principalType: "agent", principalId: managerId, permissionKey: "agents:configure" },
   ]);
-  await db.insert(agents).values({ id: managerId, companyId, name: "Manager", role: "ceo", adapterType: "codex_local" });
+  await db.insert(agents).values({ id: managerId, companyId, name: "Manager", role: "cto", adapterType: "codex_local" });
+  await db.insert(agents).values({ id: ceoId, companyId, name: "CEO", role: "ceo", adapterType: "codex_local" });
   await db.insert(companyMemberships).values({ companyId, principalType: "agent", principalId: managerId, membershipRole: "member", status: "active" });
+  await db.insert(companyMemberships).values({ companyId, principalType: "agent", principalId: ceoId, membershipRole: "member", status: "active" });
   await db.insert(agents).values({ id: workerId, companyId, name: "Worker", role: "engineer", adapterType: "codex_local", reportsTo: managerId, runtimeConfig: { heartbeat: { enabled: false, maxConcurrentRuns: 20 } } });
   const [run] = await db.insert(heartbeatRuns).values({ companyId, agentId: managerId, status: "running", responsibleUserId: userId }).returning();
-  const app = (actor: "agent" | "board") => {
+  const [ceoRun] = await db.insert(heartbeatRuns).values({ companyId, agentId: ceoId, status: "running", responsibleUserId: userId }).returning();
+  const app = (actor: "agent" | "ceo" | "board") => {
     const instance = express();
     instance.use(express.json());
     instance.use((req, _res, next) => {
-      req.actor = actor === "agent"
-        ? { type: "agent", agentId: managerId, companyId, runId: run!.id, source: "agent_jwt", onBehalfOfUserId: userId, onBehalfOfMemberships: [{ companyId, membershipRole: "owner", status: "active" }] }
-        : { type: "board", source: "session", userId, companyIds: [companyId], memberships: [{ companyId, membershipRole: "owner", status: "active" }] };
+      req.actor = actor === "board"
+        ? { type: "board", source: "session", userId, companyIds: [companyId], memberships: [{ companyId, membershipRole: "owner", status: "active" }] }
+        : {
+          type: "agent",
+          agentId: actor === "ceo" ? ceoId : managerId,
+          agentRole: actor === "ceo" ? "ceo" : "cto",
+          agentStatus: "idle",
+          companyId,
+          runId: actor === "ceo" ? ceoRun!.id : run!.id,
+          source: "agent_jwt",
+          onBehalfOfUserId: userId,
+          onBehalfOfMemberships: [{ companyId, membershipRole: "owner", status: "active" }],
+        };
       next();
     });
     instance.use("/api", agentRoutes(db));
@@ -68,7 +82,7 @@ async function fixture() {
   const stored = async () => (await db.select().from(agents).where(eq(agents.id, workerId)))[0]!.runtimeConfig;
   const revisions = () => db.select().from(agentConfigRevisions).where(eq(agentConfigRevisions.agentId, workerId));
   const rejections = () => db.select().from(activityLog).where(and(eq(activityLog.companyId, companyId), eq(activityLog.action, "agent.max_concurrent_runs_change_rejected")));
-  return { companyId, managerId, workerId, userId, app, stored, revisions, rejections };
+  return { companyId, managerId, ceoId, workerId, userId, app, stored, revisions, rejections };
 }
 
 describe("agent-authored heartbeat concurrency cap changes", () => {
@@ -84,13 +98,21 @@ describe("agent-authored heartbeat concurrency cap changes", () => {
     expect(rejection!.details).toMatchObject({ surface: "agent.patch", field: "runtimeConfig.heartbeat.maxConcurrentRuns", currentValue: 20, requestedValue: 2 });
   });
 
-  it("rejects an agent patch whose runtimeConfig drops a non-default maxConcurrentRuns", async () => {
+  it("keeps the stored maxConcurrentRuns when a non-CEO agent patch omits it", async () => {
     const f = await fixture();
     await db.update(agents).set({ runtimeConfig: { heartbeat: { enabled: false, maxConcurrentRuns: 10 } } }).where(eq(agents.id, f.workerId));
-    const response = await request(f.app("agent")).patch(`/api/agents/${f.workerId}`).send({ runtimeConfig: { heartbeat: { enabled: true } } });
-    expect(response.status, JSON.stringify(response.body)).toBe(403);
-    expect(response.body.code).toBe("agent_max_concurrent_runs_change_forbidden");
-    expect(await f.stored()).toEqual({ heartbeat: { enabled: false, maxConcurrentRuns: 10 } });
+    const response = await request(f.app("agent")).patch(`/api/agents/${f.workerId}`).send({ runtimeConfig: { heartbeat: { enabled: false, intervalSec: 900 } } });
+    expect(response.status, JSON.stringify(response.body)).toBe(200);
+    expect(await f.stored()).toEqual({ heartbeat: { enabled: false, intervalSec: 900, maxConcurrentRuns: 10 } });
+    expect(await f.rejections()).toEqual([]);
+  });
+
+  it("lets a CEO agent change maxConcurrentRuns", async () => {
+    const f = await fixture();
+    const response = await request(f.app("ceo")).patch(`/api/agents/${f.workerId}`).send({ runtimeConfig: { heartbeat: { enabled: false, maxConcurrentRuns: 2 } } });
+    expect(response.status, JSON.stringify(response.body)).toBe(200);
+    expect(await f.stored()).toEqual({ heartbeat: { enabled: false, maxConcurrentRuns: 2 } });
+    expect(await f.rejections()).toEqual([]);
   });
 
   it("lets a board user change maxConcurrentRuns", async () => {

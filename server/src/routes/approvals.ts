@@ -41,6 +41,8 @@ function isStatusOnlyRecoveryContext(contextSnapshot: unknown) {
     context.resumeRequiresNormalModel === true;
 }
 
+type ApprovalRequester = { actorType: "user" | "agent"; actorId: string };
+
 export function approvalRoutes(
   db: Db,
   options: { pluginWorkerManager?: PluginWorkerManager } = {},
@@ -90,7 +92,7 @@ export function approvalRoutes(
     linkedIssues: Awaited<ReturnType<typeof issueApprovalsSvc.listIssuesForApproval>>;
     lostIssueIds: Set<string>;
     alreadyWoken?: { agentId: string; issueId: string } | null;
-    requestedByUserId: string;
+    requestedBy: ApprovalRequester;
   }) {
     for (const issue of input.linkedIssues) {
       if (!input.lostIssueIds.has(issue.id) || !issue.assigneeAgentId) continue;
@@ -112,8 +114,8 @@ export function approvalRoutes(
             issueId: issue.id,
             ...approvalReviewPathContext(input.approvalId),
           },
-          requestedByActorType: "user",
-          requestedByActorId: input.requestedByUserId,
+          requestedByActorType: input.requestedBy.actorType,
+          requestedByActorId: input.requestedBy.actorId,
           contextSnapshot: {
             source: `approval.${input.approvalStatus}`,
             approvalId: input.approvalId,
@@ -127,8 +129,8 @@ export function approvalRoutes(
 
         await logActivity(db, {
           companyId: input.companyId,
-          actorType: "user",
-          actorId: input.requestedByUserId,
+          actorType: input.requestedBy.actorType,
+          actorId: input.requestedBy.actorId,
           action: "approval.review_path_wakeup_queued",
           entityType: "approval",
           entityId: input.approvalId,
@@ -146,8 +148,8 @@ export function approvalRoutes(
         );
         await logActivity(db, {
           companyId: input.companyId,
-          actorType: "user",
-          actorId: input.requestedByUserId,
+          actorType: input.requestedBy.actorType,
+          actorId: input.requestedBy.actorId,
           action: "approval.review_path_wakeup_failed",
           entityType: "approval",
           entityId: input.approvalId,
@@ -169,6 +171,11 @@ export function approvalRoutes(
     }
     assertCompanyAccess(req, approval.companyId);
     return approval;
+  }
+
+  function approvalRequester(req: Request): ApprovalRequester {
+    const actor = getActorInfo(req);
+    return { actorType: actor.actorType === "agent" ? "agent" : "user", actorId: actor.actorId };
   }
 
   function approvalDeciderId(req: Request) {
@@ -350,8 +357,8 @@ export function approvalRoutes(
               issueIds: linkedIssueIds,
               ...(primaryReviewPathContext ?? {}),
             },
-            requestedByActorType: "user",
-            requestedByActorId: req.actor.userId ?? "board",
+            requestedByActorType: approvalRequester(req).actorType,
+            requestedByActorId: approvalRequester(req).actorId,
             contextSnapshot: {
               source: "approval.approved",
               approvalId: approval.id,
@@ -418,7 +425,7 @@ export function approvalRoutes(
         alreadyWoken: primaryReviewPathWakeCovered && approval.requestedByAgentId && primaryIssueId
           ? { agentId: approval.requestedByAgentId, issueId: primaryIssueId }
           : null,
-        requestedByUserId: req.actor.userId ?? "board",
+        requestedBy: approvalRequester(req),
       });
     }
 
@@ -457,7 +464,7 @@ export function approvalRoutes(
         companyId: approval.companyId,
         linkedIssues,
         lostIssueIds: lostReviewIssueIds,
-        requestedByUserId: req.actor.userId ?? "board",
+        requestedBy: approvalRequester(req),
       });
     }
 

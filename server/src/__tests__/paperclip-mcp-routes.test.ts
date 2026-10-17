@@ -25,6 +25,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     otherCompanyId: string;
     agentId: string;
     ceoAgentId: string;
+    pausedCeoAgentId: string;
     issueId: string;
     userId: string;
   };
@@ -34,9 +35,11 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     const other = await seedCompanyWithBoardAccess(ctx.db, "Hosted MCP other");
     const agentId = randomUUID();
     const ceoAgentId = randomUUID();
+    const pausedCeoAgentId = randomUUID();
     await ctx.db.insert(agents).values([
       { id: agentId, companyId: company.companyId, name: "Worker", role: "general" },
       { id: ceoAgentId, companyId: company.companyId, name: "Chief", role: "ceo" },
+      { id: pausedCeoAgentId, companyId: company.companyId, name: "Paused chief", role: "ceo", status: "paused" },
     ]);
     const issueId = randomUUID();
     await ctx.db.insert(issues).values({
@@ -52,6 +55,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
       otherCompanyId: other.companyId,
       agentId,
       ceoAgentId,
+      pausedCeoAgentId,
       issueId,
       userId: company.userId,
     };
@@ -87,10 +91,13 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
   });
 
   function agentActor(agentId: string): Actor {
+    const ceo = agentId === seeded.ceoAgentId || agentId === seeded.pausedCeoAgentId;
     return {
       type: "agent",
       source: "agent_key",
       agentId,
+      agentRole: ceo ? "ceo" : "general",
+      agentStatus: agentId === seeded.pausedCeoAgentId ? "paused" : "idle",
       companyId: seeded.companyId,
       runId: randomUUID(),
     };
@@ -161,8 +168,24 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     expect(names).not.toContain("paperclipGetIssueChatBinding");
   });
 
-  it("exposes only the board tools an agent guard really reaches to a ceo agent", async () => {
+  it("exposes owner-reachable board tools to an active ceo agent", async () => {
     actor = agentActor(seeded.ceoAgentId);
+    const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
+    const names = body.result!.tools!.map((tool) => tool.name);
+    expect(names).toContain("paperclipGetIssueChatBinding");
+    expect(names).toContain("paperclipListMembers");
+    const call = await rpc(
+      {
+        method: "tools/call",
+        params: { name: "paperclipListMembers", arguments: { companyId: seeded.companyId } },
+      },
+      { toolsets: "core,extended" },
+    );
+    expect(call.body.result!.isError, call.body.result!.content![0]!.text).toBeFalsy();
+  });
+
+  it("exposes only the board tools an agent guard really reaches to a paused ceo agent", async () => {
+    actor = agentActor(seeded.pausedCeoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
     expect(names).toContain("paperclipListManagedAgentProfiles");
@@ -222,7 +245,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
   });
 
   it("hides a board tool the caller's grants cannot reach", async () => {
-    actor = agentActor(seeded.ceoAgentId);
+    actor = agentActor(seeded.pausedCeoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
     expect(names).not.toContain("paperclipListMembers");
@@ -238,7 +261,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
   });
 
   it("still refuses a pruned board tool reached through paperclipApiRequest", async () => {
-    actor = agentActor(seeded.ceoAgentId);
+    actor = agentActor(seeded.pausedCeoAgentId);
     const listed = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = listed.body.result!.tools!.map((tool) => tool.name);
     expect(names).not.toContain("paperclipListIssueFeedbackTraces");

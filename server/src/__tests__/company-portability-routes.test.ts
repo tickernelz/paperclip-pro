@@ -428,6 +428,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",
@@ -446,6 +448,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",
@@ -462,13 +466,13 @@ describe("company portability routes", () => {
       1,
       companyId,
       exportRequest,
-      { allowExternalInstructions: false },
+      { allowExternalInstructions: true },
     );
     expect(mockCompanyPortabilityService.exportBundle).toHaveBeenNthCalledWith(
       2,
       companyId,
       exportRequest,
-      { allowExternalInstructions: false },
+      { allowExternalInstructions: true },
     );
   });
 
@@ -512,6 +516,8 @@ describe("company portability routes", () => {
       {
         type: "agent",
         agentId: ceoAgentId,
+        agentRole: "ceo",
+        agentStatus: "paused",
         companyId,
         source: "agent_key",
         runId: "run-1",
@@ -527,7 +533,7 @@ describe("company portability routes", () => {
       ]) {
         const res = await request(app).post(path).send(exportRequest);
         expect(res.status, `${path}: ${JSON.stringify(res.body)}`).toBe(403);
-        expect(res.body.error).toMatch(/Instance admin|Board access/);
+        expect(res.body.error).toMatch(/Instance admin|Board access|Only CEO agents/);
       }
     }
 
@@ -655,6 +661,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",
@@ -679,6 +687,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId: "11111111-1111-4111-8111-111111111111",
       source: "agent_key",
       runId: "run-1",
@@ -702,6 +712,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",
@@ -728,6 +740,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",
@@ -817,6 +831,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId: "11111111-1111-4111-8111-111111111111",
       source: "agent_key",
       runId: "run-1",
@@ -1255,6 +1271,8 @@ describe("company portability routes", () => {
     const app = await createApp({
       type: "agent",
       agentId: ceoAgentId,
+      agentRole: "ceo",
+      agentStatus: "idle",
       companyId,
       source: "agent_key",
       runId: "run-1",

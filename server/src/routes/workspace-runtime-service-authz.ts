@@ -4,7 +4,7 @@ import { agents, heartbeatRuns, issues, projects } from "@tickernelz/paperclip-p
 import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
 import type { Request } from "express";
 import { forbidden, notFound } from "../errors.js";
-import { assertCompanyAccess, hasCompanyAccess } from "./authz.js";
+import { assertCompanyAccess, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";
 import { parseProjectExecutionWorkspacePolicy } from "../services/execution-workspace-policy.js";
 import { isLowTrustRuntimeManagementAllowed } from "../services/low-trust-runtime-containment.js";
 import { resolveCoreTrustPreset, type TrustPresetResolution } from "../services/trust-preset-resolver.js";
@@ -112,13 +112,16 @@ async function assertAgentCanManageRuntimeServicesForWorkspace(
   const runContext = readObject(actorRun?.contextSnapshot);
   const runExecutionPolicy = readObject(runContext?.executionPolicy);
 
+  const runIssueId = readRunIssueId(runContext);
+  if (isCompanyOwnerAgentActor(req)) {
+    return { runIssueId };
+  }
+
   const actorRuntimeTrust = assertLowTrustCanManageRuntimeForActor({
     companyId: input.companyId,
     actorAgent,
     runExecutionPolicy,
   });
-
-  const runIssueId = readRunIssueId(runContext);
 
   if (actorAgent.role === "ceo" && actorRuntimeTrust.kind === "standard") {
     return { runIssueId };
