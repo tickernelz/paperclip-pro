@@ -50,6 +50,8 @@ import {
   agentMineInboxQuerySchema,
   ADAPTER_AGNOSTIC_KEYS,
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
+  AGENT_MAX_MAX_CONCURRENT_RUNS,
+  AGENT_MIN_MAX_CONCURRENT_RUNS,
   createAgentKeySchema,
   createAgentHireSchema,
   createAgentSchema,
@@ -1937,6 +1939,47 @@ export function agentRoutes(
     const nextRaw =
       asRecord(asRecord(nextRuntimeConfig)?.debug)?.providerTrace === "raw";
     if (previousRaw !== nextRaw) assertInstanceAdmin(req);
+  }
+
+  function effectiveMaxConcurrentRuns(runtimeConfig: unknown): number {
+    const configured = parseNumberLike(asRecord(asRecord(runtimeConfig)?.heartbeat)?.maxConcurrentRuns);
+    if (configured == null) return AGENT_DEFAULT_MAX_CONCURRENT_RUNS;
+    return Math.max(AGENT_MIN_MAX_CONCURRENT_RUNS, Math.min(AGENT_MAX_MAX_CONCURRENT_RUNS, Math.floor(configured)));
+  }
+
+  async function assertAgentKeepsMaxConcurrentRuns(
+    req: Request,
+    target: { id: string; companyId: string },
+    nextRuntimeConfig: unknown,
+    previousRuntimeConfig: unknown,
+    surface: "agent.patch" | "agent.config_rollback",
+  ): Promise<void> {
+    if (req.actor.type !== "agent") return;
+    const currentValue = effectiveMaxConcurrentRuns(previousRuntimeConfig);
+    const requestedValue = effectiveMaxConcurrentRuns(nextRuntimeConfig);
+    if (currentValue === requestedValue) return;
+    const actor = getActorInfo(req);
+    await logActivity(db, {
+      companyId: target.companyId,
+      actorType: actor.actorType,
+      actorId: actor.actorId,
+      agentId: actor.agentId,
+      runId: actor.runId,
+      agentApiKeyId: actor.agentApiKeyId,
+      action: "agent.max_concurrent_runs_change_rejected",
+      entityType: "agent",
+      entityId: target.id,
+      details: {
+        surface,
+        field: "runtimeConfig.heartbeat.maxConcurrentRuns",
+        currentValue,
+        requestedValue,
+      },
+    });
+    throw forbidden(
+      "Agent-authenticated callers cannot change runtimeConfig.heartbeat.maxConcurrentRuns; ask a board user to change it.",
+      { code: "agent_max_concurrent_runs_change_forbidden" },
+    );
   }
 
   async function assertAgentDefaultEnvironmentSelection(
@@ -4101,6 +4144,13 @@ export function agentRoutes(
       rollbackConfig.runtimeConfig,
       existing.runtimeConfig,
     );
+    await assertAgentKeepsMaxConcurrentRuns(
+      req,
+      existing,
+      rollbackConfig.runtimeConfig,
+      existing.runtimeConfig,
+      "agent.config_rollback",
+    );
     const rollbackAdapterType = assertKnownAdapterType(
       typeof rollbackConfig.adapterType === "string"
         ? rollbackConfig.adapterType
@@ -5405,6 +5455,13 @@ export function agentRoutes(
         existing.runtimeConfig,
       );
       requestedRuntimeConfig = req.actor.source === "mcp_oauth" ? { ...existing.runtimeConfig, ...runtimeConfig } : runtimeConfig;
+      await assertAgentKeepsMaxConcurrentRuns(
+        req,
+        existing,
+        requestedRuntimeConfig,
+        existing.runtimeConfig,
+        "agent.patch",
+      );
     }
     const touchesAdapterConfiguration =
       hasOwn(patchData, "adapterType") ||
