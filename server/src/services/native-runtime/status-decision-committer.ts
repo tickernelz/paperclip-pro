@@ -3,7 +3,7 @@ import { readNativePlanWait, type NativePlanWaitSource } from "./native-plan-wai
 import { activeIssueInteractionCondition } from "../issue-question-context.js";
 import { isConversation } from "../agent-conversations.js";
 import { hasPendingNativeChildCompletion, type NativeChildCompletionRecipient } from "./native-child-completion-delivery.js";
-import { and, asc, desc, eq, inArray, notInArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import type { CreateIssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
 import {
@@ -405,7 +405,7 @@ function failAt(
     throw new Error(`native_status_failpoint:${actual}`);
 }
 
-async function enqueueWake(input: {
+interface NativeStatusWakeInput {
   tx: Db;
   companyId: string;
   issueId: string;
@@ -414,7 +414,63 @@ async function enqueueWake(input: {
   idempotencyKey: string;
   payload: Record<string, unknown>;
   contextSnapshot?: Record<string, unknown>;
-}) {
+}
+
+function completedChildIssueIdsOf(payload: Record<string, unknown>) {
+  const context = record(payload._paperclipWakeContext);
+  const candidates = [
+    ...(Array.isArray(payload.completedChildIssueIds) ? payload.completedChildIssueIds : []),
+    ...(Array.isArray(context.completedChildIssueIds) ? context.completedChildIssueIds : []),
+    payload.completedChildIssueId,
+    context.completedChildIssueId,
+  ];
+  return [...new Set(candidates.filter((value): value is string => typeof value === "string" && value.length > 0))];
+}
+
+async function supersedePendingChildCompletionWake(input: NativeStatusWakeInput) {
+  const completedChildIssueId = input.contextSnapshot?.completedChildIssueId;
+  if (input.reason !== "issue_children_completed" || typeof completedChildIssueId !== "string" ||
+      typeof input.contextSnapshot?.nativeChildCompletionDecisionId !== "string") return null;
+  const pending = await input.tx
+    .select({ id: agentWakeupRequests.id, payload: agentWakeupRequests.payload })
+    .from(agentWakeupRequests)
+    .where(and(
+      eq(agentWakeupRequests.companyId, input.companyId),
+      eq(agentWakeupRequests.agentId, input.agentId),
+      eq(agentWakeupRequests.reason, "issue_children_completed"),
+      eq(agentWakeupRequests.requestedByActorType, "system"),
+      eq(agentWakeupRequests.requestedByActorId, "native-status-committer"),
+      eq(agentWakeupRequests.status, "queued"),
+      isNull(agentWakeupRequests.runId),
+      sql`${agentWakeupRequests.payload}->>'issueId' = ${input.issueId}`,
+      sql`nullif(${agentWakeupRequests.payload}->'_paperclipWakeContext'->>'nativeChildCompletionDecisionId', '') is not null`,
+    ))
+    .orderBy(asc(agentWakeupRequests.requestedAt))
+    .limit(1)
+    .for("update")
+    .then((rows) => rows[0] ?? null);
+  if (!pending) return null;
+  const pendingChildIssueIds = completedChildIssueIdsOf(record(pending.payload));
+  if (pendingChildIssueIds.includes(completedChildIssueId)) return { kind: "already_pending" as const, wakeId: pending.id };
+  const now = new Date();
+  const superseded = await input.tx
+    .update(agentWakeupRequests)
+    .set({ status: "coalesced", finishedAt: now, updatedAt: now })
+    .where(and(
+      eq(agentWakeupRequests.id, pending.id),
+      eq(agentWakeupRequests.status, "queued"),
+      isNull(agentWakeupRequests.runId),
+    ))
+    .returning({ id: agentWakeupRequests.id });
+  if (superseded.length === 0) return null;
+  return {
+    kind: "superseded" as const,
+    supersededWakeId: pending.id,
+    completedChildIssueIds: [...pendingChildIssueIds, completedChildIssueId],
+  };
+}
+
+export async function enqueueNativeStatusWake(input: NativeStatusWakeInput) {
   const existing = await input.tx
     .select({ id: agentWakeupRequests.id })
     .from(agentWakeupRequests)
@@ -433,6 +489,12 @@ async function enqueueWake(input: {
     .limit(1)
     .then((rows) => rows[0] ?? null);
   if (existing) return existing.id;
+  const coalesced = await supersedePendingChildCompletionWake(input);
+  if (coalesced?.kind === "already_pending") return coalesced.wakeId;
+  const superseded = coalesced?.kind === "superseded" ? coalesced : null;
+  const coalescedChildren = superseded
+    ? { completedChildIssueIds: superseded.completedChildIssueIds }
+    : {};
   const inserted = await input.tx
     .insert(agentWakeupRequests)
     .values({
@@ -445,15 +507,18 @@ async function enqueueWake(input: {
         issueId: input.issueId,
         taskId: input.issueId,
         ...input.payload,
+        ...coalescedChildren,
         _paperclipWakeContext: {
           issueId: input.issueId,
           taskId: input.issueId,
           ...(input.contextSnapshot ?? {}),
+          ...coalescedChildren,
           wakeReason: input.reason,
           source: "native_status_decision",
           statusDecisionSource: "native_status_decision",
         },
       },
+      ...(superseded ? { coalescedCount: superseded.completedChildIssueIds.length } : {}),
       requestedByActorType: "system",
       requestedByActorId: "native-status-committer",
       idempotencyKey: input.idempotencyKey,
@@ -461,6 +526,12 @@ async function enqueueWake(input: {
     .returning({ id: agentWakeupRequests.id })
     .then((rows) => rows[0] ?? null);
   if (!inserted) throw new Error("native_status_wake_not_persisted");
+  if (superseded) {
+    await input.tx
+      .update(agentWakeupRequests)
+      .set({ payload: sql`${agentWakeupRequests.payload} || jsonb_build_object('coalescedIntoWakeupRequestId', ${inserted.id}::text)` })
+      .where(eq(agentWakeupRequests.id, superseded.supersededWakeId));
+  }
   return inserted.id;
 }
 
@@ -632,7 +703,7 @@ async function materializeDecisionEffect(input: {
       nativeReviewDecisionId: input.decisionId,
     };
     const reviewerWakeId = effect.ownerAgentId && interaction.effectiveResolverPolicy !== "human_only"
-      ? await enqueueWake({
+      ? await enqueueNativeStatusWake({
           tx: input.tx,
           companyId: input.companyId,
           issueId: input.issue.id,
@@ -657,7 +728,7 @@ async function materializeDecisionEffect(input: {
     };
   }
   if (effect.kind === "notify_owner") {
-    const wakeId = await enqueueWake({
+    const wakeId = await enqueueNativeStatusWake({
       tx: input.tx,
       companyId: input.companyId,
       issueId: input.issue.id,
@@ -734,7 +805,7 @@ async function materializeDecisionEffect(input: {
         };
     }
     if (effect.continuationKind === "monitor") throw new Error("Monitor delivery belongs to the issue monitor scheduler");
-    const wakeId = await enqueueWake({
+    const wakeId = await enqueueNativeStatusWake({
       tx: input.tx,
       companyId: input.companyId,
       issueId: input.issue.id,
@@ -776,7 +847,7 @@ async function materializeDecisionEffect(input: {
     if (!bound) throw new Error("native_blocker_binding_not_persisted");
     let wakeId: string | null = null;
     if (effect.owner !== "board") {
-      wakeId = await enqueueWake({
+      wakeId = await enqueueNativeStatusWake({
         tx: input.tx,
         companyId: input.companyId,
         issueId: input.issue.id,
@@ -806,7 +877,7 @@ async function materializeDecisionEffect(input: {
       return { effectKind: effect.kind, targetType: "heartbeat_run", targetId: retryId,
         payload: { cause: effect.cause, summary: effect.summary } };
     }
-    const wakeId = await enqueueWake({
+    const wakeId = await enqueueNativeStatusWake({
       tx: input.tx,
       companyId: input.companyId,
       issueId: input.issue.id,
@@ -2096,7 +2167,7 @@ export async function commitNativeStatusDecision(input: {
                 childIssueSummaryTruncated: parent.childIssueSummaryTruncated,
               }
             : null;
-        const wakeId = await enqueueWake({
+        const wakeId = await enqueueNativeStatusWake({
           tx: tx as unknown as Db,
           companyId: input.companyId,
           issueId: dependent.id,
@@ -2126,7 +2197,7 @@ export async function commitNativeStatusDecision(input: {
         });
       }
       if (parent && !parentIsDependent) {
-        const wakeId = await enqueueWake({
+        const wakeId = await enqueueNativeStatusWake({
           tx: tx as unknown as Db,
           companyId: input.companyId,
           issueId: parent.id,

@@ -1,4 +1,5 @@
 import {
+  activityLog,
   issues,
   issueComments,
   heartbeatRuns,
@@ -27,6 +28,7 @@ import {
   lte,
   asc,
   getTableColumns,
+  gt,
   gte,
 } from "drizzle-orm";
 import { RECOVERY_ORIGIN_KINDS } from "../recovery/index.js";
@@ -68,6 +70,9 @@ export interface HeartbeatSchedulingDependencies
   scheduleBoundedRetryForRun: ReturnType<typeof createHeartbeatRetries>["scheduleBoundedRetryForRun"];
   getSchedulingSuppression: () => Promise<{ suppressed: boolean }>;
 }
+
+const ISSUE_MONITOR_NO_CHANGE_BASE_BACKOFF_MS = 2 * 60 * 1000;
+const ISSUE_MONITOR_NO_CHANGE_MAX_BACKOFF_MS = 30 * 60 * 1000;
 
 function readNonEmptyString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value : null;
@@ -532,6 +537,84 @@ export function createHeartbeatScheduling(
     };
   }
 
+  function watchesExternalService(monitor: IssueExecutionMonitorPolicy | null, persistedPolicy: unknown) {
+    return monitor?.kind === "external_service" || Boolean(readNonEmptyString(monitor?.serviceName))
+      || Boolean(readNonEmptyString(parseObject(parseObject(persistedPolicy).monitor).externalRef));
+  }
+
+  async function issueChangedSinceMonitorTrigger(claimed: IssueMonitorDispatchRow, since: Date) {
+    const assigneeAgentId = claimed.assigneeAgentId!;
+    const [comment] = await db.select({ id: issueComments.id }).from(issueComments)
+      .where(and(eq(issueComments.issueId, claimed.id), isNull(issueComments.deletedAt),
+        gt(issueComments.createdAt, since),
+        sql`${issueComments.authorAgentId} is distinct from ${assigneeAgentId}::uuid`))
+      .limit(1);
+    if (comment) return true;
+    const [activity] = await db.select({ id: activityLog.id }).from(activityLog)
+      .where(and(eq(activityLog.companyId, claimed.companyId), eq(activityLog.entityType, "issue"),
+        eq(activityLog.entityId, claimed.id), gt(activityLog.createdAt, since),
+        sql`${activityLog.action} not like 'issue.monitor%'`,
+        sql`${activityLog.action} <> 'issue.read_marked'`,
+        sql`(${activityLog.details} ? 'status' or (${activityLog.agentId} is distinct from ${assigneeAgentId}::uuid
+          and not (${activityLog.actorType} = 'agent' and ${activityLog.actorId} = ${assigneeAgentId})))`))
+      .limit(1);
+    return Boolean(activity);
+  }
+
+  async function nextNoChangeMonitorBackoffMs(claimed: IssueMonitorDispatchRow, since: Date) {
+    const [previous] = await db.select({ backoffMs: sql<string | null>`${activityLog.details}->>'backoffMs'` })
+      .from(activityLog)
+      .where(and(eq(activityLog.companyId, claimed.companyId), eq(activityLog.entityType, "issue"),
+        eq(activityLog.entityId, claimed.id), eq(activityLog.action, "issue.monitor_scheduled"),
+        sql`${activityLog.details}->>'source' = 'no_change_backoff'`, gt(activityLog.createdAt, since)))
+      .orderBy(desc(activityLog.createdAt))
+      .limit(1);
+    const previousMs = Number(previous?.backoffMs ?? Number.NaN);
+    if (!Number.isFinite(previousMs) || previousMs <= 0) return ISSUE_MONITOR_NO_CHANGE_BASE_BACKOFF_MS;
+    if (previousMs >= ISSUE_MONITOR_NO_CHANGE_MAX_BACKOFF_MS) return null;
+    return Math.min(previousMs * 2, ISSUE_MONITOR_NO_CHANGE_MAX_BACKOFF_MS);
+  }
+
+  async function deferUnchangedIssueMonitor(claimed: IssueMonitorDispatchRow, monitor: IssueExecutionMonitorPolicy | null,
+    now: Date) {
+    const lastTriggeredAt = claimed.monitorLastTriggeredAt;
+    if (!monitor || !lastTriggeredAt || watchesExternalService(monitor, claimed.executionPolicy)) return null;
+    if (await issueChangedSinceMonitorTrigger(claimed, lastTriggeredAt)) return null;
+    const backoffMs = await nextNoChangeMonitorBackoffMs(claimed, lastTriggeredAt);
+    if (backoffMs === null) return null;
+    const nextCheckAt = new Date(now.getTime() + backoffMs);
+    const nextCheckAtIso = nextCheckAt.toISOString();
+    const deferred = await db.update(issues).set({
+      monitorNextCheckAt: nextCheckAt,
+      monitorWakeRequestedAt: null,
+      executionPolicy: sql`jsonb_set(${issues.executionPolicy}, '{monitor,nextCheckAt}', to_jsonb(${nextCheckAtIso}::text))`,
+      executionState: sql`case when jsonb_typeof(${issues.executionState}->'monitor') = 'object'
+        then jsonb_set(${issues.executionState}, '{monitor,nextCheckAt}', to_jsonb(${nextCheckAtIso}::text))
+        else ${issues.executionState} end`,
+      updatedAt: new Date(),
+    }).where(issueMonitorClaimCondition(claimed)).returning({ id: issues.id });
+    if (deferred.length === 0) return { outcome: "skipped" as const, reason: "monitor_replaced" };
+    await logActivity(db, {
+      companyId: claimed.companyId,
+      actorType: "system",
+      actorId: "heartbeat_scheduler",
+      agentId: null,
+      runId: null,
+      action: "issue.monitor_scheduled",
+      entityType: "issue",
+      entityId: claimed.id,
+      details: {
+        identifier: claimed.identifier,
+        source: "no_change_backoff",
+        previousNextCheckAt: claimed.monitorNextCheckAt!.toISOString(),
+        nextCheckAt: nextCheckAtIso,
+        lastTriggeredAt: lastTriggeredAt.toISOString(),
+        backoffMs,
+      },
+    });
+    return { outcome: "skipped" as const, reason: "monitor_no_change_backoff" };
+  }
+
   function issueMonitorClaimCondition(claimed: IssueMonitorDispatchRow) {
     return and(eq(issues.id, claimed.id), eq(issues.companyId, claimed.companyId),
       eq(issues.assigneeAgentId, claimed.assigneeAgentId!), isNull(issues.assigneeUserId),
@@ -552,6 +635,7 @@ export function createHeartbeatScheduling(
       runId: string | null;
       clearOnClientError: boolean;
       activitySource: "manual" | "scheduled";
+      deferWhenUnchanged: boolean;
     },
   ) {
     if (!claimed.assigneeAgentId || !claimed.monitorNextCheckAt) {
@@ -624,6 +708,11 @@ export function createHeartbeatScheduling(
         runId: input.runId,
         activitySource: input.activitySource,
       });
+    }
+
+    if (input.deferWhenUnchanged) {
+      const deferred = await deferUnchangedIssueMonitor(claimed, monitor, input.now);
+      if (deferred) return deferred;
     }
 
     try {
@@ -905,6 +994,7 @@ export function createHeartbeatScheduling(
       runId: input?.runId ?? null,
       clearOnClientError: false,
       activitySource: "manual",
+      deferWhenUnchanged: false,
     });
   }
 
@@ -976,6 +1066,7 @@ export function createHeartbeatScheduling(
           runId: null,
           clearOnClientError: true,
           activitySource: "scheduled",
+          deferWhenUnchanged: true,
         });
         if (result.outcome === "triggered") triggered += 1;
         if (result.outcome === "skipped") skipped += 1;

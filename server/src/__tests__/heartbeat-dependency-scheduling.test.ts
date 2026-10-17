@@ -31,6 +31,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { heartbeatService } from "../services/heartbeat.ts";
+import { enqueueNativeStatusWake } from "../services/native-runtime/status-decision-committer.ts";
 import { runningProcesses } from "../adapters/index.ts";
 
 const mockAdapterExecute = vi.hoisted(() =>
@@ -351,6 +352,74 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
     ]));
     expect(dispatchedRequests[0]).toMatchObject({ runId: dispatchedRun!.id });
   });
+
+  it("fans child completions into the parent's pending native wake until its run starts", async () => {
+    const companyId = randomUUID();
+    const agentId = randomUUID();
+    const issueId = randomUUID();
+    const [firstChildId, secondChildId, laterChildId] = [randomUUID(), randomUUID(), randomUUID()];
+    mockAdapterExecute.mockImplementation(async () => {
+      const [run] = await db.select().from(heartbeatRuns).where(and(
+        eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.status, "running")));
+      await db.insert(issueComments).values({ companyId, issueId, authorAgentId: agentId,
+        authorType: "agent", createdByRunId: run!.id, body: "Reviewed the finished children." });
+      await db.update(issues).set({ status: "blocked" }).where(eq(issues.id, issueId));
+      return { exitCode: 0, signal: null, timedOut: false, errorMessage: null,
+        summary: "Reviewed the finished children.", provider: "test", model: "test-model" };
+    });
+    await db.insert(companies).values({ id: companyId, name: "Fan-in",
+      issuePrefix: `F${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
+      requireBoardApprovalForNewAgents: false, defaultResponsibleUserId: "responsible-user" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "FanInParent", role: "engineer",
+      status: "active", adapterType: "codex_local", adapterConfig: {}, permissions: {},
+      runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } });
+    await db.insert(issues).values([
+      { id: issueId, companyId, title: "Coordinate the children", status: "blocked",
+        assigneeAgentId: agentId, responsibleUserId: "responsible-user" },
+      ...[firstChildId, secondChildId, laterChildId].map((id, index) => ({ id, companyId, parentId: issueId,
+        title: `Child ${index + 1}`, status: "done", responsibleUserId: "responsible-user" })),
+    ]);
+    const completeChild = (childId: string) => {
+      const decisionId = randomUUID();
+      const context = { completedChildIssueId: childId, nativeChildCompletionDecisionId: decisionId,
+        childIssueIds: [firstChildId, secondChildId, laterChildId] };
+      return enqueueNativeStatusWake({ tx: db, companyId, issueId, agentId, reason: "issue_children_completed",
+        idempotencyKey: `issue_children_completed:${issueId}:${childId}:${decisionId}`,
+        payload: context, contextSnapshot: context });
+    };
+    const childWakes = () => db.select().from(agentWakeupRequests).where(and(
+      eq(agentWakeupRequests.companyId, companyId), eq(agentWakeupRequests.reason, "issue_children_completed"),
+      eq(agentWakeupRequests.requestedByActorId, "native-status-committer")));
+
+    const firstWakeId = await completeChild(firstChildId);
+    const mergedWakeId = await completeChild(secondChildId);
+    expect(await completeChild(secondChildId)).toBe(mergedWakeId);
+
+    const pending = (await childWakes()).filter((wake) => wake.status === "queued");
+    expect(pending).toHaveLength(1);
+    expect(pending[0]).toMatchObject({ id: mergedWakeId, coalescedCount: 2 });
+    expect(pending[0]!.payload).toMatchObject({ completedChildIssueIds: [firstChildId, secondChildId],
+      _paperclipWakeContext: { completedChildIssueIds: [firstChildId, secondChildId], completedChildIssueId: secondChildId } });
+    const [superseded] = await db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.id, firstWakeId));
+    expect(superseded).toMatchObject({ status: "coalesced", runId: null });
+    expect(superseded!.payload).toMatchObject({ coalescedIntoWakeupRequestId: mergedWakeId });
+
+    await heartbeat.dispatchPendingNativeStatusWakeups({ companyId });
+    await heartbeat.drainActiveRunExecutions();
+    const firstRuns = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, companyId));
+    expect(firstRuns).toHaveLength(1);
+    expect(firstRuns[0]!.startedAt).not.toBeNull();
+    expect(firstRuns[0]!.contextSnapshot).toMatchObject({ completedChildIssueIds: [firstChildId, secondChildId] });
+
+    const laterWakeId = await completeChild(laterChildId);
+    expect(laterWakeId).not.toBe(mergedWakeId);
+    const laterWake = (await childWakes()).find((wake) => wake.id === laterWakeId);
+    expect(laterWake).toMatchObject({ status: "queued", coalescedCount: 0 });
+    expect(laterWake!.payload).toMatchObject({ completedChildIssueId: laterChildId });
+    await heartbeat.dispatchPendingNativeStatusWakeups({ companyId });
+    await heartbeat.drainActiveRunExecutions();
+    expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, companyId))).toHaveLength(2);
+  }, 30_000);
 
   it.each(["onboarding", "ordinary", "cancelled"])("dispatches only a verified completed onboarding report: %s", async kind => {
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), childId = randomUUID();

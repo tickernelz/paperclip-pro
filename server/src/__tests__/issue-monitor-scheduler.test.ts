@@ -616,6 +616,100 @@ describeEmbeddedPostgres("issue monitor scheduler", () => {
     expect(["todo", "in_progress"]).toContain(recoveryIssue?.status);
   });
 
+  async function markPreviouslyTriggered(issueId: string, lastTriggeredAt: Date) {
+    await db.update(issues).set({ monitorLastTriggeredAt: lastTriggeredAt, monitorAttemptCount: 1 })
+      .where(eq(issues.id, issueId));
+  }
+
+  async function monitorDueWakes(agentId: string) {
+    return db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.agentId, agentId))
+      .then((rows) => rows.filter((row) => row.reason === "issue_monitor_due"));
+  }
+
+  it("backs off a due monitor when nothing changed since its last trigger", async () => {
+    const { companyId, issueId, agentId, nextCheckAt } = await seedFixture();
+    await markPreviouslyTriggered(issueId, new Date("2026-04-11T12:00:00.000Z"));
+    await db.insert(issueComments).values({ companyId, issueId, authorAgentId: agentId, body: "Still waiting on the deploy." });
+    const heartbeat = heartbeatService(db);
+    const firstTick = new Date("2026-04-11T12:31:00.000Z");
+
+    const first = await heartbeat.tickTimers(firstTick);
+
+    expect(first.enqueued).toBe(0);
+    expect(await monitorDueWakes(agentId)).toHaveLength(0);
+    const [deferred] = await db.select().from(issues).where(eq(issues.id, issueId));
+    const firstNext = new Date(firstTick.getTime() + 2 * 60_000);
+    expect(deferred!.monitorNextCheckAt?.toISOString()).toBe(firstNext.toISOString());
+    expect(deferred!.monitorNextCheckAt!.getTime()).toBeGreaterThan(nextCheckAt.getTime());
+    expect(deferred!.monitorWakeRequestedAt).toBeNull();
+    expect(deferred!.monitorAttemptCount).toBe(1);
+    expect(normalizeIssueExecutionPolicy(deferred!.executionPolicy ?? null)?.monitor?.nextCheckAt).toBe(firstNext.toISOString());
+    expect(parseIssueExecutionState(deferred!.executionState)?.monitor).toMatchObject({
+      status: "scheduled", nextCheckAt: firstNext.toISOString(),
+    });
+    const scheduled = await db.select().from(activityLog).where(eq(activityLog.entityId, issueId))
+      .then((rows) => rows.filter((row) => row.action === "issue.monitor_scheduled"));
+    expect(scheduled).toHaveLength(1);
+    expect(scheduled[0]!.details).toMatchObject({
+      source: "no_change_backoff",
+      previousNextCheckAt: nextCheckAt.toISOString(),
+      nextCheckAt: firstNext.toISOString(),
+      backoffMs: 2 * 60_000,
+    });
+
+    const secondTick = new Date(firstNext.getTime() + 1_000);
+    expect((await heartbeat.tickTimers(secondTick)).enqueued).toBe(0);
+    const [again] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(again!.monitorNextCheckAt?.toISOString()).toBe(new Date(secondTick.getTime() + 4 * 60_000).toISOString());
+    expect(await monitorDueWakes(agentId)).toHaveLength(0);
+  });
+
+  it("fires a due monitor exactly once when a comment arrived since its last trigger", async () => {
+    const { companyId, issueId, agentId } = await seedFixture();
+    await markPreviouslyTriggered(issueId, new Date("2026-04-11T12:00:00.000Z"));
+    await db.insert(issueComments).values({ companyId, issueId, authorUserId: "board-user", body: "The deploy finished." });
+    const heartbeat = heartbeatService(db);
+
+    const result = await heartbeat.tickTimers(new Date("2026-04-11T12:31:00.000Z"));
+
+    expect(result.enqueued).toBe(1);
+    expect(await monitorDueWakes(agentId)).toHaveLength(1);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+    expect(issue!.monitorNextCheckAt).toBeNull();
+    expect(issue!.monitorAttemptCount).toBe(2);
+  });
+
+  it("keeps firing external-service monitors without new issue activity", async () => {
+    const { issueId, agentId } = await seedFixture({
+      monitor: { kind: "external_service", serviceName: "Deploy provider" },
+    });
+    await markPreviouslyTriggered(issueId, new Date("2026-04-11T12:00:00.000Z"));
+    const heartbeat = heartbeatService(db);
+
+    const result = await heartbeat.tickTimers(new Date("2026-04-11T12:31:00.000Z"));
+
+    expect(result.enqueued).toBe(1);
+    expect(await monitorDueWakes(agentId)).toHaveLength(1);
+  });
+
+  it("fires an unchanged monitor once its backoff reaches the cap", async () => {
+    const { issueId, agentId } = await seedFixture();
+    await markPreviouslyTriggered(issueId, new Date("2026-04-11T12:00:00.000Z"));
+    const heartbeat = heartbeatService(db);
+    const delays: number[] = [];
+    let tickAt = new Date("2026-04-11T12:31:00.000Z");
+    for (let tick = 0; tick < 10; tick += 1) {
+      const result = await heartbeat.tickTimers(tickAt);
+      if (result.enqueued > 0) break;
+      const [issue] = await db.select().from(issues).where(eq(issues.id, issueId));
+      delays.push(issue!.monitorNextCheckAt!.getTime() - tickAt.getTime());
+      tickAt = new Date(issue!.monitorNextCheckAt!.getTime() + 1_000);
+    }
+
+    expect(delays).toEqual([2, 4, 8, 16, 30].map((minutes) => minutes * 60_000));
+    expect(await monitorDueWakes(agentId)).toHaveLength(1);
+  });
+
   it("omits external monitor refs from wake payloads and activity details", async () => {
     const { issueId, agentId } = await seedFixture({
       monitor: {
