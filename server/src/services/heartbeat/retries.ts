@@ -22,7 +22,7 @@ import {
   CONVERSATION_CONTINUATION_POLICY,
   hasConversationContinuationPolicy,
 } from "../conversation-continuation.js";
-import { legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
+import { isGracefulShutdownInterruptedRun, legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
 import {
   executionFailureRetryCount,
   executionRetryAttemptCount,
@@ -155,6 +155,15 @@ export const PROCESS_LOSS_RETRY_REASON = "process_lost";
 export const PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS = 2;
 
 export const PROCESS_LOSS_CONTINUATION_DELAY_MS = 30_000;
+
+export function spentProcessLossContinuations(
+  run: Pick<typeof heartbeatRuns.$inferSelect, "status" | "errorCode" | "scheduledRetryReason" | "contextSnapshot">,
+): number {
+  const count = processLossContinuationCount(run);
+  return count > 0 && run.scheduledRetryReason === PROCESS_LOSS_RETRY_REASON && isGracefulShutdownInterruptedRun(run)
+    ? count - 1
+    : count;
+}
 
 export const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
   orphaned_running_run: true,
@@ -504,7 +513,7 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       ),
     );
     const consumedAttempts = retryReason === PROCESS_LOSS_RETRY_REASON
-      ? processLossContinuationCount(run)
+      ? spentProcessLossContinuations(run)
       : executionRetryAttemptCount(run, retryReason);
     const nextAttempt = consumedAttempts + 1;
     const fallbackDelayMs =

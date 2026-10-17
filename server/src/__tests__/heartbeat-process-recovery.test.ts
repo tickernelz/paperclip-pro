@@ -4586,6 +4586,29 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     ).toEqual([]);
   });
 
+  it.each([
+    [false, 1],
+    [true, 0],
+  ] as const)("continues a shutdown-interrupted legacy conversation run unless its remote workspace is unrestored (unrestored: %s)", async (unrestored, successors) => {
+    const { runId } = await seedRunFixture({ adapterType: "codex_local", agentStatus: "running", runtimeMode: "legacy" });
+    if (unrestored) await db.update(heartbeatRuns).set({ resultJson: {
+      workspaceRestoreFailure: "restore_failed",
+      workspaceRestoreRecovery: { schema: "paperclip.workspace-restore-recovery.v1", runId, leaseIds: [] },
+    } }).where(eq(heartbeatRuns.id, runId));
+    const drain = await heartbeatService(db).drainRunningRunsForShutdown("SIGTERM", new Date("2026-03-19T00:06:00.000Z"));
+    const [stopped] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, runId));
+    expect(stopped).toMatchObject({
+      status: "interrupted",
+      errorCode: "server_shutdown_interrupted",
+      resultJson: expect.objectContaining({ cancellation: expect.objectContaining({ source: "shutdown" }) }),
+    });
+    if (successors) expect(stopped!.resultJson).toMatchObject({ conversationContinuation: "continue_conversation_v1" });
+    const retries = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId));
+    expect(retries).toHaveLength(successors);
+    expect(drain.retryRunIds).toEqual(retries.map((retry) => retry.id));
+    if (successors) expect(retries[0]).toMatchObject({ status: "scheduled_retry", scheduledRetryReason: "process_lost" });
+  });
+
   it("keeps a repeatedly restarted issue free of reconciliation holds", async () => {
     const { companyId, runId, issueId } = await seedRunFixture({
       adapterType: "process",
@@ -6945,8 +6968,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       await seedStrandedIssueFixture({
         status: "in_progress",
         runStatus: "failed",
-        runErrorCode: "server_shutdown_interrupted",
-        runError: "Interrupted by graceful server shutdown (SIGTERM)",
+        runErrorCode: "process_lost",
+        runError: "Process lost -- child pid is no longer running",
         // The real interrupted run carries the conversation-continuation
         // marker the shutdown path writes; it also keeps a spent retry chain
         // out of legacy reconciliation so the sweeper reaches the handoff
@@ -7005,7 +7028,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       sourceRunId,
       missingDisposition: "clear_next_step",
       latestRunStatus: "interrupted",
-      latestRunErrorCode: "server_shutdown_interrupted",
+      latestRunErrorCode: "process_lost",
       recoveryCause: SUCCESSFUL_RUN_MISSING_STATE_REASON,
     });
     const sourceIssue = await db
@@ -7021,8 +7044,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       await seedStrandedIssueFixture({
         status: "in_progress",
         runStatus: "failed",
-        runErrorCode: "server_shutdown_interrupted",
-        runError: "Interrupted by graceful server shutdown (SIGTERM)",
+        runErrorCode: "process_lost",
+        runError: "Process lost -- child pid is no longer running",
         // A conversation adapter's interrupted run keeps its session for
         // continuation, so legacy reconciliation does not terminalize it;
         // the sweeper reaches the retry lane with a spent budget.
@@ -7097,6 +7120,33 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(again.continuationRequeued).toBe(0);
   });
 
+  it("continues an in_progress issue whose second process-loss continuation was itself stopped by server shutdown", async () => {
+    const { runId, issueId } = await seedStrandedIssueFixture({
+      status: "in_progress",
+      runStatus: "failed",
+      runErrorCode: "server_shutdown_interrupted",
+      runError: "Interrupted by graceful server shutdown (SIGTERM)",
+      resultJson: { stopReason: "interrupted", conversationContinuation: "continue_conversation_v1" },
+    });
+    await db.update(heartbeatRuns).set({
+      status: "interrupted",
+      scheduledRetryAttempt: 2,
+      scheduledRetryReason: "process_lost",
+      contextSnapshot: {
+        issueId, taskId: issueId, wakeReason: "transient_failure_retry", retryOfRunId: randomUUID(),
+        failureRetriesBeforeProcessLoss: 2, processLossContinuations: 2,
+      },
+    }).where(eq(heartbeatRuns.id, runId));
+
+    const result = await heartbeatService(db).reconcileStrandedAssignedIssues();
+    expect(result.escalated).toBe(0);
+    const successors = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId));
+    expect(successors).toHaveLength(1);
+    expect(successors[0]).toMatchObject({ status: "scheduled_retry", scheduledRetryReason: "process_lost", scheduledRetryAttempt: 2 });
+    expect(successors[0]!.contextSnapshot).toMatchObject({ processLossContinuations: 2 });
+    expect((await db.select().from(issues).where(eq(issues.id, issueId)))[0]?.status).toBe("in_progress");
+  });
+
   it("gives an interrupted run a process-loss continuation that carries its transient retry count", async () => {
     const { agentId, runId, issueId } = await seedStrandedIssueFixture({
       status: "in_progress",
@@ -7149,8 +7199,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     const { agentId, runId, issueId } = await seedStrandedIssueFixture({
       status: "todo",
       runStatus: "failed",
-      runErrorCode: "server_shutdown_interrupted",
-      runError: "Interrupted by graceful server shutdown (SIGTERM)",
+      runErrorCode: "process_lost",
+      runError: "Process lost -- child pid is no longer running",
       resultJson: {
         stopReason: "interrupted",
         conversationContinuation: "continue_conversation_v1",
@@ -10556,8 +10606,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .update(heartbeatRuns)
       .set({
         status: "interrupted",
-        errorCode: "server_shutdown_interrupted",
-        error: "Interrupted by graceful server shutdown (SIGTERM)",
+        errorCode: "process_lost",
+        error: "Process lost -- child pid is no longer running",
         scheduledRetryAttempt: 2,
         scheduledRetryReason: "process_lost",
         resultJson: {
@@ -10624,8 +10674,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
       .update(heartbeatRuns)
       .set({
         status: "interrupted",
-        errorCode: "server_shutdown_interrupted",
-        error: "Interrupted by graceful server shutdown (SIGTERM)",
+        errorCode: "process_lost",
+        error: "Process lost -- child pid is no longer running",
         scheduledRetryAttempt: 2,
         scheduledRetryReason: "process_lost",
         resultJson: {

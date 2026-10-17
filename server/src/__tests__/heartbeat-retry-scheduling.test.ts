@@ -523,6 +523,30 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     expect(await getExecutionBlocker(db, companyId, issueId)).toBeNull();
   });
 
+  it.each([
+    ["server_shutdown_interrupted", [1, 1, 1], "scheduled"],
+    ["process_lost", [1, 2], "retry_exhausted"],
+  ] as const)("refunds a process-loss continuation only to a child interrupted by server shutdown (%s child)", async (childErrorCode, attempts, finalOutcome) => {
+    const { runId, now } = await seedMaxTurnFixture();
+    const resultJson = { conversationContinuation: "continue_conversation_v1" };
+    await db.update(heartbeatRuns).set({ status: "interrupted", errorCode: "process_lost", resultJson })
+      .where(eq(heartbeatRuns.id, runId));
+    let predecessor = runId;
+    for (const attempt of attempts) {
+      expect(await heartbeat.scheduleBoundedRetry(predecessor, { now, random: () => 0, retryReason: "process_lost" }))
+        .toMatchObject({ outcome: "scheduled" });
+      const children = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, predecessor));
+      expect(children).toHaveLength(1);
+      expect(children[0]).toMatchObject({ scheduledRetryAttempt: attempt, scheduledRetryReason: "process_lost" });
+      expect(children[0]!.contextSnapshot).toMatchObject({ processLossContinuations: attempt });
+      predecessor = children[0]!.id;
+      await db.update(heartbeatRuns).set({ status: "interrupted", errorCode: childErrorCode, finishedAt: now, resultJson })
+        .where(eq(heartbeatRuns.id, predecessor));
+    }
+    expect(await heartbeat.scheduleBoundedRetry(predecessor, { now, random: () => 0, retryReason: "process_lost" }))
+      .toMatchObject({ outcome: finalOutcome });
+  });
+
   it.each(["dependency", "disabled", "reassigned"])("respects the %s gate for interrupted conversations", async gate => {
     const { companyId, agentId, issueId, runId, now } = await seedMaxTurnFixture();
     await db.update(heartbeatRuns).set({ status: "interrupted", errorCode: "process_lost",
