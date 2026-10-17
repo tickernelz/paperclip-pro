@@ -3481,23 +3481,35 @@ export function stripPaperclipSessionMetadataFromSessionParams(
   return next;
 }
 
-const PROCESS_LOSS_RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES: Partial<
+const RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES: Partial<
   Record<EffectiveRunSessionConfigCategory, true>
 > = { instructions: true, runtimeSkills: true };
 const PROCESS_LOSS_RESUME_TARGET_SESSION_CONFIG_CATEGORIES: Partial<
   Record<EffectiveRunSessionConfigCategory, true>
 > = { adapter: true, adapterConfig: true };
+const PROMPT_REAPPLIED_ON_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
 
-function processLossContinuationCanResumeAcross(input: {
+function sessionCanResumeAcross(input: {
+  adapterType?: string | null;
+  processLossContinuation?: boolean;
   changedCategories: readonly EffectiveRunSessionConfigCategory[];
   storedResumeFingerprint: string | null;
   nextResumeFingerprint: string;
 }) {
+  if (!input.processLossContinuation) {
+    return (
+      input.adapterType != null &&
+      PROMPT_REAPPLIED_ON_RESUME_ADAPTER_TYPES.has(input.adapterType) &&
+      input.changedCategories.every(
+        (category) => RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true,
+      )
+    );
+  }
   const resumeTargetUnchanged =
     input.storedResumeFingerprint === input.nextResumeFingerprint;
   return input.changedCategories.every(
     (category) =>
-      PROCESS_LOSS_RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true ||
+      RESUME_NEUTRAL_SESSION_CONFIG_CATEGORIES[category] === true ||
       (resumeTargetUnchanged &&
         PROCESS_LOSS_RESUME_TARGET_SESSION_CONFIG_CATEGORIES[category] === true),
   );
@@ -3570,8 +3582,9 @@ export function resolveTaskSessionConfigFreshness(input: {
         next: input.configMetadata.categoryFingerprints,
       });
       if (
-        !input.processLossContinuation ||
-        !processLossContinuationCanResumeAcross({
+        !sessionCanResumeAcross({
+          adapterType: input.adapterType,
+          processLossContinuation: input.processLossContinuation,
           changedCategories,
           storedResumeFingerprint: storedConfig.resumeFingerprint,
           nextResumeFingerprint: input.configMetadata.resumeFingerprint,

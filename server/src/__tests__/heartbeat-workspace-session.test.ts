@@ -2456,16 +2456,17 @@ describe("effective run session config freshness", () => {
       }).reset).toBe(false);
     }
 
-    const upgraded = await buildSessionConfigMetadata({
-      adapterType: "omp_local",
+    const claudeFirst = await buildSessionConfigMetadata({ adapterType: "claude_local", runtimeSkills: [skill()] });
+    const claudeUpgraded = await buildSessionConfigMetadata({
+      adapterType: "claude_local",
       runtimeSkills: [skill({ currentVersionId: "skill-version-2" })],
     });
     expect(resolveTaskSessionConfigFreshness({
       hasTaskSession: true,
-      adapterType: "omp_local",
+      adapterType: "claude_local",
       configuredModel: "gpt-5.4-mini",
-      taskSessionParams: sessionParamsWithConfigMetadata(first),
-      configMetadata: upgraded,
+      taskSessionParams: sessionParamsWithConfigMetadata(claudeFirst),
+      configMetadata: claudeUpgraded,
     }).reset).toBe(true);
   });
 
@@ -2738,33 +2739,109 @@ describe("effective run session config freshness", () => {
       expect(decision.changedCategories).toEqual(["adapterConfig"]);
     });
 
-    it("still resets an omp_local session when its instructions change", async () => {
+    async function instructionsEdit(input: {
+      adapterType: string;
+      first?: Record<string, unknown>;
+      next?: Record<string, unknown>;
+    }) {
       const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-omp-model-switch-"));
       const instructionsPath = path.join(root, "AGENTS.md");
-      const instructionsConfig = ompConfig({
+      const instructionsConfig = (overrides: Record<string, unknown> = {}) => ompConfig({
         instructionsBundleMode: "managed",
         instructionsRootPath: root,
         instructionsEntryFile: "AGENTS.md",
         instructionsFilePath: instructionsPath,
+        ...overrides,
       });
       await fs.writeFile(instructionsPath, "Version one instructions.\n", "utf8");
       const base = await buildSessionConfigMetadata({
-        adapterType: "omp_local",
-        effectiveAdapterConfig: instructionsConfig,
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: instructionsConfig(input.first),
       });
       await fs.writeFile(instructionsPath, "Version two instructions.\n", "utf8");
       const next = await buildSessionConfigMetadata({
-        adapterType: "omp_local",
-        effectiveAdapterConfig: instructionsConfig,
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: instructionsConfig(input.next),
       });
-
-      const decision = resolveTaskSessionConfigFreshness({
+      return resolveTaskSessionConfigFreshness({
         hasTaskSession: true,
-        adapterType: "omp_local",
+        adapterType: input.adapterType,
         configuredModel: "sub2api-claude/claude-opus-5-5",
         taskSessionParams: sessionParamsWithConfigMetadata(base, "sub2api-claude/claude-opus-5-5"),
         configMetadata: next,
       });
+    }
+
+    async function runtimeSkillsEdit(input: {
+      adapterType: string;
+      first?: Record<string, unknown>;
+      next?: Record<string, unknown>;
+    }) {
+      const skill = (currentVersionId: string) => ({
+        key: "paperclip",
+        runtimeName: "paperclip",
+        source: "/tmp/paperclip/runtime-skills/paperclip",
+        versionId: null,
+        currentVersionId,
+        sourceStatus: "available",
+        missingDetail: null,
+      });
+      const base = await buildSessionConfigMetadata({
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: ompConfig(input.first),
+        runtimeSkills: [skill("skill-version-1")],
+      });
+      const next = await buildSessionConfigMetadata({
+        adapterType: input.adapterType,
+        effectiveAdapterConfig: ompConfig(input.next),
+        runtimeSkills: [skill("skill-version-2"), { ...skill("skill-version-1"), key: "reviewer", runtimeName: "reviewer" }],
+      });
+      return resolveTaskSessionConfigFreshness({
+        hasTaskSession: true,
+        adapterType: input.adapterType,
+        configuredModel: "sub2api-claude/claude-opus-5-5",
+        taskSessionParams: sessionParamsWithConfigMetadata(base, "sub2api-claude/claude-opus-5-5"),
+        configMetadata: next,
+      });
+    }
+
+    it("resumes an omp_local session on an ordinary wake when only its instructions change", async () => {
+      const decision = await instructionsEdit({ adapterType: "omp_local" });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["instructions"] });
+    });
+
+    it("resumes an omp_local session on an ordinary wake when only its runtime skills change", async () => {
+      const decision = await runtimeSkillsEdit({ adapterType: "omp_local" });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["runtimeSkills"] });
+    });
+
+    it("still resets an omp_local session when a model-bearing setting changes alongside its instructions", async () => {
+      const decision = await instructionsEdit({
+        adapterType: "omp_local",
+        next: { smolModel: "vendor/smol" },
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig", "instructions"]);
+      expect(decision.reasons).toEqual([
+        "effective run configuration changed: adapter config, instructions (smolModel)",
+      ]);
+    });
+
+    it("still resets an omp_local session when a model-bearing setting changes alongside its runtime skills", async () => {
+      const decision = await runtimeSkillsEdit({
+        adapterType: "omp_local",
+        next: { slowModel: "vendor/slow" },
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig", "runtimeSkills"]);
+    });
+
+    it("keeps resetting claude_local sessions when only instructions change", async () => {
+      const decision = await instructionsEdit({ adapterType: "claude_local" });
 
       expect(decision.reset).toBe(true);
       expect(decision.changedCategories).toEqual(["instructions"]);
