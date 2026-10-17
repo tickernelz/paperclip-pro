@@ -1,7 +1,7 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
-import { AGENT_ROLE_LABELS, type Agent, type AgentRuntimeState } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, AgentRuntimeState } from "@tickernelz/paperclip-pro-shared";
 import { agentsApi } from "../api/agents";
 import { useCompany } from "../context/CompanyContext";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";
@@ -10,13 +10,12 @@ import { AgentStatusBadge } from "./StatusBadge";
 import { Identity } from "./Identity";
 import { formatDate, agentUrl } from "../lib/utils";
 import { Separator } from "@/components/ui/separator";
+import { AgentRoleEditor } from "./agent-role/AgentRoleEditor";
 
 interface AgentPropertiesProps {
   agent: Agent;
   runtimeState?: AgentRuntimeState;
 }
-
-const roleLabels = AGENT_ROLE_LABELS as Record<string, string>;
 
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -53,7 +52,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
           </PropertyRow>
         )}
         <PropertyRow label="Role">
-          <span className="text-sm">{roleLabels[agent.role] ?? agent.role}</span>
+          <AgentRoleEditor agent={agent} companyId={selectedCompanyId ?? agent.companyId} className="text-sm" />
         </PropertyRow>
         {agent.title && (
           <PropertyRow label="Title">

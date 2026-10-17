@@ -7,7 +7,7 @@ interface EntityRowProps {
   identifier?: string;
   title: string;
   titleAccessory?: ReactNode;
-  subtitle?: string;
+  subtitle?: ReactNode;
   /**
    * Optional metadata columns rendered immediately after the title. When set,
    * the title stops flex-growing and a spacer is inserted between `meta` and

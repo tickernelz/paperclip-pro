@@ -28,6 +28,8 @@ import { Tabs } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { BulkAgentAdapterConfigDialog } from "../components/BulkAgentAdapterConfigDialog";
+import { BulkAgentRoleDialog } from "../components/agents-table/BulkAgentRoleDialog";
+import { AgentRoleEditor } from "../components/agent-role/AgentRoleEditor";
 import { AlertTriangle, Bot, Plus, List, Network } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent, type Environment, type EnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
@@ -246,6 +248,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
   const [configureState, setConfigureState] = useState<BuiltInAgentState | null>(null);
   const [selectedAgentIds, setSelectedAgentIds] = useState<Record<string, true>>({});
   const [bulkConfigOpen, setBulkConfigOpen] = useState(false);
+  const [bulkRoleOpen, setBulkRoleOpen] = useState(false);
 
   const { data: agents, isLoading, error } = useQuery({
     queryKey: queryKeys.agents.list(selectedCompanyId!),
@@ -409,7 +412,12 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         titleClassName="flex-1 @5xl:flex-none @5xl:w-44"
         titleTextClassName="truncate"
         subtitleClassName="truncate"
-        subtitle={`${roleLabels[agent.role] ?? agent.role}${agent.title ? ` - ${agent.title}` : ""}`}
+        subtitle={(
+          <>
+            <AgentRoleEditor agent={agent} companyId={selectedCompanyId} />
+            {agent.title ? ` - ${agent.title}` : null}
+          </>
+        )}
         to={agentUrl(agent)}
         className={cn(
           "group py-3",
@@ -569,6 +577,14 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
               >
                 Change model / thinking ({selectedFilteredIds.length})
               </Button>
+              <Button
+                size="xs"
+                variant="outline"
+                data-testid="agents-bulk-role"
+                onClick={() => setBulkRoleOpen(true)}
+              >
+                Change role ({selectedFilteredIds.length})
+              </Button>
               <Button size="xs" variant="ghost" onClick={() => setSelectedAgentIds({})}>
                 Clear
               </Button>
@@ -639,6 +655,14 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
           agentIds={selectedFilteredIds}
           open={bulkConfigOpen}
           onOpenChange={setBulkConfigOpen}
+        />
+      )}
+      {bulkRoleOpen && selectedCompanyId && (
+        <BulkAgentRoleDialog
+          companyId={selectedCompanyId}
+          agents={filtered.filter((agent) => selectedAgentIds[agent.id])}
+          open={bulkRoleOpen}
+          onOpenChange={setBulkRoleOpen}
         />
       )}
     </div>

@@ -36,6 +36,7 @@ import { AgentSkillsTab } from "./agent-skills/AgentSkillsTab";
 import { AgentConfigForm } from "../components/AgentConfigForm";
 import { getAdapterDisplay } from "../adapters/adapter-display-registry";
 import { adapterLabels, roleLabels, help } from "../components/agent-config-primitives";
+import { AgentRoleEditor } from "../components/agent-role/AgentRoleEditor";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
 import { redactCommandText as redactCommandSecretText } from "@tickernelz/paperclip-pro-adapter-utils";
@@ -1760,7 +1761,7 @@ export function AgentOverview({
             <StatusBadge status={agent.status} />
           </div>
           <div className="space-y-3">
-            <SummaryRow label="Role"><span className="text-sm">{roleLabels[agent.role] ?? agent.role}</span></SummaryRow>
+            <SummaryRow label="Role"><AgentRoleEditor agent={agent} companyId={agent.companyId} className="text-sm" /></SummaryRow>
             <SummaryRow label="Title"><span className="text-sm">{agent.title ?? "Not set"}</span></SummaryRow>
             <SummaryRow label="Reports to">
               {reportsToAgent ? (
