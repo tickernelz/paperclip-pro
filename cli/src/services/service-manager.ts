@@ -138,7 +138,7 @@ export function launchdServiceName(instanceId: string): string {
 export type SystemdMemoryLimits = { high: string; max: string; swapMax: string; oomScoreAdjust: number };
 
 export const DEFAULT_SYSTEMD_MEMORY_LIMITS: SystemdMemoryLimits = {
-  high: "55%",
+  high: "infinity",
   max: "62%",
   swapMax: "25%",
   oomScoreAdjust: 0,
@@ -151,11 +151,11 @@ export const SERVICE_MEMORY_OVERRIDE_KEYS = {
   oomScoreAdjust: "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST",
 } as const;
 
-const SYSTEMD_MEMORY_LIMIT_PATTERN = /^(?:infinity|(?:[1-9]\d?|100)%|\d+[KMGT]?)$/;
+const SYSTEMD_MEMORY_LIMIT_PATTERN = /^(?:infinity|(?:[1-9]\d?|100)%|[1-9]\d*[KMGT]?)$/;
 
-function assertMemoryLimit(name: string, value: string): string {
-  if (!SYSTEMD_MEMORY_LIMIT_PATTERN.test(value)) {
-    throw new Error(`Invalid ${name} "${value}": use infinity, a percentage such as 62%, or bytes with an optional K, M, G or T suffix.`);
+function assertMemoryLimit(name: string, value: string, allowZero = false): string {
+  if (!(allowZero && value === "0") && !SYSTEMD_MEMORY_LIMIT_PATTERN.test(value)) {
+    throw new Error(`Invalid ${name} "${value}": use infinity, a percentage such as 62%, or a non-zero byte count with an optional K, M, G or T suffix${allowZero ? " (0 is allowed here)" : ""}.`);
   }
   return value;
 }
@@ -182,11 +182,13 @@ export function parseServiceMemoryOverrides(content: string): Partial<SystemdMem
   for (const field of ["high", "max", "swapMax"] as const) {
     const key = SERVICE_MEMORY_OVERRIDE_KEYS[field];
     const value = values.get(key);
-    if (value !== undefined) overrides[field] = assertMemoryLimit(key, value);
+    if (value !== undefined) overrides[field] = assertMemoryLimit(key, value, field === "swapMax");
   }
   const adjust = values.get(SERVICE_MEMORY_OVERRIDE_KEYS.oomScoreAdjust);
   if (adjust !== undefined) {
-    overrides.oomScoreAdjust = assertOomScoreAdjust(SERVICE_MEMORY_OVERRIDE_KEYS.oomScoreAdjust, Number(adjust));
+    const key = SERVICE_MEMORY_OVERRIDE_KEYS.oomScoreAdjust;
+    if (!/^-?\d+$/.test(adjust)) throw new Error(`Invalid ${key} "${adjust}": use a decimal integer from -1000 to 1000.`);
+    overrides.oomScoreAdjust = assertOomScoreAdjust(key, Number(adjust));
   }
   return overrides;
 }
@@ -232,7 +234,7 @@ OOMPolicy=continue
 OOMScoreAdjust=${assertOomScoreAdjust("oomScoreAdjust", limits.oomScoreAdjust)}
 MemoryHigh=${assertMemoryLimit("memoryLimits.high", limits.high)}
 MemoryMax=${assertMemoryLimit("memoryLimits.max", limits.max)}
-MemorySwapMax=${assertMemoryLimit("memoryLimits.swapMax", limits.swapMax)}
+MemorySwapMax=${assertMemoryLimit("memoryLimits.swapMax", limits.swapMax, true)}
 
 [Install]
 WantedBy=default.target
@@ -343,7 +345,12 @@ export class SystemdServiceManager implements ServiceManager {
   }
 
   async start(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "start", this.serviceName]); }
-  async stop(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "stop", this.serviceName]); }
+  async stop(): Promise<void> {
+    let renderable = true;
+    try { this.renderDefinition(); } catch { renderable = false; }
+    if (renderable) await this.ensureCurrent();
+    await this.runner("systemctl", ["--user", "stop", this.serviceName]);
+  }
   async restart(): Promise<void> { await this.ensureCurrent(); await this.runner("systemctl", ["--user", "restart", this.serviceName]); }
 
   async status(): Promise<ServiceStatus> {

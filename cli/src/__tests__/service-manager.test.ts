@@ -110,7 +110,7 @@ describe("systemd memory protection", () => {
     const unit = renderSystemdUnit(base);
     expect(serviceDirective(unit, "OOMPolicy")).toEqual(["continue"]);
     expect(serviceDirective(unit, "OOMScoreAdjust")).toEqual(["0"]);
-    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["55%"]);
+    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["infinity"]);
     expect(serviceDirective(unit, "MemoryMax")).toEqual(["62%"]);
     expect(serviceDirective(unit, "MemorySwapMax")).toEqual(["25%"]);
   });
@@ -120,7 +120,7 @@ describe("systemd memory protection", () => {
     expect(serviceDirective(unit, "MemoryMax")).toEqual(["20G"]);
     expect(serviceDirective(unit, "MemorySwapMax")).toEqual(["infinity"]);
     expect(serviceDirective(unit, "OOMScoreAdjust")).toEqual(["-100"]);
-    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["55%"]);
+    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["infinity"]);
   });
 
   it.each([
@@ -128,12 +128,18 @@ describe("systemd memory protection", () => {
     ["a percentage above 100", { high: "101%" }],
     ["a fractional percentage", { max: "62.5%" }],
     ["a unit-less word", { swapMax: "lots" }],
+    ["a zero MemoryMax", { max: "0" }],
+    ["a zero MemoryHigh", { high: "0" }],
   ])("rejects %s in a limit", (_label, memoryLimits) => {
     expect(() => renderSystemdUnit({ ...base, memoryLimits })).toThrow("Invalid memoryLimits");
   });
 
   it.each([-1001, 1001, 1.5, Number.NaN])("rejects OOMScoreAdjust %s", (oomScoreAdjust) => {
     expect(() => renderSystemdUnit({ ...base, memoryLimits: { oomScoreAdjust } })).toThrow("Invalid oomScoreAdjust");
+  });
+
+  it("allows a zero MemorySwapMax to disable swap for the unit", () => {
+    expect(serviceDirective(renderSystemdUnit({ ...base, memoryLimits: { swapMax: "0" } }), "MemorySwapMax")).toEqual(["0"]);
   });
 
   it("reads operator limits from service.env and ignores unrelated keys", () => {
@@ -151,8 +157,31 @@ describe("systemd memory protection", () => {
   it.each([
     "PAPERCLIP_SERVICE_MEMORY_MAX=everything",
     "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=abc",
+    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=",
+    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=0x1F4",
+    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=1e2",
+    "PAPERCLIP_SERVICE_MEMORY_MAX=0",
+    "PAPERCLIP_SERVICE_MEMORY_HIGH=",
   ])("rejects a malformed service.env override (%s)", (line) => {
     expect(() => parseServiceMemoryOverrides(line)).toThrow("Invalid");
+  });
+
+  it("still stops a running service when service.env holds a malformed override", async () => {
+    const userHome = await temporaryDirectory();
+    const homeDir = path.join(userHome, ".paperclip");
+    const calls: string[] = [];
+    const manager = new SystemdServiceManager("default", async (command, args) => {
+      calls.push([command, ...args].join(" "));
+      return { stdout: "", stderr: "" };
+    }, homeDir, path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
+    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "PAPERCLIP_SERVICE_MEMORY_MAX=everything\n", "utf8");
+
+    await manager.stop();
+    expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
+    await expect(manager.restart()).rejects.toThrow("Invalid PAPERCLIP_SERVICE_MEMORY_MAX");
+    await expect(manager.start()).rejects.toThrow("Invalid PAPERCLIP_SERVICE_MEMORY_MAX");
+    expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
   });
 
   it("renders the instance service.env override and rewrites a unit that still carries the old limit", async () => {
