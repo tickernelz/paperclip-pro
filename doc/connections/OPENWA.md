@@ -932,7 +932,9 @@ created with resolver policy `human_only` by an agent, and its payload carries
 no governed action (`toolAction`, `secretProposal`, `connectionAuthorization`,
 `openwaApprovalRequestId`) and is not `destructive`, the same transaction stages
 one `chat_actions` row (`kind = openwa_pending_card`) per active OpenWA
-endpoint and notifies that lane.
+endpoint and notifies that lane. A card addressed to a specific person
+(`addresseeUserId`) is staged only when that person is a current owner of the
+endpoint; otherwise it stays with its addressee in Paperclip.
 
 - The wake goes to the owner's approval chat, the same target `session_health`
   uses: the owner's self-chat in `owner_number` mode, otherwise the most

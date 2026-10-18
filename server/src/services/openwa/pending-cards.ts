@@ -9,6 +9,7 @@ import { issueService } from "../issues.js";
 import { publicChatTaskUrl } from "../chat-task-url.js";
 import { ownerRelayBlockedReason, pendingDecisionCardShape } from "../owner-decision-relay.js";
 import { openwaWakeRuntime } from "./approvals.js";
+import { openwaCurrentOwners } from "./owners.js";
 import { openwaOwnerApprovalConversation } from "./session-health.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -70,6 +71,8 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
   const staged: string[] = [];
   for (const endpoint of endpoints) {
     const account = endpoint.providerAccountId ?? "";
+    if (!account.includes("#")) continue;
+    if (card.addresseeUserId && !(await openwaCurrentOwners(tx, endpoint)).some((owner) => owner.userId === card.addresseeUserId)) continue;
     const target = await openwaOwnerApprovalConversation(tx, endpoint, {
       sessionId: account.slice(account.lastIndexOf("#") + 1),
       selfChatKey: (endpoint.botExternalId ?? "").replace(/\D/g, "") + "@c.us",

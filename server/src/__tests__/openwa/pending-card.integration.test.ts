@@ -350,6 +350,10 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     });
     await createCard(t, issueId, { payload: { version: 1, prompt: "Wipe it?", destructive: true } });
     await createCard(t, issueId, { resolverPolicy: "anyone" });
+    const other = randomUUID();
+    await db.insert(authUsers).values({ id: other, name: "Reviewer", email: other + "@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() });
+    await db.insert(companyMemberships).values({ companyId: t.companyId, principalType: "user", principalId: other, status: "active", membershipRole: "operator" });
+    await createCard(t, issueId, { addresseeUserId: other });
     await createCard(t, issueId, { kind: "ask_user_questions", payload: { version: 1, title: "Pick one", questions: [{ id: "q1", prompt: "Which?", selectionMode: "single", options: [{ id: "a", label: "A" }] }] } }, {} as Record<string, string>);
     expect(await cardActions(t)).toEqual([]);
   }, 180_000);
