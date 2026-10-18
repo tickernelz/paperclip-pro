@@ -6843,8 +6843,18 @@ registry.registerPath({
   path: "/api/companies/{companyId}/pending-decisions",
   tags: ["inbox"],
   summary: "List decisions waiting on a human",
-  description: "The Decisions-desk cards, board approvals and agent decisions still waiting for a person, limited to issues the caller can read. Each item has its issue, card kind, prompt, options or questions, requester, link, and whether an agent may relay the owner's answer with paperclipAnswerDecisionForOwner (relayBlockedReason says why not).",
-  request: { params: z.object({ companyId: z.string() }) },
+  description: "Default scope=relay is a partial list: the cards, board approvals and agent decisions an owner's answer can be relayed for (prompt, options or questions, requester, relayable and relayBlockedReason); it omits recovery, review, blocked-dependency, failed-run, budget, agent-error and join-request items, so an empty list does not mean an empty Decisions desk. scope=desk returns the same ranked feed as the Decisions page for the responsible owner, every sourceKind with severity, issue, title, age, entry and exit rule, href, open flag, relayable and relayBlockedReason; counts, ordering and the queue, includeDismissed, sort, cursor and limit filters match GET /attention. scope=desk needs a full-profile run the owner started; other runs get 403 decisions_desk_forbidden.",
+  request: {
+    params: z.object({ companyId: z.string() }),
+    query: z.object({
+      scope: z.enum(["relay", "desk"]).optional(),
+      includeDismissed: z.enum(["true", "false"]).optional(),
+      queue: z.string().min(1).optional(),
+      sort: z.enum(["activity", "decide"]).optional(),
+      cursor: z.string().min(1).optional(),
+      limit: z.coerce.number().int().min(1).max(100).optional(),
+    }),
+  },
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
 });
 

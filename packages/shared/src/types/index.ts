@@ -39,6 +39,8 @@ export type {
   AttentionDecisionVerb,
   AttentionDetailImage,
   AttentionFeed,
+  DeskDecision,
+  DeskDecisionList,
   PendingDecision,
   PendingDecisionList,
   PendingDecisionOption,
