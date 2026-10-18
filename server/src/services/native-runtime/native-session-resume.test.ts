@@ -24,7 +24,6 @@ import {
   nativeRunResults,
 } from "@tickernelz/paperclip-pro-db";
 import { describe, expect, it, vi } from "vitest";
-import * as codexCommandRuntime from "../../../../packages/paperclip-runner/src/drivers/codex/codex-command.js";
 import {
   CodexAppServerDriver,
   HarnessDriverBackend,
@@ -478,6 +477,21 @@ it("wires exact-session recovery and guarded selected identity into heartbeat pe
   expect(build).toContain("previousRun: previousNativeRun,");
 });
 
+const codexResolverOverride = vi.hoisted(() => ({ command: null as string | null, served: [] as string[] }));
+
+vi.mock("../../../../packages/paperclip-runner/src/drivers/codex/codex-command.js", async (importOriginal) => {
+  const original = await importOriginal<Record<string, unknown>>();
+  const resolveOriginal = original.resolveCodexCommand as (...args: unknown[]) => string;
+  return {
+    ...original,
+    resolveCodexCommand: (...args: unknown[]) => {
+      if (codexResolverOverride.command === null) return resolveOriginal(...args);
+      codexResolverOverride.served.push(codexResolverOverride.command);
+      return codexResolverOverride.command;
+    },
+  };
+});
+
 const embeddedSupport = await getEmbeddedPostgresTestSupport();
 const recoveryFakeCodex = resolve(
   import.meta.dirname,
@@ -745,7 +759,6 @@ const recoveryFakeCodex = resolve(
       if (runnerDiagnostics.length > 32) runnerDiagnostics.shift();
     };
     process.env.PAPERCLIP_RUNNER_STATE_DIR = stateBase;
-    const codexResolver = vi.spyOn(codexCommandRuntime, "resolveCodexCommand");
     try {
       await Promise.all(
         [bin, workspace, sourceHome].map((path) =>
@@ -761,7 +774,7 @@ const recoveryFakeCodex = resolve(
         `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(recoveryFakeCodex)} "$CODEX_HOME/fake-state.json" 16\n`,
       );
       await chmod(command, 0o700);
-      codexResolver.mockReturnValue(command);
+      codexResolverOverride.command = command;
       await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
       const address = server.address();
       if (!address || typeof address === "string")
@@ -1222,10 +1235,9 @@ const recoveryFakeCodex = resolve(
         .from(issues)
         .where(eq(issues.id, issueId));
       expect(task).toEqual({ id: issueId, assigneeAgentId: agentId });
-      expect(codexResolver).toHaveBeenCalled();
-      expect(codexResolver.mock.results.every((result) => result.value === command)).toBe(true);
+      expect(codexResolverOverride.served.length).toBeGreaterThan(0);
     } finally {
-      codexResolver.mockRestore();
+      codexResolverOverride.command = null;
       // onSession(null) quarantines the runtime owner before close finishes;
       // keep every published handle so an assertion/error cannot lose cleanup.
       if (firstSession) ownedSessions.add(firstSession);
