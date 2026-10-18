@@ -63,12 +63,16 @@ export interface LocalRunLimitsSettings {
   maxConcurrentRuns: number | null;
   maxConcurrentStarts: number | null;
   startWaitBypassSec: number | null;
+  memoryReservePercent: number | null;
+  memoryGateCooldownSec: number | null;
 }
 
 export const DEFAULT_LOCAL_RUN_LIMITS_SETTINGS: LocalRunLimitsSettings = {
   maxConcurrentRuns: null,
   maxConcurrentStarts: null,
   startWaitBypassSec: null,
+  memoryReservePercent: null,
+  memoryGateCooldownSec: null,
 };
 
 export type LocalRunLimitKey = keyof LocalRunLimitsSettings;

@@ -22,7 +22,7 @@ import {
   CONVERSATION_CONTINUATION_POLICY,
   hasConversationContinuationPolicy,
 } from "../conversation-continuation.js";
-import { isGracefulShutdownInterruptedRun, legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
+import { legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
 import {
   executionFailureRetryCount,
   executionRetryAttemptCount,
@@ -76,7 +76,7 @@ import type { createHeartbeatRunState } from "./run-state.js";
 import type { createHeartbeatRunPreparation } from "./run-preparation.js";
 import type { createRunDispatch, PostCommitEffect } from "../../modules/run-dispatch/index.js";
 import { DETACHED_PROCESS_ERROR_CODE } from "./recovery.js";
-import { processLossContinuationCount } from "../execution-recovery-attempt.js";
+import { isServerInterruptionRun, processLossContinuationCount } from "../execution-recovery-attempt.js";
 import { buildExplicitResumeSessionOverride } from "./run-state.js";
 
 type HeartbeatRun = typeof heartbeatRuns.$inferSelect;
@@ -156,13 +156,41 @@ export const PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS = 2;
 
 export const PROCESS_LOSS_CONTINUATION_DELAY_MS = 30_000;
 
+export const SERVER_INTERRUPTION_RETRY_MAX_ATTEMPTS = 6;
+
+export const SERVER_INTERRUPTION_RETRY_WINDOW_MS = 15 * 60 * 1000;
+
 export function spentProcessLossContinuations(
-  run: Pick<typeof heartbeatRuns.$inferSelect, "status" | "errorCode" | "scheduledRetryReason" | "contextSnapshot">,
+  run: Pick<typeof heartbeatRuns.$inferSelect, "contextSnapshot">,
 ): number {
-  const count = processLossContinuationCount(run);
-  return count > 0 && run.scheduledRetryReason === PROCESS_LOSS_RETRY_REASON && isGracefulShutdownInterruptedRun(run)
-    ? count - 1
-    : count;
+  return processLossContinuationCount(run);
+}
+
+export function serverInterruptionRetryWindow(
+  run: Pick<typeof heartbeatRuns.$inferSelect, "contextSnapshot">,
+  now: Date,
+): { count: number; windowStartedAt: Date } {
+  const state = parseObject(run.contextSnapshot?.serverInterruptionRetries);
+  const startedAt = typeof state.windowStartedAt === "string" ? new Date(state.windowStartedAt) : null;
+  const count = typeof state.count === "number" && Number.isInteger(state.count) && state.count > 0 ? state.count : 0;
+  if (
+    !startedAt ||
+    Number.isNaN(startedAt.getTime()) ||
+    count === 0 ||
+    now.getTime() - startedAt.getTime() >= SERVER_INTERRUPTION_RETRY_WINDOW_MS
+  ) {
+    return { count: 0, windowStartedAt: now };
+  }
+  return { count, windowStartedAt: startedAt };
+}
+
+export function processLossRetryBudgetSpent(
+  run: Pick<typeof heartbeatRuns.$inferSelect, "errorCode" | "contextSnapshot">,
+  now: Date,
+): boolean {
+  return isServerInterruptionRun(run)
+    ? serverInterruptionRetryWindow(run, now).count >= SERVER_INTERRUPTION_RETRY_MAX_ATTEMPTS
+    : spentProcessLossContinuations(run) >= PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS;
 }
 
 export const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
@@ -506,15 +534,22 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
             now,
           })
         : null;
-    const maxAttempts = Math.max(
-      0,
-      Math.floor(
-        opts?.maxAttempts ?? modelFallbackPlan?.maxAttempts ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
-      ),
-    );
-    const consumedAttempts = retryReason === PROCESS_LOSS_RETRY_REASON
-      ? spentProcessLossContinuations(run)
-      : executionRetryAttemptCount(run, retryReason);
+    const serverInterruptionWindow = retryReason === PROCESS_LOSS_RETRY_REASON && isServerInterruptionRun(run)
+      ? serverInterruptionRetryWindow(run, now)
+      : null;
+    const maxAttempts = serverInterruptionWindow
+      ? SERVER_INTERRUPTION_RETRY_MAX_ATTEMPTS
+      : Math.max(
+          0,
+          Math.floor(
+            opts?.maxAttempts ?? modelFallbackPlan?.maxAttempts ?? BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
+          ),
+        );
+    const consumedAttempts = serverInterruptionWindow
+      ? serverInterruptionWindow.count
+      : retryReason === PROCESS_LOSS_RETRY_REASON
+        ? spentProcessLossContinuations(run)
+        : executionRetryAttemptCount(run, retryReason);
     const nextAttempt = consumedAttempts + 1;
     const fallbackDelayMs =
       modelFallbackPlan && opts?.delayMs == null
@@ -583,7 +618,9 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
         eventType: "lifecycle",
         stream: "system",
         level: "warn",
-        message: `Bounded retry exhausted after ${consumedAttempts} scheduled attempts; no further automatic retry will be queued`,
+        message: serverInterruptionWindow
+          ? `Server interrupted this run ${consumedAttempts} times within ${SERVER_INTERRUPTION_RETRY_WINDOW_MS / 60_000} minutes (server crash-loop); no further automatic retry will be queued`
+          : `Bounded retry exhausted after ${consumedAttempts} scheduled attempts; no further automatic retry will be queued`,
         payload: exhaustion,
         retryExhaustion: exhaustion,
       });
@@ -779,10 +816,17 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
         ...(retryReason === PROCESS_LOSS_RETRY_REASON
           ? {
               failureRetriesBeforeProcessLoss: executionFailureRetryCount(run),
-              processLossContinuations: nextAttempt,
+              ...(serverInterruptionWindow
+                ? {
+                    serverInterruptionRetries: {
+                      count: nextAttempt,
+                      windowStartedAt: serverInterruptionWindow.windowStartedAt.toISOString(),
+                    },
+                  }
+                : { processLossContinuations: nextAttempt }),
             }
           : retryReason === MAX_TURN_CONTINUATION_RETRY_REASON
-            ? { processLossContinuations: undefined }
+            ? { processLossContinuations: undefined, serverInterruptionRetries: undefined }
             : {}),
         ...(shouldQuarantineWorkspaceForRetry
           ? {

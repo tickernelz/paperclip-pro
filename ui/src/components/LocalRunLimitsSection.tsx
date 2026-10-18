@@ -1,7 +1,13 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
+  INSTANCE_DEFAULT_LOCAL_MEMORY_GATE_COOLDOWN_SEC,
+  INSTANCE_DEFAULT_LOCAL_MEMORY_RESERVE_PERCENT,
   INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX,
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN,
   INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
   INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
   INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
@@ -47,6 +53,20 @@ const FIELDS: ReadonlyArray<{
     max: INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
     fallback: INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
   },
+  {
+    key: "memoryReservePercent",
+    label: "Memory reserve (% of RAM)",
+    min: INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN,
+    max: INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX,
+    fallback: INSTANCE_DEFAULT_LOCAL_MEMORY_RESERVE_PERCENT,
+  },
+  {
+    key: "memoryGateCooldownSec",
+    label: "Memory gate cooldown after an OOM kill (seconds)",
+    min: INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN,
+    max: INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX,
+    fallback: INSTANCE_DEFAULT_LOCAL_MEMORY_GATE_COOLDOWN_SEC,
+  },
 ];
 
 const SOURCE_LABELS: Record<LocalRunLimitSource, string> = {
@@ -62,6 +82,8 @@ function toDraft(value: LocalRunLimitsSettings): Draft {
     maxConcurrentRuns: value.maxConcurrentRuns === null ? "" : String(value.maxConcurrentRuns),
     maxConcurrentStarts: value.maxConcurrentStarts === null ? "" : String(value.maxConcurrentStarts),
     startWaitBypassSec: value.startWaitBypassSec === null ? "" : String(value.startWaitBypassSec),
+    memoryReservePercent: value.memoryReservePercent === null ? "" : String(value.memoryReservePercent),
+    memoryGateCooldownSec: value.memoryGateCooldownSec === null ? "" : String(value.memoryGateCooldownSec),
   };
 }
 
@@ -132,8 +154,9 @@ export function LocalRunLimitsSection({
           <p className="max-w-2xl text-sm text-muted-foreground">
             Cap how many local CLI agent runs this instance runs at once and how many may be starting up together.
             Changes apply to the next run admission without a restart; lowering a limit never stops runs that are
-            already running. Leave a field blank to use the built-in default. A server environment variable, when
-            set, overrides the value saved here.
+            already running. The memory reserve and cooldown only drive the memory gate's log line for now: each local
+            run start records whether it would have been held, and no start is delayed. Leave a field blank to use the
+            built-in default. A server environment variable, when set, overrides the value saved here.
           </p>
         </div>
         <form

@@ -70,6 +70,18 @@ export function buildImmediateExecutionPathRecoveryNoticeSeed(input: {
   };
 }
 
+export function buildServerInterruptionCrashLoopNoticeSeed(): StrandedRecoveryNoticeSeed {
+  return {
+    body:
+      "The Paperclip server restarted or crashed repeatedly while this issue's run was active, and the automatic retry limit " +
+      "for server interruptions is spent. The run did not fail on its own. " +
+      "Moving it to `blocked` so it is visible for intervention.",
+    title: "Server restarted repeatedly",
+    tone: "danger",
+    nextAction: "Check why the server keeps restarting, then retry the task.",
+  };
+}
+
 export function buildWorkspaceValidationRecoveryNoticeSeed(): StrandedRecoveryNoticeSeed {
   return {
     body:

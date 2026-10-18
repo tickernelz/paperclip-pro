@@ -22,9 +22,11 @@ const DEFAULTS: EffectiveLocalRunLimits = {
   maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
   maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
   startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
+  memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
+  memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
 };
 
-const UNSET: LocalRunLimitsSettings = { maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null };
+const UNSET: LocalRunLimitsSettings = { maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null };
 
 function setInputValue(input: HTMLInputElement, value: string) {
   const setter = Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, "value")?.set;
@@ -88,7 +90,7 @@ describe("LocalRunLimitsSection", () => {
 
     await vi.waitFor(() =>
       expect(mockInstanceSettingsApi.updateGeneral).toHaveBeenCalledWith({
-        localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: null, startWaitBypassSec: 300 },
+        localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: null, startWaitBypassSec: 300, memoryReservePercent: null, memoryGateCooldownSec: null },
       }),
     );
     await vi.waitFor(() =>
@@ -98,14 +100,14 @@ describe("LocalRunLimitsSection", () => {
   });
 
   it("clears a saved limit back to the default when the field is emptied", async () => {
-    await renderSection({ maxConcurrentRuns: 8, maxConcurrentStarts: 2, startWaitBypassSec: null });
+    await renderSection({ maxConcurrentRuns: 8, maxConcurrentStarts: 2, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
 
     flushSync(() => setInputValue(input("Max running local runs"), ""));
     flushSync(() => button("Save local run limits").click());
 
     await vi.waitFor(() =>
       expect(mockInstanceSettingsApi.updateGeneral).toHaveBeenCalledWith({
-        localRuns: { maxConcurrentRuns: null, maxConcurrentStarts: 2, startWaitBypassSec: null },
+        localRuns: { maxConcurrentRuns: null, maxConcurrentStarts: 2, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null },
       }),
     );
   });
@@ -125,7 +127,7 @@ describe("LocalRunLimitsSection", () => {
       ...DEFAULTS,
       maxConcurrentRuns: { value: 12, source: "env", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
     });
-    await renderSection({ maxConcurrentRuns: 5, maxConcurrentStarts: null, startWaitBypassSec: null });
+    await renderSection({ maxConcurrentRuns: 5, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
     await vi.waitFor(() =>
       expect(container.querySelector('[data-testid="local-run-limit-env-maxConcurrentRuns"]')?.textContent).toContain(
         "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
@@ -142,7 +144,7 @@ describe("LocalRunLimitsSection", () => {
 
     await vi.waitFor(() =>
       expect(mockInstanceSettingsApi.updateGeneral).toHaveBeenCalledWith({
-        localRuns: { maxConcurrentRuns: 5, maxConcurrentStarts: 6, startWaitBypassSec: null },
+        localRuns: { maxConcurrentRuns: 5, maxConcurrentStarts: 6, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null },
       }),
     );
   });

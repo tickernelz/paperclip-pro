@@ -138,6 +138,7 @@ import {
   type StrandedScopeExemption,
 } from "./stranded-scope.js";
 import { isHeartbeatWakeOnDemandEnabled } from "../heartbeat-policy.js";
+import { isServerInterruptionRun } from "../execution-recovery-attempt.js";
 import {
   DEFAULT_MAX_SUCCESSFUL_RUN_HANDOFF_ATTEMPTS,
   FINISH_SUCCESSFUL_RUN_HANDOFF_REASON,
@@ -152,6 +153,7 @@ import {
   sandboxProviderPluginRemedy,
   buildExecutionReviewParticipantRecoveryNoticeSeed,
   buildExecutionReviewParticipantUnavailableNoticeSeed,
+  buildServerInterruptionCrashLoopNoticeSeed,
   buildStrandedRecoveryEscalationNotice,
   type StrandedRecoveryNoticeSeed,
 } from "./stranded-notice.js";
@@ -293,6 +295,13 @@ export function shouldRouteRecoveryToOriginalAgent(
 }
 
 type StrandedPreviousStatus = "todo" | "in_progress" | "in_review";
+
+function exhaustionNoticeSeed(
+  latestRun: { errorCode?: string | null } | null | undefined,
+  seed: StrandedRecoveryNoticeSeed,
+): StrandedRecoveryNoticeSeed {
+  return latestRun && isServerInterruptionRun(latestRun) ? buildServerInterruptionCrashLoopNoticeSeed() : seed;
+}
 
 function strandedRecoveryUnblockDescriptor(
   action: Pick<
@@ -5455,14 +5464,14 @@ export function recoveryService(
             issue,
             previousStatus: "todo",
             latestRun,
-            notice: {
+            notice: exhaustionNoticeSeed(latestRun, {
               body:
                 "Paperclip automatically retried dispatch for this assigned `todo` issue after a lost wake/run, " +
                 "but the bounded retry budget is spent and it still has no live execution path. " +
                 "Moving it to `blocked` so it is visible for intervention.",
               title: "No live execution path",
               tone: "danger",
-            },
+            }),
           });
           if (updated) {
             result.escalated += 1;
@@ -5753,14 +5762,14 @@ export function recoveryService(
           issue,
           previousStatus: "in_progress",
           latestRun,
-          notice: {
+          notice: exhaustionNoticeSeed(latestRun, {
             body:
               "Paperclip retried this issue's run after it ended without finishing, but the bounded retry budget " +
               "is spent and it still has no live execution path. " +
               "Moving it to `blocked` so it is visible for intervention.",
             title: "No live execution path",
             tone: "danger",
-          },
+          }),
         });
         if (updated) {
           result.escalated += 1;

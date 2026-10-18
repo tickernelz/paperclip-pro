@@ -523,28 +523,70 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     expect(await getExecutionBlocker(db, companyId, issueId)).toBeNull();
   });
 
-  it.each([
-    ["server_shutdown_interrupted", [1, 1, 1], "scheduled"],
-    ["process_lost", [1, 2], "retry_exhausted"],
-  ] as const)("refunds a process-loss continuation only to a child interrupted by server shutdown (%s child)", async (childErrorCode, attempts, finalOutcome) => {
-    const { runId, now } = await seedMaxTurnFixture();
+  async function interruptChain(runId: string, errorCode: string, attempts: number, now: Date) {
     const resultJson = { conversationContinuation: "continue_conversation_v1" };
-    await db.update(heartbeatRuns).set({ status: "interrupted", errorCode: "process_lost", resultJson })
-      .where(eq(heartbeatRuns.id, runId));
+    await db.update(heartbeatRuns).set({ status: "interrupted", errorCode, resultJson }).where(eq(heartbeatRuns.id, runId));
     let predecessor = runId;
-    for (const attempt of attempts) {
-      expect(await heartbeat.scheduleBoundedRetry(predecessor, { now, random: () => 0, retryReason: "process_lost" }))
+    for (let attempt = 1; attempt <= attempts; attempt += 1) {
+      expect(await heartbeat.scheduleBoundedRetry(predecessor, { now, random: () => 0, retryReason: "process_lost", delayMs: 30_000 }))
         .toMatchObject({ outcome: "scheduled" });
       const children = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, predecessor));
       expect(children).toHaveLength(1);
-      expect(children[0]).toMatchObject({ scheduledRetryAttempt: attempt, scheduledRetryReason: "process_lost" });
-      expect(children[0]!.contextSnapshot).toMatchObject({ processLossContinuations: attempt });
+      expect(children[0]).toMatchObject({ scheduledRetryReason: "process_lost" });
       predecessor = children[0]!.id;
-      await db.update(heartbeatRuns).set({ status: "interrupted", errorCode: childErrorCode, finishedAt: now, resultJson })
+      await db.update(heartbeatRuns).set({ status: "interrupted", errorCode, finishedAt: now, resultJson })
         .where(eq(heartbeatRuns.id, predecessor));
     }
-    expect(await heartbeat.scheduleBoundedRetry(predecessor, { now, random: () => 0, retryReason: "process_lost" }))
-      .toMatchObject({ outcome: finalOutcome });
+    return predecessor;
+  }
+
+  it("keeps a genuine process loss at two continuations", async () => {
+    const { runId, now } = await seedMaxTurnFixture();
+    const last = await interruptChain(runId, "process_lost", 2, now);
+    const [child] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, last));
+    expect(child!.contextSnapshot).toMatchObject({ processLossContinuations: 2 });
+    expect(child!.contextSnapshot?.serverInterruptionRetries).toBeUndefined();
+    expect(await heartbeat.scheduleBoundedRetry(last, { now, random: () => 0, retryReason: "process_lost", delayMs: 30_000 }))
+      .toMatchObject({ outcome: "retry_exhausted", maxAttempts: 2 });
+  });
+
+  it.each(["server_shutdown_interrupted", "orphaned_running_run"])(
+    "allows six %s retries per window, then reports a server crash-loop",
+    async (errorCode) => {
+      const { companyId, runId, now } = await seedMaxTurnFixture();
+      const last = await interruptChain(runId, errorCode, 6, now);
+      const [child] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, last));
+      expect(child!.contextSnapshot).toMatchObject({ serverInterruptionRetries: { count: 6, windowStartedAt: now.toISOString() } });
+      expect(child!.contextSnapshot?.processLossContinuations).toBeUndefined();
+      expect(await heartbeat.scheduleBoundedRetry(last, { now, random: () => 0, retryReason: "process_lost", delayMs: 30_000 }))
+        .toMatchObject({ outcome: "retry_exhausted", attempt: 7, maxAttempts: 6 });
+      const events = await db.select().from(heartbeatRunEvents).where(and(
+        eq(heartbeatRunEvents.runId, last), eq(heartbeatRunEvents.companyId, companyId),
+      ));
+      expect(events.map(event => event.message)).toContainEqual(expect.stringContaining("server crash-loop"));
+    },
+  );
+
+  it("does not charge server interruptions to the process-loss budget", async () => {
+    const { runId, now } = await seedMaxTurnFixture();
+    const lostChild = await interruptChain(runId, "process_lost", 1, now);
+    const serverChild = await interruptChain(lostChild, "server_shutdown_interrupted", 3, now);
+    await db.update(heartbeatRuns).set({ errorCode: "process_lost" }).where(eq(heartbeatRuns.id, serverChild));
+    const next = await heartbeat.scheduleBoundedRetry(serverChild, { now, random: () => 0, retryReason: "process_lost", delayMs: 30_000 });
+    expect(next).toMatchObject({ outcome: "scheduled", run: { scheduledRetryAttempt: 2 } });
+    expect((next as { run: { contextSnapshot: unknown } }).run.contextSnapshot).toMatchObject({ processLossContinuations: 2 });
+  });
+
+  it("opens a fresh window once fifteen minutes have passed", async () => {
+    const { runId, now } = await seedMaxTurnFixture();
+    const last = await interruptChain(runId, "server_shutdown_interrupted", 6, now);
+    const later = new Date(now.getTime() + 15 * 60 * 1000);
+    expect(await heartbeat.scheduleBoundedRetry(last, { now: later, random: () => 0, retryReason: "process_lost", delayMs: 30_000 }))
+      .toMatchObject({ outcome: "scheduled", run: { scheduledRetryAttempt: 1 } });
+    const [successor] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, last));
+    expect(successor!.contextSnapshot).toMatchObject({
+      serverInterruptionRetries: { count: 1, windowStartedAt: later.toISOString() },
+    });
   });
 
   it.each(["dependency", "disabled", "reassigned"])("respects the %s gate for interrupted conversations", async gate => {
