@@ -211,6 +211,7 @@ export interface OpenwaCurrentOwner {
   principalId: string;
   userId: string;
   digits: string | null;
+  jids: string[];
 }
 
 /** Current owners: linked identity and active, non-viewer company membership. */
@@ -224,6 +225,7 @@ export async function openwaCurrentOwners(
       principalId: chatIdentityLinks.principalId,
       userId: chatIdentityLinks.paperclipUserId,
       externalId: chatExternalPrincipals.externalId,
+      alternateExternalIds: chatExternalPrincipals.alternateExternalIds,
     })
     .from(chatEndpointOwners)
     .innerJoin(
@@ -254,7 +256,13 @@ export async function openwaCurrentOwners(
     );
   return rows
     .filter((row): row is typeof row & { userId: string } => typeof row.userId === "string" && row.userId.length > 0)
-    .map((row) => ({ ownerId: row.ownerId, principalId: row.principalId, userId: row.userId, digits: openwaDigits(row.externalId) }));
+    .map((row) => ({
+      ownerId: row.ownerId,
+      principalId: row.principalId,
+      userId: row.userId,
+      digits: openwaDigits(row.externalId),
+      jids: [row.externalId, ...(row.alternateExternalIds ?? [])].map((id) => id.trim().toLowerCase()).filter(Boolean),
+    }));
 }
 
 export async function revokeOpenwaGrantsOfFormerOwners(

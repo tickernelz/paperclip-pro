@@ -97,6 +97,7 @@ import { issueReferenceService } from "./issue-references.js";
 import { registerOpenwaToolRuntime } from "./openwa/tools.js";
 import { openwaApprovalService, processPendingOpenwaApprovalWakes, registerOpenwaApprovalWakeRuntime } from "./openwa/approvals.js";
 import { reopenOpenwaConversationIssue } from "./openwa/conversation-status.js";
+import { processPendingOpenwaPendingCardWakes } from "./openwa/pending-cards.js";
 import { processPendingOpenwaSessionHealthWakes } from "./openwa/session-health.js";
 import {
   processPendingOpenwaFollowups,
@@ -40268,6 +40269,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     processPendingSlackFileUploadReceipts,
     processPendingSlackSessionStops,
     processPendingSlackSessionSyncs,
+    processPendingOpenwaPendingCards: () => processPendingOpenwaPendingCardWakes(db),
     getIssueBinding,
     openwaOutbound,
     openwaMedia,

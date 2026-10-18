@@ -457,7 +457,8 @@ function optionList(entries: unknown, idKey: string, labelKey: string): PendingD
   });
 }
 
-function cardShape(kind: string, payload: Record<string, unknown>): Pick<PendingDecision, "prompt" | "options" | "questions"> {
+/** Prompt, options and questions of a card as the owner sees them. */
+export function pendingDecisionCardShape(kind: string, payload: Record<string, unknown>): Pick<PendingDecision, "prompt" | "options" | "questions"> {
   switch (kind) {
     case "request_confirmation":
       return {
@@ -599,7 +600,7 @@ export async function listPendingDecisions(
         source: "interaction",
         kind: card.kind,
         title: card.title ?? base.title,
-        ...cardShape(card.kind, record(card.payload)),
+        ...pendingDecisionCardShape(card.kind, record(card.payload)),
         humanOnly: item.resolverAudience?.effectiveResolverPolicy === "human_only",
         ...requester(item.resolverAudience?.createdByAgentId ?? str(metadata.createdByAgentId)),
         requestedByUserId: card.createdByUserId ?? null,

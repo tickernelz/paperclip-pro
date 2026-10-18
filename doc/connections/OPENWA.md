@@ -922,6 +922,51 @@ of the task's siblings and parent.
   agent gets one turn per change. A child created on the board without a
   handoff keeps the generic wake.
 
+## Cards waiting on an owner
+
+A card an agent asks a person to decide (`ask_user_questions`,
+`request_confirmation`, `request_checkbox_confirmation`, `suggest_tasks`,
+`request_item_verdicts`) never reaches WhatsApp by itself: only chat-bound
+publications do, and OpenWA is excluded from those. Instead, when the card is
+created with resolver policy `human_only` by an agent, and its payload carries
+no governed action (`toolAction`, `secretProposal`, `connectionAuthorization`,
+`openwaApprovalRequestId`) and is not `destructive`, the same transaction stages
+one `chat_actions` row (`kind = openwa_pending_card`) per active OpenWA
+endpoint and notifies that lane. A card addressed to a specific person
+(`addresseeUserId`) goes only to that person's own chat, and only when they are
+a current owner of the endpoint; otherwise it stays with its addressee in
+Paperclip. A `request_confirmation` that an open autonomy window will accept at
+once is not staged.
+
+- The wake goes to the owner's approval chat, the same target `session_health`
+  uses: the owner's self-chat in `owner_number` mode, otherwise the most
+  recently active DM with a current owner, matched by phone or LID. Cards on
+  any issue of the company reach that chat, whether or not the issue came from
+  WhatsApp. When no such conversation exists the card stays in Paperclip, no
+  row is staged, and the server logs `OpenWA owner card has no owner
+  conversation`.
+- Issue privacy applies to the reader of that chat. The card is staged only when
+  the endpoint agent, acting for every owner who reads the chat (the chat's own
+  owner in a DM, every current owner in `owner_number` mode), may read the
+  issue. The check runs again when the wake is dispatched and when the wake event
+  is built, so a card on an issue that became unreadable is dropped
+  (`openwa_pending_card_unreadable`) and never reaches the prompt.
+- Cards for one chat are batched: a new card joins the chat's not yet dispatched
+  action (up to 10 cards), and an action is dispatched 60 s after it was staged,
+  so a burst of cards costs one agent run and one WhatsApp message.
+- The assigned agent wakes once with event `pending_card` (class `other`,
+  profile `read_only`) in a system comment on the conversation issue. The wake
+  event's `pendingCards` lists each card still pending at run start (card id,
+  kind, issue, link, requester, prompt, options, questions); a card answered
+  between staging and the run is dropped. The guidance tells the agent to send
+  one message giving each card's question, its options with the recommended one
+  first and the task link, and to never answer a card itself.
+- The owner answers in that chat. The reply starts an ordinary owner run, and
+  the agent submits it with `paperclipAnswerDecisionForOwner` as usual.
+- A card already resolved before the wake is settled as
+  `openwa_pending_card_resolved` without a wake. A wake that fails to dispatch
+  is retried with a growing delay, up to 5 attempts.
+
 ## Troubleshooting
 
 | Symptom | Code | Action |
