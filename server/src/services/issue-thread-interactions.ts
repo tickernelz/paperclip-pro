@@ -133,6 +133,7 @@ import {
   enqueueIssueInteractionChatPublications,
   enqueueTerminalIssueInteractionChatPublications,
 } from "./chat-interaction-publications.js";
+import { openwaOwnerCard, stageOpenwaPendingCardWakes } from "./openwa/pending-cards.js";
 import {
   assertIssueThreadInteractionResolverAudience,
   canonicalizeStoredResolverPolicy,
@@ -561,6 +562,21 @@ export function isAutonomyWindowEligibleInteraction(interaction: IssueThreadInte
     !interaction.createdByAgentId ||
     isNativeCompletionReview({ kind: interaction.kind, payload: payload as unknown as IssueThreadInteractionRow["payload"] })
   );
+}
+
+async function stageOwnerCardWakes(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  row: IssueThreadInteractionRow,
+  issueStatus: string,
+) {
+  if (!openwaOwnerCard(row)) return;
+  if (
+    issueStatus !== "in_review" &&
+    !isTerminalIssueStatus(issueStatus) &&
+    isAutonomyWindowEligibleInteraction(hydrateInteraction(row)) &&
+    (await autonomyWindowService(tx as unknown as Db).findCovering(row.companyId, row.issueId))
+  ) return;
+  await stageOpenwaPendingCardWakes(tx, row);
 }
 
 const REQUEST_CONFIRMATION_INTERACTION_KINDS = [
@@ -3885,6 +3901,7 @@ export function issueThreadInteractionService(
               tx as unknown as Db,
               hydrateInteraction(row),
             );
+            await stageOwnerCardWakes(tx, row, issueRow.status);
             return { row, supersededRows: [] };
           }
 
@@ -3941,6 +3958,7 @@ export function issueThreadInteractionService(
             tx as unknown as Db,
             hydrateInteraction(row),
           );
+          await stageOwnerCardWakes(tx, row, issueRow.status);
           return { row, supersededRows };
         });
         created = result.row;
