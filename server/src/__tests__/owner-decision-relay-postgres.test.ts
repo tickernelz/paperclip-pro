@@ -482,7 +482,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
       companyId: seed.companyId, policyId: policy!.id, scopeType: "agent", scopeId: seed.nadiaId, metric: "billed_cents", windowKind: "calendar_month_utc",
       windowStart: new Date("2026-10-01T00:00:00.000Z"), windowEnd: new Date("2026-11-01T00:00:00.000Z"), thresholdType: "hard", amountLimit: 100, amountObserved: 100, status: "open",
     });
-    return { plan, approvalId: approval!.id, reviewIssueId };
+    return { plan, approvalId: approval!.id, reviewIssueId, recoveryIssueId };
   }
 
   function ownerAgent(seed: Seed, runId: string | undefined, extra: Record<string, unknown> = {}) {
@@ -558,6 +558,33 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     expect(member.status, JSON.stringify(member.body)).toBe(200);
     expect(member.body).toMatchObject({ scope: "relay", partial: true, omittedCount: null });
     expect(member.body.items.map((item: { id: string }) => item.id)).toEqual(owner.body.items.map((item: { id: string }) => item.id));
+  }, 60_000);
+
+  it("does not count a dismissed or snoozed item the Decisions page hides", async () => {
+    const seed = await seedCompany();
+    const desk = await seedDesk(seed);
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+    const agent = ownerAgent(seed, runId);
+    const url = `/api/companies/${seed.companyId}/pending-decisions`;
+    const before = await request(agent).get(url);
+
+    await db.insert(inboxDismissals).values({
+      companyId: seed.companyId, userId: seed.ownerUserId,
+      itemKey: "attention:recovery:missing_disposition:" + desk.recoveryIssueId + ":missing_disposition:human-recovery",
+    });
+    const dismissed = await request(agent).get(url);
+    const page = await request(agent).get(deskUrl(seed));
+    expect(page.body.items.map((item: { sourceKind: string }) => item.sourceKind)).not.toContain("recovery_action");
+    expect(dismissed.body.omittedCount).toBe(before.body.omittedCount - 1);
+    expect(dismissed.body.omittedCount).toBe(page.body.totalCount - dismissed.body.items.length);
+
+    await db.insert(inboxDismissals).values({
+      companyId: seed.companyId, userId: seed.ownerUserId, itemKey: "attention:review:" + desk.reviewIssueId,
+      kind: "snooze", snoozedUntil: new Date(Date.now() + 3_600_000),
+    });
+    const snoozed = await request(agent).get(url);
+    const afterPage = await request(agent).get(deskUrl(seed));
+    expect(snoozed.body.omittedCount).toBe(afterPage.body.totalCount - snoozed.body.items.length);
   }, 60_000);
 
   it("refuses the desk to every run that is not the owner's, while the relay list stays as it was", async () => {

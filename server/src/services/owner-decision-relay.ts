@@ -495,6 +495,14 @@ const GOVERNED_APPROVAL_REASON =
   "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Paperclip, or an agent holding company:approvals authority uses paperclipApprovalDecision";
 const AGENT_DECISION_REASON = "Agent decision bundles are decided on the Paperclip Decisions desk";
 
+const RELAY_SOURCE_KINDS: AttentionSourceKind[] = ["issue_thread_interaction", "approval", "decision"];
+
+export function isOpenAttentionItem(item: AttentionItem, now: number) {
+  if (item.archivedAt) return false;
+  if (item.dismissal?.isActive) return false;
+  return !(item.snoozedUntil && Date.parse(item.snoozedUntil) > now);
+}
+
 const DESK_ONLY_REASONS: Partial<Record<AttentionSourceKind, string>> = {
   recovery_action:
     "A recovery action is resolved on the Paperclip Decisions desk; when the owner explicitly asks to continue the issue, paperclipContinueIssueForOwner relays that",
@@ -557,8 +565,11 @@ export async function listPendingDecisions(
     allowUnscopedAll: true,
     sort: "decide",
   });
-  const items = feed.items.filter((item) => ["issue_thread_interaction", "approval", "decision"].includes(item.sourceKind));
-  const omittedCount = feed.items.length - items.length;
+  const items = feed.items.filter((item) => RELAY_SOURCE_KINDS.includes(item.sourceKind));
+  const now = Date.parse(feed.generatedAt);
+  const omittedCount = feed.items.filter(
+    (item) => !RELAY_SOURCE_KINDS.includes(item.sourceKind) && isOpenAttentionItem(item, now),
+  ).length;
   const cardById = await loadRelayCards(db, input.companyId, items);
   const requesterIds = [
     ...new Set(

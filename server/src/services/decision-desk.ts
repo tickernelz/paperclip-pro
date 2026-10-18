@@ -7,7 +7,7 @@ import { forbidden, HttpError } from "../errors.js";
 import { attentionService } from "./attention.js";
 import { boardAuthService } from "./board-auth.js";
 import { openwaRunProfile, readOpenwaRunContext } from "./openwa/authority.js";
-import { relayStateByItem } from "./owner-decision-relay.js";
+import { isOpenAttentionItem, relayStateByItem } from "./owner-decision-relay.js";
 
 export const DECISIONS_DESK_FORBIDDEN_CODE = "decisions_desk_forbidden";
 
@@ -99,12 +99,6 @@ export async function canReadDesk(db: Db, input: { companyId: string; actor: Req
   }
 }
 
-function isOpen(item: AttentionItem, now: number) {
-  if (item.archivedAt) return false;
-  if (item.dismissal?.isActive) return false;
-  return !(item.snoozedUntil && Date.parse(item.snoozedUntil) > now);
-}
-
 export async function listDeskDecisions(
   db: Db,
   input: { companyId: string; actor: Request["actor"]; userId: string; query: AttentionFeedQuery },
@@ -137,7 +131,7 @@ export async function listDeskDecisions(
       entryRule: item.entryRule,
       exitRule: item.exitRule,
       href: item.subject.href,
-      open: isOpen(item, generatedAt),
+      open: isOpenAttentionItem(item, generatedAt),
       snoozedUntil: item.snoozedUntil,
       archivedAt: item.archivedAt,
       relayable: state?.relayable ?? false,
