@@ -1052,7 +1052,7 @@ const support = await getEmbeddedPostgresTestSupport();
     ["paperclip_runner", true],
     ["omp_local", false],
     ["process", false],
-    ["hermes-gateway", false],
+    ["hermes_gateway", false],
   ])("admits the pre-dispatch cancellation of a %s run regardless of its receipt", async (adapterType, receipt) => {
     const f = await seedHistoricalCancelledPreparation(receipt);
     await db.update(heartbeatRuns).set({

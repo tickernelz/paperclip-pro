@@ -14,6 +14,7 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../__tests__/helpers/embedded-postgres.js";
 import { agentExecutionsHaveStopped } from "./agent-execution-stop.js";
+import { canRetryStoppedRun } from "./cancelled-native-startup.js";
 import { legacyControllerBootId } from "./legacy-controller-lease.js";
 
 const support = await getEmbeddedPostgresTestSupport();
@@ -70,7 +71,7 @@ const support = await getEmbeddedPostgresTestSupport();
   const stopped = (agentId: string) => agentExecutionsHaveStopped(db, [agentId]);
 
   it("counts a cancelled legacy run that never reached dispatch for any adapter type", async () => {
-    for (const adapterType of ["omp_local", "hermes-gateway", "process", null]) {
+    for (const adapterType of ["omp_local", "hermes_gateway", "process", null]) {
       const owner = await agent();
       await cancelledRun(owner, { runnerProfileJson: adapterType ? { adapterDispatch: { adapterType } } : null });
       expect(await stopped(owner)).toBe(true);
@@ -212,6 +213,24 @@ const support = await getEmbeddedPostgresTestSupport();
       resultJson: { stopReason: "issue_continuation_waiting_on_review", timeoutSource: "stale_queued_run_gate" },
     });
     expect(await stopped(waiting)).toBe(true);
+  });
+
+  it("refuses a settled plan-less webhook run that left no dispatch trace", async () => {
+    const webhook = await agent();
+    const noReceipt = await cancelledRun(webhook, {
+      executionStage: "settled", controllerLeaseExpiresAt: null, errorCode: "cancelled_by_operator",
+      runnerProfileJson: { adapterDispatch: { adapterType: "http" } },
+      resultJson: { stopReason: "cancelled" },
+    });
+    expect(await stopped(webhook)).toBe(true);
+    expect(await canRetryStoppedRun(db, noReceipt)).toBe(false);
+    const settledReceipt = await agent();
+    const withReceipt = await cancelledRun(settledReceipt, {
+      executionStage: "settled", controllerLeaseExpiresAt: null, errorCode: "cancelled_by_operator",
+      runnerProfileJson: { adapterDispatch: { adapterType: "http" } },
+      resultJson: { stopReason: "cancelled", startupPreparationSettledAt: new Date().toISOString() },
+    });
+    expect(await canRetryStoppedRun(db, withReceipt)).toBe(true);
   });
 
   it("counts a settled legacy cancellation that left no process identity for a conversation adapter", async () => {

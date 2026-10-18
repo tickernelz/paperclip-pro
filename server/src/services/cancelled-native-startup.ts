@@ -1,7 +1,7 @@
 import { isCancelledBeforeStart, isPreDispatchReviewWait } from "./pre-dispatch-review-wait.js";
 import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { environmentLeases, heartbeatRunEvents, heartbeatRuns, nativeRunFinalizations, type Db } from "@tickernelz/paperclip-pro-db";
-import { claimedAdapterType } from "./conversation-continuation.js";
+import { claimedAdapterType, isConversationAdapter } from "./conversation-continuation.js";
 import { PROCESS_IDENTITY_RECORDED, PROCESS_START_REQUESTED } from "./native-local-process-stop.js";
 import { hasRemoteTerminationReceipt } from "./remote-execution-termination.js";
 import { canContinueCancelledRun } from "./run-cancellation.js";
@@ -28,7 +28,8 @@ function cancelledBeforeLegacyDispatch(run: Run, coordinator: Coordinator | unde
   const leaseGone = !run.controllerLeaseExpiresAt || run.controllerLeaseExpiresAt <= new Date();
   const foreignController = Boolean(run.controllerBootId && run.controllerBootId !== legacyControllerBootId &&
     run.controllerLeaseExpiresAt && run.controllerLeaseExpiresAt <= new Date());
-  if (run.executionStage === "settled") return leaseGone;
+  if (run.executionStage === "settled") return leaseGone &&
+    (typeof run.resultJson?.startupPreparationSettledAt === "string" || isConversationAdapter(claimedAdapterType(run) ?? ""));
   if (run.executionStage === "preparing") return !run.runtimeModeResolvedAt && foreignController;
   return run.executionStage === "dispatching" &&
     run.errorCode === "legacy_disposition_repair_suppressed" && foreignController;
