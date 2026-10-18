@@ -296,7 +296,45 @@ export interface PendingDecision {
 
 export interface PendingDecisionList {
   companyId: string;
+  scope: "relay";
+  partial: true;
+  omittedCount: number | null;
+  note: string;
   items: PendingDecision[];
+}
+
+export interface DeskDecision {
+  sourceKind: AttentionSourceKind;
+  id: string;
+  severity: AttentionSeverity;
+  rank: number;
+  issueId: string | null;
+  issueIdentifier: string | null;
+  issueTitle: string | null;
+  title: string | null;
+  whyNow: string;
+  createdAt: string;
+  activityAt: string;
+  ageSeconds: number;
+  decideBy: string | null;
+  entryRule: string;
+  exitRule: string;
+  href: string | null;
+  open: boolean;
+  snoozedUntil: string | null;
+  archivedAt: string | null;
+  relayable: boolean;
+  relayBlockedReason: string | null;
+}
+
+export interface DeskDecisionList {
+  companyId: string;
+  scope: "desk";
+  generatedAt: string;
+  totalCount: number;
+  countsBySourceKind: Record<AttentionSourceKind, number>;
+  nextCursor: string | null;
+  items: DeskDecision[];
 }
 
 export interface AttentionFeed {
