@@ -942,6 +942,19 @@ it.each(["after_budget", "within_budget", "interrupted_within_budget", "persiste
         }),
       ]);
       expect(core.semanticToolResultsSettled()).toBe(false);
+      let resultQueued!: Promise<void>;
+      if (mode !== "persistence_failure") {
+        const queue = core.queueCommand.bind(core);
+        let markQueued!: () => void;
+        resultQueued = new Promise<void>((resolveQueued) => {
+          markQueued = resolveQueued;
+        });
+        vi.spyOn(core, "queueCommand").mockImplementation((type, ...args) => {
+          const command = queue(type, ...args);
+          if (type === "semantic_tool.result") markQueued();
+          return command;
+        });
+      }
       if (mode === "persistence_failure") {
         const queue = core.queueCommand.bind(core);
         vi.spyOn(core, "queueCommand").mockImplementation((type, ...args) => {
@@ -987,33 +1000,32 @@ it.each(["after_budget", "within_budget", "interrupted_within_budget", "persiste
           ),
         ).toEqual([]);
       } else {
-        await vi.waitFor(async () => {
-          const control = JSON.parse(
-            await readFile(
-              join(stateDirectory, "control-plane", "control-plane-state.json"),
-              "utf8",
-            ),
+        await resultQueued;
+        const control = JSON.parse(
+          await readFile(
+            join(stateDirectory, "control-plane", "control-plane-state.json"),
+            "utf8",
+          ),
+        );
+        const late = control.commands.filter(
+          (command: { type: string }) =>
+            command.type === "semantic_tool.result",
+        );
+        expect(late).toHaveLength(1);
+        expect(late[0].payload.correlation.runId).toBe(
+          control.identity.runId,
+        );
+        expect(late[0].status).toBe(
+          settles ? "completed" : "pending",
+        );
+        if (settles) {
+          const results = control.committedEvents.filter(
+            (event: { eventType: string }) =>
+              event.eventType === "semantic_tool.result",
           );
-          const late = control.commands.filter(
-            (command: { type: string }) =>
-              command.type === "semantic_tool.result",
-          );
-          expect(late).toHaveLength(1);
-          expect(late[0].payload.correlation.runId).toBe(
-            control.identity.runId,
-          );
-          expect(late[0].status).toBe(
-            settles ? "completed" : "pending",
-          );
-          if (settles) {
-            const results = control.committedEvents.filter(
-              (event: { eventType: string }) =>
-                event.eventType === "semantic_tool.result",
-            );
-            expect(results).toHaveLength(1);
-            expect(results[0].envelope.runId).toBe(control.identity.runId);
-          }
-        });
+          expect(results).toHaveLength(1);
+          expect(results[0].envelope.runId).toBe(control.identity.runId);
+        }
       }
       if (settles) {
         expect(closeFailure).toBeNull();
