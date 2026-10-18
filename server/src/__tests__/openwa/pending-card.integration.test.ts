@@ -26,6 +26,7 @@ import {
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
+import * as autonomyWindows from "../../services/autonomy-windows.js";
 import { instanceSettingsService } from "../../services/instance-settings.js";
 import { issueThreadInteractionService } from "../../services/issue-thread-interactions.js";
 import { secretService } from "../../services/secrets.js";
@@ -420,5 +421,27 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     const run = await runContext(t, await wakeFor(t, actions[0]!.id));
     expect((run.guidance.wakeEvent.pendingCards ?? []).map((card) => card.interactionId)).toEqual(ids);
     expect(t.wakeup.mock.calls.filter(([, opts]) => opts.reason === "Paperclip card waits for an owner")).toHaveLength(1);
+  }, 180_000);
+
+  it("skips a confirmation an open autonomy window accepts at once, and does not look up windows for other cards", async () => {
+    const t = await setup();
+    await ownerConversation(t);
+    const issueId = await taskIssue(t, "Windowed work");
+    const [identifier] = (await db.select({ identifier: issues.identifier }).from(issues).where(eq(issues.id, issueId))).map((row) => row.identifier!);
+    await autonomyWindows.autonomyWindowService(db).open(t.companyId, { issueIds: [identifier], hours: 1 }, { userId: t.userId, grantedVia: "paperclip" });
+    const serviceFactory = autonomyWindows.autonomyWindowService;
+    const lookups = { count: 0 };
+    vi.spyOn(autonomyWindows, "autonomyWindowService").mockImplementation((target) => {
+      const service = serviceFactory(target);
+      const findCovering = service.findCovering;
+      return { ...service, findCovering: async (...args: Parameters<typeof findCovering>) => { lookups.count++; return findCovering(...args); } };
+    });
+    await createCard(t, issueId, { payload: { version: 1, prompt: "Deploy?", destructive: false } });
+    expect(await cardActions(t)).toEqual([]);
+
+    const callsBefore = lookups.count;
+    await createCard(t, issueId, { resolverPolicy: "anyone", payload: { version: 1, prompt: "Not an owner card", destructive: false } });
+    expect(lookups.count - callsBefore).toBe(1);
+    expect(await cardActions(t)).toEqual([]);
   }, 180_000);
 });

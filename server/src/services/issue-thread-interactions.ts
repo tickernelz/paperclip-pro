@@ -133,7 +133,7 @@ import {
   enqueueIssueInteractionChatPublications,
   enqueueTerminalIssueInteractionChatPublications,
 } from "./chat-interaction-publications.js";
-import { stageOpenwaPendingCardWakes } from "./openwa/pending-cards.js";
+import { openwaOwnerCard, stageOpenwaPendingCardWakes } from "./openwa/pending-cards.js";
 import {
   assertIssueThreadInteractionResolverAudience,
   canonicalizeStoredResolverPolicy,
@@ -569,8 +569,10 @@ async function stageOwnerCardWakes(
   row: IssueThreadInteractionRow,
   issueStatus: string,
 ) {
+  if (!openwaOwnerCard(row)) return;
   if (
     issueStatus !== "in_review" &&
+    !isTerminalIssueStatus(issueStatus) &&
     isAutonomyWindowEligibleInteraction(hydrateInteraction(row)) &&
     (await autonomyWindowService(tx as unknown as Db).findCovering(row.companyId, row.issueId))
   ) return;
