@@ -1,6 +1,6 @@
 import { execFile, spawn } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import fs from "node:fs/promises";
 import net from "node:net";
 import os from "node:os";
@@ -8,7 +8,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { promisify } from "node:util";
 import { parse as parseEnvContents } from "dotenv";
-import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import {
   activityLog,
   agents,
@@ -791,7 +791,86 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
   });
 });
 
+function readEphemeralPortRange() {
+  const fallback = { low: 49_152, high: 65_535 };
+  try {
+    const [low, high] = readFileSync("/proc/sys/net/ipv4/ip_local_port_range", "utf8").trim().split(/\s+/).map(Number);
+    return Number.isInteger(low) && Number.isInteger(high) && low <= high ? { low, high } : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function isLoopbackPortBindable(port: number) {
+  const probe = net.createServer();
+  return await new Promise<boolean>((resolve) => {
+    probe.once("error", () => resolve(false));
+    probe.listen(port, "127.0.0.1", () => {
+      probe.close(() => resolve(true));
+    });
+  });
+}
+
+async function reserveLoopbackPortWithCompanion() {
+  const ephemeral = readEphemeralPortRange();
+  const usable = (port: number) =>
+    (port < ephemeral.low || port > ephemeral.high) && (port < 42_000 || port > 42_999);
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    const candidate = 20_000 + Math.floor(Math.random() * 20_000);
+    const companion = candidate + 10_000;
+    if (!usable(candidate) || !usable(companion)) continue;
+    if ((await isLoopbackPortBindable(candidate)) && (await isLoopbackPortBindable(companion))) return candidate;
+  }
+  throw new Error("Failed to reserve a loopback test port and HMR companion outside the ephemeral and broker ranges");
+}
+
+async function pathWithoutPaperclipCli(ambientPath: string) {
+  const mirrors: string[] = [];
+  const entries: string[] = [];
+  for (const directory of ambientPath.split(path.delimiter)) {
+    if (!directory || !existsSync(path.join(directory, "paperclip-pro"))) {
+      entries.push(directory);
+      continue;
+    }
+    const mirror = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-runtime-path-"));
+    mirrors.push(mirror);
+    const absoluteDirectory = path.resolve(directory);
+    for (const name of await fs.readdir(absoluteDirectory)) {
+      if (name === "paperclip-pro") continue;
+      await fs.symlink(path.join(absoluteDirectory, name), path.join(mirror, name)).catch(() => undefined);
+    }
+    entries.push(mirror);
+  }
+  return { value: entries.join(path.delimiter), mirrors };
+}
+
+function isolateProvisioningFromInstalledCli() {
+  let previousShell: string | undefined;
+  let previousPath: string | undefined;
+  let mirrors: string[] = [];
+
+  beforeEach(async () => {
+    previousShell = process.env.SHELL;
+    previousPath = process.env.PATH;
+    process.env.SHELL = "/bin/sh";
+    const isolated = await pathWithoutPaperclipCli(previousPath ?? "");
+    mirrors = isolated.mirrors;
+    process.env.PATH = isolated.value;
+  });
+
+  afterEach(async () => {
+    if (previousShell === undefined) delete process.env.SHELL;
+    else process.env.SHELL = previousShell;
+    if (previousPath === undefined) delete process.env.PATH;
+    else process.env.PATH = previousPath;
+    await Promise.all(mirrors.map((mirror) => fs.rm(mirror, { recursive: true, force: true })));
+    mirrors = [];
+  });
+}
+
 describe("realizeExecutionWorkspace", () => {
+  isolateProvisioningFromInstalledCli();
+
   it("defaults new git worktrees to freshly fetched origin/master", async () => {
     const sourceRepo = await createTempRepo("master");
     const remoteDir = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-worktree-remote-"));
@@ -7974,25 +8053,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     process.env.PAPERCLIP_HOME = paperclipHome;
     process.env.PAPERCLIP_INSTANCE_ID = `runtime-https-backfill-${randomUUID()}`;
 
-    const reservePort = async () => {
-      for (let attempt = 0; attempt < 100; attempt += 1) {
-        const probe = net.createServer();
-        // macOS can allocate an entire ephemeral range above 55535. Pick a
-        // bounded candidate so the test's HMR companion remains a valid port.
-        await new Promise<void>((resolve) => {
-          probe.once("error", () => resolve());
-          probe.listen(20_000 + Math.floor(Math.random() * 20_000), "127.0.0.1", resolve);
-        });
-        if (!probe.listening) continue;
-        const address = probe.address();
-        const port = typeof address === "object" && address ? address.port : null;
-        await new Promise<void>((resolve, reject) => {
-          probe.close((error) => error ? reject(error) : resolve());
-        });
-        if (port && port <= 55_535 && (port < 42_000 || port > 42_999)) return port;
-      }
-      throw new Error("Failed to reserve an HTTPS backfill test port outside the broker range");
-    };
+    const reservePort = reserveLoopbackPortWithCompanion;
     const isLoopbackPortFree = async (port: number) => {
       const probe = net.createServer();
       return await new Promise<boolean>((resolve) => {
@@ -8321,27 +8382,7 @@ describeEmbeddedPostgres("workspace runtime startup reconciliation", () => {
     // The reconciler stores this port on the row. A port inside that range makes
     // the reconciler treat the row as an exposure reservation and report drift,
     // so the live service never reaches the adoption path this test verifies.
-    const reservePort = async () => {
-      for (let attempt = 0; attempt < 100; attempt += 1) {
-        const probe = net.createServer();
-        // macOS can allocate an entire ephemeral range above 55535. Pick a
-        // bounded candidate so the test's HMR companion remains a valid port.
-        await new Promise<void>((resolve) => {
-          probe.once("error", () => resolve());
-          probe.listen(20_000 + Math.floor(Math.random() * 20_000), "127.0.0.1", resolve);
-        });
-        if (!probe.listening) continue;
-        const address = probe.address();
-        const candidate = typeof address === "object" && address ? address.port : null;
-        await new Promise<void>((resolve, reject) => {
-          probe.close((error) => error ? reject(error) : resolve());
-        });
-        if (candidate && candidate <= 55_535 && (candidate < 42_000 || candidate > 42_999)) {
-          return candidate;
-        }
-      }
-      throw new Error("Failed to reserve pnpm reconciliation test port outside the broker range");
-    };
+    const reservePort = reserveLoopbackPortWithCompanion;
     const port = await reservePort();
 
     const companyId = randomUUID();

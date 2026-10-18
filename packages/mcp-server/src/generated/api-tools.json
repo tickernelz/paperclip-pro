@@ -18590,7 +18590,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@attention.ts:22",
+    "boardGuard": "assertBoard@attention.ts:47",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31652,7 +31652,7 @@
     "operationId": "GET /api/companies/{companyId}/pending-decisions",
     "method": "GET",
     "path": "/companies/{companyId}/pending-decisions",
-    "description": "List Decisions-desk items waiting on a human, human-only cards included, with prompt and options.",
+    "description": "List Decisions-desk items waiting on a human. Default scope=relay is PARTIAL (relayable cards and approvals; empty never means an empty desk). scope=desk is the whole Decisions page, every sourceKind, for a run the owner started.",
     "toolset": "core",
     "authority": "agent",
     "authoritySource": "default",
@@ -31678,6 +31678,66 @@
         "required": true,
         "schema": {
           "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "includeDismissed",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "queue",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "scope",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "relay",
+            "desk"
+          ]
+        }
+      },
+      {
+        "name": "sort",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "activity",
+            "decide"
+          ]
         }
       }
     ]

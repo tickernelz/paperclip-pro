@@ -945,6 +945,9 @@ async function isGitCheckout(cwd: string | null | undefined) {
     .catch(() => false);
 }
 
+const GIT_NOT_A_REPOSITORY_STDERR =
+  /^fatal: not a git repository \((?:or any of the parent directories\): \.git|or any parent up to mount point [^)\r\n]+\)\r?\nStopping at filesystem boundary \(GIT_DISCOVERY_ACROSS_FILESYSTEM not set\)\.)\r?\n?$/;
+
 async function probeGitWorktreeBase(cwd: string) {
   try {
     const result = await execFile("git", ["rev-parse", "--show-toplevel"], {
@@ -959,7 +962,7 @@ async function probeGitWorktreeBase(cwd: string) {
     // corruption and I/O failures must remain reportable in Sentry.
     const notRepository = failure.code === 128 && failure.signal == null &&
       typeof failure.stderr === "string" &&
-      /^fatal: not a git repository \((?:or any of the parent directories\): \.git|or any parent up to mount point [^\r\n)]*\))\r?\n?(?:Stopping at filesystem boundary \(GIT_DISCOVERY_ACROSS_FILESYSTEM not set\)\.\r?\n?)?$/.test(failure.stderr) &&
+      GIT_NOT_A_REPOSITORY_STDERR.test(failure.stderr) &&
       !process.env.GIT_DIR && !process.env.GIT_WORK_TREE && !process.env.GIT_COMMON_DIR &&
       await hasNoGitMetadataInWorkspaceAncestors(cwd);
     return { isCheckout: false, notRepository };

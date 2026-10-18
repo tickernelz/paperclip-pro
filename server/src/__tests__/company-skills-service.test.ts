@@ -758,7 +758,7 @@ describeEmbeddedPostgres("companySkillService.list", () => {
       createHash("sha256").update(entry.content).digest("hex"),
     ]));
     expect(championHashes).toMatchObject({
-      "SKILL.md": "7eae63698e3144704ddec244831972a6a14e459e9913e309c7d450171b15bdb4",
+      "SKILL.md": "87b418057b59d7a6ef5d82464267b4808dcf73f7c6e72b5e15d2785c4328e2e2",
       "references/cases.md": "3b821f59064a7761091020a14819a8d787131f24029748563d6c0e1be7e6eaec",
       "references/workflows.md": "35af3966848350d517163b3bb9efa956d1668a671ebf807959e4ed86121d91e2",
     });

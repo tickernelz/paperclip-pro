@@ -125,7 +125,7 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "GET /api/companies/{companyId}/pending-decisions": {
     name: "paperclipListPendingDecisions",
     description:
-      "List Decisions-desk items waiting on a human, human-only cards included, with prompt and options.",
+      "List Decisions-desk items waiting on a human. Default scope=relay is PARTIAL (relayable cards and approvals; empty never means an empty desk). scope=desk is the whole Decisions page, every sourceKind, for a run the owner started.",
     toolset: "core",
   },
   "POST /api/issues/{id}/interactions/{interactionId}/answer-for-owner": {
