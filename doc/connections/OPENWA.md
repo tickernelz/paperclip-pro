@@ -933,8 +933,10 @@ no governed action (`toolAction`, `secretProposal`, `connectionAuthorization`,
 `openwaApprovalRequestId`) and is not `destructive`, the same transaction stages
 one `chat_actions` row (`kind = openwa_pending_card`) per active OpenWA
 endpoint and notifies that lane. A card addressed to a specific person
-(`addresseeUserId`) is staged only when that person is a current owner of the
-endpoint; otherwise it stays with its addressee in Paperclip.
+(`addresseeUserId`) goes only to that person's own chat, and only when they are
+a current owner of the endpoint; otherwise it stays with its addressee in
+Paperclip. A `request_confirmation` that an open autonomy window will accept at
+once is not staged.
 
 - The wake goes to the owner's approval chat, the same target `session_health`
   uses: the owner's self-chat in `owner_number` mode, otherwise the most
@@ -943,6 +945,15 @@ endpoint; otherwise it stays with its addressee in Paperclip.
   WhatsApp. When no such conversation exists the card stays in Paperclip, no
   row is staged, and the server logs `OpenWA owner card has no owner
   conversation`.
+- Issue privacy applies to the reader of that chat. The card is staged only when
+  the endpoint agent, acting for every owner who reads the chat (the chat's own
+  owner in a DM, every current owner in `owner_number` mode), may read the
+  issue. The check runs again when the wake is dispatched and when the wake event
+  is built, so a card on an issue that became unreadable is dropped
+  (`openwa_pending_card_unreadable`) and never reaches the prompt.
+- Cards for one chat are batched: a new card joins the chat's not yet dispatched
+  action (up to 10 cards), and an action is dispatched 60 s after it was staged,
+  so a burst of cards costs one agent run and one WhatsApp message.
 - The assigned agent wakes once with event `pending_card` (class `other`,
   profile `read_only`) in a system comment on the conversation issue. The wake
   event's `pendingCards` lists each card still pending at run start (card id,

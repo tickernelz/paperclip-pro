@@ -27,6 +27,10 @@ export function chatActionDeadline(kind: ScheduledChatAction) {
     when ${chatEndpoints.status} in ('paused', 'attention') then null
     when ${chatActions.status} = 'received' then ${retry}
     when ${chatActions.status} = 'processing' then ${updated} + ${PROVIDER_EFFECT_STALE_MS} end`;
+  if (kind === "openwa_pending_card") return sql<number>`case
+    when ${chatActions.status} = 'received' then ${retry}
+    when ${chatActions.status} = 'processing' then ${updated} + ${PROVIDER_EFFECT_STALE_MS}
+    when ${chatActions.status} = 'failed' and ${chatActions.result}->>'retryable' = 'true' then ${retry} end`;
   return sql<number>`case
     when ${chatActions.status} = 'received' then 0
     when ${chatActions.status} = 'processing' then ${updated} + ${PROVIDER_EFFECT_STALE_MS}

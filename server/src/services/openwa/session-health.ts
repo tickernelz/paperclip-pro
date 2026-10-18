@@ -53,16 +53,18 @@ function healthComment(facts: OpenwaSessionHealthFacts): string {
 export async function openwaOwnerApprovalConversation(
   tx: DbTransaction,
   endpoint: EndpointRow,
-  input: { sessionId: string; selfChatKey: string },
-): Promise<{ conversationId: string; issueId: string; agentId: string } | null> {
+  input: { sessionId: string; selfChatKey: string; onlyUserId?: string },
+): Promise<{ conversationId: string; issueId: string; agentId: string; chatKey: string } | null> {
   if (!endpoint.assignedAgentId) return null;
   const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
+  const owners = (await openwaCurrentOwners(tx, endpoint)).filter((owner) => !input.onlyUserId || owner.userId === input.onlyUserId);
+  if (input.onlyUserId && owners.length === 0) return null;
   const chatKeys =
     policy.numberMode === "owner_number"
       ? [input.selfChatKey]
       : [
           ...new Set(
-            (await openwaCurrentOwners(tx, endpoint)).flatMap((owner) => [
+            owners.flatMap((owner) => [
               ...(owner.digits ? [owner.digits + "@c.us"] : []),
               ...owner.jids.filter((jid) => jid.endsWith("@lid")).map(openwaChatKey),
             ]),
@@ -70,7 +72,7 @@ export async function openwaOwnerApprovalConversation(
         ];
   if (!chatKeys.length) return null;
   const [row] = await tx
-    .select({ conversationId: chatConversations.id, issueId: issues.id })
+    .select({ conversationId: chatConversations.id, issueId: issues.id, externalConversationId: chatConversations.externalConversationId })
     .from(chatConversations)
     .innerJoin(issues, and(eq(issues.companyId, chatConversations.companyId), eq(issues.id, chatConversations.issueId)))
     .where(
@@ -88,7 +90,13 @@ export async function openwaOwnerApprovalConversation(
     )
     .orderBy(sql`${chatConversations.lastActivityAt} desc nulls last`, desc(chatConversations.createdAt))
     .limit(1);
-  return row ? { ...row, agentId: endpoint.assignedAgentId } : null;
+  if (!row) return null;
+  return {
+    conversationId: row.conversationId,
+    issueId: row.issueId,
+    agentId: endpoint.assignedAgentId,
+    chatKey: row.externalConversationId.slice(("openwa:" + input.sessionId + ":").length),
+  };
 }
 
 /** Writes the system comment and queued wake action for one session health transition inside its transaction. */

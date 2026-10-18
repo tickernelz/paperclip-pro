@@ -564,6 +564,19 @@ export function isAutonomyWindowEligibleInteraction(interaction: IssueThreadInte
   );
 }
 
+async function stageOwnerCardWakes(
+  tx: Parameters<Parameters<Db["transaction"]>[0]>[0],
+  row: IssueThreadInteractionRow,
+  issueStatus: string,
+) {
+  if (
+    issueStatus !== "in_review" &&
+    isAutonomyWindowEligibleInteraction(hydrateInteraction(row)) &&
+    (await autonomyWindowService(tx as unknown as Db).findCovering(row.companyId, row.issueId))
+  ) return;
+  await stageOpenwaPendingCardWakes(tx, row);
+}
+
 const REQUEST_CONFIRMATION_INTERACTION_KINDS = [
   "request_confirmation",
   "request_checkbox_confirmation",
@@ -3886,7 +3899,7 @@ export function issueThreadInteractionService(
               tx as unknown as Db,
               hydrateInteraction(row),
             );
-            await stageOpenwaPendingCardWakes(tx, row);
+            await stageOwnerCardWakes(tx, row, issueRow.status);
             return { row, supersededRows: [] };
           }
 
@@ -3943,7 +3956,7 @@ export function issueThreadInteractionService(
             tx as unknown as Db,
             hydrateInteraction(row),
           );
-          await stageOpenwaPendingCardWakes(tx, row);
+          await stageOwnerCardWakes(tx, row, issueRow.status);
           return { row, supersededRows };
         });
         created = result.row;

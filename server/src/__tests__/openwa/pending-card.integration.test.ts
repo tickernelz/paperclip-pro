@@ -38,6 +38,8 @@ const SESSION_ID = "52222222-3333-4444-8555-666666666666";
 const OWN_PHONE = "628111000522";
 const OWNER_PHONE = "628333000522";
 const OWNER_LID = "105000000999444@lid";
+const SECOND_PHONE = "628333000533";
+const SECOND_LID = "105000000999555@lid";
 const jid = (phone: string) => phone + "@c.us";
 
 type WakeupOptions = Parameters<ChatChannelServiceOptions["heartbeat"]["wakeup"]>[1];
@@ -210,14 +212,23 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     }, 30_000);
   }
 
-  async function ownerConversation(t: Setup) {
-    t.gateway.lids.set(OWNER_PHONE, OWNER_LID);
-    await deliverInbound(t, { chatId: OWNER_LID, from: OWNER_LID, senderPhone: OWNER_PHONE, body: "halo" });
+  async function ownerConversation(t: Setup, who = { phone: OWNER_PHONE, lid: OWNER_LID }) {
+    t.gateway.lids.set(who.phone, who.lid);
+    await deliverInbound(t, { chatId: who.lid, from: who.lid, senderPhone: who.phone, body: "halo" });
     const rows = await db.select().from(chatConversations).where(eq(chatConversations.endpointId, t.endpointId));
-    console.log("CONVERSATIONS", JSON.stringify(rows.map((r) => ({ id: r.id, ext: r.externalConversationId, issue: r.issueId }))));
-    const conversation = rows.find((row) => row.externalConversationId.endsWith(OWNER_LID));
+    const conversation = rows.find((row) => row.externalConversationId.endsWith(who.lid));
     expect(conversation).toBeDefined();
     return { conversationId: conversation!.id, issueId: conversation!.issueId };
+  }
+
+  async function addSecondOwner(t: Setup) {
+    const userId = randomUUID();
+    await db.insert(authUsers).values({ id: userId, name: "Second owner", email: userId + "@example.com", emailVerified: true, createdAt: new Date(), updatedAt: new Date() });
+    await db.insert(companyMemberships).values({ companyId: t.companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "operator" });
+    const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + SECOND_PHONE, expiresInSeconds: 1_800 }, t.userId);
+    const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
+    await t.service.confirmIdentityLink(token, userId);
+    return userId;
   }
 
   async function taskIssue(t: Setup, title: string) {
@@ -240,6 +251,13 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
       .from(chatActions)
       .where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_PENDING_CARD_ACTION_KIND)))
       .orderBy(asc(chatActions.createdAt));
+  }
+
+  async function dueNow(t: Setup) {
+    await db
+      .update(chatActions)
+      .set({ result: { retryAt: new Date(Date.now() - 1000).toISOString() } })
+      .where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, OPENWA_PENDING_CARD_ACTION_KIND), eq(chatActions.status, "received")));
   }
 
   async function wakeFor(t: Setup, actionId: string) {
@@ -287,6 +305,9 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     const comments = await db.select().from(issueComments).where(and(eq(issueComments.issueId, owner.issueId), eq(issueComments.authorType, "system")));
     expect(comments.some((comment) => comment.body.includes(card.id.slice(0, 8)))).toBe(true);
 
+    expect(await t.service.processPendingOpenwaPendingCards()).toBe(0);
+    expect((await cardActions(t))[0]!.status).toBe("received");
+    await dueNow(t);
     expect(await t.service.processPendingOpenwaPendingCards()).toBe(1);
     const wake = await wakeFor(t, staged[0]!.id);
     expect(wake.request.payload).toMatchObject({ issueId: owner.issueId, openwa: { event: "pending_card", triggerClass: "other", pendingCardIds: [card.id] } });
@@ -315,6 +336,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     expect(staged).toMatchObject({ conversationId: owner.conversationId, status: "received" });
 
     await db.update(issueThreadInteractions).set({ status: "resolved" }).where(eq(issueThreadInteractions.id, card.id));
+    await dueNow(t);
     expect(await t.service.processPendingOpenwaPendingCards()).toBe(0);
     const [settled] = await cardActions(t);
     expect(settled!.status).toBe("processed");
@@ -356,5 +378,47 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     await createCard(t, issueId, { addresseeUserId: other });
     await createCard(t, issueId, { kind: "ask_user_questions", payload: { version: 1, title: "Pick one", questions: [{ id: "q1", prompt: "Which?", selectionMode: "single", options: [{ id: "a", label: "A" }] }] } }, {} as Record<string, string>);
     expect(await cardActions(t)).toEqual([]);
+  }, 180_000);
+
+  it("never sends a private issue to an owner chat whose reader cannot see it", async () => {
+    const t = await setup();
+    await ownerConversation(t);
+    const issueId = randomUUID();
+    await db.insert(issues).values({ id: issueId, companyId: t.companyId, title: "Secret deal X", status: "in_progress", assigneeAgentId: t.agentId, visibility: "private", identifier: "P-" + issueId.slice(0, 4) });
+    const card = await createCard(t, issueId, { payload: { version: 1, prompt: "Approve secret deal X?" } });
+    expect(card.status).toBe("pending");
+    expect(await cardActions(t)).toEqual([]);
+  }, 180_000);
+
+  it("keeps a card addressed to one owner out of the other owner's chat", async () => {
+    const t = await setup();
+    const second = await addSecondOwner(t);
+    const first = await ownerConversation(t);
+    const other = await ownerConversation(t, { phone: SECOND_PHONE, lid: SECOND_LID });
+    const issueId = await taskIssue(t, "Two owners");
+    await createCard(t, issueId, { addresseeUserId: t.userId });
+    const [forFirst] = await cardActions(t);
+    expect(forFirst).toMatchObject({ conversationId: first.conversationId });
+    await createCard(t, issueId, { addresseeUserId: second, payload: { version: 1, prompt: "Second owner only?" } });
+    const actions = await cardActions(t);
+    expect(actions.map((action) => action.conversationId)).toEqual([first.conversationId, other.conversationId]);
+  }, 180_000);
+
+  it("folds a burst of cards for one chat into a single wake", async () => {
+    const t = await setup();
+    const owner = await ownerConversation(t);
+    const ids: string[] = [];
+    for (const prompt of ["First?", "Second?", "Third?"]) {
+      ids.push((await createCard(t, await taskIssue(t, "Burst " + prompt), { payload: { version: 1, prompt } })).id);
+    }
+    const actions = await cardActions(t);
+    expect(actions).toHaveLength(1);
+    expect(actions[0]!.conversationId).toBe(owner.conversationId);
+    expect((actions[0]!.payload.openwa as { pendingCardIds: string[] }).pendingCardIds).toEqual(ids);
+    await dueNow(t);
+    expect(await t.service.processPendingOpenwaPendingCards()).toBe(1);
+    const run = await runContext(t, await wakeFor(t, actions[0]!.id));
+    expect((run.guidance.wakeEvent.pendingCards ?? []).map((card) => card.interactionId)).toEqual(ids);
+    expect(t.wakeup.mock.calls.filter(([, opts]) => opts.reason === "Paperclip card waits for an owner")).toHaveLength(1);
   }, 180_000);
 });

@@ -1,5 +1,7 @@
-import { and, asc, eq, inArray, isNotNull } from "drizzle-orm";
+import { and, asc, desc, eq, inArray, isNotNull } from "drizzle-orm";
 import { agents, chatActions, chatEndpoints, issueThreadInteractions, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { openwaEndpointPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import { canActorReadIssuePrivacy, issuePrivacyMode } from "../authorization.js";
 import { forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { dueChatAction } from "../chat-action-work.js";
@@ -9,16 +11,21 @@ import { issueService } from "../issues.js";
 import { publicChatTaskUrl } from "../chat-task-url.js";
 import { ownerRelayBlockedReason, pendingDecisionCardShape } from "../owner-decision-relay.js";
 import { openwaWakeRuntime } from "./approvals.js";
+import { openwaChatKey } from "./outbound.js";
 import { openwaCurrentOwners } from "./owners.js";
 import { openwaOwnerApprovalConversation } from "./session-health.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
+type DbOrTransaction = Db | DbTransaction;
+type EndpointRow = typeof chatEndpoints.$inferSelect;
 type CardRow = typeof issueThreadInteractions.$inferSelect;
 
 export const OPENWA_PENDING_CARD_ACTION_KIND = "openwa_pending_card";
 export const OPENWA_PENDING_CARD_WAKE_ACTOR_ID = "openwa:pending-card";
 const WAKE_MAX_ATTEMPTS = 5;
 const WAKE_RETRY_MS = 30_000;
+export const OPENWA_PENDING_CARD_BATCH_MS = 60_000;
+const MAX_CARDS_PER_ACTION = 10;
 const CARD_MAX_PER_WAKE = 10;
 const CARD_MAX_OPTIONS = 10;
 const CARD_TITLE_LIMIT = 200;
@@ -48,6 +55,32 @@ export function openwaOwnerCard(card: Pick<CardRow, "id" | "kind" | "status" | "
   );
 }
 
+/** Owners who read the chat a card is sent to: the chat's own owner in a DM, every current owner in owner_number mode. */
+async function chatRecipients(db: DbOrTransaction, endpoint: EndpointRow, chatKey: string): Promise<string[]> {
+  const owners = await openwaCurrentOwners(db, endpoint);
+  const policy = openwaEndpointPolicySchema.parse(endpoint.policy ?? {});
+  const readers = policy.numberMode === "owner_number" ? owners : owners.filter((owner) => owner.jids.map(openwaChatKey).includes(chatKey));
+  return [...new Set(readers.map((owner) => owner.userId))];
+}
+
+/** True when the endpoint agent, acting for each recipient, may read the issue; fails closed without recipients. */
+async function recipientsMayRead(
+  db: DbOrTransaction,
+  endpoint: Pick<EndpointRow, "companyId" | "assignedAgentId">,
+  issueId: string,
+  recipients: string[],
+): Promise<boolean> {
+  if (issuePrivacyMode() !== "enforce") return true;
+  if (!endpoint.assignedAgentId || recipients.length === 0) return false;
+  const [issue] = await db.select().from(issues).where(and(eq(issues.id, issueId), eq(issues.companyId, endpoint.companyId))).limit(1);
+  if (!issue) return false;
+  for (const userId of recipients) {
+    const actor = { type: "agent" as const, agentId: endpoint.assignedAgentId, companyId: endpoint.companyId, onBehalfOfUserId: userId };
+    if (!(await canActorReadIssuePrivacy(db, actor, issue))) return false;
+  }
+  return true;
+}
+
 /** Queues one owner-chat wake per active OpenWA endpoint for a new owner card, inside the card's transaction. */
 export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardRow): Promise<string[]> {
   if (!openwaOwnerCard(card)) return [];
@@ -72,13 +105,36 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
   for (const endpoint of endpoints) {
     const account = endpoint.providerAccountId ?? "";
     if (!account.includes("#")) continue;
-    if (card.addresseeUserId && !(await openwaCurrentOwners(tx, endpoint)).some((owner) => owner.userId === card.addresseeUserId)) continue;
     const target = await openwaOwnerApprovalConversation(tx, endpoint, {
       sessionId: account.slice(account.lastIndexOf("#") + 1),
       selfChatKey: (endpoint.botExternalId ?? "").replace(/\D/g, "") + "@c.us",
+      ...(card.addresseeUserId ? { onlyUserId: card.addresseeUserId } : {}),
     });
     if (!target) {
       logger.warn({ endpointId: endpoint.id, interactionId: card.id }, "OpenWA owner card has no owner conversation");
+      continue;
+    }
+    if (!(await recipientsMayRead(tx, endpoint, card.issueId, await chatRecipients(tx, endpoint, target.chatKey)))) continue;
+    const [open] = await tx
+      .select()
+      .from(chatActions)
+      .where(
+        and(
+          eq(chatActions.companyId, card.companyId),
+          eq(chatActions.endpointId, endpoint.id),
+          eq(chatActions.conversationId, target.conversationId),
+          eq(chatActions.kind, OPENWA_PENDING_CARD_ACTION_KIND),
+          eq(chatActions.status, "received"),
+        ),
+      )
+      .orderBy(desc(chatActions.createdAt))
+      .limit(1)
+      .for("update");
+    const openIds = open ? ((record(record(open.payload).openwa).pendingCardIds as string[] | undefined) ?? []) : [];
+    if (open && openIds.length < MAX_CARDS_PER_ACTION && !openIds.includes(card.id)) {
+      const openwa = { ...record(open.payload.openwa), pendingCardIds: [...openIds, card.id] };
+      await tx.update(chatActions).set({ payload: { ...open.payload, openwa }, updatedAt: new Date() }).where(eq(chatActions.id, open.id));
+      staged.push(open.id);
       continue;
     }
     const payload = {
@@ -86,6 +142,7 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
       issueId: target.issueId,
       agentId: target.agentId,
       interactionId: card.id,
+      chatKey: target.chatKey,
       openwa: { event: "pending_card", triggerClass: "other", deliveryIds: [], pendingCardIds: [card.id] },
     };
     const [action] = await tx
@@ -98,6 +155,7 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
         providerActionId: "openwa-pending-card:" + card.id,
         status: "received",
         payload,
+        result: { retryAt: new Date(Date.now() + OPENWA_PENDING_CARD_BATCH_MS).toISOString() },
       })
       .onConflictDoNothing()
       .returning({ id: chatActions.id });
@@ -119,6 +177,7 @@ export async function stageOpenwaPendingCardWakes(tx: DbTransaction, card: CardR
 /** Wakes the endpoint agent in the owner chat for one staged card; settles a resolved card without waking. */
 export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): Promise<boolean> {
   const runtime = openwaWakeRuntime(db);
+  if (!runtime) return false;
   const now = new Date();
   const [claimed] = await db
     .update(chatActions)
@@ -133,26 +192,25 @@ export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): P
       .update(chatActions)
       .set({ status, result: { ...result, attemptCount }, updatedAt: new Date() })
       .where(and(eq(chatActions.id, claimed.id), eq(chatActions.status, "processing")));
-  if (!runtime) {
-    await settle("failed", {
-      code: "openwa_pending_card_runtime_unavailable",
-      retryable: attemptCount < WAKE_MAX_ATTEMPTS,
-      retryAt: new Date(Date.now() + WAKE_RETRY_MS * attemptCount).toISOString(),
-    });
-    return false;
-  }
   try {
     const issueId = String(payload.issueId);
     const agentId = String(payload.agentId);
     const commentId = String(payload.commentId);
-    const interactionId = String(payload.interactionId);
     const openwa = record(payload.openwa);
-    const [card] = await db
-      .select({ status: issueThreadInteractions.status })
-      .from(issueThreadInteractions)
-      .where(and(eq(issueThreadInteractions.companyId, claimed.companyId), eq(issueThreadInteractions.id, interactionId)))
-      .limit(1);
-    if (card?.status !== "pending") {
+    const cardIds = Array.isArray(openwa.pendingCardIds) ? openwa.pendingCardIds.filter((id): id is string => typeof id === "string") : [];
+    const pendingCards = cardIds.length
+      ? await db
+          .select({ id: issueThreadInteractions.id, issueId: issueThreadInteractions.issueId })
+          .from(issueThreadInteractions)
+          .where(
+            and(
+              eq(issueThreadInteractions.companyId, claimed.companyId),
+              inArray(issueThreadInteractions.id, cardIds),
+              eq(issueThreadInteractions.status, "pending"),
+            ),
+          )
+      : [];
+    if (pendingCards.length === 0) {
       await settle("processed", { code: "openwa_pending_card_resolved" });
       return false;
     }
@@ -163,6 +221,15 @@ export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): P
       .limit(1);
     if (!issue || issue.assigneeAgentId !== agentId || ["backlog", "done", "cancelled"].includes(issue.status)) {
       await settle("failed", { code: "openwa_pending_card_target_changed" });
+      return false;
+    }
+    const [endpoint] = await db.select().from(chatEndpoints).where(and(eq(chatEndpoints.companyId, claimed.companyId), eq(chatEndpoints.id, claimed.endpointId))).limit(1);
+    const recipients = endpoint ? await chatRecipients(db, endpoint, String(payload.chatKey ?? "")) : [];
+    const readable = endpoint
+      ? await Promise.all(pendingCards.map((pending) => recipientsMayRead(db, endpoint, pending.issueId, recipients)))
+      : [];
+    if (!readable.some(Boolean)) {
+      await settle("processed", { code: "openwa_pending_card_unreadable" });
       return false;
     }
     const request = createDurableChatWakeupRequest({
@@ -211,6 +278,7 @@ export async function dispatchOpenwaPendingCardWake(db: Db, actionId: string): P
 }
 
 export async function processPendingOpenwaPendingCardWakes(db: Db, limit = 25): Promise<number> {
+  if (!openwaWakeRuntime(db)) return 0;
   const rows = await db
     .select({ id: chatActions.id })
     .from(chatActions)
@@ -246,8 +314,15 @@ function clipOptions(options: ReadonlyArray<{ id: string; label: string }>) {
 }
 
 /** Still-pending owner cards named by a wake; titles, prompts and labels are worker-authored data. */
-export async function openwaPendingCardsForWake(db: Db, companyId: string, interactionIds: string[]): Promise<OpenwaPendingCard[]> {
+export async function openwaPendingCardsForWake(
+  db: Db,
+  input: { companyId: string; endpointId: string; chatKey: string; interactionIds: string[] },
+): Promise<OpenwaPendingCard[]> {
+  const { companyId, interactionIds } = input;
   if (!interactionIds.length) return [];
+  const [endpoint] = await db.select().from(chatEndpoints).where(and(eq(chatEndpoints.companyId, companyId), eq(chatEndpoints.id, input.endpointId))).limit(1);
+  if (!endpoint) return [];
+  const recipients = await chatRecipients(db, endpoint, input.chatKey);
   const rows = await db
     .select({ card: issueThreadInteractions, identifier: issues.identifier, issueTitle: issues.title, requestedBy: agents.name })
     .from(issueThreadInteractions)
@@ -261,7 +336,10 @@ export async function openwaPendingCardsForWake(db: Db, companyId: string, inter
       ),
     )
     .orderBy(asc(issueThreadInteractions.createdAt));
-  return rows.filter((row) => openwaOwnerCard(row.card)).map(({ card, identifier, issueTitle, requestedBy }) => {
+  const readable = await Promise.all(
+    rows.map(async (row) => openwaOwnerCard(row.card) && (await recipientsMayRead(db, endpoint, row.card.issueId, recipients))),
+  );
+  return rows.filter((_, index) => readable[index]).map(({ card, identifier, issueTitle, requestedBy }) => {
     const shape = pendingDecisionCardShape(card.kind, record(card.payload));
     const reference = identifier ?? card.issueId;
     return {
