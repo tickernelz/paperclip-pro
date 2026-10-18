@@ -20,6 +20,10 @@ runs:
       shell: bash
       run: node ./scripts/check-no-git-push.mjs
 
+    - name: Reject agent co-author trailer rules
+      shell: bash
+      run: node ./scripts/check-no-coauthor-trailer.mjs
+
     - name: Validate feature module boundaries
       shell: bash
       run: pnpm check:module-boundaries
@@ -40,6 +44,7 @@ runs:
       shell: bash
       run: |
         node --test ./scripts/check-no-git-push.test.mjs
+        node --test ./scripts/check-no-coauthor-trailer.test.mjs
         node --test ./scripts/check-module-boundaries.test.mjs
         node --test ./scripts/__tests__/run-vitest-stable-shard.test.mjs
         node --test ./scripts/__tests__/e2e-shard.test.mjs
