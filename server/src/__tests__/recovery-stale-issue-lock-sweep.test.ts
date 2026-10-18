@@ -1230,7 +1230,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         resumeSessionDisplayId: "omp-session-1",
         resumeSessionParams: { sessionId: "omp-session-1", cwd: "/tmp" },
         failureRetriesBeforeProcessLoss: 2,
-        processLossContinuations: 1,
+        serverInterruptionRetries: { count: 1 },
       });
       const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
       expect(issue).toMatchObject({ status: "in_progress", executionRunId: successor.id });
@@ -1240,11 +1240,11 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     it.each([
       ["a fresh chain", 0],
       ["a chain whose transient retry budget is spent", 2],
-    ])("caps a crash-looping chain at two consecutive continuations from %s", async (_label, scheduledRetryAttempt) => {
+    ])("caps a server-interruption chain at six continuations within the window from %s", async (_label, scheduledRetryAttempt) => {
       const f = await seedOrphanedOmpRun({ scheduledRetryAttempt });
       const heartbeat = heartbeatService(db);
       const chain = [f.runningRunId];
-      for (let crash = 0; crash < 3; crash += 1) {
+      for (let crash = 0; crash < 8; crash += 1) {
         await heartbeat.sweepStaleIssueLocks();
         const [next] = await successorsOf(chain.at(-1)!);
         if (!next) break;
@@ -1256,19 +1256,17 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         await db.update(issues).set({ checkoutRunId: next.id }).where(eq(issues.id, f.issueId));
       }
 
-      expect(chain).toHaveLength(3);
+      expect(chain).toHaveLength(7);
       const runs = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, f.companyId));
       expect(runs.filter((run) => run.status === "interrupted").map((run) => run.id).sort()).toEqual([...chain].sort());
       expect(runs.filter((run) => ["queued", "scheduled_retry", "running"].includes(run.status))).toEqual([]);
       const continuations = chain.slice(1).map((id) => runs.find((run) => run.id === id)!);
-      expect(continuations.map((run) => [run.scheduledRetryReason, run.scheduledRetryAttempt])).toEqual([
-        ["process_lost", 1],
-        ["process_lost", 2],
-      ]);
-      expect(continuations.map((run) => run.contextSnapshot?.failureRetriesBeforeProcessLoss)).toEqual([
-        scheduledRetryAttempt,
-        scheduledRetryAttempt,
-      ]);
+      expect(continuations.map((run) => [run.scheduledRetryReason, run.scheduledRetryAttempt])).toEqual(
+        [1, 2, 3, 4, 5, 6].map((attempt) => ["process_lost", attempt]),
+      );
+      expect(continuations.map((run) => run.contextSnapshot?.failureRetriesBeforeProcessLoss)).toEqual(
+        Array(6).fill(scheduledRetryAttempt),
+      );
     });
 
     it("caps a reaper-driven crash loop at two continuations with no successor of any reason afterwards", async () => {
