@@ -48095,6 +48095,12 @@
               "maxConcurrentStarts": {
                 "type": "integer"
               },
+              "memoryGateCooldownSec": {
+                "type": "integer"
+              },
+              "memoryReservePercent": {
+                "type": "integer"
+              },
               "startWaitBypassSec": {
                 "type": "integer"
               }

@@ -162,6 +162,11 @@ import {
   markLocalCliRunStarting,
   mergeLocalCliStartReservations,
 } from "./local-cli-admission.js";
+import {
+  createLocalRunMemoryGate,
+  formatLocalRunMemoryGateLine,
+  type LocalRunMemoryGate,
+} from "./local-run-memory-gate.js";
 import type { createHeartbeatRunState } from "./run-state.js";
 import type { createHeartbeatRunPreparation } from "./run-preparation.js";
 import type { HeartbeatRetryDependencies } from "./retries.js";
@@ -219,6 +224,7 @@ export interface HeartbeatQueueDependencies extends Pick<HeartbeatRetryDependenc
     snapshotRunningLocalCliRuns: () => Promise<Map<string, number | null>>;
     scheduleLocalStartBypassSweep: (dueAtMs: number) => void;
   };
+  localRunMemoryGate?: LocalRunMemoryGate;
 }
 
 const HEARTBEAT_MAX_CONCURRENT_RUNS_DEFAULT = AGENT_DEFAULT_MAX_CONCURRENT_RUNS;
@@ -401,6 +407,28 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
     filterZombieCoalesceTarget,
     localCliAdmission,
   } = dependencies;
+  const localRunMemoryGate = dependencies.localRunMemoryGate ?? createLocalRunMemoryGate();
+
+  async function recordLocalRunMemoryShadow(input: {
+    runId: string;
+    localRunsLive: number;
+    startingRuns: number;
+    limits: EffectiveLocalRunLimits;
+  }) {
+    try {
+      const gateInput = {
+        runId: input.runId,
+        localRunsLive: input.localRunsLive,
+        startingRuns: input.startingRuns,
+        reservePercent: input.limits.memoryReservePercent.value,
+        cooldownSec: input.limits.memoryGateCooldownSec.value,
+      };
+      const decision = await localRunMemoryGate.assess(gateInput);
+      logger.info(formatLocalRunMemoryGateLine(gateInput, decision));
+    } catch (err) {
+      logger.warn({ err, runId: input.runId }, "local-run-memory-gate shadow record failed");
+    }
+  }
 
   function parseHeartbeatPolicy(agent: typeof agents.$inferSelect) {
     const runtimeConfig = parseObject(agent.runtimeConfig);
@@ -2079,7 +2107,14 @@ export function createHeartbeatQueue(db: Db, dependencies: HeartbeatQueueDepende
             );
             continue;
           }
+          const startingRuns = countLocalCliRunsStarting(inFlight, now);
           markLocalCliRunStarting(queuedRun.id, now);
+          await recordLocalRunMemoryShadow({
+            runId: queuedRun.id,
+            localRunsLive: inFlight.size,
+            startingRuns,
+            limits: localRunLimits,
+          });
         }
         let claimed: typeof heartbeatRuns.$inferSelect | null;
         try {

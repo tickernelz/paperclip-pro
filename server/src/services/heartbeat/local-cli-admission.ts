@@ -1,5 +1,11 @@
 import {
+  INSTANCE_DEFAULT_LOCAL_MEMORY_GATE_COOLDOWN_SEC,
+  INSTANCE_DEFAULT_LOCAL_MEMORY_RESERVE_PERCENT,
   INSTANCE_DEFAULT_LOCAL_START_WAIT_BYPASS_SEC,
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX,
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN,
   INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS,
   INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_STARTS,
   INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
@@ -44,6 +50,18 @@ const LOCAL_RUN_LIMIT_SPECS = {
     min: INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
     max: INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
   },
+  memoryReservePercent: {
+    envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT",
+    fallback: INSTANCE_DEFAULT_LOCAL_MEMORY_RESERVE_PERCENT,
+    min: INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN,
+    max: INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX,
+  },
+  memoryGateCooldownSec: {
+    envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC",
+    fallback: INSTANCE_DEFAULT_LOCAL_MEMORY_GATE_COOLDOWN_SEC,
+    min: INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN,
+    max: INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX,
+  },
 } as const satisfies Record<
   LocalRunLimitKey,
   { envVar: string; fallback: number; min: number; max: number }
@@ -85,6 +103,8 @@ export function resolveLocalRunLimits(
     maxConcurrentRuns: resolveLocalRunLimit("maxConcurrentRuns", env, saved),
     maxConcurrentStarts: resolveLocalRunLimit("maxConcurrentStarts", env, saved),
     startWaitBypassSec: resolveLocalRunLimit("startWaitBypassSec", env, saved),
+    memoryReservePercent: resolveLocalRunLimit("memoryReservePercent", env, saved),
+    memoryGateCooldownSec: resolveLocalRunLimit("memoryGateCooldownSec", env, saved),
   };
 }
 
