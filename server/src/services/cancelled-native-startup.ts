@@ -1,4 +1,4 @@
-import { isPreDispatchReviewWait } from "./pre-dispatch-review-wait.js";
+import { isCancelledBeforeStart, isPreDispatchReviewWait } from "./pre-dispatch-review-wait.js";
 import { and, eq, inArray, isNotNull, or } from "drizzle-orm";
 import { environmentLeases, heartbeatRunEvents, heartbeatRuns, nativeRunFinalizations, type Db } from "@tickernelz/paperclip-pro-db";
 import { claimedAdapterType } from "./conversation-continuation.js";
@@ -22,6 +22,18 @@ export async function canRetryStoppedRun(db: Db, run: Run): Promise<boolean> {
   return isCancelledNativeStartup(db, run, coordinator);
 }
 
+/** A legacy run that left no evidence of entering an adapter. */
+function cancelledBeforeLegacyDispatch(run: Run, coordinator: Coordinator | undefined) {
+  if (run.runtimeMode !== "legacy" || run.nativeIssueId || run.nativeSessionId || coordinator) return false;
+  const leaseGone = !run.controllerLeaseExpiresAt || run.controllerLeaseExpiresAt <= new Date();
+  const foreignController = Boolean(run.controllerBootId && run.controllerBootId !== legacyControllerBootId &&
+    run.controllerLeaseExpiresAt && run.controllerLeaseExpiresAt <= new Date());
+  if (run.executionStage === "settled") return leaseGone;
+  if (run.executionStage === "preparing") return !run.runtimeModeResolvedAt && foreignController;
+  return run.executionStage === "dispatching" &&
+    run.errorCode === "legacy_disposition_repair_suppressed" && foreignController;
+}
+
 /** Caller holds the coordinator and run locks when using this proof to admit
  * work. Attempt zero is a durable never-claimed receipt: every native executor
  * commits its first claim before it can start or attach a provider. */
@@ -39,8 +51,9 @@ export async function isCancelledNativeStartup(db: Db, run: Run, coordinator: Co
     (run.resultJson === null || cancellation?.beforeNativeSelection === true) &&
     Boolean(run.controllerBootId && run.controllerBootId !== legacyControllerBootId &&
       run.controllerLeaseExpiresAt && run.controllerLeaseExpiresAt <= new Date());
-  const beforeReviewDispatch = isPreDispatchReviewWait(run) && !coordinator;
-  const beforeSelection = beforeReviewDispatch || historicalBeforeSelection || run.runtimeMode === "legacy" && !run.runtimeModeResolvedAt &&
+  const beforeStart = !coordinator && (isPreDispatchReviewWait(run) || isCancelledBeforeStart(run));
+  const beforeLegacyDispatch = cancelledBeforeLegacyDispatch(run, coordinator);
+  const beforeSelection = beforeStart || historicalBeforeSelection || beforeLegacyDispatch || run.runtimeMode === "legacy" && !run.runtimeModeResolvedAt &&
     !run.nativeSessionId && !coordinator && claimedAdapterType(run) === "paperclip_runner" &&
     cancellation?.beforeNativeSelection === true;
   const neverClaimed = run.runtimeMode === "native" && coordinator &&
@@ -49,7 +62,7 @@ export async function isCancelledNativeStartup(db: Db, run: Run, coordinator: Co
     !coordinator.controllerPid && !coordinator.leaseOwner && !coordinator.leaseExpiresAt &&
     !coordinator.resultId && !coordinator.failureDetail?.successorRunId;
   if (!beforeSelection && !neverClaimed) return false;
-  const settled = beforeReviewDispatch || typeof run.resultJson?.startupPreparationSettledAt === "string";
+  const settled = beforeStart || beforeLegacyDispatch || typeof run.resultJson?.startupPreparationSettledAt === "string";
   // The old preparer can still be unwinding even though the run is terminal.
   if (!settled && run.controllerLeaseExpiresAt && run.controllerLeaseExpiresAt > new Date()) return false;
   const leases = await db.select().from(environmentLeases).where(and(
