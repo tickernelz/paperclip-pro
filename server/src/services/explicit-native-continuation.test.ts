@@ -1017,17 +1017,16 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(await getExecutionBlocker(db, f.companyId, f.issueId)).toBeNull();
   });
 
-  it.each([false, true].flatMap(receipt => ["resolved", "dispatching", "adapter", "missing_boot", "current_boot", "missing_lease", "live_lease", "receipt", "launch", "invoked", "coordinator", "cleanup", "remote"].map(kind => ({ receipt, kind }))))(
+  it.each([false, true].flatMap(receipt => ["resolved", "dispatching", "missing_stage", "missing_boot", "current_boot", "missing_lease", "live_lease", "launch", "invoked", "coordinator", "cleanup", "remote"].map(kind => ({ receipt, kind }))))(
     "holds historical native preparation with contradictory or incomplete $kind evidence (receipt: $receipt)", async ({ receipt, kind }) => {
       const f = await seedHistoricalCancelledPreparation(receipt);
       const patch = kind === "resolved" ? { runtimeModeResolvedAt: new Date() }
         : kind === "dispatching" ? { executionStage: "dispatching" }
-        : kind === "adapter" ? { runnerProfileJson: { adapterDispatch: { adapterType: "process" } } }
+        : kind === "missing_stage" ? { executionStage: null }
         : kind === "missing_boot" ? { controllerBootId: null }
         : kind === "current_boot" ? { controllerBootId: legacyControllerBootId }
         : kind === "missing_lease" ? { controllerLeaseExpiresAt: null }
-        : kind === "live_lease" ? { controllerLeaseExpiresAt: new Date(Date.now() + 60_000) }
-        : kind === "receipt" ? { resultJson: { startupCancellation: { beforeNativeSelection: false } } } : {};
+        : kind === "live_lease" ? { controllerLeaseExpiresAt: new Date(Date.now() + 60_000) } : {};
       if (Object.keys(patch).length) await db.update(heartbeatRuns).set(patch).where(eq(heartbeatRuns.id, f.sourceRunId));
       if (kind === "launch" || kind === "invoked") await db.insert(heartbeatRunEvents).values({ companyId: f.companyId,
         agentId: f.agentId, runId: f.sourceRunId, seq: 1,
@@ -1048,6 +1047,21 @@ const support = await getEmbeddedPostgresTestSupport();
       await db.delete(environmentLeases).where(eq(environmentLeases.heartbeatRunId, f.sourceRunId));
     },
   );
+
+  it.each([
+    ["paperclip_runner", true],
+    ["omp_local", false],
+    ["process", false],
+    ["hermes_gateway", false],
+  ])("admits the pre-dispatch cancellation of a %s run regardless of its receipt", async (adapterType, receipt) => {
+    const f = await seedHistoricalCancelledPreparation(receipt);
+    await db.update(heartbeatRuns).set({
+      runnerProfileJson: { adapterDispatch: { adapterType } },
+      resultJson: { startupCancellation: { beforeNativeSelection: receipt } },
+    }).where(eq(heartbeatRuns.id, f.sourceRunId));
+    expect(await getExecutionBlocker(db, f.companyId, f.issueId)).toMatchObject({ canRetry: true });
+    expect(await admit(f)).toMatchObject({ previousRunId: f.sourceRunId });
+  });
 
   it.each(["attempt", "generation", "controller", "lease", "process", "launch", "provider", "cleanup", "remote", "preparing", "closed", "reassigned"])(
     "retains cancellation safeguards with %s evidence", async kind => {

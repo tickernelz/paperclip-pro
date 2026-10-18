@@ -5444,9 +5444,7 @@ export function heartbeatService(
             providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted || nativeOwnershipHeld,
           }) ?? latestRun;
         }
-        if (latestRun?.status === "cancelled" && !nativeDispatchStarted && !nativeOwnershipHeld &&
-            (latestRun.runtimeMode === "native" ||
-              parseObject(latestRun.resultJson?.startupCancellation).beforeNativeSelection === true)) {
+        if (latestRun?.status === "cancelled" && !nativeDispatchStarted && !nativeOwnershipHeld && !legacyAdapterEntered) {
           // This executor has finished preparation and lease cleanup without
           // handing off to native execution. Keep a durable receipt for admission
           // after a restart; cleanup receipts are independently rechecked there.

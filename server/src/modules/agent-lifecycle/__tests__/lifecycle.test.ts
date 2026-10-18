@@ -150,6 +150,44 @@ const support = await getEmbeddedPostgresTestSupport();
     expect((await current(agent.id)).lifecycleState).toBe("terminated");
   });
 
+  it("settles a pause and resume for a cancelled run that never started a process", async () => {
+    const agent = await hire();
+    const work = worker(createLifecycleDriver(db, {} as never).runHost);
+    await work.process(agent.id);
+    await agentConfiguration(db).update(agent.id, { adapterConfig: { command: process.execPath } });
+    await work.process(agent.id);
+    expect(await current(agent.id)).toMatchObject({ lifecycleState: "ready" });
+    await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id, status: "cancelled", invocationSource: "on_demand",
+      runtimeMode: "legacy", executionStage: "preparing", errorCode: "continuation_task_ownership_changed",
+      startedAt: new Date(Date.now() - 120_000), finishedAt: new Date(Date.now() - 119_000),
+      controllerBootId: randomUUID(), controllerLeaseExpiresAt: new Date(Date.now() - 60_000),
+      runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
+      resultJson: { stopReason: "cancelled", startupCancellation: { requestedAt: new Date().toISOString(), beforeNativeSelection: false } },
+    });
+    await createAgentLifecycle(db).pauseAgent(agent.id);
+    await work.process(agent.id);
+    expect(await current(agent.id)).toMatchObject({ lifecycleState: "paused", status: "paused" });
+    await createAgentLifecycle(db).resumeAgent(agent.id);
+    await work.process(agent.id);
+    expect(await current(agent.id)).toMatchObject({ lifecycleState: "ready", status: "idle" });
+  });
+
+  it("settles a pause for a cancelled legacy run that settled without a process identity", async () => {
+    const agent = await hire();
+    await db.insert(heartbeatRuns).values({
+      companyId, agentId: agent.id, status: "cancelled", invocationSource: "on_demand",
+      runtimeMode: "legacy", executionStage: "settled",
+      startedAt: new Date(Date.now() - 120_000), finishedAt: new Date(Date.now() - 119_000),
+      runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
+      resultJson: { stopReason: "cancelled", startupPreparationSettledAt: new Date().toISOString() },
+    });
+    const work = worker(createLifecycleDriver(db, {} as never).runHost);
+    await createAgentLifecycle(db).pauseAgent(agent.id);
+    await work.process(agent.id);
+    expect(await current(agent.id)).toMatchObject({ lifecycleState: "paused", status: "paused" });
+  });
+
   it("does not cancel a reporting agent when its manager pauses", async () => {
     const parent = await hire();
     const [child] = await db.insert(agents).values({ companyId, name: "Report", reportsTo: parent.id,
