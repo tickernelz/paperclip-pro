@@ -65,6 +65,18 @@ chmod 600 ~/.paperclip-pro/instances/default/service.env
 paperclip-pro service restart --drain
 ```
 
+Memory protection in the unit: `OOMPolicy=continue` (the server stays up when the
+kernel kills a run process), `OOMScoreAdjust=0`, `MemoryHigh=55%`,
+`MemoryMax=62%`, and `MemorySwapMax=25%` of physical memory. Run children are
+raised to `oom_score_adj` 500 (`PAPERCLIP_RUN_OOM_SCORE_ADJ`), so the kernel
+kills a run before the server. A user unit cannot lower `OOMScoreAdjust` below
+the user manager's own value. Override a limit in `service.env` with
+`PAPERCLIP_SERVICE_MEMORY_HIGH`, `PAPERCLIP_SERVICE_MEMORY_MAX`,
+`PAPERCLIP_SERVICE_MEMORY_SWAP_MAX` (`infinity`, `NN%`, or bytes with
+`K`/`M`/`G`/`T`) and `PAPERCLIP_SERVICE_OOM_SCORE_ADJUST` (-1000 to 1000); the
+CLI rewrites the unit on the next `service start` or `restart`, and a malformed
+value fails that command instead of being ignored.
+
 Supervisor and health status:
 
 ```bash

@@ -6,6 +6,7 @@ import {
   assertForegroundRunAllowed,
   detectServiceManager,
   LaunchdServiceManager,
+  parseServiceMemoryOverrides,
   renderLaunchdPlist,
   renderSystemdUnit,
   SystemdServiceManager,
@@ -99,6 +100,78 @@ describe("service definition generation", () => {
     expect(plist).toContain("<key>RunAtLoad</key><true/>");
     expect(plist).toContain("<key>KeepAlive</key><true/>");
     expect(plist).toContain("service.err.log");
+  });
+});
+
+describe("systemd memory protection", () => {
+  const base = { instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" };
+
+  it("keeps the server alive when the kernel kills a run and caps cgroup memory by host percentage", () => {
+    const unit = renderSystemdUnit(base);
+    expect(serviceDirective(unit, "OOMPolicy")).toEqual(["continue"]);
+    expect(serviceDirective(unit, "OOMScoreAdjust")).toEqual(["0"]);
+    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["55%"]);
+    expect(serviceDirective(unit, "MemoryMax")).toEqual(["62%"]);
+    expect(serviceDirective(unit, "MemorySwapMax")).toEqual(["25%"]);
+  });
+
+  it("applies operator limits over the defaults", () => {
+    const unit = renderSystemdUnit({ ...base, memoryLimits: { max: "20G", swapMax: "infinity", oomScoreAdjust: -100 } });
+    expect(serviceDirective(unit, "MemoryMax")).toEqual(["20G"]);
+    expect(serviceDirective(unit, "MemorySwapMax")).toEqual(["infinity"]);
+    expect(serviceDirective(unit, "OOMScoreAdjust")).toEqual(["-100"]);
+    expect(serviceDirective(unit, "MemoryHigh")).toEqual(["55%"]);
+  });
+
+  it.each([
+    ["a directive injection", { max: "62%\nExecStartPre=/tmp/attack" }],
+    ["a percentage above 100", { high: "101%" }],
+    ["a fractional percentage", { max: "62.5%" }],
+    ["a unit-less word", { swapMax: "lots" }],
+  ])("rejects %s in a limit", (_label, memoryLimits) => {
+    expect(() => renderSystemdUnit({ ...base, memoryLimits })).toThrow("Invalid memoryLimits");
+  });
+
+  it.each([-1001, 1001, 1.5, Number.NaN])("rejects OOMScoreAdjust %s", (oomScoreAdjust) => {
+    expect(() => renderSystemdUnit({ ...base, memoryLimits: { oomScoreAdjust } })).toThrow("Invalid oomScoreAdjust");
+  });
+
+  it("reads operator limits from service.env and ignores unrelated keys", () => {
+    expect(parseServiceMemoryOverrides([
+      "# operator notes",
+      "PAPERCLIP_PORT=3100",
+      'PAPERCLIP_SERVICE_MEMORY_MAX="18G"',
+      "PAPERCLIP_SERVICE_MEMORY_HIGH=50%",
+      "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=100",
+      "",
+    ].join("\n"))).toEqual({ max: "18G", high: "50%", oomScoreAdjust: 100 });
+    expect(parseServiceMemoryOverrides("PAPERCLIP_PORT=3100\n")).toEqual({});
+  });
+
+  it.each([
+    "PAPERCLIP_SERVICE_MEMORY_MAX=everything",
+    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=abc",
+  ])("rejects a malformed service.env override (%s)", (line) => {
+    expect(() => parseServiceMemoryOverrides(line)).toThrow("Invalid");
+  });
+
+  it("renders the instance service.env override and rewrites a unit that still carries the old limit", async () => {
+    const userHome = await temporaryDirectory();
+    const homeDir = path.join(userHome, ".paperclip");
+    const calls: string[] = [];
+    const manager = new SystemdServiceManager("default", async (command, args) => {
+      calls.push([command, ...args].join(" "));
+      return { stdout: "", stderr: "" };
+    }, homeDir, path.join(userHome, ".local/bin/paperclip-pro"), userHome);
+    await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
+    await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
+    await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
+    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "PAPERCLIP_SERVICE_MEMORY_MAX=18G\n", "utf8");
+
+    await manager.restart();
+
+    expect(serviceDirective(await fs.readFile(manager.definitionPath, "utf8"), "MemoryMax")).toEqual(["18G"]);
+    expect(calls).toEqual(["systemctl --user daemon-reload", "systemctl --user restart paperclip-pro.service"]);
   });
 });
 

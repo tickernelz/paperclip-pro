@@ -1,5 +1,5 @@
 import fs from "node:fs/promises";
-import { constants as fsConstants } from "node:fs";
+import { constants as fsConstants, readFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
@@ -135,7 +135,80 @@ export function launchdServiceName(instanceId: string): string {
   return instanceId === "default" ? "ing.paperclip.paperclip-pro" : `ing.paperclip.paperclip-pro.${instanceId}`;
 }
 
-export function renderSystemdUnit(input: { instanceId: string; shimPath: string; homeDir: string }): string {
+export type SystemdMemoryLimits = { high: string; max: string; swapMax: string; oomScoreAdjust: number };
+
+export const DEFAULT_SYSTEMD_MEMORY_LIMITS: SystemdMemoryLimits = {
+  high: "55%",
+  max: "62%",
+  swapMax: "25%",
+  oomScoreAdjust: 0,
+};
+
+export const SERVICE_MEMORY_OVERRIDE_KEYS = {
+  high: "PAPERCLIP_SERVICE_MEMORY_HIGH",
+  max: "PAPERCLIP_SERVICE_MEMORY_MAX",
+  swapMax: "PAPERCLIP_SERVICE_MEMORY_SWAP_MAX",
+  oomScoreAdjust: "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST",
+} as const;
+
+const SYSTEMD_MEMORY_LIMIT_PATTERN = /^(?:infinity|(?:[1-9]\d?|100)%|\d+[KMGT]?)$/;
+
+function assertMemoryLimit(name: string, value: string): string {
+  if (!SYSTEMD_MEMORY_LIMIT_PATTERN.test(value)) {
+    throw new Error(`Invalid ${name} "${value}": use infinity, a percentage such as 62%, or bytes with an optional K, M, G or T suffix.`);
+  }
+  return value;
+}
+
+function assertOomScoreAdjust(name: string, value: number): number {
+  if (!Number.isInteger(value) || value < -1000 || value > 1000) {
+    throw new Error(`Invalid ${name} "${value}": use an integer from -1000 to 1000.`);
+  }
+  return value;
+}
+
+export function parseServiceMemoryOverrides(content: string): Partial<SystemdMemoryLimits> {
+  const values = new Map<string, string>();
+  for (const rawLine of content.split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#")) continue;
+    const separator = line.indexOf("=");
+    if (separator < 1) continue;
+    const key = line.slice(0, separator).trim();
+    const value = line.slice(separator + 1).trim().replace(/^(["'])(.*)\1$/, "$2");
+    values.set(key, value);
+  }
+  const overrides: Partial<SystemdMemoryLimits> = {};
+  for (const field of ["high", "max", "swapMax"] as const) {
+    const key = SERVICE_MEMORY_OVERRIDE_KEYS[field];
+    const value = values.get(key);
+    if (value !== undefined) overrides[field] = assertMemoryLimit(key, value);
+  }
+  const adjust = values.get(SERVICE_MEMORY_OVERRIDE_KEYS.oomScoreAdjust);
+  if (adjust !== undefined) {
+    overrides.oomScoreAdjust = assertOomScoreAdjust(SERVICE_MEMORY_OVERRIDE_KEYS.oomScoreAdjust, Number(adjust));
+  }
+  return overrides;
+}
+
+function readServiceMemoryOverrides(homeDir: string, instanceId: string): Partial<SystemdMemoryLimits> {
+  let content: string;
+  try {
+    content = readFileSync(resolveServiceEnvironmentFilePath(homeDir, instanceId), "utf8");
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "ENOENT") return {};
+    throw error;
+  }
+  return parseServiceMemoryOverrides(content);
+}
+
+export function renderSystemdUnit(input: {
+  instanceId: string;
+  shimPath: string;
+  homeDir: string;
+  memoryLimits?: Partial<SystemdMemoryLimits>;
+}): string {
+  const limits = { ...DEFAULT_SYSTEMD_MEMORY_LIMITS, ...input.memoryLimits };
   return `[Unit]
 Description=Paperclip AI (${escapeSystemd(input.instanceId)})
 After=network.target
@@ -155,6 +228,11 @@ Restart=always
 RestartSec=5
 KillMode=mixed
 TimeoutStopSec=300
+OOMPolicy=continue
+OOMScoreAdjust=${assertOomScoreAdjust("oomScoreAdjust", limits.oomScoreAdjust)}
+MemoryHigh=${assertMemoryLimit("memoryLimits.high", limits.high)}
+MemoryMax=${assertMemoryLimit("memoryLimits.max", limits.max)}
+MemorySwapMax=${assertMemoryLimit("memoryLimits.swapMax", limits.swapMax)}
 
 [Install]
 WantedBy=default.target
@@ -225,7 +303,12 @@ export class SystemdServiceManager implements ServiceManager {
   }
 
   renderDefinition(): string {
-    return renderSystemdUnit({ instanceId: this.instanceId, shimPath: this.shimPath, homeDir: this.homeDir });
+    return renderSystemdUnit({
+      instanceId: this.instanceId,
+      shimPath: this.shimPath,
+      homeDir: this.homeDir,
+      memoryLimits: readServiceMemoryOverrides(this.homeDir, this.instanceId),
+    });
   }
 
   async installedExecutablePath(): Promise<string | null> {
