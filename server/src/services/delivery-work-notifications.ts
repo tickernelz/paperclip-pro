@@ -10,6 +10,7 @@ export const DELIVERY_QUEUES = {
   chatGitHubIngress: "chat-github-ingress",
   chatSessionSyncs: "chat-session-syncs",
   chatVerification: "chat-verification",
+  chatOpenwaPendingCards: "chat-openwa-pending-cards",
   chatInbound: "chat-inbound",
   chatPublications: "chat-publications",
   chatReceipts: "chat-slack-receipts",

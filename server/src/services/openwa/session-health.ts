@@ -7,6 +7,7 @@ import { logger } from "../../middleware/logger.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";
 import { issueService } from "../issues.js";
 import { openwaWakeRuntime } from "./approvals.js";
+import { openwaChatKey } from "./outbound.js";
 import { openwaCurrentOwners } from "./owners.js";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
@@ -48,7 +49,7 @@ function healthComment(facts: OpenwaSessionHealthFacts): string {
   );
 }
 
-/** Owner approval chat of the endpoint: self-chat in owner_number mode, else the most recent active owner DM. */
+/** Owner approval chat of the endpoint: self-chat in owner_number mode, else the most recent active owner DM (phone or LID). */
 export async function openwaOwnerApprovalConversation(
   tx: DbTransaction,
   endpoint: EndpointRow,
@@ -61,7 +62,10 @@ export async function openwaOwnerApprovalConversation(
       ? [input.selfChatKey]
       : [
           ...new Set(
-            (await openwaCurrentOwners(tx, endpoint)).flatMap((owner) => (owner.digits ? [owner.digits + "@c.us"] : [])),
+            (await openwaCurrentOwners(tx, endpoint)).flatMap((owner) => [
+              ...(owner.digits ? [owner.digits + "@c.us"] : []),
+              ...owner.jids.filter((jid) => jid.endsWith("@lid")).map(openwaChatKey),
+            ]),
           ),
         ];
   if (!chatKeys.length) return null;

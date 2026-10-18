@@ -68,6 +68,7 @@ type ChatActionService = {
   processPendingReceiptReactions(): Promise<unknown>;
   processPendingSlackSessionStops(): Promise<unknown>;
   processPendingVerificationMessages(): Promise<unknown>;
+  processPendingOpenwaPendingCards(): Promise<unknown>;
   nextChatActionAt(kind: ScheduledChatAction): Promise<number | null>;
   nextVerificationMessageAt(): Promise<number | null>;
 };
@@ -85,6 +86,7 @@ export function registerChatActionWork(
     { kind: "slash_task_start", run: service.processPendingSlackTaskStarts },
     { kind: "receipt_reaction", run: service.processPendingReceiptReactions },
     { kind: "slack_session_stop", run: service.processPendingSlackSessionStops },
+    { kind: "openwa_pending_card", run: service.processPendingOpenwaPendingCards },
   ] as const;
   const workers = actions.map(({ kind, run }) => registerChatQueueWork(coordinator, {
     queue: CHAT_ACTION_QUEUES[kind], run, next: () => service.nextChatActionAt(kind),

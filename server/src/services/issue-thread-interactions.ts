@@ -133,6 +133,7 @@ import {
   enqueueIssueInteractionChatPublications,
   enqueueTerminalIssueInteractionChatPublications,
 } from "./chat-interaction-publications.js";
+import { stageOpenwaPendingCardWakes } from "./openwa/pending-cards.js";
 import {
   assertIssueThreadInteractionResolverAudience,
   canonicalizeStoredResolverPolicy,
@@ -3885,6 +3886,7 @@ export function issueThreadInteractionService(
               tx as unknown as Db,
               hydrateInteraction(row),
             );
+            await stageOpenwaPendingCardWakes(tx, row);
             return { row, supersededRows: [] };
           }
 
@@ -3941,6 +3943,7 @@ export function issueThreadInteractionService(
             tx as unknown as Db,
             hydrateInteraction(row),
           );
+          await stageOpenwaPendingCardWakes(tx, row);
           return { row, supersededRows };
         });
         created = result.row;
