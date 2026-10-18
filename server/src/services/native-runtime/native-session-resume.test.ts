@@ -24,6 +24,7 @@ import {
   nativeRunResults,
 } from "@tickernelz/paperclip-pro-db";
 import { describe, expect, it, vi } from "vitest";
+import * as codexCommandRuntime from "../../../../packages/paperclip-runner/src/drivers/codex/codex-command.js";
 import {
   CodexAppServerDriver,
   HarnessDriverBackend,
@@ -744,6 +745,7 @@ const recoveryFakeCodex = resolve(
       if (runnerDiagnostics.length > 32) runnerDiagnostics.shift();
     };
     process.env.PAPERCLIP_RUNNER_STATE_DIR = stateBase;
+    const codexResolver = vi.spyOn(codexCommandRuntime, "resolveCodexCommand");
     try {
       await Promise.all(
         [bin, workspace, sourceHome].map((path) =>
@@ -759,6 +761,7 @@ const recoveryFakeCodex = resolve(
         `#!/bin/sh\nexec ${quote(process.execPath)} ${quote(recoveryFakeCodex)} "$CODEX_HOME/fake-state.json" 16\n`,
       );
       await chmod(command, 0o700);
+      codexResolver.mockReturnValue(command);
       await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
       const address = server.address();
       if (!address || typeof address === "string")
@@ -1219,7 +1222,10 @@ const recoveryFakeCodex = resolve(
         .from(issues)
         .where(eq(issues.id, issueId));
       expect(task).toEqual({ id: issueId, assigneeAgentId: agentId });
+      expect(codexResolver).toHaveBeenCalled();
+      expect(codexResolver.mock.results.every((result) => result.value === command)).toBe(true);
     } finally {
+      codexResolver.mockRestore();
       // onSession(null) quarantines the runtime owner before close finishes;
       // keep every published handle so an assertion/error cannot lose cleanup.
       if (firstSession) ownedSessions.add(firstSession);
