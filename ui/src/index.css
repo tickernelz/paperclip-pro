@@ -279,6 +279,8 @@
   --mobile-nav-scroll-top-zone: 24px;
   --mobile-nav-scroll-hide-distance: 32px;
   --mobile-nav-scroll-show-distance: 16px;
+  --visual-viewport-shift-top: 0px;
+  --visual-viewport-shift-bottom: 0px;
   --motion-mobile-nav-enter: var(--motion-duration-slow);
   --motion-mobile-nav-exit: var(--motion-duration-base);
 
@@ -423,7 +425,7 @@
 /* Composed on the dock so it resolves against the --tc-composer-bottom Layout sets on <main>. */
 [data-testid="task-chat-composer-dock"] {
   --tc-composer-dock-bottom: calc(
-    var(--tc-composer-bottom) + var(--mobile-viewport-inset-bottom, 0px)
+    var(--tc-composer-bottom) + var(--mobile-viewport-inset-bottom, 0px) - var(--visual-viewport-shift-bottom)
   );
 }
 
@@ -754,6 +756,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 /* Keep the nav on the compositor; the composer follows the same easing and
    duration while the page retains its reserved bottom space. */
 .mobile-bottom-nav {
+  translate: 0 var(--visual-viewport-shift-bottom);
   transform: translateY(0);
   transition: transform var(--motion-mobile-nav-enter) var(--motion-ease-out-expo);
   will-change: transform;

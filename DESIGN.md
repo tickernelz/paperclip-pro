@@ -61,6 +61,14 @@ and momentum scrolling never move the composer. While the keyboard is open the
 composer dock fits the visible height, and the mobile top bar, bottom navigation,
 turn status island and session goal step aside.
 
+iOS can leave the visible viewport displaced inside the layout viewport after the
+software keyboard closes, which lifts fixed and sticky edges off the screen. The
+shell publishes that displacement as `--visual-viewport-shift-top` and
+`--visual-viewport-shift-bottom`; the mobile top bar, bottom navigation,
+composer dock and scroll-to-bottom button add them to their anchors. The shift
+is zero while an editable control has focus, while pinch-zoomed, and during edge
+bounce.
+
 The bottom navigation responds to accumulated scrolling, ignoring small
 reversals and Safari's edge bounce. It glides out and eases back in with shared
 motion tokens; the task composer follows the same motion. Keep page padding

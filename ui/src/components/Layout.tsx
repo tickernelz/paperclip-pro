@@ -41,6 +41,7 @@ import { useKeyboardShortcuts } from "../hooks/useKeyboardShortcuts";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { useCompanyPageMemory } from "../hooks/useCompanyPageMemory";
 import { useMobileNavVisibility } from "../hooks/useMobileNavVisibility";
+import { useVisualViewportShift } from "../hooks/useVisualViewportShift";
 import { healthApi } from "../api/health";
 import { resolveArchivedCompanyBounce, shouldSyncCompanySelectionFromRoute } from "../lib/company-selection";
 import { useOptionalToastActions } from "../context/ToastContext";
@@ -143,6 +144,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
   const scrollMemory = useRef(new NavigationScrollMemory());
   const activeScrollKey = useRef<string>(location.key);
   const mobileNavVisible = useMobileNavVisibility(isMobile && !isTaskDetailRoute, location.pathname);
+  useVisualViewportShift(isMobile);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const matchedCompany = useMemo(() => {
     if (!companyPrefix) return null;
@@ -661,7 +663,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
             data-slot={isMobile ? "mobile-topbar" : undefined}
             className={cn(
               !isMobile && useStreamlinedTaskDetailShell && "hidden",
-              isMobile && "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
+              isMobile && "sticky top-(--visual-viewport-shift-top) z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
             )}
           >
             <StandaloneBrowserControls mobile={isMobile} onNavigateHome={() => navigate("/dashboard")} />
