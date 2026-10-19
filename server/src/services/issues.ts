@@ -6,6 +6,7 @@ import { assertAgentRunWriteAllowed } from "../agent-run-cancellation.js";
 import { retryIdempotentDatabaseOperation } from "../database-retry.js";
 import { externalConversationStateSql, nonIdleSlackIssueCondition, resumeSlackConversation } from "./slack-conversation-state.js";
 import { documentService } from "./documents.js";
+import { wakeRequestHoldsExecutionPath } from "./recovery/wake-execution-path.js";
 import { parseTaskSearch, taskSearchCtes, taskSearchScore } from "./task-search.js";
 import { parseStatusFilter } from "./issue-list-query.js";
 import { createdFromIssueCondition } from "./issue-creation-origin.js";
@@ -4183,6 +4184,7 @@ async function listIssueBlockerAttentionMap(
                 agentWakeupRequests.status,
                 BLOCKER_ATTENTION_ACTIVE_WAKE_STATUSES,
               ),
+              wakeRequestHoldsExecutionPath(),
               inArray(
                 sql<string>`${agentWakeupRequests.payload} ->> 'recoveryActionId'`,
                 chunk,
@@ -4691,6 +4693,7 @@ async function listIssueReviewAttentionMap(
             "deferred_issue_execution",
             "claimed",
           ]),
+          wakeRequestHoldsExecutionPath(),
           inArray(
             sql<string>`coalesce(
           ${agentWakeupRequests.payload} ->> 'issueId',
@@ -5805,6 +5808,7 @@ async function listIssueBlockedInboxAttentionMap(
               inArray(agentWakeupRequests.status, [
                 ...BLOCKED_INBOX_ACTIVE_WAKE_STATUSES,
               ]),
+              wakeRequestHoldsExecutionPath(),
               inArray(
                 sql<string>`coalesce(
               ${agentWakeupRequests.payload} ->> 'issueId',

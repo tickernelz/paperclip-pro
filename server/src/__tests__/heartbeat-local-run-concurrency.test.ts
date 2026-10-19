@@ -14,6 +14,7 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { heartbeatService, markLocalCliRunStarting } from "../services/heartbeat.ts";
 import { instanceSettingsService } from "../services/instance-settings.ts";
+import { logger } from "../middleware/logger.js";
 import { runningProcesses } from "../adapters/index.ts";
 import { isOmpStartupComplete } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
 
@@ -557,6 +558,8 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
       "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
       "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
+      "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT",
+      "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC",
     ]) {
       if (!(key in overrides)) delete env[key];
     }
@@ -567,6 +570,8 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
     maxConcurrentRuns: number | null;
     maxConcurrentStarts: number | null;
     startWaitBypassSec: number | null;
+    memoryReservePercent: number | null;
+    memoryGateCooldownSec: number | null;
   }) {
     await instanceSettingsService(db).updateGeneral({ localRuns });
   }
@@ -574,7 +579,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
   it("admits only as many local runs as the saved setting allows, and applies a raised setting without a restart", async () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 4);
-    await saveLocalRunLimits({ maxConcurrentRuns: 2, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    await saveLocalRunLimits({ maxConcurrentRuns: 2, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
     try {
       const heartbeat = heartbeatService(db, { runtimeEnv: envWithoutLocalRunLimits() });
 
@@ -584,7 +589,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       expect(await countRuns(companyId, "running")).toBe(2);
       expect(await countRuns(companyId, "queued")).toBe(2);
 
-      await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+      await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
       await heartbeat.resumeQueuedRuns();
       expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 3)).toBe(true);
       await settle(600);
@@ -595,21 +600,21 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       expect(await countRuns(companyId, "failed")).toBe(0);
       expect(await countRuns(companyId, "cancelled")).toBe(0);
     } finally {
-      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
     }
   }, 90_000);
 
   it("never stops running local runs when the saved setting is lowered", async () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 4);
-    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
     try {
       const heartbeat = heartbeatService(db, { runtimeEnv: envWithoutLocalRunLimits() });
 
       await wakeAll(heartbeat, seeded);
       expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 3)).toBe(true);
 
-      await saveLocalRunLimits({ maxConcurrentRuns: 1, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+      await saveLocalRunLimits({ maxConcurrentRuns: 1, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
       await heartbeat.resumeQueuedRuns();
       await settle(600);
       expect(await countRuns(companyId, "running")).toBe(3);
@@ -619,14 +624,47 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       await drainEverything(heartbeat);
       expect(await countRuns(companyId, "failed")).toBe(0);
     } finally {
-      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
+    }
+  }, 90_000);
+
+  it("logs one shadow memory-gate line per local run start without delaying any start", async () => {
+    const companyId = randomUUID();
+    const seeded = await seedAgentsWithWork(companyId, 3);
+    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: 90, memoryGateCooldownSec: 5 });
+    const info = vi.spyOn(logger, "info");
+    try {
+      const heartbeat = heartbeatService(db, { runtimeEnv: envWithoutLocalRunLimits() });
+
+      await wakeAll(heartbeat, seeded);
+      expect(await waitForCondition(async () => (await countRuns(companyId, "running")) === 3)).toBe(true);
+
+      const lines = info.mock.calls
+        .map((call) => call.find((arg): arg is string => typeof arg === "string") ?? "")
+        .filter((line) => line.startsWith("local-run-memory-gate shadow"));
+      const runIds = (await db.select({ id: heartbeatRuns.id }).from(heartbeatRuns).where(eq(heartbeatRuns.companyId, companyId)))
+        .map((row) => row.id);
+      expect(lines).toHaveLength(3);
+      for (const runId of runIds) expect(lines.filter((line) => line.includes(`run=${runId} `))).toHaveLength(1);
+      for (const line of lines) {
+        expect(line).toMatch(/memAvailableMiB=\d+ memTotalMiB=\d+ swapFreeMiB=(\d+|na) localRuns=\d+ starting=\d+ /);
+        expect(line).toContain("reservePct=90");
+        expect(line).toContain("wouldHold90=yes");
+      }
+      expect(await countRuns(companyId, "queued")).toBe(0);
+
+      await drainEverything(heartbeat);
+      expect(await countRuns(companyId, "failed")).toBe(0);
+    } finally {
+      info.mockRestore();
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
     }
   }, 90_000);
 
   it("lets the environment variable override the saved setting", async () => {
     const companyId = randomUUID();
     const seeded = await seedAgentsWithWork(companyId, 3);
-    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600 });
+    await saveLocalRunLimits({ maxConcurrentRuns: 3, maxConcurrentStarts: 10, startWaitBypassSec: 600, memoryReservePercent: null, memoryGateCooldownSec: null });
     try {
       const heartbeat = heartbeatService(db, {
         runtimeEnv: envWithoutLocalRunLimits({ PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "1" }),
@@ -641,7 +679,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       await drainEverything(heartbeat);
       expect(await countRuns(companyId, "failed")).toBe(0);
     } finally {
-      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null });
+      await saveLocalRunLimits({ maxConcurrentRuns: null, maxConcurrentStarts: null, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null });
     }
   }, 90_000);
 });

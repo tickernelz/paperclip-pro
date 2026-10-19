@@ -204,13 +204,29 @@ describe("instance experimental settings validators", () => {
 });
 
 describe("instance local run limit validators", () => {
-  const limits = { maxConcurrentRuns: 20, maxConcurrentStarts: 4, startWaitBypassSec: 120 };
+  const limits = { maxConcurrentRuns: 20, maxConcurrentStarts: 4, startWaitBypassSec: 120, memoryReservePercent: null, memoryGateCooldownSec: null };
 
   it("defaults every saved local run limit to null", () => {
     expect(instanceGeneralSettingsSchema.parse({}).localRuns).toEqual({
       maxConcurrentRuns: null,
       maxConcurrentStarts: null,
       startWaitBypassSec: null,
+      memoryReservePercent: null,
+      memoryGateCooldownSec: null,
+    });
+  });
+
+  it("keeps a stored localRuns object saved before the memory gate keys existed valid", () => {
+    expect(
+      instanceGeneralSettingsSchema.parse({
+        localRuns: { maxConcurrentRuns: 8, maxConcurrentStarts: null, startWaitBypassSec: 60 },
+      }).localRuns,
+    ).toEqual({
+      maxConcurrentRuns: 8,
+      maxConcurrentStarts: null,
+      startWaitBypassSec: 60,
+      memoryReservePercent: null,
+      memoryGateCooldownSec: null,
     });
   });
 
@@ -218,9 +234,9 @@ describe("instance local run limit validators", () => {
     expect(patchInstanceGeneralSettingsSchema.parse({ localRuns: limits })).toEqual({ localRuns: limits });
     expect(
       patchInstanceGeneralSettingsSchema.parse({
-        localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600 },
+        localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600, memoryReservePercent: null, memoryGateCooldownSec: null },
       }),
-    ).toEqual({ localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600 } });
+    ).toEqual({ localRuns: { maxConcurrentRuns: 64, maxConcurrentStarts: null, startWaitBypassSec: 3600, memoryReservePercent: null, memoryGateCooldownSec: null } });
   });
 
   it.each([
@@ -230,6 +246,10 @@ describe("instance local run limit validators", () => {
     { maxConcurrentStarts: 65 },
     { startWaitBypassSec: 0 },
     { startWaitBypassSec: 3601 },
+    { memoryReservePercent: 0 },
+    { memoryReservePercent: 91 },
+    { memoryGateCooldownSec: 0 },
+    { memoryGateCooldownSec: 3601 },
     { maxConcurrentRuns: 2.5 },
   ])("rejects out-of-range or fractional values: %o", (override) => {
     expect(patchInstanceGeneralSettingsSchema.safeParse({ localRuns: { ...limits, ...override } }).success).toBe(false);

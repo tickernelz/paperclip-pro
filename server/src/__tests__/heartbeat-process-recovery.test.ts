@@ -4666,8 +4666,9 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
     expect(continuation.contextSnapshot).toMatchObject({
       failureRetriesBeforeProcessLoss: 2,
-      processLossContinuations: 1,
+      serverInterruptionRetries: { count: 1 },
     });
+    expect(continuation.contextSnapshot?.processLossContinuations).toBeUndefined();
     expect(
       await db
         .select()
@@ -7120,6 +7121,35 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(again.continuationRequeued).toBe(0);
   });
 
+  it("escalates an in_progress issue with a server crash-loop notice once six server interruptions fall in one window", async () => {
+    const { runId, issueId } = await seedStrandedIssueFixture({
+      status: "in_progress",
+      runStatus: "failed",
+      runErrorCode: "server_shutdown_interrupted",
+      runError: "Interrupted by graceful server shutdown (SIGTERM)",
+      resultJson: { stopReason: "interrupted", conversationContinuation: "continue_conversation_v1" },
+    });
+    await db.update(heartbeatRuns).set({
+      status: "interrupted",
+      scheduledRetryAttempt: 6,
+      scheduledRetryReason: "process_lost",
+      contextSnapshot: {
+        issueId, taskId: issueId, wakeReason: "process_lost_retry", retryOfRunId: randomUUID(),
+        serverInterruptionRetries: { count: 6, windowStartedAt: new Date().toISOString() },
+      },
+    }).where(eq(heartbeatRuns.id, runId));
+
+    const result = await heartbeatService(db).reconcileStrandedAssignedIssues();
+    expect(result.escalated).toBe(1);
+    expect(result.continuationRequeued).toBe(0);
+    expect(await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId))).toHaveLength(0);
+    expect((await db.select().from(issues).where(eq(issues.id, issueId)))[0]?.status).toBe("blocked");
+    const comments = await db.select().from(issueComments).where(eq(issueComments.issueId, issueId));
+    expect(comments).toHaveLength(1);
+    expect(comments[0]?.body).toContain("restarted or crashed repeatedly");
+    expect(comments[0]?.body).not.toContain("bounded retry budget");
+  });
+
   it("continues an in_progress issue whose second process-loss continuation was itself stopped by server shutdown", async () => {
     const { runId, issueId } = await seedStrandedIssueFixture({
       status: "in_progress",
@@ -7142,8 +7172,8 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     expect(result.escalated).toBe(0);
     const successors = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.retryOfRunId, runId));
     expect(successors).toHaveLength(1);
-    expect(successors[0]).toMatchObject({ status: "scheduled_retry", scheduledRetryReason: "process_lost", scheduledRetryAttempt: 2 });
-    expect(successors[0]!.contextSnapshot).toMatchObject({ processLossContinuations: 2 });
+    expect(successors[0]).toMatchObject({ status: "scheduled_retry", scheduledRetryReason: "process_lost", scheduledRetryAttempt: 1 });
+    expect(successors[0]!.contextSnapshot).toMatchObject({ processLossContinuations: 2, serverInterruptionRetries: { count: 1 } });
     expect((await db.select().from(issues).where(eq(issues.id, issueId)))[0]?.status).toBe("in_progress");
   });
 
@@ -7185,7 +7215,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     });
     expect(successor?.contextSnapshot).toMatchObject({
       failureRetriesBeforeProcessLoss: 1,
-      processLossContinuations: 1,
+      serverInterruptionRetries: { count: 1 },
     });
     const sourceIssue = await db
       .select({ status: issues.status })

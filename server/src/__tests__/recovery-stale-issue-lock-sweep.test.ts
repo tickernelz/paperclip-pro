@@ -419,6 +419,46 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     expect(mockTelemetryClient.track).not.toHaveBeenCalled();
   });
 
+  it("finalizes the claimed wakeup request in the same write that terminalizes the run", async () => {
+    const { companyId, agentId, runningRunId } = await seed();
+    const wakeupId = randomUUID();
+    await db.insert(agentWakeupRequests).values({
+      id: wakeupId,
+      companyId,
+      agentId,
+      source: "automation",
+      status: "claimed",
+      claimedAt: new Date(),
+      runId: runningRunId,
+    });
+    await db
+      .update(heartbeatRuns)
+      .set({ processPid: 2_000_000_000, wakeupRequestId: wakeupId })
+      .where(eq(heartbeatRuns.id, runningRunId));
+    await db.insert(issues).values({
+      id: randomUUID(),
+      companyId,
+      title: "Backstop must not leave a claimed wakeup",
+      status: "in_progress",
+      assigneeAgentId: agentId,
+      checkoutRunId: runningRunId,
+      executionRunId: runningRunId,
+      executionLockedAt: new Date(),
+    });
+
+    const result = await heartbeatService(db).sweepStaleIssueLocks();
+    expect(result.terminalizedRunIds).toEqual([runningRunId]);
+
+    const wake = await db
+      .select({ status: agentWakeupRequests.status, finishedAt: agentWakeupRequests.finishedAt, error: agentWakeupRequests.error })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.id, wakeupId))
+      .then((rows) => rows[0]);
+    expect(wake?.status).toBe("failed");
+    expect(wake?.finishedAt).not.toBeNull();
+    expect(wake?.error).toContain("recovery backstop");
+  });
+
   it("preserves a process-less native run while same-run resumption owns its retry", async () => {
     const { companyId, agentId, runningRunId } = await seed();
     const issueId = randomUUID();
@@ -969,9 +1009,14 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     // Make only the audit-event insert fail. The run update commits the
     // terminal status first, so the audit write is best-effort. The sweep must
     // catch the failure and still clear the lock.
-    const transactionSpy = vi
-      .spyOn(db, "transaction")
-      .mockRejectedValueOnce(new Error("simulated audit write failure"));
+    const realTransaction = db.transaction.bind(db) as (...args: unknown[]) => Promise<unknown>;
+    let transactionCalls = 0;
+    const transactionSpy = vi.spyOn(db, "transaction").mockImplementation(((...args: unknown[]) => {
+      transactionCalls += 1;
+      return transactionCalls === 1
+        ? realTransaction(...args)
+        : Promise.reject(new Error("simulated audit write failure"));
+    }) as unknown as typeof db.transaction);
 
     try {
       const heartbeat = heartbeatService(db);
@@ -979,6 +1024,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
 
       expect(result.terminalizedRunIds).toEqual([runningRunId]);
       expect(result.cleared).toBe(1);
+      expect(transactionCalls).toBe(2);
     } finally {
       transactionSpy.mockRestore();
     }
@@ -1230,7 +1276,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         resumeSessionDisplayId: "omp-session-1",
         resumeSessionParams: { sessionId: "omp-session-1", cwd: "/tmp" },
         failureRetriesBeforeProcessLoss: 2,
-        processLossContinuations: 1,
+        serverInterruptionRetries: { count: 1 },
       });
       const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
       expect(issue).toMatchObject({ status: "in_progress", executionRunId: successor.id });
@@ -1240,11 +1286,11 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     it.each([
       ["a fresh chain", 0],
       ["a chain whose transient retry budget is spent", 2],
-    ])("caps a crash-looping chain at two consecutive continuations from %s", async (_label, scheduledRetryAttempt) => {
+    ])("caps a server-interruption chain at six continuations within the window from %s", async (_label, scheduledRetryAttempt) => {
       const f = await seedOrphanedOmpRun({ scheduledRetryAttempt });
       const heartbeat = heartbeatService(db);
       const chain = [f.runningRunId];
-      for (let crash = 0; crash < 3; crash += 1) {
+      for (let crash = 0; crash < 8; crash += 1) {
         await heartbeat.sweepStaleIssueLocks();
         const [next] = await successorsOf(chain.at(-1)!);
         if (!next) break;
@@ -1256,19 +1302,17 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
         await db.update(issues).set({ checkoutRunId: next.id }).where(eq(issues.id, f.issueId));
       }
 
-      expect(chain).toHaveLength(3);
+      expect(chain).toHaveLength(7);
       const runs = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.companyId, f.companyId));
       expect(runs.filter((run) => run.status === "interrupted").map((run) => run.id).sort()).toEqual([...chain].sort());
       expect(runs.filter((run) => ["queued", "scheduled_retry", "running"].includes(run.status))).toEqual([]);
       const continuations = chain.slice(1).map((id) => runs.find((run) => run.id === id)!);
-      expect(continuations.map((run) => [run.scheduledRetryReason, run.scheduledRetryAttempt])).toEqual([
-        ["process_lost", 1],
-        ["process_lost", 2],
-      ]);
-      expect(continuations.map((run) => run.contextSnapshot?.failureRetriesBeforeProcessLoss)).toEqual([
-        scheduledRetryAttempt,
-        scheduledRetryAttempt,
-      ]);
+      expect(continuations.map((run) => [run.scheduledRetryReason, run.scheduledRetryAttempt])).toEqual(
+        [1, 2, 3, 4, 5, 6].map((attempt) => ["process_lost", attempt]),
+      );
+      expect(continuations.map((run) => run.contextSnapshot?.failureRetriesBeforeProcessLoss)).toEqual(
+        Array(6).fill(scheduledRetryAttempt),
+      );
     });
 
     it("caps a reaper-driven crash loop at two continuations with no successor of any reason afterwards", async () => {
