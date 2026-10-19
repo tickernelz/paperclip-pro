@@ -138,6 +138,45 @@ describeEmbeddedPostgres("issue review attention", () => {
     });
   });
 
+  it("does not count a claimed wake whose run already ended as a review path", async () => {
+    const { companyId, agentId } = await seed();
+    const orphanedIssueId = await insertReview({ companyId, agentId, identifier: "RVA-C1" });
+    const liveIssueId = await insertReview({ companyId, agentId, identifier: "RVA-C2" });
+    const insertClaimedWake = async (issueId: string, runStatus: string) => {
+      const runId = randomUUID();
+      const wakeId = randomUUID();
+      await db.insert(agentWakeupRequests).values({
+        id: wakeId,
+        companyId,
+        agentId,
+        source: "automation",
+        reason: "issue_blockers_resolved",
+        status: "claimed",
+        payload: { issueId },
+        runId,
+      });
+      await db.insert(heartbeatRuns).values({
+        id: runId,
+        companyId,
+        agentId,
+        status: runStatus,
+        wakeupRequestId: wakeId,
+        contextSnapshot: { issueId },
+        finishedAt: runStatus === "running" ? null : new Date(),
+      });
+    };
+    await insertClaimedWake(orphanedIssueId, "interrupted");
+    await insertClaimedWake(liveIssueId, "running");
+
+    const rows = await svc.list(companyId, { status: "in_review" });
+    expect(rows.find((issue) => issue.id === orphanedIssueId)?.reviewAttention).toMatchObject({
+      state: "stalled",
+      paths: [],
+    });
+    const live = rows.find((issue) => issue.id === liveIssueId)?.reviewAttention;
+    expect(live?.state).toBe("covered");
+  });
+
   it("reports every healthy review path as covered", async () => {
     const { companyId, agentId } = await seed();
     const interactionIssueId = await insertReview({ companyId, agentId, identifier: "RVA-2" });

@@ -419,6 +419,46 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     expect(mockTelemetryClient.track).not.toHaveBeenCalled();
   });
 
+  it("finalizes the claimed wakeup request in the same write that terminalizes the run", async () => {
+    const { companyId, agentId, runningRunId } = await seed();
+    const wakeupId = randomUUID();
+    await db.insert(agentWakeupRequests).values({
+      id: wakeupId,
+      companyId,
+      agentId,
+      source: "automation",
+      status: "claimed",
+      claimedAt: new Date(),
+      runId: runningRunId,
+    });
+    await db
+      .update(heartbeatRuns)
+      .set({ processPid: 2_000_000_000, wakeupRequestId: wakeupId })
+      .where(eq(heartbeatRuns.id, runningRunId));
+    await db.insert(issues).values({
+      id: randomUUID(),
+      companyId,
+      title: "Backstop must not leave a claimed wakeup",
+      status: "in_progress",
+      assigneeAgentId: agentId,
+      checkoutRunId: runningRunId,
+      executionRunId: runningRunId,
+      executionLockedAt: new Date(),
+    });
+
+    const result = await heartbeatService(db).sweepStaleIssueLocks();
+    expect(result.terminalizedRunIds).toEqual([runningRunId]);
+
+    const wake = await db
+      .select({ status: agentWakeupRequests.status, finishedAt: agentWakeupRequests.finishedAt, error: agentWakeupRequests.error })
+      .from(agentWakeupRequests)
+      .where(eq(agentWakeupRequests.id, wakeupId))
+      .then((rows) => rows[0]);
+    expect(wake?.status).toBe("failed");
+    expect(wake?.finishedAt).not.toBeNull();
+    expect(wake?.error).toContain("recovery backstop");
+  });
+
   it("preserves a process-less native run while same-run resumption owns its retry", async () => {
     const { companyId, agentId, runningRunId } = await seed();
     const issueId = randomUUID();
@@ -969,9 +1009,14 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
     // Make only the audit-event insert fail. The run update commits the
     // terminal status first, so the audit write is best-effort. The sweep must
     // catch the failure and still clear the lock.
-    const transactionSpy = vi
-      .spyOn(db, "transaction")
-      .mockRejectedValueOnce(new Error("simulated audit write failure"));
+    const realTransaction = db.transaction.bind(db) as (...args: unknown[]) => Promise<unknown>;
+    let transactionCalls = 0;
+    const transactionSpy = vi.spyOn(db, "transaction").mockImplementation(((...args: unknown[]) => {
+      transactionCalls += 1;
+      return transactionCalls === 1
+        ? realTransaction(...args)
+        : Promise.reject(new Error("simulated audit write failure"));
+    }) as unknown as typeof db.transaction);
 
     try {
       const heartbeat = heartbeatService(db);
