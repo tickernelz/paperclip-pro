@@ -12,8 +12,8 @@ export function wakeStatusForTerminalRun(status: BackstopTerminalRunStatus) {
 export function wakeRequestHoldsExecutionPath() {
   return sql`not (${agentWakeupRequests.status} = 'claimed' and exists (
     select 1 from ${heartbeatRuns}
-    where ${heartbeatRuns.companyId} = ${agentWakeupRequests.companyId}
-      and (${heartbeatRuns.id} = ${agentWakeupRequests.runId} or ${heartbeatRuns.wakeupRequestId} = ${agentWakeupRequests.id})
+    where ${heartbeatRuns.id} = ${agentWakeupRequests.runId}
+      and ${heartbeatRuns.companyId} = ${agentWakeupRequests.companyId}
       and ${heartbeatRuns.status} not in ('queued', 'running', 'scheduled_retry')
   ))`;
 }

@@ -1024,6 +1024,7 @@ describeEmbeddedPostgres("recovery sweepStaleIssueLocks", () => {
 
       expect(result.terminalizedRunIds).toEqual([runningRunId]);
       expect(result.cleared).toBe(1);
+      expect(transactionCalls).toBe(2);
     } finally {
       transactionSpy.mockRestore();
     }
