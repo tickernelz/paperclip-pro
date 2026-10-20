@@ -13,6 +13,7 @@ import {
   chatAuditEntries,
   chatConversations,
   chatDeliveries,
+  chatEndpointLeases,
   chatEndpointResources,
   chatEndpoints,
   chatExternalPrincipals,
@@ -71,10 +72,15 @@ class ManualClock implements OpenwaScheduledWakeClock {
   }
 }
 
+let diagnose: (() => Promise<unknown>) | null = null;
+
 async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15_000): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!(await predicate())) {
-    if (Date.now() > deadline) throw new Error("condition not reached");
+    if (Date.now() > deadline) {
+      const state = await diagnose?.().catch(() => null);
+      throw new Error("condition not reached" + (state ? ": " + JSON.stringify(state) : ""));
+    }
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
 }
@@ -201,6 +207,23 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     };
     const service = chatChannelService(counted.db, options);
     services.push(service);
+    diagnose = async () => ({
+      at: new Date().toISOString(),
+      wakeups: wakeup.mock.calls.length,
+      stats: service.openwaAdmissionStats,
+      actions: await db
+        .select({ kind: chatActions.kind, status: chatActions.status, result: chatActions.result, updatedAt: chatActions.updatedAt })
+        .from(chatActions)
+        .where(eq(chatActions.companyId, companyId)),
+      deliveries: await db
+        .select({ state: chatDeliveries.state, nextAttemptAt: chatDeliveries.nextAttemptAt, updatedAt: chatDeliveries.updatedAt })
+        .from(chatDeliveries)
+        .where(eq(chatDeliveries.companyId, companyId)),
+      leases: await db
+        .select({ leaseKey: chatEndpointLeases.leaseKey, expiresAt: chatEndpointLeases.expiresAt })
+        .from(chatEndpointLeases)
+        .where(eq(chatEndpointLeases.companyId, companyId)),
+    });
     const endpoint = await service.create(companyId, { provider: "openwa", assignedAgentId: agentId } as never, userId);
     const secret = await secretService(db).create(
       companyId,
