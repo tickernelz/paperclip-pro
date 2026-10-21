@@ -3,6 +3,7 @@ import { aiConnectionRouterPluginKey } from "@tickernelz/paperclip-pro-shared";
 import { ConnectionInstructionsSettings } from "@/features/connections/ConnectionInstructions";
 import { HonchoWorkspaceSettings } from "@/features/connections/HonchoWorkspaceSettings";
 import { BrowserUseSettingsPanel } from "./app-detail/BrowserUseSettingsPanel";
+import { LocalBrowserSettingsPanel } from "./app-detail/LocalBrowserSettingsPanel";
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE, isRemoteMcpConnectorId, isRemoteMcpConnectorMethod } from "@tickernelz/paperclip-pro-shared";
 import { RemoteMcpManagement } from "@/features/connections/remote-mcp/RemoteMcpManagement";
 import { remoteMcpProviders } from "@/features/connections/remote-mcp/providers";
@@ -647,6 +648,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
               {connection.config?.sourceTemplateKey === "honcho" && <HonchoWorkspaceSettings key={connection.id} connection={connection} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}
               {renderConnectionSettings?.(connection)}
               {connection.config?.sourceTemplateKey === "browser-use-cloud" && <BrowserUseSettingsPanel connection={connection} grants={grantsQuery.data} />}
+              {connection.config?.sourceTemplateKey === "local-browser" && <LocalBrowserSettingsPanel key={connection.id} connection={connection} />}
               {connection.config?.sourceTemplateKey === "railway" && <RailwayAccessPanel connection={connection} grants={grantsQuery.data} />}
               {connection.config?.provider === "agentmail" && <EmailConnectionInboxes companyId={connection.companyId} connectionId={connection.id} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}
               {connection.config?.provider === "agentmail" ? <EmailConnectionAccess companyId={connection.companyId} connectionId={connection.id} agents={agents} /> : <>
