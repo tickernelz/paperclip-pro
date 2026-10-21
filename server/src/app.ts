@@ -19,6 +19,12 @@ import { registerBrowserUseCleanup } from "./services/browser-use-work.js";
 import { browserUseService } from "./services/browser-use.js";
 import { slackToolRoutes } from "./routes/slack-tools.js";
 import { openwaToolRoutes } from "./routes/openwa-tools.js";
+import {
+  LOCAL_BROWSER_JSON_BODY_LIMIT,
+  localBrowserBodyErrorHandler,
+  localBrowserBodyLimit,
+  localBrowserRoutes,
+} from "./routes/local-browser.js";
 import { publicIssueShareRoutes } from "./routes/public-issue-share.js";
 import { createPublicMcpOAuth, publicMcpConfig } from "./services/public-mcp/oauth.js";
 import { createDotRunnerMcpTools } from "./services/dot-runner-broker.js";
@@ -593,6 +599,12 @@ export async function createApp(
     createChatWebhookDiagnostics(),
     chatWebhookBodyParser,
   );
+  app.use(
+    "/api/local-browser",
+    localBrowserBodyLimit(),
+    express.json({ limit: LOCAL_BROWSER_JSON_BODY_LIMIT }),
+    localBrowserBodyErrorHandler(),
+  );
   const jsonBodyParser = express.json({ limit: DEFAULT_JSON_BODY_LIMIT, verify: captureRawBody });
   // File tickets authenticate before parsing bytes; JSON attachments must remain bytes too.
   app.use((req, res, next) => req.path === "/mcp/files/upload" ? next() : jsonBodyParser(req, res, next));
@@ -1041,6 +1053,7 @@ export async function createApp(
     { cancelWorkForScope: heartbeatService(db, { pluginWorkerManager: workerManager }).cancelBudgetScopeWork },
     (session, run) => toolGateway.browserUseSessionAuthorized({ ...session, runId: run.heartbeatRunId, invocationId: run.invocationId }));
   api.use(browserUseRoutes(db, browserUse));
+  api.use(localBrowserRoutes(db));
   api.use(toolGatewayRoutes(db, toolGateway));
   api.use(
     pluginRoutes(
