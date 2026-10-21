@@ -23,6 +23,12 @@ import {
 } from "./connectors/agentmail.js";
 import { materializeAsset } from "./native-runtime/runtime-context.js";
 import { BROWSER_USE_CLOUD_SKILL } from "./connectors/browser-use-cloud/skill.js";
+import { LOCAL_BROWSER_SKILL } from "./connectors/local-browser/skill.js";
+import {
+  LOCAL_BROWSER_CONNECTOR_TOOLS,
+  executeLocalBrowserTool,
+  localBrowserAssignedResources,
+} from "./connectors/local-browser/tools.js";
 
 type AgentBinding = { companyId: string; agentId: string; runId?: string; issueId?: string };
 type ToolBinding = AgentBinding & {
@@ -52,6 +58,7 @@ interface ConnectorDefinition {
   legacySkillKeys?: string[];
   tools: Tool[];
   toolsManifest?: boolean;
+  optionalResources?: boolean;
   resolve: (db: Db, binding: AgentBinding) => Promise<Resource[]>;
   execute: (
     db: Db,
@@ -71,6 +78,13 @@ const connectors: ConnectorDefinition[] = [
       try { return await getAssignedMcpGateway(db).browserUseResources(binding); } catch { return []; }
     },
     async execute() { throw forbidden("Use Browser Use Cloud through the connection tool gateway."); },
+  },
+  { key: "local-browser", label: "Local Browser", skillName: "local-browser", skillMarkdown: LOCAL_BROWSER_SKILL,
+    tools: LOCAL_BROWSER_CONNECTOR_TOOLS,
+    toolsManifest: true,
+    optionalResources: true,
+    resolve: async (db, binding) => localBrowserAssignedResources(db, binding),
+    execute: executeLocalBrowserTool,
   },
   { key: "speko", label: "Speko", skillName: "speko", skillMarkdown: SPEKO_SKILL,
     tools: [], // Native phone tools keep their existing governed gateway transport.
@@ -168,7 +182,8 @@ export async function executeConnectorTool(
   const connector = connectors.find((entry) =>
     entry.tools.some((tool) => tool.name === name),
   );
-  if (!connector || !(await connector.resolve(db, binding)).length)
+  if (!connector) throw forbidden("This connector is no longer assigned or authorized");
+  if (!connector.optionalResources && !(await connector.resolve(db, binding)).length)
     throw forbidden("This connector is no longer assigned or authorized");
   return connector.execute(db, binding, name, value);
 }

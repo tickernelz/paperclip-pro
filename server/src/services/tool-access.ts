@@ -14,6 +14,7 @@ import { mcpDiscoveryHttpFailure, retainMcpConnectionFailure, withMcpConnectionF
 import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/paperclip-pro-shared";
 import { BROWSER_USE_TOOLS } from "@tickernelz/paperclip-pro-shared";
 import { browserUseClient, isBrowserUseConnection } from "./browser-use-client.js";
+import { isLocalBrowserConnection } from "./connectors/local-browser/connection.js";
 import { browserUseService } from "./browser-use.js";
 import { COGNEE_STDIO_TEMPLATE, cogneeCloudUrl } from "./cognee-connection.js";
 import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/paperclip-pro-shared";
@@ -7499,6 +7500,7 @@ export function toolAccessService(
       await validateAgentMailConnection(connection);
       return [];
     }
+    if (isLocalBrowserConnection(connection)) return [];
     if (connection.transport === "mcp_remote")
       return remoteTools(connection, credentialHeaders, actor);
     if (connection.transport !== "local_stdio") {
@@ -7649,6 +7651,8 @@ export function toolAccessService(
         await discoverTools(connection, undefined, actor);
       } else if (isAgentMailConnection(connection)) {
         await validateAgentMailConnection(connection);
+      } else if (isLocalBrowserConnection(connection)) {
+        await discoverTools(connection, undefined, actor);
       } else if (connection.transport === "mcp_remote") {
         const canProbeWithoutAuthorization =
           options.allowUnauthenticatedProbe === true &&
@@ -7683,7 +7687,9 @@ export function toolAccessService(
             ? "Browser Use API key is connected."
           : isAgentMailConnection(connection)
             ? "AgentMail API key is connected."
-            : connection.transport === "local_stdio"
+            : isLocalBrowserConnection(connection)
+              ? "Local Browser is paired from the Apps panel."
+              : connection.transport === "local_stdio"
               ? "Approved stdio template is ready."
               : "Remote MCP server responded to tools/list.",
       );
