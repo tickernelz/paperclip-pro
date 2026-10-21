@@ -122,6 +122,33 @@ jobs:
       - name: Build
         run: pnpm build
 
+  extensions:
+    name: Browser extensions
+    needs: scope
+    if: needs.scope.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Check the shared protocol contract is current
+        run: node scripts/generate-local-browser-protocol.mjs --check
+      - name: Check every extension script parses
+        run: |
+          set -euo pipefail
+          find apps/local-browser -name '*.js' -o -name '*.mjs' | while read -r file; do
+            node --check "$file"
+          done
+      - name: Run the extension suites
+        run: |
+          set -euo pipefail
+          node --test apps/local-browser/chromium/lib/*.test.mjs
+          node --test apps/local-browser/firefox/lib/*.test.mjs
+
   runner:
     name: Verify Paperclip Runner
     needs: scope
@@ -340,7 +367,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, runner, general, serialized, e2e, mobile-shell]
+    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

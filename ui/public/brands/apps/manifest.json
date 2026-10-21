@@ -258,6 +258,12 @@
       "darkAsset": "/brands/apps/linear-dark.svg"
     },
     {
+      "slug": "local-browser",
+      "provider": "Local Browser",
+      "catalogVisible": true,
+      "localAsset": "/brands/apps/local-browser.svg"
+    },
+    {
       "slug": "local-falcon",
       "provider": "Local Falcon",
       "catalogVisible": false,

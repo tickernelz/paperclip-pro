@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   getAppDefinitionForUrl,
+  getConnectableAppDefinition,
   CONNECTABLE_APP_DEFINITIONS,
 } from "./app-definitions.js";
 
@@ -50,12 +51,15 @@ describe("tool app gallery URL matching", () => {
     ]);
   });
 
-  it("keeps tool gallery entries reachable through at least one pattern", () => {
-    for (const app of CONNECTABLE_APP_DEFINITIONS.filter((app) => app.methods.some((method) => method.purpose !== "channel" && method.purpose !== "ai"))) {
+  it("keeps tool gallery entries reachable through at least one pattern unless the connector is paired instead of pasted", () => {
+    const pairedConnectorSlugs = new Set(["local-browser"]);
+    for (const app of CONNECTABLE_APP_DEFINITIONS.filter((app) => app.methods.some((method) => method.purpose !== "channel" && method.purpose !== "ai") && !pairedConnectorSlugs.has(app.slug))) {
       const example = app.urlPatterns[0]?.replace("*", "example");
       expect(example, `${app.slug} has a pattern`).toBeTruthy();
       expect(getAppDefinitionForUrl(example!)?.slug).toBe(app.slug);
     }
+    expect(getConnectableAppDefinition("local-browser")?.urlPatterns).toEqual([]);
+    expect(getAppDefinitionForUrl("https://app.example.com/inbox")?.slug).not.toBe("local-browser");
   });
 
   it("offers region and custom model connections without claiming arbitrary URLs", () => {

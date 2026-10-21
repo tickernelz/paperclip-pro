@@ -33,6 +33,7 @@ export const BOARD_ONLY_GUARDS: Readonly<Record<string, true>> = {
   assertBoardMutationAccess: true,
   assertBoardOrgAccess: true,
   assertBoardPermission: true,
+  assertBoardUser: true,
   assertCanAccessInstanceEnvironments: true,
   assertCanManageCompanyMember: true,
   assertCanManageInstanceSettings: true,

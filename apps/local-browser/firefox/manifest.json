@@ -1,0 +1,80 @@
+{
+  "manifest_version": 2,
+  "name": "Paperclip Local Browser Bridge",
+  "short_name": "Paperclip Browser",
+  "version": "1.0.0",
+  "description": "Lets Paperclip drive your own Firefox tabs: snapshot, act, read, screenshot, network and trusted input.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "local-browser@paperclip.app",
+      "strict_min_version": "128.0"
+    }
+  },
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "cookies",
+    "storage",
+    "scripting",
+    "webRequest",
+    "webRequestBlocking",
+    "downloads",
+    "<all_urls>"
+  ],
+  "background": {
+    "persistent": true,
+    "scripts": [
+      "lib/protocol.js",
+      "lib/backoff.js",
+      "lib/ring.js",
+      "lib/text.js",
+      "lib/keys.js",
+      "lib/cursor.js",
+      "lib/input.js",
+      "lib/frames.js",
+      "lib/budget.js",
+      "background/network.js",
+      "background/tabs.js",
+      "background/bidi.js",
+      "background/downloads.js",
+      "background/tools.js",
+      "background/bridge.js",
+      "background/index.js"
+    ]
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": [
+        "lib/protocol.js",
+        "lib/text.js",
+        "lib/refmap.js",
+        "lib/snapshot.js",
+        "lib/markdown.js",
+        "lib/dom-adapter.js",
+        "lib/keys.js",
+        "lib/cursor.js",
+        "lib/input.js",
+        "content/agent.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": true
+    }
+  ],
+  "browser_action": {
+    "default_title": "Paperclip Local Browser",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon.svg",
+      "32": "icons/icon.svg",
+      "48": "icons/icon.svg",
+      "96": "icons/icon.svg"
+    }
+  },
+  "icons": {
+    "16": "icons/icon.svg",
+    "32": "icons/icon.svg",
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  }
+}

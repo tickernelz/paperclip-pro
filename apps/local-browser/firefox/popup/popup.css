@@ -1,0 +1,199 @@
+:root {
+  color-scheme: light dark;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  --accent: #1d4ed8;
+  --danger: #b91c1c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: 14px;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+h2 {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pill {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pill[data-status="connected"] {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.pill[data-status="connecting"],
+.pill[data-status="reconnecting"] {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.pill[data-status="error"] {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+.card {
+  padding: 10px 12px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  gap: 4px 8px;
+  margin: 0;
+}
+
+dt {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input {
+  display: block;
+  width: 100%;
+  margin-top: 3px;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font: inherit;
+  color: var(--ink);
+  background: #f8fafc;
+}
+
+button {
+  padding: 7px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #ffffff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: #ffffff;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+button.danger {
+  background: #ffffff;
+  border-color: #fecaca;
+  color: var(--danger);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#actions {
+  display: flex;
+  gap: 8px;
+}
+
+#actions button {
+  flex: 1;
+}
+
+.message {
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #fef2f2;
+  color: var(--danger);
+  font-size: 12px;
+}
+
+.hint {
+  margin: 8px 0 0;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #334155;
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.hint code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 11px;
+}
+
+@media (prefers-color-scheme: dark) {
+  body {
+    background: #0b1120;
+    color: #e2e8f0;
+  }
+  .card {
+    border-color: #1e293b;
+  }
+  input {
+    background: #111c33;
+    border-color: #1e293b;
+    color: #e2e8f0;
+  }
+  button.ghost,
+  button.danger {
+    background: #111c33;
+    border-color: #1e293b;
+    color: #e2e8f0;
+  }
+  button.danger {
+    color: #fca5a5;
+  }
+  .pill {
+    background: #1e293b;
+    color: #cbd5e1;
+  }
+}
