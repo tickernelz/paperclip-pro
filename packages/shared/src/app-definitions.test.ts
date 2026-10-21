@@ -226,6 +226,27 @@ describe("AppDefinition catalog", () => {
     expect(APP_DEFINITIONS.some(app => app.slug === "browser-use")).toBe(false);
     expect(getAppDefinitionForUrl("https://cloud.browser-use.com/agents")?.slug).toBe("browser-use-cloud");
   });
+  it("ships Local Browser as a paired-browser connector with an S4 warning", () => {
+    const app = getAppStoreDefinition("local-browser")!;
+    expect(app).toBeDefined();
+    expect(appDefinitionSchema.parse(app)).toEqual(app);
+    expect(app).toMatchObject({
+      name: "Local Browser",
+      categories: ["developer"],
+      branding: { logoUrl: "/brands/apps/local-browser.svg" },
+      urlPatterns: [],
+    });
+    expect(app.methods).toHaveLength(1);
+    expect(app.methods[0]).toMatchObject({
+      key: "bridge",
+      auth: "none",
+      ownershipModes: ["customer"],
+      riskTier: "S4",
+    });
+    expect(appSupportsCatalogSetup(app)).toBe(true);
+    expect(app.methods[0]!.guidanceMd).toContain("Pairing happens from this page");
+    expect(app.methods[0]!.warnings?.join(" ")).toContain("Full tier");
+  });
   it("offers Anthropic runtime authentication without the unsupported REST tool method", () => {
     const anthropic = APP_DEFINITIONS.find((app) => app.slug === "anthropic")!;
     expect(anthropic.methods.map((method) => method.key)).toEqual(["ai-subscription", "ai-api_key"]);
@@ -878,7 +899,7 @@ describe("AppDefinition catalog", () => {
       "ticktick",
       "xero",
     ]);
-    expect(APP_STORE_DEFINITIONS).toHaveLength(80);
+    expect(APP_STORE_DEFINITIONS).toHaveLength(81);
     const connectableSlugs = new Set(
       CONNECTABLE_APP_DEFINITIONS.map((entry) => entry.slug),
     );
