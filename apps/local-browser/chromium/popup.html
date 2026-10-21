@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Paperclip Local Browser</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <span id="dot" class="dot"></span>
+      <div>
+        <p id="state" class="state">Checking connection…</p>
+        <p id="detail" class="detail"></p>
+      </div>
+    </header>
+
+    <section class="meta">
+      <dl>
+        <dt>Tier</dt>
+        <dd id="tier">—</dd>
+        <dt>Session</dt>
+        <dd id="session">—</dd>
+        <dt>Tabs</dt>
+        <dd id="tabs">—</dd>
+      </dl>
+      <p id="origins" class="origins"></p>
+    </section>
+
+    <form id="pair-form" class="pair">
+      <label for="server">Server or connect URL</label>
+      <input id="server" type="text" placeholder="https://paperclip.example.com" autocomplete="off" spellcheck="false" />
+      <label for="code">Pairing code</label>
+      <input id="code" type="text" placeholder="ABCD1234" autocomplete="off" spellcheck="false" maxlength="16" />
+      <label for="label">Browser label</label>
+      <input id="label" type="text" placeholder="Chrome on my laptop" autocomplete="off" maxlength="80" />
+      <p id="error" class="error" hidden></p>
+      <div class="actions">
+        <button id="pair" type="submit">Pair</button>
+        <button id="reconnect" type="button" class="ghost">Reconnect</button>
+        <button id="disconnect" type="button" class="danger">Disconnect</button>
+      </div>
+    </form>
+
+    <footer class="foot">
+      <span id="version" class="version"></span>
+      <span class="hint">Pairing codes expire in 10 minutes.</span>
+    </footer>
+
+    <script type="module" src="lib/popup-state.js"></script>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

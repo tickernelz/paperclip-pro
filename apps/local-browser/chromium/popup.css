@@ -1,0 +1,178 @@
+:root {
+  color-scheme: light dark;
+  --ink: #111318;
+  --muted: #5b6270;
+  --line: #d8dbe2;
+  --panel: #f6f7f9;
+  --accent: #2563eb;
+  --ok: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e7e9ee;
+    --muted: #9aa2b1;
+    --line: #2a2f3a;
+    --panel: #171a21;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 340px;
+  margin: 0;
+  padding: 14px 14px 10px;
+  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--ink);
+  background: canvas;
+}
+
+.head {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.dot {
+  width: 9px;
+  height: 9px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: var(--muted);
+  flex: none;
+}
+
+.dot.on {
+  background: var(--ok);
+}
+
+.dot.wait {
+  background: var(--warn);
+}
+
+.dot.off {
+  background: var(--bad);
+}
+
+.state {
+  margin: 0;
+  font-weight: 600;
+}
+
+.detail {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.meta {
+  margin: 12px 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+dl {
+  display: grid;
+  grid-template-columns: 62px 1fr;
+  gap: 2px 8px;
+  margin: 0;
+}
+
+dt {
+  color: var(--muted);
+}
+
+dd {
+  margin: 0;
+  word-break: break-all;
+}
+
+.origins {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.pair {
+  display: grid;
+  gap: 4px;
+}
+
+label {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: canvas;
+  color: var(--ink);
+  font: inherit;
+}
+
+input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+button {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+button.ghost {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+button.danger {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--bad);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.error {
+  margin: 8px 0 0;
+  color: var(--bad);
+  font-size: 12px;
+}
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--muted);
+  font-size: 11px;
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Paperclip Local Browser</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Paperclip Local Browser</h1>
+      <span id="status" class="pill">unpaired</span>
+    </header>
+
+    <section id="details" class="card">
+      <dl>
+        <dt>Label</dt>
+        <dd id="label">&mdash;</dd>
+        <dt>Tier</dt>
+        <dd id="tier">&mdash;</dd>
+        <dt>Origin</dt>
+        <dd id="origin">&mdash;</dd>
+        <dt>Connected</dt>
+        <dd id="since">&mdash;</dd>
+        <dt>Client</dt>
+        <dd id="version">&mdash;</dd>
+        <dt>Trusted input</dt>
+        <dd id="bidi">checking</dd>
+      </dl>
+    </section>
+
+    <section id="pair-form" class="card">
+      <h2>Pair this browser</h2>
+      <label>
+        Paperclip origin
+        <input id="origin-input" type="url" placeholder="https://app.paperclip.example" autocomplete="off" spellcheck="false" />
+      </label>
+      <label>
+        Pairing code
+        <input id="code-input" type="text" placeholder="8 characters" autocomplete="off" spellcheck="false" maxlength="32" />
+      </label>
+      <label>
+        Label
+        <input id="label-input" type="text" placeholder="Firefox on my laptop" autocomplete="off" maxlength="80" />
+      </label>
+      <button id="pair" type="button">Connect</button>
+    </section>
+
+    <section id="actions" class="card">
+      <button id="reconnect" type="button" class="ghost">Reconnect</button>
+      <button id="disconnect" type="button" class="danger">Disconnect</button>
+    </section>
+
+    <p id="message" class="message" hidden></p>
+    <p id="bidi-hint" class="hint" hidden></p>
+
+    <script src="../lib/popup-state.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

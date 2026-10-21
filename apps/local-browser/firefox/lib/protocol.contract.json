@@ -1,0 +1,80 @@
+{
+  "protocol": 1,
+  "cursorPattern": "/^\\d+$/",
+  "tiers": [
+    "refine",
+    "full"
+  ],
+  "clients": [
+    "chromium",
+    "firefox"
+  ],
+  "errorCodes": [
+    "local_browser_not_paired",
+    "local_browser_extension_unavailable",
+    "local_browser_origin_denied",
+    "local_browser_tier_denied",
+    "local_browser_tab_missing",
+    "local_browser_ref_stale",
+    "local_browser_element_missing",
+    "local_browser_timeout",
+    "local_browser_navigation_blocked",
+    "local_browser_protocol_error",
+    "local_browser_result_too_large",
+    "local_browser_unsupported"
+  ],
+  "actions": [
+    "click",
+    "dblclick",
+    "type",
+    "press",
+    "hover",
+    "focus",
+    "check",
+    "uncheck",
+    "select",
+    "scroll",
+    "scroll_into_view"
+  ],
+  "mouseActions": [
+    "move",
+    "down",
+    "up"
+  ],
+  "keyActions": [
+    "down",
+    "up"
+  ],
+  "viewerStates": [
+    "connected",
+    "viewer_unavailable",
+    "agent_streaming",
+    "agent_idle",
+    "disconnected"
+  ],
+  "toolNames": [
+    "local_browser_sessions",
+    "local_browser_open",
+    "local_browser_navigate",
+    "local_browser_snapshot",
+    "local_browser_act",
+    "local_browser_read",
+    "local_browser_screenshot",
+    "local_browser_wait",
+    "local_browser_evaluate",
+    "local_browser_storage",
+    "local_browser_network",
+    "local_browser_upload",
+    "local_browser_download",
+    "local_browser_close"
+  ],
+  "limits": {
+    "callTimeoutMs": 30000,
+    "snapshotDefaultNodes": 120,
+    "snapshotMaxNodes": 400,
+    "textDefaultChars": 8000,
+    "textMaxChars": 40000,
+    "screenshotMaxBytes": 2097152,
+    "viewerFrameIntervalMs": 1000
+  }
+}
