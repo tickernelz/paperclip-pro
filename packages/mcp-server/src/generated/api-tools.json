@@ -9394,6 +9394,54 @@
     }
   },
   {
+    "name": "paperclipCreateLocalBrowserSetting",
+    "operationId": "POST /api/local-browser/settings",
+    "method": "POST",
+    "path": "/local-browser/settings",
+    "description": "Update local browser tier and origin settings",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "allowedOrigins": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "refine",
+              "full"
+            ]
+          }
+        }
+      }
+    }
+  },
+  {
     "name": "paperclipCreateManagedAgentProfile",
     "operationId": "POST /api/companies/{companyId}/managed-agent-profiles",
     "method": "POST",
@@ -15102,6 +15150,38 @@
     "parameters": [
       {
         "name": "labelId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipDeleteLocalBrowserSession",
+    "operationId": "DELETE /api/local-browser/sessions/{id}",
+    "method": "DELETE",
+    "path": "/local-browser/sessions/{sessionId}",
+    "description": "Disconnect a local browser",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": true,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "sessionId",
         "in": "path",
         "required": true,
         "schema": {
@@ -22387,6 +22467,72 @@
     ]
   },
   {
+    "name": "paperclipGetLocalBrowserPairing",
+    "operationId": "GET /api/local-browser/pairing/{code}",
+    "method": "GET",
+    "path": "/local-browser/pairing/{code}",
+    "description": "Read a pairing code status",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "code",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetLocalBrowserSessionViewer",
+    "operationId": "GET /api/local-browser/sessions/{id}/viewer",
+    "method": "GET",
+    "path": "/local-browser/sessions/{sessionId}/viewer",
+    "description": "Watch the tab a local browser is driving",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoardUser"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetNotificationWebPushConfig",
     "operationId": "GET /api/notifications/web-push/config",
     "method": "GET",
@@ -26016,6 +26162,165 @@
         "required": [
           "approvalCode",
           "approve"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipInputLocalBrowserSession",
+    "operationId": "POST /api/local-browser/sessions/{id}/input",
+    "method": "POST",
+    "path": "/local-browser/sessions/{sessionId}/input",
+    "description": "Take over a local browser tab",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoardUser"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "nest",
+      "schema": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "move",
+                  "down",
+                  "up"
+                ]
+              },
+              "button": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "middle",
+                  "right"
+                ]
+              },
+              "clickCount": {
+                "type": "integer"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "mouse"
+                ]
+              },
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "action",
+              "kind",
+              "x",
+              "y"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "deltaX": {
+                "type": "number"
+              },
+              "deltaY": {
+                "type": "number"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "wheel"
+                ]
+              },
+              "x": {
+                "type": "integer"
+              },
+              "y": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "deltaX",
+              "deltaY",
+              "kind",
+              "x",
+              "y"
+            ]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {
+                "type": "string",
+                "enum": [
+                  "down",
+                  "up"
+                ]
+              },
+              "alt": {
+                "type": "boolean"
+              },
+              "code": {
+                "type": "string"
+              },
+              "ctrl": {
+                "type": "boolean"
+              },
+              "key": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "key"
+                ]
+              },
+              "meta": {
+                "type": "boolean"
+              },
+              "shift": {
+                "type": "boolean"
+              },
+              "text": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "action",
+              "key",
+              "kind"
+            ]
+          }
         ]
       }
     }
@@ -31578,6 +31883,52 @@
     }
   },
   {
+    "name": "paperclipListLocalBrowserSessions",
+    "operationId": "GET /api/local-browser/sessions",
+    "method": "GET",
+    "path": "/local-browser/sessions",
+    "description": "List connected local browsers",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": []
+  },
+  {
+    "name": "paperclipListLocalBrowserSettings",
+    "operationId": "GET /api/local-browser/settings",
+    "method": "GET",
+    "path": "/local-browser/settings",
+    "description": "Read local browser tier and origin settings",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": []
+  },
+  {
     "name": "paperclipListManagedAgentProfiles",
     "operationId": "GET /api/companies/{companyId}/managed-agent-profiles",
     "method": "GET",
@@ -34523,6 +34874,51 @@
         }
       }
     ]
+  },
+  {
+    "name": "paperclipPairingLocalBrowser",
+    "operationId": "POST /api/local-browser/pairing",
+    "method": "POST",
+    "path": "/local-browser/pairing",
+    "description": "Start pairing a local browser",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "client": {
+            "type": "string",
+            "enum": [
+              "chromium",
+              "firefox"
+            ]
+          },
+          "label": {
+            "type": "string"
+          }
+        }
+      }
+    }
   },
   {
     "name": "paperclipPauseAgent",
