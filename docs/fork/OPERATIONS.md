@@ -65,6 +65,23 @@ chmod 600 ~/.paperclip-pro/instances/default/service.env
 paperclip-pro service restart --drain
 ```
 
+Memory protection in the unit: `OOMPolicy=continue` (the server stays up when the
+kernel kills a run process), `OOMScoreAdjust=0`, `MemoryHigh=infinity`,
+`MemoryMax=62%`, and `MemorySwapMax=25%` of physical memory. `MemoryHigh` is
+deliberately unset: it throttles every task in the cgroup, server and embedded
+Postgres included, and about a quarter of the sampled minutes sat above 55%.
+Set it only from measured data (the shadow memory-gate log plus `memory.events`
+`high`). Run children are
+raised to `oom_score_adj` 500 (`PAPERCLIP_RUN_OOM_SCORE_ADJ`), so the kernel
+kills a run before the server. A user unit cannot lower `OOMScoreAdjust` below
+the user manager's own value. Override a limit in `service.env` with
+`PAPERCLIP_SERVICE_MEMORY_HIGH`, `PAPERCLIP_SERVICE_MEMORY_MAX`,
+`PAPERCLIP_SERVICE_MEMORY_SWAP_MAX` (`infinity`, `NN%`, or a non-zero byte count with
+`K`/`M`/`G`/`T`; `0` is accepted only for `SWAP_MAX`) and `PAPERCLIP_SERVICE_OOM_SCORE_ADJUST` (-1000 to 1000); the
+CLI rewrites the unit on the next `service start` or `restart`, and a malformed
+value fails those commands instead of being ignored; `service stop` still stops
+the service.
+
 Supervisor and health status:
 
 ```bash
@@ -428,6 +445,9 @@ count drops below it.
 | `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 20 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
 | `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
 | `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
+| `PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT` | 20 | 1–90 | Memory gate, shadow only: no start is delayed. Share of host RAM that must stay available after counting the runs still starting; the verdict is only logged. Also settable under Settings → General. |
+| `PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC` | 120 | 1–3600 | Memory gate, shadow only. Seconds after a host or service OOM kill during which the logged verdict is "would hold". Also settable under Settings → General. |
+| `PAPERCLIP_RUN_OOM_SCORE_ADJ` | 500 | -1000–1000 | Linux only. `oom_score_adj` written to every local run child right after spawn, so the kernel OOM killer picks run processes before the server. Lowering below the server's own value needs `CAP_SYS_RESOURCE`; a failed write is logged once and never stops the run. An invalid value falls back to 500. |
 
 A run counts as *starting* from the moment it is claimed until its adapter
 declares the child booted. An adapter declares this with the optional
@@ -445,6 +465,27 @@ no longer applies. Progress notices such as `Still starting after 10s — phase:
 loadExtensions` go to **stderr** and never release the gate; on 2026-09-25 a
 slow MCP boot printed them at 00:42:04.766 and 00:42:23.716, with `agent_start`
 at 00:42:35.617.
+
+**Memory gate (shadow).** Every local run start writes one `info` line, with the
+host numbers at the moment of the start decision. No start is delayed in this
+mode. Read it from the server journal:
+
+```bash
+journalctl --user -u paperclip-pro.service | grep 'local-run-memory-gate shadow'
+```
+
+```
+local-run-memory-gate shadow run=<id> memAvailableMiB=5120 memTotalMiB=32768 swapFreeMiB=3072 localRuns=7 starting=1 inflightEstimateMiB=614 reservePct=20 reserveMiB=6554 cgroupCurrentMiB=12288 cgroupMaxMiB=na oomKill=0 reason=low_available_memory wouldHold20=yes
+```
+
+`wouldHold<N>=yes` means `memAvailable - starting x 614 MiB < N% of memTotal`
+(`reason=low_available_memory`), or an OOM kill counter (`/proc/vmstat` plus the
+service cgroup `memory.events`) rose within the cooldown
+(`reason=oom_kill_cooldown`). `reason=signal_unavailable` means `/proc/meminfo`
+could not be read; the gate fails open. To size an enforcement threshold, count
+the `wouldHold20=yes` lines against the real delays they would have caused
+(`starting` and `localRuns` show the load) and against the OOM kills in
+`journalctl -k` over the same window.
 
 Queued local runs are re-evaluated when a local run finishes, when a starting run
 reports its startup signal, and on a timer armed for the bypass deadline; the

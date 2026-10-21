@@ -12,6 +12,7 @@ import {
 } from "./local-process-sandbox.js";
 import { buildSshSpawnTarget, type SshRemoteExecutionSpec } from "./ssh.js";
 import { redactCommandText } from "./command-redaction.js";
+import { applyRunOomScoreAdj } from "./run-oom-score.js";
 import { paperclipChatFilePreparationDelivery } from "./chat-file-delivery.js";
 import type { PaperclipAccessMode } from "./paperclip-mcp.js";
 import {
@@ -4799,6 +4800,8 @@ export async function ensureCommandResolvable(
   throw new Error(`Command not found in PATH: "${command}"`);
 }
 
+let runOomScoreAdjFailureLogged = false;
+
 export async function runChildProcess(
   runId: string,
   command: string,
@@ -4871,6 +4874,11 @@ export async function runChildProcess(
             "pipe",
           ],
         }) as ChildProcessWithEvents;
+        const oomScoreAdj = applyRunOomScoreAdj(child.pid);
+        if (oomScoreAdj.applied === false && oomScoreAdj.error && !runOomScoreAdjFailureLogged) {
+          runOomScoreAdjFailureLogged = true;
+          onLogError(oomScoreAdj.error, runId, "failed to set run child oom_score_adj");
+        }
         opts.liveStdin?.bind(child.stdin);
         const startedAt = new Date().toISOString();
         const processGroupId = resolveProcessGroupId(child);

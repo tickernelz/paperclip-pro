@@ -16,6 +16,7 @@ import {
 import type {
   AnswerDecisionForOwner,
   AttentionItem,
+  AttentionSourceKind,
   IssueThreadInteractionOwnerRelay,
   IssueThreadInteractionOwnerRelayChannel,
   PendingDecision,
@@ -456,7 +457,8 @@ function optionList(entries: unknown, idKey: string, labelKey: string): PendingD
   });
 }
 
-function cardShape(kind: string, payload: Record<string, unknown>): Pick<PendingDecision, "prompt" | "options" | "questions"> {
+/** Prompt, options and questions of a card as the owner sees them. */
+export function pendingDecisionCardShape(kind: string, payload: Record<string, unknown>): Pick<PendingDecision, "prompt" | "options" | "questions"> {
   switch (kind) {
     case "request_confirmation":
       return {
@@ -493,10 +495,68 @@ const GOVERNED_APPROVAL_REASON =
   "Board approvals (hires, budgets, governed actions) carry company-level effects and budget stops; the owner decides them in Paperclip, or an agent holding company:approvals authority uses paperclipApprovalDecision";
 const AGENT_DECISION_REASON = "Agent decision bundles are decided on the Paperclip Decisions desk";
 
+const RELAY_SOURCE_KINDS: AttentionSourceKind[] = ["issue_thread_interaction", "approval", "decision"];
+
+export function isOpenAttentionItem(item: AttentionItem, now: number) {
+  if (item.archivedAt) return false;
+  if (item.dismissal?.isActive) return false;
+  return !(item.snoozedUntil && Date.parse(item.snoozedUntil) > now);
+}
+
+const DESK_ONLY_REASONS: Partial<Record<AttentionSourceKind, string>> = {
+  recovery_action:
+    "A recovery action is resolved on the Paperclip Decisions desk; when the owner explicitly asks to continue the issue, paperclipContinueIssueForOwner relays that",
+  review: "A review verdict is given on the issue by its reviewer, not relayed",
+  productivity_review: "A productivity review is closed on the Paperclip Decisions desk",
+  blocker_attention: "A blocked dependency clears when the blocking issue finishes or the dependency changes; there is no card to answer",
+  failed_run: "A failed run is handled on the Paperclip Decisions desk",
+  budget_alert: "A budget incident is decided by the owner on the Paperclip Decisions desk",
+  agent_error_alert: "An agent error is inspected or dismissed on the Paperclip Decisions desk",
+  join_request: "A join request is approved or denied by a board member on the Paperclip Decisions desk",
+};
+
+async function loadRelayCards(db: Db, companyId: string, items: AttentionItem[]) {
+  const interactionIds = items.filter((item) => item.sourceKind === "issue_thread_interaction").map((item) => item.subject.id);
+  if (interactionIds.length === 0) return new Map<string, RelayableCard & { title: string | null; createdByUserId: string | null }>();
+  const cards = await db
+    .select({
+      id: issueThreadInteractions.id,
+      kind: issueThreadInteractions.kind,
+      payload: issueThreadInteractions.payload,
+      title: issueThreadInteractions.title,
+      createdByUserId: issueThreadInteractions.createdByUserId,
+    })
+    .from(issueThreadInteractions)
+    .where(and(eq(issueThreadInteractions.companyId, companyId), inArray(issueThreadInteractions.id, interactionIds)));
+  return new Map(cards.map((card) => [card.id, card]));
+}
+
+export async function relayStateByItem(
+  db: Db,
+  companyId: string,
+  items: AttentionItem[],
+): Promise<Map<string, { relayable: boolean; relayBlockedReason: string | null }>> {
+  const cardById = await loadRelayCards(db, companyId, items);
+  return new Map(
+    items.map((item) => {
+      if (item.sourceKind === "issue_thread_interaction") {
+        const card = cardById.get(item.subject.id);
+        const blocked = card ? ownerRelayBlockedReason(card) : "The card is no longer pending";
+        return [item.id, { relayable: blocked === null, relayBlockedReason: blocked }] as const;
+      }
+      const reason =
+        item.sourceKind === "approval" ? GOVERNED_APPROVAL_REASON
+        : item.sourceKind === "decision" ? AGENT_DECISION_REASON
+        : (DESK_ONLY_REASONS[item.sourceKind] ?? "Resolved on the Paperclip Decisions desk");
+      return [item.id, { relayable: false, relayBlockedReason: reason }] as const;
+    }),
+  );
+}
+
 export async function listPendingDecisions(
   db: Db,
   input: { companyId: string; actor: Request["actor"]; userId: string | null },
-): Promise<PendingDecision[]> {
+): Promise<{ items: PendingDecision[]; omittedCount: number }> {
   const feed = await attentionService(db).list(input.companyId, {
     userId: input.userId ?? undefined,
     actor: input.actor,
@@ -505,21 +565,12 @@ export async function listPendingDecisions(
     allowUnscopedAll: true,
     sort: "decide",
   });
-  const items = feed.items.filter((item) => ["issue_thread_interaction", "approval", "decision"].includes(item.sourceKind));
-  const interactionIds = items.filter((item) => item.sourceKind === "issue_thread_interaction").map((item) => item.subject.id);
-  const cards = interactionIds.length
-    ? await db
-        .select({
-          id: issueThreadInteractions.id,
-          kind: issueThreadInteractions.kind,
-          payload: issueThreadInteractions.payload,
-          title: issueThreadInteractions.title,
-          createdByUserId: issueThreadInteractions.createdByUserId,
-        })
-        .from(issueThreadInteractions)
-        .where(and(eq(issueThreadInteractions.companyId, input.companyId), inArray(issueThreadInteractions.id, interactionIds)))
-    : [];
-  const cardById = new Map(cards.map((card) => [card.id, card]));
+  const items = feed.items.filter((item) => RELAY_SOURCE_KINDS.includes(item.sourceKind));
+  const now = Date.parse(feed.generatedAt);
+  const omittedCount = feed.items.filter(
+    (item) => !RELAY_SOURCE_KINDS.includes(item.sourceKind) && isOpenAttentionItem(item, now),
+  ).length;
+  const cardById = await loadRelayCards(db, input.companyId, items);
   const requesterIds = [
     ...new Set(
       items.flatMap((item) => {
@@ -540,7 +591,7 @@ export async function listPendingDecisions(
       : [],
   );
   const requester = (agentId: string | null) => ({ requestedByAgentId: agentId, requestedByAgentName: agentId ? (agentNames.get(agentId) ?? null) : null });
-  return items.flatMap((item): PendingDecision[] => {
+  const decisions = items.flatMap((item): PendingDecision[] => {
     const metadata = record(item.subject.metadata);
     const base = {
       id: item.subject.id,
@@ -560,7 +611,7 @@ export async function listPendingDecisions(
         source: "interaction",
         kind: card.kind,
         title: card.title ?? base.title,
-        ...cardShape(card.kind, record(card.payload)),
+        ...pendingDecisionCardShape(card.kind, record(card.payload)),
         humanOnly: item.resolverAudience?.effectiveResolverPolicy === "human_only",
         ...requester(item.resolverAudience?.createdByAgentId ?? str(metadata.createdByAgentId)),
         requestedByUserId: card.createdByUserId ?? null,
@@ -582,6 +633,7 @@ export async function listPendingDecisions(
       relayBlockedReason: item.sourceKind === "approval" ? GOVERNED_APPROVAL_REASON : AGENT_DECISION_REASON,
     }];
   });
+  return { items: decisions, omittedCount };
 }
 
 function decisionPrompt(item: AttentionItem): string | null {

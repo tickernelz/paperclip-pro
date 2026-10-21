@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { resolveLocalRunLimits } from "./local-cli-admission.js";
 
-const SAVED = { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec: 45 };
+const SAVED = { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec: 45, memoryReservePercent: null, memoryGateCooldownSec: null };
 
 describe("resolveLocalRunLimits", () => {
   it("defaults to 20 running local runs, 4 starts and a 120 second start wait bypass", () => {
@@ -9,6 +9,8 @@ describe("resolveLocalRunLimits", () => {
       maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
       maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
       startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
+      memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
+      memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
     });
   });
 

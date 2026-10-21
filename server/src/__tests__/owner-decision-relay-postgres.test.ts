@@ -7,7 +7,10 @@ import {
   activityLog,
   agentWakeupRequests,
   agents,
+  approvals,
   authUsers,
+  budgetIncidents,
+  budgetPolicies,
   chatConversations,
   chatDeliveries,
   chatEndpointOwners,
@@ -18,11 +21,16 @@ import {
   companies,
   companyMemberships,
   createDb,
+  heartbeatRunEvents,
   heartbeatRuns,
+  inboxDismissals,
+  invites,
   issueComments,
+  issueRecoveryActions,
   issueThreadInteractionOwnerRelays,
   issueThreadInteractions,
   issues,
+  joinRequests,
   toolApplications,
   toolConnections,
 } from "@tickernelz/paperclip-pro-db";
@@ -30,6 +38,7 @@ import { errorHandler } from "../middleware/index.js";
 import { attentionRoutes } from "../routes/attention.js";
 import { issueRoutes } from "../routes/issues.js";
 import { OPENWA_RUN_CONTEXT_KEY } from "../services/openwa/authority.js";
+import { ROUTABLE_BLOCKED_ROLLOUT_AT } from "../services/routable-blocked.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -407,5 +416,261 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
       relayable: true,
       relayBlockedReason: null,
     });
+  }, 60_000);
+
+  const DESK_KINDS = [
+    "approval",
+    "issue_thread_interaction",
+    "join_request",
+    "recovery_action",
+    "blocker_attention",
+    "review",
+    "failed_run",
+    "budget_alert",
+    "agent_error_alert",
+  ];
+
+  async function seedDesk(seed: Seed) {
+    const plan = await seedPlanCard(seed, 1524);
+    const [approval] = await db.insert(approvals).values({
+      companyId: seed.companyId, type: "hire_agent", status: "pending", payload: { title: "Hire Designer" },
+    }).returning({ id: approvals.id });
+    const inviteId = randomUUID();
+    await db.insert(invites).values({ id: inviteId, companyId: seed.companyId, tokenHash: "hash-" + inviteId, allowedJoinTypes: "both", expiresAt: new Date(Date.now() + 86_400_000) });
+    await db.insert(joinRequests).values({
+      inviteId, companyId: seed.companyId, requestType: "human", status: "pending_approval", requestIp: "127.0.0.1", requestEmailSnapshot: "new@paperclip.test",
+    });
+    const recoveryIssueId = randomUUID();
+    const reviewIssueId = randomUUID();
+    const blockedIssueId = randomUUID();
+    await db.insert(issues).values([
+      { id: recoveryIssueId, companyId: seed.companyId, identifier: seed.prefix + "-2001", title: "Needs recovery", status: "in_progress", priority: "medium", assigneeAgentId: seed.nadiaId },
+      {
+        id: reviewIssueId, companyId: seed.companyId, identifier: seed.prefix + "-2002", title: "Human review", status: "in_review", priority: "medium",
+        executionState: {
+          status: "pending", currentStageId: null, currentStageIndex: null, currentStageType: "review", currentParticipant: { type: "user", userId: seed.ownerUserId },
+          returnAssignee: null, reviewRequest: null, completedStageIds: [], lastDecisionId: null, lastDecisionOutcome: null, monitor: null,
+        } as never,
+      },
+      {
+        id: blockedIssueId, companyId: seed.companyId, identifier: seed.prefix + "-2003", title: "Needs the board", status: "blocked", priority: "medium",
+        unblockDescriptor: { owner: "board", action: "Approve the exception" } as never, blockedTransitionAt: new Date(ROUTABLE_BLOCKED_ROLLOUT_AT.getTime() + 60_000),
+      },
+    ]);
+    await db.insert(issueRecoveryActions).values({
+      companyId: seed.companyId, sourceIssueId: recoveryIssueId, kind: "missing_disposition", status: "escalated", ownerType: "board", cause: "missing_disposition",
+      fingerprint: "human-recovery", evidence: {}, nextAction: "Choose the final disposition.",
+    });
+    await db.insert(agents).values({
+      companyId: seed.companyId, name: "Broken Agent", role: "engineer", status: "error", errorReason: "adapter config missing",
+      adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+    });
+    const failedRunId = randomUUID();
+    await db.insert(heartbeatRuns).values({
+      id: failedRunId, companyId: seed.companyId, agentId: seed.nadiaId, invocationSource: "automation", status: "failed", error: "adapter failed", errorCode: "adapter_failed",
+      contextSnapshot: { issueId: reviewIssueId }, scheduledRetryAttempt: 4, scheduledRetryReason: "transient_failure", finishedAt: new Date(),
+    });
+    await db.insert(heartbeatRunEvents).values({
+      companyId: seed.companyId, runId: failedRunId, agentId: seed.nadiaId, seq: 1, eventType: "lifecycle",
+      message: "Bounded retry exhausted after 4 scheduled attempts; no further automatic retry will be queued",
+      payload: { retryReason: "transient_failure", maxAttempts: 4 },
+    });
+    const [policy] = await db.insert(budgetPolicies).values({
+      companyId: seed.companyId, scopeType: "agent", scopeId: seed.nadiaId, metric: "billed_cents", windowKind: "calendar_month_utc", amount: 100,
+    }).returning({ id: budgetPolicies.id });
+    await db.insert(budgetIncidents).values({
+      companyId: seed.companyId, policyId: policy!.id, scopeType: "agent", scopeId: seed.nadiaId, metric: "billed_cents", windowKind: "calendar_month_utc",
+      windowStart: new Date("2026-10-01T00:00:00.000Z"), windowEnd: new Date("2026-11-01T00:00:00.000Z"), thresholdType: "hard", amountLimit: 100, amountObserved: 100, status: "open",
+    });
+    return { plan, approvalId: approval!.id, reviewIssueId, recoveryIssueId };
+  }
+
+  function ownerAgent(seed: Seed, runId: string | undefined, extra: Record<string, unknown> = {}) {
+    const onBehalfOfUserId = "onBehalfOfUserId" in extra ? extra.onBehalfOfUserId : seed.ownerUserId;
+    const onBehalfOfMemberships = onBehalfOfUserId === seed.ownerUserId
+      ? [{ companyId: seed.companyId, status: "active", membershipRole: "owner" }]
+      : [];
+    return app({ type: "agent", source: "agent_jwt", companyId: seed.companyId, agentId: seed.wiraId, runId, onBehalfOfUserId, onBehalfOfMemberships, ...extra });
+  }
+
+  function boardOwner(seed: Seed) {
+    return app({ type: "board", source: "session", userId: seed.ownerUserId, companyIds: [seed.companyId], isInstanceAdmin: false });
+  }
+
+  async function plainRun(seed: Seed, contextSnapshot: Record<string, unknown> = {}) {
+    const runId = randomUUID();
+    await db.insert(heartbeatRuns).values({
+      id: runId, companyId: seed.companyId, agentId: seed.wiraId, invocationSource: "automation", triggerDetail: "system", status: "running", contextSnapshot,
+    });
+    return runId;
+  }
+
+  const deskUrl = (seed: Seed, query = "") => `/api/companies/${seed.companyId}/pending-decisions?scope=desk${query}`;
+
+  it("lets an owner run read every source kind with the same counts and order as the Decisions page", async () => {
+    const seed = await seedCompany();
+    const desk = await seedDesk(seed);
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+
+    const res = await request(ownerAgent(seed, runId)).get(deskUrl(seed));
+    const page = await request(boardOwner(seed)).get(`/api/companies/${seed.companyId}/attention`);
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(page.status, JSON.stringify(page.body)).toBe(200);
+    expect(res.body.scope).toBe("desk");
+    expect(new Set(res.body.items.map((item: { sourceKind: string }) => item.sourceKind))).toEqual(new Set(DESK_KINDS));
+    expect(res.body.totalCount).toBe(page.body.totalCount);
+    expect(res.body.countsBySourceKind).toEqual(page.body.countsBySourceKind);
+    expect(res.body.items.map((item: { id: string }) => item.id)).toEqual(page.body.items.map((item: { subject: { id: string } }) => item.subject.id));
+    const byKind = (kind: string) => res.body.items.find((item: { sourceKind: string }) => item.sourceKind === kind);
+    expect(byKind("issue_thread_interaction")).toMatchObject({
+      id: desk.plan.interactionId, issueIdentifier: desk.plan.identifier, relayable: true, relayBlockedReason: null, open: true,
+    });
+    expect(byKind("approval")).toMatchObject({ id: desk.approvalId, relayable: false, relayBlockedReason: expect.stringContaining("Board approvals") });
+    expect(byKind("recovery_action")).toMatchObject({
+      issueIdentifier: seed.prefix + "-2001", relayable: false, relayBlockedReason: expect.stringContaining("paperclipContinueIssueForOwner"),
+    });
+    expect(byKind("review")).toMatchObject({ issueIdentifier: seed.prefix + "-2002", relayable: false });
+    for (const item of res.body.items) {
+      expect(item.entryRule).toBeTruthy();
+      expect(item.exitRule).toBeTruthy();
+      expect(item.whyNow).toBeTruthy();
+      expect(item.ageSeconds).toBeGreaterThanOrEqual(0);
+      if (!item.relayable) expect(item.relayBlockedReason).toBeTruthy();
+    }
+  }, 60_000);
+
+  it("marks the default list partial and counts what it leaves out for an owner run only", async () => {
+    const seed = await seedCompany();
+    await seedDesk(seed);
+    const ownerRunId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+    const memberRunId = await seedOpenwaRun(seed, { triggerClass: "other", deliveryIds: [], principalId: seed.memberPrincipalId });
+    const url = `/api/companies/${seed.companyId}/pending-decisions`;
+
+    const owner = await request(ownerAgent(seed, ownerRunId)).get(url);
+    const desk = await request(ownerAgent(seed, ownerRunId)).get(deskUrl(seed));
+    const member = await request(ownerAgent(seed, memberRunId)).get(url);
+
+    expect(owner.status, JSON.stringify(owner.body)).toBe(200);
+    expect(owner.body).toMatchObject({ scope: "relay", partial: true, note: expect.stringContaining("scope=desk") });
+    expect(owner.body.omittedCount).toBe(desk.body.totalCount - owner.body.items.length);
+    expect(owner.body.omittedCount).toBeGreaterThan(0);
+    expect(member.status, JSON.stringify(member.body)).toBe(200);
+    expect(member.body).toMatchObject({ scope: "relay", partial: true, omittedCount: null });
+    expect(member.body.items.map((item: { id: string }) => item.id)).toEqual(owner.body.items.map((item: { id: string }) => item.id));
+  }, 60_000);
+
+  it("does not count a dismissed or snoozed item the Decisions page hides", async () => {
+    const seed = await seedCompany();
+    const desk = await seedDesk(seed);
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+    const agent = ownerAgent(seed, runId);
+    const url = `/api/companies/${seed.companyId}/pending-decisions`;
+    const before = await request(agent).get(url);
+
+    await db.insert(inboxDismissals).values({
+      companyId: seed.companyId, userId: seed.ownerUserId,
+      itemKey: "attention:recovery:missing_disposition:" + desk.recoveryIssueId + ":missing_disposition:human-recovery",
+    });
+    const dismissed = await request(agent).get(url);
+    const page = await request(agent).get(deskUrl(seed));
+    expect(page.body.items.map((item: { sourceKind: string }) => item.sourceKind)).not.toContain("recovery_action");
+    expect(dismissed.body.omittedCount).toBe(before.body.omittedCount - 1);
+    expect(dismissed.body.omittedCount).toBe(page.body.totalCount - dismissed.body.items.length);
+
+    await db.insert(inboxDismissals).values({
+      companyId: seed.companyId, userId: seed.ownerUserId, itemKey: "attention:review:" + desk.reviewIssueId,
+      kind: "snooze", snoozedUntil: new Date(Date.now() + 3_600_000),
+    });
+    const snoozed = await request(agent).get(url);
+    const afterPage = await request(agent).get(deskUrl(seed));
+    expect(snoozed.body.omittedCount).toBe(afterPage.body.totalCount - snoozed.body.items.length);
+  }, 60_000);
+
+  it("refuses the desk to every run that is not the owner's, while the relay list stays as it was", async () => {
+    const seed = await seedCompany();
+    await seedDesk(seed);
+    const ownerRunId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+    const memberRunId = await seedOpenwaRun(seed, { triggerClass: "other", deliveryIds: [], principalId: seed.memberPrincipalId });
+    const forbidden = (res: request.Response, reason: string) => {
+      expect(res.status, JSON.stringify(res.body)).toBe(403);
+      expect(res.body.details ?? res.body).toMatchObject({ code: "decisions_desk_forbidden", reason });
+    };
+
+    forbidden(await request(ownerAgent(seed, memberRunId)).get(deskUrl(seed)), "not_owner_run");
+    forbidden(await request(ownerAgent(seed, ownerRunId, { onBehalfOfUserId: null })).get(deskUrl(seed)), "owner_context_required");
+    forbidden(await request(ownerAgent(seed, undefined)).get(deskUrl(seed)), "run_required");
+    forbidden(await request(ownerAgent(seed, ownerRunId, { agentId: seed.nadiaId })).get(deskUrl(seed)), "run_not_active");
+    forbidden(await request(ownerAgent(seed, await plainRun(seed))).get(deskUrl(seed)), "not_owner_run");
+    forbidden(
+      await request(ownerAgent(seed, await plainRun(seed), { agentRole: "ceo", agentStatus: "idle", onBehalfOfUserId: "stranger-" + randomUUID() })).get(deskUrl(seed)),
+      "owner_not_member",
+    );
+    expect((await request(ownerAgent(seed, ownerRunId)).get(deskUrl(seed))).status).toBe(200);
+  }, 60_000);
+
+  it("admits a plain run only when the owner's own comment woke it or the agent is a CEO", async () => {
+    const seed = await seedCompany();
+    await seedDesk(seed);
+    const [questionIssue] = await db.insert(issues).values({
+      companyId: seed.companyId, identifier: seed.prefix + "-3001", title: "Owner question", status: "in_progress", priority: "medium", assigneeAgentId: seed.wiraId,
+    }).returning({ id: issues.id });
+    const [comment] = await db.insert(issueComments).values({
+      companyId: seed.companyId, issueId: questionIssue!.id, authorType: "user", authorUserId: seed.ownerUserId, body: "Apa yang menunggu saya?",
+    }).returning();
+    const [agentComment] = await db.insert(issueComments).values({
+      companyId: seed.companyId, issueId: questionIssue!.id, authorType: "agent", authorAgentId: seed.nadiaId, body: "Apa yang menunggu saya?",
+    }).returning();
+    const woken = await plainRun(seed, { issueId: questionIssue!.id, wakeReason: "issue_commented", wakeCommentId: comment!.id, wakeCommentIds: [comment!.id] });
+    const wokenByAgent = await plainRun(seed, { issueId: questionIssue!.id, wakeReason: "issue_commented", wakeCommentId: agentComment!.id, wakeCommentIds: [agentComment!.id] });
+    const idle = await plainRun(seed, { issueId: questionIssue!.id });
+
+    expect((await request(ownerAgent(seed, woken)).get(deskUrl(seed))).status).toBe(200);
+    expect((await request(ownerAgent(seed, wokenByAgent)).get(deskUrl(seed))).status).toBe(403);
+    expect((await request(ownerAgent(seed, idle)).get(deskUrl(seed))).status).toBe(403);
+    expect((await request(ownerAgent(seed, idle, { agentRole: "ceo", agentStatus: "idle" })).get(deskUrl(seed))).status).toBe(200);
+  }, 60_000);
+
+  it("keeps the desk inside the issues the agent can read and inside its own company", async () => {
+    const seed = await seedCompany();
+    const visible = await seedPlanCard(seed, 1524);
+    const hidden = await seedPlanCard(seed, 1600, { visibility: "private" });
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+
+    const res = await request(ownerAgent(seed, runId)).get(deskUrl(seed));
+    const ids = res.body.items.map((item: { id: string }) => item.id);
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(ids).toContain(visible.interactionId);
+    expect(ids).not.toContain(hidden.interactionId);
+
+    const other = await seedCompany();
+    const crossRes = await request(ownerAgent(seed, runId)).get(`/api/companies/${other.companyId}/pending-decisions?scope=desk`);
+    expect(crossRes.status).toBe(403);
+  }, 60_000);
+
+  it("pages and filters the desk like the Decisions page", async () => {
+    const seed = await seedCompany();
+    const desk = await seedDesk(seed);
+    const runId = await seedOpenwaRun(seed, { triggerClass: "owner", deliveryIds: [], principalId: seed.ownerPrincipalId });
+    const agent = ownerAgent(seed, runId);
+
+    const first = await request(agent).get(deskUrl(seed, "&limit=4"));
+    expect(first.status, JSON.stringify(first.body)).toBe(200);
+    expect(first.body.items).toHaveLength(4);
+    expect(first.body.nextCursor).toBeTruthy();
+    const second = await request(agent).get(deskUrl(seed, "&limit=100&cursor=" + encodeURIComponent(first.body.nextCursor)));
+    const everything = await request(agent).get(deskUrl(seed, "&limit=100"));
+    expect([...first.body.items, ...second.body.items].map((item: { id: string }) => item.id)).toEqual(everything.body.items.map((item: { id: string }) => item.id));
+    expect(first.body.totalCount).toBe(everything.body.totalCount);
+
+    await db.insert(inboxDismissals).values({ companyId: seed.companyId, userId: seed.ownerUserId, itemKey: "attention:approval:" + desk.approvalId });
+    const hiddenDismissed = await request(agent).get(deskUrl(seed, "&limit=100"));
+    const shownDismissed = await request(agent).get(deskUrl(seed, "&limit=100&includeDismissed=true"));
+    expect(hiddenDismissed.body.items.map((item: { id: string }) => item.id)).not.toContain(desk.approvalId);
+    expect(shownDismissed.body.items.find((item: { id: string }) => item.id === desk.approvalId)).toMatchObject({ open: false });
+    expect(hiddenDismissed.body.totalCount).toBe(everything.body.totalCount - 1);
+
+    expect((await request(agent).get(deskUrl(seed, "&sort=bogus"))).status).toBe(400);
+    expect((await request(agent).get(`/api/companies/${seed.companyId}/pending-decisions?scope=bogus`)).status).toBe(400);
   }, 60_000);
 });

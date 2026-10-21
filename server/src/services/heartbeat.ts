@@ -60,10 +60,9 @@ import {
   isWorkspaceBusyDeferral,
   createHeartbeatRetries,
   PROCESS_LOSS_ERROR_CODES,
-  PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS,
   PROCESS_LOST_RETRY_WAKE_REASON,
   PROCESS_LOSS_RETRY_REASON,
-  spentProcessLossContinuations,
+  processLossRetryBudgetSpent,
 } from "./heartbeat/retries.js";
 export {
   BOUNDED_TRANSIENT_HEARTBEAT_RETRY_DELAYS_MS,
@@ -1195,7 +1194,7 @@ export function heartbeatService(
     // attempt cannot be retried again through this lane.
     transientRetryBudgetSpent: (run) =>
       PROCESS_LOSS_ERROR_CODES[run.errorCode ?? ""]
-        ? spentProcessLossContinuations(run) >= PROCESS_LOSS_CONTINUATION_MAX_ATTEMPTS
+        ? processLossRetryBudgetSpent(run, new Date())
         : executionFailureRetryCount(run) >= readModelFallbackAttemptBudget(
             run.contextSnapshot,
             BOUNDED_TRANSIENT_HEARTBEAT_RETRY_MAX_ATTEMPTS,
@@ -5444,9 +5443,7 @@ export function heartbeatService(
             providerDispatchStarted: legacyAdapterEntered || nativeDispatchStarted || nativeOwnershipHeld,
           }) ?? latestRun;
         }
-        if (latestRun?.status === "cancelled" && !nativeDispatchStarted && !nativeOwnershipHeld &&
-            (latestRun.runtimeMode === "native" ||
-              parseObject(latestRun.resultJson?.startupCancellation).beforeNativeSelection === true)) {
+        if (latestRun?.status === "cancelled" && !nativeDispatchStarted && !nativeOwnershipHeld && !legacyAdapterEntered) {
           // This executor has finished preparation and lease cleanup without
           // handing off to native execution. Keep a durable receipt for admission
           // after a restart; cleanup receipts are independently rechecked there.

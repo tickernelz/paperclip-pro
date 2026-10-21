@@ -18,6 +18,7 @@ export const CHAT_ACTION_QUEUES = {
   slash_task_start: DELIVERY_QUEUES.chatTaskStarts,
   receipt_reaction: DELIVERY_QUEUES.chatReceiptReactions,
   slack_session_stop: DELIVERY_QUEUES.chatSessionStops,
+  openwa_pending_card: DELIVERY_QUEUES.chatOpenwaPendingCards,
 } as const;
 export type ScheduledChatAction = keyof typeof CHAT_ACTION_QUEUES;
 

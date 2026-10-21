@@ -75,6 +75,15 @@ export function accountingForScheduledRetry(run: RetryRun, reason: string, attem
   return accounting;
 }
 
+const SERVER_INTERRUPTION_ERROR_CODES: Record<string, true> = {
+  orphaned_running_run: true,
+  server_shutdown_interrupted: true,
+};
+
+export function isServerInterruptionRun(run: { errorCode?: string | null }): boolean {
+  return SERVER_INTERRUPTION_ERROR_CODES[run.errorCode ?? ""] === true;
+}
+
 export function processLossContinuationCount(run: {
   contextSnapshot?: Record<string, unknown> | null;
 }): number {

@@ -621,7 +621,7 @@ describe("instance settings routes", () => {
 
     const res = await request(app)
       .patch("/api/instance/settings/general")
-      .send({ localRuns: { maxConcurrentRuns: 65, maxConcurrentStarts: 4, startWaitBypassSec: 120 } });
+      .send({ localRuns: { maxConcurrentRuns: 65, maxConcurrentStarts: 4, startWaitBypassSec: 120, memoryReservePercent: null, memoryGateCooldownSec: null } });
 
     expect(res.status).toBe(400);
     expect(mockInstanceSettingsService.updateGeneral).not.toHaveBeenCalled();
@@ -635,7 +635,7 @@ describe("instance settings routes", () => {
       source: "local_implicit",
       isInstanceAdmin: true,
     });
-    const localRuns = { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120 };
+    const localRuns = { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120, memoryReservePercent: null, memoryGateCooldownSec: null };
 
     const res = await request(app).patch("/api/instance/settings/general").send({ localRuns });
 
@@ -659,7 +659,7 @@ describe("instance settings routes", () => {
 
     const res = await request(app)
       .patch("/api/instance/settings/general")
-      .send({ localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120 } });
+      .send({ localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 4, startWaitBypassSec: 120, memoryReservePercent: null, memoryGateCooldownSec: null } });
 
     expect(res.status).toBe(403);
     expect(mockInstanceSettingsService.updateGeneral).not.toHaveBeenCalled();
@@ -692,7 +692,7 @@ describe("instance settings routes", () => {
       mockInstanceSettingsService.getGeneral.mockResolvedValue({
         censorUsernameInLogs: false,
         feedbackDataSharingPreference: "prompt",
-        localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec: null },
+        localRuns: { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec: null, memoryReservePercent: null, memoryGateCooldownSec: null },
       });
       const app = await createApp({
         type: "board",
@@ -709,6 +709,8 @@ describe("instance settings routes", () => {
         maxConcurrentRuns: { value: 2, source: "setting", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
         maxConcurrentStarts: { value: 6, source: "env", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
         startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
+        memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
+        memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
       });
     });
 

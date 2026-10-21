@@ -18,6 +18,10 @@ import {
   type InstanceMessageDelivery,
 } from "../types/instance.js";
 import {
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX,
+  INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX,
+  INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN,
   INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX,
   INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN,
   INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MAX,
@@ -136,6 +140,20 @@ export const localRunLimitsSettingsSchema = z
       .min(INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MIN)
       .max(INSTANCE_LOCAL_START_WAIT_BYPASS_SEC_MAX)
       .nullable(),
+    memoryReservePercent: z
+      .number()
+      .int()
+      .min(INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MIN)
+      .max(INSTANCE_LOCAL_MEMORY_RESERVE_PERCENT_MAX)
+      .nullable()
+      .default(null),
+    memoryGateCooldownSec: z
+      .number()
+      .int()
+      .min(INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MIN)
+      .max(INSTANCE_LOCAL_MEMORY_GATE_COOLDOWN_SEC_MAX)
+      .nullable()
+      .default(null),
   })
   .strict();
 
