@@ -38,6 +38,9 @@ import {
   browserUseSettingsSchema,
   browserUseViewportSchema,
   browserUseViewerSchema,
+  localBrowserInputSchema,
+  localBrowserPairingStartSchema,
+  localBrowserSettingsSchema,
   startVoiceSessionSchema, voiceCallbackPreferenceSchema, voicePhoneConfigurationSchema, voiceInboundDecisionSchema, VOICE_SESSION_STATES,
   slackToolCallSchema,
   openwaToolCallSchema,
@@ -1506,6 +1509,17 @@ const browserUseOperations = [
   ["put", "/api/companies/{companyId}/browser-use-cloud/grants/{grantId}/settings", "Update browser credential settings", browserUseSettingsSchema],
 ] as const;
 
+const localBrowserOperations = [
+  ["post", "/api/local-browser/pairing", "Start pairing a local browser", localBrowserPairingStartSchema],
+  ["get", "/api/local-browser/pairing/{code}", "Read a pairing code status", undefined],
+  ["get", "/api/local-browser/sessions", "List connected local browsers", undefined],
+  ["delete", "/api/local-browser/sessions/{id}", "Disconnect a local browser", undefined],
+  ["get", "/api/local-browser/sessions/{id}/viewer", "Watch the tab a local browser is driving", undefined],
+  ["post", "/api/local-browser/sessions/{id}/input", "Take over a local browser tab", localBrowserInputSchema],
+  ["get", "/api/local-browser/settings", "Read local browser tier and origin settings", undefined],
+  ["post", "/api/local-browser/settings", "Update local browser tier and origin settings", localBrowserSettingsSchema],
+] as const;
+
 const BOARD_ONLY_OPERATIONS = new Set([
   "PATCH /api/issues/{id}/comments/{commentId}/public-share",
   "GET /api/companies/{companyId}/fast-response",
@@ -1517,6 +1531,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "PUT /api/companies/{companyId}/decision-model",
   "POST /api/companies/{companyId}/decision-model/test",
   ...browserUseOperations.map(([method, path]) => `${method.toUpperCase()} ${path}`),
+  ...localBrowserOperations.map(([method, path]) => `${method.toUpperCase()} ${path}`),
   "GET /api/companies/{companyId}/ai-connections",
   "POST /api/companies/{companyId}/ai-connections",
   "POST /api/companies/{companyId}/ai-connections/local",
@@ -2403,6 +2418,13 @@ for (const [method, path, summary, body] of browserUseOperations) {
     method, path, summary, body, tags: ["Browser Use Cloud"],
     ...(path.endsWith("/viewer") ? { query: browserUseViewerSchema.partial() } : {}),
     responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict },
+  });
+}
+
+for (const [method, path, summary, body] of localBrowserOperations) {
+  registerCurrentRoute({
+    method, path, summary, body, tags: ["Local Browser"],
+    responses: { 200: r.ok(), 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 413: r.badRequest },
   });
 }
 
