@@ -1295,6 +1295,21 @@
       "evidenceLimit": "Browser tester account read only; provider writes, refresh-token expiry, and actual agent-adapter execution remain unqualified. Any agent company installation; UI did not allow narrowing. No actual agent ran."
     },
     {
+      "app": "local-browser",
+      "method": "bridge",
+      "auth": "none",
+      "policy": "endpoint",
+      "requestedScopes": [],
+      "capability": "provider-controlled",
+      "supportedActions": "Drive the browser the operator paired from the Local Browser panel: read pages, click, type, navigate, and, in full tier only, evaluate JavaScript, read or clear storage, inspect network requests, upload task files, and save downloads.",
+      "evidence": [
+        "https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging",
+        "https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"
+      ],
+      "reviewedAt": "2026-10-21",
+      "liveProof": "not-run"
+    },
+    {
       "app": "local-falcon",
       "method": "mcp-oauth",
       "auth": "oauth",
