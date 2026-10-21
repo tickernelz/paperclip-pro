@@ -134,7 +134,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: "24"
       - name: Check the shared protocol contract is current
         run: node scripts/generate-local-browser-protocol.mjs --check
       - name: Check every extension script parses
