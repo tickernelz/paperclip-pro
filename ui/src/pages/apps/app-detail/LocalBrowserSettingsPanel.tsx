@@ -8,6 +8,7 @@ import type {
   ToolConnection,
 } from "@tickernelz/paperclip-pro-shared";
 import { localBrowserApi } from "@/api/local-browser";
+import { copyTextToClipboard } from "@/lib/clipboard";
 import { Copy, Download, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocalBrowserViewer } from "@/components/local-browser/LocalBrowserViewer";
@@ -264,7 +265,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
                 variant="outline"
                 onClick={() => {
                   const link = pairingLink(pairing.connectUrls);
-                  void navigator.clipboard.writeText(link).then(
+                  void copyTextToClipboard(link).then(
                     () => setCopiedLink(link),
                     () => setCopiedLink(null),
                   );
