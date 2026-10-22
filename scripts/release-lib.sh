@@ -293,7 +293,10 @@ npm_package_version_exists() {
   local resolved
 
   resolved="$(npm view "${package_name}@${version}" version 2>/dev/null || true)"
-  [ "$resolved" = "$version" ]
+  [ "$resolved" = "$version" ] && return 0
+  # The version-specific endpoint lags the packument for a few minutes after a
+  # publish, and reading it alone makes a published version look missing.
+  npm view "${package_name}" versions --json 2>/dev/null | grep -q "\"${version}\""
 }
 
 wait_for_npm_package_version() {
