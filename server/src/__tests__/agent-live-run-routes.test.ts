@@ -2,7 +2,7 @@ import express from "express";
 import request from "supertest";
 import { type SQL } from "drizzle-orm";
 import { PgDialect } from "drizzle-orm/pg-core";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockAgentService = vi.hoisted(() => ({
   getById: vi.fn(),
@@ -279,6 +279,11 @@ async function requestApp(
 }
 
 describe("agent live run routes", () => {
+  beforeAll(async () => {
+    await vi.importActual<typeof import("../routes/agents.js")>("../routes/agents.js");
+    await vi.importActual<typeof import("../middleware/index.js")>("../middleware/index.js");
+  }, 180_000);
+
   beforeEach(() => {
     vi.resetModules();
     vi.doUnmock("../services/agents.js");
