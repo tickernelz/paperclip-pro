@@ -194,6 +194,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             <li>Turn on <strong className="font-medium text-foreground">Developer mode</strong> in the top right corner.</li>
             <li>Click <strong className="font-medium text-foreground">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
             <li>Pin the Paperclip extension to the toolbar so you can see its status.</li>
+            <li>Open the extension and press <strong className="font-medium text-foreground">Allow all sites</strong> if it shows that button. Chrome asks once, and every tab becomes readable after that.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-muted-foreground">
@@ -208,12 +209,26 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             <li>Click <strong className="font-medium text-foreground">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
             <li>Confirm the install. If Firefox asks, allow the connection to this Paperclip address.</li>
             <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
+            <li>Open the extension. Its <strong className="font-medium text-foreground">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-foreground">Allow all sites</strong> if it does not.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-muted-foreground">
             The xpi is signed by Mozilla, so it installs in release Firefox without a developer
             setting. Firefox may ask you to allow the connection to this Paperclip address the first
             time you pair.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            Firefox sends trusted clicks and keystrokes only through its own debug port. Everything
+            else, including reading and driving the page, works without that; the extension popup
+            shows the one-time command for the pages that insist on trusted input.
+          </p>
+          <p className="text-xs text-muted-foreground">
+            The signed xpi can lag the source while a new build waits for signing.{" "}
+            <a className="underline" href="/downloads/local-browser-firefox-unsigned.zip" download>
+              Download the current source build
+            </a>{" "}
+            and load it through <code className="font-mono text-xs">about:debugging</code> as a
+            temporary add-on when you need the newest changes.
           </p>
         </div>
       </div>
@@ -281,7 +296,10 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             </div>
             {pairing.connectUrls.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">Or open the extension from a link:</p>
+                <p className="text-xs text-muted-foreground">
+                  Connection addresses, for pasting into the extension. Opening one in a browser tab
+                  does nothing, because the extension dials it itself.
+                </p>
                 <ul className="space-y-1">
                   {pairing.connectUrls.map((url) => (
                     <li key={url}>

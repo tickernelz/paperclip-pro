@@ -86,6 +86,50 @@ function bridgeConnectUrls(req: Request, code: string): string[] {
   return [wsUrl, httpUrl];
 }
 
+function escapeHtml(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;");
+}
+
+function bridgeHelpPage(code: string): string {
+  const shown = escapeHtml(code);
+  return [
+    "<!doctype html>",
+    '<html lang="en"><head><meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    "<title>Paperclip Local Browser bridge</title>",
+    "<style>",
+    "body{margin:0;padding:48px 24px;font:16px/1.55 system-ui,-apple-system,'Segoe UI',sans-serif;",
+    "color:#0a0a0a;background:#fff}",
+    "main{max-width:34rem;margin:0 auto}",
+    "h1{margin:0 0 12px;font-size:1.35rem;letter-spacing:-0.01em}",
+    "p{margin:0 0 12px;color:#525252}",
+    "code{display:inline-block;padding:2px 6px;border-radius:6px;background:#f5f5f5;",
+    "font:600 1.05rem ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:0.08em}",
+    "ol{margin:0;padding-left:1.25rem;color:#525252}",
+    "li{margin-bottom:6px}",
+    "@media (prefers-color-scheme:dark){body{color:#fafafa;background:#343434}p,ol{color:#a3a3a3}",
+    "code{background:#262626}}",
+    "</style></head><body><main>",
+    "<h1>This address is a connection endpoint, not a page</h1>",
+    "<p>The Paperclip Local Browser extension opens this address itself over a WebSocket. ",
+    "Opening it in a browser tab cannot pair a browser, so this message is the whole page.</p>",
+    "<p>To connect a browser:</p>",
+    "<ol>",
+    "<li>Copy the pairing link from the Local Browser page in Paperclip, or copy the code below.</li>",
+    "<li>Open the Paperclip Local Browser extension from your browser toolbar.</li>",
+    "<li>Paste the link into the extension and press Connect.</li>",
+    "</ol>",
+    code
+      ? "<p style=\"margin-top:16px\">Pairing code: <code>" + shown + "</code></p>"
+      : "<p style=\"margin-top:16px\">This address carries no pairing code. Start a pairing in Paperclip first.</p>",
+    "</main></body></html>",
+  ].join("");
+}
+
 export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
   const router = Router();
 
@@ -93,6 +137,11 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
     assertBoard(req);
     res.setHeader("Cache-Control", "no-store");
     next();
+  });
+
+  router.get("/local-browser/bridge", (req, res) => {
+    const code = String(req.query.code ?? "").trim();
+    res.status(200).type("html").send(bridgeHelpPage(code));
   });
 
   router.post("/local-browser/pairing", async (req, res) => {

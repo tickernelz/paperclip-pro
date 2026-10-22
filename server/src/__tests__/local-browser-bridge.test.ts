@@ -317,6 +317,24 @@ describe("local browser pairing", () => {
     paired.close();
   });
 
+  it("explains itself when the bridge address is opened in a browser tab", async () => {
+    const response = await fetch(bridgeUrl("/api/local-browser/bridge?code=ABCD2345"));
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toContain("text/html");
+    const html = await response.text();
+    expect(html).toContain("connection endpoint, not a page");
+    expect(html).toContain("Paperclip Local Browser extension");
+    expect(html).toContain("ABCD2345");
+    expect(html).not.toContain("API route not found");
+  });
+
+  it("escapes a pairing code it echoes into the help page", async () => {
+    const response = await fetch(bridgeUrl("/api/local-browser/bridge?code=" + encodeURIComponent("<script>x</script>")));
+    const html = await response.text();
+    expect(html).not.toContain("<script>x</script>");
+    expect(html).toContain("&lt;script&gt;");
+  });
+
   it("reports pending then paired for the same pairing code", async () => {
     const start = await startPairing();
     const pending = await fetch(bridgeUrl("/api/local-browser/pairing/" + start.code));
