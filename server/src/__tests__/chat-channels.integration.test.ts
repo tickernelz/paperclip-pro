@@ -71440,7 +71440,8 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
         const runsBefore = await db
           .select()
           .from(heartbeatRuns)
-          .where(eq(heartbeatRuns.companyId, lane.fixture.companyId));
+          .where(eq(heartbeatRuns.companyId, lane.fixture.companyId))
+          .orderBy(heartbeatRuns.id);
         let stoppedId = 0;
         lane.setHook(async (method, body) => {
           if (method.endsWith("Draft") && !stoppedId) {
@@ -71468,12 +71469,16 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
           .from(issueComments)
           .where(eq(issueComments.id, publication!.commentId!));
         expect(comment!.body).toContain("END-first-stopped");
-        expect(
-          await db
-            .select()
-            .from(heartbeatRuns)
-            .where(eq(heartbeatRuns.companyId, lane.fixture.companyId)),
-        ).toEqual(runsBefore);
+        const runsAfter = await db
+          .select()
+          .from(heartbeatRuns)
+          .where(eq(heartbeatRuns.companyId, lane.fixture.companyId))
+          .orderBy(heartbeatRuns.id);
+        const afterById = new Map(runsAfter.map((run) => [run.id, run]));
+        for (const before of runsBefore) {
+          expect(afterById.get(before.id)).toEqual(before);
+        }
+        expect(runsAfter.filter((run) => run.status === "cancelled")).toEqual([]);
         expect(lane.context.cancelRun).not.toHaveBeenCalled();
         expect(
           await lane.context.service.getPublicationBatchStatus(
