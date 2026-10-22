@@ -148,6 +148,20 @@ jobs:
           set -euo pipefail
           node --test apps/local-browser/chromium/lib/*.test.mjs
           node --test apps/local-browser/firefox/lib/*.test.mjs
+      - name: Check the download artifacts match the source
+        run: |
+          set -euo pipefail
+          before="$(sha256sum ui/public/downloads/local-browser-chromium.zip | cut -d' ' -f1)"
+          node apps/local-browser/build-artifacts.mjs
+          after="$(sha256sum ui/public/downloads/local-browser-chromium.zip | cut -d' ' -f1)"
+          test "$before" = "$after" || {
+            echo "ui/public/downloads/local-browser-chromium.zip is stale. Run pnpm build:local-browser-extensions and commit the result."
+            exit 1
+          }
+          test -s ui/public/downloads/local-browser-firefox.xpi || {
+            echo "ui/public/downloads/local-browser-firefox.xpi is missing."
+            exit 1
+          }
 
   runner:
     name: Verify Paperclip Runner
