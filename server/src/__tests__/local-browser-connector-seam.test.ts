@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings, localBrowserConnections } from "@tickernelz/paperclip-pro-db";
+import { instanceSettings, localBrowserConnections, toolConnections } from "@tickernelz/paperclip-pro-db";
 import { localBrowserService } from "../services/local-browser/service.js";
 import { registerSession, resetSessions } from "../services/local-browser/registry.js";
 import type { BridgeSocket } from "../services/local-browser/types.js";
@@ -16,6 +16,7 @@ const settingsRow = {
 };
 
 const pairedConnections: Array<Record<string, unknown>> = [];
+const installedConnections: Array<Record<string, unknown>> = [];
 
 function stubDb(): Db {
   const chain = (rows: unknown[]) => {
@@ -36,7 +37,9 @@ function stubDb(): Db {
           ? [settingsRow]
           : table === localBrowserConnections
             ? pairedConnections
-            : [],
+            : table === toolConnections
+              ? installedConnections
+              : [],
       ),
     }),
   } as unknown as Db;
@@ -81,6 +84,7 @@ function pair(ownerUserId: string | null, label: string, connectedAt: Date) {
 afterEach(() => {
   resetSessions();
   pairedConnections.length = 0;
+  installedConnections.length = 0;
 });
 
 describe("Local Browser connector seam", () => {
@@ -90,11 +94,18 @@ describe("Local Browser connector seam", () => {
     ).resolves.toEqual({ sessions: [] });
   });
 
-  it("keeps the tool manifest assigned while no browser is connected", async () => {
+  it("stays unassigned while no local browser connection is installed", async () => {
+    const assignments = await resolveConnectorAssignments(db, binding);
+    expect(assignments.find((entry) => entry.key === "local-browser")).toBeUndefined();
+  });
+
+  it("keeps the tool manifest assigned once the connection is installed", async () => {
+    installedConnections.push({ id: randomUUID(), name: "Local Browser" });
     const assignments = await resolveConnectorAssignments(db, binding);
     const localBrowser = assignments.find((entry) => entry.key === "local-browser");
     expect(localBrowser).toBeTruthy();
-    expect(localBrowser!.resources).toEqual([]);
+    expect(localBrowser!.resources).toHaveLength(1);
+    expect(localBrowser!.resources[0]!.metadata).toEqual({ live: false, paired: false });
     expect(localBrowser!.tools.map((tool) => tool.name)).toContain("local_browser_snapshot");
   });
 

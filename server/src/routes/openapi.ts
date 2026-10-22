@@ -1510,6 +1510,7 @@ const browserUseOperations = [
 ] as const;
 
 const localBrowserOperations = [
+  ["get", "/api/local-browser/bridge", "Explain the pairing bridge address to a browser visitor", undefined],
   ["post", "/api/local-browser/pairing", "Start pairing a local browser", localBrowserPairingStartSchema],
   ["get", "/api/local-browser/pairing/{code}", "Read a pairing code status", undefined],
   ["get", "/api/local-browser/sessions", "List connected local browsers", undefined],

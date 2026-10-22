@@ -3,8 +3,8 @@ import {
   LOCAL_BROWSER_TOOL_NAMES,
   type LocalBrowserSession,
 } from "@tickernelz/paperclip-pro-shared";
-import { and, desc, eq } from "drizzle-orm";
-import { localBrowserConnections, type Db } from "@tickernelz/paperclip-pro-db";
+import { and, eq, sql } from "drizzle-orm";
+import { localBrowserConnections, toolConnections, type Db } from "@tickernelz/paperclip-pro-db";
 import { localBrowserService } from "../../local-browser/service.js";
 import { forbidden } from "../../../errors.js";
 
@@ -45,6 +45,20 @@ export async function localBrowserAssignedResources(
       connectionId: session.connectionId,
       metadata: { live: true, client: session.client, tier: session.tier },
     }));
+  const installed = await db
+    .select({
+      id: toolConnections.id,
+      name: toolConnections.name,
+    })
+    .from(toolConnections)
+    .where(
+      and(
+        eq(toolConnections.companyId, binding.companyId),
+        eq(toolConnections.status, "active"),
+        eq(toolConnections.enabled, true),
+        sql`${toolConnections.config}->>'sourceTemplateKey' = 'local-browser'`,
+      ),
+    );
   const liveConnectionIds = new Set(live.map((entry) => entry.connectionId));
   const paired = await db
     .select({
@@ -52,6 +66,7 @@ export async function localBrowserAssignedResources(
       label: localBrowserConnections.label,
       client: localBrowserConnections.client,
       tier: localBrowserConnections.tier,
+      connectedAt: localBrowserConnections.connectedAt,
       createdByUserId: localBrowserConnections.createdByUserId,
     })
     .from(localBrowserConnections)
@@ -60,9 +75,10 @@ export async function localBrowserAssignedResources(
         eq(localBrowserConnections.companyId, binding.companyId),
         eq(localBrowserConnections.status, "active"),
       ),
-    )
-    .orderBy(desc(localBrowserConnections.connectedAt));
+    );
   const offline: LocalBrowserConnectorResource[] = paired
+    .slice()
+    .sort((left, right) => Number(right.connectedAt) - Number(left.connectedAt))
     .filter((connection) => !liveConnectionIds.has(connection.id))
     .map((connection) => ({
       id: connection.id,
@@ -75,7 +91,15 @@ export async function localBrowserAssignedResources(
         createdByUserId: connection.createdByUserId,
       },
     }));
-  return [...live, ...offline];
+  const unpaired = installed
+    .filter((connection) => !liveConnectionIds.has(connection.id) && !offline.some((entry) => entry.connectionId === connection.id))
+    .map((connection) => ({
+      id: connection.id,
+      label: connection.name + " · no browser paired yet",
+      connectionId: connection.id,
+      metadata: { live: false, paired: false },
+    }));
+  return [...live, ...offline, ...unpaired];
 }
 
 export async function executeLocalBrowserTool(

@@ -1,6 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings } from "@tickernelz/paperclip-pro-db";
+import { instanceSettings, toolConnections } from "@tickernelz/paperclip-pro-db";
 import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/paperclip-pro-shared";
 
 const { listSessions, executeTool } = vi.hoisted(() => ({
@@ -27,8 +27,11 @@ const settingsRow = {
   updatedAt: new Date(0),
 };
 
+const installedConnections: Array<Record<string, unknown>> = [];
+
 function stubDb(): Db {
-  const rowsFor = (table: unknown) => (table === instanceSettings ? [settingsRow] : []);
+  const rowsFor = (table: unknown) =>
+    table === instanceSettings ? [settingsRow] : table === toolConnections ? installedConnections : [];
   const chain = (rows: unknown[]) => {
     const query = {
       where: () => query,
@@ -69,14 +72,31 @@ function liveSession(overrides: Record<string, unknown> = {}) {
 }
 
 describe("Local Browser connector", () => {
-  it("keeps the skill and tools assigned while no browser is connected", async () => {
+  beforeEach(() => {
+    installedConnections.length = 0;
+  });
+
+  it("stays unassigned while no local browser connection is installed", async () => {
+    listSessions.mockReturnValue([]);
+    await expect(resolveConnectorAssignments(db, binding)).resolves.toEqual([]);
+    expect(listSessions).toHaveBeenCalledWith(binding.companyId);
+  });
+
+  it("keeps the skill and tools assigned once the connection is installed", async () => {
+    installedConnections.push({ id: "99999999-9999-4999-8999-999999999999", name: "Local Browser" });
     listSessions.mockReturnValue([]);
     const assignments = await resolveConnectorAssignments(db, binding);
     const assignment = assignments.find((entry) => entry.key === "local-browser");
     expect(assignment).toBeDefined();
-    expect(assignment!.resources).toEqual([]);
+    expect(assignment!.resources).toEqual([
+      {
+        id: "99999999-9999-4999-8999-999999999999",
+        label: "Local Browser · no browser paired yet",
+        connectionId: "99999999-9999-4999-8999-999999999999",
+        metadata: { live: false, paired: false },
+      },
+    ]);
     expect(assignment!.tools.map((tool) => tool.name)).toEqual([...LOCAL_BROWSER_TOOL_NAMES]);
-    expect(listSessions).toHaveBeenCalledWith(binding.companyId);
   });
 
   it("exposes one resource per live paired browser", async () => {
