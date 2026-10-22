@@ -85,3 +85,5 @@ test-results/
 
 # Local native Runner test/session state
 .paperclip-runner-prp/
+apps/local-browser/firefox/.amo-upload-uuid
+ui/public/downloads/.staging

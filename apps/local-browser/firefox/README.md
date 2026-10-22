@@ -31,8 +31,18 @@ The signing keys come from https://addons.mozilla.org/developers/addon/api/key/.
 `local-browser@paperclip.app`, so a re-signed build replaces the previous one and keeps its
 storage.
 
-Unlisted signing is a distribution step, not part of this repository: nothing here uploads
-the add-on.
+The repository ships the signed artifact at `ui/public/downloads/local-browser-firefox.xpi`,
+so an operator downloads it from the Local Browser connection page instead of signing. Rebuild
+both download artifacts with `pnpm build:local-browser-extensions`, and pass `--sign` with
+`WEB_EXT_API_KEY` and `WEB_EXT_API_SECRET` in the environment when the manifest version
+changed:
+
+```sh
+WEB_EXT_API_KEY=user:... WEB_EXT_API_SECRET=... node apps/local-browser/build-artifacts.mjs --sign
+```
+
+CI runs the same script without `--sign` and fails when the committed zip does not match the
+source, so the download cannot drift from the code.
 
 ## Pairing and reconnect
 

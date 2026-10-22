@@ -8,7 +8,7 @@ import type {
   ToolConnection,
 } from "@tickernelz/paperclip-pro-shared";
 import { localBrowserApi } from "@/api/local-browser";
-import { Monitor } from "lucide-react";
+import { Download, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocalBrowserViewer } from "@/components/local-browser/LocalBrowserViewer";
 import { Label } from "@/components/ui/label";
@@ -141,6 +141,59 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           same tab and can take over at any time. Nothing is installed on the server, and Paperclip
           never stores your passwords.
         </p>
+      </div>
+
+      <div className="space-y-3">
+        <h3 className="font-medium">Install the extension</h3>
+        <p className="text-sm text-muted-foreground">
+          Download the extension for the browser you want Paperclip to drive. You install it once,
+          then pair it from this page.
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <Button size="sm" variant="outline" asChild>
+            <a href="/downloads/local-browser-chromium.zip" download>
+              <Download aria-hidden="true" />
+              Chrome, Edge or Brave (zip)
+            </a>
+          </Button>
+          <Button size="sm" variant="outline" asChild>
+            <a href="/downloads/local-browser-firefox.xpi" download>
+              <Download aria-hidden="true" />
+              Firefox (signed xpi)
+            </a>
+          </Button>
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <h4 className="text-sm font-medium">Chrome, Edge or Brave</h4>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Download the zip and unzip it into a folder you will keep, for example Documents.</li>
+            <li>Open <code className="font-mono text-xs">chrome://extensions</code>.</li>
+            <li>Turn on <strong className="font-medium text-foreground">Developer mode</strong> in the top right corner.</li>
+            <li>Click <strong className="font-medium text-foreground">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
+            <li>Pin the Paperclip extension to the toolbar so you can see its status.</li>
+            <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
+          </ol>
+          <p className="text-xs text-muted-foreground">
+            The zip stays installed where you unzipped it. Do not delete that folder, because the
+            browser loads the extension from it on every start.
+          </p>
+        </div>
+
+        <div className="space-y-3 rounded-lg border border-border p-4">
+          <h4 className="text-sm font-medium">Firefox</h4>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+            <li>Download the signed xpi file.</li>
+            <li>Open <code className="font-mono text-xs">about:addons</code> and choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu.</li>
+            <li>Select the xpi you downloaded and confirm the install.</li>
+            <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
+          </ol>
+          <p className="text-xs text-muted-foreground">
+            The xpi is signed by Mozilla, so it installs in release Firefox without a developer
+            setting. Firefox may ask you to allow the connection to this Paperclip address the first
+            time you pair.
+          </p>
+        </div>
       </div>
 
       <div className="space-y-3">

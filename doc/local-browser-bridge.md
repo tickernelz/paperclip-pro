@@ -63,8 +63,20 @@ Takeover input is a board-user action: an agent token cannot drive the viewer or
 
 ## Extensions
 
-- Chromium: `apps/local-browser/chromium/README.md` (load unpacked in Chrome, Edge or Brave).
-- Firefox: `apps/local-browser/firefox/README.md` (temporary load, signing, WebDriver BiDi for trusted input).
+The Local Browser connection page in Apps has an **Install the extension** section with both
+downloads and the install steps, so an operator does not need the repository.
+
+- Chromium: download `local-browser-chromium.zip`, unzip it into a folder you keep, then load
+  it unpacked from `chrome://extensions` with Developer mode on. Chrome, Edge and Brave all
+  use the same zip. The extension runs from the unzipped folder, so that folder must stay.
+- Firefox: download `local-browser-firefox.xpi` and install it from `about:addons`. Mozilla
+  signs it as an unlisted add-on, so release Firefox installs it without a developer setting.
+
+Both artifacts live in `ui/public/downloads/` and are rebuilt with
+`pnpm build:local-browser-extensions`. The signed xpi needs `--sign` and the AMO API
+credentials; CI fails when the committed zip no longer matches the source. Source and the
+per-browser notes: `apps/local-browser/chromium/README.md` and
+`apps/local-browser/firefox/README.md`.
 
 Both extensions consume the same contract from `packages/shared/src/local-browser.ts`. A generated copy of the enumerations and limits sits at `apps/local-browser/*/lib/protocol.contract.json`; regenerate it with `pnpm generate:local-browser-protocol` and verify with `--check`. The `extensions` CI lane runs that check plus every script parse and both extension suites, so a stale copy or a broken extension fails the pull request.
 
