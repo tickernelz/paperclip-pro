@@ -22487,7 +22487,16 @@
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
-    "parameters": []
+    "parameters": [
+      {
+        "name": "code",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
   },
   {
     "name": "paperclipGetLocalBrowserPairing",

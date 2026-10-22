@@ -1510,7 +1510,7 @@ const browserUseOperations = [
 ] as const;
 
 const localBrowserOperations = [
-  ["get", "/api/local-browser/bridge", "Explain the pairing bridge address to a browser visitor", undefined],
+  ["get", "/api/local-browser/bridge", "Explain the pairing bridge address to a browser visitor", undefined, z.object({ code: z.string().optional() })],
   ["post", "/api/local-browser/pairing", "Start pairing a local browser", localBrowserPairingStartSchema],
   ["get", "/api/local-browser/pairing/{code}", "Read a pairing code status", undefined],
   ["get", "/api/local-browser/sessions", "List connected local browsers", undefined],
@@ -2422,9 +2422,9 @@ for (const [method, path, summary, body] of browserUseOperations) {
   });
 }
 
-for (const [method, path, summary, body] of localBrowserOperations) {
+for (const [method, path, summary, body, query] of localBrowserOperations) {
   registerCurrentRoute({
-    method, path, summary, body, tags: ["Local Browser"],
+    method, path, summary, body, query, tags: ["Local Browser"],
     responses: { 200: r.ok(), 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 413: r.badRequest },
   });
 }
