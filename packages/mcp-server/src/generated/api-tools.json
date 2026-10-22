@@ -22467,6 +22467,29 @@
     ]
   },
   {
+    "name": "paperclipGetLocalBrowserBridge",
+    "operationId": "GET /api/local-browser/bridge",
+    "method": "GET",
+    "path": "/local-browser/bridge",
+    "description": "Explain the pairing bridge address to a browser visitor",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": []
+  },
+  {
     "name": "paperclipGetLocalBrowserPairing",
     "operationId": "GET /api/local-browser/pairing/{code}",
     "method": "GET",
