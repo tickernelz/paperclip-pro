@@ -253,10 +253,22 @@
     });
   }
 
+  async function captureWithoutFocus(tab) {
+    if (tab.active === true) {
+      return await tabsApi.captureVisible(tab.windowId);
+    }
+    var background = await LB.bidi.captureScreenshot(tab);
+    if (background) return { dataUrl: background };
+    throw protocol.error(
+      C.unsupported,
+      "This tab cannot be captured without bringing it to the front",
+      "Ask the user to switch to that tab, or use local_browser_read instead",
+      false
+    );
+  }
+
   async function screenshot(args, ctx) {
     var tab = await targetTab(args);
-    await tabsApi.activate(tab);
-    await tabsApi.sleep(120);
     var viewport = await tabsApi.send(tab.tabId, "viewport", {});
 
     if (typeof args.selector === "string" && args.selector) {
@@ -264,7 +276,7 @@
       if (!(box.width > 0) || !(box.height > 0)) {
         throw protocol.error(C.elementMissing, "The element has no visible box", "Scroll it into view, then retry", true);
       }
-      var frame = await tabsApi.captureVisible(tab.windowId);
+      var frame = await captureWithoutFocus(tab);
       var cropped = await tabsApi.send(tab.tabId, "crop", {
         dataUrl: frame.dataUrl,
         x: Math.max(0, box.x),
@@ -278,7 +290,7 @@
 
     if (args.fullPage === true) return fullPageShot(tab, viewport);
 
-    var shot = await tabsApi.captureVisible(tab.windowId);
+    var shot = await captureWithoutFocus(tab);
     return {
       dataUrl: shot.dataUrl,
       width: Math.round(viewport.width * viewport.dpr),
@@ -295,7 +307,7 @@
     while (y < total) {
       await tabsApi.send(tab.tabId, "scrollTo", { x: viewport.scrollX, y: y });
       await tabsApi.sleep(140);
-      var shot = await tabsApi.captureVisible(tab.windowId);
+      var shot = await captureWithoutFocus(tab);
       frames.push({ dataUrl: shot.dataUrl, y: y });
       if (total <= viewport.height) break;
       y += viewport.height;

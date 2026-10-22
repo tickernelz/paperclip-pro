@@ -511,12 +511,6 @@ async function waitForTab(tabId, waitUntil, timeoutMs) {
   throw new ToolFailure(ERROR.timeout, "The page did not settle in " + timeoutMs + " ms", "Retry with a longer timeoutMs", true);
 }
 
-async function focusTab(tab) {
-  if (tab.active === true) return;
-  await chrome.tabs.update(tab.id, { active: true }).catch(() => {});
-  await sleep(150);
-}
-
 async function trySnapshot(tabId, args) {
   try {
     return await rpc(tabId, "snapshot", args || {}, 15000);
@@ -665,7 +659,7 @@ async function toolOpen(args) {
       if (reusable) {
         tab = await chrome.tabs.update(reusable.id, { url: args.url });
       } else {
-        tab = await newAgentTab(args.url, args.active !== false);
+        tab = await newAgentTab(args.url, args.active === true);
       }
     }
   } else {
@@ -750,10 +744,42 @@ async function toolRead(args) {
   return await rpc(tab.id, "read", { selector: args.selector, format: args.format, maxChars: args.maxChars }, 20000);
 }
 
+async function captureBackgroundTab(tab) {
+  const target = { tabId: tab.id };
+  const alreadyHeld = inputSession !== null && inputSession.tabId === tab.id;
+  try {
+    if (!alreadyHeld) await chrome.debugger.attach(target, "1.3");
+  } catch (error) {
+    return null;
+  }
+  try {
+    const shot = await chrome.debugger.sendCommand(target, "Page.captureScreenshot", { format: "png" });
+    return "data:image/png;base64," + shot.data;
+  } catch (error) {
+    return null;
+  } finally {
+    if (!alreadyHeld) await chrome.debugger.detach(target).catch(() => {});
+    else touchInputSession();
+  }
+}
+
+async function screenshotWithoutFocus(tab) {
+  const [focused] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (focused && focused.id === tab.id) {
+    return await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+  }
+  const background = await captureBackgroundTab(tab);
+  if (background) return background;
+  throw new ToolFailure(
+    ERROR.unsupported,
+    "This tab cannot be captured without bringing it to the front",
+    "Ask the user to switch to that tab, or use local_browser_read instead"
+  );
+}
+
 async function toolScreenshot(args) {
   const tab = await resolveTab(args);
   let fullPageFallback = null;
-  await focusTab(tab);
   if (args.fullPage === true) {
     const full = await captureFullPage(tab);
     if (full) return { dataUrl: full.dataUrl, width: full.width, height: full.height, tabId: tab.id, fullPage: true };
@@ -763,7 +789,7 @@ async function toolScreenshot(args) {
   if (args.selector) {
     rect = await rpc(tab.id, "elementRect", { selector: args.selector }, 10000);
   }
-  const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "png" });
+  const dataUrl = await screenshotWithoutFocus(tab);
   const result = { dataUrl, width: null, height: null, tabId: tab.id, fullPage: false };
   if (fullPageFallback) result.note = fullPageFallback;
   if (!rect) return result;
@@ -1211,6 +1237,31 @@ async function activeTabIdOf(windowId) {
   return active && typeof active.id === "number" ? active.id : null;
 }
 
+async function viewerFrame(tab) {
+  if (tab.active === true) {
+    const capturedTabId = await activeTabIdOf(tab.windowId);
+    if (capturedTabId === tab.id) {
+      return await chrome.tabs.captureVisibleTab(tab.windowId, { format: "jpeg", quality: 70 });
+    }
+  }
+  const target = { tabId: tab.id };
+  const alreadyHeld = inputSession !== null && inputSession.tabId === tab.id;
+  try {
+    if (!alreadyHeld) await chrome.debugger.attach(target, "1.3");
+  } catch (error) {
+    return null;
+  }
+  try {
+    const shot = await chrome.debugger.sendCommand(target, "Page.captureScreenshot", { format: "jpeg", quality: 70 });
+    return "data:image/jpeg;base64," + shot.data;
+  } catch (error) {
+    return null;
+  } finally {
+    if (!alreadyHeld) await chrome.debugger.detach(target).catch(() => {});
+    else touchInputSession();
+  }
+}
+
 async function captureFrame() {
   if (!viewer) return;
   const current = viewer;
@@ -1221,16 +1272,7 @@ async function captureFrame() {
       emitViewerState(VIEWER_STATE.disconnected, current.tabId, "The watched tab closed");
       return;
     }
-    if (tab.active !== true) {
-      await chrome.tabs.update(current.tabId, { active: true });
-      await sleep(60);
-    }
-    const capturedTabId = await activeTabIdOf(tab.windowId);
-    if (capturedTabId !== current.tabId) {
-      emitViewerState(VIEWER_STATE.unavailable, current.tabId, "The browser focused another tab, so the frame was skipped");
-      return;
-    }
-    const dataUrl = await chrome.tabs.captureVisibleTab(tab.windowId, { format: "jpeg", quality: 70 });
+    const dataUrl = await viewerFrame(tab);
     if (viewer !== current) return;
     const bitmap = await bitmapSize(dataUrl);
     if (!bitmap) {
@@ -1277,15 +1319,6 @@ async function toolViewer(args) {
   stopViewer();
   const tab = await resolveTab(args);
   const intervalMs = clampInt(args.intervalMs, DEFAULTS.viewerIntervalMs, 250, 10000);
-  await focusTab(tab);
-  const active = await activeTabIdOf(tab.windowId);
-  if (active !== tab.id) {
-    throw new ToolFailure(
-      ERROR.unsupported,
-      "The browser will not focus tab " + tab.id + ", so frames would show another tab",
-      "Activate the tab in the browser, then start the viewer again"
-    );
-  }
   viewer = { tabId: tab.id, windowId: tab.windowId, intervalMs, timer: null };
   emitViewerState(VIEWER_STATE.connected, tab.id);
   viewer.timer = setInterval(() => {

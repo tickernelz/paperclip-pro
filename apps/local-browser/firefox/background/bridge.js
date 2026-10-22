@@ -618,9 +618,21 @@
     try {
       var tab = await browser.tabs.get(tabId);
       var summary = LB.tabs.summarize(tab);
-      await LB.tabs.activate(summary);
       var viewport = await LB.tabs.send(tabId, "viewport", {});
-      var shot = await LB.tabs.captureVisible(summary.windowId);
+      var shot = null;
+      if (summary.active) {
+        shot = await LB.tabs.captureVisible(summary.windowId);
+      } else {
+        var background = await LB.bidi.captureScreenshot(summary);
+        if (!background) {
+          viewerFailures += 1;
+          if (viewerFailures === 1) {
+            emitViewerState(VIEWER_STATES.unavailable, tabId, "This tab needs to be in front before it can be watched");
+          }
+          return;
+        }
+        shot = { dataUrl: background };
+      }
       var bitmap = await LB.tabs.measureCapture(shot.dataUrl);
       var geometry = LB.frames.frameGeometry({
         bitmapWidth: bitmap ? bitmap.width : null,

@@ -76,6 +76,13 @@ refusal is `local_browser_navigation_blocked` with the hint to target that tab b
 one. Reading, snapshotting and clicking on a protected tab are still allowed; only navigation is
 refused.
 
+The agent never takes the foreground. Opening a page does not activate its tab, and neither a
+screenshot nor a live-view frame brings a background tab to the front: Chromium captures through the
+debugger protocol and Firefox through WebDriver BiDi when the tab is not the visible one, falling back
+to the visible-tab capture only when the user is already looking at that tab. A page that refuses the
+background path returns an error that names the limitation instead of switching tabs under the user.
+`active: true` on `local_browser_open` is the one explicit request that still focuses the tab.
+
 ## The tool loop
 
 Agents should follow the same loop regardless of model:

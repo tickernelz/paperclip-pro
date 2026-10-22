@@ -204,6 +204,20 @@
     }
   }
 
+  async function captureScreenshot(tab) {
+    var ws = await connect();
+    if (!ws) return null;
+    try {
+      var context = await contextFor(tab);
+      if (!context) return null;
+      var shot = await command("browsingContext.captureScreenshot", { context: context }, 10000);
+      if (!shot || typeof shot.data !== "string") return null;
+      return "data:image/png;base64," + shot.data;
+    } catch (error) {
+      return null;
+    }
+  }
+
   function extensionOrigin() {
     try {
       return browser.runtime.getURL("/").replace(/\/$/, "");
@@ -247,6 +261,7 @@
     sendInput: sendInput,
     resetInput: resetInput,
     status: status,
+    captureScreenshot: captureScreenshot,
     close: close,
     timeout: timeout
   };

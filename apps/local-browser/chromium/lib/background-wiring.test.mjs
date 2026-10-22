@@ -223,6 +223,44 @@ test("navigate refuses the Paperclip tab even when it is not focused", async () 
   assert.equal(context.tabsById.get(55).url, "https://p.test/apps");
 });
 
+test("screenshotting a background tab never brings it to the front", async () => {
+  const context = await boot();
+  context.tabsById.get(7).active = false;
+  context.tabsById.set(8, { id: 8, windowId: 1, title: "U", url: "https://user.test/", active: true, status: "complete" });
+  const updates = [];
+  context.chrome.tabs.update = async (id, props) => {
+    updates.push({ id, props });
+    return { ...context.tabsById.get(id), ...props };
+  };
+  const result = await call(context.socket, context.sent, "local_browser_screenshot", { tabId: 7 });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(
+    updates.some((entry) => entry.props && entry.props.active === true),
+    false,
+    "no call may activate a tab",
+  );
+  assert.equal(context.tabsById.get(8).active, true, "the user tab keeps focus");
+});
+
+test("a viewer frame on a background tab leaves focus alone", async () => {
+  const context = await boot();
+  context.tabsById.get(7).active = false;
+  context.tabsById.set(8, { id: 8, windowId: 1, title: "U", url: "https://user.test/", active: true, status: "complete" });
+  const updates = [];
+  context.chrome.tabs.update = async (id, props) => {
+    updates.push({ id, props });
+    return { ...context.tabsById.get(id), ...props };
+  };
+  await call(context.socket, context.sent, "local_browser_viewer", { op: "start", tabId: 7, intervalMs: 250 });
+  await new Promise((resolve) => setTimeout(resolve, 500));
+  await call(context.socket, context.sent, "local_browser_viewer", { op: "stop" });
+  assert.equal(
+    updates.some((entry) => entry.props && entry.props.active === true),
+    false,
+    "the viewer must not activate the watched tab",
+  );
+});
+
 test("opening a second url reuses the agent tab instead of piling up tabs", async () => {
   const context = await boot();
   await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/one" });
