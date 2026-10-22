@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import { agents, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
 import {
@@ -9,14 +9,42 @@ import {
   PaperclipApiClient,
   type ToolsetName,
 } from "@tickernelz/paperclip-pro-mcp-server/catalog";
+import { createConnectorToolDefinitions } from "@tickernelz/paperclip-pro-mcp-server/connector-tools";
 import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
 import { accessService } from "../services/access.js";
 import { connectionIntentService } from "../services/connection-intents.js";
-import { executeConnectorTool } from "../services/connector-runtime.js";
+import { executeConnectorTool, resolveConnectorAssignments } from "../services/connector-runtime.js";
 import { openwaToolBindingForRun, openwaToolErrorBody } from "../services/openwa/tools.js";
 import { forbidden, unauthorized } from "../errors.js";
 
 const PROTOCOL_VERSION = "2025-06-18";
+
+const GATEWAY_TRANSPORT_CONNECTORS = new Set(["browser-use-cloud", "speko"]);
+
+async function runIssueIdForCredential(
+  db: Db,
+  input: { companyId: string; agentId: string; runId: string },
+): Promise<string | null> {
+  const [run] = await db
+    .select({ contextSnapshot: heartbeatRuns.contextSnapshot })
+    .from(heartbeatRuns)
+    .where(
+      and(
+        eq(heartbeatRuns.id, input.runId),
+        eq(heartbeatRuns.companyId, input.companyId),
+        eq(heartbeatRuns.agentId, input.agentId),
+      ),
+    )
+    .limit(1);
+  const context = run?.contextSnapshot;
+  if (!context || typeof context !== "object" || Array.isArray(context)) return null;
+  const snapshot = context as Record<string, unknown>;
+  for (const key of ["issueId", "taskId"]) {
+    const value = snapshot[key];
+    if (typeof value === "string" && value) return value;
+  }
+  return null;
+}
 
 /** The server's own listen address, so a tool call re-enters the REST API over loopback. */
 function loopbackApiUrl(req: Request): string {
@@ -133,9 +161,40 @@ export function paperclipMcpRoutes(db: Db) {
         : {}),
     });
 
-    if (method === "tools/list") return send(listing);
+    const runIssueId = signedRunId
+      ? await runIssueIdForCredential(db, { companyId, agentId, runId: signedRunId })
+      : null;
+    const connectorBinding =
+      signedRunId && runIssueId ? { companyId, agentId, runId: signedRunId, issueId: runIssueId } : null;
+    const connectorTools = connectorBinding
+      ? (await resolveConnectorAssignments(db, connectorBinding))
+          .filter((assignment) => !GATEWAY_TRANSPORT_CONNECTORS.has(assignment.key) && assignment.key !== "openwa")
+          .flatMap((assignment) => assignment.tools)
+      : [];
+    const connectorDefinitions = connectorTools.length && connectorBinding
+      ? createConnectorToolDefinitions({
+          tools: connectorTools,
+          call: ({ tool, arguments: args }) =>
+            executeConnectorTool(db, connectorBinding, tool, args),
+        })
+      : [];
+    const allDefinitions = [...definitions, ...connectorDefinitions];
+    const allListing = connectorDefinitions.length
+      ? {
+          tools: [
+            ...listing.tools,
+            ...connectorDefinitions.map((entry) => ({
+              name: entry.name,
+              description: entry.description,
+              inputSchema: (entry.inputSchemaJson ?? {}) as (typeof listing.tools)[number]["inputSchema"],
+            })),
+          ],
+        }
+      : listing;
 
-    const tool = definitions.find((entry) => entry.name === params?.name);
+    if (method === "tools/list") return send(allListing);
+
+    const tool = allDefinitions.find((entry) => entry.name === params?.name);
     if (!tool) {
       return send({
         isError: true,
