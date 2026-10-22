@@ -112,6 +112,26 @@ describe("Local Browser settings panel", () => {
     expect(container.textContent).toContain("https://example.test/pair?code=ABCD2345");
   });
 
+  it("offers both extension downloads with the install steps", async () => {
+    await render();
+    expect(container.textContent).toContain("Install the extension");
+
+    const chromium = container.querySelector('a[href="/downloads/local-browser-chromium.zip"]');
+    const firefox = container.querySelector('a[href="/downloads/local-browser-firefox.xpi"]');
+    expect(chromium?.textContent).toContain("Chrome, Edge or Brave");
+    expect(firefox?.textContent).toContain("Firefox");
+    expect(chromium?.hasAttribute("download")).toBe(true);
+    expect(firefox?.hasAttribute("download")).toBe(true);
+
+    const text = container.textContent ?? "";
+    expect(text).toContain("chrome://extensions");
+    expect(text).toContain("Developer mode");
+    expect(text).toContain("Load unpacked");
+    expect(text).toContain("about:addons");
+    expect(text).toContain("Install Add-on From File");
+    expect(text).toContain("signed by Mozilla");
+  });
+
   it("warns that full tier reaches any signed-in site", async () => {
     await render();
     expect(container.textContent).not.toContain("Full power lets an agent read and change anything");
