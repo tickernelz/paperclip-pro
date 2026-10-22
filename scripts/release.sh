@@ -9,6 +9,14 @@ PUBLISH_TAG="next"
 PROMOTE_TAG="latest"
 PACK_CONCURRENCY="${PACK_CONCURRENCY:-4}"
 PACK_DIR=""
+# Provenance needs an OIDC build. Asking for it anywhere else leaves the
+# version staged on the registry, and the next publish of that version is
+# refused as a conflict, so the choice is made once before the loop.
+if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  provenance_available=true
+else
+  provenance_available=false
+fi
 
 dry_run=false
 skip_build=false
@@ -206,17 +214,11 @@ publish_one_tarball() {
   if [ "$dry_run" = true ]; then
     release_npm publish "$tarball" --dry-run --tag "$PUBLISH_TAG" --access public || status=$?
   else
-    local publish_log
-    publish_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-release-publish.XXXXXX")"
-    if ! release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance 2>&1 | tee "$publish_log"; then
-      if grep -q "Automatic provenance generation not supported" "$publish_log" && [ -n "${NODE_AUTH_TOKEN:-}" ]; then
-        release_warn "npm cannot attest provenance outside an OIDC build; publishing ${pkg_name}@${pkg_version} once without it."
-        release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance=false || status=$?
-      else
-        status=1
-      fi
+    if [ "${provenance_available}" = true ]; then
+      release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance || status=$?
+    else
+      release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance=false || status=$?
     fi
-    rm -f "$publish_log"
   fi
 
   if [ "$status" -ne 0 ]; then
