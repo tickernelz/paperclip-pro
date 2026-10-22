@@ -22,6 +22,13 @@
     return "Paste a connect URL from Paperclip to start";
   }
 
+  function accessLine(status) {
+    if (!status) return "";
+    if (status.siteAccess === "limited")
+      return "This browser limits the extension to some sites. Set site access to all sites so every page works.";
+    return "";
+  }
+
   function originsLine(status) {
     if (!status) return "";
     var origins = Array.isArray(status.allowedOrigins) ? status.allowedOrigins : [];
@@ -38,6 +45,8 @@
       dotClass: dotClass(safe),
       detail: detailLine(safe),
       origins: originsLine(safe),
+      access: accessLine(safe),
+      showGrant: Boolean(safe && safe.siteAccess === "limited"),
       tier: (safe && safe.tier) || "—",
       session: safe && safe.sessionId ? String(safe.sessionId).slice(0, 8) : "—",
       tabs: safe && typeof safe.tabCount === "number" ? String(safe.tabCount) : "—",

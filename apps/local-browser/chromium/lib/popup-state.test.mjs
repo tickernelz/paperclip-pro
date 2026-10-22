@@ -26,6 +26,12 @@ test("a connected pairing shows Connected and enables both actions", () => {
   assert.equal(state.showPairForm, true);
 });
 
+test("a limited site access says so, and full access stays quiet", () => {
+  assert.match(view({ ...paired, siteAccess: "limited" }).access, /site access to all sites/);
+  assert.equal(view({ ...paired, siteAccess: "all" }).access, "");
+  assert.equal(view(paired).access, "");
+});
+
 test("the detail line shows the label and origin", () => {
   assert.equal(view(paired).detail, "Chrome on my laptop · https://p.test");
 });

@@ -83,6 +83,28 @@
     state.clientVersion = "0.0.0";
   }
 
+  var siteAccess = "unknown";
+
+  async function refreshSiteAccess() {
+    try {
+      siteAccess = (await browser.permissions.contains({ origins: ["<all_urls>"] })) ? "all" : "limited";
+    } catch (error) {
+      siteAccess = "unknown";
+    }
+    broadcast();
+  }
+
+  if (browser.permissions && browser.permissions.onAdded) {
+    browser.permissions.onAdded.addListener(function () {
+      void refreshSiteAccess();
+    });
+  }
+  if (browser.permissions && browser.permissions.onRemoved) {
+    browser.permissions.onRemoved.addListener(function () {
+      void refreshSiteAccess();
+    });
+  }
+
   function setState(patch) {
     var keys = Object.keys(patch || {});
     for (var i = 0; i < keys.length; i += 1) state[keys[i]] = patch[keys[i]];
@@ -91,6 +113,7 @@
 
   function snapshotState() {
     return {
+      siteAccess: siteAccess,
       status: state.status,
       origin: state.origin,
       label: state.label,
@@ -204,7 +227,16 @@
         return payload;
       }
     }
-    return protocol.error(C.protocolError, failure && failure.message ? failure.message : String(failure), "Retry the call", true);
+    var message = failure && failure.message ? failure.message : String(failure);
+    if (/missing host permission|cannot access contents of|not allowed to access/i.test(message)) {
+      return protocol.error(
+        C.originDenied,
+        "This browser blocks the extension from that page, so nothing was read or changed",
+        "Open the extension popup and press Allow all sites, then retry",
+        true
+      );
+    }
+    return protocol.error(C.protocolError, message, "Retry the call", true);
   }
 
   function withTimeout(promise, timeoutMs, label) {
@@ -691,6 +723,9 @@
     startViewer: startViewer,
     stopViewer: stopViewer,
     installTabWatchers: installTabWatchers,
+    refreshSiteAccess: refreshSiteAccess,
     snapshotState: snapshotState
   };
+
+  void refreshSiteAccess();
 })(globalThis);

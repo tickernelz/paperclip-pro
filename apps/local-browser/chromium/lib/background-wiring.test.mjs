@@ -171,6 +171,23 @@ test("a dpr 2 capture reports CSS pixels of the viewport", async () => {
   await call(context.socket, context.sent, "local_browser_viewer", { op: "stop" });
 });
 
+test("a revoked site access answers with the grant hint instead of a raw browser error", async () => {
+  const context = await boot();
+  context.chrome.scripting.executeScript = async () => {
+    throw new Error(
+      'Cannot access contents of url "https://bank.test/". Extension manifest must request permission to access this host.',
+    );
+  };
+  const result = await call(context.socket, context.sent, "local_browser_evaluate", {
+    tabId: 7,
+    expression: "document.title",
+  });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_origin_denied");
+  assert.match(result.error.hint, /site access/i);
+  assert.equal(/Cannot access contents/.test(result.error.message), false);
+});
+
 test("an unanswerable viewport rpc falls back to the page and still reports CSS pixels", async () => {
   const context = await boot({
     viewportRpcFails: true,

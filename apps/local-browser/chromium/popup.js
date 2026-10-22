@@ -59,6 +59,9 @@ function apply(state) {
   setText("session", state.session);
   setText("tabs", state.tabs);
   setText("origins", state.origins);
+  setText("access", state.access);
+  const grant = byId("grant");
+  if (grant) grant.hidden = !state.showGrant;
 
   const form = byId("pair-form");
   if (form) form.hidden = !state.showPairForm;
@@ -130,7 +133,19 @@ async function reconnect() {
   render(result);
 }
 
+async function grantSites() {
+  try {
+    await chrome.permissions.request({ origins: ["<all_urls>"] });
+  } catch (error) {
+    showError(String((error && error.message) || error));
+    return;
+  }
+  await refresh();
+}
+
 function start() {
+  const grant = byId("grant");
+  if (grant) grant.addEventListener("click", grantSites);
   const form = byId("pair-form");
   if (form) form.addEventListener("submit", pair);
   const disconnectButton = byId("disconnect");

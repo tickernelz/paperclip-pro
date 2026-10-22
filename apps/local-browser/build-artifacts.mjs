@@ -55,10 +55,13 @@ if (sign && apiKey && apiSecret) {
 } else if (existsSync(firefoxXpi)) {
   console.log("firefox " + manifestVersion(firefoxDir) + " keeps the committed signature at " + path.relative(root, firefoxXpi));
 } else {
-  zipStaged(stage(firefoxDir), path.join(outDir, "local-browser-firefox-unsigned.zip"));
-  console.log("firefox " + manifestVersion(firefoxDir) + " unsigned zip only; pass --sign with AMO credentials for a loadable xpi");
+  console.log("firefox " + manifestVersion(firefoxDir) + " has no committed signature; pass --sign with AMO credentials for a loadable xpi");
 }
 
-for (const file of [chromiumZip, firefoxXpi]) {
+const firefoxUnsigned = path.join(outDir, "local-browser-firefox-unsigned.zip");
+zipStaged(stage(firefoxDir), firefoxUnsigned);
+console.log("firefox " + manifestVersion(firefoxDir) + " -> " + path.relative(root, firefoxUnsigned));
+
+for (const file of [chromiumZip, firefoxXpi, firefoxUnsigned]) {
   if (existsSync(file)) console.log(path.basename(file) + " " + statSync(file).size + " bytes");
 }

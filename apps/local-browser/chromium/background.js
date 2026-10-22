@@ -105,11 +105,28 @@ function toolError(code, message, hint, retryable) {
   return error;
 }
 
+function siteAccessDenied(message) {
+  return /cannot access contents of|missing host permission|extension manifest must request permission|Cannot access a chrome-extension|not allowed to access/i.test(
+    message
+  );
+}
+
 function toToolError(error) {
-  if (error instanceof ToolFailure) {
-    return toolError(error.code, error.message || "The browser refused the call", error.hint, error.retryable);
+  const message = error instanceof ToolFailure
+    ? error.message || "The browser refused the call"
+    : String((error && error.message) || error || "Unknown browser error");
+  if (siteAccessDenied(message)) {
+    return toolError(
+      ERROR.originDenied,
+      "This browser blocks the extension from that page, so nothing was read or changed",
+      "Open the extension details page and set site access to all sites, then retry",
+      true
+    );
   }
-  return toolError(ERROR.protocolError, String((error && error.message) || error || "Unknown browser error"), undefined, true);
+  if (error instanceof ToolFailure) {
+    return toolError(error.code, message, error.hint, error.retryable);
+  }
+  return toolError(ERROR.protocolError, message, undefined, true);
 }
 
 function fromContentError(error) {
@@ -1552,6 +1569,15 @@ async function pair(input) {
   return await status();
 }
 
+async function siteAccessState() {
+  try {
+    const all = await chrome.permissions.contains({ origins: ["<all_urls>"] });
+    return all ? "all" : "limited";
+  } catch (error) {
+    return "unknown";
+  }
+}
+
 async function status() {
   const stored = (await readPairing()) || {};
   const result = {
@@ -1564,7 +1590,8 @@ async function status() {
     allowedOrigins: Array.isArray(stored.allowedOrigins) ? stored.allowedOrigins : [],
     sessionId: stored.sessionId || null,
     clientVersion: CLIENT_VERSION,
-    tabCount: (await listTabs()).length
+    tabCount: (await listTabs()).length,
+    siteAccess: await siteAccessState()
   };
   const reason = retiredReason || retiredReasonOf(stored);
   if (reason) result.retiredReason = reason;

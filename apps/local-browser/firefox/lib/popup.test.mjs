@@ -45,6 +45,8 @@ function createDom() {
     "pair",
     "reconnect",
     "disconnect",
+    "access",
+    "grant",
   ]) {
     element(id);
   }
@@ -53,7 +55,16 @@ function createDom() {
     document: {
       getElementById: (id) => elements.get(id) || null,
       createTextNode: (text) => ({ text }),
-      createElement: (tag) => ({ tag, textContent: "" }),
+      createElement: (tag) => ({
+        tag,
+        textContent: "",
+        className: "",
+        type: "",
+        listeners: {},
+        addEventListener(type, handler) {
+          this.listeners[type] = handler;
+        },
+      }),
     },
   };
 }
@@ -119,6 +130,24 @@ test("the popup displays the retired reason when lastError is empty", async () =
   assert.match(elements.get("message").textContent, /Session ended/);
   assert.match(elements.get("message").textContent, /the pairing code was not accepted/);
   assert.match(elements.get("message").textContent, /Pair this browser again/);
+});
+
+test("a browser with full site access shows it and offers no grant button", async () => {
+  const elements = await show(
+    { status: "connected", label: "FF", tier: "full", origin: "https://paperclip.test", clientVersion: "1.0.0", connectedAt: null, lastError: "", siteAccess: "all" },
+    { origin: "https://paperclip.test", label: "FF", hasToken: true, retiredAt: null, retiredReason: null },
+  );
+  assert.equal(elements.get("access").textContent, "all sites");
+  assert.equal(elements.get("grant").hidden, true, "nothing to grant when every site is allowed");
+});
+
+test("a browser narrowed to some sites says so and offers the grant button", async () => {
+  const elements = await show(
+    { status: "connected", label: "FF", tier: "full", origin: "https://paperclip.test", clientVersion: "1.0.0", connectedAt: null, lastError: "", siteAccess: "limited" },
+    { origin: "https://paperclip.test", label: "FF", hasToken: true, retiredAt: null, retiredReason: null },
+  );
+  assert.equal(elements.get("access").textContent, "some sites only");
+  assert.equal(elements.get("grant").hidden, false, "the user needs a way to widen access");
 });
 
 test("the popup shows the pair form and hides nothing the user needs when retired", async () => {

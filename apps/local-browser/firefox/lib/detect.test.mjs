@@ -64,6 +64,12 @@ function boot(tab, pageAttributes) {
       filterResponseData: () => ({}),
     },
     cookies: { getAll: async () => [], set: async () => ({}), remove: async () => ({}) },
+    permissions: {
+      contains: async () => Boolean(sandbox.__siteAccessGranted),
+      request: async () => Boolean(sandbox.__siteAccessGranted),
+      onAdded: { addListener: () => {} },
+      onRemoved: { addListener: () => {} },
+    },
     downloads: { search: async () => [] },
     scripting: { executeScript: async () => [] },
     windows: { update: async () => undefined },
@@ -105,6 +111,20 @@ const PAPERCLIP_TAB = {
   active: true,
   status: "complete",
 };
+
+test("status reports full site access when every origin is granted", async () => {
+  const harness = boot(PAPERCLIP_TAB, null);
+  harness.sandbox.__siteAccessGranted = true;
+  await harness.sandbox.LB.bridge.refreshSiteAccess();
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().siteAccess, "all");
+});
+
+test("status reports narrowed access so the popup can offer the grant", async () => {
+  const harness = boot(PAPERCLIP_TAB, null);
+  harness.sandbox.__siteAccessGranted = false;
+  await harness.sandbox.LB.bridge.refreshSiteAccess();
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().siteAccess, "limited");
+});
 
 test("detect reads the pairing attributes from the open Paperclip tab", async () => {
   const harness = boot(PAPERCLIP_TAB, { origin: "https://paperclip.test", code: "F6BX2X8R" });

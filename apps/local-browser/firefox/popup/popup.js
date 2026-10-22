@@ -10,6 +10,8 @@
   var bidiEl = document.getElementById("bidi");
   var messageEl = document.getElementById("message");
   var bidiHintEl = document.getElementById("bidi-hint");
+  var accessEl = document.getElementById("access");
+  var grantButton = document.getElementById("grant");
   var detectedEl = document.getElementById("detected");
   var pairForm = document.getElementById("pair-form");
   var actions = document.getElementById("actions");
@@ -31,6 +33,12 @@
     messageEl.textContent = text;
   }
 
+  function renderAccess(value) {
+    if (!accessEl) return;
+    accessEl.textContent = value === "all" ? "all sites" : value === "limited" ? "some sites only" : "checking";
+    if (grantButton) grantButton.hidden = value === "all";
+  }
+
   function since(value) {
     if (!value) return "—";
     var at = new Date(value);
@@ -46,6 +54,7 @@
     originEl.textContent = state.origin || "—";
     sinceEl.textContent = since(state.connectedAt);
     versionEl.textContent = "firefox " + state.clientVersion;
+    renderAccess(state.siteAccess);
     if (pairing) lastPairing = pairing;
     if (pairing && pairing.origin) storedOrigin = pairing.origin;
     var layout = LB.popupState.view(pairing, state);
@@ -81,10 +90,29 @@
     }
     bidiHintEl.hidden = false;
     bidiHintEl.textContent = "";
-    bidiHintEl.appendChild(document.createTextNode("Viewer input stays synthetic. Start Firefox with: "));
+    bidiHintEl.appendChild(
+      document.createTextNode(
+        "Clicking and typing work now, and most pages accept synthetic events. Firefox sends trusted input only through its own debug port, so a page that ignores synthetic events needs this one-time command: "
+      )
+    );
     var code = document.createElement("code");
     code.textContent = hint;
     bidiHintEl.appendChild(code);
+    var copy = document.createElement("button");
+    copy.type = "button";
+    copy.className = "ghost";
+    copy.textContent = "Copy command";
+    copy.addEventListener("click", function () {
+      navigator.clipboard.writeText(hint).then(
+        function () {
+          copy.textContent = "Copied";
+        },
+        function () {
+          copy.textContent = "Copy failed";
+        }
+      );
+    });
+    bidiHintEl.appendChild(copy);
   }
 
   async function detect() {
@@ -144,6 +172,17 @@
   pairInput.addEventListener("keydown", function (event) {
     if (event.key === "Enter") connect();
   });
+
+  if (grantButton) {
+    grantButton.addEventListener("click", async function () {
+      try {
+        await browser.permissions.request({ origins: ["<all_urls>"] });
+      } catch (error) {
+        showMessage("Firefox refused the request. Re-enable access for this add-on in about:addons.");
+      }
+      await refresh();
+    });
+  }
 
   reconnectButton.addEventListener("click", async function () {
     var response = await browser.runtime.sendMessage({ channel: "lb-control", op: "reconnect" });
