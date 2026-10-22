@@ -600,14 +600,54 @@ async function toolSessions() {
   return Object.assign({}, summary, { sessions: [summary] });
 }
 
+const agentTabs = new Set();
+
+async function paperclipOrigins() {
+  const stored = (await readPairing()) || {};
+  const origins = new Set();
+  const paired = originOf(stored.origin);
+  if (paired) origins.add(paired);
+  return origins;
+}
+
+async function assertNavigationAllowed(tab) {
+  const origins = await paperclipOrigins();
+  const current = originOf(tab.url);
+  if (current && origins.has(current)) {
+    throw new ToolFailure(
+      ERROR.navigationBlocked,
+      "This tab belongs to Paperclip itself, so it is never navigated",
+      "Call local_browser_open with a url; that always uses a fresh tab"
+    );
+  }
+  if (agentTabs.has(tab.id)) return;
+  const [focused] = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  if (focused && focused.id === tab.id) {
+    throw new ToolFailure(
+      ERROR.navigationBlocked,
+      "This is the tab the user is looking at, so it is left alone",
+      "Call local_browser_open with a url; that always uses a fresh tab"
+    );
+  }
+}
+
+async function newAgentTab(url, active) {
+  const tab = await chrome.tabs.create({ url, active });
+  agentTabs.add(tab.id);
+  return tab;
+}
+
 async function toolOpen(args) {
   let tab;
-  if (args.newTab === true) {
-    if (!args.url) throw new ToolFailure(ERROR.protocolError, "open with newTab needs url");
-    tab = await chrome.tabs.create({ url: args.url, active: args.active !== false });
-  } else if (args.url) {
-    const current = await resolveTab(args);
-    tab = await chrome.tabs.update(current.id, { url: args.url });
+  if (args.url) {
+    if (typeof args.tabId === "number") {
+      const target = await resolveTab(args);
+      await assertNavigationAllowed(target);
+      tab = await chrome.tabs.update(target.id, { url: args.url });
+      agentTabs.add(tab.id);
+    } else {
+      tab = await newAgentTab(args.url, args.active !== false);
+    }
   } else {
     tab = await resolveTab(args);
     if (args.active === true) await chrome.tabs.update(tab.id, { active: true });
@@ -620,6 +660,7 @@ async function toolOpen(args) {
 
 async function toolNavigate(args) {
   const tab = await resolveTab(args);
+  await assertNavigationAllowed(tab);
   const timeoutMs = clampInt(args.timeoutMs, DEFAULTS.navigateTimeoutMs, 100, 120000);
   let action = null;
   if (args.url) action = "url";
@@ -1675,6 +1716,7 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 chrome.tabs.onCreated.addListener(() => scheduleTabsEvent());
 chrome.tabs.onRemoved.addListener((closedTabId) => {
   networkBuffers.delete(closedTabId);
+  agentTabs.delete(closedTabId);
   if (viewer && viewer.tabId === closedTabId) {
     stopViewer();
     emitViewerState(VIEWER_STATE.disconnected, closedTabId, "The watched tab closed");

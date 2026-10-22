@@ -260,14 +260,14 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   {
     name: "local_browser_open",
     description:
-      "Open a URL in the user's real browser, in the active tab or a new tab. Returns the tab and a snapshot ref set for the new page.",
+      "Open a URL in the user's real browser, always in a fresh tab. Returns the tab and a snapshot ref set for the new page. Never navigates the tab the user is looking at or the Paperclip tab itself.",
     inputSchema: {
       type: "object",
       properties: {
         sessionId: { type: "string", description: "Paired browser session id" },
-        tabId: { type: "integer", description: "Reuse this tab instead of the active one" },
+        tabId: { type: "integer", description: "Reuse this tab instead of opening a fresh one; refused for the tab the user is looking at and for the Paperclip tab" },
         url: { type: "string", description: "Absolute http(s) URL" },
-        newTab: { type: "boolean", description: "Open in a new tab" },
+        newTab: { type: "boolean", description: "Accepted for compatibility; a url always opens a fresh tab" },
         active: { type: "boolean", description: "Focus the tab when opening it" },
       },
       additionalProperties: false,
@@ -277,7 +277,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   {
     name: "local_browser_navigate",
     description:
-      "Navigate the current tab: pass url, or one of back, forward, reload. Prefer this over local_browser_open when the tab is already on the site you need.",
+      "Navigate the current tab: pass url, or one of back, forward, reload. Prefer this over local_browser_open when the tab is already on the site you need. Refused for the tab the user is looking at and for the Paperclip tab itself; call local_browser_open for those.",
     inputSchema: {
       type: "object",
       properties: {

@@ -58,6 +58,22 @@ browser that is not connected appears in `local_browser_sessions` as a resource 
 Board routes under `/api/local-browser` stay board-only: `GET /api/local-browser/sessions` answers
 403 to an agent token, which is correct and not a missing permission.
 
+## Tabs the agent leaves alone
+
+Two tabs are off limits for navigation, in both browsers:
+
+- The Paperclip tab. A tab whose origin matches the paired Paperclip address is never navigated or
+  reused, because changing its URL would take the operator out of the app they are watching the agent
+  in.
+- The tab the user is looking at. Navigating the active tab in the focused window would silently
+  replace whatever the person is reading. The extension refuses it unless that tab was opened by the
+  agent in this session.
+
+`local_browser_open` with a `url` therefore always creates a fresh tab and remembers it as the agent's
+own, so later `local_browser_navigate` calls against it work normally. A refusal is
+`local_browser_navigation_blocked` with the hint to call `local_browser_open` instead. Reading,
+snapshotting and clicking on a protected tab are still allowed; only navigation is refused.
+
 ## The tool loop
 
 Agents should follow the same loop regardless of model:

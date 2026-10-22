@@ -50,6 +50,8 @@ function createHarness(options = {}) {
   }
 
   const tab = { id: 7, windowId: 1, title: "T", url: "https://p.test/", active: true, status: "complete" };
+  const created = [];
+  const tabsById = new Map([[tab.id, tab]]);
   const chrome = {
     runtime: {
       getManifest: () => ({ version: "1.0.0" }),
@@ -60,9 +62,26 @@ function createHarness(options = {}) {
     },
     alarms: { create: () => Promise.resolve(), onAlarm: { addListener: addTo("alarm") } },
     tabs: {
-      query: async (query) => (query && query.active === true ? [tab] : [tab]),
-      get: async (id) => (id === tab.id ? { ...tab } : null),
-      update: async (id, props) => ({ ...tab, id, ...props }),
+      query: async (query) => {
+        const all = [...tabsById.values()];
+        if (query && query.active === true) {
+          const active = all.filter((entry) => entry.active);
+          return active.length ? active : [all[0] || tab];
+        }
+        return all;
+      },
+      get: async (id) => (tabsById.has(id) ? { ...tabsById.get(id) } : null),
+      update: async (id, props) => {
+        const next = { ...(tabsById.get(id) || tab), id, ...props };
+        tabsById.set(id, next);
+        return { ...next };
+      },
+      create: async (props) => {
+        const next = { ...tab, id: 99, url: props.url, active: props.active === true, status: "complete" };
+        tabsById.set(next.id, next);
+        created.push(next);
+        return { ...next };
+      },
       captureVisibleTab: async () => options.captureDataUrl || "data:image/jpeg;base64,AA",
       sendMessage: (tabId, payload, opts, callback) => {
         const respond = typeof opts === "function" ? opts : callback;
@@ -110,7 +129,7 @@ function createHarness(options = {}) {
     downloads: { search: async () => [] },
   };
 
-  return { listeners, sent, stored, chrome, FakeSocket, tab };
+  return { listeners, sent, stored, chrome, FakeSocket, tab, created, tabsById };
 }
 
 async function boot(options = {}) {
@@ -169,6 +188,48 @@ test("a dpr 2 capture reports CSS pixels of the viewport", async () => {
   assert.equal(captured[0].data.width, 800);
   assert.equal(captured[0].data.height, 600);
   await call(context.socket, context.sent, "local_browser_viewer", { op: "stop" });
+});
+
+test("opening a url uses a fresh tab instead of the tab the user is looking at", async () => {
+  const context = await boot();
+  const result = await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/page" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(context.created.length, 1, "a new tab must be created");
+  assert.equal(context.created[0].url, "https://example.test/page");
+  assert.equal(context.tabsById.get(7).url, "https://p.test/", "the focused tab keeps its url");
+});
+
+test("navigate refuses the tab the user is looking at and names the way out", async () => {
+  const context = await boot();
+  context.tabsById.get(7).active = false;
+  context.tabsById.set(8, { id: 8, windowId: 1, title: "U", url: "https://app.test/x", active: true, status: "complete" });
+  const result = await call(context.socket, context.sent, "local_browser_navigate", { tabId: 8, url: "https://elsewhere.test" });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_navigation_blocked");
+  assert.match(result.error.message, /tab the user is looking at/);
+  assert.match(result.error.hint, /local_browser_open/);
+  assert.equal(context.tabsById.get(8).url, "https://app.test/x", "the tab keeps its url");
+});
+
+test("navigate refuses the Paperclip tab even when it is not focused", async () => {
+  const context = await boot();
+  context.tabsById.get(7).active = false;
+  context.tabsById.set(55, { id: 55, windowId: 1, title: "P", url: "https://p.test/apps", active: false, status: "complete" });
+  context.tabsById.set(56, { id: 56, windowId: 1, title: "O", url: "https://other.test/", active: true, status: "complete" });
+  const result = await call(context.socket, context.sent, "local_browser_navigate", { tabId: 55, url: "https://elsewhere.test" });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_navigation_blocked");
+  assert.match(result.error.message, /belongs to Paperclip/);
+  assert.equal(context.tabsById.get(55).url, "https://p.test/apps");
+});
+
+test("a tab the agent opened stays navigable", async () => {
+  const context = await boot();
+  const opened = await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/page" });
+  assert.equal(opened.ok, true, JSON.stringify(opened.error || {}));
+  const moved = await call(context.socket, context.sent, "local_browser_navigate", { tabId: 99, url: "https://example.test/next" });
+  assert.equal(moved.ok, true, JSON.stringify(moved.error || {}));
+  assert.equal(context.tabsById.get(99).url, "https://example.test/next");
 });
 
 test("a revoked site access answers with the grant hint instead of a raw browser error", async () => {

@@ -57,6 +57,52 @@
     };
   }
 
+  var agentTabs = {};
+
+  function rememberAgentTab(tabId) {
+    agentTabs[String(tabId)] = true;
+  }
+
+  function forgetAgentTab(tabId) {
+    delete agentTabs[String(tabId)];
+  }
+
+  async function assertNavigationAllowed(tab) {
+    var stored = null;
+    try {
+      stored = await browser.storage.local.get(protocol.STORAGE_PAIRING);
+    } catch (error) {
+      stored = null;
+    }
+    var pairing = stored && stored[protocol.STORAGE_PAIRING] ? stored[protocol.STORAGE_PAIRING] : null;
+    var paperclipOrigin = pairing && pairing.origin ? protocol.originOf(pairing.origin) : null;
+    var current = tab && tab.url ? protocol.originOf(tab.url) : null;
+    if (paperclipOrigin && current && paperclipOrigin === current) {
+      throw protocol.error(
+        C.navigationBlocked,
+        "This tab belongs to Paperclip itself, so it is never navigated",
+        "Call local_browser_open with a url; that always uses a fresh tab",
+        false
+      );
+    }
+    if (agentTabs[String(tab.tabId)]) return;
+    var focused = await tabsApi.activeTab();
+    if (focused && focused.tabId === tab.tabId) {
+      throw protocol.error(
+        C.navigationBlocked,
+        "This is the tab the user is looking at, so it is left alone",
+        "Call local_browser_open with a url; that always uses a fresh tab",
+        false
+      );
+    }
+  }
+
+  async function newAgentTab(url, active) {
+    var tab = await browser.tabs.create({ url: url, active: active });
+    rememberAgentTab(tab.id);
+    return tab;
+  }
+
   async function open(args, ctx) {
     var url = typeof args.url === "string" && args.url ? args.url : null;
     var tab = null;
@@ -67,12 +113,14 @@
       }
     }
     try {
-      if (url && args.newTab === true) {
-        tab = await browser.tabs.create({ url: url, active: args.active === true });
+      if (url && typeof args.tabId === "number") {
+        var explicit = await targetTab(args);
+        await assertNavigationAllowed(explicit);
+        await browser.tabs.update(explicit.tabId, { url: url });
+        rememberAgentTab(explicit.tabId);
+        tab = await browser.tabs.get(explicit.tabId);
       } else if (url) {
-        var base = await targetTab(args);
-        await browser.tabs.update(base.tabId, { url: url });
-        tab = await browser.tabs.get(base.tabId);
+        tab = await newAgentTab(url, args.active === true);
       } else if (args.newTab === true) {
         tab = await browser.tabs.create({ url: "about:blank", active: args.active === true });
       } else {
@@ -96,6 +144,7 @@
 
   async function navigate(args, ctx) {
     var tab = await targetTab(args);
+    await assertNavigationAllowed(tab);
     var acted = false;
     try {
       if (typeof args.url === "string" && args.url) {

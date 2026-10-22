@@ -54,6 +54,12 @@
     return summarize(active[0]);
   }
 
+  async function activeTab() {
+    var active = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+    if (!active.length) active = await browser.tabs.query({ active: true });
+    return active.length ? summarize(active[0]) : null;
+  }
+
   function sleep(ms) {
     return new Promise(function (resolve) {
       setTimeout(resolve, ms);
@@ -190,6 +196,7 @@
     summarize: summarize,
     listTabs: listTabs,
     resolveTab: resolveTab,
+    activeTab: activeTab,
     waitForLoad: waitForLoad,
     ensureAgent: ensureAgent,
     send: send,
