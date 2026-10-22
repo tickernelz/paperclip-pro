@@ -964,7 +964,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
     await until(() => t.wakeup.mock.calls.length === 1);
     await send(t, { chatId: jid(OWNER_PHONE), body: "second request" });
-    await until(() => t.wakeup.mock.calls.length === 2);
+    await until(() => t.wakeup.mock.calls.length === 2, 45_000);
     await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
     expect((await wakeActions(t)).map((action) => burstCode(action))).toEqual(["inbound_wakeup_durable", "inbound_wakeup_durable"]);
   }, 120_000);

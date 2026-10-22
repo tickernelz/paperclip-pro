@@ -478,6 +478,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
     const ts = Math.floor(Date.now() / 1000);
     const fireAt = (ts + 120) * 1000;
     await send(t, mentionOwner(chat, jid(MEMBER_PHONE), ts));
+    await until(async () => (await wakeRows(t)).length === 1);
     const [armed] = await wakeRows(t);
     expect(armed).toMatchObject({ kind: "owner_absent", state: "pending", chatKey: chat });
     expect(armed.fireAt.getTime()).toBe(fireAt);
@@ -486,6 +487,10 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
     await send(t, mentionOwner(chat, jid(OTHER_MEMBER_PHONE), ts + 30, "@" + OWNER_PHONE + " please"));
     await send(t, mentionOwner(chat, jid(OTHER_MEMBER_PHONE), ts + 90, "@" + OWNER_PHONE + " still waiting"));
     await send(t, { chatId: chat, author: jid(MEMBER_PHONE), body: "plain chatter", timestamp: ts + 40 });
+    await until(async () => {
+      const current = (await wakeRows(t))[0];
+      return Boolean(current) && (current.payload as { messages?: unknown[] }).messages?.length === 3;
+    });
     const rows = await wakeRows(t);
     expect(rows).toHaveLength(1);
     expect(rows[0].fireAt.getTime()).toBe(fireAt);
@@ -615,8 +620,9 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
     await goLive(t);
     const ts = Math.floor(Date.now() / 1000);
     await send(t, mentionOwner(timed, jid(MEMBER_PHONE), ts));
-    expect(clock.sets).toBe(1);
+    await until(() => clock.sets === 1);
     await send(t, mentionOwner(later, jid(MEMBER_PHONE), ts + 50));
+    await until(() => clock.timers.size === 1);
     expect(clock.sets).toBe(1);
     await t.service.openwa.putChat(t.endpointId, { chatId: quiet, settings: { activation: "auto", absenceSeconds: 30 } }, t.userId);
     await send(t, { chatId: quiet, author: jid(MEMBER_PHONE), body: "refresh policy", timestamp: ts });
@@ -634,6 +640,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
     expect(clock.sets).toBe(1);
 
     await send(t, mentionOwner(quiet, jid(MEMBER_PHONE), ts));
+    await until(() => clock.sets === 2);
     expect(clock.sets).toBe(2);
     expect([...clock.timers.values()][0].at).toBe((ts + 30) * 1000);
     clock.advanceTo((ts + 30) * 1000);

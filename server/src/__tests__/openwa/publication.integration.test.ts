@@ -982,8 +982,12 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     }
     t.adapter.typingRefreshMs = 20_000;
     await t.service.processPendingDeliveries(25);
-    const [held] = await db.select({ result: chatActions.result }).from(chatActions).where(eq(chatActions.deliveryId, first.id)).limit(1);
-    expect(held!.result).toMatchObject({ code: "openwa_burst_held" });
+    const heldResult = async () => {
+      const [row] = await db.select({ result: chatActions.result }).from(chatActions).where(eq(chatActions.deliveryId, first.id)).limit(1);
+      return row?.result;
+    };
+    await until(async () => (await heldResult()) !== null);
+    expect(await heldResult()).toMatchObject({ code: "openwa_burst_held" });
     expect(t.gateway.typing.filter((entry) => entry.state === "typing" && entry.chatId === MEMBER).length).toBeGreaterThanOrEqual(1);
     await runOutput(t, c, { triggerClass: "other", body: "x", deliveryIds: [first.id, second.id, third.id], status: "running" });
     const releasedAt = Date.now();
