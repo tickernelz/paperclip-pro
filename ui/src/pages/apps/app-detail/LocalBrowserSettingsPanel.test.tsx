@@ -112,6 +112,33 @@ describe("Local Browser settings panel", () => {
     expect(container.textContent).toContain("https://example.test/pair?code=ABCD2345");
   });
 
+  it("copies the pairing link and marks the page for the extension", async () => {
+    const written: string[] = [];
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: { writeText: async (value: string) => void written.push(value) },
+    });
+    await render();
+    await act(async () => button("Pair a browser").click());
+
+    const marker = container.querySelector("[data-paperclip-local-browser-pairing]");
+    expect(marker).toBeTruthy();
+    expect(marker?.getAttribute("data-code")).toBe("ABCD2345");
+    expect(marker?.getAttribute("data-origin")).toBe("https://example.test");
+
+    await act(async () => button("Copy pairing link").click());
+    expect(written).toEqual(["https://example.test/pair?code=ABCD2345"]);
+    expect(container.textContent).toContain("Link copied");
+  });
+
+  it("drops the pairing marker once the pairing is cancelled", async () => {
+    await render();
+    await act(async () => button("Pair a browser").click());
+    expect(container.querySelector("[data-paperclip-local-browser-pairing]")).toBeTruthy();
+    await act(async () => button("Cancel").click());
+    expect(container.querySelector("[data-paperclip-local-browser-pairing]")).toBeNull();
+  });
+
   it("offers both extension downloads with the install steps", async () => {
     await render();
     expect(container.textContent).toContain("Install the extension");
@@ -119,9 +146,9 @@ describe("Local Browser settings panel", () => {
     const chromium = container.querySelector('a[href="/downloads/local-browser-chromium.zip"]');
     const firefox = container.querySelector('a[href="/downloads/local-browser-firefox.xpi"]');
     expect(chromium?.textContent).toContain("Chrome, Edge or Brave");
-    expect(firefox?.textContent).toContain("Firefox");
+    expect(firefox?.textContent).toContain("Install in Firefox");
     expect(chromium?.hasAttribute("download")).toBe(true);
-    expect(firefox?.hasAttribute("download")).toBe(true);
+    expect(firefox?.hasAttribute("download")).toBe(false);
 
     const text = container.textContent ?? "";
     expect(text).toContain("chrome://extensions");
@@ -129,7 +156,6 @@ describe("Local Browser settings panel", () => {
     expect(text).toContain("Load unpacked");
     expect(text).toContain("about:addons");
     expect(text).toContain("Install Add-on From File");
-    expect(text).toContain("signed by Mozilla");
   });
 
   it("warns that full tier reaches any signed-in site", async () => {

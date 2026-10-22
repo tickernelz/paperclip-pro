@@ -8,7 +8,7 @@ import type {
   ToolConnection,
 } from "@tickernelz/paperclip-pro-shared";
 import { localBrowserApi } from "@/api/local-browser";
-import { Download, Monitor } from "lucide-react";
+import { Copy, Download, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LocalBrowserViewer } from "@/components/local-browser/LocalBrowserViewer";
 import { Label } from "@/components/ui/label";
@@ -44,6 +44,26 @@ function sessionSubtitle(session: LocalBrowserSession): string {
   const tabs = session.tabs.length;
   const owner = session.ownerUserId ? ` · owner ${session.ownerUserId}` : "";
   return `${session.client} ${session.clientVersion} · ${tabs} ${tabs === 1 ? "tab" : "tabs"} · ${session.tier} tier${owner}`;
+}
+
+function bridgeUrlOf(connectUrls: string[]): string | null {
+  const ws = connectUrls.find((url) => /^wss?:\/\//.test(url));
+  if (!ws) return connectUrls[0] ?? null;
+  return ws.replace(/^ws/, "http");
+}
+
+function pairingLink(connectUrls: string[]): string {
+  return bridgeUrlOf(connectUrls) ?? "";
+}
+
+function pairingOrigin(connectUrls: string[]): string {
+  const url = bridgeUrlOf(connectUrls);
+  if (!url) return "";
+  try {
+    return new URL(url).origin;
+  } catch {
+    return "";
+  }
 }
 
 export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConnection }) {
@@ -129,6 +149,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
   const pairingPending = Boolean(pairing) && !pairingExpired;
   const liveSessions = sessions.data?.sessions ?? [];
   const [watchedSessionId, setWatchedSessionId] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState<string | null>(null);
 
   return (
     <section className="space-y-8" aria-labelledby={`${id}-title`}>
@@ -150,16 +171,16 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           then pair it from this page.
         </p>
         <div className="flex flex-wrap gap-2">
+          <Button size="sm" asChild>
+            <a href="/downloads/local-browser-firefox.xpi">
+              <Download aria-hidden="true" />
+              Install in Firefox
+            </a>
+          </Button>
           <Button size="sm" variant="outline" asChild>
             <a href="/downloads/local-browser-chromium.zip" download>
               <Download aria-hidden="true" />
               Chrome, Edge or Brave (zip)
-            </a>
-          </Button>
-          <Button size="sm" variant="outline" asChild>
-            <a href="/downloads/local-browser-firefox.xpi" download>
-              <Download aria-hidden="true" />
-              Firefox (signed xpi)
             </a>
           </Button>
         </div>
@@ -183,9 +204,9 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         <div className="space-y-3 rounded-lg border border-border p-4">
           <h4 className="text-sm font-medium">Firefox</h4>
           <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Download the signed xpi file.</li>
-            <li>Open <code className="font-mono text-xs">about:addons</code> and choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu.</li>
-            <li>Select the xpi you downloaded and confirm the install.</li>
+            <li>Click <strong className="font-medium text-foreground">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
+            <li>Confirm the install. If Firefox asks, allow the connection to this Paperclip address.</li>
+            <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-muted-foreground">
@@ -227,12 +248,36 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           )}
         </div>
         {pairing && (
-          <div className="space-y-3 rounded-lg border border-border bg-muted/40 p-4">
+          <div
+            className="space-y-3 rounded-lg border border-border bg-muted/40 p-4"
+            data-paperclip-local-browser-pairing=""
+            data-origin={pairingOrigin(pairing.connectUrls)}
+            data-code={pairing.code}
+          >
             <p className="text-sm text-muted-foreground">
-              Open the Local Browser extension and enter this code before{" "}
+              Copy this link, open the Local Browser extension and paste it. It stops working after{" "}
               {pairingExpiry(pairing.expiresAt)}.
             </p>
-            <p className="font-mono text-2xl font-semibold tracking-widest">{pairing.code}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const link = pairingLink(pairing.connectUrls);
+                  void navigator.clipboard.writeText(link).then(
+                    () => setCopiedLink(link),
+                    () => setCopiedLink(null),
+                  );
+                }}
+              >
+                <Copy aria-hidden="true" />
+                {copiedLink ? "Link copied" : "Copy pairing link"}
+              </Button>
+              <span className="text-xs text-muted-foreground">
+                Or type this code in the extension:{" "}
+                <span className="font-mono font-semibold tracking-widest">{pairing.code}</span>
+              </span>
+            </div>
             {pairing.connectUrls.length > 0 && (
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground">Or open the extension from a link:</p>
