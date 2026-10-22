@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Paperclip Local Browser Bridge",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Connects this browser to a paired Paperclip server so an agent can read and drive real tabs.",
   "minimum_chrome_version": "116",
   "permissions": [

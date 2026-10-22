@@ -1,10 +1,49 @@
 :root {
   color-scheme: light dark;
-  --ink: #0f172a;
-  --muted: #64748b;
-  --line: #e2e8f0;
-  --accent: #1d4ed8;
-  --danger: #b91c1c;
+  --radius: 0.5rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: oklch(0.205 0 0);
+    --foreground: oklch(0.985 0 0);
+    --card: oklch(0.205 0 0);
+    --card-foreground: oklch(0.985 0 0);
+    --primary: oklch(0.922 0 0);
+    --primary-foreground: oklch(0.205 0 0);
+    --secondary: oklch(0.269 0 0);
+    --secondary-foreground: oklch(0.985 0 0);
+    --muted: oklch(0.269 0 0);
+    --muted-foreground: oklch(0.708 0 0);
+    --accent: oklch(0.269 0 0);
+    --accent-foreground: oklch(0.985 0 0);
+    --destructive: oklch(0.637 0.237 25.331);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 15%);
+    --ring: oklch(0.556 0 0);
+  }
 }
 
 * {
@@ -15,9 +54,10 @@ body {
   width: 340px;
   margin: 0;
   padding: 14px;
-  font: 13px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif;
-  color: var(--ink);
-  background: #ffffff;
+  font: 13px/1.45 var(--font-sans);
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
 }
 
 header {
@@ -32,6 +72,7 @@ h1 {
   margin: 0;
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 h2 {
@@ -41,47 +82,60 @@ h2 {
 }
 
 .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 2px 8px;
   border-radius: 999px;
-  background: #e2e8f0;
-  color: #334155;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
   font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-weight: 500;
+  text-transform: capitalize;
 }
 
-.pill[data-status="connected"] {
-  background: #dcfce7;
-  color: #166534;
+.pill::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--muted-foreground);
 }
 
-.pill[data-status="connecting"],
-.pill[data-status="reconnecting"] {
-  background: #fef3c7;
-  color: #92400e;
+.pill[data-status="connected"]::before {
+  background: var(--foreground);
+}
+
+.pill[data-status="connecting"]::before,
+.pill[data-status="reconnecting"]::before {
+  background: var(--ring);
 }
 
 .pill[data-status="error"] {
-  background: #fee2e2;
-  color: var(--danger);
+  color: var(--destructive);
+}
+
+.pill[data-status="error"]::before {
+  background: var(--destructive);
 }
 
 .card {
-  padding: 10px 12px;
+  padding: 12px;
   margin-bottom: 10px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--card);
 }
 
 dl {
   display: grid;
   grid-template-columns: 96px 1fr;
-  gap: 4px 8px;
+  gap: 6px 8px;
   margin: 0;
 }
 
 dt {
-  color: var(--muted);
+  color: var(--muted-foreground);
   font-weight: 500;
 }
 
@@ -93,47 +147,69 @@ dd {
 label {
   display: block;
   margin-bottom: 8px;
-  color: var(--muted);
+  color: var(--muted-foreground);
   font-size: 12px;
+  font-weight: 500;
 }
 
 input {
   display: block;
   width: 100%;
-  margin-top: 3px;
-  padding: 6px 8px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  margin-top: 4px;
+  padding: 7px 9px;
+  border: 1px solid var(--input);
+  border-radius: var(--radius-md);
   font: inherit;
-  color: var(--ink);
-  background: #f8fafc;
+  color: var(--foreground);
+  background: var(--background);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+input::placeholder {
+  color: var(--muted-foreground);
+}
+
+input:focus-visible {
+  outline: none;
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px color-mix(in oklab, var(--ring) 35%, transparent);
 }
 
 button {
   padding: 7px 12px;
   border: 1px solid transparent;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #ffffff;
+  border-radius: var(--radius-md);
+  background: var(--primary);
+  color: var(--primary-foreground);
   font: inherit;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
+  transition: opacity 120ms ease;
+}
+
+button:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--background), 0 0 0 4px var(--ring);
 }
 
 button.ghost {
-  background: #ffffff;
-  border-color: var(--line);
-  color: var(--ink);
+  background: var(--background);
+  border-color: var(--border);
+  color: var(--foreground);
 }
 
 button.danger {
-  background: #ffffff;
-  border-color: #fecaca;
-  color: var(--danger);
+  background: var(--background);
+  border-color: color-mix(in oklab, var(--destructive) 35%, var(--border));
+  color: var(--destructive);
 }
 
 button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
@@ -149,51 +225,29 @@ button:disabled {
 .message {
   margin: 0;
   padding: 8px 10px;
-  border-radius: 8px;
-  background: #fef2f2;
-  color: var(--danger);
+  border: 1px solid color-mix(in oklab, var(--destructive) 30%, var(--border));
+  border-radius: var(--radius-md);
+  background: color-mix(in oklab, var(--destructive) 8%, var(--background));
+  color: var(--destructive);
   font-size: 12px;
 }
 
 .hint {
   margin: 8px 0 0;
   padding: 8px 10px;
-  border-radius: 8px;
-  background: #f1f5f9;
-  color: #334155;
+  border-radius: var(--radius-md);
+  background: var(--muted);
+  color: var(--muted-foreground);
   font-size: 11px;
   overflow-wrap: anywhere;
 }
 
-.hint code {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  font-size: 11px;
+#detected {
+  margin: 0 0 8px;
 }
 
-@media (prefers-color-scheme: dark) {
-  body {
-    background: #0b1120;
-    color: #e2e8f0;
-  }
-  .card {
-    border-color: #1e293b;
-  }
-  input {
-    background: #111c33;
-    border-color: #1e293b;
-    color: #e2e8f0;
-  }
-  button.ghost,
-  button.danger {
-    background: #111c33;
-    border-color: #1e293b;
-    color: #e2e8f0;
-  }
-  button.danger {
-    color: #fca5a5;
-  }
-  .pill {
-    background: #1e293b;
-    color: #cbd5e1;
-  }
+.hint code,
+code {
+  font-family: var(--font-mono);
+  font-size: 11px;
 }

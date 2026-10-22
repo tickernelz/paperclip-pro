@@ -29,20 +29,17 @@
     </section>
 
     <section id="pair-form" class="card">
-      <h2>Pair this browser</h2>
+      <h2>Connect this browser</h2>
+      <p id="detected" class="hint" hidden></p>
       <label>
-        Paperclip origin
-        <input id="origin-input" type="url" placeholder="https://app.paperclip.example" autocomplete="off" spellcheck="false" />
-      </label>
-      <label>
-        Pairing code
-        <input id="code-input" type="text" placeholder="8 characters" autocomplete="off" spellcheck="false" maxlength="32" />
-      </label>
-      <label>
-        Label
-        <input id="label-input" type="text" placeholder="Firefox on my laptop" autocomplete="off" maxlength="80" />
+        Pairing link or code
+        <input id="pair-input" type="text" placeholder="Paste the link from Paperclip" autocomplete="off" spellcheck="false" />
       </label>
       <button id="pair" type="button">Connect</button>
+      <p class="hint">
+        Paste the pairing link from the Local Browser page, or type the 8 character code if this
+        browser has connected before.
+      </p>
     </section>
 
     <section id="actions" class="card">
@@ -53,6 +50,8 @@
     <p id="message" class="message" hidden></p>
     <p id="bidi-hint" class="hint" hidden></p>
 
+    <script src="../lib/protocol.js"></script>
+    <script src="../lib/pairing.js"></script>
     <script src="../lib/popup-state.js"></script>
     <script src="popup.js"></script>
   </body>

@@ -1,4 +1,5 @@
 import "./lib/protocol.js";
+import "./lib/pairing.js";
 import "./lib/budget.js";
 import "./lib/attachments.js";
 import "./lib/frames.js";
@@ -1473,37 +1474,61 @@ function scheduleTabsEvent() {
   }, 300);
 }
 
-function parsePairingInput(input) {
-  const server = String(input.server || "").trim();
-  const rawCode = String(input.code || "").trim().toUpperCase();
-  if (!server) {
+async function parsePairingInput(input) {
+  const raw = String((input && input.input) || "").trim();
+  const parsed = LB.pairing.parsePairingInput(raw);
+  if (parsed.reason) {
     throw new ToolFailure(
       ERROR.protocolError,
-      "Paste the connect URL or the server address",
-      "Paperclip shows a connect URL with a pairing code when you start pairing"
+      parsed.reason,
+      "Paperclip shows a pairing link with the code in it on the Local Browser page"
     );
   }
-  let url;
-  try {
-    url = new URL(server);
-  } catch (error) {
-    throw new ToolFailure(ERROR.protocolError, "That server address is not a URL", "Use https://paperclip.example.com");
+  const stored = (await readPairing()) || {};
+  const origin = parsed.origin || stored.origin || "";
+  if (!origin) {
+    throw new ToolFailure(
+      ERROR.protocolError,
+      "Paste the pairing link from Paperclip, or open the pairing page in a tab first",
+      "The link carries the server address and the code together"
+    );
   }
-  const secure = url.protocol === "https:" || url.protocol === "wss:";
-  const origin = (secure ? "https://" : "http://") + url.host;
-  const fromUrl = (url.searchParams.get("code") || "").trim().toUpperCase();
-  const code = rawCode || fromUrl;
+  const code = String(parsed.code || "").toUpperCase();
   if (!code) {
-    throw new ToolFailure(ERROR.protocolError, "No pairing code", "Paste the code Paperclip shows next to the connect URL");
+    throw new ToolFailure(ERROR.protocolError, "Add the pairing code", "The pairing link already carries it");
   }
-  if (!/^[A-Z0-9]{4,16}$/.test(code)) {
-    throw new ToolFailure(ERROR.protocolError, "That pairing code looks wrong", "Codes are letters and digits");
+  return { origin, code, label: String((input && input.label) || "").trim() || defaultLabel() };
+}
+
+async function detectPairingTab() {
+  const tabs = await chrome.tabs.query({ active: true, lastFocusedWindow: true });
+  const tab = tabs && tabs[0];
+  if (!tab || typeof tab.id !== "number" || !/^https?:/i.test(String(tab.url || ""))) return { pairing: null };
+  let results;
+  try {
+    results = await chrome.scripting.executeScript({
+      target: { tabId: tab.id },
+      func: () => {
+        const element = document.querySelector("[data-paperclip-local-browser-pairing]");
+        if (!element) return null;
+        return {
+          origin: element.getAttribute("data-origin") || "",
+          code: element.getAttribute("data-code") || ""
+        };
+      }
+    });
+  } catch (error) {
+    return { pairing: null };
   }
-  return { origin, code, label: String(input.label || "").trim() || defaultLabel() };
+  const found = results && results[0] && results[0].result;
+  if (!found || !found.code) return { pairing: null };
+  const origin = LB.pairing.normalizeOrigin(found.origin || tab.url);
+  if (!origin) return { pairing: null };
+  return { pairing: { origin, code: String(found.code).trim() } };
 }
 
 async function pair(input) {
-  const parsed = parsePairingInput(input);
+  const parsed = await parsePairingInput(input);
   const entry = {
     origin: parsed.origin,
     code: parsed.code,
@@ -1557,6 +1582,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   if (message.type === "lb:status") {
     status().then(sendResponse, (error) => sendResponse({ error: String((error && error.message) || error) }));
+    return true;
+  }
+
+  if (message.type === "lb:detect") {
+    detectPairingTab().then(sendResponse, (error) => sendResponse({ error: String((error && error.message) || error) }));
     return true;
   }
 

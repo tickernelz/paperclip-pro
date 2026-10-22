@@ -6,6 +6,7 @@ import { dirname, join } from "node:path";
 import vm from "node:vm";
 
 import "./popup-state.js";
+import "./pairing.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, "..");
@@ -92,8 +93,7 @@ test("a retired status renders the reason and keeps the pair form usable", () =>
   assert.equal(shim.node("state").textContent, "Not paired");
   assert.equal(shim.node("detail").textContent, "Session ended: session token is not usable");
   assert.equal(shim.node("pair-form").hidden, false, "the form must stay visible so the user is not stuck");
-  assert.equal(shim.node("server").value, "https://p.test", "the origin must be prefilled");
-  assert.equal(shim.node("label").value, "Chrome on my laptop");
+  assert.equal(shim.node("pair-input").value, "https://p.test", "the known address is prefilled");
   assert.equal(shim.node("reconnect").disabled, true);
   assert.equal(shim.node("disconnect").disabled, true);
 });

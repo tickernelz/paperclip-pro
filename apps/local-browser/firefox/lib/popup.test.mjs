@@ -40,9 +40,8 @@ function createDom() {
     "bidi-hint",
     "pair-form",
     "actions",
-    "origin-input",
-    "code-input",
-    "label-input",
+    "detected",
+    "pair-input",
     "pair",
     "reconnect",
     "disconnect",
@@ -86,6 +85,7 @@ function bootPopup() {
     sandbox.__render = render;
   };
   createContext(sandbox);
+  runInContext(readFileSync(root + "lib/pairing.js", "utf8"), sandbox, { filename: "lib/pairing.js" });
   runInContext(readFileSync(root + "lib/popup-state.js", "utf8"), sandbox, { filename: "lib/popup-state.js" });
   runInContext(readFileSync(root + "popup/popup.js", "utf8"), sandbox, { filename: "popup/popup.js" });
   assert.equal(typeof sandbox.__render, "function", "popup.js must expose render for testing");
@@ -129,7 +129,7 @@ test("the popup shows the pair form and hides nothing the user needs when retire
   assert.equal(elements.get("pair-form").hidden, false, "the form must be visible");
   assert.equal(elements.get("actions").hidden, false, "Disconnect must stay visible");
   assert.equal(elements.get("reconnect").disabled, true, "Reconnect must be disabled");
-  assert.equal(elements.get("origin-input").value, "https://paperclip.test", "the origin is prefilled");
+  assert.equal(elements.get("pair-input").value, "https://paperclip.test", "the known address is prefilled");
 });
 
 test("the popup shows nothing when a live pairing is connected", async () => {

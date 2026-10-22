@@ -27,12 +27,10 @@
     </section>
 
     <form id="pair-form" class="pair">
-      <label for="server">Server or connect URL</label>
-      <input id="server" type="text" placeholder="https://paperclip.example.com" autocomplete="off" spellcheck="false" />
-      <label for="code">Pairing code</label>
-      <input id="code" type="text" placeholder="ABCD1234" autocomplete="off" spellcheck="false" maxlength="16" />
-      <label for="label">Browser label</label>
-      <input id="label" type="text" placeholder="Chrome on my laptop" autocomplete="off" maxlength="80" />
+      <p id="detected" class="hint" hidden></p>
+      <label for="pair-input">Pairing link or code</label>
+      <input id="pair-input" type="text" placeholder="Paste the link from Paperclip" autocomplete="off" spellcheck="false" />
+      <p class="hint">Paste the pairing link from the Local Browser page, or type the 8 character code if this browser has connected before.</p>
       <p id="error" class="error" hidden></p>
       <div class="actions">
         <button id="pair" type="submit">Pair</button>
@@ -46,6 +44,7 @@
       <span class="hint">Pairing codes expire in 10 minutes.</span>
     </footer>
 
+    <script type="module" src="lib/pairing.js"></script>
     <script type="module" src="lib/popup-state.js"></script>
     <script type="module" src="popup.js"></script>
   </body>

@@ -10,16 +10,16 @@
   var bidiEl = document.getElementById("bidi");
   var messageEl = document.getElementById("message");
   var bidiHintEl = document.getElementById("bidi-hint");
+  var detectedEl = document.getElementById("detected");
   var pairForm = document.getElementById("pair-form");
   var actions = document.getElementById("actions");
-  var originInput = document.getElementById("origin-input");
-  var codeInput = document.getElementById("code-input");
-  var labelInput = document.getElementById("label-input");
+  var pairInput = document.getElementById("pair-input");
   var pairButton = document.getElementById("pair");
   var reconnectButton = document.getElementById("reconnect");
   var disconnectButton = document.getElementById("disconnect");
 
   var lastPairing = null;
+  var storedOrigin = null;
 
   function showMessage(text) {
     if (!text) {
@@ -32,26 +32,27 @@
   }
 
   function since(value) {
-    if (!value) return "\u2014";
+    if (!value) return "—";
     var at = new Date(value);
-    if (Number.isNaN(at.getTime())) return "\u2014";
+    if (Number.isNaN(at.getTime())) return "—";
     return at.toLocaleTimeString();
   }
 
   function render(state, pairing) {
     statusEl.textContent = state.status;
     statusEl.dataset.status = state.status;
-    labelEl.textContent = state.label || "\u2014";
-    tierEl.textContent = state.tier || "\u2014";
-    originEl.textContent = state.origin || "\u2014";
+    labelEl.textContent = state.label || "—";
+    tierEl.textContent = state.tier || "—";
+    originEl.textContent = state.origin || "—";
     sinceEl.textContent = since(state.connectedAt);
     versionEl.textContent = "firefox " + state.clientVersion;
     if (pairing) lastPairing = pairing;
+    if (pairing && pairing.origin) storedOrigin = pairing.origin;
     var layout = LB.popupState.view(pairing, state);
     pairForm.hidden = !layout.showPairForm;
     actions.hidden = !layout.showActions;
     reconnectButton.disabled = !layout.reconnectEnabled;
-    if (layout.showPairForm && layout.prefillOrigin && !originInput.value) originInput.value = layout.prefillOrigin;
+    if (layout.showPairForm && layout.prefillOrigin && !pairInput.value) pairInput.value = layout.prefillOrigin;
     showMessage(layout.message);
   }
 
@@ -86,26 +87,62 @@
     bidiHintEl.appendChild(code);
   }
 
-  pairButton.addEventListener("click", async function () {
+  async function detect() {
+    var response = await browser.runtime.sendMessage({ channel: "lb-control", op: "detect" });
+    if (!response || !response.ok || !response.pairing) return null;
+    return response.pairing;
+  }
+
+  async function offerDetected() {
+    var found = await detect();
+    if (!found || !found.code) {
+      detectedEl.hidden = true;
+      return;
+    }
+    detectedEl.hidden = false;
+    detectedEl.textContent = "Found a pairing code on the open Paperclip tab. Press Connect to use it.";
+    pairInput.value = LB.pairing.pairUrl(found.origin, found.code) || found.code;
+  }
+
+  async function connect() {
     pairButton.disabled = true;
     showMessage("");
     try {
+      var parsed = LB.pairing.parsePairingInput(pairInput.value);
+      if (parsed.reason) {
+        showMessage(parsed.reason);
+        return;
+      }
+      var origin = parsed.origin || storedOrigin;
+      if (!origin) {
+        showMessage("Paste the pairing link from Paperclip, or open the pairing page in a tab first.");
+        return;
+      }
+      if (!parsed.code) {
+        showMessage("Add the pairing code to that address.");
+        return;
+      }
       var response = await browser.runtime.sendMessage({
         channel: "lb-control",
         op: "pair",
-        origin: originInput.value,
-        code: codeInput.value,
-        label: labelInput.value
+        origin: origin,
+        code: parsed.code
       });
       if (!response || !response.ok) {
         showMessage(response && response.error ? response.error : "Pairing failed");
         return;
       }
-      codeInput.value = "";
-      render(response.state, { origin: originInput.value });
+      pairInput.value = "";
+      detectedEl.hidden = true;
+      render(response.state, { origin: origin });
     } finally {
       pairButton.disabled = false;
     }
+  }
+
+  pairButton.addEventListener("click", connect);
+  pairInput.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") connect();
   });
 
   reconnectButton.addEventListener("click", async function () {
@@ -132,6 +169,6 @@
 
   if (typeof globalThis.__exposeRender === "function") globalThis.__exposeRender(render);
 
-  refresh();
+  refresh().then(offerDetected);
   refreshBidi();
 })();

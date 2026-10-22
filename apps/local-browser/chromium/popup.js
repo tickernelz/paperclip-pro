@@ -67,8 +67,8 @@ function apply(state) {
   const reconnect = byId("reconnect");
   if (reconnect) reconnect.disabled = !state.reconnectEnabled;
 
-  if (state.prefilledLabel && !byId("label").value) byId("label").value = state.prefilledLabel;
-  if (state.prefilledOrigin && !byId("server").value) byId("server").value = state.prefilledOrigin;
+  const input = byId("pair-input");
+  if (state.prefilledOrigin && input && !input.value) input.value = state.prefilledOrigin;
 }
 
 async function refresh() {
@@ -86,20 +86,36 @@ async function pair(event) {
   event.preventDefault();
   if (state.busy) return;
   showError(null);
+  const parsed = LB.pairing.parsePairingInput(byId("pair-input").value);
+  if (parsed.reason) {
+    showError(parsed.reason);
+    return;
+  }
   setBusy(true);
-  const result = await call("lb:pair", {
-    server: byId("server").value,
-    code: byId("code").value,
-    label: byId("label").value
-  });
+  const result = await call("lb:pair", { input: byId("pair-input").value });
   setBusy(false);
   if (result && result.error) {
     showError(result.error);
     await refresh();
     return;
   }
-  byId("code").value = "";
+  byId("pair-input").value = "";
   render(result);
+}
+
+async function offerDetected() {
+  const detected = await call("lb:detect");
+  const node = byId("detected");
+  if (!node) return;
+  if (!detected || detected.error || !detected.pairing) {
+    node.hidden = true;
+    return;
+  }
+  const link = LB.pairing.pairUrl(detected.pairing.origin, detected.pairing.code);
+  node.textContent = "Found a pairing code on the open Paperclip tab. Press Pair to use it.";
+  node.hidden = false;
+  const input = byId("pair-input");
+  if (input && !input.value) input.value = link || detected.pairing.code;
 }
 
 async function disconnect() {
@@ -123,7 +139,7 @@ function start() {
   if (reconnectButton) reconnectButton.addEventListener("click", reconnect);
 
   setText("version", "v" + chrome.runtime.getManifest().version);
-  void refresh();
+  void refresh().then(offerDetected);
   state.poll = setInterval(() => {
     if (!state.busy) void refresh();
   }, 1500);

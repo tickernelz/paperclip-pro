@@ -448,10 +448,34 @@
     return os ? protocol.DEFAULT_LABEL + " on " + os : protocol.DEFAULT_LABEL;
   }
 
+  async function detectPairingTab() {
+    var tabs = await browser.tabs.query({ active: true, lastFocusedWindow: true });
+    if (!tabs.length) tabs = await browser.tabs.query({ active: true });
+    if (!tabs.length) return null;
+    var tab = tabs[0];
+    if (!tab || typeof tab.id !== "number" || !/^https?:/i.test(String(tab.url || ""))) return null;
+    var results = await browser.tabs
+      .executeScript(tab.id, {
+        code: [
+          "(function(){",
+          "var el=document.querySelector('[data-paperclip-local-browser-pairing]');",
+          "if(!el)return null;",
+          "return {origin:el.getAttribute('data-origin')||'',code:el.getAttribute('data-code')||''};",
+          "})()"
+        ].join("")
+      })
+      .catch(function () {
+        return null;
+      });
+    var found = results && results[0];
+    if (!found || !found.code) return null;
+    return { origin: LB.pairing.normalizeOrigin(found.origin || tab.url), code: String(found.code).trim() };
+  }
+
   async function pair(options) {
     var opts = options || {};
-    var origin = String(opts.origin || "").trim().replace(/\/+$/, "");
-    if (!protocol.originOf(origin)) throw new Error("Origin must start with http:// or https://");
+    var origin = LB.pairing.normalizeOrigin(opts.origin);
+    if (!origin) throw new Error("Use an http or https address, such as https://paperclip.example");
     var code = String(opts.code || "").trim();
     if (!/^[A-Za-z0-9]{4,32}$/.test(code)) throw new Error("The pairing code looks wrong");
     var label = String(opts.label || "").trim() || (await defaultLabel());
@@ -623,6 +647,9 @@
       if (message.op === "pair") {
         await pair(message);
         return { ok: true, state: snapshotState() };
+      }
+      if (message.op === "detect") {
+        return { ok: true, pairing: await detectPairingTab() };
       }
       if (message.op === "reconnect") {
         if (!pairing) return { ok: false, error: "Pair a browser first" };
