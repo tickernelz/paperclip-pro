@@ -631,6 +631,21 @@ async function assertNavigationAllowed(tab) {
   }
 }
 
+async function ownAgentTab() {
+  for (const id of [...agentTabs]) {
+    const tab = await chrome.tabs.get(id).catch(() => null);
+    if (!tab) {
+      agentTabs.delete(id);
+      continue;
+    }
+    const origins = await paperclipOrigins();
+    const current = originOf(tab.url);
+    if (current && origins.has(current)) continue;
+    return tab;
+  }
+  return null;
+}
+
 async function newAgentTab(url, active) {
   const tab = await chrome.tabs.create({ url, active });
   agentTabs.add(tab.id);
@@ -646,7 +661,12 @@ async function toolOpen(args) {
       tab = await chrome.tabs.update(target.id, { url: args.url });
       agentTabs.add(tab.id);
     } else {
-      tab = await newAgentTab(args.url, args.active !== false);
+      const reusable = await ownAgentTab();
+      if (reusable) {
+        tab = await chrome.tabs.update(reusable.id, { url: args.url });
+      } else {
+        tab = await newAgentTab(args.url, args.active !== false);
+      }
     }
   } else {
     tab = await resolveTab(args);

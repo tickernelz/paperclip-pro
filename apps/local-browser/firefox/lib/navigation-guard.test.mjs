@@ -109,6 +109,14 @@ test("navigate refuses the Paperclip tab even when another tab is focused", asyn
   assert.equal(harness.tabs.get(7).url, PAPERCLIP_ORIGIN + "/");
 });
 
+test("opening a second url reuses the agent tab", async () => {
+  const harness = boot();
+  await harness.sandbox.LB.tools.dispatch("local_browser_open", { url: "https://example.test/one" }, ctx);
+  await harness.sandbox.LB.tools.dispatch("local_browser_open", { url: "https://example.test/two" }, ctx);
+  assert.equal(harness.created.length, 1, "one agent tab serves every open");
+  assert.equal(harness.tabs.get(99).url, "https://example.test/two");
+});
+
 test("a tab the agent opened stays navigable", async () => {
   const harness = boot();
   await harness.sandbox.LB.tools.dispatch("local_browser_open", { url: "https://example.test/page" }, ctx);

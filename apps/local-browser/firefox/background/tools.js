@@ -97,6 +97,35 @@
     }
   }
 
+  async function ownAgentTab() {
+    var ids = Object.keys(agentTabs);
+    for (var i = 0; i < ids.length; i += 1) {
+      var candidate = null;
+      try {
+        candidate = await browser.tabs.get(Number(ids[i]));
+      } catch (error) {
+        forgetAgentTab(ids[i]);
+        continue;
+      }
+      if (!candidate) {
+        forgetAgentTab(ids[i]);
+        continue;
+      }
+      var stored = null;
+      try {
+        stored = await browser.storage.local.get(protocol.STORAGE_PAIRING);
+      } catch (error) {
+        stored = null;
+      }
+      var pairing = stored && stored[protocol.STORAGE_PAIRING] ? stored[protocol.STORAGE_PAIRING] : null;
+      var paperclipOrigin = pairing && pairing.origin ? protocol.originOf(pairing.origin) : null;
+      var current = candidate.url ? protocol.originOf(candidate.url) : null;
+      if (paperclipOrigin && current && paperclipOrigin === current) continue;
+      return tabsApi.summarize(candidate);
+    }
+    return null;
+  }
+
   async function newAgentTab(url, active) {
     var tab = await browser.tabs.create({ url: url, active: active });
     rememberAgentTab(tab.id);
@@ -120,7 +149,13 @@
         rememberAgentTab(explicit.tabId);
         tab = await browser.tabs.get(explicit.tabId);
       } else if (url) {
-        tab = await newAgentTab(url, args.active === true);
+        var reusable = await ownAgentTab();
+        if (reusable) {
+          await browser.tabs.update(reusable.tabId, { url: url });
+          tab = await browser.tabs.get(reusable.tabId);
+        } else {
+          tab = await newAgentTab(url, args.active === true);
+        }
       } else if (args.newTab === true) {
         tab = await browser.tabs.create({ url: "about:blank", active: args.active === true });
       } else {

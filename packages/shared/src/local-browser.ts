@@ -260,14 +260,14 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   {
     name: "local_browser_open",
     description:
-      "Open a URL in the user's real browser, always in a fresh tab. Returns the tab and a snapshot ref set for the new page. Never navigates the tab the user is looking at or the Paperclip tab itself.",
+      "Open a URL in the user's real browser. It reuses the tab you already opened for this work, and creates one only when you have none, so repeated opens never pile up tabs. Never navigates the tab the user is looking at or the Paperclip tab itself.",
     inputSchema: {
       type: "object",
       properties: {
         sessionId: { type: "string", description: "Paired browser session id" },
-        tabId: { type: "integer", description: "Reuse this tab instead of opening a fresh one; refused for the tab the user is looking at and for the Paperclip tab" },
+        tabId: { type: "integer", description: "Target this tab instead of your own; refused for the tab the user is looking at and for the Paperclip tab" },
         url: { type: "string", description: "Absolute http(s) URL" },
-        newTab: { type: "boolean", description: "Accepted for compatibility; a url always opens a fresh tab" },
+        newTab: { type: "boolean", description: "Accepted for compatibility; a url reuses your own tab when you have one" },
         active: { type: "boolean", description: "Focus the tab when opening it" },
       },
       additionalProperties: false,

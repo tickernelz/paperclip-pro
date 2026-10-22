@@ -69,10 +69,12 @@ Two tabs are off limits for navigation, in both browsers:
   replace whatever the person is reading. The extension refuses it unless that tab was opened by the
   agent in this session.
 
-`local_browser_open` with a `url` therefore always creates a fresh tab and remembers it as the agent's
-own, so later `local_browser_navigate` calls against it work normally. A refusal is
-`local_browser_navigation_blocked` with the hint to call `local_browser_open` instead. Reading,
-snapshotting and clicking on a protected tab are still allowed; only navigation is refused.
+`local_browser_open` with a `url` therefore reuses the tab the agent already opened for this work, and
+creates one only when it has none, so repeated opens never pile up tabs. The first tab it creates is
+remembered as the agent's own, and later `local_browser_navigate` calls against it work normally. A
+refusal is `local_browser_navigation_blocked` with the hint to target that tab by `tabId` or to open
+one. Reading, snapshotting and clicking on a protected tab are still allowed; only navigation is
+refused.
 
 ## The tool loop
 

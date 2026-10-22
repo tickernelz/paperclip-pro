@@ -39,11 +39,13 @@ Choose the cheapest way to learn what you need:
   canvas content that a snapshot cannot describe. It costs an attachment, so do not
   use it to read text.
 
-local_browser_navigate covers url, back, forward, and reload on the current tab.
-Prefer it over local_browser_open when the tab is already on the site you need.
-local_browser_open is for starting somewhere new, or a new tab. local_browser_close
-closes a tab or disconnects the browser when you are done; it never signs the user
-out.
+local_browser_navigate covers url, back, forward, and reload on the tab you are
+working in. local_browser_open reuses the tab you already opened, and creates one
+only when you have none, so calling it again never piles up tabs. Both refuse the
+Paperclip tab and the tab the user is currently looking at; that refusal means the
+page you want is one you already opened, so target it by tabId instead of opening
+another. local_browser_close closes a tab or disconnects the browser when you are
+done; it never signs the user out.
 
 Full-tier tools exist and are worth their risk only in specific situations:
 

@@ -223,6 +223,14 @@ test("navigate refuses the Paperclip tab even when it is not focused", async () 
   assert.equal(context.tabsById.get(55).url, "https://p.test/apps");
 });
 
+test("opening a second url reuses the agent tab instead of piling up tabs", async () => {
+  const context = await boot();
+  await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/one" });
+  await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/two" });
+  assert.equal(context.created.length, 1, "one agent tab serves every open");
+  assert.equal(context.tabsById.get(99).url, "https://example.test/two");
+});
+
 test("a tab the agent opened stays navigable", async () => {
   const context = await boot();
   const opened = await call(context.socket, context.sent, "local_browser_open", { url: "https://example.test/page" });
