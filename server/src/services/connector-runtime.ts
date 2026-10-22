@@ -151,7 +151,7 @@ export async function resolveConnectorAssignments(
   const assignments: ConnectorAssignment[] = [];
   for (const connector of connectors) {
     const resources = await connector.resolve(db, binding);
-    if (resources.length)
+    if (resources.length || connector.optionalResources)
       assignments.push({
         key: connector.key,
         label: connector.label,

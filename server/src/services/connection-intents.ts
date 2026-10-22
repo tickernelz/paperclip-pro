@@ -2,6 +2,7 @@ import { updateAgentConfigurationInTransaction } from "./agent-configuration-tra
 import { emailChannelService } from "./email-channels.js";
 import { emailConnectionService } from "./email-connections.js";
 import { grantConnectionAgentTools } from "./connection-agent-access.js";
+import { isLocalBrowserConnection } from "./connectors/local-browser/connection.js";
 import { agentService } from "./agents.js";
 import { createHash } from "node:crypto";
 import { logActivity } from "./activity-log.js";
@@ -296,6 +297,18 @@ export function connectionIntentService(db: Db) {
       && connection.status === "active" && connection.enabled
       && ["mcp_remote", "local_stdio"].includes(connection.transport)
       && !isToolConnectionAttentionHealth(connection.healthStatus) ? connection : null;
+    if (input.serviceSlug === "local-browser") {
+      return (
+        matching.find(
+          (connection) =>
+            installedIds.has(connection.id) &&
+            isLocalBrowserConnection(connection) &&
+            connection.status === "active" &&
+            connection.enabled &&
+            !isToolConnectionAttentionHealth(connection.healthStatus),
+        ) ?? null
+      );
+    }
     if (input.serviceSlug === "github") {
       const selection = await resolveManagedGitHubIdentitySelection(db, input.companyId, {
         agentId: input.agentId, responsibleUserId: input.responsibleUserId,

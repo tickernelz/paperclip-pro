@@ -7,6 +7,7 @@ import {
   createDb,
   toolConnections,
 } from "@tickernelz/paperclip-pro-db";
+import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/paperclip-pro-shared";
 import { toolAccessService } from "../services/tool-access.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 
@@ -41,7 +42,7 @@ const actor = { actorType: "user" as const, actorId: "local-browser-reviewer" };
     return company;
   }
 
-  it("connects the paired-browser connector without a credential or a discovered action", async () => {
+  it("connects the paired-browser connector with its action catalog and no credential", async () => {
     const company = await fixture();
     const access = toolAccessService(db);
     const connected = await access.connectGalleryApp(
@@ -57,7 +58,9 @@ const actor = { actorType: "user" as const, actorId: "local-browser-reviewer" };
     expect(row.transport).toBe("rest_api");
     expect(row.authKind).toBe("none");
     expect(row.config.sourceTemplateKey).toBe("local-browser");
-    expect(connected.catalog).toEqual([]);
+    expect(connected.catalog.map((entry) => entry.toolName).sort()).toEqual(
+      [...LOCAL_BROWSER_TOOL_NAMES].sort(),
+    );
 
     const finished = await access.finishGalleryAppConnection(
       company.id,

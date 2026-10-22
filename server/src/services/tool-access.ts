@@ -15,6 +15,7 @@ import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorP
 import { BROWSER_USE_TOOLS } from "@tickernelz/paperclip-pro-shared";
 import { browserUseClient, isBrowserUseConnection } from "./browser-use-client.js";
 import { isLocalBrowserConnection } from "./connectors/local-browser/connection.js";
+import { LOCAL_BROWSER_CONNECTOR_TOOLS } from "./connectors/local-browser/tools.js";
 import { browserUseService } from "./browser-use.js";
 import { COGNEE_STDIO_TEMPLATE, cogneeCloudUrl } from "./cognee-connection.js";
 import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/paperclip-pro-shared";
@@ -7500,7 +7501,7 @@ export function toolAccessService(
       await validateAgentMailConnection(connection);
       return [];
     }
-    if (isLocalBrowserConnection(connection)) return [];
+    if (isLocalBrowserConnection(connection)) return LOCAL_BROWSER_CONNECTOR_TOOLS;
     if (connection.transport === "mcp_remote")
       return remoteTools(connection, credentialHeaders, actor);
     if (connection.transport !== "local_stdio") {

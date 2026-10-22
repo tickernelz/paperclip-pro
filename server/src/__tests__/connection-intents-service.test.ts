@@ -905,6 +905,41 @@ describeEmbeddedPostgres("connectionIntentService", () => {
   });
 
 
+  it("treats a granted paired-browser connection as ready even though it has no MCP transport", async () => {
+    const [company] = await db.insert(companies).values({ name: "Browser fixture", issuePrefix: `B${randomUUID().slice(0, 7)}` }).returning();
+    const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Browser agent", role: "general", adapterType: "process" }).returning();
+    await db.insert(companyMemberships).values({ companyId: company.id, principalType: "user", principalId: "browser-user", membershipRole: "owner", status: "active" });
+    const [issue] = await db.insert(issues).values({ companyId: company.id, title: "Drive the browser", status: "in_progress", assigneeAgentId: agent.id }).returning();
+    const [run] = await db.insert(heartbeatRuns).values({ companyId: company.id, agentId: agent.id, status: "running", responsibleUserId: "browser-user", contextSnapshot: { issueId: issue.id } }).returning();
+    const [application] = await db.insert(toolApplications).values({ companyId: company.id, applicationKey: randomUUID(), name: "Local Browser", type: "rest_api", metadata: { sourceTemplateKey: "local-browser" } }).returning();
+    const [connection] = await db.insert(toolConnections).values({
+      companyId: company.id,
+      applicationId: application.id,
+      uid: randomUUID(),
+      name: "Paired browser",
+      transport: "rest_api",
+      authKind: "none",
+      credentialPolicy: "shared",
+      enabled: true,
+      status: "active",
+      healthStatus: "ok",
+      config: { sourceTemplateKey: "local-browser" },
+    }).returning();
+    await db.insert(connectionGrants).values({ companyId: company.id, connectionId: connection.id, kind: "agent", subjectAgentId: agent.id, status: "active" });
+    await db.insert(toolConnectionInstalls).values({ companyId: company.id, connectionId: connection.id, targetType: "agent", targetId: agent.id });
+    const claimsForRun = { ...claims, sub: agent.id, company_id: company.id, run_id: run.id, responsible_user_id: "browser-user" };
+    const service = connectionIntentService(db);
+
+    const found = (await service.search(claimsForRun, "local browser")).results.find(
+      (entry) => entry.service === "local-browser",
+    );
+    expect(found).toMatchObject({ service: "local-browser", state: "ready", connectionId: connection.id });
+    await expect(service.request(claimsForRun, "local-browser")).resolves.toMatchObject({
+      state: "ready",
+      connectionId: connection.id,
+    });
+  });
+
   async function accessFixture() {
     const [company] = await db.insert(companies).values({ name: "Grant fixture", issuePrefix: `G${randomUUID().slice(0, 7)}` }).returning();
     const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Default agent", role: "general", adapterType: "process" }).returning();

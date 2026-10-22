@@ -31,11 +31,12 @@ function stubDb(): Db {
   const rowsFor = (table: unknown) => (table === instanceSettings ? [settingsRow] : []);
   const chain = (rows: unknown[]) => {
     const query = {
-      where: () => Promise.resolve(rows),
+      where: () => query,
       innerJoin: () => query,
       leftJoin: () => query,
       orderBy: () => Promise.resolve(rows),
       limit: () => Promise.resolve(rows),
+      then: (resolve: (value: unknown[]) => unknown) => Promise.resolve(rows).then(resolve),
     };
     return query;
   };
@@ -68,9 +69,13 @@ function liveSession(overrides: Record<string, unknown> = {}) {
 }
 
 describe("Local Browser connector", () => {
-  it("stays unassigned while no browser is paired", async () => {
+  it("keeps the skill and tools assigned while no browser is connected", async () => {
     listSessions.mockReturnValue([]);
-    await expect(resolveConnectorAssignments(db, binding)).resolves.toEqual([]);
+    const assignments = await resolveConnectorAssignments(db, binding);
+    const assignment = assignments.find((entry) => entry.key === "local-browser");
+    expect(assignment).toBeDefined();
+    expect(assignment!.resources).toEqual([]);
+    expect(assignment!.tools.map((tool) => tool.name)).toEqual([...LOCAL_BROWSER_TOOL_NAMES]);
     expect(listSessions).toHaveBeenCalledWith(binding.companyId);
   });
 
@@ -94,11 +99,13 @@ describe("Local Browser connector", () => {
         id: "33333333-3333-4333-8333-333333333333",
         label: "chromium — Work laptop",
         connectionId: "44444444-4444-4444-8444-444444444444",
+        metadata: { live: true, client: "chromium", tier: "refine" },
       },
       {
         id: "55555555-5555-4555-8555-555555555555",
         label: "firefox — Personal",
         connectionId: "66666666-6666-4666-8666-666666666666",
+        metadata: { live: true, client: "firefox", tier: "refine" },
       },
     ]);
     expect(assignment!.tools.map((tool) => tool.name)).toEqual([...LOCAL_BROWSER_TOOL_NAMES]);

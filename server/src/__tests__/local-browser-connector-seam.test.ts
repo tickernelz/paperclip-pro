@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings } from "@tickernelz/paperclip-pro-db";
+import { instanceSettings, localBrowserConnections } from "@tickernelz/paperclip-pro-db";
 import { localBrowserService } from "../services/local-browser/service.js";
 import { registerSession, resetSessions } from "../services/local-browser/registry.js";
 import type { BridgeSocket } from "../services/local-browser/types.js";
@@ -15,20 +15,29 @@ const settingsRow = {
   updatedAt: new Date(0),
 };
 
+const pairedConnections: Array<Record<string, unknown>> = [];
+
 function stubDb(): Db {
   const chain = (rows: unknown[]) => {
     const query = {
-      where: () => Promise.resolve(rows),
+      where: () => query,
       innerJoin: () => query,
       leftJoin: () => query,
       orderBy: () => Promise.resolve(rows),
       limit: () => Promise.resolve(rows),
+      then: (resolve: (value: unknown[]) => unknown) => Promise.resolve(rows).then(resolve),
     };
     return query;
   };
   return {
     select: () => ({
-      from: (table: unknown) => chain(table === instanceSettings ? [settingsRow] : []),
+      from: (table: unknown) => chain(
+        table === instanceSettings
+          ? [settingsRow]
+          : table === localBrowserConnections
+            ? pairedConnections
+            : [],
+      ),
     }),
   } as unknown as Db;
 }
@@ -71,6 +80,7 @@ function pair(ownerUserId: string | null, label: string, connectedAt: Date) {
 
 afterEach(() => {
   resetSessions();
+  pairedConnections.length = 0;
 });
 
 describe("Local Browser connector seam", () => {
@@ -78,6 +88,73 @@ describe("Local Browser connector seam", () => {
     await expect(
       executeConnectorTool(db, binding, "local_browser_sessions", {}),
     ).resolves.toEqual({ sessions: [] });
+  });
+
+  it("keeps the tool manifest assigned while no browser is connected", async () => {
+    const assignments = await resolveConnectorAssignments(db, binding);
+    const localBrowser = assignments.find((entry) => entry.key === "local-browser");
+    expect(localBrowser).toBeTruthy();
+    expect(localBrowser!.resources).toEqual([]);
+    expect(localBrowser!.tools.map((tool) => tool.name)).toContain("local_browser_snapshot");
+  });
+
+  it("lists a paired browser that is not connected right now", async () => {
+    const connectionId = randomUUID();
+    pairedConnections.push({
+      id: connectionId,
+      companyId,
+      label: "Firefox on win",
+      client: "firefox",
+      tier: "full",
+      createdByUserId: "user-alice",
+      status: "active",
+      connectedAt: new Date("2026-10-21T00:00:00.000Z"),
+    });
+
+    const assignments = await resolveConnectorAssignments(db, binding);
+    const localBrowser = assignments.find((entry) => entry.key === "local-browser");
+    expect(localBrowser!.resources).toHaveLength(1);
+    expect(localBrowser!.resources[0]).toMatchObject({
+      id: connectionId,
+      connectionId,
+      metadata: { live: false, client: "firefox", tier: "full" },
+    });
+    expect(localBrowser!.resources[0]!.label).toContain("not connected");
+  });
+
+  it("marks a live session as live next to the paired record", async () => {
+    const connectionId = randomUUID();
+    pairedConnections.push({
+      id: connectionId,
+      companyId,
+      label: "Alice laptop",
+      client: "chromium",
+      tier: "refine",
+      createdByUserId: "user-alice",
+      status: "active",
+      connectedAt: new Date("2026-10-21T00:00:00.000Z"),
+    });
+    const session = registerSession({
+      socket,
+      companyId,
+      connectionId,
+      createdByUserId: "user-alice",
+      createdByAgentId: null,
+      client: "chromium",
+      clientVersion: "0.1.0",
+      label: "Alice laptop",
+      profileName: null,
+      tabs: [{ tabId: 1, title: "Inbox", url: "https://app.example.com/inbox", active: true }],
+      tier: "refine",
+      allowedOrigins: ["https://app.example.com"],
+      tokenHash: randomUUID(),
+      now: new Date("2026-10-21T00:01:00.000Z"),
+    });
+
+    const assignments = await resolveConnectorAssignments(db, binding);
+    const resources = assignments.find((entry) => entry.key === "local-browser")!.resources;
+    expect(resources).toHaveLength(1);
+    expect(resources[0]).toMatchObject({ id: session.sessionId, metadata: { live: true } });
   });
 
   it("raises local_browser_not_paired with its hint once the browser is gone", async () => {
