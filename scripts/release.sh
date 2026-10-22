@@ -206,7 +206,17 @@ publish_one_tarball() {
   if [ "$dry_run" = true ]; then
     release_npm publish "$tarball" --dry-run --tag "$PUBLISH_TAG" --access public || status=$?
   else
-    release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance || status=$?
+    local publish_log
+    publish_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-release-publish.XXXXXX")"
+    if ! release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance 2>&1 | tee "$publish_log"; then
+      if grep -q "Automatic provenance generation not supported" "$publish_log" && [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+        release_warn "npm cannot attest provenance outside an OIDC build; publishing ${pkg_name}@${pkg_version} once without it."
+        release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance=false || status=$?
+      else
+        status=1
+      fi
+    fi
+    rm -f "$publish_log"
   fi
 
   if [ "$status" -ne 0 ]; then
