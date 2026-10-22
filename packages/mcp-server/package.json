@@ -38,6 +38,10 @@
       "./generated-tools": {
         "types": "./dist/generated-tools.d.ts",
         "import": "./dist/generated-tools.js"
+      },
+      "./connector-tools": {
+        "types": "./dist/connector-tools.d.ts",
+        "import": "./dist/connector-tools.js"
       }
     },
     "main": "./dist/index.js",
