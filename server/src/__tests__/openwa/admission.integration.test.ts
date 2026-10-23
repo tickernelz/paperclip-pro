@@ -57,6 +57,10 @@ class ManualClock implements OpenwaScheduledWakeClock {
   setTimer(fire: () => void, delayMs: number) {
     const id = ++this.seq;
     this.timers.set(id, { at: this.time + delayMs, fire });
+    if (delayMs <= 0)
+      queueMicrotask(() => {
+        if (this.timers.delete(id)) fire();
+      });
     return id;
   }
   clearTimer(handle: unknown) {
@@ -85,12 +89,49 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15
   }
 }
 
+type HeadSelectGate = { skip: number; observed: () => void; release: Promise<void> };
+
+let headSelectGate: HeadSelectGate | null = null;
+
+function holdEmptyHeadSelect(builder: any): any {
+  return new Proxy(builder, {
+    get(inner, property) {
+      if (property === "then")
+        return (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
+          inner
+            .then(async (rows: unknown) => {
+              const gate = headSelectGate;
+              if (gate && Array.isArray(rows) && rows.length === 0 && String(inner.toSQL().sql).includes("providerSentAt")) {
+                if (gate.skip-- > 0) return rows;
+                headSelectGate = null;
+                gate.observed();
+                await gate.release;
+              }
+              return rows;
+            })
+            .then(resolve, reject);
+      const member = Reflect.get(inner, property);
+      if (typeof member !== "function") return member;
+      return (...args: unknown[]) => {
+        const out = member.apply(inner, args);
+        return out && typeof out.then === "function" ? holdEmptyHeadSelect(out) : out;
+      };
+    },
+  });
+}
+
 function countingDb(db: Db) {
   const counts = { queries: 0, transactions: 0 };
   const proxy = new Proxy(db, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
       if (typeof value !== "function") return value;
+      if (property === "select")
+        return (...args: unknown[]) => {
+          counts.queries++;
+          const builder = value.apply(target, args);
+          return headSelectGate ? holdEmptyHeadSelect(builder) : builder;
+        };
       if (typeof property === "string" && QUERY_METHODS.has(property))
         return (...args: unknown[]) => {
           counts.queries++;
@@ -123,6 +164,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");
   }, 60_000);
   afterEach(async () => {
+    headSelectGate = null;
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
     await Promise.all(gateways.splice(0).map((gateway) => gateway.close()));
     for (const id of endpointIds.splice(0)) await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, id));
@@ -316,13 +358,19 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     );
   }
 
-  async function settledDeliveries(t: Setup, count: number) {
+  async function untilSwept(t: Setup, predicate: () => boolean | Promise<boolean>, timeoutMs?: number) {
     let swept = Date.now();
     await until(async () => {
       if (Date.now() - swept > 1_000) {
         swept = Date.now();
         await t.service.processPendingDeliveries();
       }
+      return predicate();
+    }, timeoutMs);
+  }
+
+  async function settledDeliveries(t: Setup, count: number) {
+    await untilSwept(t, async () => {
       const rows = await deliveries(t);
       return rows.length >= count && rows.every((row) => row.state !== "processing" && row.state !== "received");
     });
@@ -380,7 +428,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await t.service.openwa.addSenderRule(t.endpointId, { list: "deny", e164: "+" + ALLOWED_PHONE }, t.userId);
     await send(t, { chatId: jid(ALLOWED_PHONE), body: "allowed then denied" });
     expect(await deliveries(t)).toHaveLength(2);
-    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    const filtered = await filteredAudits(t, 2);
     expect(filtered.map((entry) => (entry.metadata as { reason: string }).reason)).toEqual(["outside_allowlist", "denylisted"]);
     expect(filtered.map((entry) => entry.chatKey)).toEqual([jid(STRANGER_PHONE), jid(ALLOWED_PHONE)]);
     const admittedAudits = (await audits(t)).filter((entry) => entry.kind === "trigger_admitted");
@@ -407,7 +455,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await t.service.revokeLink(t.endpointId, owner.principalId);
     await send(t, { chatId: jid(OWNER_PHONE), body: "after revoke" });
     expect(await deliveries(t)).toHaveLength(1);
-    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    const filtered = await filteredAudits(t, 1);
     expect(filtered.map((entry) => (entry.metadata as { reason: string; principalRole: string }).principalRole)).toEqual(["outside_allowlist"]);
     expect((await t.service.openwa.listOwners(t.endpointId))[0].effective).toBe(false);
   }, 90_000);
@@ -460,7 +508,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await send(t, { chatId: inactive, author: jid(MEMBER_PHONE), body: "@" + OWN_PHONE + " hi", extra: { mentionedIds: [jid(OWN_PHONE)] } });
     await send(t, { chatId: inactive, author: jid(MEMBER_PHONE), body: "no mention here" });
     expect(await deliveries(t)).toHaveLength(2);
-    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    const filtered = await filteredAudits(t, 1);
     expect(filtered.map((entry) => [entry.chatKey, (entry.metadata as { reason: string }).reason])).toEqual([[inactive, "chat_inactive"]]);
 
     await t.service.openwa.putChat(t.endpointId, { chatId: inactive, settings: { activation: "on" } }, t.userId);
@@ -576,8 +624,8 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await t.service.openwa.putChat(t.endpointId, { chatId: group, settings: { activation: "on", triggers: { keywords: ["invoice"] } } }, t.userId);
     await send(t, { chatId: group, author: jid(MEMBER_PHONE), body: "where is the invoice?" });
     expect(await deliveries(t)).toHaveLength(0);
+    const filtered = await filteredAudits(t, 1);
     const entries = await audits(t);
-    const filtered = entries.filter((entry) => entry.kind === "trigger_filtered");
     expect(filtered).toHaveLength(1);
     expect(filtered[0]).toMatchObject({ chatKey: group, metadata: { reason: "denylisted", principalRole: "denylisted", rules: ["keywords"] }, content: { text: "where is the invoice?" } });
     expect(entries.map((entry) => entry.kind)).not.toContain("trigger_admitted");
@@ -753,6 +801,12 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     return entries.filter((entry) => entry.kind === "trigger_filtered").map((entry) => (entry.metadata as { reason: string }).reason);
   }
 
+  async function filteredAudits(t: Setup, count: number) {
+    const entries = () => audits(t).then((rows) => rows.filter((entry) => entry.kind === "trigger_filtered"));
+    await until(async () => (await entries()).length >= count);
+    return entries();
+  }
+
   async function filteredReasons(t: Setup, count: number) {
     await until(async () => reasons(await audits(t)).length >= count);
     return reasons(await audits(t));
@@ -798,7 +852,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await goLive(t);
     for (let index = 0; index < 7; index++) await send(t, { chatId: jid(ALLOWED_PHONE), body: "distinct " + index });
     expect(await settledDeliveries(t, 5)).toHaveLength(5);
-    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    const filtered = await filteredAudits(t, 2);
     expect(filtered.map((entry) => entry.metadata)).toEqual([
       expect.objectContaining({ reason: "rate_limited", limit: 5, windowSeconds: 60 }),
       expect.objectContaining({ reason: "rate_limited", limit: 5, windowSeconds: 60 }),
@@ -868,7 +922,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
   async function sendHeld(t: Setup, input: Parameters<FakeOpenwaGateway["inbound"]>[0]) {
     const row = await send(t, input);
     let delivery: typeof chatDeliveries.$inferSelect | undefined;
-    await until(async () => {
+    await untilSwept(t, async () => {
       delivery = (await deliveries(t)).find((entry) => (entry.normalizedEvent as { openwa?: { waMessageId?: string } }).openwa?.waMessageId === row.waMessageId);
       const action = delivery && (await wakeActions(t)).find((entry) => entry.deliveryId === delivery!.id);
       return ["openwa_burst_held", "openwa_burst_folded"].includes(burstCode(action) ?? "");
@@ -906,7 +960,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await settle();
     expect(t.wakeup).not.toHaveBeenCalled();
     clock.advance(100);
-    await until(async () => (await wakeActions(t))[0]?.status === "processed");
+    await untilSwept(t, async () => (await wakeActions(t))[0]?.status === "processed");
     expect(t.wakeup).toHaveBeenCalledTimes(1);
     expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(held.map((delivery) => delivery.id));
     await settle();
@@ -919,13 +973,13 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     const t = await burstSetup(clock);
     const first = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "first request" });
     clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 1);
     clock.advance(5_000 - OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
     const second = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "a later request" });
     const secondWake = (await wakeActions(t)).find((action) => action.deliveryId === second.id)!;
     expect(burstCode(secondWake)).toBe("openwa_burst_held");
     clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
-    await until(() => t.wakeup.mock.calls.length === 2);
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 2);
     const [firstWake] = await wakeActions(t);
     expect(wakeCallDeliveryIds(t, firstWake.id)).toEqual([first.id]);
     expect(wakeCallDeliveryIds(t, secondWake.id)).toEqual([second.id]);
@@ -944,9 +998,35 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await settle();
     expect(t.wakeup).not.toHaveBeenCalled();
     clock.advance(100);
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 1);
     const [wake] = await wakeActions(t);
     expect(wakeCallDeliveryIds(t, wake.id)).toEqual(held.map((delivery) => delivery.id));
+  }, 120_000);
+
+  it("folds a message that arrives while the drain of the previous one is finishing", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    let observed!: () => void;
+    const drainFinishing = new Promise<void>((resolve) => (observed = resolve));
+    let release!: () => void;
+    headSelectGate = { skip: 1, observed, release: new Promise<void>((resolve) => (release = resolve)) };
+    const first = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "first part" });
+    await drainFinishing;
+    const row = await send(t, { chatId: jid(OWNER_PHONE), body: "second part" });
+    await until(async () => (await deliveries(t)).length === 2);
+    await settle();
+    release();
+    let second: typeof chatDeliveries.$inferSelect | undefined;
+    await until(async () => {
+      second = (await deliveries(t)).find((entry) => (entry.normalizedEvent as { openwa?: { waMessageId?: string } }).openwa?.waMessageId === row.waMessageId);
+      const action = second && (await wakeActions(t)).find((entry) => entry.deliveryId === second!.id);
+      return burstCode(action) === "openwa_burst_folded";
+    }, 5_000);
+    clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 1);
+    const [wake] = await wakeActions(t);
+    expect(wakeCallDeliveryIds(t, wake.id)).toEqual([first.id, second!.id]);
   }, 120_000);
 
   it("starts each message's wake immediately when the endpoint burst window is 0", async () => {
@@ -962,10 +1042,10 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       .where(eq(chatEndpoints.id, t.endpointId));
     await goLive(t);
     await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 1);
     await send(t, { chatId: jid(OWNER_PHONE), body: "second request" });
-    await until(() => t.wakeup.mock.calls.length === 2, 45_000);
-    await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
+    await untilSwept(t, () => t.wakeup.mock.calls.length === 2, 45_000);
+    await untilSwept(t, async () => (await wakeActions(t)).every((action) => action.status === "processed"));
     expect((await wakeActions(t)).map((action) => burstCode(action))).toEqual(["inbound_wakeup_durable", "inbound_wakeup_durable"]);
   }, 120_000);
 
