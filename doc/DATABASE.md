@@ -30,6 +30,13 @@ disconnecting is not proof that provider billing ended. See
 [subscription cost reporting](connections/AI-CONNECTIONS.md#subscription-cost-reporting)
 for the reporting and ownership rules.
 
+Host-side terminal sessions add `terminal_ssh_hosts` (company-scoped saved ssh
+destinations with a unique name per company) in migration
+`0352_lucky_marvel_apes.sql`. Hosts read from the server user's `~/.ssh/config`
+are parsed at request time and never stored. Every host-side session runs the
+server user's own ssh client, so it is exactly as privileged as a local shell
+and requires local terminal access.
+
 If you need to apply pending migrations manually, run:
 
 ```sh

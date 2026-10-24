@@ -8,9 +8,11 @@ import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   TERMINAL_MAX_UPLOAD_BYTES,
   TERMINAL_WEBSOCKET_PATH,
+  type CreateTerminalSshHostRequest,
   type TerminalAttachToken,
   type TerminalSession,
   type TerminalSessionKind,
+  type TerminalSshHost,
   type TerminalUploadResult,
 } from "@tickernelz/paperclip-pro-shared";
 import { resolveAttachmentUploadTempDir } from "../attachment-upload.js";
@@ -18,12 +20,19 @@ import { HttpError, badRequest, conflict, forbidden, notFound, payloadTooLarge, 
 import { validate } from "../middleware/validate.js";
 import { logActivity, type LogActivityInput } from "../services/activity-log.js";
 import { terminalAccessDenial } from "../services/terminal/access.js";
-import { localTerminalFiles, type TerminalFileAccess } from "../services/terminal/files.js";
+import { localTerminalFiles, pastedImageFileName, type TerminalFileAccess } from "../services/terminal/files.js";
 import { terminalSessionManager, type TerminalSessionManager } from "../services/terminal/manager.js";
 import { terminalOriginAllowed, type TerminalOriginPolicy } from "../services/terminal/origin.js";
 import { spawnLocalTerminal, type TerminalProcess } from "../services/terminal/process.js";
-import { createTerminalSessionSchema } from "../services/terminal/schema.js";
+import { createTerminalSessionSchema, createTerminalSshHostSchema } from "../services/terminal/schema.js";
 import { connectSshTerminal, type SshTerminalTarget } from "../services/terminal/ssh.js";
+import {
+  SSH_CONFIG_HOST_ID_PREFIX,
+  databaseSshHostStore,
+  parseSavedSshHostId,
+  type TerminalSshHostStore,
+} from "../services/terminal/ssh-hosts.js";
+import { startSystemSshTerminal } from "../services/terminal/system-ssh.js";
 import { resolveLocalTerminalCwd, resolveSshTerminalTarget } from "../services/terminal/targets.js";
 import { getActorInfo } from "./authz.js";
 
@@ -39,6 +48,9 @@ export interface TerminalRouteOptions {
   resolveSshTarget?: (companyId: string, environmentId: string) => Promise<{ target: SshTerminalTarget; title: string }>;
   startLocal?: (input: { cwd: string; cols: number; rows: number }) => StartedTerminal | Promise<StartedTerminal>;
   startSsh?: (target: SshTerminalTarget, size: { cols: number; rows: number }) => Promise<StartedTerminal>;
+  startHostSsh?: (input: { host: TerminalSshHost; cols: number; rows: number }) => StartedTerminal | Promise<StartedTerminal>;
+  sshHosts?: TerminalSshHostStore;
+  sshConfigPath?: string;
   recordActivity?: (input: LogActivityInput) => Promise<unknown>;
   uploadTempDir?: string;
 }
@@ -104,15 +116,18 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       files: localTerminalFiles(input.cwd),
     }));
   const startSsh = options.startSsh ?? connectSshTerminal;
+  const startHostSsh = options.startHostSsh ?? startSystemSshTerminal;
+  const sshHosts = options.sshHosts ?? databaseSshHostStore(db, { configPath: options.sshConfigPath });
   const recordActivity = options.recordActivity ?? ((input: LogActivityInput) => logActivity(db, input));
   const uploadTempDir = options.uploadTempDir ?? resolveAttachmentUploadTempDir();
 
   async function audit(
     req: Request,
     companyId: string,
-    sessionId: string,
+    entityId: string,
     action: string,
     details: Record<string, unknown>,
+    entityType = "terminal_session",
   ) {
     const actor = getActorInfo(req);
     await recordActivity({
@@ -122,8 +137,8 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       agentId: actor.agentId,
       runId: actor.runId,
       action,
-      entityType: "terminal_session",
-      entityId: sessionId,
+      entityType,
+      entityId,
       details,
     });
   }
@@ -132,6 +147,8 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
     assertTerminalAccess(req, req.params.companyId as string, "ssh");
     next();
   };
+
+  const requireLocalAccess = (req: Request, companyId: string) => assertTerminalAccess(req, companyId, "local");
 
   const sameOrigin = (req: Request, _res: Response, next: NextFunction) => {
     const allowed = terminalOriginAllowed(
@@ -165,6 +182,7 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
         kind: TerminalSessionKind;
         issueId?: string;
         environmentId?: string;
+        sshHostId?: string;
         cols?: number;
         rows?: number;
         title?: string;
@@ -176,9 +194,21 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       const size = { cols: body.cols ?? 80, rows: body.rows ?? 24 };
       const issueId = body.issueId ?? null;
       let started: StartedTerminal;
-      let cwd: string;
+      let cwd: string | null;
       let title: string;
-      if (body.kind === "ssh") {
+      let sshHost: string | null = null;
+      if (body.sshHostId) {
+        const host = await sshHosts.resolve(companyId, body.sshHostId);
+        if (!host) throw notFound("SSH host not found");
+        cwd = null;
+        title = body.title ?? host.name;
+        sshHost = host.name;
+        try {
+          started = await startHostSsh({ host, ...size });
+        } catch (err) {
+          throw startFailure(err);
+        }
+      } else if (body.kind === "ssh") {
         const resolved = await resolveSshTarget(companyId, body.environmentId!);
         cwd = resolved.target.remoteCwd;
         title = body.title ?? resolved.title;
@@ -201,6 +231,7 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
         cwd,
         issueId,
         environmentId: body.kind === "ssh" ? body.environmentId! : null,
+        sshHost,
         cols: size.cols,
         rows: size.rows,
         createdByUserId: userId,
@@ -213,6 +244,7 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
           cwd: session.cwd,
           issueId: session.issueId,
           environmentId: session.environmentId,
+          sshHost: session.sshHost,
         });
       } catch (err) {
         manager.kill(companyId, session.id);
@@ -227,6 +259,52 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
     res.json(
       manager.list(companyId).filter((session) => terminalAccessDenial(req.actor, companyId, session.kind) === null),
     );
+  });
+
+  router.get("/companies/:companyId/terminal/ssh-hosts", gate, async (req, res) => {
+    const companyId = req.params.companyId as string;
+    requireLocalAccess(req, companyId);
+    res.setHeader("Cache-Control", "no-store");
+    res.json(await sshHosts.list(companyId));
+  });
+
+  router.post(
+    "/companies/:companyId/terminal/ssh-hosts",
+    gate,
+    sameOrigin,
+    validate(createTerminalSshHostSchema),
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      requireLocalAccess(req, companyId);
+      const input = req.body as CreateTerminalSshHostRequest;
+      const saved = await sshHosts.create(companyId, input, req.actor.userId ?? null);
+      if (!saved) throw conflict("A saved SSH host with that name already exists");
+      await audit(
+        req,
+        companyId,
+        saved.id,
+        "terminal.ssh_host_saved",
+        { name: saved.name, destination: saved.destination, port: saved.port },
+        "terminal_ssh_host",
+      );
+      res.status(201).json(saved);
+    },
+  );
+
+  router.delete("/companies/:companyId/terminal/ssh-hosts/:hostId", gate, sameOrigin, async (req, res) => {
+    const companyId = req.params.companyId as string;
+    const hostId = req.params.hostId as string;
+    requireLocalAccess(req, companyId);
+    if (!parseSavedSshHostId(hostId)) {
+      if (hostId.startsWith(SSH_CONFIG_HOST_ID_PREFIX)) {
+        throw badRequest("Hosts from the server ssh config cannot be removed");
+      }
+      throw notFound("SSH host not found");
+    }
+    const removed = await sshHosts.remove(companyId, hostId);
+    if (!removed) throw notFound("SSH host not found");
+    await audit(req, companyId, hostId, "terminal.ssh_host_deleted", { hostId }, "terminal_ssh_host");
+    res.status(204).end();
   });
 
   router.delete("/companies/:companyId/terminal/sessions/:sessionId", gate, sameOrigin, async (req, res) => {
@@ -274,6 +352,25 @@ export function terminalRoutes(db: Db, options: TerminalRouteOptions) {
       if (!files) throw notFound("Terminal session not found");
       const saved = await files.saveUpload(file.originalname, file.path);
       await audit(req, companyId, sessionId, "terminal.file_uploaded", { path: saved.path, bytes: saved.bytes });
+      const result: TerminalUploadResult = { path: saved.path, bytes: saved.bytes };
+      res.status(201).json(result);
+    } finally {
+      if (file?.path) await fs.rm(file.path, { force: true });
+    }
+  });
+
+  router.post("/companies/:companyId/terminal/sessions/:sessionId/paste-image", gate, sameOrigin, async (req, res) => {
+    const companyId = req.params.companyId as string;
+    const sessionId = req.params.sessionId as string;
+    sessionForActor(req, companyId, sessionId);
+    const file = await readUploadFile(req, res, uploadTempDir);
+    try {
+      if (!file) throw badRequest("Multipart field \"file\" is required");
+      const fileName = pastedImageFileName(file.mimetype);
+      const files = manager.files(companyId, sessionId);
+      if (!files) throw notFound("Terminal session not found");
+      const saved = await files.savePastedImage(fileName, file.path);
+      await audit(req, companyId, sessionId, "terminal.image_pasted", { path: saved.path, bytes: saved.bytes });
       const result: TerminalUploadResult = { path: saved.path, bytes: saved.bytes };
       res.status(201).json(result);
     } finally {

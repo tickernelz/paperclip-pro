@@ -16,7 +16,7 @@ import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { ImageAddon } from "@xterm/addon-image";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
 import "@xterm/xterm/css/xterm.css";
-import { ArrowDown, ArrowUp, Download, RotateCw, Search, X } from "lucide-react";
+import { ArrowDown, ArrowUp, ClipboardPaste, Copy, Download, Eraser, RotateCw, Search, TextSelect, Upload, X } from "lucide-react";
 import {
   clampTerminalCols,
   clampTerminalRows,
@@ -26,8 +26,15 @@ import {
 import { ApiError } from "@/api/client";
 import { terminalApi } from "@/api/terminal";
 import { Button } from "@/components/ui/button";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
 import { Input } from "@/components/ui/input";
-import { readTextFromClipboard } from "@/lib/clipboard";
 import { useCopyToast } from "@/lib/use-copy-action";
 import { cn } from "@/lib/utils";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
@@ -40,6 +47,7 @@ import {
   resolveTerminalTheme,
   TERMINAL_RECONNECT_BASE_DELAY_MS,
 } from "./terminal-frames";
+import { pastedImageFromTransfer, readClipboardImage, readTerminalClipboard, shellEscapePath } from "./terminal-clipboard";
 
 export type TerminalConnectionState = "connecting" | "connected" | "reconnecting" | "exited" | "failed";
 
@@ -121,6 +129,9 @@ export function TerminalView({
   const copyWithToastRef = useRef(copyWithToast);
   const reconnectBaseDelayRef = useRef(reconnectBaseDelayMs);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const pasteImageRef = useRef<(image: Blob) => Promise<void>>(async () => {});
+  const pasteClipboardRef = useRef<() => Promise<void>>(async () => {});
 
   const [connection, setConnection] = useState<TerminalConnectionState>("connecting");
   const [renderer, setRenderer] = useState<"webgl" | "dom">("dom");
@@ -130,6 +141,7 @@ export function TerminalView({
   const [downloadOpen, setDownloadOpen] = useState(false);
   const [downloadPath, setDownloadPath] = useState("");
   const [dragging, setDragging] = useState(false);
+  const [menuHasSelection, setMenuHasSelection] = useState(false);
 
   onSessionChangeRef.current = onSessionChange;
   onExitRef.current = onExit;
@@ -149,6 +161,7 @@ export function TerminalView({
     let attempt = 0;
     let attached = false;
     let replaysInFlight = 0;
+    let heldInput: string[] | null = null;
     let lastSize: { cols: number; rows: number } | null = null;
 
     const terminal = new XTermTerminal({
@@ -343,8 +356,35 @@ export function TerminalView({
 
     const inputDisposable = terminal.onData((data) => {
       if (replaysInFlight > 0) return;
+      if (heldInput) {
+        heldInput.push(data);
+        return;
+      }
       send({ type: "input", data });
     });
+
+    const pasteImageOrControlV = async () => {
+      const held: string[] = [];
+      heldInput = held;
+      let image: Blob | null = null;
+      try {
+        image = await readClipboardImage();
+      } finally {
+        heldInput = null;
+        if (!image) send({ type: "input", data: "\x16" });
+        for (const data of held) send({ type: "input", data });
+      }
+      if (image && !disposed) await pasteImageRef.current(image);
+    };
+
+    const onPasteCapture = (event: ClipboardEvent) => {
+      const image = pastedImageFromTransfer(event.clipboardData);
+      if (!image) return;
+      event.preventDefault();
+      event.stopPropagation();
+      void pasteImageRef.current(image);
+    };
+    element.addEventListener("paste", onPasteCapture, true);
     terminal.attachCustomKeyEventHandler((event) => {
       if (event.type !== "keydown") return true;
       const key = event.key.toLowerCase();
@@ -360,9 +400,12 @@ export function TerminalView({
       }
       if (event.ctrlKey && event.shiftKey && key === "v") {
         event.preventDefault();
-        void readTextFromClipboard().then((text) => {
-          if (text) terminal.paste(text);
-        });
+        void pasteClipboardRef.current();
+        return false;
+      }
+      if (event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey && key === "v") {
+        event.preventDefault();
+        if (!heldInput) void pasteImageOrControlV();
         return false;
       }
       return true;
@@ -388,6 +431,7 @@ export function TerminalView({
       if (fitFrame !== null) window.cancelAnimationFrame(fitFrame);
       resizeObserver?.disconnect();
       themeObserver?.disconnect();
+      element.removeEventListener("paste", onPasteCapture, true);
       inputDisposable.dispose();
       const current = socket;
       socket = null;
@@ -447,6 +491,40 @@ export function TerminalView({
     }
     terminalRef.current?.focus();
   }, [companyId, sessionId]);
+
+  const pasteImage = useCallback(async (image: Blob) => {
+    setMessage("Uploading pasted image…");
+    try {
+      const result = await terminalApi.pasteImage(companyId, sessionId, image);
+      terminalRef.current?.paste(`${shellEscapePath(result.path)} `);
+      setMessage(`Pasted image saved to ${result.path}`);
+    } catch (error) {
+      setMessage(`Image paste failed: ${errorText(error, "unknown error")}`);
+    }
+    terminalRef.current?.focus();
+  }, [companyId, sessionId]);
+  pasteImageRef.current = pasteImage;
+
+  const pasteClipboard = useCallback(async () => {
+    const content = await readTerminalClipboard();
+    if (content.image) {
+      await pasteImageRef.current(content.image);
+      return;
+    }
+    if (content.text) terminalRef.current?.paste(content.text);
+    terminalRef.current?.focus();
+  }, []);
+  pasteClipboardRef.current = pasteClipboard;
+
+  const copySelection = () => {
+    const terminal = terminalRef.current;
+    if (terminal?.hasSelection()) void copyWithToast(terminal.getSelection(), "Copied selection");
+  };
+
+  const runFromMenu = (action: (terminal: XTermTerminal) => void) => {
+    const terminal = terminalRef.current;
+    if (terminal) action(terminal);
+  };
 
   const onDragOver = (event: DragEvent<HTMLDivElement>) => {
     if (!hasFiles(event)) return;
@@ -568,13 +646,72 @@ export function TerminalView({
         onDragLeave={() => setDragging(false)}
         onDrop={onDrop}
       >
-        <div
-          ref={screenRef}
-          role="application"
-          aria-label="Terminal"
-          data-testid="terminal-screen"
-          className="h-full w-full overflow-hidden text-xs [&_.xterm]:h-full [&_.xterm-viewport]:!overflow-y-auto [&_.xterm-viewport]:!bg-transparent"
-          onClick={() => terminalRef.current?.focus()}
+        <ContextMenu onOpenChange={(open) => { if (open) setMenuHasSelection(terminalRef.current?.hasSelection() ?? false); }}>
+          <ContextMenuTrigger asChild>
+            <div
+              ref={screenRef}
+              role="application"
+              aria-label="Terminal"
+              data-testid="terminal-screen"
+              className="h-full w-full overflow-hidden text-xs [&_.xterm]:h-full [&_.xterm-viewport]:!overflow-y-auto [&_.xterm-viewport]:!bg-transparent"
+              onClick={() => terminalRef.current?.focus()}
+            />
+          </ContextMenuTrigger>
+          <ContextMenuContent
+            data-testid="terminal-context-menu"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              terminalRef.current?.focus();
+            }}
+          >
+            <ContextMenuItem disabled={!menuHasSelection} onSelect={copySelection}>
+              <Copy aria-hidden />
+              Copy
+              <ContextMenuShortcut>Ctrl+Shift+C</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={() => void pasteClipboard()}>
+              <ClipboardPaste aria-hidden />
+              Paste
+              <ContextMenuShortcut>Ctrl+Shift+V</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={() => runFromMenu((terminal) => terminal.selectAll())}>
+              <TextSelect aria-hidden />
+              Select all
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => setSearchOpen(true)}>
+              <Search aria-hidden />
+              Find
+              <ContextMenuShortcut>Ctrl+Shift+F</ContextMenuShortcut>
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={() => runFromMenu((terminal) => terminal.clear())}>
+              <Eraser aria-hidden />
+              Clear scrollback
+            </ContextMenuItem>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => fileInputRef.current?.click()}>
+              <Upload aria-hidden />
+              Upload file
+            </ContextMenuItem>
+            <ContextMenuItem onSelect={() => setDownloadOpen(true)}>
+              <Download aria-hidden />
+              Download file
+            </ContextMenuItem>
+          </ContextMenuContent>
+        </ContextMenu>
+        <input
+          ref={fileInputRef}
+          type="file"
+          multiple
+          hidden
+          aria-hidden
+          tabIndex={-1}
+          data-testid="terminal-upload-input"
+          onChange={(event) => {
+            const files = Array.from(event.target.files ?? []);
+            event.target.value = "";
+            if (files.length > 0) void uploadFiles(files);
+          }}
         />
         {dragging ? (
           <div className="pointer-events-none absolute inset-1 flex items-center justify-center rounded-md border-2 border-dashed border-ring bg-background/80 text-sm text-foreground">

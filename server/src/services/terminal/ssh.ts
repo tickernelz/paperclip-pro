@@ -10,6 +10,8 @@ import { badRequest, conflict, notFound } from "../../errors.js";
 import {
   TERMINAL_UPLOAD_EXISTS_MESSAGE,
   isPathInside,
+  remotePastedImageCommand,
+  shellQuote,
   validateTerminalDownloadPath,
   validateTerminalUploadFileName,
   type TerminalFileAccess,
@@ -40,12 +42,12 @@ interface SftpSession {
   end(): void;
 }
 
-interface SshChannel {
+interface SshChannel extends Writable {
   stderr: { on(event: "data", listener: (data: Buffer) => void): void };
-  on(event: "data", listener: (data: Buffer) => void): void;
-  on(event: "exit", listener: (code: number | null, signal?: string) => void): void;
-  on(event: "close", listener: () => void): void;
-  write(data: string): void;
+  on(event: "data", listener: (data: Buffer) => void): this;
+  on(event: "exit", listener: (code: number | null, signal?: string) => void): this;
+  on(event: "close", listener: () => void): this;
+  on(event: string, listener: (...args: never[]) => void): this;
   setWindow(rows: number, cols: number, height: number, width: number): void;
   close(): void;
 }
@@ -58,7 +60,7 @@ interface SshClient {
   connect(config: Record<string, unknown>): void;
   exec(
     command: string,
-    options: { pty: { term: string; cols: number; rows: number } },
+    options: { pty?: { term: string; cols: number; rows: number } },
     callback: (err: Error | undefined, channel: SshChannel) => void,
   ): void;
   sftp(callback: (err: Error | undefined, sftp: SftpSession) => void): void;
@@ -67,10 +69,6 @@ interface SshClient {
 }
 
 const require = createRequire(import.meta.url);
-
-function shellQuote(value: string): string {
-  return `'${value.replace(/'/g, "'\\''")}'`;
-}
 
 function globToRegExp(pattern: string): RegExp {
   const escaped = pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".");
@@ -196,6 +194,34 @@ function sftpCall<T>(run: (callback: (err: Error | null | undefined, value: T) =
   });
 }
 
+function execWithFileInput(client: SshClient, command: string, sourcePath: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    client.exec(command, {}, (err, channel) => {
+      if (err) {
+        reject(err);
+        return;
+      }
+      let stdout = "";
+      let stderr = "";
+      let exitCode: number | null = null;
+      channel.on("data", (data: Buffer) => {
+        stdout += data.toString("utf8");
+      });
+      channel.stderr.on("data", (data: Buffer) => {
+        stderr += data.toString("utf8");
+      });
+      channel.on("exit", (code: number | null) => {
+        exitCode = code;
+      });
+      channel.on("close", () => {
+        if (exitCode === 0 && stdout) resolve(stdout);
+        else reject(new Error(stderr.trim() || `Remote command failed with exit code ${exitCode ?? "unknown"}`));
+      });
+      pipeline(createReadStream(sourcePath), channel).catch(reject);
+    });
+  });
+}
+
 function sshTerminalFiles(client: SshClient, remoteCwd: string): TerminalFileAccess {
   const remote = path.posix;
   return {
@@ -213,6 +239,11 @@ function sshTerminalFiles(client: SshClient, remoteCwd: string): TerminalFileAcc
       } finally {
         sftp.end();
       }
+    },
+    async savePastedImage(fileName, sourcePath) {
+      const remotePath = await execWithFileInput(client, remotePastedImageCommand(fileName), sourcePath);
+      const { size } = await fs.stat(sourcePath);
+      return { path: remotePath, bytes: size };
     },
     async openDownload(requestedPath) {
       const requested = validateTerminalDownloadPath(requestedPath);

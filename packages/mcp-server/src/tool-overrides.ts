@@ -80,6 +80,10 @@ export const EXCLUDED_OPERATIONS: Record<string, string> = {
   "DELETE /api/companies/{companyId}/terminal/sessions/{sessionId}": "trust_boundary",
   "POST /api/companies/{companyId}/terminal/sessions/{sessionId}/token": "trust_boundary",
   "POST /api/companies/{companyId}/terminal/sessions/{sessionId}/upload": "trust_boundary",
+  "POST /api/companies/{companyId}/terminal/sessions/{sessionId}/paste-image": "trust_boundary",
+  "GET /api/companies/{companyId}/terminal/ssh-hosts": "trust_boundary",
+  "POST /api/companies/{companyId}/terminal/ssh-hosts": "trust_boundary",
+  "DELETE /api/companies/{companyId}/terminal/ssh-hosts/{hostId}": "trust_boundary",
   "GET /api/companies/{companyId}/terminal/sessions/{sessionId}/download": "trust_boundary",
 };
 

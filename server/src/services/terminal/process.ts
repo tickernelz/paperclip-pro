@@ -45,6 +45,7 @@ const INHERITED_ENV_KEYS = [
   "DBUS_SESSION_BUS_ADDRESS",
   "DISPLAY",
   "WAYLAND_DISPLAY",
+  "SSH_AUTH_SOCK",
 ] as const;
 
 export function resolveLoginShell(env: NodeJS.ProcessEnv = process.env): string {

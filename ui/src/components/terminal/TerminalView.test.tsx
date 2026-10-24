@@ -48,7 +48,8 @@ const xterm = vi.hoisted(() => {
       for (const handler of this.dataHandlers) handler(data);
     }
 
-    attachCustomKeyEventHandler() {}
+    keyHandler: ((event: KeyboardEvent) => boolean) | null = null;
+    attachCustomKeyEventHandler(handler: (event: KeyboardEvent) => boolean) { this.keyHandler = handler; }
     write(data: string, callback?: () => void) {
       this.writes.push(data);
       if (data.includes(DEVICE_ATTRIBUTES_QUERY)) this.emitData(DEVICE_ATTRIBUTES_REPLY);
@@ -60,7 +61,9 @@ const xterm = vi.hoisted(() => {
     clearSelection() {}
     hasSelection() { return false; }
     getSelection() { return ""; }
-    paste() {}
+    paste(data: string) { this.emitData(data); }
+    selectAll() {}
+    clear() {}
     dispose() { this.disposed = true; }
   }
 
@@ -104,6 +107,7 @@ vi.mock("@xterm/xterm/css/xterm.css", () => ({}));
 const terminalApiMock = vi.hoisted(() => ({
   createToken: vi.fn(),
   upload: vi.fn(),
+  pasteImage: vi.fn(),
   download: vi.fn(),
 }));
 
@@ -168,6 +172,7 @@ const session = {
   createdAt: "2026-10-24T00:00:00.000Z",
   lastActivityAt: "2026-10-24T00:00:00.000Z",
   createdByUserId: "user-1",
+  sshHost: null,
 };
 
 function token(value: string) {
@@ -349,6 +354,118 @@ describe("TerminalView", () => {
 
     await provider.writeText("c", "copied");
     expect(writeSpy).toHaveBeenCalledWith("copied");
+  });
+
+  async function connected() {
+    terminalApiMock.createToken.mockResolvedValue(token("token-1"));
+    await mount();
+    const socket = FakeWebSocket.instances[0]!;
+    await act(async () => {
+      socket.open();
+      socket.receive({ type: "ready", session });
+    });
+    return { socket, terminal: xterm.terminals[0]! };
+  }
+
+  function inputs(socket: FakeWebSocket) {
+    return socket.frames().filter((frame) => frame.type === "input").map((frame) => frame.data);
+  }
+
+  function pasteEvent(types: string[], file: File | null) {
+    const event = new Event("paste", { bubbles: true, cancelable: true });
+    const items = file ? [{ kind: "file", type: file.type, getAsFile: () => file }] : [];
+    Object.defineProperty(event, "clipboardData", { value: { types, items } });
+    return event;
+  }
+
+  function stubClipboard(items: Array<Record<string, Blob>>) {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => { release = resolve; });
+    const read = vi.fn(async () => {
+      await gate;
+      return items.map((entry) => ({ types: Object.keys(entry), getType: async (type: string) => entry[type]! }));
+    });
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { read, readText: vi.fn().mockResolvedValue("") } });
+    return { read, release: () => release() };
+  }
+
+  function ctrlV() {
+    return { type: "keydown", key: "v", ctrlKey: true, shiftKey: false, altKey: false, metaKey: false, preventDefault: vi.fn() } as unknown as KeyboardEvent;
+  }
+
+  it("saves a pasted image on the terminal host and types its shell-escaped path", async () => {
+    terminalApiMock.pasteImage.mockReset().mockResolvedValue({ path: "/tmp/paperclip pasted/shot.png", bytes: 4 });
+    const { socket } = await connected();
+    const image = new File([new Uint8Array([1, 2, 3, 4])], "image.png", { type: "image/png" });
+    const event = pasteEvent(["Files"], image);
+
+    await act(async () => {
+      container.querySelector('[data-testid="terminal-screen"]')!.dispatchEvent(event);
+    });
+    await flush();
+
+    expect(event.defaultPrevented).toBe(true);
+    expect(terminalApiMock.pasteImage).toHaveBeenCalledWith("company-1", "session-1", image);
+    expect(inputs(socket)).toEqual(["'/tmp/paperclip pasted/shot.png' "]);
+  });
+
+  it("leaves a paste that carries text to the terminal's normal text paste", async () => {
+    terminalApiMock.pasteImage.mockReset();
+    await connected();
+    const image = new File([new Uint8Array([1])], "image.png", { type: "image/png" });
+    const event = pasteEvent(["text/plain", "Files"], image);
+
+    await act(async () => {
+      container.querySelector('[data-testid="terminal-screen"]')!.dispatchEvent(event);
+    });
+    await flush();
+
+    expect(event.defaultPrevented).toBe(false);
+    expect(terminalApiMock.pasteImage).not.toHaveBeenCalled();
+  });
+
+  it("sends Ctrl+V to the shell in typing order when the clipboard holds no image", async () => {
+    terminalApiMock.pasteImage.mockReset();
+    const { socket, terminal } = await connected();
+    const clipboard = stubClipboard([{ "text/plain": new Blob(["hello"], { type: "text/plain" }) }]);
+
+    expect(terminal.keyHandler!(ctrlV())).toBe(false);
+    await act(async () => terminal.emitData("x"));
+    expect(inputs(socket)).toEqual([]);
+
+    await act(async () => clipboard.release());
+    await flush();
+
+    expect(inputs(socket)).toEqual(["\x16", "x"]);
+    expect(terminalApiMock.pasteImage).not.toHaveBeenCalled();
+  });
+
+  it("turns Ctrl+V with an image in the clipboard into a pasted image path", async () => {
+    terminalApiMock.pasteImage.mockReset().mockResolvedValue({ path: "/tmp/p/shot.png", bytes: 1 });
+    const { socket, terminal } = await connected();
+    const image = new Blob([new Uint8Array([9])], { type: "image/png" });
+    const clipboard = stubClipboard([{ "image/png": image }]);
+
+    terminal.keyHandler!(ctrlV());
+    await act(async () => clipboard.release());
+    await flush();
+
+    expect(terminalApiMock.pasteImage).toHaveBeenCalledWith("company-1", "session-1", image);
+    expect(inputs(socket)).toEqual(["/tmp/p/shot.png "]);
+  });
+
+  it("prefers the image when Ctrl+V finds both an image and text in the clipboard", async () => {
+    terminalApiMock.pasteImage.mockReset().mockResolvedValue({ path: "/tmp/p/both.png", bytes: 1 });
+    const { socket, terminal } = await connected();
+    const image = new Blob([new Uint8Array([7])], { type: "image/png" });
+    const clipboard = stubClipboard([{ "text/plain": new Blob(["caption"], { type: "text/plain" }), "image/png": image }]);
+
+    terminal.keyHandler!(ctrlV());
+    await act(async () => clipboard.release());
+    await flush();
+
+    expect(terminalApiMock.pasteImage).toHaveBeenCalledWith("company-1", "session-1", image);
+    expect(inputs(socket)).toEqual(["/tmp/p/both.png "]);
   });
 
   it("reports a missing session so the owner can start a new one", async () => {

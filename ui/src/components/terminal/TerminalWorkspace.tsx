@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Columns2, Plus, Server, SquareTerminal, X } from "lucide-react";
-import type { CreateTerminalSessionRequest, TerminalSession } from "@tickernelz/paperclip-pro-shared";
+import type { CreateTerminalSessionRequest, TerminalSession, TerminalSshHost } from "@tickernelz/paperclip-pro-shared";
 import { ApiError } from "@/api/client";
 import { accessApi } from "@/api/access";
 import { environmentsApi } from "@/api/environments";
@@ -12,12 +12,15 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable-panels";
 import { queryKeys } from "@/lib/queryKeys";
+import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
+import { SshHostDialog } from "./SshHostDialog";
 import { TerminalView } from "./TerminalView";
 import { canOpenLocalTerminal, terminalAccessErrorMessage } from "./terminal-access";
 
@@ -84,6 +87,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   const [titles, setTitles] = useState<Record<string, string>>(() => readTitles(companyId));
   const [renaming, setRenaming] = useState<{ id: string; value: string } | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [sshDialogOpen, setSshDialogOpen] = useState(false);
   const boardAccessQuery = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -103,6 +107,19 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   const sshEnvironments = useMemo(
     () => (environmentsQuery.data ?? []).filter((environment) => environment.driver === "ssh"),
     [environmentsQuery.data],
+  );
+  const sshHostsQuery = useQuery({
+    queryKey: terminalQueryKeys.sshHosts(companyId),
+    queryFn: () => terminalApi.listSshHosts(companyId),
+    enabled: localAllowed,
+  });
+  const sshConfigHosts = useMemo(
+    () => (sshHostsQuery.data?.hosts ?? []).filter((host) => host.source === "config"),
+    [sshHostsQuery.data],
+  );
+  const savedSshHosts = useMemo(
+    () => (sshHostsQuery.data?.hosts ?? []).filter((host) => host.source === "saved"),
+    [sshHostsQuery.data],
   );
 
   useEffect(() => {
@@ -169,6 +186,8 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   const createLocal = (pane?: number) => createMutation.mutate({ body: { kind: "local" }, pane });
   const createSsh = (environmentId: string, name: string) =>
     createMutation.mutate({ body: { kind: "ssh", environmentId, title: name } });
+  const createSshHost = (host: TerminalSshHost) =>
+    createMutation.mutate({ body: { kind: "local", sshHostId: host.id, title: host.name } });
 
   const toggleSplit = () => {
     if (layout.panes.length >= MAX_PANES) {
@@ -241,7 +260,11 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                   selected ? "border-ring bg-accent text-foreground" : visible ? "border-border text-foreground" : "border-transparent text-muted-foreground hover:bg-accent",
                 )}
               >
-                {session.kind === "ssh" ? <Server className="size-3" aria-hidden /> : <SquareTerminal className="size-3" aria-hidden />}
+                {session.kind === "ssh" || session.sshHost ? (
+                  <Server className="size-3" aria-hidden />
+                ) : (
+                  <SquareTerminal className="size-3" aria-hidden />
+                )}
                 {renaming?.id === session.id ? (
                   <Input
                     autoFocus
@@ -292,8 +315,56 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
               SSH
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuLabel>SSH environments</DropdownMenuLabel>
+          <DropdownMenuContent align="end" className="w-72">
+            {localAllowed ? (
+              <>
+                {sshHostsQuery.isLoading ? (
+                  <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
+                ) : sshHostsQuery.isError ? (
+                  <DropdownMenuItem disabled className="text-destructive">
+                    {terminalAccessErrorMessage(sshHostsQuery.error, "SSH hosts could not be loaded.")}
+                  </DropdownMenuItem>
+                ) : sshConfigHosts.length === 0 && savedSshHosts.length === 0 ? (
+                  <DropdownMenuItem disabled>No SSH hosts</DropdownMenuItem>
+                ) : (
+                  <>
+                    <DropdownMenuLabel>~/.ssh/config</DropdownMenuLabel>
+                    {sshConfigHosts.length === 0 ? (
+                      <DropdownMenuItem disabled>No hosts</DropdownMenuItem>
+                    ) : (
+                      sshConfigHosts.map((host) => (
+                        <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
+                          <span className="truncate">{host.name}</span>
+                          <span className="ml-auto truncate pl-2 text-xs text-muted-foreground">
+                            {host.destination}
+                          </span>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                    <DropdownMenuLabel>Saved</DropdownMenuLabel>
+                    {savedSshHosts.length === 0 ? (
+                      <DropdownMenuItem disabled>No saved hosts</DropdownMenuItem>
+                    ) : (
+                      savedSshHosts.map((host) => (
+                        <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
+                          <span className="truncate">{host.name}</span>
+                          <span className="ml-auto truncate pl-2 text-xs text-muted-foreground">
+                            {host.destination}
+                            {host.port === null ? "" : `:${host.port}`}
+                          </span>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </>
+                )}
+                {sshHostsQuery.data?.configError ? (
+                  <DropdownMenuItem disabled className="text-muted-foreground">
+                    {sshHostsQuery.data.configError}
+                  </DropdownMenuItem>
+                ) : null}
+              </>
+            ) : null}
+            <DropdownMenuLabel>Environments</DropdownMenuLabel>
             {sshEnvironments.length === 0 ? (
               <DropdownMenuItem disabled>
                 {environmentsQuery.isLoading ? "Loading…" : "No SSH environments"}
@@ -303,6 +374,13 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                 {environment.name}
               </DropdownMenuItem>
             ))}
+            <DropdownMenuSeparator />
+            {localAllowed ? (
+              <DropdownMenuItem onSelect={() => setSshDialogOpen(true)}>Connect to host…</DropdownMenuItem>
+            ) : null}
+            <DropdownMenuItem asChild>
+              <Link to="/company/settings/instance/environments">Manage SSH environments</Link>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <Button
@@ -317,6 +395,13 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
           <Columns2 aria-hidden />
         </Button>
       </div>
+      <SshHostDialog
+        companyId={companyId}
+        open={sshDialogOpen}
+        savedHosts={savedSshHosts}
+        onOpenChange={setSshDialogOpen}
+        onConnect={createSshHost}
+      />
       {actionError ? (
         <p className="shrink-0 border-b border-border px-3 py-1 text-xs text-destructive" role="alert">{actionError}</p>
       ) : null}

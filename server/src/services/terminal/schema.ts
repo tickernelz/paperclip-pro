@@ -12,6 +12,7 @@ export const createTerminalSessionSchema = z
     kind: z.enum(["local", "ssh"]),
     issueId: z.string().uuid().optional(),
     environmentId: z.string().uuid().optional(),
+    sshHostId: z.string().trim().min(1).max(300).optional(),
     cols: z.number().int().min(TERMINAL_MIN_COLS).max(TERMINAL_MAX_COLS).optional(),
     rows: z.number().int().min(TERMINAL_MIN_ROWS).max(TERMINAL_MAX_ROWS).optional(),
     title: z.string().trim().min(1).max(120).optional(),
@@ -20,6 +21,12 @@ export const createTerminalSessionSchema = z
   .superRefine((value, ctx) => {
     if (value.kind === "ssh" && !value.environmentId) {
       ctx.addIssue({ code: "custom", path: ["environmentId"], message: "SSH terminals require environmentId" });
+    }
+    if (value.sshHostId && value.kind !== "local") {
+      ctx.addIssue({ code: "custom", path: ["sshHostId"], message: "sshHostId opens a host-side ssh client and needs kind \"local\"" });
+    }
+    if (value.sshHostId && value.issueId) {
+      ctx.addIssue({ code: "custom", path: ["issueId"], message: "sshHostId cannot be combined with issueId" });
     }
   });
 
@@ -39,7 +46,35 @@ export const terminalSessionResponseSchema = z.object({
   createdAt: z.string(),
   lastActivityAt: z.string(),
   createdByUserId: z.string().nullable(),
+  sshHost: z.string().nullable(),
 });
+
+export const terminalSshHostSchema = z.object({
+  id: z.string(),
+  source: z.enum(["config", "saved"]),
+  name: z.string(),
+  destination: z.string(),
+  port: z.number().int().nullable(),
+});
+
+export const terminalSshHostListSchema = z.object({
+  hosts: z.array(terminalSshHostSchema),
+  configPath: z.string(),
+  configError: z.string().nullable(),
+});
+
+export const createTerminalSshHostSchema = z
+  .object({
+    name: z.string().trim().min(1).max(80),
+    destination: z
+      .string()
+      .trim()
+      .min(1)
+      .max(255)
+      .regex(/^(?:[A-Za-z0-9._][A-Za-z0-9._-]*@)?[A-Za-z0-9._][A-Za-z0-9._:-]*$/, "Destination must look like host or user@host"),
+    port: z.number().int().min(1).max(65535).optional(),
+  })
+  .strict();
 
 export const terminalAttachTokenResponseSchema = z.object({
   sessionId: z.string(),

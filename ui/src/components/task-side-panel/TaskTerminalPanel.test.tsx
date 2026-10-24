@@ -40,6 +40,7 @@ function session(overrides: Partial<TerminalSession>): TerminalSession {
     createdAt: "2026-10-24T00:00:00.000Z",
     lastActivityAt: "2026-10-24T00:00:00.000Z",
     createdByUserId: "user-1",
+    sshHost: null,
     ...overrides,
   };
 }

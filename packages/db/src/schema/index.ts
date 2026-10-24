@@ -263,3 +263,5 @@ export { aiSubscriptions, aiSubscriptionPrices, aiSubscriptionConnections } from
 export * from "./fast_responses.js";
 
 export { localBrowserConnections, localBrowserSettings } from "./local_browser_connections.js";
+
+export { terminalSshHosts } from "./terminal_ssh_hosts.js";

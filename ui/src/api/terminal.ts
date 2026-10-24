@@ -2,8 +2,11 @@ import {
   TERMINAL_MAX_UPLOAD_BYTES,
   terminalApiPaths,
   type CreateTerminalSessionRequest,
+  type CreateTerminalSshHostRequest,
   type TerminalAttachToken,
   type TerminalSession,
+  type TerminalSshHost,
+  type TerminalSshHostList,
   type TerminalUploadResult,
 } from "@tickernelz/paperclip-pro-shared";
 import { api, ApiError } from "./client";
@@ -16,6 +19,7 @@ function clientPath(path: string): string {
 
 export const terminalQueryKeys = {
   sessions: (companyId: string) => ["terminal-sessions", companyId] as const,
+  sshHosts: (companyId: string) => ["terminal-ssh-hosts", companyId] as const,
 };
 
 export function terminalUploadTooLargeError(file: Blob): ApiError | null {
@@ -40,6 +44,19 @@ export const terminalApi = {
     form.append("file", file, file.name);
     return api.postForm<TerminalUploadResult>(clientPath(terminalApiPaths.upload(companyId, sessionId)), form);
   },
+  pasteImage: (companyId: string, sessionId: string, image: Blob) => {
+    const tooLarge = terminalUploadTooLargeError(image);
+    if (tooLarge) return Promise.reject(tooLarge);
+    const form = new FormData();
+    form.append("file", image, "pasted-image");
+    return api.postForm<TerminalUploadResult>(clientPath(terminalApiPaths.pasteImage(companyId, sessionId)), form);
+  },
+  listSshHosts: (companyId: string) =>
+    api.get<TerminalSshHostList>(clientPath(terminalApiPaths.sshHosts(companyId)), { cache: "no-store" }),
+  createSshHost: (companyId: string, body: CreateTerminalSshHostRequest) =>
+    api.post<TerminalSshHost>(clientPath(terminalApiPaths.sshHosts(companyId)), body),
+  removeSshHost: (companyId: string, hostId: string) =>
+    api.delete<void>(clientPath(terminalApiPaths.sshHost(companyId, hostId))),
   download: (companyId: string, sessionId: string, path: string) =>
     api.getBlob(`${clientPath(terminalApiPaths.download(companyId, sessionId))}?path=${encodeURIComponent(path)}`),
 };

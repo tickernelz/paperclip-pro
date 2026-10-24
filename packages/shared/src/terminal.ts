@@ -6,7 +6,7 @@ export const TERMINAL_ATTACH_TOKEN_TTL_MS = 60_000;
 
 export const TERMINAL_IDLE_KILL_MS = 24 * 60 * 60 * 1000;
 
-export const TERMINAL_SCROLLBACK_BYTES = 2 * 1024 * 1024;
+export const TERMINAL_SCROLLBACK_ROWS = 2_000;
 
 export const TERMINAL_MAX_UPLOAD_BYTES = 100 * 1024 * 1024;
 
@@ -38,15 +38,39 @@ export interface TerminalSession {
   createdAt: string;
   lastActivityAt: string;
   createdByUserId: string | null;
+  sshHost: string | null;
 }
 
 export interface CreateTerminalSessionRequest {
   kind: TerminalSessionKind;
   issueId?: string;
   environmentId?: string;
+  sshHostId?: string;
   cols?: number;
   rows?: number;
   title?: string;
+}
+
+export type TerminalSshHostSource = "config" | "saved";
+
+export interface TerminalSshHost {
+  id: string;
+  source: TerminalSshHostSource;
+  name: string;
+  destination: string;
+  port: number | null;
+}
+
+export interface TerminalSshHostList {
+  hosts: TerminalSshHost[];
+  configPath: string;
+  configError: string | null;
+}
+
+export interface CreateTerminalSshHostRequest {
+  name: string;
+  destination: string;
+  port?: number;
 }
 
 export interface TerminalAttachToken {
@@ -92,6 +116,11 @@ export const terminalApiPaths = {
     `/api/companies/${encodeURIComponent(companyId)}/terminal/sessions/${encodeURIComponent(sessionId)}/token`,
   upload: (companyId: string, sessionId: string) =>
     `/api/companies/${encodeURIComponent(companyId)}/terminal/sessions/${encodeURIComponent(sessionId)}/upload`,
+  pasteImage: (companyId: string, sessionId: string) =>
+    `/api/companies/${encodeURIComponent(companyId)}/terminal/sessions/${encodeURIComponent(sessionId)}/paste-image`,
+  sshHosts: (companyId: string) => `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-hosts`,
+  sshHost: (companyId: string, hostId: string) =>
+    `/api/companies/${encodeURIComponent(companyId)}/terminal/ssh-hosts/${encodeURIComponent(hostId)}`,
   download: (companyId: string, sessionId: string) =>
     `/api/companies/${encodeURIComponent(companyId)}/terminal/sessions/${encodeURIComponent(sessionId)}/download`,
 } as const;

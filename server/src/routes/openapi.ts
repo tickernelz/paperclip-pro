@@ -4,9 +4,12 @@ import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
 import {
   createTerminalSessionSchema,
+  createTerminalSshHostSchema,
   terminalAttachTokenResponseSchema,
   terminalDownloadQuerySchema,
   terminalSessionResponseSchema,
+  terminalSshHostListSchema,
+  terminalSshHostSchema,
   terminalUploadResultSchema,
 } from "../services/terminal/schema.js";
 import {
@@ -1530,6 +1533,7 @@ const localBrowserOperations = [
 
 const terminalSessionsPath = "/api/companies/{companyId}/terminal/sessions";
 const terminalSessionPath = `${terminalSessionsPath}/{sessionId}`;
+const terminalSshHostsPath = "/api/companies/{companyId}/terminal/ssh-hosts";
 
 const terminalOperations = [
   ["post", terminalSessionsPath],
@@ -1537,7 +1541,11 @@ const terminalOperations = [
   ["delete", terminalSessionPath],
   ["post", `${terminalSessionPath}/token`],
   ["post", `${terminalSessionPath}/upload`],
+  ["post", `${terminalSessionPath}/paste-image`],
   ["get", `${terminalSessionPath}/download`],
+  ["get", terminalSshHostsPath],
+  ["post", terminalSshHostsPath],
+  ["delete", `${terminalSshHostsPath}/{hostId}`],
 ] as const;
 
 const BOARD_ONLY_OPERATIONS = new Set([
@@ -2505,6 +2513,48 @@ registry.registerPath({
     409: r.conflict,
     413: r.payloadTooLarge,
   },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSessionPath}/paste-image`,
+  tags: ["Terminal"],
+  summary: "Save a pasted clipboard image to a private temp folder on the terminal's host and return its path",
+  request: { params: z.object({ companyId: z.string(), sessionId: z.string() }) },
+  requestBody: multipartFileRequestBody("file", "The pasted PNG, JPEG, GIF, WebP or BMP image."),
+  responses: {
+    201: r.ok(terminalUploadResultSchema),
+    ...terminalErrorResponses,
+    409: r.conflict,
+    413: r.payloadTooLarge,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: terminalSshHostsPath,
+  tags: ["Terminal"],
+  summary: "List ssh hosts from the server's ~/.ssh/config and the company's saved ssh hosts",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(terminalSshHostListSchema), ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "post",
+  path: terminalSshHostsPath,
+  tags: ["Terminal"],
+  summary: "Save a custom ssh destination for host-side terminals",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(createTerminalSshHostSchema) },
+  responses: { 201: r.ok(terminalSshHostSchema), ...terminalErrorResponses, 409: r.conflict },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: `${terminalSshHostsPath}/{hostId}`,
+  tags: ["Terminal"],
+  summary: "Remove a saved ssh destination",
+  request: { params: z.object({ companyId: z.string(), hostId: z.string() }) },
+  responses: { 204: r.noContent, ...terminalErrorResponses },
 });
 
 registry.registerPath({

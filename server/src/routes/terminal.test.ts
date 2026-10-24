@@ -1,10 +1,14 @@
 import express from "express";
-import { existsSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
+import {
+  isCompanyOwnerAgent,
+  type CreateTerminalSshHostRequest,
+  type TerminalSshHost,
+} from "@tickernelz/paperclip-pro-shared";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { errorHandler } from "../middleware/index.js";
 import type { LogActivityInput } from "../services/activity-log.js";
@@ -13,11 +17,14 @@ import { localTerminalFiles } from "../services/terminal/files.js";
 import { TerminalSessionManager, type TerminalSessionManagerOptions } from "../services/terminal/manager.js";
 import type { TerminalOriginPolicy } from "../services/terminal/origin.js";
 import type { TerminalExit, TerminalProcess } from "../services/terminal/process.js";
+import { savedSshHostId, type TerminalSshHostStore } from "../services/terminal/ssh-hosts.js";
+import { systemSshArgs } from "../services/terminal/system-ssh.js";
 import { terminalRoutes } from "./terminal.js";
 
 const COMPANY_ID = "11111111-1111-4111-8111-111111111111";
 const OTHER_COMPANY_ID = "22222222-2222-4222-8222-222222222222";
 const ENVIRONMENT_ID = "55555555-5555-4555-8555-555555555555";
+const SAVED_HOST_ID = "77777777-7777-4777-8777-000000000001";
 
 type Actor = Express.Request["actor"];
 
@@ -116,6 +123,37 @@ describe("terminal routes", () => {
   let activity: LogActivityInput[];
   let processes: FakeProcess[];
   let failNextActivity: boolean;
+  let configHosts: TerminalSshHost[];
+  let savedHosts: TerminalSshHost[];
+  let hostStarts: Array<{ host: TerminalSshHost; cols: number; rows: number }>;
+  let hostCreators: Array<string | null>;
+
+  function sshHostStore(): TerminalSshHostStore {
+    return {
+      list: async () => ({ hosts: [...configHosts, ...savedHosts], configPath: "/home/dev/.ssh/config", configError: null }),
+      create: async (_companyId, input: CreateTerminalSshHostRequest, createdByUserId) => {
+        if (savedHosts.some((host) => host.name === input.name)) return null;
+        const created: TerminalSshHost = {
+          id: savedSshHostId(`77777777-7777-4777-8777-${String(savedHosts.length + 1).padStart(12, "0")}`),
+          source: "saved",
+          name: input.name,
+          destination: input.destination,
+          port: input.port ?? null,
+        };
+        savedHosts.push(created);
+        hostCreators.push(createdByUserId);
+        return created;
+      },
+      remove: async (_companyId, hostId) => {
+        const index = savedHosts.findIndex((host) => host.id === hostId);
+        if (index < 0) return false;
+        savedHosts.splice(index, 1);
+        return true;
+      },
+      resolve: async (_companyId, hostId) =>
+        [...configHosts, ...savedHosts].find((host) => host.id === hostId) ?? null,
+    };
+  }
 
   function createApp(policy: TerminalOriginPolicy = localTrustedPolicy) {
     const app = express();
@@ -149,6 +187,11 @@ describe("terminal routes", () => {
         }),
         startLocal: ({ cwd }) => start(cwd),
         startSsh: async () => start(workDir),
+        startHostSsh: (input) => {
+          hostStarts.push(input);
+          return start(workDir);
+        },
+        sshHosts: sshHostStore(),
         recordActivity: async (input) => {
           if (failNextActivity) {
             failNextActivity = false;
@@ -169,6 +212,7 @@ describe("terminal routes", () => {
   }
 
   const sessionsPath = (companyId = COMPANY_ID) => `/api/companies/${companyId}/terminal/sessions`;
+  const sshHostsPath = (companyId = COMPANY_ID) => `/api/companies/${companyId}/terminal/ssh-hosts`;
 
   beforeEach(() => {
     workDir = mkdtempSync(path.join(os.tmpdir(), "terminal-route-cwd-"));
@@ -178,6 +222,12 @@ describe("terminal routes", () => {
     activity = [];
     processes = [];
     failNextActivity = false;
+    configHosts = [
+      { id: "config:web", source: "config", name: "web", destination: "deploy@10.0.0.5", port: 2222 },
+    ];
+    savedHosts = [];
+    hostStarts = [];
+    hostCreators = [];
   });
 
   afterEach(() => {
@@ -378,6 +428,36 @@ describe("terminal routes", () => {
     expect(activity.filter((entry) => entry.action === "terminal.file_uploaded")).toHaveLength(1);
   });
 
+  it("saves a pasted image privately on the session host and refuses non-images", async () => {
+    const previousTmp = process.env.TMPDIR;
+    process.env.TMPDIR = tempDir;
+    try {
+      const app = createApp();
+      const created = await request(app).post(sessionsPath()).send({ kind: "local" });
+      const base = `${sessionsPath()}/${created.body.id}`;
+      const png = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10, 1]);
+
+      const ok = await request(app).post(`${base}/paste-image`).attach("file", png, { filename: "x", contentType: "image/png" });
+      expect(ok.status).toBe(201);
+      const directory = path.join(tempDir, `paperclip-pasted-${process.getuid?.() ?? "user"}`);
+      expect(path.dirname(ok.body.path)).toBe(directory);
+      expect(path.basename(ok.body.path)).toMatch(/^pasted-image-\d+-[0-9a-f]{8}\.png$/);
+      expect(readFileSync(ok.body.path)).toEqual(png);
+      expect(statSync(directory).mode & 0o777).toBe(0o700);
+      expect(statSync(ok.body.path).mode & 0o777).toBe(0o600);
+
+      const html = await request(app)
+        .post(`${base}/paste-image`)
+        .attach("file", Buffer.from("<b>x</b>"), { filename: "x.png", contentType: "text/html" });
+      expect(html.status).toBe(400);
+      expect(readdirSync(directory)).toHaveLength(1);
+      expect(activity.filter((entry) => entry.action === "terminal.image_pasted")).toHaveLength(1);
+    } finally {
+      if (previousTmp === undefined) delete process.env.TMPDIR;
+      else process.env.TMPDIR = previousTmp;
+    }
+  });
+
   it("downloads files inside the cwd and refuses paths outside it", async () => {
     const app = createApp();
     const created = await request(app).post(sessionsPath()).send({ kind: "local" });
@@ -441,5 +521,113 @@ describe("terminal routes", () => {
   it("rejects an ssh request without environmentId", async () => {
     const res = await request(createApp()).post(sessionsPath()).send({ kind: "ssh" });
     expect(res.status).toBe(400);
+  });
+
+  it("lists, saves and deletes host-side ssh hosts with activity entries", async () => {
+    const app = createApp();
+    const listed = await request(app).get(sshHostsPath());
+    expect(listed.status).toBe(200);
+    expect(listed.body).toEqual({ hosts: configHosts, configPath: "/home/dev/.ssh/config", configError: null });
+
+    const saved = await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test", port: 2200 });
+    expect(saved.status).toBe(201);
+    expect(saved.body).toEqual({
+      id: savedSshHostId(SAVED_HOST_ID),
+      source: "saved",
+      name: "prod",
+      destination: "root@prod.test",
+      port: 2200,
+    });
+    expect(hostCreators).toEqual(["admin-1"]);
+
+    const duplicate = await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@other.test" });
+    expect(duplicate.status).toBe(409);
+
+    const listedAfter = await request(app).get(sshHostsPath());
+    expect(listedAfter.body.hosts.map((host: TerminalSshHost) => host.id)).toEqual([
+      "config:web",
+      savedSshHostId(SAVED_HOST_ID),
+    ]);
+
+    expect((await request(app).delete(`${sshHostsPath()}/config:web`)).status).toBe(400);
+    expect((await request(app).delete(`${sshHostsPath()}/saved:missing`)).status).toBe(404);
+    expect((await request(app).delete(`${sshHostsPath()}/${savedSshHostId(SAVED_HOST_ID)}`)).status).toBe(204);
+    expect((await request(app).delete(`${sshHostsPath()}/${savedSshHostId(SAVED_HOST_ID)}`)).status).toBe(404);
+    expect(savedHosts).toEqual([]);
+    expect(activity.map((entry) => entry.action)).toEqual(["terminal.ssh_host_saved", "terminal.ssh_host_deleted"]);
+    expect(activity[0]).toMatchObject({
+      companyId: COMPANY_ID,
+      actorType: "user",
+      actorId: "admin-1",
+      action: "terminal.ssh_host_saved",
+      entityType: "terminal_ssh_host",
+      entityId: savedSshHostId(SAVED_HOST_ID),
+    });
+  });
+
+  it("refuses ssh host routes and host-side sessions to a non-admin company owner", async () => {
+    actor = memberActor;
+    const app = createApp();
+    expect((await request(app).get(sshHostsPath())).status).toBe(403);
+    expect((await request(app).post(sshHostsPath()).send({ name: "prod", destination: "root@prod.test" })).status).toBe(403);
+    expect((await request(app).delete(`${sshHostsPath()}/config:web`)).status).toBe(403);
+    const session = await request(app).post(sessionsPath()).send({ kind: "local", sshHostId: "config:web" });
+    expect(session.status).toBe(403);
+    expect(hostStarts).toHaveLength(0);
+    expect(savedHosts).toEqual([]);
+  });
+
+  it("requires same-origin requests to save and delete ssh hosts", async () => {
+    const app = createApp();
+    const evil = "https://evil.example";
+    const saved = await request(app)
+      .post(sshHostsPath())
+      .set("Origin", evil)
+      .send({ name: "prod", destination: "root@prod.test" });
+    expect(saved.status).toBe(403);
+    const deleted = await request(app).delete(`${sshHostsPath()}/${savedSshHostId(SAVED_HOST_ID)}`).set("Origin", evil);
+    expect(deleted.status).toBe(403);
+    expect(savedHosts).toEqual([]);
+  });
+
+  it("opens host-side sessions with the argv of each ssh host source", async () => {
+    const app = createApp();
+    const configSession = await request(app)
+      .post(sessionsPath())
+      .send({ kind: "local", sshHostId: "config:web", cols: 90, rows: 20 });
+    expect(configSession.status).toBe(201);
+    expect(configSession.body).toMatchObject({
+      kind: "local",
+      title: "web",
+      sshHost: "web",
+      cwd: null,
+      issueId: null,
+      environmentId: null,
+      cols: 90,
+      rows: 20,
+    });
+    expect(systemSshArgs(hostStarts[0]!.host)).toEqual(["--", "web"]);
+    expect(hostStarts[0]).toMatchObject({ cols: 90, rows: 20 });
+
+    const withPort = await request(app).post(sshHostsPath()).send({ name: "db", destination: "deploy@db.test", port: 2222 });
+    const withPortSession = await request(app)
+      .post(sessionsPath())
+      .send({ kind: "local", sshHostId: withPort.body.id, title: "Db box" });
+    expect(withPortSession.status).toBe(201);
+    expect(withPortSession.body).toMatchObject({ title: "Db box", sshHost: "db", cwd: null });
+    expect(systemSshArgs(hostStarts[1]!.host)).toEqual(["-p", "2222", "--", "deploy@db.test"]);
+
+    const plain = await request(app).post(sshHostsPath()).send({ name: "plain", destination: "plain.test" });
+    const plainSession = await request(app).post(sessionsPath()).send({ kind: "local", sshHostId: plain.body.id });
+    expect(plainSession.status).toBe(201);
+    expect(systemSshArgs(hostStarts[2]!.host)).toEqual(["--", "plain.test"]);
+    expect(plainSession.body).toMatchObject({ title: "plain", sshHost: "plain" });
+  });
+
+  it("returns 404 when the requested ssh host id is unknown", async () => {
+    const res = await request(createApp()).post(sessionsPath()).send({ kind: "local", sshHostId: "config:missing" });
+    expect(res.status).toBe(404);
+    expect(hostStarts).toHaveLength(0);
+    expect(manager.list(COMPANY_ID)).toEqual([]);
   });
 });

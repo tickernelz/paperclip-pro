@@ -80,7 +80,7 @@ describe("local terminal process", () => {
     await waitUntil(() => manager.get("company-a", session.id) === null);
   });
 
-  it("does not hand the ssh agent socket or server secrets to the shell", () => {
+  it("hands the ssh agent socket to the shell but not server secrets", () => {
     const env = buildLocalTerminalEnv("/bin/sh", {
       PATH: "/usr/bin",
       HOME: "/home/u",
@@ -88,8 +88,13 @@ describe("local terminal process", () => {
       DATABASE_URL: "postgres://secret",
       BETTER_AUTH_SECRET: "secret",
     });
-    expect(env).toMatchObject({ PATH: "/usr/bin", HOME: "/home/u", SHELL: "/bin/sh", TERM: "xterm-256color" });
-    expect(env.SSH_AUTH_SOCK).toBeUndefined();
+    expect(env).toMatchObject({
+      PATH: "/usr/bin",
+      HOME: "/home/u",
+      SHELL: "/bin/sh",
+      TERM: "xterm-256color",
+      SSH_AUTH_SOCK: "/tmp/agent.sock",
+    });
     expect(env.DATABASE_URL).toBeUndefined();
     expect(env.BETTER_AUTH_SECRET).toBeUndefined();
   });
