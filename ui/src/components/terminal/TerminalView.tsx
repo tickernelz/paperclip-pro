@@ -27,6 +27,8 @@ import { ApiError } from "@/api/client";
 import { terminalApi } from "@/api/terminal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { readTextFromClipboard } from "@/lib/clipboard";
+import { useCopyToast } from "@/lib/use-copy-action";
 import { cn } from "@/lib/utils";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
 import {
@@ -115,6 +117,8 @@ export function TerminalView({
   const onSessionChangeRef = useRef(onSessionChange);
   const onExitRef = useRef(onExit);
   const onUnavailableRef = useRef(onUnavailable);
+  const copyWithToast = useCopyToast();
+  const copyWithToastRef = useRef(copyWithToast);
   const reconnectBaseDelayRef = useRef(reconnectBaseDelayMs);
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -130,6 +134,7 @@ export function TerminalView({
   onSessionChangeRef.current = onSessionChange;
   onExitRef.current = onExit;
   onUnavailableRef.current = onUnavailable;
+  copyWithToastRef.current = copyWithToast;
   reconnectBaseDelayRef.current = reconnectBaseDelayMs;
 
   useEffect(() => {
@@ -169,7 +174,9 @@ export function TerminalView({
     }));
     terminal.loadAddon(new ClipboardAddon(undefined, {
       readText: () => "",
-      writeText: (_selection, text) => navigator.clipboard.writeText(text),
+      writeText: async (_selection, text) => {
+        await copyWithToastRef.current(text, "Copied from terminal");
+      },
     }));
     terminal.loadAddon(new Unicode11Addon());
     terminal.unicode.activeVersion = "11";
@@ -342,12 +349,12 @@ export function TerminalView({
       }
       if (event.ctrlKey && event.shiftKey && key === "c" && terminal.hasSelection()) {
         event.preventDefault();
-        void navigator.clipboard?.writeText(terminal.getSelection());
+        void copyWithToastRef.current(terminal.getSelection(), "Copied selection");
         return false;
       }
       if (event.ctrlKey && event.shiftKey && key === "v") {
         event.preventDefault();
-        void navigator.clipboard?.readText().then((text) => {
+        void readTextFromClipboard().then((text) => {
           if (text) terminal.paste(text);
         });
         return false;

@@ -66,6 +66,7 @@ import { boardMutationGuard } from "./middleware/board-mutation-guard.js";
 import {
   privateHostnameGuard,
   resolvePrivateHostnameAllowSet,
+  shouldEnablePrivateHostnameGuard,
 } from "./middleware/private-hostname-guard.js";
 import {
   applyTrustProxy,
@@ -314,17 +315,6 @@ export function shouldServeViteDevHtml(req: ExpressRequest): boolean {
   if (VITE_DEV_ASSET_PREFIXES.some((prefix) => pathname.startsWith(prefix)))
     return false;
   return req.accepts(["html"]) === "html";
-}
-
-export function shouldEnablePrivateHostnameGuard(opts: {
-  deploymentMode: DeploymentMode;
-  deploymentExposure: DeploymentExposure;
-}): boolean {
-  return (
-    opts.deploymentExposure === "private" &&
-    (opts.deploymentMode === "local_trusted" ||
-      opts.deploymentMode === "authenticated")
-  );
 }
 
 type ChatReconciliationLane =

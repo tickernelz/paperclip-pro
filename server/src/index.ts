@@ -53,7 +53,8 @@ import {
   instanceUserRoles,
 } from "@tickernelz/paperclip-pro-db";
 import detectPort from "detect-port";
-import { createApp, shouldEnablePrivateHostnameGuard } from "./app.js";
+import { createApp } from "./app.js";
+import { shouldEnablePrivateHostnameGuard } from "./middleware/private-hostname-guard.js";
 import { loadConfig } from "./config.js";
 import { logger } from "./middleware/logger.js";
 import { setStartupRecoveryPhase } from "./startup-recovery-state.js";

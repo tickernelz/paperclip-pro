@@ -1,9 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it, vi } from "vitest";
-import {
-  createChatReconciliationCoordinator,
-  shouldEnablePrivateHostnameGuard,
-} from "../app.ts";
+import { createChatReconciliationCoordinator } from "../app.ts";
+import { shouldEnablePrivateHostnameGuard } from "../middleware/private-hostname-guard.ts";
 
 describe("createChatReconciliationCoordinator", () => {
   it.each([false, true])(

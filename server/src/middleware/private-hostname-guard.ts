@@ -1,4 +1,16 @@
 import type { Request, RequestHandler } from "express";
+import type { DeploymentExposure, DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+
+export function shouldEnablePrivateHostnameGuard(opts: {
+  deploymentMode: DeploymentMode;
+  deploymentExposure: DeploymentExposure;
+}): boolean {
+  return (
+    opts.deploymentExposure === "private" &&
+    (opts.deploymentMode === "local_trusted" ||
+      opts.deploymentMode === "authenticated")
+  );
+}
 
 function normalizeHostname(value: string): string {
   const normalized = value.trim().toLowerCase();

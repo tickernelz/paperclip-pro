@@ -1,3 +1,12 @@
+export async function readTextFromClipboard(): Promise<string> {
+  if (typeof navigator === "undefined" || !navigator.clipboard?.readText) return "";
+  try {
+    return await navigator.clipboard.readText();
+  } catch {
+    return "";
+  }
+}
+
 export async function copyTextToClipboard(text: string): Promise<void> {
   // The async Clipboard API is only reliable in a secure context. Over plain
   // HTTP on a non-localhost host (e.g. a Tailscale name) `writeText` may resolve
