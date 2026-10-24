@@ -261,7 +261,7 @@ function ExpandedActivity({
         <div
           id={detailId}
           hidden={!open}
-          className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground"
+          className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground [&>*]:shrink-0"
           data-testid="task-chat-runner-activity-detail"
         >
           <ActivityDetails item={item} />

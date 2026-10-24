@@ -200,6 +200,11 @@ describe("TaskChatRunnerActivityGroup", () => {
     expect(
       [...detail.classList].some((name) => name.startsWith("max-h-")),
     ).toBe(true);
+    expect(
+      [...detail.classList].some(
+        (name) => name.includes("[&>*]:shrink-0"),
+      ),
+    ).toBe(true);
   });
 
   it("reveals the older one-line rows on +N earlier, each individually expandable", () => {
