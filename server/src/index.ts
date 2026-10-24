@@ -53,7 +53,7 @@ import {
   instanceUserRoles,
 } from "@tickernelz/paperclip-pro-db";
 import detectPort from "detect-port";
-import { createApp } from "./app.js";
+import { createApp, shouldEnablePrivateHostnameGuard } from "./app.js";
 import { loadConfig } from "./config.js";
 import { logger } from "./middleware/logger.js";
 import { setStartupRecoveryPhase } from "./startup-recovery-state.js";
@@ -70,6 +70,7 @@ import { getOperatorSettingDefaults } from "./services/setting-defaults.js";
 import { setupEnvironmentCustomImageTerminalWebSocketServer } from "./realtime/environment-custom-image-terminal-ws.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
 import { setupLocalBrowserWebSocketServer } from "./realtime/local-browser-ws.js";
+import { setupTerminalWebSocketServer } from "./realtime/terminal-ws.js";
 import { cloudActorHeaderSourceFromHeaders, resolveCloudTenantActor } from "./middleware/auth.js";
 import {
   feedbackService,
@@ -999,6 +1000,20 @@ async function startServerWithDatabaseTeardown(
     pluginWorkerManager,
   });
   setupLocalBrowserWebSocketServer(server, db as any);
+  setupTerminalWebSocketServer(server, {
+    db: db as any,
+    originPolicy: {
+      deploymentMode: config.deploymentMode,
+      allowedHostnames: config.allowedHostnames,
+      bindHost: config.host,
+      listenPort,
+      hostnameGuardEnabled: shouldEnablePrivateHostnameGuard({
+        deploymentMode: config.deploymentMode,
+        deploymentExposure: config.deploymentExposure,
+      }),
+      publicBaseUrls: [config.authPublicBaseUrl],
+    },
+  });
   setupLiveEventsWebSocketServer(server, db as any, {
     deploymentMode: config.deploymentMode,
     resolveSessionFromHeaders,

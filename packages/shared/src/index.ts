@@ -2956,6 +2956,7 @@ export { resolveAgentInstructionCandidateSchema, type ResolveAgentInstructionCan
 export { isHeartbeatRunVisibleInMine } from "./heartbeat-inbox.js";
 export * from "./browser-use.js";
 export * from "./local-browser.js";
+export * from "./terminal.js";
 
 export * from "./types/skill-source.js";
 export * from "./validators/skill-source.js";

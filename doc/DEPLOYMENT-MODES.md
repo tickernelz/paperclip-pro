@@ -84,6 +84,7 @@ Paperclip now treats **bind** as a separate concern from auth:
 - Better Auth request rate limiting is on by default; set `PAPERCLIP_AUTH_RATE_LIMIT_ENABLED=false` only when an explicit front-door limiter covers the deployment
 - recommended bind is `loopback` behind a reverse proxy; direct `lan/custom` is advanced
 - local stdio MCP runtime slots fail closed by default; set `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` only when a trusted worker/runtime host is configured to supervise those processes. Remote HTTP MCP remains the preferred public-hosted path.
+- the web terminal stays available: an instance admin can open a shell on the host. Only origins from `auth.publicBaseUrl`, `PAPERCLIP_PUBLIC_URL`, or https on an allowed hostname are trusted. See [web-terminal.md](web-terminal.md).
 
 ### Paperclip Cloud warm-pool identity
 

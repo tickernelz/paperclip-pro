@@ -75,6 +75,12 @@ export const EXCLUDED_OPERATIONS: Record<string, string> = {
   "POST /api/tool-gateway/sessions/{sessionId}/revoke": "credential_surface",
   "POST /api/tool-gateway/runtime-slots/{slotId}/restart": "runtime_authority",
   "POST /api/tool-gateway/runtime-slots/{slotId}/stop": "runtime_authority",
+  "GET /api/companies/{companyId}/terminal/sessions": "trust_boundary",
+  "POST /api/companies/{companyId}/terminal/sessions": "trust_boundary",
+  "DELETE /api/companies/{companyId}/terminal/sessions/{sessionId}": "trust_boundary",
+  "POST /api/companies/{companyId}/terminal/sessions/{sessionId}/token": "trust_boundary",
+  "POST /api/companies/{companyId}/terminal/sessions/{sessionId}/upload": "trust_boundary",
+  "GET /api/companies/{companyId}/terminal/sessions/{sessionId}/download": "trust_boundary",
 };
 
 export const PROBE_BOARD_DENIED_OPERATIONS: Record<string, string> = {

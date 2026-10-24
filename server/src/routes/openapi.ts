@@ -3,6 +3,13 @@ import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizat
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
 import {
+  createTerminalSessionSchema,
+  terminalAttachTokenResponseSchema,
+  terminalDownloadQuerySchema,
+  terminalSessionResponseSchema,
+  terminalUploadResultSchema,
+} from "../services/terminal/schema.js";
+import {
   experimentalApiPaths,
   experimentalApiQueries,
 } from "./experimental-api-paths.js";
@@ -1521,7 +1528,20 @@ const localBrowserOperations = [
   ["post", "/api/local-browser/settings", "Update local browser tier and origin settings", localBrowserSettingsSchema],
 ] as const;
 
+const terminalSessionsPath = "/api/companies/{companyId}/terminal/sessions";
+const terminalSessionPath = `${terminalSessionsPath}/{sessionId}`;
+
+const terminalOperations = [
+  ["post", terminalSessionsPath],
+  ["get", terminalSessionsPath],
+  ["delete", terminalSessionPath],
+  ["post", `${terminalSessionPath}/token`],
+  ["post", `${terminalSessionPath}/upload`],
+  ["get", `${terminalSessionPath}/download`],
+] as const;
+
 const BOARD_ONLY_OPERATIONS = new Set([
+  ...terminalOperations.map(([method, path]) => `${method.toUpperCase()} ${path}`),
   "PATCH /api/issues/{id}/comments/{commentId}/public-share",
   "GET /api/companies/{companyId}/fast-response",
   "PUT /api/companies/{companyId}/fast-response",
@@ -2428,6 +2448,76 @@ for (const [method, path, summary, body, query] of localBrowserOperations) {
     responses: { 200: r.ok(), 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 413: r.badRequest },
   });
 }
+
+const terminalErrorResponses = {
+  400: r.badRequest,
+  401: r.unauthorized,
+  403: r.forbidden,
+  404: r.notFound,
+};
+
+registry.registerPath({
+  method: "post",
+  path: terminalSessionsPath,
+  tags: ["Terminal"],
+  summary: "Open a web terminal session on this host or over SSH to an environment",
+  request: { params: z.object({ companyId: z.string() }), body: jsonBody(createTerminalSessionSchema) },
+  responses: { 201: r.ok(terminalSessionResponseSchema), ...terminalErrorResponses, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: terminalSessionsPath,
+  tags: ["Terminal"],
+  summary: "List open web terminal sessions",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(z.array(terminalSessionResponseSchema)), ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "delete",
+  path: terminalSessionPath,
+  tags: ["Terminal"],
+  summary: "Close a web terminal session",
+  request: { params: z.object({ companyId: z.string(), sessionId: z.string() }) },
+  responses: { 204: r.noContent, ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSessionPath}/token`,
+  tags: ["Terminal"],
+  summary: "Mint a short-lived single-use websocket attach token for a terminal session",
+  request: { params: z.object({ companyId: z.string(), sessionId: z.string() }) },
+  responses: { 201: r.ok(terminalAttachTokenResponseSchema), ...terminalErrorResponses },
+});
+
+registry.registerPath({
+  method: "post",
+  path: `${terminalSessionPath}/upload`,
+  tags: ["Terminal"],
+  summary: "Upload a file into the terminal session working directory",
+  request: { params: z.object({ companyId: z.string(), sessionId: z.string() }) },
+  requestBody: multipartFileRequestBody("file", "The file to place in the terminal working directory."),
+  responses: {
+    201: r.ok(terminalUploadResultSchema),
+    ...terminalErrorResponses,
+    409: r.conflict,
+    413: r.payloadTooLarge,
+  },
+});
+
+registry.registerPath({
+  method: "get",
+  path: `${terminalSessionPath}/download`,
+  tags: ["Terminal"],
+  summary: "Download a file from inside the terminal session working directory",
+  request: { params: z.object({ companyId: z.string(), sessionId: z.string() }), query: terminalDownloadQuerySchema },
+  responses: {
+    200: { description: "File content", content: { "application/octet-stream": { schema: { type: "string", format: "binary" } } } },
+    ...terminalErrorResponses,
+  },
+});
 
 // Voice endpoints accept current authenticated board sessions (or local implicit board),
 // never agent keys or board API keys. Provider callbacks use signatures and are

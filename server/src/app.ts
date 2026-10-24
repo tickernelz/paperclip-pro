@@ -111,6 +111,7 @@ import { routineRoutes } from "./routes/routines.js";
 import { pipelineRoutes } from "./routes/pipelines.js";
 import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
+import { terminalRoutes } from "./routes/terminal.js";
 import { goalRoutes } from "./routes/goals.js";
 import { onboardingSeedRoutes } from "./routes/onboarding-seed.js";
 import { boardChatRoutes } from "./routes/board-chat.js";
@@ -880,6 +881,18 @@ export async function createApp(
     }),
   );
   api.use(executionWorkspaceRoutes(db, { pluginWorkerManager: workerManager }));
+  api.use(
+    terminalRoutes(db, {
+      originPolicy: {
+        deploymentMode: opts.deploymentMode,
+        allowedHostnames: opts.allowedHostnames,
+        bindHost: opts.bindHost,
+        listenPort: opts.serverPort,
+        hostnameGuardEnabled: privateHostnameGateEnabled,
+        publicBaseUrls: [opts.authPublicBaseUrl],
+      },
+    }),
+  );
   api.use(emailRoutes(db, emailChannels));
   api.use(goalRoutes(db));
   api.use(onboardingSeedRoutes(db));
