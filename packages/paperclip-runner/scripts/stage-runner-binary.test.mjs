@@ -7,6 +7,12 @@ import path from "node:path";
 import { test } from "node:test";
 import { stageRunnerBinary } from "./stage-runner-binary.mjs";
 
+async function napExecutable(directory) {
+  const file = path.join(directory, "nap-fixture");
+  await writeFile(file, "#!/bin/sh\nexec /bin/sleep \"$1\"\n", { mode: 0o755 });
+  return file;
+}
+
 async function withOwnedChildren(root, action) {
   const owned = [];
   const start = (command, args) => {
@@ -34,13 +40,16 @@ async function withOwnedChildren(root, action) {
 
 test("atomically publishes while the previous executable is running", { skip: process.platform === "win32", timeout: 15_000 }, async () => {
   const root = await mkdtemp(path.join(tmpdir(), "runnerd-stage-test-"));
+  const fixtures = await mkdtemp(path.join(tmpdir(), "runnerd-stage-fixture-"));
+  const nap = await napExecutable(fixtures);
   const destination = path.join(root, "paperclip-runnerd");
+  try {
   await withOwnedChildren(root, async start => {
-    await stageRunnerBinary("/bin/sleep", destination);
+    await stageRunnerBinary(nap, destination);
     const previous = await stat(destination);
     const old = start(destination, ["30"]);
     await old.spawned;
-    await stageRunnerBinary("/bin/sleep", destination);
+    await stageRunnerBinary(nap, destination);
     const published = await stat(destination);
     assert.notEqual(published.ino, previous.ino);
     assert.equal(published.mode & 0o777, 0o755);
@@ -51,6 +60,7 @@ test("atomically publishes while the previous executable is running", { skip: pr
     await next.spawned; await next.closed;
     assert.equal(next.child.exitCode, 0);
   });
+  } finally { await rm(fixtures, { recursive: true, force: true }); }
 });
 
 test("a second spawn error still retires the live old child and removes its fixture", { skip: process.platform === "win32", timeout: 15_000 }, async () => {
