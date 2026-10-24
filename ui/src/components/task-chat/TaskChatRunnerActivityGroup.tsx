@@ -1,13 +1,6 @@
 import { useId, useState } from "react";
 import { completedActivitySummary } from "./completed-activity-summary";
-import {
-  Brain,
-  ChevronDown,
-  ChevronRight,
-  CirclePause,
-  Gauge,
-} from "lucide-react";
-import { useReducedMotion } from "motion/react";
+import { Brain, ChevronRight, CirclePause, Gauge } from "lucide-react";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { cn } from "@/lib/utils";
 import { useTaskChatExpansion } from "./expansion-state";
@@ -155,58 +148,6 @@ function ActivityContent({
   );
 }
 
-/** Only a new logical activity moves; token and status updates stay mounted. */
-function RollingActivity({
-  item,
-  active,
-}: {
-  item: Activity;
-  active: boolean;
-}) {
-  const reducedMotion = useReducedMotion();
-  const [frame, setFrame] = useState({
-    current: item,
-    previous: null as Activity | null,
-  });
-  if (frame.current.id !== item.id)
-    setFrame({ current: item, previous: reducedMotion ? null : frame.current });
-  else if (frame.current !== item) setFrame({ ...frame, current: item });
-  return (
-    <span
-      className="relative flex h-8 min-w-0 flex-1 items-center overflow-hidden"
-      aria-live="polite"
-      aria-atomic="true"
-      data-testid="task-chat-activity-viewport"
-    >
-      {frame.previous && !reducedMotion ? (
-        <span
-          key={`exit-${item.id}`}
-          className="runner-activity-roll-out absolute inset-0 flex items-center"
-          aria-hidden="true"
-          onAnimationEnd={() =>
-            setFrame((current) =>
-              current.current.id === item.id
-                ? { ...current, previous: null }
-                : current,
-            )
-          }
-        >
-          <ActivityContent item={frame.previous} active={false} />
-        </span>
-      ) : null}
-      <span
-        key={item.id}
-        className={cn(
-          "relative flex w-full min-w-0 items-center",
-          frame.previous && !reducedMotion && "runner-activity-roll-in",
-        )}
-      >
-        <ActivityContent item={item} active={active} />
-      </span>
-    </span>
-  );
-}
-
 function ActivityDetails({ item }: { item: Activity }) {
   if (item.kind === "thinking")
     return <MarkdownBody softBreaks>{item.lines.join("\n")}</MarkdownBody>;
@@ -256,29 +197,54 @@ function hasActivityDetails(item: Activity): boolean {
   );
 }
 
+const OPEN_ACTIVITY_COUNT = 3;
+const NO_OPEN_ACTIVITIES: ReadonlySet<string> = new Set();
+
+function visibleActivities(item: TaskChatActivityPhaseItem): Activity[] {
+  return item.items.filter((activity) => presentation(activity, false) !== null);
+}
+
+/** Ids of the newest rendered activities across a running turn's phases, which render open. */
+export function newestActivityIds(
+  phases: readonly TaskChatActivityPhaseItem[],
+): ReadonlySet<string> {
+  const ids = phases.flatMap((phase) =>
+    visibleActivities(phase).map((activity) => activity.id),
+  );
+  return new Set(ids.slice(-OPEN_ACTIVITY_COUNT));
+}
+
 function ExpandedActivity({
   item,
   active,
+  auto,
+  current = false,
 }: {
   item: Activity;
   active: boolean;
+  auto: boolean;
+  current?: boolean;
 }) {
-  const [open, setOpen] = useTaskChatExpansion(
-    `runner-detail:${item.id}`,
-    false,
-  );
+  const [open, setOpen] = useTaskChatExpansion(`runner-detail:${item.id}`, auto);
+  const [mounted, setMounted] = useState(open);
+  if (open && !mounted) setMounted(true);
   const detailId = useId();
   const expandable = hasActivityDetails(item);
   const content = <ActivityContent item={item} active={active} />;
   return (
-    <li className="min-w-0" data-activity-item-id={item.id}>
+    <li
+      className="min-w-0"
+      data-activity-item-id={item.id}
+      data-activity-open={expandable ? open : undefined}
+      data-testid={current ? "task-chat-activity-current" : undefined}
+    >
       {expandable ? (
         <button
           type="button"
           className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
-          aria-controls={open ? detailId : undefined}
+          aria-controls={mounted ? detailId : undefined}
         >
           {content}
           <ChevronRight
@@ -291,10 +257,11 @@ function ExpandedActivity({
           {content}
         </div>
       )}
-      {expandable && open ? (
+      {expandable && mounted ? (
         <div
           id={detailId}
-          className="flex min-w-0 flex-col gap-2 overflow-hidden rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground"
+          hidden={!open}
+          className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground"
           data-testid="task-chat-runner-activity-detail"
         >
           <ActivityDetails item={item} />
@@ -304,32 +271,155 @@ function ExpandedActivity({
   );
 }
 
-/** One rolling activity between commentary messages, with persistent optional history. */
-export function TaskChatRunnerActivityGroup({
-  item,
-  defaultExpanded = false,
+function LiveActivities({
+  phaseId,
+  activities,
+  openIds,
+  active,
 }: {
-  item: TaskChatActivityPhaseItem;
-  defaultExpanded?: boolean;
+  phaseId: string;
+  activities: Activity[];
+  openIds: ReadonlySet<string>;
+  active: boolean;
 }) {
-  const [expanded, setExpanded] = useTaskChatExpansion(
-    item.id,
-    defaultExpanded,
+  const [showEarlier, setShowEarlier] = useTaskChatExpansion(
+    `runner-earlier:${phaseId}`,
+    false,
   );
-  const historyId = useId();
-  const activities = item.items.filter(
-    (activity) => presentation(activity, false) !== null,
-  );
+  const listId = useId();
   const latest = activities.at(-1);
+  const earlierCount = activities.filter(
+    (activity) => !openIds.has(activity.id),
+  ).length;
+  const shown = activities.filter(
+    (activity) => showEarlier || openIds.has(activity.id),
+  );
+  return (
+    <div className="flex min-w-0 flex-col gap-1">
+      {earlierCount > 0 ? (
+        <button
+          type="button"
+          className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          data-testid="task-chat-activity-earlier-toggle"
+          onClick={() => setShowEarlier(!showEarlier)}
+          aria-expanded={showEarlier}
+          aria-controls={listId}
+        >
+          <span className="flex size-5 shrink-0 items-center justify-center">
+            <ChevronRight
+              className={cn("size-3.5", showEarlier && "rotate-90")}
+              aria-hidden="true"
+            />
+          </span>
+          <span>
+            {showEarlier
+              ? `Hide ${earlierCount} earlier`
+              : `+${earlierCount} earlier`}
+          </span>
+        </button>
+      ) : null}
+      <ol
+        id={listId}
+        className="flex min-w-0 flex-col gap-1"
+        aria-label="Activity history"
+        data-testid="task-chat-runner-activity-list"
+      >
+        {shown.map((activity) => (
+          <ExpandedActivity
+            key={activity.id}
+            item={activity}
+            active={active && activity === latest}
+            auto={openIds.has(activity.id)}
+            current={activity === latest}
+          />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function SettledActivities({
+  phaseId,
+  activities,
+}: {
+  phaseId: string;
+  activities: Activity[];
+}) {
+  const [expanded, setExpanded] = useTaskChatExpansion(phaseId, false);
+  const listId = useId();
   const summary = completedActivitySummary(activities);
   const SummaryIcon = summary.icon;
   const countLabel = `${activities.length} ${activities.length === 1 ? "activity" : "activities"}`;
+  return (
+    <div className="min-w-0">
+      <button
+        type="button"
+        className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        data-testid="task-chat-activity-phase-toggle"
+        onClick={() => setExpanded(!expanded)}
+        aria-expanded={expanded}
+        aria-controls={expanded ? listId : undefined}
+        aria-label={`${expanded ? "Collapse" : "Expand"} ${summary.fullLabel.toLowerCase()} (${countLabel})`}
+      >
+        <span
+          className="flex h-8 min-w-0 flex-1 items-center gap-2 text-xs"
+          data-completed-summary
+        >
+          <span className="flex size-5 shrink-0 items-center justify-center">
+            <SummaryIcon className="size-3.5" aria-hidden="true" />
+          </span>
+          <span className="truncate" title={summary.fullLabel}>
+            {summary.label}
+          </span>
+        </span>
+        <span className="flex shrink-0 items-center gap-1 text-xs">
+          {expanded ? countLabel : null}
+          <ChevronRight
+            className={cn("size-3.5", expanded && "rotate-90")}
+            aria-hidden="true"
+          />
+        </span>
+      </button>
+      {expanded ? (
+        <ol
+          id={listId}
+          className="flex min-w-0 flex-col gap-1"
+          aria-label="Activity history"
+          data-testid="task-chat-runner-activity-list"
+        >
+          {activities.map((activity) => (
+            <ExpandedActivity
+              key={activity.id}
+              item={activity}
+              active={false}
+              auto={false}
+            />
+          ))}
+        </ol>
+      ) : null}
+    </div>
+  );
+}
+
+/** One activity phase: newest rows open under "+N earlier" while live, a folded summary once settled. */
+export function TaskChatRunnerActivityGroup({
+  item,
+  openActivityIds,
+}: {
+  item: TaskChatActivityPhaseItem;
+  openActivityIds?: ReadonlySet<string>;
+}) {
+  const activities = visibleActivities(item);
+  const openIds =
+    openActivityIds ??
+    (item.active ? newestActivityIds([item]) : NO_OPEN_ACTIVITIES);
+  const live = activities.some((activity) => openIds.has(activity.id));
   return (
     <section
       className="flex min-w-0 flex-col gap-2"
       data-testid="task-chat-activity-phase"
       data-activity-group={item.id}
-      data-expanded={expanded}
+      data-activity-mode={live ? "live" : "settled"}
     >
       {item.interstitial ? (
         <div
@@ -341,64 +431,15 @@ export function TaskChatRunnerActivityGroup({
           </MarkdownBody>
         </div>
       ) : null}
-      {latest ? (
-        <div className="min-w-0">
-          <button
-            type="button"
-            className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            data-testid="task-chat-activity-phase-toggle"
-            onClick={() => setExpanded(!expanded)}
-            aria-expanded={expanded}
-            aria-controls={expanded ? historyId : undefined}
-            aria-label={`${expanded ? "Collapse" : "Expand"} ${item.active ? countLabel : `${summary.fullLabel.toLowerCase()} (${countLabel})`}`}
-          >
-            {!item.active ? (
-              <span
-                className="flex h-8 min-w-0 flex-1 items-center gap-2 text-xs"
-                data-completed-summary
-              >
-                <span className="flex size-5 shrink-0 items-center justify-center">
-                  <SummaryIcon className="size-3.5" aria-hidden="true" />
-                </span>
-                <span className="truncate" title={summary.fullLabel}>
-                  {summary.label}
-                </span>
-              </span>
-            ) : expanded ? (
-              <span className="flex min-h-8 flex-1 items-center gap-2 text-xs">
-                <span className="flex size-5 shrink-0 items-center justify-center">
-                  <ChevronDown className="size-3.5" aria-hidden="true" />
-                </span>
-                <span>{countLabel}</span>
-              </span>
-            ) : (
-              <RollingActivity item={latest} active={item.active} />
-            )}
-            <span className="flex shrink-0 items-center gap-1 text-xs">
-              {expanded ? countLabel : item.active ? activities.length : null}
-              <ChevronRight
-                className={cn("size-3.5", expanded && "rotate-90")}
-                aria-hidden="true"
-              />
-            </span>
-          </button>
-          {expanded ? (
-            <ol
-              id={historyId}
-              className="flex min-w-0 flex-col gap-1"
-              aria-label="Activity history"
-              data-testid="task-chat-runner-activity-list"
-            >
-              {activities.map((activity, index) => (
-                <ExpandedActivity
-                  key={activity.id}
-                  item={activity}
-                  active={item.active && index === activities.length - 1}
-                />
-              ))}
-            </ol>
-          ) : null}
-        </div>
+      {live ? (
+        <LiveActivities
+          phaseId={item.id}
+          activities={activities}
+          openIds={openIds}
+          active={item.active}
+        />
+      ) : activities.length > 0 ? (
+        <SettledActivities phaseId={item.id} activities={activities} />
       ) : null}
     </section>
   );

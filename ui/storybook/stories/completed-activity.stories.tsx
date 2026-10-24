@@ -37,22 +37,14 @@ export const DesktopLive: Story = {
   name: "03 · Desktop live to completed",
   args: { mode: "live" },
 };
-export const Expanded: Story = {
-  name: "04 · Expanded history",
-  args: { expanded: true },
-};
-export const ExpandedLive: Story = {
-  name: "05 · Expanded live to completed",
-  args: { mode: "live", expanded: true },
-};
 export const MobileLive: Story = {
-  name: "06 · Mobile live to completed",
+  name: "04 · Mobile live to completed",
   args: { mode: "live", narrow: true },
   globals: { viewport: { value: "mobile1", isRotated: false } },
 };
 export const MobileSituations: Story = {
-  name: "07 · Mobile summary situations",
+  name: "05 · Mobile summary situations",
   args: { mode: "gallery", narrow: true },
   globals: { viewport: { value: "mobile1", isRotated: false } },
 };
-export const Light: Story = { name: "08 · Light", globals: { theme: "light" } };
+export const Light: Story = { name: "06 · Light", globals: { theme: "light" } };

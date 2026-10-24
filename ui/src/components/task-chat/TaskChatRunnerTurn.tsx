@@ -11,7 +11,10 @@ import type {
 import { TaskChatAgentIdentity, TaskChatBubble } from "./TaskChatBubble";
 import { TaskChatBubbleActions } from "./TaskChatBubbleActions";
 import { formatTaskChatTimestamp } from "./task-chat-adapter";
-import { TaskChatRunnerActivityGroup } from "./TaskChatRunnerActivityGroup";
+import {
+  TaskChatRunnerActivityGroup,
+  newestActivityIds,
+} from "./TaskChatRunnerActivityGroup";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
 import { TaskChatPlanPreviewCard } from "./TaskChatPlanPreviewCard";
 import {
@@ -238,6 +241,15 @@ export function TaskChatRunnerTurn({
       ),
     [projection, finalText, terminal, phaseScope],
   );
+  const openActivityIds = useMemo(
+    () =>
+      newestActivityIds(
+        terminal
+          ? []
+          : timelineRows.filter((row) => row.kind === "activity_phase"),
+      ),
+    [timelineRows, terminal],
+  );
   // Identical elements let React skip the timeline subtree entirely on the many
   // renders that leave the rows alone; the scroll anchor and the expansion
   // memory both stay bound to the same row ids across those renders.
@@ -257,7 +269,10 @@ export function TaskChatRunnerTurn({
               data-thread-anchor={row.id}
             >
               {row.kind === "activity_phase" ? (
-                <TaskChatRunnerActivityGroup item={row} />
+                <TaskChatRunnerActivityGroup
+                  item={row}
+                  openActivityIds={openActivityIds}
+                />
               ) : row.kind === "plan_document" ? (
                 <TaskChatPlanPreviewCard
                   source={{ kind: "saved", document: row.document }}
@@ -277,7 +292,7 @@ export function TaskChatRunnerTurn({
           ))}
         </div>
       ),
-    [timelineRows, runId, onRuntimeRequestDecision],
+    [timelineRows, runId, onRuntimeRequestDecision, openActivityIds],
 
   );
 

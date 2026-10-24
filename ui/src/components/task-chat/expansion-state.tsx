@@ -6,6 +6,15 @@ import { createContext, useCallback, useContext, useState, type Dispatch, type S
 // expressed no preference and the caller's auto rule still governs.
 export const TaskChatExpansionState = createContext<Map<string, boolean> | null>(null);
 
+/** Expansion memory scoped to one issue; switching issues starts a fresh map. */
+export function useIssueExpansionMemory(issueId: string | null | undefined): Map<string, boolean> {
+  const [scope, setScope] = useState(() => ({ issueId, memory: new Map<string, boolean>() }));
+  if (scope.issueId === issueId) return scope.memory;
+  const next = { issueId, memory: new Map<string, boolean>() };
+  setScope(next);
+  return next.memory;
+}
+
 export function useTaskChatExpansion(id: string, auto: boolean): [boolean, Dispatch<SetStateAction<boolean>>] {
   const memory = useContext(TaskChatExpansionState);
   const [explicit, setExplicit] = useState<boolean | undefined>(() => memory?.get(id));

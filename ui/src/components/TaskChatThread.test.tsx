@@ -1529,13 +1529,12 @@ describe("TaskChatThread runtime transcript selection", () => {
         />,
       );
     const revealUsage = () => {
-      const summary = container.querySelector<HTMLButtonElement>(
-        '[data-testid="task-chat-activity-phase-toggle"]',
-      );
-      expect(summary).not.toBeNull();
-      if (summary?.getAttribute("aria-expanded") !== "true") {
-        flushSync(() => summary!.click());
-      }
+      expect(
+        container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+      ).toBeNull();
+      expect(
+        container.querySelector('[data-testid="task-chat-activity-current"]'),
+      ).not.toBeNull();
     };
 
     nativeTranscriptState.transcriptByRun.set("native-run", [usageEntry(10)]);
@@ -4387,11 +4386,13 @@ describe("TaskChatThread live transcript", () => {
     expect(tail!.textContent).toContain(
       "Streaming through the shared renderer",
     );
-    const phaseSummary = tail!.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-activity-phase-toggle"]',
-    );
-    expect(phaseSummary?.getAttribute("aria-expanded")).toBe("false");
-    expect(tail!.textContent).toContain("src/app.ts");
+    expect(
+      tail!.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+    ).toBeNull();
+    expect(
+      tail!.querySelector('[data-testid="task-chat-activity-current"]')
+        ?.textContent,
+    ).toContain("src/app.ts");
     // None of the debug plumbing reaches the thread.
     for (const noise of [
       "INITMARKER",

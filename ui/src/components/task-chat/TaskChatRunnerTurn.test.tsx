@@ -243,7 +243,7 @@ describe("TaskChatRunnerTurn", () => {
       },
     ]);
     const commentary = container.querySelector('[data-testid="task-chat-phase-interstitial"]');
-    const activity = container.querySelector('[data-testid="task-chat-activity-viewport"]');
+    const activity = container.querySelector('[data-testid="task-chat-activity-current"]');
     expect(commentary?.textContent).toContain("Running the exact command now.");
     expect(activity?.textContent).toContain("Running a command");
     expect(activity?.textContent).toContain("STREAM-$i");
@@ -279,7 +279,7 @@ describe("TaskChatRunnerTurn", () => {
     ]);
 
     const header = container.querySelector('[data-testid="task-chat-turn-status-header"]');
-    const activity = container.querySelector('[data-testid="task-chat-activity-viewport"]');
+    const activity = container.querySelector('[data-testid="task-chat-activity-current"]');
     expect(header?.textContent).toContain("Working for");
     expect(activity?.textContent).toBe("Thinking");
     expect(header?.compareDocumentPosition(activity!)).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
@@ -349,22 +349,19 @@ describe("TaskChatRunnerTurn", () => {
       "I’ve found the rendering seam.",
     );
     expect(
-      container.querySelector('[data-testid="task-chat-runner-activity-list"]'),
+      container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
     ).toBeNull();
-    act(() =>
-      container
-        .querySelector<HTMLButtonElement>(
-          '[data-testid="task-chat-activity-phase-toggle"]',
-        )
-        ?.click(),
-    );
     expect(
       container.querySelector('[data-testid="task-chat-runner-activity-list"]')
         ?.textContent,
     ).toContain("Thought");
+    expect(
+      container.querySelector('[data-testid="task-chat-runner-activity-detail"]')
+        ?.textContent,
+    ).toContain("The saved preview can be reused.");
   });
 
-  it("keeps the latest provider-authored reasoning line visible while activity is folded", () => {
+  it("keeps the latest provider-authored reasoning line and its full text open while live", () => {
     render([
       {
         id: "reasoning",
@@ -377,12 +374,13 @@ describe("TaskChatRunnerTurn", () => {
     ]);
 
     const ticker = container.querySelector(
-      '[data-testid="task-chat-activity-viewport"]',
+      '[data-testid="task-chat-activity-current"]',
     );
     expect(ticker?.textContent).toContain("Checking the steering path.");
     expect(
-      container.querySelector('[data-testid="task-chat-runner-activity-list"]'),
-    ).toBeNull();
+      ticker?.querySelector('[data-testid="task-chat-runner-activity-detail"]')
+        ?.textContent,
+    ).toContain("Inspecting the task state.");
   });
 
   it("keeps a visible fallback when completion tools are filtered before the final reply", () => {
@@ -495,19 +493,12 @@ describe("TaskChatRunnerTurn", () => {
     expect(
       container.querySelectorAll('[data-testid="task-chat-thinking"]'),
     ).toHaveLength(0);
-    act(() =>
-      container
-        .querySelector<HTMLButtonElement>(
-          '[data-testid="task-chat-activity-phase-toggle"]',
-        )
-        ?.click(),
-    );
     const history = container.querySelector('[data-testid="task-chat-runner-activity-list"]');
     expect(container.querySelector('[data-testid="task-chat-runner-activity-rail"]')).toBeNull();
     expect(history?.querySelectorAll("li")).toHaveLength(2);
     expect(history?.textContent).toContain("ThoughtInspect the current card.");
     expect(history?.textContent).toContain("ThinkingKeep the canonical revision atomic.");
-    expect(container.querySelector('[data-testid="task-chat-runner-activity-detail"]')).toBeNull();
+    expect(history?.querySelectorAll('[data-testid="task-chat-runner-activity-detail"]:not([hidden])')).toHaveLength(2);
 
   });
 
@@ -535,14 +526,6 @@ describe("TaskChatRunnerTurn", () => {
         transcriptIndex: 3,
       },
     ]);
-
-    act(() =>
-      container
-        .querySelector<HTMLButtonElement>(
-          '[data-testid="task-chat-activity-phase-toggle"]',
-        )
-        ?.click(),
-    );
 
     expect(container.querySelector('[data-activity-item-id="old-reasoning"]')?.textContent).toContain("ThoughtInspect the current card.");
     expect(container.querySelector('[data-activity-item-id="current-reasoning"]')?.textContent).toContain("ThinkingVerify the updated state.");
@@ -578,7 +561,7 @@ describe("TaskChatRunnerTurn", () => {
     ).toBeNull();
     expect(
       container.querySelector(
-        '[data-testid="task-chat-activity-viewport"]',
+        '[data-testid="task-chat-activity-current"]',
       )?.textContent,
     ).toBe("Thinking");
   });
@@ -608,11 +591,9 @@ describe("TaskChatRunnerTurn", () => {
     expect(
       container.querySelector('[data-testid="task-chat-live-plan-preview"]'),
     ).toBeNull();
-    const disclosure = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-activity-phase-toggle"]',
-    );
-    expect(disclosure?.getAttribute("aria-label")).toContain("Expand 1 activity");
-    act(() => disclosure?.click());
+    expect(
+      container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+    ).toBeNull();
     const history = container.querySelector(
       '[data-testid="task-chat-runner-activity-list"]',
     );
@@ -648,7 +629,7 @@ describe("TaskChatRunnerTurn", () => {
     ]);
 
     const activity = container.querySelector(
-      '[data-testid="task-chat-activity-viewport"]',
+      '[data-testid="task-chat-activity-current"]',
     );
     expect(activity?.textContent).toContain("Searching the web");
     expect(activity?.textContent).toContain(
@@ -788,7 +769,7 @@ describe("TaskChatRunnerTurn", () => {
         },
       ]);
       const activity = container.querySelector(
-        '[data-testid="task-chat-activity-viewport"]',
+        '[data-testid="task-chat-activity-current"]',
       );
       const families = Array.from(
         activity?.querySelectorAll("[data-activity-family]") ?? [],
@@ -819,12 +800,12 @@ describe("TaskChatRunnerTurn", () => {
     });
     render([provider("failed")]);
     expect(
-      container.querySelector('[data-testid="task-chat-activity-viewport"]')
+      container.querySelector('[data-testid="task-chat-activity-current"]')
         ?.textContent,
     ).toContain("Web search failed");
     render([provider("interrupted")]);
     expect(
-      container.querySelector('[data-testid="task-chat-activity-viewport"]')
+      container.querySelector('[data-testid="task-chat-activity-current"]')
         ?.textContent,
     ).toContain("Web search stopped");
   });
@@ -869,7 +850,7 @@ describe("TaskChatRunnerTurn", () => {
       },
     ]);
     const activity = container.querySelector(
-      '[data-testid="task-chat-activity-viewport"]',
+      '[data-testid="task-chat-activity-current"]',
     );
     expect(activity?.textContent).toContain("Referenced a file");
     expect(activity?.textContent).toContain("ui/src/App.tsx:42");
@@ -1439,7 +1420,7 @@ describe("TaskChatRunnerTurn", () => {
     );
   });
 
-  it("expands a grouped live phase without hiding its commentary", () => {
+  it("shows a grouped live phase open without hiding its commentary", () => {
     render([
       {
         id: "thinking-empty",
@@ -1467,20 +1448,16 @@ describe("TaskChatRunnerTurn", () => {
       },
     ]);
 
-    const disclosure = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-activity-phase-toggle"]',
-    );
-    expect(disclosure?.getAttribute("aria-expanded")).toBe("false");
+    expect(
+      container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+    ).toBeNull();
     expect(
       container.querySelectorAll('[data-testid="task-chat-thinking"]'),
     ).toHaveLength(0);
-
-    act(() => disclosure?.click());
-
-    expect(disclosure?.getAttribute("aria-expanded")).toBe("true");
     expect(
-      container.querySelector('[data-testid="task-chat-runner-activity-list"]'),
-    ).not.toBeNull();
+      container.querySelector('[data-activity-item-id="tool"] [data-testid="task-chat-runner-activity-detail"]')
+        ?.textContent,
+    ).toContain("export function App() {}");
     expect(
       container.querySelector('[data-testid="task-chat-phase-interstitial"]')
         ?.textContent,
@@ -1488,7 +1465,7 @@ describe("TaskChatRunnerTurn", () => {
     expect(container.textContent).toContain("ui/src/App.tsx");
   });
 
-  it("preserves an open phase while the live run becomes terminal", () => {
+  it("collapses the open live rows to the summary when the run becomes terminal", () => {
     const items: TaskChatItem[] = [
       {
         id: "tool",
@@ -1500,11 +1477,14 @@ describe("TaskChatRunnerTurn", () => {
       },
     ];
     render(items);
-    const disclosure = container.querySelector<HTMLButtonElement>(
-      '[data-testid="task-chat-activity-phase-toggle"]',
-    );
-    act(() => disclosure?.click());
-    expect(disclosure?.getAttribute("aria-expanded")).toBe("true");
+    expect(
+      container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+    ).toBeNull();
+    expect(
+      container
+        .querySelector('[data-activity-item-id="tool"] > button')
+        ?.getAttribute("aria-expanded"),
+    ).toBe("true");
 
     render(
       [{ ...items[0], kind: "tool", status: "completed" } as TaskChatItem],
@@ -1514,7 +1494,9 @@ describe("TaskChatRunnerTurn", () => {
     const settled = container.querySelector<HTMLButtonElement>(
       '[data-testid="task-chat-activity-phase-toggle"]',
     );
-    expect(settled?.getAttribute("aria-expanded")).toBe("true");
+    expect(settled?.getAttribute("aria-expanded")).toBe("false");
+    expect(container.querySelector("[data-activity-item-id]")).toBeNull();
+    expect(container.textContent).not.toContain("smoked pork shoulder");
     expect(
       container.querySelector('[data-testid="task-chat-turn-status-header"]')
         ?.textContent,
@@ -1532,27 +1514,70 @@ describe("TaskChatRunnerTurn", () => {
         status: "completed",
       },
     ];
+    const rowToggle = () =>
+      container.querySelector<HTMLButtonElement>(
+        '[data-activity-item-id="tool"] > button',
+      );
     render(items, "running", "run-1");
-    act(() =>
-      container
-        .querySelector<HTMLButtonElement>(
-          '[data-testid="task-chat-activity-phase-toggle"]',
-        )
-        ?.click(),
-    );
-    expect(
-      container
-        .querySelector('[data-testid="task-chat-activity-phase-toggle"]')
-        ?.getAttribute("aria-expanded"),
-    ).toBe("true");
+    expect(rowToggle()?.getAttribute("aria-expanded")).toBe("true");
+    act(() => rowToggle()?.click());
+    expect(rowToggle()?.getAttribute("aria-expanded")).toBe("false");
 
     render(items, "running", "run-2");
 
+    expect(rowToggle()?.getAttribute("aria-expanded")).toBe("true");
+  });
+
+  it("keeps the turn's newest three rows open when a mid-turn boundary splits the phase", () => {
+    const tools: TaskChatItem[] = Array.from({ length: 18 }, (_, index) => ({
+      id: `t${index + 1}`,
+      kind: "tool",
+      name: "Command",
+      rawName: "bash",
+      target: `command-t${index + 1}`,
+      status: index === 17 ? "in_progress" : "completed",
+      detail: `output-t${index + 1}`,
+    }));
+    const openRows = () =>
+      [
+        ...container.querySelectorAll<HTMLElement>(
+          '[data-activity-open="true"]',
+        ),
+      ].map((row) => row.dataset.activityItemId);
+    const earlier = () =>
+      container.querySelector(
+        '[data-testid="task-chat-activity-earlier-toggle"]',
+      )?.textContent;
+    render(tools);
+    expect(openRows()).toEqual(["t16", "t17", "t18"]);
+    expect(earlier()).toBe("+15 earlier");
+
+    render([
+      ...tools.slice(0, 17),
+      {
+        id: "late-commentary",
+        kind: "message",
+        author: "agent",
+        text: "Checking the last command.",
+        interstitial: true,
+        channel: "progress",
+      },
+      tools[17],
+    ]);
+
     expect(
-      container
-        .querySelector('[data-testid="task-chat-activity-phase-toggle"]')
-        ?.getAttribute("aria-expanded"),
-    ).toBe("false");
+      container.querySelectorAll('[data-testid="task-chat-activity-phase"]'),
+    ).toHaveLength(2);
+    expect(openRows()).toEqual(["t16", "t17", "t18"]);
+    expect(
+      container.querySelectorAll(
+        '[data-testid="task-chat-runner-activity-detail"]:not([hidden])',
+      ),
+    ).toHaveLength(3);
+    expect(earlier()).toBe("+15 earlier");
+    expect(
+      container.querySelector('[data-testid="task-chat-activity-phase-toggle"]'),
+    ).toBeNull();
   });
 
   it("renders a failed terminal disclosure without treating prose as status authority", () => {

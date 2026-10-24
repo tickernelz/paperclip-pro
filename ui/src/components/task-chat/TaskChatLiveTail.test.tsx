@@ -44,16 +44,18 @@ describe("TaskChatLiveTail", () => {
     return transcriptToTaskChatItems(entries, { runId: "run-1", running });
   }
 
-  const toggle = () => container.querySelector<HTMLButtonElement>(
+  const phaseToggle = () => container.querySelector<HTMLButtonElement>(
     '[data-testid="task-chat-activity-phase-toggle"]',
-  )!;
+  );
+  const earlierToggle = () => container.querySelector<HTMLButtonElement>(
+    '[data-testid="task-chat-activity-earlier-toggle"]',
+  );
   const viewport = () => container.querySelector(
-    '[data-testid="task-chat-activity-viewport"]',
+    '[data-testid="task-chat-activity-current"]',
   )!;
-  const expandFirstDetail = () => {
-    flushSync(() => toggle().click());
-    flushSync(() => container.querySelector<HTMLButtonElement>("li button")!.click());
-  };
+  const openDetails = () => [
+    ...container.querySelectorAll<HTMLElement>('[data-testid="task-chat-runner-activity-detail"]'),
+  ].filter((detail) => !detail.hidden);
 
   it("renders streamed reply markdown with one compact activity, without old tool cards", () => {
     const items = parse([
@@ -66,7 +68,7 @@ describe("TaskChatLiveTail", () => {
     expect(container.querySelector('[data-testid="task-chat-phase-interstitial"]')?.textContent).toContain(
       "Looking into the failing test.",
     );
-    expect(toggle().getAttribute("aria-expanded")).toBe("false");
+    expect(phaseToggle()).toBeNull();
     expect(viewport().textContent).toContain("Read a file");
     expect(viewport().textContent).toContain("src/app.ts");
     expect(container.querySelector('[data-testid="task-chat-tool-card"]')).toBeNull();
@@ -81,15 +83,10 @@ describe("TaskChatLiveTail", () => {
     ]);
     render(items);
 
-    expect(toggle().getAttribute("aria-expanded")).toBe("false");
+    expect(openDetails()).toHaveLength(1);
+    expect(openDetails()[0].textContent).toContain("+1 −1");
     expect(container.textContent).not.toContain("const x = 1;");
-    expect(container.textContent).not.toContain("+1 −1");
-
-    expandFirstDetail();
-
-    expect(container.textContent).toContain("+1 −1");
-    expect(container.textContent).not.toContain("const x = 1;");
-    expect(container.querySelector('[data-testid="task-chat-runner-activity-detail"]')).not.toBeNull();
+    expect(container.textContent).not.toContain("const x = 0;");
   });
 
   it("drops the debug plumbing kinds RunTranscriptView surfaced", () => {
@@ -121,8 +118,7 @@ describe("TaskChatLiveTail", () => {
     expect(container.querySelector('[data-testid="task-chat-phase-interstitial"]')?.textContent).toContain(
       "Here is the real reply.",
     );
-    expect(toggle().getAttribute("aria-expanded")).toBe("false");
-    flushSync(() => toggle().click());
+    expect(phaseToggle()).toBeNull();
     const text = container.textContent ?? "";
     expect(text).toContain("Here is the real reply.");
     expect(text).toContain("pnpm test");
@@ -141,7 +137,7 @@ describe("TaskChatLiveTail", () => {
     }
   });
 
-  it("updates only the latest reasoning line in place, with full text available on expansion", () => {
+  it("updates the latest reasoning line in place, with the full text open below it", () => {
     const entries: TranscriptEntry[] = [
       { kind: "thinking", ts: TS, itemId: "reasoning", text: "First line\nChecking" },
     ];
@@ -151,17 +147,15 @@ describe("TaskChatLiveTail", () => {
     render(parse(entries));
 
     expect(viewport().querySelector("[data-activity-row]")).toBe(row);
-    expect(viewport().textContent).toContain("Checking the file");
-    expect(container.textContent).not.toContain("First line");
-    expect(container.querySelector(".runner-activity-roll-in")).toBeNull();
-    expect(toggle().getAttribute("aria-expanded")).toBe("false");
-    expandFirstDetail();
-    expect(container.textContent).toContain("First line");
-    expect(container.textContent).toContain("Checking the file");
+    expect(row?.textContent).toContain("Checking the file");
+    expect(row?.textContent).not.toContain("First line");
+    expect(openDetails()).toHaveLength(1);
+    expect(openDetails()[0].textContent).toContain("First line");
+    expect(openDetails()[0].textContent).toContain("Checking the file");
     expect(container.querySelector('[data-testid="task-chat-phase-child-rail"]')).toBeNull();
   });
 
-  it("rolls successive CLI commands and image calls through one row without accumulating history", () => {
+  it("keeps the newest three commands open and moves older ones behind +N earlier", () => {
     const entries: TranscriptEntry[] = [
       { kind: "assistant", ts: TS, text: "Checking the fix.", channel: "progress" },
       { kind: "tool_call", ts: TS, name: "exec_command", toolUseId: "t1", input: { command: "git status" } },
@@ -172,36 +166,62 @@ describe("TaskChatLiveTail", () => {
     render(parse(entries));
     expect(viewport().querySelector("[data-activity-row]")).toBe(first);
     expect(viewport().textContent).toContain("Ran a command");
-    expect(container.querySelector(".runner-activity-roll-in")).toBeNull();
-
-    entries.push({ kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t2", input: { command: "pnpm test" } });
-    render(parse(entries));
-    expect(container.querySelector(".runner-activity-roll-in")?.textContent).toContain("Running a command");
-    const outgoing = container.querySelector(".runner-activity-roll-out")!;
-    expect(outgoing.getAttribute("aria-hidden")).toBe("true");
-    flushSync(() => outgoing.dispatchEvent(new Event("webkitAnimationEnd", { bubbles: true })));
-    expect(viewport().querySelectorAll("[data-activity-row]")).toHaveLength(1);
-    expect(container.textContent).not.toContain("git status");
-    expect(container.querySelector('[data-testid="task-chat-runner-activity-list"]')).toBeNull();
 
     entries.push(
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t2", input: { command: "pnpm test" } },
       { kind: "tool_result", ts: TS, toolUseId: "t2", content: "passed", isError: false },
-      { kind: "tool_call", ts: TS, name: "image_generation", toolUseId: "t3", input: { file_path: "preview.png" } },
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t3", input: { command: "pnpm lint" } },
     );
     render(parse(entries));
-    expect(container.querySelector(".runner-activity-roll-in")?.textContent).toContain("Generating an image");
-    flushSync(() => toggle().click());
+    expect(viewport().textContent).toContain("Running a command");
     expect(container.querySelectorAll("li")).toHaveLength(3);
+    expect(openDetails()).toHaveLength(3);
+    expect(earlierToggle()).toBeNull();
     expect(container.textContent).toContain("git status");
-    expect(container.textContent).toContain("pnpm test");
 
-    entries.push({ kind: "tool_result", ts: TS, toolUseId: "t3", content: "created", isError: false });
+    entries.push(
+      { kind: "tool_result", ts: TS, toolUseId: "t3", content: "clean", isError: false },
+      { kind: "tool_call", ts: TS, name: "image_generation", toolUseId: "t4", input: { file_path: "preview.png" } },
+    );
     render(parse(entries));
-    expect(toggle().getAttribute("aria-expanded")).toBe("true");
+    expect(viewport().textContent).toContain("Generating an image");
+    expect(container.querySelectorAll("li")).toHaveLength(3);
+    expect(earlierToggle()?.textContent).toBe("+1 earlier");
+    expect(container.textContent).not.toContain("git status");
+
+    flushSync(() => earlierToggle()!.click());
+    expect(container.querySelectorAll("li")).toHaveLength(4);
+    expect(container.textContent).toContain("git status");
+    expect(openDetails()).toHaveLength(3);
+
+    entries.push({ kind: "tool_result", ts: TS, toolUseId: "t4", content: "created", isError: false });
+    render(parse(entries));
+    expect(earlierToggle()?.getAttribute("aria-expanded")).toBe("true");
     expect(container.textContent).toContain("Generated an image");
   });
 
-  it("bounds long tool targets and wraps the full value only when expanded", () => {
+  it("keeps the newest three open across a commentary split mid-run", () => {
+    const entries: TranscriptEntry[] = [
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t1", input: { command: "echo one" } },
+      { kind: "tool_result", ts: TS, toolUseId: "t1", content: "one", isError: false },
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t2", input: { command: "echo two" } },
+      { kind: "tool_result", ts: TS, toolUseId: "t2", content: "two", isError: false },
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t3", input: { command: "echo three" } },
+      { kind: "tool_result", ts: TS, toolUseId: "t3", content: "three", isError: false },
+      { kind: "assistant", ts: TS, text: "Halfway there.", channel: "progress" },
+      { kind: "tool_call", ts: TS, name: "Bash", toolUseId: "t4", input: { command: "echo four" } },
+    ];
+    render(parse(entries));
+
+    const openText = openDetails().map((detail) => detail.textContent ?? "").join("\n");
+    expect(openDetails()).toHaveLength(3);
+    expect(openText).toContain("two");
+    expect(openText).toContain("three");
+    expect(openText).toContain("echo four");
+    expect(openText).not.toContain("echo one");
+  });
+
+  it("bounds long tool targets on the row and wraps the full value in the open detail", () => {
     const longPath =
       "/Users/dotta/paperclip/instances/default/companies/company-id/codex/home/skills/paperclip/references/API-reference.md";
     const items = parse([
@@ -220,22 +240,19 @@ describe("TaskChatLiveTail", () => {
       .find((item) => item.kind === "tool")?.target;
     render(items);
 
-    const collapsedTarget = viewport().querySelector("[title]");
-    expect(collapsedTarget?.classList.contains("truncate")).toBe(true);
-    expect(toggle().getAttribute("aria-expanded")).toBe("false");
+    const rowTarget = viewport().querySelector("[data-activity-row] [title]");
+    expect(rowTarget?.classList.contains("truncate")).toBe(true);
     expect(renderedTarget).toBeTruthy();
-    expect(collapsedTarget?.textContent).toBe(renderedTarget);
+    expect(rowTarget?.textContent).toBe(renderedTarget);
 
-    expandFirstDetail();
-
-    const expandedTarget = container.querySelector(
-      '[data-testid="task-chat-runner-activity-detail"] p',
-    );
-    expect(toggle().getAttribute("aria-expanded")).toBe("true");
+    const expandedTarget = openDetails()[0]?.querySelector("p");
     expect(expandedTarget?.textContent).toBe(renderedTarget);
-    expect(
-      expandedTarget?.classList.contains("break-all"),
-    ).toBe(true);
+    expect(expandedTarget?.classList.contains("break-all")).toBe(true);
+
+    const rowButton = viewport().querySelector<HTMLButtonElement>(":scope > button")!;
+    flushSync(() => rowButton.click());
+    expect(rowButton.getAttribute("aria-expanded")).toBe("false");
+    expect(openDetails()).toHaveLength(0);
   });
 
   it("shows the empty message when nothing renderable has streamed yet", () => {

@@ -206,10 +206,6 @@ function renderItem(
     case "usage":
       return <TaskChatUsageReadout item={item} />;
     case "activity_phase":
-      // Legacy adapter transcripts and native runner transcripts now share the
-      // same compact activity treatment. Keeping this decision at the common
-      // renderer boundary also gives old persisted runs the current taxonomy,
-      // alignment, one-line targets, and collapsed-by-default behavior.
       return <TaskChatRunnerActivityGroup item={item} />;
     case "interaction":
       return renderInteraction ? renderInteraction(item) : null;

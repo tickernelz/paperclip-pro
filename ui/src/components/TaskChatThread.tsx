@@ -10,7 +10,10 @@ import type { ActivityEvent, IssueQueuedCommentQueue, TaskBrowser } from "@ticke
 import { useProjectCreatedItems } from "@/hooks/useProjectCreatedItems";
 import { skillCreatedItems } from "@/components/task-chat/skill-created-items";
 import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
-import { TaskChatExpansionState } from "@/components/task-chat/expansion-state";
+import {
+  TaskChatExpansionState,
+  useIssueExpansionMemory,
+} from "@/components/task-chat/expansion-state";
 import { TaskChatScrollReady } from "@/components/task-chat/scroll-navigation";
 import {
   useCallback,
@@ -2890,7 +2893,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               : runtimeRequestReplacesComposerSkip(selectedPendingInput.item),
         }
       : null;
-  const expansionState = useRef(new Map<string, boolean>());
+  const expansionMemory = useIssueExpansionMemory(issueId);
   const autoFollowContentKey = `${threadContentKey}:${composerTakeover?.id ?? "composer"}`;
 
 
@@ -3007,7 +3010,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
   };
 
   return (
-    <TaskChatExpansionState.Provider value={expansionState.current}>
+    <TaskChatExpansionState.Provider value={expansionMemory}>
       <TaskChatScrollReady.Provider value={!historyPending || historyWaitExpired}>
         <TaskChatWindowScroll
           contentKey={isMobile ? `${autoFollowContentKey}:${composerReserve}` : 0}

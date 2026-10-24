@@ -2773,6 +2773,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --sz-108px: 108px;
   --sz-88px: 88px; /* Extracted from ui/src/components/AgentConfigForm.tsx (min-h-[88px]). */
   --sz-240px: 240px; /* Extracted from ui/src/components/AgentConfigForm.tsx (max-h-[240px]). */
+  --sz-64: 16rem;
   --sz-10_5rem: 10.5rem; /* Extracted from ui/src/components/BlockedInboxView.tsx (w-[10.5rem]). */
   --sz-150px: 150px; /* Extracted from ui/src/components/BlockedInboxView.tsx (w-[150px]). */
   --sz-5_75rem: 5.75rem; /* Extracted from ui/src/components/BlockedInboxView.tsx (w-[5.75rem]). */
@@ -3266,21 +3267,6 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   line-height: var(--text-sm--line-height);
 }
 
-/* The runner keeps one fixed-height activity row between commentary updates. */
-@keyframes runner-activity-roll-in {
-  from { transform: translateY(100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-@keyframes runner-activity-roll-out {
-  from { transform: translateY(0); opacity: 1; }
-  to { transform: translateY(-100%); opacity: 0; }
-}
-.runner-activity-roll-in { animation: runner-activity-roll-in var(--motion-line-scroll) var(--motion-ease-standard) both; }
-.runner-activity-roll-out { animation: runner-activity-roll-out var(--motion-line-scroll) var(--motion-ease-standard) both; }
-@media (prefers-reduced-motion: reduce) {
-  .runner-activity-roll-in { animation: none; }
-  .runner-activity-roll-out { display: none; }
-}
 
 /* Entity pickers become bottom sheets on narrow screens. Radix's popper wrapper
    carries a transform, so it is the containing block for fixed descendants: dock

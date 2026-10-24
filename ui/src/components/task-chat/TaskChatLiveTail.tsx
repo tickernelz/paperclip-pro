@@ -3,21 +3,12 @@ import { MarkdownBody } from "@/components/MarkdownBody";
 import type { TaskChatItem, TaskChatRuntimeRequestDecision, TaskChatRuntimeRequestItem } from "./task-chat-model";
 import { TaskChatToolCard } from "./TaskChatToolCard";
 import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
-import { TaskChatRunnerActivityGroup } from "./TaskChatRunnerActivityGroup";
+import { TaskChatRunnerActivityGroup, newestActivityIds } from "./TaskChatRunnerActivityGroup";
 import { TaskChatThinking } from "./TaskChatThinking";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
+import type { TaskChatActivityPhaseItem } from "./task-chat-model";
 import { buildTurnTimelineRows } from "./transcript-adapter";
 
-/**
- * Live body for legacy runner transcripts. The adapter drops debug plumbing;
- * the same activity group as the native runner shows one rolling current row
- * with friendly tool labels and explicitly expandable history. The status pill
- * above this body (`TaskChatLiveRunPill`) owns the run-status affordance.
- *
- * Stable assistant and runtime-request boundaries compact the rows into an
- * ordered turn timeline. Commentary remains readable above the activity group
- * it introduced, and resolved request receipts keep their original slot.
- */
 export function TaskChatLiveTail({
   items,
   turnId = 'turn',
@@ -43,8 +34,12 @@ export function TaskChatLiveTail({
     const visibleItems = excludeFinal
       ? items.filter((item) => item.kind !== "message" || item.interstitial)
       : items;
-    return buildTurnTimelineRows(visibleItems, true, turnId)
-      .map((item) => renderTailRow(item, onRuntimeRequestDecision))
+    const timelineRows = buildTurnTimelineRows(visibleItems, true, turnId);
+    const openActivityIds = newestActivityIds(
+      timelineRows.filter((row): row is TaskChatActivityPhaseItem => row.kind === "activity_phase"),
+    );
+    return timelineRows
+      .map((item) => renderTailRow(item, openActivityIds, onRuntimeRequestDecision))
       .filter((row): row is ReactElement => row != null);
   }, [items, excludeFinal, onRuntimeRequestDecision, turnId]);
 
@@ -59,6 +54,7 @@ export function TaskChatLiveTail({
 
 function renderTailRow(
   item: TaskChatItem,
+  openActivityIds: ReadonlySet<string>,
   onRuntimeRequestDecision?: (
     item: TaskChatRuntimeRequestItem,
     decision: TaskChatRuntimeRequestDecision,
@@ -102,6 +98,7 @@ function renderTailRow(
         <TaskChatRunnerActivityGroup
           key={item.id}
           item={item}
+          openActivityIds={openActivityIds}
         />
       );
     case "protocol":

@@ -2,7 +2,7 @@
 
 Production runner activity group with deterministic fixtures for the approved completed summaries.
 
-Open **Tasks → Completed activity preview**. Start with Completed conversation, Summary situations, and Desktop live to completed. Mobile and expanded playback variants exercise the same proposal.
+Open **Tasks → Completed activity preview**. Start with Completed conversation, Summary situations, and Desktop live to completed. Mobile playback variants exercise the same proposal; running phases open their newest three activities on their own.
 
 ## Behavior
 

@@ -195,12 +195,10 @@ function phase(
 export function CompletedActivityPreview({
   mode = "conversation",
   narrow = false,
-  expanded = false,
   autoPlay = true,
 }: {
   mode?: "conversation" | "gallery" | "live";
   narrow?: boolean;
-  expanded?: boolean;
   autoPlay?: boolean;
 }) {
   const [step, setStep] = useState(0);
@@ -281,7 +279,6 @@ export function CompletedActivityPreview({
               <p className="text-xs text-muted-foreground">{scenario.note}</p>
               <CompletedActivityGroup
                 item={phase(scenario.id, scenario.items)}
-                defaultExpanded={expanded}
               />
             </section>
           ))
@@ -293,7 +290,6 @@ export function CompletedActivityPreview({
             </p>
             <CompletedActivityGroup
               item={phase("live-group", liveItems, step < 3)}
-              defaultExpanded={expanded}
             />
             {step >= 3 && (
               <p className="text-sm">
@@ -313,7 +309,6 @@ export function CompletedActivityPreview({
                   ],
                   step === 3,
                 )}
-                defaultExpanded={expanded}
               />
             )}
             {step === 4 && (
@@ -329,7 +324,6 @@ export function CompletedActivityPreview({
             </p>
             <CompletedActivityGroup
               item={phase("conversation-1", [thought, read, search])}
-              defaultExpanded={expanded}
             />
             <p className="text-sm">
               The grouping is already in place. I’m updating how each group
@@ -337,14 +331,12 @@ export function CompletedActivityPreview({
             </p>
             <CompletedActivityGroup
               item={phase("conversation-2", [edit, command])}
-              defaultExpanded={expanded}
             />
             <p className="text-sm">
               The preview took a moment to start. I’ll check the address again.
             </p>
             <CompletedActivityGroup
               item={phase("conversation-3", [retry, recovered])}
-              defaultExpanded={expanded}
             />
             <p className="text-sm">
               The preview is ready. Completed groups now describe the work in a
