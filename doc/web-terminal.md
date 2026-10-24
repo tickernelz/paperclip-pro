@@ -42,7 +42,7 @@ Behind a reverse proxy or tunnel, set `auth.publicBaseUrl` to the public URL and
 ## Terminal features
 
 - WebGL rendering with a fallback when WebGL is unavailable
-- inline images over Sixel and the iTerm2 protocol
+- inline images over Sixel and the iTerm2 protocol; the kitty graphics protocol is not supported and its images are dropped without output, so pick Sixel in the tool (for example `chafa -f sixels`, `timg -p s`, `img2sixel`)
 - clickable links, search (Ctrl/Cmd+F), copy and paste (Ctrl+Shift+C/V)
 - tabs and a side-by-side split
 - drag a file onto the terminal to upload it into the session's directory; download a file by path
