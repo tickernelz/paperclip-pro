@@ -8,6 +8,11 @@ import { TerminalView } from "./TerminalView";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
+const { DEVICE_ATTRIBUTES_QUERY, DEVICE_ATTRIBUTES_REPLY } = vi.hoisted(() => ({
+  DEVICE_ATTRIBUTES_QUERY: "\u001b[c",
+  DEVICE_ATTRIBUTES_REPLY: "\u001b[?1;2c",
+}));
+
 const xterm = vi.hoisted(() => {
   class MockTerminal {
     readonly options: Record<string, unknown>;
@@ -44,7 +49,11 @@ const xterm = vi.hoisted(() => {
     }
 
     attachCustomKeyEventHandler() {}
-    write(data: string) { this.writes.push(data); }
+    write(data: string, callback?: () => void) {
+      this.writes.push(data);
+      if (data.includes(DEVICE_ATTRIBUTES_QUERY)) this.emitData(DEVICE_ATTRIBUTES_REPLY);
+      callback?.();
+    }
     reset() { this.resets += 1; this.writes = []; }
     resize(cols: number, rows: number) { this.cols = cols; this.rows = rows; }
     focus() {}
@@ -242,6 +251,24 @@ describe("TerminalView", () => {
 
     await act(async () => terminal.emitData("ls\r"));
     expect(socket.frames().at(-1)).toEqual({ type: "input", data: "ls\r" });
+  });
+
+  it("keeps replayed history from answering old terminal queries into the shell", async () => {
+    terminalApiMock.createToken.mockResolvedValueOnce(token("token-1"));
+    await mount();
+    const socket = FakeWebSocket.instances[0]!;
+    await act(async () => socket.open());
+
+    await act(async () => {
+      socket.receive({ type: "ready", session });
+      socket.receive({ type: "replay", data: `vim${DEVICE_ATTRIBUTES_QUERY}` });
+    });
+    expect(socket.frames().filter((frame) => frame.type === "input")).toEqual([]);
+
+    await act(async () => socket.receive({ type: "output", data: DEVICE_ATTRIBUTES_QUERY }));
+    expect(socket.frames().filter((frame) => frame.type === "input")).toEqual([
+      { type: "input", data: DEVICE_ATTRIBUTES_REPLY },
+    ]);
   });
 
   it("mints a fresh token and reattaches after the socket closes", async () => {

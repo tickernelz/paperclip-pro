@@ -148,6 +148,7 @@ export function TerminalView({
     let fitFrame: number | null = null;
     let attempt = 0;
     let attached = false;
+    let replaysInFlight = 0;
     let lastSize: { cols: number; rows: number } | null = null;
 
     const terminal = new XTermTerminal({
@@ -296,7 +297,10 @@ export function TerminalView({
             return;
           case "replay":
             terminal.reset();
-            if (frame.data) terminal.write(frame.data);
+            if (frame.data) {
+              replaysInFlight += 1;
+              terminal.write(frame.data, () => { replaysInFlight -= 1; });
+            }
             return;
           case "output":
             terminal.write(frame.data);
@@ -338,7 +342,10 @@ export function TerminalView({
       void connect();
     };
 
-    const inputDisposable = terminal.onData((data) => send({ type: "input", data }));
+    const inputDisposable = terminal.onData((data) => {
+      if (replaysInFlight > 0) return;
+      send({ type: "input", data });
+    });
     terminal.attachCustomKeyEventHandler((event) => {
       if (event.type !== "keydown") return true;
       const key = event.key.toLowerCase();
@@ -567,7 +574,7 @@ export function TerminalView({
           role="application"
           aria-label="Terminal"
           data-testid="terminal-screen"
-          className="h-full w-full overflow-hidden text-xs [&_.xterm]:h-full [&_.xterm-viewport]:overflow-y-auto"
+          className="h-full w-full overflow-hidden text-xs [&_.xterm]:h-full [&_.xterm-viewport]:!overflow-y-auto [&_.xterm-viewport]:!bg-transparent"
           onClick={() => terminalRef.current?.focus()}
         />
         {dragging ? (
