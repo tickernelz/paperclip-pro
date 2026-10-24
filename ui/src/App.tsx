@@ -144,6 +144,9 @@ const ProductionCompanySkills = lazy(() =>
 const ProductionCompanyActivity = lazy(() =>
   import("./pages/audit/CompanyActivity.production").then((module) => ({ default: module.CompanyActivity })),
 );
+const TerminalPage = lazy(() =>
+  import("./pages/Terminal").then((module) => ({ default: module.Terminal })),
+);
 const ProductionOrgChart = lazy(() =>
   import("./pages/OrgChart.production").then((module) => ({ default: module.OrgChart })),
 );
@@ -314,6 +317,7 @@ function boardRoutes(streamlinedUiEnabled: boolean, combinedInboxTasksEnabled: b
       <Route element={<IsolatedWorkspacesRouteGate />}>
         <Route path="workspaces" element={<Workspaces />} />
       </Route>
+      <Route path="terminal" element={<ProductionSurface><TerminalPage /></ProductionSurface>} />
       <Route path="issues" element={<Issues />} />
       <Route path="tasks" element={<Navigate to="/issues" replace />} />
       <Route path="search" element={<Search />} />
@@ -899,6 +903,7 @@ export function App() {
           <Route path="projects/:projectId/workspaces/:workspaceId" element={<UnprefixedBoardRedirect />} />
           <Route path="projects/:projectId/configuration" element={<UnprefixedBoardRedirect />} />
           <Route path="workspaces" element={<UnprefixedBoardRedirect />} />
+          <Route path="terminal" element={<UnprefixedBoardRedirect />} />
           <Route path="execution-workspaces/:workspaceId" element={<UnprefixedExecutionWorkspaceRedirect />} />
           <Route path="execution-workspaces/:workspaceId/services" element={<UnprefixedExecutionWorkspaceRedirect />} />
           <Route path="execution-workspaces/:workspaceId/configuration" element={<UnprefixedExecutionWorkspaceRedirect />} />

@@ -23,6 +23,7 @@ import {
   LayoutGrid,
   Users,
   Gamepad2,
+  SquareTerminal,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -260,6 +261,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           {showWorkspacesLink ? (
             <SidebarNavItem to="/workspaces" label="Workspaces" icon={GitBranch} />
           ) : null}
+          <SidebarNavItem to="/terminal" label="Terminal" icon={SquareTerminal} />
           <PluginSlotOutlet
             errorBehavior="hidden"
             slotTypes={["sidebar"]}

@@ -28,9 +28,12 @@ import {
   ListTree,
   Plus,
   SlidersHorizontal,
+  SquareTerminal,
   X,
 } from "lucide-react";
 import { fileResourcesApi } from "@/api/file-resources";
+import { accessApi } from "@/api/access";
+import { canOpenLocalTerminal } from "@/components/terminal/terminal-access";
 import { IssueProperties } from "@/components/IssueProperties";
 import { PROPERTIES_PANE_HEADER_SLOT_ID } from "@/components/PropertiesPanel";
 import { WorkspaceFileBrowser } from "@/components/WorkspaceFileBrowser";
@@ -80,6 +83,7 @@ import {
   taskPanelPropertiesTab,
   taskPanelSkillTab,
   taskPanelSubtasksTab,
+  taskPanelTerminalTab,
   taskPanelWorkspaceFileTab,
   writeTaskSidePanelState,
   type TaskSidePanelTabPayload,
@@ -88,6 +92,7 @@ import { cn } from "@/lib/utils";
 import { TaskDocumentPanel } from "./TaskDocumentPanel";
 import { TaskWorkspaceFilePanel } from "./TaskWorkspaceFilePanel";
 import { TaskSkillPanel } from "./TaskSkillPanel";
+import { TaskTerminalPanel } from "./TaskTerminalPanel";
 
 export interface TaskSidePanelProps {
   issue: Issue;
@@ -136,6 +141,7 @@ function tabIcon(tab: SidePanelTabRecord<TaskSidePanelTabPayload>): ReactNode {
     case "attachment": return <FileText />;
     case "files-browser": return <FolderOpen />;
     case "workspace-file": return <FileCode2 />;
+    case "terminal": return <SquareTerminal />;
     case "issue-document": return tab.payload.documentKey === "plan" ? <Lightbulb /> : <FileText />;
   }
 }
@@ -470,6 +476,12 @@ export function TaskSidePanel({
     onAttachmentOpened?.();
   }, [controller.openTab, openAttachment, onAttachmentOpened]);
 
+  const boardAccessQuery = useQuery({
+    queryKey: queryKeys.access.currentBoardAccess,
+    queryFn: () => accessApi.getCurrentBoardAccess(),
+  });
+  const terminalAllowed = canOpenLocalTerminal(boardAccessQuery.data);
+
   const recentFilesQuery = useQuery({
     queryKey: queryKeys.issues.fileResources(issue.id, {
       workspace: "auto",
@@ -587,6 +599,9 @@ export function TaskSidePanel({
     if (fileTabsEnabled) {
       primary.push({ id: "files", label: "Files", icon: <FolderOpen />, shortcut: "G F", alreadyOpen: controller.tabs.some((tab) => tab.id === "files") });
     }
+    if (terminalAllowed) {
+      primary.push({ id: "terminal", label: "Terminal", description: "Shell in the task workspace", icon: <SquareTerminal />, alreadyOpen: controller.tabs.some((tab) => tab.id === "terminal") });
+    }
     const documentItems: SidePanelLauncherItem[] = [
       ...(planDocument ? [{
         id: "document:plan",
@@ -631,7 +646,7 @@ export function TaskSidePanel({
       });
     }
     return sections;
-  }, [browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable]);
+  }, [browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable, terminalAllowed]);
 
   function selectLauncherItem(item: SidePanelLauncherItem) {
     markInteracted();
@@ -646,6 +661,7 @@ export function TaskSidePanel({
     }
     else if (item.id === "artifacts") controller.openTab(taskPanelArtifactsTab());
     else if (item.id === "agent-tasks") controller.openTab(taskPanelAgentTasksTab());
+    else if (item.id === "terminal") controller.openTab(taskPanelTerminalTab());
     else if (item.id === "files") {
       controller.openTab(taskPanelFilesTab());
       viewer.openBrowse();
@@ -720,7 +736,7 @@ export function TaskSidePanel({
   let content: ReactNode;
   if (!activeTab) {
     content = <SidePanelLauncher sections={launcherSections} onSelect={selectLauncherItem} />;
-  } else if (activeTab.payload.kind === "browser") {
+  } else if (activeTab.payload.kind === "browser" || activeTab.payload.kind === "terminal") {
     content = null; // Mounted below independently of the selected tab.
   } else if (activeTab.payload.kind === "properties") {
     content = (
@@ -846,6 +862,11 @@ export function TaskSidePanel({
         {controller.tabs.map(tab => tab.payload.kind === "browser" ? (
           <div key={tab.id} hidden={tab.id !== controller.activeTabId} className={cn("h-full min-h-0", tab.id !== controller.activeTabId && "hidden")}>
             <TaskBrowserPanel active={tab.id === controller.activeTabId} issueId={issue.id} browser={browsersQuery.data?.find(b => tab.payload.kind === "browser" && (b.id === tab.payload.browserId || b.sessionId === tab.payload.browserId))} accessError={browsersQuery.isError} onOpenActiveBrowser={newestLiveBrowser ? () => controller.openTab(taskPanelBrowserTab(newestLiveBrowser.id)) : undefined} />
+          </div>
+        ) : null)}
+        {controller.tabs.map(tab => tab.payload.kind === "terminal" ? (
+          <div key={tab.id} hidden={tab.id !== controller.activeTabId} className={cn("h-full min-h-0", tab.id !== controller.activeTabId && "hidden")}>
+            <TaskTerminalPanel issue={issue} active={tab.id === controller.activeTabId} />
           </div>
         ) : null)}
         {contentMode === "prose" ? (

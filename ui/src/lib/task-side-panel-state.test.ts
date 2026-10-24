@@ -8,6 +8,7 @@ import {
   taskPanelPropertiesTab,
   taskPanelSkillTab,
   taskPanelSubtasksTab,
+  taskPanelTerminalTab,
   writeTaskSidePanelState,
   shouldSuppressTaskPanelUntilPlan,
   openSkillPanelState,
@@ -28,6 +29,41 @@ describe("task side-panel persistence", () => {
       state: { tabs: [], activeTabId: null },
       userInteracted: true,
     });
+  });
+
+  it("restores a terminal tab with its payload kind, even with file tabs disabled", () => {
+    writeTaskSidePanelState("user-1", "company-1", "task-1", {
+      state: { tabs: [taskPanelPropertiesTab(), taskPanelTerminalTab()], activeTabId: "terminal" },
+      launcherOpen: false,
+      userInteracted: true,
+      autoPlanHandled: true,
+      updatedAt: 1,
+    });
+    const restored = readTaskSidePanelState("user-1", "company-1", "task-1", false);
+    expect(restored?.state.activeTabId).toBe("terminal");
+    expect(restored?.state.tabs.map((tab) => tab.id)).toEqual(["properties", "terminal"]);
+    expect(restored?.state.tabs[1]).toEqual(taskPanelTerminalTab());
+  });
+
+  it("drops a stored tab whose payload kind is unknown", () => {
+    window.localStorage.setItem("paperclip:task-side-panel:v1:user-1:company-1", JSON.stringify({
+      version: 1,
+      tasks: {
+        "task-1": {
+          state: {
+            tabs: [
+              { id: "terminal", type: "terminal", label: "Terminal", payload: { kind: "terminal" } },
+              { id: "shell", type: "shell", label: "Shell", payload: { kind: "shell" } },
+            ],
+            activeTabId: "shell",
+          },
+          updatedAt: 1,
+        },
+      },
+    }));
+    const restored = readTaskSidePanelState("user-1", "company-1", "task-1", true);
+    expect(restored?.state.tabs.map((tab) => tab.payload.kind)).toEqual(["terminal"]);
+    expect(restored?.state.activeTabId).toBe("terminal");
   });
 
   it("persists and restores a skill tab", () => {

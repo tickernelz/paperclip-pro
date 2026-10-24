@@ -26,6 +26,18 @@ class ResizeObserverStub {
 (globalThis as { ResizeObserver?: typeof ResizeObserver }).ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 
 const browserFixture = vi.hoisted(() => ({ data: [] as import("@tickernelz/paperclip-pro-shared").TaskBrowser[], viewer: vi.fn(async () => ({ url: "https://live.browser-use.com/test-viewer" })), control: vi.fn(async () => ({})) }));
+const accessFixture = vi.hoisted(() => ({ isInstanceAdmin: true }));
+vi.mock("@/api/access", () => ({
+  accessApi: {
+    getCurrentBoardAccess: vi.fn(async () => ({
+      user: null,
+      userId: "user-1",
+      isInstanceAdmin: accessFixture.isInstanceAdmin,
+      companyIds: ["company-1"],
+      source: "session",
+    })),
+  },
+}));
 vi.mock("@/hooks/useTaskBrowsers", () => ({ useTaskBrowsers: () => ({ data: browserFixture.data, isError: false }) }));
 vi.mock("@/api/browser-use", () => ({ browserUseApi: { viewer: browserFixture.viewer, control: browserFixture.control, presence: vi.fn(async () => ({ accepted: true })) } }));
 const fixture = vi.hoisted(() => ({
@@ -100,6 +112,12 @@ vi.mock("./TaskWorkspaceFilePanel", () => ({
   TaskWorkspaceFilePanel: () => <div>Workspace file</div>,
 }));
 
+vi.mock("./TaskTerminalPanel", () => ({
+  TaskTerminalPanel: ({ issue: terminalIssue, active }: { issue: Issue; active: boolean }) => (
+    <div data-testid="task-terminal-stub" data-active={String(active)}>{`Terminal for ${terminalIssue.id}`}</div>
+  ),
+}));
+
 function issue(overrides: Partial<Issue> = {}): Issue {
   return {
     id: "task-1",
@@ -130,6 +148,7 @@ describe("TaskSidePanel", () => {
 
   beforeEach(() => {
     window.localStorage.clear();
+    accessFixture.isInstanceAdmin = true;
     browserFixture.data = [];
     browserFixture.control.mockClear();
     fixture.documents = [];
@@ -519,6 +538,50 @@ describe("TaskSidePanel", () => {
 
     await render(panel({ childIssues: [issue({ id: "child-1" })], showSubtasksTab: false }));
     expect(container.querySelector('[data-side-panel-tab-target="subtasks"]')).toBeNull();
+  });
+
+  it("offers no Terminal to a company member who is not an instance admin", async () => {
+    accessFixture.isInstanceAdmin = false;
+    await render(panel());
+    await act(async () => { await Promise.resolve(); });
+
+    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]')?.click());
+    const labels = Array.from(document.body.querySelectorAll<HTMLElement>('[role="option"]')).map((item) => item.textContent ?? "");
+    expect(labels.some((label) => label.includes("Properties"))).toBe(true);
+    expect(labels.some((label) => label.includes("Terminal"))).toBe(false);
+  });
+
+  it("opens a Terminal tab from the launcher and keeps it mounted while another tab is selected", async () => {
+    await render(panel());
+    await act(async () => { await Promise.resolve(); });
+    expect(container.querySelector('[data-testid="task-terminal-stub"]')).toBeNull();
+
+    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]')?.click());
+    const launcherItem = Array.from(document.body.querySelectorAll<HTMLElement>('[role="option"]'))
+      .find((item) => item.textContent?.includes("Terminal"));
+    expect(launcherItem).not.toBeUndefined();
+    await act(async () => launcherItem?.click());
+
+    const selected = container.querySelector('[role="tab"][aria-selected="true"]');
+    expect(selected?.getAttribute("data-side-panel-tab-target")).toBe("terminal");
+    const stub = container.querySelector<HTMLElement>('[data-testid="task-terminal-stub"]');
+    expect(stub?.textContent).toBe("Terminal for task-1");
+    expect(stub?.dataset.active).toBe("true");
+    expect(stub?.closest("[hidden]")).toBeNull();
+    expect(localStorage.getItem("paperclip:task-side-panel:v1:user-1:company-1")).toContain('"kind":"terminal"');
+
+    await act(async () => container.querySelector<HTMLButtonElement>("#side-panel-tab-properties")?.click());
+    expect(container.querySelector('[data-testid="task-terminal-stub"]')).toBe(stub);
+    expect(stub?.dataset.active).toBe("false");
+    expect(stub?.closest("[hidden]")).toBeTruthy();
+
+    await act(async () => container.querySelector<HTMLButtonElement>("#side-panel-tab-terminal")?.click());
+    expect(container.querySelector('[data-testid="task-terminal-stub"]')).toBe(stub);
+    expect(stub?.dataset.active).toBe("true");
+    const close = container.querySelector<HTMLButtonElement>('button[aria-label="Close Terminal"]');
+    expect(close).not.toBeNull();
+    await act(async () => close?.click());
+    expect(container.querySelector('[data-testid="task-terminal-stub"]')).toBeNull();
   });
 
   it("reopens a closed Subtasks tab from the launcher", async () => {

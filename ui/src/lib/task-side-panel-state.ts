@@ -38,6 +38,7 @@ export type TaskSidePanelTabPayload =
   | { kind: "attachment"; attachmentId: string }
   | { kind: "skill"; skillId: string }
   | { kind: "issue-document"; documentKey: string }
+  | { kind: "terminal" }
   | {
       kind: "files-browser";
       query: string | null;
@@ -96,6 +97,7 @@ function parsePayload(value: unknown): TaskSidePanelTabPayload | null {
   if (kind === "subtasks") return { kind };
   if (kind === "artifacts") return { kind };
   if (kind === "agent-tasks") return { kind };
+  if (kind === "terminal") return { kind };
   if (kind === "attachment") {
     return typeof input.attachmentId === "string" && input.attachmentId.length > 0 ? { kind, attachmentId: input.attachmentId } : null;
   }
@@ -294,6 +296,10 @@ export function taskPanelWorkspaceFileTab(input: {
 
 export function taskPanelAttachmentTab(attachmentId: string, title: string): SidePanelTabRecord<TaskSidePanelTabPayload> {
   return { id: `attachment:${attachmentId}`, type: "attachment", label: title, closable: true, contentMode: "full-bleed", payload: { kind: "attachment", attachmentId } };
+}
+
+export function taskPanelTerminalTab(): SidePanelTabRecord<TaskSidePanelTabPayload> {
+  return { id: "terminal", type: "terminal", label: "Terminal", closable: true, contentMode: "full-bleed", payload: { kind: "terminal" } };
 }
 
 export function taskPanelBrowserTab(browserId: string): SidePanelTabRecord<TaskSidePanelTabPayload> {
