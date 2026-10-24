@@ -561,7 +561,6 @@ function EnvironmentCustomImageBrowserTerminal({
       cursorInactiveStyle: "bar",
       cursorStyle: "bar",
       cursorWidth: 2,
-      customGlyphs: true,
       fontFamily: CUSTOM_IMAGE_TERMINAL_FONT_FAMILY,
       fontSize: 12,
       letterSpacing: 0,

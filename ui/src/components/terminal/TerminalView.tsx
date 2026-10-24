@@ -159,7 +159,6 @@ export function TerminalView({
       cursorBlink: true,
       cursorStyle: "bar",
       cursorInactiveStyle: "outline",
-      customGlyphs: true,
       lineHeight: 1.2,
       scrollback: SCROLLBACK_ROWS,
       theme: resolveTerminalTheme(element),
@@ -181,7 +180,7 @@ export function TerminalView({
     }));
     terminal.loadAddon(new Unicode11Addon());
     terminal.unicode.activeVersion = "11";
-    terminal.loadAddon(new ImageAddon({ sixelSupport: true, iipSupport: true }));
+    terminal.loadAddon(new ImageAddon({ sixelSupport: true, iipSupport: true, kittySupport: true }));
     terminal.open(element);
     terminalRef.current = terminal;
     searchAddonRef.current = searchAddon;
