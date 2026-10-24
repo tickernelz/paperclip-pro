@@ -1,3 +1,12 @@
+export async function readClipboardItems(): Promise<ClipboardItem[] | null> {
+  if (typeof navigator === "undefined" || !navigator.clipboard?.read) return null;
+  try {
+    return await navigator.clipboard.read();
+  } catch {
+    return null;
+  }
+}
+
 export async function readTextFromClipboard(): Promise<string> {
   if (typeof navigator === "undefined" || !navigator.clipboard?.readText) return "";
   try {

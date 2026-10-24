@@ -1,4 +1,4 @@
-import { readTextFromClipboard } from "@/lib/clipboard";
+import { readClipboardItems, readTextFromClipboard } from "@/lib/clipboard";
 
 export interface TerminalClipboardContent {
   image: Blob | null;
@@ -21,16 +21,6 @@ export function pastedImageFromTransfer(data: DataTransfer | null): File | null 
     if (file) return file;
   }
   return null;
-}
-
-async function readClipboardItems(): Promise<ClipboardItem[] | null> {
-  const clipboard = typeof navigator === "undefined" ? undefined : navigator.clipboard;
-  if (!clipboard?.read) return null;
-  try {
-    return await clipboard.read();
-  } catch {
-    return null;
-  }
 }
 
 async function firstImage(items: ClipboardItem[]): Promise<Blob | null> {
