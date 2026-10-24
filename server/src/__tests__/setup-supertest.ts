@@ -29,7 +29,28 @@ const paperclipTestHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-vites
 process.env.PAPERCLIP_HOME = paperclipTestHome;
 // Setup-file afterAll hooks run before suites drain asynchronous heartbeats.
 // Cleanup at worker exit, after all suite teardown, avoids deleting live state.
-process.once("exit", () => fs.rmSync(paperclipTestHome, { recursive: true, force: true, maxRetries: 8, retryDelay: 50 }));
+function removeTestHome(directory: string): void {
+  const remove = () => fs.rmSync(directory, { recursive: true, force: true, maxRetries: 8, retryDelay: 50 });
+  try {
+    remove();
+    return;
+  } catch {}
+  const pending = [directory];
+  while (pending.length > 0) {
+    const current = pending.pop()!;
+    try {
+      const stat = fs.lstatSync(current);
+      if (!stat.isDirectory() || stat.isSymbolicLink()) continue;
+      fs.chmodSync(current, 0o700);
+      for (const entry of fs.readdirSync(current)) pending.push(path.join(current, entry));
+    } catch {}
+  }
+  try {
+    remove();
+  } catch {}
+}
+
+process.once("exit", () => removeTestHome(paperclipTestHome));
 
 const require = createRequire(import.meta.url);
 const SupertestTest = require("supertest/lib/test.js") as SupertestTestConstructor;
