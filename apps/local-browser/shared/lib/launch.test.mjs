@@ -1,11 +1,16 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import { loadShared } from "./test-ext.mjs";
 
 const { launch } = loadShared(["lib/launch.js"]).LB;
 
 const ORIGIN = "moz-extension://0a1b2c3d-1111-2222-3333-444455556666";
 const ARGS = "--remote-debugging-port 9333 --remote-allow-origins " + ORIGIN;
+const EXPR = "/^Exec=/{/@@/{s|$| " + ARGS + "|;b;};/ %[uUfF]/{s| \\(%[uUfF]\\)| " + ARGS + " \\1|;b;};s|$| " + ARGS + "|;}";
 
 function plain(value) {
   return JSON.parse(JSON.stringify(value));
@@ -122,7 +127,7 @@ test("the four reference commands are exact", () => {
   assert.equal(flat.run.command, "flatpak run io.gitlab.librewolf-community " + ARGS);
   assert.equal(
     flat.permanent.command,
-    "mkdir -p ~/.local/share/applications && cp /var/lib/flatpak/exports/share/applications/io.gitlab.librewolf-community.desktop ~/.local/share/applications/ && sed -i 's|^\\(Exec=.*\\)$|\\1 " + ARGS + "|' ~/.local/share/applications/io.gitlab.librewolf-community.desktop"
+    "mkdir -p ~/.local/share/applications && cp /var/lib/flatpak/exports/share/applications/io.gitlab.librewolf-community.desktop ~/.local/share/applications/ && sed -i '" + EXPR + "' ~/.local/share/applications/io.gitlab.librewolf-community.desktop"
   );
   const custom = plan({ os: "windows", browser: "other", install: "custom", customPath: "\"D:\\Portable Apps\\My Fox\\fox.exe\"", profile: "Work Stuff" });
   assert.equal(custom.run.command, "& \"D:\\Portable Apps\\My Fox\\fox.exe\" " + ARGS + " -P \"Work Stuff\"");
@@ -158,7 +163,7 @@ test("macOS custom paths use the .app bundle or the binary", () => {
 test("Linux custom paths detect Flatpak and Snap installs", () => {
   const flatpak = plan({ os: "linux", browser: "zen", install: "custom", customPath: "/app/zen/zen" });
   assert.equal(flatpak.run.command, "flatpak run app.zen_browser.zen " + ARGS);
-  assert.match(flatpak.permanent.command, /sed -i 's\|\^\\\(Exec=\.\*\\\)\$\|/);
+  assert.ok(flatpak.permanent.command.includes("sed -i '" + EXPR + "'"));
   const unknown = plan({ os: "linux", browser: "firefox-developer", install: "custom", customPath: "/app/lib/firefox/firefox" });
   assert.equal(unknown.needsPath, true);
   assert.equal(unknown.run, null);
@@ -172,7 +177,7 @@ test("Linux custom paths detect Flatpak and Snap installs", () => {
   assert.equal(snapLib.run.command, "snap run firefox " + ARGS);
   assert.equal(
     snapLib.permanent.command,
-    "mkdir -p ~/.local/share/applications && cp /var/lib/snapd/desktop/applications/firefox_firefox.desktop ~/.local/share/applications/ && sed -i 's|^\\(Exec=.*/snap/bin/firefox\\)|\\1 " + ARGS + "|' ~/.local/share/applications/firefox_firefox.desktop"
+    "mkdir -p ~/.local/share/applications && cp /var/lib/snapd/desktop/applications/firefox_firefox.desktop ~/.local/share/applications/ && sed -i '" + EXPR + "' ~/.local/share/applications/firefox_firefox.desktop"
   );
   const opt = plan({ os: "linux", browser: "other", install: "custom", customPath: " '/opt/My Fox/$fox' " });
   assert.equal(opt.run.command, "\"/opt/My Fox/\\$fox\" " + ARGS);
@@ -180,7 +185,7 @@ test("Linux custom paths detect Flatpak and Snap installs", () => {
   const pkg = plan({ os: "linux", browser: "waterfox" });
   assert.equal(
     pkg.permanent.command,
-    "mkdir -p ~/.local/share/applications && cp /usr/share/applications/waterfox.desktop ~/.local/share/applications/ && sed -i 's|^Exec=\\([^ ]*\\)|Exec=\\1 " + ARGS + "|' ~/.local/share/applications/waterfox.desktop"
+    "mkdir -p ~/.local/share/applications && cp /usr/share/applications/waterfox.desktop ~/.local/share/applications/ && sed -i '" + EXPR + "' ~/.local/share/applications/waterfox.desktop"
   );
   assert.equal(pkg.permanent.steps[0].command, "ls /usr/share/applications /var/lib/flatpak/exports/share/applications ~/.local/share/flatpak/exports/share/applications /var/lib/snapd/desktop/applications 2>/dev/null | grep -i waterfox");
 });
@@ -191,11 +196,11 @@ test("the profile flag is quoted for every shell and launcher", () => {
   assert.ok(plan({ os: "macos", browser: "firefox", profile }).run.command.endsWith(ARGS + " -P \"Work Stuff\""));
   const linux = plan({ os: "linux", browser: "firefox", profile });
   assert.equal(linux.args, ARGS + " -P \"Work Stuff\"");
-  assert.ok(linux.permanent.command.includes("Exec=\\1 " + ARGS + " -P \"Work Stuff\"|'"));
+  assert.ok(linux.permanent.command.includes("s|$| " + ARGS + " -P \"Work Stuff\"|;}'"));
   assert.match(linux.notes.join(" "), /-P starts the profile named "Work Stuff"/);
   const odd = plan({ os: "linux", browser: "firefox", profile: "a$b 5%" });
   assert.ok(odd.run.command.endsWith(" -P \"a\\$b 5%\""));
-  assert.ok(odd.permanent.command.includes(" -P \"a\\\\\\\\$b 5%%\"|'"));
+  assert.ok(odd.permanent.command.includes(" -P \"a\\\\\\\\$b 5%%\"|;}'"));
   const quoted = plan({ os: "windows", browser: "firefox", profile: "say \"hi\"" });
   assert.ok(quoted.run.command.endsWith(" -P \"say hi\""));
   assert.match(quoted.warnings[0], /double quotes/);
@@ -217,4 +222,31 @@ test("notes, port fallback and the missing origin warning", () => {
   const missing = plain(launch.plan({ os: "linux", browser: "firefox", port: 9333 }));
   assert.match(missing.warnings[0], /extension address is missing/);
   assert.equal(plain(launch.plan(undefined)).os, "linux");
+});
+
+test("the launcher edit keeps env-prefixed, snap and flatpak Exec lines launchable", () => {
+  const dir = mkdtempSync(path.join(os.tmpdir(), "lb-desktop-"));
+  try {
+    const samples = {
+      env: ["[Desktop Entry]", "Exec=env MOZ_ENABLE_WAYLAND=1 zen-browser %U", "[Desktop Action new-window]", "Exec=env MOZ_ENABLE_WAYLAND=1 zen-browser --new-window"],
+      snap: ["Exec=env BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/firefox_firefox.desktop /snap/bin/firefox %u"],
+      flatpak: ["Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=launch-script.sh --file-forwarding app.zen_browser.zen @@u %u @@"],
+    };
+    const expected = {
+      env: ["Exec=env MOZ_ENABLE_WAYLAND=1 zen-browser " + ARGS + " -P \"Work Stuff\" %U", "Exec=env MOZ_ENABLE_WAYLAND=1 zen-browser --new-window " + ARGS + " -P \"Work Stuff\""],
+      snap: ["Exec=env BAMF_DESKTOP_FILE_HINT=/var/lib/snapd/desktop/applications/firefox_firefox.desktop /snap/bin/firefox " + ARGS + " -P \"Work Stuff\" %u"],
+      flatpak: ["Exec=/usr/bin/flatpak run --branch=stable --arch=x86_64 --command=launch-script.sh --file-forwarding app.zen_browser.zen @@u %u @@ " + ARGS + " -P \"Work Stuff\""],
+    };
+    const command = plan({ os: "linux", browser: "zen", profile: "Work Stuff" }).permanent.command;
+    const script = command.slice(command.indexOf("sed -i '") + 8, command.lastIndexOf("' "));
+    for (const [name, lines] of Object.entries(samples)) {
+      const file = path.join(dir, name + ".desktop");
+      writeFileSync(file, lines.join("\n") + "\n");
+      execFileSync("sed", ["-i", script, file]);
+      const exec = readFileSync(file, "utf8").split("\n").filter((line) => line.startsWith("Exec="));
+      assert.deepEqual(exec, expected[name], name);
+    }
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

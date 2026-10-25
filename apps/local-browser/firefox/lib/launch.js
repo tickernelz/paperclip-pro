@@ -309,6 +309,10 @@
     };
   }
 
+  function desktopExpression(args) {
+    return "/^Exec=/{/@@/{s|$| " + args + "|;b;};/ %[uUfF]/{s| \\(%[uUfF]\\)| " + args + " \\1|;b;};s|$| " + args + "|;}";
+  }
+
   function sedArgs(value) {
     return value.replace(/\\/g, "\\\\").replace(/&/g, "\\&").replace(/\|/g, "\\|").replace(/'/g, "'\\''");
   }
@@ -356,26 +360,23 @@
     var desktopArgs = sedArgs(flags(input.port, input.origin, input.profile, desktopQuote));
     var dir;
     var file;
-    var expression;
     var search;
     if (kind === "flatpak") {
       dir = "/var/lib/flatpak/exports/share/applications";
       file = flatpakId + ".desktop";
-      expression = "s|^\\(Exec=.*\\)$|\\1 " + desktopArgs + "|";
       search = entry.search || flatpakId.split(".").pop();
     } else if (kind === "snap") {
       dir = "/var/lib/snapd/desktop/applications";
       file = snapName + "_" + snapName + ".desktop";
-      expression = "s|^\\(Exec=.*/snap/bin/" + snapName + "\\)|\\1 " + desktopArgs + "|";
       search = snapName;
     } else {
       dir = "/usr/share/applications";
       search = entry.search || baseName(binary).toLowerCase();
       file = entry.desktop || search + ".desktop";
-      expression = "s|^Exec=\\([^ ]*\\)|Exec=\\1 " + desktopArgs + "|";
     }
     var locate = "ls " + LOCATE_DIRS + " 2>/dev/null | grep -i " + search;
     var local = "~/.local/share/applications/" + file;
+    var expression = desktopExpression(desktopArgs);
     var copy = "mkdir -p ~/.local/share/applications && cp " + dir + "/" + file + " ~/.local/share/applications/ && sed -i '" + expression + "' " + local;
     return {
       run: { shell: "Terminal", command: command },
