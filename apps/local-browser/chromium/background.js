@@ -325,6 +325,7 @@ async function sendHello() {
     protocol: PROTOCOL.PROTOCOL_VERSION,
     client: PROTOCOL.CLIENT,
     clientVersion: CLIENT_VERSION,
+    capabilities: ["cookies.v2"],
     label: stored.label || defaultLabel(),
     profileName: null,
     tabs: await listTabs()
@@ -870,7 +871,7 @@ async function toolEvaluate(args) {
 }
 
 function cookieSummary(cookie) {
-  return {
+  const summary = {
     name: cookie.name,
     value: cookie.value,
     domain: cookie.domain,
@@ -881,30 +882,68 @@ function cookieSummary(cookie) {
     sameSite: cookie.sameSite || "unspecified",
     expirationDate: cookie.expirationDate
   };
+  if (cookie.storeId) summary.storeId = cookie.storeId;
+  if (cookie.partitionKey && cookie.partitionKey.topLevelSite) summary.partitionTopLevelSite = cookie.partitionKey.topLevelSite;
+  return summary;
+}
+
+function cookieQuery(args, tab) {
+  const query = {};
+  if (args.storeId) query.storeId = args.storeId;
+  if (args.name) query.name = args.name;
+  if (args.allDomains === true) return query;
+  if (typeof args.domain === "string" && args.domain) {
+    query.domain = args.domain.replace(/^\./, "");
+  } else {
+    const url = args.url || tab.url;
+    if (!url || !/^https?:/.test(url)) {
+      throw new ToolFailure(ERROR.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website");
+    }
+    query.url = url;
+  }
+  return query;
+}
+
+function cookieUrlFor(args, tab, entry) {
+  if (entry && typeof entry.url === "string" && /^https?:/.test(entry.url)) return entry.url;
+  const scheme = entry && entry.secure === false ? "http://" : "https://";
+  const domain = (entry && entry.domain) || (typeof args.domain === "string" ? args.domain : "");
+  if (domain) return scheme + String(domain).replace(/^\./, "") + ((entry && entry.path) || "/");
+  const base = args.url || (tab.url && /^https?:/.test(tab.url) ? tab.url : "");
+  if (!base) {
+    throw new ToolFailure(ERROR.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website");
+  }
+  if (entry && entry.path) {
+    try {
+      return new URL(entry.path, base).href;
+    } catch (error) {
+      return base;
+    }
+  }
+  return base;
 }
 
 async function toolStorage(args) {
-  const tab = await resolveTab(args);
+  const jarScope = args.kind === "cookies" && (args.allDomains === true || typeof args.domain === "string");
+  const tab = jarScope ? await resolveTab(args).catch(() => ({ id: null, url: "" })) : await resolveTab(args);
   if (args.kind !== "cookies") {
     return await rpc(tab.id, "storage", args, 10000);
   }
-  const url = args.url || tab.url;
-  if (!url || !/^https?:/.test(url)) {
-    throw new ToolFailure(ERROR.protocolError, "Cookies need an http(s) url", "Pass url, or use a tab on a website");
-  }
   if (args.op === "get") {
-    const query = { url };
-    if (args.name) query.name = args.name;
-    const cookies = await chrome.cookies.getAll(query);
-    return { kind: "cookies", op: "get", url, cookies: cookies.map(cookieSummary) };
+    const query = cookieQuery(args, tab);
+    const found = (await chrome.cookies.getAll(query)).map(cookieSummary);
+    const limit = typeof args.limit === "number" ? args.limit : 200;
+    return { kind: "cookies", op: "get", query, total: found.length, cookies: found.slice(0, limit) };
   }
   if (args.op === "set") {
     const entries = args.entries || [];
     const written = [];
     const failed = [];
     for (const entry of entries) {
-      const details = { url, name: entry.name, value: entry.value };
-      if (typeof entry.domain === "string" && entry.domain) details.domain = entry.domain;
+      const details = { url: cookieUrlFor(args, tab, entry), name: entry.name, value: entry.value };
+      if (entry.storeId || args.storeId) details.storeId = entry.storeId || args.storeId;
+      const entryDomain = entry.domain || (typeof args.domain === "string" ? args.domain : "");
+      if (entryDomain) details.domain = entryDomain;
       if (typeof entry.path === "string" && entry.path) details.path = entry.path;
       if (typeof entry.secure === "boolean") details.secure = entry.secure;
       if (typeof entry.httpOnly === "boolean") details.httpOnly = entry.httpOnly;
@@ -918,16 +957,18 @@ async function toolStorage(args) {
         failed.push(entry.name);
       }
     }
-    const result = { kind: "cookies", op: "set", url, count: written.length, cookies: written };
+    const result = { kind: "cookies", op: "set", count: written.length, cookies: written };
     if (failed.length) {
       result.failed = failed;
       result.note = "The browser refused " + failed.length + " cookie(s); check the domain against the url";
     }
     return result;
   }
-  const query = { url };
-  if (args.name) query.name = args.name;
+  const query = cookieQuery(args, tab);
   const cookies = await chrome.cookies.getAll(query);
+  if (args.allDomains === true && cookies.length > 50 && args.confirmAll !== true && !args.name) {
+    throw new ToolFailure(ERROR.protocolError, "Refusing to clear " + cookies.length + " cookies across every site", "Pass a name filter or confirmAll: true");
+  }
   const removed = [];
   const failed = [];
   for (const cookie of cookies) {
@@ -941,7 +982,7 @@ async function toolStorage(args) {
       failed.push(cookie.name);
     }
   }
-  const result = { kind: "cookies", op: "clear", url, count: removed.length, removed, matched: cookies.length };
+  const result = { kind: "cookies", op: "clear", query, count: removed.length, removed, matched: cookies.length };
   if (failed.length) {
     result.failed = failed;
     result.note = "The browser refused to remove " + failed.length + " cookie(s)";

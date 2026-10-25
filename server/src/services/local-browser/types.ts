@@ -47,6 +47,7 @@ export interface LiveSession {
   socket: BridgeSocket;
   client: LocalBrowserClient;
   clientVersion: string;
+  capabilities: string[];
   label: string;
   profileName: string | null;
   tabs: LocalBrowserTab[];

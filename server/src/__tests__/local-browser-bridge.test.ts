@@ -133,7 +133,7 @@ async function startPairing(): Promise<{ code: string; connectUrls: string[] }> 
 }
 
 async function pairExtension(
-  options: { code?: string; tabUrl?: string; onCall?: (call: CallRecord) => CallAnswer } = {},
+  options: { code?: string; tabUrl?: string; capabilities?: string[]; onCall?: (call: CallRecord) => CallAnswer } = {},
 ): Promise<Paired> {
   const active = currentHarness();
   const code = options.code ?? (await startPairing()).code;
@@ -178,6 +178,7 @@ async function pairExtension(
       protocol: 1,
       client: "chromium",
       clientVersion: "1.0.0",
+      capabilities: options.capabilities,
       label: "Test browser",
       profileName: "Default",
       tabs: [
@@ -237,6 +238,28 @@ async function waitFor(
 function binding() {
   return { companyId: currentHarness().companyId, agentId: null, userId: "user-local-browser", runId: null, issueId: null };
 }
+
+it("refuses the jar-wide cookie scopes when the extension does not advertise them", async () => {
+  const active = currentHarness();
+  const oldBuild = await pairExtension();
+  await setTier("full");
+  await expectFailure(active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "get", domain: "example.com" }), "local_browser_unsupported");
+  await expectFailure(active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "get", allDomains: true }), "local_browser_unsupported");
+  await expectFailure(
+    active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "set", url: "https://a.test/", entries: [{ name: "a", value: "b", httpOnly: true }] }),
+    "local_browser_unsupported",
+  );
+  expect(oldBuild.calls).toHaveLength(0);
+});
+
+it("lets a capability-advertising extension use the jar-wide cookie scopes", async () => {
+  const active = currentHarness();
+  const modern = await pairExtension({ capabilities: ["cookies.v2"], onCall: () => ({ ok: true, result: { kind: "cookies", op: "get", cookies: [] } }) });
+  await setTier("full");
+  await active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "get", domain: "example.com" });
+  const call = modern.calls.find((entry) => entry.tool === "local_browser_storage");
+  expect(call?.args).toMatchObject({ kind: "cookies", op: "get", domain: "example.com" });
+});
 
 async function expectFailure(promise: Promise<unknown>, code: string) {
   await expect(promise).rejects.toMatchObject({ code });

@@ -22,6 +22,7 @@ export function registerSession(input: {
   createdByAgentId: string | null;
   client: LiveSession["client"];
   clientVersion: string;
+  capabilities?: string[];
   label: string;
   profileName: string | null;
   tabs: LocalBrowserTab[];
@@ -42,6 +43,7 @@ export function registerSession(input: {
     socket: input.socket,
     client: input.client,
     clientVersion: input.clientVersion,
+    capabilities: input.capabilities ?? [],
     label: input.label,
     profileName: input.profileName,
     tabs: input.tabs,

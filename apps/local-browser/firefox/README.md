@@ -194,7 +194,7 @@ edit that value to use a different port. Trusted input is never required for
 | `<all_urls>` | The agent drives whatever site the user is on. Scoping is the server's job: the `refine` tier checks `allowedOrigins` before a call is dispatched. |
 | `scripting` | `local_browser_evaluate` through `browser.scripting.executeScript` in the MAIN or ISOLATED world (Firefox 128+ for MAIN). |
 | `webRequest`, `webRequestBlocking` | `local_browser_network` reads response bodies with `filterResponseData`, which only exists for blocking listeners. |
-| `cookies` | `local_browser_storage` with `kind: "cookies"`. |
+| `cookies` | `local_browser_storage` with `kind: "cookies"`: url, domain or whole-jar scope, cookie stores, httpOnly cookies, site-level attributes and store on writes, and a refusal to wipe the whole jar without `name` or `confirmAll`. The jar-wide scopes need the `cookies.v2` capability, which this build advertises. First-party and partitioned cookies are only reached when Firefox reports them for the same scope. |
 | `storage` | Persist the pairing token, label and the BiDi port. |
 | `downloads` | `local_browser_download` lists the tab's downloads and reads one for `save`. |
 

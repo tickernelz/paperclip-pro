@@ -14,6 +14,7 @@ import {
   localBrowserOpenInputSchema,
   localBrowserOriginAllowed,
   localBrowserOriginOf,
+  LOCAL_BROWSER_COOKIE_CAPABILITY,
   localBrowserReadInputSchema,
   localBrowserScreenshotInputSchema,
   localBrowserSettingsSchema,
@@ -139,6 +140,30 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     return candidates[candidates.length - 1]!;
   }
 
+  function enforceCookieCapability(session: LiveSession, tool: string, args: Record<string, unknown>) {
+    if (tool !== "local_browser_storage" || args.kind !== "cookies") return;
+    const modern =
+      args.domain !== undefined ||
+      args.allDomains === true ||
+      args.limit !== undefined ||
+      args.confirmAll !== undefined ||
+      (Array.isArray(args.entries) &&
+        args.entries.some(
+          (entry) =>
+            entry &&
+            typeof entry === "object" &&
+            ["domain", "path", "secure", "httpOnly", "sameSite", "expirationDate", "storeId"].some(
+              (key) => (entry as Record<string, unknown>)[key] !== undefined,
+            ),
+        ));
+    if (!modern || session.capabilities.includes(LOCAL_BROWSER_COOKIE_CAPABILITY)) return;
+    throw localBrowserFailure(
+      "local_browser_unsupported",
+      "This browser build only reads cookies for the page url; update the Local Browser extension to use domain, allDomains, limits or cookie attributes",
+      { hint: "Install the current extension from the Apps page and pair again." },
+    );
+  }
+
   function enforceTier(session: LiveSession, tool: string) {
     if (session.tier === "full") return;
     if (!localBrowserToolRequiresFullTier(tool)) return;
@@ -152,6 +177,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
   function originForCall(tool: string, args: Record<string, unknown>, session: LiveSession): string | null {
     if (ORIGIN_EXEMPT_TOOLS.has(tool)) return null;
     if (typeof args.url === "string") return localBrowserOriginOf(args.url);
+    if (typeof args.domain === "string" || args.allDomains === true) return null;
     const tab = activeTab(session, typeof args.tabId === "number" ? args.tabId : undefined);
     if (!tab || !tab.url) return null;
     return localBrowserOriginOf(tab.url);
@@ -485,6 +511,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         }
         session = resolveSession(binding, typeof args.sessionId === "string" ? args.sessionId : undefined);
         enforceTier(session, name);
+        enforceCookieCapability(session, name, args);
         origin = originForCall(name, args, session);
         enforceOrigin(session, name, origin);
         const callArgs = name === "local_browser_upload" ? await uploadFiles(binding, args) : args;

@@ -202,15 +202,91 @@ export const localBrowserEvaluateInputSchema = localBrowserTargetSchema
   })
   .strict();
 
+export const LOCAL_BROWSER_COOKIE_SAME_SITE = ["no_restriction", "lax", "strict", "unspecified"] as const;
+
+export const LOCAL_BROWSER_COOKIE_CAPABILITY = "cookies.v2";
+
+const localBrowserDomainPattern = /^\.?(?!-)[a-z0-9-]{1,63}(?:\.(?!-)[a-z0-9-]{1,63})*\.?$/i;
+
+const localBrowserCookieEntrySchema = z
+  .object({
+    name: z.string().min(1),
+    value: z.string(),
+    domain: z.string().min(1).optional(),
+    path: z.string().min(1).optional(),
+    secure: z.boolean().optional(),
+    httpOnly: z.boolean().optional(),
+    sameSite: z.enum(LOCAL_BROWSER_COOKIE_SAME_SITE).optional(),
+    expirationDate: z.number().positive().optional(),
+    storeId: z.string().min(1).optional(),
+  })
+  .strict();
+
 export const localBrowserStorageInputSchema = localBrowserTargetSchema
   .extend({
     kind: z.enum(["cookies", "local", "session"]),
     op: z.enum(["get", "set", "clear"]),
     url: z.string().url().optional(),
+    domain: z
+      .string()
+      .min(1)
+      .max(253)
+      .regex(localBrowserDomainPattern, "domain must be a bare host name, without a scheme, wildcard or path")
+      .optional(),
+    allDomains: z.boolean().optional(),
+    storeId: z.string().min(1).optional(),
     name: z.string().min(1).optional(),
-    entries: z.array(z.object({ name: z.string().min(1), value: z.string() }).strict()).max(200).optional(),
+    limit: z.number().int().min(1).max(500).optional(),
+    confirmAll: z.boolean().optional(),
+    entries: z.array(localBrowserCookieEntrySchema).max(200).optional(),
   })
-  .strict();
+  .strict()
+  .superRefine((value, ctx) => {
+    if (value.kind !== "cookies") {
+      for (const key of ["domain", "allDomains", "storeId", "limit", "confirmAll"] as const) {
+        if (value[key] !== undefined) {
+          ctx.addIssue({ code: "custom", path: [key], message: key + " applies to cookies only" });
+        }
+      }
+      for (const [index, entry] of (value.entries ?? []).entries()) {
+        for (const key of ["domain", "path", "secure", "httpOnly", "sameSite", "expirationDate", "storeId"] as const) {
+          if (entry[key] !== undefined) {
+            ctx.addIssue({ code: "custom", path: ["entries", index, key], message: key + " applies to cookies only" });
+          }
+        }
+      }
+      return;
+    }
+    if (value.limit !== undefined && value.op !== "get") {
+      ctx.addIssue({ code: "custom", path: ["limit"], message: "limit is for get only" });
+    }
+    if (value.op === "clear" && value.allDomains === true && value.name === undefined && value.confirmAll !== true) {
+      ctx.addIssue({ code: "custom", path: ["confirmAll"], message: "Clearing the whole jar needs a name filter or confirmAll" });
+    }
+    if (value.allDomains === true && (value.url !== undefined || value.domain !== undefined)) {
+      ctx.addIssue({ code: "custom", path: ["allDomains"], message: "allDomains reads the whole cookie jar, so omit url and domain" });
+    }
+    if (value.domain !== undefined && value.url !== undefined) {
+      ctx.addIssue({ code: "custom", path: ["domain"], message: "Pass either url or domain, not both" });
+    }
+    if (value.op !== "get" && value.op !== "clear" && value.allDomains === true) {
+      ctx.addIssue({ code: "custom", path: ["allDomains"], message: "allDomains is for get and clear only" });
+    }
+    if (value.op !== "set" && value.entries !== undefined) {
+      ctx.addIssue({ code: "custom", path: ["entries"], message: "entries is for set only" });
+    }
+    if (value.op === "set" && (value.entries?.length ?? 0) === 0) {
+      ctx.addIssue({ code: "custom", path: ["entries"], message: "set needs at least one entry" });
+    }
+    if (
+      value.op === "set" &&
+      value.url === undefined &&
+      value.domain === undefined &&
+      !(value.entries ?? []).some((entry) => entry.domain !== undefined)
+    ) {
+      ctx.addIssue({ code: "custom", path: ["url"], message: "Set needs a url, a domain, or an entry with a domain" });
+    }
+  });
 
 export const localBrowserNetworkInputSchema = localBrowserTargetSchema
   .extend({
@@ -415,7 +491,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   {
     name: "local_browser_storage",
     description:
-      "Read or write cookies, localStorage or sessionStorage for the page. Full-power tier only. Never print secret values into the task; report only what the task needs.",
+      "Read or write cookies, localStorage or sessionStorage for the page. Cookies can be scoped by url, by domain (includes subdomains) or with allDomains for the whole jar, and can be written with domain, path, secure, httpOnly, sameSite and expiry. Full-power tier only. Never print secret values into the task; report only what the task needs.",
     inputSchema: {
       type: "object",
       properties: {
@@ -424,8 +500,31 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
         kind: { type: "string", enum: ["cookies", "local", "session"] },
         op: { type: "string", enum: ["get", "set", "clear"] },
         url: { type: "string" },
+        domain: { type: "string" },
+        allDomains: { type: "boolean", description: "Whole cookie jar; needs confirmAll with op clear" },
+        storeId: { type: "string", description: "Cookie store for reads and the default for writes" },
         name: { type: "string" },
-        entries: { type: "array", items: { type: "object", properties: { name: { type: "string" }, value: { type: "string" } }, required: ["name", "value"], additionalProperties: false } },
+        limit: { type: "integer", description: "Maximum cookies returned by get (default 200)" },
+        confirmAll: { type: "boolean" },
+        entries: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              value: { type: "string" },
+              domain: { type: "string" },
+              path: { type: "string" },
+              secure: { type: "boolean" },
+              httpOnly: { type: "boolean" },
+              sameSite: { type: "string", enum: [...LOCAL_BROWSER_COOKIE_SAME_SITE] },
+              expirationDate: { type: "number" },
+              storeId: { type: "string" },
+            },
+            required: ["name", "value"],
+            additionalProperties: false,
+          },
+        },
       },
       required: ["kind", "op"],
       additionalProperties: false,
@@ -679,7 +778,7 @@ export const localBrowserPairingStartResultSchema = z
 export type LocalBrowserPairingStartResult = z.infer<typeof localBrowserPairingStartResultSchema>;
 
 export const localBrowserBridgeFrameSchema = z.discriminatedUnion("type", [
-  z.object({ type: z.literal("hello"), protocol: z.number().int(), client: localBrowserClientSchema, clientVersion: z.string(), label: z.string(), profileName: z.string().nullable(), tabs: z.array(localBrowserTabSchema) }).strict(),
+  z.object({ type: z.literal("hello"), protocol: z.number().int(), client: localBrowserClientSchema, clientVersion: z.string(), label: z.string(), profileName: z.string().nullable(), tabs: z.array(localBrowserTabSchema), capabilities: z.array(z.string().min(1).max(40)).max(20).optional() }).strict(),
   z.object({ type: z.literal("hello_ack"), sessionId: z.string().uuid(), sessionToken: z.string(), tier: localBrowserTierSchema, allowedOrigins: z.array(z.string()) }).strict(),
   z.object({ type: z.literal("call"), id: z.string(), tool: z.string(), args: z.unknown() }).strict(),
   z.object({ type: z.literal("result"), id: z.string(), ok: z.boolean(), result: z.unknown().optional(), error: localBrowserToolErrorSchema.optional() }).strict(),

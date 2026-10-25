@@ -56,7 +56,9 @@ Full-tier tools exist and are worth their risk only in specific situations:
   response body instead of guessing from the rendered page.
 - local_browser_storage to inspect or clear cookies, localStorage, or sessionStorage
   for a task that is explicitly about them, such as diagnosing a signed-out state.
-  Read one named value when that is enough.
+  Cookie reads scope by url, domain or allDomains; scope as narrowly as the task
+  allows and read one named cookie when that is enough. Never copy a cookie value
+  into a task or a comment.
 - local_browser_upload to attach task files to a file input, and
   local_browser_download to list downloads or save one into the task as an
   attachment.

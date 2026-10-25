@@ -291,6 +291,7 @@
       protocol: protocol.PROTOCOL_VERSION,
       client: protocol.CLIENT,
       clientVersion: state.clientVersion,
+      capabilities: ["cookies.v2"],
       label: pairing && pairing.label ? pairing.label : protocol.DEFAULT_LABEL,
       profileName: profileName,
       tabs: tabs

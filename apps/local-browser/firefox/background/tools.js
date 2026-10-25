@@ -423,43 +423,122 @@
       sameSite: cookie.sameSite || "no_restriction"
     };
     if (typeof cookie.expirationDate === "number") record.expirationDate = cookie.expirationDate;
+    if (cookie.storeId) record.storeId = cookie.storeId;
+    if (cookie.firstPartyDomain) record.firstPartyDomain = cookie.firstPartyDomain;
+    if (cookie.partitionKey && cookie.partitionKey.topLevelSite) record.partitionTopLevelSite = cookie.partitionKey.topLevelSite;
     return record;
   }
 
-  async function cookies(args, tab) {
-    var url = typeof args.url === "string" && args.url ? args.url : tab.url;
-    if (!protocol.originOf(url)) {
-      throw protocol.error(C.protocolError, "Cookies need an http(s) url", "Pass url, or use a tab on a website", false);
+  function cookieQuery(args, tab) {
+    var query = {};
+    if (args.storeId) query.storeId = args.storeId;
+    if (args.name) query.name = args.name;
+    if (args.allDomains === true) return query;
+    if (typeof args.domain === "string" && args.domain) {
+      query.domain = args.domain.replace(/^\./, "");
+    } else {
+      var target = typeof args.url === "string" && args.url ? args.url : tab.url;
+      if (!protocol.originOf(target)) {
+        throw protocol.error(C.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website", false);
+      }
+      query.url = target;
     }
+    return query;
+  }
+
+  function cookieUrlFor(args, tab, entry) {
+    if (entry && typeof entry.url === "string" && /^https?:/.test(entry.url)) return entry.url;
+    var scheme = entry && entry.secure === false ? "http://" : "https://";
+    var domain = (entry && entry.domain) || (typeof args.domain === "string" ? args.domain : "");
+    if (domain) return scheme + String(domain).replace(/^\./, "") + ((entry && entry.path) || "/");
+    var base = (typeof args.url === "string" && args.url) || (protocol.originOf(tab.url) ? tab.url : "");
+    if (!base) {
+      throw protocol.error(C.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website", false);
+    }
+    if (entry && entry.path) {
+      try {
+        return new URL(entry.path, base).href;
+      } catch (error) {
+        return base;
+      }
+    }
+    return base;
+  }
+
+  async function cookies(args, tab) {
     if (args.op === "get") {
-      var query = { url: url };
-      if (args.name) query.name = args.name;
-      var found = await browser.cookies.getAll(query);
-      return { kind: "cookies", op: "get", url: url, cookies: found.map(cookieRecord) };
+      var query = cookieQuery(args, tab);
+      var found = (await browser.cookies.getAll(query)).map(cookieRecord);
+      var limit = typeof args.limit === "number" ? args.limit : 200;
+      return { kind: "cookies", op: "get", query: query, total: found.length, cookies: found.slice(0, limit) };
     }
     if (args.op === "set") {
       var writes = Array.isArray(args.entries) ? args.entries : [];
       if (!writes.length) {
         throw protocol.error(C.protocolError, "set needs entries", "Pass name and value pairs", false);
       }
+      var written = [];
+      var failed = [];
       for (var i = 0; i < writes.length; i += 1) {
-        await browser.cookies.set({ url: url, name: writes[i].name, value: writes[i].value });
+        var entry = writes[i];
+        var details = { url: cookieUrlFor(args, tab, entry), name: entry.name, value: entry.value };
+        if (entry.storeId || args.storeId) details.storeId = entry.storeId || args.storeId;
+        var entryDomain = entry.domain || (typeof args.domain === "string" ? args.domain : "");
+        if (entryDomain) details.domain = entryDomain;
+        if (typeof entry.path === "string" && entry.path) details.path = entry.path;
+        if (typeof entry.secure === "boolean") details.secure = entry.secure;
+        if (typeof entry.httpOnly === "boolean") details.httpOnly = entry.httpOnly;
+        if (typeof entry.sameSite === "string" && entry.sameSite !== "unspecified") details.sameSite = entry.sameSite;
+        if (typeof entry.expirationDate === "number") details.expirationDate = entry.expirationDate;
+        try {
+          written.push(cookieRecord(await browser.cookies.set(details)));
+        } catch (error) {
+          failed.push(entry.name);
+        }
       }
-      return { kind: "cookies", op: "set", url: url, count: writes.length };
+      var setResult = { kind: "cookies", op: "set", count: written.length, cookies: written };
+      if (failed.length) {
+        setResult.failed = failed;
+        setResult.note = "The browser refused " + failed.length + " cookie(s); check the domain against the url";
+      }
+      return setResult;
     }
     if (args.op === "clear") {
-      var all = await browser.cookies.getAll({ url: url });
-      var targets = args.name ? all.filter(function (cookie) { return cookie.name === args.name; }) : all;
-      for (var j = 0; j < targets.length; j += 1) {
-        await browser.cookies.remove({ url: url, name: targets[j].name });
+      var clearQuery = cookieQuery(args, tab);
+      var all = await browser.cookies.getAll(clearQuery);
+      if (args.allDomains === true && all.length > 50 && args.confirmAll !== true && !args.name) {
+        throw protocol.error(C.protocolError, "Refusing to clear " + all.length + " cookies across every site", "Pass a name filter or confirmAll: true", false);
       }
-      return { kind: "cookies", op: "clear", url: url, count: targets.length };
+      var removed = [];
+      var refused = [];
+      for (var j = 0; j < all.length; j += 1) {
+        var cookie = all[j];
+        var host = String(cookie.domain || "").replace(/^\./, "");
+        var removeUrl = (cookie.secure ? "https://" : "http://") + host + (cookie.path || "/");
+        try {
+          var outcome = await browser.cookies.remove({ url: removeUrl, name: cookie.name, storeId: cookie.storeId });
+          if (outcome) removed.push(cookie.name);
+          else refused.push(cookie.name);
+        } catch (error) {
+          refused.push(cookie.name);
+        }
+      }
+      var clearResult = { kind: "cookies", op: "clear", query: clearQuery, count: removed.length, removed: removed, matched: all.length };
+      if (refused.length) {
+        clearResult.failed = refused;
+        clearResult.note = "The browser refused to remove " + refused.length + " cookie(s)";
+      }
+      return clearResult;
     }
     throw protocol.error(C.protocolError, "Unknown storage op " + String(args.op), "Use get, set or clear", false);
   }
 
   async function storage(args, ctx) {
-    var tab = await targetTab(args);
+    var jarScope = args.kind === "cookies" && (args.allDomains === true || typeof args.domain === "string");
+    var tab = await targetTab(args).catch(function () {
+      if (!jarScope) throw new Error("The tab is unavailable");
+      return { id: null, url: "" };
+    });
     if (args.kind === "cookies") return cookies(args, tab);
     return tabsApi.send(tab.tabId, "storage", { kind: args.kind, op: args.op, name: args.name, entries: args.entries });
   }

@@ -53,7 +53,7 @@ only the Paperclip link is removed. **Reconnect** re-opens the socket with the s
 | `scripting` | Inject the content script into tabs that were already open before the extension was installed, run `local_browser_evaluate`, and attach files in the page's main world. |
 | `activeTab` | Touch the tab the user is looking at without waiting for a full-page grant. |
 | `storage` | Keep the pairing entry (origin, label, session token, tier, allowed origins) in `chrome.storage.local`. |
-| `cookies` | Read, write and clear cookies for `local_browser_storage` (full tier only). |
+| `cookies` | Read, write and clear cookies for `local_browser_storage` (full tier only), including httpOnly cookies, the cookie stores this extension can reach, and the whole jar behind `confirmAll`. |
 | `downloads` | List the tab's downloads and read a saved file's bytes for `local_browser_download` (full tier only). |
 | `debugger` | Trusted input for `local_browser_input`, full-page screenshots, and the `Network` domain for `local_browser_network`. Attached only for the duration of the call, or 30 s after the last takeover input. |
 | `alarms` | A 30-second heartbeat that re-opens the socket after the service worker is suspended. |
@@ -74,7 +74,7 @@ The extension never logs page content, cookie values or the session token to the
 | `local_browser_screenshot` | `chrome.tabs.captureVisibleTab`, cropped in an `OffscreenCanvas` for an element (the crop is clamped in offset **and** extent, and an element outside the viewport returns the full frame with `cropped:false` rather than a blank 1x1); `Page.captureScreenshot` with a content-size clip for `fullPage`, which falls back to the viewport with a `note` when the debugger is unavailable. |
 | `local_browser_wait` | Content script polls selector, text, URL fragment or idle state. |
 | `local_browser_evaluate` | `chrome.scripting.executeScript` in the main or isolated world, result JSON-cloned in the page. |
-| `local_browser_storage` | `chrome.cookies` for cookies (domain, path, secure, httpOnly, sameSite and expiry are honoured on write; clear removes per-cookie domain+path and reports what actually went), `localStorage`/`sessionStorage` in the content script. |
+| `local_browser_storage` | `chrome.cookies` for cookies: scope by `url`, by `domain` (subdomains included) or `allDomains` for the whole jar, narrowed by `name` and `limit` and pinned to a `storeId`. Writes honour domain, path, secure, httpOnly, sameSite, expiry and store per entry, and an entry inherits the call's domain when it names none. Clear removes per-cookie domain+path+store, reports what actually went, and refuses a whole-jar wipe without `name` or `confirmAll`. `localStorage`/`sessionStorage` live in the content script. |
 | `local_browser_network` | `chrome.debugger` with `Network.enable` for a 1.2 s collection window, bodies on request. Reuses an already-attached takeover session instead of failing, and only detaches what it attached. The per-tab ring buffer is dropped when the tab closes. |
 | `local_browser_upload` | `File` + `DataTransfer` in the page's main world, then `input` and `change`. Accepts `{name, mimeType, base64}` and the older `{name, mime, dataBase64}`. 60 s budget. |
 | `local_browser_download` | `chrome.downloads.search`; `save` fetches the file and returns `{id, name, mimeType, sizeBytes, base64}`. 60 s budget. |

@@ -323,6 +323,7 @@ export function setupLocalBrowserWebSocketServer(
       createdByAgentId,
       client: hello.client,
       clientVersion: hello.clientVersion.slice(0, 40),
+      capabilities: hello.capabilities ?? [],
       label: (hello.label || "Paired browser").slice(0, 80),
       profileName: hello.profileName,
       tabs: hello.tabs as LocalBrowserTab[],

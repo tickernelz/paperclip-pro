@@ -125,7 +125,7 @@ function createHarness(options = {}) {
         return [{ result: null }];
       },
     },
-    cookies: { getAll: async () => [], set: async () => null, remove: async () => null },
+    cookies: options.cookies || { getAll: async () => [], set: async () => null, remove: async () => null },
     downloads: { search: async () => [] },
   };
 
