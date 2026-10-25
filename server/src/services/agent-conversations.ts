@@ -565,10 +565,9 @@ export async function deliverConversationComments(
       contextSnapshot: Record<string, unknown>;
     },
   ) => Promise<unknown>,
-): Promise<{ deferred: AgentInvokability | null }> {
-  if (!issue.conversationAgentId) return { deferred: null };
-  const invokability = await conversationAgentInvokability(db, issue);
-  if (!invokability.invokable) return { deferred: invokability };
+  options?: { invokability?: AgentInvokability },
+): Promise<void> {
+  if (!issue.conversationAgentId) return;
   for (;;) {
     const delivered = await db.transaction(async (tx) => {
       // Contenders release their connection while waiting so concurrent sends
@@ -577,11 +576,15 @@ export async function deliverConversationComments(
         sql`select pg_try_advisory_xact_lock(hashtextextended(${"conversation-delivery:" + issue.id}, 0)) as acquired`,
       );
       if (!locks[0]?.acquired) return false;
-      for (const comment of await undeliveredConversationComments(
+      const pending = await undeliveredConversationComments(
         tx as unknown as Db,
         issue.companyId,
         issue.id,
-      )) {
+      );
+      if (pending.length === 0) return true;
+      const invokability = options?.invokability ?? (await conversationAgentInvokability(tx as unknown as Db, issue));
+      if (!invokability.invokable) return true;
+      for (const comment of pending) {
         await resumeConversationForReset(db, comment);
         await enqueue(issue.conversationAgentId!, {
           source: "on_demand",
@@ -603,7 +606,7 @@ export async function deliverConversationComments(
       }
       return true;
     });
-    if (delivered) return { deferred: null };
+    if (delivered) return;
     await new Promise((resolve) => setTimeout(resolve, 10));
   }
 }

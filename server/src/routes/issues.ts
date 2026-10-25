@@ -20351,7 +20351,7 @@ export function issueRoutes(
         });
         for (const publication of publications) publishActivity(publication);
         await issueReferencesSvc.syncComment(comment.id);
-        await deliverConversationComments(db, issue, heartbeat.wakeup);
+        await deliverConversationComments(db, issue, heartbeat.wakeup, { invokability: agentInvokability });
         res.status(201).json({
           ...comment,
           ...(await resolveMessageDeliveryDisposition({

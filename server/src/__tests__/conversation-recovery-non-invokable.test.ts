@@ -147,6 +147,22 @@ describeEmbeddedPostgres("conversation recovery with a non-invokable agent", () 
     expect(blocked.map((row) => row.id)).toContain(seeded.issueId);
   });
 
+  it("escalates once for an agent paused by budget and keeps the comment queued", async () => {
+    const seeded = await seedConversation("paused");
+    await db.update(agents).set({ pauseReason: "budget" }).where(eq(agents.id, seeded.agentId));
+
+    const first = await sweep();
+    const second = await sweep();
+
+    expect(first.errored).toBe(0);
+    expect(first.escalated).toBe(1);
+    expect(second.errored).toBe(0);
+    expect(second.escalated).toBe(0);
+    const [issue] = await db.select().from(issues).where(eq(issues.id, seeded.issueId));
+    expect(issue?.status).toBe("blocked");
+    expect(await undeliveredConversationComments(db, seeded.companyId, seeded.issueId)).toHaveLength(1);
+  });
+
   it.each(["paused", "pending_approval"])("keeps a conversation with a %s agent in place and delivers once the agent is invokable", async (status) => {
     const seeded = await seedConversation(status);
 
