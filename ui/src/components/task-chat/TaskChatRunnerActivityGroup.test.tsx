@@ -296,6 +296,43 @@ describe("TaskChatRunnerActivityGroup", () => {
     vi.unstubAllGlobals();
   });
 
+  it("resumes following once the reader scrolls back to the bottom of the detail", () => {
+    let fireResize = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          fireResize = () => callback([], this as unknown as ResizeObserver);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    render(tools(1));
+    const detail = visibleDetails()[0];
+    let scrollTop = 0;
+    Object.defineProperty(detail, "scrollHeight", { value: 900, configurable: true });
+    Object.defineProperty(detail, "clientHeight", { value: 300, configurable: true });
+    Object.defineProperty(detail, "scrollTop", {
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+      configurable: true,
+    });
+    act(() => fireResize());
+    expect(scrollTop).toBe(900);
+    scrollTop = 200;
+    act(() => detail.dispatchEvent(new Event("scroll")));
+    act(() => fireResize());
+    expect(scrollTop).toBe(200);
+    scrollTop = 620;
+    act(() => detail.dispatchEvent(new Event("scroll")));
+    act(() => fireResize());
+    expect(scrollTop).toBe(900);
+    vi.unstubAllGlobals();
+  });
+
   it("lets a click override the positional open state and keeps the detail mounted", () => {
     render(tools(4));
     const detail = container.querySelector<HTMLElement>(

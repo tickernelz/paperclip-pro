@@ -213,8 +213,16 @@ function useFollowDetailBottom<T extends HTMLElement>(follow: boolean) {
   const onScroll = useCallback(() => {
     const el = ref.current;
     if (!el) return;
-    if (el.scrollTop < lastTop.current - DETAIL_PIN_THRESHOLD_PX) pinned.current = false;
-    lastTop.current = el.scrollTop;
+    const top = el.scrollTop;
+    const moved = top - lastTop.current;
+    lastTop.current = top;
+    if (moved < -DETAIL_PIN_THRESHOLD_PX) {
+      pinned.current = false;
+      return;
+    }
+    if (moved > 0 && el.scrollHeight - top - el.clientHeight <= DETAIL_PIN_THRESHOLD_PX) {
+      pinned.current = true;
+    }
   }, []);
   useLayoutEffect(() => {
     if (follow) stick();
