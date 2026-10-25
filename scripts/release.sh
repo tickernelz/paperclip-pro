@@ -314,6 +314,30 @@ PACK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-tarballs.XXXXXX")"
 export PAPERCLIP_RELEASE_REUSE_UI_DIST=1
 
 release_info ""
+sign_local_browser_extensions() {
+  local creds="${AMO_SIGNING_ENV:-${HOME}/.config/paperclip-pro/amo-signing.env}"
+  if [ -z "${WEB_EXT_API_KEY:-}" ] || [ -z "${WEB_EXT_API_SECRET:-}" ]; then
+    if [ -f "$creds" ]; then
+      set -a
+      . "$creds"
+      set +a
+    fi
+  fi
+  local source_version signed_version
+  source_version="$(node -p "require('${REPO_ROOT}/apps/local-browser/firefox/manifest.json').version")"
+  signed_version="$(unzip -p "${REPO_ROOT}/ui/public/downloads/local-browser-firefox.xpi" manifest.json 2>/dev/null | node -e "let d='';process.stdin.on('data',(c)=>d+=c).on('end',()=>{try{process.stdout.write(JSON.parse(d).version)}catch{process.stdout.write('missing')}})")"
+  if [ "$source_version" = "$signed_version" ]; then
+    release_info "==> Local Browser: the signed Firefox xpi already matches source ${source_version}"
+    return 0
+  fi
+  if [ -z "${WEB_EXT_API_KEY:-}" ] || [ -z "${WEB_EXT_API_SECRET:-}" ]; then
+    release_fail "the Firefox extension source is ${source_version} but the signed xpi is ${signed_version}. Export WEB_EXT_API_KEY and WEB_EXT_API_SECRET, or write them to ${creds}, then run: node apps/local-browser/build-artifacts.mjs --sign"
+  fi
+  release_info "==> Local Browser: signing Firefox ${source_version} (committed xpi is ${signed_version})"
+  ( cd "${REPO_ROOT}" && node apps/local-browser/build-artifacts.mjs --sign )
+  node "${REPO_ROOT}/scripts/check-local-browser-artifacts.mjs" >/dev/null
+}
+
 if [ "$skip_build" = false ]; then
   release_info "==> Step 1/6: Building workspace artifacts..."
   cd "${REPO_ROOT}"
@@ -322,6 +346,8 @@ if [ "$skip_build" = false ]; then
 else
   release_info "==> Step 1/6: Reusing the existing workspace build (--skip-build)"
 fi
+
+sign_local_browser_extensions
 
 bash "${REPO_ROOT}/scripts/prepare-release-package-assets.sh"
 

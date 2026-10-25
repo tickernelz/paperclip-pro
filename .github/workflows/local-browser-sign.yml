@@ -1,0 +1,64 @@
+name: Local Browser Signing
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "apps/local-browser/**"
+      - "ui/public/downloads/local-browser-*"
+      - "scripts/check-local-browser-artifacts.mjs"
+      - ".github/workflows/local-browser-sign.yml"
+
+concurrency:
+  group: local-browser-signing
+  cancel-in-progress: false
+
+jobs:
+  sign:
+    name: Sign Firefox extension
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Decide whether a signature is needed
+        id: check
+        run: |
+          source_version=$(node -p "require('./apps/local-browser/firefox/manifest.json').version")
+          signed_version=$(unzip -p ui/public/downloads/local-browser-firefox.xpi manifest.json 2>/dev/null | node -e "let d='';process.stdin.on('data',(c)=>d+=c).on('end',()=>{try{process.stdout.write(JSON.parse(d).version)}catch{process.stdout.write('missing')}})")
+          echo "source=$source_version signed=$signed_version"
+          if [ "$source_version" = "$signed_version" ]; then
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::the committed xpi is $signed_version but the source is $source_version; signing it now"
+          fi
+      - name: Sign with AMO credentials
+        if: steps.check.outputs.needed == 'true'
+        env:
+          WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
+          WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+        run: |
+          if [ -z "${WEB_EXT_API_KEY:-}" ] || [ -z "${WEB_EXT_API_SECRET:-}" ]; then
+            echo "::error::WEB_EXT_API_KEY and WEB_EXT_API_SECRET are not configured for this repository"
+            exit 1
+          fi
+          node apps/local-browser/build-artifacts.mjs --sign
+      - name: Verify the downloads match the source
+        run: node scripts/check-local-browser-artifacts.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: local-browser-extensions
+          if-no-files-found: error
+          path: |
+            ui/public/downloads/local-browser-chromium.zip
+            ui/public/downloads/local-browser-firefox.xpi
+            ui/public/downloads/local-browser-firefox-unsigned.zip
+      - name: Tell the operator what to commit
+        if: steps.check.outputs.needed == 'true'
+        run: |
+          echo "::error::The Firefox source moved ahead of the committed xpi. Download the local-browser-extensions artifact from this run, commit ui/public/downloads/local-browser-firefox.xpi, and release."
+          exit 1
