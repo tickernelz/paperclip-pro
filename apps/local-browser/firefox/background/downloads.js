@@ -30,7 +30,7 @@
   }
 
   async function list(tab) {
-    var items = await browser.downloads.search({ limit: 100, orderBy: ["-startTime"] });
+    var items = await browser.downloads.search({ orderBy: ["-startTime"] });
     var origin = protocol.originOf(tab.url);
     var fromTab = [];
     var others = [];
@@ -77,9 +77,6 @@
       throw protocol.error(protocol.ERROR_CODES.extensionUnavailable, "The download URL answered " + response.status, "Open the URL in a tab and retry", true);
     }
     var blob = await response.blob();
-    if (blob.size > protocol.DEFAULTS.downloadMaxBytes) {
-      throw protocol.error(protocol.ERROR_CODES.resultTooLarge, "The file is " + blob.size + " bytes, over the " + protocol.DEFAULTS.downloadMaxBytes + " byte cap", "Fetch it in a tab, or ask for a smaller export", false);
-    }
     var bytes = new Uint8Array(await blob.arrayBuffer());
     var name = baseName(item.filename) || nameFromUrl(item.url);
     var mime = item.mime || blob.type || "application/octet-stream";

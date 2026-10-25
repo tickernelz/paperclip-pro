@@ -1,7 +1,7 @@
 import {
   LOCAL_BROWSER_CURSOR_PATTERN,
+  LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_SNAPSHOT_DEFAULT_NODES,
-  LOCAL_BROWSER_SNAPSHOT_MAX_NODES,
 } from "@tickernelz/paperclip-pro-shared";
 
 export interface SnapshotNode {
@@ -39,7 +39,7 @@ export interface RenderedSnapshot {
 const MAX_COLLAPSED_RUN_CHARS = 300;
 const MAX_RENDER_DEPTH = 40;
 const MAX_NODE_FIELD_CHARS = 160;
-const MAX_RENDERED_TEXT_CHARS = 40_000;
+const DEFAULT_RENDERED_TEXT_CHARS = LOCAL_BROWSER_LIMITS.resultMaxChars.default;
 const PLAIN_VALUE = /^[\w@.:/+-]{1,120}$/;
 
 export function formatSnapshotCursor(offset: number): string {
@@ -59,10 +59,14 @@ function payloadOffset(value: unknown): number | null {
   return value;
 }
 
-export function clampSnapshotMaxNodes(maxNodes: number | undefined): number {
-  if (maxNodes === undefined) return LOCAL_BROWSER_SNAPSHOT_DEFAULT_NODES;
-  if (!Number.isFinite(maxNodes)) return LOCAL_BROWSER_SNAPSHOT_DEFAULT_NODES;
-  return Math.min(Math.max(Math.trunc(maxNodes), 1), LOCAL_BROWSER_SNAPSHOT_MAX_NODES);
+export function clampSnapshotMaxNodes(
+  maxNodes: number | undefined,
+  ceiling: number = LOCAL_BROWSER_LIMITS.snapshotMaxNodes.default,
+): number {
+  const fallback = Math.min(LOCAL_BROWSER_SNAPSHOT_DEFAULT_NODES, ceiling);
+  if (maxNodes === undefined) return fallback;
+  if (!Number.isFinite(maxNodes)) return fallback;
+  return Math.min(Math.max(Math.trunc(maxNodes), 1), ceiling);
 }
 
 function quote(text: string): string {
@@ -126,8 +130,9 @@ function renderTextRun(run: SnapshotNode[]): string {
 
 export function renderSnapshot(
   payload: SnapshotPayload,
-  options: { maxNodes?: number; cursor?: string } = {},
+  options: { maxNodes?: number; cursor?: string; maxNodesCeiling?: number; maxChars?: number } = {},
 ): RenderedSnapshot {
+  const maxChars = options.maxChars ?? DEFAULT_RENDERED_TEXT_CHARS;
   const rawNodes = Array.isArray(payload.nodes) ? payload.nodes : [];
   const total = typeof payload.total === "number" && payload.total >= 0 ? payload.total : rawNodes.length;
   const reset = payload.cursorReset === true;
@@ -135,7 +140,7 @@ export function renderSnapshot(
   const reported = reset ? null : payloadOffset(payload.offset);
   const base = reported ?? (reset ? 0 : requested);
   const start = reported === null ? Math.min(base, rawNodes.length) : 0;
-  const maxNodes = clampSnapshotMaxNodes(options.maxNodes);
+  const maxNodes = clampSnapshotMaxNodes(options.maxNodes, options.maxNodesCeiling);
   const lines: string[] = [];
   let index = start;
   let rendered = 0;
@@ -156,7 +161,7 @@ export function renderSnapshot(
       consumed = 1;
     }
     const width = rendered === 0 ? line.length : rendered + 1 + line.length;
-    if (width > MAX_RENDERED_TEXT_CHARS) break;
+    if (width > maxChars) break;
     lines.push(line);
     rendered = width;
     index += consumed;
@@ -174,10 +179,10 @@ export function renderSnapshot(
     truncated,
   };
   if (truncated && nextOffset > base) result.cursor = formatSnapshotCursor(nextOffset);
-  return boundRenderedSnapshot(result);
+  return boundRenderedSnapshot(result, maxChars);
 }
 
-export function boundRenderedSnapshot(snapshot: RenderedSnapshot): RenderedSnapshot {
-  if (snapshot.text.length <= MAX_RENDERED_TEXT_CHARS) return snapshot;
-  return { ...snapshot, text: snapshot.text.slice(0, MAX_RENDERED_TEXT_CHARS), truncated: true };
+export function boundRenderedSnapshot(snapshot: RenderedSnapshot, maxChars = DEFAULT_RENDERED_TEXT_CHARS): RenderedSnapshot {
+  if (snapshot.text.length <= maxChars) return snapshot;
+  return { ...snapshot, text: snapshot.text.slice(0, maxChars), truncated: true };
 }

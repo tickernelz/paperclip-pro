@@ -22,37 +22,40 @@
     navigationBlocked: "local_browser_navigation_blocked",
     protocolError: "local_browser_protocol_error",
     resultTooLarge: "local_browser_result_too_large",
-    unsupported: "local_browser_unsupported"
+    unsupported: "local_browser_unsupported",
+    permissionRequired: "local_browser_permission_required"
   });
+
+  var CAPABILITIES = Object.freeze([
+    "cookies.v2",
+    "permissions.v1",
+    "context.v1",
+    "network.headers",
+    "tabs.container",
+    "document.state",
+    "api.v1",
+    "act.force",
+    "budget.v1"
+  ]);
 
   var DEFAULTS = Object.freeze({
     callTimeoutMs: 30000,
     snapshotNodes: 120,
-    snapshotMaxNodes: 400,
     textChars: 8000,
-    textMaxChars: 40000,
-    screenshotMaxBytes: 2 * 1024 * 1024,
     viewerIntervalMs: 1000,
     viewerMinIntervalMs: 500,
     waitTimeoutMs: 10000,
     navigateTimeoutMs: 15000,
-    networkLimit: 50,
-    networkMaxLimit: 200,
-    networkBodyBytes: 65536,
-    downloadMaxBytes: 2 * 1024 * 1024,
+    budgetMarginMs: 1000,
+    networkLimit: 200,
+    networkBodyBytes: 1048576,
+    screenshotJpegAboveBytes: 2097152,
+    canvasMaxPixels: 32767,
     heartbeatMs: 25000,
     heartbeatTimeoutMs: 75000
   });
 
-  var FULL_TIER_TOOLS = Object.freeze([
-    "local_browser_evaluate",
-    "local_browser_storage",
-    "local_browser_network",
-    "local_browser_upload",
-    "local_browser_download"
-  ]);
-
-  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input"]);
+  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui"]);
 
   var AGENT_TOOLS = Object.freeze([
     "local_browser_sessions",
@@ -68,7 +71,10 @@
     "local_browser_network",
     "local_browser_upload",
     "local_browser_download",
-    "local_browser_close"
+    "local_browser_close",
+    "local_browser_context",
+    "local_browser_permissions",
+    "local_browser_api"
   ]);
 
   function originOf(rawUrl) {
@@ -79,27 +85,6 @@
     } catch (error) {
       return null;
     }
-  }
-
-  function originAllowed(tier, allowedOrigins, rawUrl) {
-    if (tier === "full") return true;
-    var origin = originOf(rawUrl);
-    if (!origin) return false;
-    var rules = Array.isArray(allowedOrigins) ? allowedOrigins : [];
-    var host = new URL(origin).host.toLowerCase();
-    for (var i = 0; i < rules.length; i += 1) {
-      var rule = String(rules[i] || "").trim().toLowerCase();
-      if (!rule) continue;
-      if (rule === "*") return true;
-      if (rule.indexOf("*.") === 0) {
-        var suffix = rule.slice(1);
-        if (host.slice(-suffix.length) === suffix || host === suffix.slice(1)) return true;
-        continue;
-      }
-      var normalized = originOf(rule) || rule;
-      if (normalized === origin.toLowerCase()) return true;
-    }
-    return false;
   }
 
   function socketOrigin(origin) {
@@ -135,11 +120,8 @@
     if (typeof hint === "string" && hint) payload.hint = hint;
     var canRetry = extra ? extra.retryable : retryable;
     if (typeof canRetry === "boolean") payload.retryable = canRetry;
+    if (extra && Array.isArray(extra.permissions) && extra.permissions.length) payload.permissions = extra.permissions.slice();
     return payload;
-  }
-
-  function requiresFullTier(tool) {
-    return FULL_TIER_TOOLS.indexOf(tool) !== -1;
   }
 
   root.LB = root.LB || {};
@@ -154,14 +136,12 @@
     CURSOR_PATTERN: CURSOR_PATTERN,
     ERROR_CODES: ERROR_CODES,
     DEFAULTS: DEFAULTS,
-    FULL_TIER_TOOLS: FULL_TIER_TOOLS,
+    CAPABILITIES: CAPABILITIES,
     INTERNAL_TOOLS: INTERNAL_TOOLS,
     AGENT_TOOLS: AGENT_TOOLS,
     originOf: originOf,
-    originAllowed: originAllowed,
     socketOrigin: socketOrigin,
     bridgeUrl: bridgeUrl,
-    error: error,
-    requiresFullTier: requiresFullTier
+    error: error
   };
 })(globalThis);

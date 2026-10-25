@@ -413,9 +413,19 @@
     return settleChange(before, args.timeoutMs);
   }
 
+  function documentState() {
+    return LB.documentState && typeof LB.documentState.read === "function" ? LB.documentState.read() : null;
+  }
+
+  function withDocument(result) {
+    var state = documentState();
+    if (state && result && typeof result === "object") result.document = state;
+    return result;
+  }
+
   function readPage(args) {
     var format = args.format || "text";
-    var maxChars = clampInt(args.maxChars, protocol.DEFAULTS.textChars, 200, protocol.DEFAULTS.textMaxChars);
+    var maxChars = typeof args.maxChars === "number" && args.maxChars >= 1 ? Math.floor(args.maxChars) : protocol.DEFAULTS.textChars;
     var url = location.href;
     var title = document.title;
     var start = args.selector ? adapter.query(document, args.selector) : adapter.getRoot();
@@ -443,7 +453,7 @@
   }
 
   async function waitFor(args) {
-    var timeoutMs = clampInt(args.timeoutMs, protocol.DEFAULTS.waitTimeoutMs, 100, 120000);
+    var timeoutMs = clampInt(args.timeoutMs, protocol.DEFAULTS.waitTimeoutMs, 100, Number.MAX_SAFE_INTEGER);
     var start = Date.now();
     var wantSelector = typeof args.selector === "string" && args.selector;
     var wantText = typeof args.text === "string" && args.text;
@@ -454,16 +464,16 @@
 
     while (true) {
       if (wantSelector && adapter.query(document, args.selector)) {
-        return { matched: "selector", elapsedMs: Date.now() - start, url: location.href, title: document.title };
+        return { matched: true, condition: "selector", elapsedMs: Date.now() - start, url: location.href, title: document.title };
       }
       if (wantText) {
         var haystack = document.body ? document.body.innerText || "" : "";
         if (haystack.indexOf(args.text) !== -1) {
-          return { matched: "text", elapsedMs: Date.now() - start, url: location.href, title: document.title };
+          return { matched: true, condition: "text", elapsedMs: Date.now() - start, url: location.href, title: document.title };
         }
       }
       if (wantUrl && location.href.indexOf(args.urlIncludes) !== -1) {
-        return { matched: "url", elapsedMs: Date.now() - start, url: location.href, title: document.title };
+        return { matched: true, condition: "url", elapsedMs: Date.now() - start, url: location.href, title: document.title };
       }
       if (wantIdle) {
         var signature = activitySignature();
@@ -472,11 +482,17 @@
           quietSince = Date.now();
         }
         if (document.readyState === "complete" && Date.now() - quietSince >= 400) {
-          return { matched: "idle", elapsedMs: Date.now() - start, url: location.href, title: document.title };
+          return { matched: true, condition: "idle", elapsedMs: Date.now() - start, url: location.href, title: document.title };
         }
       }
       if (Date.now() - start >= timeoutMs) {
-        throw fail(protocol.ERROR_CODES.timeout, "Nothing matched within " + timeoutMs + "ms", "Take a snapshot to see the current page, or raise timeoutMs", true);
+        return {
+          matched: false,
+          elapsedMs: Date.now() - start,
+          url: location.href,
+          title: document.title,
+          note: "Nothing matched within " + timeoutMs + "ms; take a snapshot to see the current page, or raise timeoutMs"
+        };
       }
       await sleep(100);
     }
@@ -637,9 +653,9 @@
     }
     var png = await encodeCanvas(canvas, "image/png");
     var dataUrl = await blobToDataUrl(png);
-    if (dataUrl.length > protocol.DEFAULTS.screenshotMaxBytes) {
-      var jpeg = await encodeCanvas(canvas, "image/jpeg", 0.82);
-      dataUrl = await blobToDataUrl(jpeg);
+    if (dataUrl.length > protocol.DEFAULTS.screenshotJpegAboveBytes) {
+      var jpeg = await blobToDataUrl(await encodeCanvas(canvas, "image/jpeg", 0.82));
+      if (jpeg.length < dataUrl.length) dataUrl = jpeg;
     }
     return { dataUrl: dataUrl, width: width, height: height, dpr: dpr };
   }
@@ -883,17 +899,20 @@
     viewport: function () {
       return viewportInfo();
     },
+    documentState: function () {
+      return documentState();
+    },
     snapshot: function (args) {
-      return snapshot(args);
+      return withDocument(snapshot(args));
     },
     act: function (args) {
       return act(args);
     },
     read: function (args) {
-      return readPage(args);
+      return withDocument(readPage(args));
     },
     wait: function (args) {
-      return waitFor(args);
+      return waitFor(args).then(withDocument);
     },
     storage: function (args) {
       return storageOp(args);

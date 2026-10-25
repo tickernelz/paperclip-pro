@@ -17,16 +17,16 @@
     navigationBlocked: "local_browser_navigation_blocked",
     protocolError: "local_browser_protocol_error",
     resultTooLarge: "local_browser_result_too_large",
-    unsupported: "local_browser_unsupported"
+    unsupported: "local_browser_unsupported",
+    permissionRequired: "local_browser_permission_required"
   });
 
   var DEFAULTS = Object.freeze({
     callTimeoutMs: 30000,
     snapshotNodes: 120,
-    snapshotMaxNodes: 400,
     textChars: 8000,
-    textMaxChars: 40000,
     viewerIntervalMs: 1000,
+    budgetMarginMs: 1000,
     waitTimeoutMs: 10000,
     navigateTimeoutMs: 15000
   });
@@ -36,10 +36,11 @@
     "local_browser_storage",
     "local_browser_network",
     "local_browser_upload",
-    "local_browser_download"
+    "local_browser_download",
+    "local_browser_api"
   ]);
 
-  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input"]);
+  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui"]);
 
   root.LB = root.LB || {};
   root.LB.protocol = {

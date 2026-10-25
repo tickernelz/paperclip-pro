@@ -88,3 +88,30 @@ test("a missing or junk args object does not throw", () => {
 test("fractional timeouts floor before clamping", () => {
   assert.equal(callBudget("local_browser_wait", { timeoutMs: 1500.9 }), 1500 + GRACE);
 });
+
+test("a server budgetMs replaces the static table minus the margin", () => {
+  assert.equal(callBudget("local_browser_snapshot", {}, 45000), 44000);
+  assert.equal(callBudget("local_browser_navigate", { timeoutMs: 999999 }, 600000), 599000);
+  assert.equal(callBudget("local_browser_upload", {}, 300000), 299000);
+  assert.equal(callBudget("local_browser_act", { timeoutMs: 1 }, 2500), 1500);
+});
+
+test("a junk or missing budgetMs keeps the legacy table", () => {
+  assert.equal(callBudget("local_browser_snapshot", {}, undefined), DEFAULT);
+  assert.equal(callBudget("local_browser_snapshot", {}, 0), DEFAULT);
+  assert.equal(callBudget("local_browser_snapshot", {}, -5), DEFAULT);
+  assert.equal(callBudget("local_browser_snapshot", {}, Number.NaN), DEFAULT);
+});
+
+test("a budget smaller than the margin still leaves a positive budget", () => {
+  assert.equal(callBudget("local_browser_snapshot", {}, 500), 1);
+});
+
+test("inner timeouts fit the server budget and are not clamped to 120 s", () => {
+  const { innerTimeout, INNER_SLACK_MS } = globalThis.LB.budget;
+  assert.equal(innerTimeout(300000, 15000, 399000), 300000);
+  assert.equal(innerTimeout(undefined, 15000, 399000), 15000);
+  assert.equal(innerTimeout(60000, 15000, 10000), 10000 - INNER_SLACK_MS);
+  assert.equal(innerTimeout(1, 15000, 10000), 100);
+  assert.equal(innerTimeout(999999, 15000, undefined, MAX_CALL), MAX_CALL);
+});

@@ -2,7 +2,7 @@ import type {
   LocalBrowserPairingStartResult,
   LocalBrowserSession,
   LocalBrowserSettings,
-  LocalBrowserTier,
+  LocalBrowserSettingsUpdate,
 } from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
@@ -13,6 +13,10 @@ export interface LocalBrowserPairingStatus {
 
 function scoped(path: string, companyId: string): string {
   return `${path}?${new URLSearchParams({ companyId }).toString()}`;
+}
+
+function sessionPath(sessionId: string, suffix = ""): string {
+  return `/local-browser/sessions/${encodeURIComponent(sessionId)}${suffix}`;
 }
 
 export const localBrowserApi = {
@@ -28,11 +32,11 @@ export const localBrowserApi = {
       cache: "no-store",
     }),
   disconnect: (companyId: string, sessionId: string) =>
-    api.delete<{ ok: true }>(
-      scoped(`/local-browser/sessions/${encodeURIComponent(sessionId)}`, companyId),
-    ),
+    api.delete<{ ok: true }>(scoped(sessionPath(sessionId), companyId)),
+  openPermissions: (companyId: string, sessionId: string) =>
+    api.post<{ ok: true }>(scoped(sessionPath(sessionId, "/open-permissions"), companyId), {}),
   settings: (companyId: string) =>
     api.get<LocalBrowserSettings>(scoped("/local-browser/settings", companyId), { cache: "no-store" }),
-  saveSettings: (companyId: string, settings: { tier: LocalBrowserTier; allowedOrigins: string[] }) =>
-    api.post<LocalBrowserSettings>(scoped("/local-browser/settings", companyId), settings),
+  saveSettings: (companyId: string, update: LocalBrowserSettingsUpdate) =>
+    api.post<LocalBrowserSettings>(scoped("/local-browser/settings", companyId), update),
 };

@@ -1,29 +1,64 @@
 {
   "manifest_version": 3,
   "name": "Paperclip Local Browser Bridge",
-  "version": "1.0.8",
+  "version": "1.1.0",
   "description": "Connects this browser to a paired Paperclip server so an agent can read and drive real tabs.",
   "minimum_chrome_version": "116",
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
   "permissions": [
+    "debugger",
+    "storage",
+    "alarms",
+    "activeTab",
+    "webRequest"
+  ],
+  "optional_permissions": [
     "tabs",
     "scripting",
-    "activeTab",
-    "storage",
     "cookies",
     "downloads",
-    "debugger",
-    "alarms"
+    "downloads.open",
+    "webNavigation",
+    "history",
+    "bookmarks",
+    "browsingData",
+    "sessions",
+    "topSites",
+    "clipboardRead",
+    "clipboardWrite",
+    "notifications",
+    "management",
+    "privacy",
+    "search",
+    "pageCapture",
+    "tabGroups",
+    "contentSettings"
   ],
   "optional_host_permissions": [
     "<all_urls>"
   ],
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background/index.js",
     "type": "module"
   },
   "action": {
     "default_title": "Paperclip Local Browser",
-    "default_popup": "popup.html"
+    "default_popup": "ui/popup.html",
+    "default_icon": {
+      "16": "icons/icon-16.png",
+      "32": "icons/icon-32.png",
+      "48": "icons/icon-48.png",
+      "128": "icons/icon-128.png"
+    }
+  },
+  "options_ui": {
+    "page": "ui/control.html",
+    "open_in_tab": true
   },
   "content_scripts": [
     {
@@ -34,13 +69,12 @@
         "lib/protocol.js",
         "lib/text.js",
         "lib/refmap.js",
+        "lib/cursor.js",
         "lib/snapshot.js",
         "lib/markdown.js",
-        "lib/cursor.js",
-        "lib/attachments.js",
-        "lib/frames.js",
-        "lib/hit.js",
         "lib/dom-adapter.js",
+        "lib/document-state.js",
+        "lib/hit.js",
         "content.js"
       ],
       "all_frames": true,

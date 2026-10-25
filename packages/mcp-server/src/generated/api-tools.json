@@ -9394,11 +9394,45 @@
     }
   },
   {
+    "name": "paperclipCreateLocalBrowserPermission",
+    "operationId": "POST /api/local-browser/sessions/{id}/open-permissions",
+    "method": "POST",
+    "path": "/local-browser/sessions/{sessionId}/open-permissions",
+    "description": "Open the permission page in a paired browser",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "Local Browser"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertBoardUser"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "sessionId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipCreateLocalBrowserSetting",
     "operationId": "POST /api/local-browser/settings",
     "method": "POST",
     "path": "/local-browser/settings",
-    "description": "Update local browser tier and origin settings",
+    "description": "Update local browser tier, origin and limit settings",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",
@@ -9428,6 +9462,32 @@
             "type": "array",
             "items": {
               "type": "string"
+            }
+          },
+          "limits": {
+            "type": "object",
+            "properties": {
+              "callMaxMs": {
+                "type": "integer"
+              },
+              "networkMaxEntries": {
+                "type": "integer"
+              },
+              "readMaxChars": {
+                "type": "integer"
+              },
+              "resultMaxChars": {
+                "type": "integer"
+              },
+              "screenshotMaxBytes": {
+                "type": "integer"
+              },
+              "snapshotMaxNodes": {
+                "type": "integer"
+              },
+              "transferMaxBytes": {
+                "type": "integer"
+              }
             }
           },
           "tier": {
@@ -31942,7 +32002,7 @@
     "operationId": "GET /api/local-browser/settings",
     "method": "GET",
     "path": "/local-browser/settings",
-    "description": "Read local browser tier and origin settings",
+    "description": "Read local browser tier, origin and limit settings",
     "toolset": "extended",
     "authority": "board",
     "authoritySource": "registry",

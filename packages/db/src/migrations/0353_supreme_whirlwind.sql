@@ -1,0 +1,1 @@
+ALTER TABLE "local_browser_settings" ADD COLUMN "limits" jsonb DEFAULT '{}'::jsonb NOT NULL;

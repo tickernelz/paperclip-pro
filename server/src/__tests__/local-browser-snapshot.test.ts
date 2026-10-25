@@ -1,11 +1,13 @@
 import { describe, expect, it } from "vitest";
-import { LOCAL_BROWSER_CURSOR_PATTERN } from "@tickernelz/paperclip-pro-shared";
+import { LOCAL_BROWSER_CURSOR_PATTERN, LOCAL_BROWSER_LIMITS } from "@tickernelz/paperclip-pro-shared";
 import {
   clampSnapshotMaxNodes,
   formatSnapshotCursor,
   parseSnapshotCursor,
   renderSnapshot,
 } from "../services/local-browser/snapshot.js";
+
+const RESULT_CHARS = LOCAL_BROWSER_LIMITS.resultMaxChars.default;
 
 const nodes = [
   { ref: "e1", role: "navigation", name: "Main", depth: 0 },
@@ -105,6 +107,16 @@ describe("renderSnapshot", () => {
     expect(clampSnapshotMaxNodes(5_000)).toBe(400);
     expect(clampSnapshotMaxNodes(0)).toBe(1);
     expect(clampSnapshotMaxNodes(Number.NaN)).toBe(120);
+    expect(clampSnapshotMaxNodes(5_000, 20_000)).toBe(5_000);
+    expect(clampSnapshotMaxNodes(undefined, 50)).toBe(50);
+  });
+
+  it("bounds the rendered text by the caller's character limit", () => {
+    const wide = Array.from({ length: 200 }, (_, index) => ({ ref: "e" + index, role: "button", name: "x".repeat(150) }));
+    const rendered = renderSnapshot({ nodes: wide, total: wide.length }, { maxNodes: 200, maxChars: 2_000 });
+    expect(rendered.text.length).toBeLessThanOrEqual(2_000);
+    expect(rendered.truncated).toBe(true);
+    expect(rendered.cursor).toBe(String(rendered.nodes));
   });
 
   it("accepts only decimal cursors and treats anything else as the start of the page", () => {
@@ -140,7 +152,7 @@ describe("renderSnapshot", () => {
         { nodes: hostile, total: hostile.length },
         { maxNodes: 400, cursor },
       );
-      expect(page.text.length).toBeLessThanOrEqual(40_000);
+      expect(page.text.length).toBeLessThanOrEqual(RESULT_CHARS);
       expect(page.nodes).toBeGreaterThan(0);
       for (const line of page.text.split("\n")) {
         const ref = /^(e\d+) /.exec(line);
@@ -191,7 +203,7 @@ describe("renderSnapshot", () => {
       total: 1,
     });
     expect(rendered.nodes).toBe(1);
-    expect(rendered.text.length).toBeLessThanOrEqual(40_000);
+    expect(rendered.text.length).toBeLessThanOrEqual(RESULT_CHARS);
     expect(rendered.text).toContain("Go");
     expect(rendered.text).toContain("\u2026");
     expect(rendered.cursor).toBeUndefined();

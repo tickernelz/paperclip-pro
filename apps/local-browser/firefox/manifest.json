@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "name": "Paperclip Local Browser Bridge",
   "short_name": "Paperclip Browser",
-  "version": "1.0.8",
-  "description": "Lets Paperclip drive your own Firefox tabs: snapshot, act, read, screenshot, network and trusted input.",
+  "version": "1.1.0",
+  "description": "Lets Paperclip drive your own Firefox tabs: snapshot, act, read, screenshot, network and trusted input. You choose every permission.",
   "browser_specific_settings": {
     "gecko": {
       "id": "local-browser@paperclip.app",
@@ -11,21 +11,47 @@
     }
   },
   "permissions": [
-    "tabs",
-    "activeTab",
-    "cookies",
+    "contextualIdentities",
     "storage",
+    "activeTab"
+  ],
+  "optional_permissions": [
+    "<all_urls>",
+    "tabs",
     "scripting",
+    "cookies",
+    "downloads",
+    "downloads.open",
     "webRequest",
     "webRequestBlocking",
-    "downloads",
-    "<all_urls>"
+    "webNavigation",
+    "history",
+    "bookmarks",
+    "browsingData",
+    "sessions",
+    "topSites",
+    "clipboardRead",
+    "clipboardWrite",
+    "notifications",
+    "management",
+    "privacy",
+    "search",
+    "proxy",
+    "tabHide",
+    "find",
+    "browserSettings"
   ],
   "background": {
     "persistent": true,
     "scripts": [
-      "lib/protocol.js",
+      "lib/contract.js",
+      "lib/ext-api.js",
+      "lib/access.js",
+      "lib/guards.js",
+      "lib/headers.js",
+      "lib/api-call.js",
       "lib/pairing.js",
+      "lib/protocol.js",
       "lib/backoff.js",
       "lib/ring.js",
       "lib/text.js",
@@ -37,6 +63,7 @@
       "background/network.js",
       "background/tabs.js",
       "background/bidi.js",
+      "background/cookies.js",
       "background/downloads.js",
       "background/tools.js",
       "background/bridge.js",
@@ -52,11 +79,12 @@
         "lib/protocol.js",
         "lib/text.js",
         "lib/refmap.js",
+        "lib/cursor.js",
         "lib/snapshot.js",
         "lib/markdown.js",
         "lib/dom-adapter.js",
+        "lib/document-state.js",
         "lib/keys.js",
-        "lib/cursor.js",
         "lib/input.js",
         "content/agent.js"
       ],
@@ -66,13 +94,17 @@
   ],
   "browser_action": {
     "default_title": "Paperclip Local Browser",
-    "default_popup": "popup/popup.html",
+    "default_popup": "ui/popup.html",
     "default_icon": {
       "16": "icons/icon.svg",
       "32": "icons/icon.svg",
       "48": "icons/icon.svg",
       "96": "icons/icon.svg"
     }
+  },
+  "options_ui": {
+    "page": "ui/control.html",
+    "open_in_tab": true
   },
   "icons": {
     "16": "icons/icon.svg",

@@ -1,58 +1,52 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
-import path from "node:path";
-import vm from "node:vm";
+import {
+  LOCAL_BROWSER_CALL_GRACE_MS,
+  LOCAL_BROWSER_EXTENSION_BUDGET_MARGIN_MS,
+  LOCAL_BROWSER_LIMITS,
+  LOCAL_BROWSER_TOOL_NAMES,
+} from "@tickernelz/paperclip-pro-shared";
 import { localBrowserCallBudget } from "../services/local-browser/timeouts.js";
-import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/paperclip-pro-shared";
 
-const root = path.resolve(__dirname, "..", "..", "..");
+const LEGACY_LONG_TOOLS = new Set(["local_browser_network", "local_browser_upload", "local_browser_download"]);
 
-function loadBudget(relativePaths: string[], name: string): (tool: string, args: Record<string, unknown>) => number {
-  const sandbox: { globalThis: unknown } = { globalThis: null };
-  sandbox.globalThis = sandbox;
-  vm.createContext(sandbox);
-  for (const relativePath of relativePaths) {
-    const source = readFileSync(path.join(root, relativePath), "utf8");
-    new vm.Script(source, { filename: relativePath }).runInContext(sandbox);
-  }
-  const relativePath = relativePaths[relativePaths.length - 1];
-  const scope = sandbox as unknown as { LB: { budget: Record<string, unknown> } };
-  const budget = scope.LB.budget;
-  const fn = budget[name];
-  if (typeof fn !== "function") throw new Error(relativePath + " does not export " + name);
-  return fn as (tool: string, args: Record<string, unknown>) => number;
+function legacyExtensionBudget(tool: string, args: Record<string, unknown>): number {
+  const clamp = (value: unknown, fallback: number, max: number) => {
+    const number = typeof value === "number" && Number.isFinite(value) ? Math.floor(value) : fallback;
+    return Math.min(Math.max(number, 100), max);
+  };
+  if (tool === "local_browser_navigate") return clamp(args.timeoutMs, 15_000, 120_000) + 5_000;
+  if (tool === "local_browser_wait") return clamp(args.timeoutMs, 10_000, 120_000) + 5_000;
+  if (tool === "local_browser_act" || tool === "local_browser_evaluate") return clamp(args.timeoutMs, 30_000, 60_000) + 5_000;
+  if (LEGACY_LONG_TOOLS.has(tool)) return 60_000;
+  return 30_000;
 }
-
-const chromium = loadBudget(
-  ["apps/local-browser/chromium/lib/protocol.js", "apps/local-browser/chromium/lib/budget.js"],
-  "callBudget",
-);
-const firefox = loadBudget(
-  ["apps/local-browser/firefox/lib/protocol.js", "apps/local-browser/firefox/lib/budget.js"],
-  "budgetFor",
-);
 
 const ARG_SHAPES: Record<string, unknown>[] = [
   {},
   { timeoutMs: 0 },
   { timeoutMs: 100 },
   { timeoutMs: 5_000 },
-  { timeoutMs: 10_000 },
-  { timeoutMs: 15_000 },
   { timeoutMs: 30_000 },
   { timeoutMs: 60_000 },
   { timeoutMs: 120_000 },
   { timeoutMs: 600_000 },
 ];
 
-describe("call budgets agree across the server and both extensions", () => {
+const CALL_LIMITS = [LOCAL_BROWSER_LIMITS.callMaxMs.min, 30_000, LOCAL_BROWSER_LIMITS.callMaxMs.default, LOCAL_BROWSER_LIMITS.callMaxMs.ceiling];
+
+describe("call budgets under the budget.v1 model", () => {
   for (const tool of LOCAL_BROWSER_TOOL_NAMES) {
     for (const args of ARG_SHAPES) {
       const label = tool + " " + JSON.stringify(args);
-      it(label, () => {
-        const server = localBrowserCallBudget(tool, args);
-        expect(chromium(tool, args), "chromium budget for " + label).toBe(server);
-        expect(firefox(tool, args), "firefox budget for " + label).toBe(server);
+      it("never undercuts a legacy extension at the default limit: " + label, () => {
+        expect(localBrowserCallBudget(tool, args)).toBeGreaterThanOrEqual(legacyExtensionBudget(tool, args));
+      });
+      it("stays inside the company call limit and leaves the extension its margin: " + label, () => {
+        for (const callMaxMs of CALL_LIMITS) {
+          const budget = localBrowserCallBudget(tool, args, callMaxMs);
+          expect(budget).toBeLessThanOrEqual(callMaxMs + LOCAL_BROWSER_CALL_GRACE_MS);
+          expect(budget - LOCAL_BROWSER_EXTENSION_BUDGET_MARGIN_MS).toBeGreaterThan(0);
+        }
       });
     }
   }

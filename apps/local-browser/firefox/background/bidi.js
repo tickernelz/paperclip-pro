@@ -241,6 +241,25 @@
     };
   }
 
+  async function trustedInput() {
+    var current = await status();
+    if (current.available) return { mode: "bidi" };
+    return {
+      mode: "synthetic",
+      hint: "Start Firefox with WebDriver BiDi on port " + current.port + " so agents send real clicks and keys.",
+      command: current.launchHint
+    };
+  }
+
+  async function setPort(port) {
+    var value = typeof port === "number" ? Math.floor(port) : NaN;
+    if (!(value >= 1 && value <= 65535)) throw new Error("Use a port between 1 and 65535");
+    await browser.storage.local.set({ [protocol.STORAGE_BIDI]: { port: value } });
+    probeCache = { at: 0, url: null };
+    await close();
+    return trustedInput();
+  }
+
   function resetInput() {
     inputState.reset();
   }
@@ -261,6 +280,8 @@
     sendInput: sendInput,
     resetInput: resetInput,
     status: status,
+    trustedInput: trustedInput,
+    setPort: setPort,
     captureScreenshot: captureScreenshot,
     close: close,
     timeout: timeout

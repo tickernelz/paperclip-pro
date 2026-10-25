@@ -28,59 +28,90 @@ Brave:
 After an update to the files, press the reload arrow on the extension card. Reloading the
 extension keeps the pairing: the session token lives in `chrome.storage.local`.
 
-Requires Chrome 116 or newer (WebSocket activity keeps the MV3 service worker alive).
+Requires Chrome 116 or newer (WebSocket activity keeps the MV3 service worker alive). Tabs report `frozen` from Chrome 132.
 
 ## Pairing
 
-1. In Paperclip, open the browser connector for `local-browser` and start a pairing. The
-   server answers with a code and one or more connect URLs
-   (`wss://<host>/api/local-browser/bridge?code=XXXXXXXX`).
-2. Click the extension icon. Paste either the full connect URL or just the server origin
-   (`https://paperclip.example.com`) into **Server or connect URL**, and the 8-character
-   code into **Pairing code**. Set a label such as `Chrome on my laptop`.
-3. Press **Pair**. The popup turns green when the bridge answers `hello_ack`; from then on
-   the extension reconnects with `?session=<token>` and keeps the token across restarts.
-4. Pairing codes expire after 10 minutes. If the code expired, start a new pairing.
+1. In Paperclip, open the Local Browser page and start a pairing. The page shows a pairing
+   link that carries the server address and an 8-character code.
+2. Click the extension icon. The popup offers the link it finds on the active Paperclip tab;
+   otherwise paste the link (or just the code when the server is already known) and press
+   **Pair**. The popup turns green when the bridge answers `hello_ack`; from then on the
+   extension reconnects with `?session=<token>` and keeps the token across restarts.
+3. Pairing codes expire after 10 minutes. If the code expired, start a new pairing.
 
 **Disconnect** forgets the token on this device. The browser stays signed in to every site;
 only the Paperclip link is removed. **Reconnect** re-opens the socket with the stored token.
 
+The popup (`ui/popup.html`) and the control center (`ui/control.html`, also the options page)
+are shared with Firefox and live in `apps/local-browser/shared/ui`. They talk to the service
+worker over `runtime.sendMessage({channel: "lb-control", op})` with the ops `status`, `pair`,
+`detect`, `reconnect`, `disconnect`, `guards.set` and `pending.clear`; the worker broadcasts
+`{channel: "lb-status", status}` on every connection, permission or guard change. The
+control center opens on install, and again after an update while site access is not "all".
+
 ## Permissions
 
-| Permission | Why it is needed |
-| --- | --- |
-| `tabs` | List tabs for `local_browser_sessions`, report titles and URLs, react to open/close/navigate events, and focus the tab before a screenshot. |
-| `scripting` | Inject the content script into tabs that were already open before the extension was installed, run `local_browser_evaluate`, and attach files in the page's main world. |
-| `activeTab` | Touch the tab the user is looking at without waiting for a full-page grant. |
-| `storage` | Keep the pairing entry (origin, label, session token, tier, allowed origins) in `chrome.storage.local`. |
-| `cookies` | Read, write and clear cookies for `local_browser_storage` (full tier only), including httpOnly cookies, the cookie stores this extension can reach, and the whole jar behind `confirmAll`. |
-| `downloads` | List the tab's downloads and read a saved file's bytes for `local_browser_download` (full tier only). |
-| `debugger` | Trusted input for `local_browser_input`, full-page screenshots, and the `Network` domain for `local_browser_network`. Attached only for the duration of the call, or 30 s after the last takeover input. |
-| `alarms` | A 30-second heartbeat that re-opens the socket after the service worker is suspended. |
-| `<all_urls>` (host) | The bridge drives whatever site the task needs; `captureVisibleTab` and `chrome.cookies` also require host access. The server still refuses `refine`-tier tabs whose origin is not in `allowedOrigins`. |
+The user decides what agents may do. Only what Chrome cannot make optional is required;
+everything else is requested from the control center, one by one or with **Allow all**,
+which asks for every optional permission plus site access in one browser prompt.
+
+| Permission | Kind | Why it is needed |
+| --- | --- | --- |
+| `debugger` | required | Trusted input, background-tab and full-page screenshots, the network window fallback and response bodies. Chrome cannot make it optional. |
+| `storage` | required | The pairing entry, agent guards and the pending permission list in `chrome.storage.local`. |
+| `alarms` | required | A 30-second heartbeat that re-opens the socket after the service worker is suspended. |
+| `activeTab` | required | Touch the tab the user is looking at without a site grant. |
+| `webRequest` | required | Continuous network capture. Chrome only delivers `webRequest` events to listeners registered when the service worker starts, so a runtime grant could never start capture. It sees nothing until the user grants site access. |
+| `<all_urls>` | optional host | Read and drive any site; `captureVisibleTab`, content scripts and cookie access need it. |
+| `scripting`, `tabs`, `cookies`, `downloads`, `downloads.open`, `webNavigation`, `history`, `bookmarks`, `browsingData`, `sessions`, `topSites`, `clipboardRead`, `clipboardWrite`, `notifications`, `management`, `privacy`, `search`, `pageCapture`, `tabGroups`, `contentSettings` | optional | Exactly the catalog's `chromium: optional` ids (`LOCAL_BROWSER_PERMISSIONS`); `background/manifest.test.mjs` fails when the manifest drifts from the catalog. |
+
+Every tool checks what it needs with `LB.access.ensure` before touching the browser: page tools
+need `<all_urls>` and `scripting`, cookies need `cookies` (plus `<all_urls>` for `domain` or
+`allDomains`), downloads need `downloads`. A missing permission fails the call with
+`local_browser_permission_required` (retryable, `permissions` lists the ids), queues the request
+in `lb.pending`, paints the badge with the pending count and, when `notifications` is granted,
+shows a notification that opens the control center. Agents can also queue requests themselves
+with `local_browser_permissions op:"request"`.
+
+Agent guards are the user's own switches, kept in `lb.guards` and edited in the control center:
+`protectPaperclipTab` (never navigate the Paperclip tab), `protectFocusedTab` (never navigate the
+tab the user is looking at unless the agent opened it) and `networkBufferSize` (the continuous
+network ring, 50 to 20000 requests). Changes are sent to the server as `guards` events.
 
 The extension never logs page content, cookie values or the session token to the console.
 
 ## What each tool does
 
+The service worker is `background/index.js`, a module worker that imports the shared layer
+(`lib/contract.js`, `ext-api`, `access`, `guards`, `headers`, `api-call`, `pairing`) and then
+the browser modules in `background/`: `core` (errors, helpers, content-script list), `cdp`
+(one debugger attachment per tab shared by input, captures and network), `tabs`, `network`,
+`cookies`, `input`, `screenshot`, `viewer`, `downloads`, `tools` (tool registry and permission
+requirements), `bridge` (socket, pairing, `lb-control`, events) and `boot` (listeners).
+
 | Tool | Implementation |
 | --- | --- |
-| `local_browser_sessions` | `chrome.tabs.query`; returns `{tabId, windowId, title, url, active, status}` per tab, plus a one-entry `sessions` array with the session id, label and tier. |
-| `local_browser_open` | `chrome.tabs.create` or `chrome.tabs.update`, waits for `status === "complete"`, returns the tab and a first-page snapshot. |
-| `local_browser_navigate` | `chrome.tabs.update` / `goBack` / `goForward` / `reload`, then waits for load, DOMContentLoaded or network idle. |
-| `local_browser_snapshot` | Content script walks the DOM and returns the accessibility-style node list below, paged by a decimal `cursor` offset. |
-| `local_browser_act` | Content script scrolls the target into view, then hit-tests its centre, then dispatches real pointer, keyboard and input events; reports `changed` after watching for 300 ms, measured from a mutation baseline taken *after* the scroll so scroll-triggered DOM churn is not misreported as the action's effect. A null hit outside the viewport means "scroll and retry"; if the target is still outside the visible page area after that, the call is refused with `local_browser_element_missing` rather than firing an event no trusted click could reach (off-canvas drawers, `left:-9999px` hiders, transform carousels). `scroll` moves the element's own scroll container when it has one. |
-| `local_browser_read` | A visibility-aware text walk, a small markdown converter, or `innerHTML`, capped at `maxChars`. |
-| `local_browser_screenshot` | `chrome.tabs.captureVisibleTab`, cropped in an `OffscreenCanvas` for an element (the crop is clamped in offset **and** extent, and an element outside the viewport returns the full frame with `cropped:false` rather than a blank 1x1); `Page.captureScreenshot` with a content-size clip for `fullPage`, which falls back to the viewport with a `note` when the debugger is unavailable. |
-| `local_browser_wait` | Content script polls selector, text, URL fragment or idle state. |
+| `local_browser_sessions` | `chrome.tabs.query`; each tab carries `cookieStoreId` (from `chrome.cookies.getAllCookieStores`, else `0`/`1` by incognito), `incognito`, `discarded`, `pinned`, `audible` and `frozen` (Chrome 132+), plus a one-entry `sessions` array. |
+| `local_browser_open` | Reuses the agent's own tab or creates one, waits for load, returns the tab and a first-page snapshot. `newWindow` opens `chrome.windows.create`; `incognito` (or `cookieStoreId: "1"`) opens in a private window and fails with `local_browser_unsupported` and a hint to turn on **Allow in Incognito** when the extension is not allowed there. Any store other than `0`/`1` is unsupported on Chromium. |
+| `local_browser_navigate` | `chrome.tabs.update` / `goBack` / `goForward` / `reload`, then waits for load, DOMContentLoaded or network idle. Refused by the agent guards above. |
+| `local_browser_snapshot` | Content script walks the DOM and returns the accessibility-style node list below, paged by a decimal `cursor` offset, plus `document`. |
+| `local_browser_act` | Content script scrolls the target into view, hit-tests its centre, then dispatches real pointer, keyboard and input events; reports `changed` after watching for 300 ms from a baseline taken after the scroll. A covered or off-screen target is refused with `local_browser_element_missing` unless `force: true`, which skips the hit test. `scroll` moves the element's own scroll container when it has one. |
+| `local_browser_read` | A visibility-aware text walk, a small markdown converter, or `innerHTML`, cut at the forwarded `maxChars` (default 8000, no extension-side maximum), plus `document`. |
+| `local_browser_screenshot` | `captureVisibleTab` for the focused tab, `Page.captureScreenshot` through the debugger for background tabs and `fullPage`, an `OffscreenCanvas` crop for a selector, plus `document`. |
+| `local_browser_wait` | Content script polls selector, text, URL fragment or idle state, plus `document`. |
 | `local_browser_evaluate` | `chrome.scripting.executeScript` in the main or isolated world, result JSON-cloned in the page. |
-| `local_browser_storage` | `chrome.cookies` for cookies: scope by `url`, by `domain` (subdomains included) or `allDomains` for the whole jar, narrowed by `name` and `limit` and pinned to a `storeId`. Writes honour domain, path, secure, httpOnly, sameSite, expiry and store per entry, and an entry inherits the call's domain when it names none. Clear removes per-cookie domain+path+store, reports what actually went, and refuses a whole-jar wipe without `name` or `confirmAll`. `localStorage`/`sessionStorage` live in the content script. |
-| `local_browser_network` | `chrome.debugger` with `Network.enable` for a 1.2 s collection window, bodies on request. Reuses an already-attached takeover session instead of failing, and only detaches what it attached. The per-tab ring buffer is dropped when the tab closes. |
-| `local_browser_upload` | `File` + `DataTransfer` in the page's main world, then `input` and `change`. Accepts `{name, mimeType, base64}` and the older `{name, mime, dataBase64}`. 60 s budget. |
-| `local_browser_download` | `chrome.downloads.search`; `save` fetches the file and returns `{id, name, mimeType, sizeBytes, base64}`. 60 s budget. |
-| `local_browser_close` | `chrome.tabs.remove`, or `{ok:true, closed:"session"}` when `closeSession` is set. The result is sent before the socket closes, so the server sees it. |
-| `local_browser_viewer` | Internal: `captureVisibleTab` every `intervalMs` (default 1000) as `frame` events in CSS pixels, plus `state` events on start, stop and agent activity. |
-| `local_browser_input` | Internal: consumes `localBrowserInputSchema` exactly; trusted `Input.dispatchMouseEvent` / `Input.dispatchKeyEvent` through `chrome.debugger`, synthetic DOM fallback. |
+| `local_browser_storage` | `chrome.cookies` by `url`, `domain` or `allDomains`, narrowed by `name`, pinned to a `storeId`; `limit` is honoured and absent means every cookie. Cookies report `name, value, domain, path, secure, httpOnly, sameSite, session, expirationDate?, hostOnly, storeId, partitionKey?`. A `session: true` entry writes a cookie without expiry. Clear removes per cookie and refuses a whole-jar wipe without `name` or `confirmAll`. `localStorage`/`sessionStorage` live in the content script. |
+| `local_browser_network` | Continuous `chrome.webRequest` capture (`onBeforeRequest`, `onBeforeSendHeaders` with `extraHeaders`, `onHeadersReceived` with `extraHeaders`, `onCompleted`, `onErrorOccurred`) into one ring of `networkBufferSize` rows. Rows carry full request and response headers, `hasCookie`, `hasAuthorization`, `fromCache`, `ip`, `initiator`, `documentId`, `frameId` and `error`. `list` filters by tab (default the current tab), `since`, `urlIncludes`, `method`, `types` and `limit`; `includeHeaders: false` drops the headers. `includeBodies` attaches the debugger on demand and keeps it for 5 idle minutes so later bodies come from `Network.getResponseBody`. Without site access the call falls back to a 1.2 s debugger window. `capture` reports `{mode, since, windowMs?}`. |
+| `local_browser_upload` | `File` + `DataTransfer` in the page's main world, then `input` and `change`. Accepts `{name, mimeType, base64}` and the older `{name, mime, dataBase64}`. |
+| `local_browser_download` | `chrome.downloads.search` over every download; `save` fetches the file and returns `{id, name, mimeType, sizeBytes, base64}` with no size cap. |
+| `local_browser_close` | `chrome.tabs.remove`, or `{ok:true, closed:"session"}` when `closeSession` is set. The result is sent before the socket closes. |
+| `local_browser_context` | One probe: the tab with its container, the tab URL's cookies in its store without values, the content script's document state (`connected`, `missing` or `blocked`), network capture state with `lastRequestAt` and `requestsSinceLoad`, and the access snapshot. |
+| `local_browser_permissions` | `status` returns the access snapshot; `request` queues ids for the user and answers with `requested`, `alreadyGranted` and a note to ask the user to press Allow. |
+| `local_browser_api` | Calls `chrome.<path>(...args)` through the shared `LB.apiCall` and returns `{value, type}`. `storage.*` is refused; a namespace missing for lack of permission answers `local_browser_permission_required`. |
+| `local_browser_viewer` | Internal: `captureVisibleTab` or a debugger capture every `intervalMs` (default 1000) as `frame` events in CSS pixels, plus `state` events. |
+| `local_browser_input` | Internal: `localBrowserInputSchema` shapes through `Input.dispatchMouseEvent` / `Input.dispatchKeyEvent`, synthetic DOM fallback. |
+| `local_browser_ui` | Internal: opens the control center on `#permissions` or `#overview`. |
 
 ## Snapshot node shape
 
@@ -121,9 +152,13 @@ The extension never logs page content, cookie values or the session token to the
 
 ## Call timeouts
 
-`lib/budget.js` mirrors the server's per-tool table
-(`server/src/services/local-browser/timeouts.ts`) exactly, so a call is never killed by the
-client while the server would still be waiting:
+The server sends `budgetMs` with each call. With it, the extension uses
+`budgetMs - callDefaults.extensionBudgetMarginMs` (1000 ms) as the whole call budget and fits
+inner waits (page load, `wait`, content RPCs) inside it, so a long company `callMaxMs` really
+reaches the browser and nothing is clamped to 120 s.
+
+An older server sends no `budgetMs`; `lib/budget.js` then keeps the legacy table that mirrors
+`server/src/services/local-browser/timeouts.ts`:
 
 | Tool | Budget |
 | --- | --- |
@@ -133,37 +168,9 @@ client while the server would still be waiting:
 | `network`, `upload`, `download` | `60000` |
 | everything else | `30000` |
 
-`local_browser_upload` and `local_browser_download` need the long budget: upload decodes
-base64 into `DataTransfer` files and `download op:save` fetches a file of up to 2 MiB and
-base64-encodes it, both on top of the page round trip.
-
-The table exists in three places (the server module, this client, and the Firefox client) and
-nothing in `packages/shared` owns it yet. Equality is held by behaviour, not by a text
-comparison: `server/src/__tests__/local-browser-budget-parity.test.ts` imports the real
-`localBrowserCallBudget`, loads both extensions' budget modules in a vm, and compares every
-contract tool across ten `timeoutMs` shapes. A source-text parser was tried and retired: it
-turns red on a harmless rename and green on a real behaviour change that keeps the same text.
-
-This client also pins the invariant the parity test cannot see. `lib/defaults-parity.test.mjs`
-asserts that `protocol.js` `DEFAULTS` (`callTimeoutMs`, `navigateTimeoutMs`,
-`waitTimeoutMs`) equal the `lib/budget.js` literals, and that across six `timeoutMs` shapes
-each inner operation wait stays strictly inside the call budget that wraps it, with the gap
-equal to the grace window. Those are different numbers used by different layers: an inner load
-wait of 26 s inside a 20 s call budget would surface as a bare `local_browser_timeout` instead
-of the navigation reporting its own timeout.
-
-Both files hold their own opinion rather than importing one. `lib/budget.test.mjs` and
-`lib/defaults-parity.test.mjs` declare the expected numbers as literals (`GRACE_LITERAL`,
-`CALL_LITERAL`, `NAVIGATE_LITERAL`, `WAIT_LITERAL`, `LONG_CALL_MS` and friends) and assert the
-module exports equal them, instead of writing `15000 + CALL_GRACE_MS` with the constant read
-from the module under test. An assertion whose expected value comes from the subject moves
-both sides together and stays green while the value drifts: mutating `CALL_GRACE_MS` from 5000
-to 8000 left the whole of the earlier `budget.test.mjs` passing. Every drift of
-`CALL_GRACE_MS`, `LONG_CALL_MS`, `DEFAULT_CALL_MS`, `DEFAULT_NAVIGATE_MS` and
-`DEFAULTS.navigateTimeoutMs` now turns its file red.
-
-When `packages/shared` opens for this feature, moving the row set there removes all three
-copies.
+`server/src/__tests__/local-browser-budget-parity.test.ts` keeps a literal copy of this legacy
+table and asserts the server's `budgetMs` never undercuts it and always leaves the margin. `lib/budget.test.mjs` declares its expected
+numbers as literals instead of reading them from the module under test, so a drift turns it red.
 
 ## Cursors and paging
 
@@ -187,25 +194,26 @@ SPA route change cannot leave an old ref pointing at a recycled node.
 
 ## Tests
 
-The pure helpers in `lib/` run without a browser, and `lib/load.test.mjs` loads the real
-manifest script list into a `vm` sandbox to prove the content script actually installs: it
-asserts `lib/protocol.js` is present and ordered before `content.js` in both
-`manifest.json` and `background.js` `CONTENT_FILES`, that the listener registers and answers
-a snapshot RPC, and that cursor paging, ref resets, hit-testing and scroll containers behave
-through the real message seam.
-
 ```sh
-node --test apps/local-browser/chromium/lib/*.test.mjs
+node --test apps/local-browser/chromium/lib/*.test.mjs apps/local-browser/chromium/background/*.test.mjs
 ```
 
-They cover the snapshot walker (invisible-node skipping, ref order, depth, text collapsing,
-name capping, truncation and cursors), the markdown converter, and the ref map. The tests use
-a fake DOM adapter (`lib/test-dom.mjs`) with the same interface as `lib/dom-adapter.js`.
+`background/harness.test.mjs` loads the real service-worker module list (parsed from
+`background/index.js`) into a `vm` sandbox with a fake `chrome` built on the shared
+`createFakeApi`, a fake WebSocket and stateful tabs, debugger, cookies, downloads and
+`webRequest`. The suites cover the bridge (`hello` capabilities, access and guards events, the
+`lb-control` ops, broadcasts, first run, `budgetMs`), the tools (permission refusals, context,
+api, permissions, ui, incognito and stores, guards, `force`, tab fields), network capture,
+cookies, the viewer and pairing lifecycle (`wiring.test.mjs`), the manifest against the
+permission catalog with every referenced file, and `load.test.mjs`, which loads the manifest's
+content scripts into a sandbox and drives them through the real message seam. Shared modules
+are tested in `apps/local-browser/shared/lib`.
 
 Every JavaScript file parses on its own:
 
 ```sh
-for f in $(find apps/local-browser/chromium -name '*.js' -o -name '*.mjs'); do node --check "$f"; done
+for f in $(find apps/local-browser/chromium -name '*.js' ! -path '*/background/index.js'); do node --check "$f"; done
+node --input-type=module --check < apps/local-browser/chromium/background/index.js
 ```
 
 ## Protocol notes and deviations
@@ -220,10 +228,11 @@ contract leaves a choice, this client does the following:
 - `local_browser_upload` needs the server to send `files: [{name, mimeType, base64}]`
   with the call (the older `{name, mime, dataBase64}` is accepted too). `attachmentIds` alone
   cannot cross the bridge; the call fails with `local_browser_unsupported` and a hint saying so.
-- `local_browser_network` collects for 1.2 s after enabling `Network`, keeps a 400-row ring
-  buffer per tab, and only fetches response bodies when `includeBodies` is set.
-- `local_browser_download` filters by origin because `chrome.downloads` items carry no tab
-  id: a download belongs to the tab when its `referrer` or URL origin matches the tab's.
+- `local_browser_network` captures continuously through `chrome.webRequest` once site access
+  is granted; without it it falls back to a 1.2 s debugger window
+  (`capture.mode: "window"`) and queues the missing permissions.
+- `local_browser_download` lists every download, newest first; rows carry `referrer` so the
+  agent can tell which site started each one.
 - `local_browser_evaluate` defaults to the main world. Sites whose CSP blocks `eval` fail
   with `local_browser_unsupported` and a hint to retry with `world: "isolated"`.
 - `local_browser_input` takes the frozen `localBrowserInputSchema` shapes verbatim and
@@ -279,17 +288,15 @@ contract leaves a choice, this client does the following:
   and falls back to an injected read of `window.devicePixelRatio` when that RPC cannot answer.
 - A close code `1008` (policy violation, the server rejecting a dead token) retires the pairing:
   the token and session id are cleared, origin and label are kept so the user can re-pair, the
-  popup shows `Not paired` with the reason, and no reconnect is attempted. Any other close code
+  popup shows `Pairing ended` with the reason, and no reconnect is attempted. Any other close code
   is treated as a network drop and reconnects with backoff.
-- The popup never decides anything: `lib/popup-state.js` turns a status into display and
-  enablement decisions (`stateLabel`, `dotClass`, `detail`, `origins`, `showPairForm`,
-  `reconnectEnabled`, `disconnectEnabled`, `prefilledOrigin`, `prefilledLabel`) and
-  `popup.js` only applies them. The pair form stays visible in every state including retired,
-  so a user whose session ended can always re-pair with the origin still prefilled; Reconnect
-  and Disconnect are enabled only for a live pairing.
+- The popup and control center never decide anything: the shared `lib/ui-state.js` turns the
+  `lb-control` status into display and enablement decisions and the pages only apply them.
+  The pair form shows for unpaired and retired states, so a user whose session ended can
+  always re-pair; Reconnect is refused for a retired pairing with the reason kept.
 - Retirement survives a service-worker restart. The retired record carries `retiredAt` and
   `retiredReason` in `chrome.storage.local`, so a worker that wakes later finds no token, does
-  not connect, and still shows the reason in the popup. Only `pair`, `Reconnect`, startup and
+  not connect, and still shows the reason in the popup. Only `pair`, startup and
   install clear the retired state.
 - The capture loop stops when the socket closes, when the watched tab closes, and on
   `{op:"stop"}`. A frame is skipped rather than sent with a null width or height, because
@@ -303,6 +310,8 @@ contract leaves a choice, this client does the following:
 - The extension does not enforce tiers or origin allowlists: the server owns `tier` and
   `allowedOrigins`, refuses `refine` calls to unlisted origins, and answers full-tier tools
   in `refine` with `local_browser_tier_denied` before they reach the browser. The extension
-  only stores what `hello_ack` reports so the popup can show it.
+  only stores what `hello_ack` reports so the popup can show it. The only extension-side
+  gates are browser permissions (`local_browser_permission_required`) and the user's agent
+  guards.
 - Trusted `Input.dispatchKeyEvent` sends `char` with the key's own text for single-character
   keys, so takeover typing works without a separate text argument.

@@ -12,16 +12,6 @@ const chromiumContract = JSON.parse(
   await readFile(path.join(here, "..", "..", "chromium", "lib", "protocol.contract.json"), "utf8"),
 );
 
-test("the firefox contract file parses and carries the fields the assertions read", () => {
-  for (const key of ["protocol", "tiers", "clients", "errorCodes", "actions", "toolNames", "limits"]) {
-    assert.ok(Object.prototype.hasOwnProperty.call(contract, key), "contract is missing " + key);
-  }
-  assert.ok(Array.isArray(contract.errorCodes) && contract.errorCodes.length > 0, "errorCodes must be a non-empty array");
-  assert.ok(Array.isArray(contract.toolNames) && contract.toolNames.length > 0, "toolNames must be a non-empty array");
-  assert.equal(typeof contract.limits.callTimeoutMs, "number");
-  assert.equal(typeof contract.limits.snapshotMaxNodes, "number");
-});
-
 test("the firefox and chromium contract files are identical", () => {
   assert.deepEqual(contract, chromiumContract);
 });
@@ -45,12 +35,31 @@ test("the firefox error codes match the shared contract", () => {
   );
 });
 
-test("the firefox defaults match the shared contract limits", () => {
-  const limits = contract.limits;
-  assert.equal(protocol.DEFAULTS.callTimeoutMs, limits.callTimeoutMs);
-  assert.equal(protocol.DEFAULTS.snapshotMaxNodes, limits.snapshotMaxNodes);
-  assert.equal(protocol.DEFAULTS.textMaxChars, limits.textMaxChars);
-  assert.equal(protocol.DEFAULTS.viewerIntervalMs, limits.viewerFrameIntervalMs);
+test("the firefox defaults match the shared contract call defaults", () => {
+  const defaults = contract.callDefaults;
+  assert.equal(protocol.DEFAULTS.callTimeoutMs, defaults.callTimeoutMs);
+  assert.equal(protocol.DEFAULTS.snapshotNodes, defaults.snapshotNodes);
+  assert.equal(protocol.DEFAULTS.textChars, defaults.readChars);
+  assert.equal(protocol.DEFAULTS.viewerIntervalMs, defaults.viewerFrameIntervalMs);
+  assert.equal(protocol.DEFAULTS.budgetMarginMs, defaults.extensionBudgetMarginMs);
+  assert.equal(protocol.DEFAULTS.networkLimit, contract.limits.defaults.networkMaxEntries);
+  assert.equal(protocol.DEFAULTS.screenshotJpegAboveBytes, contract.limits.defaults.screenshotMaxBytes);
+});
+
+test("the firefox extension keeps no copy of the server's user limits", () => {
+  for (const key of ["snapshotMaxNodes", "textMaxChars", "networkMaxLimit", "downloadMaxBytes", "screenshotMaxBytes"]) {
+    assert.equal(Object.prototype.hasOwnProperty.call(protocol.DEFAULTS, key), false, key + " is a server-side limit now");
+  }
+});
+
+test("the firefox extension advertises exactly the contract capabilities", () => {
+  assert.deepEqual([...protocol.CAPABILITIES].sort(), [...contract.capabilities].sort());
+});
+
+test("a permission error carries the missing permission ids", () => {
+  const payload = protocol.error("local_browser_permission_required", "Needs cookies", { hint: "Ask", retryable: true, permissions: ["cookies"] });
+  assert.deepEqual([...payload.permissions], ["cookies"]);
+  assert.equal(payload.retryable, true);
 });
 
 test("the firefox cursor pattern matches the shared contract", () => {
@@ -64,9 +73,11 @@ test("every firefox tool name is a contract tool name", () => {
   for (const tool of protocol.AGENT_TOOLS) {
     assert.equal(known.has(tool), true, tool + " is not a contract tool name");
   }
+  assert.deepEqual([...protocol.AGENT_TOOLS].sort(), [...contract.toolNames].sort());
   for (const tool of protocol.INTERNAL_TOOLS) {
     assert.equal(known.has(tool), false, tool + " must not be a contract tool");
   }
+  assert.deepEqual([...protocol.INTERNAL_TOOLS].sort(), [...contract.internalToolNames].sort());
 });
 
 test("accepts a hint string and a retryable boolean", () => {
@@ -94,7 +105,6 @@ test("pins the navigate and wait defaults the server table also hardcodes", () =
   assert.equal(protocol.DEFAULTS.waitTimeoutMs, 10000);
   assert.equal(protocol.DEFAULTS.callTimeoutMs, 30000);
   assert.equal(protocol.DEFAULTS.snapshotNodes, 120);
-  assert.equal(protocol.DEFAULTS.snapshotMaxNodes, 400);
 });
 
 test("the navigate and wait defaults sit inside the clamp range the budgets use", () => {

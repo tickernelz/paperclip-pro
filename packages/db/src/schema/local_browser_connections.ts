@@ -35,6 +35,7 @@ export const localBrowserSettings = pgTable(
     companyId: uuid("company_id").primaryKey().references(() => companies.id),
     tier: text("tier").notNull().default("refine"),
     allowedOrigins: jsonb("allowed_origins").$type<string[]>().notNull().default([]),
+    limits: jsonb("limits").$type<Record<string, number>>().notNull().default({}),
     updatedByUserId: text("updated_by_user_id"),
     updatedByAgentId: uuid("updated_by_agent_id").references(() => agents.id),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),

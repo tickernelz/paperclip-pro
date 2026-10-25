@@ -50,7 +50,7 @@ import {
   browserUseViewerSchema,
   localBrowserInputSchema,
   localBrowserPairingStartSchema,
-  localBrowserSettingsSchema,
+  localBrowserSettingsUpdateSchema,
   startVoiceSessionSchema, voiceCallbackPreferenceSchema, voicePhoneConfigurationSchema, voiceInboundDecisionSchema, VOICE_SESSION_STATES,
   slackToolCallSchema,
   openwaToolCallSchema,
@@ -1527,8 +1527,9 @@ const localBrowserOperations = [
   ["delete", "/api/local-browser/sessions/{id}", "Disconnect a local browser", undefined],
   ["get", "/api/local-browser/sessions/{id}/viewer", "Watch the tab a local browser is driving", undefined],
   ["post", "/api/local-browser/sessions/{id}/input", "Take over a local browser tab", localBrowserInputSchema],
-  ["get", "/api/local-browser/settings", "Read local browser tier and origin settings", undefined],
-  ["post", "/api/local-browser/settings", "Update local browser tier and origin settings", localBrowserSettingsSchema],
+  ["post", "/api/local-browser/sessions/{id}/open-permissions", "Open the permission page in a paired browser", undefined],
+  ["get", "/api/local-browser/settings", "Read local browser tier, origin and limit settings", undefined],
+  ["post", "/api/local-browser/settings", "Update local browser tier, origin and limit settings", localBrowserSettingsUpdateSchema],
 ] as const;
 
 const terminalSessionsPath = "/api/companies/{companyId}/terminal/sessions";
@@ -2453,7 +2454,7 @@ for (const [method, path, summary, body] of browserUseOperations) {
 for (const [method, path, summary, body, query] of localBrowserOperations) {
   registerCurrentRoute({
     method, path, summary, body, query, tags: ["Local Browser"],
-    responses: { 200: r.ok(), 201: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 413: r.badRequest },
+    responses: { 200: r.ok(), 201: r.ok(), 202: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 404: r.notFound, 409: r.conflict, 413: r.badRequest },
   });
 }
 

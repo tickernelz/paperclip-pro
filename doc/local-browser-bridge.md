@@ -1,6 +1,6 @@
 # Local Browser Bridge
 
-Paperclip agents can drive the browser you are already signed in to. The feature is a connector (`Local Browser`) plus a browser extension: the extension connects out to your Paperclip instance, and agents reach it through 14 `local_browser_*` tools.
+Paperclip agents can drive the browser you are already signed in to. The feature is a connector (`Local Browser`) plus a browser extension: the extension connects out to your Paperclip instance, and agents reach it through 17 `local_browser_*` tools.
 
 Use it when the work needs the real signed-in web: a page behind SSO, an internal tool, a site whose state lives in your cookies. Use the hosted Browser Use Cloud connector when you need a disposable browser that is not your own.
 
@@ -29,8 +29,10 @@ The code expires after 10 minutes and can be used once. The session token is sto
 
 | Tier | Reach | Tools |
 |---|---|---|
-| `refine` (default) | Only origins in the allowlist | `sessions`, `open`, `navigate`, `snapshot`, `act`, `read`, `screenshot`, `wait`, `close` |
-| `full` | Every origin | The same tools plus `evaluate`, `storage`, `network`, `upload`, `download` |
+| `refine` (default) | Only origins in the allowlist | `sessions`, `context`, `open`, `navigate`, `snapshot`, `act`, `read`, `screenshot`, `wait`, `permissions`, `close` |
+| `full` | Every origin | The same tools plus `evaluate`, `storage`, `network`, `upload`, `download`, `api` |
+
+`sessions`, `close`, `permissions` and `api` are exempt from the origin check: they act on the browser, not on a page.
 
 `refine` refuses a navigation outside the allowlist before anything reaches the browser, and refuses every full-tier tool. `full` is the mode to use when an agent must read a signed-in site or debug a failing request; it can see every page you are logged in to, so grant it to the agents you would trust with your session.
 
@@ -87,24 +89,73 @@ background path returns an error that names the limitation instead of switching 
 
 Agents should follow the same loop regardless of model:
 
-1. `local_browser_sessions` — which browser and tab am I on?
-2. `local_browser_snapshot` — a compact tree where every interactive element has a ref (`e12`).
-3. `local_browser_act` with that ref — one action per call.
-4. `local_browser_snapshot` again — refs from the previous snapshot are stale after a click that changes the page.
+1. `local_browser_sessions` — which browser and tab am I on, what can the extension do (`capabilities`), which permissions are granted (`access`)?
+2. `local_browser_context` — the tab's container and cookie jar, cookie names for its URL (never values), whether the document is stale, whether the content script is connected, and network capture state.
+3. `local_browser_snapshot` — a compact tree where every interactive element has a ref (`e12`).
+4. `local_browser_act` with that ref — one action per call.
+5. `local_browser_snapshot` again — refs from the previous snapshot are stale after a click that changes the page.
 
 Use `local_browser_read` when the task needs the page text rather than its controls, `local_browser_wait` instead of snapshotting in a loop, and `local_browser_screenshot` only for visual questions or canvas content.
 
 `local_browser_snapshot` pages with an opaque-free decimal cursor: when the tree is truncated the result carries `cursor` (a decimal node offset) and passing it back returns the following page. A cursor the server does not recognise starts again from the first page, so a stale cursor costs a repeat rather than a wrong window.
 
-`local_browser_storage` with `kind: "cookies"` reaches the browser's cookie jar: scope a read with `url`, with `domain` (a bare host, subdomains included) or with `allDomains`, optionally narrowed by `name`, capped by `limit` (default 200) and limited to one `storeId` (a Chromium profile store or a Firefox container, which also becomes the default store for writes). A write carries `entries`; each entry may set `domain`, `path`, `secure`, `httpOnly`, `sameSite`, `expirationDate` and `storeId`, and an entry without a `domain` inherits the call's `domain`. `clear` removes each matched cookie through its own domain, path and store, reports names it could not remove, and refuses to wipe the whole jar unless you pass a `name` or `confirmAll: true`. The jar-wide scopes need an extension that advertises the `cookies.v2` capability; an older build answers `local_browser_unsupported` instead of silently reading only the page's cookies. Cookies the browser keeps apart per top-level site (Chrome's partitioned cookies, Firefox's total cookie protection) appear only when the browser reports them for that scope, and are not re-created as partitioned by a write.
+`local_browser_storage` with `kind: "cookies"` reaches the browser's cookie jar: scope a read with `url`, with `domain` (a bare host, subdomains included) or with `allDomains`, optionally narrowed by `name`, capped by `limit` (default every match) and limited to one `storeId` (a Chromium profile store or a Firefox container, which also becomes the default store for writes). Each cookie read reports `name, value, domain, path, secure, httpOnly, sameSite, session, expirationDate, hostOnly, storeId, partitionKey`; `session: true` means the cookie has no expiry. A write carries `entries`; each entry may set `domain`, `path`, `secure`, `httpOnly`, `sameSite`, `expirationDate` or `session: true`, and `storeId`, and an entry without a `domain` inherits the call's `domain`. `clear` removes each matched cookie through its own domain, path and store, reports names it could not remove, and refuses to wipe the whole jar unless you pass a `name` or `confirmAll: true`. The jar-wide scopes need an extension that advertises the `cookies.v2` capability; an older build answers `local_browser_unsupported` instead of silently reading only the page's cookies. Cookies the browser keeps apart per top-level site (Chrome's partitioned cookies, Firefox's total cookie protection) appear only when the browser reports them for that scope, and are not re-created as partitioned by a write.
 
-Every tool returns either a result or a stable error code (`local_browser_origin_denied`, `local_browser_tier_denied`, `local_browser_ref_stale`, `local_browser_timeout`, …). A refusal is a permission answer, not a bug: switch tier, add the origin, or ask the human.
+`local_browser_network` reads a capture that runs continuously in the extension (a ring of `guards.networkBufferSize` requests). Each row carries `requestHeaders` and `responseHeaders` (default on; `includeHeaders: false` drops them), `hasCookie`, `hasAuthorization`, `fromCache`, `initiator`, `error` and `documentId`. Narrow it with `since` (epoch ms), `types`, `urlIncludes` or `method`; the result reports the `capture` mode.
+
+Tabs report `cookieStoreId`, `containerName`, `incognito`, `discarded`, `frozen`, `pinned` and `audible`. `local_browser_open` accepts `cookieStoreId` (a Firefox container or another jar), `incognito` and `newWindow`.
+
+Snapshot, read, screenshot and wait results carry `document`: a per-page `documentId`, `navigationType`, `restoredFromBfcache`, `wasDiscarded`, `ageMs`, request counts since load, and `stale` with `staleReasons`. A stale document is the back-forward-cache or frozen-tab case where the page shows old data; agents reload before trusting it.
+
+`local_browser_act` refuses an element another element covers. `force: true` skips that hit test.
+
+`local_browser_api` (full tier) calls any browser extension function by dotted path, for example `history.search`, `bookmarks.search`, `tabs.query` or `windows.getAll`, and returns `{ value, type }` as JSON. The extension's own `storage` namespace is refused because it holds the pairing secret.
+
+Every tool returns either a result or a stable error code (`local_browser_origin_denied`, `local_browser_tier_denied`, `local_browser_permission_required`, `local_browser_ref_stale`, `local_browser_timeout`, …). A refusal is a permission answer, not a bug: switch tier, add the origin, grant the browser permission, or ask the human.
+
+## Limits
+
+The user sets every limit in **Apps → Local Browser → Limits**; the extension caps nothing on its own. Each value has a default, a minimum and a sanity ceiling:
+
+| Limit | Default | Min | Ceiling |
+|---|---|---|---|
+| `resultMaxChars` | 60000 | 1000 | 2000000 |
+| `snapshotMaxNodes` | 400 | 10 | 20000 |
+| `readMaxChars` | 40000 | 200 | 2000000 |
+| `screenshotMaxBytes` | 2 MiB | 64 KiB | 50 MiB |
+| `transferMaxBytes` | 20 MiB | 1 MiB | 256 MiB |
+| `callMaxMs` | 120000 | 5000 | 600000 |
+| `networkMaxEntries` | 200 | 10 | 5000 |
+
+Tool inputs accept values up to the ceiling. The server clamps each call to the company's limits and says so in the result as `limited: [{ field, requested, applied }]`. A `local_browser_network` call without `limit` receives `networkMaxEntries`. A screenshot, upload or download above its byte limit answers `local_browser_result_too_large`. Settings are stored in `local_browser_settings.limits`; a save that omits `limits`, or names only some keys, keeps the other stored values.
+
+Call budgets follow `callMaxMs`: `navigate`, `wait`, `act` and `evaluate` use their `timeoutMs` (defaults 15 s, 10 s, 30 s, 30 s) clamped to `callMaxMs`; `network`, `upload`, `download` and `api` get the whole `callMaxMs`; everything else gets 30 s. The server adds a 5 s grace. An extension that advertises `budget.v1` receives the deadline as `budgetMs` on the call frame and stops its own work at `budgetMs - 1000`, so it always answers before the server gives up.
+
+The bridge WebSocket accepts frames up to the base64 size of the `transferMaxBytes` ceiling plus 1 MiB, so a download at the largest allowed limit still fits in one frame; the company limit is enforced on the decoded bytes. An upgrade with `?session=` whose token is unknown or closed is refused with 403 before the WebSocket opens, and a socket whose first frame is not a valid `hello` is closed with 1008.
+
+## Capabilities
+
+`LOCAL_BROWSER_PROTOCOL_VERSION` stays `1`. New features are negotiated through `hello.capabilities`, and the server refuses a feature the extension does not advertise with `local_browser_unsupported` and the hint "Update the Paperclip Local Browser extension":
+
+| Capability | Unlocks |
+|---|---|
+| `cookies.v2` | Jar-wide cookie scopes, cookie attributes, session cookies |
+| `permissions.v1` | `local_browser_permissions`, the open-permissions route |
+| `context.v1` | `local_browser_context` |
+| `network.headers` | Header capture in `local_browser_network` |
+| `tabs.container` | `cookieStoreId` and `incognito` on `local_browser_open` |
+| `document.state` | `document` on snapshot, read, screenshot and wait |
+| `api.v1` | `local_browser_api` |
+| `act.force` | `force` on `local_browser_act` |
+| `budget.v1` | `budgetMs` on call frames |
+
+`local_browser_sessions` and `GET /api/local-browser/sessions` report each session's `capabilities`, `access` and `guards`.
 
 ## Live view and takeover
 
 Every live browser row in the Browser connection settings has a **Watch** button. It opens a live frame of the tab the agent is driving, refreshed once a second. Frames and input coordinates are CSS pixels, so a click lands on the same element on a scaled display as on a 1x one.
 
-Frames keep arriving while the viewer is open, including while the agent is idle, so you can watch the tab change under your own hands. They stop when you hide the viewer and when the browser disconnects.
+Frames keep arriving while the viewer is open, including while the agent is idle, so you can watch the tab change under your own hands. They stop when you hide the viewer and when the browser disconnects. A viewer frame may be as large as the bigger of `screenshotMaxBytes` and 2 MiB, so lowering the agent screenshot limit does not blank the viewer.
 
 Take over to type or click yourself; the agent keeps working around you, so re-snapshot rather than retrying blindly. Release control, or press Escape, to hand input back. Held keys and the mouse button are released automatically when you release control.
 
@@ -129,27 +180,35 @@ matches the source, loadable through `about:debugging` as a temporary add-on. CI
 committed Chromium zip no longer matches the source. Source and the per-browser notes:
 `apps/local-browser/chromium/README.md` and `apps/local-browser/firefox/README.md`.
 
-Site access is a permission the user grants, and the extension asks for it from its own popup.
+## Browser permissions and Allow all
 
-- Chromium declares `tabs`, `scripting`, `activeTab`, `storage`, `cookies`, `downloads`, `debugger`
-  and `alarms` as required permissions, and `<all_urls>` as an optional host permission. A fresh
-  install therefore reaches the active tab only. The popup shows **Allow all sites** while access is
-  narrower than every site; pressing it calls `chrome.permissions.request` from the popup, so the
-  grant comes from Chrome's own prompt and needs no browser restart.
-- Firefox declares `<all_urls>` as a required permission, so the grant arrives with the install
-  prompt. If the user later revokes it in `about:addons`, the popup's **Site access** row reads
-  `some sites only` and **Allow all sites** asks for it again.
+The user, not Paperclip, decides what the extension may do in the browser. Both extensions declare only what they cannot run without as required, and everything else as optional, from one catalog (`LOCAL_BROWSER_PERMISSIONS`):
 
-A refused or narrowed grant is reported, never silent. Chromium answers
-`local_browser_origin_denied` with a hint to allow all sites instead of passing along Chrome's raw
-"manifest must request permission" text, and both popups show the same state.
+- Always required: `storage` and `activeTab` in both browsers; `debugger` and `alarms` in Chromium (Chrome cannot make `debugger` optional); `contextualIdentities` in Firefox (Firefox cannot make it optional).
+- Optional in both: `<all_urls>` (every website), `tabs`, `scripting`, `cookies`, `downloads`, `downloads.open`, `webNavigation`, `history`, `bookmarks`, `browsingData`, `sessions`, `topSites`, `clipboardRead`, `clipboardWrite`, `notifications`, `management`, `privacy`, `search`.
+- Chromium only: `pageCapture`, `tabGroups`, `contentSettings`. Firefox only: `webRequest` (network activity), `webRequestBlocking` (response bodies), `proxy`, `tabHide`, `find`, `browserSettings`.
+- `webRequest` is required on Chromium: Chrome only delivers `webRequest` events to listeners a service worker registers at startup, so a runtime grant would never start capture. It shows nothing on its own; requests are only visible on sites the user granted.
+
+The extension popup and its control center list every catalog entry for that browser with a one-sentence description of what it grants, its state (granted, missing, required) and Allow / Revoke buttons. **Allow all** requests every optional permission plus `<all_urls>` in one browser prompt.
+
+When a tool needs a permission the user has not granted, the extension queues it as a pending request (badge count, and a desktop notice when `notifications` is granted) and the tool answers `local_browser_permission_required` with the missing ids in `permissions` and `retryable: true`. Agents call `local_browser_permissions` with `op: "request"` and a reason, then ask the user to press Allow; the request alone grants nothing, because browsers only grant on a user click. From Paperclip, **Open permission page in browser** on a live session calls the open-permissions route, which opens the control center on the Permissions section.
+
+The extension reports its permission state as `access` (`siteAccess`, `granted`, `missing`, `pending`) in `hello` and in `access` events, so Paperclip always shows the current grants.
+
+## Agent guards
+
+The control center also holds guards the user switches on the extension side, reported to Paperclip as `guards`:
+
+- `protectPaperclipTab` (default on): never navigate or reuse the Paperclip tab.
+- `protectFocusedTab` (default on): never navigate the tab the user is looking at.
+- `networkBufferSize` (50 to 20000, default 1000): how many requests the continuous network capture keeps.
 
 Trusted input is separate from site access. Chromium sends real mouse and key events through the
 `debugger` permission. Firefox has no equivalent extension API, so it sends synthetic events by
 default and can only send trusted ones through its own debug port; the popup says so and offers the
 one-time command. Reading, snapshotting, clicking and typing all work without that command.
 
-Both extensions consume the same contract from `packages/shared/src/local-browser.ts`. A generated copy of the enumerations and limits sits at `apps/local-browser/*/lib/protocol.contract.json`; regenerate it with `pnpm generate:local-browser-protocol` and verify with `--check`. The `extensions` CI lane runs that check plus every script parse and both extension suites, so a stale copy or a broken extension fails the pull request.
+Both extensions consume the same contract. The data lives in `packages/shared/src/local-browser-contract.ts` (protocol version, error codes, capabilities, permission catalog, limits, guards, tool tiers) and the zod schemas in `packages/shared/src/local-browser.ts`. `pnpm generate:local-browser-protocol` imports the contract file and writes `apps/local-browser/shared/lib/protocol.contract.json` and `apps/local-browser/shared/lib/contract.js` (`LB.contract`); `scripts/sync-local-browser-shared.mjs` then copies `apps/local-browser/shared/` into both browser folders. `--check` on each script fails on drift. The `extensions` CI lane runs both checks plus every script parse and the extension suites, so a stale copy or a broken extension fails the pull request.
 
 ## Security notes
 
@@ -157,4 +216,6 @@ Both extensions consume the same contract from `packages/shared/src/local-browse
 - Audit: every tool call writes one `local_browser.tool_called` activity row with the tool, session, tab, origin, tier, outcome and duration. Arguments and results are never logged.
 - Page content is untrusted data. The connector skill tells agents to treat text on a page as data, never as instructions, and never to paste credentials or cookie values into a task.
 - `DELETE /api/local-browser/sessions/:id` disconnects a browser. It does not sign you out of anything.
+- `POST /api/local-browser/sessions/:id/open-permissions` (board users only) asks the extension to open its permission page. It answers `202 { ok: true }`, writes an audit row for the internal `local_browser_ui` tool, and answers `local_browser_unsupported` when the extension lacks `permissions.v1`. Agents can never call `local_browser_ui`, `local_browser_viewer` or `local_browser_input`.
+- Request headers in `local_browser_network` include `Cookie` and `Authorization` values. That is full tier, which already exposes HttpOnly cookies, so nothing is redacted; the skill tells agents never to copy those values into a task.
 - Opening the bridge address in a browser tab cannot pair anything: the extension dials it over a WebSocket. The address answers with a short page that says so and repeats the pairing code, so a pasted link does not look broken.

@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Paperclip Local Browser &mdash; Control center</title>
+    <link rel="stylesheet" href="control.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <h1>Paperclip Local Browser</h1>
+        <p class="hint">You decide what agents can do in this browser.</p>
+      </div>
+      <p class="pill" id="pill" data-tone="off"><span class="dot" aria-hidden="true"></span><span id="pill-text">Checking&hellip;</span></p>
+    </header>
+
+    <nav class="tabs" aria-label="Sections">
+      <a href="#overview" data-nav="overview">Overview</a>
+      <a href="#permissions" data-nav="permissions">Permissions <span id="nav-badge" class="badge" hidden></span></a>
+      <a href="#guards" data-nav="guards">Agent guards</a>
+      <a href="#input" data-nav="input">Trusted input</a>
+    </nav>
+
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+
+    <main>
+      <section id="welcome" data-section="welcome" aria-labelledby="welcome-title" hidden>
+        <h2 id="welcome-title">Welcome</h2>
+        <p>Paperclip agents can work in this browser on your behalf. Two steps get them going:</p>
+        <ol class="steps">
+          <li>
+            <strong>Allow access.</strong> Grant the browser permissions agents need. You can revoke any of them later.
+            <div class="row"><button id="welcome-allow" type="button" class="primary">Allow all</button></div>
+          </li>
+          <li><strong>Pair with Paperclip.</strong> Open the Local Browser page in Paperclip and paste its pairing link on the <a href="#overview">Overview</a>.</li>
+        </ol>
+      </section>
+
+      <section id="overview" data-section="overview" aria-labelledby="overview-title" hidden>
+        <h2 id="overview-title">Connection</h2>
+        <p id="detail" class="lead"></p>
+        <dl class="facts">
+          <dt>Label</dt>
+          <dd id="label">&mdash;</dd>
+          <dt>Paperclip</dt>
+          <dd id="origin">&mdash;</dd>
+          <dt>Tier</dt>
+          <dd id="tier">&mdash;</dd>
+          <dt>Session</dt>
+          <dd id="session">&mdash;</dd>
+          <dt>Tabs</dt>
+          <dd id="tabs">&mdash;</dd>
+          <dt>Browser</dt>
+          <dd id="client">&mdash;</dd>
+        </dl>
+        <p id="origins" class="hint"></p>
+        <div class="row">
+          <button id="reconnect" type="button">Reconnect</button>
+          <button id="disconnect" type="button" class="danger">Disconnect</button>
+        </div>
+
+        <form id="pair-form" class="panel" aria-labelledby="pair-title">
+          <h3 id="pair-title">Pair with Paperclip</h3>
+          <p id="pair-note" class="hint">Paste the pairing link from Paperclip's Local Browser page. Codes expire after 10 minutes.</p>
+          <p id="detected" class="hint" hidden></p>
+          <label for="pair-input">Pairing link or code</label>
+          <div class="row">
+            <input id="pair-input" type="text" placeholder="Paste the link from Paperclip" autocomplete="off" spellcheck="false" />
+            <button id="pair" type="submit" class="primary">Pair</button>
+          </div>
+          <p id="pair-error" class="error" role="alert" hidden></p>
+        </form>
+      </section>
+
+      <section id="permissions" data-section="permissions" aria-labelledby="permissions-title" hidden>
+        <h2 id="permissions-title">Permissions</h2>
+        <p id="site-line" class="lead"></p>
+        <div class="row">
+          <button id="allow-all" type="button" class="primary">Allow all</button>
+          <span id="summary" class="hint"></span>
+        </div>
+
+        <div id="pending-panel" class="panel attention" hidden>
+          <h3>Waiting for you</h3>
+          <p class="hint">Agents asked for these. Allow them, or dismiss the request.</p>
+          <ul id="pending-list" class="pending"></ul>
+          <div class="row"><button id="dismiss-all" type="button">Dismiss all requests</button></div>
+        </div>
+
+        <ul id="permission-list" class="permissions" aria-label="Every permission this browser supports"></ul>
+      </section>
+
+      <section id="guards" data-section="guards" aria-labelledby="guards-title" hidden>
+        <h2 id="guards-title">Agent guards</h2>
+        <p class="lead">Switches that stay in this browser. Paperclip cannot change them.</p>
+        <form id="guards-form" class="panel">
+          <div id="guard-toggles" class="toggles"></div>
+          <label for="buffer-size">Network requests kept per tab</label>
+          <div class="row">
+            <input id="buffer-size" type="number" inputmode="numeric" step="50" />
+            <span id="buffer-range" class="hint"></span>
+          </div>
+          <div class="row"><button id="guards-save" type="submit" class="primary">Save guards</button></div>
+        </form>
+      </section>
+
+      <section id="input" data-section="input" aria-labelledby="input-title" hidden>
+        <h2 id="input-title">Trusted input</h2>
+        <p id="input-title-line" class="lead"></p>
+        <p id="input-hint" class="hint"></p>
+        <div id="command-panel" class="panel" hidden>
+          <h3 id="command-label">Start the browser with this command once</h3>
+          <pre id="command" class="command" tabindex="0" aria-labelledby="command-label"></pre>
+          <div class="row"><button id="copy-command" type="button">Copy command</button></div>
+        </div>
+        <form id="port-form" class="panel" hidden>
+          <label for="bidi-port">Remote debugging port</label>
+          <div class="row">
+            <input id="bidi-port" type="number" min="1" max="65535" inputmode="numeric" />
+            <button type="submit">Use this port</button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <footer class="foot"><span id="version" class="hint"></span></footer>
+
+    <script src="../lib/contract.js"></script>
+    <script src="../lib/ext-api.js"></script>
+    <script src="../lib/pairing.js"></script>
+    <script src="../lib/access.js"></script>
+    <script src="../lib/ui-state.js"></script>
+    <script src="control.js"></script>
+  </body>
+</html>

@@ -1301,7 +1301,7 @@
       "policy": "endpoint",
       "requestedScopes": [],
       "capability": "provider-controlled",
-      "supportedActions": "Drive the browser the operator paired from the Local Browser panel: read pages, click, type, navigate, and, in full tier only, evaluate JavaScript, read or clear storage, inspect network requests, upload task files, and save downloads.",
+      "supportedActions": "Drive the browser the operator paired from the Local Browser panel: read pages, click, type, navigate, probe a tab's container, cookies and page freshness, ask the user for browser permissions, and, in full tier only, evaluate JavaScript, read or clear storage, inspect network requests with headers, upload task files, save downloads, and call browser extension APIs such as history or bookmarks. The extension holds only the browser permissions the user granted.",
       "evidence": [
         "https://developer.chrome.com/docs/extensions/develop/concepts/native-messaging",
         "https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/Content_scripts"

@@ -1,184 +1,11 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
-import { createContext, runInContext } from "node:vm";
-import { fileURLToPath } from "node:url";
 
-const root = fileURLToPath(new URL("../", import.meta.url));
-const manifest = JSON.parse(readFileSync(root + "manifest.json", "utf8"));
-
-function createClock() {
-  let now = 0;
-  let seq = 1;
-  const timers = new Map();
-
-  function schedule(fn, delay, repeat) {
-    const id = seq;
-    seq += 1;
-    timers.set(id, { fn, at: now + Math.max(0, delay || 0), repeat: repeat ? Math.max(1, delay || 1) : null });
-    return id;
-  }
-
-  return {
-    now: () => now,
-    setTimeout: (fn, delay) => schedule(fn, delay, false),
-    clearTimeout: (id) => timers.delete(id),
-    setInterval: (fn, delay) => schedule(fn, delay, true),
-    clearInterval: (id) => timers.delete(id),
-    advance(ms) {
-      const target = now + ms;
-      for (let guard = 0; guard < 100000; guard += 1) {
-        let nextId = null;
-        let nextAt = Infinity;
-        for (const [id, timer] of timers) {
-          if (timer.at < nextAt) {
-            nextAt = timer.at;
-            nextId = id;
-          }
-        }
-        if (nextId === null || nextAt > target) break;
-        now = nextAt;
-        const timer = timers.get(nextId);
-        if (timer.repeat === null) timers.delete(nextId);
-        else timer.at = now + timer.repeat;
-        timer.fn();
-      }
-      now = target;
-    },
-  };
-}
+import { bootBackground, flush, pairAndAck } from "./harness.test.mjs";
 
 function boot() {
-  const clock = createClock();
-  const sockets = [];
-  const storage = new Map();
-
-  class FakeSocket {
-    constructor(url) {
-      this.url = url;
-      this.readyState = 0;
-      this.sent = [];
-      sockets.push(this);
-    }
-    send(payload) {
-      this.sent.push(JSON.parse(payload));
-    }
-    close(code, reason) {
-      this.readyState = 3;
-      if (this.onclose) this.onclose({ code: typeof code === "number" ? code : 1006, reason: reason || "" });
-    }
-    open() {
-      this.readyState = 1;
-      if (this.onopen) this.onopen();
-    }
-    deliver(frame) {
-      if (this.onmessage) this.onmessage({ data: JSON.stringify(frame) });
-    }
-  }
-  FakeSocket.OPEN = 1;
-
-  class FakeDate extends Date {
-    constructor(...args) {
-      if (args.length === 0) super(clock.now());
-      else super(...args);
-    }
-    static now() {
-      return clock.now();
-    }
-  }
-
-  const browser = {
-    runtime: {
-      getManifest: () => ({ version: manifest.version }),
-      getPlatformInfo: async () => ({ os: "linux" }),
-      onMessage: { addListener: () => {} },
-      onStartup: { addListener: () => {} },
-      onInstalled: { addListener: () => {} },
-      sendMessage: async () => undefined,
-    },
-    storage: {
-      local: {
-        get: async (key) => (storage.has(key) ? { [key]: storage.get(key) } : {}),
-        set: async (value) => Object.entries(value).forEach(([k, v]) => storage.set(k, v)),
-        remove: async (key) => storage.delete(key),
-      },
-    },
-    browserAction: { setBadgeBackgroundColor: async () => undefined, setBadgeText: async () => undefined },
-    tabs: {
-      query: async () => [{ id: 7, windowId: 1, title: "t", url: "https://example.test/", active: true, status: "complete" }],
-      get: async (id) => ({ id, windowId: 1, title: "t", url: "https://example.test/", active: true, status: "complete" }),
-      onCreated: { addListener: () => {} },
-      onRemoved: { addListener: () => {} },
-      onUpdated: { addListener: () => {} },
-      onActivated: { addListener: () => {} },
-      sendMessage: async () => ({ ok: true, result: {} }),
-      captureVisibleTab: async () => "data:image/png;base64,AAA",
-      update: async () => undefined,
-      remove: async () => undefined,
-    },
-    webRequest: {
-      onBeforeRequest: { addListener: () => {} },
-      onHeadersReceived: { addListener: () => {} },
-      onCompleted: { addListener: () => {} },
-      onErrorOccurred: { addListener: () => {} },
-      filterResponseData: () => ({}),
-    },
-    cookies: { getAll: async () => [], set: async () => ({}), remove: async () => ({}) },
-    downloads: { search: async () => [] },
-    scripting: { executeScript: async () => [] },
-    windows: { update: async () => undefined },
-    profiles: { getProfileName: async () => "work" },
-  };
-
-  const sandbox = {
-    browser,
-    console,
-    Date: FakeDate,
-    setTimeout: clock.setTimeout,
-    clearTimeout: clock.clearTimeout,
-    setInterval: clock.setInterval,
-    clearInterval: clock.clearInterval,
-    URL,
-    URLSearchParams,
-    AbortController,
-    TextDecoder,
-    btoa,
-    atob,
-    WebSocket: FakeSocket,
-    fetch: async () => {
-      throw new Error("offline");
-    },
-    createImageBitmap: async () => ({ width: 1, height: 1, close() {} }),
-  };
-  sandbox.globalThis = sandbox;
-  createContext(sandbox);
-  for (const file of manifest.background.scripts) {
-    runInContext(readFileSync(root + file, "utf8"), sandbox, { filename: file });
-  }
-  return { sandbox, clock, sockets, storage };
-}
-
-function flush() {
-  return new Promise((resolve) => setImmediate(resolve));
-}
-
-async function pairAndAck(harness) {
-  const { sandbox, clock, sockets } = harness;
-  await flush();
-  await sandbox.LB.bridge.pair({ origin: "https://app.example", code: "ABC12345", label: "Work" });
-  const socket = sockets[sockets.length - 1];
-  socket.open();
-  await flush();
-  socket.deliver({
-    type: "hello_ack",
-    sessionId: "11111111-1111-4111-8111-111111111111",
-    sessionToken: "tok",
-    tier: "refine",
-    allowedOrigins: [],
-  });
-  await flush();
-  clock.advance(1);
-  return socket;
+  const harness = bootBackground({ clock: true });
+  return { ...harness, storage: harness.store };
 }
 
 test("server pings alone keep the socket open past 150s with no reconnect", async () => {
@@ -196,6 +23,68 @@ test("server pings alone keep the socket open past 150s with no reconnect", asyn
   assert.equal(socket.readyState, 1, "the socket must still be open");
   assert.equal(harness.sockets.length, before, "no reconnect may have been attempted");
   assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "connected");
+});
+
+test("hello advertises every capability with the access snapshot and guards", async () => {
+  const harness = boot();
+  const socket = await pairAndAck(harness);
+  const hello = socket.sent.find((frame) => frame.type === "hello");
+  assert.deepEqual([...hello.capabilities].sort(), [...harness.sandbox.LB.protocol.CAPABILITIES].sort());
+  assert.equal(hello.access.siteAccess, "all");
+  assert.ok(Array.isArray(hello.access.granted));
+  assert.deepEqual(hello.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.equal(hello.tabs[0].cookieStoreId, "firefox-default");
+});
+
+test("a call carries the server budget into the tool and times out on it", async () => {
+  const harness = boot();
+  const socket = await pairAndAck(harness);
+  let seen = null;
+  harness.sandbox.LB.tools.dispatch = (tool, args, ctx) => {
+    seen = ctx;
+    return new Promise(() => {});
+  };
+  socket.sent.length = 0;
+  socket.deliver({ type: "call", id: "slow", tool: "local_browser_snapshot", args: {}, budgetMs: 4000 });
+  await flush();
+  assert.equal(seen.budgetMs, 3000);
+  harness.clock.advance(2999);
+  await flush();
+  assert.equal(socket.sent.filter((frame) => frame.type === "result").length, 0);
+  harness.clock.advance(2);
+  await flush();
+  const result = socket.sent.find((frame) => frame.type === "result" && frame.id === "slow");
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_timeout");
+});
+
+test("a permission refusal reaches the server with the missing ids", async () => {
+  const harness = boot();
+  harness.revoke(["cookies"]);
+  const socket = await pairAndAck(harness);
+  socket.sent.length = 0;
+  socket.deliver({ type: "call", id: "jar", tool: "local_browser_storage", args: { kind: "cookies", op: "get", allDomains: true } });
+  await flush(20);
+  const result = socket.sent.find((frame) => frame.type === "result" && frame.id === "jar");
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_permission_required");
+  assert.deepEqual(result.error.permissions, ["cookies"]);
+  assert.equal(result.error.retryable, true);
+});
+
+test("access and guards changes are sent as events", async () => {
+  const harness = boot();
+  const socket = await pairAndAck(harness);
+  socket.sent.length = 0;
+  harness.revoke(["history"]);
+  await flush(20);
+  const access = socket.sent.find((frame) => frame.type === "event" && frame.event === "access");
+  assert.ok(access, "an access event must follow a permission change");
+  assert.ok(access.data.missing.includes("history"));
+  await harness.control({ channel: "lb-control", op: "guards.set", patch: { networkBufferSize: 75 } });
+  await flush(20);
+  const guards = socket.sent.find((frame) => frame.type === "event" && frame.event === "guards");
+  assert.equal(guards.data.networkBufferSize, 75);
 });
 
 test("the client keeps sending its own ping so the server can check for silence", async () => {
@@ -265,7 +154,7 @@ test("a 1008 close retires the pairing instead of reconnecting forever", async (
   await flush();
 
   assert.equal(harness.sockets.length, before, "no reconnect may be attempted after a 1008");
-  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "unpaired");
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "retired");
   const stored = harness.storage.get("lb.pairing");
   assert.equal(stored.sessionToken, null);
   assert.equal(stored.sessionId, null);
@@ -284,7 +173,8 @@ test("a 1008 close reports the reason to the popup", async () => {
   await flush();
 
   const state = harness.sandbox.LB.bridge.snapshotState();
-  assert.equal(state.status, "unpaired");
+  assert.equal(state.status, "retired");
+  assert.equal(state.retiredReason, "session token is not usable");
   assert.match(state.lastError, /Session ended/);
   assert.match(state.lastError, /session token is not usable/);
   assert.match(state.lastError, /Pair this browser again/);
@@ -345,7 +235,7 @@ test("a retired pairing does not reconnect on browser start and keeps its reason
 
   assert.equal(harness.sockets.length, before, "a retired pairing must not open a socket");
   const state = harness.sandbox.LB.bridge.snapshotState();
-  assert.equal(state.status, "unpaired");
+  assert.equal(state.status, "retired");
   assert.match(state.lastError, /session token is not usable/, "the reason must survive a restart");
 });
 
@@ -363,7 +253,7 @@ test("a pairing code the server never accepts is retired instead of retried fore
   }
 
   const state = harness.sandbox.LB.bridge.snapshotState();
-  assert.equal(state.status, "unpaired", "a dead code must not leave the popup on connecting");
+  assert.equal(state.status, "retired", "a dead code must not leave the popup on connecting");
   assert.match(state.lastError, /pairing code was not accepted/);
   const stored = harness.storage.get("lb.pairing");
   assert.equal(stored.origin, "https://app.example");
@@ -387,19 +277,19 @@ test("a pairing code retires after exactly three failed attempts, not before", a
   await flush();
   harness.clock.advance(60000);
   await flush();
-  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "unpaired", "one failure must still retry");
+  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "retired", "one failure must still retry");
 
   const second = harness.sockets[harness.sockets.length - 1];
   second.close(1006, "upgrade rejected");
   await flush();
   harness.clock.advance(60000);
   await flush();
-  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "unpaired", "two failures must still retry");
+  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "retired", "two failures must still retry");
 
   const third = harness.sockets[harness.sockets.length - 1];
   third.close(1006, "upgrade rejected");
   await flush();
-  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "unpaired", "three failures retire the code");
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "retired", "three failures retire the code");
 });
 
 test("an established session still reconnects on 1006 rather than retiring", async () => {
@@ -416,7 +306,7 @@ test("an established session still reconnects on 1006 rather than retiring", asy
   }
 
   assert.ok(harness.sockets.length > before, "a paired session must keep reconnecting");
-  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "unpaired");
+  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "retired");
   assert.equal(harness.storage.get("lb.pairing").sessionToken, "tok");
 });
 
@@ -430,13 +320,13 @@ test("pairing again after a dead code resets the attempt counter", async () => {
     harness.clock.advance(60000);
     await flush();
   }
-  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "unpaired");
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "retired");
 
   await harness.sandbox.LB.bridge.pair({ origin: "https://app.example", code: "GOODCODE", label: "Work" });
   await flush();
   const fresh = harness.sockets[harness.sockets.length - 1];
   assert.match(fresh.url, /\?code=GOODCODE/);
-  assert.notEqual(harness.sandbox.LB.bridge.snapshotState().status, "unpaired");
+  assert.equal(harness.sandbox.LB.bridge.snapshotState().status, "connecting");
 });
 
 test("Reconnect refuses a retired pairing instead of dialling with no credential", async () => {
@@ -463,11 +353,12 @@ test("the status payload tells the popup that a pairing is retired", async () =>
   socket.close(1008, "session token is not usable");
   await flush();
 
-  const response = await harness.sandbox.LB.bridge.control({ op: "status" });
-  assert.equal(response.pairing.hasToken, false);
-  assert.equal(typeof response.pairing.retiredAt, "string");
-  assert.equal(response.pairing.retiredReason, "session token is not usable");
-  assert.equal(response.pairing.origin, "https://app.example");
+  const response = await harness.control({ channel: "lb-control", op: "status" });
+  assert.equal(response.ok, true);
+  assert.equal(response.status.state, "retired");
+  assert.equal(response.status.retiredReason, "session token is not usable");
+  assert.equal(response.status.origin, "https://app.example");
+  assert.equal(response.status.sessionId, null);
 });
 
 test("a live pairing can still Reconnect", async () => {

@@ -1,12 +1,25 @@
+import { constants as bufferConstants } from "node:buffer";
 import { createServer, type Server } from "node:http";
 import { createRequire } from "node:module";
 import express from "express";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { activityLog, localBrowserConnections, localBrowserSettings } from "@tickernelz/paperclip-pro-db";
-import { LOCAL_BROWSER_CURSOR_PATTERN, type LocalBrowserBridgeFrame } from "@tickernelz/paperclip-pro-shared";
+import {
+  LOCAL_BROWSER_CAPABILITIES,
+  LOCAL_BROWSER_CURSOR_PATTERN,
+  LOCAL_BROWSER_LIMIT_DEFAULTS,
+  LOCAL_BROWSER_LIMIT_KEYS,
+  LOCAL_BROWSER_LIMITS,
+  type LocalBrowserBridgeFrame,
+} from "@tickernelz/paperclip-pro-shared";
 import { errorHandler } from "../middleware/index.js";
-import { setupLocalBrowserWebSocketServer, type LocalBrowserWebSocketServer } from "../realtime/local-browser-ws.js";
+import {
+  LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES,
+  localBrowserWebSocketInternals,
+  setupLocalBrowserWebSocketServer,
+  type LocalBrowserWebSocketServer,
+} from "../realtime/local-browser-ws.js";
 import {
   LOCAL_BROWSER_JSON_BODY_LIMIT,
   localBrowserBodyErrorHandler,
@@ -15,7 +28,7 @@ import {
 } from "../routes/local-browser.js";
 import { resetPairings } from "../services/local-browser/pairing.js";
 import { resetSessions } from "../services/local-browser/registry.js";
-import { localBrowserService } from "../services/local-browser/service.js";
+import { localBrowserService, normalizeLocalBrowserLimits } from "../services/local-browser/service.js";
 import { seedCompanyWithBoardAccess, useEmbeddedPostgres } from "./helpers/route-test-harness.js";
 
 const require = createRequire(import.meta.url);
@@ -44,6 +57,7 @@ interface CallRecord {
   id: string;
   tool: string;
   args: Record<string, unknown>;
+  budgetMs?: number;
 }
 
 type CallAnswer = { ok: boolean; result?: unknown; error?: Record<string, unknown> } | "ignore";
@@ -133,7 +147,13 @@ async function startPairing(): Promise<{ code: string; connectUrls: string[] }> 
 }
 
 async function pairExtension(
-  options: { code?: string; tabUrl?: string; capabilities?: string[]; onCall?: (call: CallRecord) => CallAnswer } = {},
+  options: {
+    code?: string;
+    tabUrl?: string;
+    capabilities?: string[];
+    hello?: Record<string, unknown>;
+    onCall?: (call: CallRecord) => CallAnswer;
+  } = {},
 ): Promise<Paired> {
   const active = currentHarness();
   const code = options.code ?? (await startPairing()).code;
@@ -149,7 +169,12 @@ async function pairExtension(
       return;
     }
     if (frame.type !== "call") return;
-    const call: CallRecord = { id: frame.id, tool: frame.tool, args: (frame.args ?? {}) as Record<string, unknown> };
+    const call: CallRecord = {
+      id: frame.id,
+      tool: frame.tool,
+      args: (frame.args ?? {}) as Record<string, unknown>,
+      ...(frame.budgetMs === undefined ? {} : { budgetMs: frame.budgetMs }),
+    };
     calls.push(call);
     const waiter = callWaiters.find((entry) => entry.tool === call.tool);
     if (waiter) {
@@ -190,6 +215,7 @@ async function pairExtension(
           active: true,
         },
       ],
+      ...options.hello,
     }),
   );
   const ack = await ackPromise;
@@ -283,6 +309,16 @@ async function setTier(tier: "refine" | "full", allowedOrigins: string[] = [APP_
     body: JSON.stringify({ tier, allowedOrigins }),
   });
   expect(response.status).toBe(200);
+}
+
+async function setLimits(limits: Record<string, number>, tier: "refine" | "full" = "refine") {
+  const response = await fetch(bridgeUrl("/api/local-browser/settings"), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ tier, allowedOrigins: [APP_ORIGIN], limits }),
+  });
+  expect(response.status).toBe(200);
+  return (await response.json()) as { limits: Record<string, number> };
 }
 
 beforeAll(async () => {
@@ -1041,9 +1077,9 @@ describe("local browser viewer frame bounds", () => {
 });
 
 describe("local browser snapshot text bounds", () => {
-  it("bounds a hostile snapshot and marks it truncated", async () => {
+  it("bounds a hostile snapshot by the result limit and marks it truncated", async () => {
     const active = currentHarness();
-    await allowOrigin();
+    await setLimits({ resultMaxChars: 20_000 });
     const huge = "x".repeat(20_000);
     const nodes = Array.from({ length: 120 }, (_, index) => ({
       ref: "e" + (index + 1),
@@ -1065,8 +1101,7 @@ describe("local browser snapshot text bounds", () => {
       total: number;
       cursor?: string;
     };
-    expect(result.text.length).toBeLessThanOrEqual(40_000);
-    expect(result.text.length).toBeLessThan(200_000);
+    expect(result.text.length).toBeLessThanOrEqual(20_000);
     expect(result.truncated).toBe(true);
     expect(result.nodes).toBeLessThan(120);
     expect(result.total).toBe(120);
@@ -1076,7 +1111,7 @@ describe("local browser snapshot text bounds", () => {
     const next = (await active.service.executeTool(binding(), "local_browser_snapshot", {
       cursor: result.cursor,
     })) as { text: string; nodes: number; cursor?: string };
-    expect(next.text.length).toBeLessThanOrEqual(40_000);
+    expect(next.text.length).toBeLessThanOrEqual(20_000);
     expect(next.text.startsWith("e" + (result.nodes + 1) + " ")).toBe(true);
     expect(next.nodes).toBeGreaterThan(0);
     paired.close();
@@ -1117,7 +1152,7 @@ describe("local browser call budgets", () => {
     await expectFailure(pending, "local_browser_extension_unavailable");
   });
 
-  it("keeps the shared 30s default for tools without a longer row", async () => {
+  it("keeps the shared 30s default plus grace for tools without a longer row", async () => {
     const active = currentHarness();
     await allowOrigin();
     const paired = await pairExtension({ onCall: () => "ignore" });
@@ -1126,7 +1161,7 @@ describe("local browser call budgets", () => {
     const pending = bare.executeTool(binding(), "local_browser_snapshot", {});
     await paired.waitForCall("local_browser_snapshot");
     const live = bare.getSessionForCompany(active.companyId, paired.sessionId);
-    expect([...(live?.pending.values() ?? [])][0]?.budgetMs).toBe(30_000);
+    expect([...(live?.pending.values() ?? [])][0]?.budgetMs).toBe(35_000);
 
     paired.close();
     await expectFailure(pending, "local_browser_extension_unavailable");
@@ -1223,5 +1258,671 @@ describe("local browser audit", () => {
     expect(rows).toHaveLength(1);
     expect(rows[0]!.details).toMatchObject({ tool: "local_browser_evaluate", ok: false, errorCode: "local_browser_tier_denied" });
     paired.close();
+  });
+});
+
+const ALL_CAPABILITIES = [...LOCAL_BROWSER_CAPABILITIES];
+const ACCESS = { siteAccess: "limited", granted: ["tabs", "scripting"], missing: ["cookies", "<all_urls>"], pending: [] };
+const UPDATE_HINT = "Update the Paperclip Local Browser extension";
+
+async function readSettings(): Promise<{ tier: string; allowedOrigins: string[]; limits: Record<string, number> }> {
+  const response = await fetch(bridgeUrl("/api/local-browser/settings"));
+  expect(response.status).toBe(200);
+  return (await response.json()) as { tier: string; allowedOrigins: string[]; limits: Record<string, number> };
+}
+
+describe("local browser limits", () => {
+  it("round-trips limits through settings and keeps them when a save omits them", async () => {
+    const active = currentHarness();
+    expect((await readSettings()).limits).toEqual(LOCAL_BROWSER_LIMIT_DEFAULTS);
+    const paired = await pairExtension();
+    const saved = await setLimits({ snapshotMaxNodes: 50, callMaxMs: 9_000 });
+    expect(saved.limits).toEqual({ ...LOCAL_BROWSER_LIMIT_DEFAULTS, snapshotMaxNodes: 50, callMaxMs: 9_000 });
+    await setTier("refine");
+    expect((await readSettings()).limits).toMatchObject({ snapshotMaxNodes: 50, callMaxMs: 9_000 });
+    expect(active.service.getSessionForCompany(active.companyId, paired.sessionId)?.limits).toMatchObject({
+      snapshotMaxNodes: 50,
+      callMaxMs: 9_000,
+    });
+    const [row] = await postgres.db.select().from(localBrowserSettings);
+    expect(row?.limits).toMatchObject({ snapshotMaxNodes: 50, callMaxMs: 9_000 });
+    const tooHigh = await fetch(bridgeUrl("/api/local-browser/settings"), {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ tier: "refine", allowedOrigins: [], limits: { callMaxMs: 600_001 } }),
+    });
+    expect(tooHigh.status).toBe(400);
+    expect((await readSettings()).limits.callMaxMs).toBe(9_000);
+    paired.close();
+  });
+
+  it("clamps calls to the company limits and reports what it clamped", async () => {
+    const active = currentHarness();
+    await setLimits({ snapshotMaxNodes: 50, readMaxChars: 300, resultMaxChars: 1_000 }, "full");
+    const paired = await pairExtension({
+      onCall: (call) => {
+        if (call.tool === "local_browser_snapshot") {
+          return { ok: true, result: { url: APP_ORIGIN + "/", title: "t", nodes: [{ ref: "e1", role: "button", name: "Go" }], total: 1 } };
+        }
+        if (call.tool === "local_browser_read") {
+          return { ok: true, result: { url: APP_ORIGIN + "/", content: "y".repeat(900), totalChars: 900 } };
+        }
+        if (call.tool === "local_browser_evaluate") return { ok: true, result: { value: "z".repeat(5_000) } };
+        return { ok: true, result: {} };
+      },
+    });
+    const snapshot = (await active.service.executeTool(binding(), "local_browser_snapshot", { maxNodes: 5_000 })) as {
+      limited?: unknown;
+    };
+    expect(snapshot.limited).toEqual([{ field: "maxNodes", requested: 5_000, applied: 50 }]);
+    expect((await paired.waitForCall("local_browser_snapshot")).args.maxNodes).toBe(50);
+
+    const read = (await active.service.executeTool(binding(), "local_browser_read", { maxChars: 2_000 })) as {
+      content: string;
+      limited?: unknown;
+    };
+    expect(read.content).toHaveLength(300);
+    expect(read.limited).toEqual([{ field: "maxChars", requested: 2_000, applied: 300 }]);
+    expect((await paired.waitForCall("local_browser_read")).args.maxChars).toBe(300);
+
+    const evaluated = (await active.service.executeTool(binding(), "local_browser_evaluate", { expression: "1" })) as {
+      truncated: boolean;
+      preview: string;
+      limited: Array<{ field: string; applied: number }>;
+    };
+    expect(evaluated.truncated).toBe(true);
+    expect(evaluated.preview).toHaveLength(1_000);
+    expect(evaluated.limited).toEqual([expect.objectContaining({ field: "resultMaxChars", applied: 1_000 })]);
+
+    const unclamped = (await active.service.executeTool(binding(), "local_browser_snapshot", { maxNodes: 20 })) as {
+      limited?: unknown;
+    };
+    expect(unclamped.limited).toBeUndefined();
+    paired.close();
+  });
+
+  it("clamps timeouts to the call limit and arms the matching budget", async () => {
+    const active = currentHarness();
+    await setLimits({ callMaxMs: 5_000 });
+    const paired = await pairExtension({ capabilities: ["budget.v1"], onCall: () => "ignore" });
+    const bare = localBrowserService(postgres.db);
+    const pending = bare.executeTool(binding(), "local_browser_wait", { timeoutMs: 60_000 });
+    const call = await paired.waitForCall("local_browser_wait");
+    expect(call.args.timeoutMs).toBe(5_000);
+    expect(call.budgetMs).toBe(10_000);
+    const armed = [...(bare.getSessionForCompany(active.companyId, paired.sessionId)?.pending.values() ?? [])];
+    expect(armed[0]?.budgetMs).toBe(10_000);
+    paired.close();
+    await expectFailure(pending, "local_browser_extension_unavailable");
+  });
+
+  it("refuses a screenshot above the company byte limit", async () => {
+    const active = currentHarness();
+    await setLimits({ screenshotMaxBytes: 65_536 });
+    const big = Buffer.alloc(70_000, 1).toString("base64");
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_screenshot"
+          ? { ok: true, result: { dataUrl: "data:image/png;base64," + big, width: 10, height: 10 } }
+          : { ok: true, result: {} },
+    });
+    await expect(active.service.executeTool(binding(), "local_browser_screenshot", {})).rejects.toMatchObject({
+      code: "local_browser_result_too_large",
+      status: 413,
+    });
+    paired.close();
+  });
+});
+
+describe("local browser call frames", () => {
+  it("sends budgetMs to an extension that advertises budget.v1", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const paired = await pairExtension({ capabilities: ["budget.v1"] });
+    await active.service.executeTool(binding(), "local_browser_snapshot", {});
+    expect((await paired.waitForCall("local_browser_snapshot")).budgetMs).toBe(CALL_TIMEOUT_MS);
+    paired.close();
+  });
+
+  it("leaves budgetMs off the frame for an extension without budget.v1", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const paired = await pairExtension();
+    await active.service.executeTool(binding(), "local_browser_snapshot", {});
+    expect((await paired.waitForCall("local_browser_snapshot")).budgetMs).toBeUndefined();
+    paired.close();
+  });
+});
+
+describe("local browser capability negotiation", () => {
+  it("refuses every new feature against an extension that does not advertise it", async () => {
+    const active = currentHarness();
+    await setTier("full");
+    const legacy = await pairExtension();
+    const attempts: Array<[string, Record<string, unknown>]> = [
+      ["local_browser_context", {}],
+      ["local_browser_permissions", { op: "status" }],
+      ["local_browser_api", { path: "history.search", args: [{ text: "" }] }],
+      ["local_browser_open", { url: APP_ORIGIN + "/", cookieStoreId: "firefox-container-1" }],
+      ["local_browser_open", { url: APP_ORIGIN + "/", incognito: true }],
+      ["local_browser_act", { action: "click", ref: "e1", force: true }],
+    ];
+    for (const [tool, args] of attempts) {
+      await expect(active.service.executeTool(binding(), tool, args), tool).rejects.toMatchObject({
+        code: "local_browser_unsupported",
+        hint: expect.stringContaining(UPDATE_HINT),
+      });
+    }
+    await expectFailure(
+      active.service.executeTool(binding(), "local_browser_storage", {
+        kind: "cookies",
+        op: "set",
+        url: APP_ORIGIN + "/",
+        entries: [{ name: "a", value: "b", session: true }],
+      }),
+      "local_browser_unsupported",
+    );
+    expect(legacy.calls).toHaveLength(0);
+    legacy.close();
+  });
+
+  it("forwards the new features to an extension that advertises them", async () => {
+    const active = currentHarness();
+    await setTier("full");
+    const modern = await pairExtension({
+      capabilities: ALL_CAPABILITIES,
+      onCall: (call) => {
+        if (call.tool === "local_browser_api") return { ok: true, result: { value: [{ url: "https://a.test/" }], type: "object" } };
+        if (call.tool === "local_browser_context") return { ok: true, result: { contentScript: "connected", access: ACCESS } };
+        return { ok: true, result: { ok: true } };
+      },
+    });
+    await expect(
+      active.service.executeTool(binding(), "local_browser_api", { path: "history.search", args: [{ text: "invoice" }] }),
+    ).resolves.toEqual({ value: [{ url: "https://a.test/" }], type: "object" });
+    await expect(active.service.executeTool(binding(), "local_browser_context", { tabId: 7 })).resolves.toMatchObject({
+      contentScript: "connected",
+    });
+    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/", cookieStoreId: "firefox-container-1" });
+    await active.service.executeTool(binding(), "local_browser_act", { action: "click", ref: "e1", force: true });
+    await active.service.executeTool(binding(), "local_browser_network", { op: "list", includeHeaders: true, since: 5, types: ["fetch"] });
+    expect((await modern.waitForCall("local_browser_api")).args).toMatchObject({ path: "history.search", args: [{ text: "invoice" }] });
+    expect((await modern.waitForCall("local_browser_open")).args.cookieStoreId).toBe("firefox-container-1");
+    expect((await modern.waitForCall("local_browser_act")).args.force).toBe(true);
+    expect((await modern.waitForCall("local_browser_network")).args).toMatchObject({ includeHeaders: true, since: 5, types: ["fetch"] });
+    modern.close();
+  });
+
+  it("exempts permissions from the origin gate, keeps context behind it and api in full tier", async () => {
+    const active = currentHarness();
+    await setTier("refine", []);
+    const paired = await pairExtension({
+      capabilities: ALL_CAPABILITIES,
+      onCall: (call) =>
+        call.tool === "local_browser_permissions"
+          ? { ok: true, result: { granted: [], missing: ["history"], pending: [], siteAccess: "limited", note: "Ask the user" } }
+          : { ok: true, result: {} },
+    });
+    await expect(active.service.executeTool(binding(), "local_browser_permissions", { op: "status" })).resolves.toMatchObject({
+      missing: ["history"],
+    });
+    await expectFailure(active.service.executeTool(binding(), "local_browser_context", {}), "local_browser_origin_denied");
+    await expectFailure(
+      active.service.executeTool(binding(), "local_browser_api", { path: "history.search" }),
+      "local_browser_tier_denied",
+    );
+    expect(paired.calls.map((call) => call.tool)).toEqual(["local_browser_permissions"]);
+    paired.close();
+  });
+
+  it("never lets an agent call the internal ui tool", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const paired = await pairExtension({ capabilities: ALL_CAPABILITIES });
+    await expectFailure(
+      active.service.executeTool(binding(), "local_browser_ui", { op: "open_permissions" }),
+      "local_browser_unsupported",
+    );
+    expect(paired.calls).toHaveLength(0);
+    paired.close();
+  });
+
+  it("propagates permission_required with the missing permissions and a hint", async () => {
+    const active = currentHarness();
+    await setTier("full");
+    let extensionHint: string | undefined;
+    const paired = await pairExtension({
+      capabilities: ALL_CAPABILITIES,
+      onCall: () => ({
+        ok: false,
+        error: {
+          code: "local_browser_permission_required",
+          message: "history is not granted",
+          permissions: ["history"],
+          ...(extensionHint ? { hint: extensionHint } : {}),
+        },
+      }),
+    });
+    const failure = (await active.service
+      .executeTool(binding(), "local_browser_api", { path: "history.search" })
+      .catch((error: unknown) => error)) as {
+      code: string;
+      status: number;
+      retryable: boolean;
+      permissions: string[];
+      hint: string;
+      details: Record<string, unknown>;
+      toToolError(): Record<string, unknown>;
+    };
+    expect(failure).toMatchObject({ code: "local_browser_permission_required", status: 403, retryable: true, permissions: ["history"] });
+    expect(failure.hint).toContain("local_browser_permissions");
+    expect(failure.details).toMatchObject({ permissions: ["history"], retryable: true });
+    expect(failure.toToolError()).toMatchObject({ code: "local_browser_permission_required", permissions: ["history"] });
+
+    extensionHint = "Press Allow in the extension popup";
+    await expect(
+      active.service.executeTool(binding(), "local_browser_api", { path: "history.search" }),
+    ).rejects.toMatchObject({ hint: extensionHint, permissions: ["history"] });
+    paired.close();
+  });
+});
+
+describe("local browser session state", () => {
+  it("surfaces capabilities, access, guards and container tabs from hello and later events", async () => {
+    const active = currentHarness();
+    const guards = { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 500 };
+    const paired = await pairExtension({
+      capabilities: ["permissions.v1"],
+      hello: {
+        access: ACCESS,
+        guards,
+        tabs: [
+          {
+            tabId: 7,
+            windowId: 1,
+            title: "Example",
+            url: APP_ORIGIN + "/dashboard",
+            active: true,
+            cookieStoreId: "firefox-container-2",
+            containerName: "Work",
+            incognito: false,
+          },
+        ],
+      },
+    });
+    expect(active.service.listSessions(active.companyId)[0]).toMatchObject({
+      capabilities: ["permissions.v1"],
+      access: ACCESS,
+      guards,
+      tabs: [{ cookieStoreId: "firefox-container-2", containerName: "Work", incognito: false }],
+    });
+
+    paired.emit("access", { ...ACCESS, granted: [...ACCESS.granted, "cookies"], missing: ["<all_urls>"] });
+    await waitFor(
+      () => active.service.listSessions(active.companyId)[0]?.access?.granted.includes("cookies") === true,
+      "access event",
+    );
+    paired.emit("guards", { networkBufferSize: 5 });
+    paired.emit("guards", { ...guards, protectFocusedTab: true });
+    await waitFor(
+      () => active.service.listSessions(active.companyId)[0]?.guards?.protectFocusedTab === true,
+      "guards event",
+    );
+    expect(active.service.listSessions(active.companyId)[0]?.guards?.networkBufferSize).toBe(500);
+
+    const response = await fetch(bridgeUrl("/api/local-browser/sessions"));
+    const body = (await response.json()) as { sessions: Array<Record<string, unknown>> };
+    expect(body.sessions[0]).toMatchObject({ capabilities: ["permissions.v1"], access: { missing: ["<all_urls>"] } });
+    const listed = (await active.service.executeTool(binding(), "local_browser_sessions", {})) as {
+      sessions: Array<Record<string, unknown>>;
+    };
+    expect(listed.sessions[0]).toMatchObject({ access: { granted: ["tabs", "scripting", "cookies"] } });
+    paired.close();
+  });
+
+  it("passes document state through snapshot, read and wait results", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const documentState = {
+      documentId: "d1",
+      url: APP_ORIGIN + "/",
+      readyState: "complete",
+      visibilityState: "visible",
+      navigationType: "back_forward",
+      restoredFromBfcache: true,
+      wasDiscarded: false,
+      prerendering: false,
+      loadedAt: 1,
+      ageMs: 2,
+      requestsSinceLoad: 0,
+      xhrSinceLoad: 0,
+      stale: true,
+      staleReasons: ["restored_from_bfcache"],
+    };
+    const paired = await pairExtension({
+      capabilities: ["document.state"],
+      onCall: (call) => {
+        if (call.tool === "local_browser_snapshot") {
+          return {
+            ok: true,
+            result: { url: APP_ORIGIN + "/", title: "t", nodes: [{ ref: "e1", role: "button", name: "Go" }], total: 1, document: documentState },
+          };
+        }
+        if (call.tool === "local_browser_read") {
+          return { ok: true, result: { url: APP_ORIGIN + "/", content: "hi", totalChars: 2, document: documentState } };
+        }
+        return { ok: true, result: { ok: true, document: documentState } };
+      },
+    });
+    for (const [tool, args] of [
+      ["local_browser_snapshot", {}],
+      ["local_browser_read", {}],
+      ["local_browser_wait", { idle: true }],
+    ] as const) {
+      const result = (await active.service.executeTool(binding(), tool, args)) as { document?: unknown };
+      expect(result.document, tool).toEqual(documentState);
+    }
+    paired.close();
+  });
+});
+
+describe("local browser open-permissions route", () => {
+  it("asks the extension to open its permission page and audits the board user", async () => {
+    const active = currentHarness();
+    const paired = await pairExtension({ capabilities: ["permissions.v1"] });
+    const response = await fetch(bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/open-permissions"), {
+      method: "POST",
+    });
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ ok: true });
+    expect((await paired.waitForCall("local_browser_ui")).args).toEqual({ op: "open_permissions" });
+    await waitFor(
+      async () =>
+        (await postgres.db.select().from(activityLog).where(eq(activityLog.action, "local_browser.tool_called"))).some(
+          (row) => row.details?.tool === "local_browser_ui",
+        ),
+      "open-permissions audit row",
+    );
+    const rows = await postgres.db.select().from(activityLog).where(eq(activityLog.action, "local_browser.tool_called"));
+    const row = rows.find((entry) => entry.details?.tool === "local_browser_ui");
+    expect(row).toMatchObject({ actorType: "user", actorId: active.userId, entityId: paired.sessionId });
+    expect(row?.details).toMatchObject({ ok: true, sessionId: paired.sessionId });
+    paired.close();
+  });
+
+  it("refuses agents, unknown sessions and extensions without permissions.v1", async () => {
+    const legacy = await pairExtension();
+    const url = bridgeUrl("/api/local-browser/sessions/" + legacy.sessionId + "/open-permissions");
+    const asAgent = await fetch(url, { method: "POST", headers: ceoAgentHeaders() });
+    expect(asAgent.status).toBe(403);
+    const unsupported = await fetch(url, { method: "POST" });
+    expect(unsupported.status).toBe(400);
+    expect(await unsupported.text()).toContain("local_browser_unsupported");
+    const unknown = await fetch(
+      bridgeUrl("/api/local-browser/sessions/00000000-0000-4000-8000-000000000999/open-permissions"),
+      { method: "POST" },
+    );
+    expect(unknown.status).toBe(409);
+    expect(legacy.calls).toHaveLength(0);
+    legacy.close();
+  });
+});
+
+function helloFrame(label = "Test browser"): string {
+  return JSON.stringify({
+    type: "hello",
+    protocol: 1,
+    client: "chromium",
+    clientVersion: "1.0.0",
+    label,
+    profileName: "Default",
+    tabs: [{ tabId: 7, windowId: 1, title: "Example", url: APP_ORIGIN + "/dashboard", active: true }],
+  });
+}
+
+function watchSocket(url: string) {
+  const socket = new WebSocket(url);
+  const opened = new Promise<{ ok: true } | { ok: false; message: string }>((resolve) => {
+    socket.on("open", () => resolve({ ok: true }));
+    socket.on("error", (error) => resolve({ ok: false, message: (error as Error).message }));
+  });
+  const closed = new Promise<number>((resolve) => socket.on("close", (code) => resolve(code as number)));
+  const acked = new Promise<Extract<LocalBrowserBridgeFrame, { type: "hello_ack" }>>((resolve) => {
+    socket.on("message", (data: unknown) => {
+      const frame = JSON.parse(String(data)) as LocalBrowserBridgeFrame;
+      if (frame.type === "hello_ack") resolve(frame);
+    });
+  });
+  return { socket, opened, closed, acked };
+}
+
+async function listenBridge(options: { maxPayloadBytes?: number } = {}) {
+  const active = currentHarness();
+  const extra = createServer(express());
+  await new Promise<void>((resolve) => extra.listen(0, "127.0.0.1", resolve));
+  const address = extra.address();
+  if (!address || typeof address === "string") throw new Error("extra server did not bind");
+  const extraBridge = setupLocalBrowserWebSocketServer(extra, postgres.db, {
+    service: active.service,
+    pingIntervalMs: 60_000,
+    silenceLimitMs: 600_000,
+    ...options,
+  });
+  return {
+    wsUrl: "ws://127.0.0.1:" + address.port,
+    async close() {
+      extraBridge.closeAllSessions();
+      extra.closeAllConnections?.();
+      await new Promise<void>((resolve) => extra.close(() => resolve()));
+    },
+  };
+}
+
+describe("local browser bridge frame hardening", () => {
+  it("keeps the frame ceiling below the longest string Node can build", () => {
+    expect(LOCAL_BROWSER_LIMITS.transferMaxBytes.ceiling).toBe(268_435_456);
+    expect(LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES).toBeGreaterThan(Math.ceil((LOCAL_BROWSER_LIMITS.transferMaxBytes.ceiling * 4) / 3));
+    expect(LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES).toBeLessThan(bufferConstants.MAX_STRING_LENGTH);
+  });
+
+  it("answers null instead of throwing when a frame cannot become a string", () => {
+    const unreadable = {
+      toString(): string {
+        throw new RangeError("Cannot create a string longer than 0x1fffffe8 characters");
+      },
+    };
+    expect(localBrowserWebSocketInternals.readFrame(unreadable)).toBeNull();
+    expect(localBrowserWebSocketInternals.readFrame(Buffer.from("not json"))).toBeNull();
+  });
+
+  it("closes only the socket that sent an oversized frame and keeps serving", async () => {
+    const active = currentHarness();
+    const small = await listenBridge({ maxPayloadBytes: 4_096 });
+    try {
+      const offender = watchSocket(small.wsUrl + "/api/local-browser/bridge?code=" + (await startPairing()).code);
+      expect(await offender.opened).toEqual({ ok: true });
+      offender.socket.send(helloFrame("Offender"));
+      await offender.acked;
+      const bystander = watchSocket(small.wsUrl + "/api/local-browser/bridge?code=" + (await startPairing()).code);
+      expect(await bystander.opened).toEqual({ ok: true });
+      bystander.socket.send(helloFrame("Bystander"));
+      const bystanderAck = await bystander.acked;
+
+      offender.socket.send("x".repeat(10_000));
+      expect(await offender.closed).toBe(1009);
+
+      expect(bystander.socket.readyState).toBe(OPEN_STATE);
+      await waitFor(() => active.service.listSessions(active.companyId).length === 1, "offender session removed");
+      expect(active.service.listSessions(active.companyId)[0]?.sessionId).toBe(bystanderAck.sessionId);
+
+      const later = watchSocket(small.wsUrl + "/api/local-browser/bridge?code=" + (await startPairing()).code);
+      expect(await later.opened).toEqual({ ok: true });
+      later.socket.send(helloFrame("Later"));
+      await later.acked;
+      expect(active.service.listSessions(active.companyId)).toHaveLength(2);
+      bystander.socket.close();
+      later.socket.close();
+    } finally {
+      await small.close();
+    }
+  });
+
+  it("closes a socket whose first frame is not a hello", async () => {
+    const active = currentHarness();
+    const early = watchSocket(active.wsUrl + "/api/local-browser/bridge?code=" + (await startPairing()).code);
+    expect(await early.opened).toEqual({ ok: true });
+    early.socket.send(JSON.stringify({ type: "result", id: "c1", ok: true, result: {} }));
+    expect(await early.closed).toBe(1008);
+
+    const garbage = watchSocket(active.wsUrl + "/api/local-browser/bridge?code=" + (await startPairing()).code);
+    expect(await garbage.opened).toEqual({ ok: true });
+    garbage.socket.send("{not json");
+    expect(await garbage.closed).toBe(1008);
+
+    expect(active.service.listSessions(active.companyId)).toHaveLength(0);
+    expect(await postgres.db.select().from(localBrowserConnections)).toHaveLength(0);
+    const paired = await pairExtension();
+    expect(active.service.listSessions(active.companyId)).toHaveLength(1);
+    paired.close();
+  });
+
+  it("refuses a session token it does not know before the socket opens", async () => {
+    const active = currentHarness();
+    const stranger = watchSocket(active.wsUrl + "/api/local-browser/bridge?session=" + "a".repeat(43));
+    const outcome = await stranger.opened;
+    expect(outcome.ok).toBe(false);
+    expect(outcome.ok ? "" : outcome.message).toContain("403");
+  });
+
+  it("reopens with a live session token and refuses it once the connection is closed", async () => {
+    const active = currentHarness();
+    const first = await pairExtension();
+    const token = first.sessionToken;
+    const firstClosed = new Promise<void>((resolve) => first.socket.on("close", () => resolve()));
+    first.close();
+    await firstClosed;
+    await waitFor(() => active.service.listSessions(active.companyId).length === 0, "first session gone");
+
+    const resumed = watchSocket(active.wsUrl + "/api/local-browser/bridge?session=" + encodeURIComponent(token));
+    expect(await resumed.opened).toEqual({ ok: true });
+    resumed.socket.send(helloFrame("Resumed"));
+    expect((await resumed.acked).sessionToken).toBe(token);
+    const resumedClosed = resumed.closed;
+    resumed.socket.close();
+    await resumedClosed;
+
+    await postgres.db.update(localBrowserConnections).set({ status: "closed", closedAt: new Date() });
+    const revoked = watchSocket(active.wsUrl + "/api/local-browser/bridge?session=" + encodeURIComponent(token));
+    const outcome = await revoked.opened;
+    expect(outcome.ok).toBe(false);
+    expect(outcome.ok ? "" : outcome.message).toContain("403");
+  });
+});
+
+describe("local browser network default limit", () => {
+  it("sends the company network limit when the agent names none", async () => {
+    const active = currentHarness();
+    await setLimits({ networkMaxEntries: 30 }, "full");
+    const paired = await pairExtension({ onCall: () => ({ ok: true, result: { requests: [] } }) });
+
+    await active.service.executeTool(binding(), "local_browser_network", { op: "list" });
+    expect(paired.calls.at(-1)?.args.limit).toBe(30);
+
+    await active.service.executeTool(binding(), "local_browser_network", { op: "list", limit: 5 });
+    expect(paired.calls.at(-1)?.args.limit).toBe(5);
+
+    const clamped = (await active.service.executeTool(binding(), "local_browser_network", { op: "list", limit: 1_000 })) as {
+      limited?: unknown;
+    };
+    expect(paired.calls.at(-1)?.args.limit).toBe(30);
+    expect(clamped.limited).toEqual([{ field: "limit", requested: 1_000, applied: 30 }]);
+    paired.close();
+  });
+});
+
+describe("local browser viewer frames under a lowered screenshot limit", () => {
+  it("keeps the viewer's own frame bound when the agent screenshot limit is lower", () => {
+    const { toViewerEvent } = localBrowserWebSocketInternals;
+    const frame = (bytes: number) => ({
+      type: "event" as const,
+      event: "frame" as const,
+      data: { dataUrl: "data:image/jpeg;base64," + "A".repeat(Math.ceil((bytes * 4) / 3)), width: 10, height: 10 },
+    });
+    const viewerDefault = LOCAL_BROWSER_LIMITS.screenshotMaxBytes.default;
+    const lowest = LOCAL_BROWSER_LIMITS.screenshotMaxBytes.min;
+    expect(toViewerEvent(frame(1_000_000), lowest)).toMatchObject({ type: "frame" });
+    expect(toViewerEvent(frame(viewerDefault - 1_024), lowest)).toMatchObject({ type: "frame" });
+    expect(toViewerEvent(frame(viewerDefault + 4_096), lowest)).toBeNull();
+    expect(toViewerEvent(frame(viewerDefault * 2), viewerDefault * 4)).toMatchObject({ type: "frame" });
+    expect(toViewerEvent(frame(viewerDefault * 5), viewerDefault * 4)).toBeNull();
+  });
+
+  it("streams a viewer frame larger than a lowered screenshot limit", async () => {
+    await setLimits({ screenshotMaxBytes: LOCAL_BROWSER_LIMITS.screenshotMaxBytes.min });
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_viewer" ? { ok: true, result: { started: true } } : { ok: true, result: {} },
+    });
+    const controller = new AbortController();
+    const response = await fetch(bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer"), {
+      signal: controller.signal,
+    });
+    const reader = response.body!.getReader();
+    const decoder = new TextDecoder();
+    let buffer = "";
+    while (!buffer.includes('"state":"connected"')) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+    }
+    await paired.waitForCall("local_browser_viewer");
+
+    paired.emit("frame", { dataUrl: "data:image/jpeg;base64," + "B".repeat(400_000), width: 640, height: 480 });
+    while (!buffer.includes('"width":640')) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+    }
+    expect(buffer).toContain('"width":640');
+    expect(buffer).toContain("B".repeat(400_000));
+    controller.abort();
+    await reader.cancel().catch(() => undefined);
+    paired.close();
+  });
+});
+
+describe("local browser stored limits", () => {
+  it("replaces out-of-range, wrong-typed and unknown stored values with defaults", () => {
+    const ranges = LOCAL_BROWSER_LIMITS;
+    expect(
+      normalizeLocalBrowserLimits({
+        resultMaxChars: ranges.resultMaxChars.min - 1,
+        snapshotMaxNodes: ranges.snapshotMaxNodes.ceiling + 1,
+        readMaxChars: "5000",
+        screenshotMaxBytes: 70_000.5,
+        transferMaxBytes: null,
+        callMaxMs: ranges.callMaxMs.ceiling,
+        networkMaxEntries: ranges.networkMaxEntries.min,
+        retired: 7,
+      }),
+    ).toEqual({
+      ...LOCAL_BROWSER_LIMIT_DEFAULTS,
+      callMaxMs: ranges.callMaxMs.ceiling,
+      networkMaxEntries: ranges.networkMaxEntries.min,
+    });
+    for (const raw of [null, undefined, "limits", 42, [1, 2], { transferMaxBytes: Number.POSITIVE_INFINITY }]) {
+      expect(normalizeLocalBrowserLimits(raw)).toEqual(LOCAL_BROWSER_LIMIT_DEFAULTS);
+    }
+    for (const key of LOCAL_BROWSER_LIMIT_KEYS) {
+      expect(normalizeLocalBrowserLimits({ [key]: ranges[key].ceiling })[key]).toBe(ranges[key].ceiling);
+    }
+  });
+
+  it("serves defaults for a stored row whose limits fell out of range", async () => {
+    await setLimits({ snapshotMaxNodes: 50 });
+    await postgres.db.update(localBrowserSettings).set({
+      limits: { snapshotMaxNodes: 50, transferMaxBytes: 524_288_000, callMaxMs: 1, readMaxChars: "big" } as unknown as Record<string, number>,
+    });
+    expect((await readSettings()).limits).toEqual({ ...LOCAL_BROWSER_LIMIT_DEFAULTS, snapshotMaxNodes: 50 });
   });
 });

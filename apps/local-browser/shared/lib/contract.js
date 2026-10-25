@@ -1,0 +1,424 @@
+(function () {
+  "use strict";
+  globalThis.LB = globalThis.LB || {};
+  globalThis.LB.contract = {
+    "protocol": 1,
+    "cursorPattern": "/^\\d+$/",
+    "apiPathPattern": "/^[a-zA-Z][a-zA-Z0-9]*(\\.[a-zA-Z][a-zA-Z0-9]*)+$/",
+    "tiers": [
+      "refine",
+      "full"
+    ],
+    "clients": [
+      "chromium",
+      "firefox"
+    ],
+    "errorCodes": [
+      "local_browser_not_paired",
+      "local_browser_extension_unavailable",
+      "local_browser_origin_denied",
+      "local_browser_tier_denied",
+      "local_browser_tab_missing",
+      "local_browser_ref_stale",
+      "local_browser_element_missing",
+      "local_browser_timeout",
+      "local_browser_navigation_blocked",
+      "local_browser_protocol_error",
+      "local_browser_result_too_large",
+      "local_browser_unsupported",
+      "local_browser_permission_required"
+    ],
+    "capabilities": [
+      "cookies.v2",
+      "permissions.v1",
+      "context.v1",
+      "network.headers",
+      "tabs.container",
+      "document.state",
+      "api.v1",
+      "act.force",
+      "budget.v1"
+    ],
+    "permissions": [
+      {
+        "id": "<all_urls>",
+        "kind": "origin",
+        "label": "Every website",
+        "grants": "Agents can open, read and act on any website in this browser.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "tabs",
+        "kind": "api",
+        "label": "Tabs",
+        "grants": "Agents can see the title and address of every open tab.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "scripting",
+        "kind": "api",
+        "label": "Page scripting",
+        "grants": "Agents can read pages, click, type and run scripts in the pages they can reach.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "cookies",
+        "kind": "api",
+        "label": "Cookies",
+        "grants": "Agents can read, set and clear cookies, including signed-in sessions.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "downloads",
+        "kind": "api",
+        "label": "Downloads",
+        "grants": "Agents can list downloads and save downloaded files into a task.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "downloads.open",
+        "kind": "api",
+        "label": "Open downloads",
+        "grants": "Agents can open files the browser downloaded.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "webRequest",
+        "kind": "api",
+        "label": "Network activity",
+        "grants": "Agents can see the requests pages make, with their headers.",
+        "chromium": "required",
+        "firefox": "optional"
+      },
+      {
+        "id": "webRequestBlocking",
+        "kind": "api",
+        "label": "Network response bodies",
+        "grants": "Agents can read the response bodies of the requests pages make.",
+        "chromium": "unsupported",
+        "firefox": "optional"
+      },
+      {
+        "id": "webNavigation",
+        "kind": "api",
+        "label": "Navigation events",
+        "grants": "Agents can tell when a page loads, reloads or comes back from the back-forward cache.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "history",
+        "kind": "api",
+        "label": "History",
+        "grants": "Agents can search and read your browsing history.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "bookmarks",
+        "kind": "api",
+        "label": "Bookmarks",
+        "grants": "Agents can search, read and change your bookmarks.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "browsingData",
+        "kind": "api",
+        "label": "Browsing data",
+        "grants": "Agents can clear browsing data such as cache, cookies and history.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "sessions",
+        "kind": "api",
+        "label": "Recently closed",
+        "grants": "Agents can list and restore recently closed tabs and windows.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "topSites",
+        "kind": "api",
+        "label": "Top sites",
+        "grants": "Agents can read the sites you visit most.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "clipboardRead",
+        "kind": "api",
+        "label": "Read clipboard",
+        "grants": "Agents can read what you copied to the clipboard.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "clipboardWrite",
+        "kind": "api",
+        "label": "Write clipboard",
+        "grants": "Agents can put text on your clipboard.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "notifications",
+        "kind": "api",
+        "label": "Notifications",
+        "grants": "The extension can show a desktop notice when an agent asks for a permission.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "management",
+        "kind": "api",
+        "label": "Extensions",
+        "grants": "Agents can list your installed extensions and turn them on or off.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "privacy",
+        "kind": "api",
+        "label": "Privacy settings",
+        "grants": "Agents can read and change the browser privacy settings.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "search",
+        "kind": "api",
+        "label": "Search",
+        "grants": "Agents can run a search with your default search engine.",
+        "chromium": "optional",
+        "firefox": "optional"
+      },
+      {
+        "id": "pageCapture",
+        "kind": "api",
+        "label": "Save page",
+        "grants": "Agents can save a whole page as one MHTML file.",
+        "chromium": "optional",
+        "firefox": "unsupported"
+      },
+      {
+        "id": "tabGroups",
+        "kind": "api",
+        "label": "Tab groups",
+        "grants": "Agents can read and arrange tab groups.",
+        "chromium": "optional",
+        "firefox": "unsupported"
+      },
+      {
+        "id": "contentSettings",
+        "kind": "api",
+        "label": "Site settings",
+        "grants": "Agents can read and change per-site settings such as cookies, JavaScript and pop-ups.",
+        "chromium": "optional",
+        "firefox": "unsupported"
+      },
+      {
+        "id": "proxy",
+        "kind": "api",
+        "label": "Proxy",
+        "grants": "Agents can read and change the browser proxy settings.",
+        "chromium": "unsupported",
+        "firefox": "optional"
+      },
+      {
+        "id": "tabHide",
+        "kind": "api",
+        "label": "Hide tabs",
+        "grants": "Agents can hide and show tabs.",
+        "chromium": "unsupported",
+        "firefox": "optional"
+      },
+      {
+        "id": "find",
+        "kind": "api",
+        "label": "Find in page",
+        "grants": "Agents can search page text the way Find in page does.",
+        "chromium": "unsupported",
+        "firefox": "optional"
+      },
+      {
+        "id": "browserSettings",
+        "kind": "api",
+        "label": "Browser settings",
+        "grants": "Agents can read and change some global browser settings.",
+        "chromium": "unsupported",
+        "firefox": "optional"
+      },
+      {
+        "id": "debugger",
+        "kind": "api",
+        "label": "Debugger",
+        "grants": "The extension can send trusted clicks and keys and read response bodies through the browser debugging protocol.",
+        "chromium": "required",
+        "firefox": "unsupported"
+      },
+      {
+        "id": "contextualIdentities",
+        "kind": "api",
+        "label": "Containers",
+        "grants": "Agents can see and open your Firefox containers, each with its own cookie jar.",
+        "chromium": "unsupported",
+        "firefox": "required"
+      },
+      {
+        "id": "storage",
+        "kind": "api",
+        "label": "Extension storage",
+        "grants": "The extension keeps its pairing and your settings.",
+        "chromium": "required",
+        "firefox": "required"
+      },
+      {
+        "id": "alarms",
+        "kind": "api",
+        "label": "Background timers",
+        "grants": "The extension stays connected while the browser runs.",
+        "chromium": "required",
+        "firefox": "unsupported"
+      },
+      {
+        "id": "activeTab",
+        "kind": "api",
+        "label": "Current tab",
+        "grants": "The extension can work with the tab you open it on.",
+        "chromium": "required",
+        "firefox": "required"
+      }
+    ],
+    "limits": {
+      "defaults": {
+        "resultMaxChars": 60000,
+        "snapshotMaxNodes": 400,
+        "readMaxChars": 40000,
+        "screenshotMaxBytes": 2097152,
+        "transferMaxBytes": 20971520,
+        "callMaxMs": 120000,
+        "networkMaxEntries": 200
+      },
+      "min": {
+        "resultMaxChars": 1000,
+        "snapshotMaxNodes": 10,
+        "readMaxChars": 200,
+        "screenshotMaxBytes": 65536,
+        "transferMaxBytes": 1048576,
+        "callMaxMs": 5000,
+        "networkMaxEntries": 10
+      },
+      "ceilings": {
+        "resultMaxChars": 2000000,
+        "snapshotMaxNodes": 20000,
+        "readMaxChars": 2000000,
+        "screenshotMaxBytes": 52428800,
+        "transferMaxBytes": 268435456,
+        "callMaxMs": 600000,
+        "networkMaxEntries": 5000
+      }
+    },
+    "guards": {
+      "defaults": {
+        "protectPaperclipTab": true,
+        "protectFocusedTab": true,
+        "networkBufferSize": 1000
+      },
+      "networkBufferSize": {
+        "min": 50,
+        "max": 20000
+      }
+    },
+    "toolNames": [
+      "local_browser_sessions",
+      "local_browser_open",
+      "local_browser_navigate",
+      "local_browser_snapshot",
+      "local_browser_act",
+      "local_browser_read",
+      "local_browser_screenshot",
+      "local_browser_wait",
+      "local_browser_evaluate",
+      "local_browser_storage",
+      "local_browser_network",
+      "local_browser_upload",
+      "local_browser_download",
+      "local_browser_close",
+      "local_browser_context",
+      "local_browser_permissions",
+      "local_browser_api"
+    ],
+    "fullTierToolNames": [
+      "local_browser_evaluate",
+      "local_browser_storage",
+      "local_browser_network",
+      "local_browser_upload",
+      "local_browser_download",
+      "local_browser_api"
+    ],
+    "originExemptToolNames": [
+      "local_browser_sessions",
+      "local_browser_close",
+      "local_browser_permissions",
+      "local_browser_api"
+    ],
+    "internalToolNames": [
+      "local_browser_viewer",
+      "local_browser_input",
+      "local_browser_ui"
+    ],
+    "toolCapabilities": {
+      "local_browser_context": "context.v1",
+      "local_browser_permissions": "permissions.v1",
+      "local_browser_api": "api.v1"
+    },
+    "actions": [
+      "click",
+      "dblclick",
+      "type",
+      "press",
+      "hover",
+      "focus",
+      "check",
+      "uncheck",
+      "select",
+      "scroll",
+      "scroll_into_view"
+    ],
+    "mouseActions": [
+      "move",
+      "down",
+      "up"
+    ],
+    "keyActions": [
+      "down",
+      "up"
+    ],
+    "viewerStates": [
+      "connected",
+      "viewer_unavailable",
+      "agent_streaming",
+      "agent_idle",
+      "disconnected"
+    ],
+    "uiOps": [
+      "open_permissions",
+      "open_control_center"
+    ],
+    "callDefaults": {
+      "snapshotNodes": 120,
+      "readChars": 8000,
+      "callTimeoutMs": 30000,
+      "viewerFrameIntervalMs": 1000,
+      "extensionBudgetMarginMs": 1000
+    }
+  };
+})();

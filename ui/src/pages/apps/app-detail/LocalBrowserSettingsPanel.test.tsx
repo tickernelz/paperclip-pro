@@ -2,23 +2,29 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import {
+  LOCAL_BROWSER_LIMIT_DEFAULTS,
+  type LocalBrowserSession,
+  type ToolConnection,
+} from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { sessions, settings, saveSettings, startPairing, pairingStatus, disconnect } = vi.hoisted(() => ({
+const { sessions, settings, saveSettings, startPairing, pairingStatus, disconnect, openPermissions } = vi.hoisted(() => ({
   sessions: vi.fn(),
   settings: vi.fn(),
   saveSettings: vi.fn(),
   startPairing: vi.fn(),
   pairingStatus: vi.fn(),
   disconnect: vi.fn(),
+  openPermissions: vi.fn(),
 }));
 
 vi.mock("@/api/local-browser", () => ({
-  localBrowserApi: { sessions, settings, saveSettings, startPairing, pairingStatus, disconnect },
+  localBrowserApi: { sessions, settings, saveSettings, startPairing, pairingStatus, disconnect, openPermissions },
 }));
 
 const { LocalBrowserSettingsPanel } = await import("./LocalBrowserSettingsPanel");
+const { ApiError } = await import("@/api/client");
 
 const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
 const SESSION_ID = "33333333-3333-4333-8333-333333333333";
@@ -57,6 +63,7 @@ beforeEach(() => {
   });
   pairingStatus.mockResolvedValue({ status: "pending" });
   disconnect.mockResolvedValue({ ok: true });
+  openPermissions.mockResolvedValue({ ok: true });
   MockEventSource.instances = [];
   vi.stubGlobal("EventSource", MockEventSource);
 });
@@ -100,6 +107,67 @@ function button(label: string): HTMLButtonElement {
   );
   if (!found) throw new Error(`Missing button: ${label}`);
   return found as HTMLButtonElement;
+}
+
+function labelled(label: string): HTMLButtonElement {
+  const found = container.querySelector(`button[aria-label="${label}"]`);
+  if (!found) throw new Error(`Missing button: ${label}`);
+  return found as HTMLButtonElement;
+}
+
+function field(label: string): HTMLInputElement {
+  const target = Array.from(container.querySelectorAll("label")).find(
+    (entry) => entry.textContent?.trim() === label,
+  );
+  const found = target ? document.getElementById(target.htmlFor) : null;
+  if (!found) throw new Error(`Missing field: ${label}`);
+  return found as HTMLInputElement;
+}
+
+async function typeInto(input: HTMLInputElement, value: string) {
+  await act(async () => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+    setter?.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+function permissionsBlock(): HTMLElement {
+  const found = container.querySelector('[role="group"][aria-label="Permissions"]');
+  if (!found) throw new Error("Missing permissions block");
+  return found as HTMLElement;
+}
+
+function liveSession(overrides: Partial<LocalBrowserSession> = {}): LocalBrowserSession {
+  return {
+    sessionId: SESSION_ID,
+    connectionId: "44444444-4444-4444-8444-444444444444",
+    client: "chromium",
+    clientVersion: "0.2.0",
+    label: "Work laptop",
+    profileName: null,
+    ownerUserId: "user-alice",
+    tier: "refine",
+    connectedAt: "2026-10-21T00:00:00.000Z",
+    lastSeenAt: "2026-10-21T00:00:05.000Z",
+    tabs: [],
+    controlledByViewer: false,
+    capabilities: ["permissions.v1", "cookies.v2"],
+    access: {
+      siteAccess: "limited",
+      granted: ["tabs", "scripting"],
+      missing: ["cookies", "debugger"],
+      pending: [
+        {
+          permission: "cookies",
+          reason: "Read the sign-in cookie",
+          tool: "local_browser_storage",
+          at: Date.now() - 120_000,
+        },
+      ],
+    },
+    ...overrides,
+  };
 }
 
 describe("Local Browser settings panel", () => {
@@ -166,14 +234,174 @@ describe("Local Browser settings panel", () => {
     expect(container.textContent).toContain("origin allowlist no longer applies");
   });
 
-  it("saves the selected tier with the origin allowlist", async () => {
+  it("saves the selected tier with the origin allowlist and limits", async () => {
     await render();
-    expect(button("Save access level").disabled).toBe(true);
+    expect(button("Save settings").disabled).toBe(true);
     await act(async () => button("Full power").click());
-    await act(async () => button("Save access level").click());
+    settings.mockResolvedValue({
+      tier: "full",
+      allowedOrigins: ["https://app.example.com"],
+      limits: LOCAL_BROWSER_LIMIT_DEFAULTS,
+    });
+    await act(async () => button("Save settings").click());
     expect(saveSettings).toHaveBeenCalledWith(COMPANY_ID, {
       tier: "full",
       allowedOrigins: ["https://app.example.com"],
+      limits: LOCAL_BROWSER_LIMIT_DEFAULTS,
+    });
+    await flush();
+    expect(container.textContent).toContain("Settings saved.");
+  });
+
+  it("shows granted, missing and pending permissions for a live session", async () => {
+    sessions.mockResolvedValue({ sessions: [liveSession()] });
+    await render();
+    const block = permissionsBlock();
+    const text = block.textContent ?? "";
+    expect(text).toContain("Only some websites");
+    const granted = block.querySelector('[aria-label="Granted permissions"]')?.textContent ?? "";
+    expect(granted).toContain("Tabs");
+    expect(granted).toContain("Page scripting");
+    expect(granted).not.toContain("Cookies");
+    const missing = block.querySelector('[aria-label="Missing permissions"]')?.textContent ?? "";
+    expect(missing).toContain("Cookies");
+    expect(missing).toContain("Debugger · required");
+    expect(missing).not.toContain("Cookies · required");
+    const attention = block.querySelector('[data-state="attention"]');
+    expect(attention?.textContent).toContain("2 permissions are missing, 1 required.");
+    expect(attention?.textContent).toContain("Open the extension and press Allow all.");
+    const pending = block.querySelector('[aria-label="Pending permission requests"]')?.textContent ?? "";
+    expect(pending).toContain("Cookies");
+    expect(pending).toContain("Read the sign-in cookie");
+    expect(pending).toContain("local_browser_storage");
+    expect(pending).toContain("2m ago");
+    const chips = container.querySelector('[aria-label="Extension capabilities"]')?.textContent ?? "";
+    expect(chips).toContain("permissions.v1");
+    expect(chips).toContain("cookies.v2");
+    expect(container.textContent).toContain("chromium 0.2.0");
+  });
+
+  it("drops the amber state once every permission is granted", async () => {
+    sessions.mockResolvedValue({
+      sessions: [
+        liveSession({
+          access: { siteAccess: "all", granted: ["tabs", "cookies"], missing: [], pending: [] },
+        }),
+      ],
+    });
+    await render();
+    const block = permissionsBlock();
+    expect(block.textContent).toContain("Every website");
+    expect(block.querySelector('[data-state="attention"]')).toBeNull();
+    expect(block.querySelector('[aria-label="Missing permissions"]')).toBeNull();
+  });
+
+  it("opens the permission page in the paired browser", async () => {
+    sessions.mockResolvedValue({ sessions: [liveSession()] });
+    await render();
+    await act(async () => button("Open permission page in browser").click());
+    await flush();
+    expect(openPermissions).toHaveBeenCalledWith(COMPANY_ID, SESSION_ID);
+    expect(permissionsBlock().textContent).toContain("The permission page is open in Work laptop.");
+  });
+
+  it("tells the user to update an extension that cannot open the permission page", async () => {
+    sessions.mockResolvedValue({ sessions: [liveSession()] });
+    openPermissions.mockRejectedValue(
+      new ApiError("[local_browser_unsupported] This browser extension cannot open its permission page yet", 400, {
+        error: "[local_browser_unsupported] This browser extension cannot open its permission page yet",
+        code: "local_browser_unsupported",
+      }),
+    );
+    await render();
+    await act(async () => button("Open permission page in browser").click());
+    await flush();
+    const alert = permissionsBlock().querySelector('[role="alert"]');
+    expect(alert?.textContent).toContain("Update the extension, then pair it again.");
+  });
+
+  it("surfaces other open-permission failures with the server message", async () => {
+    sessions.mockResolvedValue({ sessions: [liveSession()] });
+    openPermissions.mockRejectedValue(
+      new ApiError("[local_browser_extension_unavailable] Browser session is not connected", 409, {
+        code: "local_browser_extension_unavailable",
+      }),
+    );
+    await render();
+    await act(async () => button("Open permission page in browser").click());
+    await flush();
+    const alert = permissionsBlock().querySelector('[role="alert"]');
+    expect(alert?.textContent).toBe("Could not open the permission page. Browser session is not connected");
+  });
+
+  it("asks an old extension to update before permissions show here", async () => {
+    sessions.mockResolvedValue({
+      sessions: [liveSession({ capabilities: [], access: undefined })],
+    });
+    await render();
+    const block = permissionsBlock();
+    expect(block.textContent).toContain("Update the extension to manage permissions here.");
+    expect(block.querySelector('[data-state="attention"]')).toBeNull();
+    expect(container.querySelector('[aria-label="Extension capabilities"]')).toBeNull();
+  });
+
+  it("shows limits in display units with their default and range", async () => {
+    settings.mockResolvedValue({
+      tier: "refine",
+      allowedOrigins: [],
+      limits: { ...LOCAL_BROWSER_LIMIT_DEFAULTS, screenshotMaxBytes: 4_194_304, callMaxMs: 90_000 },
+    });
+    await render();
+    expect(field("Screenshot size").value).toBe("4");
+    expect(field("Call time limit").value).toBe("90");
+    expect(field("Snapshot size").value).toBe("400");
+    const text = container.textContent ?? "";
+    expect(text).toContain("Default 2 MiB, allowed 0.0625 to 50.");
+    expect(text).toContain("Default 120 seconds, allowed 5 to 600.");
+    expect(text).toContain("Default 60,000 chars, allowed 1,000 to 2,000,000.");
+
+    await act(async () => labelled("Reset Screenshot size to default").click());
+    expect(field("Screenshot size").value).toBe("2");
+    expect(labelled("Reset Screenshot size to default").disabled).toBe(true);
+  });
+
+  it("blocks out-of-range limits and saves converted units", async () => {
+    settings.mockResolvedValue({
+      tier: "refine",
+      allowedOrigins: ["https://app.example.com"],
+      limits: LOCAL_BROWSER_LIMIT_DEFAULTS,
+    });
+    await render();
+
+    await typeInto(field("Screenshot size"), "60");
+    await typeInto(field("Call time limit"), "1");
+    await typeInto(field("Network log entries"), "lots");
+    const text = container.textContent ?? "";
+    expect(text).toContain("Use 0.0625 to 50 MiB.");
+    expect(text).toContain("Use 5 to 600 seconds.");
+    expect(text).toContain("Enter a number of entries.");
+    expect(text).toContain("Fix the highlighted limits before saving.");
+    expect(field("Screenshot size").getAttribute("aria-invalid")).toBe("true");
+    expect(button("Save settings").disabled).toBe(true);
+    await act(async () => button("Save settings").click());
+    expect(saveSettings).not.toHaveBeenCalled();
+
+    await typeInto(field("Screenshot size"), "8");
+    await typeInto(field("Call time limit"), "30");
+    await typeInto(field("Network log entries"), "500");
+    await typeInto(field("Upload and download size"), "100");
+    expect(button("Save settings").disabled).toBe(false);
+    await act(async () => button("Save settings").click());
+    expect(saveSettings).toHaveBeenCalledWith(COMPANY_ID, {
+      tier: "refine",
+      allowedOrigins: ["https://app.example.com"],
+      limits: {
+        ...LOCAL_BROWSER_LIMIT_DEFAULTS,
+        screenshotMaxBytes: 8_388_608,
+        transferMaxBytes: 104_857_600,
+        callMaxMs: 30_000,
+        networkMaxEntries: 500,
+      },
     });
   });
 
@@ -265,7 +493,7 @@ describe("Local Browser settings panel", () => {
     settings.mockRejectedValue(new Error("offline"));
     await render();
     expect(container.textContent).toContain("did not answer");
-    expect(button("Save access level").disabled).toBe(true);
+    expect(button("Save settings").disabled).toBe(true);
     expect(container.querySelector("h2")?.textContent).toBe("Local Browser");
   });
 });

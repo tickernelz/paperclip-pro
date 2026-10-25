@@ -5,18 +5,7 @@ import { createContext, runInContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const FILES = [
-  "lib/protocol.js",
-  "lib/text.js",
-  "lib/refmap.js",
-  "lib/cursor.js",
-  "lib/snapshot.js",
-  "lib/markdown.js",
-  "lib/dom-adapter.js",
-  "lib/keys.js",
-  "lib/input.js",
-  "content/agent.js",
-];
+const FILES = JSON.parse(readFileSync(root + "manifest.json", "utf8")).content_scripts[0].js;
 
 function makeElement(tag, options = {}) {
   const attrs = { ...(options.attrs || {}) };
@@ -297,3 +286,62 @@ test("resets refs after a navigation", async () => {
   const second = await agent.call("snapshot", { maxNodes: 10 });
   assert.equal(refsOf(second.result.nodes), "e1=Button 0|e2=Button 1");
 });
+
+function textBody(text) {
+  const body = makeElement("body", { text });
+  body.childNodes = [];
+  return body;
+}
+
+test("the content agent answers documentState with the document state schema", async () => {
+  const agent = loadAgent(buttons(1));
+  const response = await agent.call("documentState", {});
+  assert.equal(response.ok, true);
+  const state = response.result;
+  for (const key of ["documentId", "url", "readyState", "visibilityState", "navigationType", "restoredFromBfcache", "wasDiscarded", "prerendering", "loadedAt", "ageMs", "requestsSinceLoad", "xhrSinceLoad", "stale", "staleReasons"]) {
+    assert.ok(Object.prototype.hasOwnProperty.call(state, key), key + " is missing");
+  }
+  assert.equal(state.url, "https://example.test/page");
+});
+
+test("snapshot, read and wait results carry the same document", async () => {
+  const agent = loadAgent(buttons(2));
+  const snapshot = await agent.call("snapshot", {});
+  const read = await agent.call("read", {});
+  const wait = await agent.call("wait", { urlIncludes: "example" });
+  assert.equal(typeof snapshot.result.document.documentId, "string");
+  assert.equal(read.result.document.documentId, snapshot.result.document.documentId);
+  assert.equal(wait.result.document.documentId, snapshot.result.document.documentId);
+});
+
+test("read honours a maxChars far above the old 40000 clamp", async () => {
+  const agent = loadAgent(textBody("x".repeat(60000)));
+  const response = await agent.call("read", { maxChars: 50000, format: "html" });
+  assert.equal(response.ok, true);
+  assert.equal(response.result.totalChars, 60000);
+  assert.equal(response.result.text.length, 50000);
+  assert.equal(response.result.truncated, true);
+});
+
+test("read honours a maxChars below the old 200 floor", async () => {
+  const agent = loadAgent(textBody("y".repeat(500)));
+  const response = await agent.call("read", { maxChars: 50, format: "html" });
+  assert.equal(response.result.text.length, 50);
+});
+
+test("a wait that runs out reports matched false instead of throwing", async () => {
+  const agent = loadAgent(buttons(1));
+  const response = await agent.call("wait", { selector: "#never", timeoutMs: 150 });
+  assert.equal(response.ok, true);
+  assert.equal(response.result.matched, false);
+  assert.ok(response.result.elapsedMs >= 100);
+  assert.match(response.result.note, /Nothing matched/);
+});
+
+test("a wait that matches says which condition held", async () => {
+  const agent = loadAgent(buttons(1));
+  const response = await agent.call("wait", { urlIncludes: "/page" });
+  assert.equal(response.result.matched, true);
+  assert.equal(response.result.condition, "url");
+});
+

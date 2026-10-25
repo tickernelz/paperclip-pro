@@ -8,24 +8,110 @@
     "lib/protocol.js",
     "lib/text.js",
     "lib/refmap.js",
+    "lib/cursor.js",
     "lib/snapshot.js",
     "lib/markdown.js",
     "lib/dom-adapter.js",
+    "lib/document-state.js",
     "lib/keys.js",
-    "lib/cursor.js",
     "lib/input.js",
     "content/agent.js"
   ];
 
+  var DEFAULT_STORE = "firefox-default";
+  var PRIVATE_STORE = "firefox-private";
+  var containers = new Map();
+
+  function identitiesApi() {
+    var api = browser.contextualIdentities;
+    return api && typeof api.query === "function" ? api : null;
+  }
+
+  async function refreshContainers() {
+    var api = identitiesApi();
+    if (!api) return containers;
+    var next = new Map();
+    try {
+      var list = await api.query({});
+      for (var i = 0; i < (list || []).length; i += 1) {
+        var identity = list[i];
+        if (identity && identity.cookieStoreId) next.set(identity.cookieStoreId, { name: identity.name, color: identity.color });
+      }
+    } catch (error) {
+      void error;
+    }
+    containers = next;
+    return containers;
+  }
+
+  function installContainerWatchers(onChange) {
+    var api = identitiesApi();
+    if (!api) return;
+    var names = ["onCreated", "onUpdated", "onRemoved"];
+    for (var i = 0; i < names.length; i += 1) {
+      var event = api[names[i]];
+      if (!event || typeof event.addListener !== "function") continue;
+      event.addListener(function () {
+        void refreshContainers().then(function () {
+          if (typeof onChange === "function") onChange();
+        });
+      });
+    }
+  }
+
+  async function container(cookieStoreId) {
+    var id = typeof cookieStoreId === "string" && cookieStoreId ? cookieStoreId : DEFAULT_STORE;
+    var out = { cookieStoreId: id, isDefault: id === DEFAULT_STORE };
+    if (id === DEFAULT_STORE) return out;
+    if (id === PRIVATE_STORE) {
+      out.name = "Private browsing";
+      return out;
+    }
+    var api = identitiesApi();
+    if (!api || typeof api.get !== "function") return out;
+    try {
+      var identity = await api.get(id);
+      if (identity) {
+        if (identity.name) out.name = identity.name;
+        if (identity.color) out.color = identity.color;
+        containers.set(id, { name: identity.name, color: identity.color });
+      }
+    } catch (error) {
+      void error;
+    }
+    return out;
+  }
+
+  async function containerExists(cookieStoreId) {
+    if (cookieStoreId === DEFAULT_STORE || cookieStoreId === PRIVATE_STORE) return true;
+    var api = identitiesApi();
+    if (!api || typeof api.get !== "function") return false;
+    try {
+      return Boolean(await api.get(cookieStoreId));
+    } catch (error) {
+      return false;
+    }
+  }
+
   function summarize(tab) {
-    return {
+    var out = {
       tabId: tab.id,
-      windowId: tab.windowId,
       title: tab.title || "",
       url: tab.url || "",
       active: tab.active === true,
       status: tab.status || "unknown"
     };
+    if (typeof tab.windowId === "number" && tab.windowId >= 0) out.windowId = tab.windowId;
+    if (typeof tab.cookieStoreId === "string" && tab.cookieStoreId) {
+      out.cookieStoreId = tab.cookieStoreId;
+      var known = containers.get(tab.cookieStoreId);
+      if (known && known.name) out.containerName = known.name;
+    }
+    if (typeof tab.incognito === "boolean") out.incognito = tab.incognito;
+    if (typeof tab.discarded === "boolean") out.discarded = tab.discarded;
+    if (typeof tab.pinned === "boolean") out.pinned = tab.pinned;
+    if (typeof tab.audible === "boolean") out.audible = tab.audible;
+    return out;
   }
 
   async function listTabs() {
@@ -132,6 +218,23 @@
 
   var TOP_FRAME = 0;
 
+  async function probeAgent(tab) {
+    try {
+      var pong = await browser.tabs.sendMessage(tab.tabId, { channel: "lb", op: "ping", args: {} }, { frameId: TOP_FRAME });
+      if (pong && pong.ok) return "connected";
+    } catch (error) {
+      void error;
+    }
+    if (!/^(https?|file):/i.test(String(tab.url || ""))) return "blocked";
+    var host = false;
+    try {
+      host = await browser.permissions.contains({ origins: ["<all_urls>"] });
+    } catch (error) {
+      host = false;
+    }
+    return host ? "missing" : "blocked";
+  }
+
   async function send(tabId, op, args) {
     await ensureAgent(tabId);
     var response;
@@ -193,6 +296,13 @@
   root.LB = root.LB || {};
   root.LB.tabs = {
     CONTENT_FILES: CONTENT_FILES,
+    DEFAULT_STORE: DEFAULT_STORE,
+    PRIVATE_STORE: PRIVATE_STORE,
+    refreshContainers: refreshContainers,
+    installContainerWatchers: installContainerWatchers,
+    container: container,
+    containerExists: containerExists,
+    probeAgent: probeAgent,
     summarize: summarize,
     listTabs: listTabs,
     resolveTab: resolveTab,

@@ -11,23 +11,48 @@
     UNPAIRED: "unpaired",
     CONNECTING: "connecting",
     CONNECTED: "connected",
-    RECONNECTING: "reconnecting",
-    IDLE: "idle",
-    ERROR: "error"
+    DISCONNECTED: "disconnected",
+    RETIRED: "retired"
   };
+
+  var POLICY_VIOLATION = 1008;
+  var PAIRING_CODE_ATTEMPTS = 3;
 
   var pairing = null;
   var socket = null;
   var stopped = true;
   var attempt = 0;
+  var codeAttempts = 0;
   var pendingCode = null;
   var reconnectTimer = null;
   var heartbeatTimer = null;
+  var broadcastTimer = null;
   var lastPongAt = 0;
   var viewerFailures = 0;
   var viewer = { timer: null, tabId: null, intervalMs: 0, busy: false };
   var tabsTimer = null;
   var lastTabsJson = "";
+  var trustedInput = { mode: "synthetic" };
+
+  var state = {
+    status: STATUS.UNPAIRED,
+    origin: null,
+    label: null,
+    tier: null,
+    sessionId: null,
+    allowedOrigins: [],
+    profileName: null,
+    connectedAt: null,
+    lastError: null,
+    retiredReason: null,
+    clientVersion: "0.0.0"
+  };
+
+  try {
+    state.clientVersion = browser.runtime.getManifest().version;
+  } catch (error) {
+    state.clientVersion = "0.0.0";
+  }
 
   function scheduleTabsEvent() {
     if (tabsTimer !== null || !isConnected()) return;
@@ -62,46 +87,21 @@
     browser.tabs.onActivated.addListener(function () {
       scheduleTabsEvent();
     });
-  }
-
-  var state = {
-    status: STATUS.UNPAIRED,
-    origin: null,
-    label: null,
-    tier: null,
-    sessionId: null,
-    allowedOrigins: [],
-    profileName: null,
-    connectedAt: null,
-    lastError: null,
-    clientVersion: "0.0.0"
-  };
-
-  try {
-    state.clientVersion = browser.runtime.getManifest().version;
-  } catch (error) {
-    state.clientVersion = "0.0.0";
-  }
-
-  var siteAccess = "unknown";
-
-  async function refreshSiteAccess() {
-    try {
-      siteAccess = (await browser.permissions.contains({ origins: ["<all_urls>"] })) ? "all" : "limited";
-    } catch (error) {
-      siteAccess = "unknown";
-    }
-    broadcast();
-  }
-
-  if (browser.permissions && browser.permissions.onAdded) {
-    browser.permissions.onAdded.addListener(function () {
-      void refreshSiteAccess();
+    LB.tabs.installContainerWatchers(function () {
+      lastTabsJson = "";
+      scheduleTabsEvent();
     });
   }
-  if (browser.permissions && browser.permissions.onRemoved) {
-    browser.permissions.onRemoved.addListener(function () {
-      void refreshSiteAccess();
+
+  function installAccessWatchers() {
+    LB.access.onChange(function (snapshot) {
+      send({ type: "event", event: "access", data: snapshot });
+      broadcast();
+    });
+    LB.guards.onChange(function (guards) {
+      LB.network.resize(guards.networkBufferSize);
+      send({ type: "event", event: "guards", data: guards });
+      broadcast();
     });
   }
 
@@ -113,29 +113,88 @@
 
   function snapshotState() {
     return {
-      siteAccess: siteAccess,
       status: state.status,
       origin: state.origin,
       label: state.label,
       tier: state.tier,
       sessionId: state.sessionId,
+      allowedOrigins: state.allowedOrigins,
       clientVersion: state.clientVersion,
       profileName: state.profileName,
       connectedAt: state.connectedAt,
       lastError: state.lastError,
+      retiredReason: state.retiredReason,
       attempt: attempt,
       viewerTabId: viewer.tabId,
       viewerActive: viewer.timer !== null
     };
   }
 
-  function broadcast() {
+  async function status() {
+    var tabs = [];
     try {
-      var sending = browser.runtime.sendMessage({ channel: "lb-status", state: snapshotState() });
-      if (sending && typeof sending.catch === "function") sending.catch(function () {});
+      tabs = await LB.tabs.listTabs();
+    } catch (error) {
+      tabs = [];
+    }
+    var access = null;
+    try {
+      access = await LB.access.snapshot();
+    } catch (error) {
+      access = { siteAccess: "unknown", granted: [], missing: [], pending: [] };
+    }
+    var guards = LB.guards.current();
+    try {
+      guards = await LB.guards.get();
     } catch (error) {
       void error;
     }
+    var out = {
+      client: protocol.CLIENT,
+      version: state.clientVersion,
+      state: state.status,
+      label: state.label,
+      origin: state.origin,
+      sessionId: state.sessionId,
+      tier: state.tier,
+      allowedOrigins: state.allowedOrigins,
+      tabs: tabs,
+      access: access,
+      guards: guards,
+      trustedInput: trustedInput
+    };
+    if (state.retiredReason) out.retiredReason = state.retiredReason;
+    if (state.lastError) out.lastError = state.lastError;
+    return out;
+  }
+
+  async function refreshTrustedInput() {
+    try {
+      trustedInput = await LB.bidi.trustedInput();
+    } catch (error) {
+      trustedInput = { mode: "synthetic" };
+    }
+    return trustedInput;
+  }
+
+  function broadcast() {
+    try {
+      Promise.resolve(LB.access.refreshBadge()).catch(function () {});
+    } catch (error) {
+      void error;
+    }
+    if (broadcastTimer !== null) return;
+    broadcastTimer = setTimeout(function () {
+      broadcastTimer = null;
+      void status().then(function (current) {
+        try {
+          var sending = browser.runtime.sendMessage({ channel: "lb-status", status: current });
+          if (sending && typeof sending.catch === "function") sending.catch(function () {});
+        } catch (error) {
+          void error;
+        }
+      });
+    }, 50);
   }
 
   async function readPairing() {
@@ -215,25 +274,26 @@
     }, D.heartbeatMs);
   }
 
+  function isKnownCode(code) {
+    return Object.keys(C).some(function (key) {
+      return C[key] === code;
+    });
+  }
+
   function normalizeError(failure) {
-    if (failure && typeof failure.code === "string" && typeof failure.message === "string") {
-      var known = Object.keys(C).some(function (key) {
-        return C[key] === failure.code;
-      });
-      if (known) {
-        var payload = { code: failure.code, message: failure.message };
-        if (typeof failure.hint === "string" && failure.hint) payload.hint = failure.hint;
-        if (typeof failure.retryable === "boolean") payload.retryable = failure.retryable;
-        return payload;
-      }
+    if (failure && typeof failure.code === "string" && typeof failure.message === "string" && isKnownCode(failure.code)) {
+      var payload = { code: failure.code, message: failure.message };
+      if (typeof failure.hint === "string" && failure.hint) payload.hint = failure.hint;
+      if (typeof failure.retryable === "boolean") payload.retryable = failure.retryable;
+      if (Array.isArray(failure.permissions) && failure.permissions.length) payload.permissions = failure.permissions.slice();
+      return payload;
     }
     var message = failure && failure.message ? failure.message : String(failure);
     if (/missing host permission|cannot access contents of|not allowed to access/i.test(message)) {
       return protocol.error(
-        C.originDenied,
+        C.permissionRequired,
         "This browser blocks the extension from that page, so nothing was read or changed",
-        "Open the extension popup and press Allow all sites, then retry",
-        true
+        { hint: "Ask the user to open the extension and allow Every website, then retry", retryable: true, permissions: ["<all_urls>"] }
       );
     }
     return protocol.error(C.protocolError, message, "Retry the call", true);
@@ -257,7 +317,7 @@
     });
   }
 
-  function context() {
+  function context(budgetMs) {
     return {
       sessionId: state.sessionId,
       clientVersion: state.clientVersion,
@@ -266,7 +326,9 @@
       tier: state.tier || "refine",
       allowedOrigins: state.allowedOrigins,
       connectedAt: state.connectedAt,
-      controlledByViewer: viewer.timer !== null
+      controlledByViewer: viewer.timer !== null,
+      budgetMs: budgetMs,
+      deadline: Date.now() + budgetMs
     };
   }
 
@@ -286,16 +348,27 @@
       profileName = null;
     }
     state.profileName = profileName;
-    send({
+    var frame = {
       type: "hello",
       protocol: protocol.PROTOCOL_VERSION,
       client: protocol.CLIENT,
       clientVersion: state.clientVersion,
-      capabilities: ["cookies.v2"],
+      capabilities: protocol.CAPABILITIES.slice(),
       label: pairing && pairing.label ? pairing.label : protocol.DEFAULT_LABEL,
       profileName: profileName,
       tabs: tabs
-    });
+    };
+    try {
+      frame.access = await LB.access.snapshot();
+    } catch (error) {
+      void error;
+    }
+    try {
+      frame.guards = await LB.guards.get();
+    } catch (error) {
+      void error;
+    }
+    send(frame);
   }
 
   function emitAgentActivity(stateName) {
@@ -307,11 +380,12 @@
     var id = typeof frame.id === "string" ? frame.id : String(frame.id);
     var tool = String(frame.tool || "");
     var args = frame.args && typeof frame.args === "object" ? frame.args : {};
+    var budgetMs = LB.budget.budgetFor(tool, args, frame.budgetMs);
     var result = null;
     var failure = null;
     if (tool !== "local_browser_viewer") emitAgentActivity(VIEWER_STATES.AGENT_STREAMING);
     try {
-      result = await withTimeout(LB.tools.dispatch(tool, args, context()), LB.tools.budgetFor(tool, args), tool);
+      result = await withTimeout(LB.tools.dispatch(tool, args, context(budgetMs)), budgetMs, tool);
     } catch (error) {
       failure = normalizeError(error);
     }
@@ -338,6 +412,8 @@
         pairing.sessionToken = typeof frame.sessionToken === "string" ? frame.sessionToken : pairing.sessionToken;
         pairing.sessionId = typeof frame.sessionId === "string" ? frame.sessionId : pairing.sessionId;
         pairing.tier = typeof frame.tier === "string" ? frame.tier : pairing.tier;
+        pairing.retiredAt = null;
+        pairing.retiredReason = null;
         try {
           await writePairing(pairing);
         } catch (error) {
@@ -352,7 +428,8 @@
         tier: typeof frame.tier === "string" ? frame.tier : state.tier,
         allowedOrigins: Array.isArray(frame.allowedOrigins) ? frame.allowedOrigins : state.allowedOrigins,
         connectedAt: new Date().toISOString(),
-        lastError: null
+        lastError: null,
+        retiredReason: null
       });
       startHeartbeat();
       scheduleTabsEvent();
@@ -375,7 +452,7 @@
     if (stopped) return;
     attempt += 1;
     var delay = backoff.computeDelay(attempt - 1, { baseMs: 1000, maxMs: 30000, jitter: 0.25 });
-    setState({ status: STATUS.RECONNECTING });
+    setState({ status: STATUS.DISCONNECTED });
     clearReconnect();
     reconnectTimer = setTimeout(function () {
       reconnectTimer = null;
@@ -393,7 +470,7 @@
     var query = useCode ? { code: useCode } : { session: pairing ? pairing.sessionToken : null };
     var url = protocol.bridgeUrl(pairing ? pairing.origin : "", query);
     if (!url) {
-      setState({ status: STATUS.ERROR, lastError: "The paired origin is not http or https" });
+      setState({ status: STATUS.DISCONNECTED, lastError: "The paired origin is not http or https" });
       return;
     }
     setState({ status: STATUS.CONNECTING, origin: pairing.origin, label: pairing.label, lastError: null });
@@ -401,7 +478,7 @@
     try {
       ws = new WebSocket(url);
     } catch (error) {
-      setState({ status: STATUS.ERROR, lastError: "Firefox could not open the bridge socket" });
+      setState({ status: STATUS.DISCONNECTED, lastError: "Firefox could not open the bridge socket" });
       scheduleReconnect(useCode ? { code: useCode } : null);
       return;
     }
@@ -434,8 +511,7 @@
           return;
         }
       }
-      var fallback = codeNeverAccepted ? { code: useCode } : null;
-      scheduleReconnect(fallback);
+      scheduleReconnect(codeNeverAccepted ? { code: useCode } : null);
     };
     ws.onerror = function () {
       if (socket !== ws) return;
@@ -443,24 +519,29 @@
     };
   }
 
+  function retiredMessage(reason) {
+    return reason
+      ? "Session ended: " + reason + ". Pair this browser again to reconnect."
+      : "This browser was disconnected. Pair it again to reconnect.";
+  }
+
   async function start() {
     pairing = await readPairing();
     if (!pairing) {
       stopped = true;
-      setState({ status: STATUS.UNPAIRED, origin: null, label: null, tier: null, sessionId: null, lastError: null });
+      setState({ status: STATUS.UNPAIRED, origin: null, label: null, tier: null, sessionId: null, lastError: null, retiredReason: null });
       return;
     }
     if (pairing.retiredAt && !pairing.sessionToken) {
       stopped = true;
       setState({
-        status: STATUS.UNPAIRED,
+        status: STATUS.RETIRED,
         origin: pairing.origin,
         label: pairing.label,
         tier: null,
         sessionId: null,
-        lastError: pairing.retiredReason
-          ? "Session ended: " + pairing.retiredReason + ". Pair this browser again to reconnect."
-          : "This browser was disconnected. Pair it again to reconnect."
+        retiredReason: pairing.retiredReason || "the pairing ended",
+        lastError: retiredMessage(pairing.retiredReason)
       });
       return;
     }
@@ -505,6 +586,11 @@
     return { origin: LB.pairing.normalizeOrigin(found.origin || tab.url), code: String(found.code).trim() };
   }
 
+  function detectedInput(found) {
+    if (!found || !found.code) return null;
+    return { input: found.origin ? found.origin + "/?code=" + encodeURIComponent(found.code) : found.code };
+  }
+
   async function pair(options) {
     var opts = options || {};
     var origin = LB.pairing.normalizeOrigin(opts.origin);
@@ -518,7 +604,20 @@
     stopped = false;
     attempt = 0;
     codeAttempts = 0;
+    state.retiredReason = null;
     connect({ code: code });
+  }
+
+  async function pairFromInput(input) {
+    var parsed = LB.pairing.parsePairingInput(input);
+    if (parsed.reason) throw new Error(parsed.reason);
+    if (parsed.needsCode || !parsed.code) throw new Error("This link has no pairing code. Copy the whole pairing link from Paperclip.");
+    var scheme = /^\s*([A-Za-z][A-Za-z0-9+.-]*):\/\//.exec(String(input || ""));
+    if (!parsed.origin && scheme) throw new Error("Use an http or https address, not " + scheme[1] + ":");
+    var origin = parsed.origin || (pairing ? pairing.origin : null);
+    if (!origin) throw new Error("A bare code needs the Paperclip address. Paste the whole pairing link instead.");
+    var label = pairing && pairing.origin === origin ? pairing.label : "";
+    await pair({ origin: origin, code: parsed.code, label: label });
   }
 
   function stop(options) {
@@ -530,7 +629,7 @@
     stopViewer();
     closeSocket();
     if (opts.keepPairing === true) {
-      setState({ status: STATUS.IDLE, lastError: opts.reason || null });
+      setState({ status: STATUS.DISCONNECTED, connectedAt: null, lastError: opts.reason ? "Stopped: " + opts.reason : null });
       return;
     }
     setState({ status: STATUS.UNPAIRED, sessionId: null, tier: null, connectedAt: null, lastError: opts.reason || null });
@@ -540,12 +639,8 @@
     stop({});
     pairing = null;
     await writePairing(null);
-    setState({ status: STATUS.UNPAIRED, origin: null, label: null, tier: null, sessionId: null, lastError: null });
+    setState({ status: STATUS.UNPAIRED, origin: null, label: null, tier: null, sessionId: null, lastError: null, retiredReason: null });
   }
-
-  var POLICY_VIOLATION = 1008;
-  var PAIRING_CODE_ATTEMPTS = 3;
-  var codeAttempts = 0;
 
   async function retirePairing(reason) {
     stopped = true;
@@ -574,14 +669,15 @@
       void error;
     }
     setState({
-      status: STATUS.UNPAIRED,
+      status: STATUS.RETIRED,
       origin: keptOrigin,
       label: keptLabel,
       tier: null,
       sessionId: null,
       allowedOrigins: [],
       connectedAt: null,
-      lastError: "Session ended: " + reason + ". Pair this browser again to reconnect."
+      retiredReason: reason,
+      lastError: retiredMessage(reason)
     });
   }
 
@@ -628,7 +724,7 @@
         if (!background) {
           viewerFailures += 1;
           if (viewerFailures === 1) {
-            emitViewerState(VIEWER_STATES.unavailable, tabId, "This tab needs to be in front before it can be watched");
+            emitViewerState(VIEWER_STATES.UNAVAILABLE, tabId, "This tab needs to be in front before it can be watched");
           }
           return;
         }
@@ -672,56 +768,65 @@
     void emitFrame();
   }
 
+  function fail(message) {
+    return status().then(function (current) {
+      return { ok: false, error: message, status: current };
+    });
+  }
+
+  async function succeed(extra) {
+    return Object.assign({ ok: true, status: await status() }, extra || {});
+  }
+
   async function control(message) {
+    var op = message && message.op;
     try {
-      if (message.op === "status") {
-        return {
-          ok: true,
-          state: snapshotState(),
-          pairing: pairing
-            ? {
-                origin: pairing.origin,
-                label: pairing.label,
-                hasToken: Boolean(pairing.sessionToken),
-                retiredAt: pairing.retiredAt || null,
-                retiredReason: pairing.retiredReason || null
-              }
-            : null
-        };
+      if (op === "status") {
+        await refreshTrustedInput();
+        return succeed();
       }
-      if (message.op === "pair") {
-        await pair(message);
-        return { ok: true, state: snapshotState() };
+      if (op === "pair") {
+        await pairFromInput(message.input);
+        return succeed();
       }
-      if (message.op === "detect") {
-        return { ok: true, pairing: await detectPairingTab() };
+      if (op === "detect") {
+        return succeed({ detected: detectedInput(await detectPairingTab()) });
       }
-      if (message.op === "reconnect") {
-        if (!pairing) return { ok: false, error: "Pair a browser first" };
+      if (op === "reconnect") {
+        if (!pairing) return fail("Pair this browser first.");
         if (pairing.retiredAt && !pairing.sessionToken) {
-          return {
-            ok: false,
-            error: pairing.retiredReason
-              ? "Session ended: " + pairing.retiredReason + ". Pair this browser again with a new code."
-              : "This browser was disconnected. Pair it again with a new code."
-          };
+          return fail(
+            pairing.retiredReason
+              ? "Session ended: " + pairing.retiredReason + ". Pair this browser again with a new link."
+              : "This browser was disconnected. Pair it again with a new link."
+          );
         }
         pendingCode = null;
         stopped = false;
         attempt = 0;
         connect({});
-        return { ok: true, state: snapshotState() };
+        return succeed();
       }
-      if (message.op === "disconnect") {
+      if (op === "disconnect") {
         await disconnect();
-        return { ok: true, state: snapshotState() };
+        return succeed();
       }
-      if (message.op === "bidi") {
-        return { ok: true, bidi: await LB.bidi.status() };
+      if (op === "guards.set") {
+        await LB.guards.set(message.patch && typeof message.patch === "object" ? message.patch : {});
+        return succeed();
       }
-      return { ok: false, error: "Unknown op " + String(message.op) };
+      if (op === "pending.clear") {
+        await LB.access.clearPending(Array.isArray(message.permissions) ? message.permissions : undefined);
+        return succeed();
+      }
+      if (op === "bidi.set") {
+        trustedInput = await LB.bidi.setPort(message.port);
+        broadcast();
+        return succeed();
+      }
+      return fail("Unknown control op " + String(op) + ".");
     } catch (error) {
-      return { ok: false, error: error && error.message ? error.message : String(error) };
+      return fail(error && error.message ? error.message : String(error));
     }
   }
 
@@ -731,14 +836,16 @@
     start: start,
     stop: stop,
     pair: pair,
+    pairFromInput: pairFromInput,
     disconnect: disconnect,
     control: control,
+    status: status,
+    refreshTrustedInput: refreshTrustedInput,
     startViewer: startViewer,
     stopViewer: stopViewer,
     installTabWatchers: installTabWatchers,
-    refreshSiteAccess: refreshSiteAccess,
+    installAccessWatchers: installAccessWatchers,
+    isConnected: isConnected,
     snapshotState: snapshotState
   };
-
-  void refreshSiteAccess();
 })(globalThis);

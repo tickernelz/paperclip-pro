@@ -24,6 +24,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 24
+      - name: Check the synced extension copies match apps/local-browser/shared
+        run: node scripts/sync-local-browser-shared.mjs --check
       - name: Decide whether a signature is needed
         id: check
         run: |

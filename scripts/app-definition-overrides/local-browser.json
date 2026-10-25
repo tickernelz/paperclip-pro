@@ -21,10 +21,11 @@
         "customer"
       ],
       "whenToUse": "Let agents use the signed-in browser on your own machine after you pair it from this panel.",
-      "guidanceMd": "Pairing happens from this page, not in the setup wizard: install the Local Browser extension for Chromium or Firefox, click Pair a browser here, and enter the eight-character code it shows. The extension connects out to Paperclip, so no port, tunnel, or credential is needed. Start in refine tier, which only reaches the origins you allowlist, and raise it to full only when a task genuinely needs JavaScript evaluation, storage, network inspection, uploads, or downloads.",
+      "guidanceMd": "Pairing happens from this page, not in the setup wizard: install the Local Browser extension for Chromium or Firefox, click Pair a browser here, and enter the eight-character code it shows. The extension connects out to Paperclip, so no port, tunnel, or credential is needed. The extension asks for browser permissions only when you allow them: open its control center and press Allow, or Allow all to give agents full browser access. Start in refine tier, which only reaches the origins you allowlist, and raise it to full only when a task genuinely needs JavaScript evaluation, storage, network inspection, uploads, downloads, or direct browser API calls. Result size, snapshot, read, screenshot, transfer, call time and network limits are yours to set in the Limits section.",
       "riskTier": "S4",
       "warnings": [
-        "Full tier lets an agent read any page the browser is signed into, including mail, banking, and admin consoles. Every origin is reachable in full tier, so the allowlist stops applying.",
+        "Full tier lets an agent read any page the browser is signed into, including mail, banking, and admin consoles, call browser APIs such as history and bookmarks, and see request headers. Every origin is reachable in full tier, so the allowlist stops applying.",
+        "Allow all grants every browser permission the extension can request, including history, bookmarks, cookies, downloads and clipboard. Grant only what the work needs, and revoke a permission in the extension at any time.",
         "Paired browsers act as you. Paperclip does not sign you in, does not store your passwords, and closing a session never signs you out."
       ]
     }

@@ -343,7 +343,7 @@
     var trustedNeeded = false;
 
     if (args.action !== "scroll") safeScrollIntoView(element);
-    var blocked = ensureReachable(element, args.action);
+    var blocked = args.force === true ? null : ensureReachable(element, args.action);
     if (blocked) return blocked;
 
     var beforeUrl = location.href;
@@ -462,7 +462,7 @@
 
   function opRead(args) {
     var format = args.format || "text";
-    var maxChars = LB.text.clampInt(args.maxChars, DEFAULTS.textChars, 200, DEFAULTS.textMaxChars);
+    var maxChars = LB.text.clampInt(args.maxChars, DEFAULTS.textChars, 1, Number.MAX_SAFE_INTEGER);
     var raw;
 
     if (format === "html") {
@@ -500,7 +500,7 @@
   }
 
   async function opWait(args) {
-    var timeoutMs = LB.text.clampInt(args.timeoutMs, DEFAULTS.waitTimeoutMs, 100, 120000);
+    var timeoutMs = LB.text.clampInt(args.timeoutMs, DEFAULTS.waitTimeoutMs, 100, Number.MAX_SAFE_INTEGER);
     var started = Date.now();
     var deadline = started + timeoutMs;
 
@@ -752,17 +752,35 @@
     return fail(ERROR.protocolError, "Unknown input kind " + String(kind), "Use mouse, wheel or key");
   }
 
+  function documentState() {
+    if (!LB.documentState || typeof LB.documentState.read !== "function") return null;
+    try {
+      return LB.documentState.read();
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function withDocument(response) {
+    if (response && response.ok === true && response.result && typeof response.result === "object") {
+      response.result.document = documentState();
+    }
+    return response;
+  }
+
   function handle(message) {
     var args = message.args || {};
     switch (message.op) {
       case "snapshot":
-        return Promise.resolve(opSnapshot(args));
+        return Promise.resolve(withDocument(opSnapshot(args)));
       case "act":
         return opAct(args);
       case "read":
-        return Promise.resolve(opRead(args));
+        return Promise.resolve(withDocument(opRead(args)));
       case "wait":
-        return opWait(args);
+        return opWait(args).then(withDocument);
+      case "documentState":
+        return Promise.resolve({ ok: true, result: documentState() });
       case "storage":
         return Promise.resolve(opStorage(args));
       case "elementRect":

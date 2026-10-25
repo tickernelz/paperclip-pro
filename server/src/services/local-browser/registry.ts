@@ -1,5 +1,13 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import type { LocalBrowserSession, LocalBrowserTab, LocalBrowserTier } from "@tickernelz/paperclip-pro-shared";
+import {
+  LOCAL_BROWSER_LIMIT_DEFAULTS,
+  type LocalBrowserAccess,
+  type LocalBrowserGuards,
+  type LocalBrowserSession,
+  type LocalBrowserSettings,
+  type LocalBrowserTab,
+  type LocalBrowserTier,
+} from "@tickernelz/paperclip-pro-shared";
 import { localBrowserFailure } from "./errors.js";
 import type { BridgeSocket, LiveSession, PendingCall, ViewerListener, ViewerPayload } from "./types.js";
 
@@ -28,6 +36,9 @@ export function registerSession(input: {
   tabs: LocalBrowserTab[];
   tier: LocalBrowserTier;
   allowedOrigins: string[];
+  limits?: LocalBrowserSettings["limits"];
+  access?: LocalBrowserAccess | null;
+  guards?: LocalBrowserGuards | null;
   tokenHash: string;
   sessionId?: string;
   now?: Date;
@@ -49,6 +60,9 @@ export function registerSession(input: {
     tabs: input.tabs,
     tier: input.tier,
     allowedOrigins: input.allowedOrigins,
+    limits: input.limits ?? { ...LOCAL_BROWSER_LIMIT_DEFAULTS },
+    access: input.access ?? null,
+    guards: input.guards ?? null,
     connectedAt: now,
     lastSeenAt: now,
     pending: new Map(),
@@ -87,9 +101,18 @@ export function updateSessionTabs(session: LiveSession, tabs: LocalBrowserTab[])
   session.tabs = tabs;
 }
 
-export function updateSessionTier(session: LiveSession, tier: LocalBrowserTier, allowedOrigins: string[]): void {
-  session.tier = tier;
-  session.allowedOrigins = allowedOrigins;
+export function updateSessionSettings(session: LiveSession, settings: LocalBrowserSettings): void {
+  session.tier = settings.tier;
+  session.allowedOrigins = settings.allowedOrigins;
+  session.limits = settings.limits;
+}
+
+export function updateSessionAccess(session: LiveSession, access: LocalBrowserAccess): void {
+  session.access = access;
+}
+
+export function updateSessionGuards(session: LiveSession, guards: LocalBrowserGuards): void {
+  session.guards = guards;
 }
 
 export function nextCallId(): string {
@@ -178,6 +201,9 @@ export function toPublicSession(session: LiveSession): LocalBrowserSession {
     lastSeenAt: session.lastSeenAt.toISOString(),
     tabs: session.tabs,
     controlledByViewer: session.viewers.size > 0,
+    capabilities: [...session.capabilities],
+    ...(session.access ? { access: session.access } : {}),
+    ...(session.guards ? { guards: session.guards } : {}),
   };
   return view;
 }

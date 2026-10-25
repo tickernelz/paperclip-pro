@@ -1,18 +1,52 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { createContext, runInContext } from "node:vm";
 import { fileURLToPath } from "node:url";
 
 const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("../manifest.json", import.meta.url)), "utf8"));
+const contract = JSON.parse(readFileSync(fileURLToPath(new URL("./protocol.contract.json", import.meta.url)), "utf8"));
+const synced = JSON.parse(readFileSync(fileURLToPath(new URL("../../shared/.synced-files.json", import.meta.url)), "utf8"));
 
 function position(list, file) {
   return list.indexOf(file);
 }
 
-test("protocol.js loads first so every module can read its defaults", () => {
-  assert.equal(position(manifest.background.scripts, "lib/protocol.js"), 0);
-  assert.equal(position(manifest.content_scripts[0].js, "lib/protocol.js"), 0);
+function catalog(kind) {
+  return contract.permissions.filter((entry) => entry.firefox === kind).map((entry) => entry.id);
+}
+
+test("required permissions are exactly the catalog's firefox required ids", () => {
+  assert.deepEqual([...manifest.permissions].sort(), catalog("required").sort());
+});
+
+test("optional permissions are exactly the catalog's firefox optional ids, every website included", () => {
+  assert.deepEqual([...manifest.optional_permissions].sort(), catalog("optional").sort());
+  assert.ok(manifest.optional_permissions.includes("<all_urls>"));
+  assert.equal(manifest.permissions.includes("<all_urls>"), false);
+});
+
+test("no catalog id unsupported in firefox is declared", () => {
+  const declared = new Set([...manifest.permissions, ...manifest.optional_permissions]);
+  for (const id of catalog("unsupported")) assert.equal(declared.has(id), false, id + " is unsupported in firefox");
+});
+
+test("the manifest is version 1.1.0 with the shared popup and control center", () => {
+  assert.equal(manifest.version, "1.1.0");
+  assert.equal(manifest.browser_action.default_popup, "ui/popup.html");
+  assert.deepEqual(manifest.options_ui, { page: "ui/control.html", open_in_tab: true });
+  assert.equal(manifest.browser_specific_settings.gecko.id, "local-browser@paperclip.app");
+  assert.equal(manifest.browser_specific_settings.gecko.strict_min_version, "128.0");
+});
+
+test("the background loads the shared layer first in its documented order", () => {
+  const scripts = manifest.background.scripts;
+  assert.equal(position(scripts, "lib/contract.js"), 0);
+  assert.equal(position(scripts, "lib/ext-api.js"), 1);
+  for (const file of ["lib/access.js", "lib/guards.js", "lib/headers.js", "lib/api-call.js", "lib/pairing.js"]) {
+    assert.ok(position(scripts, file) > position(scripts, "lib/ext-api.js"), file + " must load after ext-api");
+    assert.ok(position(scripts, file) < position(scripts, "lib/protocol.js"), file + " must load before the firefox modules");
+  }
 });
 
 test("budget.js loads after protocol.js", () => {
@@ -20,10 +54,27 @@ test("budget.js loads after protocol.js", () => {
   assert.ok(position(scripts, "lib/budget.js") > position(scripts, "lib/protocol.js"));
 });
 
-test("the walker loads after text and refmap, which it captures at load", () => {
+test("protocol.js leads the content scripts", () => {
+  assert.equal(position(manifest.content_scripts[0].js, "lib/protocol.js"), 0);
+});
+
+test("the walker loads after text, refmap and cursor, which it captures at load", () => {
   const files = manifest.content_scripts[0].js;
   assert.ok(position(files, "lib/snapshot.js") > position(files, "lib/text.js"));
   assert.ok(position(files, "lib/snapshot.js") > position(files, "lib/refmap.js"));
+  assert.ok(position(files, "lib/snapshot.js") > position(files, "lib/cursor.js"));
+});
+
+test("the document state tracker loads before the content agent", () => {
+  const files = manifest.content_scripts[0].js;
+  assert.ok(position(files, "lib/document-state.js") !== -1);
+  assert.ok(position(files, "lib/document-state.js") < position(files, "content/agent.js"));
+});
+
+test("every synced shared file is present in the firefox folder", () => {
+  for (const file of synced.files) {
+    assert.ok(existsSync(fileURLToPath(new URL("../" + file, import.meta.url))), file + " is not synced");
+  }
 });
 
 test("the content agent loads last", () => {
@@ -42,6 +93,7 @@ test("every manifest script reference exists", () => {
     ...manifest.background.scripts,
     ...manifest.content_scripts.flatMap((entry) => entry.js),
     manifest.browser_action.default_popup,
+    manifest.options_ui.page,
     ...Object.values(manifest.icons),
   ];
   for (const file of referenced) {
@@ -64,9 +116,9 @@ test("the content script covers every url and runs in all frames", () => {
   assert.equal(entry.run_at, "document_idle");
 });
 
-test("the permissions the network and input paths need are declared", () => {
-  for (const permission of ["tabs", "storage", "scripting", "webRequest", "webRequestBlocking", "cookies", "downloads", "<all_urls>"]) {
-    assert.ok(manifest.permissions.includes(permission), permission + " is missing");
+test("the permissions the network and input paths ask for are requestable", () => {
+  for (const permission of ["tabs", "scripting", "webRequest", "webRequestBlocking", "cookies", "downloads", "<all_urls>"]) {
+    assert.ok(manifest.optional_permissions.includes(permission), permission + " is missing");
   }
 });
 
@@ -78,10 +130,13 @@ test("the manifest is a persistent manifest v2 add-on with a pinned id", () => {
 });
 
 function contentFilesFromSource() {
-  const source = readFileSync(fileURLToPath(new URL("../background/tabs.js", import.meta.url)), "utf8");
-  const match = /var CONTENT_FILES = \[([\s\S]*?)\];/.exec(source);
-  assert.ok(match, "background/tabs.js must declare CONTENT_FILES");
-  return [...match[1].matchAll(/"([^"]+)"/g)].map((entry) => entry[1]);
+  const sandbox = {};
+  sandbox.globalThis = sandbox;
+  createContext(sandbox);
+  for (const file of ["lib/protocol.js", "background/tabs.js"]) {
+    runInContext(readFileSync(fileURLToPath(new URL("../" + file, import.meta.url)), "utf8"), sandbox, { filename: file });
+  }
+  return JSON.parse(JSON.stringify(sandbox.LB.tabs.CONTENT_FILES));
 }
 
 function bootContent(files) {
@@ -99,6 +154,7 @@ function bootContent(files) {
     MutationObserver: class {
       observe() {}
     },
+    Date,
     Event: class {},
     KeyboardEvent: class {},
     MouseEvent: class {},
@@ -167,6 +223,7 @@ test("injecting exactly CONTENT_FILES boots the agent with every module it needs
   assert.equal(typeof sandbox.LB.dom.adapter.url, "function");
   assert.equal(typeof sandbox.LB.markdown.renderMarkdown, "function");
   assert.equal(typeof sandbox.LB.keys.resolve, "function");
+  assert.equal(typeof sandbox.LB.documentState.read, "function");
 });
 
 test("a CONTENT_FILES list that drops a module fails to boot instead of failing silently", () => {

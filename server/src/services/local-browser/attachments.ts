@@ -7,8 +7,6 @@ import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
 import { localBrowserFailure } from "./errors.js";
 
-export const LOCAL_BROWSER_UPLOAD_MAX_BYTES = 20 * 1024 * 1024;
-
 const DATA_URL = /^data:([^;,]+)?(;base64)?,(.*)$/s;
 
 export interface DecodedDataUrl {
@@ -109,7 +107,7 @@ export async function storeLocalBrowserAttachment(
 
 export async function readTaskAttachment(
   db: Db,
-  input: { companyId: string; attachmentId: string; issueId?: string | null; storage?: StorageService },
+  input: { companyId: string; attachmentId: string; issueId?: string | null; storage?: StorageService; maxBytes: number },
 ): Promise<{ bytes: Buffer; contentType: string; originalFilename: string }> {
   const [row] = await db
     .select({
@@ -132,7 +130,7 @@ export async function readTaskAttachment(
   }
   const storage = input.storage ?? getStorageService();
   const object = await storage.getObject(input.companyId, row.objectKey);
-  const bytes = await readStreamBytes(object.stream, LOCAL_BROWSER_UPLOAD_MAX_BYTES);
+  const bytes = await readStreamBytes(object.stream, input.maxBytes);
   return {
     bytes,
     contentType: row.contentType || object.contentType || "application/octet-stream",

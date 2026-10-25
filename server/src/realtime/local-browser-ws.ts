@@ -5,8 +5,8 @@ import { eq } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { localBrowserConnections } from "@tickernelz/paperclip-pro-db";
 import {
+  LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_PROTOCOL_VERSION,
-  LOCAL_BROWSER_SCREENSHOT_MAX_BYTES,
   localBrowserBridgeFrameSchema,
   localBrowserExtensionEventFrameSchema,
   type LocalBrowserExtensionEventFrame,
@@ -31,6 +31,8 @@ import {
   removeSession,
   takePendingCall,
   touchSession,
+  updateSessionAccess,
+  updateSessionGuards,
   updateSessionTabs,
 } from "../services/local-browser/registry.js";
 import { localBrowserService } from "../services/local-browser/service.js";
@@ -39,7 +41,7 @@ import type { BridgeSocket, LiveSession } from "../services/local-browser/types.
 const require = createRequire(import.meta.url);
 const { WebSocket, WebSocketServer } = require("ws") as {
   WebSocket: { OPEN: number };
-  WebSocketServer: new (opts: { noServer: boolean }) => WsServer;
+  WebSocketServer: new (opts: { noServer: boolean; maxPayload: number }) => WsServer;
 };
 
 interface WsServer {
@@ -65,11 +67,26 @@ export const LOCAL_BROWSER_PING_INTERVAL_MS = 25_000;
 export const LOCAL_BROWSER_SILENCE_LIMIT_MS = 75_000;
 export const LOCAL_BROWSER_HELLO_TIMEOUT_MS = 15_000;
 
-const MAX_VIEWER_DATA_URL_CHARS = Math.ceil((LOCAL_BROWSER_SCREENSHOT_MAX_BYTES * 4) / 3) + 256;
+export const LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES =
+  Math.ceil((LOCAL_BROWSER_LIMITS.transferMaxBytes.ceiling * 4) / 3) + 1024 * 1024;
 
-export function toViewerEvent(frame: LocalBrowserExtensionEventFrame): LocalBrowserViewerEvent | null {
+const PERMISSION_HINT =
+  "Call local_browser_permissions with op request and these permissions, then ask the user to press Allow in the Paperclip Local Browser extension.";
+
+function base64Chars(bytes: number): number {
+  return Math.ceil((bytes * 4) / 3) + 256;
+}
+
+export function viewerFrameMaxBytes(screenshotMaxBytes: number): number {
+  return Math.max(screenshotMaxBytes, LOCAL_BROWSER_LIMITS.screenshotMaxBytes.default);
+}
+
+export function toViewerEvent(
+  frame: LocalBrowserExtensionEventFrame,
+  screenshotMaxBytes: number = LOCAL_BROWSER_LIMITS.screenshotMaxBytes.default,
+): LocalBrowserViewerEvent | null {
   if (frame.event === "frame") {
-    if (frame.data.dataUrl.length > MAX_VIEWER_DATA_URL_CHARS) return null;
+    if (frame.data.dataUrl.length > base64Chars(viewerFrameMaxBytes(screenshotMaxBytes))) return null;
     return { type: "frame", ...frame.data };
   }
   if (frame.event !== "state") return null;
@@ -131,9 +148,9 @@ function closeSocket(socket: BridgeSocket, code: number, reason: string) {
 }
 
 function readFrame(data: unknown) {
-  const text = typeof data === "string" ? data : Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
   let parsed: unknown;
   try {
+    const text = typeof data === "string" ? data : Buffer.isBuffer(data) ? data.toString("utf8") : String(data);
     parsed = JSON.parse(text);
   } catch {
     return null;
@@ -149,6 +166,7 @@ export interface LocalBrowserWebSocketOptions {
   pingIntervalMs?: number;
   silenceLimitMs?: number;
   helloTimeoutMs?: number;
+  maxPayloadBytes?: number;
 }
 
 export function setupLocalBrowserWebSocketServer(
@@ -160,10 +178,25 @@ export function setupLocalBrowserWebSocketServer(
   const pingIntervalMs = options.pingIntervalMs ?? LOCAL_BROWSER_PING_INTERVAL_MS;
   const silenceLimitMs = options.silenceLimitMs ?? LOCAL_BROWSER_SILENCE_LIMIT_MS;
   const helloTimeoutMs = options.helloTimeoutMs ?? LOCAL_BROWSER_HELLO_TIMEOUT_MS;
-  const wss = new WebSocketServer({ noServer: true });
+  const wss = new WebSocketServer({ noServer: true, maxPayload: options.maxPayloadBytes ?? LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES });
   const socketBySession = new Map<string, BridgeSocket>();
   const sessionBySocket = new Map<BridgeSocket, string>();
   const pairingByRequest = new WeakMap<IncomingMessage, PairingRecord>();
+
+  const findUsableConnection = async (tokenHash: string) => {
+    const [row] = await db
+      .select({
+        id: localBrowserConnections.id,
+        companyId: localBrowserConnections.companyId,
+        createdByUserId: localBrowserConnections.createdByUserId,
+        createdByAgentId: localBrowserConnections.createdByAgentId,
+        closedAt: localBrowserConnections.closedAt,
+      })
+      .from(localBrowserConnections)
+      .where(eq(localBrowserConnections.tokenHash, tokenHash))
+      .limit(1);
+    return row && !row.closedAt ? row : null;
+  };
 
   const closeConnectionRow = (connectionId: string, status: string, extra: Record<string, unknown> = {}) =>
     db
@@ -283,18 +316,8 @@ export function setupLocalBrowserWebSocketServer(
       connectionId = row.id;
     } else if (token) {
       tokenHash = hashSessionToken(token);
-      const [row] = await db
-        .select({
-          id: localBrowserConnections.id,
-          companyId: localBrowserConnections.companyId,
-          createdByUserId: localBrowserConnections.createdByUserId,
-          createdByAgentId: localBrowserConnections.createdByAgentId,
-          closedAt: localBrowserConnections.closedAt,
-        })
-        .from(localBrowserConnections)
-        .where(eq(localBrowserConnections.tokenHash, tokenHash))
-        .limit(1);
-      if (!row || row.closedAt) {
+      const row = await findUsableConnection(tokenHash);
+      if (!row) {
         closeSocket(socket, 1008, "session token is not usable");
         return false;
       }
@@ -329,6 +352,9 @@ export function setupLocalBrowserWebSocketServer(
       tabs: hello.tabs as LocalBrowserTab[],
       tier: settings.tier,
       allowedOrigins: settings.allowedOrigins,
+      limits: settings.limits,
+      access: hello.access ?? null,
+      guards: hello.guards ?? null,
       tokenHash,
     });
     socketBySession.set(session.sessionId, socket);
@@ -382,6 +408,12 @@ export function setupLocalBrowserWebSocketServer(
 
     socket.on("message", (data: unknown) => {
       const frame = readFrame(data);
+      if (!settled && frame?.type !== "hello") {
+        settled = true;
+        clearTimeout(helloTimer);
+        closeSocket(socket, 1008, frame ? "hello required" : "invalid frame");
+        return;
+      }
       if (!frame) return;
       if (frame.type === "hello") {
         if (settled) return;
@@ -411,16 +443,14 @@ export function setupLocalBrowserWebSocketServer(
           return;
         }
         const error = frame.error;
+        const code = error?.code ?? "local_browser_protocol_error";
+        const hint = error?.hint ?? (code === "local_browser_permission_required" ? PERMISSION_HINT : undefined);
         call.reject(
-          localBrowserFailure(
-            error?.code ?? "local_browser_protocol_error",
-            error?.message ?? "The extension could not complete the call",
-            {
-              retryable: error?.retryable ?? false,
-              ...(error?.hint ? { hint: error.hint } : {}),
-              status: undefined,
-            },
-          ),
+          localBrowserFailure(code, error?.message ?? "The extension could not complete the call", {
+            ...(error?.retryable === undefined ? {} : { retryable: error.retryable }),
+            ...(hint ? { hint } : {}),
+            ...(error?.permissions?.length ? { permissions: error.permissions } : {}),
+          }),
         );
         return;
       }
@@ -431,7 +461,15 @@ export function setupLocalBrowserWebSocketServer(
           updateSessionTabs(live, extensionEvent.data.tabs);
           return;
         }
-        const viewerEvent = toViewerEvent(extensionEvent);
+        if (extensionEvent.event === "access") {
+          updateSessionAccess(live, extensionEvent.data);
+          return;
+        }
+        if (extensionEvent.event === "guards") {
+          updateSessionGuards(live, extensionEvent.data);
+          return;
+        }
+        const viewerEvent = toViewerEvent(extensionEvent, live.limits.screenshotMaxBytes);
         if (viewerEvent) publishViewerPayload(live, viewerEvent);
       }
     });
@@ -479,10 +517,10 @@ export function setupLocalBrowserWebSocketServer(
 
     const code = url.searchParams.get("code");
     const token = url.searchParams.get("session");
-    if (!code && !token) {
-      rejectUpgrade(socket, "400 Bad Request", "pairing code or session token required");
-      return;
-    }
+    const accept = () =>
+      wss.handleUpgrade(req, socket, head, (ws: BridgeSocket) => {
+        wss.emit("connection", ws, request);
+      });
     if (code) {
       const claimed = claimPairing(code);
       if (!claimed) {
@@ -490,10 +528,30 @@ export function setupLocalBrowserWebSocketServer(
         return;
       }
       pairingByRequest.set(req, claimed);
+      accept();
+      return;
     }
-    wss.handleUpgrade(req, socket, head, (ws: BridgeSocket) => {
-      wss.emit("connection", ws, request);
-    });
+    if (!token) {
+      rejectUpgrade(socket, "400 Bad Request", "pairing code or session token required");
+      return;
+    }
+    const dropOnError = () => socket.destroy();
+    socket.on("error", dropOnError);
+    void findUsableConnection(hashSessionToken(token))
+      .then((row) => {
+        socket.off("error", dropOnError);
+        if (!row) {
+          rejectUpgrade(socket, "403 Forbidden", "session token is unknown or no longer usable");
+          return;
+        }
+        if (socket.destroyed) return;
+        accept();
+      })
+      .catch((error: unknown) => {
+        socket.off("error", dropOnError);
+        logger.warn({ err: error }, "local browser session lookup failed");
+        rejectUpgrade(socket, "503 Service Unavailable", "session lookup failed");
+      });
   });
 
   return wss as LocalBrowserWebSocketServer;

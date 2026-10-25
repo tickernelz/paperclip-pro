@@ -2,10 +2,12 @@ import { Router, type Request } from "express";
 import { z } from "zod";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
+  LOCAL_BROWSER_UPDATE_HINT,
   LOCAL_BROWSER_VIEWER_FRAME_INTERVAL_MS,
   localBrowserInputSchema,
   localBrowserPairingStartSchema,
   localBrowserSettingsSchema,
+  localBrowserSettingsUpdateSchema,
   localBrowserViewerEventSchema,
   type LocalBrowserViewerEvent,
 } from "@tickernelz/paperclip-pro-shared";
@@ -336,6 +338,52 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
     res.json({ ok: true });
   });
 
+  router.post("/local-browser/sessions/:id/open-permissions", async (req, res) => {
+    assertBoardUser(req);
+    const companyId = resolveCompanyId(req);
+    const sessionId = sessionIdSchema.parse(req.params.id);
+    const session = service.getSessionForCompany(companyId, sessionId);
+    if (!session) {
+      throw localBrowserFailure("local_browser_extension_unavailable", "Browser session is not connected", {
+        retryable: true,
+      });
+    }
+    if (!session.capabilities.includes("permissions.v1")) {
+      throw localBrowserFailure(
+        "local_browser_unsupported",
+        "This browser extension cannot open its permission page yet",
+        { hint: LOCAL_BROWSER_UPDATE_HINT + ", then pair it again." },
+      );
+    }
+    const actor = auditActor(req);
+    const startedAt = Date.now();
+    const record = (ok: boolean, errorCode: string | null) =>
+      service.auditInternal({
+        companyId,
+        tool: "local_browser_ui",
+        sessionId,
+        tabId: null,
+        origin: null,
+        tier: session.tier,
+        ok,
+        durationMs: Date.now() - startedAt,
+        errorCode,
+        ...actor,
+      });
+    void service
+      .sendInternalCall(session, "local_browser_ui", { op: "open_permissions" })
+      .then(() => record(true, null))
+      .catch((error: unknown) =>
+        record(
+          false,
+          error && typeof error === "object" && "code" in error
+            ? String((error as { code: unknown }).code)
+            : "local_browser_protocol_error",
+        ),
+      );
+    res.status(202).json({ ok: true });
+  });
+
   router.get("/local-browser/settings", async (req, res) => {
     const companyId = resolveCompanyId(req);
     res.json(await service.getSettings(companyId));
@@ -343,7 +391,13 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
 
   router.post("/local-browser/settings", async (req, res) => {
     const companyId = resolveCompanyId(req);
-    const settings = localBrowserSettingsSchema.parse(req.body ?? {});
+    const update = localBrowserSettingsUpdateSchema.parse(req.body ?? {});
+    const current = await service.getSettings(companyId);
+    const settings = localBrowserSettingsSchema.parse({
+      tier: update.tier ?? current.tier,
+      allowedOrigins: update.allowedOrigins ?? current.allowedOrigins,
+      limits: { ...current.limits, ...update.limits },
+    });
     const actor = getActorInfo(req);
     res.json(
       await service.updateSettings(companyId, settings, {

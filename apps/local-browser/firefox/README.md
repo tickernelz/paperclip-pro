@@ -10,8 +10,10 @@ WebExtension (Manifest V2) that pairs a Firefox profile with Paperclip and answe
 3. The add-on appears as *Paperclip Local Browser Bridge* with the internal UUID
    `moz-extension://<uuid>`. A temporary add-on disappears when Firefox restarts, and its
    `browser.storage.local` data survives, so pairing is not lost.
-4. In Paperclip start pairing for a Firefox browser, copy the 8 character code, then open the
-   toolbar popup and fill in origin, code and label.
+4. The control center (`ui/control.html`) opens on first install. Grant the permissions you
+   want agents to have (**Allow all** asks for every optional permission and every website in
+   one prompt), then paste the pairing link from Paperclip's Local Browser page. The toolbar
+   popup offers the same pairing form and the pending permission requests.
 
 ## Permanent install
 
@@ -78,28 +80,22 @@ exponential backoff and never retire.
 
 ## Call budgets
 
-`lib/budget.js` maps a tool to the wall-clock budget the bridge arms around it:
+With capability `budget.v1` the server sends `budgetMs` on every `call` frame: its own deadline
+for that call, already clamped to the company's `callMaxMs` limit. The bridge arms
+`budgetMs - 1000` (`callDefaults.extensionBudgetMarginMs`) around the tool, so the extension
+always answers before the server gives up, and inner waits follow the same budget:
 
-| tool | budget |
-| --- | --- |
-| `navigate`, `wait` | the call's own `timeoutMs`, capped at 120 s |
-| `act`, `evaluate` | the call's own `timeoutMs`, capped at 60 s |
-| `network`, `upload`, `download` | 60 s |
-| everything else | 30 s |
+- `navigate` and `open` wait for the load for `timeoutMs` (default 15 s), never longer than the
+  budget minus 500 ms.
+- `wait` polls for `timeoutMs` (default 10 s) with the same bound and returns
+  `{matched: false, note}` when nothing matched, like the Chromium client, instead of failing.
+- `screenshot` with `fullPage` captures viewport after viewport until the bottom of the page,
+  the budget, or the 32767 device pixel canvas limit; a partial capture says so with
+  `truncated`, `capturedHeight`, `pageHeight` and `note`.
 
-Every row gets a 5 s grace so the extension answers before the caller gives up. Defaults are
-read from `LB.protocol.DEFAULTS`, never duplicated.
-
-`upload` and `download` get 60 s here on purpose: both decode or fetch file bytes on top of
-the page round trip, so a 30 s cap truncates a real transfer. The Chromium client has no row
-for them and falls back to 30 s, which is why its own client cuts a long upload off early. Do
-not "restore parity" by dropping this branch — that would inherit the defect.
-
-**The server agrees.** `server/src/services/local-browser/timeouts.ts`
-(`localBrowserCallBudget`) implements this same table and `dispatch()` arms it per call, so the
-two budgets are equal for every tool: the server never times out a call the extension is still
-working on, and the extension always answers before the server gives up. Cross-checked over all
-14 tools × 9 `timeoutMs` shapes (126 combinations): zero mismatches, server never shorter.
+A server without `budget.v1` sends no `budgetMs`; then `lib/budget.js` falls back to the old
+table (`navigate`/`wait` take `timeoutMs` + 5 s, `act`/`evaluate` take `timeoutMs` + 5 s,
+`network`/`upload`/`download` 60 s, everything else 30 s) without the old 60 s and 120 s caps.
 
 ## Snapshot paging
 
@@ -173,93 +169,161 @@ sees `isTrusted` events. Otherwise the add-on dispatches synthetic DOM events an
    ```
 
    `<uuid>` is the add-on's own origin: `about:debugging` shows it in the add-on's *Internal
-   UUID* field. The popup prints the exact command to copy once the agent is not reachable.
+   UUID* field. The control center's *Trusted input* section prints the exact command to copy while the agent is not reachable.
 2. Verify the endpoint answers: `curl http://127.0.0.1:9222/session` returns
    `{"webSocketUrl": "ws://127.0.0.1:9222/session"}`.
-3. Open the popup: *Trusted input* reads **WebDriver BiDi ready**. While it reads **synthetic
-   events**, the viewer still works, it just cannot produce trusted events.
+3. Open the control center: *Trusted input* reads **WebDriver BiDi** ready. While it reads
+   **synthetic events**, the viewer still works, it just cannot produce trusted events.
 
 `--remote-allow-origins` is mandatory. Firefox's remote agent rejects a WebSocket handshake
 whose `Origin` is not on that list, and a page inside an extension always sends
 `moz-extension://<uuid>`. The port is stored in `browser.storage.local` under `lb.bidi`;
-edit that value to use a different port. Trusted input is never required for
+change it in the control center (control op `bidi.set`). Trusted input is never required for
 `local_browser_act`: that path uses DOM events on purpose so it works in every profile.
 
 ## Permissions
 
-| Permission | Why |
+The user decides what agents may do. The manifest asks only for what the extension cannot run
+without, and declares every other permission of the shared catalog
+(`LB.contract.permissions`, firefox column) as optional:
+
+| Kind | Ids | Why |
+| --- | --- | --- |
+| required | `storage`, `activeTab`, `contextualIdentities` | Pairing token, guards and pending requests; scripting the focused tab; container names. Firefox cannot make `contextualIdentities` optional. |
+| optional | `<all_urls>` | Open, read and act on websites; cookies and network capture need it too. |
+| optional | `scripting` | Page tools and `evaluate` (MAIN world on Firefox 128+). |
+| optional | `cookies` | `local_browser_storage` with `kind: "cookies"` and the cookie list of `local_browser_context`. |
+| optional | `webRequest`, `webRequestBlocking` | Continuous network capture; response bodies through `filterResponseData`. |
+| optional | `downloads`, `downloads.open` | `local_browser_download`. |
+| optional | `tabs`, `webNavigation`, `history`, `bookmarks`, `browsingData`, `sessions`, `topSites`, `clipboardRead`, `clipboardWrite`, `notifications`, `management`, `privacy`, `search`, `proxy`, `tabHide`, `find`, `browserSettings` | Reached through `local_browser_api`. `notifications` also lets the extension announce new permission requests. |
+
+Every tool calls `LB.access.ensure` before it touches the browser:
+
+| Tool | Asks for |
 | --- | --- |
-| `tabs` | List, open, navigate, activate and close the user's tabs, and read their title and URL for `sessions` and snapshots. |
-| `activeTab` | Script the focused tab when the agent acts on it without a prior navigation by the add-on. |
-| `<all_urls>` | The agent drives whatever site the user is on. Scoping is the server's job: the `refine` tier checks `allowedOrigins` before a call is dispatched. |
-| `scripting` | `local_browser_evaluate` through `browser.scripting.executeScript` in the MAIN or ISOLATED world (Firefox 128+ for MAIN). |
-| `webRequest`, `webRequestBlocking` | `local_browser_network` reads response bodies with `filterResponseData`, which only exists for blocking listeners. |
-| `cookies` | `local_browser_storage` with `kind: "cookies"`: url, domain or whole-jar scope, cookie stores, httpOnly cookies, site-level attributes and store on writes, and a refusal to wipe the whole jar without `name` or `confirmAll`. The jar-wide scopes need the `cookies.v2` capability, which this build advertises. First-party and partitioned cookies are only reached when Firefox reports them for the same scope. |
-| `storage` | Persist the pairing token, label and the BiDi port. |
-| `downloads` | `local_browser_download` lists the tab's downloads and reads one for `save`. |
+| `open`, `navigate`, `snapshot`, `act`, `read`, `screenshot`, `wait`, `evaluate`, `upload`, `storage` (local/session) | `<all_urls>`, `scripting` |
+| `storage` (cookies) | `cookies`, `<all_urls>` |
+| `network` | `webRequest`, `<all_urls>`, plus `webRequestBlocking` with `includeBodies` |
+| `download` | `downloads` |
+| `context` | `cookies` unless `cookies: false` |
+| `api` | the catalog id behind the path, for example `history` for `history.search` |
+
+A missing permission fails the call with `local_browser_permission_required`, `retryable: true`
+and `permissions: [ids]`, queues the ids with the tool and reason in `lb.pending`, and paints
+the toolbar badge with the pending count. Only a click in the popup or control center can grant
+(browsers require a user gesture); `local_browser_permissions` with `op: "request"` queues ids
+without granting. The extension keeps no tier gate: the server checks the tier and the origin
+allowlist before a call is dispatched.
+
+## Agent guards
+
+User switches stored under `lb.guards` and edited in the control center:
+`protectPaperclipTab` (never navigate the Paperclip tab), `protectFocusedTab` (never navigate
+the tab the user is looking at unless the agent opened it) and `networkBufferSize` (requests
+kept per tab, 50 to 20000, default 1000). The server receives them in `hello` and as `guards`
+events.
+
+## Network capture
+
+The webRequest listeners exist only while `webRequest` is granted: they are added on
+`permissions.onAdded` and removed on `permissions.onRemoved`. Capture is continuous for every
+resource type into a per-tab ring of `networkBufferSize` rows. Each row carries the request
+headers from `onBeforeSendHeaders` and every response header (lowercased, duplicates joined,
+`set-cookie` joined by newlines), `hasCookie`, `hasAuthorization`, `initiator` (the
+`originUrl`), `fromCache`, `ip`, `error` and timing. Firefox has no `documentId`, so rows omit
+it. `types` accepts Firefox types plus the aliases `fetch`/`xhr` (`xmlhttprequest`) and
+`document` (`main_frame`, `sub_frame`); `since` filters by start time; the result carries
+`capture: {mode: "continuous", since}`. Bodies are tapped only while `webRequestBlocking` is
+granted, for documents, frames, XHR/fetch and `other`, up to 1 MiB per body (`bodyTruncated`
+beyond that; a memory guard for the ring, not a user limit).
+
+## Containers, private windows and the context probe
+
+Tab summaries carry `cookieStoreId`, `containerName`, `incognito`, `discarded`, `pinned` and
+`audible`. `local_browser_open` honours `cookieStoreId` (`tabs.create({cookieStoreId})`, and
+reuses the agent's own tab only inside the same store), `incognito` (a tab in an existing
+private window, else `windows.create({incognito: true})`; refused with a hint when the
+extension is not allowed in private windows) and `newWindow`.
+
+`local_browser_context` returns the tab, its container (`isDefault` for `firefox-default`), the
+tab's cookies without values, the content script state (`connected`, `missing` when the page has
+no agent yet, `blocked` when the extension cannot script it), the page's document state, the
+tab's network capture state and the access snapshot.
+
+Cookie output reports `session`, `expirationDate` (never on a session cookie), `hostOnly`,
+`storeId` and `partitionKey`; reads ask every partition (`partitionKey: {}`), the store
+defaults to the tab's `cookieStoreId`, a `get` without `limit` returns the whole match, and
+`session: true` on a write omits the expiry.
+
+## Document state
+
+`lib/document-state.js` runs in every content script and answers the `documentState` op.
+Snapshot, read, wait and screenshot results carry the same object as `document`
+(`documentId`, `navigationType`, `restoredFromBfcache`, `stale`, `staleReasons`, request counts),
+so an agent can tell a bfcache restore or a hidden page from a fresh load.
+
+## Control protocol
+
+The popup and control center talk to the background over `runtime.sendMessage` with
+`channel: "lb-control"` and the ops `status`, `pair {input}`, `detect`, `reconnect`,
+`disconnect`, `guards.set {patch}`, `pending.clear {permissions?}` and `bidi.set {port}`.
+Every answer is `{ok: true, status, ...}` or `{ok: false, error, status}`; the background
+broadcasts `{channel: "lb-status", status}` on every change. `status.state` is one of
+`unpaired`, `connecting`, `connected`, `disconnected`, `retired`. On install the control center
+opens on `#welcome`; on update it opens again while site access is not `all`.
 
 Nothing is sent anywhere except the paired origin. The add-on never writes page content,
-cookie values or the session token to the console, and the popup shows only label, tier,
-origin, connection time and client version.
+cookie values or the session token to the console.
 
 ## Parity with the Chromium client
 
-Both clients answer the same 14 tools, plus the internal `local_browser_viewer` and
-`local_browser_input`, with the same result shapes. Snapshot, cursor handling, ref assignment,
-text collapsing, markdown conversion and the DOM adapter are the same code, byte identical
-between `chromium/lib` and `firefox/lib`. `lib/protocol.js`, `keys.js`, `input.js`,
-`frames.js`, `ring.js` and `backoff.js` are Firefox only.
+Both clients answer the same 17 tools, plus the internal `local_browser_viewer`,
+`local_browser_input` and `local_browser_ui`, with the same result shapes and the same
+capabilities (`cookies.v2`, `permissions.v1`, `context.v1`, `network.headers`,
+`tabs.container`, `document.state`, `api.v1`, `act.force`, `budget.v1`). The shared layer and
+UI in `apps/local-browser/shared/` are copied byte for byte into both folders by
+`node scripts/sync-local-browser-shared.mjs`; never edit the synced copies here.
+`lib/protocol.js`, `keys.js`, `input.js`, `frames.js`, `ring.js`, `budget.js` and `backoff.js`
+are Firefox only.
 
 | Area | Chromium (MV3) | Firefox (MV2) |
 | --- | --- | --- |
-| Background | Service worker, woken per event | Persistent background page (MV2), so the socket survives idle |
-| Pairing, frames, backoff | Same | Same |
-| Snapshot / refs / read / markdown | Same modules | Same modules, byte identical |
+| Background | Service worker, woken per event | Persistent background page, so the socket survives idle |
 | Click, type, select, check | `Input.dispatch*` through the debugger domain where possible | DOM events with the native value setter, `input` + `change` |
-| `evaluate` | MAIN world through the debugger domain | `browser.scripting.executeScript` MAIN world (Firefox 128+), then `tabs.executeScript` fallback |
-| Network bodies | CDP `Network.getResponseBody` | `webRequest.filterResponseData`, 64 KiB per body, ring buffer 50 shown / 200 kept |
-| Screenshot | `captureVisibleTab`, element crop on canvas | `captureVisibleTab`, element crop on canvas; `fullPage` stitches up to 8 viewport frames |
-| Viewer frames | `captureVisibleTab` per tick | `captureVisibleTab` per tick, minimum interval 500 ms, reported in CSS pixels |
-| Viewer input | CDP input, trusted | Frozen `localBrowserInputSchema`; BiDi `input.performActions` when the remote agent runs, else synthetic with `synthetic: true` |
-| Viewer state | CDP session state | `localBrowserViewerStateEventSchema` payloads: `connected`, `viewer_unavailable`, `agent_streaming`, `agent_idle`, `disconnected` |
-| Upload | `DataTransfer` + `File` from base64 sent by the server | Same |
-| Downloads | `chrome.downloads` + `fetch` for `save` | `browser.downloads.search` + `fetch`, 2 MiB cap |
-| Cookies | `chrome.cookies` | `browser.cookies` |
-| localStorage / sessionStorage | Content script | Content script |
-| Restricted pages | `chrome://`, the Web Store | `about:`, `addons.mozilla.org`, PDF viewer — reported as `local_browser_unsupported` |
-| Call budget | Per tool: `navigate`/`wait` honour `timeoutMs` up to 120 s, `act`/`evaluate` up to 60 s, network 60 s, `upload`/`download` 30 s | Same table, plus 60 s for `upload`/`download` (deliberate, see below) |
-| Frame targeting | Content script in all frames, RPC always to frame 0 | Content script in all frames, RPC always to frame 0 |
-| Tab close | Releases the tab's network buffer and stops the viewer | Same |
-| Error detail | `{code, message, hint?, retryable?}` | Same, every thrown error carries the hint and retry flag |
+| `act.force` | Skips the hit-test refusal | Accepted; Firefox has no hit-test refusal to skip |
+| `evaluate` | MAIN world through the debugger domain | `browser.scripting.executeScript` MAIN world, then `tabs.executeScript` fallback |
+| Network | `chrome.webRequest` continuous capture, CDP bodies on demand | `browser.webRequest` continuous capture, `filterResponseData` bodies with `webRequestBlocking` |
+| Screenshot | `captureVisibleTab`, element crop | `captureVisibleTab`, element crop; `fullPage` stitched up to the budget |
+| Viewer input | CDP input, trusted | BiDi `input.performActions` when the remote agent runs, else synthetic with `synthetic: true` |
+| Containers | none | `contextualIdentities`, `cookieStoreId` on tabs and open |
+| Downloads | `chrome.downloads` + `fetch` for `save` | `browser.downloads.search` + `fetch`, no size cap (the server enforces `transferMaxBytes`) |
+| Restricted pages | `chrome://`, the Web Store | `about:`, `addons.mozilla.org`, PDF viewer |
 
 ## Files
 
 ```
 firefox/
-  manifest.json          MV2, persistent background, gecko id, min Firefox 128
+  manifest.json          MV2, persistent background, gecko id, min Firefox 128, optional permissions
   icons/icon.svg
-  popup/                 pairing state, label, tier, BiDi hint, Disconnect
-  content/agent.js       page side: snapshot, act, read, wait, storage, upload, crop, synthetic input
+  ui/                    popup and control center (synced from shared/)
+  content/agent.js       page side: snapshot, act, read, wait, documentState, storage, upload, crop, synthetic input
   background/
-    index.js             entry: network capture, message routing, startup reconnect, badge
-    bridge.js            socket, pairing storage, hello/hello_ack, call/result, viewer loop, heartbeat
-    tools.js             the 14 tools + viewer + input, tier gate, timeouts
-    tabs.js              tab list/resolve, content injection, load waiting, capture
-    network.js           webRequest capture, filterResponseData bodies, per-tab ring buffers
-    bidi.js              remote agent probe, browsingContext resolution, input.performActions
+    index.js             entry: badge, first run, control routing, network install, startup reconnect
+    bridge.js            socket, pairing, hello/hello_ack, call/result with budgetMs, access/guards events, control ops, viewer loop, heartbeat
+    tools.js             the 17 tools + viewer, input and ui, permission checks, guards, open placement
+    tabs.js              tab summaries with containers, resolve, content injection and probe, load waiting, capture
+    network.js           permission-driven webRequest listeners, headers, bodies, per-tab rings
+    cookies.js           cookie get/set/clear and the context cookie list
+    bidi.js              remote agent probe, port setting, browsingContext resolution, input.performActions
     downloads.js         download listing and fetch+base64 save
-  lib/                   pure modules with node --test suites: snapshot, cursor, refmap, text,
-                         markdown and dom-adapter are byte identical to the Chromium client's copies;
-                         protocol, keys, input, frames, budget, ring and backoff are Firefox
-                         specific
+  lib/                   shared modules (synced) and Firefox modules with node --test suites;
+                         harness.test.mjs is the fake browser the background suites boot
 ```
 
 ## Tests
 
 ```sh
-node --check apps/local-browser/firefox/background/*.js
-node --check apps/local-browser/firefox/content/agent.js
-node --check apps/local-browser/firefox/popup/popup.js
-node --check apps/local-browser/firefox/lib/*.js
+node scripts/sync-local-browser-shared.mjs --check
 node --test apps/local-browser/firefox/lib/*.test.mjs
+for f in apps/local-browser/firefox/{background,content,lib,ui}/*.js; do node --check "$f"; done
 ```

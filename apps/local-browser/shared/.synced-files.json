@@ -1,0 +1,27 @@
+{
+  "source": "apps/local-browser/shared",
+  "files": [
+    "lib/access.js",
+    "lib/api-call.js",
+    "lib/contract.js",
+    "lib/cursor.js",
+    "lib/document-state.js",
+    "lib/dom-adapter.js",
+    "lib/ext-api.js",
+    "lib/guards.js",
+    "lib/headers.js",
+    "lib/markdown.js",
+    "lib/pairing.js",
+    "lib/protocol.contract.json",
+    "lib/refmap.js",
+    "lib/snapshot.js",
+    "lib/text.js",
+    "lib/ui-state.js",
+    "ui/control.css",
+    "ui/control.html",
+    "ui/control.js",
+    "ui/popup.css",
+    "ui/popup.html",
+    "ui/popup.js"
+  ]
+}

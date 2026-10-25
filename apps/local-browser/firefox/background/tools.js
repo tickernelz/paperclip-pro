@@ -6,21 +6,52 @@
   var tabsApi = LB.tabs;
   var D = protocol.DEFAULTS;
   var C = protocol.ERROR_CODES;
+  var PAGE = ["<all_urls>", "scripting"];
+  var STITCH_RESERVE_MS = 1500;
+  var PERMISSION_NOTE = "Ask the user to open the Paperclip Local Browser extension and press Allow.";
+  var STATUS_NOTE =
+    "Only the user can grant browser permissions. Call op request with the missing ids to queue them, then ask the user to press Allow in the extension.";
+
+  var REQUIREMENTS = {
+    local_browser_open: PAGE,
+    local_browser_navigate: PAGE,
+    local_browser_snapshot: PAGE,
+    local_browser_act: PAGE,
+    local_browser_read: PAGE,
+    local_browser_screenshot: PAGE,
+    local_browser_wait: PAGE,
+    local_browser_evaluate: PAGE,
+    local_browser_upload: PAGE,
+    local_browser_download: ["downloads"],
+    local_browser_viewer: ["<all_urls>"],
+    local_browser_input: ["<all_urls>"]
+  };
+
+  function requirementsFor(tool, args) {
+    if (tool === "local_browser_storage") return args.kind === "cookies" ? ["cookies", "<all_urls>"] : PAGE;
+    if (tool === "local_browser_network") {
+      if (args.op === "clear") return [];
+      return args.includeBodies === true ? ["webRequest", "webRequestBlocking", "<all_urls>"] : ["webRequest", "<all_urls>"];
+    }
+    if (tool === "local_browser_context") return args.cookies === false ? [] : ["cookies"];
+    if (tool === "local_browser_viewer" && args.op !== "start") return [];
+    return REQUIREMENTS[tool] || [];
+  }
 
   function clampInt(value, fallback, min, max) {
     return LB.text.clampInt(value, fallback, min, max);
   }
 
-  var budgetFor = LB.budget.budgetFor;
+  function budgetOf(ctx) {
+    return ctx && typeof ctx.budgetMs === "number" ? ctx.budgetMs : undefined;
+  }
+
+  function deadlineOf(ctx) {
+    return ctx && typeof ctx.deadline === "number" ? ctx.deadline : Infinity;
+  }
 
   async function targetTab(args) {
     return tabsApi.resolveTab(args || {});
-  }
-
-  function tierAllowed(tool, ctx) {
-    if (!protocol.requiresFullTier(tool)) return;
-    if (ctx.tier === "full") return;
-    throw protocol.error(C.tierDenied, tool + " needs the full tier", "Ask the operator to switch this browser to full tier", false);
   }
 
   async function sessions(args, ctx) {
@@ -67,7 +98,7 @@
     delete agentTabs[String(tabId)];
   }
 
-  async function assertNavigationAllowed(tab) {
+  async function paperclipOrigin() {
     var stored = null;
     try {
       stored = await browser.storage.local.get(protocol.STORAGE_PAIRING);
@@ -75,30 +106,40 @@
       stored = null;
     }
     var pairing = stored && stored[protocol.STORAGE_PAIRING] ? stored[protocol.STORAGE_PAIRING] : null;
-    var paperclipOrigin = pairing && pairing.origin ? protocol.originOf(pairing.origin) : null;
-    var current = tab && tab.url ? protocol.originOf(tab.url) : null;
-    if (paperclipOrigin && current && paperclipOrigin === current) {
-      throw protocol.error(
-        C.navigationBlocked,
-        "This tab belongs to Paperclip itself, so it is never navigated",
-        "Call local_browser_open with a url; that always uses a fresh tab",
-        false
-      );
+    return pairing && pairing.origin ? protocol.originOf(pairing.origin) : null;
+  }
+
+  async function assertNavigationAllowed(tab) {
+    var guards = LB.guards.current();
+    if (guards.protectPaperclipTab !== false) {
+      var own = await paperclipOrigin();
+      var current = tab && tab.url ? protocol.originOf(tab.url) : null;
+      if (own && current && own === current) {
+        throw protocol.error(
+          C.navigationBlocked,
+          "This tab belongs to Paperclip itself, so it is never navigated",
+          "Call local_browser_open with a url; that always uses a fresh tab. The user can turn this guard off in the extension's Agent guards.",
+          false
+        );
+      }
     }
     if (agentTabs[String(tab.tabId)]) return;
+    if (guards.protectFocusedTab === false) return;
     var focused = await tabsApi.activeTab();
     if (focused && focused.tabId === tab.tabId) {
       throw protocol.error(
         C.navigationBlocked,
         "This is the tab the user is looking at, so it is left alone",
-        "Call local_browser_open with a url; that always uses a fresh tab",
+        "Call local_browser_open with a url; that always uses a fresh tab. The user can turn this guard off in the extension's Agent guards.",
         false
       );
     }
   }
 
-  async function ownAgentTab() {
+  async function ownAgentTab(store) {
     var ids = Object.keys(agentTabs);
+    var own = null;
+    var ownLoaded = false;
     for (var i = 0; i < ids.length; i += 1) {
       var candidate = null;
       try {
@@ -111,62 +152,144 @@
         forgetAgentTab(ids[i]);
         continue;
       }
-      var stored = null;
-      try {
-        stored = await browser.storage.local.get(protocol.STORAGE_PAIRING);
-      } catch (error) {
-        stored = null;
+      if (store && (candidate.cookieStoreId || tabsApi.DEFAULT_STORE) !== store) continue;
+      if (!store && candidate.incognito === true) continue;
+      if (!ownLoaded) {
+        own = await paperclipOrigin();
+        ownLoaded = true;
       }
-      var pairing = stored && stored[protocol.STORAGE_PAIRING] ? stored[protocol.STORAGE_PAIRING] : null;
-      var paperclipOrigin = pairing && pairing.origin ? protocol.originOf(pairing.origin) : null;
       var current = candidate.url ? protocol.originOf(candidate.url) : null;
-      if (paperclipOrigin && current && paperclipOrigin === current) continue;
+      if (own && current && own === current) continue;
       return tabsApi.summarize(candidate);
     }
     return null;
   }
 
-  async function newAgentTab(url, active) {
-    var tab = await browser.tabs.create({ url: url, active: active });
-    rememberAgentTab(tab.id);
+  async function privateWindow() {
+    var windows = [];
+    try {
+      windows = await browser.windows.getAll({ windowTypes: ["normal"] });
+    } catch (error) {
+      windows = [];
+    }
+    for (var i = 0; i < windows.length; i += 1) {
+      if (windows[i] && windows[i].incognito === true) return windows[i];
+    }
+    return null;
+  }
+
+  async function assertPrivateAllowed() {
+    var allowed = false;
+    try {
+      allowed = await browser.extension.isAllowedIncognitoAccess();
+    } catch (error) {
+      allowed = false;
+    }
+    if (allowed) return;
+    throw protocol.error(
+      C.unsupported,
+      "This extension is not allowed in private windows, so it cannot open one",
+      "Ask the user to open about:addons, choose Paperclip Local Browser Bridge and set Run in Private Windows to Allow",
+      false
+    );
+  }
+
+  async function placementOf(args) {
+    var store = typeof args.cookieStoreId === "string" && args.cookieStoreId ? args.cookieStoreId : null;
+    var incognito = args.incognito === true || store === tabsApi.PRIVATE_STORE;
+    if (incognito && store && store !== tabsApi.PRIVATE_STORE) {
+      throw protocol.error(C.protocolError, "A private window always uses the firefox-private cookie store", "Pass incognito alone, or a container cookieStoreId without incognito", false);
+    }
+    if (store && !incognito && !(await tabsApi.containerExists(store))) {
+      throw protocol.error(
+        C.protocolError,
+        "No cookie store " + store + " exists in this Firefox",
+        "Call local_browser_context for a tab's cookieStoreId, or local_browser_api with contextualIdentities.query for the containers",
+        false
+      );
+    }
+    if (incognito) await assertPrivateAllowed();
+    return {
+      store: incognito ? tabsApi.PRIVATE_STORE : store,
+      incognito: incognito,
+      newWindow: args.newWindow === true,
+      special: Boolean(store) || incognito || args.newWindow === true
+    };
+  }
+
+  async function openWindow(url, placement, active) {
+    var props = { url: url || "about:blank", focused: active === true };
+    if (placement.incognito) props.incognito = true;
+    else if (placement.store) props.cookieStoreId = placement.store;
+    var created = await browser.windows.create(props);
+    var tab = created && Array.isArray(created.tabs) && created.tabs[0] ? created.tabs[0] : null;
+    if (!tab && created && typeof created.id === "number") {
+      var inWindow = await browser.tabs.query({ windowId: created.id });
+      tab = inWindow[0] || null;
+    }
+    if (!tab) throw new Error("the new window has no tab");
     return tab;
+  }
+
+  async function openTab(url, placement, active) {
+    var props = { url: url || "about:blank", active: active === true };
+    if (placement.incognito) {
+      var win = await privateWindow();
+      if (!win) return openWindow(url, placement, active);
+      props.windowId = win.id;
+    } else if (placement.store) {
+      props.cookieStoreId = placement.store;
+    }
+    return browser.tabs.create(props);
   }
 
   async function open(args, ctx) {
     var url = typeof args.url === "string" && args.url ? args.url : null;
-    var tab = null;
-    if (url) {
-      var origin = protocol.originOf(url);
-      if (!origin) {
-        throw protocol.error(C.navigationBlocked, "open needs an absolute http or https URL", "Pass a full URL, for example https://example.com", false);
-      }
+    if (url && !protocol.originOf(url)) {
+      throw protocol.error(C.navigationBlocked, "open needs an absolute http or https URL", "Pass a full URL, for example https://example.com", false);
     }
+    var placement = await placementOf(args);
+    if (placement.special && typeof args.tabId === "number") {
+      throw protocol.error(
+        C.protocolError,
+        "An existing tab cannot move to another cookie store or window",
+        "Omit tabId to open a fresh tab with cookieStoreId, incognito or newWindow",
+        false
+      );
+    }
+    var tab = null;
     try {
-      if (url && typeof args.tabId === "number") {
+      if (placement.newWindow) {
+        tab = await openWindow(url, placement, args.active);
+        rememberAgentTab(tab.id);
+      } else if (url && typeof args.tabId === "number") {
         var explicit = await targetTab(args);
         await assertNavigationAllowed(explicit);
         await browser.tabs.update(explicit.tabId, { url: url });
         rememberAgentTab(explicit.tabId);
         tab = await browser.tabs.get(explicit.tabId);
       } else if (url) {
-        var reusable = await ownAgentTab();
+        var reusable = await ownAgentTab(placement.store);
         if (reusable) {
           await browser.tabs.update(reusable.tabId, { url: url });
           tab = await browser.tabs.get(reusable.tabId);
         } else {
-          tab = await newAgentTab(url, args.active === true);
+          tab = await openTab(url, placement, args.active);
+          rememberAgentTab(tab.id);
         }
-      } else if (args.newTab === true) {
-        tab = await browser.tabs.create({ url: "about:blank", active: args.active === true });
+      } else if (args.newTab === true || placement.special) {
+        tab = await openTab(null, placement, args.active);
+        rememberAgentTab(tab.id);
       } else {
         var current = await targetTab(args);
         tab = await browser.tabs.get(current.tabId);
       }
     } catch (error) {
+      if (error && typeof error.code === "string" && typeof error.message === "string") throw error;
       throw protocol.error(C.navigationBlocked, "Firefox refused to open the tab: " + (error && error.message ? error.message : "unknown reason"), "Check the URL and retry", true);
     }
     if (args.active === true) await tabsApi.activate(tabsApi.summarize(tab));
-    if (url) await tabsApi.waitForLoad(tab.id, D.navigateTimeoutMs);
+    if (url) await tabsApi.waitForLoad(tab.id, LB.budget.innerTimeout(undefined, D.navigateTimeoutMs, budgetOf(ctx)));
     var summary = tabsApi.summarize(await browser.tabs.get(tab.id));
     var snapshot = null;
     try {
@@ -205,11 +328,12 @@
     if (!acted) {
       throw protocol.error(C.protocolError, "navigate needs url, back, forward or reload", "Pass one of them", false);
     }
-    var timeoutMs = clampInt(args.timeoutMs, D.navigateTimeoutMs, 100, 120000);
+    var timeoutMs = LB.budget.innerTimeout(args.timeoutMs, D.navigateTimeoutMs, budgetOf(ctx));
+    var started = Date.now();
     await tabsApi.waitForLoad(tab.tabId, timeoutMs);
     if (args.waitUntil === "networkidle") {
       try {
-        await tabsApi.send(tab.tabId, "wait", { idle: true, timeoutMs: Math.min(timeoutMs, 8000) });
+        await tabsApi.send(tab.tabId, "wait", { idle: true, timeoutMs: Math.max(100, timeoutMs - (Date.now() - started)) });
       } catch (error) {
         void error;
       }
@@ -249,7 +373,7 @@
       text: args.text,
       urlIncludes: args.urlIncludes,
       idle: args.idle,
-      timeoutMs: args.timeoutMs
+      timeoutMs: LB.budget.innerTimeout(args.timeoutMs, D.waitTimeoutMs, budgetOf(ctx))
     });
   }
 
@@ -265,6 +389,20 @@
       "Ask the user to switch to that tab, or use local_browser_read instead",
       false
     );
+  }
+
+  async function documentOf(tabId) {
+    try {
+      return await tabsApi.send(tabId, "documentState", {});
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function withDocument(tabId, result) {
+    var state = await documentOf(tabId);
+    if (state) result.document = state;
+    return result;
   }
 
   async function screenshot(args, ctx) {
@@ -285,41 +423,63 @@
         height: box.height,
         dpr: box.dpr
       });
-      return { dataUrl: cropped.dataUrl, width: cropped.width, height: cropped.height, tabId: tab.tabId, fullPage: false };
+      return withDocument(tab.tabId, { dataUrl: cropped.dataUrl, width: cropped.width, height: cropped.height, tabId: tab.tabId, fullPage: false });
     }
 
-    if (args.fullPage === true) return fullPageShot(tab, viewport);
+    if (args.fullPage === true) return withDocument(tab.tabId, await fullPageShot(tab, viewport, ctx));
 
     var shot = await captureWithoutFocus(tab);
-    return {
+    return withDocument(tab.tabId, {
       dataUrl: shot.dataUrl,
       width: Math.round(viewport.width * viewport.dpr),
       height: Math.round(viewport.height * viewport.dpr),
       tabId: tab.tabId,
       fullPage: false
-    };
+    });
   }
 
-  async function fullPageShot(tab, viewport) {
-    var total = Math.min(viewport.docHeight, viewport.height * 8);
+  async function fullPageShot(tab, viewport, ctx) {
+    var dpr = viewport.dpr > 0 ? viewport.dpr : 1;
+    var pageHeight = Math.max(viewport.docHeight || 0, viewport.height);
+    var canvasHeight = Math.floor(D.canvasMaxPixels / dpr);
+    var total = Math.min(pageHeight, canvasHeight);
+    var deadline = deadlineOf(ctx) - STITCH_RESERVE_MS;
     var frames = [];
     var y = 0;
-    while (y < total) {
-      await tabsApi.send(tab.tabId, "scrollTo", { x: viewport.scrollX, y: y });
+    var covered = 0;
+    var outOfTime = false;
+    while (covered < total) {
+      if (frames.length && Date.now() > deadline) {
+        outOfTime = true;
+        break;
+      }
+      var at = await tabsApi.send(tab.tabId, "scrollTo", { x: viewport.scrollX, y: y });
+      var actualY = at && typeof at.scrollY === "number" ? at.scrollY : y;
       await tabsApi.sleep(140);
       var shot = await captureWithoutFocus(tab);
-      frames.push({ dataUrl: shot.dataUrl, y: y });
-      if (total <= viewport.height) break;
-      y += viewport.height;
+      frames.push({ dataUrl: shot.dataUrl, y: actualY });
+      covered = Math.max(covered, actualY + viewport.height);
+      if (actualY < y) break;
+      y = actualY + viewport.height;
     }
     await tabsApi.send(tab.tabId, "scrollTo", { x: viewport.scrollX, y: viewport.scrollY });
+    var height = Math.max(viewport.height, Math.min(total, covered));
     var composed = await tabsApi.send(tab.tabId, "stitch", {
       frames: frames,
       width: viewport.width,
-      height: Math.max(total, viewport.height),
-      dpr: viewport.dpr
+      height: height,
+      dpr: dpr
     });
-    return { dataUrl: composed.dataUrl, width: composed.width, height: composed.height, tabId: tab.tabId, fullPage: true };
+    var result = { dataUrl: composed.dataUrl, width: composed.width, height: composed.height, tabId: tab.tabId, fullPage: true };
+    if (height < pageHeight) {
+      result.truncated = true;
+      result.capturedHeight = height;
+      result.pageHeight = pageHeight;
+      result.note = outOfTime
+        ? "The call budget ran out before the bottom of the page; scroll and capture the rest, or raise the call limit"
+        : "The page is taller than one browser canvas can hold; scroll and capture the rest";
+    }
+    return result;
   }
 
   function pageEvaluator(payload) {
@@ -411,147 +571,29 @@
     return evaluateLegacy(tab, args, world, failure);
   }
 
-  function cookieRecord(cookie) {
-    var record = {
-      name: cookie.name,
-      value: cookie.value,
-      domain: cookie.domain,
-      path: cookie.path,
-      secure: cookie.secure === true,
-      httpOnly: cookie.httpOnly === true,
-      session: cookie.session === true,
-      sameSite: cookie.sameSite || "no_restriction"
-    };
-    if (typeof cookie.expirationDate === "number") record.expirationDate = cookie.expirationDate;
-    if (cookie.storeId) record.storeId = cookie.storeId;
-    if (cookie.firstPartyDomain) record.firstPartyDomain = cookie.firstPartyDomain;
-    if (cookie.partitionKey && cookie.partitionKey.topLevelSite) record.partitionTopLevelSite = cookie.partitionKey.topLevelSite;
-    return record;
-  }
-
-  function cookieQuery(args, tab) {
-    var query = {};
-    if (args.storeId) query.storeId = args.storeId;
-    if (args.name) query.name = args.name;
-    if (args.allDomains === true) return query;
-    if (typeof args.domain === "string" && args.domain) {
-      query.domain = args.domain.replace(/^\./, "");
-    } else {
-      var target = typeof args.url === "string" && args.url ? args.url : tab.url;
-      if (!protocol.originOf(target)) {
-        throw protocol.error(C.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website", false);
-      }
-      query.url = target;
-    }
-    return query;
-  }
-
-  function cookieUrlFor(args, tab, entry) {
-    if (entry && typeof entry.url === "string" && /^https?:/.test(entry.url)) return entry.url;
-    var scheme = entry && entry.secure === false ? "http://" : "https://";
-    var domain = (entry && entry.domain) || (typeof args.domain === "string" ? args.domain : "");
-    if (domain) return scheme + String(domain).replace(/^\./, "") + ((entry && entry.path) || "/");
-    var base = (typeof args.url === "string" && args.url) || (protocol.originOf(tab.url) ? tab.url : "");
-    if (!base) {
-      throw protocol.error(C.protocolError, "Cookies need an http(s) url or a domain", "Pass url, domain, or allDomains, or use a tab on a website", false);
-    }
-    if (entry && entry.path) {
-      try {
-        return new URL(entry.path, base).href;
-      } catch (error) {
-        return base;
-      }
-    }
-    return base;
-  }
-
-  async function cookies(args, tab) {
-    if (args.op === "get") {
-      var query = cookieQuery(args, tab);
-      var found = (await browser.cookies.getAll(query)).map(cookieRecord);
-      var limit = typeof args.limit === "number" ? args.limit : 200;
-      return { kind: "cookies", op: "get", query: query, total: found.length, cookies: found.slice(0, limit) };
-    }
-    if (args.op === "set") {
-      var writes = Array.isArray(args.entries) ? args.entries : [];
-      if (!writes.length) {
-        throw protocol.error(C.protocolError, "set needs entries", "Pass name and value pairs", false);
-      }
-      var written = [];
-      var failed = [];
-      for (var i = 0; i < writes.length; i += 1) {
-        var entry = writes[i];
-        var details = { url: cookieUrlFor(args, tab, entry), name: entry.name, value: entry.value };
-        if (entry.storeId || args.storeId) details.storeId = entry.storeId || args.storeId;
-        var entryDomain = entry.domain || (typeof args.domain === "string" ? args.domain : "");
-        if (entryDomain) details.domain = entryDomain;
-        if (typeof entry.path === "string" && entry.path) details.path = entry.path;
-        if (typeof entry.secure === "boolean") details.secure = entry.secure;
-        if (typeof entry.httpOnly === "boolean") details.httpOnly = entry.httpOnly;
-        if (typeof entry.sameSite === "string" && entry.sameSite !== "unspecified") details.sameSite = entry.sameSite;
-        if (typeof entry.expirationDate === "number") details.expirationDate = entry.expirationDate;
-        try {
-          written.push(cookieRecord(await browser.cookies.set(details)));
-        } catch (error) {
-          failed.push(entry.name);
-        }
-      }
-      var setResult = { kind: "cookies", op: "set", count: written.length, cookies: written };
-      if (failed.length) {
-        setResult.failed = failed;
-        setResult.note = "The browser refused " + failed.length + " cookie(s); check the domain against the url";
-      }
-      return setResult;
-    }
-    if (args.op === "clear") {
-      var clearQuery = cookieQuery(args, tab);
-      var all = await browser.cookies.getAll(clearQuery);
-      if (args.allDomains === true && all.length > 50 && args.confirmAll !== true && !args.name) {
-        throw protocol.error(C.protocolError, "Refusing to clear " + all.length + " cookies across every site", "Pass a name filter or confirmAll: true", false);
-      }
-      var removed = [];
-      var refused = [];
-      for (var j = 0; j < all.length; j += 1) {
-        var cookie = all[j];
-        var host = String(cookie.domain || "").replace(/^\./, "");
-        var removeUrl = (cookie.secure ? "https://" : "http://") + host + (cookie.path || "/");
-        try {
-          var outcome = await browser.cookies.remove({ url: removeUrl, name: cookie.name, storeId: cookie.storeId });
-          if (outcome) removed.push(cookie.name);
-          else refused.push(cookie.name);
-        } catch (error) {
-          refused.push(cookie.name);
-        }
-      }
-      var clearResult = { kind: "cookies", op: "clear", query: clearQuery, count: removed.length, removed: removed, matched: all.length };
-      if (refused.length) {
-        clearResult.failed = refused;
-        clearResult.note = "The browser refused to remove " + refused.length + " cookie(s)";
-      }
-      return clearResult;
-    }
-    throw protocol.error(C.protocolError, "Unknown storage op " + String(args.op), "Use get, set or clear", false);
-  }
-
   async function storage(args, ctx) {
-    var jarScope = args.kind === "cookies" && (args.allDomains === true || typeof args.domain === "string");
-    var tab = await targetTab(args).catch(function () {
-      if (!jarScope) throw new Error("The tab is unavailable");
-      return { id: null, url: "" };
+    var jarScope = args.kind === "cookies" && (args.allDomains === true || typeof args.domain === "string" || typeof args.url === "string");
+    var tab = await targetTab(args).catch(function (error) {
+      if (!jarScope) throw error;
+      return { tabId: null, url: "" };
     });
-    if (args.kind === "cookies") return cookies(args, tab);
+    if (args.kind === "cookies") return LB.cookies.run(args, tab);
     return tabsApi.send(tab.tabId, "storage", { kind: args.kind, op: args.op, name: args.name, entries: args.entries });
   }
 
   async function network(args, ctx) {
     var tab = await targetTab(args);
+    await LB.network.sync();
     if (args.op === "clear") {
       LB.network.clear(tab.tabId);
-      return { requests: [], total: 0, cleared: true };
+      return { requests: [], total: 0, cleared: true, capture: { mode: "continuous", since: Date.now() } };
     }
     return LB.network.list(tab.tabId, {
-      limit: clampInt(args.limit, D.networkLimit, 1, D.networkMaxLimit),
+      limit: args.limit,
       includeBodies: args.includeBodies === true,
+      includeHeaders: args.includeHeaders !== false,
+      since: args.since,
+      types: args.types,
       urlIncludes: args.urlIncludes,
       method: args.method
     });
@@ -572,13 +614,15 @@
   }
 
   async function download(args, ctx) {
-    var tab = await targetTab(args);
     if (args.op === "save") {
       if (typeof args.downloadId !== "number") {
         throw protocol.error(C.protocolError, "save needs downloadId", "Call op list first", false);
       }
       return LB.downloads.save(args.downloadId);
     }
+    var tab = await targetTab(args).catch(function () {
+      return { tabId: null, url: "" };
+    });
     return LB.downloads.list(tab);
   }
 
@@ -591,7 +635,58 @@
     }
     var tab = await targetTab(args);
     await browser.tabs.remove(tab.tabId);
+    forgetAgentTab(tab.tabId);
     return { ok: true, closed: "tab", tabId: tab.tabId };
+  }
+
+  async function context(args, ctx) {
+    var tab = await targetTab(args);
+    var raw = await browser.tabs.get(tab.tabId);
+    var store = typeof raw.cookieStoreId === "string" && raw.cookieStoreId ? raw.cookieStoreId : tabsApi.DEFAULT_STORE;
+    var summary = tabsApi.summarize(raw);
+    var cookies = args.cookies === false ? { storeId: store, url: summary.url, count: 0, items: [] } : await LB.cookies.forTab(summary, store);
+    var contentScript = await tabsApi.probeAgent(summary);
+    var state = contentScript === "connected" ? await documentOf(summary.tabId) : null;
+    return {
+      tab: summary,
+      container: await tabsApi.container(store),
+      cookies: cookies,
+      document: state,
+      contentScript: contentScript,
+      network: LB.network.tabInfo(summary.tabId),
+      access: await LB.access.snapshot()
+    };
+  }
+
+  async function permissions(args, ctx) {
+    var snapshot = await LB.access.snapshot();
+    if (args.op === "status") return Object.assign({}, snapshot, { note: STATUS_NOTE });
+    if (args.op !== "request") {
+      throw protocol.error(C.protocolError, "permissions op must be status or request", "Pass op status or request", false);
+    }
+    var ids = Array.isArray(args.permissions) ? args.permissions : [];
+    if (!ids.length) {
+      throw protocol.error(C.protocolError, "request needs permissions", "Call op status to see what is missing", false);
+    }
+    var outcome = await LB.access.queue(ids, { tool: "local_browser_permissions", reason: args.reason });
+    var after = await LB.access.snapshot();
+    var note = outcome.queued.length ? PERMISSION_NOTE : "Nothing new to ask: every requested permission is already granted or not available.";
+    var refused = (outcome.unknown || []).concat(outcome.unsupported || []);
+    if (refused.length) note += " Not available in Firefox: " + refused.join(", ") + ".";
+    return Object.assign({}, after, { requested: outcome.queued, alreadyGranted: outcome.alreadyGranted, note: note });
+  }
+
+  async function api(args, ctx) {
+    return LB.apiCall.invoke(LB.ext.api, args.path, args.args);
+  }
+
+  async function ui(args, ctx) {
+    var section = args.op === "open_permissions" ? "permissions" : args.op === "open_control_center" ? "overview" : null;
+    if (!section) {
+      throw protocol.error(C.protocolError, "ui op must be open_permissions or open_control_center", "Pass one of them", false);
+    }
+    var tab = await LB.ext.openControlCenter(section);
+    return { ok: true, opened: section, tabId: tab && typeof tab.id === "number" ? tab.id : null };
   }
 
   var HANDLERS = {
@@ -608,7 +703,10 @@
     local_browser_network: network,
     local_browser_upload: upload,
     local_browser_download: download,
-    local_browser_close: close
+    local_browser_close: close,
+    local_browser_context: context,
+    local_browser_permissions: permissions,
+    local_browser_api: api
   };
 
   async function viewer(args, ctx) {
@@ -667,17 +765,30 @@
     return syntheticResult;
   }
 
+  var INTERNAL = {
+    local_browser_viewer: viewer,
+    local_browser_input: input,
+    local_browser_ui: ui
+  };
+
   async function dispatch(tool, args, ctx) {
-    if (tool === "local_browser_viewer") return viewer(args, ctx);
-    if (tool === "local_browser_input") return input(args, ctx);
-    var handler = HANDLERS[tool];
+    var input = args && typeof args === "object" ? args : {};
+    var handler = HANDLERS[tool] || INTERNAL[tool];
     if (!handler) {
       throw protocol.error(C.unsupported, "Unknown tool " + String(tool), "Reload the extension so it matches the server", false);
     }
-    tierAllowed(tool, ctx);
-    return handler(args || {}, ctx);
+    var needs = requirementsFor(tool, input);
+    if (needs.length) {
+      await LB.access.ensure(needs, { tool: tool, reason: "An agent called " + tool + " and the browser needs this permission first." });
+    }
+    return handler(input, ctx || {});
   }
 
   root.LB = root.LB || {};
-  root.LB.tools = { dispatch: dispatch, budgetFor: budgetFor, HANDLERS: HANDLERS };
+  root.LB.tools = {
+    dispatch: dispatch,
+    requirementsFor: requirementsFor,
+    HANDLERS: HANDLERS,
+    INTERNAL: INTERNAL
+  };
 })(globalThis);

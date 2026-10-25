@@ -137,6 +137,8 @@ jobs:
           node-version: "24"
       - name: Check the shared protocol contract is current
         run: node scripts/generate-local-browser-protocol.mjs --check
+      - name: Check the synced extension copies match apps/local-browser/shared
+        run: node scripts/sync-local-browser-shared.mjs --check
       - name: Check every extension script parses
         run: |
           set -euo pipefail
@@ -146,7 +148,8 @@ jobs:
       - name: Run the extension suites
         run: |
           set -euo pipefail
-          node --test apps/local-browser/chromium/lib/*.test.mjs
+          node --test apps/local-browser/shared/lib/*.test.mjs
+          node --test apps/local-browser/chromium/lib/*.test.mjs apps/local-browser/chromium/background/*.test.mjs
           node --test apps/local-browser/firefox/lib/*.test.mjs
       - name: Check the download artifacts match the source
         run: |

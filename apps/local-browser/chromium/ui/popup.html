@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="light dark" />
+    <title>Paperclip Local Browser</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header class="head">
+      <span id="dot" class="dot" data-tone="off" aria-hidden="true"></span>
+      <div class="head-text">
+        <h1 id="state" class="state">Checking connection&hellip;</h1>
+        <p id="detail" class="detail"></p>
+      </div>
+    </header>
+
+    <section id="pending-section" class="card attention" aria-labelledby="pending-title" hidden>
+      <h2 id="pending-title">Agents are asking for permission</h2>
+      <ul id="pending-list" class="pending"></ul>
+    </section>
+
+    <section class="card" aria-labelledby="access-title">
+      <h2 id="access-title">Browser access</h2>
+      <p id="site-line" class="hint"></p>
+      <p id="summary" class="hint"></p>
+      <button id="allow-all" type="button" class="primary">Allow all</button>
+    </section>
+
+    <form id="pair-form" class="card" aria-labelledby="pair-title" hidden>
+      <h2 id="pair-title">Pair with Paperclip</h2>
+      <p id="detected" class="hint" hidden></p>
+      <label for="pair-input">Pairing link or code</label>
+      <input id="pair-input" type="text" placeholder="Paste the link from Paperclip" autocomplete="off" spellcheck="false" />
+      <p id="pair-error" class="error" role="alert" hidden></p>
+      <button id="pair" type="submit" class="primary">Pair</button>
+    </form>
+
+    <p id="message" class="message" role="status" aria-live="polite"></p>
+
+    <footer class="foot">
+      <button id="open-control" type="button" class="link">Open control center</button>
+      <span id="version" class="version"></span>
+    </footer>
+
+    <script src="../lib/contract.js"></script>
+    <script src="../lib/ext-api.js"></script>
+    <script src="../lib/pairing.js"></script>
+    <script src="../lib/access.js"></script>
+    <script src="../lib/ui-state.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

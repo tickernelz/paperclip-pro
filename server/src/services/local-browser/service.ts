@@ -2,41 +2,27 @@ import { and, eq } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { localBrowserConnections, localBrowserSettings as localBrowserSettingsTable } from "@tickernelz/paperclip-pro-db";
 import {
-  LOCAL_BROWSER_SCREENSHOT_MAX_BYTES,
+  LOCAL_BROWSER_COOKIE_CAPABILITY,
+  LOCAL_BROWSER_LIMIT_KEYS,
+  LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_TEXT_DEFAULT_CHARS,
-  LOCAL_BROWSER_TEXT_MAX_CHARS,
-  localBrowserActInputSchema,
-  localBrowserCloseInputSchema,
-  localBrowserDownloadInputSchema,
-  localBrowserEvaluateInputSchema,
-  localBrowserNavigateInputSchema,
-  localBrowserNetworkInputSchema,
-  localBrowserOpenInputSchema,
+  LOCAL_BROWSER_UPDATE_HINT,
+  localBrowserIsInternalTool,
   localBrowserOriginAllowed,
   localBrowserOriginOf,
-  LOCAL_BROWSER_COOKIE_CAPABILITY,
-  localBrowserReadInputSchema,
-  localBrowserScreenshotInputSchema,
   localBrowserSettingsSchema,
-  localBrowserSnapshotInputSchema,
-  localBrowserStorageInputSchema,
-  localBrowserTargetSchema,
+  localBrowserTool,
   localBrowserToolRequiresFullTier,
-  localBrowserUploadInputSchema,
-  localBrowserWaitInputSchema,
-  type LocalBrowserSettings,
+  type LocalBrowserLimitKey,
+  type LocalBrowserLimited,
+  type LocalBrowserLimits,
   type LocalBrowserSession,
+  type LocalBrowserSettings,
   type LocalBrowserTab,
 } from "@tickernelz/paperclip-pro-shared";
-import type { z } from "zod";
 import type { StorageService } from "../../storage/types.js";
 import { logActivity } from "../activity-log.js";
-import {
-  decodeDataUrl,
-  LOCAL_BROWSER_UPLOAD_MAX_BYTES,
-  readTaskAttachment,
-  storeLocalBrowserAttachment,
-} from "./attachments.js";
+import { decodeDataUrl, readTaskAttachment, storeLocalBrowserAttachment } from "./attachments.js";
 import { localBrowserFailure } from "./errors.js";
 import {
   addPendingCall,
@@ -46,31 +32,22 @@ import {
   removeSession,
   takePendingCall,
   toPublicSession,
-  updateSessionTier,
+  updateSessionSettings,
 } from "./registry.js";
-import { boundRenderedSnapshot, renderSnapshot } from "./snapshot.js";
+import { renderSnapshot } from "./snapshot.js";
 import { localBrowserCallBudget } from "./timeouts.js";
 import type { LiveSession, LocalBrowserBinding } from "./types.js";
 
-const INTERNAL_TOOLS = new Set(["local_browser_viewer", "local_browser_input"]);
-const ORIGIN_EXEMPT_TOOLS = new Set(["local_browser_sessions", "local_browser_close"]);
-const RESULT_CAP_CHARS = 60_000;
+const BUDGET_CAPABILITY = "budget.v1";
 
-const INPUT_SCHEMAS: Record<string, z.ZodTypeAny> = {
-  local_browser_sessions: localBrowserTargetSchema,
-  local_browser_open: localBrowserOpenInputSchema,
-  local_browser_navigate: localBrowserNavigateInputSchema,
-  local_browser_snapshot: localBrowserSnapshotInputSchema,
-  local_browser_act: localBrowserActInputSchema,
-  local_browser_read: localBrowserReadInputSchema,
-  local_browser_screenshot: localBrowserScreenshotInputSchema,
-  local_browser_wait: localBrowserWaitInputSchema,
-  local_browser_evaluate: localBrowserEvaluateInputSchema,
-  local_browser_storage: localBrowserStorageInputSchema,
-  local_browser_network: localBrowserNetworkInputSchema,
-  local_browser_upload: localBrowserUploadInputSchema,
-  local_browser_download: localBrowserDownloadInputSchema,
-  local_browser_close: localBrowserCloseInputSchema,
+const LIMITED_ARGS: Partial<Record<string, Array<{ field: string; limit: LocalBrowserLimitKey; fill?: boolean }>>> = {
+  local_browser_snapshot: [{ field: "maxNodes", limit: "snapshotMaxNodes" }],
+  local_browser_read: [{ field: "maxChars", limit: "readMaxChars" }],
+  local_browser_network: [{ field: "limit", limit: "networkMaxEntries", fill: true }],
+  local_browser_navigate: [{ field: "timeoutMs", limit: "callMaxMs" }],
+  local_browser_wait: [{ field: "timeoutMs", limit: "callMaxMs" }],
+  local_browser_act: [{ field: "timeoutMs", limit: "callMaxMs" }],
+  local_browser_evaluate: [{ field: "timeoutMs", limit: "callMaxMs" }],
 };
 
 export interface LocalBrowserServiceOptions {
@@ -87,22 +64,81 @@ function activeTab(session: LiveSession, tabId: number | undefined): LocalBrowse
   return session.tabs.find((tab) => tab.active) ?? session.tabs[0] ?? null;
 }
 
-function capResult(value: unknown, limit = RESULT_CAP_CHARS): unknown {
-  if (value === undefined || value === null) return value ?? null;
-  const text = JSON.stringify(value);
-  if (text.length <= limit) return value;
-  return { truncated: true, totalChars: text.length, preview: text.slice(0, limit) };
-}
-
 function bytesOfBase64(base64: string): number {
   const cleaned = base64.replace(/\s+/g, "");
   const padding = cleaned.endsWith("==") ? 2 : cleaned.endsWith("=") ? 1 : 0;
   return Math.max(0, Math.floor((cleaned.length * 3) / 4) - padding);
 }
 
+export function normalizeLocalBrowserLimits(raw: unknown): LocalBrowserLimits {
+  const stored = record(raw);
+  const limits = {} as LocalBrowserLimits;
+  for (const key of LOCAL_BROWSER_LIMIT_KEYS) {
+    const range = LOCAL_BROWSER_LIMITS[key];
+    const value = stored[key];
+    limits[key] =
+      typeof value === "number" && Number.isInteger(value) && value >= range.min && value <= range.ceiling
+        ? value
+        : range.default;
+  }
+  return limits;
+}
+
+export function applyLocalBrowserLimits(
+  limits: LocalBrowserLimits,
+  tool: string,
+  args: Record<string, unknown>,
+): { args: Record<string, unknown>; limited: LocalBrowserLimited } {
+  const limited: LocalBrowserLimited = [];
+  const next = { ...args };
+  for (const { field, limit, fill } of LIMITED_ARGS[tool] ?? []) {
+    const requested = args[field];
+    if (requested === undefined && fill) {
+      next[field] = limits[limit];
+      continue;
+    }
+    if (typeof requested !== "number" || requested <= limits[limit]) continue;
+    limited.push({ field, requested, applied: limits[limit] });
+    next[field] = limits[limit];
+  }
+  return { args: next, limited };
+}
+
+function withExtras(
+  result: Record<string, unknown>,
+  payload: Record<string, unknown>,
+  limited: LocalBrowserLimited,
+): Record<string, unknown> {
+  const document = payload.document;
+  return {
+    ...result,
+    ...(document && typeof document === "object" ? { document } : {}),
+    ...(limited.length > 0 ? { limited } : {}),
+  };
+}
+
+function capResult(value: unknown, limit: number, limited: LocalBrowserLimited): unknown {
+  if (value === undefined || value === null) return value ?? null;
+  const text = JSON.stringify(value);
+  if (text.length <= limit) {
+    if (limited.length === 0 || typeof value !== "object" || Array.isArray(value)) return value;
+    return { ...(value as Record<string, unknown>), limited };
+  }
+  return {
+    truncated: true,
+    totalChars: text.length,
+    preview: text.slice(0, limit),
+    limited: [...limited, { field: "resultMaxChars", requested: text.length, applied: limit }],
+  };
+}
+
+function raiseLimitHint(what: string): string {
+  return "Ask the user to raise the " + what + " limit in the Local Browser settings in Paperclip.";
+}
+
 export function localBrowserService(db: Db, options: LocalBrowserServiceOptions = {}) {
-  const budgetFor = (tool: string, args: Record<string, unknown>): number =>
-    options.callTimeoutMs ?? localBrowserCallBudget(tool, args);
+  const budgetFor = (session: LiveSession, tool: string, args: Record<string, unknown>): number =>
+    options.callTimeoutMs ?? localBrowserCallBudget(tool, args, session.limits.callMaxMs);
 
   function resolveSession(binding: LocalBrowserBinding, sessionId: string | undefined): LiveSession {
     if (sessionId) {
@@ -140,6 +176,15 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     return candidates[candidates.length - 1]!;
   }
 
+  function requireCapability(session: LiveSession, capability: string, feature: string) {
+    if (session.capabilities.includes(capability)) return;
+    throw localBrowserFailure(
+      "local_browser_unsupported",
+      "This browser extension does not support " + feature + " yet",
+      { hint: LOCAL_BROWSER_UPDATE_HINT + ", then pair it again." },
+    );
+  }
+
   function enforceCookieCapability(session: LiveSession, tool: string, args: Record<string, unknown>) {
     if (tool !== "local_browser_storage" || args.kind !== "cookies") return;
     const modern =
@@ -153,7 +198,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           (entry) =>
             entry &&
             typeof entry === "object" &&
-            ["domain", "path", "secure", "httpOnly", "sameSite", "expirationDate", "storeId"].some(
+            ["domain", "path", "secure", "httpOnly", "sameSite", "expirationDate", "storeId", "session"].some(
               (key) => (entry as Record<string, unknown>)[key] !== undefined,
             ),
         ));
@@ -163,6 +208,18 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
       "This browser build only reads cookies for the page url; update the Local Browser extension to use domain, allDomains, limits or cookie attributes",
       { hint: "Install the current extension from the Apps page and pair again." },
     );
+  }
+
+  function enforceCapabilities(session: LiveSession, tool: string, args: Record<string, unknown>) {
+    const capability = localBrowserTool(tool)?.capability;
+    if (capability) requireCapability(session, capability, tool);
+    if (tool === "local_browser_open" && (args.cookieStoreId !== undefined || args.incognito === true)) {
+      requireCapability(session, "tabs.container", "cookieStoreId or incognito on local_browser_open");
+    }
+    if (tool === "local_browser_act" && args.force === true) {
+      requireCapability(session, "act.force", "force on local_browser_act");
+    }
+    enforceCookieCapability(session, tool, args);
   }
 
   function enforceTier(session: LiveSession, tool: string) {
@@ -175,8 +232,12 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     );
   }
 
+  function originExempt(tool: string): boolean {
+    return localBrowserTool(tool)?.originExempt === true;
+  }
+
   function originForCall(tool: string, args: Record<string, unknown>, session: LiveSession): string | null {
-    if (ORIGIN_EXEMPT_TOOLS.has(tool)) return null;
+    if (originExempt(tool)) return null;
     if (typeof args.url === "string") return localBrowserOriginOf(args.url);
     if (typeof args.domain === "string" || args.allDomains === true) return null;
     const tab = activeTab(session, typeof args.tabId === "number" ? args.tabId : undefined);
@@ -185,7 +246,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
   }
 
   function enforceOrigin(session: LiveSession, tool: string, origin: string | null) {
-    if (ORIGIN_EXEMPT_TOOLS.has(tool)) return;
+    if (originExempt(tool)) return;
     if (!origin) {
       if (session.tier === "full") return;
       throw localBrowserFailure(
@@ -205,7 +266,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
   function dispatch(session: LiveSession, tool: string, args: Record<string, unknown>): Promise<unknown> {
     return new Promise<unknown>((resolve, reject) => {
       const id = nextCallId();
-      const budget = budgetFor(tool, args);
+      const budget = budgetFor(session, tool, args);
       const timer = setTimeout(() => {
         session.pending.delete(id);
         reject(
@@ -230,8 +291,15 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         reject,
         timer,
       });
+      const frame = {
+        type: "call",
+        id,
+        tool,
+        args,
+        ...(session.capabilities.includes(BUDGET_CAPABILITY) ? { budgetMs: budget } : {}),
+      };
       try {
-        session.socket.send(JSON.stringify({ type: "call", id, tool, args }));
+        session.socket.send(JSON.stringify(frame));
       } catch {
         takePendingCall(session, id);
         reject(
@@ -280,7 +348,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     }
   }
 
-  async function uploadFiles(binding: LocalBrowserBinding, args: Record<string, unknown>) {
+  async function uploadFiles(binding: LocalBrowserBinding, limits: LocalBrowserLimits, args: Record<string, unknown>) {
     const attachmentIds = Array.isArray(args.attachmentIds) ? (args.attachmentIds as string[]) : [];
     const files: Array<{ name: string; mimeType: string; base64: string }> = [];
     let total = 0;
@@ -290,13 +358,14 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         attachmentId,
         issueId: binding.issueId ?? null,
         storage: options.storage,
+        maxBytes: limits.transferMaxBytes,
       });
       total += file.bytes.length;
-      if (total > LOCAL_BROWSER_UPLOAD_MAX_BYTES) {
+      if (total > limits.transferMaxBytes) {
         throw localBrowserFailure(
           "local_browser_result_too_large",
-          "The files together exceed the " + LOCAL_BROWSER_UPLOAD_MAX_BYTES + " byte upload limit",
-          { status: 413 },
+          "The files together exceed the " + limits.transferMaxBytes + " byte transfer limit",
+          { status: 413, hint: raiseLimitHint("transfer") },
         );
       }
       files.push({ name: file.originalFilename, mimeType: file.contentType, base64: file.bytes.toString("base64") });
@@ -308,38 +377,46 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
 
   async function finishResult(
     binding: LocalBrowserBinding,
+    session: LiveSession,
     tool: string,
     args: Record<string, unknown>,
     raw: unknown,
+    limited: LocalBrowserLimited,
   ): Promise<unknown> {
+    const limits = session.limits;
     const payload = record(raw);
     if (tool === "local_browser_snapshot") {
-      return boundRenderedSnapshot(
-        renderSnapshot(payload, {
-          maxNodes: typeof args.maxNodes === "number" ? args.maxNodes : undefined,
-          cursor: typeof args.cursor === "string" ? args.cursor : undefined,
-        }),
-      );
+      const rendered = renderSnapshot(payload, {
+        maxNodes: typeof args.maxNodes === "number" ? args.maxNodes : undefined,
+        cursor: typeof args.cursor === "string" ? args.cursor : undefined,
+        maxNodesCeiling: limits.snapshotMaxNodes,
+        maxChars: limits.resultMaxChars,
+      });
+      return withExtras({ ...rendered }, payload, limited);
     }
     if (tool === "local_browser_read") {
       const requested = typeof args.maxChars === "number" ? args.maxChars : LOCAL_BROWSER_TEXT_DEFAULT_CHARS;
-      const maxChars = Math.min(Math.max(requested, 200), LOCAL_BROWSER_TEXT_MAX_CHARS);
+      const maxChars = Math.min(Math.max(requested, 200), limits.readMaxChars);
       const content =
         typeof payload.content === "string" ? payload.content : typeof payload.text === "string" ? payload.text : "";
       const totalChars = typeof payload.totalChars === "number" ? payload.totalChars : content.length;
       const clipped = content.length > maxChars ? content.slice(0, maxChars) : content;
-      return {
-        url: typeof payload.url === "string" ? payload.url : null,
-        format:
-          typeof payload.format === "string"
-            ? payload.format
-            : typeof args.format === "string"
-              ? args.format
-              : "text",
-        content: clipped,
-        totalChars,
-        truncated: payload.truncated === true || clipped.length < content.length || content.length < totalChars,
-      };
+      return withExtras(
+        {
+          url: typeof payload.url === "string" ? payload.url : null,
+          format:
+            typeof payload.format === "string"
+              ? payload.format
+              : typeof args.format === "string"
+                ? args.format
+                : "text",
+          content: clipped,
+          totalChars,
+          truncated: payload.truncated === true || clipped.length < content.length || content.length < totalChars,
+        },
+        payload,
+        limited,
+      );
     }
     if (tool === "local_browser_screenshot") {
       const dataUrl = typeof payload.dataUrl === "string" ? payload.dataUrl : "";
@@ -349,15 +426,11 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           retryable: true,
         });
       }
-      if (decoded.bytes.length > LOCAL_BROWSER_SCREENSHOT_MAX_BYTES) {
+      if (decoded.bytes.length > limits.screenshotMaxBytes) {
         throw localBrowserFailure(
           "local_browser_result_too_large",
-          "The screenshot is " +
-            decoded.bytes.length +
-            " bytes, above the " +
-            LOCAL_BROWSER_SCREENSHOT_MAX_BYTES +
-            " byte limit",
-          { status: 413, hint: "Capture an element instead of the full page, or reduce the window size." },
+          "The screenshot is " + decoded.bytes.length + " bytes, above the " + limits.screenshotMaxBytes + " byte limit",
+          { status: 413, hint: "Capture an element instead of the full page, or " + raiseLimitHint("screenshot").toLowerCase() },
         );
       }
       const stored = await storeLocalBrowserAttachment(db, {
@@ -372,12 +445,16 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         issueId: binding.issueId ?? null,
         storage: options.storage,
       });
-      return {
-        attachmentId: stored.attachmentId,
-        width: typeof payload.width === "number" ? payload.width : null,
-        height: typeof payload.height === "number" ? payload.height : null,
-        byteSize: stored.byteSize,
-      };
+      return withExtras(
+        {
+          attachmentId: stored.attachmentId,
+          width: typeof payload.width === "number" ? payload.width : null,
+          height: typeof payload.height === "number" ? payload.height : null,
+          byteSize: stored.byteSize,
+        },
+        payload,
+        limited,
+      );
     }
     if (tool === "local_browser_download" && args.op === "save") {
       const base64 = typeof payload.base64 === "string" ? payload.base64 : "";
@@ -386,10 +463,12 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           retryable: true,
         });
       }
-      if (bytesOfBase64(base64) > LOCAL_BROWSER_UPLOAD_MAX_BYTES) {
-        throw localBrowserFailure("local_browser_result_too_large", "The download is larger than 20 MB", {
-          status: 413,
-        });
+      if (bytesOfBase64(base64) > limits.transferMaxBytes) {
+        throw localBrowserFailure(
+          "local_browser_result_too_large",
+          "The download is larger than the " + limits.transferMaxBytes + " byte transfer limit",
+          { status: 413, hint: raiseLimitHint("transfer") },
+        );
       }
       const stored = await storeLocalBrowserAttachment(db, {
         companyId: binding.companyId,
@@ -404,14 +483,18 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         issueId: binding.issueId ?? null,
         storage: options.storage,
       });
-      return {
-        downloadId: typeof payload.downloadId === "number" ? payload.downloadId : null,
-        attachmentId: stored.attachmentId,
-        name: stored.originalFilename,
-        byteSize: stored.byteSize,
-      };
+      return withExtras(
+        {
+          downloadId: typeof payload.downloadId === "number" ? payload.downloadId : null,
+          attachmentId: stored.attachmentId,
+          name: stored.originalFilename,
+          byteSize: stored.byteSize,
+        },
+        {},
+        limited,
+      );
     }
-    return capResult(raw);
+    return capResult(raw, limits.resultMaxChars, limited);
   }
 
   async function teardownSession(session: LiveSession): Promise<void> {
@@ -471,17 +554,17 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
       let tabId: number | null = null;
       let origin: string | null = null;
       try {
-        if (INTERNAL_TOOLS.has(name)) {
+        if (localBrowserIsInternalTool(name)) {
           throw localBrowserFailure(
             "local_browser_unsupported",
-            name + " is driven by the Paperclip viewer and is not an agent tool",
+            name + " is driven by Paperclip itself and is not an agent tool",
           );
         }
-        const schema = INPUT_SCHEMAS[name];
-        if (!schema) {
+        const definition = localBrowserTool(name);
+        if (!definition) {
           throw localBrowserFailure("local_browser_unsupported", "Unknown local browser tool " + name);
         }
-        const parsed = schema.safeParse(rawArgs ?? {});
+        const parsed = definition.schema.safeParse(rawArgs ?? {});
         if (!parsed.success) {
           const issue = parsed.error.issues[0];
           throw localBrowserFailure(
@@ -510,22 +593,25 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           });
           return { sessions };
         }
-        session = resolveSession(binding, typeof args.sessionId === "string" ? args.sessionId : undefined);
-        enforceTier(session, name);
-        enforceCookieCapability(session, name, args);
-        origin = originForCall(name, args, session);
-        enforceOrigin(session, name, origin);
-        const callArgs = name === "local_browser_upload" ? await uploadFiles(binding, args) : args;
-        const raw = await dispatch(session, name, callArgs);
-        const result = await finishResult(binding, name, args, raw);
+        const live = resolveSession(binding, typeof args.sessionId === "string" ? args.sessionId : undefined);
+        session = live;
+        enforceTier(live, name);
+        enforceCapabilities(live, name, args);
+        origin = originForCall(name, args, live);
+        enforceOrigin(live, name, origin);
+        const bounded = applyLocalBrowserLimits(live.limits, name, args);
+        const callArgs =
+          name === "local_browser_upload" ? await uploadFiles(binding, live.limits, bounded.args) : bounded.args;
+        const raw = await dispatch(live, name, callArgs);
+        const result = await finishResult(binding, live, name, bounded.args, raw, bounded.limited);
         if (name === "local_browser_close" && args.closeSession === true) {
-          await teardownSession(session);
+          await teardownSession(live);
         }
         await audit({
           binding,
           tool: name,
-          session,
-          sessionId: session.sessionId,
+          session: live,
+          sessionId: live.sessionId,
           tabId,
           origin,
           ok: true,
@@ -582,14 +668,19 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
 
     async getSettings(companyId: string): Promise<LocalBrowserSettings> {
       const [row] = await db
-        .select({ tier: localBrowserSettingsTable.tier, allowedOrigins: localBrowserSettingsTable.allowedOrigins })
+        .select({
+          tier: localBrowserSettingsTable.tier,
+          allowedOrigins: localBrowserSettingsTable.allowedOrigins,
+          limits: localBrowserSettingsTable.limits,
+        })
         .from(localBrowserSettingsTable)
         .where(eq(localBrowserSettingsTable.companyId, companyId))
         .limit(1);
-      if (!row) return { tier: "refine", allowedOrigins: [] };
+      if (!row) return localBrowserSettingsSchema.parse({});
       return localBrowserSettingsSchema.parse({
         tier: row.tier === "full" ? "full" : "refine",
         allowedOrigins: Array.isArray(row.allowedOrigins) ? row.allowedOrigins : [],
+        limits: normalizeLocalBrowserLimits(row.limits),
       });
     },
 
@@ -606,6 +697,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           companyId,
           tier: parsed.tier,
           allowedOrigins: parsed.allowedOrigins,
+          limits: parsed.limits,
           updatedByUserId: actor.userId ?? null,
           updatedByAgentId: actor.agentId ?? null,
           updatedAt: now,
@@ -615,6 +707,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
           set: {
             tier: parsed.tier,
             allowedOrigins: parsed.allowedOrigins,
+            limits: parsed.limits,
             updatedByUserId: actor.userId ?? null,
             updatedByAgentId: actor.agentId ?? null,
             updatedAt: now,
@@ -625,7 +718,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         .set({ tier: parsed.tier, allowedOrigins: parsed.allowedOrigins, updatedAt: now })
         .where(and(eq(localBrowserConnections.companyId, companyId), eq(localBrowserConnections.status, "active")));
       for (const session of liveSessionsForCompany(companyId)) {
-        updateSessionTier(session, parsed.tier, parsed.allowedOrigins);
+        updateSessionSettings(session, parsed);
       }
       return parsed;
     },

@@ -3,6 +3,7 @@
 
   var text = root.LB.text;
   var refmap = root.LB.refmap;
+  var MAX_NODES_GUARD = 1000000;
 
   var SKIP_TAGS = new Set([
     "script",
@@ -292,7 +293,7 @@
 
   function buildSnapshot(adapter, options) {
     var opts = options || {};
-    var maxNodes = text.clampInt(opts.maxNodes, 120, 10, 400);
+    var maxNodes = text.clampInt(opts.maxNodes, 120, 1, MAX_NODES_GUARD);
     var includeText = opts.includeText !== false;
     var includeHidden = opts.includeHidden === true;
     var cursorState = parseCursor(opts.cursor);

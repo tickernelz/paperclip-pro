@@ -1,16 +1,26 @@
 import { useEffect, useId, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type {
-  LocalBrowserPairingStartResult,
-  LocalBrowserSession,
-  LocalBrowserSettings,
-  LocalBrowserTier,
-  ToolConnection,
+import {
+  LOCAL_BROWSER_LIMIT_DEFAULTS,
+  LOCAL_BROWSER_LIMIT_KEYS,
+  type LocalBrowserLimitKey,
+  type LocalBrowserPairingStartResult,
+  type LocalBrowserSession,
+  type LocalBrowserSettingsUpdate,
+  type LocalBrowserTier,
+  type ToolConnection,
 } from "@tickernelz/paperclip-pro-shared";
 import { localBrowserApi } from "@/api/local-browser";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Copy, Download, Monitor } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  LocalBrowserLimitsFields,
+  limitDraftsFrom,
+  parseLimitDrafts,
+  type LocalBrowserLimitDrafts,
+} from "@/components/local-browser/LocalBrowserLimitsFields";
+import { LocalBrowserSessionAccess } from "@/components/local-browser/LocalBrowserSessionAccess";
 import { LocalBrowserViewer } from "@/components/local-browser/LocalBrowserViewer";
 import { Label } from "@/components/ui/label";
 import { RadioCardGroup } from "@/components/ui/radio-card";
@@ -75,6 +85,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
   const [origins, setOrigins] = useState("");
   const [pairing, setPairing] = useState<LocalBrowserPairingStartResult | null>(null);
   const [pairedSessionId, setPairedSessionId] = useState<string | null>(null);
+  const [limitDrafts, setLimitDrafts] = useState<LocalBrowserLimitDrafts>(() => limitDraftsFrom(undefined));
 
   const sessions = useQuery({
     queryKey: ["local-browser-sessions", companyId],
@@ -92,6 +103,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
     if (!settings.data) return;
     setTier(settings.data.tier);
     setOrigins(settings.data.allowedOrigins.join("\n"));
+    setLimitDrafts(limitDraftsFrom(settings.data.limits));
   }, [settings.data]);
 
   const pairingStatus = useQuery({
@@ -122,10 +134,11 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
   });
 
   const saveSettings = useMutation({
-    mutationFn: (next: LocalBrowserSettings) => localBrowserApi.saveSettings(companyId, next),
+    mutationFn: (next: LocalBrowserSettingsUpdate) => localBrowserApi.saveSettings(companyId, next),
     onSuccess: (saved) => {
       setTier(saved.tier);
       setOrigins(saved.allowedOrigins.join("\n"));
+      setLimitDrafts(limitDraftsFrom(saved.limits));
       void queryClient.invalidateQueries({ queryKey: ["local-browser-settings", companyId] });
     },
   });
@@ -142,10 +155,17 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
     .filter(Boolean);
   const savedTier = settings.data?.tier ?? "refine";
   const savedOrigins = settings.data?.allowedOrigins ?? [];
+  const savedLimits = { ...LOCAL_BROWSER_LIMIT_DEFAULTS, ...settings.data?.limits };
+  const parsedLimits = parseLimitDrafts(limitDrafts);
+  const limitsInvalid = parsedLimits.limits === null;
+  const limitsDirty =
+    limitsInvalid ||
+    LOCAL_BROWSER_LIMIT_KEYS.some((key) => parsedLimits.limits?.[key] !== savedLimits[key]);
   const dirty =
     tier !== savedTier ||
     allowedOrigins.length !== savedOrigins.length ||
-    allowedOrigins.some((origin, index) => origin !== savedOrigins[index]);
+    allowedOrigins.some((origin, index) => origin !== savedOrigins[index]) ||
+    limitsDirty;
   const pairingExpired = pairingStatus.data?.status === "expired";
   const pairingPending = Boolean(pairing) && !pairingExpired;
   const liveSessions = sessions.data?.sessions ?? [];
@@ -171,6 +191,12 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           Download the extension for the browser you want Paperclip to drive. You install it once,
           then pair it from this page.
         </p>
+        <p className="text-sm text-muted-foreground">
+          The extension opens a control center that shows its site access and every browser
+          permission agents can use. Press <strong className="font-medium text-foreground">Allow all</strong>{" "}
+          there once so agents can reach every tab and tool; you can withdraw single permissions
+          later from the same page, or reopen it from a live session below.
+        </p>
         <div className="flex flex-wrap gap-2">
           <Button size="sm" asChild>
             <a href="/downloads/local-browser-firefox.xpi">
@@ -194,7 +220,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             <li>Turn on <strong className="font-medium text-foreground">Developer mode</strong> in the top right corner.</li>
             <li>Click <strong className="font-medium text-foreground">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
             <li>Pin the Paperclip extension to the toolbar so you can see its status.</li>
-            <li>Open the extension and press <strong className="font-medium text-foreground">Allow all sites</strong> if it shows that button. Chrome asks once, and every tab becomes readable after that.</li>
+            <li>Open the extension control center and press <strong className="font-medium text-foreground">Allow all</strong>. Chrome asks once, and every tab and tool works after that.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-muted-foreground">
@@ -209,7 +235,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             <li>Click <strong className="font-medium text-foreground">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
             <li>Confirm the install. If Firefox asks, allow the connection to this Paperclip address.</li>
             <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
-            <li>Open the extension. Its <strong className="font-medium text-foreground">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-foreground">Allow all sites</strong> if it does not.</li>
+            <li>Open the extension control center. Its <strong className="font-medium text-foreground">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-foreground">Allow all</strong> if it does not, or if any permission is listed as missing.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-muted-foreground">
@@ -396,6 +422,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
                     </Button>
                   </div>
                 </div>
+                <LocalBrowserSessionAccess session={session} companyId={companyId} />
                 {watchedSessionId === session.sessionId ? (
                   <LocalBrowserViewer sessionId={session.sessionId} companyId={companyId} />
                 ) : null}
@@ -447,9 +474,25 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         </p>
       </div>
 
+      <div className="space-y-3">
+        <h3 className="font-medium">Limits</h3>
+        <p className="text-sm text-muted-foreground">
+          Caps on how much one agent call can read, return or move, and how long it may run. Raise a
+          limit only when tasks keep hitting it; larger answers cost the agent more context.
+        </p>
+        <LocalBrowserLimitsFields
+          idPrefix={id}
+          drafts={limitDrafts}
+          disabled={!settings.data}
+          onChange={(key: LocalBrowserLimitKey, draft: string) =>
+            setLimitDrafts((current) => ({ ...current, [key]: draft }))
+          }
+        />
+      </div>
+
       {settings.isError && (
         <p role="alert" className="text-sm text-destructive">
-          Could not load the saved access level. {UNREACHABLE}{" "}
+          Could not load the saved settings. {UNREACHABLE}{" "}
           <Button size="sm" variant="ghost" onClick={() => void settings.refetch()}>
             Retry
           </Button>
@@ -457,22 +500,30 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
       )}
       {saveSettings.isError && (
         <p role="alert" className="text-sm text-destructive">
-          Could not save the access level. {UNREACHABLE}
+          Could not save the settings. {UNREACHABLE}
         </p>
       )}
+      {limitsInvalid && settings.data ? (
+        <p role="alert" className="text-sm text-destructive">
+          Fix the highlighted limits before saving.
+        </p>
+      ) : null}
       {saveSettings.isSuccess && !dirty && (
         <p role="status" className="text-sm text-muted-foreground">
-          Access level saved.
+          Settings saved.
         </p>
       )}
 
       <div className="flex justify-end">
         <Button
           size="sm"
-          disabled={!settings.data || !dirty || saveSettings.isPending}
-          onClick={() => saveSettings.mutate({ tier, allowedOrigins })}
+          disabled={!settings.data || !dirty || limitsInvalid || saveSettings.isPending}
+          onClick={() => {
+            if (!parsedLimits.limits) return;
+            saveSettings.mutate({ tier, allowedOrigins, limits: parsedLimits.limits });
+          }}
         >
-          Save access level
+          Save settings
         </Button>
       </div>
     </section>

@@ -1,5 +1,8 @@
 import type {
+  LocalBrowserAccess,
   LocalBrowserClient,
+  LocalBrowserGuards,
+  LocalBrowserLimits,
   LocalBrowserTab,
   LocalBrowserTier,
   LocalBrowserViewerEvent,
@@ -53,6 +56,9 @@ export interface LiveSession {
   tabs: LocalBrowserTab[];
   tier: LocalBrowserTier;
   allowedOrigins: string[];
+  limits: LocalBrowserLimits;
+  access: LocalBrowserAccess | null;
+  guards: LocalBrowserGuards | null;
   connectedAt: Date;
   lastSeenAt: Date;
   pending: Map<string, PendingCall>;
