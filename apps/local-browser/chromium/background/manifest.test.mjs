@@ -35,9 +35,8 @@ test("no unsupported catalog id is declared", () => {
   for (const id of ids("unsupported", "api")) assert.equal(declared.has(id), false, id);
 });
 
-test("the manifest is MV3 version 1.1.1 with the shared popup and control center", () => {
+test("the manifest is MV3 with the shared popup and control center", () => {
   assert.equal(manifest.manifest_version, 3);
-  assert.equal(manifest.version, "1.1.1");
   assert.equal(manifest.action.default_popup, "ui/popup.html");
   assert.deepEqual(manifest.options_ui, { page: "ui/control.html", open_in_tab: true });
   assert.equal(manifest.background.type, "module");

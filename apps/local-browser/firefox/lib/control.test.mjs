@@ -1,7 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+
 import { bootBackground, flush, plain } from "./harness.test.mjs";
+
+const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("../manifest.json", import.meta.url)), "utf8"));
 
 const PAPERCLIP_TAB = {
   id: 12,
@@ -31,7 +36,7 @@ test("status answers with the documented envelope and status object", async () =
   assert.equal(response.ok, true);
   const status = response.status;
   assert.equal(status.client, "firefox");
-  assert.equal(status.version, "1.1.1");
+  assert.equal(status.version, manifest.version);
   assert.equal(status.state, "unpaired");
   assert.equal(status.sessionId, null);
   assert.ok(Array.isArray(status.tabs));
