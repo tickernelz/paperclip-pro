@@ -107,7 +107,11 @@ Tabs report `cookieStoreId`, `containerName`, `incognito`, `discarded`, `frozen`
 
 Snapshot, read, screenshot and wait results carry `document`: a per-page `documentId`, `navigationType`, `restoredFromBfcache`, `wasDiscarded`, `ageMs`, request counts since load, and `stale` with `staleReasons`. A stale document is the back-forward-cache or frozen-tab case where the page shows old data; agents reload before trusting it.
 
-`local_browser_act` refuses an element another element covers. `force: true` skips that hit test.
+`local_browser_act` refuses an element another element covers. `force: true` skips that hit test; a forced act on a covered element runs page events on the element itself, because a real click would hit the cover.
+
+`local_browser_act` sends real (`isTrusted`) input for click, dblclick, hover, check, uncheck, type and press whenever the browser offers it: Chromium through `chrome.debugger` (`Input.dispatchMouseEvent`, `Input.dispatchKeyEvent`, `Input.insertText`), Firefox through WebDriver BiDi `input.performActions` when its probe reports `bidi`. The content script still resolves the target, scrolls it into view and runs the hit test, then returns the target's centre in CSS pixels of the viewport; the background dispatches pointer move, down and up there. `type` clicks the field, selects its content with Ctrl+A (Cmd+A on macOS) and inserts the text (Chromium `Input.insertText`, Firefox one key action per character in chunks), then presses Enter when `submit` is set. `press` accepts modifiers in the key string, for example `Shift+Tab` or `Control+a`. Scroll, select, focus and scroll_into_view stay synthetic. Chromium reuses the shared debugger attachment and its idle detach, so the "started debugging this browser" bar appears once rather than per call. Firefox brings the tab to the front before BiDi input, like the viewer does.
+
+The optional `input` argument picks the path: `auto` (default) uses trusted input when available and otherwise synthetic events; `trusted` fails with `local_browser_unsupported` and a setup hint instead of falling back; `synthetic` always uses page events. The result carries `input: "trusted" | "synthetic"` for the path that ran and a `note` when auto fell back (Chromium refused the debugger, Firefox not started with remote debugging, a forced act on a covered element). `input` other than `auto` needs the `act.input` capability.
 
 `local_browser_api` (full tier) calls any browser extension function by dotted path, for example `history.search`, `bookmarks.search`, `tabs.query` or `windows.getAll`, and returns `{ value, type }` as JSON. The extension's own `storage` namespace is refused because it holds the pairing secret.
 
@@ -147,6 +151,7 @@ The bridge WebSocket accepts frames up to the base64 size of the `transferMaxByt
 | `document.state` | `document` on snapshot, read, screenshot and wait |
 | `api.v1` | `local_browser_api` |
 | `act.force` | `force` on `local_browser_act` |
+| `act.input` | `input` other than `auto` on `local_browser_act` |
 | `budget.v1` | `budgetMs` on call frames |
 
 `local_browser_sessions` and `GET /api/local-browser/sessions` report each session's `capabilities`, `access` and `guards`.
@@ -205,8 +210,14 @@ The control center also holds guards the user switches on the extension side, re
 
 Trusted input is separate from site access. Chromium sends real mouse and key events through the
 `debugger` permission. Firefox has no equivalent extension API, so it sends synthetic events by
-default and can only send trusted ones through its own debug port; the popup says so and offers the
-one-time command. Reading, snapshotting, clicking and typing all work without that command.
+default and can only send trusted ones through WebDriver BiDi on its own debug port. The Firefox popup
+shows "Trusted input: on" or "Trusted input: off" with a *Set up* link; the control center's *Trusted
+input* section detects the operating system and the browser (Firefox, Developer Edition, Nightly, Zen,
+LibreWolf, Waterfox, Floorp or any other Firefox-based browser), builds the launch command for
+Windows, macOS or Linux (package, Flatpak, Snap or a custom path from `about:support`), says why
+trusted input is off (`not_running`, `origin_refused`, `busy`) and re-checks on demand. Reading,
+snapshotting, clicking and typing all work without that command; with it, agent clicks, typing and
+key presses through `local_browser_act` become trusted events too.
 
 Both extensions consume the same contract. The data lives in `packages/shared/src/local-browser-contract.ts` (protocol version, error codes, capabilities, permission catalog, limits, guards, tool tiers) and the zod schemas in `packages/shared/src/local-browser.ts`. `pnpm generate:local-browser-protocol` imports the contract file and writes `apps/local-browser/shared/lib/protocol.contract.json` and `apps/local-browser/shared/lib/contract.js` (`LB.contract`); `scripts/sync-local-browser-shared.mjs` then copies `apps/local-browser/shared/` into both browser folders. `--check` on each script fails on drift. The `extensions` CI lane runs both checks plus every script parse and the extension suites, so a stale copy or a broken extension fails the pull request.
 

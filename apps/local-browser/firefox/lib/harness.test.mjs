@@ -131,9 +131,28 @@ export function bootBackground(options = {}) {
       this.readyState = 0;
       this.sent = [];
       sockets.push(this);
+      this.bidi = Boolean(options.bidi) && /^ws:\/\/127\.0\.0\.1:\d+\/session$/.test(url);
+      if (this.bidi) {
+        Promise.resolve().then(() => {
+          if (options.bidi.accept === false) {
+            this.readyState = 3;
+            if (this.onerror) this.onerror({ type: "error" });
+            if (this.onclose) this.onclose({ code: 1006, reason: "" });
+          } else {
+            this.open();
+          }
+        });
+      }
     }
     send(payload) {
-      this.sent.push(JSON.parse(payload));
+      const frame = JSON.parse(payload);
+      this.sent.push(frame);
+      if (!this.bidi || !options.bidi.reply) return;
+      Promise.resolve().then(() => {
+        const answer = options.bidi.reply(frame);
+        if (answer && answer.error) this.deliver({ id: frame.id, type: "error", error: answer.error, message: answer.error });
+        else this.deliver({ id: frame.id, type: "success", result: answer || {} });
+      });
     }
     close(code, reason) {
       this.readyState = 3;
@@ -366,7 +385,9 @@ export function bootBackground(options = {}) {
     btoa,
     atob,
     WebSocket: FakeSocket,
-    fetch: async () => {
+    fetch: async (url, init) => {
+      record("fetch", url, init);
+      if (options.fetch) return options.fetch(url, init);
       throw new Error("offline");
     },
     createImageBitmap: async () => ({ width: 1, height: 1, close() {} }),

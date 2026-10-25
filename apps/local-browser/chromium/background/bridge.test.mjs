@@ -7,7 +7,7 @@ test("hello advertises every implemented capability with access and guards", asy
   const hello = context.sent.find((frame) => frame.type === "hello");
   assert.ok(hello, "the extension must say hello once the socket opens");
   assert.deepEqual(hello.capabilities, [...context.LB.contract.capabilities]);
-  assert.equal(hello.clientVersion, "1.1.0");
+  assert.equal(hello.clientVersion, "1.1.1");
   assert.equal(hello.access.siteAccess, "all");
   assert.deepEqual(hello.access.missing, []);
   assert.deepEqual(hello.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
@@ -52,7 +52,7 @@ test("status describes the connection for the popup and control center", async (
   assert.equal(answer.ok, true);
   const status = answer.status;
   assert.equal(status.client, "chromium");
-  assert.equal(status.version, "1.1.0");
+  assert.equal(status.version, "1.1.1");
   assert.equal(status.state, "connected");
   assert.equal(status.origin, "https://p.test");
   assert.equal(status.sessionId, "11111111-1111-4111-8111-111111111111");

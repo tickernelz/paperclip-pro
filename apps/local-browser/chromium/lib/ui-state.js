@@ -177,23 +177,54 @@
     };
   }
 
-  function trustedInput(value, client) {
+  var INPUT_REASONS = {
+    not_running: "The browser was not started with remote debugging.",
+    origin_refused: "Remote debugging is on, but this extension is not in --remote-allow-origins (wrong or old id).",
+    busy: "Another automation tool is connected to this browser."
+  };
+
+  var INPUT_BENEFIT = {
+    firefox: "With trusted input, agents send real clicks and key presses that websites treat as a person's, and can take screenshots of tabs in the background. Without it, agents fall back to synthetic events, which some sites ignore.",
+    chromium: "Chrome sends real clicks and key presses through its debugger, so websites treat them as a person's."
+  };
+
+  function trustedInput(value, client, now) {
     var source = value && typeof value === "object" ? value : {};
+    var firefox = client === "firefox";
     var mode = source.mode === "cdp" || source.mode === "bidi" ? source.mode : "synthetic";
+    var ready = mode !== "synthetic";
+    var port = typeof source.port === "number" && source.port >= 1 && source.port <= 65535 ? source.port : null;
     var title;
-    if (mode === "cdp") title = "Trusted input is ready (Chrome DevTools Protocol).";
-    else if (mode === "bidi") title = "Trusted input is ready (WebDriver BiDi).";
-    else if (client === "firefox") title = "Agents use synthetic events. Start Firefox with remote debugging to give them real clicks and keys.";
-    else title = "Agents use synthetic events until the debugger can attach.";
-    var command = mode === "synthetic" ? text(source.command) : "";
+    var detail;
+    if (mode === "cdp") {
+      title = "Trusted input is ready (Chrome DevTools Protocol).";
+      detail = "";
+    } else if (mode === "bidi") {
+      title = "Ready";
+      detail = "WebDriver BiDi" + (port ? ", port " + port : "") + ".";
+    } else if (firefox) {
+      title = "Not active";
+      detail = INPUT_REASONS[source.reason] || "Not checked yet.";
+    } else {
+      title = "Agents use synthetic events until the debugger can attach.";
+      detail = "";
+    }
+    var checked = typeof source.checkedAt === "number" ? ageText(source.checkedAt, now) : "";
     return {
       mode: mode,
-      tone: mode === "synthetic" ? "warn" : "ok",
+      tone: ready ? "ok" : "warn",
+      ready: ready,
       title: title,
-      hint: text(source.hint),
-      command: command,
-      showCommand: Boolean(command),
-      showPort: client === "firefox"
+      detail: detail,
+      reason: Object.prototype.hasOwnProperty.call(INPUT_REASONS, source.reason) ? source.reason : "",
+      port: port,
+      origin: text(source.origin),
+      checked: checked ? "Last checked " + checked + "." : "",
+      benefit: firefox ? INPUT_BENEFIT.firefox : INPUT_BENEFIT.chromium,
+      showSetup: firefox,
+      showCheck: firefox,
+      showPort: firefox,
+      popupLine: firefox ? (ready ? "Trusted input: on" : "Trusted input: off") : ""
     };
   }
 
@@ -210,7 +241,7 @@
       connection: connection(source),
       permissions: permissions(opts.access || source.access, { catalog: opts.catalog, client: client, requestable: opts.requestable, now: opts.now }),
       guards: guards(source.guards, opts.bounds),
-      trustedInput: trustedInput(source.trustedInput, client),
+      trustedInput: trustedInput(source.trustedInput, client, opts.now),
       ready: Boolean(status)
     };
   }
@@ -222,7 +253,12 @@
       permissions: view.permissions,
       ready: view.ready,
       showAllowAll: !view.permissions.allGranted,
-      showPending: view.permissions.pending.length > 0
+      showPending: view.permissions.pending.length > 0,
+      trusted: {
+        show: view.ready && view.trustedInput.showSetup,
+        text: view.trustedInput.popupLine,
+        showSetup: !view.trustedInput.ready
+      }
     };
   }
 

@@ -39,7 +39,7 @@ test("declared maps manifest permissions and host patterns to catalog ids", () =
 });
 
 test("version reads the manifest", () => {
-  assert.equal(setup().LB.ext.version(), "1.1.0");
+  assert.equal(setup().LB.ext.version(), "1.1.1");
 });
 
 test("openControlCenter creates a tab at the section, or focuses an existing one", async () => {

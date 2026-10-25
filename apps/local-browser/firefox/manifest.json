@@ -2,7 +2,7 @@
   "manifest_version": 2,
   "name": "Paperclip Local Browser Bridge",
   "short_name": "Paperclip Browser",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Lets Paperclip drive your own Firefox tabs: snapshot, act, read, screenshot, network and trusted input. You choose every permission.",
   "browser_specific_settings": {
     "gecko": {

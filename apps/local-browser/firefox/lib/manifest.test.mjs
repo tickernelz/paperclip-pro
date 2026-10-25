@@ -31,8 +31,8 @@ test("no catalog id unsupported in firefox is declared", () => {
   for (const id of catalog("unsupported")) assert.equal(declared.has(id), false, id + " is unsupported in firefox");
 });
 
-test("the manifest is version 1.1.0 with the shared popup and control center", () => {
-  assert.equal(manifest.version, "1.1.0");
+test("the manifest is version 1.1.1 with the shared popup and control center", () => {
+  assert.equal(manifest.version, "1.1.1");
   assert.equal(manifest.browser_action.default_popup, "ui/popup.html");
   assert.deepEqual(manifest.options_ui, { page: "ui/control.html", open_in_tab: true });
   assert.equal(manifest.browser_specific_settings.gecko.id, "local-browser@paperclip.app");

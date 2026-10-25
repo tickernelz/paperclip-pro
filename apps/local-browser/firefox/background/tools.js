@@ -9,6 +9,10 @@
   var PAGE = ["<all_urls>", "scripting"];
   var STITCH_RESERVE_MS = 1500;
   var PERMISSION_NOTE = "Ask the user to open the Paperclip Local Browser extension and press Allow.";
+  var TRUSTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true, press: true };
+  var TRUSTED_OFF_NOTE = "Trusted input is off: start Firefox with remote debugging (see the extension's Trusted input page)";
+  var TRUSTED_SETUP_HINT = "Ask the user to start Firefox with remote debugging as the extension's Trusted input page shows, or pass input auto to fall back to page events";
+  var COVERED_NOTE = "Another element covers this target, so force ran page events on the target itself instead of a real click that would hit the cover";
   var STATUS_NOTE =
     "Only the user can grant browser permissions. Call op request with the missing ids to queue them, then ask the user to press Allow in the extension.";
 
@@ -352,9 +356,54 @@
     });
   }
 
+  async function syntheticAct(tab, args, note) {
+    var result = Object.assign({}, await tabsApi.send(tab.tabId, "act", args), { input: "synthetic" });
+    if (note) result.note = note;
+    return result;
+  }
+
+  async function isMac() {
+    try {
+      return (await browser.runtime.getPlatformInfo()).os === "mac";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function trustedRefusal(reason) {
+    return protocol.error(C.unsupported, "Trusted input is unavailable: " + reason, TRUSTED_SETUP_HINT, false);
+  }
+
+  async function settleAct(tab, prepared, args) {
+    try {
+      return await tabsApi.send(tab.tabId, "actSettle", { before: prepared.before, timeoutMs: args.timeoutMs });
+    } catch (error) {
+      var fresh = await browser.tabs.get(tab.tabId).catch(function () {
+        return tab;
+      });
+      return { ok: true, url: fresh.url || "", title: fresh.title || "", changed: true };
+    }
+  }
+
   async function act(args, ctx) {
     var tab = await targetTab(args);
-    return tabsApi.send(tab.tabId, "act", args);
+    var mode = args.input || "auto";
+    if (mode === "synthetic") return syntheticAct(tab, args);
+    if (TRUSTED_ACTIONS[args.action] !== true) return syntheticAct(tab, args, mode === "trusted" ? args.action + " always runs as page events" : undefined);
+    var probe = await LB.bidi.probe(false);
+    if (probe.mode !== "bidi") {
+      if (mode === "trusted") throw trustedRefusal("Firefox was not started with remote debugging");
+      return syntheticAct(tab, args, TRUSTED_OFF_NOTE);
+    }
+    var prepared = await tabsApi.send(tab.tabId, "actPrepare", args);
+    if (prepared.covered) return syntheticAct(tab, args, COVERED_NOTE);
+    var sent = await LB.bidi.performActions(tab, LB.input.actBatches(args, prepared, await isMac()));
+    if (!sent.available) {
+      var reason = sent.error || "WebDriver BiDi refused the input";
+      if (mode === "trusted" || sent.dispatched > 0) throw trustedRefusal(reason);
+      return syntheticAct(tab, args, "Trusted input failed (" + reason + "), so page events ran instead");
+    }
+    return Object.assign({}, await settleAct(tab, prepared, args), { input: "trusted" });
   }
 
   async function read(args, ctx) {

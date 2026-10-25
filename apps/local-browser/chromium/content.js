@@ -340,7 +340,6 @@
     var target = resolveTarget(args);
     if (!target.ok) return target;
     var element = target.element;
-    var trustedNeeded = false;
 
     if (args.action !== "scroll") safeScrollIntoView(element);
     var blocked = args.force === true ? null : ensureReachable(element, args.action);
@@ -370,10 +369,10 @@
             "Type into an input, textarea or contenteditable element"
           );
         }
-        if (args.submit) trustedNeeded = !pressKey(element, "Enter");
+        if (args.submit) pressKey(element, "Enter");
         break;
       case "press":
-        trustedNeeded = !pressKey(element, args.key);
+        pressKey(element, args.key);
         break;
       case "check":
         setChecked(element, true);
@@ -399,8 +398,45 @@
     var changed = await observeChange(beforeUrl, beforeMutations, 300);
     return {
       ok: true,
-      result: { ok: true, url: location.href, title: document.title, changed: changed, trustedNeeded: trustedNeeded }
+      result: { ok: true, url: location.href, title: document.title, changed: changed }
     };
+  }
+
+  function canTakeText(element) {
+    return element.tagName === "INPUT" || element.tagName === "TEXTAREA" || element.isContentEditable === true;
+  }
+
+  function opActPrepare(args) {
+    var target = resolveTarget(args);
+    if (!target.ok) return target;
+    var element = target.element;
+    if (args.action === "type" && !canTakeText(element)) {
+      return fail(ERROR.unsupported, "This element cannot take text", "Type into an input, textarea or contenteditable element");
+    }
+    safeScrollIntoView(element);
+    var prepared = { url: location.href, mutations: mutationCount, covered: false };
+    if (args.action === "press") {
+      if (typeof element.focus === "function") element.focus();
+      return { ok: true, result: prepared };
+    }
+    if (args.force === true) {
+      prepared.covered = hitVerdict(element).verdict !== "allow";
+    } else {
+      var blocked = ensureReachable(element, args.action);
+      if (blocked) return blocked;
+    }
+    if ((args.action === "check" || args.action === "uncheck") && "checked" in element) {
+      prepared.done = element.checked === (args.action === "check");
+    }
+    var point = pointOf(element);
+    prepared.x = Math.round(point.x);
+    prepared.y = Math.round(point.y);
+    return { ok: true, result: prepared };
+  }
+
+  async function opActSettle(args) {
+    var changed = await observeChange(String(args.url || ""), typeof args.mutations === "number" ? args.mutations : mutationCount, 300);
+    return { ok: true, result: { ok: true, url: location.href, title: document.title, changed: changed } };
   }
 
   function opSnapshot(args) {
@@ -775,6 +811,10 @@
         return Promise.resolve(withDocument(opSnapshot(args)));
       case "act":
         return opAct(args);
+      case "actPrepare":
+        return Promise.resolve(opActPrepare(args));
+      case "actSettle":
+        return opActSettle(args);
       case "read":
         return Promise.resolve(withDocument(opRead(args)));
       case "wait":

@@ -102,16 +102,59 @@ test("guards, trusted input and sections", () => {
   assert.equal(guards.networkBufferSize, 2000);
   assert.deepEqual(plain(guards.toggles).map((toggle) => [toggle.key, toggle.checked]), [["protectPaperclipTab", true], ["protectFocusedTab", false]]);
 
-  assert.equal(uiState.trustedInput({ mode: "cdp" }, "chromium").tone, "ok");
-  const synthetic = uiState.trustedInput({ mode: "synthetic", hint: "Start Firefox like this", command: "firefox --remote-debugging-port 9222" }, "firefox");
-  assert.equal(synthetic.showCommand, true);
-  assert.equal(synthetic.showPort, true);
-  assert.equal(uiState.trustedInput({ mode: "bidi", command: "x" }, "firefox").showCommand, false);
-
   assert.equal(uiState.section("#permissions"), "permissions");
   assert.equal(uiState.section("#welcome"), "welcome");
   assert.equal(uiState.section("#nope"), "overview");
   assert.equal(uiState.section(""), "overview");
+});
+
+test("trusted input view for Chromium", () => {
+  const view = uiState.trustedInput({ mode: "cdp" }, "chromium");
+  assert.equal(view.tone, "ok");
+  assert.equal(view.ready, true);
+  assert.equal(view.title, "Trusted input is ready (Chrome DevTools Protocol).");
+  assert.equal(view.showSetup, false);
+  assert.equal(view.showPort, false);
+  assert.equal(view.showCheck, false);
+  assert.equal(view.popupLine, "");
+});
+
+test("trusted input view for Firefox names the reason in plain words", () => {
+  const now = 1000000000;
+  const reasons = {
+    not_running: /not started with remote debugging/,
+    origin_refused: /not in --remote-allow-origins \(wrong or old id\)/,
+    busy: /another automation tool is connected/i,
+  };
+  for (const [reason, pattern] of Object.entries(reasons)) {
+    const view = uiState.trustedInput({ mode: "synthetic", port: 9333, origin: "moz-extension://u", reason, checkedAt: now - 5000 }, "firefox", now);
+    assert.equal(view.title, "Not active");
+    assert.equal(view.tone, "warn");
+    assert.equal(view.ready, false);
+    assert.equal(view.reason, reason);
+    assert.match(view.detail, pattern);
+    assert.equal(view.port, 9333);
+    assert.equal(view.origin, "moz-extension://u");
+    assert.equal(view.checked, "Last checked just now.");
+    assert.equal(view.showSetup, true);
+    assert.equal(view.showCheck, true);
+    assert.equal(view.showPort, true);
+    assert.equal(view.popupLine, "Trusted input: off");
+    assert.match(view.benefit, /synthetic events/);
+  }
+  const unknown = uiState.trustedInput({ mode: "synthetic", reason: "weird" }, "firefox", now);
+  assert.equal(unknown.reason, "");
+  assert.equal(unknown.detail, "Not checked yet.");
+  assert.equal(unknown.checked, "");
+  assert.equal(unknown.port, null);
+  const ready = uiState.trustedInput({ mode: "bidi", port: 9333, checkedAt: now - 120000 }, "firefox", now);
+  assert.equal(ready.title, "Ready");
+  assert.equal(ready.detail, "WebDriver BiDi, port 9333.");
+  assert.equal(ready.tone, "ok");
+  assert.equal(ready.checked, "Last checked 2 min ago.");
+  assert.equal(ready.popupLine, "Trusted input: on");
+  assert.equal(uiState.trustedInput({ mode: "synthetic", port: 70000 }, "firefox").port, null);
+  assert.equal(uiState.control({ ...connected, client: "firefox", trustedInput: { mode: "bidi", port: 9222, checkedAt: now } }, { client: "firefox", now }).trustedInput.checked, "Last checked just now.");
 });
 
 test("age text and response unwrapping", () => {
@@ -133,6 +176,12 @@ test("popup and control views compose the same pieces", () => {
   assert.equal(popup.showPending, false);
   const control = uiState.control(connected, options);
   assert.equal(control.trustedInput.mode, "cdp");
+  assert.equal(popup.trusted.show, false);
+  const firefox = uiState.popup({ ...connected, client: "firefox", trustedInput: { mode: "synthetic", reason: "busy" } }, { ...options, client: "firefox" });
+  assert.deepEqual(plain(firefox.trusted), { show: true, text: "Trusted input: off", showSetup: true });
+  const on = uiState.popup({ ...connected, client: "firefox", trustedInput: { mode: "bidi", port: 9222 } }, { ...options, client: "firefox" });
+  assert.deepEqual(plain(on.trusted), { show: true, text: "Trusted input: on", showSetup: false });
+  assert.equal(uiState.popup(null, { ...options, client: "firefox" }).trusted.show, false);
   assert.equal(control.guards.networkBufferSize, 2000);
   assert.equal(uiState.control(null, options).ready, false);
 });

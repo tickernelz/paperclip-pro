@@ -219,6 +219,9 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     if (tool === "local_browser_act" && args.force === true) {
       requireCapability(session, "act.force", "force on local_browser_act");
     }
+    if (tool === "local_browser_act" && args.input !== undefined && args.input !== "auto") {
+      requireCapability(session, "act.input", "input " + String(args.input) + " on local_browser_act");
+    }
     enforceCookieCapability(session, tool, args);
   }
 

@@ -100,6 +100,18 @@ when the browser closes and has no expirationDate. Write a session cookie with
 
 \`local_browser_act\` refuses an element that another element covers, such as a banner.
 Close the overlay first. When you know the target is right, pass \`force: true\`.
+A forced act on a covered element runs page events on the element itself.
+
+## Real input
+
+\`local_browser_act\` clicks, hovers, types and presses keys with real browser input
+when the extension can send it: Chrome through its debugger, Firefox through WebDriver
+BiDi when the user started it with remote debugging. The result says which ran:
+\`input: "trusted"\` or \`input: "synthetic"\`, with a \`note\` when it fell back.
+Some sites ignore synthetic events. When a synthetic act did nothing, retry with
+\`input: "trusted"\`; it fails with \`local_browser_unsupported\` instead of falling back,
+and its hint says what the user must turn on. \`input: "synthetic"\` forces page events.
+Scroll, select, focus and scroll_into_view always use page events.
 
 ## Limits
 

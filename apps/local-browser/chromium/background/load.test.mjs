@@ -429,6 +429,67 @@ test("typing into a covered field is refused too", async () => {
   assert.equal(result.error.code, "local_browser_element_missing");
 });
 
+test("actPrepare returns the rounded centre of a reachable target and the change baseline", async () => {
+  const target = fakeElement("button", { attributes: { "aria-label": "Pay" }, innerText: "Pay", rect: { left: 10, top: 10, width: 101, height: 31 } });
+  const body = fakeElement("body", { children: [target] });
+  let clicks = 0;
+  target.dispatchEvent = () => {
+    clicks += 1;
+    return true;
+  };
+  const context = loadPageScripts(contentScripts, { elementFromPoint: () => target });
+  context.sandbox.document.body = body;
+
+  const result = await callRpc(context, "actPrepare", { action: "click", selector: "button" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(result.result.x, 61);
+  assert.equal(result.result.y, 26);
+  assert.equal(result.result.covered, false);
+  assert.equal(typeof result.result.mutations, "number");
+  assert.equal(typeof result.result.url, "string");
+  assert.equal(clicks, 0, "prepare never fires page events");
+});
+
+test("actPrepare refuses a covered target unless force, then marks it covered", async () => {
+  const target = fakeElement("button", { attributes: { "aria-label": "Pay" }, innerText: "Pay" });
+  const overlay = fakeElement("div", { attributes: { "aria-label": "Overlay" } });
+  const body = fakeElement("body", { children: [target, overlay] });
+  const context = loadPageScripts(contentScripts, { elementFromPoint: () => overlay });
+  context.sandbox.document.body = body;
+
+  const refused = await callRpc(context, "actPrepare", { action: "click", selector: "button" });
+  assert.equal(refused.ok, false);
+  assert.match(refused.error.message, /covers this target/);
+  const forced = await callRpc(context, "actPrepare", { action: "click", selector: "button", force: true });
+  assert.equal(forced.ok, true, JSON.stringify(forced.error || {}));
+  assert.equal(forced.result.covered, true);
+});
+
+test("actPrepare refuses type on an element that cannot take text and reports checked boxes as done", async () => {
+  const button = fakeElement("button", { attributes: { "aria-label": "Pay" }, innerText: "Pay" });
+  const box = fakeElement("input", { attributes: { type: "checkbox" } });
+  box.checked = true;
+  const body = fakeElement("body", { children: [button, box] });
+  const context = loadPageScripts(contentScripts, { elementFromPoint: (x, y) => (y > 0 ? box : button) });
+  context.sandbox.document.body = body;
+
+  const typed = await callRpc(context, "actPrepare", { action: "type", selector: "button", text: "x" });
+  assert.equal(typed.ok, false);
+  assert.equal(typed.error.code, "local_browser_unsupported");
+  const checked = await callRpc(context, "actPrepare", { action: "check", selector: "input" });
+  assert.equal(checked.ok, true, JSON.stringify(checked.error || {}));
+  assert.equal(checked.result.done, true);
+});
+
+test("actSettle reports a url change after the trusted input", async () => {
+  const body = fakeElement("body");
+  const context = loadPageScripts(contentScripts);
+  context.sandbox.document.body = body;
+  const result = await callRpc(context, "actSettle", { url: "https://before.test/", mutations: 0 });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(result.result.changed, true);
+});
+
 function scrollablePage() {
   const scroller = fakeElement("div", { attributes: { "aria-label": "Results" } });
   scroller.scrollTop = 0;

@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 
+import "./keys.js";
 import "./input.js";
 
-const { createInputState, bidiActions, clickCountOf, buttonOf } = globalThis.LB.input;
+const { createInputState, bidiActions, clickCountOf, buttonOf, parseCombo, actBatches } = globalThis.LB.input;
 
 test("a move never clicks", () => {
   const state = createInputState();
@@ -149,4 +150,28 @@ test("BiDi groups effects into pointer, key and wheel sources", () => {
   assert.equal(sources[0].type, "pointer");
   assert.equal(sources[0].id, "mouse");
   assert.deepEqual(sources[0].actions[0], { type: "pointerMove", x: 5, y: 6, origin: "viewport" });
+});
+
+test("key strings parse into a key and modifiers", () => {
+  assert.deepEqual(parseCombo("Control+a"), { key: "a", modifiers: ["ctrl"] });
+  assert.deepEqual(parseCombo("Cmd+Shift+Enter"), { key: "Enter", modifiers: ["meta", "shift"] });
+  assert.deepEqual(parseCombo("Control++"), { key: "+", modifiers: ["ctrl"] });
+  assert.deepEqual(parseCombo("+"), { key: "+", modifiers: [] });
+  assert.deepEqual(parseCombo("a+b"), { key: "a+b", modifiers: [] });
+});
+
+test("type on macOS selects all with Meta, clears with Backspace when the text is empty", () => {
+  const batches = actBatches({ action: "type", text: "" }, { x: 3.6, y: 4.4 }, true);
+  assert.deepEqual(batches[0][0].actions[0], { type: "pointerMove", x: 4, y: 4, origin: "viewport" });
+  assert.equal(batches[1][0].actions[0].value, "");
+  assert.deepEqual(batches[2][0].actions, [
+    { type: "keyDown", value: "" },
+    { type: "keyUp", value: "" },
+  ]);
+  assert.equal(batches.length, 3);
+});
+
+test("hover only moves and a done check sends nothing", () => {
+  assert.deepEqual(actBatches({ action: "hover" }, { x: 1, y: 2 }, false)[0][0].actions.map((action) => action.type), ["pointerMove"]);
+  assert.deepEqual(actBatches({ action: "check" }, { x: 1, y: 2, done: true }, false), []);
 });

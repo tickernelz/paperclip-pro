@@ -31,7 +31,7 @@ test("status answers with the documented envelope and status object", async () =
   assert.equal(response.ok, true);
   const status = response.status;
   assert.equal(status.client, "firefox");
-  assert.equal(status.version, "1.1.0");
+  assert.equal(status.version, "1.1.1");
   assert.equal(status.state, "unpaired");
   assert.equal(status.sessionId, null);
   assert.ok(Array.isArray(status.tabs));
@@ -40,7 +40,11 @@ test("status answers with the documented envelope and status object", async () =
   assert.deepEqual(status.access.missing, []);
   assert.deepEqual(status.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
   assert.equal(status.trustedInput.mode, "synthetic");
-  assert.match(status.trustedInput.command, /--remote-debugging-port 9222/);
+  assert.equal(status.trustedInput.port, 9222);
+  assert.equal(status.trustedInput.reason, "not_running");
+  assert.equal(status.trustedInput.origin, "moz-extension://uuid");
+  assert.equal(typeof status.trustedInput.checkedAt, "number");
+  assert.equal("command" in status.trustedInput, false);
 });
 
 test("status reports narrowed site access and the missing ids", async () => {
@@ -150,12 +154,13 @@ test("pending.clear dismisses queued agent requests", async () => {
   assert.deepEqual(status.access.pending, []);
 });
 
-test("bidi.set stores the port and the launch command follows it", async () => {
+test("bidi.set stores the port and re-probes it", async () => {
   const harness = boot();
   const response = await send(harness, "bidi.set", { port: 9333 });
   assert.equal(response.ok, true);
   assert.deepEqual(plain(harness.store.get("lb.bidi")), { port: 9333 });
-  assert.match(response.status.trustedInput.command, /--remote-debugging-port 9333/);
+  assert.equal(response.status.trustedInput.port, 9333);
+  assert.equal(harness.callsOf("fetch").at(-1)[1], "http://127.0.0.1:9333/");
   const refused = await send(harness, "bidi.set", { port: 70000 });
   assert.equal(refused.ok, false);
   assert.match(refused.error, /1 and 65535/);

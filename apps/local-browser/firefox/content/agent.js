@@ -413,6 +413,81 @@
     return settleChange(before, args.timeoutMs);
   }
 
+  function contains(outer, inner) {
+    if (typeof outer.contains === "function") return outer.contains(inner);
+    var node = inner.parentNode || inner.parentElement;
+    while (node) {
+      if (node === outer) return true;
+      node = node.parentNode || node.parentElement;
+    }
+    return false;
+  }
+
+  function hitAt(element, point) {
+    if (typeof document.elementFromPoint !== "function") return { state: "allow", hit: null };
+    var hit;
+    try {
+      hit = document.elementFromPoint(point.x, point.y);
+    } catch (error) {
+      return { state: "allow", hit: null };
+    }
+    if (hit && (hit === element || contains(element, hit))) return { state: "allow", hit: hit };
+    if (hit) return { state: "covered", hit: hit };
+    var inside = point.x >= 0 && point.y >= 0 && point.x <= window.innerWidth && point.y <= window.innerHeight;
+    return { state: inside ? "covered" : "offscreen", hit: null };
+  }
+
+  function describeBlock(hit) {
+    return hit && typeof hit.tagName === "string" ? hit.tagName.toLowerCase() : "nothing";
+  }
+
+  function actPrepare(args) {
+    var action = args.action;
+    var element = resolveElement(args);
+    if (action === "type" && !editableOf(element)) {
+      throw fail(protocol.ERROR_CODES.elementMissing, "type needs an input, textarea or contenteditable element", "Take a snapshot and target a textbox", false);
+    }
+    if ((action === "check" || action === "uncheck") && typeof element.checked !== "boolean") {
+      throw fail(protocol.ERROR_CODES.elementMissing, action + " needs a checkbox or radio", "Take a snapshot and target a checkbox", false);
+    }
+    if (typeof element.scrollIntoView === "function") element.scrollIntoView({ block: "center", inline: "center" });
+    var prepared = { before: pageSignature(), covered: false };
+    if (action === "press") {
+      focusElement(element);
+      return prepared;
+    }
+    var point = centerOf(element);
+    var hit = hitAt(element, point);
+    if (hit.state !== "allow") {
+      if (args.force !== true) {
+        if (hit.state === "offscreen") {
+          throw fail(
+            protocol.ERROR_CODES.elementMissing,
+            "This target stays outside the visible page area, so a real click could not land on it",
+            "Scroll the page yourself, or take a fresh snapshot and pick a target that is on screen",
+            true
+          );
+        }
+        throw fail(
+          protocol.ERROR_CODES.elementMissing,
+          "Another element covers this target, so a real click would hit " + describeBlock(hit.hit),
+          "Take a fresh snapshot: the covering element is probably the one to act on, or pass force",
+          true
+        );
+      }
+      prepared.covered = true;
+      return prepared;
+    }
+    if (action === "check" || action === "uncheck") prepared.done = element.checked === (action === "check");
+    prepared.x = Math.round(point.x);
+    prepared.y = Math.round(point.y);
+    return prepared;
+  }
+
+  function actSettle(args) {
+    return settleChange(args.before && typeof args.before === "object" ? args.before : pageSignature(), args.timeoutMs);
+  }
+
   function documentState() {
     return LB.documentState && typeof LB.documentState.read === "function" ? LB.documentState.read() : null;
   }
@@ -907,6 +982,12 @@
     },
     act: function (args) {
       return act(args);
+    },
+    actPrepare: function (args) {
+      return actPrepare(args);
+    },
+    actSettle: function (args) {
+      return actSettle(args);
     },
     read: function (args) {
       return withDocument(readPage(args));

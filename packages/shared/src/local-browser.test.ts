@@ -129,6 +129,15 @@ describe("local browser tool contract", () => {
     expect(localBrowserActInputSchema.safeParse({ action: "click", ref: "e1", force: true, timeoutMs: 600_000 }).success).toBe(true);
   });
 
+  it("accepts the act input modes and advertises act.input", () => {
+    for (const input of ["auto", "trusted", "synthetic"]) {
+      expect(localBrowserActInputSchema.safeParse({ action: "click", ref: "e1", input }).success).toBe(true);
+    }
+    expect(localBrowserActInputSchema.safeParse({ action: "click", ref: "e1", input: "real" }).success).toBe(false);
+    expect(LOCAL_BROWSER_CAPABILITIES).toContain("act.input");
+    expect(localBrowserTool("local_browser_act")?.capability).toBeNull();
+  });
+
   it("validates permission requests and api paths", () => {
     expect(localBrowserPermissionsInputSchema.safeParse({ op: "status" }).success).toBe(true);
     expect(localBrowserPermissionsInputSchema.safeParse({ op: "request", permissions: ["history"], reason: "Search past invoices" }).success).toBe(true);

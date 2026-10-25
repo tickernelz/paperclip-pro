@@ -8,6 +8,9 @@
   var ToolFailure = core.ToolFailure;
   var SITE = ["<all_urls>", "scripting"];
   var PERMISSION_NOTE = "Ask the user to open the Paperclip Local Browser extension and press Allow.";
+  var TRUSTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true, press: true };
+  var COVERED_NOTE = "Another element covers this target, so force ran page events on the target itself instead of a real click that would hit the cover";
+  var REFUSED_NOTE = "Trusted input is off for this tab: Chrome refused the debugger (DevTools may be open on it), so page events ran instead";
 
   function tabs() {
     return LB.bg.tabs;
@@ -107,29 +110,68 @@
     );
   }
 
-  async function toolAct(args, call) {
-    var tab = await tabs().resolveTab(args);
-    var result = await tabs().rpc(tab.id, "act", args, call.inner(args.timeoutMs, 15000, 60000));
-    var trusted = false;
-    var retryKey = args.key || (args.action === "type" && args.submit ? "Enter" : null);
-    if (result && result.trustedNeeded === true && retryKey) {
-      try {
-        await LB.bg.input.ensureDebugger(tab.id);
-        await LB.bg.input.pressTrustedKey(tab.id, retryKey);
-        LB.bg.input.touch();
-        trusted = true;
-      } catch (error) {
-        trusted = false;
-      }
-    }
+  function actResult(tab, args, result, input, note) {
     var out = {
       ok: result && result.ok !== false,
       url: (result && result.url) || tab.url || "",
       title: (result && result.title) || tab.title || "",
-      changed: Boolean(result && result.changed) || trusted
+      changed: Boolean(result && result.changed),
+      input: input
     };
+    if (note) out.note = note;
     if (args.force === true) out.forced = true;
     return out;
+  }
+
+  async function syntheticAct(tab, args, timeoutMs, note) {
+    var result = await tabs().rpc(tab.id, "act", args, timeoutMs);
+    return actResult(tab, args, result, "synthetic", note);
+  }
+
+  function trustedRefusal(reason) {
+    return new ToolFailure(
+      ERROR.unsupported,
+      "Trusted input is unavailable for this tab: " + reason,
+      "Close DevTools on that tab and keep the debugging bar Chrome shows, or pass input auto to fall back to page events"
+    );
+  }
+
+  async function settleAct(tab, prepared, timeoutMs) {
+    var settled = await tabs()
+      .rpc(tab.id, "actSettle", { url: prepared.url, mutations: prepared.mutations }, timeoutMs)
+      .catch(function () {
+        return null;
+      });
+    if (settled) return settled;
+    var fresh = await chrome.tabs.get(tab.id).catch(function () {
+      return tab;
+    });
+    return { ok: true, url: fresh.url || "", title: fresh.title || "", changed: true };
+  }
+
+  async function toolAct(args, call) {
+    var tab = await tabs().resolveTab(args);
+    var timeoutMs = call.inner(args.timeoutMs, 15000, 60000);
+    var mode = args.input || "auto";
+    if (mode === "synthetic") return await syntheticAct(tab, args, timeoutMs);
+    if (TRUSTED_ACTIONS[args.action] !== true) {
+      return await syntheticAct(tab, args, timeoutMs, mode === "trusted" ? args.action + " always runs as page events" : undefined);
+    }
+    var prepared = await tabs().rpc(tab.id, "actPrepare", args, timeoutMs);
+    if (prepared.covered) return await syntheticAct(tab, args, timeoutMs, COVERED_NOTE);
+    try {
+      await LB.bg.input.ensureDebugger(tab.id);
+    } catch (error) {
+      if (mode === "trusted") throw trustedRefusal("the browser refused to attach the debugger");
+      return await syntheticAct(tab, args, timeoutMs, REFUSED_NOTE);
+    }
+    try {
+      await LB.bg.input.runSteps(tab.id, LB.bg.input.actSteps(args, prepared));
+    } catch (error) {
+      if (mode === "trusted" || error.dispatched !== 0) throw error;
+      return await syntheticAct(tab, args, timeoutMs, REFUSED_NOTE);
+    }
+    return actResult(tab, args, await settleAct(tab, prepared, timeoutMs), "trusted");
   }
 
   async function toolRead(args, call) {

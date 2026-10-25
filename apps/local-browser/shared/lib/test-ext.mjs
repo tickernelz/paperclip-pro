@@ -26,7 +26,7 @@ export function event() {
 export function chromiumManifest() {
   return {
     manifest_version: 3,
-    version: "1.1.0",
+    version: "1.1.1",
     permissions: ["debugger", "storage", "alarms", "activeTab", "webRequest"],
     optional_permissions: ["tabs", "scripting", "cookies", "downloads", "notifications", "history"],
     optional_host_permissions: ["<all_urls>"],
@@ -36,7 +36,7 @@ export function chromiumManifest() {
 export function firefoxManifest() {
   return {
     manifest_version: 2,
-    version: "1.1.0",
+    version: "1.1.1",
     browser_specific_settings: { gecko: { id: "local-browser@paperclip.app" } },
     permissions: ["contextualIdentities", "storage", "activeTab"],
     optional_permissions: ["<all_urls>", "tabs", "scripting", "cookies", "webRequest", "webRequestBlocking", "notifications", "history", "proxy"],
@@ -72,6 +72,8 @@ export function createFakeApi(options = {}) {
         return options.onMessage ? options.onMessage(message) : { ok: true };
       },
       onMessage: event(),
+      ...(options.browserInfo ? { getBrowserInfo: async () => ({ ...options.browserInfo }) } : {}),
+      ...(options.platformInfo ? { getPlatformInfo: async () => ({ ...options.platformInfo }) } : {}),
     },
     permissions: {
       ...permissionsEvents,

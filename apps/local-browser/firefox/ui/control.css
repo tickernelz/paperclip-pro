@@ -383,6 +383,117 @@ pre:focus-visible {
   font: 13px/1.4 var(--mono);
   white-space: pre-wrap;
   word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+select {
+  max-width: 100%;
+  padding: 7px 10px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+
+.panel > * {
+  min-width: 0;
+}
+
+.status-card {
+  border-left-width: 4px;
+}
+
+.status-card[data-tone="ok"] {
+  border-left-color: var(--ok);
+}
+
+.status-card[data-tone="warn"] {
+  border-left-color: var(--warn);
+}
+
+.status-line {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 15px;
+}
+
+.status-line .dot {
+  flex: none;
+}
+
+.setup {
+  margin-top: 16px;
+}
+
+.setup > summary,
+details.panel > summary {
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.setup > summary {
+  font-size: 15px;
+}
+
+details.panel {
+  display: block;
+}
+
+.fields {
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.field input,
+.field select {
+  width: 100%;
+}
+
+.wide {
+  grid-column: 1 / -1;
+}
+
+.setup-steps {
+  margin: 16px 0 0;
+}
+
+.setup-steps > li,
+#permanent-steps > li {
+  min-width: 0;
+}
+
+#permanent-steps {
+  margin: 10px 0 0;
+}
+
+.sub,
+.notes {
+  display: grid;
+  gap: 4px;
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.notes {
+  color: var(--muted);
+}
+
+#notes-title {
+  margin-top: 16px;
+}
+
+.command-block {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  margin-top: 8px;
 }
 
 .foot {

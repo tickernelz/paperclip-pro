@@ -6,6 +6,11 @@
   var access = null;
   var busy = false;
   var guardsDirty = false;
+  var portDirty = false;
+  var checking = false;
+  var lastReady = null;
+  var currentPlan = null;
+  var setup = { os: "linux", browser: "firefox", install: "", customPath: "", profile: "", touched: false, detected: null };
 
   function byId(id) {
     return document.getElementById(id);
@@ -153,12 +158,137 @@
       byId("buffer-range").textContent = "Between " + view.guards.min + " and " + view.guards.max + ".";
     }
 
-    var input = view.trustedInput;
-    byId("input-title-line").textContent = input.title;
-    byId("input-hint").textContent = input.hint;
-    byId("command-panel").hidden = !input.showCommand;
-    byId("command").textContent = input.command;
+    renderInput(view.trustedInput, view.ready);
+  }
+
+  function extensionOrigin() {
+    try {
+      return String(LB.ext.api.runtime.getURL("")).replace(/\/$/, "");
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function option(item) {
+    var node = document.createElement("option");
+    node.value = item.key;
+    node.textContent = item.label;
+    return node;
+  }
+
+  function fillSelect(id, items, value) {
+    var node = byId(id);
+    var signature = items.map(function (item) { return item.key; }).join(",");
+    if (node.getAttribute("data-options") !== signature) {
+      fill(id, items.map(option));
+      node.setAttribute("data-options", signature);
+    }
+    node.value = value;
+  }
+
+  function copyButton(command, label) {
+    var node = button("Copy", "", { "data-copy": command, "aria-label": label });
+    node.disabled = false;
+    return node;
+  }
+
+  function commandBlock(command, label) {
+    var block = element("pre", "command", command);
+    block.setAttribute("tabindex", "0");
+    var row = element("div", "row");
+    row.append(copyButton(command, label));
+    var wrap = element("div", "command-block");
+    wrap.append(block, row);
+    return wrap;
+  }
+
+  function stepItem(step, index) {
+    var item = element("li");
+    item.append(element("span", "", step.text));
+    if (step.command) item.append(commandBlock(step.command, "Copy the command of step " + (index + 1)));
+    return item;
+  }
+
+  function textItem(value) {
+    return element("li", "", value);
+  }
+
+  function renderSetup(input) {
+    var launch = LB.launch;
+    var plan = launch.plan({
+      os: setup.os,
+      browser: setup.browser,
+      install: setup.install,
+      customPath: setup.customPath,
+      profile: setup.profile,
+      port: input.port || launch.DEFAULT_PORT,
+      origin: extensionOrigin()
+    });
+    currentPlan = plan;
+    setup.install = plan.install;
+    fillSelect("setup-os", launch.OSES, plan.os);
+    fillSelect("setup-browser", launch.BROWSER_KEYS.map(function (key) { return { key: key, label: launch.BROWSERS[key].label }; }), plan.browser);
+    fillSelect("setup-install", plan.installs, plan.install);
+    var detected = setup.detected;
+    byId("setup-detected").textContent = detected
+      ? "Detected " + launch.BROWSERS[detected.browser].label + " on " + launch.OSES.filter(function (item) { return item.key === detected.os; })[0].label + ". Change it below if that is wrong. Install locations are typical ones, not guaranteed."
+      : "Pick your system and browser. Install locations are typical ones, not guaranteed.";
+    byId("setup-path-field").hidden = !plan.path;
+    if (plan.path) {
+      byId("setup-path-label").textContent = plan.path.label;
+      byId("setup-path").setAttribute("placeholder", plan.path.placeholder);
+      byId("setup-path-hint").textContent = plan.path.hint;
+    }
+    var warning = byId("setup-warning");
+    warning.textContent = plan.warnings.join(" ");
+    warning.hidden = !plan.warnings.length;
+    fill("quit-steps", plan.quit.map(textItem));
+    var missing = byId("setup-missing");
+    missing.textContent = plan.missing;
+    missing.hidden = !plan.missing;
+    byId("command-panel").hidden = !plan.run;
+    byId("command-label").textContent = plan.run ? "In " + plan.run.shell + ":" : "";
+    byId("command").textContent = plan.run ? plan.run.command : "";
+    byId("alt-panel").hidden = !plan.alt;
+    byId("alt-label").textContent = plan.alt ? "Or in " + plan.alt.label + ":" : "";
+    byId("alt-command").textContent = plan.alt ? plan.alt.command : "";
+    byId("permanent").hidden = !plan.permanent;
+    if (plan.permanent) {
+      byId("permanent-title").textContent = plan.permanent.title;
+      fill("permanent-steps", plan.permanent.steps.map(stepItem));
+    } else {
+      fill("permanent-steps", []);
+    }
+    fill("setup-notes", plan.notes.map(textItem));
+  }
+
+  function renderInput(input, ready) {
+    byId("input-status").setAttribute("data-tone", input.tone);
+    byId("input-title-line").textContent = ready ? input.title : "Checking\u2026";
+    var detail = byId("input-detail");
+    detail.textContent = ready ? input.detail : "";
+    detail.hidden = !ready || !input.detail;
+    var checked = byId("input-checked");
+    checked.textContent = input.checked;
+    checked.hidden = !input.checked;
+    byId("input-check-row").hidden = !input.showCheck;
+    byId("input-check").disabled = checking;
+    byId("input-hint").textContent = input.benefit;
     byId("port-form").hidden = !input.showPort;
+    if (ready && !portDirty) byId("bidi-port").value = String(input.port || LB.launch.DEFAULT_PORT);
+    var panel = byId("input-setup");
+    panel.hidden = !input.showSetup;
+    if (!input.showSetup) return;
+    if (ready && lastReady !== input.ready) {
+      panel.open = !input.ready;
+      lastReady = input.ready;
+    }
+    renderSetup(input);
+  }
+
+  function renderTrusted() {
+    var view = LB.uiState.control(status, options());
+    renderInput(view.trustedInput, view.ready);
   }
 
   function loadAccess() {
@@ -285,14 +415,19 @@
     control("guards.set", { patch: patch }, "Guards saved.");
   }
 
-  function onCopyCommand() {
-    var command = byId("command").textContent;
+  function copyText(value) {
     var clipboard = navigator.clipboard;
+    if (!value) return;
     if (!clipboard || typeof clipboard.writeText !== "function") {
       say("Select the command and copy it by hand.");
       return;
     }
-    clipboard.writeText(command).then(function () { say("Command copied."); }, failure);
+    clipboard.writeText(value).then(function () { say("Command copied."); }, failure);
+  }
+
+  function onCopyClick(event) {
+    var target = event.target && event.target.closest ? event.target.closest("button[data-copy]") : null;
+    if (target) copyText(target.getAttribute("data-copy"));
   }
 
   function onPortSubmit(event) {
@@ -302,7 +437,65 @@
       say("Enter a port between 1 and 65535.", "error");
       return;
     }
-    control("bidi.set", { port: port }, "Port saved. The extension checks it now.");
+    portDirty = false;
+    control("bidi.set", { port: port }, "Port saved. The commands below use it now.");
+  }
+
+  function onCheck() {
+    checking = true;
+    renderTrusted();
+    control("bidi.check", {}).then(function (result) {
+      checking = false;
+      renderTrusted();
+      if (!result.ok) return;
+      var input = LB.uiState.control(status, options()).trustedInput;
+      say(input.ready ? "Trusted input is on." : "Still not active. " + input.detail, input.ready ? undefined : "error");
+    });
+  }
+
+  function onSetupChange(event) {
+    var target = event.target;
+    if (!target || !target.id) return;
+    if (target.id === "setup-os" || target.id === "setup-browser") {
+      if (target.id === "setup-os") setup.os = target.value;
+      else setup.browser = target.value;
+      setup.install = LB.launch.defaultInstall(setup.os, setup.browser);
+      setup.touched = true;
+    } else if (target.id === "setup-install") {
+      setup.install = target.value;
+      setup.touched = true;
+    } else if (target.id === "setup-path") {
+      setup.customPath = target.value;
+    } else if (target.id === "setup-profile") {
+      setup.profile = target.value;
+    } else {
+      return;
+    }
+    renderTrusted();
+  }
+
+  function runtimeCall(name) {
+    try {
+      var runtime = LB.ext.api.runtime;
+      if (typeof runtime[name] !== "function") return Promise.resolve(null);
+      return Promise.resolve(runtime[name]()).catch(function () { return null; });
+    } catch (error) {
+      return Promise.resolve(null);
+    }
+  }
+
+  function detectEnvironment() {
+    if (LB.ext.client !== "firefox") return Promise.resolve();
+    return Promise.all([runtimeCall("getBrowserInfo"), runtimeCall("getPlatformInfo")]).then(function (found) {
+      var detected = LB.launch.detect(found[0], found[1]);
+      setup.detected = detected;
+      if (!setup.touched) {
+        setup.os = detected.os;
+        setup.browser = detected.browser;
+        setup.install = LB.launch.defaultInstall(detected.os, detected.browser);
+      }
+      renderTrusted();
+    });
   }
 
   function onMessage(message) {
@@ -323,7 +516,14 @@
   byId("disconnect").addEventListener("click", function () { control("disconnect", {}, "Disconnected."); });
   byId("guards-form").addEventListener("submit", onGuardsSubmit);
   byId("guards-form").addEventListener("input", function () { guardsDirty = true; });
-  byId("copy-command").addEventListener("click", onCopyCommand);
+  byId("copy-command").addEventListener("click", function () { copyText(byId("command").textContent); });
+  byId("copy-alt").addEventListener("click", function () { copyText(byId("alt-command").textContent); });
+  byId("permanent-steps").addEventListener("click", onCopyClick);
+  byId("input-check").addEventListener("click", onCheck);
+  ["setup-os", "setup-browser", "setup-install"].forEach(function (id) { byId(id).addEventListener("change", onSetupChange); });
+  ["setup-path", "setup-profile"].forEach(function (id) { byId(id).addEventListener("input", onSetupChange); });
+  byId("setup-form").addEventListener("submit", function (event) { event.preventDefault(); });
+  byId("bidi-port").addEventListener("input", function () { portDirty = true; });
   byId("port-form").addEventListener("submit", onPortSubmit);
   window.addEventListener("hashchange", showSection);
   LB.ext.api.runtime.onMessage.addListener(onMessage);
@@ -335,5 +535,6 @@
   showSection();
   render();
   loadAccess();
+  detectEnvironment();
   control("status", {}).then(offerDetected);
 })();

@@ -35,7 +35,8 @@
     "document.state",
     "api.v1",
     "act.force",
-    "budget.v1"
+    "budget.v1",
+    "act.input"
   ]);
 
   var DEFAULTS = Object.freeze({

@@ -53,6 +53,10 @@
     byId("detail").textContent = view.ready ? connection.detail : "";
     byId("version").textContent = connection.version;
     byId("pair-form").hidden = !view.ready || !connection.showPairForm;
+    byId("trusted-line").hidden = !view.trusted.show;
+    byId("trusted-text").textContent = view.trusted.text;
+    byId("trusted-setup").hidden = !view.trusted.showSetup;
+    byId("trusted-sep").hidden = !view.trusted.showSetup;
 
     var permissions = view.permissions;
     byId("site-line").textContent = permissions.siteLine;
@@ -172,6 +176,14 @@
     });
   }
 
+  function onTrustedSetup() {
+    LB.ext.openControlCenter("input").then(function () {
+      window.close();
+    }, function (error) {
+      say((error && error.message) || String(error), "error");
+    });
+  }
+
   function onMessage(message) {
     if (!message || message.channel !== "lb-status" || !message.status) return;
     status = message.status;
@@ -182,6 +194,7 @@
   byId("pending-list").addEventListener("click", onPendingClick);
   byId("pair-form").addEventListener("submit", onPair);
   byId("open-control").addEventListener("click", onOpenControl);
+  byId("trusted-setup").addEventListener("click", onTrustedSetup);
   LB.ext.api.runtime.onMessage.addListener(onMessage);
   LB.access.onChange(function (snapshot) {
     access = snapshot;

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  LOCAL_BROWSER_ACT_INPUT_MODES,
   LOCAL_BROWSER_ACTIONS,
   LOCAL_BROWSER_API_PATH_PATTERN,
   LOCAL_BROWSER_CAPABILITIES,
@@ -262,6 +263,12 @@ export const localBrowserActInputSchema = localBrowserTargetSchema
       .boolean()
       .optional()
       .describe("Act even when another element covers the target; use after a refusal that says the element is covered"),
+    input: z
+      .enum(LOCAL_BROWSER_ACT_INPUT_MODES)
+      .optional()
+      .describe(
+        "auto (default) uses real browser clicks and keys when the extension can send them and falls back to page events; trusted fails instead of falling back; synthetic always uses page events",
+      ),
     timeoutMs: timeoutSchema.optional(),
   })
   .strict()
@@ -631,7 +638,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   ),
   defineTool(
     "local_browser_act",
-    "Do one thing on the page: click, dblclick, type, press, hover, focus, check, uncheck, select, scroll, scroll_into_view. Target an element with ref from the latest snapshot, or a CSS selector. Pass force to act on an element another element covers. After a click or press that changes the page, take a new snapshot because old refs go stale.",
+    "Do one thing on the page: click, dblclick, type, press, hover, focus, check, uncheck, select, scroll, scroll_into_view. Target an element with ref from the latest snapshot, or a CSS selector. Clicks, hovers, typing and key presses use real browser input when the extension can send it; the result field input says whether trusted or synthetic events ran, and note explains a fallback. Pass input trusted when the site ignores page events. Pass force to act on an element another element covers. After a click or press that changes the page, take a new snapshot because old refs go stale.",
     localBrowserActInputSchema,
   ),
   defineTool(

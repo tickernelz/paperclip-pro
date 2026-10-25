@@ -1406,6 +1406,8 @@ describe("local browser capability negotiation", () => {
       ["local_browser_open", { url: APP_ORIGIN + "/", cookieStoreId: "firefox-container-1" }],
       ["local_browser_open", { url: APP_ORIGIN + "/", incognito: true }],
       ["local_browser_act", { action: "click", ref: "e1", force: true }],
+      ["local_browser_act", { action: "click", ref: "e1", input: "trusted" }],
+      ["local_browser_act", { action: "click", ref: "e1", input: "synthetic" }],
     ];
     for (const [tool, args] of attempts) {
       await expect(active.service.executeTool(binding(), tool, args), tool).rejects.toMatchObject({
@@ -1450,6 +1452,8 @@ describe("local browser capability negotiation", () => {
     expect((await modern.waitForCall("local_browser_open")).args.cookieStoreId).toBe("firefox-container-1");
     expect((await modern.waitForCall("local_browser_act")).args.force).toBe(true);
     expect((await modern.waitForCall("local_browser_network")).args).toMatchObject({ includeHeaders: true, since: 5, types: ["fetch"] });
+    await active.service.executeTool(binding(), "local_browser_act", { action: "click", ref: "e1", input: "trusted" });
+    expect(modern.calls.filter((call) => call.tool === "local_browser_act").map((call) => call.args.input)).toContain("trusted");
     modern.close();
   });
 

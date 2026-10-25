@@ -10,6 +10,7 @@
     "lib/ext-api.js",
     "lib/guards.js",
     "lib/headers.js",
+    "lib/launch.js",
     "lib/markdown.js",
     "lib/pairing.js",
     "lib/protocol.contract.json",

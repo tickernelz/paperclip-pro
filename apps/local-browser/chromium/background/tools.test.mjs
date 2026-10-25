@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { boot, everyPermission, flush, manifest, FAKE_DOCUMENT } from "./harness.test.mjs";
+import { boot, everyPermission, flush, manifest, plain, FAKE_DOCUMENT } from "./harness.test.mjs";
 
 function grantedWithout(...ids) {
   const all = everyPermission();
@@ -203,13 +203,136 @@ test("turning off the Paperclip-tab guard lets navigate move the Paperclip tab",
   assert.equal(result.ok, true, JSON.stringify(result.error || {}));
 });
 
-test("act forwards force to the page and reports it", async () => {
-  const context = await boot({ onRpc: (payload) => (payload.op === "act" ? { ok: true, result: { ok: true, changed: true } } : undefined) });
+function actPage(prepared, extra = {}) {
+  return (payload) => {
+    if (payload.op === "actPrepare") return { ok: true, result: { url: "https://p.test/", mutations: 3, covered: false, ...prepared } };
+    if (payload.op === "actSettle") return { ok: true, result: { ok: true, url: "https://p.test/next", title: "Next", changed: true } };
+    if (payload.op === "act") return { ok: true, result: { ok: true, url: "https://p.test/", title: "P", changed: true } };
+    return extra[payload.op];
+  };
+}
+
+function cdp(context, method) {
+  return context.calls.filter((entry) => entry[0] === "debugger.sendCommand" && (!method || entry[2] === method)).map((entry) => plain(entry[3]));
+}
+
+test("act with force on a covered target runs page events on the target and says so", async () => {
+  const context = await boot({ onRpc: actPage({ covered: true }) });
   const result = await context.call("local_browser_act", { tabId: 7, action: "click", selector: "button", force: true });
   assert.equal(result.ok, true, JSON.stringify(result.error || {}));
   assert.equal(result.result.forced, true);
+  assert.equal(result.result.input, "synthetic");
+  assert.match(result.result.note, /covers this target/);
   const act = context.rpcs.find((entry) => entry.op === "act");
   assert.equal(act.args.force, true);
+  assert.equal(cdp(context).length, 0, "no trusted click lands on the cover");
+});
+
+test("act click sends trusted mouse events at the element centre in CSS pixels", async () => {
+  const context = await boot({ onRpc: actPage({ x: 60, y: 25 }), viewport: { width: 800, height: 600, dpr: 2 } });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "click", ref: "e3" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.deepEqual(plain(result.result), { ok: true, url: "https://p.test/next", title: "Next", changed: true, input: "trusted" });
+  assert.deepEqual(cdp(context, "Input.dispatchMouseEvent"), [
+    { type: "mouseMoved", x: 60, y: 25, button: "none", buttons: 0 },
+    { type: "mousePressed", x: 60, y: 25, button: "left", clickCount: 1, buttons: 1 },
+    { type: "mouseReleased", x: 60, y: 25, button: "left", clickCount: 1, buttons: 0 },
+  ]);
+  assert.equal(context.rpcs.some((entry) => entry.op === "act"), false, "no synthetic events after a trusted click");
+  const settle = context.rpcs.find((entry) => entry.op === "actSettle");
+  assert.deepEqual(plain(settle.args), { url: "https://p.test/", mutations: 3 });
+  assert.equal(context.calls.filter((entry) => entry[0] === "debugger.attach").length, 1);
+  await context.call("local_browser_act", { tabId: 7, action: "hover", ref: "e3" });
+  assert.equal(context.calls.filter((entry) => entry[0] === "debugger.attach").length, 1, "the debugger stays attached between acts");
+  assert.deepEqual(cdp(context, "Input.dispatchMouseEvent").slice(3), [{ type: "mouseMoved", x: 60, y: 25, button: "none", buttons: 0 }]);
+});
+
+test("act dblclick sends two presses with rising click counts", async () => {
+  const context = await boot({ onRpc: actPage({ x: 5, y: 9 }) });
+  await context.call("local_browser_act", { tabId: 7, action: "dblclick", ref: "e3" });
+  const presses = cdp(context, "Input.dispatchMouseEvent").filter((event) => event.type === "mousePressed");
+  assert.deepEqual(presses.map((event) => event.clickCount), [1, 2]);
+});
+
+test("act type focuses with a trusted click, selects all and inserts the text", async () => {
+  const context = await boot({ onRpc: actPage({ x: 40, y: 12 }) });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "type", ref: "e2", text: "hello", submit: true });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(result.result.input, "trusted");
+  const commands = context.calls.filter((entry) => entry[0] === "debugger.sendCommand").map((entry) => [entry[2], plain(entry[3])]);
+  assert.deepEqual(commands.slice(0, 3).map(([, params]) => params.type), ["mouseMoved", "mousePressed", "mouseReleased"]);
+  const selectAll = commands[3][1];
+  assert.equal(selectAll.type, "rawKeyDown");
+  assert.equal(selectAll.key, "a");
+  assert.deepEqual(selectAll.commands, ["selectAll"]);
+  assert.equal(selectAll.modifiers, 2);
+  assert.equal(commands[4][1].type, "keyUp");
+  assert.deepEqual(commands[5], ["Input.insertText", { text: "hello" }]);
+  assert.deepEqual(commands.slice(6).map(([, params]) => [params.type, params.key]), [
+    ["rawKeyDown", "Enter"],
+    ["char", "Enter"],
+    ["keyUp", "Enter"],
+  ]);
+});
+
+test("act press sends trusted key events with modifiers from the key string", async () => {
+  const context = await boot({ onRpc: actPage({}) });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "press", ref: "e2", key: "Shift+Tab" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(result.result.input, "trusted");
+  assert.deepEqual(
+    cdp(context, "Input.dispatchKeyEvent").map((event) => [event.type, event.key, event.code, event.modifiers]),
+    [
+      ["rawKeyDown", "Tab", "Tab", 8],
+      ["keyUp", "Tab", "Tab", 8],
+    ],
+  );
+  assert.equal(cdp(context, "Input.dispatchMouseEvent").length, 0);
+});
+
+test("act check on an already checked box sends no click", async () => {
+  const context = await boot({ onRpc: actPage({ x: 1, y: 1, done: true }) });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "check", ref: "e2" });
+  assert.equal(result.result.input, "trusted");
+  assert.equal(cdp(context).length, 0);
+});
+
+test("act in auto falls back to page events with a note when Chrome refuses the debugger", async () => {
+  const context = await boot({ onRpc: actPage({ x: 60, y: 25 }), debuggerRefuses: true });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "click", ref: "e3" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(result.result.input, "synthetic");
+  assert.match(result.result.note, /Trusted input is off/);
+  assert.ok(context.rpcs.some((entry) => entry.op === "act"));
+});
+
+test("act with input trusted fails unsupported when Chrome refuses the debugger", async () => {
+  const context = await boot({ onRpc: actPage({ x: 60, y: 25 }), debuggerRefuses: true });
+  const result = await context.call("local_browser_act", { tabId: 7, action: "click", ref: "e3", input: "trusted" });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_unsupported");
+  assert.equal(context.rpcs.some((entry) => entry.op === "act"), false);
+});
+
+test("act with input synthetic and non-pointer actions never touch the debugger", async () => {
+  const context = await boot({ onRpc: actPage({ x: 60, y: 25 }) });
+  const synthetic = await context.call("local_browser_act", { tabId: 7, action: "click", ref: "e3", input: "synthetic" });
+  assert.equal(synthetic.result.input, "synthetic");
+  assert.equal("note" in synthetic.result, false);
+  const scroll = await context.call("local_browser_act", { tabId: 7, action: "scroll", ref: "e3", deltaY: 200 });
+  assert.equal(scroll.result.input, "synthetic");
+  assert.equal(context.rpcs.some((entry) => entry.op === "actPrepare"), false);
+  assert.equal(context.calls.filter((entry) => entry[0] === "debugger.attach").length, 0);
+});
+
+test("key strings parse into a key and modifiers", async () => {
+  const context = await boot();
+  const parse = (text) => plain(context.LB.bg.input.parseCombo(text));
+  assert.deepEqual(parse("Control+a"), { key: "a", alt: false, ctrl: true, meta: false, shift: false });
+  assert.deepEqual(parse("Meta+Shift+enter"), { key: "Enter", alt: false, ctrl: false, meta: true, shift: true });
+  assert.deepEqual(parse("Control++"), { key: "+", alt: false, ctrl: true, meta: false, shift: false });
+  assert.deepEqual(parse("+"), { key: "+", alt: false, ctrl: false, meta: false, shift: false });
+  assert.deepEqual(parse("a+b"), { key: "a+b", alt: false, ctrl: false, meta: false, shift: false });
 });
 
 test("tabs report container, incognito, discarded, frozen, pinned and audible", async () => {

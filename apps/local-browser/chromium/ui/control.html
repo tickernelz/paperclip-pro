@@ -108,20 +108,77 @@
 
       <section id="input" data-section="input" aria-labelledby="input-title" hidden>
         <h2 id="input-title">Trusted input</h2>
-        <p id="input-title-line" class="lead"></p>
-        <p id="input-hint" class="hint"></p>
-        <div id="command-panel" class="panel" hidden>
-          <h3 id="command-label">Start the browser with this command once</h3>
-          <pre id="command" class="command" tabindex="0" aria-labelledby="command-label"></pre>
-          <div class="row"><button id="copy-command" type="button">Copy command</button></div>
+        <div id="input-status" class="panel status-card" data-tone="warn" role="status" aria-live="polite">
+          <p class="status-line"><span class="dot" aria-hidden="true"></span><strong id="input-title-line"></strong></p>
+          <p id="input-detail"></p>
+          <p id="input-checked" class="hint"></p>
+          <div id="input-check-row" class="row" hidden><button id="input-check" type="button">Check again</button></div>
         </div>
-        <form id="port-form" class="panel" hidden>
-          <label for="bidi-port">Remote debugging port</label>
-          <div class="row">
-            <input id="bidi-port" type="number" min="1" max="65535" inputmode="numeric" />
-            <button type="submit">Use this port</button>
-          </div>
-        </form>
+        <p id="input-hint" class="hint lead"></p>
+
+        <details id="input-setup" class="setup" open hidden>
+          <summary id="input-setup-title">Set up trusted input</summary>
+          <form id="setup-form" class="panel fields" aria-labelledby="input-setup-title">
+            <p id="setup-detected" class="hint wide"></p>
+            <div class="field">
+              <label for="setup-os">Operating system</label>
+              <select id="setup-os"></select>
+            </div>
+            <div class="field">
+              <label for="setup-browser">Browser</label>
+              <select id="setup-browser"></select>
+            </div>
+            <div class="field">
+              <label for="setup-install">Install type</label>
+              <select id="setup-install"></select>
+            </div>
+            <div id="setup-path-field" class="field wide" hidden>
+              <label id="setup-path-label" for="setup-path">Path to the browser program</label>
+              <input id="setup-path" type="text" autocomplete="off" spellcheck="false" aria-describedby="setup-path-hint" />
+              <p id="setup-path-hint" class="hint"></p>
+            </div>
+            <div class="field wide">
+              <label for="setup-profile">Profile name (optional)</label>
+              <input id="setup-profile" type="text" autocomplete="off" spellcheck="false" aria-describedby="setup-profile-hint" />
+              <p id="setup-profile-hint" class="hint">Only needed if you use several profiles; see about:profiles.</p>
+            </div>
+          </form>
+          <form id="port-form" class="panel" hidden>
+            <label for="bidi-port">Remote debugging port</label>
+            <div class="row">
+              <input id="bidi-port" type="number" min="1" max="65535" inputmode="numeric" />
+              <button type="submit">Use this port</button>
+            </div>
+          </form>
+          <p id="setup-warning" class="error" role="alert" hidden></p>
+          <ol class="steps setup-steps">
+            <li>
+              <strong>Quit the browser completely.</strong>
+              <ul id="quit-steps" class="sub"></ul>
+            </li>
+            <li>
+              <strong>Start it with this command.</strong>
+              <p id="setup-missing" class="hint" hidden></p>
+              <div id="command-panel" class="command-block" hidden>
+                <p id="command-label" class="hint"></p>
+                <pre id="command" class="command" tabindex="0" aria-labelledby="command-label"></pre>
+                <div class="row"><button id="copy-command" type="button">Copy</button></div>
+              </div>
+              <div id="alt-panel" class="command-block" hidden>
+                <p id="alt-label" class="hint"></p>
+                <pre id="alt-command" class="command" tabindex="0" aria-labelledby="alt-label"></pre>
+                <div class="row"><button id="copy-alt" type="button">Copy</button></div>
+              </div>
+            </li>
+            <li><strong>Come back here and press Check again.</strong></li>
+          </ol>
+          <details id="permanent" class="panel" hidden>
+            <summary id="permanent-title">Start it this way every time</summary>
+            <ol id="permanent-steps" class="steps"></ol>
+          </details>
+          <h3 id="notes-title">Good to know</h3>
+          <ul id="setup-notes" class="notes" aria-labelledby="notes-title"></ul>
+        </details>
       </section>
     </main>
 
@@ -132,6 +189,7 @@
     <script src="../lib/pairing.js"></script>
     <script src="../lib/access.js"></script>
     <script src="../lib/ui-state.js"></script>
+    <script src="../lib/launch.js"></script>
     <script src="control.js"></script>
   </body>
 </html>

@@ -61,7 +61,7 @@ function memoryStore() {
   };
 }
 
-function loadAgent(body) {
+function loadAgent(body, options = {}) {
   let handler = null;
   const location = { href: "https://example.test/page" };
   const document = {
@@ -75,7 +75,7 @@ function loadAgent(body) {
     getElementById: () => null,
     querySelector: () => null,
     querySelectorAll: () => [],
-    elementFromPoint: () => body,
+    elementFromPoint: options.elementFromPoint || (() => body),
     execCommand: () => false,
     getElementsByTagName: () => [body],
     addEventListener: () => {},
@@ -345,3 +345,63 @@ test("a wait that matches says which condition held", async () => {
   assert.equal(response.result.condition, "url");
 });
 
+
+test("actPrepare returns the rounded centre of a reachable target without firing events", async () => {
+  const body = buttons(1);
+  const [button] = body.children;
+  let fired = 0;
+  button.dispatchEvent = () => {
+    fired += 1;
+    return true;
+  };
+  button.getBoundingClientRect = () => ({ left: 10, top: 10, width: 101, height: 31, x: 10, y: 10 });
+  const agent = loadAgent(body, { elementFromPoint: () => button });
+  await agent.call("snapshot", {});
+  const response = await agent.call("actPrepare", { action: "click", ref: "e1" });
+  assert.equal(response.ok, true, JSON.stringify(response.error || {}));
+  assert.equal(response.result.x, 61);
+  assert.equal(response.result.y, 26);
+  assert.equal(response.result.covered, false);
+  assert.equal(response.result.before.url, "https://example.test/page");
+  assert.equal(fired, 0);
+});
+
+test("actPrepare refuses a covered target unless force marks it covered", async () => {
+  const body = buttons(1);
+  const overlay = makeElement("div");
+  const agent = loadAgent(body, { elementFromPoint: () => overlay });
+  await agent.call("snapshot", {});
+  const refused = await agent.call("actPrepare", { action: "click", ref: "e1" });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.error.code, "local_browser_element_missing");
+  assert.match(refused.error.message, /covers this target, so a real click would hit div/);
+  const forced = await agent.call("actPrepare", { action: "click", ref: "e1", force: true });
+  assert.equal(forced.ok, true, JSON.stringify(forced.error || {}));
+  assert.equal(forced.result.covered, true);
+});
+
+test("actPrepare refuses type on a button and focuses the target of a press", async () => {
+  const body = buttons(1);
+  const [button] = body.children;
+  let focused = 0;
+  button.focus = () => {
+    focused += 1;
+  };
+  const agent = loadAgent(body, { elementFromPoint: () => button });
+  await agent.call("snapshot", {});
+  const typed = await agent.call("actPrepare", { action: "type", ref: "e1", text: "x" });
+  assert.equal(typed.ok, false);
+  assert.match(typed.error.message, /type needs an input/);
+  const pressed = await agent.call("actPrepare", { action: "press", ref: "e1", key: "Enter" });
+  assert.equal(pressed.ok, true, JSON.stringify(pressed.error || {}));
+  assert.equal(focused, 1);
+  assert.equal("x" in pressed.result, false);
+});
+
+test("actSettle compares against the signature taken before the trusted input", async () => {
+  const agent = loadAgent(buttons(1));
+  const response = await agent.call("actSettle", { before: { url: "https://example.test/before", title: "Fixture", elements: 1 }, timeoutMs: 50 });
+  assert.equal(response.ok, true);
+  assert.equal(response.result.changed, true);
+  assert.equal(response.result.url, "https://example.test/page");
+});

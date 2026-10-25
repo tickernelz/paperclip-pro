@@ -159,27 +159,74 @@ frame. Frames stay `{type:"event", event:"frame", data:{dataUrl, width, height, 
 ## Trusted input through WebDriver BiDi
 
 The viewer sends pointer and keyboard events through WebDriver BiDi when it can, so the page
-sees `isTrusted` events. Otherwise the add-on dispatches synthetic DOM events and reports
-`{synthetic: true, mode: "synthetic"}` in the result.
+sees `isTrusted` events and background tabs can be captured. Otherwise the add-on dispatches
+synthetic DOM events and reports `{synthetic: true, mode: "synthetic"}` in the result.
 
-1. Quit Firefox and start it with the remote agent:
+The control center's *Trusted input* section (`ui/control.html#input`, also the popup's *Set up*
+link) is the setup guide. It detects the operating system (`runtime.getPlatformInfo`) and the browser
+(`runtime.getBrowserInfo`), both changeable, and `lib/launch.js` builds the commands for Firefox,
+Firefox Developer Edition, Firefox Nightly, Zen, LibreWolf, Waterfox, Floorp or any other
+Firefox-based browser: PowerShell and Command Prompt on Windows, Terminal on macOS, and package,
+Flatpak, Snap or a custom path on Linux. The default locations are typical install locations, not
+guaranteed; `about:support` shows the exact program in its *Application Binary* row in every fork,
+and pasting that as *Custom path* always works (a macOS path inside `*.app/` starts the bundle, a
+Linux path under `/app/` is a Flatpak and one under `/snap/` a Snap).
+
+1. Quit the browser completely. While it still runs, starting it again only opens a window in the
+   running process, which ignores the flags. On macOS press Cmd+Q; on Windows also check the tray.
+2. Start it with the command from the control center, for example:
 
    ```sh
    firefox --remote-debugging-port 9222 --remote-allow-origins moz-extension://<uuid>
    ```
 
-   `<uuid>` is the add-on's own origin: `about:debugging` shows it in the add-on's *Internal
-   UUID* field. The control center's *Trusted input* section prints the exact command to copy while the agent is not reachable.
-2. Verify the endpoint answers: `curl http://127.0.0.1:9222/session` returns
-   `{"webSocketUrl": "ws://127.0.0.1:9222/session"}`.
-3. Open the control center: *Trusted input* reads **WebDriver BiDi** ready. While it reads
-   **synthetic events**, the viewer still works, it just cannot produce trusted events.
+   ```powershell
+   & "C:\Program Files\Zen Browser\zen.exe" --remote-debugging-port 9222 --remote-allow-origins moz-extension://<uuid>
+   ```
+
+   `open -a "Firefox" --args ...` on macOS, `flatpak run io.gitlab.librewolf-community ...` for a
+   Flatpak. `-P "<profile>"` starts a named profile (`about:profiles`); it must be the profile this
+   add-on is installed in. `<uuid>` is the add-on's origin in this profile (`runtime.getURL("")`,
+   the *Internal UUID* in `about:debugging`); the control center fills it in.
+3. Press *Check again* (control op `bidi.check`).
+
+The section also shows how to start the browser this way every time: the shortcut *Target* on
+Windows, a double-clickable `~/Desktop/<Browser>-Paperclip.command` script on macOS, and a copy of
+the launcher in `~/.local/share/applications` with the flags added to every `Exec` line on Linux.
+While remote control is on the address bar is striped with a robot icon; the port listens on
+127.0.0.1 only.
+
+The background probes the stored port and reports
+`trustedInput: {mode: "bidi" | "synthetic", port, origin, reason?, checkedAt}`:
+
+| Step | Fails when | `reason` |
+| --- | --- | --- |
+| `fetch("http://127.0.0.1:<port>/", {mode: "no-cors"})`, 900 ms | nothing listens: the browser was not started with remote debugging | `not_running` |
+| WebSocket `ws://127.0.0.1:<port>/session`, 3 s | the handshake is refused: this add-on's origin is not in `--remote-allow-origins` (wrong or old uuid) | `origin_refused` |
+| `session.status`, then `session.new` | another automation client holds the only WebDriver session | `busy` |
+
+On success the socket stays open (`mode: "bidi"`) and every later probe, input and screenshot
+reuses it instead of opening a second session. Results are cached for 15 s; `bidi.check` and
+`bidi.set` probe at once. The remote agent answers `/json/version` and `/json` with 404, so the
+probe does not use them.
 
 `--remote-allow-origins` is mandatory. Firefox's remote agent rejects a WebSocket handshake
 whose `Origin` is not on that list, and a page inside an extension always sends
 `moz-extension://<uuid>`. The port is stored in `browser.storage.local` under `lb.bidi`;
-change it in the control center (control op `bidi.set`). Trusted input is never required for
-`local_browser_act`: that path uses DOM events on purpose so it works in every profile.
+change it in the control center (control op `bidi.set`) and the commands follow.
+
+`local_browser_act` uses the same session for agents. With the probe in `bidi` mode, click,
+dblclick, hover, check, uncheck, type and press run as BiDi `input.performActions` (after
+`browsingContext.activate`, like the viewer): the content op `actPrepare` resolves the target,
+scrolls it into view, refuses a covered or off-screen target unless `force`, focuses the target of
+a press and returns the centre in CSS pixels; `type` clicks, selects with Ctrl+A (Cmd+A on macOS)
+and sends one key action per character in chunks of 64, then Enter when `submit` is set; `press`
+reads modifiers from the key string (`Shift+Tab`); `actSettle` reports `changed`. Without the
+remote agent, act falls back to DOM events and the result says `input: "synthetic"` with the note
+"Trusted input is off: start Firefox with remote debugging (see the extension's Trusted input
+page)". `input: "trusted"` fails with `local_browser_unsupported` instead; `input: "synthetic"`
+always uses DOM events. A forced act on a covered target, scroll, select, focus and
+scroll_into_view use DOM events. Trusted input is never required: every act still works without it.
 
 ## Permissions
 
@@ -266,7 +313,8 @@ so an agent can tell a bfcache restore or a hidden page from a fresh load.
 
 The popup and control center talk to the background over `runtime.sendMessage` with
 `channel: "lb-control"` and the ops `status`, `pair {input}`, `detect`, `reconnect`,
-`disconnect`, `guards.set {patch}`, `pending.clear {permissions?}` and `bidi.set {port}`.
+`disconnect`, `guards.set {patch}`, `pending.clear {permissions?}`, `bidi.set {port}` and
+`bidi.check`.
 Every answer is `{ok: true, status, ...}` or `{ok: false, error, status}`; the background
 broadcasts `{channel: "lb-status", status}` on every change. `status.state` is one of
 `unpaired`, `connecting`, `connected`, `disconnected`, `retired`. On install the control center
@@ -280,7 +328,7 @@ cookie values or the session token to the console.
 Both clients answer the same 17 tools, plus the internal `local_browser_viewer`,
 `local_browser_input` and `local_browser_ui`, with the same result shapes and the same
 capabilities (`cookies.v2`, `permissions.v1`, `context.v1`, `network.headers`,
-`tabs.container`, `document.state`, `api.v1`, `act.force`, `budget.v1`). The shared layer and
+`tabs.container`, `document.state`, `api.v1`, `act.force`, `budget.v1`, `act.input`). The shared layer and
 UI in `apps/local-browser/shared/` are copied byte for byte into both folders by
 `node scripts/sync-local-browser-shared.mjs`; never edit the synced copies here.
 `lib/protocol.js`, `keys.js`, `input.js`, `frames.js`, `ring.js`, `budget.js` and `backoff.js`
@@ -289,8 +337,8 @@ are Firefox only.
 | Area | Chromium (MV3) | Firefox (MV2) |
 | --- | --- | --- |
 | Background | Service worker, woken per event | Persistent background page, so the socket survives idle |
-| Click, type, select, check | `Input.dispatch*` through the debugger domain where possible | DOM events with the native value setter, `input` + `change` |
-| `act.force` | Skips the hit-test refusal | Accepted; Firefox has no hit-test refusal to skip |
+| Click, type, press, hover, check | `Input.dispatch*` and `Input.insertText` through the debugger domain, DOM events when Chrome refuses the debugger | BiDi `input.performActions` when the remote agent runs, else DOM events with the native value setter, `input` + `change` |
+| `act.force` | Skips the hit-test refusal; a covered target gets DOM events | Skips the trusted-path hit-test refusal; a covered target gets DOM events |
 | `evaluate` | MAIN world through the debugger domain | `browser.scripting.executeScript` MAIN world, then `tabs.executeScript` fallback |
 | Network | `chrome.webRequest` continuous capture, CDP bodies on demand | `browser.webRequest` continuous capture, `filterResponseData` bodies with `webRequestBlocking` |
 | Screenshot | `captureVisibleTab`, element crop | `captureVisibleTab`, element crop; `fullPage` stitched up to the budget |

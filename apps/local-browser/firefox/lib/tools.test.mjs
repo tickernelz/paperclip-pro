@@ -340,3 +340,183 @@ test("an unknown tool is refused as unsupported", async () => {
   const { error } = await harness.call("local_browser_teleport", {});
   assert.equal(error.code, "local_browser_unsupported");
 });
+
+const BIDI_READY = {
+  "session.status": { ready: true, message: "" },
+  "session.new": { sessionId: "s1", capabilities: {} },
+  "browsingContext.getTree": { contexts: [{ context: "ctx-7", url: "https://example.test/", children: [] }] },
+};
+
+function actHarness(options = {}) {
+  const ops = [];
+  const content = (message) => {
+    ops.push({ op: message.op, args: plain(message.args) });
+    if (message.op === "ping") return { ok: true, result: { ok: true } };
+    if (message.op === "actPrepare") {
+      return { ok: true, result: { before: { url: "https://example.test/", title: "Example", elements: 4 }, covered: false, ...options.prepared } };
+    }
+    if (message.op === "actSettle") return { ok: true, result: { ok: true, url: "https://example.test/next", title: "Next", changed: true } };
+    if (message.op === "act") return { ok: true, result: { ok: true, url: "https://example.test/", title: "Example", changed: true } };
+    return { ok: true, result: {} };
+  };
+  const replies = { ...BIDI_READY, ...(options.replies || {}) };
+  const harness = bootBackground({
+    content,
+    fetch: options.bidiDown ? () => Promise.reject(new TypeError("NetworkError")) : () => ({ ok: false, status: 0, type: "opaque" }),
+    bidi: {
+      reply: (frame) => {
+        const value = replies[frame.method];
+        return typeof value === "function" ? value(frame) : value;
+      },
+    },
+  });
+  const performed = () =>
+    harness.sockets
+      .filter((socket) => socket.bidi)
+      .flatMap((socket) => socket.sent)
+      .filter((frame) => frame.method === "input.performActions")
+      .map((frame) => plain(frame.params));
+  return { ...harness, ops, performed };
+}
+
+test("act click goes through BiDi pointer actions at the element centre", async () => {
+  const harness = actHarness({ prepared: { x: 61, y: 26 } });
+  const { ok, result, error } = await harness.call("local_browser_act", { action: "click", ref: "e3" });
+  assert.equal(ok, true, JSON.stringify(error));
+  assert.deepEqual(result, { ok: true, url: "https://example.test/next", title: "Next", changed: true, input: "trusted" });
+  assert.deepEqual(harness.performed(), [
+    {
+      context: "ctx-7",
+      actions: [
+        {
+          type: "pointer",
+          id: "mouse",
+          parameters: { pointerType: "mouse" },
+          actions: [
+            { type: "pointerMove", x: 61, y: 26, origin: "viewport" },
+            { type: "pointerDown", button: 0 },
+            { type: "pointerUp", button: 0 },
+          ],
+        },
+      ],
+    },
+  ]);
+  assert.equal(harness.ops.some((entry) => entry.op === "act"), false);
+  assert.deepEqual(harness.ops.find((entry) => entry.op === "actSettle").args.before, { url: "https://example.test/", title: "Example", elements: 4 });
+});
+
+test("act dblclick sends two pointer presses in one BiDi action chain", async () => {
+  const harness = actHarness({ prepared: { x: 5, y: 9 } });
+  await harness.call("local_browser_act", { action: "dblclick", ref: "e3" });
+  const pointer = harness.performed()[0].actions[0].actions;
+  assert.deepEqual(pointer.map((action) => action.type), ["pointerMove", "pointerDown", "pointerUp", "pointerDown", "pointerUp"]);
+});
+
+test("act type clicks, selects all with Control+A and types each character", async () => {
+  const harness = actHarness({ prepared: { x: 40, y: 12 } });
+  const { ok, result, error } = await harness.call("local_browser_act", { action: "type", ref: "e2", text: "hi", submit: true });
+  assert.equal(ok, true, JSON.stringify(error));
+  assert.equal(result.input, "trusted");
+  const batches = harness.performed().map((params) => params.actions[0]);
+  assert.equal(batches[0].type, "pointer");
+  assert.deepEqual(batches[0].actions.map((action) => action.type), ["pointerMove", "pointerDown", "pointerUp"]);
+  assert.deepEqual(batches[1], {
+    type: "key",
+    id: "keyboard",
+    actions: [
+      { type: "keyDown", value: "\uE009" },
+      { type: "keyDown", value: "a" },
+      { type: "keyUp", value: "a" },
+      { type: "keyUp", value: "\uE009" },
+    ],
+  });
+  assert.deepEqual(batches[2].actions, [
+    { type: "keyDown", value: "h" },
+    { type: "keyUp", value: "h" },
+    { type: "keyDown", value: "i" },
+    { type: "keyUp", value: "i" },
+  ]);
+  assert.deepEqual(batches[3].actions, [
+    { type: "keyDown", value: "\uE007" },
+    { type: "keyUp", value: "\uE007" },
+  ]);
+});
+
+test("act type splits long text into chunks of BiDi key actions", async () => {
+  const harness = actHarness({ prepared: { x: 1, y: 1 } });
+  const chunk = harness.LB.input.TEXT_CHUNK;
+  await harness.call("local_browser_act", { action: "type", ref: "e2", text: "x".repeat(chunk * 2 + 1) });
+  const textBatches = harness.performed().slice(2).map((params) => params.actions[0].actions.length / 2);
+  assert.deepEqual(textBatches, [chunk, chunk, 1]);
+});
+
+test("act press sends the key with its modifiers through BiDi", async () => {
+  const harness = actHarness();
+  const { ok, result, error } = await harness.call("local_browser_act", { action: "press", ref: "e2", key: "Shift+Tab" });
+  assert.equal(ok, true, JSON.stringify(error));
+  assert.equal(result.input, "trusted");
+  assert.deepEqual(harness.performed()[0].actions, [
+    {
+      type: "key",
+      id: "keyboard",
+      actions: [
+        { type: "keyDown", value: "\uE008" },
+        { type: "keyDown", value: "\uE004" },
+        { type: "keyUp", value: "\uE004" },
+        { type: "keyUp", value: "\uE008" },
+      ],
+    },
+  ]);
+});
+
+test("act with force on a covered target runs page events and says so", async () => {
+  const harness = actHarness({ prepared: { covered: true } });
+  const { result } = await harness.call("local_browser_act", { action: "click", ref: "e3", force: true });
+  assert.equal(result.input, "synthetic");
+  assert.match(result.note, /covers this target/);
+  assert.equal(harness.performed().length, 0);
+  assert.equal(harness.ops.find((entry) => entry.op === "act").args.force, true);
+});
+
+test("act falls back to page events with the setup note when BiDi is not running", async () => {
+  const harness = actHarness({ bidiDown: true });
+  const { ok, result, error } = await harness.call("local_browser_act", { action: "click", ref: "e3" });
+  assert.equal(ok, true, JSON.stringify(error));
+  assert.equal(result.input, "synthetic");
+  assert.equal(result.note, "Trusted input is off: start Firefox with remote debugging (see the extension's Trusted input page)");
+  assert.equal(harness.ops.some((entry) => entry.op === "actPrepare"), false);
+  assert.ok(harness.ops.some((entry) => entry.op === "act"));
+});
+
+test("act with input trusted fails unsupported when BiDi is not running", async () => {
+  const harness = actHarness({ bidiDown: true });
+  const { ok, error } = await harness.call("local_browser_act", { action: "click", ref: "e3", input: "trusted" });
+  assert.equal(ok, false);
+  assert.equal(error.code, "local_browser_unsupported");
+  assert.match(error.hint, /remote debugging/);
+  assert.equal(harness.ops.some((entry) => entry.op === "act"), false);
+});
+
+test("act in auto falls back when BiDi refuses the first action, and trusted mode fails", async () => {
+  const replies = { "input.performActions": { error: "no such frame" } };
+  const auto = actHarness({ prepared: { x: 1, y: 1 }, replies });
+  const fallback = await auto.call("local_browser_act", { action: "click", ref: "e3" });
+  assert.equal(fallback.result.input, "synthetic");
+  assert.match(fallback.result.note, /no such frame/);
+  const strict = actHarness({ prepared: { x: 1, y: 1 }, replies });
+  const refused = await strict.call("local_browser_act", { action: "click", ref: "e3", input: "trusted" });
+  assert.equal(refused.ok, false);
+  assert.equal(refused.error.code, "local_browser_unsupported");
+});
+
+test("act with input synthetic and scroll stay on page events", async () => {
+  const harness = actHarness({ prepared: { x: 1, y: 1 } });
+  const synthetic = await harness.call("local_browser_act", { action: "click", ref: "e3", input: "synthetic" });
+  assert.equal(synthetic.result.input, "synthetic");
+  assert.equal("note" in synthetic.result, false);
+  const scroll = await harness.call("local_browser_act", { action: "scroll", deltaY: 100 });
+  assert.equal(scroll.result.input, "synthetic");
+  assert.equal(harness.performed().length, 0);
+  assert.equal(harness.ops.some((entry) => entry.op === "actPrepare"), false);
+});
+

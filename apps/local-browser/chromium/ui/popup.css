@@ -182,6 +182,14 @@ button.primary {
   border-color: var(--accent);
 }
 
+.trusted {
+  margin-top: 2px;
+}
+
+.trusted button.link {
+  font-size: inherit;
+}
+
 button.link {
   padding: 0;
   color: var(--accent);

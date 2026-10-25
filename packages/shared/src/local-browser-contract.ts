@@ -35,6 +35,7 @@ export const LOCAL_BROWSER_CAPABILITIES = [
   "api.v1",
   "act.force",
   "budget.v1",
+  "act.input",
 ] as const;
 
 export const LOCAL_BROWSER_ACTIONS = [
@@ -50,6 +51,7 @@ export const LOCAL_BROWSER_ACTIONS = [
   "scroll",
   "scroll_into_view",
 ] as const;
+export const LOCAL_BROWSER_ACT_INPUT_MODES = ["auto", "trusted", "synthetic"] as const;
 export const LOCAL_BROWSER_MOUSE_ACTIONS = ["move", "down", "up"] as const;
 export const LOCAL_BROWSER_KEY_ACTIONS = ["down", "up"] as const;
 export const LOCAL_BROWSER_VIEWER_STATES = [

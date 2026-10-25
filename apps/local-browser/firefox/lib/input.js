@@ -6,6 +6,11 @@
   var MODIFIER_KEYS = Object.freeze({ Shift: "shift", Control: "ctrl", Alt: "alt", Meta: "meta" });
   var MODIFIER_VALUES = Object.freeze({ shift: "\uE008", ctrl: "\uE009", alt: "\uE00A", meta: "\uE03D" });
   var ACTIONS = Object.freeze({ mouse: ["move", "down", "up"], key: ["down", "up"] });
+  var COMBO_MODIFIERS = Object.freeze({ control: "ctrl", ctrl: "ctrl", shift: "shift", alt: "alt", option: "alt", meta: "meta", cmd: "meta", command: "meta" });
+  var ACT_CLICKS = Object.freeze({ click: 1, check: 1, uncheck: 1, type: 1, dblclick: 2, hover: 0 });
+  var TEXT_CHUNK = 64;
+  var ENTER = "\uE007";
+  var BACKSPACE = "\uE003";
 
   function clickCountOf(value) {
     var count = typeof value === "number" && Number.isFinite(value) ? Math.round(value) : 1;
@@ -222,8 +227,89 @@
     return sources;
   }
 
+  function parseCombo(text) {
+    var value = String(text || "");
+    var parts = value.length > 1 ? value.split("+") : [value];
+    var key = parts.pop();
+    if (key === "" && parts.length) {
+      parts.pop();
+      key = "+";
+    }
+    var modifiers = [];
+    for (var i = 0; i < parts.length; i += 1) {
+      var name = COMBO_MODIFIERS[parts[i].toLowerCase()];
+      if (!name) return { key: value, modifiers: [] };
+      if (modifiers.indexOf(name) === -1) modifiers.push(name);
+    }
+    return { key: key, modifiers: modifiers };
+  }
+
+  function keySource(actions) {
+    return [{ type: "key", id: "keyboard", actions: actions }];
+  }
+
+  function tap(value) {
+    return [
+      { type: "keyDown", value: value },
+      { type: "keyUp", value: value }
+    ];
+  }
+
+  function comboActions(text) {
+    var combo = parseCombo(text);
+    var down = combo.modifiers.map(function (name) {
+      return { type: "keyDown", value: MODIFIER_VALUES[name] };
+    });
+    var up = combo.modifiers
+      .slice()
+      .reverse()
+      .map(function (name) {
+        return { type: "keyUp", value: MODIFIER_VALUES[name] };
+      });
+    return down.concat(tap(root.LB.keys.bidiValue(combo.key)), up);
+  }
+
+  function pointerSource(x, y, clicks) {
+    var actions = [{ type: "pointerMove", x: Math.round(x), y: Math.round(y), origin: "viewport" }];
+    for (var count = 0; count < clicks; count += 1) {
+      actions.push({ type: "pointerDown", button: BUTTONS.left });
+      actions.push({ type: "pointerUp", button: BUTTONS.left });
+    }
+    return [{ type: "pointer", id: "mouse", parameters: { pointerType: "mouse" }, actions: actions }];
+  }
+
+  function textBatches(text) {
+    var characters = Array.from(text);
+    var batches = [];
+    for (var start = 0; start < characters.length; start += TEXT_CHUNK) {
+      var actions = [];
+      characters.slice(start, start + TEXT_CHUNK).forEach(function (character) {
+        if (character === "\r") return;
+        actions = actions.concat(tap(character === "\n" ? ENTER : character));
+      });
+      if (actions.length) batches.push(keySource(actions));
+    }
+    return batches;
+  }
+
+  function actBatches(args, target, mac) {
+    if (args.action === "press") return [keySource(comboActions(args.key))];
+    if (target.done === true) return [];
+    var batches = [pointerSource(target.x, target.y, ACT_CLICKS[args.action] || 0)];
+    if (args.action !== "type") return batches;
+    var modifier = mac ? MODIFIER_VALUES.meta : MODIFIER_VALUES.ctrl;
+    batches.push(keySource([{ type: "keyDown", value: modifier }].concat(tap("a"), [{ type: "keyUp", value: modifier }])));
+    var text = args.text === undefined || args.text === null ? "" : String(args.text);
+    batches = batches.concat(text.length ? textBatches(text) : [keySource(tap(BACKSPACE))]);
+    if (args.submit === true) batches.push(keySource(tap(ENTER)));
+    return batches;
+  }
+
   root.LB = root.LB || {};
   root.LB.input = {
+    TEXT_CHUNK: TEXT_CHUNK,
+    parseCombo: parseCombo,
+    actBatches: actBatches,
     BUTTONS: BUTTONS,
     MODIFIERS: MODIFIERS,
     MODIFIER_KEYS: MODIFIER_KEYS,

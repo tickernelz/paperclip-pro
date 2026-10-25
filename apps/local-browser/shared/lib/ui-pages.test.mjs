@@ -5,7 +5,6 @@ import path from "node:path";
 import { createFakeApi, flush, loadShared, sharedDir } from "./test-ext.mjs";
 
 const PAGES = ["popup", "control"];
-const LOAD_ORDER = ["lib/contract.js", "lib/ext-api.js", "lib/pairing.js", "lib/access.js", "lib/ui-state.js"];
 
 function read(file) {
   return readFileSync(path.join(sharedDir, file), "utf8");
@@ -121,16 +120,24 @@ const connectedStatus = {
   allowedOrigins: [],
   tabs: [],
   guards: { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 },
-  trustedInput: { mode: "synthetic", command: "firefox --remote-debugging-port 9222" },
+  trustedInput: { mode: "cdp" },
 };
 
-async function openPage(page, { client = "chromium", hash = "", status = connectedStatus, storage = {} } = {}) {
+function pageScripts(page) {
+  return [...read("ui/" + page + ".html").matchAll(/<script src="([^"]+)"/g)].map((match) => (match[1].startsWith("../") ? match[1].slice(3) : "ui/" + match[1]));
+}
+
+async function openPage(page, { client = "chromium", hash = "", status = connectedStatus, storage = {}, browserInfo, platformInfo, answers = {} } = {}) {
   const sent = [];
+  const copied = [];
   const fake = createFakeApi({
     client,
     storage,
+    browserInfo,
+    platformInfo,
     onMessage(message) {
       sent.push(message);
+      if (answers[message.op]) return answers[message.op](message);
       if (message.op === "status") return { ok: true, status };
       if (message.op === "detect") return { ok: true, detected: null };
       return { ok: true, status };
@@ -141,13 +148,13 @@ async function openPage(page, { client = "chromium", hash = "", status = connect
   const globals = {
     document,
     location: { hash },
-    navigator: { clipboard: { writeText: async () => undefined } },
+    navigator: { clipboard: { writeText: async (value) => void copied.push(value) } },
     window: { close() {}, addEventListener: (name, fn) => ((windowListeners[name] ||= []).push(fn)) },
   };
-  const files = LOAD_ORDER.concat("ui/" + page + ".js");
+  const files = pageScripts(page);
   const sandbox = loadShared(files, { api: fake.api, client, globals });
   await flush(10);
-  return { fake, document, sent, sandbox, windowListeners, byId: (id) => document.getElementById(id) };
+  return { fake, document, sent, copied, sandbox, windowListeners, byId: (id) => document.getElementById(id) };
 }
 
 for (const page of PAGES) {
@@ -255,17 +262,151 @@ test("control center saves guards with a patch", async () => {
   assert.deepEqual(JSON.parse(JSON.stringify(set.patch)), { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 5000 });
 });
 
-test("control center offers the Firefox command and port only where they apply", async () => {
-  const firefox = await openPage("control", { client: "firefox", hash: "#input", status: { ...connectedStatus, client: "firefox" } });
-  assert.equal(firefox.byId("command-panel").hidden, false);
-  assert.equal(firefox.byId("port-form").hidden, false);
-  firefox.byId("bidi-port").value = "9333";
-  firefox.byId("port-form").dispatch("submit");
+const firefoxInput = {
+  mode: "synthetic",
+  port: 9333,
+  origin: "moz-extension://ext-id",
+  reason: "not_running",
+  checkedAt: Date.now(),
+};
+
+function openFirefoxInput(extra = {}) {
+  return openPage("control", {
+    client: "firefox",
+    hash: "#input",
+    status: { ...connectedStatus, client: "firefox", trustedInput: firefoxInput },
+    browserInfo: { name: "Zen", vendor: "Zen", version: "1.17b" },
+    platformInfo: { os: "win" },
+    ...extra,
+  });
+}
+
+const ZEN_WINDOWS = '& "C:\\Program Files\\Zen Browser\\zen.exe" --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id';
+
+test("Firefox input section prefills the port, detects the browser and shows the reason", async () => {
+  const { byId } = await openFirefoxInput();
+  assert.equal(byId("bidi-port").value, "9333");
+  assert.equal(byId("port-form").hidden, false);
+  assert.equal(byId("input-title-line").textContent, "Not active");
+  assert.match(byId("input-detail").textContent, /not started with remote debugging/);
+  assert.equal(byId("input-checked").textContent, "Last checked just now.");
+  assert.equal(byId("input-check-row").hidden, false);
+  assert.equal(byId("input-status").getAttribute("data-tone"), "warn");
+  assert.equal(byId("input-setup").hidden, false);
+  assert.equal(byId("input-setup").open, true);
+  assert.equal(byId("setup-os").value, "windows");
+  assert.equal(byId("setup-browser").value, "zen");
+  assert.equal(byId("setup-install").value, "default");
+  assert.match(byId("setup-detected").textContent, /Detected Zen on Windows/);
+  assert.equal(byId("command").textContent, ZEN_WINDOWS);
+  assert.equal(byId("command-label").textContent, "In PowerShell:");
+  assert.equal(byId("alt-panel").hidden, false);
+  assert.equal(byId("alt-command").textContent, ZEN_WINDOWS.slice(2));
+  assert.equal(byId("quit-steps").children.length, 2);
+  assert.ok(byId("setup-notes").children.length >= 5);
+  assert.equal(byId("permanent").hidden, false);
+  assert.equal(byId("setup-browser").children.length, 8);
+  assert.deepEqual(byId("setup-install").children.map((node) => node.value), ["default", "custom"]);
+});
+
+test("changing the setup fields regenerates the command", async () => {
+  const { byId } = await openFirefoxInput();
+  const change = (id, value, kind = "change") => {
+    byId(id).value = value;
+    byId(id).dispatch(kind);
+  };
+  change("setup-os", "linux");
+  assert.equal(byId("setup-install").value, "default");
+  assert.deepEqual(byId("setup-install").children.map((node) => node.value), ["default", "flatpak", "custom"]);
+  assert.equal(byId("command").textContent, "zen-browser --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id");
+  assert.equal(byId("alt-panel").hidden, true);
+  change("setup-install", "flatpak");
+  assert.equal(byId("command").textContent, "flatpak run app.zen_browser.zen --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id");
+  change("setup-install", "custom");
+  assert.equal(byId("setup-path-field").hidden, false);
+  assert.equal(byId("command-panel").hidden, true);
+  assert.equal(byId("setup-missing").hidden, false);
+  assert.match(byId("setup-path-hint").textContent, /about:support/);
+  change("setup-path", "/opt/zen browser/zen", "input");
+  change("setup-profile", "work", "input");
+  assert.equal(byId("command-panel").hidden, false);
+  assert.equal(byId("command").textContent, '"/opt/zen browser/zen" --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id -P "work"');
+  change("setup-browser", "firefox");
+  assert.equal(byId("setup-install").value, "default");
+  assert.deepEqual(byId("setup-install").children.map((node) => node.value), ["default", "flatpak", "snap", "custom"]);
+  change("setup-install", "snap");
+  assert.equal(byId("command").textContent, 'snap run firefox --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id -P "work"');
+  change("setup-os", "macos");
+  assert.equal(byId("command").textContent, 'open -a "Firefox" --args --remote-debugging-port 9333 --remote-allow-origins moz-extension://ext-id -P "work"');
+  assert.equal(byId("command-label").textContent, "In Terminal:");
+});
+
+test("copy buttons copy the main, alternative and permanent commands", async () => {
+  const { byId, copied } = await openFirefoxInput();
+  byId("copy-command").click();
+  byId("copy-alt").click();
+  const stepCopy = byId("permanent-steps").descendants().find((node) => node.getAttribute("data-copy"));
+  assert.ok(stepCopy, "a permanent step offers Copy");
+  stepCopy.click();
   await flush();
-  assert.equal(firefox.sent.find((message) => message.op === "bidi.set").port, 9333);
-  const chromium = await openPage("control", { hash: "#input", status: { ...connectedStatus, trustedInput: { mode: "cdp" } } });
-  assert.equal(chromium.byId("command-panel").hidden, true);
-  assert.equal(chromium.byId("port-form").hidden, true);
+  assert.deepEqual(copied, [ZEN_WINDOWS, ZEN_WINDOWS.slice(2), ZEN_WINDOWS.slice(2)]);
+  assert.equal(byId("message").textContent, "Command copied.");
+});
+
+test("Check again sends bidi.check and renders the answer", async () => {
+  const ready = { ...connectedStatus, client: "firefox", trustedInput: { mode: "bidi", port: 9333, origin: "moz-extension://ext-id", checkedAt: Date.now() } };
+  const { byId, sent } = await openFirefoxInput({ answers: { "bidi.check": () => ({ ok: true, status: ready }) } });
+  byId("input-check").click();
+  assert.equal(byId("input-check").disabled, true);
+  await flush();
+  assert.equal(sent.filter((message) => message.op === "bidi.check").length, 1);
+  assert.equal(sent.find((message) => message.op === "bidi.check").channel, "lb-control");
+  assert.equal(byId("input-check").disabled, false);
+  assert.equal(byId("input-title-line").textContent, "Ready");
+  assert.equal(byId("input-detail").textContent, "WebDriver BiDi, port 9333.");
+  assert.equal(byId("input-status").getAttribute("data-tone"), "ok");
+  assert.equal(byId("input-setup").open, false);
+  assert.equal(byId("message").textContent, "Trusted input is on.");
+});
+
+test("the port form saves through bidi.set and keeps a typed port until saved", async () => {
+  const { byId, sent, fake } = await openFirefoxInput();
+  byId("bidi-port").value = "9444";
+  byId("bidi-port").dispatch("input");
+  fake.api.runtime.onMessage.fire({ channel: "lb-status", status: { ...connectedStatus, client: "firefox", trustedInput: firefoxInput } });
+  assert.equal(byId("bidi-port").value, "9444");
+  byId("port-form").dispatch("submit");
+  await flush();
+  assert.equal(sent.find((message) => message.op === "bidi.set").port, 9444);
+  fake.api.runtime.onMessage.fire({ channel: "lb-status", status: { ...connectedStatus, client: "firefox", trustedInput: { ...firefoxInput, port: 9444 } } });
+  assert.equal(byId("bidi-port").value, "9444");
+  assert.match(byId("command").textContent, /--remote-debugging-port 9444 /);
+});
+
+test("Chromium keeps the short ready view without Firefox setup", async () => {
+  const { byId } = await openPage("control", { hash: "#input" });
+  assert.equal(byId("input-title-line").textContent, "Trusted input is ready (Chrome DevTools Protocol).");
+  assert.equal(byId("input-setup").hidden, true);
+  assert.equal(byId("port-form").hidden, true);
+  assert.equal(byId("input-check-row").hidden, true);
+  assert.equal(byId("input-status").getAttribute("data-tone"), "ok");
+});
+
+test("popup shows the Firefox trusted input line with a Set up link", async () => {
+  const { byId, fake } = await openPage("popup", { client: "firefox", status: { ...connectedStatus, client: "firefox", trustedInput: firefoxInput } });
+  assert.equal(byId("trusted-line").hidden, false);
+  assert.equal(byId("trusted-text").textContent, "Trusted input: off");
+  assert.equal(byId("trusted-setup").hidden, false);
+  byId("trusted-setup").click();
+  await flush();
+  const opened = fake.callsOf("tabs.create")[0][1].url;
+  assert.equal(opened, "moz-extension://ext-id/ui/control.html#input");
+  fake.api.runtime.onMessage.fire({ channel: "lb-status", status: { ...connectedStatus, client: "firefox", trustedInput: { mode: "bidi", port: 9333 } } });
+  assert.equal(byId("trusted-text").textContent, "Trusted input: on");
+  assert.equal(byId("trusted-setup").hidden, true);
+  assert.equal(byId("trusted-sep").hidden, true);
+  const chromium = await openPage("popup");
+  assert.equal(chromium.byId("trusted-line").hidden, true);
 });
 
 test("pages re-render on lb-status broadcasts", async () => {

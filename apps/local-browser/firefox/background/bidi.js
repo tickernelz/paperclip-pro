@@ -5,11 +5,16 @@
   var protocol = LB.protocol;
 
   var socket = null;
+  var socketPort = 0;
+  var live = false;
   var nextId = 1;
   var pending = new Map();
-  var connecting = null;
-  var probeCache = { at: 0, url: null };
+  var probing = null;
+  var probingPort = 0;
+  var probeCache = { at: 0, port: 0, result: null };
   var PROBE_TTL_MS = 15000;
+  var HTTP_TIMEOUT_MS = 900;
+  var HANDSHAKE_TIMEOUT_MS = 3000;
   var COMMAND_TIMEOUT_MS = 4000;
 
   function timeout(ms) {
@@ -18,17 +23,16 @@
     });
   }
 
-  async function fetchJson(url) {
+  async function httpAnswers(port) {
     var controller = new AbortController();
     var timer = setTimeout(function () {
       controller.abort();
-    }, 900);
+    }, HTTP_TIMEOUT_MS);
     try {
-      var response = await fetch(url, { signal: controller.signal, cache: "no-store" });
-      if (!response.ok) return null;
-      return await response.json();
+      await fetch("http://127.0.0.1:" + port + "/", { mode: "no-cors", cache: "no-store", signal: controller.signal });
+      return true;
     } catch (error) {
-      return null;
+      return false;
     } finally {
       clearTimeout(timer);
     }
@@ -45,21 +49,62 @@
     return protocol.DEFAULT_BIDI_PORT;
   }
 
-  async function probe() {
-    if (Date.now() - probeCache.at < PROBE_TTL_MS) return probeCache.url;
-    var port = await portOf();
-    var candidates = ["http://127.0.0.1:" + port + "/session", "http://127.0.0.1:" + port + "/json/version"];
-    for (var i = 0; i < candidates.length; i += 1) {
-      var payload = await fetchJson(candidates[i]);
-      if (!payload) continue;
-      var url = payload.webSocketUrl || payload.webSocketDebuggerUrl;
-      if (typeof url === "string" && url) {
-        probeCache = { at: Date.now(), url: url };
-        return url;
-      }
+  function isOpen() {
+    return live && Boolean(socket) && socket.readyState === WebSocket.OPEN;
+  }
+
+  function remember(port, result) {
+    probeCache = { at: Date.now(), port: port, result: result };
+    return result;
+  }
+
+  async function attempt(port) {
+    await close();
+    if (!(await httpAnswers(port))) return { mode: "synthetic", port: port, reason: "not_running" };
+    var ws;
+    try {
+      ws = await openSocket("ws://127.0.0.1:" + port + "/session");
+    } catch (error) {
+      return { mode: "synthetic", port: port, reason: "origin_refused" };
     }
-    probeCache = { at: Date.now(), url: null };
-    return null;
+    socket = ws;
+    socketPort = port;
+    live = false;
+    try {
+      var current = await command("session.status", {}, HANDSHAKE_TIMEOUT_MS);
+      if (current && current.ready === false) throw new Error("BiDi session is taken");
+      await command("session.new", { capabilities: { alwaysMatch: {} } }, HANDSHAKE_TIMEOUT_MS);
+    } catch (error) {
+      await close();
+      return { mode: "synthetic", port: port, reason: "busy" };
+    }
+    live = true;
+    return { mode: "bidi", port: port };
+  }
+
+  async function probe(force) {
+    var port = await portOf();
+    if (probing) {
+      if (probingPort === port) return probing;
+      await probing;
+      return probe(force);
+    }
+    if (isOpen() && socketPort === port) return remember(port, { mode: "bidi", port: port });
+    if (!force && probeCache.result && probeCache.port === port && Date.now() - probeCache.at < PROBE_TTL_MS) return probeCache.result;
+    probingPort = port;
+    probing = attempt(port).then(
+      function (result) {
+        return remember(port, result);
+      },
+      function () {
+        return remember(port, { mode: "synthetic", port: port, reason: "not_running" });
+      }
+    );
+    try {
+      return await probing;
+    } finally {
+      probing = null;
+    }
   }
 
   function onMessage(event) {
@@ -75,7 +120,7 @@
     pending.delete(payload.id);
     clearTimeout(waiter.timer);
     if (payload.type === "error") {
-      waiter.reject(new Error((payload.error && payload.error.message) || "BiDi command failed"));
+      waiter.reject(new Error(String(payload.message || payload.error || "BiDi command failed")));
       return;
     }
     waiter.resolve(payload.result || {});
@@ -100,22 +145,42 @@
 
   async function openSocket(url) {
     var ws = new WebSocket(url);
-    await new Promise(function (resolve, reject) {
-      var timer = setTimeout(function () {
-        reject(new Error("BiDi handshake timed out"));
-      }, 3000);
-      ws.onopen = function () {
-        clearTimeout(timer);
-        resolve();
-      };
-      ws.onerror = function () {
-        clearTimeout(timer);
-        reject(new Error("BiDi handshake failed"));
-      };
-    });
+    try {
+      await new Promise(function (resolve, reject) {
+        var timer = setTimeout(function () {
+          reject(new Error("BiDi handshake timed out"));
+        }, HANDSHAKE_TIMEOUT_MS);
+        ws.onopen = function () {
+          clearTimeout(timer);
+          resolve();
+        };
+        ws.onerror = function () {
+          clearTimeout(timer);
+          reject(new Error("BiDi handshake failed"));
+        };
+        ws.onclose = function () {
+          clearTimeout(timer);
+          reject(new Error("BiDi handshake refused"));
+        };
+      });
+    } catch (error) {
+      ws.onclose = null;
+      try {
+        ws.close();
+      } catch (closeError) {
+        void closeError;
+      }
+      throw error;
+    }
     ws.onmessage = onMessage;
+    ws.onerror = null;
     ws.onclose = function () {
-      socket = null;
+      if (socket === ws) {
+        socket = null;
+        socketPort = 0;
+        live = false;
+        probeCache = { at: 0, port: 0, result: null };
+      }
       pending.forEach(function (waiter) {
         clearTimeout(waiter.timer);
         waiter.reject(new Error("BiDi closed"));
@@ -126,29 +191,9 @@
   }
 
   async function connect() {
-    if (socket && socket.readyState === WebSocket.OPEN) return socket;
-    if (connecting) return connecting;
-    connecting = (async function () {
-      var url = await probe();
-      if (!url) return null;
-      var ws = await openSocket(url);
-      socket = ws;
-      try {
-        await command("session.new", { capabilities: { alwaysMatch: {} } }, 3000);
-      } catch (error) {
-        void error;
-      }
-      return ws;
-    })();
-    try {
-      return await connecting;
-    } catch (error) {
-      probeCache = { at: Date.now(), url: null };
-      socket = null;
-      return null;
-    } finally {
-      connecting = null;
-    }
+    if (isOpen()) return socket;
+    var result = await probe(false);
+    return result.mode === "bidi" && isOpen() ? socket : null;
   }
 
   function sameOrigin(a, b) {
@@ -204,6 +249,40 @@
     }
   }
 
+  function messageOf(error) {
+    return error && error.message ? error.message : String(error);
+  }
+
+  async function performActions(tab, batches) {
+    var ws = await connect();
+    if (!ws) return { available: false, dispatched: 0, error: "WebDriver BiDi is not reachable" };
+    var context;
+    try {
+      context = await contextFor(tab);
+    } catch (error) {
+      return { available: false, dispatched: 0, error: messageOf(error) };
+    }
+    if (!context) return { available: false, dispatched: 0, error: "No browsing context matched this tab" };
+    try {
+      await command("browsingContext.activate", { context: context }, 2000);
+    } catch (error) {
+      void error;
+    }
+    for (var index = 0; index < batches.length; index += 1) {
+      try {
+        await command("input.performActions", { context: context, actions: batches[index] });
+      } catch (error) {
+        return { available: false, dispatched: index, error: messageOf(error) };
+      }
+    }
+    try {
+      await command("input.releaseActions", { context: context }, 2000);
+    } catch (error) {
+      void error;
+    }
+    return { available: true, dispatched: batches.length };
+  }
+
   async function captureScreenshot(tab) {
     var ws = await connect();
     if (!ws) return null;
@@ -226,38 +305,30 @@
     }
   }
 
-  async function status() {
-    var url = await probe();
-    var port = await portOf();
-    var origin = extensionOrigin();
-    return {
-      available: Boolean(url),
-      endpoint: url,
-      port: port,
-      extensionOrigin: origin,
-      launchHint: origin
-        ? "firefox --remote-debugging-port " + port + " --remote-allow-origins " + origin
-        : "firefox --remote-debugging-port " + port
+  async function trustedInput(force) {
+    var result = await probe(force === true);
+    var out = {
+      mode: result.mode === "bidi" ? "bidi" : "synthetic",
+      port: result.port,
+      origin: extensionOrigin(),
+      checkedAt: probeCache.at || Date.now()
     };
+    if (out.mode === "synthetic" && result.reason) out.reason = result.reason;
+    return out;
   }
 
-  async function trustedInput() {
-    var current = await status();
-    if (current.available) return { mode: "bidi" };
-    return {
-      mode: "synthetic",
-      hint: "Start Firefox with WebDriver BiDi on port " + current.port + " so agents send real clicks and keys.",
-      command: current.launchHint
-    };
+  function check() {
+    probeCache = { at: 0, port: 0, result: null };
+    return trustedInput(true);
   }
 
   async function setPort(port) {
     var value = typeof port === "number" ? Math.floor(port) : NaN;
     if (!(value >= 1 && value <= 65535)) throw new Error("Use a port between 1 and 65535");
     await browser.storage.local.set({ [protocol.STORAGE_BIDI]: { port: value } });
-    probeCache = { at: 0, url: null };
+    probeCache = { at: 0, port: 0, result: null };
     await close();
-    return trustedInput();
+    return trustedInput(true);
   }
 
   function resetInput() {
@@ -265,22 +336,27 @@
   }
 
   async function close() {
+    live = false;
+    socketPort = 0;
     if (!socket) return;
+    var ws = socket;
+    socket = null;
     try {
-      socket.close();
+      ws.close();
     } catch (error) {
       void error;
     }
-    socket = null;
   }
 
   root.LB = root.LB || {};
   root.LB.bidi = {
     connect: connect,
     sendInput: sendInput,
+    performActions: performActions,
     resetInput: resetInput,
-    status: status,
+    probe: probe,
     trustedInput: trustedInput,
+    check: check,
     setPort: setPort,
     captureScreenshot: captureScreenshot,
     close: close,

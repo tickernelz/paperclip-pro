@@ -26,6 +26,9 @@
   };
   var MODIFIER_BITS = { alt: 1, ctrl: 2, meta: 4, shift: 8 };
   var MOUSE_BUTTON_BITS = { left: 1, middle: 4, right: 2 };
+  var MODIFIER_NAMES = { control: "ctrl", ctrl: "ctrl", shift: "shift", alt: "alt", option: "alt", meta: "meta", cmd: "meta", command: "meta" };
+  var KEY_ALIASES = { esc: "Escape", return: "Enter", space: " ", up: "ArrowUp", down: "ArrowDown", left: "ArrowLeft", right: "ArrowRight", del: "Delete" };
+  var CLICK_COUNTS = { click: 1, check: 1, uncheck: 1, type: 1, dblclick: 2, hover: 0 };
 
   var session = null;
 
@@ -36,6 +39,40 @@
     if (args.meta === true) mask |= MODIFIER_BITS.meta;
     if (args.shift === true) mask |= MODIFIER_BITS.shift;
     return mask;
+  }
+
+  function isMac() {
+    var nav = root.navigator || {};
+    var platform = (nav.userAgentData && nav.userAgentData.platform) || nav.platform || nav.userAgent || "";
+    return /mac/i.test(platform);
+  }
+
+  function canonicalKey(name) {
+    if (Object.prototype.hasOwnProperty.call(KEY_EVENTS, name)) return name;
+    var lower = name.toLowerCase();
+    if (Object.prototype.hasOwnProperty.call(KEY_ALIASES, lower)) return KEY_ALIASES[lower];
+    var names = Object.keys(KEY_EVENTS);
+    for (var index = 0; index < names.length; index += 1) {
+      if (names[index].toLowerCase() === lower) return names[index];
+    }
+    return name;
+  }
+
+  function parseCombo(text) {
+    var value = String(text || "");
+    var parts = value.length > 1 ? value.split("+") : [value];
+    var key = parts.pop();
+    if (key === "" && parts.length) {
+      parts.pop();
+      key = "+";
+    }
+    var flags = { alt: false, ctrl: false, meta: false, shift: false };
+    for (var index = 0; index < parts.length; index += 1) {
+      var name = MODIFIER_NAMES[parts[index].toLowerCase()];
+      if (!name) return { key: canonicalKey(value), alt: false, ctrl: false, meta: false, shift: false };
+      flags[name] = true;
+    }
+    return Object.assign({ key: canonicalKey(key) }, flags);
   }
 
   function keyCodeOf(key) {
@@ -118,7 +155,7 @@
     });
   }
 
-  async function dispatchKey(tabId, args) {
+  function keyEvents(args) {
     var key = String(args.key || "");
     var spec = KEY_EVENTS[key] || {};
     var code = args.code || spec.code || (key.length === 1 ? "Key" + key.toUpperCase() : key);
@@ -130,20 +167,68 @@
       nativeVirtualKeyCode: virtualKey,
       modifiers: modifierMask(args)
     };
-    if (args.action === "up") {
-      await send(tabId, "Input.dispatchKeyEvent", Object.assign({ type: "keyUp" }, base));
-      return;
-    }
-    await send(tabId, "Input.dispatchKeyEvent", Object.assign({ type: "rawKeyDown" }, base));
-    if (args.ctrl === true || args.meta === true) return;
+    if (args.action === "up") return [Object.assign({ type: "keyUp" }, base)];
+    var events = [Object.assign({ type: "rawKeyDown" }, base)];
+    if (args.ctrl === true || args.meta === true) return events;
     var fallback = spec.text !== undefined ? spec.text : key.length === 1 ? (args.shift === true ? key.toUpperCase() : key) : "";
     var text = typeof args.text === "string" ? args.text : fallback;
-    if (text.length) await send(tabId, "Input.dispatchKeyEvent", Object.assign({ type: "char", text: text, unmodifiedText: text }, base));
+    if (text.length) events.push(Object.assign({ type: "char", text: text, unmodifiedText: text }, base));
+    return events;
   }
 
-  async function pressTrustedKey(tabId, key) {
-    await dispatchKey(tabId, { kind: "key", action: "down", key: key });
-    await dispatchKey(tabId, { kind: "key", action: "up", key: key });
+  async function dispatchKey(tabId, args) {
+    var events = keyEvents(args);
+    for (var index = 0; index < events.length; index += 1) await send(tabId, "Input.dispatchKeyEvent", events[index]);
+  }
+
+  function pointerSteps(x, y, clicks) {
+    var steps = [["Input.dispatchMouseEvent", { type: "mouseMoved", x: x, y: y, button: "none", buttons: 0 }]];
+    for (var count = 1; count <= clicks; count += 1) {
+      steps.push(["Input.dispatchMouseEvent", { type: "mousePressed", x: x, y: y, button: "left", clickCount: count, buttons: 1 }]);
+      steps.push(["Input.dispatchMouseEvent", { type: "mouseReleased", x: x, y: y, button: "left", clickCount: count, buttons: 0 }]);
+    }
+    return steps;
+  }
+
+  function comboSteps(text) {
+    var combo = parseCombo(text);
+    var events = keyEvents(Object.assign({ action: "down" }, combo)).concat(keyEvents(Object.assign({ action: "up" }, combo)));
+    return events.map(function (params) {
+      return ["Input.dispatchKeyEvent", params];
+    });
+  }
+
+  function selectAllSteps(mac) {
+    var base = { key: "a", code: "KeyA", windowsVirtualKeyCode: 65, nativeVirtualKeyCode: 65, modifiers: mac ? MODIFIER_BITS.meta : MODIFIER_BITS.ctrl };
+    return [
+      ["Input.dispatchKeyEvent", Object.assign({ type: "rawKeyDown", commands: ["selectAll"] }, base)],
+      ["Input.dispatchKeyEvent", Object.assign({ type: "keyUp" }, base)]
+    ];
+  }
+
+  function actSteps(args, target) {
+    if (args.action === "press") return comboSteps(args.key);
+    if (target.done === true) return [];
+    var steps = pointerSteps(target.x, target.y, CLICK_COUNTS[args.action] || 0);
+    if (args.action !== "type") return steps;
+    steps = steps.concat(selectAllSteps(isMac()));
+    var text = args.text === undefined || args.text === null ? "" : String(args.text);
+    steps = steps.concat(text.length ? [["Input.insertText", { text: text }]] : comboSteps("Delete"));
+    if (args.submit === true) steps = steps.concat(comboSteps("Enter"));
+    return steps;
+  }
+
+  async function runSteps(tabId, steps) {
+    for (var index = 0; index < steps.length; index += 1) {
+      try {
+        await send(tabId, steps[index][0], steps[index][1]);
+      } catch (error) {
+        var failure = new ToolFailure(ERROR.unsupported, "Trusted input stopped: " + core.messageOf(error), "Retry the action, or pass input synthetic");
+        failure.dispatched = index;
+        throw failure;
+      }
+    }
+    touch();
   }
 
   function assertInputShape(args) {
@@ -213,7 +298,9 @@
     touch: touch,
     detach: detach,
     onDebuggerDetached: onDebuggerDetached,
-    pressTrustedKey: pressTrustedKey,
+    parseCombo: parseCombo,
+    actSteps: actSteps,
+    runSteps: runSteps,
     assertInputShape: assertInputShape,
     toolInput: toolInput,
     activeTabId: activeTabId

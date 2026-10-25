@@ -824,6 +824,11 @@
         broadcast();
         return succeed();
       }
+      if (op === "bidi.check") {
+        trustedInput = await LB.bidi.check();
+        broadcast();
+        return succeed();
+      }
       return fail("Unknown control op " + String(op) + ".");
     } catch (error) {
       return fail(error && error.message ? error.message : String(error));
