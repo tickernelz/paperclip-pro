@@ -19,7 +19,7 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 
 import { sanitizeQuarantinedCommentForHigherTrust } from "./source-trust.js";
-import { isAgentAwaitingSetup } from "../modules/agent-lifecycle/domain/policy.js";
+import { isAgentAwaitingSetup } from "../modules/agent-lifecycle/index.js";
 import { evaluateAgentInvokabilityFromDb, type AgentInvokability } from "./agent-invokability.js";
 
 export type ConversationIdentity = {
