@@ -7,6 +7,7 @@ import {
 import type { NativeStatusDecision } from "./native-runtime/status-arbiter.js";
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import {
+  agents,
   agentTaskSessions,
   agentWakeupRequests,
   heartbeatRuns,
@@ -18,6 +19,8 @@ import {
 } from "@tickernelz/paperclip-pro-db";
 
 import { sanitizeQuarantinedCommentForHigherTrust } from "./source-trust.js";
+import { isAgentAwaitingSetup } from "../modules/agent-lifecycle/index.js";
+import { evaluateAgentInvokabilityFromDb, type AgentInvokability } from "./agent-invokability.js";
 
 export type ConversationIdentity = {
   conversationAgentId?: string | null;
@@ -523,6 +526,23 @@ export async function resumeConversationForReset(db: Db, comment: typeof issueCo
   for (const publication of publications) publishActivity(publication);
 }
 
+export async function conversationAgentInvokability(
+  db: Db,
+  issue: { companyId: string; conversationAgentId: string | null },
+): Promise<AgentInvokability> {
+  const [agent] = issue.conversationAgentId
+    ? await db
+        .select()
+        .from(agents)
+        .where(and(eq(agents.id, issue.conversationAgentId), eq(agents.companyId, issue.companyId)))
+    : [];
+  return evaluateAgentInvokabilityFromDb(db, agent && isAgentAwaitingSetup(agent) ? { ...agent, status: "idle" } : agent);
+}
+
+export function isTemporarilyNonInvokable(invokability: AgentInvokability) {
+  return !invokability.invokable && (invokability.reason === "paused" || invokability.reason === "pending_approval");
+}
+
 /** Serialize durable outbox delivery across API servers; the normal wake queue owns execution. */
 export async function deliverConversationComments(
   db: Db,
@@ -545,7 +565,8 @@ export async function deliverConversationComments(
       contextSnapshot: Record<string, unknown>;
     },
   ) => Promise<unknown>,
-) {
+  options?: { invokability?: AgentInvokability },
+): Promise<void> {
   if (!issue.conversationAgentId) return;
   for (;;) {
     const delivered = await db.transaction(async (tx) => {
@@ -555,11 +576,15 @@ export async function deliverConversationComments(
         sql`select pg_try_advisory_xact_lock(hashtextextended(${"conversation-delivery:" + issue.id}, 0)) as acquired`,
       );
       if (!locks[0]?.acquired) return false;
-      for (const comment of await undeliveredConversationComments(
+      const pending = await undeliveredConversationComments(
         tx as unknown as Db,
         issue.companyId,
         issue.id,
-      )) {
+      );
+      if (pending.length === 0) return true;
+      const invokability = options?.invokability ?? (await conversationAgentInvokability(tx as unknown as Db, issue));
+      if (!invokability.invokable) return true;
+      for (const comment of pending) {
         await resumeConversationForReset(db, comment);
         await enqueue(issue.conversationAgentId!, {
           source: "on_demand",

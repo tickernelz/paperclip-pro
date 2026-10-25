@@ -31,7 +31,13 @@ import { createIssueReadTiming } from "../services/issue-read-timing.js";
 import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
 import { retryNativeWorkspaceExport } from "../services/native-runtime/native-workspace-export-retry.js";
 import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractionResponse } from "../services/queued-interaction-response.js";
-import { deliverConversationComments, isConversation, isConversationReset } from "../services/agent-conversations.js";
+import {
+  conversationAgentInvokability,
+  deliverConversationComments,
+  isConversation,
+  isConversationReset,
+  isTemporarilyNonInvokable,
+} from "../services/agent-conversations.js";
 import { issueRecoveryActionReadModel } from "../services/issue-recovery-actions.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { registerOpenwaCommentSteering, type OpenwaCommentSteerRequest, type OpenwaSystemSteerActor } from "../services/openwa/steering.js";
@@ -20316,6 +20322,10 @@ export function issueRoutes(
         if (!req.body.clientRequestId) throw unprocessable("Chat messages require a clientRequestId for safe retries");
         if (!(await assertAgentIssueCommentAllowed(req, res, issue))) return;
         if (req.body.body.trim() !== "/new" && !(await assertBoardCommentNotPaused(req, res, issue))) return;
+        const agentInvokability = await conversationAgentInvokability(db, issue);
+        if (!agentInvokability.invokable && !isTemporarilyNonInvokable(agentInvokability)) {
+          throw conflict(agentInvokability.message, { reason: agentInvokability.reason, ...agentInvokability.details });
+        }
         const actor = getActorInfo(req);
         const userId = req.actor.userId;
         const publications: ActivityPublication[] = [];
@@ -20341,7 +20351,7 @@ export function issueRoutes(
         });
         for (const publication of publications) publishActivity(publication);
         await issueReferencesSvc.syncComment(comment.id);
-        await deliverConversationComments(db, issue, heartbeat.wakeup);
+        await deliverConversationComments(db, issue, heartbeat.wakeup, { invokability: agentInvokability });
         res.status(201).json({
           ...comment,
           ...(await resolveMessageDeliveryDisposition({
