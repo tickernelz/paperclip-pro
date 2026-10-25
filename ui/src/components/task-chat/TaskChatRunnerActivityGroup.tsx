@@ -1,4 +1,4 @@
-import { useId, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { completedActivitySummary } from "./completed-activity-summary";
 import { Brain, ChevronRight, CirclePause, Gauge } from "lucide-react";
 import { MarkdownBody } from "@/components/MarkdownBody";
@@ -197,6 +197,42 @@ function hasActivityDetails(item: Activity): boolean {
   );
 }
 
+const DETAIL_PIN_THRESHOLD_PX = 24;
+
+function useFollowDetailBottom<T extends HTMLElement>(follow: boolean) {
+  const ref = useRef<T | null>(null);
+  const pinned = useRef(follow);
+  const lastTop = useRef(0);
+  const stick = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    pinned.current = true;
+    el.scrollTop = el.scrollHeight;
+    lastTop.current = el.scrollTop;
+  }, []);
+  const onScroll = useCallback(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (el.scrollTop < lastTop.current - DETAIL_PIN_THRESHOLD_PX) pinned.current = false;
+    lastTop.current = el.scrollTop;
+  }, []);
+  useLayoutEffect(() => {
+    if (follow) stick();
+  }, [follow, stick]);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      if (!pinned.current) return;
+      el.scrollTop = el.scrollHeight;
+      lastTop.current = el.scrollTop;
+    });
+    for (const child of el.children) observer.observe(child);
+    return () => observer.disconnect();
+  }, []);
+  return { ref, onScroll };
+}
+
 const OPEN_ACTIVITY_COUNT = 3;
 const NO_OPEN_ACTIVITIES: ReadonlySet<string> = new Set();
 
@@ -227,6 +263,7 @@ function ExpandedActivity({
 }) {
   const [open, setOpen] = useTaskChatExpansion(`runner-detail:${item.id}`, auto);
   const [mounted, setMounted] = useState(open);
+  const detail = useFollowDetailBottom<HTMLDivElement>(open && current === true);
   if (open && !mounted) setMounted(true);
   const detailId = useId();
   const expandable = hasActivityDetails(item);
@@ -261,10 +298,14 @@ function ExpandedActivity({
         <div
           id={detailId}
           hidden={!open}
+          ref={detail.ref}
+          onScroll={detail.onScroll}
           className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground [&>*]:shrink-0"
           data-testid="task-chat-runner-activity-detail"
         >
-          <ActivityDetails item={item} />
+          <div className="flex min-w-0 flex-col gap-2" data-testid="task-chat-runner-activity-body">
+            <ActivityDetails item={item} />
+          </div>
         </div>
       ) : null}
     </li>

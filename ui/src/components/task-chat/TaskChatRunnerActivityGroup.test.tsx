@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TaskChatThreadView } from "./TaskChatThreadView";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { MemoryRouter } from "@/lib/router";
@@ -232,6 +232,68 @@ describe("TaskChatRunnerActivityGroup", () => {
     render(tools(6));
     expect(openRowIds()).toEqual(["t4", "t5", "t6"]);
     expect(earlierToggle()?.textContent).toBe("+3 earlier");
+  });
+
+  it("keeps the running activity's detail on its newest line as it streams", () => {
+    let fireResize = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          fireResize = () => callback([], this as unknown as ResizeObserver);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    render(tools(1));
+    const detail = visibleDetails()[0];
+    let scrollTop = 0;
+    Object.defineProperty(detail, "scrollHeight", { value: 900, configurable: true });
+    Object.defineProperty(detail, "clientHeight", { value: 300, configurable: true });
+    Object.defineProperty(detail, "scrollTop", {
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+      configurable: true,
+    });
+    act(() => fireResize());
+    expect(scrollTop).toBe(900);
+    vi.unstubAllGlobals();
+  });
+
+  it("stops following once the reader scrolls up inside the detail", () => {
+    let fireResize = () => {};
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        constructor(callback: ResizeObserverCallback) {
+          fireResize = () => callback([], this as unknown as ResizeObserver);
+        }
+        observe() {}
+        disconnect() {}
+      },
+    );
+    render(tools(1));
+    const detail = visibleDetails()[0];
+    let scrollTop = 0;
+    Object.defineProperty(detail, "scrollHeight", { value: 900, configurable: true });
+    Object.defineProperty(detail, "clientHeight", { value: 300, configurable: true });
+    Object.defineProperty(detail, "scrollTop", {
+      get: () => scrollTop,
+      set: (value: number) => {
+        scrollTop = value;
+      },
+      configurable: true,
+    });
+    act(() => fireResize());
+    expect(scrollTop).toBe(900);
+    scrollTop = 200;
+    act(() => detail.dispatchEvent(new Event("scroll")));
+    act(() => fireResize());
+    expect(scrollTop).toBe(200);
+    vi.unstubAllGlobals();
   });
 
   it("lets a click override the positional open state and keeps the detail mounted", () => {
