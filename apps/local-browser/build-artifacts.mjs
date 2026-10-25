@@ -20,8 +20,8 @@ function stage(sourceDir) {
   const staging = path.join(outDir, ".staging");
   rmSync(staging, { recursive: true, force: true });
   cpSync(sourceDir, staging, { recursive: true, filter: (entry) => !SKIP(entry) });
-  const files = execFileSync("find", [staging, "-type", "f"], { encoding: "utf8" }).split("\n").filter(Boolean);
-  for (const file of files) utimesSync(file, FIXED_TIME, FIXED_TIME);
+  const entries = execFileSync("find", [staging, "-mindepth", "1"], { encoding: "utf8" }).split("\n").filter(Boolean);
+  for (const entry of entries) utimesSync(entry, FIXED_TIME, FIXED_TIME);
   return staging;
 }
 
