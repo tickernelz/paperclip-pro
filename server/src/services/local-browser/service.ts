@@ -145,6 +145,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
     const modern =
       args.domain !== undefined ||
       args.allDomains === true ||
+      args.storeId !== undefined ||
       args.limit !== undefined ||
       args.confirmAll !== undefined ||
       (Array.isArray(args.entries) &&

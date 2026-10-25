@@ -106,7 +106,7 @@ function toolError(code, message, hint, retryable) {
 }
 
 function siteAccessDenied(message) {
-  return /cannot access contents of|missing host permission|extension manifest must request permission|Cannot access a chrome-extension|not allowed to access/i.test(
+  return /cannot access contents of|missing host permission|no host permissions for cookies|extension manifest must request permission|Cannot access a chrome-extension|not allowed to access/i.test(
     message
   );
 }
@@ -929,6 +929,13 @@ async function toolStorage(args) {
   if (args.kind !== "cookies") {
     return await rpc(tab.id, "storage", args, 10000);
   }
+  if ((args.allDomains === true || typeof args.domain === "string") && (await siteAccessState()) === "limited") {
+    throw new ToolFailure(
+      ERROR.originDenied,
+      "Reading cookies outside the page you are on needs site access that is not granted",
+      "Press Allow all sites in the Paperclip extension popup, or pass url for the page you are on"
+    );
+  }
   if (args.op === "get") {
     const query = cookieQuery(args, tab);
     const found = (await chrome.cookies.getAll(query)).map(cookieSummary);
@@ -939,6 +946,7 @@ async function toolStorage(args) {
     const entries = args.entries || [];
     const written = [];
     const failed = [];
+    let denied = false;
     for (const entry of entries) {
       const details = { url: cookieUrlFor(args, tab, entry), name: entry.name, value: entry.value };
       if (entry.storeId || args.storeId) details.storeId = entry.storeId || args.storeId;
@@ -955,12 +963,15 @@ async function toolStorage(args) {
         else failed.push(entry.name);
       } catch (error) {
         failed.push(entry.name);
+        if (siteAccessDenied(String((error && error.message) || error))) denied = true;
       }
     }
     const result = { kind: "cookies", op: "set", count: written.length, cookies: written };
     if (failed.length) {
       result.failed = failed;
-      result.note = "The browser refused " + failed.length + " cookie(s); check the domain against the url";
+      result.note = denied
+        ? "The browser refused " + failed.length + " cookie(s) because this extension has no site access yet; press Allow all sites in its popup"
+        : "The browser refused " + failed.length + " cookie(s); check the domain against the url";
     }
     return result;
   }

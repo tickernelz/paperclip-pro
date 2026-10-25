@@ -249,6 +249,8 @@ it("refuses the jar-wide cookie scopes when the extension does not advertise the
     active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "set", url: "https://a.test/", entries: [{ name: "a", value: "b", httpOnly: true }] }),
     "local_browser_unsupported",
   );
+  await expectFailure(active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "get", storeId: "3" }), "local_browser_unsupported");
+  await expectFailure(active.service.executeTool(binding(), "local_browser_storage", { kind: "cookies", op: "get", limit: 5 }), "local_browser_unsupported");
   expect(oldBuild.calls).toHaveLength(0);
 });
 

@@ -12,7 +12,7 @@ after(() => {
   setTimeout(() => process.exit(0), 50);
 });
 
-async function boot() {
+async function boot(options = {}) {
   const calls = { getAll: [], set: [], remove: [] };
   const jar = [];
   const refusedRemovals = new Set();
@@ -126,7 +126,7 @@ async function boot() {
     scripting: { executeScript: async () => [{ result: { width: 800, height: 600, dpr: 1 } }] },
     cookies,
     downloads: { search: async () => [] },
-    permissions: { contains: async () => true, request: async () => true },
+    permissions: { contains: async () => options.siteAccess !== "limited", request: async () => true },
   };
 
   globalThis.chrome = chrome;
@@ -140,7 +140,7 @@ async function boot() {
   socket.readyState = FakeSocket.OPEN;
   socket.emit("open", {});
   await new Promise((resolve) => setTimeout(resolve, 30));
-  return { socket, sent, calls, jar, refusedRemovals };
+  return { socket, sent, calls, jar, refusedRemovals, cookies };
 }
 
 function call(socket, sent, tool, args) {
@@ -272,6 +272,30 @@ test("a whole-jar clear needs a name or an explicit confirmation", async () => {
   const confirmed = await call(h.socket, h.sent, "local_browser_storage", { kind: "cookies", op: "clear", allDomains: true, confirmAll: true });
   assert.equal(confirmed.ok, true, JSON.stringify(confirmed.error || {}));
   assert.equal(h.calls.remove.length, 60);
+});
+
+test("a host-permission refusal explains how to grant site access", async () => {
+  const h = await boot();
+  h.cookies.set = async () => {
+    throw new Error('No host permissions for cookies at url: "https://app.test/".');
+  };
+  const result = await call(h.socket, h.sent, "local_browser_storage", {
+    kind: "cookies",
+    op: "set",
+    url: "https://app.test/",
+    entries: [{ name: "a", value: "1" }],
+  });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.deepEqual(plain(result.result.failed), ["a"]);
+  assert.match(result.result.note, /Allow all sites/);
+});
+
+test("a jar-wide read without site access says so instead of returning nothing", async () => {
+  const h = await boot({ siteAccess: "limited" });
+  const result = await call(h.socket, h.sent, "local_browser_storage", { kind: "cookies", op: "get", allDomains: true });
+  assert.equal(result.ok, false);
+  assert.equal(result.error.code, "local_browser_origin_denied");
+  assert.match(result.error.message, /needs site access/);
 });
 
 test("a jar-wide read does not need a reachable tab", async () => {
