@@ -31,6 +31,7 @@ import { useConfigSchema } from "../../adapters/schema-config-fields";
 import { queryKeys } from "../../lib/queryKeys";
 import { cn, formatDurationMs } from "../../lib/utils";
 import { AgentAvatar } from "../AgentAvatar";
+import { LiveNowTodoLine } from "./LiveNowTodoLine";
 import type { LiveNowAncestor, LiveNowEntry } from "../TasksLiveNowSection";
 import {
   LIVE_NOW_HEALTH_POSE,
@@ -111,6 +112,7 @@ export function LiveNowCard({
     },
   });
 
+  const runIds = entry.runs.map((run) => run.id);
   const openComposer = () => {
     setFeedback(null);
     setComposing((open) => !open);
@@ -226,6 +228,8 @@ export function LiveNowCard({
           <span className="ml-auto shrink-0 tabular-nums">{formatSilence(Math.max(0, now - lastActivityMs))} ago</span>
         ) : null}
       </div>
+
+      <LiveNowTodoLine issueId={entry.issueId} runIds={runIds} />
 
       {composing ? (
         <LiveNowSteerForm

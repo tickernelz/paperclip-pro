@@ -11,6 +11,7 @@ import { cn, relativeTime } from "../lib/utils";
 import { Clock3 } from "lucide-react";
 import { StatusGlyph } from "./StatusGlyph";
 import { RunChatSurface } from "./RunChatSurface";
+import { LiveNowTodoLine } from "./live-now/LiveNowTodoLine";
 import { useLiveRunTranscripts } from "./transcript/useLiveRunTranscripts";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 
@@ -239,6 +240,9 @@ export const AgentRunCard = memo(function AgentRunCard({
             <span className="truncate">{run.invocationSource === "timer" ? "Scheduled heartbeat" : "No linked task"}</span>
           </Link>
         )}
+        {run.issueId && (run.status === "running" || run.status === "queued") ? (
+          <LiveNowTodoLine issueId={run.issueId} runIds={[run.id]} className="px-0.5" />
+        ) : null}
         <time
           dateTime={run.finishedAt ?? run.startedAt ?? run.createdAt}
           className="text-right font-sans text-xs text-muted-foreground/70"

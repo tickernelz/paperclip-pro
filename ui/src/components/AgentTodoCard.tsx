@@ -1,4 +1,4 @@
-import { useContext, useId, useState } from "react";
+import { useContext, useEffect, useId, useRef, useState } from "react";
 import { ChevronDown, ChevronRight, ListTodo, PanelRightOpen } from "lucide-react";
 import type {
   AgentTodoPhase,
@@ -11,6 +11,13 @@ import { Button } from "@/components/ui/button";
 import { AgentTodoPanelContext } from "@/context/AgentTodoPanelContext";
 import { useIssueAgentTodo } from "@/hooks/useIssueAgentTodo";
 import { timeAgo } from "@/lib/timeAgo";
+import {
+  agentTodoFocus,
+  agentTodoFocusIconStatus,
+  agentTodoFocusStatusLabel,
+  agentTodoFocusText,
+} from "@/lib/agent-todo-focus";
+import { readAgentTodoCardExpanded, writeAgentTodoCardExpanded } from "@/lib/agent-todo-card-state";
 import { cn } from "@/lib/utils";
 
 const LIVE_RUN_STATUSES = new Set(["running", "queued"]);
@@ -40,12 +47,13 @@ export function isAgentTodoRunLive(snapshot: Pick<AgentTodoSnapshot, "runStatus"
   return LIVE_RUN_STATUSES.has(snapshot.runStatus);
 }
 
-function AgentTodoTaskRow({ task }: { task: AgentTodoTask }) {
+function AgentTodoTaskRow({ task, dense }: { task: AgentTodoTask; dense: boolean }) {
   const settledTone = task.status === "dropped" ? "text-muted-foreground/70 line-through" : "text-muted-foreground line-through";
   return (
     <li
       className={cn(
-        "flex items-start gap-2 rounded-sm px-1.5 py-1 text-sm",
+        "flex items-start gap-2 rounded-sm px-1.5 text-sm",
+        dense ? "py-0.5 leading-5" : "py-1",
         task.status === "in_progress" && "bg-muted font-medium text-foreground",
       )}
       data-status={task.status}
@@ -66,7 +74,7 @@ function AgentTodoTaskRow({ task }: { task: AgentTodoTask }) {
   );
 }
 
-function AgentTodoPhaseSection({ phase, index }: { phase: AgentTodoPhase; index: number }) {
+function AgentTodoPhaseSection({ phase, index, dense }: { phase: AgentTodoPhase; index: number; dense: boolean }) {
   const listId = useId();
   const settled = phase.tasks.length > 0 && phase.tasks.every(isSettled);
   const [expanded, setExpanded] = useState(!settled);
@@ -87,7 +95,7 @@ function AgentTodoPhaseSection({ phase, index }: { phase: AgentTodoPhase; index:
       </button>
       <ol id={listId} hidden={!expanded} aria-label={`${name} tasks`} className="flex flex-col gap-0.5">
         {phase.tasks.map((task, taskIndex) => (
-          <AgentTodoTaskRow key={`${taskIndex}:${task.content}`} task={task} />
+          <AgentTodoTaskRow key={`${taskIndex}:${task.content}`} task={task} dense={dense} />
         ))}
       </ol>
     </section>
@@ -95,16 +103,16 @@ function AgentTodoPhaseSection({ phase, index }: { phase: AgentTodoPhase; index:
 }
 
 /** Phase-by-phase todo list shared by the pinned card and the side panel tab. */
-export function AgentTodoList({ snapshot }: { snapshot: AgentTodoSnapshot }) {
+export function AgentTodoList({ snapshot, dense = false }: { snapshot: AgentTodoSnapshot; dense?: boolean }) {
   const listed = snapshot.phases.reduce((sum, phase) => sum + phase.tasks.length, 0);
   const hidden = Math.max(0, snapshot.counts.total - listed);
   if (snapshot.phases.length === 0) {
     return <p className="text-sm text-muted-foreground">The agent cleared its todo list.</p>;
   }
   return (
-    <div className="flex flex-col gap-3">
+    <div className={cn("flex flex-col", dense ? "gap-2" : "gap-3")}>
       {snapshot.phases.map((phase, index) => (
-        <AgentTodoPhaseSection key={`${index}:${phase.name}`} phase={phase} index={index} />
+        <AgentTodoPhaseSection key={`${index}:${phase.name}`} phase={phase} index={index} dense={dense} />
       ))}
       {hidden > 0 ? (
         <p className="text-xs text-muted-foreground">{`+${hidden} more ${hidden === 1 ? "task" : "tasks"} not listed`}</p>
@@ -114,7 +122,7 @@ export function AgentTodoList({ snapshot }: { snapshot: AgentTodoSnapshot }) {
 }
 
 /** Progress bar, run label, and live dot for a todo snapshot. */
-export function AgentTodoProgress({ snapshot }: { snapshot: AgentTodoSnapshot }) {
+export function AgentTodoProgress({ snapshot, showLiveDot = true }: { snapshot: AgentTodoSnapshot; showLiveDot?: boolean }) {
   const { completed, total } = snapshot.counts;
   const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
   const live = isAgentTodoRunLive(snapshot);
@@ -124,7 +132,7 @@ export function AgentTodoProgress({ snapshot }: { snapshot: AgentTodoSnapshot })
         <span className="font-medium tabular-nums text-foreground">{`${completed}/${total}`}</span>
         <span aria-hidden>·</span>
         <span className="inline-flex items-center gap-1.5">
-          {live ? (
+          {live && showLiveDot ? (
             <span
               className="size-1.5 shrink-0 animate-pulse rounded-full bg-(--status-agent-running) motion-reduce:animate-none"
               aria-hidden
@@ -154,7 +162,27 @@ export function AgentTodoProgress({ snapshot }: { snapshot: AgentTodoSnapshot })
   );
 }
 
-/** Latest agent todo for the issue, pinned above the task chat; renders nothing without a snapshot. */
+/** One line naming the task a todo is on, with its status icon; shared by the collapsed card and Live Now. */
+export function AgentTodoFocusLine({
+  snapshot,
+  className,
+  "data-slot": dataSlot,
+}: {
+  snapshot: Pick<AgentTodoSnapshot, "phases" | "counts">;
+  className?: string;
+  "data-slot"?: string;
+}) {
+  const focus = agentTodoFocus(snapshot);
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1.5 text-sm", className)} data-slot={dataSlot} data-focus={focus.kind}>
+      <StatusIcon status={agentTodoFocusIconStatus(focus)} className={cn("size-3.5 shrink-0", focus.kind === "empty" && "opacity-50")} />
+      <span className="sr-only">{`${agentTodoFocusStatusLabel(focus)}: `}</span>
+      <span className="min-w-0 truncate" title={agentTodoFocusText(focus)}>{agentTodoFocusText(focus)}</span>
+    </span>
+  );
+}
+
+/** Latest agent todo for the issue, pinned above the task chat; collapsed to the current task until opened. */
 export function AgentTodoCard({
   issueId,
   className,
@@ -167,17 +195,61 @@ export function AgentTodoCard({
   const { data: snapshot } = useIssueAgentTodo(issueId);
   const openInPanel = useContext(AgentTodoPanelContext);
   const bodyId = useId();
-  const [expanded, setExpanded] = useState(true);
+  const [expanded, setExpanded] = useState(readAgentTodoCardExpanded);
+  const listRef = useRef<HTMLDivElement>(null);
+  const focus = snapshot ? agentTodoFocus(snapshot) : null;
+  const focusKey = focus?.task ? `${focus.kind}:${focus.task.content}` : null;
+  useEffect(() => {
+    if (!expanded) return;
+    const box = listRef.current;
+    const row = box?.querySelector<HTMLElement>('[aria-current="step"]');
+    if (!box || !row) return;
+    const boxRect = box.getBoundingClientRect();
+    const rowRect = row.getBoundingClientRect();
+    if (rowRect.top >= boxRect.top && rowRect.bottom <= boxRect.bottom) return;
+    box.scrollTop += rowRect.top - boxRect.top - (box.clientHeight - rowRect.height) / 2;
+  }, [expanded, focusKey]);
   if (!snapshot) return null;
+  const toggle = () => {
+    const next = !expanded;
+    setExpanded(next);
+    writeAgentTodoCardExpanded(next);
+  };
+  const live = isAgentTodoRunLive(snapshot);
   const card = (
     <section
       aria-label="Agent todo"
-      className={cn("flex flex-col gap-2 rounded-md border border-border bg-card px-3 py-2.5", className)}
+      className={cn("flex flex-col rounded-md border border-border bg-card px-3", expanded ? "gap-2 py-2" : "py-1.5", className)}
       data-testid="agent-todo-card"
+      data-expanded={expanded}
     >
       <header className="flex min-w-0 items-center gap-2">
         <ListTodo aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-        <h2 className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">Agent todo</h2>
+        <h2 className={cn(expanded ? "min-w-0 flex-1 truncate text-sm font-medium text-foreground" : "sr-only")}>Agent todo</h2>
+        {expanded ? null : (
+          <button
+            type="button"
+            className="min-w-0 flex-1 rounded-sm text-left text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            aria-expanded={false}
+            aria-controls={bodyId}
+            onClick={toggle}
+            data-testid="agent-todo-collapsed-summary"
+          >
+            <AgentTodoFocusLine snapshot={snapshot} />
+          </button>
+        )}
+        {expanded ? null : (
+          <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+            {live ? (
+              <span
+                className="size-1.5 shrink-0 animate-pulse rounded-full bg-(--status-agent-running) motion-reduce:animate-none"
+                aria-hidden
+                data-testid="agent-todo-live-dot"
+              />
+            ) : null}
+            <span className="font-medium tabular-nums text-foreground">{`${snapshot.counts.completed}/${snapshot.counts.total}`}</span>
+          </span>
+        )}
         {openInPanel ? (
           <Button type="button" variant="ghost" size="icon-xs" aria-label="Open agent todo in side panel" onClick={openInPanel}>
             <PanelRightOpen aria-hidden />
@@ -190,14 +262,16 @@ export function AgentTodoCard({
           aria-label={expanded ? "Collapse agent todo" : "Expand agent todo"}
           aria-expanded={expanded}
           aria-controls={bodyId}
-          onClick={() => setExpanded((value) => !value)}
+          onClick={toggle}
         >
           {expanded ? <ChevronDown aria-hidden /> : <ChevronRight aria-hidden />}
         </Button>
       </header>
-      <AgentTodoProgress snapshot={snapshot} />
-      <div id={bodyId} hidden={!expanded} className="max-h-64 overflow-y-auto">
-        <AgentTodoList snapshot={snapshot} />
+      <div id={bodyId} hidden={!expanded} className="flex flex-col gap-2">
+        <AgentTodoProgress snapshot={snapshot} showLiveDot={expanded} />
+        <div ref={listRef} className="max-h-40 overflow-y-auto" data-testid="agent-todo-card-list">
+          <AgentTodoList snapshot={snapshot} dense />
+        </div>
       </div>
     </section>
   );

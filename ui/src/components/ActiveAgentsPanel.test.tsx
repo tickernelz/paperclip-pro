@@ -12,6 +12,7 @@ const mockHeartbeatsApi = vi.hoisted(() => ({
 
 const mockIssuesApi = vi.hoisted(() => ({
   get: vi.fn(),
+  getAgentTodo: vi.fn(),
 }));
 
 vi.mock("@/lib/router", () => ({
@@ -88,6 +89,12 @@ function createIssueRun(index: number, issueId: string) {
   };
 }
 
+function withQueryClient(node: ReactNode) {
+  return (
+    <QueryClientProvider client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}>{node}</QueryClientProvider>
+  );
+}
+
 function createIssue(id: string, identifier: string, title: string) {
   return {
     id,
@@ -120,6 +127,7 @@ describe("ActiveAgentsPanel", () => {
     document.body.appendChild(container);
     mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([1, 2, 3, 4, 5].map(createRun));
     mockIssuesApi.get.mockRejectedValue(new Error("Issue not found"));
+    mockIssuesApi.getAgentTodo.mockResolvedValue({ snapshot: null });
   });
 
   afterEach(() => {
@@ -286,14 +294,14 @@ describe("ActiveAgentsPanel", () => {
     const root = createRoot(container);
     const statuses = ["running", "queued", "succeeded", "failed", "timed_out", "cancelled", "interrupted"];
     await act(async () => {
-      root.render(<>{statuses.map((status, index) => (
+      root.render(withQueryClient(<>{statuses.map((status, index) => (
         <AgentRunCard
           key={status}
           companyId="company-1"
           run={{ ...createIssueRun(index, "issue-1"), status }}
           issue={{ title: "Review release notes", identifier: "PAP-559", status: "in_review" }}
         />
-      ))}</>);
+      ))}</>));
     });
     const headers = [...container.querySelectorAll('a[aria-label$=". View run"]')];
     expect(headers.map((header) => header.getAttribute("aria-label"))).toEqual([
@@ -327,7 +335,7 @@ describe("ActiveAgentsPanel", () => {
   it("keeps a failed task lookup navigable and shows a clear error", async () => {
     const root = createRoot(container);
     await act(async () => {
-      root.render(<AgentRunCard companyId="company-1" run={createIssueRun(1, "issue-missing")} issueLoadFailed />);
+      root.render(withQueryClient(<AgentRunCard companyId="company-1" run={createIssueRun(1, "issue-missing")} issueLoadFailed />));
     });
     expect(container.textContent).toContain("Task unavailable");
     expect(container.querySelector('a[href="/issues/issue-missing"]')).not.toBeNull();
@@ -353,6 +361,37 @@ describe("ActiveAgentsPanel", () => {
     expect(container.querySelector('a[aria-label="Agent 0 — Running. View run"]')).not.toBeNull();
     expect(container.querySelector(".status-chip")).toBeNull();
     expect(container.querySelectorAll(".motion-safe\\:animate-spin")).toHaveLength(0);
+    await act(async () => root.unmount());
+  });
+
+  it("shows the live run's current todo on its card, but not on a finished run", async () => {
+    const todo = (runId: string) => ({
+      version: 1,
+      source: "omp",
+      op: "update",
+      phases: [{ name: "Fix", tasks: [{ content: "Done step", status: "completed" }, { content: "Locate the bug", status: "in_progress" }, { content: "Later step", status: "pending" }] }],
+      counts: { total: 3, completed: 1, inProgress: 1, pending: 1, blocked: 0, dropped: 0 },
+      runId,
+      agentId: "agent-0",
+      issueId: "issue-1",
+      seq: 1,
+      createdAt: "2026-04-24T12:00:00.000Z",
+      runStatus: "running",
+    });
+    mockIssuesApi.getAgentTodo.mockResolvedValue({ snapshot: todo("run-0") });
+    const root = createRoot(container);
+    await act(async () => {
+      root.render(withQueryClient(<>
+        <AgentRunCard companyId="company-1" run={createIssueRun(0, "issue-1")} />
+        <AgentRunCard companyId="company-1" run={{ ...createIssueRun(1, "issue-1"), status: "succeeded" }} />
+      </>));
+    });
+    await flushReact();
+    const lines = container.querySelectorAll('[data-slot="tasks-live-now-todo"]');
+    expect(lines).toHaveLength(1);
+    expect(lines[0]?.textContent).toContain("Locate the bug");
+    expect(lines[0]?.textContent).toContain("1/3");
+    expect(container.textContent).not.toContain("Later step");
     await act(async () => root.unmount());
   });
 });

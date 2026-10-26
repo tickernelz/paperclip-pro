@@ -69,6 +69,7 @@ describe("AgentTodoCard", () => {
   let client: QueryClient;
 
   beforeEach(() => {
+    localStorage.clear();
     container = document.createElement("div");
     document.body.append(container);
     root = createRoot(container);
@@ -215,5 +216,57 @@ describe("AgentTodoCard", () => {
     expect(client.getQueryData(queryKeys.issues.agentTodo(ISSUE_ID))).toBe(before);
     expect(taskRow("Locate the bug")?.getAttribute("aria-current")).toBe("step");
     expect(taskRow("Other issue work")).toBeNull();
+  });
+
+  it("starts collapsed on the current task with its progress and hides the list", async () => {
+    vi.spyOn(issuesApi, "getAgentTodo").mockResolvedValue({ snapshot: snapshot() });
+    await render();
+    const card = container.querySelector<HTMLElement>('[data-testid="agent-todo-card"]');
+    expect(card?.getAttribute("data-expanded")).toBe("false");
+    const summary = container.querySelector<HTMLElement>('[data-testid="agent-todo-collapsed-summary"]');
+    expect(summary?.textContent).toContain("Locate the bug");
+    expect(summary?.textContent).not.toContain("Read the issue");
+    expect(card?.querySelector('[aria-label="Agent todo"] h2, h2')?.textContent).toBe("Agent todo");
+    expect(container.querySelector("#" + CSS.escape(summary?.getAttribute("aria-controls") ?? ""))?.hasAttribute("hidden")).toBe(true);
+    expect(container.querySelector('button[aria-label="Expand agent todo"]')).not.toBeNull();
+    expect(container.textContent).toContain("1/7");
+  });
+
+  it("opens the list on demand and remembers the choice in this browser", async () => {
+    vi.spyOn(issuesApi, "getAgentTodo").mockResolvedValue({ snapshot: snapshot() });
+    await render();
+    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Expand agent todo"]')?.click());
+    const card = container.querySelector<HTMLElement>('[data-testid="agent-todo-card"]');
+    expect(card?.getAttribute("data-expanded")).toBe("true");
+    expect(container.querySelector('[data-testid="agent-todo-collapsed-summary"]')).toBeNull();
+    expect(container.querySelector('[data-testid="agent-todo-card-list"]')?.parentElement?.hasAttribute("hidden")).toBe(false);
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render();
+    expect(container.querySelector('[data-testid="agent-todo-card"]')?.getAttribute("data-expanded")).toBe("true");
+    await act(async () => container.querySelector<HTMLButtonElement>('button[aria-label="Collapse agent todo"]')?.click());
+    act(() => root.unmount());
+    root = createRoot(container);
+    await render();
+    expect(container.querySelector('[data-testid="agent-todo-card"]')?.getAttribute("data-expanded")).toBe("false");
+  });
+
+  it("summarizes the next pending task, then a finished list, once nothing is in progress", async () => {
+    const idle = payload({
+      phases: [{ name: "Fix", tasks: [{ content: "Read the issue", status: "completed" }, { content: "Write the patch", status: "pending" }] }],
+      counts: { total: 2, completed: 1, inProgress: 0, pending: 1, blocked: 0, dropped: 0 },
+    });
+    vi.spyOn(issuesApi, "getAgentTodo").mockResolvedValue({ snapshot: snapshot(idle) });
+    await render();
+    const summary = () => container.querySelector('[data-testid="agent-todo-collapsed-summary"]')?.textContent;
+    expect(summary()).toContain("Write the patch");
+    const finished = payload({
+      op: "done",
+      phases: [{ name: "Fix", tasks: [{ content: "Read the issue", status: "completed" }, { content: "Write the patch", status: "completed" }] }],
+      counts: { total: 2, completed: 2, inProgress: 0, pending: 0, blocked: 0, dropped: 0 },
+    });
+    await dispatch("heartbeat.run.event", todoEvent(9, finished));
+    expect(summary()).toContain("All tasks done");
+    expect(container.textContent).toContain("2/2");
   });
 });
