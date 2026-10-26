@@ -205,6 +205,8 @@ publish_one_tarball() {
   local pkg_version="$2"
   local tarball="$3"
   local status=0
+  local publish_log=""
+  local conflict=""
 
   if npm_package_version_exists "$pkg_name" "$pkg_version"; then
     release_info "    already on npm, skipping publish"
@@ -214,16 +216,41 @@ publish_one_tarball() {
   if [ "$dry_run" = true ]; then
     release_npm publish "$tarball" --dry-run --tag "$PUBLISH_TAG" --access public || status=$?
   else
+    publish_log="$(mktemp "${TMPDIR:-/tmp}/paperclip-release-publish.XXXXXX")"
     if [ "${provenance_available}" = true ]; then
-      release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance || status=$?
+      (set -o pipefail; release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance 2>&1 | tee "$publish_log") || status=$?
     else
-      release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance=false || status=$?
+      (set -o pipefail; release_npm publish "$tarball" --tag "$PUBLISH_TAG" --access public --provenance=false 2>&1 | tee "$publish_log") || status=$?
     fi
   fi
 
-  if [ "$status" -ne 0 ]; then
-    release_fail "npm rejected ${pkg_name}@${pkg_version}."
+  if [ "$status" -eq 0 ]; then
+    [ -n "$publish_log" ] && rm -f "$publish_log"
+    return 0
   fi
+
+  conflict="$(npm_publish_conflict_kind "$(cat "$publish_log")" || true)"
+  case "$conflict" in
+    published)
+      release_warn "npm already publishes ${pkg_name}@${pkg_version}; continuing with the rest of the set."
+      ;;
+    staged)
+      release_warn "npm holds ${pkg_name}@${pkg_version} as a staged upload that is not visible yet; waiting instead of aborting the rest of the set."
+      if wait_for_npm_package_version "$pkg_name" "$pkg_version" "${NPM_STAGED_VISIBILITY_ATTEMPTS:-30}" "${NPM_STAGED_VISIBILITY_DELAY_SECONDS:-10}"; then
+        release_info "    published"
+        rm -f "$publish_log"
+        return 0
+      fi
+      rm -f "$publish_log"
+      release_fail "npm staged ${pkg_name}@${pkg_version} but never exposed it; rerun the same version to finish the set."
+      ;;
+    *)
+      rm -f "$publish_log"
+      release_fail "npm rejected ${pkg_name}@${pkg_version}."
+      ;;
+  esac
+
+  rm -f "$publish_log"
 }
 
 promote_to_latest() {

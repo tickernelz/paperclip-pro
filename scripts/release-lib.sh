@@ -320,6 +320,19 @@ wait_for_npm_package_version() {
   return 1
 }
 
+npm_publish_conflict_kind() {
+  local output="$1"
+
+  if grep -q "previously published version" <<< "$output"; then
+    echo "published"
+    return 0
+  fi
+  if grep -q "previously staged version" <<< "$output"; then
+    echo "staged"
+    return 0
+  fi
+  return 1
+}
 is_npm_tlog_duplicate_error() {
   local output="$1"
 
