@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type { Issue, IssueDocument } from "@tickernelz/paperclip-pro-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { issuesApi } from "@/api/issues";
 import {
   taskPanelAgentTasksTab,
   taskPanelArtifactsTab,
@@ -160,6 +161,7 @@ describe("TaskSidePanel", () => {
     document.body.appendChild(container);
     root = createRoot(container);
     queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    vi.spyOn(issuesApi, "getAgentTodo").mockResolvedValue({ snapshot: null });
     Element.prototype.scrollIntoView = vi.fn();
     HTMLElement.prototype.scrollTo = vi.fn();
     vi.spyOn(window, "requestAnimationFrame").mockImplementation((callback) => {
@@ -197,6 +199,41 @@ describe("TaskSidePanel", () => {
       />
     );
   }
+
+  it("opens the agent todo tab on request and renders the full list", async () => {
+    vi.mocked(issuesApi.getAgentTodo).mockResolvedValue({
+      snapshot: {
+        version: 1,
+        source: "omp",
+        op: "start",
+        phases: [
+          { name: "Context", tasks: [{ content: "Read the issue", status: "completed" }] },
+          { name: "Fix", tasks: [{ content: "Patch the panel", status: "in_progress" }, { content: "Run tests", status: "pending" }] },
+        ],
+        counts: { total: 3, completed: 1, inProgress: 1, pending: 1, blocked: 0, dropped: 0 },
+        runId: "run-1234567890",
+        agentId: "agent-1",
+        issueId: "task-1",
+        seq: 3,
+        createdAt: new Date().toISOString(),
+        runStatus: "succeeded",
+      },
+    });
+    const onAgentTodoOpened = vi.fn();
+    await render(panel({ openAgentTodoRequestId: 1, onAgentTodoOpened }));
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    expect(onAgentTodoOpened).toHaveBeenCalledOnce();
+    expect(container.querySelector('[role="tab"][aria-selected="true"]')?.textContent).toContain("Todo");
+    const todoPanel = container.querySelector('[data-testid="task-agent-todo-panel"]');
+    expect(todoPanel?.querySelector('[role="progressbar"]')?.getAttribute("aria-valuenow")).toBe("1");
+    expect(todoPanel?.querySelector('ol[aria-label="Fix tasks"]')?.textContent).toContain("Patch the panel");
+    expect(todoPanel?.querySelector('ol[aria-label="Fix tasks"]')?.textContent).toContain("Run tests");
+    expect(todoPanel?.querySelector('ol[aria-label="Context tasks"]')?.hasAttribute("hidden")).toBe(true);
+    expect(todoPanel?.textContent).toContain("from run run-1234");
+    expect(todoPanel?.querySelector('[data-testid="agent-todo-live-dot"]')).toBeNull();
+  });
 
   it("opens, deduplicates, switches and closes text attachment tabs", async () => {
     const onAttachmentOpened = vi.fn();

@@ -35,7 +35,6 @@ import { attentionApi } from "../api/attention";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
-import { attentionBadgeCount } from "../lib/attention";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -91,13 +90,13 @@ export function Sidebar() {
   // item is hidden entirely until the flag is enabled (same no-flash pattern as
   // showWorkspacesLink — it defaults hidden, so no placeholder is needed).
   const showDecisions = experimentalSettings?.enableDecisions === true;
-  const { data: attentionFeed } = useQuery({
-    queryKey: queryKeys.attention(selectedCompanyId!),
-    queryFn: () => attentionApi.list(selectedCompanyId!),
+  const { data: attentionBadge } = useQuery({
+    queryKey: queryKeys.attentionCount(selectedCompanyId!),
+    queryFn: () => attentionApi.count(selectedCompanyId!),
     enabled: !!selectedCompanyId && showDecisions,
     refetchInterval: 60_000,
   });
-  const attentionCount = attentionBadgeCount(attentionFeed);
+  const attentionCount = attentionBadge?.count ?? 0;
   const showCases = experimentalSettings?.enableCases === true;
   // Streamlined left navigation (top-level Projects link + starred children) is
   // now the standard product sidebar (PAP-12472). The former experimental

@@ -12,6 +12,8 @@ import { agentActionAuditService } from "../services/agent-action-audit.js";
 import { logActivity } from "../services/activity-log.js";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
 import { issueReadSqlCondition } from "../services/authorization.js";
+import { getLatestAgentTodoSnapshot } from "../services/heartbeat-run-events.js";
+import { createRunSecretRedactionRegistry } from "../services/run-secret-redaction.js";
 
 /** Max rows a single CSV export will stream (guards against runaway exports). */
 const AUDIT_CSV_EXPORT_MAX_ROWS = 10_000;
@@ -130,6 +132,7 @@ export function activityRoutes(db: Db) {
   const heartbeat = heartbeatService(db);
   const issueSvc = issueService(db);
   const agentAudit = agentActionAuditService(db);
+  const runRedactions = createRunSecretRedactionRegistry(db);
 
   async function hasAgentAuditPermission(req: import("express").Request, companyId: string) {
     if (req.actor.type !== "board") return false;
@@ -365,6 +368,19 @@ export function activityRoutes(db: Db) {
     const result = await svc.runsForIssue(issue.companyId, issue.id,
       req.actor.type === "board" ? getActorInfo(req).actorId : null);
     res.json(result);
+  });
+
+  router.get("/issues/:issueId/agent-todo", async (req, res) => {
+    const rawId = req.params.issueId as string;
+    const issue = await getAccessibleResource(req, res, resolveIssueByRef(rawId), "Issue not found");
+    if (!issue) return;
+    if (!(await assertIssueReadAllowed(req, res, issue))) return;
+    const snapshot = await getLatestAgentTodoSnapshot(db, { companyId: issue.companyId, issueId: issue.id });
+    res.json({
+      snapshot: snapshot
+        ? await runRedactions.redactForRun(issue.companyId, snapshot.runId, snapshot)
+        : null,
+    });
   });
 
   router.get("/heartbeat-runs/:runId/issues", async (req, res) => {

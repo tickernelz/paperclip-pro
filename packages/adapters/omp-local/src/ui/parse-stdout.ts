@@ -363,6 +363,7 @@ function parseOmpEvent(
     if (type === "tool_execution_end") {
       const toolUseId = asString(parsed.toolCallId);
       if (!toolUseId) return raw();
+      const details = asRecord(parsed.result)?.details;
       return [{
         kind: "tool_result",
         ts,
@@ -370,6 +371,7 @@ function parseOmpEvent(
         toolName: asString(parsed.toolName, "tool"),
         content: parsed.result === undefined ? "" : extractToolResult(parsed.result),
         isError: parsed.isError === true,
+        ...(details === undefined ? {} : { details }),
       }];
     }
 

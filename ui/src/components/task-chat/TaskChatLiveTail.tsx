@@ -6,6 +6,7 @@ import { TaskChatUsageReadout } from "./TaskChatUsageReadout";
 import { TaskChatRunnerActivityGroup, newestActivityIds } from "./TaskChatRunnerActivityGroup";
 import { TaskChatThinking } from "./TaskChatThinking";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
+import { TaskChatTodoRow } from "./TaskChatTodoRow";
 import type { TaskChatActivityPhaseItem } from "./task-chat-model";
 import { buildTurnTimelineRows } from "./transcript-adapter";
 
@@ -101,6 +102,8 @@ function renderTailRow(
           openActivityIds={openActivityIds}
         />
       );
+    case "todo":
+      return <TaskChatTodoRow key={item.id} item={item} />;
     case "protocol":
       return <TaskChatProtocolCard key={item.id} item={item} onRuntimeRequestDecision={onRuntimeRequestDecision} />;
     // Markers, interactions, briefs, statuses, turns, and dropped debug kinds

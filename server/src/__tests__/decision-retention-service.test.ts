@@ -1,5 +1,7 @@
 import { randomUUID } from "node:crypto";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
+import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
 import {
   activityLog,
   agents,
@@ -89,6 +91,51 @@ describePg("decision retention", () => {
     agentApiKeyId: null,
     responsibleUserId: "board-user",
   };
+
+  it("syncs retention rows in one batch: inserts new, bumps changed, leaves unchanged rows untouched", async () => {
+    const { companyId } = await seedReviewItems(1);
+    const stamp = new Date("2026-07-01T00:00:00.000Z");
+    const sameAt = new Date("2026-07-10T10:00:00.123Z");
+    const oldAt = new Date("2026-07-05T10:00:00.000Z");
+    const changedAt = new Date("2026-07-20T10:00:00.000Z");
+    const insertedAt = new Date("2026-07-21T10:00:00.000Z");
+    const ids = { same: randomUUID(), changed: randomUUID(), inserted: randomUUID(), micro: randomUUID(), otherKind: randomUUID() };
+    await db.insert(decisionRetention).values([
+      { companyId, sourceKind: "review", sourceId: ids.same, sourceActivityAt: sameAt, version: 3, updatedAt: stamp },
+      { companyId, sourceKind: "review", sourceId: ids.changed, sourceActivityAt: oldAt, version: 1, updatedAt: stamp },
+      { companyId, sourceKind: "review", sourceId: ids.micro, sourceActivityAt: sameAt, version: 2, updatedAt: stamp },
+      { companyId, sourceKind: "approval", sourceId: ids.otherKind, sourceActivityAt: oldAt, version: 4, updatedAt: stamp },
+    ]);
+    await db.execute(sql`update decision_retention set source_activity_at = source_activity_at + interval '456 microseconds' where source_id = ${ids.micro}`);
+    const item = (sourceId: string, activityAt: Date) => ({
+      sourceKind: "review",
+      subject: { id: sourceId },
+      activityAt: activityAt.toISOString(),
+    }) as unknown as AttentionItem;
+
+    const result = await decisionRetentionService(db).syncItems(companyId, [
+      item(ids.same, sameAt),
+      item(ids.changed, changedAt),
+      item(ids.changed, changedAt),
+      item(ids.inserted, insertedAt),
+      item(ids.micro, sameAt),
+      item(ids.otherKind, changedAt),
+    ]);
+
+    const rows = new Map((await db.select().from(decisionRetention).where(eq(decisionRetention.companyId, companyId)))
+      .map((row) => [`${row.sourceKind}:${row.sourceId}`, row]));
+    expect(rows.get(`review:${ids.same}`)).toMatchObject({ version: 3, sourceActivityAt: sameAt, updatedAt: stamp });
+    expect(rows.get(`review:${ids.micro}`)).toMatchObject({ version: 2, updatedAt: stamp });
+    expect(rows.get(`review:${ids.changed}`)).toMatchObject({ version: 2, sourceActivityAt: changedAt });
+    expect(rows.get(`review:${ids.changed}`)!.updatedAt.getTime()).toBeGreaterThan(stamp.getTime());
+    expect(rows.get(`review:${ids.inserted}`)).toMatchObject({ version: 1, sourceActivityAt: insertedAt, keep: false, archivedAt: null });
+    expect(rows.get(`approval:${ids.otherKind}`)).toMatchObject({ version: 4, sourceActivityAt: oldAt, updatedAt: stamp });
+    expect(rows.get(`review:${ids.otherKind}`)).toMatchObject({ version: 1, sourceActivityAt: changedAt });
+    expect([...result.keys()].sort()).toEqual(
+      [ids.same, ids.changed, ids.inserted, ids.micro, ids.otherKind].map((id) => `review:${id}`).sort(),
+    );
+    expect(result.get(`review:${ids.changed}`)).toMatchObject({ version: 2, sourceActivityAt: changedAt });
+  });
 
   it("auto-archives, excludes by default, returns archived rows, and revives", async () => {
     const { companyId, issueIds } = await seedReviewItems(1);

@@ -25,6 +25,7 @@ import {
   FolderOpen,
   Lightbulb,
   ListChecks,
+  ListTodo,
   ListTree,
   Plus,
   SlidersHorizontal,
@@ -69,6 +70,7 @@ import {
 import { useIssueDocuments } from "@/hooks/useIssueDocuments";
 import type { IssueExternalObjectGroup } from "@/hooks/useIssueExternalObjects";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
+import { useIssueAgentTodo } from "@/hooks/useIssueAgentTodo";
 import { documentDisplayTitle } from "@/lib/issue-artifacts";
 import { queryKeys } from "@/lib/queryKeys";
 import { useLocation, useNavigate } from "@/lib/router";
@@ -76,6 +78,7 @@ import {
   readTaskSidePanelState,
   taskPanelBrowserTab,
   taskPanelAgentTasksTab,
+  taskPanelAgentTodoTab,
   taskPanelArtifactsTab,
   taskPanelAttachmentTab,
   taskPanelDocumentTab,
@@ -89,6 +92,7 @@ import {
   type TaskSidePanelTabPayload,
 } from "@/lib/task-side-panel-state";
 import { cn } from "@/lib/utils";
+import { TaskAgentTodoPanel } from "./TaskAgentTodoPanel";
 import { TaskDocumentPanel } from "./TaskDocumentPanel";
 import { TaskWorkspaceFilePanel } from "./TaskWorkspaceFilePanel";
 import { TaskSkillPanel } from "./TaskSkillPanel";
@@ -124,6 +128,8 @@ export interface TaskSidePanelProps {
   tasksTab?: { count: number; content: ReactNode; hasError?: boolean };
   onAttachmentOpened?: () => void;
   openAttachment?: { id: string; title: string; requestId: number } | null;
+  openAgentTodoRequestId?: number | null;
+  onAgentTodoOpened?: () => void;
   openSkillId?: string | null;
   openSkillName?: string | null;
   onSkillOpened?: (skillId: string) => void;
@@ -138,6 +144,7 @@ function tabIcon(tab: SidePanelTabRecord<TaskSidePanelTabPayload>): ReactNode {
     case "subtasks": return <ListTree />;
     case "artifacts": return <Box />;
     case "agent-tasks": return <ListChecks />;
+    case "todo": return <ListTodo />;
     case "attachment": return <FileText />;
     case "files-browser": return <FolderOpen />;
     case "workspace-file": return <FileCode2 />;
@@ -268,6 +275,8 @@ export function TaskSidePanel({
   tasksTab,
   openAttachment,
   onAttachmentOpened,
+  openAgentTodoRequestId,
+  onAgentTodoOpened,
   openSkillId,
   openSkillName,
   onSkillOpened,
@@ -283,6 +292,7 @@ export function TaskSidePanel({
   const { data: documentsData } = useIssueDocuments(issue.id);
   const documents = documentsData ?? EMPTY_ISSUE_DOCUMENTS;
   const { data: planDocument } = useIssuePlanDocument(issue.id);
+  const { data: agentTodo } = useIssueAgentTodo(issue.id);
   const restoredRef = useRef(
     readTaskSidePanelState(accountScope, issue.companyId, issue.id, fileTabsEnabled),
   );
@@ -476,6 +486,15 @@ export function TaskSidePanel({
     onAttachmentOpened?.();
   }, [controller.openTab, openAttachment, onAttachmentOpened]);
 
+  useEffect(() => {
+    if (!openAgentTodoRequestId) return;
+    userInteractedRef.current = true;
+    setLauncherOpen(false);
+    controller.openTab(taskPanelAgentTodoTab());
+    if (viewer.state || viewer.browse) viewer.close();
+    onAgentTodoOpened?.();
+  }, [controller.openTab, openAgentTodoRequestId, onAgentTodoOpened]);
+
   const boardAccessQuery = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -593,6 +612,9 @@ export function TaskSidePanel({
       ...(subtasksAvailable ? [{ id: "subtasks", label: taskLabel, description: tasksTab?.hasError ? "Could not load all tasks" : `${taskCount} total`, icon: <ListTree />, alreadyOpen: controller.tabs.some((tab) => tab.id === "subtasks") }] : []),
       { id: "artifacts", label: "Artifacts", icon: <Box />, alreadyOpen: controller.tabs.some((tab) => tab.id === "artifacts") },
     ];
+    if (agentTodo) {
+      primary.push({ id: "todo", label: "Todo", description: `${agentTodo.counts.completed}/${agentTodo.counts.total} done`, icon: <ListTodo />, alreadyOpen: controller.tabs.some((tab) => tab.id === "todo") });
+    }
     for (const [index, browser] of (browsersQuery.data ?? []).entries()) {
       primary.push({ id: `browser:${browser.id}`, label: (browsersQuery.data?.length ?? 0) > 1 ? `Browser ${index + 1}` : "Browser", description: browser.status, icon: <Globe />, alreadyOpen: controller.tabs.some(tab => tab.id === `browser:${browser.id}`) });
     }
@@ -646,7 +668,7 @@ export function TaskSidePanel({
       });
     }
     return sections;
-  }, [browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable, terminalAllowed]);
+  }, [agentTodo, browsersQuery.data, conversationAgentId, taskCount, taskLabel, tasksTab?.hasError, controller.tabs, documents, fileTabsEnabled, planDocument, recentFilesQuery.data, recentFilesQuery.isError, recentFilesQuery.isLoading, subtasksAvailable, terminalAllowed]);
 
   function selectLauncherItem(item: SidePanelLauncherItem) {
     markInteracted();
@@ -661,6 +683,7 @@ export function TaskSidePanel({
     }
     else if (item.id === "artifacts") controller.openTab(taskPanelArtifactsTab());
     else if (item.id === "agent-tasks") controller.openTab(taskPanelAgentTasksTab());
+    else if (item.id === "todo") controller.openTab(taskPanelAgentTodoTab());
     else if (item.id === "terminal") controller.openTab(taskPanelTerminalTab());
     else if (item.id === "files") {
       controller.openTab(taskPanelFilesTab());
@@ -765,6 +788,8 @@ export function TaskSidePanel({
         issueLinkState={issueLinkState}
       />
     );
+  } else if (activeTab.payload.kind === "todo") {
+    content = <TaskAgentTodoPanel issueId={issue.id} />;
   } else if (activeTab.payload.kind === "agent-tasks") {
     content = conversationAgentId ? (
       <AgentTasksPanel companyId={issue.companyId} agentId={conversationAgentId} excludeIssueId={issue.id} />

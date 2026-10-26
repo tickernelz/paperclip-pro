@@ -139,6 +139,7 @@ import {
 } from "@/lib/issue-artifacts";
 import { heartbeatsApi, type RuntimeRequestResolution } from "@/api/heartbeats";
 import { issuesApi } from "@/api/issues";
+import { AgentTodoCard } from "@/components/AgentTodoCard";
 import { queryKeys } from "@/lib/queryKeys";
 import { useQueryClient } from "@tanstack/react-query";
 import { TaskChatPresentationProvider } from "@/components/task-chat/presentation-mode";
@@ -3027,6 +3028,14 @@ export function TaskChatThread(props: TaskChatThreadProps) {
             )}
             data-testid="task-chat-thread"
           >
+            <AgentTodoCard
+              issueId={issueId}
+              frameClassName={cn(
+                "mx-auto w-full max-w-(--tc-shell-max-w) shrink-0 px-4",
+                isMobile ? "pt-4" : "pt-3",
+                streamlinedUiEnabled && "md:px-0",
+              )}
+            />
             <div
               className={cn(
                 "relative flex flex-col",

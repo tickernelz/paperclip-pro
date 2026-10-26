@@ -198,7 +198,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@activity.ts:338",
+    "boardGuard": "assertBoard@activity.ts:341",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18832,6 +18832,41 @@
     ]
   },
   {
+    "name": "paperclipGetAttentionCount",
+    "operationId": "GET /api/companies/{companyId}/attention/count",
+    "method": "GET",
+    "path": "/companies/{companyId}/attention/count",
+    "description": "Count the Decisions sidebar badge without returning the feed. Returns count (the feed's deskBadgeCount), updatedAt, countsBySourceKind over the full ranked feed, and errorAgentIds for agents with an open agent_error_alert, so clients can tell which live events change the badge.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "inbox"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@attention.ts:66",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetBudgetOverview",
     "operationId": "GET /api/companies/{companyId}/budgets/overview",
     "method": "GET",
@@ -21607,6 +21642,40 @@
         "required": false,
         "schema": {
           "type": "integer"
+        }
+      }
+    ]
+  },
+  {
+    "name": "paperclipGetIssueAgentTodo",
+    "operationId": "GET /api/issues/{issueId}/agent-todo",
+    "method": "GET",
+    "path": "/issues/{issueId}/agent-todo",
+    "description": "Get the latest agent todo snapshot for an issue",
+    "toolset": "extended",
+    "authority": "agent",
+    "authoritySource": "default",
+    "tags": [
+      "activity"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertIssueReadAllowed"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "issueId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
         }
       }
     ]

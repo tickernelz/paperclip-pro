@@ -60,6 +60,17 @@ export function attentionRoutes(db: Db) {
     res.json(feed);
   });
 
+  router.get("/companies/:companyId/attention/count", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertCompanyAccess(req, companyId);
+    assertBoard(req);
+    if (!req.actor.userId) {
+      res.status(403).json({ error: "Board user context required" });
+      return;
+    }
+    res.json(await svc.count(companyId, { userId: req.actor.userId, actor: req.actor }));
+  });
+
   router.get("/companies/:companyId/pending-decisions", async (req, res) => {
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);

@@ -17,6 +17,7 @@ import {
 } from "./TaskChatRunnerActivityGroup";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
 import { TaskChatPlanPreviewCard } from "./TaskChatPlanPreviewCard";
+import { TaskChatTodoRow } from "./TaskChatTodoRow";
 import {
   buildTurnTimelineRows,
   isTerminalRunStatus,
@@ -282,6 +283,8 @@ export function TaskChatRunnerTurn({
                       : "task-chat-plan-preview"
                   }
                 />
+              ) : row.kind === "todo" ? (
+                <TaskChatTodoRow item={row} />
               ) : row.kind === "protocol" ? (
                 <TaskChatProtocolCard
                   item={row}

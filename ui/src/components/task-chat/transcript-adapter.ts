@@ -28,6 +28,11 @@ import {
   toolActivityPresentation,
   toolTaxonomy,
 } from "./tool-taxonomy";
+import {
+  applyTodoResult,
+  isAgentTodoCall,
+  todoItemFromCall,
+} from "./task-chat-todo";
 
 const TERMINAL_STATUSES = new Set([
   "failed",
@@ -106,6 +111,7 @@ export function isNestableLiveChild(
     item.kind === "usage" ||
     item.kind === "activity_phase" ||
     item.kind === "plan_document" ||
+    item.kind === "todo" ||
     item.kind === "protocol"
   );
 }
@@ -803,7 +809,9 @@ export function transcriptToTaskChatItems(
         const existingIndex = toolIndexById.get(toolCallId);
         const existing =
           existingIndex != null ? items[existingIndex] : undefined;
-        if (existing?.kind === "tool") {
+        if (existing?.kind === "todo") {
+          lastToolIndex = existingIndex!;
+        } else if (existing?.kind === "tool") {
           // tool_call_update for a call already in the list: merge. Updates
           // often omit the title (acpx fills in a literal "tool call"), so a
           // generic name must never displace the initial call's real one. ACP
@@ -818,6 +826,12 @@ export function transcriptToTaskChatItems(
             }
           }
           lastToolIndex = existingIndex!;
+        } else if (isAgentTodoCall(entry.name, entry.input)) {
+          items.push(
+            todoItemFromCall(`${runId}:todo:${toolCallId}`, entry.input),
+          );
+          toolIndexById.set(toolCallId, items.length - 1);
+          lastToolIndex = items.length - 1;
         } else {
           const dispatchedTool = xdDeviceToolName(entry.name, entry.input);
           const callName = dispatchedTool ?? entry.name;
@@ -842,7 +856,9 @@ export function transcriptToTaskChatItems(
         const idx = toolIndexById.get(toolCallId);
         if (idx != null) {
           const existing = items[idx];
-          if (existing.kind === "tool") {
+          if (existing.kind === "todo") {
+            applyTodoResult(existing, entry);
+          } else if (existing.kind === "tool") {
             existing.status = entry.delta
               ? "in_progress"
               : entry.isError
@@ -1302,6 +1318,7 @@ export function paperclipRunnerActivityItems(
           item.surface === "resource"
         );
       case "usage":
+      case "todo":
         return true;
       case "status":
       case "activity_phase":
@@ -1834,7 +1851,7 @@ export function buildTurnTimelineRows(
       current = null;
       rows.push(item);
       opening = item.id;
-    } else if (item.kind === "plan_document") {
+    } else if (item.kind === "plan_document" || item.kind === "todo") {
       current = null;
       rows.push(item);
       opening = item.id;

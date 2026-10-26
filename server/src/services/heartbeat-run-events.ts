@@ -1,6 +1,11 @@
-import { and, asc, eq, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, or, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { heartbeatRunEvents, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import {
+  AGENT_TODO_EVENT_TYPE,
+  parseAgentTodoPayload,
+  type AgentTodoSnapshot,
+} from "@tickernelz/paperclip-pro-shared";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 
 export interface AppendHeartbeatRunEventInput {
@@ -192,4 +197,45 @@ async function contiguousCursor(db: Db, runId: string, sourceInstanceId: string)
     else if (row.sourceSeq !== null && row.sourceSeq > cursor + 1) break;
   }
   return cursor;
+}
+
+const AGENT_TODO_EVENT_TYPE_LITERAL = sql.raw(`'${AGENT_TODO_EVENT_TYPE}'`);
+
+/** Latest agent todo snapshot across every run bound to the issue, or null. */
+export async function getLatestAgentTodoSnapshot(
+  db: Db,
+  input: { companyId: string; issueId: string },
+): Promise<AgentTodoSnapshot | null> {
+  const row = await db
+    .select({
+      runId: heartbeatRunEvents.runId,
+      agentId: heartbeatRunEvents.agentId,
+      seq: heartbeatRunEvents.seq,
+      payload: heartbeatRunEvents.payload,
+      createdAt: heartbeatRunEvents.createdAt,
+      runStatus: heartbeatRuns.status,
+    })
+    .from(heartbeatRuns)
+    .innerJoin(heartbeatRunEvents, eq(heartbeatRunEvents.runId, heartbeatRuns.id))
+    .where(and(
+      eq(heartbeatRuns.companyId, input.companyId),
+      eq(heartbeatRuns.issueId, input.issueId),
+      eq(heartbeatRunEvents.companyId, input.companyId),
+      sql`${heartbeatRunEvents.eventType} = ${AGENT_TODO_EVENT_TYPE_LITERAL}`,
+    ))
+    .orderBy(desc(heartbeatRunEvents.id))
+    .limit(1)
+    .then((rows) => rows[0] ?? null);
+  if (!row) return null;
+  const payload = parseAgentTodoPayload(row.payload);
+  if (!payload) return null;
+  return {
+    ...payload,
+    runId: row.runId,
+    agentId: row.agentId,
+    issueId: input.issueId,
+    seq: row.seq,
+    createdAt: row.createdAt.toISOString(),
+    runStatus: row.runStatus,
+  };
 }

@@ -2,6 +2,7 @@ import { WorkspaceBaseRefRecoveryProvider } from "../components/WorkspaceBaseRef
 import { isLockedIssueStub, LockedIssueChip } from "@/components/LockedIssueChip";
 import { canManageIssuePrivacy } from "../lib/issuePrivacy";
 import { TextAttachmentContext } from "../context/TextAttachmentContext";
+import { AgentTodoPanelContext } from "../context/AgentTodoPanelContext";
 import { PurgedAttachmentsContext } from "../context/PurgedAttachmentsContext";
 import { purgedContentPaths } from "../lib/purged-attachment";
 import { useTaskBrowsers, useBrowserArrivals } from "@/hooks/useTaskBrowsers";
@@ -248,6 +249,7 @@ import { IssueGalleryContext } from "../context/IssueGalleryContext";
 import { useIssuePlanDocument } from "../hooks/useIssuePlanDocument";
 import { useTaskArtifactArrival } from "../hooks/useTaskArtifactArrival";
 import { IssueRunLedger } from "../components/IssueRunLedger";
+import { AgentTodoCard } from "../components/AgentTodoCard";
 import { IssueWorkspaceCard } from "../components/IssueWorkspaceCard";
 import type { MentionOption } from "../components/MarkdownEditor";
 import {
@@ -2462,6 +2464,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     >
       {/* Chat-style: the button rides inside the thread's scroll viewport with
           the header so nothing sits above the thread in the page flow. */}
+      {classicTaskInterfaceEnabled ? <AgentTodoCard issueId={issueId} /> : null}
       {classicTaskInterfaceEnabled ? loadOlderButton : null}
       {classicTaskInterfaceEnabled &&
       commentsInitialLoading &&
@@ -3082,6 +3085,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     handled?: boolean;
   } | null>(null);
   const [openAttachment, setOpenAttachment] = useState<{ issueId: string; id: string; title: string; requestId: number } | null>(null);
+  const [agentTodoOpenRequest, setAgentTodoOpenRequest] = useState<{ issueId: string; requestId: number } | null>(null);
   const [openSkill, setOpenSkill] = useState<{ id: string; name: string } | null>(null);
   const handleSkillOpened = useCallback((skillId: string) => {
     setOpenSkill((current) => current?.id === skillId ? null : current);
@@ -3813,6 +3817,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const handleOpenTextAttachment = useCallback((id: string, title: string) => {
     if (!issue?.id) return;
     setOpenAttachment({ issueId: issue.id, id, title, requestId: Date.now() });
+    openTaskSidePanel();
+    if (isMobile) setMobilePropsOpen(true);
+  }, [issue?.id, openTaskSidePanel, isMobile]);
+  const handleAgentTodoOpened = useCallback(() => setAgentTodoOpenRequest(null), []);
+  const handleOpenAgentTodo = useCallback(() => {
+    if (!issue?.id) return;
+    setAgentTodoOpenRequest({ issueId: issue.id, requestId: Date.now() });
     openTaskSidePanel();
     if (isMobile) setMobilePropsOpen(true);
   }, [issue?.id, openTaskSidePanel, isMobile]);
@@ -5962,6 +5973,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             artifactsOpenRequestId={!isMobile && !artifactsOpenRequest?.handled && artifactsOpenRequest?.issueId === panelIssue.id
               ? artifactsOpenRequest.requestId : undefined}
             onArtifactsOpened={handleArtifactsOpened}
+            openAgentTodoRequestId={!isMobile && agentTodoOpenRequest?.issueId === panelIssue.id ? agentTodoOpenRequest.requestId : null}
+            onAgentTodoOpened={handleAgentTodoOpened}
           />
         </IssueGalleryContext.Provider>,
         { contentMode: "full-bleed" },
@@ -6007,6 +6020,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     resolvedTasksTab,
     artifactsOpenRequest,
     handleArtifactsOpened,
+    agentTodoOpenRequest,
+    handleAgentTodoOpened,
     isMobile,
   ]);
 
@@ -7740,7 +7755,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
   return (
     <FileViewerProvider issueId={conversation && !conversation.issue ? "" : issue.id} enabled={fileViewerEnabled}>
-      <TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}><PurgedAttachmentsContext.Provider value={purgedAttachmentPaths}>
+      <AgentTodoPanelContext.Provider value={taskChatShellEnabled ? handleOpenAgentTodo : null}><TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}><PurgedAttachmentsContext.Provider value={purgedAttachmentPaths}>
         <div
           data-task-chat-shell={taskChatShellEnabled ? "" : undefined}
           className={
@@ -8557,6 +8572,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     onArtifactsOpened={handleArtifactsOpened}
                     onAttachmentOpened={handleAttachmentOpened}
                     openAttachment={openAttachment?.issueId === issue.id ? openAttachment : null}
+                    openAgentTodoRequestId={agentTodoOpenRequest?.issueId === issue.id ? agentTodoOpenRequest.requestId : null}
+                    onAgentTodoOpened={handleAgentTodoOpened}
                     openSkillId={openSkill?.id ?? null}
                     openSkillName={openSkill?.name ?? null}
                     onSkillOpened={handleSkillOpened}
@@ -8636,7 +8653,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           ) : null}
           <ScrollToBottom />
         </div>
-      </PurgedAttachmentsContext.Provider></IssueGalleryContext.Provider></TextAttachmentContext.Provider>
+      </PurgedAttachmentsContext.Provider></IssueGalleryContext.Provider></TextAttachmentContext.Provider></AgentTodoPanelContext.Provider>
     </FileViewerProvider>
   );
 }

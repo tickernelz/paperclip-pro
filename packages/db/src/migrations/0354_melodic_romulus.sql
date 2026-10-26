@@ -1,0 +1,4 @@
+-- paperclip:migration-safety-ignore large-create-index-not-concurrently: Drizzle migrations are transactional, so CONCURRENTLY is unavailable. The partial predicate matches a single production row; the table scan it needs measured 79 ms over 477k production events.
+CREATE INDEX "heartbeat_run_events_fallback_exhausted_run_idx" ON "heartbeat_run_events" USING btree ("company_id","run_id","id") WHERE "heartbeat_run_events"."event_type" = 'model.fallback_exhausted';--> statement-breakpoint
+-- paperclip:migration-safety-ignore large-create-index-not-concurrently: Drizzle migrations are transactional, so CONCURRENTLY is unavailable. The partial predicate matches no production rows yet; the table scan it needs measured 43 ms over 477k production events.
+CREATE INDEX "heartbeat_run_events_agent_todo_run_idx" ON "heartbeat_run_events" USING btree ("run_id","id") WHERE "heartbeat_run_events"."event_type" = 'agent.todo';

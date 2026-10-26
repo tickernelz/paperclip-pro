@@ -14,6 +14,7 @@ const mockHeartbeatsApi = vi.hoisted(() => ({
 
 const mockAttentionApi = vi.hoisted(() => ({
   list: vi.fn(),
+  count: vi.fn(),
 }));
 
 const mockInstanceSettingsApi = vi.hoisted(() => ({
@@ -159,6 +160,7 @@ describe("Sidebar", () => {
     document.body.appendChild(container);
     mockHeartbeatsApi.liveRunsForCompany.mockResolvedValue([]);
     mockAttentionApi.list.mockResolvedValue({ items: [] });
+    mockAttentionApi.count.mockResolvedValue({ count: 0, updatedAt: "2026-10-26T00:00:00.000Z" });
     mockSidebar.isMobile = false;
     mockSidebar.collapsed = false;
     mockSidebar.collapseLocked = false;
@@ -480,6 +482,24 @@ describe("Sidebar", () => {
     const root = await renderSidebar();
 
     expect(mockAttentionApi.list).not.toHaveBeenCalled();
+    expect(mockAttentionApi.count).not.toHaveBeenCalled();
+
+    flushSync(() => {
+      root.unmount();
+    });
+  });
+
+  it("reads the Decisions badge from the count endpoint without fetching the feed", async () => {
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableDecisions: true });
+    mockAttentionApi.count.mockResolvedValue({ count: 7, updatedAt: "2026-10-26T00:00:00.000Z" });
+    const root = await renderSidebar();
+
+    const decisionsLink = [...container.querySelectorAll("nav a")].find(
+      (anchor) => anchor.textContent?.includes("Decisions"),
+    );
+    expect(mockAttentionApi.count).toHaveBeenCalledTimes(1);
+    expect(mockAttentionApi.list).not.toHaveBeenCalled();
+    expect(decisionsLink?.textContent).toContain("7");
 
     flushSync(() => {
       root.unmount();

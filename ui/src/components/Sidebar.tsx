@@ -41,7 +41,6 @@ import { attentionApi } from "../api/attention";
 import { heartbeatsApi } from "../api/heartbeats";
 import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
-import { attentionBadgeCount } from "../lib/attention";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
@@ -113,13 +112,13 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   // item is hidden entirely until the flag is enabled (same no-flash pattern as
   // showWorkspacesLink — it defaults hidden, so no placeholder is needed).
   const showDecisions = experimentalSettings?.enableDecisions === true;
-  const { data: attentionFeed } = useQuery({
-    queryKey: queryKeys.attention(selectedCompanyId!),
-    queryFn: () => attentionApi.list(selectedCompanyId!),
+  const { data: attentionBadge } = useQuery({
+    queryKey: queryKeys.attentionCount(selectedCompanyId!),
+    queryFn: () => attentionApi.count(selectedCompanyId!),
     enabled: !!selectedCompanyId && showDecisions,
     refetchInterval: 60_000,
   });
-  const attentionCount = attentionBadgeCount(attentionFeed);
+  const attentionCount = attentionBadge?.count ?? 0;
   const showCases = experimentalSettings?.enableCases === true;
   // Conference Room Chat flag (PAP-136/PAP-137): the Conference Room nav item
   // is a new surface, hidden entirely while the flag is off (same no-flash

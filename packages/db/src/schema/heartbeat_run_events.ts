@@ -49,5 +49,11 @@ export const heartbeatRunEvents = pgTable(
     retryExhaustedRunIdx: index("heartbeat_run_events_retry_exhausted_run_idx")
       .on(table.runId, table.id)
       .where(sql`${table.eventType} = 'lifecycle' and ${table.message} like 'Bounded retry exhausted%'`),
+    fallbackExhaustedRunIdx: index("heartbeat_run_events_fallback_exhausted_run_idx")
+      .on(table.companyId, table.runId, table.id)
+      .where(sql`${table.eventType} = 'model.fallback_exhausted'`),
+    agentTodoRunIdx: index("heartbeat_run_events_agent_todo_run_idx")
+      .on(table.runId, table.id)
+      .where(sql`${table.eventType} = 'agent.todo'`),
   }),
 );

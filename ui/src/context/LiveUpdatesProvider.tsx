@@ -33,6 +33,7 @@ import type {
   LiveEvent,
 } from "@tickernelz/paperclip-pro-shared";
 import type { RunForIssue } from "../api/activity";
+import type { AttentionBadgeCount } from "../api/attention";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import type { CompanyUserDirectoryResponse } from "../api/access";
 import { issuesApi } from "../api/issues";
@@ -56,6 +57,7 @@ import {
   refreshInvalidatedLiveLists,
 } from "../lib/live-issue-list-cache";
 import { applyIssueRefActivity } from "../lib/issueRefStatus";
+import { applyAgentTodoLiveEvent } from "../lib/agent-todo-live";
 import { extractCompanyPrefixFromPath, toCompanyRelativePath } from "../lib/company-routes";
 import { useLocation } from "../lib/router";
 import { agentRouteRef } from "../lib/utils";
@@ -1394,11 +1396,16 @@ function activityChangesAttention(
 function cachedAttentionIncludes(
   queryClient: QueryClient,
   companyId: string,
-  matches: (item: AttentionItem) => boolean,
+  feedMatches: (item: AttentionItem) => boolean,
+  countMatches: (count: AttentionBadgeCount) => boolean,
 ): boolean {
   return queryClient
-    .getQueriesData<AttentionFeed>({ queryKey: queryKeys.attention(companyId) })
-    .some(([, feed]) => Array.isArray(feed?.items) && feed.items.some(matches));
+    .getQueriesData<AttentionFeed | AttentionBadgeCount>({ queryKey: queryKeys.attention(companyId) })
+    .some(([, data]) => {
+      if (!data) return false;
+      if ("items" in data) return Array.isArray(data.items) && data.items.some(feedMatches);
+      return "count" in data && countMatches(data);
+    });
 }
 
 function invalidateAttentionQueries(queryClient: QueryClient, companyId: string) {
@@ -1875,6 +1882,7 @@ function handleLiveEvent(
       payload,
     );
     invalidateHeartbeatQueries(queryClient, expectedCompanyId, payload);
+    applyAgentTodoLiveEvent(queryClient, event);
     if (!liveRunsPatched) {
       // A new run we couldn't reconstruct from the event — refetch once to add it.
       queryClient.invalidateQueries({
@@ -1886,7 +1894,12 @@ function handleLiveEvent(
       (event.type === "heartbeat.run.status" &&
         ATTENTION_FAILED_RUN_STATUSES.has(readString(payload.status) ?? "")) ||
       (event.type === "heartbeat.run.queued" &&
-        cachedAttentionIncludes(queryClient, expectedCompanyId, (item) => item.sourceKind === "failed_run"))
+        cachedAttentionIncludes(
+          queryClient,
+          expectedCompanyId,
+          (item) => item.sourceKind === "failed_run",
+          (count) => (count.countsBySourceKind?.failed_run ?? 0) > 0,
+        ))
     ) {
       invalidateAttentionQueries(queryClient, expectedCompanyId);
     }
@@ -1908,6 +1921,7 @@ function handleLiveEvent(
   }
 
   if (event.type === "heartbeat.run.event") {
+    applyAgentTodoLiveEvent(queryClient, event);
     return;
   }
 
@@ -1933,6 +1947,7 @@ function handleLiveEvent(
           queryClient,
           expectedCompanyId,
           (item) => item.sourceKind === "agent_error_alert" && item.subject?.id === agentId,
+          (count) => count.errorAgentIds?.includes(agentId) === true,
         ))
     ) {
       invalidateAttentionQueries(queryClient, expectedCompanyId);

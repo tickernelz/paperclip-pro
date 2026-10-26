@@ -1993,7 +1993,7 @@ describe("LiveUpdatesProvider queued comment refresh", () => {
 
 describe("LiveUpdatesProvider Decisions badge invalidation", () => {
   const companyId = "company-1";
-  const badgeKey = queryKeys.attention(companyId);
+  const badgeKey = queryKeys.attentionCount(companyId);
   const pageKey = [...queryKeys.attention(companyId), "with-dismissed", null, null];
   const expiredKey = queryKeys.decisions.list(companyId, "expired");
 
@@ -2001,11 +2001,26 @@ describe("LiveUpdatesProvider Decisions badge invalidation", () => {
     return { companyId, generatedAt: "2026-10-09T00:00:00.000Z", totalCount: items.length, deskBadgeCount: 2, nextCursor: null, items };
   }
 
+  function badge(input: { failedRuns?: number; errorAgentIds?: string[] } = {}) {
+    return {
+      count: 2,
+      updatedAt: "2026-10-09T00:00:00.000Z",
+      countsBySourceKind: { failed_run: input.failedRuns ?? 0, agent_error_alert: input.errorAgentIds?.length ?? 0 },
+      errorAgentIds: input.errorAgentIds ?? [],
+    };
+  }
+
   function seed(items: Array<Record<string, unknown>> = []) {
     const client = new QueryClient();
-    client.setQueryData(badgeKey, feed(items));
+    client.setQueryData(badgeKey, badge());
     client.setQueryData(pageKey, feed(items));
     client.setQueryData(expiredKey, []);
+    return client;
+  }
+
+  function seedBadgeOnly(input: { failedRuns?: number; errorAgentIds?: string[] }) {
+    const client = new QueryClient();
+    client.setQueryData(badgeKey, badge(input));
     return client;
   }
 
@@ -2049,14 +2064,14 @@ describe("LiveUpdatesProvider Decisions badge invalidation", () => {
   it("updates a mounted badge count without a reload when an agent resolves the decision", async () => {
     const client = new QueryClient();
     const counts = [2, 1];
-    const queryFn = vi.fn(async () => ({ ...feed(), deskBadgeCount: counts.shift() ?? 1 }));
+    const queryFn = vi.fn(async () => ({ ...badge(), count: counts.shift() ?? 1 }));
     const observer = new QueryObserver(client, { queryKey: badgeKey, queryFn, staleTime: Infinity });
     const unsubscribe = observer.subscribe(() => {});
-    await vi.waitFor(() => expect(observer.getCurrentResult().data?.deskBadgeCount).toBe(2));
+    await vi.waitFor(() => expect(observer.getCurrentResult().data?.count).toBe(2));
 
     dispatch(client, "activity.logged", { entityType: "issue", entityId: "issue-1", action: "issue.thread_interaction_cancelled", actorType: "agent", actorId: "agent-1" });
 
-    await vi.waitFor(() => expect(observer.getCurrentResult().data?.deskBadgeCount).toBe(1));
+    await vi.waitFor(() => expect(observer.getCurrentResult().data?.count).toBe(1));
     expect(queryFn).toHaveBeenCalledTimes(2);
     unsubscribe();
     client.clear();
@@ -2092,6 +2107,30 @@ describe("LiveUpdatesProvider Decisions badge invalidation", () => {
     dispatch(unrelated, "agent.status", { agentId: "agent-2", status: "running" });
     expect(stale(unrelated, badgeKey)).toBe(false);
     unrelated.clear();
+  });
+
+  it("refreshes a badge-only cache when the errored agent behind it recovers", () => {
+    const recovering = seedBadgeOnly({ errorAgentIds: ["agent-1"] });
+    dispatch(recovering, "agent.status", { agentId: "agent-1", status: "idle" });
+    expect(stale(recovering, badgeKey)).toBe(true);
+    recovering.clear();
+
+    const other = seedBadgeOnly({ errorAgentIds: ["agent-1"] });
+    dispatch(other, "agent.status", { agentId: "agent-2", status: "idle" });
+    expect(stale(other, badgeKey)).toBe(false);
+    other.clear();
+  });
+
+  it("refreshes a badge-only cache when a newer run supersedes a failed run", () => {
+    const superseding = seedBadgeOnly({ failedRuns: 1 });
+    dispatch(superseding, "heartbeat.run.queued", { runId: "run-2", agentId: "agent-1", status: "queued" });
+    expect(stale(superseding, badgeKey)).toBe(true);
+    superseding.clear();
+
+    const clean = seedBadgeOnly({ failedRuns: 0 });
+    dispatch(clean, "heartbeat.run.queued", { runId: "run-3", agentId: "agent-1", status: "queued" });
+    expect(stale(clean, badgeKey)).toBe(false);
+    clean.clear();
   });
 
   it("refreshes the badge when a run fails or a newer run supersedes a failed-run card", () => {

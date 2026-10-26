@@ -34,6 +34,7 @@ import {
   saveAttentionSortOrder,
   saveCollapsedAttentionGroupKeys,
   sortAttentionItems,
+  ATTENTION_FEED_STALE_MS,
   type AttentionDateRangeId,
   type AttentionFilterState,
   type AttentionGroup,
@@ -155,9 +156,6 @@ export function WhatNeedsMe() {
     isLoading,
     error,
   } = useQuery({
-    // Distinct from the sidebar badge's `queryKeys.attention` so dismissed rows
-    // (needed for the curtains) never inflate the badge count. Invalidating the
-    // `["attention", companyId]` prefix still cascades to this query.
     queryKey: [
       ...queryKeys.attention(selectedCompanyId!),
       "with-dismissed",
@@ -170,7 +168,8 @@ export function WhatNeedsMe() {
       ...activityBounds,
     }),
     enabled: !!selectedCompanyId,
-    refetchOnWindowFocus: true,
+    staleTime: ATTENTION_FEED_STALE_MS,
+    refetchOnWindowFocus: false,
   });
 
   const { data: agents } = useQuery({

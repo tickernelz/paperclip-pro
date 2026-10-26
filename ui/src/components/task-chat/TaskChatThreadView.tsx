@@ -25,6 +25,7 @@ import { TaskMessageScroller } from "./TaskMessageScroller";
 import { TaskChatProtocolCard } from "./TaskChatProtocolCard";
 import { TaskChatProtocolActivityRow } from "./TaskChatProtocolActivityRow";
 import { TaskChatPlanPreviewCard } from "./TaskChatPlanPreviewCard";
+import { TaskChatTodoRow } from "./TaskChatTodoRow";
 
 const EMPTY_ATTACHMENTS: IssueAttachment[] = [];
 
@@ -220,6 +221,8 @@ function renderItem(
           }
         />
       );
+    case "todo":
+      return <TaskChatTodoRow item={item} />;
     case "brief":
       return renderBrief ? renderBrief() : null;
     case "turn":
@@ -466,6 +469,9 @@ function signatureOf(it: TaskChatItem): number {
     return (it.diff?.lines?.length ?? 0) + (it.status === "completed" ? 1 : 0);
   if (it.kind === "plan_document") {
     return it.document.body.length + it.document.latestRevisionNumber;
+  }
+  if (it.kind === "todo") {
+    return (it.status === "in_progress" ? 0 : 1) + (it.counts?.completed ?? 0);
   }
   if (it.kind === "turn") {
     if (it.settled) return 1 + (it.finalResponse?.text.length ?? 0);

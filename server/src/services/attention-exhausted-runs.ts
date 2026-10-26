@@ -52,6 +52,27 @@ export function listAttentionExhaustedRuns(db: Db, companyId: string) {
     .orderBy(desc(heartbeatRuns.createdAt), desc(latestExhaustion.eventId));
 }
 
+/** Latest run creation time per (agent, run issue) for the given agents after `since`. */
+export function listLatestRunCreatedAtByAgentIssue(db: Db, companyId: string, agentIds: string[], since: Date) {
+  const runIssueId = sql<string | null>`case
+    when ${heartbeatRuns.issueId} is not null then ${heartbeatRuns.issueId}::text
+    else nullif(coalesce(${heartbeatRuns.contextSnapshot} ->> 'issueId', ${heartbeatRuns.contextSnapshot} ->> 'taskId'), '')
+  end`;
+  return db
+    .select({
+      agentId: heartbeatRuns.agentId,
+      runIssueId,
+      createdAt: sql<Date>`max(${heartbeatRuns.createdAt})`.mapWith(heartbeatRuns.createdAt),
+    })
+    .from(heartbeatRuns)
+    .where(and(
+      eq(heartbeatRuns.companyId, companyId),
+      inArray(heartbeatRuns.agentId, agentIds),
+      gt(heartbeatRuns.createdAt, since),
+    ))
+    .groupBy(heartbeatRuns.agentId, runIssueId);
+}
+
 /** Runs whose model fallback chain was exhausted and whose agent has not succeeded since. */
 export function listAttentionModelFallbackExhaustedRuns(db: Db, companyId: string) {
   const laterRuns = alias(heartbeatRuns, "later_runs");
@@ -66,7 +87,7 @@ export function listAttentionModelFallbackExhaustedRuns(db: Db, companyId: strin
       eq(heartbeatRunEvents.companyId, companyId),
       eq(heartbeatRunEvents.eventType, "model.fallback_exhausted"),
     ))
-    .orderBy(asc(heartbeatRunEvents.runId), desc(heartbeatRunEvents.id))
+    .orderBy(desc(heartbeatRunEvents.runId), desc(heartbeatRunEvents.id))
     .as("latest_fallback_exhaustion");
 
   return db

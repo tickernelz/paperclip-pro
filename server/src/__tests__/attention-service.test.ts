@@ -42,8 +42,10 @@ import {
 } from "./helpers/embedded-postgres.js";
 import { errorHandler } from "../middleware/index.js";
 import { attentionRoutes } from "../routes/attention.js";
+import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
 import { attentionService } from "../services/attention.js";
 import { listAttentionExhaustedRuns } from "../services/attention-exhausted-runs.js";
+import { decisionQueueService } from "../services/decision-queues.js";
 import { agentService } from "../services/agents.js";
 import { ROUTABLE_BLOCKED_ROLLOUT_AT } from "../services/routable-blocked.js";
 
@@ -861,11 +863,13 @@ describeEmbeddedPostgres("attention service", () => {
       issueId: string;
       interactionId: string;
       status: string;
+      runIssueId?: string | null;
     }) {
       await db.insert(heartbeatRuns).values({
         id: randomUUID(),
         companyId: input.companyId,
         agentId: input.agentId,
+        issueId: input.runIssueId ?? null,
         invocationSource: "automation",
         status: input.status,
         contextSnapshot: {
@@ -897,6 +901,40 @@ describeEmbeddedPostgres("attention service", () => {
       });
 
       expect(await boardInteractionTitles(seeded.companyId)).not.toContain("Addressed to the reviewer");
+    });
+
+    it("counts a wake run whose issue column is null through its context issue", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWN", createdAt: STALE_CARD_CREATED_AT });
+      await seedWakeRun({
+        companyId: seeded.companyId,
+        agentId: seeded.reviewerId,
+        issueId: seeded.issueId,
+        interactionId: seeded.interactionId,
+        status: "running",
+        runIssueId: null,
+      });
+
+      expect(await boardInteractionTitles(seeded.companyId)).not.toContain("Addressed to the reviewer");
+    });
+
+    it("ignores a wake run recorded against another issue", async () => {
+      const seeded = await seedAddressedCard({ prefix: "AWO", createdAt: STALE_CARD_CREATED_AT });
+      const otherIssueId = await insertIssue({
+        companyId: seeded.companyId,
+        identifier: "AWO-2",
+        title: "Unrelated work",
+        status: "in_progress",
+      });
+      await seedWakeRun({
+        companyId: seeded.companyId,
+        agentId: seeded.reviewerId,
+        issueId: seeded.issueId,
+        interactionId: seeded.interactionId,
+        status: "running",
+        runIssueId: otherIssueId,
+      });
+
+      expect(await boardInteractionTitles(seeded.companyId)).toContain("Addressed to the reviewer");
     });
 
     it("surfaces a card whose only addressee wake was cancelled", async () => {
@@ -1145,6 +1183,64 @@ describeEmbeddedPostgres("attention service", () => {
     const feed = await attentionService(db).list(companyId, { userId: "board-user" });
 
     expect(feed.items.filter((item) => item.sourceKind === "failed_run")).toEqual([]);
+  });
+
+  it("matches newer runs by heartbeat_runs.issue_id without reading the run context", async () => {
+    const { companyId, workerId } = await seedCompany("ANI");
+    const issueId = await insertIssue({ companyId, identifier: "ANI-1", title: "Cleared task", status: "in_progress" });
+    const otherIssueId = await insertIssue({ companyId, identifier: "ANI-2", title: "Other task", status: "in_progress" });
+    const keptIssueId = await insertIssue({ companyId, identifier: "ANI-3", title: "Still failing", status: "in_progress" });
+    const clearedRunId = randomUUID();
+    const keptRunId = randomUUID();
+    const failedAt = new Date("2026-07-09T12:00:00.000Z");
+    const newerAt = new Date("2026-07-09T12:05:00.000Z");
+    const failedRun = (id: string, runIssueId: string) => ({
+      id,
+      companyId,
+      agentId: workerId,
+      scopeKind: "issue" as const,
+      issueId: runIssueId,
+      invocationSource: "automation",
+      status: "failed",
+      error: "adapter failed",
+      contextSnapshot: { issueId: runIssueId },
+      createdAt: failedAt,
+      updatedAt: failedAt,
+      finishedAt: failedAt,
+    });
+    const newerRun = (runIssueId: string) => ({
+      id: randomUUID(),
+      companyId,
+      agentId: workerId,
+      scopeKind: "issue" as const,
+      issueId: runIssueId,
+      invocationSource: "automation",
+      status: "succeeded",
+      contextSnapshot: {},
+      createdAt: newerAt,
+      updatedAt: newerAt,
+      finishedAt: newerAt,
+    });
+    await db.insert(heartbeatRuns).values([
+      failedRun(clearedRunId, issueId),
+      failedRun(keptRunId, keptIssueId),
+      newerRun(issueId),
+      newerRun(otherIssueId),
+    ]);
+    await db.insert(heartbeatRunEvents).values([clearedRunId, keptRunId].map((runId) => ({
+      companyId,
+      runId,
+      agentId: workerId,
+      seq: 1,
+      eventType: "lifecycle",
+      message: "Bounded retry exhausted after 4 scheduled attempts; no further automatic retry will be queued",
+      createdAt: new Date("2026-07-09T12:00:01.000Z"),
+    })));
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+
+    expect(feed.items.filter((item) => item.sourceKind === "failed_run").map((item) => item.subject.id))
+      .toEqual([keptRunId]);
   });
 
   it("enriches interaction details with project, workspace, plan metadata, and images", async () => {
@@ -2414,5 +2510,203 @@ describeEmbeddedPostgres("attention service", () => {
     expect(deskItems.map((item) => item.subject.id)).not.toContain(agingId);
     expect(feed.deskBadgeCount).toBe(deskItems.length);
     expect(feed.deskBadgeCount).toBe(2);
+  });
+
+  it("counts the desk badge exactly like the feed without returning items", async () => {
+    const { companyId, workerId, errorAgentId } = await seedCompany("ABC");
+    const now = Date.parse("2026-08-02T12:00:00.000Z");
+    const freshAt = new Date("2026-08-02T09:00:00.000Z");
+    const earlierAt = new Date("2026-07-28T09:00:00.000Z");
+    const idleAt = new Date("2026-06-30T12:00:00.000Z");
+    const ids = { fresh: randomUUID(), earlier: randomUUID(), aging: randomUUID(), snoozed: randomUUID(), decideNow: randomUUID() };
+    await db.insert(approvals).values([
+      { id: ids.fresh, at: freshAt },
+      { id: ids.earlier, at: earlierAt },
+      { id: ids.aging, at: idleAt },
+      { id: ids.snoozed, at: freshAt },
+      { id: ids.decideNow, at: earlierAt },
+    ].map((value) => ({
+      id: value.id,
+      companyId,
+      type: "request_board_approval",
+      requestedByAgentId: workerId,
+      status: "pending",
+      payload: { title: `Approval ${value.id}` },
+      createdAt: value.at,
+      updatedAt: value.at,
+    })));
+    await db.insert(decisionTriage).values([
+      { sourceId: ids.aging, decideBy: "today" },
+      { sourceId: ids.decideNow, decideBy: "today" },
+      { sourceId: ids.snoozed, decideBy: null, snoozedUntil: new Date("2026-08-03T00:00:00.000Z") },
+    ].map((value) => ({
+      companyId,
+      sourceKind: "approval",
+      sourceId: value.sourceId,
+      decideBy: value.decideBy,
+      snoozedUntil: value.snoozedUntil ?? null,
+      setByType: "user",
+      setByUserId: "board-user",
+    })));
+
+    const service = attentionService(db, { now: () => now });
+    const feed = await service.list(companyId, { userId: "board-user", limit: 1 });
+    const count = await service.count(companyId, { userId: "board-user" });
+
+    expect(feed.deskBadgeCount).toBeGreaterThan(feed.items.length);
+    expect(count.count).toBe(feed.deskBadgeCount);
+    expect(Number.isNaN(Date.parse(count.updatedAt))).toBe(false);
+    expect(count.countsBySourceKind).toEqual(feed.countsBySourceKind);
+    expect(count.errorAgentIds).toEqual([errorAgentId]);
+    expect(Object.keys(count).sort()).toEqual(["count", "countsBySourceKind", "errorAgentIds", "updatedAt"]);
+  });
+
+  it("serves the badge count route with the same board-only guard as the feed", async () => {
+    const { companyId, workerId } = await seedCompany("ABR");
+    await db.insert(approvals).values({
+      id: randomUUID(),
+      companyId,
+      type: "request_board_approval",
+      requestedByAgentId: workerId,
+      status: "pending",
+      payload: { title: "Fresh approval" },
+    });
+    function app(actor: Record<string, unknown>) {
+      const testApp = express();
+      testApp.use(express.json());
+      testApp.use((req, _res, next) => {
+        (req as any).actor = actor;
+        next();
+      });
+      testApp.use("/api", attentionRoutes(db));
+      testApp.use(errorHandler);
+      return testApp;
+    }
+    const board = {
+      type: "board",
+      source: "local_implicit",
+      userId: "board-user",
+      companyIds: [companyId],
+      isInstanceAdmin: false,
+    };
+
+    const feed = await request(app(board)).get(`/api/companies/${companyId}/attention`).expect(200);
+    const count = await request(app(board)).get(`/api/companies/${companyId}/attention/count`).expect(200);
+    expect(count.body.count).toBe(feed.body.deskBadgeCount);
+    expect(count.body.count).toBeGreaterThan(0);
+    await request(app({ type: "agent", source: "agent_key", companyId, agentId: randomUUID(), runId: null }))
+      .get(`/api/companies/${companyId}/attention/count`)
+      .expect(403);
+  });
+
+  it("builds the same feed when no issue is blocked or in review", async () => {
+    const { companyId, workerId } = await seedCompany("ANB");
+    await insertIssue({ companyId, identifier: "ANB-1", title: "Plain work", status: "in_progress" });
+    const approvalId = randomUUID();
+    await db.insert(approvals).values({
+      id: approvalId,
+      companyId,
+      type: "request_board_approval",
+      requestedByAgentId: workerId,
+      status: "pending",
+      payload: { title: "Only approval" },
+    });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+
+    expect(feed.countsBySourceKind.blocker_attention).toBe(0);
+    expect(feed.countsBySourceKind.review).toBe(0);
+    expect(feed.items.map((item) => [item.sourceKind, item.subject.id])).toEqual(
+      expect.arrayContaining([["approval", approvalId]]),
+    );
+    expect(feed.items.every((item) => item.sourceKind === "approval" || item.sourceKind === "agent_error_alert")).toBe(true);
+  });
+
+  it("materializes seeded queues once and skips the write transaction when nothing is missing", async () => {
+    const { companyId } = await seedCompany("ASQ");
+    const questionItem = (id: string) => ({
+      sourceKind: "issue_thread_interaction",
+      subject: { kind: "interaction", id, metadata: { kind: "ask_user_questions" } },
+      relatedIssue: null,
+    }) as unknown as AttentionItem;
+    let transactions = 0;
+    const countingDb = new Proxy(db, {
+      get(target, property, receiver) {
+        if (property === "transaction") {
+          return (...args: unknown[]) => {
+            transactions += 1;
+            return (target.transaction as (...inner: unknown[]) => unknown).apply(target, args);
+          };
+        }
+        return Reflect.get(target, property, receiver);
+      },
+    }) as typeof db;
+    const service = decisionQueueService(countingDb);
+    const firstId = randomUUID();
+    const secondId = randomUUID();
+
+    await service.materializeSeededQueues(companyId, [questionItem(firstId)]);
+    expect(transactions).toBe(1);
+    const snapshot = async () => ({
+      queues: await db.select().from(decisionQueues).where(eq(decisionQueues.companyId, companyId)),
+      items: await db.select().from(decisionQueueItems).where(eq(decisionQueueItems.companyId, companyId)),
+      events: await db.select().from(decisionTriageEvents).where(eq(decisionTriageEvents.companyId, companyId)),
+    });
+    const afterFirst = await snapshot();
+    expect(afterFirst.queues.map((queue) => queue.key)).toEqual(["questions"]);
+    expect(afterFirst.items.map((item) => item.sourceId)).toEqual([firstId]);
+
+    await service.materializeSeededQueues(companyId, [questionItem(firstId)]);
+    expect(transactions).toBe(1);
+    expect(await snapshot()).toEqual(afterFirst);
+
+    await service.materializeSeededQueues(companyId, [questionItem(firstId), questionItem(secondId)]);
+    expect(transactions).toBe(2);
+    const afterSecond = await snapshot();
+    expect(afterSecond.items.map((item) => item.sourceId).sort()).toEqual([firstId, secondId].sort());
+
+    await db.update(decisionQueues).set({ seedRulesEnabled: false }).where(eq(decisionQueues.companyId, companyId));
+    await service.materializeSeededQueues(companyId, [questionItem(randomUUID())]);
+    expect(transactions).toBe(2);
+    expect((await snapshot()).items).toHaveLength(2);
+  });
+
+  it("matches queue and triage rows by source kind as well as source id", async () => {
+    const { companyId, workerId } = await seedCompany("ASK");
+    const approvalId = randomUUID();
+    await db.insert(approvals).values({
+      id: approvalId,
+      companyId,
+      type: "request_board_approval",
+      requestedByAgentId: workerId,
+      status: "pending",
+      payload: { title: "Kind-scoped approval" },
+    });
+    const [queue] = await db.insert(decisionQueues).values({
+      companyId,
+      key: "other-kind",
+      title: "Other kind",
+      createdByType: "system",
+    }).returning();
+    await db.insert(decisionQueueItems).values({
+      companyId,
+      queueId: queue!.id,
+      sourceKind: "decision",
+      sourceId: approvalId,
+      addedByType: "system",
+    });
+    await db.insert(decisionTriage).values({
+      companyId,
+      sourceKind: "decision",
+      sourceId: approvalId,
+      decideBy: "today",
+      setByType: "user",
+      setByUserId: "board-user",
+    });
+
+    const feed = await attentionService(db).list(companyId, { userId: "board-user" });
+    const item = feed.items.find((entry) => entry.subject.id === approvalId);
+
+    expect(item).toMatchObject({ sourceKind: "approval", queues: [], decideBy: null });
   });
 });

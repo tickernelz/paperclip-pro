@@ -89,7 +89,7 @@ function statusTone(status: string): string {
   return "text-muted-foreground";
 }
 
-function StatusIcon({
+export function StatusIcon({
   status,
   className,
 }: {

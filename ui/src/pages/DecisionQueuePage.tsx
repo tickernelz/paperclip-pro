@@ -30,6 +30,7 @@ import {
   saveAttentionSortOrder,
   saveCollapsedAttentionGroupKeys,
   sortAttentionItems,
+  ATTENTION_FEED_STALE_MS,
   type AttentionDateRangeId,
   type AttentionFilterState,
   type AttentionGroup,
@@ -105,7 +106,8 @@ export function DecisionQueuePage() {
     ],
     queryFn: () => attentionApi.list(selectedCompanyId!, { queue: queueKey, all: true, ...activityBounds }),
     enabled: !!selectedCompanyId && !!queueKey,
-    refetchOnWindowFocus: true,
+    staleTime: ATTENTION_FEED_STALE_MS,
+    refetchOnWindowFocus: false,
   });
 
   const { data: agents } = useQuery({

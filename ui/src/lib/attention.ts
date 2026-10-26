@@ -1,6 +1,5 @@
 import type {
   AttentionDetailImage,
-  AttentionFeed,
   AttentionFeedQuery,
   AttentionItem,
   AttentionItemDetail,
@@ -263,16 +262,6 @@ export function attentionImageUrl(assetId: string): string {
   return `/api/assets/${assetId}/content`;
 }
 
-/**
- * The sidebar badge: distinct items that either surfaced today or carry an
- * explicit decide-by deadline that is due today/past. The server computes this
- * before pagination (`deskBadgeCount`), so badge polling can fetch a small
- * first page without losing the company-wide signal.
- */
-export function attentionBadgeCount(feed: AttentionFeed | null | undefined): number {
-  return feed?.deskBadgeCount ?? 0;
-}
-
 // ---------------------------------------------------------------------------
 // Today's desk
 //
@@ -388,6 +377,7 @@ function attentionArrivalTimestamp(item: AttentionItem): number {
 
 /** Default idle threshold before an item drops from the desk to the shelf. */
 export const ATTENTION_AGING_DAYS = 30;
+export const ATTENTION_FEED_STALE_MS = 60_000;
 
 /** Milliseconds since the item last saw activity. */
 export function attentionIdleMs(item: AttentionItem, now: number): number {

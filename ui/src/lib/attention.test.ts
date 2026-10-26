@@ -1,9 +1,8 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { AttentionFeed, AttentionItem, AttentionSourceKind } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionItem, AttentionSourceKind } from "@tickernelz/paperclip-pro-shared";
 import {
   ATTENTION_GROUP_BY_KEY,
   ATTENTION_GROUP_BY_OPTIONS,
-  attentionBadgeCount,
   attentionDateBucket,
   attentionDetailLine,
   attentionIsNewToday,
@@ -108,26 +107,6 @@ describe("isInlineResolvable", () => {
     for (const kind of ["recovery_action", "failed_run", "budget_alert", "blocker_attention"] as AttentionSourceKind[]) {
       expect(isInlineResolvable(buildItem({ sourceKind: kind, inlineResolvable: true }))).toBe(false);
     }
-  });
-});
-
-describe("attentionBadgeCount", () => {
-  it("uses the server's pre-pagination desk badge count", () => {
-    const feed: AttentionFeed = {
-      companyId: "c1",
-      generatedAt: "2026-07-09T12:00:00Z",
-      totalCount: 3,
-      deskBadgeCount: 2,
-      nextCursor: "next-page",
-      countsBySourceKind: {} as AttentionFeed["countsBySourceKind"],
-      items: [buildItem({ id: "1" }), buildItem({ id: "2" }), buildItem({ id: "3" })],
-    };
-    expect(attentionBadgeCount(feed)).toBe(2);
-  });
-
-  it("is zero for an empty or missing feed", () => {
-    expect(attentionBadgeCount(null)).toBe(0);
-    expect(attentionBadgeCount(undefined)).toBe(0);
   });
 });
 

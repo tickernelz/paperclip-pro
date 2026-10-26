@@ -42,6 +42,7 @@ import type {
   ReleaseIssueTreeHoldResponse,
   UpsertIssueWatchdog,
   UpsertIssueDocument,
+  AgentTodoSnapshot,
 } from "@tickernelz/paperclip-pro-shared";
 import { api, ApiError, detachInflightGet, oversizedUploadError, type RequestOptions } from "./client";
 import type { MessageDeliveryDisposition, MessageDeliveryMode } from "@/lib/message-delivery-command";
@@ -267,6 +268,8 @@ export const issuesApi = {
     api.put<IssueRunModelOverrideView>(`/issues/${id}/model-override`, data),
   getWatchdog: (id: string) =>
     api.get<IssueWatchdog | null>(`/issues/${id}/watchdog`),
+  getAgentTodo: (id: string) =>
+    api.get<{ snapshot: AgentTodoSnapshot | null }>(`/issues/${id}/agent-todo`),
   upsertWatchdog: (id: string, data: UpsertIssueWatchdog) =>
     api.put<IssueWatchdog>(`/issues/${id}/watchdog`, data),
   deleteWatchdog: (id: string) =>

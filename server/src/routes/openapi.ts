@@ -1,4 +1,5 @@
 import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
+import { agentTodoSnapshotSchema } from "@tickernelz/paperclip-pro-shared";
 import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/paperclip-pro-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
@@ -6936,6 +6937,20 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/issues/{issueId}/agent-todo",
+  tags: ["activity"],
+  summary: "Get the latest agent todo snapshot for an issue",
+  request: { params: z.object({ issueId: z.string() }) },
+  responses: {
+    200: r.ok(z.object({ snapshot: agentTodoSnapshotSchema.nullable() })),
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/heartbeat-runs/{runId}/issues",
   tags: ["activity"],
   summary: "List issues for a heartbeat run",
@@ -6999,6 +7014,16 @@ registry.registerPath({
       limit: z.coerce.number().int().min(1).max(100).optional(),
     }),
   },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/companies/{companyId}/attention/count",
+  tags: ["inbox"],
+  summary: "Count the Decisions sidebar badge without returning the feed",
+  description: "Returns count (the feed's deskBadgeCount), updatedAt, countsBySourceKind over the full ranked feed, and errorAgentIds for agents with an open agent_error_alert, so clients can tell which live events change the badge.",
+  request: { params: z.object({ companyId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
 });
 

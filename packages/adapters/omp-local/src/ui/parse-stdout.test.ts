@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
 import { parseOmpStdoutLine } from "./parse-stdout.js";
 
 describe("OMP model fallback lines", () => {
@@ -103,5 +104,40 @@ describe("parseOmpStdoutLine tool pairing", () => {
       isError: false,
     });
     expect(entries.some((entry) => entry.kind === "system")).toBe(true);
+  });
+});
+
+describe("parseOmpStdoutLine todo results", () => {
+  const recorded = readFileSync(new URL("../server/test-fixtures/omp-todo-events.jsonl", import.meta.url), "utf8")
+    .split("\n")
+    .filter((line) => line.includes("\"tool_execution_end\""));
+
+  it("keeps the structured todo details next to the rendered text", () => {
+    const [entry] = parseOmpStdoutLine(recorded[0]!, "2026-10-26T00:00:00.000Z");
+
+    expect(entry).toMatchObject({
+      kind: "tool_result",
+      toolUseId: "toolu_01LZ5a9tsyhZJoCfJgmYC6UP",
+      toolName: "todo",
+      isError: false,
+    });
+    expect(entry?.kind === "tool_result" && entry.content.startsWith("Remaining items (5):")).toBe(true);
+    expect(entry?.kind === "tool_result" ? entry.details : null).toMatchObject({
+      op: "init",
+      storage: "session",
+      phases: [
+        { name: "Investigate", tasks: [{ content: "Locate Scheduled job prefix rendering and colors", status: "in_progress" }, { status: "pending" }] },
+        { name: "Build" },
+        { name: "Ship" },
+      ],
+    });
+  });
+
+  it("omits details when a tool result has none", () => {
+    const [entry] = parseOmpStdoutLine(
+      JSON.stringify({ type: "tool_execution_end", toolCallId: "call_1", toolName: "read", result: { content: [{ type: "text", text: "x" }] }, isError: false }),
+      "2026-10-26T00:00:00.000Z",
+    );
+    expect(entry).toEqual({ kind: "tool_result", ts: "2026-10-26T00:00:00.000Z", toolUseId: "call_1", toolName: "read", content: "x", isError: false });
   });
 });

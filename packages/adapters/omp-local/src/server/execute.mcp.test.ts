@@ -198,6 +198,12 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.systemPrompt).toContain("toolsets: extended,core");
   });
 
+  it("mentions the todo tool once in the system prompt and never in the wake prompt", async () => {
+    const invocation = await run({});
+    expect(invocation.systemPrompt.match(/\btodo tool\b/g)).toHaveLength(1);
+    expect(invocation.userPrompt).not.toMatch(/\btodo tool\b/);
+  });
+
   it("passes the tool guard extension to OMP and removes it once the run finishes", async () => {
     const invocation = await run({});
     expect(invocation.toolGuardPath).toBeTruthy();

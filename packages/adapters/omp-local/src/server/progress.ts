@@ -1,4 +1,9 @@
 import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import {
+  AGENT_TODO_EVENT_TYPE,
+  agentTodoEventMessage,
+  buildAgentTodoPayloadFromOmpDetails,
+} from "@tickernelz/paperclip-pro-adapter-utils/agent-todo";
 import { parseOmpJsonLine } from "./parse.js";
 
 type ProgressSink = NonNullable<AdapterExecutionContext["onRuntimeProgress"]>;
@@ -116,10 +121,15 @@ export function createOmpProgressReporter(
     }
   };
 
-  const publish = async (eventType: string, message: string, failed: boolean): Promise<void> => {
+  const publish = async (
+    eventType: string,
+    message: string,
+    failed: boolean,
+    payload?: Record<string, unknown>,
+  ): Promise<void> => {
     if (!events || eventsBroken) return;
     try {
-      await events({ eventType, stream: "system", level: failed ? "error" : "info", message });
+      await events({ eventType, stream: "system", level: failed ? "error" : "info", message, ...(payload ? { payload } : {}) });
     } catch {
       eventsBroken = true;
     }
@@ -133,6 +143,12 @@ export function createOmpProgressReporter(
       return;
     }
     await publish("omp.tool", message, failed);
+  };
+
+  const publishTodo = async (result: unknown, toolCallId: string): Promise<void> => {
+    const payload = buildAgentTodoPayloadFromOmpDetails(record(result)?.details, { toolCallId });
+    if (!payload) return;
+    await publish(AGENT_TODO_EVENT_TYPE, agentTodoEventMessage(payload), false, payload);
   };
 
   const flushThinking = async (): Promise<void> => {
@@ -187,6 +203,7 @@ export function createOmpProgressReporter(
           `${toolName} ${failed ? "failed" : "ok"}${duration}${hint ? ` — ${hint}` : ""}`,
           failed,
         );
+        if (toolName === "todo" && !failed) await publishTodo(event.result, toolCallId);
         return;
       }
       case "message_update": {

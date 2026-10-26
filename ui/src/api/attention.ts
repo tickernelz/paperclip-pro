@@ -1,6 +1,13 @@
 import type { AttentionFeed, AttentionFeedQuery } from "@tickernelz/paperclip-pro-shared";
 import { api } from "./client";
 
+export interface AttentionBadgeCount {
+  count: number;
+  updatedAt: string;
+  countsBySourceKind: AttentionFeed["countsBySourceKind"];
+  errorAgentIds: string[];
+}
+
 export const attentionApi = {
   /**
    * Fetch the ranked Decisions attention feed for a company. The server
@@ -21,4 +28,5 @@ export const attentionApi = {
     const query = params.toString();
     return api.get<AttentionFeed>(`/companies/${companyId}/attention${query ? `?${query}` : ""}`);
   },
+  count: (companyId: string) => api.get<AttentionBadgeCount>(`/companies/${companyId}/attention/count`),
 };

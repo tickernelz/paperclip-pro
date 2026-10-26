@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { and, asc, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
+import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
@@ -143,30 +143,20 @@ export function decisionRetentionService(
       sourceKind: item.sourceKind,
       sourceId: item.subject.id,
       sourceActivityAt: new Date(item.activityAt),
-    }))).onConflictDoNothing({
+    }))).onConflictDoUpdate({
       target: [decisionRetention.companyId, decisionRetention.sourceKind, decisionRetention.sourceId],
-    });
-    let rows = await db.select().from(decisionRetention).where(and(
-      eq(decisionRetention.companyId, companyId),
-      inArray(decisionRetention.sourceId, unique.map((item) => item.subject.id)),
-    ));
-    const byKey = new Map(rows.map((row) => [sourceKey(row.sourceKind, row.sourceId), row]));
-    for (const item of unique) {
-      const key = itemSourceKey(item);
-      const row = byKey.get(key);
-      const activityAt = new Date(item.activityAt);
-      if (!row || row.sourceActivityAt.getTime() === activityAt.getTime()) continue;
-      const updated = await db.update(decisionRetention).set({
-        sourceActivityAt: activityAt,
+      set: {
+        sourceActivityAt: sql`excluded.source_activity_at`,
         version: sql`${decisionRetention.version} + 1`,
         updatedAt: new Date(),
-      }).where(and(
-        eq(decisionRetention.id, row.id),
-        ne(decisionRetention.sourceActivityAt, activityAt),
-      )).returning().then((values) => values[0] ?? null);
-      if (updated) byKey.set(key, updated);
-    }
-    rows = [...byKey.values()];
+      },
+      setWhere: sql`date_trunc('milliseconds', ${decisionRetention.sourceActivityAt}) is distinct from excluded.source_activity_at`,
+    });
+    const rows = await db.select().from(decisionRetention).where(and(
+      eq(decisionRetention.companyId, companyId),
+      inArray(decisionRetention.sourceKind, [...new Set(unique.map((item) => item.sourceKind))]),
+      inArray(decisionRetention.sourceId, unique.map((item) => item.subject.id)),
+    ));
     return new Map(rows.map((row) => [sourceKey(row.sourceKind, row.sourceId), row]));
   }
 

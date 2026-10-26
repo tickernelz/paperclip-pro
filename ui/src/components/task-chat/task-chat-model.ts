@@ -333,6 +333,17 @@ export interface TaskChatPlanDocumentItem {
   placement?: "write_boundary" | "fallback";
 }
 
+/** One compact row for an agent todo tool call; the full list stays in the pinned card. */
+export interface TaskChatTodoItem {
+  id: string;
+  kind: "todo";
+  op: string | null;
+  status: "in_progress" | "completed" | "failed";
+  subject?: string;
+  counts?: { completed: number; total: number };
+  error?: string;
+}
+
 export interface TaskChatProtocolDetail {
   label: string;
   value: string;
@@ -503,6 +514,7 @@ export type TaskChatTurnChildItem =
   | TaskChatUsageItem
   | TaskChatActivityPhaseItem
   | TaskChatPlanDocumentItem
+  | TaskChatTodoItem
   | TaskChatProtocolItem;
 
 /**
@@ -594,6 +606,7 @@ export type TaskChatItem =
   | TaskChatActivityPhaseItem
   | TaskChatInteractionItem
   | TaskChatPlanDocumentItem
+  | TaskChatTodoItem
   | TaskChatTurnItem
   | TaskChatBriefItem
   | TaskChatProtocolItem;

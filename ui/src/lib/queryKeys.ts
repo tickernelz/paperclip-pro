@@ -415,6 +415,7 @@ export const queryKeys = {
     liveRuns: (issueId: string) => ["issues", "live-runs", issueId] as const,
     activeRun: (issueId: string) => ["issues", "active-run", issueId] as const,
     shareLink: (issueId: string) => ["issues", "share-link", issueId] as const,
+    agentTodo: (issueId: string) => ["issues", issueId, "agent-todo"] as const,
     runnerGoal: (issueId: string, agentId?: string | null) =>
       ["issues", "runner-goal", issueId, agentId ?? "__effective__"] as const,
     modelOverride: (issueId: string) =>
@@ -698,6 +699,7 @@ export const queryKeys = {
   },
   dashboard: (companyId: string) => ["dashboard", companyId] as const,
   attention: (companyId: string) => ["attention", companyId] as const,
+  attentionCount: (companyId: string) => ["attention", companyId, "count"] as const,
   decisions: {
     list: (companyId: string, status?: string) =>
       ["decisions", companyId, status ?? "__all-statuses__"] as const,

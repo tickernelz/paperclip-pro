@@ -707,9 +707,37 @@ export function decisionQueueService(db: Db) {
         }
       }
 
-      for (const seed of DECISION_QUEUE_SEEDS) {
-        const matchingItems = matches.get(seed.key) ?? [];
-        if (matchingItems.length === 0) continue;
+      const matchedSeeds = DECISION_QUEUE_SEEDS.filter((seed) => (matches.get(seed.key)?.length ?? 0) > 0);
+      if (matchedSeeds.length === 0) return;
+      const existingQueues = await db
+        .select({ id: decisionQueues.id, key: decisionQueues.key, seedRulesEnabled: decisionQueues.seedRulesEnabled })
+        .from(decisionQueues)
+        .where(and(
+          eq(decisionQueues.companyId, companyId),
+          inArray(decisionQueues.key, matchedSeeds.map((seed) => seed.key)),
+        ));
+      const existingQueueByKey = new Map(existingQueues.map((queue) => [queue.key, queue]));
+      const enabledQueueIds = existingQueues.filter((queue) => queue.seedRulesEnabled).map((queue) => queue.id);
+      const matchedSourceIds = [...new Set(matchedSeeds.flatMap((seed) => matches.get(seed.key)!.map((item) => item.subject.id)))];
+      const existingItemKeys = new Set(enabledQueueIds.length === 0 ? [] : await db
+        .select({
+          queueId: decisionQueueItems.queueId,
+          sourceKind: decisionQueueItems.sourceKind,
+          sourceId: decisionQueueItems.sourceId,
+        })
+        .from(decisionQueueItems)
+        .where(and(
+          eq(decisionQueueItems.companyId, companyId),
+          inArray(decisionQueueItems.queueId, enabledQueueIds),
+          inArray(decisionQueueItems.sourceId, matchedSourceIds),
+        ))
+        .then((rows) => rows.map((row) => `${row.queueId}:${row.sourceKind}:${row.sourceId}`)));
+
+      for (const seed of matchedSeeds) {
+        const matchingItems = matches.get(seed.key)!;
+        const existingQueue = existingQueueByKey.get(seed.key);
+        if (existingQueue && (!existingQueue.seedRulesEnabled || matchingItems.every((item) =>
+          existingItemKeys.has(`${existingQueue.id}:${item.sourceKind}:${item.subject.id}`)))) continue;
         await db.transaction(async (tx) => {
           const txDb = tx as unknown as Db;
           const insertedQueue = await txDb.insert(decisionQueues).values({
