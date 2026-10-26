@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { LiveEvent } from "@tickernelz/paperclip-pro-shared";
-import { LOCAL_BROWSER_FLOAT_IDLE_LINGER_MS, LocalBrowserFloatHost } from "./LocalBrowserFloatHost";
+import { LocalBrowserFloatHost } from "./LocalBrowserFloatHost";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -14,6 +14,11 @@ const COMPANY_ID = "22222222-2222-4222-8222-222222222222";
 
 const liveHandlers = vi.hoisted(() => ({ current: null as ((event: LiveEvent) => void) | null }));
 const sessionsMock = vi.hoisted(() => vi.fn());
+const authMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@/api/auth", () => ({
+  authApi: { getSession: authMock },
+}));
 
 vi.mock("@/context/LiveUpdatesProvider", () => ({
   useCompanyLiveEvent: (handler: (event: LiveEvent) => void) => {
@@ -26,10 +31,8 @@ vi.mock("@/api/local-browser", () => ({
 }));
 
 vi.mock("./LocalBrowserViewer", () => ({
-  LocalBrowserViewer: (props: { sessionId: string; tabId?: number; onControlledChange?: (value: boolean) => void }) => (
-    <div data-testid="viewer" data-session={props.sessionId} data-tab={props.tabId}>
-      <button type="button" data-testid="take-over" onClick={() => props.onControlledChange?.(true)} />
-    </div>
+  LocalBrowserViewer: (props: { sessionId: string; tabId?: number }) => (
+    <div data-testid="viewer" data-session={props.sessionId} data-tab={props.tabId} />
   ),
 }));
 
@@ -67,6 +70,9 @@ async function mountHost() {
       </QueryClientProvider>,
     );
   });
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
 }
 
 function panel() {
@@ -90,6 +96,8 @@ beforeEach(() => {
   client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   sessionsMock.mockReset();
   sessionsMock.mockResolvedValue({ sessions: [session()] });
+  authMock.mockReset();
+  authMock.mockResolvedValue({ user: { id: "user-1" }, session: { userId: "user-1" } });
   liveHandlers.current = null;
 });
 
@@ -137,43 +145,77 @@ it("adopts a session that is already operating when the page loads", async () =>
   expect(container.textContent).toContain("Invoices");
 });
 
-it("closes after the idle linger, but stays while the user has taken over", async () => {
-  vi.useFakeTimers();
+it("keeps the panel through idle gaps between calls and closes only when the tab closes", async () => {
   await mountHost();
   await activity("operating", 41);
   await activity("idle", 41);
-  await act(async () => {
-    vi.advanceTimersByTime(LOCAL_BROWSER_FLOAT_IDLE_LINGER_MS - 1);
-  });
+  await new Promise((resolve) => setTimeout(resolve, 30));
   expect(panel()).not.toBeNull();
-  await act(async () => {
-    vi.advanceTimersByTime(2);
-  });
-  expect(panel()).toBeNull();
-
   await activity("operating", 41);
-  await act(async () => {
-    container.querySelector<HTMLButtonElement>('[data-testid="take-over"]')?.click();
-  });
   await activity("idle", 41);
-  await act(async () => {
-    vi.advanceTimersByTime(LOCAL_BROWSER_FLOAT_IDLE_LINGER_MS * 3);
-  });
   expect(panel()).not.toBeNull();
+  await activity("closed", 41);
+  expect(panel()).toBeNull();
 });
 
-it("stays dismissed for the rest of one operating burst and returns on the next", async () => {
+it("stays dismissed through idle and further calls on the same tab until the tab closes or changes", async () => {
   await mountHost();
   await activity("operating", 41);
   await act(async () => {
     container.querySelector<HTMLButtonElement>('button[aria-label="Close agent browser"]')?.click();
   });
   expect(panel()).toBeNull();
+  await activity("idle", 41);
+  expect(panel()).toBeNull();
   await activity("operating", 41);
   expect(panel()).toBeNull();
   await activity("idle", 41);
+  expect(panel()).toBeNull();
+  await activity("operating", 52);
+  expect(panel()).not.toBeNull();
+  await activity("closed", 52);
   await activity("operating", 41);
   expect(panel()).not.toBeNull();
+});
+
+it("shows a tab to its owner only", async () => {
+  sessionsMock.mockResolvedValue({ sessions: [session({ ownerUserId: "someone-else" })] });
+  await mountHost();
+  await activity("operating", 41);
+  expect(panel()).toBeNull();
+  sessionsMock.mockResolvedValue({ sessions: [session({ ownerUserId: "user-1" })] });
+  await act(async () => {
+    await client.invalidateQueries({ queryKey: ["local-browser-sessions", COMPANY_ID] });
+  });
+  await activity("operating", 41);
+  expect(panel()).not.toBeNull();
+});
+
+it("withholds the viewer stream while the page is hidden and resumes when it shows", async () => {
+  const visibility = vi.spyOn(document, "visibilityState", "get").mockReturnValue("hidden");
+  await mountHost();
+  await activity("operating", 41);
+  expect(panel()).not.toBeNull();
+  expect(container.querySelector('[data-testid="viewer"]')).toBeNull();
+  visibility.mockReturnValue("visible");
+  await act(async () => {
+    document.dispatchEvent(new Event("visibilitychange"));
+  });
+  expect(container.querySelector('[data-testid="viewer"]')).not.toBeNull();
+});
+
+it("updates the sessions cache from the event instead of refetching for each call", async () => {
+  await mountHost();
+  const before = sessionsMock.mock.calls.length;
+  await activity("operating", 41);
+  await activity("idle", 41);
+  await activity("operating", 41);
+  expect(sessionsMock.mock.calls.length).toBe(before);
+  const cached = client.getQueryData<{ sessions: Array<{ agentActivity: { state: string } | null }> }>([
+    "local-browser-sessions",
+    COMPANY_ID,
+  ]);
+  expect(cached?.sessions[0]?.agentActivity?.state).toBe("operating");
 });
 
 it("pops out into a Document Picture-in-Picture window and moves the viewer there", async () => {

@@ -70,6 +70,7 @@ export function registerSession(input: {
     viewers: new Set(),
     activity: null,
     operatingCalls: 0,
+    viewerTabId: null,
   };
   sessions.set(sessionId, session);
   sessionIdByTokenHash.set(input.tokenHash, sessionId);

@@ -900,6 +900,35 @@ describe("local browser agent activity", () => {
     controller.abort();
     paired.close();
   });
+
+  it("starts the capture once when several viewers follow the same agent tab", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_open"
+          ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } }
+          : { ok: true, result: { started: true } },
+    });
+    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
+    const url = bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer?tabId=9");
+    const first = new AbortController();
+    const second = new AbortController();
+    const one = await fetch(url, { signal: first.signal, headers: { accept: "text/event-stream" } });
+    await paired.waitForCall("local_browser_viewer");
+    const two = await fetch(url, { signal: second.signal, headers: { accept: "text/event-stream" } });
+    expect(one.status).toBe(200);
+    expect(two.status).toBe(200);
+    await new Promise((resolve) => setTimeout(resolve, 250));
+    expect(paired.calls.filter((call) => call.tool === "local_browser_viewer" && call.args.op === "start")).toHaveLength(1);
+    first.abort();
+    second.abort();
+    await waitFor(
+      () => paired.calls.some((call) => call.tool === "local_browser_viewer" && call.args.op === "stop"),
+      "local_browser_viewer stop",
+    );
+    paired.close();
+  });
 });
 
 describe("local browser takeover authority", () => {

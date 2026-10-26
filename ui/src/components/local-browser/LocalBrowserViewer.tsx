@@ -22,7 +22,6 @@ export interface LocalBrowserViewerProps {
   companyId?: string;
   tabId?: number;
   className?: string;
-  onControlledChange?: (controlled: boolean) => void;
 }
 
 interface ContentBox {
@@ -122,13 +121,7 @@ function keyDescriptorOf(event: {
   };
 }
 
-export function LocalBrowserViewer({
-  sessionId,
-  companyId,
-  tabId,
-  className,
-  onControlledChange,
-}: LocalBrowserViewerProps) {
+export function LocalBrowserViewer({ sessionId, companyId, tabId, className }: LocalBrowserViewerProps) {
   const {
     frame,
     status,
@@ -148,10 +141,6 @@ export function LocalBrowserViewer({
   const surfaceRef = useRef<HTMLDivElement>(null);
   const letterboxRef = useRef<LetterboxCache | null>(null);
   const hintId = useId();
-
-  useEffect(() => {
-    onControlledChange?.(controlledByViewer);
-  }, [controlledByViewer, onControlledChange]);
 
   useEffect(() => {
     if (!controlledByViewer) return;

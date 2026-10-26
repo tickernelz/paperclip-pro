@@ -66,4 +66,5 @@ export interface LiveSession {
   viewers: Set<ViewerListener>;
   activity: LocalBrowserActivity | null;
   operatingCalls: number;
+  viewerTabId: number | null;
 }

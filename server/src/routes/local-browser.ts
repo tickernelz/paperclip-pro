@@ -215,7 +215,10 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
       finished = true;
       if (keepalive) clearInterval(keepalive);
       unsubscribe();
-      if (viewerCount(session) === 0) stopFrames();
+      if (viewerCount(session) === 0) {
+        session.viewerTabId = null;
+        stopFrames();
+      }
       if (!res.writableEnded) res.end();
     };
 
@@ -231,7 +234,8 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
     const wasIdle = viewerCount(session) === 0;
     const actor = auditActor(req);
     unsubscribe = subscribeViewer(session, write);
-    if (wasIdle || tabQuery !== null) {
+    if (wasIdle || (tabQuery !== null && session.viewerTabId !== tabQuery)) {
+      session.viewerTabId = tabQuery;
       const startedAt = Date.now();
       void service
         .sendInternalCall(session, "local_browser_viewer", {
@@ -254,6 +258,7 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
           }),
         )
         .catch((error: unknown) => {
+          if (session.viewerTabId === tabQuery) session.viewerTabId = null;
           const code =
             error && typeof error === "object" && "code" in error
               ? String((error as { code: unknown }).code)
