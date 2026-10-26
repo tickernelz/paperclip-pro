@@ -259,6 +259,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     return row!.id;
   }
 
+  let nextTriggerOffsetMs = 0;
   async function trigger(
     t: Fixture,
     c: Conversation,
@@ -290,7 +291,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
         triggerClass: input.triggerClass,
         principalRole: input.role,
         answerState: "pending",
-        receivedAt: input.receivedAt ?? new Date(Date.now() - 60_000),
+        receivedAt: input.receivedAt ?? new Date(Date.now() - 60_000 + (nextTriggerOffsetMs += 1_000)),
       })
       .returning();
     return { id: row!.id, waMessageId };
