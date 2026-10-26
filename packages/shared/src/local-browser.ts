@@ -138,6 +138,28 @@ export const localBrowserTabSchema = z
   .strict();
 export type LocalBrowserTab = z.infer<typeof localBrowserTabSchema>;
 
+export const LOCAL_BROWSER_ACTIVITY_STATES = ["operating", "idle", "closed"] as const;
+export type LocalBrowserActivityState = (typeof LOCAL_BROWSER_ACTIVITY_STATES)[number];
+
+export const localBrowserActivitySchema = z
+  .object({
+    state: z.enum(["operating", "idle"]),
+    tabId: z.number().int().nonnegative().nullable(),
+    at: z.string(),
+  })
+  .strict();
+export type LocalBrowserActivity = z.infer<typeof localBrowserActivitySchema>;
+
+export const localBrowserActivityEventSchema = z
+  .object({
+    sessionId: z.string().uuid(),
+    state: z.enum(LOCAL_BROWSER_ACTIVITY_STATES),
+    tabId: z.number().int().nonnegative().nullable(),
+    at: z.string(),
+  })
+  .strict();
+export type LocalBrowserActivityEvent = z.infer<typeof localBrowserActivityEventSchema>;
+
 export const localBrowserSessionSchema = z
   .object({
     sessionId: z.string().uuid(),
@@ -152,6 +174,7 @@ export const localBrowserSessionSchema = z
     lastSeenAt: z.string(),
     tabs: z.array(localBrowserTabSchema),
     controlledByViewer: z.boolean(),
+    agentActivity: localBrowserActivitySchema.nullable().optional(),
     capabilities: z.array(z.string()).default([]),
     access: localBrowserAccessSchema.optional(),
     guards: localBrowserGuardsSchema.optional(),

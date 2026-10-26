@@ -1004,6 +1004,7 @@ export const LIVE_EVENT_TYPES = [
   "plugin.worker.crashed",
   "plugin.worker.restarted",
   "notification.created",
+  "local_browser.activity",
 ] as const;
 export type LiveEventType = (typeof LIVE_EVENT_TYPES)[number];
 

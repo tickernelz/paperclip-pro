@@ -26,6 +26,7 @@ import {
   localBrowserBodyLimit,
   localBrowserRoutes,
 } from "../routes/local-browser.js";
+import { subscribeCompanyLiveEvents } from "../services/live-events.js";
 import { resetPairings } from "../services/local-browser/pairing.js";
 import { resetSessions } from "../services/local-browser/registry.js";
 import { localBrowserService, normalizeLocalBrowserLimits } from "../services/local-browser/service.js";
@@ -806,6 +807,97 @@ describe("local browser viewer and input", () => {
     });
     expect(oversized.status).toBe(413);
     void active;
+    paired.close();
+  });
+});
+
+describe("local browser agent activity", () => {
+  it("publishes operating then idle around a tab tool and closes when the tab disappears", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const events: Array<{ type: string; payload: Record<string, unknown> }> = [];
+    const unsubscribe = subscribeCompanyLiveEvents(active.companyId, (event) => {
+      if (event.type === "local_browser.activity") events.push({ type: event.type, payload: event.payload as Record<string, unknown> });
+    });
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_open" ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } } : { ok: true, result: {} },
+    });
+
+    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
+
+    expect(events.map((event) => [event.payload.state, event.payload.tabId])).toEqual([
+      ["operating", null],
+      ["idle", 9],
+    ]);
+    expect(events.every((event) => event.payload.sessionId === paired.sessionId)).toBe(true);
+    expect(active.service.listSessions(active.companyId)[0]?.agentActivity).toMatchObject({ state: "idle", tabId: 9 });
+
+    paired.emit("tabs", {
+      tabs: [{ tabId: 7, windowId: 1, title: "Example", url: APP_ORIGIN + "/dashboard", active: true }],
+    });
+    await waitFor(() => events.some((event) => event.payload.state === "closed"), "closed activity");
+    expect(events.at(-1)?.payload).toMatchObject({ state: "closed", tabId: 9 });
+    expect(active.service.listSessions(active.companyId)[0]?.agentActivity).toBeNull();
+    unsubscribe();
+    paired.close();
+  });
+
+  it("reports idle after a failed tab call and ignores tools that touch no tab", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const states: unknown[] = [];
+    const unsubscribe = subscribeCompanyLiveEvents(active.companyId, (event) => {
+      if (event.type === "local_browser.activity") states.push((event.payload as Record<string, unknown>).state);
+    });
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_navigate"
+          ? { ok: false, error: { code: "local_browser_navigation_blocked", message: "blocked" } }
+          : { ok: true, result: {} },
+    });
+
+    await expect(
+      active.service.executeTool(binding(), "local_browser_navigate", { tabId: 7, url: APP_ORIGIN + "/x" }),
+    ).rejects.toMatchObject({ code: "local_browser_navigation_blocked" });
+    expect(states).toEqual(["operating", "idle"]);
+
+    await active.service.executeTool(binding(), "local_browser_sessions", {});
+    expect(states).toEqual(["operating", "idle"]);
+    unsubscribe();
+    paired.close();
+  });
+
+  it("starts the viewer on the tab the agent operates and refuses any other tab", async () => {
+    const active = currentHarness();
+    await allowOrigin();
+    const paired = await pairExtension({
+      onCall: (call) =>
+        call.tool === "local_browser_open"
+          ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } }
+          : call.tool === "local_browser_viewer"
+            ? { ok: true, result: { started: true } }
+            : { ok: true, result: {} },
+    });
+    const viewerUrl = (tabId: string) => bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer?tabId=" + tabId);
+
+    const beforeActivity = await fetch(viewerUrl("9"), { headers: { accept: "text/event-stream" } });
+    expect(beforeActivity.status).toBe(403);
+
+    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
+
+    const other = await fetch(viewerUrl("7"), { headers: { accept: "text/event-stream" } });
+    expect(other.status).toBe(403);
+    const malformed = await fetch(viewerUrl("abc"), { headers: { accept: "text/event-stream" } });
+    expect(malformed.status).toBe(400);
+    expect(paired.calls.some((call) => call.tool === "local_browser_viewer")).toBe(false);
+
+    const controller = new AbortController();
+    const response = await fetch(viewerUrl("9"), { signal: controller.signal, headers: { accept: "text/event-stream" } });
+    expect(response.status).toBe(200);
+    const start = await paired.waitForCall("local_browser_viewer");
+    expect(start.args).toMatchObject({ op: "start", tabId: 9 });
+    controller.abort();
     paired.close();
   });
 });

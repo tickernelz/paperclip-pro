@@ -31,8 +31,13 @@ function scoped(path: string, companyId?: string): string {
   return `${path}?${new URLSearchParams({ companyId }).toString()}`;
 }
 
-export function localBrowserViewerUrl(sessionId: string, companyId?: string): string {
-  return scoped(`/api/local-browser/sessions/${encodeURIComponent(sessionId)}/viewer`, companyId);
+export function localBrowserViewerUrl(sessionId: string, companyId?: string, tabId?: number): string {
+  const path = `/api/local-browser/sessions/${encodeURIComponent(sessionId)}/viewer`;
+  const params = new URLSearchParams();
+  if (companyId) params.set("companyId", companyId);
+  if (typeof tabId === "number") params.set("tabId", String(tabId));
+  const query = params.toString();
+  return query ? `${path}?${query}` : path;
 }
 
 export function localBrowserInputUrl(sessionId: string, companyId?: string): string {

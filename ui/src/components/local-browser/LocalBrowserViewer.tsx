@@ -20,7 +20,9 @@ import {
 export interface LocalBrowserViewerProps {
   sessionId: string;
   companyId?: string;
+  tabId?: number;
   className?: string;
+  onControlledChange?: (controlled: boolean) => void;
 }
 
 interface ContentBox {
@@ -120,7 +122,13 @@ function keyDescriptorOf(event: {
   };
 }
 
-export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBrowserViewerProps) {
+export function LocalBrowserViewer({
+  sessionId,
+  companyId,
+  tabId,
+  className,
+  onControlledChange,
+}: LocalBrowserViewerProps) {
   const {
     frame,
     status,
@@ -136,20 +144,25 @@ export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBro
     sendWheel,
     pressKey,
     releaseKey,
-  } = useLocalBrowserViewer(sessionId, companyId);
+  } = useLocalBrowserViewer(sessionId, companyId, tabId);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const letterboxRef = useRef<LetterboxCache | null>(null);
   const hintId = useId();
 
   useEffect(() => {
+    onControlledChange?.(controlledByViewer);
+  }, [controlledByViewer, onControlledChange]);
+
+  useEffect(() => {
     if (!controlledByViewer) return;
+    const owner = surfaceRef.current?.ownerDocument ?? document;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
       setControlledByViewer(false);
     };
-    document.addEventListener("keydown", onKeyDown);
-    return () => document.removeEventListener("keydown", onKeyDown);
+    owner.addEventListener("keydown", onKeyDown);
+    return () => owner.removeEventListener("keydown", onKeyDown);
   }, [controlledByViewer, setControlledByViewer]);
 
   const pointOf = useCallback(

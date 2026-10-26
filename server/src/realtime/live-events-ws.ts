@@ -54,7 +54,7 @@ interface UpgradeContext {
 }
 
 /** Notification fan-out stays board-only; agent keys never receive it. */
-const BOARD_ONLY_LIVE_EVENT_TYPES = new Set<string>(["notification.created"]);
+const BOARD_ONLY_LIVE_EVENT_TYPES = new Set<string>(["notification.created", "local_browser.activity"]);
 
 export function isLiveEventVisibleToActor(event: LiveEvent, context: Pick<UpgradeContext, "actorType">) {
   return context.actorType === "board" || !BOARD_ONLY_LIVE_EVENT_TYPES.has(event.type);

@@ -8,6 +8,7 @@ import {
   type LocalBrowserTab,
   type LocalBrowserTier,
 } from "@tickernelz/paperclip-pro-shared";
+import { closeActivity, reconcileActivityWithTabs } from "./activity.js";
 import { localBrowserFailure } from "./errors.js";
 import type { BridgeSocket, LiveSession, PendingCall, ViewerListener, ViewerPayload } from "./types.js";
 
@@ -67,6 +68,8 @@ export function registerSession(input: {
     lastSeenAt: now,
     pending: new Map(),
     viewers: new Set(),
+    activity: null,
+    operatingCalls: 0,
   };
   sessions.set(sessionId, session);
   sessionIdByTokenHash.set(input.tokenHash, sessionId);
@@ -99,6 +102,7 @@ export function touchSession(session: LiveSession, now = new Date()): void {
 
 export function updateSessionTabs(session: LiveSession, tabs: LocalBrowserTab[]): void {
   session.tabs = tabs;
+  reconcileActivityWithTabs(session);
 }
 
 export function updateSessionSettings(session: LiveSession, settings: LocalBrowserSettings): void {
@@ -163,6 +167,7 @@ export function removeSession(sessionId: string, reason: "closed" | "disconnecte
     listener({ type: "state", state: "disconnected", message: reason === "closed" ? "Browser session closed" : "Browser disconnected" });
   }
   session.viewers.clear();
+  closeActivity(session);
   return session;
 }
 
@@ -201,6 +206,7 @@ export function toPublicSession(session: LiveSession): LocalBrowserSession {
     lastSeenAt: session.lastSeenAt.toISOString(),
     tabs: session.tabs,
     controlledByViewer: session.viewers.size > 0,
+    agentActivity: session.activity,
     capabilities: [...session.capabilities],
     ...(session.access ? { access: session.access } : {}),
     ...(session.guards ? { guards: session.guards } : {}),

@@ -23,6 +23,7 @@ import {
 import type { StorageService } from "../../storage/types.js";
 import { logActivity } from "../activity-log.js";
 import { decodeDataUrl, readTaskAttachment, storeLocalBrowserAttachment } from "./attachments.js";
+import { beginTabCall, endTabCall, LOCAL_BROWSER_TAB_TOOLS } from "./activity.js";
 import { localBrowserFailure } from "./errors.js";
 import {
   addPendingCall,
@@ -62,6 +63,13 @@ function record(value: unknown): Record<string, unknown> {
 function activeTab(session: LiveSession, tabId: number | undefined): LocalBrowserTab | null {
   if (tabId !== undefined) return session.tabs.find((tab) => tab.tabId === tabId) ?? null;
   return session.tabs.find((tab) => tab.active) ?? session.tabs[0] ?? null;
+}
+
+function resultTabId(raw: unknown): number | null {
+  const payload = record(raw);
+  const tab = record(payload.tab);
+  if (typeof tab.tabId === "number") return tab.tabId;
+  return typeof payload.tabId === "number" ? payload.tabId : null;
 }
 
 function bytesOfBase64(base64: string): number {
@@ -556,6 +564,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
       let session: LiveSession | null = null;
       let tabId: number | null = null;
       let origin: string | null = null;
+      let tracking: LiveSession | null = null;
       try {
         if (localBrowserIsInternalTool(name)) {
           throw localBrowserFailure(
@@ -605,7 +614,15 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         const bounded = applyLocalBrowserLimits(live.limits, name, args);
         const callArgs =
           name === "local_browser_upload" ? await uploadFiles(binding, live.limits, bounded.args) : bounded.args;
+        if (LOCAL_BROWSER_TAB_TOOLS.has(name)) {
+          tracking = live;
+          beginTabCall(live, tabId);
+        }
         const raw = await dispatch(live, name, callArgs);
+        if (tracking) {
+          tracking = null;
+          endTabCall(live, resultTabId(raw) ?? tabId);
+        }
         const result = await finishResult(binding, live, name, bounded.args, raw, bounded.limited);
         if (name === "local_browser_close" && args.closeSession === true) {
           await teardownSession(live);
@@ -623,6 +640,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         });
         return result;
       } catch (error) {
+        if (tracking) endTabCall(tracking, tabId);
         const code =
           error && typeof error === "object" && "code" in error && typeof (error as { code?: unknown }).code === "string"
             ? (error as { code: string }).code

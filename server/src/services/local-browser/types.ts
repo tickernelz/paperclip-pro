@@ -1,5 +1,6 @@
 import type {
   LocalBrowserAccess,
+  LocalBrowserActivity,
   LocalBrowserClient,
   LocalBrowserGuards,
   LocalBrowserLimits,
@@ -63,4 +64,6 @@ export interface LiveSession {
   lastSeenAt: Date;
   pending: Map<string, PendingCall>;
   viewers: Set<ViewerListener>;
+  activity: LocalBrowserActivity | null;
+  operatingCalls: number;
 }
