@@ -159,6 +159,7 @@ test("opening incognito when allowed creates a private window in store 1", async
   assert.equal(windows[0][1].incognito, true);
   assert.equal(result.result.tab.incognito, true);
   assert.equal(result.result.tab.cookieStoreId, "1");
+  assert.match(result.result.note, /No private window was open/);
 });
 
 test("a cookie store Chromium does not have is refused", async () => {
@@ -169,14 +170,37 @@ test("a cookie store Chromium does not have is refused", async () => {
   assert.match(result.error.message, /store 0 and the incognito store 1/);
 });
 
-test("newWindow opens the url in a fresh regular window", async () => {
-  const context = await boot();
-  const result = await context.call("local_browser_open", { url: "https://example.test/", newWindow: true });
+test("open places the tab in an existing regular window without creating one", async () => {
+  const context = await boot({ windows: [{ id: 4, incognito: false }, { id: 5, incognito: true }] });
+  const result = await context.call("local_browser_open", { url: "https://example.test/" });
   assert.equal(result.ok, true, JSON.stringify(result.error || {}));
-  const windows = context.callsOf("windows.create");
-  assert.equal(windows.length, 1);
-  assert.equal(windows[0][1].incognito, false);
-  assert.equal(windows[0][1].url, "https://example.test/");
+  assert.equal(context.callsOf("windows.create").length, 0);
+  const created = context.callsOf("tabs.create")[0][1];
+  assert.equal(created.windowId, 4);
+  assert.equal(created.active, false);
+  assert.equal(result.result.note, undefined);
+});
+
+test("open prefers the focused regular window", async () => {
+  const context = await boot({ windows: [{ id: 4, incognito: false }, { id: 6, incognito: false, focused: true }] });
+  await context.call("local_browser_open", { url: "https://example.test/" });
+  assert.equal(context.callsOf("tabs.create")[0][1].windowId, 6);
+});
+
+test("open creates a window and says so only when no regular window exists", async () => {
+  const context = await boot({ windows: [{ id: 5, incognito: true }] });
+  const result = await context.call("local_browser_open", { url: "https://example.test/" });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(context.callsOf("windows.create").length, 1);
+  assert.match(result.result.note, /No regular window was open/);
+});
+
+test("open reuses an existing private window for an incognito tab", async () => {
+  const context = await boot({ incognitoAllowed: true, windows: [{ id: 4, incognito: false }, { id: 5, incognito: true }] });
+  const result = await context.call("local_browser_open", { url: "https://example.test/", incognito: true });
+  assert.equal(result.ok, true, JSON.stringify(result.error || {}));
+  assert.equal(context.callsOf("windows.create").length, 0);
+  assert.equal(context.callsOf("tabs.create")[0][1].windowId, 5);
 });
 
 test("turning off the focused-tab guard lets navigate drive the tab the user is on", async () => {

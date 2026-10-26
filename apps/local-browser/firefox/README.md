@@ -289,8 +289,9 @@ beyond that; a memory guard for the ring, not a user limit).
 Tab summaries carry `cookieStoreId`, `containerName`, `incognito`, `discarded`, `pinned` and
 `audible`. `local_browser_open` honours `cookieStoreId` (`tabs.create({cookieStoreId})`, and
 reuses the agent's own tab only inside the same store), `incognito` (a tab in an existing
-private window, else `windows.create({incognito: true})`; refused with a hint when the
-extension is not allowed in private windows) and `newWindow`.
+private window, else `windows.create({incognito: true})` with a `note` in the result; refused
+with a hint when the extension is not allowed in private windows). Every tab opens with an
+explicit `windowId` of a window the user already has open, never in a new window.
 
 `local_browser_context` returns the tab, its container (`isDefault` for `firefox-default`), the
 tab's cookies without values, the content script state (`connected`, `missing` when the page has

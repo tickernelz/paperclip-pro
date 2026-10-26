@@ -216,7 +216,6 @@ export const localBrowserOpenInputSchema = localBrowserTargetSchema
       .optional()
       .describe("Open the tab in this cookie jar, for example a Firefox container id from local_browser_context"),
     incognito: z.boolean().optional().describe("Open in a private window; the extension must be allowed in private windows"),
-    newWindow: z.boolean().optional().describe("Open in a new window instead of a tab"),
   })
   .strict();
 
@@ -623,7 +622,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   ),
   defineTool(
     "local_browser_open",
-    "Open a URL in the user's real browser. It reuses the tab you already opened for this work and creates one only when you have none, so repeated opens never pile up tabs. Pass cookieStoreId to open in a container or another cookie jar, incognito for a private window, newWindow for a separate window. Never navigates the tab the user is looking at or the Paperclip tab itself. Returns the tab and a first snapshot.",
+    "Open a URL in the user's real browser. It reuses the tab you already opened for this work and creates one only when you have none, so repeated opens never pile up tabs. The tab always opens inside a window the user already has open and never takes focus unless active is true; a new window appears only when none matches, for example the first private tab, and the result then carries a note. Pass cookieStoreId to open in a container or another cookie jar, incognito for a private window. Never navigates the tab the user is looking at or the Paperclip tab itself. Returns the tab and a first snapshot.",
     localBrowserOpenInputSchema,
   ),
   defineTool(

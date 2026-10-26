@@ -31,11 +31,14 @@
   }
 
   async function toolOpen(args, call) {
-    var tab = await tabs().openTab(args);
+    var outcome = {};
+    var tab = await tabs().openTab(args, outcome);
     await tabs().waitForTab(tab.id, "load", call.inner(undefined, DEFAULTS.navigateTimeoutMs));
     var fresh = await chrome.tabs.get(tab.id);
     var snapshot = await tabs().trySnapshot(tab.id, {}, call.pageTimeout(15000));
-    return { tab: await tabs().describe(fresh), snapshot: snapshot };
+    var opened = { tab: await tabs().describe(fresh), snapshot: snapshot };
+    if (outcome.note) opened.note = outcome.note;
+    return opened;
   }
 
   async function pageIdentity(tabId) {

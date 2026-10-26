@@ -262,6 +262,7 @@ test("open incognito opens a private window when none exists, and reuses one whe
   const first = await fresh.call("local_browser_open", { url: "https://example.test/", incognito: true });
   assert.equal(first.ok, true);
   assert.equal(plain(fresh.callsOf("windows.create")[0][1]).incognito, true);
+  assert.match(first.result.note, /No private window was open/);
   assert.equal(first.result.tab.incognito, true);
   assert.equal(first.result.tab.cookieStoreId, "firefox-private");
 
@@ -272,12 +273,40 @@ test("open incognito opens a private window when none exists, and reuses one whe
   assert.equal(plain(existing.callsOf("tabs.create")[0][1]).windowId, 3);
 });
 
-test("open newWindow opens a window in the requested container", async () => {
-  const harness = boot();
-  const { ok, result } = await harness.call("local_browser_open", { url: "https://example.test/", newWindow: true, cookieStoreId: "firefox-container-1" });
+test("open places the tab in an existing window without creating one", async () => {
+  const harness = boot({ windows: [{ id: 4, incognito: false }, { id: 5, incognito: true }] });
+  const { ok, result } = await harness.call("local_browser_open", { url: "https://example.test/" });
   assert.equal(ok, true);
-  assert.deepEqual(plain(harness.callsOf("windows.create")[0][1]), { url: "https://example.test/", focused: false, cookieStoreId: "firefox-container-1" });
+  assert.equal(harness.callsOf("windows.create").length, 0);
+  const props = plain(harness.callsOf("tabs.create")[0][1]);
+  assert.equal(props.windowId, 4);
+  assert.equal(props.active, false);
+  assert.equal(result.note, undefined);
+});
+
+test("open prefers the focused regular window", async () => {
+  const harness = boot({ windows: [{ id: 4, incognito: false }, { id: 6, incognito: false, focused: true }] });
+  await harness.call("local_browser_open", { url: "https://example.test/" });
+  assert.equal(plain(harness.callsOf("tabs.create")[0][1]).windowId, 6);
+});
+
+test("open puts a container tab in an existing window", async () => {
+  const harness = boot({ windows: [{ id: 4, incognito: false }] });
+  const { ok, result } = await harness.call("local_browser_open", { url: "https://example.test/", cookieStoreId: "firefox-container-1" });
+  assert.equal(ok, true);
+  assert.equal(harness.callsOf("windows.create").length, 0);
+  const props = plain(harness.callsOf("tabs.create")[0][1]);
+  assert.equal(props.windowId, 4);
+  assert.equal(props.cookieStoreId, "firefox-container-1");
   assert.equal(result.tab.cookieStoreId, "firefox-container-1");
+});
+
+test("open creates a window and says so only when no regular window exists", async () => {
+  const harness = boot({ windows: [{ id: 5, incognito: true }] });
+  const { ok, result } = await harness.call("local_browser_open", { url: "https://example.test/" });
+  assert.equal(ok, true);
+  assert.equal(harness.callsOf("windows.create").length, 1);
+  assert.match(result.note, /No regular window was open/);
 });
 
 test("wait honours the requested timeout but never outlives the call budget", async () => {

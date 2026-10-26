@@ -103,7 +103,7 @@ Use `local_browser_read` when the task needs the page text rather than its contr
 
 `local_browser_network` reads a capture that runs continuously in the extension (a ring of `guards.networkBufferSize` requests). Each row carries `requestHeaders` and `responseHeaders` (default on; `includeHeaders: false` drops them), `hasCookie`, `hasAuthorization`, `fromCache`, `initiator`, `error` and `documentId`. Narrow it with `since` (epoch ms), `types`, `urlIncludes` or `method`; the result reports the `capture` mode.
 
-Tabs report `cookieStoreId`, `containerName`, `incognito`, `discarded`, `frozen`, `pinned` and `audible`. `local_browser_open` accepts `cookieStoreId` (a Firefox container or another jar), `incognito` and `newWindow`.
+Tabs report `cookieStoreId`, `containerName`, `incognito`, `discarded`, `frozen`, `pinned` and `audible`. `local_browser_open` accepts `cookieStoreId` (a Firefox container or another jar), and `incognito`. A tab always opens in a window the user already has open; a new window appears only when no window of the wanted kind exists (the first private tab), and the result then says so in `note`.
 
 Snapshot, read, screenshot and wait results carry `document`: a per-page `documentId`, `navigationType`, `restoredFromBfcache`, `wasDiscarded`, `ageMs`, request counts since load, and `stale` with `staleReasons`. A stale document is the back-forward-cache or frozen-tab case where the page shows old data; agents reload before trusting it.
 

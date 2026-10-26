@@ -169,17 +169,33 @@
     return null;
   }
 
-  async function privateWindow() {
+  async function hostWindowId(incognito) {
     var windows = [];
     try {
       windows = await browser.windows.getAll({ windowTypes: ["normal"] });
     } catch (error) {
       windows = [];
     }
-    for (var i = 0; i < windows.length; i += 1) {
-      if (windows[i] && windows[i].incognito === true) return windows[i];
+    var matching = windows.filter(function (candidate) {
+      return candidate && typeof candidate.id === "number" && (candidate.incognito === true) === incognito;
+    });
+    if (matching.length === 0) return null;
+    var focused = matching.find(function (candidate) {
+      return candidate.focused === true;
+    });
+    if (focused) return focused.id;
+    if (typeof browser.windows.getLastFocused === "function") {
+      try {
+        var last = await browser.windows.getLastFocused({ windowTypes: ["normal"] });
+        var known = last && matching.find(function (candidate) {
+          return candidate.id === last.id;
+        });
+        if (known) return known.id;
+      } catch (error) {
+        void error;
+      }
     }
-    return null;
+    return matching[0].id;
   }
 
   async function assertPrivateAllowed() {
@@ -216,8 +232,7 @@
     return {
       store: incognito ? tabsApi.PRIVATE_STORE : store,
       incognito: incognito,
-      newWindow: args.newWindow === true,
-      special: Boolean(store) || incognito || args.newWindow === true
+      special: Boolean(store) || incognito
     };
   }
 
@@ -236,15 +251,19 @@
   }
 
   async function openTab(url, placement, active) {
-    var props = { url: url || "about:blank", active: active === true };
-    if (placement.incognito) {
-      var win = await privateWindow();
-      if (!win) return openWindow(url, placement, active);
-      props.windowId = win.id;
-    } else if (placement.store) {
-      props.cookieStoreId = placement.store;
+    var windowId = await hostWindowId(placement.incognito);
+    if (windowId === null) {
+      return { tab: await openWindow(url, placement, active), windowCreated: true };
     }
-    return browser.tabs.create(props);
+    var props = { url: url || "about:blank", active: active === true, windowId: windowId };
+    if (placement.store && !placement.incognito) props.cookieStoreId = placement.store;
+    return { tab: await browser.tabs.create(props), windowCreated: false };
+  }
+
+  function windowNote(placement) {
+    return placement.incognito
+      ? "No private window was open, so a new private window was created for this tab"
+      : "No regular window was open, so a new window was created for this tab";
   }
 
   async function open(args, ctx) {
@@ -257,16 +276,14 @@
       throw protocol.error(
         C.protocolError,
         "An existing tab cannot move to another cookie store or window",
-        "Omit tabId to open a fresh tab with cookieStoreId, incognito or newWindow",
+        "Omit tabId to open a fresh tab with cookieStoreId or incognito",
         false
       );
     }
     var tab = null;
+    var created = null;
     try {
-      if (placement.newWindow) {
-        tab = await openWindow(url, placement, args.active);
-        rememberAgentTab(tab.id);
-      } else if (url && typeof args.tabId === "number") {
+      if (url && typeof args.tabId === "number") {
         var explicit = await targetTab(args);
         await assertNavigationAllowed(explicit);
         await browser.tabs.update(explicit.tabId, { url: url });
@@ -278,11 +295,13 @@
           await browser.tabs.update(reusable.tabId, { url: url });
           tab = await browser.tabs.get(reusable.tabId);
         } else {
-          tab = await openTab(url, placement, args.active);
+          created = await openTab(url, placement, args.active);
+          tab = created.tab;
           rememberAgentTab(tab.id);
         }
       } else if (args.newTab === true || placement.special) {
-        tab = await openTab(null, placement, args.active);
+        created = await openTab(null, placement, args.active);
+        tab = created.tab;
         rememberAgentTab(tab.id);
       } else {
         var current = await targetTab(args);
@@ -301,7 +320,9 @@
     } catch (error) {
       snapshot = null;
     }
-    return { tab: summary, snapshot: snapshot };
+    var opened = { tab: summary, snapshot: snapshot };
+    if (created && created.windowCreated) opened.note = windowNote(placement);
+    return opened;
   }
 
   async function navigate(args, ctx) {

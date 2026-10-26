@@ -291,27 +291,52 @@
     throw new ToolFailure(ERROR.tabMissing, "The new window opened without a tab", "Retry local_browser_open");
   }
 
-  async function openWindow(url, incognito, active) {
+  async function openWindow(url, incognito, active, outcome) {
     var props = { incognito: incognito, focused: active === true };
     if (url) props.url = url;
-    return adopt(await windowTab(await chrome.windows.create(props)));
+    var tab = adopt(await windowTab(await chrome.windows.create(props)));
+    outcome.note = incognito
+      ? "No private window was open, so a new private window was created for this tab"
+      : "No regular window was open, so a new window was created for this tab";
+    return tab;
   }
 
-  async function incognitoWindowId() {
+  async function hostWindowId(incognito) {
     if (!chrome.windows || typeof chrome.windows.getAll !== "function") return null;
     var windows = await chrome.windows.getAll({ windowTypes: ["normal"] }).catch(function () {
       return [];
     });
-    for (var index = 0; index < (windows || []).length; index += 1) {
-      if (windows[index].incognito === true) return windows[index].id;
+    var matching = (windows || []).filter(function (candidate) {
+      return candidate && typeof candidate.id === "number" && (candidate.incognito === true) === incognito;
+    });
+    if (matching.length === 0) return null;
+    var focused = matching.find(function (candidate) {
+      return candidate.focused === true;
+    });
+    if (focused) return focused.id;
+    if (typeof chrome.windows.getLastFocused === "function") {
+      var last = await chrome.windows.getLastFocused({ windowTypes: ["normal"] }).catch(function () {
+        return null;
+      });
+      var known = last && matching.find(function (candidate) {
+        return candidate.id === last.id;
+      });
+      if (known) return known.id;
     }
-    return null;
+    return matching[0].id;
   }
 
-  async function openTab(args) {
+  async function createInHostWindow(args, incognito, outcome) {
+    var windowId = await hostWindowId(incognito);
+    if (windowId === null) return await openWindow(args.url, incognito, args.active, outcome);
+    var props = { active: args.active === true, windowId: windowId };
+    if (args.url) props.url = args.url;
+    return adopt(await chrome.tabs.create(props));
+  }
+
+  async function openTab(args, outcome) {
     var incognito = wantsIncognito(args);
     if (incognito) await assertIncognitoAllowed();
-    if (args.newWindow === true) return await openWindow(args.url, incognito, args.active);
     if (args.url && typeof args.tabId === "number") {
       var target = await resolveTab(args);
       if ((target.incognito === true) !== incognito && (args.incognito !== undefined || args.cookieStoreId !== undefined)) {
@@ -323,17 +348,12 @@
     if (args.url) {
       var reusable = await ownAgentTab(incognito);
       if (reusable) return await chrome.tabs.update(reusable.id, { url: args.url });
-      if (incognito) {
-        var windowId = await incognitoWindowId();
-        if (windowId === null) return await openWindow(args.url, true, args.active);
-        return adopt(await chrome.tabs.create({ url: args.url, active: args.active === true, windowId: windowId }));
-      }
-      return adopt(await chrome.tabs.create({ url: args.url, active: args.active === true }));
+      return await createInHostWindow(args, incognito, outcome);
     }
     if (incognito) {
       var existing = await ownAgentTab(true);
       if (existing) return existing;
-      return await openWindow(undefined, true, args.active);
+      return await createInHostWindow(args, true, outcome);
     }
     var tab = await resolveTab(args);
     if (args.active === true) await chrome.tabs.update(tab.id, { active: true });
