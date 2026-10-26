@@ -364,26 +364,28 @@ describe("ActiveAgentsPanel", () => {
     await act(async () => root.unmount());
   });
 
-  it("shows the live run's current todo on its card, but not on a finished run", async () => {
-    const todo = (runId: string) => ({
+  it("shows the live run's current todo on its card, but not on a finished run's own todo", async () => {
+    const todo = (runId: string, issueId: string, content: string) => ({
       version: 1,
       source: "omp",
       op: "update",
-      phases: [{ name: "Fix", tasks: [{ content: "Done step", status: "completed" }, { content: "Locate the bug", status: "in_progress" }, { content: "Later step", status: "pending" }] }],
+      phases: [{ name: "Fix", tasks: [{ content: "Done step", status: "completed" }, { content, status: "in_progress" }, { content: "Later step", status: "pending" }] }],
       counts: { total: 3, completed: 1, inProgress: 1, pending: 1, blocked: 0, dropped: 0 },
       runId,
       agentId: "agent-0",
-      issueId: "issue-1",
+      issueId,
       seq: 1,
       createdAt: "2026-04-24T12:00:00.000Z",
       runStatus: "running",
     });
-    mockIssuesApi.getAgentTodo.mockResolvedValue({ snapshot: todo("run-0") });
+    mockIssuesApi.getAgentTodo.mockImplementation(async (issueId: string) => ({
+      snapshot: issueId === "issue-1" ? todo("run-0", "issue-1", "Locate the bug") : todo("run-1", "issue-2", "Finished run step"),
+    }));
     const root = createRoot(container);
     await act(async () => {
       root.render(withQueryClient(<>
         <AgentRunCard companyId="company-1" run={createIssueRun(0, "issue-1")} />
-        <AgentRunCard companyId="company-1" run={{ ...createIssueRun(1, "issue-1"), status: "succeeded" }} />
+        <AgentRunCard companyId="company-1" run={{ ...createIssueRun(1, "issue-2"), status: "succeeded" }} />
       </>));
     });
     await flushReact();
@@ -391,6 +393,7 @@ describe("ActiveAgentsPanel", () => {
     expect(lines).toHaveLength(1);
     expect(lines[0]?.textContent).toContain("Locate the bug");
     expect(lines[0]?.textContent).toContain("1/3");
+    expect(container.textContent).not.toContain("Finished run step");
     expect(container.textContent).not.toContain("Later step");
     await act(async () => root.unmount());
   });
