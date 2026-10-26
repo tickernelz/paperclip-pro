@@ -4,6 +4,7 @@ import {
   closeActivity,
   endTabCall,
   LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS,
+  touchActivity,
 } from "../services/local-browser/activity.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";
 import type { LiveSession } from "../services/local-browser/types.js";
@@ -51,6 +52,22 @@ describe("local browser activity idle close", () => {
     vi.advanceTimersByTime(LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS);
     expect(session.activity).toBeNull();
     expect(states).toEqual(["operating", "idle", "operating", "idle", "closed"]);
+  });
+
+  it("postpones the idle close while the user takes over, and never starts one without activity", () => {
+    const session = fakeSession();
+    touchActivity(session);
+    vi.advanceTimersByTime(LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS * 2);
+    expect(states).toEqual([]);
+
+    beginTabCall(session, 9);
+    endTabCall(session, 9);
+    vi.advanceTimersByTime(LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS - 1000);
+    touchActivity(session);
+    vi.advanceTimersByTime(LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS - 1000);
+    expect(session.activity).toMatchObject({ state: "idle", tabId: 9 });
+    vi.advanceTimersByTime(1000);
+    expect(session.activity).toBeNull();
   });
 
   it("keeps the timer off while another call is still running", () => {

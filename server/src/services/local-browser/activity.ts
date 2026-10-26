@@ -23,6 +23,11 @@ function armIdleTimer(session: LiveSession): void {
   idleTimers.set(session, timer);
 }
 
+export function touchActivity(session: LiveSession): void {
+  if (!session.activity || session.operatingCalls > 0) return;
+  armIdleTimer(session);
+}
+
 export const LOCAL_BROWSER_TAB_TOOLS: ReadonlySet<string> = new Set([
   "local_browser_open",
   "local_browser_navigate",

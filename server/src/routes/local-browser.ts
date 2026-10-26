@@ -13,6 +13,7 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import { badRequest, forbidden, notFound, payloadTooLarge } from "../errors.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { touchActivity } from "../services/local-browser/activity.js";
 import { localBrowserFailure } from "../services/local-browser/errors.js";
 import { createPairing, pairingResult, pairingStatusForCompany } from "../services/local-browser/pairing.js";
 import { subscribeViewer, viewerCount } from "../services/local-browser/registry.js";
@@ -311,6 +312,7 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
       return;
     }
     const body = parsedInput.data;
+    touchActivity(session);
     const actor = auditActor(req);
     const startedAt = Date.now();
     try {
