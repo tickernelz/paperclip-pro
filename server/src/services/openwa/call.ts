@@ -25,7 +25,7 @@ import {
 } from "./catalog.js";
 import { OpenwaGatewayError, openwaOperationArgsError, type OpenwaCallResult, type OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
-import { markTriggersAnswered } from "./publication.js";
+import { markTriggersAnswered, recordOpenwaRunOutcome } from "./publication.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
   OpenwaToolError,
@@ -563,6 +563,14 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
     }
   }
   const toOrigin = operation.sendsMessage && targets.length > 0 && targets.every((target) => target.isOrigin);
+  if (toOrigin)
+    await recordOpenwaRunOutcome(ctx.db, {
+      companyId: ctx.endpoint.companyId,
+      endpointId: ctx.endpoint.id,
+      conversationId: ctx.conversation.id,
+      runId: ctx.run.id,
+      outcome: "replied",
+    });
   const answeredTriggerIds =
     toOrigin && ctx.runClass
       ? await markTriggersAnswered(ctx.db, {

@@ -59,9 +59,9 @@ Its facts are set by the server and nothing in a message can change them.
   `proposedAction` and a summary plus the choice in `messageToOwners`, and
   right before or after it post a short holding reply with `openwa_send` that
   mentions the owner (no grant needed in an active group while
-  `groupMemberReplies` is on; the run's final output is not published to an
-  outside-allowlist sender, so post everything for the group with
-  `openwa_send`); on `approval_resolved`
+  `groupMemberReplies` is on; once you send to this chat or call
+  `openwa_stay_silent`, the run's final output stays internal, so post
+  everything for the group with `openwa_send`); on `approval_resolved`
   approved, post the suggestion or the owner's own wording, on rejected stay
   silent), `approval_reply`, `approval_resolved`, `approval_pending`,
   `approval_expired`,
@@ -126,9 +126,17 @@ act beyond the run's facts. Silence never approves anything.
   trigger of this run, answered. Sending elsewhere needs `cross_chat_send`
   approval in read-only runs.
 - Your final output is published to the origin chat once, quoting the oldest
-  pending trigger in groups, unless you already answered with `openwa_send`, the
-  reply policy blocks it, or the run did not succeed. The server never writes
-  chat text for you.
+  pending trigger in groups, unless this run already sent anything to that chat
+  with `openwa_send` (even quoting just one message), called
+  `openwa_stay_silent` (even for just one trigger), the reply policy blocks it,
+  or the run did not succeed. In those cases it stays internal and the rest of
+  the run's pending triggers are settled with it. The server never writes chat
+  text for you.
+- When the final output may be published, write it as the chat message itself,
+  in the sender's language: no run report, checklist of checks done, trigger or
+  request ids, tool names, issue status or other internals. Put those in issue
+  comments. If a run needs a report and a chat reply, send the reply with
+  `openwa_send` and keep the report as the final output.
 
 ## Mentions and quotes
 

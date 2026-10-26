@@ -35,6 +35,7 @@ type PublicationRow = typeof chatPublications.$inferSelect;
 
 export const OPENWA_PUBLICATION_ACTION_KIND = "openwa_publication";
 export const OPENWA_LAST_OUTPUT_ACTION_KIND = "openwa_last_output";
+export const OPENWA_RUN_OUTCOME_ACTION_KIND = "openwa_run_outcome";
 const PUBLICATION_KEY = /^(comment|attachment):[0-9a-f-]{36}:[0-9a-f-]{36}$/i;
 const UNSUCCESSFUL_RUN_STATUSES = new Set(["failed", "timed_out", "cancelled", "interrupted"]);
 
@@ -47,6 +48,8 @@ export type OpenwaSuppressionReason =
   | "approval_acknowledged"
   | "run_not_succeeded"
   | "completion_report"
+  | "replied_by_tool"
+  | "stayed_silent"
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
@@ -106,6 +109,29 @@ function publicationActionId(publicationId: string): string {
 
 function runPublishedActionId(runId: string, conversationId: string): string {
   return "openwa-run-published:" + runId + ":" + conversationId;
+}
+
+function runOutcomeActionId(outcome: "replied" | "silenced", runId: string, conversationId: string): string {
+  return "openwa-run-" + outcome + ":" + runId + ":" + conversationId;
+}
+
+/** Records that a run already replied in, or deliberately stayed silent in, a conversation, so its final output stays internal. */
+export async function recordOpenwaRunOutcome(
+  db: DbOrTransaction,
+  input: { companyId: string; endpointId: string; conversationId: string; runId: string; outcome: "replied" | "silenced" },
+): Promise<void> {
+  await db
+    .insert(chatActions)
+    .values({
+      companyId: input.companyId,
+      endpointId: input.endpointId,
+      conversationId: input.conversationId,
+      kind: OPENWA_RUN_OUTCOME_ACTION_KIND,
+      providerActionId: runOutcomeActionId(input.outcome, input.runId, input.conversationId),
+      payload: { version: 1, runId: input.runId, outcome: input.outcome },
+      status: "processed",
+    })
+    .onConflictDoNothing();
 }
 
 function lastOutputActionId(conversationId: string): string {
@@ -183,10 +209,12 @@ export async function decideOpenwaRunPublication(
   return db.transaction(async (tx) => {
     const actionKey = publicationActionId(publication.id);
     const runKey = runPublishedActionId(run.runId, conversation.id);
+    const repliedKey = runOutcomeActionId("replied", run.runId, conversation.id);
+    const silencedKey = runOutcomeActionId("silenced", run.runId, conversation.id);
     const decided = await tx
       .select({ providerActionId: chatActions.providerActionId, payload: chatActions.payload })
       .from(chatActions)
-      .where(and(eq(chatActions.endpointId, endpoint.id), inArray(chatActions.providerActionId, [actionKey, runKey])))
+      .where(and(eq(chatActions.endpointId, endpoint.id), inArray(chatActions.providerActionId, [actionKey, runKey, repliedKey, silencedKey])))
       .for("update");
     const existing = decided.find((row) => row.providerActionId === actionKey);
     if (existing) {
@@ -243,6 +271,8 @@ export async function decideOpenwaRunPublication(
     if (!reason && UNSUCCESSFUL_RUN_STATUSES.has(run.status)) reason = "run_not_succeeded";
     if (!reason && runEvent(run.contextSnapshot) === "task_completion") reason = "completion_report";
     if (!reason && pending.length === 0) reason = "no_pending_trigger";
+    if (!reason && decided.some((row) => row.providerActionId === repliedKey)) reason = "replied_by_tool";
+    if (!reason && decided.some((row) => row.providerActionId === silencedKey)) reason = "stayed_silent";
     if (!reason && runClass === "owner") {
       const [resolvedHere] = await tx
         .select({ id: chatAuditEntries.id })
@@ -360,10 +390,11 @@ export async function decideOpenwaRunPublication(
         retentionDays: policy.auditContentRetentionDays,
         occurredAt: now,
       });
-      if (reason === "approval_acknowledged")
+      const settledState = reason === "approval_acknowledged" || reason === "replied_by_tool" ? "answered" : reason === "stayed_silent" ? "silenced" : null;
+      if (settledState)
         await tx
           .update(chatDeliveries)
-          .set({ answerState: "answered", updatedAt: now })
+          .set({ answerState: settledState, updatedAt: now })
           .where(and(eq(chatDeliveries.endpointId, endpoint.id), inArray(chatDeliveries.id, triggerIds), eq(chatDeliveries.answerState, "pending")));
       const reply = pending.find((trigger) => deliveryIds.includes(trigger.id)) ?? pending.at(-1)!;
       const acknowledged = reason === "approval_acknowledged" ? triggerWaMessageId(reply.normalizedEvent) : null;

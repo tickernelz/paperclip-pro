@@ -65,7 +65,7 @@ import { openwaAttachmentLocalPaths, type OpenwaIngestedMedia, type OpenwaMediaS
 import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, type OpenwaOwnerService } from "./owners.js";
 import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
-import { markTriggersAnswered } from "./publication.js";
+import { markTriggersAnswered, recordOpenwaRunOutcome } from "./publication.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
   createOpenwaWrite,
@@ -1066,6 +1066,14 @@ async function openwaSend(ctx: ToolContext, args: Args): Promise<Record<string, 
       instruction: "The outcome is not confirmed yet. Do not send again with a new key; retry later with the same idempotencyKey to reconcile.",
     };
   await releaseReport(true);
+  if (target.isOrigin && !ctx.completion)
+    await recordOpenwaRunOutcome(ctx.db, {
+      companyId: ctx.endpoint.companyId,
+      endpointId: ctx.endpoint.id,
+      conversationId: ctx.conversation.id,
+      runId: ctx.run.id,
+      outcome: "replied",
+    });
   const answeredTriggerIds =
     target.isOrigin && ctx.runClass && !ctx.completion
       ? await markTriggersAnswered(ctx.db, {
@@ -1411,6 +1419,13 @@ async function openwaStaySilent(ctx: ToolContext, args: Args): Promise<Record<st
         : and(visibleTriggerScope(ctx), eq(chatDeliveries.triggerClass, runClass)),
     )
     .returning({ id: chatDeliveries.id });
+  await recordOpenwaRunOutcome(ctx.db, {
+    companyId: ctx.endpoint.companyId,
+    endpointId: ctx.endpoint.id,
+    conversationId: ctx.conversation.id,
+    runId: ctx.run.id,
+    outcome: "silenced",
+  });
   const silenced = rows.map((row) => row.id);
   const skipped = listed ? listed.filter((id) => !silenced.includes(id)) : [];
   return { silenced, ...(skipped.length ? { notPending: skipped } : {}) };

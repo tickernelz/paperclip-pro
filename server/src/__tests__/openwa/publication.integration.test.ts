@@ -45,7 +45,7 @@ import { createOpenwaGatewayClient } from "../../services/openwa/gateway.js";
 import { openwaChatKey, sendThroughRegistry } from "../../services/openwa/outbound.js";
 import type { OpenwaScheduledWakeClock } from "../../services/openwa/scheduled-wakes.js";
 import { readOpenwaRunContext } from "../../services/openwa/authority.js";
-import { markTriggersAnswered, readOpenwaLastOutput } from "../../services/openwa/publication.js";
+import { markTriggersAnswered, readOpenwaLastOutput, recordOpenwaRunOutcome } from "../../services/openwa/publication.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 
 const SESSION_ID = "22222222-3333-4444-8555-666666666666";
@@ -647,6 +647,68 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     await runOutput(t, c, { triggerClass: "other", body: "mention reply", deliveryIds: [mention.id] });
     await drain(t);
     expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "mention reply", quotedMessageId: mention.waMessageId })]);
+  }, 90_000);
+
+  it("keeps the final output internal when the run stayed silent on only some of a group burst", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000333");
+    const first = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    const second = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    const run = await runOutput(t, c, { triggerClass: "other", body: "Handled the two requests on ZHA-1. Checks done: ...", deliveryIds: [first.id, second.id] });
+    await db.update(chatDeliveries).set({ answerState: "silenced" }).where(eq(chatDeliveries.id, first.id));
+    await recordOpenwaRunOutcome(db, { companyId: t.companyId, endpointId: t.endpointId, conversationId: c.id, runId: run.runId, outcome: "silenced" });
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect((await publicationState(run.publicationId)).state).toBe("cancelled");
+    const [suppressed] = await audits(t, "publication_suppressed");
+    expect(suppressed).toMatchObject({ runId: run.runId, metadata: expect.objectContaining({ reason: "stayed_silent" }) });
+    expect(await answerStates([first.id, second.id])).toEqual(["silenced", "silenced"]);
+  }, 90_000);
+
+  it("keeps the final output internal once the run replied in the chat with a quoted send, and settles the rest of the burst", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000444");
+    const first = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    const second = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"] });
+    const run = await runOutput(t, c, { triggerClass: "other", body: "Reply sent to the group. ZHA-2 stays in_progress.", deliveryIds: [first.id, second.id] });
+    expect(
+      await markTriggersAnswered(db, {
+        companyId: t.companyId,
+        endpointId: t.endpointId,
+        conversationId: c.id,
+        chatKey: GROUP,
+        quotedMessageId: second.waMessageId,
+        runClass: "other",
+        visibleBefore: new Date(),
+        deliveryIds: [first.id, second.id],
+      }),
+    ).toEqual([second.id]);
+    await recordOpenwaRunOutcome(db, { companyId: t.companyId, endpointId: t.endpointId, conversationId: c.id, runId: run.runId, outcome: "replied" });
+    await drain(t);
+    expect(t.gateway.sends).toHaveLength(0);
+    expect((await publicationState(run.publicationId)).state).toBe("cancelled");
+    const [suppressed] = await audits(t, "publication_suppressed");
+    expect(suppressed).toMatchObject({ runId: run.runId, metadata: expect.objectContaining({ reason: "replied_by_tool" }) });
+    expect(await answerStates([first.id, second.id])).toEqual(["answered", "answered"]);
+    expect(await readOpenwaLastOutput(db, { companyId: t.companyId, endpointId: t.endpointId, conversationId: c.id })).toMatchObject({
+      runId: run.runId,
+      suppressed: true,
+      reason: "replied_by_tool",
+    });
+  }, 90_000);
+
+  it("still publishes the final output of another run in the same chat that did not reply or stay silent", async () => {
+    const t = await setup();
+    const c = await conversation(t, GROUP, { activation: "on" });
+    const stranger = await principal(t, "628999000555");
+    const earlier = await runOutput(t, c, { triggerClass: "other", body: "earlier run notes", deliveryIds: [] });
+    await recordOpenwaRunOutcome(db, { companyId: t.companyId, endpointId: t.endpointId, conversationId: c.id, runId: earlier.runId, outcome: "replied" });
+    const mention = await trigger(t, c, { triggerClass: "other", role: "outside_allowlist", principalId: stranger, rules: ["agent_mentioned"], receivedAt: new Date() });
+    await runOutput(t, c, { triggerClass: "other", body: "group reply", deliveryIds: [mention.id] });
+    await drain(t);
+    expect(t.gateway.sends).toEqual([expect.objectContaining({ text: "group reply", quotedMessageId: mention.waMessageId })]);
   }, 90_000);
 
   it("suppresses a reply to an addressed outside-allowlist group member when groupMemberReplies is off", async () => {
