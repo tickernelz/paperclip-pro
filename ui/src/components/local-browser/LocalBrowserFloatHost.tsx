@@ -179,7 +179,7 @@ export function LocalBrowserFloatHost({ companyId }: { companyId: string | null 
     <aside
       aria-label="Agent browser"
       data-testid="local-browser-float-panel"
-      className="fixed bottom-4 right-4 z-50 flex w-[22rem] max-w-[calc(100vw-2rem)] flex-col gap-2 rounded-lg border bg-background p-3 shadow-xl"
+      className="fixed bottom-4 right-4 z-50 flex w-(--sz-22rem) max-w-(--sz-calc-4) flex-col gap-2 rounded-lg border bg-background p-3 shadow-xl"
     >
       <div className="flex items-center justify-between gap-2">
         <p className="min-w-0 truncate text-xs font-medium">{tabTitle}</p>
