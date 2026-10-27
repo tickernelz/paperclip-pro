@@ -3996,6 +3996,7 @@ export function heartbeatService(
           context.paperclipScratch = {
             type: "heartbeat_run",
             dir: runScratch.dir,
+            tempDir: runScratch.tempDir,
             cleanupPolicy: "terminal_run",
             marker: HEARTBEAT_RUN_SCRATCH_MARKER,
             tempKeysApplied: scratchEnv.tempKeysApplied,

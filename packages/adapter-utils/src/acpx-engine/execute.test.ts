@@ -2087,6 +2087,27 @@ describe("shared ACPX engine runtime behavior", () => {
     expect(changed.result.sessionParams?.configFingerprint).not.toBe(first.result.sessionParams?.configFingerprint);
   });
 
+  it("keeps the separate runtime temp root out of session identity", async () => {
+    const root = await makeTempRoot();
+    const config = { agentCommand: "node ./fake-acp.js", stateDir: path.join(root, "state") };
+    async function withScratch(dir: string, tempDir: string, userTemp?: string) {
+      return runExecutor({ ...config, env: {
+        PAPERCLIP_RUN_SCRATCH_DIR: dir, PAPERCLIP_TASK_SCRATCH_DIR: dir,
+        PAPERCLIP_SCRATCH_DIR: dir, PAPERCLIP_TMPDIR: tempDir,
+        TEMP: tempDir, TMP: tempDir, TMPDIR: userTemp ?? tempDir,
+      } }, { context: { taskId: "issue-1", paperclipScratch: {
+        type: "heartbeat_run", dir, tempDir,
+        tempKeysApplied: userTemp ? ["TEMP", "TMP"] : ["TMPDIR", "TEMP", "TMP"],
+      } } });
+    }
+    const first = await withScratch(path.join(root, "run-1"), path.join(root, "tmp-1"));
+    const second = await withScratch(path.join(root, "run-2"), path.join(root, "tmp-2"));
+    const userTempOne = await withScratch(path.join(root, "run-3"), path.join(root, "tmp-3"), "/custom/tmp-1");
+    const userTempTwo = await withScratch(path.join(root, "run-4"), path.join(root, "tmp-4"), "/custom/tmp-2");
+    expect(second.result.sessionParams?.configFingerprint).toBe(first.result.sessionParams?.configFingerprint);
+    expect(userTempTwo.result.sessionParams?.configFingerprint).not.toBe(userTempOne.result.sessionParams?.configFingerprint);
+  });
+
   it("busts the session fingerprint when a stable configured PAPERCLIP_* value rotates", async () => {
     const root = await makeTempRoot();
     const stateDir = path.join(root, "state");

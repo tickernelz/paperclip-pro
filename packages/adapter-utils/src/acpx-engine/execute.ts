@@ -2107,6 +2107,9 @@ async function buildRuntime(input: {
       ...(Array.isArray(scratch.tempKeysApplied) ? scratch.tempKeysApplied.filter((key): key is string =>
         typeof key === "string" && ["TMPDIR", "TEMP", "TMP"].includes(key)) : [])])
     : new Set<string>();
+  const scratchPaths = new Set(
+    [scratch.dir, scratch.tempDir].filter((value): value is string => typeof value === "string"),
+  );
   for (const [key, value] of Object.entries(shapedEnvConfig)) {
     if (typeof value !== "string") continue;
     // Runtime PAPERCLIP_* always wins over config: skip a PAPERCLIP_* key that
@@ -2120,7 +2123,7 @@ async function buildRuntime(input: {
     // The server rotates run-owned scratch paths on every wake. Still forward
     // them, but only hash actual adapter settings. User-supplied temp overrides
     // are absent from tempKeysApplied and keep their compatibility protection.
-    if (!scratchKeys.has(key) || value !== scratch.dir) resolvedAdapterEnv[key] = value;
+    if (!scratchKeys.has(key) || !scratchPaths.has(value)) resolvedAdapterEnv[key] = value;
   }
   if (authToken) env.PAPERCLIP_API_KEY = authToken;
   // For the claude agent, set model via ANTHROPIC_MODEL at startup rather than
