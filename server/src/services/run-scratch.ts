@@ -16,6 +16,7 @@ export interface HeartbeatRunScratchMetadata {
 
 export interface HeartbeatRunScratch {
   dir: string;
+  tempDir: string;
   markerPath: string;
   metadata: HeartbeatRunScratchMetadata;
 }
@@ -32,6 +33,7 @@ export type HeartbeatRunScratchCleanupResult =
 const TEMP_ENV_KEYS = ["TMPDIR", "TEMP", "TMP"] as const;
 const SCRATCH_DIR_PREFIX = "pcr-";
 const LEGACY_SCRATCH_DIR_PREFIX = "paperclip-run-";
+const RUNTIME_TEMP_DIR_PREFIX = "pctmp-";
 const RUN_SEGMENT_CHARS = 8;
 
 function runPathSegment(runId: string): string {
@@ -41,11 +43,6 @@ function runPathSegment(runId: string): string {
     .replace(/[^a-z0-9]+/g, "")
     .slice(0, RUN_SEGMENT_CHARS);
   return normalized || "run";
-}
-
-function hasScratchDirPrefix(dir: string): boolean {
-  const name = path.basename(dir);
-  return name.startsWith(SCRATCH_DIR_PREFIX) || name.startsWith(LEGACY_SCRATCH_DIR_PREFIX);
 }
 
 function isPathInside(parent: string, child: string): boolean {
@@ -89,7 +86,9 @@ export async function prepareHeartbeatRunScratch(input: {
   issueIdentifier?: string | null;
   now?: Date;
 }): Promise<HeartbeatRunScratch> {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), `${SCRATCH_DIR_PREFIX}${runPathSegment(input.runId)}-`));
+  const segment = runPathSegment(input.runId);
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), `${SCRATCH_DIR_PREFIX}${segment}-`));
+  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), `${RUNTIME_TEMP_DIR_PREFIX}${segment}-`));
   const markerPath = path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER);
   const metadata: HeartbeatRunScratchMetadata = {
     version: 1,
@@ -100,8 +99,12 @@ export async function prepareHeartbeatRunScratch(input: {
     issueIdentifier: input.issueIdentifier ?? null,
     createdAt: (input.now ?? new Date()).toISOString(),
   };
-  await fs.writeFile(markerPath, `${JSON.stringify(metadata, null, 2)}\n`, { mode: 0o600 });
-  return { dir, markerPath, metadata };
+  const serialized = `${JSON.stringify(metadata, null, 2)}\n`;
+  await Promise.all([
+    fs.writeFile(markerPath, serialized, { mode: 0o600 }),
+    fs.writeFile(path.join(tempDir, HEARTBEAT_RUN_SCRATCH_MARKER), serialized, { mode: 0o600 }),
+  ]);
+  return { dir, tempDir, markerPath, metadata };
 }
 
 export function buildHeartbeatRunScratchEnv(
@@ -112,16 +115,47 @@ export function buildHeartbeatRunScratchEnv(
     PAPERCLIP_RUN_SCRATCH_DIR: scratch.dir,
     PAPERCLIP_TASK_SCRATCH_DIR: scratch.dir,
     PAPERCLIP_SCRATCH_DIR: scratch.dir,
-    PAPERCLIP_TMPDIR: scratch.dir,
+    PAPERCLIP_TMPDIR: scratch.tempDir,
   };
   const tempKeysApplied: string[] = [];
   for (const key of TEMP_ENV_KEYS) {
     const existing = existingEnv[key];
     if (typeof existing === "string" && existing.trim().length > 0) continue;
-    env[key] = scratch.dir;
+    env[key] = scratch.tempDir;
     tempKeysApplied.push(key);
   }
   return { env, tempKeysApplied };
+}
+
+async function removeOwnedScratchDir(input: {
+  dir: string;
+  ownedBy: HeartbeatRunScratchMetadata;
+  prefixes: readonly string[];
+}): Promise<"removed" | "missing" | "unmarked" | "owner_mismatch"> {
+  const tmpRoot = path.resolve(os.tmpdir());
+  const dir = path.resolve(input.dir);
+  if (!isPathInside(tmpRoot, dir)) return "unmarked";
+  const name = path.basename(dir);
+  if (!input.prefixes.some((prefix) => name.startsWith(prefix))) return "unmarked";
+  try {
+    const stats = await fs.stat(dir);
+    if (!stats.isDirectory()) return "missing";
+  } catch {
+    return "missing";
+  }
+
+  const marker = await readMarker(path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER));
+  if (!marker) return "unmarked";
+  if (
+    marker.companyId !== input.ownedBy.companyId ||
+    marker.agentId !== input.ownedBy.agentId ||
+    marker.runId !== input.ownedBy.runId
+  ) {
+    return "owner_mismatch";
+  }
+
+  await fs.rm(dir, { recursive: true, force: true });
+  return "removed";
 }
 
 export async function cleanupHeartbeatRunScratch(input: {
@@ -129,31 +163,22 @@ export async function cleanupHeartbeatRunScratch(input: {
   processGroupId?: number | null;
   isProcessGroupAlive?: (processGroupId: number | null | undefined) => boolean;
 }): Promise<HeartbeatRunScratchCleanupResult> {
-  const tmpRoot = path.resolve(os.tmpdir());
   const dir = path.resolve(input.scratch.dir);
-  if (!isPathInside(tmpRoot, dir) || !hasScratchDirPrefix(dir)) {
-    return { removed: false, dir, reason: "unmarked" };
-  }
-  try {
-    const stats = await fs.stat(dir);
-    if (!stats.isDirectory()) return { removed: false, dir, reason: "missing" };
-  } catch {
-    return { removed: false, dir, reason: "missing" };
-  }
-
-  const marker = await readMarker(path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER));
-  if (!marker) return { removed: false, dir, reason: "unmarked" };
-  if (
-    marker.companyId !== input.scratch.metadata.companyId ||
-    marker.agentId !== input.scratch.metadata.agentId ||
-    marker.runId !== input.scratch.metadata.runId
-  ) {
-    return { removed: false, dir, reason: "owner_mismatch" };
-  }
   if (input.isProcessGroupAlive?.(input.processGroupId) === true) {
     return { removed: false, dir, reason: "process_group_alive" };
   }
 
-  await fs.rm(dir, { recursive: true, force: true });
-  return { removed: true, dir };
+  const outcome = await removeOwnedScratchDir({
+    dir,
+    ownedBy: input.scratch.metadata,
+    prefixes: [SCRATCH_DIR_PREFIX, LEGACY_SCRATCH_DIR_PREFIX],
+  });
+  await removeOwnedScratchDir({
+    dir: input.scratch.tempDir,
+    ownedBy: input.scratch.metadata,
+    prefixes: [RUNTIME_TEMP_DIR_PREFIX],
+  });
+
+  if (outcome === "removed") return { removed: true, dir };
+  return { removed: false, dir, reason: outcome };
 }

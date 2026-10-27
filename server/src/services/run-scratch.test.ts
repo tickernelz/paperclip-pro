@@ -42,6 +42,21 @@ describe("heartbeat run scratch cleanup", () => {
 
     expect(result).toEqual({ removed: true, dir: scratch.dir });
     await expect(fs.stat(scratch.dir)).rejects.toMatchObject({ code: "ENOENT" });
+    await expect(fs.stat(scratch.tempDir)).rejects.toMatchObject({ code: "ENOENT" });
+  });
+
+  it("still removes the runtime temp root after the agent deleted its scratch directory", async () => {
+    const scratch = await trackScratch(await prepareHeartbeatRunScratch({
+      companyId: "company-1",
+      agentId: "agent-1",
+      runId: "run-1",
+    }));
+    await fs.rm(scratch.dir, { recursive: true, force: true });
+
+    const result = await cleanupHeartbeatRunScratch({ scratch });
+
+    expect(result).toEqual({ removed: false, dir: scratch.dir, reason: "missing" });
+    await expect(fs.stat(scratch.tempDir)).rejects.toMatchObject({ code: "ENOENT" });
   });
 
   it("keeps scratch paths short enough for nested Chrome singleton sockets", async () => {
@@ -56,7 +71,7 @@ describe("heartbeat run scratch cleanup", () => {
         issueIdentifier: "ZHA-720 with a long, descriptive identifier",
       }));
       const chromeSocket = path.join(
-        scratch.dir,
+        scratch.tempDir,
         "tmp7de1x0ir_chrome_odoo",
         "com.google.Chrome.osrEVc",
         "SingletonSocket",
@@ -65,6 +80,7 @@ describe("heartbeat run scratch cleanup", () => {
       expect(path.dirname(scratch.dir)).toBe("/tmp");
       expect(path.basename(scratch.dir)).toMatch(/^pcr-5059b89f-[A-Za-z0-9]{6}$/);
       expect(scratch.dir.length).toBeLessThanOrEqual(30);
+      expect(scratch.tempDir.length).toBeLessThanOrEqual(30);
       expect(Buffer.byteLength(chromeSocket) + 1).toBeLessThanOrEqual(108);
       expect(JSON.parse(await fs.readFile(scratch.markerPath, "utf8"))).toMatchObject({
         runId: "5059b89f-ecc0-4a6e-9d6e-1f0b1c2d3e4f",
@@ -81,6 +97,7 @@ describe("heartbeat run scratch cleanup", () => {
     cleanupDirs.add(dir);
     const scratch: HeartbeatRunScratch = {
       dir,
+      tempDir: path.join(dir, "runtime-temp"),
       markerPath: path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER),
       metadata: {
         version: 1,
@@ -105,6 +122,7 @@ describe("heartbeat run scratch cleanup", () => {
     cleanupDirs.add(dir);
     const scratch: HeartbeatRunScratch = {
       dir,
+      tempDir: path.join(dir, "runtime-temp"),
       markerPath: path.join(dir, HEARTBEAT_RUN_SCRATCH_MARKER),
       metadata: {
         version: 1,
@@ -172,10 +190,30 @@ describe("heartbeat run scratch cleanup", () => {
     expect(result.env.PAPERCLIP_RUN_SCRATCH_DIR).toBe(scratch.dir);
     expect(result.env.PAPERCLIP_TASK_SCRATCH_DIR).toBe(scratch.dir);
     expect(result.env.PAPERCLIP_SCRATCH_DIR).toBe(scratch.dir);
-    expect(result.env.PAPERCLIP_TMPDIR).toBe(scratch.dir);
+    expect(result.env.PAPERCLIP_TMPDIR).toBe(scratch.tempDir);
     expect(result.env.TMPDIR).toBeUndefined();
-    expect(result.env.TEMP).toBe(scratch.dir);
-    expect(result.env.TMP).toBe(scratch.dir);
+    expect(result.env.TEMP).toBe(scratch.tempDir);
+    expect(result.env.TMP).toBe(scratch.tempDir);
     expect(result.tempKeysApplied).toEqual(["TEMP", "TMP"]);
+  });
+
+  it("keeps the runtime temp root when the agent clears its scratch directory", async () => {
+    const scratch = await trackScratch(await prepareHeartbeatRunScratch({
+      companyId: "company-1",
+      agentId: "agent-1",
+      runId: "abc76bcf-3b34-4ca9-b7c0-aa194cdc67b0",
+    }));
+    await fs.writeFile(path.join(scratch.dir, "main-wt", "README.md"), "agent scratch").catch(async () => {
+      await fs.mkdir(path.join(scratch.dir, "main-wt"));
+      await fs.writeFile(path.join(scratch.dir, "main-wt", "README.md"), "agent scratch");
+    });
+
+    await fs.rm(scratch.dir, { recursive: true, force: true });
+
+    const runtimeTemp = await fs.mkdtemp(path.join(scratch.tempDir, "omp-rpc-output-"));
+    await fs.writeFile(path.join(runtimeTemp, "output"), "final output");
+    expect(path.dirname(runtimeTemp)).toBe(scratch.tempDir);
+    await expect(fs.readFile(path.join(runtimeTemp, "output"), "utf8")).resolves.toBe("final output");
+    expect(scratch.tempDir.startsWith(scratch.dir + path.sep)).toBe(false);
   });
 });
