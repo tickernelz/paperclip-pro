@@ -28,8 +28,8 @@ The bundled WOFF2 files are included unmodified from the upstream v4.1 release.
   (SHA-256 `fe471e538392f51910faab985fa8e192a39dd3426125edd15b71b3680df0e749`)
 - Bundled file: `SymbolsNerdFontMono-v3.5.1.woff2`
   (SHA-256 `b9e4e6812ea40d1a4679ecc349a74d38792acc8382f235c30b69a820bfef4109`)
-- Conversion: `uvx --from 'fonttools[woff]==4.68.0' fonttools ttLib.woff2 compress -o SymbolsNerdFontMono-v3.5.1.woff2 SymbolsNerdFontMono-Regular.ttf`
-  (brotli 1.2.1); glyphs and tables are unchanged, only the container is WOFF2.
+- Conversion: `uvx --from 'fonttools[woff]==4.68.0' --with brotli==1.2.1 fonttools ttLib.woff2 compress -o SymbolsNerdFontMono-v3.5.1.woff2 SymbolsNerdFontMono-Regular.ttf`;
+  glyphs and tables are unchanged, only the container is WOFF2.
 - License: MIT, `NerdFonts-LICENSE` (copied from the archive). The icon sets
   inside the font keep their own licenses, listed in `NerdFonts-README.md`
   (copied from the archive).
