@@ -96,8 +96,8 @@ describe("OpenWA settings validation", () => {
 
 describe("OpenWA health and capability warnings", () => {
   const health: OpenwaEndpointHealth = {
-    gatewayVersion: "0.24.0",
-    pinnedVersion: "0.24.0",
+    gatewayVersion: "0.27.1",
+    pinnedVersion: "0.27.1",
     engine: "whatsapp-web.js",
     session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: null },
     pacing: { attested: true, observedAt: null },

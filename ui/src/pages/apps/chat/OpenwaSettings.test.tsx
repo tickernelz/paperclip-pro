@@ -51,8 +51,8 @@ const endpoint = {
 } as ChatEndpoint;
 
 const health = {
-  gatewayVersion: "0.23.7",
-  pinnedVersion: "0.23.7",
+  gatewayVersion: "0.27.1",
+  pinnedVersion: "0.27.1",
   engine: "whatsapp-web.js",
   session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: null },
   pacing: { attested: true, observedAt: null },
@@ -139,7 +139,7 @@ describe("OpenWA settings", () => {
     render();
     await loaded();
     const card = section("Gateway health");
-    expect(card.textContent).toContain("0.23.7");
+    expect(card.textContent).toContain("0.27.1");
     expect(card.textContent).toContain("ready · +62xxx...5678");
     expect(card.textContent).toContain("Attested · not yet observed");
     await vi.waitFor(() => expect(container.querySelector('[aria-label="Capability warnings"]')).not.toBeNull());

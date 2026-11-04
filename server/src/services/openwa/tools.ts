@@ -1365,7 +1365,7 @@ async function openwaFind(ctx: ToolContext, args: Args): Promise<Record<string, 
   if (cursor && (!cursor.startsWith("f:") || !Number.isInteger(offset) || offset <= 0 || offset >= FIND_LIMIT * 2))
     throw new OpenwaToolError(400, "invalid_cursor", "The cursor is malformed");
   const [contactsResult, chatsResult] = await gatewayCall(ctx, (gateway) =>
-    Promise.all([gateway.call("ContactController_findAll", { limit: "1000" }), gateway.call("SessionController_getChats", { limit: "1000" })]),
+    Promise.all([gateway.call("ContactController_findAll", { limit: 1000 }), gateway.call("SessionController_getChats", { limit: 1000 })]),
   );
   const list = (result: unknown) => {
     const data = record(result).data;

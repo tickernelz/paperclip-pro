@@ -4,10 +4,10 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const GATEWAY_VERSION = "0.24.0";
+const GATEWAY_VERSION = "0.27.1";
 const DOC_PATH = resolve(repoRoot, "scripts/openwa/openapi-" + GATEWAY_VERSION + ".json");
 const OUT_PATH = resolve(repoRoot, "packages/shared/src/openwa-operations.ts");
-const EXPECTED_OPERATION_COUNT = 202;
+const EXPECTED_OPERATION_COUNT = 205;
 const HTTP_METHODS = ["get", "post", "put", "patch", "delete", "head", "options"];
 const MAX_DESCRIPTION = 160;
 
@@ -121,13 +121,15 @@ const OPERATOR_ROLE = [
   "CallController_reject", "CatalogController_sendProduct", "ChannelController_create",
   "ChannelController_demoteAdmin", "ChannelController_mute", "ChannelController_remove",
   "ChannelController_subscribe", "ChannelController_transferOwnership", "ChannelController_unsubscribe",
-  "ContactController_blockContact", "ContactController_deleteContact", "ContactController_unblockContact",
+  "ContactController_blockContact", "ContactController_checkNumber", "ContactController_deleteContact",
+  "ContactController_getContactLid", "ContactController_unblockContact",
   "ContactController_upsertContact", "GroupController_addParticipants", "GroupController_approveMembershipRequests",
   "GroupController_create", "GroupController_deletePicture", "GroupController_demoteParticipants",
   "GroupController_getInviteCode", "GroupController_join", "GroupController_leave",
   "GroupController_promoteParticipants", "GroupController_rejectMembershipRequests",
   "GroupController_removeParticipants", "GroupController_revokeInviteCode", "GroupController_setDescription",
-  "GroupController_setPicture", "GroupController_setSubject", "GroupController_updateSettings",
+  "GroupController_setMemberLabel", "GroupController_setPicture", "GroupController_setSubject",
+  "GroupController_updateSettings",
   "LabelController_addLabelToChat", "LabelController_deleteLabel", "LabelController_removeLabelFromChat",
   "LabelController_upsertLabel", "MediaController_convertVideo", "MediaController_convertVoice",
   "MessageController_cancelBatch", "MessageController_clickButton", "MessageController_deleteMessage",
@@ -145,7 +147,7 @@ const OPERATOR_ROLE = [
   "SessionController_muteChat", "SessionController_pinChat", "SessionController_requestPairingCode",
   "SessionController_sendChatState", "SessionController_setOnlinePresence", "SessionController_start",
   "SessionController_stop", "SessionController_subscribeToPresence", "SessionController_updateConfig",
-  "SessionController_updateProxy", "StatusController_deleteStatus", "StatusController_sendImageStatus",
+  "StatusController_deleteStatus", "StatusController_sendImageStatus",
   "StatusController_sendTextStatus", "StatusController_sendVideoStatus", "StatusController_sendVoiceStatus",
   "TemplateController_create", "TemplateController_delete", "TemplateController_findBySession",
   "TemplateController_findOne", "TemplateController_update", "WebhookController_create",
@@ -167,8 +169,9 @@ const ADMIN_ROLE = [
   "PluginsController_getConfigUi", "PluginsController_healthCheck", "PluginsController_install",
   "PluginsController_installFromUrl", "PluginsController_uninstall", "PluginsController_update",
   "PluginsController_updateConfig", "PluginsController_updateSessionConfig", "PluginsController_updateSessions",
-  "RedriveController_redriveInstance", "SettingsController_get", "StatsController_getMessageStats",
-  "StatsController_getOverview", "WebhooksListController_deliveryFailures",
+  "RedriveController_redriveInstance", "SessionController_updateProxy", "SettingsController_get",
+  "StatsController_getMessageStats", "StatsController_getOverview", "WebhooksListController_deliveryFailures",
+  "WebhooksListController_redriveDeliveryFailures",
 ];
 
 const UNSCOPED_KEY = [
@@ -200,7 +203,8 @@ const UNAVAILABLE_ON_ENGINE = {
     "CallController_reject", "CatalogController_getCatalog", "CatalogController_getProduct",
     "CatalogController_getProducts", "CatalogController_sendProduct", "ChannelController_demoteAdmin",
     "ChannelController_subscribe", "ChannelController_transferOwnership", "GroupController_create",
-    "LabelController_deleteLabel", "LabelController_upsertLabel", "MessageController_clickButton",
+    "GroupController_setMemberLabel", "LabelController_deleteLabel", "LabelController_upsertLabel",
+    "MessageController_clickButton",
     "SessionController_subscribeToPresence",
   ],
   baileys: [
@@ -420,6 +424,10 @@ function buildOperations(doc) {
       const body = convertSchema(doc, op.requestBody.content[types[0]].schema, id + ".body");
       if (body.type !== "object" || !body.properties) fail("request body of " + id + " is not an object schema");
       for (const [name, schema] of Object.entries(body.properties)) {
+        if (name === "sessionId" && sessionParam === null && !(body.required ?? []).includes(name)) {
+          sessionParam = "body";
+          continue;
+        }
         if (properties[name] || name === "sessionId") fail("body argument " + name + " collides on " + id);
         properties[name] = schema;
         bodyParams.push(name);
@@ -521,7 +529,7 @@ function render(operations) {
     "  requiresUnscopedKey: boolean;",
     '  auth: "api_key" | "none" | "metrics_token";',
     "  sessionScoped: boolean;",
-    '  sessionParam: "path" | "query" | null;',
+    '  sessionParam: "path" | "query" | "body" | null;',
     "  targetChatArg: string | null;",
     "  sendsMessage: boolean;",
     "  engines: readonly OpenwaEngine[];",

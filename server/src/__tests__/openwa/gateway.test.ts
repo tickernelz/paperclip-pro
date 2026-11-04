@@ -132,6 +132,29 @@ describe("OpenWA gateway client requests", () => {
     expect(seen[0].headers["x-api-key"]).toBe(ADMIN_KEY);
   });
 
+  it("binds the session id into the body of a session-filtered redrive and refuses a caller's own", async () => {
+    handler = (_req, res) => reply(res, 200, { replayed: 0, failed: 0 });
+    await client().call("WebhooksListController_redriveDeliveryFailures", { limit: 10 });
+    expect(seen[0].url).toBe("/api/webhooks/delivery-failures/redrive");
+    expect(seen[0].headers["x-api-key"]).toBe(ADMIN_KEY);
+    expect(JSON.parse(seen[0].body)).toEqual({ limit: 10, sessionId: SESSION_ID });
+    const foreign = await caught(client().call("WebhooksListController_redriveDeliveryFailures", { sessionId: "other" }));
+    expect(foreign.code).toBe("bad_request");
+    expect(seen).toHaveLength(1);
+  });
+
+  it("pages chat and group listings with integer limits", async () => {
+    handler = (_req, res) => reply(res, 200, []);
+    await client().listChats({ limit: 50, offset: 100 });
+    await client().listGroups({ limit: 20, offset: 0 });
+    expect(seen.map((entry) => Object.fromEntries(new URL(entry.url, "http://x").searchParams))).toEqual([
+      { limit: "50", offset: "100" },
+      { limit: "20", offset: "0" },
+    ]);
+    const text = await caught(client().call("SessionController_getChats", { limit: "50" }));
+    expect(text.code).toBe("bad_request");
+  });
+
   it("encodes path arguments and query flags for stored and live history", async () => {
     handler = (_req, res) => reply(res, 200, { messages: [], total: 0 });
     await client().listStoredMessages({ after: "row-1", limit: 100, chatId: "120363@g.us", inlineMedia: false });
@@ -176,8 +199,8 @@ describe("OpenWA gateway client requests", () => {
   });
 
   it("reads the gateway version from the public OpenAPI document", async () => {
-    handler = (_req, res) => reply(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.24.0" }, paths: {} });
-    expect(await client().openApiVersion()).toBe("0.24.0");
+    handler = (_req, res) => reply(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: "0.27.1" }, paths: {} });
+    expect(await client().openApiVersion()).toBe("0.27.1");
     expect(seen[0].url).toBe("/api/docs-json");
     expect(seen[0].headers["x-api-key"]).toBeUndefined();
   });

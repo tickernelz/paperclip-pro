@@ -28,6 +28,7 @@ import { chatChannelService, type ChatChannelService } from "../../services/chat
 import { ChatSdkRuntime, type ChatSdkEndpointRuntime } from "../../services/chat-sdk-runtime.js";
 import { agentService } from "../../services/agents.js";
 import { OPENWA_AGENT_ADAPTER_ATTENTION_MESSAGE } from "../../services/openwa/agent-adapter.js";
+import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 
 const OPERATOR_KEY = "operator-key-0123456789";
 const ADMIN_KEY = "admin-key-0123456789";
@@ -52,7 +53,7 @@ interface FakeGateway {
 
 async function startFakeGateway(): Promise<FakeGateway> {
   const state = {
-    version: "0.24.0" as string | null,
+    version: OPENWA_GATEWAY_VERSION as string | null,
     sessions: [{ id: SESSION_ID, name: "ops", status: "ready", phone: PHONE, pushName: "Ops Desk" }] as FakeSession[],
     sessionsStatus: 200,
     sessionsBody: undefined as unknown,
@@ -261,8 +262,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(response.headers["cache-control"]).toBe("no-store");
     expect(response.body).toEqual({
       baseUrl: live().baseUrl,
-      gatewayVersion: "0.24.0",
-      pinnedVersion: "0.24.0",
+      gatewayVersion: OPENWA_GATEWAY_VERSION,
+      pinnedVersion: OPENWA_GATEWAY_VERSION,
       engine: "whatsapp-web.js",
       keyRole: "operator",
       adminKey: null,
@@ -282,7 +283,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(response.status).toBe(200);
     expect(response.body.gatewayVersion).toBeNull();
     expect(response.body.adminKey).toEqual({ role: "admin" });
-    expect(response.body.warnings.join(" ")).toContain("assumes OpenWA 0.24.0");
+    expect(response.body.warnings.join(" ")).toContain("assumes OpenWA " + OPENWA_GATEWAY_VERSION);
   });
 
   it("warns when the key sees more than one session", async () => {
@@ -415,8 +416,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(attested.status).toBe(200);
     expect(attested.headers["cache-control"]).toBe("no-store");
     expect(attested.body).toMatchObject({
-      gatewayVersion: "0.24.0",
-      pinnedVersion: "0.24.0",
+      gatewayVersion: OPENWA_GATEWAY_VERSION,
+      pinnedVersion: OPENWA_GATEWAY_VERSION,
       engine: "whatsapp-web.js",
       session: { status: "ready", maskedNumber: "+62xxx...5678", restriction: { active: true, kind: "temporary_ban", expiresAt: "2026-10-04T00:00:00.000Z" } },
       pacing: { attested: true, observedAt: null },

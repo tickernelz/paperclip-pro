@@ -6,10 +6,10 @@ const SEND_PATH = /\/messages\/(send-[a-z]+|reply|forward)$/;
 
 describe("OpenWA operation manifest", () => {
   it("covers every operation of the pinned gateway document exactly once", () => {
-    expect(OPENWA_GATEWAY_VERSION).toBe("0.24.0");
-    expect(OPENWA_OPERATIONS).toHaveLength(202);
-    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.id)).size).toBe(202);
-    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.method + " " + operation.path)).size).toBe(202);
+    expect(OPENWA_GATEWAY_VERSION).toBe("0.27.1");
+    expect(OPENWA_OPERATIONS).toHaveLength(205);
+    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.id)).size).toBe(205);
+    expect(new Set(OPENWA_OPERATIONS.map((operation) => operation.method + " " + operation.path)).size).toBe(205);
   });
 
   it("classifies every gateway administration surface as gateway_admin", () => {
@@ -64,6 +64,7 @@ describe("OpenWA operation manifest", () => {
   it("records engine gaps of the active and idle engines", () => {
     const byId = new Map(OPENWA_OPERATIONS.map((operation) => [operation.id, operation]));
     expect(byId.get("GroupController_create")?.engines).toEqual(["baileys"]);
+    expect(byId.get("GroupController_setMemberLabel")?.engines).toEqual(["baileys"]);
     expect(byId.get("MessageController_getChatHistory")?.engines).toEqual(["whatsapp-web.js"]);
     expect(byId.get("MessageController_sendText")?.engines).toEqual(["whatsapp-web.js", "baileys"]);
   });

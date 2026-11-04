@@ -31,7 +31,7 @@ sends too much, too fast, or to people who did not expect it.
   sends need owner approval (`cross_chat_send`).
 - A `session.restriction` event puts the endpoint in Attention (see
   [Health card](#health-card)).
-- Paperclip is tested against OpenWA `0.24.0`
+- Paperclip is tested against OpenWA `0.27.1`
   (`OPENWA_GATEWAY_VERSION`, `packages/shared/src/openwa-operations.ts:3`). Another
   version shows a warning in setup and on the health card.
 
@@ -40,7 +40,7 @@ sends too much, too fast, or to people who did not expect it.
 Do these on the gateway host before connecting (spec §16). Paperclip never
 changes the gateway.
 
-1. Run rmyndharis/OpenWA `0.24.0` with a connected WhatsApp session whose
+1. Run rmyndharis/OpenWA `0.27.1` with a connected WhatsApp session whose
    status is `ready`.
 2. In the gateway environment set `SEND_PACING_ENABLED=true` and
    `RESOLVE_LID_TO_PHONE=true`. The second lets group senders that appear as
@@ -71,7 +71,7 @@ Both keys are write-only and vaulted. Agents never receive either key.
    **Advanced**, optionally enter **Admin API key (optional)**. Select **Inspect
    gateway** (`POST /api/chat-endpoints/:endpointId/openwa/inspect`). Inspection
    is read-only and returns no secrets: gateway version (or "Unknown (assuming
-   0.24.0)"), engine, key role, admin key role, warnings, and the sessions the key
+   0.27.1)"), engine, key role, admin key role, warnings, and the sessions the key
    can see with masked numbers (`+62xxx...1234`) and push names. A key that sees
    more than one session gets the warning that it is not session-scoped.
 3. Under **WhatsApp session**, select a `ready` session. A session or number
@@ -248,6 +248,12 @@ from the number mode (`openwaDefaultTriggerRules`,
 | `ownerMentionedAbsent` | Owner mentioned while away | on | on |
 | `keywords` | Keywords | none | none |
 | `allMessages` | All messages | off | off |
+
+In a group that addresses members by LID, **Agent mentioned**, **Replies to the
+agent** and owner mentions match the agent and owner LIDs, which Paperclip looks
+up with `GET /api/sessions/{sessionId}/contacts/{number}/lid` (operator key) the
+first time such a message arrives. The number check answers with the phone id
+since OpenWA 0.26.0, so it cannot supply the LID.
 
 The command prefix is 1 to 32 characters without whitespace and matches
 case-insensitively. Keywords are comma-separated whole words, case-insensitive,
@@ -590,8 +596,8 @@ Every call is audited as `tool_called`.
 
 Source: `OPENWA_TOOLS`, `packages/shared/src/openwa-tools.ts:42`.
 
-**Catalog.** The pinned manifest has 202 operations for OpenWA 0.24.0: 49
-`read`, 25 `write`, 49 `wa_admin`, 79 `gateway_admin`. The catalog adds one
+**Catalog.** The pinned manifest has 205 operations for OpenWA 0.27.1: 50
+`read`, 25 `write`, 50 `wa_admin`, 80 `gateway_admin`. The catalog adds one
 `paperclip` entry, `paperclip.audit.list`, for owner runs only. Each entry carries a
 gate: `none` (reads), `reply_or_cross_chat_send` (writes that name a chat),
 `cross_chat_send`, `wa_admin`, `gateway_admin`, `owner_confirmation` or `owner_only`.
@@ -787,7 +793,7 @@ never returns keys or full numbers.
 
 | Row | Shows |
 | --- | --- |
-| Gateway version | Version from the gateway's API document, highlighted when it differs from 0.24.0; "Unknown (API document unavailable)" otherwise |
+| Gateway version | Version from the gateway's API document, highlighted when it differs from 0.27.1; "Unknown (API document unavailable)" otherwise |
 | Engine | Active engine |
 | Session | Session status and masked number, highlighted unless `ready` |
 | Pacing | "Observed · last limited …", "Attested · not yet observed" or "Not attested" |

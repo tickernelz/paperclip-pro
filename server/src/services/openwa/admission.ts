@@ -488,10 +488,10 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     let lookup = lidLookups.get(key);
     if (!lookup) {
       lookup = gateway
-        .checkNumber(digits)
+        .contactLid(digits)
         .then(
-          (check) => {
-            const found = check.whatsappId?.trim().toLowerCase() ?? "";
+          (result) => {
+            const found = result.lid?.trim().toLowerCase() ?? "";
             if (found.endsWith("@lid")) resolvedLids.set(key, found);
             else lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
           },

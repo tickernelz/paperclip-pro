@@ -24,8 +24,8 @@ const endpoint = {
 
 const inspection = {
   baseUrl: "http://localhost:2785",
-  gatewayVersion: "0.23.7",
-  pinnedVersion: "0.23.7",
+  gatewayVersion: "0.27.1",
+  pinnedVersion: "0.27.1",
   engine: "whatsapp-web.js",
   keyRole: "operator",
   adminKey: null,
@@ -84,7 +84,7 @@ describe("OpenWA connect step", () => {
     click(button("Inspect gateway"));
     await vi.waitFor(() => expect(container.textContent).toContain("whatsapp-web.js"));
     expect(mocks.inspectOpenwa).toHaveBeenCalledWith("endpoint-1", { baseUrl: "http://localhost:2785", apiKey: "secret-operator-key" });
-    expect(container.textContent).toContain("0.23.7");
+    expect(container.textContent).toContain("0.27.1");
     expect(container.textContent).toContain("operator");
     expect(container.textContent).toContain("+62xxx...5678");
     expect(container.textContent).toContain("not scoped to one session");

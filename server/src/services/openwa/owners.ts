@@ -868,7 +868,7 @@ export function openwaOwnerService(db: Db, deps: OpenwaOwnerServiceDeps) {
     const endpoint = await endpointFor(endpointId);
     const gateway = await deps.gatewayFor(endpoint);
     const result = await gateway.client
-      .call("SessionController_getChats", { limit: String(input.limit), offset: String(input.offset) }, { timeoutMs: 15_000 })
+      .call("SessionController_getChats", { limit: input.limit, offset: input.offset }, { timeoutMs: 15_000 })
       .catch((error: unknown) => {
         throw openwaSetupError(error, gateway.baseUrl);
       });

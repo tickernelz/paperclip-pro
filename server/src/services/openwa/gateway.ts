@@ -230,6 +230,11 @@ export interface OpenwaNumberCheck {
   whatsappId: string | null;
 }
 
+export interface OpenwaContactLid {
+  number: string;
+  lid: string | null;
+}
+
 export type OpenwaMediaKind = "image" | "video" | "audio" | "document" | "sticker";
 
 export interface OpenwaSendMediaInput {
@@ -286,6 +291,7 @@ export interface OpenwaGatewayClient {
   listGroups(input?: { limit?: number; offset?: number }): Promise<OpenwaGroupSummary[]>;
   contactPhone(contactId: string): Promise<OpenwaContactPhone>;
   checkNumber(number: string): Promise<OpenwaNumberCheck>;
+  contactLid(number: string): Promise<OpenwaContactLid>;
   downloadMedia(input: {
     chatId: string;
     messageId: string;
@@ -594,6 +600,7 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     if (operation.bodyMode === "json") {
       const payload: Record<string, unknown> = {};
       for (const name of operation.bodyParams) if (args[name] !== undefined) payload[name] = args[name];
+      if (operation.sessionParam === "body") payload.sessionId = sessionId;
       headers["Content-Type"] = "application/json";
       body = JSON.stringify(payload);
     } else if (operation.bodyMode === "multipart") {
@@ -737,8 +744,8 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     },
     listChats: (input = {}) => {
       const args: Record<string, unknown> = {};
-      if (input.limit !== undefined) args.limit = String(input.limit);
-      if (input.offset !== undefined) args.offset = String(input.offset);
+      if (input.limit !== undefined) args.limit = input.limit;
+      if (input.offset !== undefined) args.offset = input.offset;
       return json<OpenwaChatSummary[]>("SessionController_getChats", args);
     },
     sendText: (input) => json<OpenwaSendResult>("MessageController_sendText", { ...input }),
@@ -772,12 +779,13 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     getGroup: (groupId) => json<OpenwaGroup>("GroupController_findOne", { groupId }),
     listGroups: (input = {}) => {
       const args: Record<string, unknown> = {};
-      if (input.limit !== undefined) args.limit = String(input.limit);
-      if (input.offset !== undefined) args.offset = String(input.offset);
+      if (input.limit !== undefined) args.limit = input.limit;
+      if (input.offset !== undefined) args.offset = input.offset;
       return json<OpenwaGroupSummary[]>("SessionController_getGroups", args);
     },
     contactPhone: (contactId) => json<OpenwaContactPhone>("ContactController_resolvePhone", { contactId }),
     checkNumber: (number) => json<OpenwaNumberCheck>("ContactController_checkNumber", { number }),
+    contactLid: (number) => json<OpenwaContactLid>("ContactController_getContactLid", { number }),
     async downloadMedia(input) {
       const result = await call(
         "MessageController_getChatMedia",

@@ -332,16 +332,16 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     const c = await conversation(t, MEMBER);
     const binding = await run(t, c, "owner");
     const outcomes = await sweep(t, binding, c, { level: "full", adminKey: true, runClass: "owner" });
-    expect(outcomes).toHaveLength(202);
+    expect(outcomes).toHaveLength(OPENWA_OPERATIONS.length);
     expect(outcomes.filter((entry) => entry.actual !== entry.expected)).toEqual([]);
     expect(outcomes.filter((entry) => (entry.actual === "dispatch") !== (entry.forwarded === 1))).toEqual([]);
     const counts = outcomes.reduce<Record<string, number>>((acc, entry) => ({ ...acc, [entry.actual]: (acc[entry.actual] ?? 0) + 1 }), {});
-    expect(counts).toEqual({ dispatch: 180, unavailable_on_engine: 13, self_session_requires_confirmation: 4, secret_issuing_operation: 5 });
+    expect(counts).toEqual({ dispatch: 182, unavailable_on_engine: 14, self_session_requires_confirmation: 4, secret_issuing_operation: 5 });
     const audited = await db
       .select({ count: sql<number>`count(*)::int` })
       .from(chatAuditEntries)
       .where(and(eq(chatAuditEntries.endpointId, t.endpointId), eq(chatAuditEntries.kind, "tool_called"), sql`${chatAuditEntries.metadata}->>'tool' = 'openwa_call'`));
-    expect(audited[0]!.count).toBe(202);
+    expect(audited[0]!.count).toBe(OPENWA_OPERATIONS.length);
     const receipts = await db.select({ count: sql<number>`count(*)::int` }).from(chatActions).where(and(eq(chatActions.endpointId, t.endpointId), eq(chatActions.kind, "openwa_tool_write"), eq(chatActions.status, "processed")));
     expect(receipts[0]!.count).toBe(outcomes.filter((entry) => entry.actual === "dispatch" && !OPENWA_OPERATIONS.find((op) => op.id === entry.id && (op.category === "read" || SAFE.has(op.method)))).length);
     expect(t.gateway.requests.filter((request) => request.path.startsWith("/api/auth/api-keys")).every((request) => request.key === "admin")).toBe(true);
@@ -373,15 +373,15 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     return operations;
   }
 
-  it("AC12: catalogs 202 operations with category and availability; hides gateway admin at off", async () => {
+  it("AC12: catalogs every gateway operation with category and availability; hides gateway admin at off", async () => {
     const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
     const c = await conversation(t, MEMBER);
     const owner = await run(t, c, "owner");
     const all = await catalogAll(owner);
     const gateway = all.filter((entry) => entry.category !== "paperclip");
-    expect(gateway).toHaveLength(202);
+    expect(gateway).toHaveLength(OPENWA_OPERATIONS.length);
     expect(gateway.every((entry) => typeof entry.available === "boolean" && typeof entry.category === "string")).toBe(true);
-    expect(gateway.filter((entry) => entry.reason === "unavailable_on_engine")).toHaveLength(13);
+    expect(gateway.filter((entry) => entry.reason === "unavailable_on_engine")).toHaveLength(14);
     expect(all.find((entry) => entry.operation === "paperclip.audit.list")).toMatchObject({ category: "paperclip", gate: "owner_only" });
     expect(all.find((entry) => entry.operation === "SessionController_findAll")).toMatchObject({ category: "gateway_admin", instanceGlobal: true });
     expect(all.find((entry) => entry.operation === "SessionController_logout")).toMatchObject({ gate: "owner_confirmation" });
@@ -394,7 +394,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     await db.update(chatEndpoints).set({ policy: { gatewayAdminTools: "off" } }).where(eq(chatEndpoints.id, t.endpointId));
     const hidden = await catalogAll(owner);
     expect(hidden.some((entry) => entry.category === "gateway_admin")).toBe(false);
-    expect(hidden.filter((entry) => entry.category !== "paperclip")).toHaveLength(202 - OPENWA_OPERATIONS.filter((op) => op.category === "gateway_admin").length);
+    expect(hidden.filter((entry) => entry.category !== "paperclip")).toHaveLength(OPENWA_OPERATIONS.length - OPENWA_OPERATIONS.filter((op) => op.category === "gateway_admin").length);
     expect((await rejection(executeOpenwaTool(db, owner, "openwa_describe", { operation: "PluginsController_findAll" }))).code).toBe("gateway_admin_disabled");
     const before = t.gateway.requests.length;
     expect((await rejection(call(owner, { operation: "PluginsController_findAll" }))).code).toBe("gateway_admin_disabled");
