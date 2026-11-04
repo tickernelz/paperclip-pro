@@ -34,7 +34,7 @@ const routes: Record<string, (body: Record<string, unknown>) => unknown> = {
   },
   "POST /contact": (body) => {
     gateway.contacts.push(body as never);
-    if (typeof body.lid === "string" && typeof body.number === "string") gateway.lids.set(body.lid, body.number);
+    if (typeof body.lid === "string" && typeof body.number === "string") gateway.lids.set(body.number, body.lid);
     return { ok: true };
   },
   "POST /media": (body) => {

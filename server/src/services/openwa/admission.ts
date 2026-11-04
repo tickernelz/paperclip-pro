@@ -480,10 +480,24 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     learnedLids.add(key);
   }
 
+  function retryLidLater(key: string) {
+    lidRetryAt.delete(key);
+    if (lidRetryAt.size >= LEARNED_LID_CAP) {
+      const oldest = lidRetryAt.keys().next().value;
+      if (oldest !== undefined) lidRetryAt.delete(oldest);
+    }
+    lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+  }
+
   async function lidPhone(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, lid: string): Promise<string | null> {
     const key = snapshot.endpointId + "\u0000" + lid;
     const known = lidPhones.get(key);
-    if (known || (lidRetryAt.get(key) ?? 0) > now()) return known ?? null;
+    if (known) return known;
+    const retryAt = lidRetryAt.get(key);
+    if (retryAt !== undefined) {
+      if (retryAt > now()) return null;
+      lidRetryAt.delete(key);
+    }
     const gateway = runtime.adapter()?.gateway ?? null;
     if (!gateway) return null;
     let lookup = lidLookups.get(key);
@@ -494,7 +508,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
           (resolved) => {
             const digits = resolved.phone?.replace(/\D/g, "") ?? "";
             if (!digits) {
-              lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+              retryLidLater(key);
               return;
             }
             if (lidPhones.size >= LEARNED_LID_CAP) {
@@ -503,9 +517,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
             }
             lidPhones.set(key, digits);
           },
-          () => {
-            lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
-          },
+          () => retryLidLater(key),
         )
         .finally(() => lidLookups.delete(key));
       lidLookups.set(key, lookup);
