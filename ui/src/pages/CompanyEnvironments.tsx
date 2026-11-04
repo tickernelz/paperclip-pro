@@ -57,6 +57,7 @@ import { useCompany } from "@/context/CompanyContext";
 import { useToast } from "@/context/ToastContext";
 import { environmentDisplayLabel, isPlatformManagedEnvironment } from "@/lib/managed-sandbox-environment";
 import { queryKeys } from "@/lib/queryKeys";
+import { terminalFontFamily } from "@/lib/terminal-font";
 import { Link, useNavigate, useParams } from "@/lib/router";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
 import {
@@ -379,20 +380,7 @@ function setupConnectionFallbackMessage(input: {
 const CUSTOM_IMAGE_TERMINAL_COLS = 100;
 const CUSTOM_IMAGE_TERMINAL_ROWS = 28;
 const CUSTOM_IMAGE_TERMINAL_SCROLLBACK_ROWS = 5_000;
-const CUSTOM_IMAGE_TERMINAL_FONT_FAMILY = [
-  "MesloLGS NF",
-  "MesloLGS Nerd Font Mono",
-  "CaskaydiaCove Nerd Font Mono",
-  "CaskaydiaMono Nerd Font",
-  "JetBrainsMono Nerd Font",
-  "FiraCode Nerd Font Mono",
-  "Symbols Nerd Font Mono",
-  "Menlo",
-  "Monaco",
-  "Consolas",
-  "Liberation Mono",
-  "monospace",
-].join(", ");
+const CUSTOM_IMAGE_TERMINAL_FONT_FAMILY = terminalFontFamily();
 
 type CustomImageTerminalConnectionState =
   | "idle"

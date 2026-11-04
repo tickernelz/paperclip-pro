@@ -258,6 +258,17 @@ describe("TerminalView", () => {
     expect(socket.frames().at(-1)).toEqual({ type: "input", data: "ls\r" });
   });
 
+  it("draws prompt icons with Nerd Font families ahead of the app's monospace stack", async () => {
+    container.style.setProperty("--font-mono", "ui-monospace, monospace");
+    terminalApiMock.createToken.mockResolvedValueOnce(token("token-1"));
+    await mount();
+
+    const families = String(xterm.terminals[0]!.options.fontFamily).split(", ");
+    expect(families.indexOf("JetBrainsMono Nerd Font")).toBeGreaterThanOrEqual(0);
+    expect(families.indexOf("Symbols Nerd Font Mono")).toBeLessThan(families.indexOf("ui-monospace"));
+    expect(families.at(-1)).toBe("monospace");
+  });
+
   it("keeps replayed history from answering old terminal queries into the shell", async () => {
     terminalApiMock.createToken.mockResolvedValueOnce(token("token-1"));
     await mount();

@@ -1,5 +1,6 @@
 import type { ITheme } from "@xterm/xterm";
 import type { TerminalErrorCode, TerminalServerFrame } from "@tickernelz/paperclip-pro-shared";
+import { terminalFontFamily } from "@/lib/terminal-font";
 
 export const TERMINAL_RECONNECT_BASE_DELAY_MS = 500;
 export const TERMINAL_RECONNECT_MAX_DELAY_MS = 30_000;
@@ -77,7 +78,7 @@ export function resolveTerminalFont(element: Element): { fontFamily?: string; fo
   const style = window.getComputedStyle(element);
   const fontSize = Number.parseFloat(style.fontSize);
   return {
-    fontFamily: cssVariable(style, "--font-mono"),
+    fontFamily: terminalFontFamily(cssVariable(style, "--font-mono")),
     fontSize: Number.isFinite(fontSize) && fontSize > 0 ? fontSize : undefined,
   };
 }
