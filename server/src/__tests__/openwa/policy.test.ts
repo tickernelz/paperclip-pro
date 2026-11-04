@@ -119,6 +119,18 @@ describe("classifyOpenwaEvent", () => {
     expect(classifyOpenwaEvent(event({ chatKey: GROUP, ...denied, body: "chatter" }), keywords)).toEqual({ kind: "discard" });
   });
 
+  it("matches the agent's LID tag in a catch-up body and a reply to the agent in an auto group", () => {
+    const s = snapshot({}, [[GROUP, { ownerPresent: true }]]);
+    s.agentLids.add("191000000001668@lid");
+    const catchUp = { chatKey: GROUP, degraded: true, mentionedIds: ["191000000001668@c.us"] };
+    expect(classifyOpenwaEvent(event({ ...catchUp, body: "@191000000001668 tolong cek" }), s)).toMatchObject({ kind: "trigger", rules: ["agent_mentioned"] });
+    expect(classifyOpenwaEvent(event({ ...catchUp, mentionedIds: ["1910000000016689@c.us"], body: "@1910000000016689 bukan bot" }), s)).toEqual({ kind: "discard" });
+    expect(classifyOpenwaEvent(event({ chatKey: GROUP, body: "chatter" }), s)).toEqual({ kind: "discard" });
+    const reply = event({ chatKey: GROUP, body: "oke", quoted: { id: "true_" + GROUP + "_3EB0_191000000001668@lid", body: "siap" } });
+    expect(classifyOpenwaEvent(reply, s, { quotedFromAgent: true })).toMatchObject({ kind: "trigger", rules: ["reply_to_agent"] });
+    expect(classifyOpenwaEvent(reply, s, { quotedFromAgent: false })).toEqual({ kind: "discard" });
+  });
+
   it("activates groups only with an owner present and admits outside-allowlist members there", () => {
     const mention = { mentionedIds: [AGENT + "@c.us"], body: "@" + AGENT + " help" };
     const withOwner = snapshot({}, [[GROUP, { ownerPresent: true }]]);

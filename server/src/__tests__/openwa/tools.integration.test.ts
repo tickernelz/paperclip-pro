@@ -422,9 +422,9 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
       .update(heartbeatRuns)
       .set({ contextSnapshot: sql`jsonb_set(${heartbeatRuns.contextSnapshot}, '{paperclipOpenwa,event}', '"owner_absent"')` })
       .where(eq(heartbeatRuns.id, absent.runId));
-    t.gateway.lids.set("105000000006444@lid", "628444000222");
+    t.gateway.lids.set("628444000222", "105000000006444@lid");
     await expect(executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000006444@lid" })).resolves.toMatchObject({ role: "owner" });
-    t.gateway.lids.set("105000000009999@lid", "628555000999");
+    t.gateway.lids.set("628555000999", "105000000009999@lid");
     expect(await executeOpenwaTool(db, absent, "openwa_find", { lid: "105000000009999@lid" })).not.toHaveProperty("role");
     const ownerDm = await rejection(executeOpenwaTool(db, absent, "openwa_send", { chat: "+628444000222", text: "psst", idempotencyKey: randomUUID() }));
     expect(ownerDm.code).toBe("approval_required");
@@ -1113,7 +1113,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     const binding = await run(t, c, { triggerClass: "other" });
     t.gateway.numbers.set("628777000111", false);
     await expect(executeOpenwaTool(db, binding, "openwa_find", { phone: "+628777000111" })).resolves.toEqual({ phone: "+62xxx...0111", exists: false, chatRef: null });
-    t.gateway.lids.set("123456789012@lid", "628666000999");
+    t.gateway.lids.set("628666000999", "123456789012@lid");
     await expect(executeOpenwaTool(db, binding, "openwa_find", { lid: "123456789012@lid" })).resolves.toMatchObject({ phone: "+62xxx...0999", chatRef: "openwa:" + SESSION_ID + ":628666000999@c.us" });
     t.gateway.contacts.push({ id: "628666000999@c.us", name: "Budi Santoso", number: "628666000999" });
     const found = await executeOpenwaTool(db, binding, "openwa_find", { query: "budi" });

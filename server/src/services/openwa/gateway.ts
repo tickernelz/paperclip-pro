@@ -165,7 +165,7 @@ export interface OpenwaHistoryMessage {
   isGroup: boolean;
   kind: "individual" | "group" | "channel" | "status" | "broadcast" | "unknown";
   author?: string;
-  mentionedIds?: string[];
+  mentionedIds?: unknown[];
   isLidSender?: boolean;
   senderPhone?: string | null;
   contact?: Record<string, unknown>;

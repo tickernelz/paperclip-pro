@@ -618,6 +618,15 @@ function phoneOf(jid: string | null): string | null {
   return match ? match[1] : null;
 }
 
+export function openwaWidString(value: unknown): string | null {
+  if (typeof value === "string") return value || null;
+  const wid = record(value);
+  if (!wid) return null;
+  const serialized = wid._serialized ?? wid.$1;
+  if (typeof serialized === "string" && serialized) return serialized;
+  return typeof wid.user === "string" && wid.user && typeof wid.server === "string" && wid.server ? wid.user + "@" + wid.server : null;
+}
+
 function mentionsFromBody(body: string): string[] {
   const ids = new Set<string>();
   for (const match of body.matchAll(/@(\d{5,20})\b/g)) ids.add(match[1] + "@c.us");
@@ -648,7 +657,7 @@ export function normalizeOpenwaInbound(
       phoneOf(senderJid);
   const body = typeof data.body === "string" ? data.body : "";
   const mentionedIds = Array.isArray(data.mentionedIds)
-    ? data.mentionedIds.filter((id): id is string => typeof id === "string")
+    ? data.mentionedIds.map(openwaWidString).filter((id): id is string => id !== null)
     : degraded
       ? mentionsFromBody(body)
       : [];

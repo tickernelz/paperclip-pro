@@ -450,12 +450,13 @@ export class FakeOpenwaGateway {
     if (req.method === "GET" && check) {
       const number = decodeURIComponent(check[1]!);
       const exists = this.numbers.get(number) ?? true;
-      return reply(200, { number, exists, whatsappId: exists ? (this.lids.get(number) ?? number + "@c.us") : null });
+      return reply(200, { number, exists, whatsappId: exists ? number + "@c.us" : null });
     }
     const phone = /^\/contacts\/([^/]+)\/phone$/.exec(url.pathname.slice(prefix.length));
     if (req.method === "GET" && phone) {
       const contactId = decodeURIComponent(phone[1]!);
-      return reply(200, { contactId, phone: this.lids.get(contactId) ?? null });
+      const owner = [...this.lids].find(([, lid]) => lid === contactId);
+      return reply(200, { contactId, phone: owner ? owner[0] : null });
     }
     if (req.method === "GET" && url.pathname === prefix + "/contacts") return reply(200, this.contacts);
     if (req.method === "GET" && url.pathname === prefix + "/chats") return reply(200, this.chats);

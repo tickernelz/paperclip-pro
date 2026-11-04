@@ -32,6 +32,7 @@ import {
   openwaParticipantJids,
   openwaPrincipalExternalId,
   openwaQuoteMayAddressAgent,
+  openwaQuotedAuthor,
   openwaRememberChat,
   openwaSenderOwner,
   openwaSenderRole,
@@ -363,7 +364,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
   const discoveries = new Map<string, Promise<boolean>>();
   const discoveryFailures = new Map<string, number>();
   const learnedLids = new Set<string>();
-  const resolvedLids = new Map<string, string>();
+  const lidPhones = new Map<string, string>();
   const lidLookups = new Map<string, Promise<void>>();
   const lidRetryAt = new Map<string, number>();
   const senderTriggers = new Map<string, OpenwaSenderTriggers>();
@@ -479,21 +480,28 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     learnedLids.add(key);
   }
 
-  async function resolveLid(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, digits: string): Promise<string | null> {
-    const key = snapshot.endpointId + "\u0000" + digits;
-    const known = resolvedLids.get(key);
+  async function lidPhone(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, lid: string): Promise<string | null> {
+    const key = snapshot.endpointId + "\u0000" + lid;
+    const known = lidPhones.get(key);
     if (known || (lidRetryAt.get(key) ?? 0) > now()) return known ?? null;
     const gateway = runtime.adapter()?.gateway ?? null;
     if (!gateway) return null;
     let lookup = lidLookups.get(key);
     if (!lookup) {
       lookup = gateway
-        .checkNumber(digits)
+        .contactPhone(lid)
         .then(
-          (check) => {
-            const found = check.whatsappId?.trim().toLowerCase() ?? "";
-            if (found.endsWith("@lid")) resolvedLids.set(key, found);
-            else lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+          (resolved) => {
+            const digits = resolved.phone?.replace(/\D/g, "") ?? "";
+            if (!digits) {
+              lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
+              return;
+            }
+            if (lidPhones.size >= LEARNED_LID_CAP) {
+              const oldest = lidPhones.keys().next().value;
+              if (oldest !== undefined) lidPhones.delete(oldest);
+            }
+            lidPhones.set(key, digits);
           },
           () => {
             lidRetryAt.set(key, now() + DISCOVERY_RETRY_MS);
@@ -503,26 +511,35 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       lidLookups.set(key, lookup);
     }
     await lookup;
-    return resolvedLids.get(key) ?? null;
+    return lidPhones.get(key) ?? null;
   }
 
-  /** Adds the agent's and owners' WhatsApp LIDs to the snapshot so LID-addressed groups recognise their mentions and joins. */
-  async function ensureLids(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot): Promise<void> {
-    const pending: Promise<void>[] = [];
-    if (!snapshot.agentLids.size && snapshot.agentDigits)
-      pending.push(
-        resolveLid(runtime, snapshot, snapshot.agentDigits).then((lid) => {
-          if (lid) snapshot.agentLids.add(lid);
-        }),
-      );
-    for (const owner of snapshot.owners)
-      if (!owner.lids.size && owner.digits)
-        pending.push(
-          resolveLid(runtime, snapshot, owner.digits).then((lid) => {
-            if (lid) openwaLearnOwnerLid(snapshot, owner, lid);
-          }),
-        );
-    if (pending.length) await Promise.all(pending);
+  /** Learns which of these WhatsApp LIDs belong to the agent or an owner, so LID-addressed groups recognise their mentions and joins. */
+  async function ensureLids(runtime: OpenwaAdmissionRuntime, snapshot: OpenwaPolicySnapshot, ids: Iterable<string>): Promise<void> {
+    const ownersWithoutLid = snapshot.owners.filter((owner) => !owner.lids.size && owner.digits);
+    if (snapshot.agentLids.size && !ownersWithoutLid.length) return;
+    const unknown = new Set<string>();
+    for (const id of ids) {
+      const lid = id.trim().toLowerCase();
+      if (lid.endsWith("@lid") && !snapshot.agentLids.has(lid) && !snapshot.ownerByJid.has(lid)) unknown.add(lid);
+    }
+    if (!unknown.size) return;
+    await Promise.all(
+      [...unknown].map(async (lid) => {
+        const digits = await lidPhone(runtime, snapshot, lid);
+        if (!digits) return;
+        if (digits === snapshot.agentDigits) snapshot.agentLids.add(lid);
+        for (const owner of ownersWithoutLid) if (owner.digits === digits) openwaLearnOwnerLid(snapshot, owner, lid);
+      }),
+    );
+  }
+
+  function lidCandidates(event: OpenwaInboundEvent): string[] {
+    const ids = [...event.mentionedIds];
+    const quotedAuthor = openwaQuotedAuthor(event);
+    if (quotedAuthor) ids.push(quotedAuthor);
+    if (event.degraded) for (const match of event.body.matchAll(/@(\d{5,20})(?!\d)/g)) ids.push(match[1] + "@lid");
+    return ids;
   }
 
   async function discoverGroup(
@@ -703,7 +720,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
       await deps.timers?.onOwnerActivity?.(event.chatKey, event, ctx);
       return;
     }
-    if (event.chatKind === "group" && (event.mentionedIds.length || event.body.includes("@") || event.quoted)) await ensureLids(runtime, snapshot);
+    if (event.chatKind === "group") await ensureLids(runtime, snapshot, lidCandidates(event));
     const fromAgent = event.quoted ? await quotedFromAgent(snapshot, event) : false;
     const facts = { quotedFromAgent: fromAgent };
     if (event.chatKind === "group" && !snapshot.chats.has(event.chatKey)) {
@@ -893,7 +910,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     const snapshot = await snapshotFor(runtime);
     if (!snapshot) return;
     const chatKey = openwaChatKey(event.groupId);
-    if (event.participantIds.some((id) => id.trim().toLowerCase().endsWith("@lid"))) await ensureLids(runtime, snapshot);
+    await ensureLids(runtime, snapshot, event.participantIds);
     const self = event.participantIds.some((id) => isAgentJid(snapshot, id));
     if (event.event === "group.leave" && self) {
       await markGroupLeft(runtime, snapshot, event);

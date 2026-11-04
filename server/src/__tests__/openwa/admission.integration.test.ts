@@ -510,23 +510,44 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     expect(await conversations(t)).toHaveLength(2);
   }, 120_000);
 
-  it("recognises the agent's LID in group mentions and joins", async () => {
+  it("recognises the agent's LID or number in Wid-object mentions on text, document and image, and its LID in joins", async () => {
     const t = await setup();
     await addOwner(t, OWNER_PHONE);
     const ownLid = "191000000001668@lid";
+    const memberLid = "110000000000910@lid";
     t.gateway.lids.set(OWN_PHONE, ownLid);
+    const wid = (id: string) => ({ server: id.split("@")[1], user: id.split("@")[0], _serialized: id });
     const active = "120363000000000011@g.us";
     const joined = "120363000000000012@g.us";
     t.gateway.groups.set(active, { id: active, name: "Lid group", participants: [{ id: jid(OWN_PHONE) }, { id: jid(OWNER_PHONE) }, { id: jid(MEMBER_PHONE) }] });
     t.gateway.groups.set(joined, { id: joined, name: "Lid join", participants: [{ id: jid(OWN_PHONE) }, { id: jid(MEMBER_PHONE) }] });
     await goLive(t);
     await discovered(t, active);
-    await send(t, { chatId: active, author: jid(MEMBER_PHONE), body: "@191000000001668 apa itu Paperclip?", extra: { mentionedIds: [ownLid] } });
-    const [row] = await settledDeliveries(t, 1);
-    expect((row.normalizedEvent as { openwa?: { rules?: string[] } }).openwa?.rules).toContain("agent_mentioned");
-    expect((row.normalizedEvent as { openwa?: { agentMentionIds?: string[] } }).openwa?.agentMentionIds).toEqual([ownLid]);
+    await send(t, { chatId: active, author: memberLid, body: "@110000000000777 bukan untuk bot", extra: { isLidSender: true, mentionedIds: [wid("110000000000777@lid")] } });
+    expect(await deliveries(t)).toHaveLength(0);
+    await send(t, { chatId: active, author: memberLid, body: "@191000000001668 apa itu Paperclip?", extra: { isLidSender: true, mentionedIds: [wid(ownLid)] } });
+    await send(t, {
+      chatId: active,
+      author: jid(MEMBER_PHONE),
+      body: "@191000000001668 laporan bug, tolong cek",
+      extra: { type: "document", media: { mimetype: "application/pdf", filename: "bug.pdf", omitted: true }, mentionedIds: [wid(ownLid)] },
+    });
+    await send(t, {
+      chatId: active,
+      author: jid(MEMBER_PHONE),
+      body: "@" + OWN_PHONE + " lihat gambar ini",
+      extra: { type: "image", media: { mimetype: "image/jpeg", omitted: true }, mentionedIds: [{ server: "c.us", user: OWN_PHONE, $1: jid(OWN_PHONE) }] },
+    });
+    const rows = await settledDeliveries(t, 3);
+    const openwa = rows.map((row) => (row.normalizedEvent as { openwa?: { rules?: string[]; agentMentionIds?: string[] } }).openwa);
+    expect(openwa.map((entry) => entry?.rules)).toEqual([["agent_mentioned"], ["agent_mentioned"], ["agent_mentioned"]]);
+    expect(openwa.map((entry) => entry?.agentMentionIds)).toEqual([[ownLid], [ownLid], [jid(OWN_PHONE)]]);
+    expect(t.gateway.requests.filter((entry) => entry.path.endsWith("/phone")).map((entry) => decodeURIComponent(entry.path.split("/").at(-2)!))).toEqual([
+      "110000000000777@lid",
+      ownLid,
+    ]);
     t.gateway.emit("group.join", { groupId: joined, actorId: jid(MEMBER_PHONE), participantIds: [ownLid], timestamp: Math.floor(Date.now() / 1000) });
-    await settledDeliveries(t, 2);
+    await settledDeliveries(t, 4);
     expect((await audits(t)).filter((entry) => entry.kind === "group_added").map((entry) => entry.chatKey)).toEqual([joined]);
   }, 90_000);
 

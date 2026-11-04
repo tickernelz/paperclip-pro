@@ -66,6 +66,7 @@ import { openwaChatKey, type OpenwaOutboundRegistry } from "./outbound.js";
 import { openwaCurrentOwnerUserId, type OpenwaOwnerService } from "./owners.js";
 import { openwaOutsideAllowlistNeedsGrant, openwaResourceGroupActive } from "./policy.js";
 import { markTriggersAnswered, recordOpenwaRunOutcome } from "./publication.js";
+import { openwaWidString } from "./receiver.js";
 import { redactOpenwaSecrets } from "./redact.js";
 import {
   createOpenwaWrite,
@@ -1124,7 +1125,8 @@ function textView(value: unknown) {
 function mentionView(value: unknown): string[] {
   return Array.isArray(value)
     ? value
-        .filter((entry): entry is string => typeof entry === "string")
+        .map(openwaWidString)
+        .filter((entry): entry is string => entry !== null)
         .slice(0, 50)
         .map((jid) => (phoneDigits(jid) ? maskOpenwaPhoneNumber(phoneDigits(jid)!) : maskOpenwaDigits(jid)))
     : [];
