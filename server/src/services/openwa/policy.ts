@@ -305,14 +305,22 @@ function startsWithPrefix(body: string, prefix: string): boolean {
   return next === undefined || /\s/.test(next);
 }
 
+function bodyTags(body: string, user: string): boolean {
+  for (let at = body.indexOf("@" + user); at !== -1; at = body.indexOf("@" + user, at + 1)) {
+    const next = body.charCodeAt(at + user.length + 1);
+    if (!(next >= 48 && next <= 57)) return true;
+  }
+  return false;
+}
+
 function mentions(event: Pick<OpenwaInboundEvent, "mentionedIds" | "body">, jids: Iterable<string>, digits: string | null): boolean {
   for (const jid of jids) {
     for (const id of event.mentionedIds) if (id.toLowerCase() === jid) return true;
-    if (jid.endsWith("@lid") && event.body.includes("@" + openwaDigits(jid))) return true;
+    if (jid.endsWith("@lid") && bodyTags(event.body, jid.slice(0, -"@lid".length))) return true;
   }
   if (digits) {
     for (const id of event.mentionedIds) if (openwaDigits(id) === digits) return true;
-    if (event.body.includes("@" + digits)) return true;
+    if (bodyTags(event.body, digits)) return true;
   }
   return false;
 }
@@ -324,9 +332,13 @@ function mentionsOwner(snapshot: OpenwaPolicySnapshot, event: OpenwaInboundEvent
 
 const QUOTED_AUTHOR = /_([0-9]{5,25}@(?:c\.us|lid))$/i;
 
+export function openwaQuotedAuthor(event: Pick<OpenwaInboundEvent, "quoted">): string | null {
+  return (event.quoted ? QUOTED_AUTHOR.exec(event.quoted.id)?.[1]?.toLowerCase() : undefined) ?? null;
+}
+
 /** True when the message replies to (quotes) a message an owner wrote in this chat. */
 export function openwaQuotesOwner(snapshot: OpenwaPolicySnapshot, event: Pick<OpenwaInboundEvent, "quoted">): boolean {
-  const author = event.quoted ? QUOTED_AUTHOR.exec(event.quoted.id)?.[1]?.toLowerCase() : undefined;
+  const author = openwaQuotedAuthor(event);
   if (!author) return false;
   if (snapshot.ownerByJid.has(author)) return true;
   const digits = author.endsWith("@c.us") ? openwaDigits(author) : null;

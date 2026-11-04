@@ -165,7 +165,7 @@ export interface OpenwaHistoryMessage {
   isGroup: boolean;
   kind: "individual" | "group" | "channel" | "status" | "broadcast" | "unknown";
   author?: string;
-  mentionedIds?: string[];
+  mentionedIds?: unknown[];
   isLidSender?: boolean;
   senderPhone?: string | null;
   contact?: Record<string, unknown>;
@@ -230,11 +230,6 @@ export interface OpenwaNumberCheck {
   whatsappId: string | null;
 }
 
-export interface OpenwaContactLid {
-  number: string;
-  lid: string | null;
-}
-
 export type OpenwaMediaKind = "image" | "video" | "audio" | "document" | "sticker";
 
 export interface OpenwaSendMediaInput {
@@ -291,7 +286,6 @@ export interface OpenwaGatewayClient {
   listGroups(input?: { limit?: number; offset?: number }): Promise<OpenwaGroupSummary[]>;
   contactPhone(contactId: string): Promise<OpenwaContactPhone>;
   checkNumber(number: string): Promise<OpenwaNumberCheck>;
-  contactLid(number: string): Promise<OpenwaContactLid>;
   downloadMedia(input: {
     chatId: string;
     messageId: string;
@@ -785,7 +779,6 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     },
     contactPhone: (contactId) => json<OpenwaContactPhone>("ContactController_resolvePhone", { contactId }),
     checkNumber: (number) => json<OpenwaNumberCheck>("ContactController_checkNumber", { number }),
-    contactLid: (number) => json<OpenwaContactLid>("ContactController_getContactLid", { number }),
     async downloadMedia(input) {
       const result = await call(
         "MessageController_getChatMedia",

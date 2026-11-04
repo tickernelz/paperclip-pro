@@ -250,9 +250,10 @@ from the number mode (`openwaDefaultTriggerRules`,
 | `allMessages` | All messages | off | off |
 
 In a group that addresses members by LID, **Agent mentioned**, **Replies to the
-agent** and owner mentions match the agent and owner LIDs, which Paperclip looks
-up with `GET /api/sessions/{sessionId}/contacts/{number}/lid` (operator key) the
-first time such a message arrives. The number check answers with the phone id
+agent** and owner mentions match the agent and owner LIDs. Paperclip resolves each
+unknown LID a group message mentions or quotes with
+`GET /api/sessions/{sessionId}/contacts/{contactId}/phone` and keeps the ones whose
+phone is the agent number or an owner. The number check answers with the phone id
 since OpenWA 0.26.0, so it cannot supply the LID.
 
 The command prefix is 1 to 32 characters without whitespace and matches
