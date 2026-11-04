@@ -425,6 +425,7 @@ function buildOperations(doc) {
       if (body.type !== "object" || !body.properties) fail("request body of " + id + " is not an object schema");
       for (const [name, schema] of Object.entries(body.properties)) {
         if (name === "sessionId" && sessionParam === null && !(body.required ?? []).includes(name)) {
+          if (bodyMode !== "json") fail("body sessionId outside a JSON body on " + id);
           sessionParam = "body";
           continue;
         }

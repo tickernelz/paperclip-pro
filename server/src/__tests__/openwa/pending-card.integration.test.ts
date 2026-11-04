@@ -45,10 +45,13 @@ const jid = (phone: string) => phone + "@c.us";
 
 type WakeupOptions = Parameters<ChatChannelServiceOptions["heartbeat"]["wakeup"]>[1];
 
-async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 20_000): Promise<void> {
+async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 20_000, describe?: () => Promise<unknown>): Promise<void> {
   const deadline = Date.now() + timeoutMs;
   while (!(await predicate())) {
-    if (Date.now() > deadline) throw new Error("condition not reached");
+    if (Date.now() > deadline) {
+      const state = await describe?.().catch(() => null);
+      throw new Error("condition not reached" + (state ? ": " + JSON.stringify(state) : ""));
+    }
     await new Promise((resolve) => setTimeout(resolve, 20));
   }
 }
@@ -210,7 +213,18 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
       }
       const rows = await db.select().from(chatDeliveries).where(eq(chatDeliveries.endpointId, t.endpointId));
       return rows.length > before.length && rows.every((entry) => entry.state === "processed");
-    }, 30_000);
+    }, 30_000, async () => ({
+      at: new Date().toISOString(),
+      stats: t.service.openwaAdmissionStats,
+      deliveries: await db
+        .select({ state: chatDeliveries.state, nextAttemptAt: chatDeliveries.nextAttemptAt, updatedAt: chatDeliveries.updatedAt })
+        .from(chatDeliveries)
+        .where(eq(chatDeliveries.endpointId, t.endpointId)),
+      actions: await db
+        .select({ kind: chatActions.kind, status: chatActions.status, result: chatActions.result, updatedAt: chatActions.updatedAt })
+        .from(chatActions)
+        .where(eq(chatActions.endpointId, t.endpointId)),
+    }));
   }
 
   async function ownerConversation(t: Setup, who = { phone: OWNER_PHONE, lid: OWNER_LID }) {

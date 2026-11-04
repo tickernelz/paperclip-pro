@@ -57,6 +57,7 @@ class ManualClock implements OpenwaScheduledWakeClock {
   setTimer(fire: () => void, delayMs: number) {
     const id = ++this.seq;
     this.timers.set(id, { at: this.time + delayMs, fire });
+    if (delayMs <= 0) setTimeout(() => this.advance(0), 0);
     return id;
   }
   clearTimer(handle: unknown) {

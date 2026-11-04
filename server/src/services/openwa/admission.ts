@@ -756,14 +756,13 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     }
     switch (classification.kind) {
       case "discard":
-        stats.discarded++;
         if (classification.armsAbsence) await deps.timers?.onAbsenceCandidate?.(event, ctx);
+        stats.discarded++;
         return;
       case "owner_activity":
         stats.ownerActivity++;
         return;
       case "filtered":
-        stats.filtered++;
         await audit(snapshot, {
           kind: "trigger_filtered",
           chatKey: event.chatKey,
@@ -780,6 +779,7 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
           },
           text: event.body,
         });
+        stats.filtered++;
         return;
       case "trigger":
         break;
@@ -790,9 +790,6 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
     const spam = spamKey ? spamVerdict(spamKey, spamBody, at) : null;
     if (spam) {
       const repeatCount = spam.reason === "duplicate" ? await countRepeat(runtime, spam.previous.lastDedupeKey) : null;
-      if (spam.reason === "duplicate") stats.duplicates++;
-      else stats.rateLimited++;
-      stats.filtered++;
       await audit(snapshot, {
         kind: "trigger_filtered",
         chatKey: event.chatKey,
@@ -812,6 +809,9 @@ export function createOpenwaAdmission(deps: OpenwaAdmissionDeps) {
         },
         text: event.body,
       });
+      if (spam.reason === "duplicate") stats.duplicates++;
+      else stats.rateLimited++;
+      stats.filtered++;
       return;
     }
     await learnLid(snapshot, event);
