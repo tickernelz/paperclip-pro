@@ -20,6 +20,8 @@ const xterm = vi.hoisted(() => {
     rows: number;
     writes: string[] = [];
     resets = 0;
+    atlasClears = 0;
+    refreshes: Array<[number, number]> = [];
     disposed = false;
     unicode = { activeVersion: "6" };
     addons: unknown[] = [];
@@ -64,6 +66,8 @@ const xterm = vi.hoisted(() => {
     paste(data: string) { this.emitData(data); }
     selectAll() {}
     clear() {}
+    clearTextureAtlas() { this.atlasClears += 1; }
+    refresh(start: number, end: number) { this.refreshes.push([start, end]); }
     dispose() { this.disposed = true; }
   }
 
@@ -179,6 +183,48 @@ function token(value: string) {
   return { sessionId: "session-1", token: value, expiresAt: "2026-10-24T00:01:00.000Z", websocketPath: "/api/terminal/ws" };
 }
 
+function installIconFont(fallsThroughToBundledFont: boolean) {
+  let resolveLoaded: () => void = () => {};
+  const face = {
+    family: '"Paperclip Symbols Nerd Font Mono"',
+    status: "unloaded" as FontFaceLoadStatus,
+    loaded: new Promise<void>((resolve) => { resolveLoaded = resolve; }),
+    load: vi.fn(),
+  };
+  const listeners = new Set<(event: { fontfaces: unknown[] }) => void>();
+  const fonts = {
+    load: vi.fn(),
+    [Symbol.iterator]: () => [face][Symbol.iterator](),
+    addEventListener: (_type: string, listener: (event: { fontfaces: unknown[] }) => void) => listeners.add(listener),
+    removeEventListener: (_type: string, listener: (event: { fontfaces: unknown[] }) => void) => listeners.delete(listener),
+  };
+  Object.defineProperty(document, "fonts", { configurable: true, value: fonts });
+  const measured: string[] = [];
+  const getContext = vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(() => ({
+    font: "",
+    measureText(this: { font: string }, text: string) {
+      measured.push(`${this.font}|${text}`);
+      if (fallsThroughToBundledFont) face.status = "loading";
+      return { width: 0 };
+    },
+  }) as unknown as CanvasRenderingContext2D);
+  return {
+    face,
+    fonts,
+    measured,
+    finishLoading() {
+      face.status = "loaded";
+      resolveLoaded();
+      for (const listener of listeners) listener({ fontfaces: [face] });
+    },
+    listenerCount: () => listeners.size,
+    restore() {
+      getContext.mockRestore();
+      delete (document as { fonts?: unknown }).fonts;
+    },
+  };
+}
+
 async function flush() {
   await act(async () => {
     await Promise.resolve();
@@ -264,9 +310,56 @@ describe("TerminalView", () => {
     await mount();
 
     const families = String(xterm.terminals[0]!.options.fontFamily).split(", ");
+    const bundled = families.indexOf("Paperclip Symbols Nerd Font Mono");
     expect(families.indexOf("JetBrainsMono Nerd Font")).toBeGreaterThanOrEqual(0);
-    expect(families.indexOf("Symbols Nerd Font Mono")).toBeLessThan(families.indexOf("ui-monospace"));
+    expect(bundled).toBeGreaterThan(families.indexOf("JetBrainsMono Nerd Font"));
+    expect(bundled).toBeGreaterThan(families.indexOf("Symbols Nerd Font Mono"));
+    expect(bundled).toBeLessThan(families.indexOf("ui-monospace"));
     expect(families.at(-1)).toBe("monospace");
+  });
+
+  it("holds the shell output until the bundled icon font loads, then redraws the glyph atlas", async () => {
+    const iconFont = installIconFont(true);
+    try {
+      terminalApiMock.createToken.mockResolvedValueOnce(token("token-1"));
+      await mount();
+      const terminal = xterm.terminals[0]!;
+
+      expect(iconFont.measured).toEqual([`16px ${String(terminal.options.fontFamily)}|\uE0A0\uE0B0\uF017\uF07B\uF313`]);
+      expect(terminalApiMock.createToken).not.toHaveBeenCalled();
+      expect(FakeWebSocket.instances).toHaveLength(0);
+
+      await act(async () => iconFont.finishLoading());
+      await flush();
+
+      expect(terminal.atlasClears).toBe(1);
+      expect(terminal.refreshes).toEqual([[0, 31]]);
+      expect(terminalApiMock.createToken).toHaveBeenCalledTimes(1);
+      expect(FakeWebSocket.instances).toHaveLength(1);
+    } finally {
+      iconFont.restore();
+    }
+  });
+
+  it("never downloads the bundled icon font when an installed Nerd Font draws the prompt icons", async () => {
+    const iconFont = installIconFont(false);
+    try {
+      terminalApiMock.createToken.mockResolvedValueOnce(token("token-1"));
+      await mount();
+
+      expect(iconFont.measured).toHaveLength(1);
+      expect(iconFont.face.status).toBe("unloaded");
+      expect(iconFont.face.load).not.toHaveBeenCalled();
+      expect(iconFont.fonts.load).not.toHaveBeenCalled();
+      expect(FakeWebSocket.instances).toHaveLength(1);
+      expect(xterm.terminals[0]!.atlasClears).toBe(0);
+
+      act(() => root.unmount());
+      expect(iconFont.listenerCount()).toBe(0);
+      root = createRoot(container);
+    } finally {
+      iconFont.restore();
+    }
   });
 
   it("keeps replayed history from answering old terminal queries into the shell", async () => {

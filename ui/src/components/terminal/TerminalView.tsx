@@ -35,6 +35,7 @@ import {
   ContextMenuTrigger,
 } from "@/components/ui/context-menu";
 import { Input } from "@/components/ui/input";
+import { loadTerminalIconFont, onTerminalIconFontLoaded } from "@/lib/terminal-font";
 import { useCopyToast } from "@/lib/use-copy-action";
 import { cn } from "@/lib/utils";
 import { buildSameOriginWebSocketUrl } from "@/lib/websocket-url";
@@ -71,6 +72,7 @@ const DEFAULT_COLS = 100;
 const DEFAULT_ROWS = 30;
 const SCROLLBACK_ROWS = 10_000;
 const KEEPALIVE_INTERVAL_MS = 25_000;
+const ICON_FONT_WAIT_MS = 3_000;
 const FATAL_HTTP_STATUSES = new Set([401, 403, 404, 410]);
 
 const SESSION_GONE_HTTP_STATUSES = new Set([404, 410]);
@@ -163,7 +165,9 @@ export function TerminalView({
     let replaysInFlight = 0;
     let heldInput: string[] | null = null;
     let lastSize: { cols: number; rows: number } | null = null;
+    let iconFontTimer: number | null = null;
 
+    const font = resolveTerminalFont(element);
     const terminal = new XTermTerminal({
       allowProposedApi: true,
       allowTransparency: false,
@@ -175,7 +179,7 @@ export function TerminalView({
       lineHeight: 1.2,
       scrollback: SCROLLBACK_ROWS,
       theme: resolveTerminalTheme(element),
-      ...resolveTerminalFont(element),
+      ...font,
     });
     const fitAddon = new FitAddon();
     const searchAddon = new SearchAddon();
@@ -211,6 +215,10 @@ export function TerminalView({
         setRenderer("dom");
       }
     }
+    const stopIconFontRefresh = onTerminalIconFontLoaded(() => {
+      terminal.clearTextureAtlas();
+      terminal.refresh(0, terminal.rows - 1);
+    });
 
     const send = (frame: TerminalClientFrame) => {
       if (!socket || socket.readyState !== WebSocket.OPEN) return;
@@ -422,11 +430,25 @@ export function TerminalView({
     const keepalive = window.setInterval(() => send({ type: "ping" }), KEEPALIVE_INTERVAL_MS);
 
     fitNow();
-    void connect();
+    const iconFont = font.fontFamily ? loadTerminalIconFont(font.fontFamily) : null;
+    if (iconFont) {
+      const iconFontWait = new Promise<void>((resolve) => {
+        iconFontTimer = window.setTimeout(resolve, ICON_FONT_WAIT_MS);
+      });
+      void Promise.race([iconFont, iconFontWait]).then(() => {
+        if (iconFontTimer !== null) window.clearTimeout(iconFontTimer);
+        iconFontTimer = null;
+        void connect();
+      });
+    } else {
+      void connect();
+    }
 
     return () => {
       disposed = true;
       window.clearInterval(keepalive);
+      if (iconFontTimer !== null) window.clearTimeout(iconFontTimer);
+      stopIconFontRefresh();
       if (reconnectTimer !== null) window.clearTimeout(reconnectTimer);
       if (fitFrame !== null) window.cancelAnimationFrame(fitFrame);
       resizeObserver?.disconnect();

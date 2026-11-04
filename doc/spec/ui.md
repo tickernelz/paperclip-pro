@@ -42,6 +42,7 @@ Priority indicators:
 
 - **Font:** Bundled Inter v4.1 variable WOFF2 for sans text, loaded from `/fonts/InterVariable.woff2` and `/fonts/InterVariable-Italic.woff2`, with `Inter`, `ui-sans-serif`, `system-ui`, `-apple-system`, `BlinkMacSystemFont`, and `'Segoe UI'` fallbacks.
 - **Mono:** System monospace stack via the `font-mono` token (`ui-monospace`, `SFMono-Regular`, `Menlo`, `Monaco`, `Consolas`, `Liberation Mono`, `Courier New`, `monospace`).
+- **Terminal:** `terminalFontFamily()` in `ui/src/lib/terminal-font.ts` puts installed Nerd Fonts first, then the bundled Symbols Nerd Font Mono v3.5.1 (`/fonts/SymbolsNerdFontMono-v3.5.1.woff2`, Private Use Area `unicode-range` only, loaded on demand), then the mono stack.
 - **Body:** 13px / 1.5 line-height
 - **Labels/metadata:** 11px / uppercase tracking
 - **Headings:** 14-18px / semi-bold, never all-caps

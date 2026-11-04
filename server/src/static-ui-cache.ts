@@ -1,5 +1,8 @@
 import path from "node:path";
 
+const IMMUTABLE = "public, max-age=31536000, immutable";
+const VERSIONED_FONT = /\/fonts\/[^/]+-v\d+(?:\.\d+)*\.woff2$/;
+
 /**
  * Cache-Control override for non-hashed UI static files (everything outside
  * /assets, which is content-hashed and immutable). Three kinds of file must
@@ -16,9 +19,10 @@ import path from "node:path";
  *
  * Returns undefined for files where the middleware's default TTL applies.
  */
-export function staticUiCacheControl(filePath: string): "no-cache" | undefined {
+export function staticUiCacheControl(filePath: string): "no-cache" | typeof IMMUTABLE | undefined {
   const basename = path.basename(filePath);
   if (basename === "index.html" || basename === "sw.js") return "no-cache";
   const normalized = filePath.split(path.sep).join("/");
-  return normalized.includes("/downloads/") ? "no-cache" : undefined;
+  if (normalized.includes("/downloads/")) return "no-cache";
+  return VERSIONED_FONT.test(normalized) ? IMMUTABLE : undefined;
 }
