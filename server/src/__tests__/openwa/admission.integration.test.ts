@@ -379,8 +379,10 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
 
     await t.service.openwa.addSenderRule(t.endpointId, { list: "deny", e164: "+" + ALLOWED_PHONE }, t.userId);
     await send(t, { chatId: jid(ALLOWED_PHONE), body: "allowed then denied" });
+    const filteredAudits = async () => (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    await until(async () => (await filteredAudits()).length >= 2);
     expect(await deliveries(t)).toHaveLength(2);
-    const filtered = (await audits(t)).filter((entry) => entry.kind === "trigger_filtered");
+    const filtered = await filteredAudits();
     expect(filtered.map((entry) => (entry.metadata as { reason: string }).reason)).toEqual(["outside_allowlist", "denylisted"]);
     expect(filtered.map((entry) => entry.chatKey)).toEqual([jid(STRANGER_PHONE), jid(ALLOWED_PHONE)]);
     const admittedAudits = (await audits(t)).filter((entry) => entry.kind === "trigger_admitted");
@@ -889,7 +891,12 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
   async function sendHeld(t: Setup, input: Parameters<FakeOpenwaGateway["inbound"]>[0]) {
     const row = await send(t, input);
     let delivery: typeof chatDeliveries.$inferSelect | undefined;
+    let swept = Date.now();
     await until(async () => {
+      if (Date.now() - swept > 1_000) {
+        swept = Date.now();
+        await t.service.processPendingDeliveries();
+      }
       delivery = (await deliveries(t)).find((entry) => (entry.normalizedEvent as { openwa?: { waMessageId?: string } }).openwa?.waMessageId === row.waMessageId);
       const action = delivery && (await wakeActions(t)).find((entry) => entry.deliveryId === delivery!.id);
       return ["openwa_burst_held", "openwa_burst_folded"].includes(burstCode(action) ?? "");
