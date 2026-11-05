@@ -20,7 +20,11 @@ test("skips display:none, visibility:hidden, opacity:0 and zero-box subtrees", (
       el("div", { style: { display: "none" }, children: [el("button", { children: [t("Hidden")] })] }),
       el("div", { style: { visibility: "hidden" }, children: [el("button", { children: [t("Invisible")] })] }),
       el("div", { style: { opacity: "0" }, children: [el("button", { children: [t("Transparent")] })] }),
-      el("div", { box: { width: 0, height: 0 }, children: [el("button", { children: [t("Zero box")] })] }),
+      el("div", {
+        box: { width: 0, height: 0 },
+        style: { overflowX: "hidden", overflowY: "hidden" },
+        children: [el("button", { children: [t("Zero box")] })],
+      }),
       el("div", { attrs: { "aria-hidden": "true" }, children: [el("button", { children: [t("Aria hidden")] })] }),
       el("button", { children: [t("Visible")] }),
     ],
@@ -322,4 +326,113 @@ test("keeps the default page size when maxNodes is absent or junk", () => {
   assert.equal(buildSnapshot(adapter, { refs: createRefMap() }).nodes.length, 120);
   assert.equal(buildSnapshot(adapter, { maxNodes: "lots", refs: createRefMap() }).nodes.length, 120);
   assert.equal(buildSnapshot(adapter, { maxNodes: -4, refs: createRefMap() }).nodes.length, 1);
+});
+
+function composeDialog() {
+  return el("div", {
+    attrs: { role: "dialog", "aria-label": "New Message" },
+    children: [
+      el("input", { attrs: { type: "text", role: "combobox", "aria-label": "To recipients" } }),
+      el("input", { attrs: { type: "text", "aria-label": "Subject" } }),
+      el("div", { attrs: { role: "textbox", contenteditable: "true", "aria-label": "Message Body" } }),
+      el("div", { attrs: { role: "button", "aria-label": "Send \u202a(Ctrl-Enter)\u202c" }, children: [t("Send")] }),
+    ],
+  });
+}
+
+function inboxRows(count) {
+  const rows = [];
+  for (let index = 1; index <= count; index += 1) {
+    rows.push(el("div", { children: [el("a", { attrs: { href: "/m/" + index }, children: [t("Message " + index)] })] }));
+  }
+  return el("div", { children: rows });
+}
+
+test("puts an open dialog at the top of the first page even when the page appends it last", () => {
+  const body = el("body", { children: [inboxRows(300), el("div", { children: [composeDialog()] })] });
+  const result = snapshot(body, { maxNodes: 20 });
+  assert.deepEqual(result.nodes.slice(0, 5).map((node) => [node.role, node.name, node.depth]), [
+    ["dialog", "New Message", 0],
+    ["combobox", "To recipients", 1],
+    ["textbox", "Subject", 1],
+    ["textbox", "Message Body", 1],
+    ["button", "Send (Ctrl-Enter)", 1],
+  ]);
+  assert.deepEqual(result.nodes.slice(1, 5).map((node) => node.ref), ["e1", "e2", "e3", "e4"]);
+  assert.deepEqual([result.nodes[5].role, result.nodes[5].name], ["text", "Send"]);
+  assert.deepEqual([result.nodes[6].role, result.nodes[6].name], ["link", "Message 1"]);
+  assert.equal(result.total, 6 + 600);
+});
+
+test("pages through the rest of the document after the dialog without gaps", () => {
+  const adapter = createFakeAdapter({ body: el("body", { children: [inboxRows(30), composeDialog()] }) });
+  const refs = createRefMap();
+  const seen = [];
+  let cursor;
+  for (let guard = 0; guard < 20; guard += 1) {
+    const page = buildSnapshot(adapter, { maxNodes: 7, cursor, refs });
+    seen.push(...page.nodes.map((node) => node.name));
+    if (!page.cursor) break;
+    cursor = page.cursor;
+  }
+  assert.equal(seen.length, 6 + 60);
+  assert.equal(seen[0], "New Message");
+  assert.equal(seen[seen.length - 1], "Message 30");
+});
+
+test("treats aria-modal as an overlay", () => {
+  const body = el("body", {
+    children: [
+      inboxRows(50),
+      el("div", { attrs: { "aria-modal": "true", "aria-label": "Cookie choices" }, children: [el("button", { children: [t("Accept")] })] }),
+    ],
+  });
+  const result = snapshot(body, { maxNodes: 4 });
+  assert.deepEqual(result.nodes.map((node) => [node.role, node.name]), [
+    ["dialog", "Cookie choices"],
+    ["button", "Accept"],
+    ["text", "Accept"],
+    ["link", "Message 1"],
+  ]);
+});
+
+test("reads controls inside an open shadow root", () => {
+  const host = el("compose-window", { props: { shadow: [composeDialog()] } });
+  const result = snapshot(el("body", { children: [inboxRows(50), host] }), { maxNodes: 6 });
+  assert.equal(result.nodes[0].role, "dialog");
+  assert.equal(result.nodes[4].name, "Send (Ctrl-Enter)");
+});
+
+test("descends through a zero-size box whose overflow is visible", () => {
+  const host = el("div", { box: { width: 0, height: 0 }, children: [el("button", { children: [t("Floating")] })] });
+  const result = snapshot(el("body", { children: [host] }));
+  assert.deepEqual(result.nodes.filter((node) => node.ref).map((node) => node.name), ["Floating"]);
+});
+
+test("reads a same-origin frame and skips one it cannot open", () => {
+  const readable = el("iframe", { props: { frameBody: el("body", { children: [composeDialog()] }) } });
+  const foreign = el("iframe", { props: {} });
+  const result = snapshot(el("body", { children: [foreign, readable, el("button", { children: [t("Page")] })] }));
+  assert.deepEqual(result.nodes.filter((node) => node.ref).map((node) => node.name), [
+    "To recipients",
+    "Subject",
+    "Message Body",
+    "Send (Ctrl-Enter)",
+    "Page",
+  ]);
+});
+
+
+test("shows what was typed into an input combobox such as a recipient field", () => {
+  const body = el("body", {
+    children: [
+      el("input", { attrs: { type: "text", role: "combobox", "aria-label": "To recipients" }, props: { value: "ana@example.test" } }),
+      el("input", { attrs: { type: "password", role: "combobox", "aria-label": "Secret" }, props: { value: "hunter2" } }),
+    ],
+  });
+  const result = snapshot(body);
+  assert.deepEqual(result.nodes.map((node) => [node.name, node.value]), [
+    ["To recipients", "ana@example.test"],
+    ["Secret", undefined],
+  ]);
 });

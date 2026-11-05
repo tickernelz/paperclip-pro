@@ -655,7 +655,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   ),
   defineTool(
     "local_browser_snapshot",
-    "Read the page as a compact accessibility tree where every interactive element has a ref like e12. This is the primary way to see a page: call it after every navigation or click, then pass those refs to local_browser_act. Pass cursor from the previous result to continue. The result carries document; when document.stale is true, reload before you trust it.",
+    "Read the page as a compact accessibility tree where every interactive element has a ref like e12. This is the primary way to see a page: call it after every navigation or click, then pass those refs to local_browser_act. Open dialogs, such as a compose window, come first; open shadow DOM and same-origin frames are included. Pass cursor from the previous result to continue. The result carries document; when document.stale is true, reload before you trust it.",
     localBrowserSnapshotInputSchema,
   ),
   defineTool(

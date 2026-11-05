@@ -17,7 +17,6 @@
     "base",
     "svg",
     "canvas",
-    "iframe",
     "object",
     "embed",
     "video",
@@ -27,6 +26,8 @@
     "map",
     "area"
   ]);
+
+  var FRAME_TAGS = new Set(["iframe", "frame"]);
 
   var IMPLICIT_ROLES = {
     a: "link",
@@ -171,17 +172,27 @@
     return null;
   }
 
-  function isHidden(adapter, element) {
-    if (adapter.attr(element, "hidden") !== null) return true;
-    if ((adapter.attr(element, "aria-hidden") || "").toLowerCase() === "true") return true;
+  function hiddenReason(adapter, element) {
+    if (adapter.attr(element, "hidden") !== null) return "attribute";
+    if ((adapter.attr(element, "aria-hidden") || "").toLowerCase() === "true") return "attribute";
     var style = adapter.style(element) || {};
-    if (style.display === "none") return true;
-    if (style.visibility === "hidden" || style.visibility === "collapse") return true;
-    if (style.opacity !== undefined && style.opacity !== null && Number(style.opacity) === 0) return true;
-    if (adapter.tagName(element) === "option") return false;
+    if (style.display === "none") return "style";
+    if (style.visibility === "hidden" || style.visibility === "collapse") return "style";
+    if (style.opacity !== undefined && style.opacity !== null && Number(style.opacity) === 0) return "style";
+    if (adapter.tagName(element) === "option") return null;
     var rect = adapter.rect(element) || {};
-    if (!(rect.width > 0) || !(rect.height > 0)) return true;
-    return false;
+    if (!(rect.width > 0) || !(rect.height > 0)) return overflows(style) ? "empty-box" : "box";
+    return null;
+  }
+
+  function overflows(style) {
+    var x = style.overflowX;
+    var y = style.overflowY;
+    return (!x || x === "visible") && (!y || y === "visible");
+  }
+
+  function isHidden(adapter, element) {
+    return hiddenReason(adapter, element) !== null;
   }
 
   var TEXT_NAME_ROLES = new Set([
@@ -260,6 +271,10 @@
     if (role === "combobox" || role === "listbox") {
       var selected = adapter.selectedTexts(element);
       if (selected.length) state.value = text.normalizeName(selected.join(", "));
+      else if (role === "combobox" && adapter.tagName(element) === "input" && (adapter.attr(element, "type") || "").toLowerCase() !== "password") {
+        var typed = adapter.valueOf(element);
+        if (typeof typed === "string" && typed) state.value = text.truncate(typed, text.NODE_NAME_MAX);
+      }
     }
     if (role === "checkbox" || role === "radio" || role === "switch") {
       state.checked = adapter.checkedOf(element) === true;
@@ -269,9 +284,31 @@
     return state;
   }
 
+  var OVERLAY_ROLES = new Set(["dialog", "alertdialog"]);
+
+  function isOverlay(adapter, element, role) {
+    if (OVERLAY_ROLES.has(role)) return true;
+    return (adapter.attr(element, "aria-modal") || "").toLowerCase() === "true";
+  }
+
+  function childrenOf(adapter, element) {
+    var shadow = adapter.shadowRoot ? adapter.shadowRoot(element) : null;
+    var children = adapter.children(element);
+    return shadow ? adapter.children(shadow).concat(children) : children;
+  }
+
+  function withRef(node, ref) {
+    var out = { ref: ref };
+    for (var key in node) {
+      if (Object.prototype.hasOwnProperty.call(node, key)) out[key] = node[key];
+    }
+    return out;
+  }
+
   function directText(adapter, element) {
     var out = "";
-    var nodes = adapter.childNodes(element);
+    var shadow = adapter.shadowRoot ? adapter.shadowRoot(element) : null;
+    var nodes = shadow ? adapter.childNodes(shadow).concat(adapter.childNodes(element)) : adapter.childNodes(element);
     for (var i = 0; i < nodes.length; i += 1) {
       var child = nodes[i];
       if (adapter.isText(child)) out += adapter.nodeText(child) + " ";
@@ -307,49 +344,74 @@
       return { url: url, title: title, nodes: [], truncated: false, total: 0, missing: true };
     }
 
-    var nodes = [];
-    var total = 0;
+    var overlayEntries = [];
+    var pageEntries = [];
+    var stack = [];
 
-    function emit(node) {
-      total += 1;
-      if (total <= offset) return;
-      if (nodes.length < maxNodes) nodes.push(node);
+    function record(item, entry) {
+      (item.overlay ? overlayEntries : pageEntries).push(entry);
     }
 
-    var stack = [];
+    function pushChildren(item, list) {
+      for (var c = list.length - 1; c >= 0; c -= 1) {
+        stack.push({ element: list[c], depth: item.depth + 1, overlay: item.overlay, shift: item.shift });
+      }
+    }
+
     var seed = adapter.children(start);
-    for (var s = seed.length - 1; s >= 0; s -= 1) stack.push({ element: seed[s], depth: 0 });
+    for (var s = seed.length - 1; s >= 0; s -= 1) stack.push({ element: seed[s], depth: 0, overlay: false, shift: 0 });
 
     while (stack.length) {
       var item = stack.pop();
       var element = item.element;
-      if (!includeHidden && isHidden(adapter, element)) continue;
+      if (!includeHidden) {
+        var hidden = hiddenReason(adapter, element);
+        if (hidden === "empty-box") pushChildren(item, childrenOf(adapter, element));
+        if (hidden !== null) continue;
+      }
       var tag = adapter.tagName(element);
+      if (FRAME_TAGS.has(tag)) {
+        var frameBody = adapter.frameBody ? adapter.frameBody(element) : null;
+        if (frameBody) pushChildren(item, adapter.children(frameBody));
+        continue;
+      }
       if (SKIP_TAGS.has(tag)) continue;
 
       var role = roleFor(adapter, element);
+      var opensOverlay = !item.overlay && isOverlay(adapter, element, role);
+      if (opensOverlay) {
+        item = { element: element, depth: item.depth, overlay: true, shift: item.depth };
+        if (!role) role = "dialog";
+      }
       if (role) {
         var node = {};
         var interactive = INTERACTIVE_ROLES.has(role);
-        if (interactive) node.ref = refs.assign(element);
         node.role = role;
         node.name = nodeName(adapter, element, role);
         var state = nodeState(adapter, element, role);
         if (Object.prototype.hasOwnProperty.call(state, "value")) node.value = state.value;
-        node.depth = item.depth;
+        node.depth = item.depth - item.shift;
         if (state.disabled) node.disabled = true;
         if (Object.prototype.hasOwnProperty.call(state, "checked")) node.checked = state.checked;
         if (Object.prototype.hasOwnProperty.call(state, "selected")) node.selected = state.selected;
-        if (interactive || node.name) emit(node);
+        if (interactive || node.name || opensOverlay) record(item, { node: node, element: interactive ? element : null });
       }
 
       if (includeText) {
         var run = text.normalizeName(directText(adapter, element));
-        if (run) emit({ role: "text", name: run, depth: item.depth + 1 });
+        if (run) record(item, { node: { role: "text", name: run, depth: item.depth - item.shift + 1 }, element: null });
       }
 
-      var children = adapter.children(element);
-      for (var c = children.length - 1; c >= 0; c -= 1) stack.push({ element: children[c], depth: item.depth + 1 });
+      pushChildren(item, childrenOf(adapter, element));
+    }
+
+    var entries = overlayEntries.length ? overlayEntries.concat(pageEntries) : pageEntries;
+    var total = entries.length;
+    var nodes = [];
+    for (var e = 0; e < entries.length; e += 1) {
+      var entry = entries[e];
+      if (entry.element) entry.node = withRef(entry.node, refs.assign(entry.element));
+      if (e >= offset && nodes.length < maxNodes) nodes.push(entry.node);
     }
 
     var stale = offset > 0 && offset >= total;

@@ -2,10 +2,11 @@
   "use strict";
 
   var NODE_NAME_MAX = 160;
+  var FORMAT_CONTROLS = /[\u200b\u200e\u200f\u202a-\u202e\u2066-\u2069\ufeff]/g;
 
   function collapse(value) {
     if (typeof value !== "string") return "";
-    return value.replace(/\s+/g, " ").trim();
+    return value.replace(FORMAT_CONTROLS, "").replace(/\s+/g, " ").trim();
   }
 
   function truncate(value, max) {

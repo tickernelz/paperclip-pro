@@ -1,8 +1,13 @@
 (function (root) {
   "use strict";
 
+  function viewOf(element) {
+    var doc = element && element.ownerDocument;
+    return (doc && doc.defaultView) || window;
+  }
+
   function styleOf(element) {
-    var computed = window.getComputedStyle(element);
+    var computed = viewOf(element).getComputedStyle(element);
     return {
       display: computed.display,
       visibility: computed.visibility,
@@ -107,6 +112,17 @@
     },
     children: function (element) {
       return element && element.children ? Array.prototype.slice.call(element.children) : [];
+    },
+    shadowRoot: function (element) {
+      return (element && element.shadowRoot) || null;
+    },
+    frameBody: function (element) {
+      try {
+        var doc = element.contentDocument;
+        return (doc && doc.body) || null;
+      } catch (error) {
+        return null;
+      }
     },
     childNodes: function (element) {
       return element && element.childNodes ? Array.prototype.slice.call(element.childNodes) : [];

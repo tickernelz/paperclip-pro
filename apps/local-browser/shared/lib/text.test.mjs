@@ -11,6 +11,11 @@ test("collapse folds every whitespace run into one space", () => {
   assert.equal(collapse(42), "");
 });
 
+test("collapse drops invisible direction and zero-width marks", () => {
+  assert.equal(collapse("Send \u202a(Ctrl-Enter)\u202c"), "Send (Ctrl-Enter)");
+  assert.equal(collapse("\u200eHello\u200f \u2066world\u2069\u200b\ufeff"), "Hello world");
+});
+
 test("truncate keeps short values untouched", () => {
   assert.equal(truncate("short", 10), "short");
   assert.equal(truncate("exactly10!", 10), "exactly10!");

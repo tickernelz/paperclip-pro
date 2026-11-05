@@ -81,30 +81,70 @@
     }
   }
 
-  function pointOf(element) {
+  function centerOf(element) {
     var rect = element.getBoundingClientRect();
     return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
   }
 
-  var HIT_TESTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true };
+  function viewOf(element) {
+    var doc = element && element.ownerDocument;
+    return (doc && doc.defaultView) || window;
+  }
 
-  function hitAtPoint(x, y) {
-    if (typeof document.elementFromPoint !== "function") return undefined;
+  function hostFrameOf(element) {
+    var view = viewOf(element);
+    if (view === window) return null;
     try {
-      return document.elementFromPoint(x, y);
+      return view.frameElement || null;
     } catch (error) {
-      return undefined;
+      return null;
     }
   }
 
-  function viewportOf() {
-    return { width: window.innerWidth || 0, height: window.innerHeight || 0 };
+  function pointOf(element) {
+    var point = centerOf(element);
+    var frame = hostFrameOf(element);
+    while (frame) {
+      var rect = frame.getBoundingClientRect();
+      var style = viewOf(frame).getComputedStyle(frame);
+      point.x += rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0);
+      point.y += rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0);
+      frame = hostFrameOf(frame);
+    }
+    return point;
+  }
+
+  var HIT_TESTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true };
+
+  function hitAtPoint(x, y, doc) {
+    var scope = doc || document;
+    if (typeof scope.elementFromPoint !== "function") return undefined;
+    var hit;
+    try {
+      hit = scope.elementFromPoint(x, y);
+    } catch (error) {
+      return undefined;
+    }
+    while (hit && hit.shadowRoot && typeof hit.shadowRoot.elementFromPoint === "function") {
+      var inner = hit.shadowRoot.elementFromPoint(x, y);
+      if (!inner || inner === hit) break;
+      hit = inner;
+    }
+    return hit;
+  }
+
+  function viewportOf(element) {
+    var view = viewOf(element);
+    return { width: view.innerWidth || 0, height: view.innerHeight || 0 };
   }
 
   function hitVerdict(element) {
-    var point = pointOf(element);
-    var hit = hitAtPoint(point.x, point.y);
-    return { verdict: LB.hit.hitTestVerdict(element, hit, point, viewportOf()), hit: hit, point: point };
+    var point = centerOf(element);
+    var hit = hitAtPoint(point.x, point.y, element.ownerDocument);
+    var verdict = LB.hit.hitTestVerdict(element, hit, point, viewportOf(element));
+    var frame = hostFrameOf(element);
+    if (verdict === "allow" && frame) return hitVerdict(frame);
+    return { verdict: verdict, hit: hit, point: point };
   }
 
   function ensureReachable(element, action) {
@@ -156,7 +196,7 @@
   }
 
   function pointerSequence(element, detail) {
-    var point = pointOf(element);
+    var point = centerOf(element);
     var base = {
       bubbles: true,
       cancelable: true,
@@ -213,7 +253,7 @@
   }
 
   function hover(element) {
-    var point = pointOf(element);
+    var point = centerOf(element);
     var base = { bubbles: true, cancelable: true, composed: true, view: window, clientX: point.x, clientY: point.y };
     element.dispatchEvent(new PointerEvent("pointerover", base));
     element.dispatchEvent(new MouseEvent("mouseover", base));

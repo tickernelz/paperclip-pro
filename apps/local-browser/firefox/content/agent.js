@@ -423,17 +423,59 @@
     return false;
   }
 
+  function viewOf(element) {
+    var doc = element && element.ownerDocument;
+    return (doc && doc.defaultView) || window;
+  }
+
+  function hostFrameOf(element) {
+    var view = viewOf(element);
+    if (view === window) return null;
+    try {
+      return view.frameElement || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function pointOf(element) {
+    var center = centerOf(element);
+    var point = { x: center.x, y: center.y };
+    var frame = hostFrameOf(element);
+    while (frame) {
+      var rect = frame.getBoundingClientRect();
+      var style = viewOf(frame).getComputedStyle(frame);
+      point.x += rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0);
+      point.y += rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0);
+      frame = hostFrameOf(frame);
+    }
+    return point;
+  }
+
+  function deepHit(scope, point) {
+    var hit = scope.elementFromPoint(point.x, point.y);
+    while (hit && hit.shadowRoot && typeof hit.shadowRoot.elementFromPoint === "function") {
+      var inner = hit.shadowRoot.elementFromPoint(point.x, point.y);
+      if (!inner || inner === hit) break;
+      hit = inner;
+    }
+    return hit;
+  }
+
   function hitAt(element, point) {
-    if (typeof document.elementFromPoint !== "function") return { state: "allow", hit: null };
+    var scope = element.ownerDocument || document;
+    if (typeof scope.elementFromPoint !== "function") return { state: "allow", hit: null };
     var hit;
     try {
-      hit = document.elementFromPoint(point.x, point.y);
+      hit = deepHit(scope, point);
     } catch (error) {
       return { state: "allow", hit: null };
     }
-    if (hit && (hit === element || contains(element, hit))) return { state: "allow", hit: hit };
+    var frame = hostFrameOf(element);
+    if (hit && (hit === element || contains(element, hit))) return frame ? hitAt(frame, centerOf(frame)) : { state: "allow", hit: hit };
     if (hit) return { state: "covered", hit: hit };
-    var inside = point.x >= 0 && point.y >= 0 && point.x <= window.innerWidth && point.y <= window.innerHeight;
+    var view = viewOf(element);
+    var inside = point.x >= 0 && point.y >= 0 && point.x <= view.innerWidth && point.y <= view.innerHeight;
     return { state: inside ? "covered" : "offscreen", hit: null };
   }
 
@@ -479,8 +521,9 @@
       return prepared;
     }
     if (action === "check" || action === "uncheck") prepared.done = element.checked === (action === "check");
-    prepared.x = Math.round(point.x);
-    prepared.y = Math.round(point.y);
+    var target = pointOf(element);
+    prepared.x = Math.round(target.x);
+    prepared.y = Math.round(target.y);
     return prepared;
   }
 

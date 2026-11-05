@@ -59,7 +59,10 @@ export function createFakeAdapter({ body, url = "https://example.test/page", tit
     title: () => title,
     getRoot: () => body,
     query: (scope, selector) => find(scope || body, selector),
-    children: (node) => (node && node.kind === "element" ? node.children.filter((child) => child.kind === "element") : []),
+    children: (node) =>
+      node && (node.kind === "element" || node.kind === "shadow-root") ? node.children.filter((child) => child.kind === "element") : [],
+    shadowRoot: (node) => (node && node.props.shadow ? { kind: "shadow-root", children: node.props.shadow } : null),
+    frameBody: (node) => (node && node.props.frameBody) || null,
     childNodes: (node) => (node && node.children ? node.children : []),
     isElement: (node) => Boolean(node) && node.kind === "element",
     isText: (node) => Boolean(node) && node.kind === "text",

@@ -96,6 +96,23 @@ expirationDate, hostOnly, storeId, partitionKey\`. \`session: true\` means the c
 when the browser closes and has no expirationDate. Write a session cookie with
 \`session: true\` and no expirationDate.
 
+## Dialogs and floating windows
+
+Open dialogs come first in a snapshot, before the page behind them: role \`dialog\` or
+\`alertdialog\`, or \`aria-modal\`, such as a mail compose window or a cookie prompt.
+Snapshots also read open shadow DOM and same-origin frames. Names drop invisible
+direction marks, so Gmail's button reads \`Send (Ctrl-Enter)\`.
+
+To send an email, for example in Gmail:
+
+1. Send only a message the user asked you to send, to the recipients they named.
+   Otherwise stop at a saved draft and say so.
+2. Click Compose, then snapshot: the \`dialog "New Message"\` lines are the window.
+3. \`type\` into \`To recipients\`, then press \`Enter\` so the address becomes a chip;
+   then \`type\` into \`Subject\` and into the \`Message Body\` textbox.
+4. Snapshot again and check the three values, then \`click\` the Send button.
+5. Confirm with \`local_browser_wait\` for the site's notice (Gmail: \`Message sent\`).
+
 ## Covered elements
 
 \`local_browser_act\` refuses an element that another element covers, such as a banner.
