@@ -263,6 +263,34 @@ vi.mock("../api/health", () => ({
   healthApi: mockHealthApi,
 }));
 
+vi.mock("../api/local-browser", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api/local-browser")>();
+  return {
+    ...actual,
+    localBrowserApi: {
+      ...actual.localBrowserApi,
+      sessions: vi.fn().mockResolvedValue({
+        sessions: [
+          {
+            sessionId: "11111111-1111-4111-8111-111111111111",
+            ownerUserId: null,
+            tabs: [{ tabId: 9, windowId: 1, title: "Inbox", url: "https://mail.example.com/", active: false }],
+            agentActivity: { state: "operating", tabId: 9, at: "2026-11-05T00:00:00.000Z" },
+          },
+        ],
+      }),
+    },
+  };
+});
+
+vi.mock("../api/auth", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api/auth")>();
+  return {
+    ...actual,
+    authApi: { ...actual.authApi, getSession: vi.fn().mockResolvedValue({ user: { id: "user-1" }, session: { userId: "user-1" } }) },
+  };
+});
+
 vi.mock("../api/instanceSettings", () => ({
   instanceSettingsApi: mockInstanceSettingsApi,
 }));
@@ -366,6 +394,31 @@ describe("Layout", () => {
     expect(container.textContent).not.toContain(
       "Sign-in is required and this instance is intended for private-network access.",
     );
+
+    await act(async () => {
+      root.unmount();
+    });
+  });
+
+  it("shows no in-app browser window while an agent operates a browser tab", async () => {
+    const root = createRoot(container);
+    const queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+
+    await act(async () => {
+      root.render(
+        <QueryClientProvider client={queryClient}>
+          <Layout />
+        </QueryClientProvider>,
+      );
+    });
+    await flushReact();
+    await flushReact();
+
+    expect(container.textContent).toContain("Outlet content");
+    expect(document.querySelector('[aria-label="Agent browser"]')).toBeNull();
+    expect(Array.from(document.querySelectorAll("button")).some((button) => button.textContent === "Pop out")).toBe(false);
 
     await act(async () => {
       root.unmount();

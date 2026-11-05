@@ -80,11 +80,7 @@ function keyIdOf(descriptor: LocalBrowserKeyDescriptor): string {
   return descriptor.code || descriptor.key;
 }
 
-export function useLocalBrowserViewer(
-  sessionId: string,
-  companyId?: string,
-  tabId?: number,
-): UseLocalBrowserViewerResult {
+export function useLocalBrowserViewer(sessionId: string, companyId?: string): UseLocalBrowserViewerResult {
   const [frame, setFrame] = useState<LocalBrowserViewerFrame | null>(null);
   const [status, setStatus] = useState<LocalBrowserViewerStatus>("connecting");
   const [error, setError] = useState<string | null>(null);
@@ -117,7 +113,7 @@ export function useLocalBrowserViewer(
       return;
     }
 
-    const url = localBrowserViewerUrl(sessionId, companyId, tabId);
+    const url = localBrowserViewerUrl(sessionId, companyId);
     let disposed = false;
     let source: EventSource | null = null;
     let retries = 0;
@@ -179,7 +175,7 @@ export function useLocalBrowserViewer(
       source?.close();
       source = null;
     };
-  }, [sessionId, companyId, tabId]);
+  }, [sessionId, companyId]);
 
   useEffect(() => {
     lastMoveRef.current = "";

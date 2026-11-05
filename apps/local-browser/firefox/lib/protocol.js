@@ -36,7 +36,8 @@
     "api.v1",
     "act.force",
     "budget.v1",
-    "act.input"
+    "act.input",
+    "indicator.v1"
   ]);
 
   var DEFAULTS = Object.freeze({
@@ -56,7 +57,7 @@
     heartbeatTimeoutMs: 75000
   });
 
-  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui"]);
+  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui", "local_browser_indicator"]);
 
   var AGENT_TOOLS = Object.freeze([
     "local_browser_sessions",

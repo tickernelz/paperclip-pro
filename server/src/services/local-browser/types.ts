@@ -1,6 +1,5 @@
 import type {
   LocalBrowserAccess,
-  LocalBrowserActivity,
   LocalBrowserClient,
   LocalBrowserGuards,
   LocalBrowserLimits,
@@ -64,7 +63,13 @@ export interface LiveSession {
   lastSeenAt: Date;
   pending: Map<string, PendingCall>;
   viewers: Set<ViewerListener>;
-  activity: LocalBrowserActivity | null;
-  operatingCalls: number;
-  viewerTabId: number | null;
+  operators: Map<string, TabOperator>;
+  indicatorSync: { inFlight: boolean; dirty: boolean; sent: string };
+}
+
+export interface TabOperator {
+  name: string | null;
+  calls: number;
+  tabId: number | null;
+  timer: ReturnType<typeof setTimeout> | null;
 }

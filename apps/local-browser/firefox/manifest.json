@@ -60,8 +60,10 @@
       "lib/input.js",
       "lib/frames.js",
       "lib/budget.js",
+      "lib/indicator.js",
       "background/network.js",
       "background/tabs.js",
+      "background/indicator.js",
       "background/bidi.js",
       "background/cookies.js",
       "background/downloads.js",
@@ -86,6 +88,7 @@
         "lib/document-state.js",
         "lib/keys.js",
         "lib/input.js",
+        "lib/indicator.js",
         "content/agent.js"
       ],
       "run_at": "document_idle",

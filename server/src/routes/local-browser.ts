@@ -187,11 +187,6 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
     const sessionId = sessionIdSchema.parse(req.params.id);
     const session = service.getSessionForCompany(companyId, sessionId);
     if (!session) throw notFound("Browser session is not connected");
-    const tabQuery = typeof req.query.tabId === "string" && /^\d{1,9}$/.test(req.query.tabId) ? Number(req.query.tabId) : null;
-    if (req.query.tabId !== undefined && tabQuery === null) throw badRequest("tabId must be a tab id");
-    if (tabQuery !== null && session.activity?.tabId !== tabQuery) {
-      throw forbidden("The live view can follow only the tab the agent is operating");
-    }
 
     res.status(200);
     res.setHeader("Content-Type", "text/event-stream");
@@ -216,10 +211,7 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
       finished = true;
       if (keepalive) clearInterval(keepalive);
       unsubscribe();
-      if (viewerCount(session) === 0) {
-        session.viewerTabId = null;
-        stopFrames();
-      }
+      if (viewerCount(session) === 0) stopFrames();
       if (!res.writableEnded) res.end();
     };
 
@@ -235,14 +227,12 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
     const wasIdle = viewerCount(session) === 0;
     const actor = auditActor(req);
     unsubscribe = subscribeViewer(session, write);
-    if (wasIdle || (tabQuery !== null && session.viewerTabId !== tabQuery)) {
-      session.viewerTabId = tabQuery;
+    if (wasIdle) {
       const startedAt = Date.now();
       void service
         .sendInternalCall(session, "local_browser_viewer", {
           op: "start",
           intervalMs: LOCAL_BROWSER_VIEWER_FRAME_INTERVAL_MS,
-          ...(tabQuery !== null ? { tabId: tabQuery } : {}),
         })
         .then(() =>
           service.auditInternal({
@@ -259,7 +249,6 @@ export function localBrowserRoutes(db: Db, service = localBrowserService(db)) {
           }),
         )
         .catch((error: unknown) => {
-          if (session.viewerTabId === tabQuery) session.viewerTabId = null;
           const code =
             error && typeof error === "object" && "code" in error
               ? String((error as { code: unknown }).code)

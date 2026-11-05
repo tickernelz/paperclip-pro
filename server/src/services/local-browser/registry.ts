@@ -68,9 +68,8 @@ export function registerSession(input: {
     lastSeenAt: now,
     pending: new Map(),
     viewers: new Set(),
-    activity: null,
-    operatingCalls: 0,
-    viewerTabId: null,
+    operators: new Map(),
+    indicatorSync: { inFlight: false, dirty: false, sent: "[]" },
   };
   sessions.set(sessionId, session);
   sessionIdByTokenHash.set(input.tokenHash, sessionId);
@@ -207,7 +206,6 @@ export function toPublicSession(session: LiveSession): LocalBrowserSession {
     lastSeenAt: session.lastSeenAt.toISOString(),
     tabs: session.tabs,
     controlledByViewer: session.viewers.size > 0,
-    agentActivity: session.activity,
     capabilities: [...session.capabilities],
     ...(session.access ? { access: session.access } : {}),
     ...(session.guards ? { guards: session.guards } : {}),

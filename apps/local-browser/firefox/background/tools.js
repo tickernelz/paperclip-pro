@@ -58,6 +58,10 @@
     return tabsApi.resolveTab(args || {});
   }
 
+  async function agentTab(args) {
+    return LB.indicatorTabs.assertNotHeld(await targetTab(args));
+  }
+
   async function sessions(args, ctx) {
     var tabs = await tabsApi.listTabs();
     var active = null;
@@ -158,6 +162,7 @@
       }
       if (store && (candidate.cookieStoreId || tabsApi.DEFAULT_STORE) !== store) continue;
       if (!store && candidate.incognito === true) continue;
+      if (LB.indicatorTabs.isHeld(candidate.id)) continue;
       if (!ownLoaded) {
         own = await paperclipOrigin();
         ownLoaded = true;
@@ -284,7 +289,7 @@
     var created = null;
     try {
       if (url && typeof args.tabId === "number") {
-        var explicit = await targetTab(args);
+        var explicit = await agentTab(args);
         await assertNavigationAllowed(explicit);
         await browser.tabs.update(explicit.tabId, { url: url });
         rememberAgentTab(explicit.tabId);
@@ -304,7 +309,7 @@
         tab = created.tab;
         rememberAgentTab(tab.id);
       } else {
-        var current = await targetTab(args);
+        var current = await agentTab(args);
         tab = await browser.tabs.get(current.tabId);
       }
     } catch (error) {
@@ -326,7 +331,7 @@
   }
 
   async function navigate(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     await assertNavigationAllowed(tab);
     var acted = false;
     try {
@@ -367,7 +372,7 @@
   }
 
   async function snapshot(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     return tabsApi.send(tab.tabId, "snapshot", {
       selector: args.selector,
       maxNodes: args.maxNodes,
@@ -407,7 +412,7 @@
   }
 
   async function act(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     var mode = args.input || "auto";
     if (mode === "synthetic") return syntheticAct(tab, args);
     if (TRUSTED_ACTIONS[args.action] !== true) return syntheticAct(tab, args, mode === "trusted" ? args.action + " always runs as page events" : undefined);
@@ -428,7 +433,7 @@
   }
 
   async function read(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     return tabsApi.send(tab.tabId, "read", {
       selector: args.selector,
       format: args.format,
@@ -437,7 +442,7 @@
   }
 
   async function wait(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     return tabsApi.send(tab.tabId, "wait", {
       selector: args.selector,
       text: args.text,
@@ -476,7 +481,13 @@
   }
 
   async function screenshot(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
+    return LB.indicatorTabs.withHidden(tab.tabId, function () {
+      return captureShot(tab, args, ctx);
+    });
+  }
+
+  async function captureShot(tab, args, ctx) {
     var viewport = await tabsApi.send(tab.tabId, "viewport", {});
 
     if (typeof args.selector === "string" && args.selector) {
@@ -620,7 +631,7 @@
   }
 
   async function evaluate(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     var world = args.world === "isolated" ? "ISOLATED" : "MAIN";
     var failure = null;
     try {
@@ -643,7 +654,7 @@
 
   async function storage(args, ctx) {
     var jarScope = args.kind === "cookies" && (args.allDomains === true || typeof args.domain === "string" || typeof args.url === "string");
-    var tab = await targetTab(args).catch(function (error) {
+    var tab = await (args.kind === "cookies" ? targetTab(args) : agentTab(args)).catch(function (error) {
       if (!jarScope) throw error;
       return { tabId: null, url: "" };
     });
@@ -652,7 +663,7 @@
   }
 
   async function network(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     await LB.network.sync();
     if (args.op === "clear") {
       LB.network.clear(tab.tabId);
@@ -670,7 +681,7 @@
   }
 
   async function upload(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     var files = Array.isArray(args.files) ? args.files : [];
     if (!files.length) {
       throw protocol.error(C.unsupported, "No file bytes arrived with the call", "Attach the file to the task and retry", false);
@@ -703,14 +714,14 @@
       }, 80);
       return { ok: true, closed: "session" };
     }
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     await browser.tabs.remove(tab.tabId);
     forgetAgentTab(tab.tabId);
     return { ok: true, closed: "tab", tabId: tab.tabId };
   }
 
   async function context(args, ctx) {
-    var tab = await targetTab(args);
+    var tab = await agentTab(args);
     var raw = await browser.tabs.get(tab.tabId);
     var store = typeof raw.cookieStoreId === "string" && raw.cookieStoreId ? raw.cookieStoreId : tabsApi.DEFAULT_STORE;
     var summary = tabsApi.summarize(raw);
@@ -838,7 +849,10 @@
   var INTERNAL = {
     local_browser_viewer: viewer,
     local_browser_input: input,
-    local_browser_ui: ui
+    local_browser_ui: ui,
+    local_browser_indicator: function (args) {
+      return LB.indicatorTabs.toolIndicator(args);
+    }
   };
 
   async function dispatch(tool, args, ctx) {

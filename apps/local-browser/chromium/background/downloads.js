@@ -29,7 +29,7 @@
   }
 
   async function toolUpload(args, call) {
-    var tab = await LB.bg.tabs.resolveTab(args);
+    var tab = await LB.bg.tabs.resolveAgentTab(args);
     var files = LB.attachments.normalizeUploadFiles(args);
     if (!files.length) {
       throw new ToolFailure(

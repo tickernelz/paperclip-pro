@@ -94,8 +94,10 @@
   }
 
   async function toolScreenshot(args, call) {
-    var tab = await LB.bg.tabs.resolveTab(args);
-    var result = await capture(tab, args, call);
+    var tab = await LB.bg.tabs.resolveAgentTab(args);
+    var result = await LB.bg.indicator.withHidden(tab.id, function () {
+      return capture(tab, args, call);
+    });
     result.document = await LB.bg.tabs.documentOf(tab.id, Math.min(3000, call.pageTimeout(3000)));
     return result;
   }

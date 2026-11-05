@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import express from "express";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { activityLog, localBrowserConnections, localBrowserSettings } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agents, localBrowserConnections, localBrowserSettings } from "@tickernelz/paperclip-pro-db";
 import {
   LOCAL_BROWSER_CAPABILITIES,
   LOCAL_BROWSER_CURSOR_PATTERN,
@@ -26,7 +26,6 @@ import {
   localBrowserBodyLimit,
   localBrowserRoutes,
 } from "../routes/local-browser.js";
-import { subscribeCompanyLiveEvents } from "../services/live-events.js";
 import { resetPairings } from "../services/local-browser/pairing.js";
 import { resetSessions } from "../services/local-browser/registry.js";
 import { localBrowserService, normalizeLocalBrowserLimits } from "../services/local-browser/service.js";
@@ -812,96 +811,65 @@ describe("local browser viewer and input", () => {
 });
 
 describe("local browser agent activity", () => {
-  it("publishes operating then idle around a tab tool and closes when the tab disappears", async () => {
+  it("lets the tab go idle after a failed tab call and marks nothing for tools that touch no tab", async () => {
     const active = currentHarness();
     await allowOrigin();
-    const events: Array<{ type: string; payload: Record<string, unknown> }> = [];
-    const unsubscribe = subscribeCompanyLiveEvents(active.companyId, (event) => {
-      if (event.type === "local_browser.activity") events.push({ type: event.type, payload: event.payload as Record<string, unknown> });
-    });
-    const paired = await pairExtension({
-      onCall: (call) =>
-        call.tool === "local_browser_open" ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } } : { ok: true, result: {} },
-    });
-
-    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
-
-    expect(events.map((event) => [event.payload.state, event.payload.tabId])).toEqual([
-      ["operating", null],
-      ["idle", 9],
-    ]);
-    expect(events.every((event) => event.payload.sessionId === paired.sessionId)).toBe(true);
-    expect(active.service.listSessions(active.companyId)[0]?.agentActivity).toMatchObject({ state: "idle", tabId: 9 });
-
-    paired.emit("tabs", {
-      tabs: [{ tabId: 7, windowId: 1, title: "Example", url: APP_ORIGIN + "/dashboard", active: true }],
-    });
-    await waitFor(() => events.some((event) => event.payload.state === "closed"), "closed activity");
-    expect(events.at(-1)?.payload).toMatchObject({ state: "closed", tabId: 9 });
-    expect(active.service.listSessions(active.companyId)[0]?.agentActivity).toBeNull();
-    unsubscribe();
-    paired.close();
-  });
-
-  it("reports idle after a failed tab call and ignores tools that touch no tab", async () => {
-    const active = currentHarness();
-    await allowOrigin();
-    const states: unknown[] = [];
-    const unsubscribe = subscribeCompanyLiveEvents(active.companyId, (event) => {
-      if (event.type === "local_browser.activity") states.push((event.payload as Record<string, unknown>).state);
-    });
     const paired = await pairExtension({
       onCall: (call) =>
         call.tool === "local_browser_navigate"
           ? { ok: false, error: { code: "local_browser_navigation_blocked", message: "blocked" } }
           : { ok: true, result: {} },
     });
+    const session = () => active.service.getSessionForCompany(active.companyId, paired.sessionId)!;
+
+    await active.service.executeTool(binding(), "local_browser_sessions", {});
+    expect(session().operators.size).toBe(0);
 
     await expect(
       active.service.executeTool(binding(), "local_browser_navigate", { tabId: 7, url: APP_ORIGIN + "/x" }),
     ).rejects.toMatchObject({ code: "local_browser_navigation_blocked" });
-    expect(states).toEqual(["operating", "idle"]);
-
-    await active.service.executeTool(binding(), "local_browser_sessions", {});
-    expect(states).toEqual(["operating", "idle"]);
-    unsubscribe();
+    expect([...session().operators.values()].map((operator) => [operator.tabId, operator.calls])).toEqual([[7, 0]]);
     paired.close();
   });
 
-  it("starts the viewer on the tab the agent operates and refuses any other tab", async () => {
+  it("marks the operated tab with the agent's name in an extension that can draw it, and clears it when the tab closes", async () => {
     const active = currentHarness();
     await allowOrigin();
-    const paired = await pairExtension({
-      onCall: (call) =>
-        call.tool === "local_browser_open"
-          ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } }
-          : call.tool === "local_browser_viewer"
-            ? { ok: true, result: { started: true } }
-            : { ok: true, result: {} },
+    const [agent] = await postgres.db
+      .insert(agents)
+      .values({ companyId: active.companyId, name: "Ada Researcher", adapterType: "process", adapterConfig: {} })
+      .returning({ id: agents.id });
+    const agentBinding = { ...binding(), agentId: agent!.id, userId: null };
+    const onCall = (call: CallRecord): CallAnswer =>
+      call.tool === "local_browser_open" ? { ok: true, result: { tab: { tabId: 9 }, snapshot: null } } : { ok: true, result: {} };
+    const legacy = await pairExtension({ capabilities: ["budget.v1"], onCall });
+    await active.service.executeTool({ ...agentBinding }, "local_browser_open", { sessionId: legacy.sessionId, url: APP_ORIGIN + "/page" });
+    legacy.close();
+
+    const paired = await pairExtension({ capabilities: ["indicator.v1"], onCall });
+    await active.service.executeTool(agentBinding, "local_browser_open", { sessionId: paired.sessionId, url: APP_ORIGIN + "/page" });
+    await waitFor(() => paired.calls.some((call) => call.tool === "local_browser_indicator"), "indicator push");
+    expect(paired.calls.filter((call) => call.tool === "local_browser_indicator").at(-1)?.args).toEqual({
+      tabs: [{ tabId: 9, agents: ["Ada Researcher"] }],
     });
-    const viewerUrl = (tabId: string) => bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer?tabId=" + tabId);
+    expect(legacy.calls.some((call) => call.tool === "local_browser_indicator")).toBe(false);
 
-    const beforeActivity = await fetch(viewerUrl("9"), { headers: { accept: "text/event-stream" } });
-    expect(beforeActivity.status).toBe(403);
-
-    await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
-
-    const other = await fetch(viewerUrl("7"), { headers: { accept: "text/event-stream" } });
-    expect(other.status).toBe(403);
-    const malformed = await fetch(viewerUrl("abc"), { headers: { accept: "text/event-stream" } });
-    expect(malformed.status).toBe(400);
-    expect(paired.calls.some((call) => call.tool === "local_browser_viewer")).toBe(false);
-
-    const controller = new AbortController();
-    const response = await fetch(viewerUrl("9"), { signal: controller.signal, headers: { accept: "text/event-stream" } });
-    expect(response.status).toBe(200);
-    const start = await paired.waitForCall("local_browser_viewer");
-    expect(start.args).toMatchObject({ op: "start", tabId: 9 });
-    controller.abort();
+    paired.emit("tabs", {
+      tabs: [{ tabId: 7, windowId: 1, title: "Example", url: APP_ORIGIN + "/dashboard", active: true }],
+    });
+    await waitFor(
+      () => JSON.stringify(paired.calls.filter((call) => call.tool === "local_browser_indicator").at(-1)?.args) === '{"tabs":[]}',
+      "indicator cleared",
+    );
+    await expect(active.service.executeTool(agentBinding, "local_browser_indicator", { tabs: [] })).rejects.toMatchObject({
+      code: "local_browser_unsupported",
+    });
     paired.close();
+    await postgres.db.delete(activityLog);
+    await postgres.db.delete(agents).where(eq(agents.id, agent!.id));
   });
 
-  it("starts the capture once when several viewers follow the same agent tab", async () => {
+  it("starts the capture once when several viewers watch the same browser", async () => {
     const active = currentHarness();
     await allowOrigin();
     const paired = await pairExtension({
@@ -911,7 +879,7 @@ describe("local browser agent activity", () => {
           : { ok: true, result: { started: true } },
     });
     await active.service.executeTool(binding(), "local_browser_open", { url: APP_ORIGIN + "/page" });
-    const url = bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer?tabId=9");
+    const url = bridgeUrl("/api/local-browser/sessions/" + paired.sessionId + "/viewer");
     const first = new AbortController();
     const second = new AbortController();
     const one = await fetch(url, { signal: first.signal, headers: { accept: "text/event-stream" } });

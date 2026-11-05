@@ -36,6 +36,7 @@ export const LOCAL_BROWSER_CAPABILITIES = [
   "act.force",
   "budget.v1",
   "act.input",
+  "indicator.v1",
 ] as const;
 
 export const LOCAL_BROWSER_ACTIONS = [
@@ -186,4 +187,9 @@ export const LOCAL_BROWSER_ORIGIN_EXEMPT_TOOL_NAMES = [
   "local_browser_api",
 ] as const;
 
-export const LOCAL_BROWSER_INTERNAL_TOOL_NAMES = ["local_browser_viewer", "local_browser_input", "local_browser_ui"] as const;
+export const LOCAL_BROWSER_INTERNAL_TOOL_NAMES = [
+  "local_browser_viewer",
+  "local_browser_input",
+  "local_browser_ui",
+  "local_browser_indicator",
+] as const;

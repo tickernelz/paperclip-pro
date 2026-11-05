@@ -19,7 +19,8 @@
     "api.v1",
     "act.force",
     "budget.v1",
-    "act.input"
+    "act.input",
+    "indicator.v1"
   ];
 
   var socket = null;
@@ -182,6 +183,7 @@
       socketState = "idle";
       stopHeartbeat();
       LB.bg.viewer.stop();
+      LB.bg.indicator.reset();
       var code = event && typeof event.code === "number" ? event.code : 1006;
       if (code === CLOSE_POLICY_VIOLATION) {
         void retirePairing(event && typeof event.reason === "string" ? event.reason : "");
@@ -276,6 +278,7 @@
     });
     retiredReason = "";
     backoffMs = 1000;
+    LB.bg.indicator.reset();
     scheduleBroadcast();
   }
 
@@ -536,6 +539,10 @@
     if (!message || typeof message !== "object") return false;
     if (message.type === "lb:frame-ready") {
       sendResponse({ tabId: sender && sender.tab ? sender.tab.id : undefined, frameId: sender ? sender.frameId : undefined });
+      return false;
+    }
+    if (message.type === "lb:indicator-toggle") {
+      if (sender && sender.tab && typeof sender.tab.id === "number" && sender.frameId === 0) LB.bg.indicator.toggle(sender.tab.id);
       return false;
     }
     if (message.channel !== "lb-control") return false;

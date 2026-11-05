@@ -36,6 +36,7 @@
     LB.bg.network.forgetTab(tabId);
     LB.bg.tabs.forget(tabId);
     LB.bg.viewer.onTabClosed(tabId);
+    LB.bg.indicator.forget(tabId);
     bridge.scheduleTabsEvent();
   }
 
@@ -76,6 +77,7 @@
   chrome.tabs.onActivated.addListener(bridge.scheduleTabsEvent);
   chrome.tabs.onMoved.addListener(bridge.scheduleTabsEvent);
   chrome.tabs.onUpdated.addListener(function (tabId, changeInfo) {
+    if (changeInfo.status === "complete") LB.bg.indicator.refresh(tabId);
     if (
       changeInfo.url ||
       changeInfo.status === "complete" ||

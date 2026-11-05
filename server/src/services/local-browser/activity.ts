@@ -1,32 +1,7 @@
-import type { LocalBrowserActivityState } from "@tickernelz/paperclip-pro-shared";
-import { publishLiveEvent } from "../live-events.js";
-import type { LiveSession } from "./types.js";
+import type { LiveSession, TabOperator } from "./types.js";
 
 export const LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS = 300_000;
-
-const idleTimers = new WeakMap<LiveSession, ReturnType<typeof setTimeout>>();
-
-function clearIdleTimer(session: LiveSession): void {
-  const timer = idleTimers.get(session);
-  if (!timer) return;
-  clearTimeout(timer);
-  idleTimers.delete(session);
-}
-
-function armIdleTimer(session: LiveSession): void {
-  clearIdleTimer(session);
-  const timer = setTimeout(() => {
-    idleTimers.delete(session);
-    if (session.operatingCalls === 0) closeActivity(session);
-  }, LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS);
-  timer.unref?.();
-  idleTimers.set(session, timer);
-}
-
-export function touchActivity(session: LiveSession): void {
-  if (!session.activity || session.operatingCalls > 0) return;
-  armIdleTimer(session);
-}
+export const LOCAL_BROWSER_INDICATOR_CAPABILITY = "indicator.v1";
 
 export const LOCAL_BROWSER_TAB_TOOLS: ReadonlySet<string> = new Set([
   "local_browser_open",
@@ -41,52 +16,119 @@ export const LOCAL_BROWSER_TAB_TOOLS: ReadonlySet<string> = new Set([
   "local_browser_context",
 ]);
 
-function publish(session: LiveSession, state: LocalBrowserActivityState, tabId: number | null, at: string): void {
-  publishLiveEvent({
-    companyId: session.companyId,
-    type: "local_browser.activity",
-    payload: { sessionId: session.sessionId, state, tabId, at },
-  });
+export interface LocalBrowserOperatorRef {
+  key: string;
+  name: string | null;
 }
 
-function changed(session: LiveSession, state: "operating" | "idle", tabId: number | null): boolean {
-  const current = session.activity;
-  return !current || current.state !== state || current.tabId !== tabId;
+export interface LocalBrowserIndicatorTab {
+  tabId: number;
+  agents: string[];
 }
 
-export function beginTabCall(session: LiveSession, tabId: number | null): void {
-  session.operatingCalls += 1;
-  clearIdleTimer(session);
-  const next = tabId ?? session.activity?.tabId ?? null;
-  if (!changed(session, "operating", next)) return;
-  const at = new Date().toISOString();
-  session.activity = { state: "operating", tabId: next, at };
-  publish(session, "operating", next, at);
+type IndicatorSender = (session: LiveSession, tabs: LocalBrowserIndicatorTab[]) => Promise<unknown>;
+
+let indicatorSender: IndicatorSender | null = null;
+
+export function setLocalBrowserIndicatorSender(sender: IndicatorSender | null): void {
+  indicatorSender = sender;
 }
 
-export function endTabCall(session: LiveSession, tabId: number | null): void {
-  session.operatingCalls = Math.max(0, session.operatingCalls - 1);
-  const next = tabId ?? session.activity?.tabId ?? null;
-  const state = session.operatingCalls > 0 ? "operating" : "idle";
-  if (state === "idle") armIdleTimer(session);
-  if (!changed(session, state, next)) return;
-  const at = new Date().toISOString();
-  session.activity = { state, tabId: next, at };
-  publish(session, state, next, at);
+export function localBrowserIndicatorTabs(session: LiveSession): LocalBrowserIndicatorTab[] {
+  const byTab = new Map<number, string[]>();
+  for (const operator of session.operators.values()) {
+    if (operator.tabId === null) continue;
+    const agents = byTab.get(operator.tabId) ?? [];
+    if (operator.name && !agents.includes(operator.name)) agents.push(operator.name);
+    byTab.set(operator.tabId, agents);
+  }
+  return [...byTab.entries()].sort((a, b) => a[0] - b[0]).map(([tabId, agents]) => ({ tabId, agents }));
+}
+
+function syncIndicators(session: LiveSession): void {
+  const sender = indicatorSender;
+  if (!sender || !session.capabilities.includes(LOCAL_BROWSER_INDICATOR_CAPABILITY)) return;
+  const sync = session.indicatorSync;
+  if (sync.inFlight) {
+    sync.dirty = true;
+    return;
+  }
+  const tabs = localBrowserIndicatorTabs(session);
+  const key = JSON.stringify(tabs);
+  if (key === sync.sent) return;
+  sync.inFlight = true;
+  sync.dirty = false;
+  sender(session, tabs)
+    .then(
+      () => {
+        sync.sent = key;
+      },
+      () => undefined,
+    )
+    .finally(() => {
+      sync.inFlight = false;
+      if (sync.dirty) syncIndicators(session);
+    });
+}
+
+function clearIdleTimer(operator: TabOperator): void {
+  if (!operator.timer) return;
+  clearTimeout(operator.timer);
+  operator.timer = null;
+}
+
+function armIdleTimer(session: LiveSession, key: string, operator: TabOperator): void {
+  clearIdleTimer(operator);
+  operator.timer = setTimeout(() => {
+    operator.timer = null;
+    if (operator.calls !== 0 || session.operators.get(key) !== operator) return;
+    session.operators.delete(key);
+    syncIndicators(session);
+  }, LOCAL_BROWSER_ACTIVITY_IDLE_CLOSE_MS);
+  operator.timer.unref?.();
+}
+
+export function touchActivity(session: LiveSession): void {
+  for (const [key, operator] of session.operators) {
+    if (operator.calls === 0) armIdleTimer(session, key, operator);
+  }
+}
+
+export function beginTabCall(session: LiveSession, ref: LocalBrowserOperatorRef, tabId: number | null): void {
+  let operator = session.operators.get(ref.key);
+  if (!operator) {
+    operator = { name: ref.name, calls: 0, tabId: null, timer: null };
+    session.operators.set(ref.key, operator);
+  }
+  operator.name = ref.name ?? operator.name;
+  operator.calls += 1;
+  operator.tabId = tabId ?? operator.tabId;
+  clearIdleTimer(operator);
+  syncIndicators(session);
+}
+
+export function endTabCall(session: LiveSession, ref: LocalBrowserOperatorRef, tabId: number | null): void {
+  const operator = session.operators.get(ref.key);
+  if (!operator) return;
+  operator.calls = Math.max(0, operator.calls - 1);
+  operator.tabId = tabId ?? operator.tabId;
+  if (operator.calls === 0) armIdleTimer(session, ref.key, operator);
+  syncIndicators(session);
 }
 
 export function closeActivity(session: LiveSession): void {
-  clearIdleTimer(session);
-  const current = session.activity;
-  if (!current) return;
-  session.activity = null;
-  session.operatingCalls = 0;
-  publish(session, "closed", current.tabId, new Date().toISOString());
+  for (const operator of session.operators.values()) clearIdleTimer(operator);
+  session.operators.clear();
 }
 
 export function reconcileActivityWithTabs(session: LiveSession): void {
-  const tabId = session.activity?.tabId;
-  if (typeof tabId !== "number") return;
-  if (session.tabs.some((tab) => tab.tabId === tabId)) return;
-  closeActivity(session);
+  const open = new Set(session.tabs.map((tab) => tab.tabId));
+  let closed = false;
+  for (const [key, operator] of [...session.operators]) {
+    if (typeof operator.tabId !== "number" || open.has(operator.tabId)) continue;
+    clearIdleTimer(operator);
+    session.operators.delete(key);
+    closed = true;
+  }
+  if (closed) syncIndicators(session);
 }

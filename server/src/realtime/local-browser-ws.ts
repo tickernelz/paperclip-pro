@@ -14,6 +14,7 @@ import {
   type LocalBrowserViewerEvent,
 } from "@tickernelz/paperclip-pro-shared";
 import { logger } from "../middleware/logger.js";
+import { setLocalBrowserIndicatorSender } from "../services/local-browser/activity.js";
 import { localBrowserFailure } from "../services/local-browser/errors.js";
 import {
   claimPairing,
@@ -175,6 +176,7 @@ export function setupLocalBrowserWebSocketServer(
   options: LocalBrowserWebSocketOptions = {},
 ) {
   const service = options.service ?? localBrowserService(db);
+  setLocalBrowserIndicatorSender((session, tabs) => service.sendInternalCall(session, "local_browser_indicator", { tabs }));
   const pingIntervalMs = options.pingIntervalMs ?? LOCAL_BROWSER_PING_INTERVAL_MS;
   const silenceLimitMs = options.silenceLimitMs ?? LOCAL_BROWSER_SILENCE_LIMIT_MS;
   const helloTimeoutMs = options.helloTimeoutMs ?? LOCAL_BROWSER_HELLO_TIMEOUT_MS;

@@ -408,6 +408,7 @@
     if (!frame || typeof frame !== "object") return;
     lastPongAt = Date.now();
     if (frame.type === "hello_ack") {
+      LB.indicatorTabs.reset();
       if (pairing) {
         pairing.sessionToken = typeof frame.sessionToken === "string" ? frame.sessionToken : pairing.sessionToken;
         pairing.sessionId = typeof frame.sessionId === "string" ? frame.sessionId : pairing.sessionId;
@@ -495,6 +496,7 @@
       if (socket !== ws) return;
       socket = null;
       stopHeartbeat();
+      LB.indicatorTabs.reset();
       if (stopped) return;
       emitViewerState(VIEWER_STATES.DISCONNECTED, undefined, "The bridge socket closed");
       var code = event && typeof event.code === "number" ? event.code : 1006;

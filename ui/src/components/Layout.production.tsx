@@ -31,7 +31,6 @@ import { NewGoalDialog } from "./NewGoalDialog";
 import { NewAgentDialog } from "./NewAgentDialog";
 import { KeyboardShortcutsCheatsheet } from "./KeyboardShortcutsCheatsheet";
 import { ToastViewport } from "./ToastViewport";
-import { LocalBrowserFloatHost } from "./local-browser/LocalBrowserFloatHost";
 import { MobileBottomNav } from "./MobileBottomNav";
 import { WorktreeBanner } from "./WorktreeBanner";
 import { DevRestartBanner } from "./DevRestartBanner";
@@ -729,7 +728,6 @@ export function Layout() {
           onOpenChange={setShortcutsOpen}
         />
         <ToastViewport />
-        <LocalBrowserFloatHost companyId={selectedCompanyId} />
         <PluginAppShellOverlays localTrusted={health?.deploymentMode === "local_trusted"} />
       </div>
     </ChatSetupSidebarProvider>

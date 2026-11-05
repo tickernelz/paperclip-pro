@@ -27,7 +27,13 @@
   var mutationCount = 0;
   var lastMutationAt = Date.now();
   var observer = new MutationObserver(function (records) {
-    mutationCount += records.length;
+    var counted = 0;
+    for (var index = 0; index < records.length; index += 1) {
+      if (!LB.indicator.touches(records[index])) counted += 1;
+    }
+    LB.indicator.keepAttached();
+    if (counted === 0) return;
+    mutationCount += counted;
     lastMutationAt = Date.now();
   });
   var MUTATION_OPTIONS = { childList: true, subtree: true, attributes: true, characterData: true };
@@ -138,6 +144,13 @@
       hit = scope.elementFromPoint(x, y);
     } catch (error) {
       return undefined;
+    }
+    if (LB.indicator.isHost(hit) && LB.indicator.dodge(hit, { x: x, y: y })) {
+      try {
+        hit = scope.elementFromPoint(x, y);
+      } catch (error) {
+        return undefined;
+      }
     }
     while (hit && hit.shadowRoot && typeof hit.shadowRoot.elementFromPoint === "function") {
       var inner = hit.shadowRoot.elementFromPoint(x, y);
@@ -858,9 +871,26 @@
     return response;
   }
 
+  function opIndicator(args) {
+    if (window !== window.top) return Promise.resolve({ ok: true, result: { shown: false } });
+    if (typeof args.suppressed === "boolean") {
+      return LB.indicator.suppress(args.suppressed).then(function (applied) {
+        return { ok: true, result: { suppressed: applied } };
+      });
+    }
+    var shown = LB.indicator.show(args.state || null, function () {
+      try {
+        chrome.runtime.sendMessage({ type: "lb:indicator-toggle" });
+      } catch (error) {}
+    });
+    return Promise.resolve({ ok: true, result: { shown: shown } });
+  }
+
   function handle(message) {
     var args = message.args || {};
     switch (message.op) {
+      case "indicator":
+        return opIndicator(args);
       case "snapshot":
         return Promise.resolve(withDocument(opSnapshot(args)));
       case "act":

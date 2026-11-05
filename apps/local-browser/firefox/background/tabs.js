@@ -15,6 +15,7 @@
     "lib/document-state.js",
     "lib/keys.js",
     "lib/input.js",
+    "lib/indicator.js",
     "content/agent.js"
   ];
 

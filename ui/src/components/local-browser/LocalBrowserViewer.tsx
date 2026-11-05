@@ -20,7 +20,6 @@ import {
 export interface LocalBrowserViewerProps {
   sessionId: string;
   companyId?: string;
-  tabId?: number;
   className?: string;
 }
 
@@ -121,7 +120,7 @@ function keyDescriptorOf(event: {
   };
 }
 
-export function LocalBrowserViewer({ sessionId, companyId, tabId, className }: LocalBrowserViewerProps) {
+export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBrowserViewerProps) {
   const {
     frame,
     status,
@@ -137,21 +136,20 @@ export function LocalBrowserViewer({ sessionId, companyId, tabId, className }: L
     sendWheel,
     pressKey,
     releaseKey,
-  } = useLocalBrowserViewer(sessionId, companyId, tabId);
+  } = useLocalBrowserViewer(sessionId, companyId);
   const surfaceRef = useRef<HTMLDivElement>(null);
   const letterboxRef = useRef<LetterboxCache | null>(null);
   const hintId = useId();
 
   useEffect(() => {
     if (!controlledByViewer) return;
-    const owner = surfaceRef.current?.ownerDocument ?? document;
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       event.preventDefault();
       setControlledByViewer(false);
     };
-    owner.addEventListener("keydown", onKeyDown);
-    return () => owner.removeEventListener("keydown", onKeyDown);
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
   }, [controlledByViewer, setControlledByViewer]);
 
   const pointOf = useCallback(

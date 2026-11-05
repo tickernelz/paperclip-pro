@@ -40,7 +40,7 @@
     "local_browser_api"
   ]);
 
-  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui"]);
+  var INTERNAL_TOOLS = Object.freeze(["local_browser_viewer", "local_browser_input", "local_browser_ui", "local_browser_indicator"]);
 
   root.LB = root.LB || {};
   root.LB.protocol = {

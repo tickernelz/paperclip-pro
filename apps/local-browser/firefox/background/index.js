@@ -45,6 +45,7 @@
   });
 
   LB.bridge.installTabWatchers();
+  LB.indicatorTabs.install();
   LB.bridge.installAccessWatchers();
 
   void LB.guards

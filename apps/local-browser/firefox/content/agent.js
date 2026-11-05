@@ -47,7 +47,9 @@
 
   function trackMutations() {
     if (mutationObserver || typeof MutationObserver !== "function") return;
-    mutationObserver = new MutationObserver(function () {
+    mutationObserver = new MutationObserver(function (records) {
+      LB.indicator.keepAttached();
+      if (records.every(LB.indicator.touches)) return;
       mutationCount += 1;
     });
     var scope = document.documentElement;
@@ -474,6 +476,7 @@
 
   function deepHit(scope, point) {
     var hit = scope.elementFromPoint(point.x, point.y);
+    if (LB.indicator.isHost(hit) && LB.indicator.dodge(hit, point)) hit = scope.elementFromPoint(point.x, point.y);
     while (hit && hit.shadowRoot && typeof hit.shadowRoot.elementFromPoint === "function") {
       var inner = hit.shadowRoot.elementFromPoint(point.x, point.y);
       if (!inner || inner === hit) break;
@@ -1033,6 +1036,18 @@
   var OPS = {
     ping: function () {
       return { ok: true, url: location.href, title: document.title };
+    },
+    indicator: function (args) {
+      if (window !== window.top) return { shown: false };
+      if (typeof args.suppressed === "boolean") {
+        return LB.indicator.suppress(args.suppressed).then(function (applied) {
+          return { suppressed: applied };
+        });
+      }
+      var shown = LB.indicator.show(args.state || null, function () {
+        browser.runtime.sendMessage({ channel: "lb-indicator", op: "toggle" }).catch(function () {});
+      });
+      return { shown: shown };
     },
     viewport: function () {
       return viewportInfo();

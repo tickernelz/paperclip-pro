@@ -84,7 +84,7 @@
   }
 
   async function toolNavigate(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     await tabs().assertNavigationAllowed(tab);
     var timeoutMs = call.inner(args.timeoutMs, DEFAULTS.navigateTimeoutMs, 120000);
     var action = args.url ? "url" : args.back ? "back" : args.forward ? "forward" : args.reload ? "reload" : null;
@@ -104,7 +104,7 @@
   }
 
   async function toolSnapshot(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     return await tabs().rpc(
       tab.id,
       "snapshot",
@@ -153,7 +153,7 @@
   }
 
   async function toolAct(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     var timeoutMs = call.inner(args.timeoutMs, 15000, 60000);
     var mode = args.input || "auto";
     if (mode === "synthetic") return await syntheticAct(tab, args, timeoutMs);
@@ -178,12 +178,12 @@
   }
 
   async function toolRead(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     return await tabs().rpc(tab.id, "read", { selector: args.selector, format: args.format, maxChars: args.maxChars }, call.pageTimeout(20000));
   }
 
   async function toolWait(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     if (!args.selector && !args.text && !args.urlIncludes && !args.idle) {
       throw new ToolFailure(ERROR.protocolError, "wait needs selector, text, urlIncludes or idle");
     }
@@ -217,7 +217,7 @@
   }
 
   async function toolEvaluate(args) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     var frames;
     try {
       frames = await chrome.scripting.executeScript({
@@ -245,7 +245,7 @@
   }
 
   async function toolNetwork(args) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     if (args.op === "clear") {
       LB.bg.network.clear(tab.id);
       return { requests: [], total: 0, cleared: true };
@@ -258,13 +258,13 @@
       LB.bg.bridge.closeAfterCall();
       return { ok: true, closed: "session", sessionId: args.sessionId || null };
     }
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     await chrome.tabs.remove(tab.id);
     return { ok: true, closed: "tab", tabId: tab.id };
   }
 
   async function toolContext(args, call) {
-    var tab = await tabs().resolveTab(args);
+    var tab = await tabs().resolveAgentTab(args);
     var stores = await tabs().cookieStores();
     var info = tabs().tabInfo(tab, stores);
     var storeId = info.cookieStoreId;
@@ -315,6 +315,10 @@
     return { ok: true, tabId: tab && typeof tab.id === "number" ? tab.id : null };
   }
 
+  function toolIndicator(args) {
+    return LB.bg.indicator.toolIndicator(args);
+  }
+
   function site() {
     return SITE;
   }
@@ -339,7 +343,8 @@
     local_browser_api: { run: toolApi },
     local_browser_viewer: { run: LB.bg.viewer.toolViewer, quiet: true },
     local_browser_input: { run: LB.bg.input.toolInput },
-    local_browser_ui: { run: toolUi, quiet: true }
+    local_browser_ui: { run: toolUi, quiet: true },
+    local_browser_indicator: { run: toolIndicator, quiet: true }
   };
 
   function handler(tool) {

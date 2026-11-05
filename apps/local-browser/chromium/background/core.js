@@ -14,6 +14,7 @@
     "lib/dom-adapter.js",
     "lib/document-state.js",
     "lib/hit.js",
+    "lib/indicator.js",
     "content.js"
   ];
 

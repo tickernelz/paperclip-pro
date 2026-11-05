@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
-import { localBrowserConnections, localBrowserSettings as localBrowserSettingsTable } from "@tickernelz/paperclip-pro-db";
+import { agents, localBrowserConnections, localBrowserSettings as localBrowserSettingsTable } from "@tickernelz/paperclip-pro-db";
 import {
   LOCAL_BROWSER_COOKIE_CAPABILITY,
   LOCAL_BROWSER_LIMIT_KEYS,
@@ -23,7 +23,12 @@ import {
 import type { StorageService } from "../../storage/types.js";
 import { logActivity } from "../activity-log.js";
 import { decodeDataUrl, readTaskAttachment, storeLocalBrowserAttachment } from "./attachments.js";
-import { beginTabCall, endTabCall, LOCAL_BROWSER_TAB_TOOLS } from "./activity.js";
+import {
+  beginTabCall,
+  endTabCall,
+  LOCAL_BROWSER_TAB_TOOLS,
+  type LocalBrowserOperatorRef,
+} from "./activity.js";
 import { localBrowserFailure } from "./errors.js";
 import {
   addPendingCall,
@@ -144,9 +149,26 @@ function raiseLimitHint(what: string): string {
   return "Ask the user to raise the " + what + " limit in the Local Browser settings in Paperclip.";
 }
 
+const AGENT_NAME_CACHE_MS = 300_000;
+const AGENT_NAME_CACHE_MAX = 1_000;
+const agentNames = new Map<string, { name: string | null; expiresAt: number }>();
+
 export function localBrowserService(db: Db, options: LocalBrowserServiceOptions = {}) {
   const budgetFor = (session: LiveSession, tool: string, args: Record<string, unknown>): number =>
     options.callTimeoutMs ?? localBrowserCallBudget(tool, args, session.limits.callMaxMs);
+
+  async function operatorOf(binding: LocalBrowserBinding): Promise<LocalBrowserOperatorRef> {
+    const agentId = binding.agentId ?? null;
+    if (!agentId) return { key: binding.userId ? "user:" + binding.userId : "system", name: null };
+    const now = Date.now();
+    const cached = agentNames.get(agentId);
+    if (cached && cached.expiresAt > now) return { key: "agent:" + agentId, name: cached.name };
+    const [row] = await db.select({ name: agents.name }).from(agents).where(eq(agents.id, agentId)).limit(1);
+    const name = row?.name ?? null;
+    if (agentNames.size >= AGENT_NAME_CACHE_MAX) agentNames.clear();
+    agentNames.set(agentId, { name, expiresAt: now + AGENT_NAME_CACHE_MS });
+    return { key: "agent:" + agentId, name };
+  }
 
   function resolveSession(binding: LocalBrowserBinding, sessionId: string | undefined): LiveSession {
     if (sessionId) {
@@ -565,6 +587,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
       let tabId: number | null = null;
       let origin: string | null = null;
       let tracking: LiveSession | null = null;
+      let operator: LocalBrowserOperatorRef | null = null;
       try {
         if (localBrowserIsInternalTool(name)) {
           throw localBrowserFailure(
@@ -615,13 +638,14 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         const callArgs =
           name === "local_browser_upload" ? await uploadFiles(binding, live.limits, bounded.args) : bounded.args;
         if (LOCAL_BROWSER_TAB_TOOLS.has(name)) {
+          operator = await operatorOf(binding);
           tracking = live;
-          beginTabCall(live, tabId);
+          beginTabCall(live, operator, tabId);
         }
         const raw = await dispatch(live, name, callArgs);
-        if (tracking) {
+        if (tracking && operator) {
           tracking = null;
-          endTabCall(live, resultTabId(raw) ?? tabId);
+          endTabCall(live, operator, resultTabId(raw) ?? tabId);
         }
         const result = await finishResult(binding, live, name, bounded.args, raw, bounded.limited);
         if (name === "local_browser_close" && args.closeSession === true) {
@@ -640,7 +664,7 @@ export function localBrowserService(db: Db, options: LocalBrowserServiceOptions 
         });
         return result;
       } catch (error) {
-        if (tracking) endTabCall(tracking, tabId);
+        if (tracking && operator) endTabCall(tracking, operator, tabId);
         const code =
           error && typeof error === "object" && "code" in error && typeof (error as { code?: unknown }).code === "string"
             ? (error as { code: string }).code

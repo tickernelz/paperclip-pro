@@ -160,7 +160,9 @@
       ? await LB.bg.tabs.resolveTab(args).catch(function () {
           return { id: null, url: "" };
         })
-      : await LB.bg.tabs.resolveTab(args);
+      : args.kind === "cookies"
+        ? await LB.bg.tabs.resolveTab(args)
+        : await LB.bg.tabs.resolveAgentTab(args);
     if (args.kind !== "cookies") return await LB.bg.tabs.rpc(tab.id, "storage", args, call.pageTimeout(10000));
     if (args.op === "get") return await getCookies(args, tab);
     if (args.op === "set") return await setCookies(args, tab);

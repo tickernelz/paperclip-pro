@@ -38,7 +38,8 @@
       "api.v1",
       "act.force",
       "budget.v1",
-      "act.input"
+      "act.input",
+      "indicator.v1"
     ],
     "permissions": [
       {
@@ -374,7 +375,8 @@
     "internalToolNames": [
       "local_browser_viewer",
       "local_browser_input",
-      "local_browser_ui"
+      "local_browser_ui",
+      "local_browser_indicator"
     ],
     "toolCapabilities": {
       "local_browser_context": "context.v1",

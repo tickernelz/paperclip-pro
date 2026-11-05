@@ -86,6 +86,10 @@
     throw new ToolFailure(ERROR.tabMissing, "No active tab in the paired browser", "Open a tab, then retry");
   }
 
+  async function resolveAgentTab(args) {
+    return LB.bg.indicator.assertNotHeld(await resolveTab(args));
+  }
+
   function sendToTab(tabId, payload, timeoutMs, frameId) {
     var options = typeof frameId === "number" ? { frameId: frameId } : {};
     return new Promise(function (resolve, reject) {
@@ -239,6 +243,7 @@
         continue;
       }
       if ((tab.incognito === true) !== incognito) continue;
+      if (LB.bg.indicator.isHeld(tab.id)) continue;
       if (await isPaperclipTab(tab)) continue;
       return tab;
     }
@@ -338,7 +343,7 @@
     var incognito = wantsIncognito(args);
     if (incognito) await assertIncognitoAllowed();
     if (args.url && typeof args.tabId === "number") {
-      var target = await resolveTab(args);
+      var target = await resolveAgentTab(args);
       if ((target.incognito === true) !== incognito && (args.incognito !== undefined || args.cookieStoreId !== undefined)) {
         throw new ToolFailure(ERROR.protocolError, "Tab " + target.id + " is in the other cookie jar", "Omit tabId to open a fresh tab in the jar you asked for");
       }
@@ -355,7 +360,7 @@
       if (existing) return existing;
       return await createInHostWindow(args, true, outcome);
     }
-    var tab = await resolveTab(args);
+    var tab = await resolveAgentTab(args);
     if (args.active === true) await chrome.tabs.update(tab.id, { active: true });
     return tab;
   }
@@ -376,6 +381,7 @@
     listTabs: listTabs,
     focusedTab: focusedTab,
     resolveTab: resolveTab,
+    resolveAgentTab: resolveAgentTab,
     sendToTab: sendToTab,
     injectContentScript: injectContentScript,
     rpc: rpc,
