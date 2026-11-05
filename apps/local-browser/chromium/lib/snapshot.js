@@ -291,22 +291,14 @@
     return (adapter.attr(element, "aria-modal") || "").toLowerCase() === "true";
   }
 
-  function childrenOf(adapter, element) {
+  function childrenOf(adapter, element, tag) {
     var shadow = adapter.shadowRoot ? adapter.shadowRoot(element) : null;
     if (shadow) return adapter.children(shadow);
-    if (adapter.assignedElements && adapter.tagName(element) === "slot") {
+    if (tag === "slot" && adapter.assignedElements) {
       var assigned = adapter.assignedElements(element);
       if (assigned.length) return assigned;
     }
     return adapter.children(element);
-  }
-
-  function withRef(node, ref) {
-    var out = { ref: ref };
-    for (var key in node) {
-      if (Object.prototype.hasOwnProperty.call(node, key)) out[key] = node[key];
-    }
-    return out;
   }
 
   function directText(adapter, element) {
@@ -348,12 +340,20 @@
       return { url: url, title: title, nodes: [], truncated: false, total: 0, missing: true };
     }
 
-    var overlayEntries = [];
-    var pageEntries = [];
+    var overlayNodes = [];
+    var overlayElements = [];
+    var pageNodes = [];
+    var pageElements = [];
     var stack = [];
 
-    function record(item, entry) {
-      (item.overlay ? overlayEntries : pageEntries).push(entry);
+    function record(item, node, element) {
+      if (item.overlay) {
+        overlayNodes.push(node);
+        overlayElements.push(element);
+      } else {
+        pageNodes.push(node);
+        pageElements.push(element);
+      }
     }
 
     function pushChildren(item, list) {
@@ -370,7 +370,7 @@
       var element = item.element;
       if (!includeHidden) {
         var hidden = hiddenReason(adapter, element);
-        if (hidden === "empty-box") pushChildren(item, childrenOf(adapter, element));
+        if (hidden === "empty-box") pushChildren(item, childrenOf(adapter, element, adapter.tagName(element)));
         if (hidden !== null) continue;
       }
       var tag = adapter.tagName(element);
@@ -388,8 +388,8 @@
         if (!role) role = "dialog";
       }
       if (role) {
-        var node = {};
         var interactive = INTERACTIVE_ROLES.has(role);
+        var node = interactive ? { ref: undefined } : {};
         node.role = role;
         node.name = nodeName(adapter, element, role);
         var state = nodeState(adapter, element, role);
@@ -398,24 +398,24 @@
         if (state.disabled) node.disabled = true;
         if (Object.prototype.hasOwnProperty.call(state, "checked")) node.checked = state.checked;
         if (Object.prototype.hasOwnProperty.call(state, "selected")) node.selected = state.selected;
-        if (interactive || node.name || opensOverlay) record(item, { node: node, element: interactive ? element : null });
+        if (interactive || node.name || opensOverlay) record(item, node, interactive ? element : null);
       }
 
       if (includeText) {
         var run = text.normalizeName(directText(adapter, element));
-        if (run) record(item, { node: { role: "text", name: run, depth: item.depth - item.shift + 1 }, element: null });
+        if (run) record(item, { role: "text", name: run, depth: item.depth - item.shift + 1 }, null);
       }
 
-      pushChildren(item, childrenOf(adapter, element));
+      pushChildren(item, childrenOf(adapter, element, tag));
     }
 
-    var entries = overlayEntries.length ? overlayEntries.concat(pageEntries) : pageEntries;
-    var total = entries.length;
+    var ordered = overlayNodes.length ? overlayNodes.concat(pageNodes) : pageNodes;
+    var elements = overlayNodes.length ? overlayElements.concat(pageElements) : pageElements;
+    var total = ordered.length;
     var nodes = [];
-    for (var e = 0; e < entries.length; e += 1) {
-      var entry = entries[e];
-      if (entry.element) entry.node = withRef(entry.node, refs.assign(entry.element));
-      if (e >= offset && nodes.length < maxNodes) nodes.push(entry.node);
+    for (var e = 0; e < total; e += 1) {
+      if (elements[e]) ordered[e].ref = refs.assign(elements[e]);
+      if (e >= offset && nodes.length < maxNodes) nodes.push(ordered[e]);
     }
 
     var stale = offset > 0 && offset >= total;
