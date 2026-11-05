@@ -746,9 +746,13 @@ or in the OpenWA dashboard.
 WhatsApp message text is never altered: `openwa_send`, run-output publication,
 approval bubbles, `openwa_read_chat`, `openwa_find`, `openwa_linked_read` and
 message operations of `openwa_call` carry links (including query strings and
-fragments), tokens and any other text exactly as written or received. Only
-Markdown is converted to WhatsApp formatting and long text is split. Keeping
-secrets out of messages is the agent's instruction, not a filter.
+fragments), tokens and any other text exactly as written or received. Run output
+is sent from the stored agent comment, not from the projected publication payload
+other chat providers use. Only Markdown is converted to WhatsApp formatting and
+long text is split. Keeping secrets out of messages is the agent's instruction,
+not a filter. The one exception is the instance setting `censorUsernameInLogs`
+(off by default): when on, Paperclip stores every comment with the signed-in
+user's name masked, and the WhatsApp text follows the stored comment.
 
 Credential fields in gateway administration results (`gateway_admin` operations
 and the session, config, proxy and key-validation reads), their stored receipts and

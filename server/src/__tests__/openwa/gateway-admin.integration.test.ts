@@ -262,6 +262,17 @@ describe("OpenWA gateway administration from the board (embedded Postgres + fake
     expect(t.gateway.requests.filter((entry) => entry.path.includes("send-text"))).toEqual([]);
   });
 
+  it("refuses dot-segment path values so an allowlisted operation cannot reach another gateway path", async () => {
+    const t = await setup();
+    const call = admin(t);
+    const before = t.gateway.requests.length;
+    const parent = await call({ operationId: "WebhookController_delete", sessionId: SESSION_ID, args: { id: ".." } });
+    expect(parent.status).toBe(400);
+    const session = await call({ operationId: "SessionController_delete", sessionId: "..", confirmOwnSession: true });
+    expect(session.status).toBe(400);
+    expect(t.gateway.requests.slice(before).filter((entry) => entry.method === "DELETE")).toEqual([]);
+  });
+
   it("refuses without the admin key instead of falling back to the operator key", async () => {
     const t = await setup({ adminKey: false });
     const response = await admin(t)({ operationId: "SessionController_findAll" });

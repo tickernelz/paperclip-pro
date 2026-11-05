@@ -38980,6 +38980,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   return;
                 }
                 openwaPublication = { runId: decision.runId, quotedMessageId: decision.quotedMessageId };
+                if (!payload.attachmentIds?.length) payload = { ...payload, text: decision.text };
               }
               if (authorizationClaim.preparedText !== null)
                 payload = { ...payload, text: authorizationClaim.preparedText };

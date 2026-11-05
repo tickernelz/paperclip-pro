@@ -308,7 +308,6 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
       event?: string;
       approvalRequestId?: string;
       status?: string;
-      projected?: boolean;
       attachment?: { filename: string; content: string };
     },
   ) {
@@ -362,7 +361,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
         issueId: c.issueId,
         commentId: comment!.id,
         idempotencyKey: "comment:" + comment!.id + ":" + t.endpointId,
-        payload: input.projected === false ? { text: input.body } : projectSafeChatPublication({ classification: "external", source: "agent_comment", text: input.body }),
+        payload: projectSafeChatPublication({ classification: "external", source: "agent_comment", text: input.body }),
         state: "pending",
       })
       .returning();
@@ -461,19 +460,19 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     const c = await conversation(t, MEMBER);
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
     const other = await trigger(t, c, { triggerClass: "other", role: "allowed" });
-    const run = await runOutput(t, c, {
-      triggerClass: "owner",
-      body: "Done. The deploy key was " + CREDENTIAL + " and password: hunter2",
-      deliveryIds: [owner.id],
-      projected: false,
-    });
+    const body =
+      "Done. Klaim di https://paperclip.example/board-claim/0b6f1d2e-1111-4222-8333-944455556666?code=AbC_12-xyz#step, " +
+      "token https://hooks.example/cb?token=abc, lokal http://localhost:3100/x?code=1 dan http://192.168.1.8/y. The deploy key was " +
+      CREDENTIAL +
+      " and password: hunter2";
+    const run = await runOutput(t, c, { triggerClass: "owner", body, deliveryIds: [owner.id] });
     await drain(t);
     await drain(t);
     expect(t.gateway.sends).toHaveLength(1);
     const sent = t.gateway.sends[0]!;
     expect(sent.chatId).toBe(MEMBER);
     expect(sent.quotedMessageId).toBeUndefined();
-    expect(sent.text).toBe("Done. The deploy key was " + CREDENTIAL + " and password: hunter2");
+    expect(sent.text).toBe(body);
     expect((await publicationState(run.publicationId)).state).toBe("published");
     expect(await answerStates([owner.id, other.id])).toEqual(["answered", "pending"]);
     const outbound = await db.select().from(chatOutboundMessages).where(eq(chatOutboundMessages.endpointId, t.endpointId));

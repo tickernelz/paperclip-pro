@@ -52,7 +52,7 @@ export type OpenwaSuppressionReason =
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
-  | { kind: "publish"; runId: string; quotedMessageId: string | null; triggerIds: string[] }
+  | { kind: "publish"; runId: string; quotedMessageId: string | null; triggerIds: string[]; text: string }
   | { kind: "suppressed"; runId: string | null; reason: OpenwaSuppressionReason; acknowledge?: { chatId: string; messageId: string } }
   | { kind: "empty"; runId: string }
   | { kind: "blocked"; reason: "not_agent_output" };
@@ -219,7 +219,7 @@ export async function decideOpenwaRunPublication(
     if (existing) {
       const stored = existing.payload as unknown as StoredDecision;
       return stored.decision === "published"
-        ? { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds: stored.triggerIds }
+        ? { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds: stored.triggerIds, text: run.body }
         : { kind: "suppressed", runId: run.runId, reason: stored.reason ?? "no_pending_trigger" };
     }
     if (decided.some((row) => row.providerActionId === runKey)) {
@@ -237,7 +237,7 @@ export async function decideOpenwaRunPublication(
       });
       return isText
         ? { kind: "suppressed", runId: run.runId, reason: "already_published" }
-        : { kind: "publish", runId: run.runId, quotedMessageId: null, triggerIds: [] };
+        : { kind: "publish", runId: run.runId, quotedMessageId: null, triggerIds: [], text: run.body };
     }
     const runClass = openwaRunTriggerClass(run.contextSnapshot);
     const deliveryIds = readOpenwaRunContext(run.contextSnapshot)?.deliveryIds ?? [];
@@ -430,7 +430,7 @@ export async function decideOpenwaRunPublication(
           details: { grantId: grant.id, category: grant.category, scope: "one_action", publicationId: publication.id },
         });
     }
-    return { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds };
+    return { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds, text: run.body };
   });
 }
 
