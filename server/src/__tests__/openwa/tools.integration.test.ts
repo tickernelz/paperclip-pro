@@ -886,6 +886,22 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     expect(audit!.metadata).toMatchObject({ errorCode: "retry_after", pacing: true });
   });
 
+  it("sends a one-time claim link and a credential verbatim and reads them back unchanged", async () => {
+    const t = await setup();
+    const c = await conversation(t, MEMBER);
+    await trigger(t, c, { triggerClass: "other", role: "allowed" });
+    const binding = await run(t, c, { triggerClass: "other" });
+    const link = "https://paperclip.example/board-claim/" + randomUUID() + "?code=AbC_12-xyz&next=%2Fhome#frag";
+    const key = "owa_k1_" + randomUUID().replace(/-/g, "");
+    const text = "Klaim di " + link + " lalu pakai " + key + " (password: hunter2)";
+    await expect(executeOpenwaTool(db, binding, "openwa_send", { text, idempotencyKey: randomUUID() })).resolves.toMatchObject({ state: "delivered" });
+    expect(t.gateway.sends.at(-1)!.text).toBe(text);
+    const stored = await executeOpenwaTool(db, binding, "openwa_read_chat", { limit: 10 });
+    expect(JSON.stringify(stored)).toContain(JSON.stringify(text).slice(1, -1));
+    const live = await executeOpenwaTool(db, binding, "openwa_read_chat", { source: "live", limit: 10 });
+    expect((live.messages as Array<Record<string, unknown>>).some((message) => Object.values(message).includes(text))).toBe(true);
+  });
+
   it("caps read results at 16 KB with a continuation cursor", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);

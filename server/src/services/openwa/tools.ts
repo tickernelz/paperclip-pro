@@ -31,7 +31,6 @@ import { HttpError, forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";
-import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { instanceSettingsService } from "../instance-settings.js";
 import { claimOpenwaCompletionReport, isOpenwaCompletionTurn, openwaCompletionOwedToOwner, settleOpenwaCompletionReport } from "../chat-completion-delivery.js";
 import { openwaOwnerReportRoute } from "./owner-report.js";
@@ -752,10 +751,9 @@ export function prefixFor(ctx: ToolContext): string | null {
   return ctx.policy.numberMode === "owner_number" && ctx.policy.ownerNumberPrefix.enabled ? ctx.policy.ownerNumberPrefix.text : null;
 }
 
-function safeText(text: string): string {
-  const safe = projectSafeChatPublicationTextOrNull(text);
-  if (safe === null) throw new OpenwaToolError(422, "gateway_error", "The message text is empty after removing hidden content");
-  return safe;
+function messageText(text: string): string {
+  if (!text.trim()) throw new OpenwaToolError(422, "gateway_error", "The message text is empty");
+  return text;
 }
 
 export function messageIdOf(result: unknown): OpenwaSendResult {
@@ -778,7 +776,7 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
   const withMentions = (index: number) => (index === 0 && mentionIds.length ? { mentions: mentionIds } : {});
   const chatId = target.chatId;
   if (kind === "text") {
-    const markdown = openwaMentionText(safeText(String(args.text)), mentions);
+    const markdown = openwaMentionText(messageText(String(args.text)), mentions);
     const formatted = formatOpenwaPublication({ markdown, prefix: prefixFor(ctx) });
     if (formatted.kind === "text") {
       return {
@@ -902,7 +900,7 @@ async function planSends(ctx: ToolContext, args: Args, target: Target, quote: st
   const gatewayKind = openwaGatewayMediaKind(kind, named.mimetype);
   const sentKind: OpenwaSendKind = gatewayKind === "document" ? "document" : kind;
   const prefix = prefixFor(ctx);
-  const captionSource = args.text ? markdownToWhatsapp(openwaMentionText(safeText(String(args.text)), mentions)) : mentions.length ? mentions.map((mention) => mention.token).join(" ") : "";
+  const captionSource = args.text ? markdownToWhatsapp(openwaMentionText(messageText(String(args.text)), mentions)) : mentions.length ? mentions.map((mention) => mention.token).join(" ") : "";
   const caption = captionSource ? (prefix ? prefix + "\n" + captionSource : captionSource) : "";
   if ([...caption].length > OPENWA_DOCUMENT_CAPTION_LIMIT)
     throw new OpenwaToolError(422, "caption_too_long", "Media captions are limited to " + OPENWA_DOCUMENT_CAPTION_LIMIT + " characters; send the text separately");
@@ -1537,7 +1535,17 @@ function linkedResultSummary(result: Record<string, unknown>): Record<string, un
   return { count: Array.isArray(result.linked) ? result.linked.length : 0 };
 }
 
-const MANIFEST_ONLY_TOOLS = new Set(["openwa_catalog", "openwa_describe"]);
+const UNREDACTED_TOOLS = new Set([
+  "openwa_catalog",
+  "openwa_describe",
+  "openwa_send",
+  "openwa_read_chat",
+  "openwa_get_media",
+  "openwa_find",
+  "openwa_call",
+  "openwa_linked_read",
+  "openwa_linked_get_media",
+]);
 
 export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name: string, value: unknown): Promise<Record<string, unknown>> {
   const tool = openwaTool(name);
@@ -1554,7 +1562,7 @@ export async function executeOpenwaTool(db: Db, binding: OpenwaToolBinding, name
       args = tool.schema.parse(value) as Args;
     }
     const output = await execute(ctx, args);
-    const result = MANIFEST_ONLY_TOOLS.has(name) ? output : redactOpenwaSecrets(output);
+    const result = UNREDACTED_TOOLS.has(name) ? output : redactOpenwaSecrets(output);
     await auditSafely(ctx, {
       kind: "tool_called",
       metadata: {

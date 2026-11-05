@@ -26,7 +26,7 @@ import {
 import { OpenwaGatewayError, openwaOperationArgsError, type OpenwaCallResult, type OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { markTriggersAnswered, recordOpenwaRunOutcome } from "./publication.js";
-import { redactOpenwaSecrets } from "./redact.js";
+import { redactOpenwaOperationResult } from "./redact.js";
 import {
   OpenwaToolError,
   assertReadable,
@@ -194,7 +194,7 @@ function resultValue(effective: OpenwaEffectiveOperation, ctx: ToolContext, resu
       hint: "Media is never returned inline; store message media with openwa_get_media.",
     };
   }
-  const data = redactOpenwaSecrets(scrubInlineMedia(result.data));
+  const data = redactOpenwaOperationResult(effective.operation, scrubInlineMedia(result.data));
   if (effective.operation.sessionParam === "query") return ownSessionOnly(data, ctx.sessionId, "sessionId");
   if (effective.operation.id === "SessionController_findAll" && !effective.useAdminKey) return ownSessionOnly(data, ctx.sessionId, "id");
   return data;
@@ -529,7 +529,7 @@ async function executeWrite(ctx: ToolContext, resolved: ResolvedScope, effective
         instruction: "The outcome is not confirmed yet. Do not call again with a new key; retry later with the same idempotencyKey to reconcile.",
       };
     messageIds = outcome.messageIds;
-    value = data === null ? { messageId: messageIds[0] } : redactOpenwaSecrets(scrubInlineMedia(data));
+    value = data === null ? { messageId: messageIds[0] } : redactOpenwaOperationResult(operation, scrubInlineMedia(data));
   } else {
     const claimed = await claimOpenwaWrite(ctx.db, action);
     if (!claimed)

@@ -28,6 +28,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import { OpenwaChatsSettings } from "./OpenwaChatsSettings";
 import { OpenwaHealthCard } from "./OpenwaHealthCard";
+import { OpenwaGatewayManager } from "./OpenwaGatewayManager";
 import { OpenwaLinkedNumbers } from "./OpenwaLinkedNumbers";
 import { FieldMessage, NumberField, SettingsSection, ToggleRow, fieldError, openwaSelectClass } from "./openwa-fields";
 import {
@@ -117,6 +118,7 @@ export function OpenwaSettings({ endpoint }: { endpoint: ChatEndpoint }) {
       <CapabilityWarnings endpoint={typed} />
       <OwnersSection endpointId={endpoint.id} />
       <OpenwaLinkedNumbers endpointId={endpoint.id} />
+      <OpenwaGatewayManager endpointId={endpoint.id} ownSessionId={endpoint.providerAccountId?.split("#").at(-1) || null} />
       <SenderPolicySection key={"sender-" + revision} endpoint={typed} />
       <TriggerDefaultsSection key={"triggers-" + revision} endpoint={typed} />
       <OpenwaChatsSettings endpointId={endpoint.id} policy={typed.policy} />

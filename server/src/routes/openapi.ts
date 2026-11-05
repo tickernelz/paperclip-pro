@@ -360,6 +360,7 @@ import {
   addOpenwaOwnerSchema,
   createOpenwaSenderRuleSchema,
   linkOpenwaSessionSchema,
+  openwaGatewayAdminCallSchema,
   updateOpenwaLinkedChatsSchema,
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
@@ -1817,6 +1818,7 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "PUT /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/chats",
   "DELETE /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}",
   "GET /api/chat-endpoints/{endpointId}/openwa/linked-sessions/{linkedId}/gateway-chats",
+  "POST /api/chat-endpoints/{endpointId}/openwa/gateway-admin",
   "GET /api/chat-endpoints/{endpointId}/openwa/health",
   "PATCH /api/chat-endpoints/{endpointId}/openwa/policy",
   "GET /api/chat-endpoints/{endpointId}/openwa/approvals",
@@ -3294,6 +3296,26 @@ registry.registerPath({
     403: r.forbidden,
     404: r.notFound,
     409: r.conflict,
+    ...openwaLinkedGatewayErrors,
+  },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/chat-endpoints/{endpointId}/openwa/gateway-admin",
+  tags: ["chat-channels"],
+  summary: "Run an OpenWA gateway administration operation",
+  description:
+    "Board only, requires connection-management access and the endpoint's OpenWA admin key. Runs one allowlisted OpenWA operation for sessions (list, create, start, stop, logout, force-kill, delete, QR, pairing code, config), API keys, webhooks and integration instances. Mutations record a config_changed audit entry with redacted arguments and before/after snapshots plus openwa.gateway_admin_called. New API keys, regenerated secrets, QR codes and pairing codes are returned once with revealed=true; every other result masks credentials. Logout, stop, force-kill and delete of the agent's own session fail 409 openwa_own_session_confirmation_required unless confirmOwnSession is true. Responses are not cached.",
+  request: { params: openwaEndpointParams, body: jsonBody(openwaGatewayAdminCallSchema) },
+  responses: {
+    200: r.ok(z.object({ operationId: z.string(), sessionId: z.string().nullable(), data: z.unknown(), revealed: z.boolean() }).strict()),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+    409: r.conflict,
+    422: r.unprocessable,
     ...openwaLinkedGatewayErrors,
   },
 });

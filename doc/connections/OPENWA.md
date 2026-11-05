@@ -46,7 +46,9 @@ changes the gateway.
    `RESOLVE_LID_TO_PHONE=true`. The second lets group senders that appear as
    `@lid` resolve to phone numbers; unresolved LIDs are treated as outside the
    allowlist and never as owners.
-3. In the OpenWA dashboard, open **API Keys** and create an **operator** key whose
+3. Create an **operator** key (OpenWA dashboard **API Keys**, or Settings →
+   **OpenWA API keys** once an admin key is connected, see
+   [Gateway management](#gateway-management-from-paperclip)) whose
    `allowedSessions` contains only this agent's session. Leave `allowedChats`
    empty: a chat-restricted key disables live Socket.IO events and setup rejects
    it. `allowedIps` may be used.
@@ -690,17 +692,72 @@ Routes, all under `/api/chat-endpoints/:endpointId/openwa` and board-only:
 
 Table: `chat_openwa_linked_sessions` (migration 0289).
 
+## Gateway management from Paperclip
+
+With the channel's OpenWA admin key connected, a board user with
+connection-management access (`tools:manage_connections`, instance admin, or
+local trusted mode) manages the whole gateway from the channel's Settings tab,
+without the OpenWA dashboard. Agents cannot reach any of it.
+
+| Section | What it does | OpenWA operations |
+| --- | --- | --- |
+| WhatsApp sessions | List every session (name, status, number, push name, connected or created time, last error), create and start a session, Connect (QR code reloaded every 3 s until the status is `ready`, or an 8-character pairing code for a phone number), start, stop, restart (stop then start), log out, delete, and edit the session settings | `SessionController_findAll`, `findOne`, `create`, `start`, `stop`, `logout`, `delete`, `getQRCode`, `requestPairingCode`, `getConfig`, `updateConfig` |
+| OpenWA API keys | List keys (prefix, role, sessions, state, last use), create a key with a role and optional session scope, revoke, delete | `AuthController_findAll`, `create`, `revoke`, `delete` |
+| OpenWA webhooks | Per session: list, add (URL, events, optional signing secret), test, pause or resume, delete; count failed deliveries and retry them | `WebhookController_*`, `WebhooksListController_deliveryFailures`, `redriveDeliveryFailures` |
+| OpenWA integrations | Pick an ingress plugin, list its instances, add an instance (optionally scoped to one session), enable or disable, regenerate its secret, remove | `PluginsController_findAll`, `IntegrationInstanceController_*` |
+
+Route: `POST /api/chat-endpoints/:endpointId/openwa/gateway-admin` with
+`{ operationId, sessionId?, args?, confirmOwnSession? }`; only the operations in
+`OPENWA_BOARD_GATEWAY_OPERATIONS` (`packages/shared/src/types/chat-channels.ts`)
+are accepted, always with the admin key (422 `openwa_admin_key_required` without
+one; the operator key is never used as a fallback).
+
+- A new API key, a created or regenerated integration secret, the QR code and the
+  pairing code come back once with `revealed: true` and are shown once in the UI.
+  Paperclip never stores them and never writes them to the audit or the log.
+  Every other result masks credential fields as described below.
+- Logout, stop, force-kill and delete of the agent's own session fail 409
+  `openwa_own_session_confirmation_required` unless the request carries
+  `confirmOwnSession: true`; the UI asks for an explicit acknowledgement first.
+- Every change (any non-GET operation) records a `config_changed` audit entry
+  with the acting user, the operation, the session, the outcome, the redacted
+  arguments, and snapshots before and after (`SessionController_findOne` or
+  `getConfig`, `AuthController_findOne`, `WebhookController_findOne`,
+  `IntegrationInstanceController_getOne`; `after` is `null` for a delete and
+  `{ revealedOnce: true }` for an operation that issues a secret), plus
+  `openwa.gateway_admin_called` in company activity. Failed changes are recorded
+  with their error code. Reads (lists, QR polling) are not audited.
+
+Still in the OpenWA dashboard: renaming a session (OpenWA 0.27.1 has no rename
+operation; the name is fixed at creation), session proxy settings, installing,
+updating or configuring plugins, templates, automation and gateway-wide settings.
+
 ## Gateway secrets (D38)
 
 Operations that issue a credential or a device-linking code shown only once
-are refused for every run class and level with 403 `secret_issuing_operation`
-(`OPENWA_SECRET_ISSUING_OPERATIONS`, `server/src/services/openwa/catalog.ts:23`):
-`AuthController_create`, `IntegrationInstanceController_create`,
-`IntegrationInstanceController_regenerate`, `SessionController_requestPairingCode`
-and `SessionController_getQRCode`. Do these in the OpenWA dashboard only.
+are refused to agents for every run class and level with 403
+`secret_issuing_operation` (`OPENWA_SECRET_ISSUING_OPERATIONS`,
+`server/src/services/openwa/catalog.ts:23`): `AuthController_create`,
+`IntegrationInstanceController_create`, `IntegrationInstanceController_regenerate`,
+`SessionController_requestPairingCode` and `SessionController_getQRCode`. A
+person does these under [Gateway management](#gateway-management-from-paperclip)
+or in the OpenWA dashboard.
 
-Credential fields in every other gateway result, stored receipt, replay and
-audit entry are replaced with `[REDACTED]` (`server/src/services/openwa/redact.ts`):
+WhatsApp message text is never altered: `openwa_send`, run-output publication,
+approval bubbles, `openwa_read_chat`, `openwa_find`, `openwa_linked_read` and
+message operations of `openwa_call` carry links (including query strings and
+fragments), tokens and any other text exactly as written or received. Run output
+is sent from the stored agent comment, not from the projected publication payload
+other chat providers use. Only Markdown is converted to WhatsApp formatting and
+long text is split. Keeping secrets out of messages is the agent's instruction,
+not a filter. The one exception is the instance setting `censorUsernameInLogs`
+(off by default): when on, Paperclip stores every comment with the signed-in
+user's name masked, and the WhatsApp text follows the stored comment.
+
+Credential fields in gateway administration results (`gateway_admin` operations
+and the session, config, proxy and key-validation reads), their stored receipts and
+replays, and every audit entry are replaced with `[REDACTED]`
+(`server/src/services/openwa/redact.ts`):
 keys named `apiKey`, `api_key`, `secret`, `clientSecret`, `verifyToken`, `token`,
 `accessToken`, `refreshToken`, `password`, `pairingCode`, `qr` and `qrCode`
 (case-insensitive), any string starting with `owa_k1_`, and image data URLs under
@@ -996,7 +1053,8 @@ once is not staged.
 | Tool error `owner_decision_unclear` (409) | `decision` in `details` | The owner's latest decisive message about the request does not open with a matching approval or refusal word (or an unquoted reply was ambiguous between several requests); the agent keeps the request pending, answers the owner, and resolves after a clear reply. |
 | Tool error `owner_only` | | The action needs an owner-class run: audit reads, own-session stop/logout/delete, handoff of non-owner triggers, configuration from WhatsApp. |
 | Tool error `approval_required` / `reply_denied` (403) | category in `details` | The run's profile or the reply policy needs an owner grant; the agent asks with `openwa_request_approval`. |
-| Tool error `secret_issuing_operation` (403) | | Issue keys, pairing codes and QR codes in the OpenWA dashboard. |
+| Tool error `secret_issuing_operation` (403) | | A person issues keys, pairing codes and QR codes in the channel's Settings (Gateway management) or the OpenWA dashboard. |
+| 409 `openwa_own_session_confirmation_required` | | The board tried to stop, log out, force-kill or delete the agent's own session; tick the acknowledgement and confirm. |
 | Tool error `number_not_on_whatsapp` / `quote_unresolvable` (422) | | The number is not registered, or the quoted message is not in that chat. When WhatsApp rejects the quote of one of the run's visible pending triggers (revoked or deleted), the server resends once without the quote under the same action and returns `quoteDropped: true`. |
 | Audit `run_failed` | `retry_failed`, `send_uncertain`, `approval_event` | A run and its automatic retry both failed, or a failed run was not retried because a reply may already have gone out or it answered an approval; the listed triggers are unanswered. Check the run log and the chat, then reply or ask the person to resend. |
 | Tool error `chat_inactive` (403) | | In `owner_number` mode only chats enabled in Settings are visible. |

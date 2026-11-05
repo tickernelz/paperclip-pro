@@ -91,6 +91,7 @@ import {
   syncOpenwaGroupActivation,
 } from "./openwa/owners.js";
 import { openwaLinkedService } from "./openwa/linked.js";
+import { openwaGatewayAdminService } from "./openwa/gateway-admin.js";
 import { createOpenwaGatewayClient } from "./openwa/gateway.js";
 import { invalidateOpenwaAgentKey, invalidateOpenwaIssueBinding } from "./openwa/authority.js";
 import { issueReferenceService } from "./issue-references.js";
@@ -38979,6 +38980,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
                   return;
                 }
                 openwaPublication = { runId: decision.runId, quotedMessageId: decision.quotedMessageId };
+                if (!payload.attachmentIds?.length) payload = { ...payload, text: decision.text };
               }
               if (authorizationClaim.preparedText !== null)
                 payload = { ...payload, text: authorizationClaim.preparedText };
@@ -40074,6 +40076,11 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     fetchImpl,
   });
 
+  const openwaGatewayAdmin = openwaGatewayAdminService(db, {
+    adminApiKey: async (endpoint) => (await resolveCredentials(endpoint)).adminApiKey || null,
+    fetchImpl,
+  });
+
   const unregisterOpenwaToolRuntime = registerOpenwaToolRuntime(db, {
     async resolve(endpoint) {
       const adapter = (await runtimeFor(endpoint)).getProviderAdapter();
@@ -40220,6 +40227,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     replaceResources,
     openwa: openwaOwners,
     openwaLinked,
+    openwaGatewayAdmin,
     openwaPolicies,
     openwaApprovals: openwaApprovalService(db),
     openwaAdmissionStats: openwaAdmission.stats,

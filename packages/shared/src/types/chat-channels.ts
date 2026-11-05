@@ -666,6 +666,60 @@ export interface OpenwaLinkedGatewayChat {
   allowed: boolean;
 }
 
+export const OPENWA_BOARD_GATEWAY_OPERATIONS = [
+  "SessionController_findAll",
+  "SessionController_findOne",
+  "SessionController_getStats",
+  "SessionController_create",
+  "SessionController_start",
+  "SessionController_stop",
+  "SessionController_logout",
+  "SessionController_forceKill",
+  "SessionController_delete",
+  "SessionController_getQRCode",
+  "SessionController_requestPairingCode",
+  "SessionController_getConfig",
+  "SessionController_updateConfig",
+  "AuthController_findAll",
+  "AuthController_findOne",
+  "AuthController_create",
+  "AuthController_update",
+  "AuthController_revoke",
+  "AuthController_delete",
+  "WebhookController_findBySession",
+  "WebhookController_findOne",
+  "WebhookController_create",
+  "WebhookController_update",
+  "WebhookController_delete",
+  "WebhookController_test",
+  "WebhooksListController_findAll",
+  "WebhooksListController_deliveryFailures",
+  "WebhooksListController_redriveDeliveryFailures",
+  "PluginsController_findAll",
+  "IntegrationInstanceController_list",
+  "IntegrationInstanceController_getOne",
+  "IntegrationInstanceController_create",
+  "IntegrationInstanceController_patch",
+  "IntegrationInstanceController_regenerate",
+  "IntegrationInstanceController_remove",
+] as const;
+export type OpenwaBoardGatewayOperation = (typeof OPENWA_BOARD_GATEWAY_OPERATIONS)[number];
+
+export interface OpenwaGatewayAdminCallInput {
+  operationId: OpenwaBoardGatewayOperation;
+  sessionId?: string;
+  args?: Record<string, unknown>;
+  confirmOwnSession?: boolean;
+}
+
+/** Gateway reply to a board-run operation; `revealed` marks a one-time secret (new key, QR, pairing code) returned unmasked. */
+export interface OpenwaGatewayAdminResult {
+  operationId: OpenwaBoardGatewayOperation;
+  sessionId: string | null;
+  data: unknown;
+  revealed: boolean;
+}
+
 export const CHAT_INFLIGHT_MODES = ["steer", "queue"] as const;
 export type ChatInflightMode = (typeof CHAT_INFLIGHT_MODES)[number];
 

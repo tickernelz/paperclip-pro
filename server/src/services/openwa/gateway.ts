@@ -575,6 +575,11 @@ export function createOpenwaGatewayClient(options: OpenwaGatewayClientOptions): 
     useAdminKey = false,
   ): { url: string; init: RequestInit } {
     let path = operation.path;
+    const segments: Array<[string, string]> = operation.pathParams.map((name) => [name, String(args[name])]);
+    if (operation.sessionParam === "path") segments.push(["sessionId", sessionId]);
+    for (const [name, value] of segments)
+      if (value === "" || value === "." || value === "..")
+        throw fail("bad_request", operation.id + " rejected " + name + ": a path segment cannot be empty, . or ..", { operationId: operation.id });
     if (operation.sessionParam === "path") path = path.replace("{sessionId}", encodedSessionId);
     for (const name of operation.pathParams) {
       path = path.replace("{" + name + "}", encodeURIComponent(String(args[name])));

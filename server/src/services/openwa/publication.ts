@@ -18,7 +18,6 @@ import {
   type OpenwaGrantCategory,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { formatOpenwaPublication } from "./format.js";
 import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";
@@ -53,7 +52,7 @@ export type OpenwaSuppressionReason =
   | "no_openwa_context";
 
 export type OpenwaPublicationDecision =
-  | { kind: "publish"; runId: string; quotedMessageId: string | null; triggerIds: string[] }
+  | { kind: "publish"; runId: string; quotedMessageId: string | null; triggerIds: string[]; text: string }
   | { kind: "suppressed"; runId: string | null; reason: OpenwaSuppressionReason; acknowledge?: { chatId: string; messageId: string } }
   | { kind: "empty"; runId: string }
   | { kind: "blocked"; reason: "not_agent_output" };
@@ -202,7 +201,7 @@ export async function decideOpenwaRunPublication(
   const run = await sourceRun(db, endpoint, publication);
   if (!run) return { kind: "blocked", reason: "not_agent_output" };
   const isText = !publication.payload.attachmentIds?.length;
-  if (isText && projectSafeChatPublicationTextOrNull(run.body) === null) return { kind: "empty", runId: run.runId };
+  if (isText && !run.body.trim()) return { kind: "empty", runId: run.runId };
   const now = input.now ?? new Date();
   const policy = openwaEndpointPolicySchema.parse(endpoint.policy);
   const target = openwaChatTarget(conversation);
@@ -220,7 +219,7 @@ export async function decideOpenwaRunPublication(
     if (existing) {
       const stored = existing.payload as unknown as StoredDecision;
       return stored.decision === "published"
-        ? { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds: stored.triggerIds }
+        ? { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds: stored.triggerIds, text: run.body }
         : { kind: "suppressed", runId: run.runId, reason: stored.reason ?? "no_pending_trigger" };
     }
     if (decided.some((row) => row.providerActionId === runKey)) {
@@ -238,7 +237,7 @@ export async function decideOpenwaRunPublication(
       });
       return isText
         ? { kind: "suppressed", runId: run.runId, reason: "already_published" }
-        : { kind: "publish", runId: run.runId, quotedMessageId: null, triggerIds: [] };
+        : { kind: "publish", runId: run.runId, quotedMessageId: null, triggerIds: [], text: run.body };
     }
     const runClass = openwaRunTriggerClass(run.contextSnapshot);
     const deliveryIds = readOpenwaRunContext(run.contextSnapshot)?.deliveryIds ?? [];
@@ -431,7 +430,7 @@ export async function decideOpenwaRunPublication(
           details: { grantId: grant.id, category: grant.category, scope: "one_action", publicationId: publication.id },
         });
     }
-    return { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds };
+    return { kind: "publish", runId: run.runId, quotedMessageId: stored.quotedMessageId, triggerIds, text: run.body };
   });
 }
 
@@ -546,11 +545,11 @@ export async function sendOpenwaPublication(input: {
         }),
     });
   }
-  const safe = input.files.length ? null : projectSafeChatPublicationTextOrNull(input.text);
+  const text = input.files.length || !input.text.trim() ? null : input.text;
   let sentText: string | null = null;
-  if (safe !== null) {
+  if (text !== null) {
     const prefix = policy.numberMode === "owner_number" && policy.ownerNumberPrefix.enabled ? policy.ownerNumberPrefix.text : null;
-    const formatted = formatOpenwaPublication({ markdown: safe, prefix });
+    const formatted = formatOpenwaPublication({ markdown: text, prefix });
     if (formatted.kind === "text") {
       sentText = formatted.parts.join("\n\n");
       for (const [index, part] of formatted.parts.entries())

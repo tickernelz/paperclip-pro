@@ -23,6 +23,7 @@ import {
   updateOpenwaChatSettingsSchema,
   updateOpenwaEndpointPolicySchema,
   linkOpenwaSessionSchema,
+  openwaGatewayAdminCallSchema,
   updateOpenwaLinkedChatsSchema,
   confirmChatIdentityLinkSchema,
   createChatEndpointSchema,
@@ -543,6 +544,12 @@ export function chatChannelRoutes(db: Db, options: ChatChannelRouteOptions) {
       throw badRequest("limit must be 1-500 and offset 0-100000");
     res.set("Cache-Control", "no-store");
     res.json(await service.openwaLinked.gatewayChats(endpointId(req), req.params.linkedId as string, { limit, offset }));
+  });
+
+  router.post("/chat-endpoints/:endpointId/openwa/gateway-admin", validate(openwaGatewayAdminCallSchema), async (req, res) => {
+    if (!(await assertEndpointManagementAccess(req, res))) return;
+    res.set("Cache-Control", "no-store");
+    res.json(await service.openwaGatewayAdmin.call(endpointId(req), req.body, actorUserId(req)));
   });
 
   router.get("/chat-endpoints/:endpointId/openwa/health", async (req, res) => {
