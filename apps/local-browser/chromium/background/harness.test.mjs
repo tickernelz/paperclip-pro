@@ -96,6 +96,15 @@ export function createChrome(options = {}) {
   const rpcs = [];
   let nextId = 99;
 
+  const sessionStore = options.sessionStore || {};
+  api.storage.session = {
+    async get(key) {
+      return key in sessionStore ? { [key]: structuredClone(sessionStore[key]) } : {};
+    },
+    async set(values) {
+      for (const [key, value] of Object.entries(values)) sessionStore[key] = structuredClone(value);
+    },
+  };
   api.storage.local.remove = async (key) => {
     const changes = { [key]: { oldValue: fake.store[key] } };
     delete fake.store[key];

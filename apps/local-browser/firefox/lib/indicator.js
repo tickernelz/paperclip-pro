@@ -104,8 +104,20 @@
       held.delete(tabId);
     }
 
+    function restoreHeld(ids) {
+      (Array.isArray(ids) ? ids : []).forEach(function (tabId) {
+        if (typeof tabId === "number" && Number.isInteger(tabId) && tabId >= 0) held.add(tabId);
+      });
+    }
+
     return {
       replace: replace,
+      restoreHeld: restoreHeld,
+      heldIds: function () {
+        return Array.from(held).sort(function (a, b) {
+          return a - b;
+        });
+      },
       toggle: toggle,
       stateOf: stateOf,
       isHeld: function (tabId) {

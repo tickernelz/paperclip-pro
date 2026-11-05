@@ -92,6 +92,30 @@ test("the user's hold outlives the agent moving on, idling out and the bridge dr
   assert.deepEqual(indicatorRpcs(context, 9).at(-1), { state: null }, "Hand back on a tab no agent uses removes the bar");
 });
 
+test("the user's hold survives the service worker restarting", async () => {
+  const sessionStore = {};
+  const first = await boot({ sessionStore });
+  agentTab(first, 9);
+  await first.call("local_browser_indicator", { tabs: [{ tabId: 9, agents: ["Ada"] }] });
+  pressButton(first, 9);
+  await sleep(10);
+
+  const restarted = await boot({ sessionStore });
+  agentTab(restarted, 9);
+  const refused = await restarted.call("local_browser_snapshot", { tabId: 9 });
+  assert.equal(refused.error && refused.error.code, "local_browser_navigation_blocked");
+  assert.deepEqual(indicatorRpcs(restarted, 9).at(-1), { state: { agents: [], held: true } });
+
+  pressButton(restarted, 9);
+  await sleep(10);
+  const allowed = await restarted.call("local_browser_snapshot", { tabId: 9 });
+  assert.equal(allowed.ok, true, JSON.stringify(allowed.error || {}));
+  const third = await boot({ sessionStore });
+  agentTab(third, 9);
+  const stillFree = await third.call("local_browser_snapshot", { tabId: 9 });
+  assert.equal(stillFree.ok, true, "Hand back is remembered across a restart too");
+});
+
 test("a screenshot hides the indicator while it captures and shows it again", async () => {
   const context = await boot();
   await context.call("local_browser_indicator", { tabs: [{ tabId: 7, agents: ["Ada"] }] });

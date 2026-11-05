@@ -87,7 +87,9 @@
   }
 
   async function resolveAgentTab(args) {
-    return LB.bg.indicator.assertNotHeld(await resolveTab(args));
+    var tab = await resolveTab(args);
+    await LB.bg.indicator.ready();
+    return LB.bg.indicator.assertNotHeld(tab);
   }
 
   function sendToTab(tabId, payload, timeoutMs, frameId) {
@@ -233,6 +235,7 @@
   }
 
   async function ownAgentTab(incognito) {
+    await LB.bg.indicator.ready();
     var ids = Array.from(agentTabs);
     for (var index = 0; index < ids.length; index += 1) {
       var tab = await chrome.tabs.get(ids[index]).catch(function () {
