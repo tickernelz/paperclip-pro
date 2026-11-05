@@ -37,7 +37,7 @@ export interface OpenwaLinkedServiceDeps {
   fetchImpl?: typeof fetch;
 }
 
-function account(endpoint: Pick<EndpointRow, "providerAccountId">): { baseUrl: string; sessionId: string } {
+export function openwaEndpointAccount(endpoint: Pick<EndpointRow, "providerAccountId">): { baseUrl: string; sessionId: string } {
   const value = endpoint.providerAccountId ?? "";
   const hash = value.lastIndexOf("#");
   return { baseUrl: hash > 0 ? value.slice(0, hash) : "", sessionId: hash >= 0 ? value.slice(hash + 1) : "" };
@@ -93,7 +93,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
   }
 
   async function adminFor(endpoint: EndpointRow, sessionId: string) {
-    const { baseUrl } = account(endpoint);
+    const { baseUrl } = openwaEndpointAccount(endpoint);
     if (!baseUrl) throw unprocessable("Connect the OpenWA gateway first", { code: "openwa_session_required" });
     const adminApiKey = await deps.adminApiKey(endpoint);
     if (!adminApiKey) throw adminKeyRequired();
@@ -205,7 +205,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
   }
 
   async function viewerFor(endpoint: EndpointRow, row: LinkedRow): Promise<OpenwaGatewayClient> {
-    const { baseUrl } = account(endpoint);
+    const { baseUrl } = openwaEndpointAccount(endpoint);
     const apiKey = await secrets.resolveSecretValue(endpoint.companyId, row.secretId, "latest").catch(() => null);
     if (!baseUrl || !apiKey) throw new OpenwaToolError(409, "linked_session_unavailable", "This linked number's key is no longer available; ask the board to link it again");
     return createOpenwaGatewayClient({ baseUrl, apiKey, sessionId: row.sessionId, timeoutMs: GATEWAY_TIMEOUT_MS, fetchImpl: deps.fetchImpl });
@@ -225,7 +225,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
 
   async function linkableSessions(endpointId: string): Promise<OpenwaLinkableSession[]> {
     const endpoint = await endpointFor(endpointId);
-    const own = account(endpoint).sessionId;
+    const own = openwaEndpointAccount(endpoint).sessionId;
     const { client, baseUrl } = await adminFor(endpoint, own);
     const [sessions, linked] = await Promise.all([
       client.listAllSessions().catch((error: unknown) => {
@@ -252,7 +252,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
   async function link(endpointId: string, input: { sessionId: string; label: string }, actorUserId: string | null): Promise<OpenwaLinkedSessionView> {
     const endpoint = await endpointFor(endpointId);
     const sessionId = input.sessionId.trim();
-    if (sessionId === account(endpoint).sessionId)
+    if (sessionId === openwaEndpointAccount(endpoint).sessionId)
       throw unprocessable("This is the agent's own WhatsApp session; link a different number.", { code: "openwa_linked_is_agent_session" });
     if ((await rowsFor(endpoint)).some((row) => row.sessionId === sessionId))
       throw conflict("This WhatsApp session is already linked to this channel", { code: "openwa_linked_exists" });
@@ -408,7 +408,7 @@ export function openwaLinkedService(db: Db, deps: OpenwaLinkedServiceDeps) {
         await setStatus(row, "unavailable");
         throw new HttpError(409, "OpenWA no longer accepts this linked number's key. Unlink it and link it again.", { code: "openwa_linked_unavailable" });
       }
-      throw openwaSetupError(error, account(endpoint).baseUrl);
+      throw openwaSetupError(error, openwaEndpointAccount(endpoint).baseUrl);
     });
     await setStatus(row, "active");
     const allowed = new Set(row.allowedChats.map((chat) => chat.chatId));

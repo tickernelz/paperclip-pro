@@ -28,6 +28,8 @@ import type {
   OpenwaLinkedChat,
   OpenwaLinkedGatewayChat,
   OpenwaLinkedSessionView,
+  OpenwaGatewayAdminCallInput,
+  OpenwaGatewayAdminResult,
   OpenwaLinkedUnlinkResult,
   ChatPublicationBatchStatus,
   ChatPublicationState,
@@ -410,6 +412,8 @@ export const chatEndpointsApi = {
     api.delete<OpenwaLinkedUnlinkResult>(`/chat-endpoints/${endpointId}/openwa/linked-sessions/${linkedId}`),
   listOpenwaLinkedGatewayChats: (endpointId: string, linkedId: string) =>
     api.get<OpenwaLinkedGatewayChat[]>(`/chat-endpoints/${endpointId}/openwa/linked-sessions/${linkedId}/gateway-chats?limit=500`, { cache: "no-store" }),
+  runOpenwaGatewayAdmin: (endpointId: string, input: OpenwaGatewayAdminCallInput) =>
+    api.post<OpenwaGatewayAdminResult>(`/chat-endpoints/${endpointId}/openwa/gateway-admin`, input),
   listOpenwaApprovals: (endpointId: string, status?: ChatOwnerApprovalStatus) =>
     api.get<OpenwaApproval[]>(`/chat-endpoints/${endpointId}/openwa/approvals${status ? "?status=" + status : ""}`, { cache: "no-store" }),
   resolveOpenwaApproval: (endpointId: string, requestId: string, input: OpenwaApprovalResolveInput) =>

@@ -12,6 +12,7 @@ import {
   CHAT_PUBLICATION_STATES,
   CHAT_RESOURCE_AVAILABILITIES,
   CHAT_INFLIGHT_MODES,
+  OPENWA_BOARD_GATEWAY_OPERATIONS,
   OPENWA_CHAT_ACTIVATIONS,
   OPENWA_GATEWAY_ADMIN_TOOL_LEVELS,
   OPENWA_NUMBER_MODES,
@@ -461,6 +462,15 @@ export const linkOpenwaSessionSchema = z
   .object({
     sessionId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}$/),
     label: z.string().trim().min(1).max(120),
+  })
+  .strict();
+
+export const openwaGatewayAdminCallSchema = z
+  .object({
+    operationId: z.enum(OPENWA_BOARD_GATEWAY_OPERATIONS),
+    sessionId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}$/).optional(),
+    args: z.record(z.string(), z.unknown()).default({}),
+    confirmOwnSession: z.boolean().optional(),
   })
   .strict();
 

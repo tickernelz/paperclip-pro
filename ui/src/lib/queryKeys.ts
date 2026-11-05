@@ -52,6 +52,7 @@ export const queryKeys = {
     openwaGatewayChats: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-gateway-chats"] as const,
     openwaLinkedSessions: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-linked-sessions"] as const,
     openwaLinkableSessions: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-linkable-sessions"] as const,
+    openwaGateway: (endpointId: string, ...parts: string[]) => ["chat-endpoints", endpointId, "openwa-gateway", ...parts] as const,
     openwaLinkedGatewayChats: (endpointId: string, linkedId: string) => ["chat-endpoints", endpointId, "openwa-linked-gateway-chats", linkedId] as const,
     audit: (endpointId: string) => ["chat-endpoints", endpointId, "audit"] as const,
     openwaApprovals: (endpointId: string) => ["chat-endpoints", endpointId, "openwa-approvals"] as const,

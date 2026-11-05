@@ -17553,6 +17553,102 @@
     }
   },
   {
+    "name": "paperclipGatewayAdminChatEndpointOpenwa",
+    "operationId": "POST /api/chat-endpoints/{endpointId}/openwa/gateway-admin",
+    "method": "POST",
+    "path": "/chat-endpoints/{endpointId}/openwa/gateway-admin",
+    "description": "Run an OpenWA gateway administration operation. Board only, requires connection-management access and the endpoint's OpenWA admin key. Runs one allowlisted OpenWA operation for sessions (list, create, start, stop, logout, force-kill, delete, QR, pairing code, config), API keys, webhooks and integration instances. Mutations record a config_changed audit entry with redacted arguments and before/after snapshots plus openwa.gateway_admin_called. New API keys, regenerated secrets, QR codes and pairing codes are returned once with revealed=true; every other result masks credentials. Logout, stop, force-kill and delete of the agent's own session fail 409 openwa_own_session_confirmation_required unless confirmOwnSession is true. Responses are not cached.",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "registry",
+    "tags": [
+      "chat-channels"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": false
+    },
+    "guards": [
+      "assertEndpointManagementAccess"
+    ],
+    "permissions": [],
+    "boardGuard": null,
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "endpointId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": true,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "args": {
+            "type": "object"
+          },
+          "confirmOwnSession": {
+            "type": "boolean"
+          },
+          "operationId": {
+            "type": "string",
+            "enum": [
+              "SessionController_findAll",
+              "SessionController_findOne",
+              "SessionController_getStats",
+              "SessionController_create",
+              "SessionController_start",
+              "SessionController_stop",
+              "SessionController_logout",
+              "SessionController_forceKill",
+              "SessionController_delete",
+              "SessionController_getQRCode",
+              "SessionController_requestPairingCode",
+              "SessionController_getConfig",
+              "SessionController_updateConfig",
+              "AuthController_findAll",
+              "AuthController_findOne",
+              "AuthController_create",
+              "AuthController_update",
+              "AuthController_revoke",
+              "AuthController_delete",
+              "WebhookController_findBySession",
+              "WebhookController_findOne",
+              "WebhookController_create",
+              "WebhookController_update",
+              "WebhookController_delete",
+              "WebhookController_test",
+              "WebhooksListController_findAll",
+              "WebhooksListController_deliveryFailures",
+              "WebhooksListController_redriveDeliveryFailures",
+              "PluginsController_findAll",
+              "IntegrationInstanceController_list",
+              "IntegrationInstanceController_getOne",
+              "IntegrationInstanceController_create",
+              "IntegrationInstanceController_patch",
+              "IntegrationInstanceController_regenerate",
+              "IntegrationInstanceController_remove"
+            ]
+          },
+          "sessionId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operationId"
+        ]
+      }
+    }
+  },
+  {
     "name": "paperclipGenerateSummarySlot",
     "operationId": "POST /api/companies/{companyId}/summary-slots/{scopeKind}/{slotKey}/generate",
     "method": "POST",
@@ -19311,7 +19407,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:204",
+    "boardGuard": "assertBoard@chat-channels.ts:205",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21752,7 +21848,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:780",
+    "boardGuard": "assertBoard@chat-channels.ts:787",
     "authorityCapability": null,
     "parameters": [
       {
@@ -29388,7 +29484,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@chat-channels.ts:180",
+    "boardGuard": "assertBoard@chat-channels.ts:181",
     "authorityCapability": null,
     "parameters": [
       {

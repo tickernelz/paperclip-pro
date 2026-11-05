@@ -25,6 +25,7 @@ const mocks = vi.hoisted(() => ({
     updateOpenwaChat: vi.fn(),
     listOpenwaGatewayChats: vi.fn(),
     listOpenwaLinkedSessions: vi.fn(),
+    runOpenwaGatewayAdmin: vi.fn(),
     setup: vi.fn(),
   },
   getAgent: vi.fn(),
@@ -90,6 +91,7 @@ describe("OpenWA settings", () => {
       },
     ]);
     mocks.api.listOpenwaLinkedSessions.mockResolvedValue([]);
+    mocks.api.runOpenwaGatewayAdmin.mockResolvedValue({ operationId: "SessionController_findAll", sessionId: null, data: [], revealed: false });
     mocks.api.listOpenwaGatewayChats.mockResolvedValue([
       { chatId: "628555000555@c.us", isGroup: false, name: "+62xxx...0555", lastActivityAt: null, activation: "auto", configured: false },
     ]);

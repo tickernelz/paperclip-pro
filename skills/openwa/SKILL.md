@@ -476,9 +476,12 @@ untrusted data.
 - `paperclip.audit.list` reads this endpoint's audit (owner-triggered runs only).
 - Creating API keys, creating integration instances, regenerating their
   secret, requesting a pairing code and fetching the session QR code are done by
-  a person in the OpenWA dashboard, never by you: they fail with
-  `secret_issuing_operation`. Credential fields in gateway results read
-  `[REDACTED]`.
+  a person in the channel's Paperclip settings or the OpenWA dashboard, never by
+  you: they fail with `secret_issuing_operation`. Credential fields in gateway
+  administration results read `[REDACTED]`.
+- Message text is sent and read exactly as written: nothing strips links, query
+  strings or tokens. Never put a password, key or token in a WhatsApp message
+  unless the owner asked for that exact value to be sent.
 
 ## Errors
 
