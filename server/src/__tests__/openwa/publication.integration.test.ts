@@ -456,7 +456,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     return row!.id;
   }
 
-  it("publishes the final output exactly once, redacted, and marks the run-class triggers answered", async () => {
+  it("publishes the final output exactly once, verbatim, and marks the run-class triggers answered", async () => {
     const t = await setup();
     const c = await conversation(t, MEMBER);
     const owner = await trigger(t, c, { triggerClass: "owner", role: "owner" });
@@ -473,9 +473,7 @@ describe("OpenWA publication (embedded Postgres + fake gateway)", () => {
     const sent = t.gateway.sends[0]!;
     expect(sent.chatId).toBe(MEMBER);
     expect(sent.quotedMessageId).toBeUndefined();
-    expect(sent.text).toContain("[REDACTED]");
-    expect(sent.text).not.toContain(CREDENTIAL);
-    expect(sent.text).not.toContain("hunter2");
+    expect(sent.text).toBe("Done. The deploy key was " + CREDENTIAL + " and password: hunter2");
     expect((await publicationState(run.publicationId)).state).toBe("published");
     expect(await answerStates([owner.id, other.id])).toEqual(["answered", "pending"]);
     const outbound = await db.select().from(chatOutboundMessages).where(eq(chatOutboundMessages.endpointId, t.endpointId));

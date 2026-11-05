@@ -777,7 +777,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
     });
   });
 
-  it("redacts gateway credentials in results, stored receipts, replays and audit content", async () => {
+  it("redacts gateway credentials in admin results, receipts, replays and audit content but returns WhatsApp messages verbatim", async () => {
     const t = await setup({ policy: { gatewayAdminTools: "full" }, adminKey: true });
     const secret = "hmac-plaintext-" + randomUUID();
     const verifyToken = "verify-plaintext-" + randomUUID();
@@ -810,7 +810,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
 
     const other = await run(t, c, "other");
     const history = await call(other, { operation: "MessageController_getChatHistory", args: { chatId: MEMBER } });
-    expect(history.result).toEqual([{ id: "m1", body: "order", order: { orderId: "o1", token: OPENWA_REDACTED } }]);
+    expect(history.result).toEqual([{ id: "m1", body: "order", order: { orderId: "o1", token: orderToken } }]);
 
     const audits = await db.select().from(chatAuditEntries).where(eq(chatAuditEntries.endpointId, t.endpointId));
     expect(audits.filter((entry) => entry.kind === "tool_called")).toHaveLength(4);

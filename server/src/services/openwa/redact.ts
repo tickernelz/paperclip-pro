@@ -1,3 +1,4 @@
+import type { OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
 import { SECRET_FIELD_NAME_PATTERN } from "../../redaction.js";
 
 export const OPENWA_REDACTED = "[REDACTED]";
@@ -27,4 +28,17 @@ function redact(value: unknown, depth: number): unknown {
 
 export function redactOpenwaSecrets<T>(value: T): T {
   return redact(value, 0) as T;
+}
+
+const GATEWAY_RECORD_READS = new Set([
+  "SessionController_findAll",
+  "SessionController_findOne",
+  "SessionController_getConfig",
+  "SessionController_getProxy",
+  "AuthValidateController_validate",
+]);
+
+/** Masks credentials in gateway-administration results; WhatsApp content passes unchanged. */
+export function redactOpenwaOperationResult<T>(operation: Pick<OpenwaOperation, "id" | "category">, value: T): T {
+  return operation.category === "gateway_admin" || GATEWAY_RECORD_READS.has(operation.id) ? redactOpenwaSecrets(value) : value;
 }

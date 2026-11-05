@@ -18,7 +18,6 @@ import {
   type OpenwaGrantCategory,
   type OpenwaTriggerClass,
 } from "@tickernelz/paperclip-pro-shared";
-import { projectSafeChatPublicationTextOrNull } from "../chat-publication-projection.js";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { formatOpenwaPublication } from "./format.js";
 import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";
@@ -202,7 +201,7 @@ export async function decideOpenwaRunPublication(
   const run = await sourceRun(db, endpoint, publication);
   if (!run) return { kind: "blocked", reason: "not_agent_output" };
   const isText = !publication.payload.attachmentIds?.length;
-  if (isText && projectSafeChatPublicationTextOrNull(run.body) === null) return { kind: "empty", runId: run.runId };
+  if (isText && !run.body.trim()) return { kind: "empty", runId: run.runId };
   const now = input.now ?? new Date();
   const policy = openwaEndpointPolicySchema.parse(endpoint.policy);
   const target = openwaChatTarget(conversation);
@@ -546,11 +545,11 @@ export async function sendOpenwaPublication(input: {
         }),
     });
   }
-  const safe = input.files.length ? null : projectSafeChatPublicationTextOrNull(input.text);
+  const text = input.files.length || !input.text.trim() ? null : input.text;
   let sentText: string | null = null;
-  if (safe !== null) {
+  if (text !== null) {
     const prefix = policy.numberMode === "owner_number" && policy.ownerNumberPrefix.enabled ? policy.ownerNumberPrefix.text : null;
-    const formatted = formatOpenwaPublication({ markdown: safe, prefix });
+    const formatted = formatOpenwaPublication({ markdown: text, prefix });
     if (formatted.kind === "text") {
       sentText = formatted.parts.join("\n\n");
       for (const [index, part] of formatted.parts.entries())
