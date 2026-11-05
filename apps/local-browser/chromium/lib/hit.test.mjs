@@ -46,10 +46,17 @@ test("contains walks parentNode when contains() is missing", () => {
   assert.equal(contains(button, button), false);
 });
 
-test("contains prefers a native contains()", () => {
-  const child = { tagName: "I" };
-  const parent = { tagName: "B", contains: (other) => other === child };
-  assert.equal(contains(parent, child), true);
+test("a hit inside the target's own shadow root is clickable", () => {
+  const inner = node("DIV");
+  const shadowRoot = { parentNode: null, children: [inner] };
+  inner.parentNode = shadowRoot;
+  const host = node("X-CHECK");
+  shadowRoot.host = host;
+  host.contains = (other) => other === host;
+  const other = node("DIV");
+  node("BODY", [host, other]);
+  assert.equal(hitTestAllows(host, inner), true);
+  assert.equal(hitTestAllows(other, inner), false);
 });
 
 test("a null hit inside the viewport means something is covering the point", () => {

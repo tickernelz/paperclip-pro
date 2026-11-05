@@ -380,6 +380,20 @@ test("actPrepare refuses a covered target unless force marks it covered", async 
   assert.equal(forced.result.covered, true);
 });
 
+test("actPrepare reaches a custom control whose shadow root draws its face", async () => {
+  const body = buttons(1);
+  const [host] = body.children;
+  const face = makeElement("div");
+  const shadowRoot = { host, children: [face], childNodes: [face], elementFromPoint: () => face };
+  face.parentNode = shadowRoot;
+  host.shadowRoot = shadowRoot;
+  const agent = loadAgent(body, { elementFromPoint: () => host });
+  await agent.call("snapshot", {});
+  const response = await agent.call("actPrepare", { action: "click", ref: "e1" });
+  assert.equal(response.ok, true, JSON.stringify(response.error || {}));
+  assert.equal(response.result.covered, false);
+});
+
 test("actPrepare refuses type on a button and focuses the target of a press", async () => {
   const body = buttons(1);
   const [button] = body.children;

@@ -30,12 +30,24 @@
     mutationCount += records.length;
     lastMutationAt = Date.now();
   });
-  observer.observe(document.documentElement || document, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    characterData: true
-  });
+  var MUTATION_OPTIONS = { childList: true, subtree: true, attributes: true, characterData: true };
+  observer.observe(document.documentElement || document, MUTATION_OPTIONS);
+  var watchedDocuments = new WeakSet([document]);
+
+  function watchRoot(root) {
+    if (!root || watchedDocuments.has(root)) return;
+    watchedDocuments.add(root);
+    try {
+      observer.observe(root, MUTATION_OPTIONS);
+    } catch (error) {}
+  }
+
+  function watchDocumentOf(element) {
+    if (!element) return element;
+    watchRoot(element.ownerDocument);
+    if (typeof element.getRootNode === "function") watchRoot(element.getRootNode());
+    return element;
+  }
 
   function fail(code, message, hint) {
     var error = { code: code, message: message };
@@ -59,7 +71,7 @@
       if (!resolved.ok) {
         return fail(ERROR.refStale, "Ref " + args.ref + " is no longer usable", "Take a fresh snapshot and use the new ref");
       }
-      return { ok: true, element: resolved.element };
+      return { ok: true, element: watchDocumentOf(resolved.element) };
     }
     if (args.selector) {
       var element = adapter.query(document, args.selector);
@@ -101,16 +113,18 @@
     }
   }
 
+  function intoParent(point, frame) {
+    var rect = frame.getBoundingClientRect();
+    var style = viewOf(frame).getComputedStyle(frame);
+    return {
+      x: point.x + rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0),
+      y: point.y + rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0)
+    };
+  }
+
   function pointOf(element) {
     var point = centerOf(element);
-    var frame = hostFrameOf(element);
-    while (frame) {
-      var rect = frame.getBoundingClientRect();
-      var style = viewOf(frame).getComputedStyle(frame);
-      point.x += rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0);
-      point.y += rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0);
-      frame = hostFrameOf(frame);
-    }
+    for (var frame = hostFrameOf(element); frame; frame = hostFrameOf(frame)) point = intoParent(point, frame);
     return point;
   }
 
@@ -138,12 +152,12 @@
     return { width: view.innerWidth || 0, height: view.innerHeight || 0 };
   }
 
-  function hitVerdict(element) {
-    var point = centerOf(element);
+  function hitVerdict(element, at) {
+    var point = at || centerOf(element);
     var hit = hitAtPoint(point.x, point.y, element.ownerDocument);
     var verdict = LB.hit.hitTestVerdict(element, hit, point, viewportOf(element));
     var frame = hostFrameOf(element);
-    if (verdict === "allow" && frame) return hitVerdict(frame);
+    if (verdict === "allow" && frame) return hitVerdict(frame, intoParent(point, frame));
     return { verdict: verdict, hit: hit, point: point };
   }
 

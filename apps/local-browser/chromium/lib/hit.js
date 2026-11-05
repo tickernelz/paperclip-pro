@@ -3,11 +3,10 @@
 
   function contains(outer, inner) {
     if (!outer || !inner || outer === inner) return false;
-    if (typeof outer.contains === "function") return outer.contains(inner);
-    var node = inner.parentNode;
+    var node = inner.parentNode || inner.host;
     while (node) {
       if (node === outer) return true;
-      node = node.parentNode;
+      node = node.parentNode || node.host;
     }
     return false;
   }

@@ -293,8 +293,12 @@
 
   function childrenOf(adapter, element) {
     var shadow = adapter.shadowRoot ? adapter.shadowRoot(element) : null;
-    var children = adapter.children(element);
-    return shadow ? adapter.children(shadow).concat(children) : children;
+    if (shadow) return adapter.children(shadow);
+    if (adapter.assignedElements && adapter.tagName(element) === "slot") {
+      var assigned = adapter.assignedElements(element);
+      if (assigned.length) return assigned;
+    }
+    return adapter.children(element);
   }
 
   function withRef(node, ref) {

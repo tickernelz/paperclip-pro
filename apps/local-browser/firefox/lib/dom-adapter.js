@@ -116,6 +116,9 @@
     shadowRoot: function (element) {
       return (element && element.shadowRoot) || null;
     },
+    assignedElements: function (slot) {
+      return slot && typeof slot.assignedElements === "function" ? Array.prototype.slice.call(slot.assignedElements({ flatten: true })) : [];
+    },
     frameBody: function (element) {
       try {
         var doc = element.contentDocument;

@@ -42,6 +42,9 @@
     return false;
   }
 
+  var MUTATION_OPTIONS = { childList: true, subtree: true, attributes: true, characterData: true };
+  var watchedDocuments = new WeakSet();
+
   function trackMutations() {
     if (mutationObserver || typeof MutationObserver !== "function") return;
     mutationObserver = new MutationObserver(function () {
@@ -49,7 +52,23 @@
     });
     var scope = document.documentElement;
     if (!scope) return;
-    mutationObserver.observe(scope, { childList: true, subtree: true, attributes: true, characterData: true });
+    watchedDocuments.add(document);
+    mutationObserver.observe(scope, MUTATION_OPTIONS);
+  }
+
+  function watchRoot(root) {
+    if (!root || watchedDocuments.has(root)) return;
+    watchedDocuments.add(root);
+    try {
+      mutationObserver.observe(root, MUTATION_OPTIONS);
+    } catch (error) {}
+  }
+
+  function watchDocumentOf(element) {
+    if (!mutationObserver || !element) return element;
+    watchRoot(element.ownerDocument);
+    if (typeof element.getRootNode === "function") watchRoot(element.getRootNode());
+    return element;
   }
 
   trackMutations();
@@ -68,7 +87,7 @@
     syncRefs();
     if (args && args.ref) {
       var hit = refs.resolve(args.ref);
-      if (hit.ok) return hit.element;
+      if (hit.ok) return watchDocumentOf(hit.element);
       if (hit.reason === "stale") {
         throw fail(protocol.ERROR_CODES.refStale, "Ref " + args.ref + " is stale because the page changed", "Take a fresh snapshot and use its refs", true);
       }
@@ -414,11 +433,10 @@
   }
 
   function contains(outer, inner) {
-    if (typeof outer.contains === "function") return outer.contains(inner);
-    var node = inner.parentNode || inner.parentElement;
+    var node = inner.parentNode || inner.parentElement || inner.host;
     while (node) {
       if (node === outer) return true;
-      node = node.parentNode || node.parentElement;
+      node = node.parentNode || node.parentElement || node.host;
     }
     return false;
   }
@@ -438,17 +456,19 @@
     }
   }
 
+  function intoParent(point, frame) {
+    var rect = frame.getBoundingClientRect();
+    var style = viewOf(frame).getComputedStyle(frame);
+    return {
+      x: point.x + rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0),
+      y: point.y + rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0)
+    };
+  }
+
   function pointOf(element) {
     var center = centerOf(element);
     var point = { x: center.x, y: center.y };
-    var frame = hostFrameOf(element);
-    while (frame) {
-      var rect = frame.getBoundingClientRect();
-      var style = viewOf(frame).getComputedStyle(frame);
-      point.x += rect.left + frame.clientLeft + (parseFloat(style.paddingLeft) || 0);
-      point.y += rect.top + frame.clientTop + (parseFloat(style.paddingTop) || 0);
-      frame = hostFrameOf(frame);
-    }
+    for (var frame = hostFrameOf(element); frame; frame = hostFrameOf(frame)) point = intoParent(point, frame);
     return point;
   }
 
@@ -472,7 +492,7 @@
       return { state: "allow", hit: null };
     }
     var frame = hostFrameOf(element);
-    if (hit && (hit === element || contains(element, hit))) return frame ? hitAt(frame, centerOf(frame)) : { state: "allow", hit: hit };
+    if (hit && (hit === element || contains(element, hit))) return frame ? hitAt(frame, intoParent(point, frame)) : { state: "allow", hit: hit };
     if (hit) return { state: "covered", hit: hit };
     var view = viewOf(element);
     var inside = point.x >= 0 && point.y >= 0 && point.x <= view.innerWidth && point.y <= view.innerHeight;

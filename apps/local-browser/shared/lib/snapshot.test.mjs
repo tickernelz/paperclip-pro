@@ -436,3 +436,19 @@ test("shows what was typed into an input combobox such as a recipient field", ()
     ["Secret", undefined],
   ]);
 });
+
+test("reads slotted light content where its slot sits in the shadow tree, once", () => {
+  const slotted = el("button", { children: [t("Slotted")] });
+  const host = el("x-card", {
+    children: [slotted],
+    props: {
+      shadow: [
+        el("button", { children: [t("Header")] }),
+        el("slot", { props: { assigned: [slotted] } }),
+        el("button", { children: [t("Footer")] }),
+      ],
+    },
+  });
+  const result = snapshot(el("body", { children: [host] }));
+  assert.deepEqual(result.nodes.filter((node) => node.ref).map((node) => node.name), ["Header", "Slotted", "Footer"]);
+});
