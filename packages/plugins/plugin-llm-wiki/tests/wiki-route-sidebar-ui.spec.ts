@@ -547,7 +547,7 @@ describe("WikiPage", () => {
                   source: "managed",
                   agentId: "agent-1",
                   resourceKey: "wiki-maintainer",
-                  details: { name: "Wiki Maintainer", status: "idle", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" },
+                  details: { name: "Wiki Maintainer", status: "idle", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" },
                 },
                 managedProject: {
                   status: "resolved",

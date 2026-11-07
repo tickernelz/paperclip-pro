@@ -36,7 +36,7 @@ const MANAGED_AGENT = {
   status: "active",
   agentId: "agt-c14a-7b2f-4e90",
   resourceKey: "paperclipai.plugin-llm-wiki:agent:wiki-maintainer",
-  details: { name: "Wiki Maintainer", status: "active", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" },
+  details: { name: "Wiki Maintainer", status: "active", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" },
 };
 
 const MANAGED_PROJECT = {
