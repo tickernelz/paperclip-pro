@@ -4073,3 +4073,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 }
 }
 
+
+@layer components {
+.home-charts {
+  min-inline-size: 420px;
+}
+}
