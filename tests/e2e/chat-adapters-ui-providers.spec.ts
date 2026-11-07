@@ -245,7 +245,7 @@ test.describe.serial("native chat adapter UI", () => {
     mock.setWebhookVerified();
     await expect(page.getByRole("heading", { name: "Success", exact: true })).toBeVisible();
     await expect(page.getByRole("link", { name: "Download avatar" })).toHaveCount(0);
-    await expect(page.getByRole("button", { name: /Link .* to my Paperclip account/ })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: /Link .* to my Wardmote account/ })).toHaveCount(0);
     await expect(page.getByRole("link", { name: "Open your Slack DM" })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Copy message" })).toHaveCount(0);
     await page.reload();
@@ -498,7 +498,7 @@ test.describe.serial("native chat adapter UI", () => {
         mock.setWebhookVerified();
         await expect(page.getByRole("heading", { name: "Connect your Slack account" })).toBeVisible();
         await expect(page.getByText("/maya connect", { exact: true })).toBeVisible();
-        await page.getByRole("button", { name: "Link Test operator to my Paperclip account" }).click();
+        await page.getByRole("button", { name: "Link Test operator to my Wardmote account" }).click();
         await page.getByRole("button", { name: "Continue to message test" }).click();
       }
 
