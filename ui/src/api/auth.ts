@@ -157,7 +157,7 @@ export const authApi = {
     const res = await fetch("/api/auth/get-session", {
       credentials: "include",
       headers: { Accept: "application/json" },
-      cache: "no-cache",
+      cache: "no-store",
     });
     const payload = await readApiJson(res);
     if (!res.ok) {

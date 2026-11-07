@@ -5,10 +5,13 @@ const LEGACY_CACHE_PREFIX = "paperclip-public-assets-";
 const SHELL_KEY = "/__wardmote_shell__";
 const CACHED_AT_HEADER = "x-wardmote-cached-at";
 const MAX_DATA_ENTRIES = 400;
+const STORE_INTERVAL_MS = 30_000;
 const SKIP_WAITING_MESSAGE = "wardmote.skip-waiting";
 const CLEAR_OFFLINE_DATA_MESSAGE = "wardmote.clear-offline-data";
 const SESSION_PATH = "/api/auth/get-session";
+const NO_STORE_READABLE_API = new Set([SESSION_PATH, "/api/health"]);
 const privateRequests = new Set();
+const storedAt = new Map();
 const privateCacheControl = /(?:^|,)\s*(?:no-store|private)(?:\s*(?:,|=)|\s*$)/i;
 const noStoreCacheControl = /(?:^|,)\s*no-store(?:\s*(?:,|=)|\s*$)/i;
 const ID = "[^/]+";
@@ -79,8 +82,14 @@ async function currentDataCacheName() {
 }
 
 async function clearOfflineData(keep = null) {
-  const keys = await caches.keys();
-  await Promise.all(keys.filter((key) => key.startsWith(DATA_CACHE_PREFIX) && key !== keep).map((key) => caches.delete(key)));
+  const doomed = (await caches.keys()).filter((key) => key.startsWith(DATA_CACHE_PREFIX) && key !== keep);
+  if (keep === null || doomed.length) storedAt.clear();
+  await Promise.all(doomed.map((key) => caches.delete(key)));
+}
+
+function storedRecently(url) {
+  const at = storedAt.get(url);
+  return at !== undefined && Date.now() - at < STORE_INTERVAL_MS;
 }
 
 async function sessionCacheName(response) {
@@ -92,8 +101,14 @@ async function sessionCacheName(response) {
 }
 
 async function rememberOfflineReadable(request, url, response) {
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401 || (response.status === 403 && url.pathname === SESSION_PATH)) {
     await clearOfflineData();
+    return;
+  }
+  if (response.status === 403) {
+    storedAt.delete(request.url);
+    const cacheName = await currentDataCacheName();
+    if (cacheName) await (await caches.open(cacheName)).delete(request);
     return;
   }
   const cacheControl = response.headers.get("cache-control") ?? "";
@@ -115,10 +130,15 @@ async function rememberOfflineReadable(request, url, response) {
   headers.set(CACHED_AT_HEADER, new Date().toISOString());
   const stored = new Response(await response.blob(), { status: 200, headers });
   const cache = await caches.open(cacheName);
+  const newEntry = !storedAt.has(request.url);
   await cache.put(request, stored);
+  storedAt.set(request.url, Date.now());
+  if (!newEntry) return;
   const keys = await cache.keys();
   if (keys.length > MAX_DATA_ENTRIES) {
-    await Promise.all(keys.slice(0, keys.length - MAX_DATA_ENTRIES).map((key) => cache.delete(key)));
+    const evicted = keys.slice(0, keys.length - MAX_DATA_ENTRIES);
+    for (const key of evicted) storedAt.delete(key.url);
+    await Promise.all(evicted.map((key) => cache.delete(key)));
   }
 }
 
@@ -134,7 +154,9 @@ function handleOfflineReadableApi(event, url) {
   event.respondWith(
     fetch(request).then(
       (response) => {
-        event.waitUntil(rememberOfflineReadable(request, url, response.clone()).catch(() => {}));
+        if (url.pathname === SESSION_PATH || response.status !== 200 || !storedRecently(request.url)) {
+          event.waitUntil(rememberOfflineReadable(request, url, response.clone()).catch(() => {}));
+        }
         return response;
       },
       () => offlineReadable(request).catch(() => Response.error()),
@@ -265,7 +287,8 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
   if (url.pathname.startsWith("/api")) {
     const eventStream = request.headers.get("accept")?.includes("text/event-stream") === true;
-    if (request.cache !== "no-store" && !eventStream && isOfflineReadableApi(url)) handleOfflineReadableApi(event, url);
+    const storable = request.cache !== "no-store" || NO_STORE_READABLE_API.has(url.pathname);
+    if (storable && !eventStream && isOfflineReadableApi(url)) handleOfflineReadableApi(event, url);
     return;
   }
   if (request.cache === "no-store") {

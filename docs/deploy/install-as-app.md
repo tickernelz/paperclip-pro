@@ -39,8 +39,8 @@ Use **Install app** in the account menu, the install icon in the address bar, or
 - The last pages you opened, and what they showed, stay readable offline. A banner says when the data was loaded.
 - Approve, Decline, Reject, and reply stay disabled until the connection returns. Nothing is queued for later.
 - When the connection returns, the board reloads its data once.
-- What is stored: the app shell (HTML, scripts, styles, fonts) and the last response of a fixed list of read-only board routes (organizations, tasks, comments, approvals, inbox, dashboard), kept per signed-in session. Secrets, keys, tokens, invites, agent configuration, instance settings, and any response marked `no-store` are never stored.
-- Signing out, a session that ends (401), or another account signing in on the same device deletes the stored board data.
+- What is stored: the app shell (HTML, scripts, styles, fonts) and the last response of a fixed list of read-only board routes (organizations, tasks, comments, approvals, inbox, dashboard), kept per signed-in account and refreshed at most every 30 seconds per route. Secrets, keys, tokens, invites, agent configuration, instance settings, and any response marked `no-store` are never stored.
+- Signing out, a session that ends (401), losing access to the session (403), or another account signing in on the same device deletes the stored board data. Losing access to one route (403) deletes only that route's copy.
 
 ## Troubleshooting
 

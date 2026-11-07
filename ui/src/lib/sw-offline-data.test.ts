@@ -1,7 +1,7 @@
 // @vitest-environment node
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 const ORIGIN = "https://example.test";
 
@@ -61,7 +61,7 @@ function worker(initialCaches: string[] = []) {
       skipWaiting,
       clients: { claim: vi.fn() },
     },
-    URL, Request, Response, Headers, TextEncoder, crypto, fetch, caches: storage,
+    URL, Request, Response, Headers, TextEncoder, crypto, fetch, caches: storage, Date,
   });
 
   async function get(pathname: string, init: RequestInit & { mode?: RequestMode } = {}) {
@@ -101,9 +101,14 @@ function worker(initialCaches: string[] = []) {
 async function signedIn(userId = "user-a") {
   const w = worker();
   w.fetch.mockResolvedValueOnce(json(session(userId)));
-  await w.get("/api/auth/get-session");
+  await w.get("/api/auth/get-session", { cache: "no-store" });
   return w;
 }
+
+afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
+});
 
 describe("service worker offline data (per-session cache)", () => {
   it("keeps the last allowlisted GET of the signed-in user and serves it when the network is gone", async () => {
@@ -174,12 +179,50 @@ describe("service worker offline data (per-session cache)", () => {
     expect((await w.get("/api/companies/c1/issues"))?.type).toBe("error");
   });
 
+  it("rewrites a polled route at most once per 30 seconds and lists the cache only for a new route", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-11-07T10:00:00Z"));
+    const put = vi.spyOn(FakeCache.prototype, "put");
+    const keys = vi.spyOn(FakeCache.prototype, "keys");
+    const w = await signedIn();
+    put.mockClear();
+    keys.mockClear();
+    for (let poll = 0; poll < 10; poll++) {
+      vi.setSystemTime(new Date(Date.parse("2026-11-07T10:00:00Z") + poll * 3_000));
+      w.fetch.mockResolvedValueOnce(json([{ poll }]));
+      expect(await (await w.get("/api/issues/i1/live-runs"))?.json()).toEqual([{ poll }]);
+    }
+    expect(put).toHaveBeenCalledTimes(1);
+    expect(keys).toHaveBeenCalledTimes(1);
+    vi.setSystemTime(new Date("2026-11-07T10:00:31Z"));
+    w.fetch.mockResolvedValueOnce(json([{ poll: 10 }]));
+    await w.get("/api/issues/i1/live-runs");
+    expect(put).toHaveBeenCalledTimes(2);
+    expect(keys).toHaveBeenCalledTimes(1);
+    w.fetch.mockRejectedValue(new TypeError("offline"));
+    expect(await (await w.get("/api/issues/i1/live-runs"))?.json()).toEqual([{ poll: 10 }]);
+  });
+
+  it("drops only the forbidden route on a 403, and everything when the session itself is forbidden", async () => {
+    const w = await signedIn();
+    w.fetch.mockResolvedValueOnce(json([{ id: "issue-1" }]));
+    await w.get("/api/companies/c1/issues");
+    w.fetch.mockResolvedValueOnce(json([{ id: "run-1" }]));
+    await w.get("/api/companies/c1/live-runs");
+    w.fetch.mockResolvedValueOnce(json({ error: "forbidden" }, { status: 403 }));
+    await w.get("/api/companies/c1/live-runs");
+    expect(Object.values(await w.dataEntries()).flat().sort()).toEqual(["/api/auth/get-session", "/api/companies/c1/issues"]);
+    w.fetch.mockResolvedValueOnce(json({ error: "forbidden" }, { status: 403 }));
+    await w.get("/api/auth/get-session", { cache: "no-store" });
+    expect(await w.dataEntries()).toEqual({});
+  });
+
   it("drops the previous user's copies when another user signs in on the same device", async () => {
     const w = await signedIn("user-a");
     w.fetch.mockResolvedValueOnce(json([{ id: "issue-of-a" }]));
     await w.get("/api/companies/c1/issues");
     w.fetch.mockResolvedValueOnce(json(session("user-b")));
-    await w.get("/api/auth/get-session");
+    await w.get("/api/auth/get-session", { cache: "no-store" });
     const entries = await w.dataEntries();
     expect(Object.keys(entries)).toHaveLength(1);
     expect(Object.values(entries).flat()).toEqual(["/api/auth/get-session"]);
