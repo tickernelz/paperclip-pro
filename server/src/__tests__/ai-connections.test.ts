@@ -762,26 +762,6 @@ describe("managed AI connections", () => {
     } finally { await Promise.all([resumed.cleanup(), peer.cleanup()]); }
   });
 
-  it("preserves Google account defaults when the provider constraint migration is reapplied", async () => {
-    const saved = await service.save(companyId, "bob", {
-      provider: "google", method: "api_key", ownership: "personal", name: "Google migration",
-      apiKey: "fixture", allAgents: true, agentIds: [],
-    }, "google-migration-key");
-    const migration = await readFile(new URL("../../../packages/db/src/migrations/0321_familiar_titania.sql", import.meta.url), "utf8");
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      await db.transaction(async (tx) => {
-        for (const statement of migration.split("--> statement-breakpoint")) {
-          if (statement.trim()) await tx.execute(sql.raw(statement));
-        }
-      });
-    }
-    const selected = await service.select({
-      companyId, agentId, userId: "bob", adapterType: "gemini_local",
-      binding: { provider: "google", method: "api_key", mode: "responsible_user" },
-    });
-    expect(selected.grant.id).toBe(saved.grantId);
-  });
-
   it.each([false, true])("reports the authoritative connection-manager capability for custom grants (manager: %s)", async (manager) => {
     const userId = `custom-manager-${manager}`;
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: userId, status: "active", membershipRole: "member" });
@@ -1845,7 +1825,7 @@ describe("managed AI connections", () => {
     app.use("/api", agentRoutes(db));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     for (const endpoint of ["agents", "agent-hires"]) {
-      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "claude_local", adapterConfig: { model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
       expect(response.status, JSON.stringify(response.body)).toBe(201);
       const agent = endpoint === "agents" ? response.body : response.body.agent;
       expect(agent.adapterConfig.model).toBe("claude-sonnet-4-6");
@@ -1860,7 +1840,7 @@ describe("managed AI connections", () => {
     try {
       for (const endpoint of ["agents", "agent-hires"]) {
         const name = `Rollback ${endpoint}`;
-        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "claude_local", adapterConfig: { model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
         expect(response.status).toBe(500);
         expect(await db.select().from(agents).where(and(eq(agents.companyId, companyId), eq(agents.name, name)))).toEqual([]);
       }

@@ -24,14 +24,6 @@ vi.mock("../vendor/paperclip-runner/live/index.js", () => ({
   probeAcpxCursorInstallation: vi.fn(async () => undefined),
 }));
 
-it("advertises tool-refresh recovery for the selected legacy harness", () => {
-  for (const type of ["claude_local", "codex_local", "grok_local", "gemini_local", "kimi_local", "cursor", "opencode_local", "pi_local"]) {
-    expect(requireServerAdapter(type).supportsToolRefreshOnResume).toBe(true);
-    expect(requireServerAdapter(type).sessionManagement?.supportsSessionResume).toBe(true);
-  }
-  expect(requireServerAdapter("process").supportsToolRefreshOnResume).toBeUndefined();
-});
-
 const externalAdapter: ServerAdapterModule = {
   type: "external_test",
   execute: async () => ({
@@ -120,88 +112,6 @@ describe("server adapter registry", () => {
     ]);
   });
 
-  it("ships Hermes adapters as built-ins and still accepts external overrides", () => {
-    const builtInLocal = findServerAdapter("hermes_local");
-    const builtInGateway = findServerAdapter("hermes_gateway");
-
-    expect(builtInLocal).not.toBeNull();
-    expect(builtInLocal?.supportsLocalAgentJwt).toBe(true);
-    expect(builtInLocal?.supportsInstructionsBundle).toBe(true);
-    expect(builtInLocal?.requiresMaterializedRuntimeSkills).toBe(false);
-    expect(builtInLocal?.detectModel).toBeTypeOf("function");
-    expect(builtInLocal?.getConfigSchema).toBeTypeOf("function");
-
-    expect(builtInGateway).not.toBeNull();
-    expect(builtInGateway?.supportsLocalAgentJwt).toBe(false);
-    expect(builtInGateway?.supportsInstructionsBundle).toBe(false);
-    expect(builtInGateway?.requiresMaterializedRuntimeSkills).toBe(false);
-    expect(builtInGateway?.getConfigSchema).toBeTypeOf("function");
-
-    const hermesLocalExternalAdapter: ServerAdapterModule = {
-      type: "hermes_local",
-      execute: async () => ({ exitCode: 0, signal: null, timedOut: false }),
-      testEnvironment: async () => ({
-        adapterType: "hermes_local",
-        status: "pass",
-        checks: [],
-        testedAt: new Date(0).toISOString(),
-      }),
-      supportsLocalAgentJwt: true,
-      supportsInstructionsBundle: true,
-      instructionsPathKey: "instructionsFilePath",
-      requiresMaterializedRuntimeSkills: false,
-      listSkills: async () => ({
-        adapterType: "hermes_local",
-        supported: true,
-        mode: "ephemeral",
-        desiredSkills: [],
-        entries: [],
-        warnings: [],
-      }),
-      getConfigSchema: () => ({ fields: [{ key: "provider", label: "Provider", type: "text" }] }),
-      detectModel: async () => ({
-        model: "hermes-model",
-        provider: "openrouter",
-        source: "test",
-      }),
-    };
-
-    const hermesGatewayExternalAdapter: ServerAdapterModule = {
-      type: "hermes_gateway",
-      execute: async () => ({ exitCode: 0, signal: null, timedOut: false }),
-      testEnvironment: async () => ({
-        adapterType: "hermes_gateway",
-        status: "pass",
-        checks: [],
-        testedAt: new Date(0).toISOString(),
-      }),
-      supportsLocalAgentJwt: false,
-      supportsInstructionsBundle: false,
-      requiresMaterializedRuntimeSkills: false,
-      getConfigSchema: () => ({
-        fields: [{ key: "apiBaseUrl", label: "API URL", type: "text" }],
-      }),
-    };
-
-    registerServerAdapter(hermesLocalExternalAdapter);
-
-    expect(requireServerAdapter("hermes_local")).toBe(hermesLocalExternalAdapter);
-    expect(findActiveServerAdapter("hermes_local")?.supportsLocalAgentJwt).toBe(true);
-
-    unregisterServerAdapter("hermes_local");
-
-    expect(requireServerAdapter("hermes_local")).toBe(builtInLocal);
-
-    registerServerAdapter(hermesGatewayExternalAdapter);
-
-    expect(requireServerAdapter("hermes_gateway")).toBe(hermesGatewayExternalAdapter);
-    expect(findActiveServerAdapter("hermes_gateway")?.supportsLocalAgentJwt).toBe(false);
-
-    unregisterServerAdapter("hermes_gateway");
-
-    expect(requireServerAdapter("hermes_gateway")).toBe(builtInGateway);
-  });
-
   it("exposes capability flags from registered adapters", () => {
     const adapterWithCaps: ServerAdapterModule = {
       type: "external_test",
@@ -236,15 +146,6 @@ describe("server adapter registry", () => {
     expect(resolved!.supportsInstructionsBundle).toBeUndefined();
     expect(resolved!.instructionsPathKey).toBeUndefined();
     expect(resolved!.requiresMaterializedRuntimeSkills).toBeUndefined();
-  });
-
-  it("built-in claude_local adapter declares capability flags", () => {
-    const adapter = findActiveServerAdapter("claude_local");
-    expect(adapter).not.toBeNull();
-    expect(adapter!.supportsInstructionsBundle).toBe(true);
-    expect(adapter!.instructionsPathKey).toBe("instructionsFilePath");
-    expect(adapter!.requiresMaterializedRuntimeSkills).toBe(false);
-    expect(adapter!.supportsLocalAgentJwt).toBe(true);
   });
 
   it("rejects an incomplete managed runner provider before probing Codex", async () => {
@@ -364,33 +265,9 @@ describe("server adapter registry", () => {
     }
   });
   it("wraps built-in npm runtime installs with the sandbox-aware install helper", () => {
-    const expectedClaudeInstall = `if ! command -v 'claude' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@anthropic-ai/claude-code")}; fi`;
-    const expectedCodexInstall = `if ! command -v 'codex' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@openai/codex")}; fi`;
-    const expectedGeminiInstall = `if ! command -v 'gemini' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@google/gemini-cli")}; fi`;
-    const expectedOpenCodeInstall = `if ! command -v 'opencode' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("opencode-ai")}; fi`;
     const expectedRunnerCodexInstall = `if ! command -v 'codex' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("@openai/codex@0.160.0")}; fi`;
     const expectedRunnerOpenCodeInstall = `if ! command -v 'opencode' >/dev/null 2>&1; then ${buildSandboxNpmInstallCommand("opencode-ai@1.18.34")}; fi`;
 
-    expect(findActiveServerAdapter("claude_local")?.getRuntimeCommandSpec?.({})).toEqual({
-      command: "claude",
-      detectCommand: "claude",
-      installCommand: expectedClaudeInstall,
-    });
-    expect(findActiveServerAdapter("codex_local")?.getRuntimeCommandSpec?.({})).toEqual({
-      command: "codex",
-      detectCommand: "codex",
-      installCommand: expectedCodexInstall,
-    });
-    expect(findActiveServerAdapter("gemini_local")?.getRuntimeCommandSpec?.({})).toEqual({
-      command: "gemini",
-      detectCommand: "gemini",
-      installCommand: expectedGeminiInstall,
-    });
-    expect(findActiveServerAdapter("opencode_local")?.getRuntimeCommandSpec?.({})).toEqual({
-      command: "opencode",
-      detectCommand: "opencode",
-      installCommand: expectedOpenCodeInstall,
-    });
     expect(findActiveServerAdapter("paperclip_runner")?.getRuntimeCommandSpec?.({ provider: "codex" })).toEqual({
       command: "codex",
       detectCommand: "codex",
@@ -488,10 +365,10 @@ describe("resolveExternalAdapterRegistration", () => {
     // An external that overrides a built-in type should inherit the built-in's
     // sessionManagement when it does not provide its own.
     const adapter: ServerAdapterModule = {
-      type: "claude_local",
+      type: "omp_local",
       execute: async () => ({ exitCode: 0, signal: null, timedOut: false }),
       testEnvironment: async () => ({
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         status: "pass",
         checks: [],
         testedAt: new Date(0).toISOString(),

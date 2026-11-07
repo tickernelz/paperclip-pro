@@ -3858,7 +3858,7 @@ describe("company portability", () => {
       collisionStrategy: "rename",
       adapterOverrides: {
         claudecoder: {
-          adapterType: "codex_local",
+          adapterType: "omp_local",
           adapterConfig: {
             extraArgs: [],
             args: ["--legacy-arg"],
@@ -3868,9 +3868,9 @@ describe("company portability", () => {
     }, "user-1");
 
     expect(agentSvc.create).toHaveBeenLastCalledWith("company-imported", expect.objectContaining({
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: expect.objectContaining({
-        extraArgs: ["--skip-git-repo-check"],
+        extraArgs: [],
         args: ["--legacy-arg"],
       }),
     }), { createdByUserId: "user-1" });
@@ -5858,7 +5858,7 @@ describe("company portability", () => {
       collisionStrategy: "replace",
       adapterOverrides: {
         claudecoder: {
-          adapterType: "codex_local",
+          adapterType: "omp_local",
           adapterConfig: {
             model: "gpt-5.4",
           },
@@ -5870,12 +5870,11 @@ describe("company portability", () => {
       "company-1",
       expect.objectContaining({
         model: "gpt-5.4",
-        extraArgs: ["--skip-git-repo-check"],
       }),
-      { strictMode: false, adapterType: "codex_local" },
+      { strictMode: false, adapterType: "omp_local" },
     );
     expect(agentSvc.update).toHaveBeenCalledWith("agent-1", expect.objectContaining({
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {
         normalized: "updated",
       },
