@@ -563,7 +563,7 @@ const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = [
     value: adapter.type,
     label: adapterLabels[adapter.type] ?? getAdapterLabel(adapter.type),
   })),
-  { value: "openai_dot", label: "OpenAI Dot (experimental)" },
+  { value: "openai_dot", label: "OpenAI Dot (beta)" },
 ];
 
 // Dot is a picker choice backed by the shared Runner API adapter.

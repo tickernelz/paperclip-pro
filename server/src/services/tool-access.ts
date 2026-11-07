@@ -12332,7 +12332,7 @@ export function toolAccessService(
   async function assertExperimentalConnectorSetupEnabled(provider: unknown, existing = false) {
     if (!existing && isMemoryConnectorId(provider)
       && !(await instanceSettingsService(db).getExperimental()).enableMemoryConnectors) {
-      throw forbidden("Enable memory connectors in Settings → Experimental to set up this connection", { code: "memory_connectors_disabled" });
+      throw forbidden("Memory connectors are not finished yet and are off on this instance", { code: "memory_connectors_disabled" });
     }
   }
 

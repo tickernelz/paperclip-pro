@@ -136,7 +136,7 @@ export function AiConnectionField({
           else changeBinding({ mode: "responsible_user", provider, method });
         }}>
           <option value="">Individual account</option>
-          {compatiblePools.map(pool => <option key={pool.id} value={pool.id}>{pool.name} · Experimental pool</option>)}
+          {compatiblePools.map(pool => <option key={pool.id} value={pool.id}>{pool.name} · Connection pool</option>)}
           {value?.mode === "router" && !compatiblePools.some(pool => pool.id === value.connectionId) && <option value={value.connectionId}>Pool unavailable — enable routing and the pool</option>}
         </select>
         {value?.mode === "router" && <span className="text-ink-3">New tasks rotate. Existing tasks keep their account.</span>}

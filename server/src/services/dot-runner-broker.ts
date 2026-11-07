@@ -124,7 +124,7 @@ function createBroker(db: Db) {
   return {
     enabled,
     async createPairing(input: { companyId: string; agentId: string; operatorId: string; dotUrl?: string; replaceBindingId?: string }) {
-      if (!await enabled()) throw fail("Enable OpenAI Dot and Assistant connections (MCP) in experimental settings.");
+      if (!await enabled()) throw fail("Turn on OpenAI Dot and Assistant connections in Settings > Features.");
       if (input.dotUrl && !/^https:\/\/chatgpt\.com\/dots\/[A-Za-z0-9-]+$/.test(input.dotUrl)) throw fail("Use the Dot's ChatGPT URL.");
       const code = randomBytes(24).toString("base64url");
       const binding = await db.transaction(async tx => {
@@ -291,7 +291,7 @@ function createBroker(db: Db) {
         .where(and(eq(issues.companyId, b.companyId), eq(issues.assigneeAgentId, b.agentId), inArray(issues.status, ["todo", "in_progress", "blocked"]), after ? gt(issues.id, after) : undefined)).orderBy(asc(issues.id)).limit(50);
     },
     async setAvatar(principal: McpPrincipal, input: SetAgentAvatarInput) {
-      if (!await enabled()) throw fail("Dot is disabled in experimental settings.");
+      if (!await enabled()) throw fail("OpenAI Dot is turned off in Settings > Features.");
       const b = await principalBinding(principal, false);
       return setAgentProfileAvatar(db, getStorageService(), b.companyId, b.agentId, input,
         { actorType: "agent", actorId: b.agentId, agentId: b.agentId });

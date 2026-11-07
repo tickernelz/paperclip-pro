@@ -592,7 +592,7 @@ export function ConnectionSetupFlow(props: ConnectionSetupFlowProps = {}) {
   if (lookup && existing.isError) return <div role="alert" className="space-y-3 p-6"><p>Could not load this connection. Your saved access and credentials have not changed.</p><Button variant="secondary" onClick={() => void existing.refetch()}>Try again</Button></div>;
   if (isMemoryConnectorId(provider) && !(existing.data && existing.data.status !== "draft" && existing.data.config?.sourceTemplateKey === provider)) {
     if (!memory.loaded) return <p className="p-6 text-sm text-ink-3">Loading connection settings…</p>;
-    if (!memory.enabled) return <p role="status" className="p-6 text-sm text-ink-3">Enable memory connectors in Settings → Experimental to set up this connection.</p>;
+    if (!memory.enabled) return <p role="status" className="p-6 text-sm text-ink-3">Memory connectors are not finished yet and are off on this instance.</p>;
   }
   if (!props.byoOnly && (props.credentialSource ?? "paperclip_vault") === "paperclip_vault"
     && isRemoteMcpConnectorId(provider) && (!method || isRemoteMcpConnectorMethod(provider, method))) {

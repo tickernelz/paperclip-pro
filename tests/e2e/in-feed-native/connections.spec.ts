@@ -54,8 +54,8 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
     const prefix = `/${company.issuePrefix}`;
     await page.goto(base + prefix + '/dashboard');
     await expect(page.getByText('No runs yet').first()).toBeVisible();
-    await page.goto(base + prefix + '/company/settings/instance/experimental');
-    await page.getByRole('switch', { name: 'Toggle Paperclip Runner experimental setting' }).click();
+    await page.goto(base + prefix + '/company/settings/instance/advanced');
+    await page.getByRole('switch', { name: 'Native runner' }).click();
     await expect.poll(async () => (await api('/instance/settings/experimental')).enableNativeRunner).toBe(true);
     await page.goto(base + prefix + `/agents/${agent.id}/configuration`);
     await page.getByRole('button', { name: 'Codex', exact: true }).click();

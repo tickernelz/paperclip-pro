@@ -162,25 +162,7 @@ export const SharedChildTasksPanel: Story = {
   },
 };
 
-export const ClassicSharedChild: Story = {
-  parameters: { privacy: { role: "reader", childOnly: true, classic: true } },
-  render: () => <PrivacyPage child />,
-  play: async ({ canvasElement }) => {
-    const page = within(canvasElement);
-    const chips = await page.findAllByTestId(
-      "locked-issue-chip",
-      {},
-      { timeout: 15000 },
-    );
-    await expect(chips.length).toBeGreaterThanOrEqual(1);
-    await expect(
-      page.queryByRole("link", { name: /PAP-410/ }),
-    ).not.toBeInTheDocument();
-  },
-};
-
 export const PrivateProjectsInNavigation: Story = { parameters: { docs: { description: { story: "Route /PAP/projects. Private project locks sit on the right in the list and starred navigation." } } }, render: () => <PrivacyPage projects /> };
-export const ClassicPrivateProjects: Story = { parameters: { privacy: { classic: true } }, render: () => <PrivacyPage projects /> };
 export const MobilePrivateProjects: Story = { globals: mobile, render: () => <PrivacyPage projects /> };
 
 export const OwnerInheritedTaskMenu: Story = {

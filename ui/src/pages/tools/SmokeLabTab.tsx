@@ -184,9 +184,9 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
           <h2 className="text-base font-semibold">Smoke Lab is turned off</h2>
         </div>
         <p className="mt-1.5 max-w-xl text-sm text-ink-3">
-          The Smoke Lab is an experimental developer surface for exercising the integration paths
+          The Smoke Lab is a developer surface for exercising the integration paths
           against deterministic local fixtures. Turn on <code className="rounded bg-bg-3 px-1 py-0.5 text-xs">Smoke Lab</code>{" "}
-          under Settings → Experimental to enable it.
+          under Settings → Advanced to enable it.
         </p>
       </div>
     );
@@ -206,7 +206,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         <div className="flex flex-wrap items-center gap-2">
           <FlaskConical className="h-5 w-5 text-ink-3" />
           <h1 className="text-xl font-bold text-ink">Smoke Lab</h1>
-          <Badge variant="outline">Experimental</Badge>
+          <Badge variant="outline">Developer</Badge>
           <a
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
             target="_blank"

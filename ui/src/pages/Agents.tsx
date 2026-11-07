@@ -12,8 +12,6 @@ import { instanceSettingsApi } from "../api/instanceSettings";
 import { useCompany } from "../context/CompanyContext";
 import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
-import { useSidebar } from "../context/SidebarContext";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { queryKeys } from "../lib/queryKeys";
 import { isPlatformManagedEnvironment } from "../lib/managed-sandbox-environment";
 import { AgentStatusBadge, AgentStatusCapsule } from "../components/StatusBadge";
@@ -207,17 +205,15 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isMobile } = useSidebar();
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const pathSegment = location.pathname.split("/").pop() ?? "all";
   const requestedTab: FilterTab = isFilterTab(pathSegment) ? pathSegment : "all";
-  const [view, setView] = useState<AgentsView>(() => streamlinedUiEnabled ? initialView : "org");
-  const forceListView = !streamlinedUiEnabled && isMobile;
+  const [view, setView] = useState<AgentsView>(() => initialView);
+  const forceListView = false;
   const effectiveView: AgentsView = forceListView ? "list" : view;
 
   useEffect(() => {
-    setView(streamlinedUiEnabled ? initialView : "org");
-  }, [initialView, streamlinedUiEnabled]);
+    setView(initialView);
+  }, [initialView]);
 
   const { data: instanceSettings } = useQuery({
     queryKey: queryKeys.instance.settings,

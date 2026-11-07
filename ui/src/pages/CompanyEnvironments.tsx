@@ -1934,7 +1934,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     return (
       <div className="max-w-6xl space-y-4">
         <div className="text-sm text-ink-3">
-          Enable Environments in instance experimental settings to manage shared execution targets.
+          Turn on Environments in Settings &gt; Features to manage shared execution targets.
         </div>
       </div>
     );

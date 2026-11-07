@@ -26,9 +26,7 @@ async function body<T>(
   return response.json() as Promise<T>;
 }
 
-async function setup(page: Page, request: APIRequestContext, classic: boolean) {
-  // Announcements can appear after navigation or reload and cover the classic
-  // composer's attachment button. Dismiss through the same UI as a Board user.
+async function setup(page: Page, request: APIRequestContext) {
   await page.addLocatorHandler(
     page.getByRole("complementary", { name: "Paperclip announcements", exact: true })
       .getByRole("button", { name: "Dismiss announcement", exact: true }),
@@ -51,7 +49,7 @@ async function setup(page: Page, request: APIRequestContext, classic: boolean) {
   await page.route("**/api/instance/settings/experimental", (route) =>
     route.fulfill({
       contentType: "application/json",
-      body: JSON.stringify({ enableClassicTaskInterface: classic }),
+      body: JSON.stringify({}),
     }),
   );
   await page.goto(`/${company.issuePrefix}/issues/${issue.identifier}`);
@@ -61,19 +59,14 @@ async function setup(page: Page, request: APIRequestContext, classic: boolean) {
       exact: true,
     }),
   ).toBeVisible();
-  const composer = classic
-    ? page.getByTestId("issue-chat-composer")
-    : page.locator(".paperclip-task-chat-composer");
+  const composer = page.locator(".paperclip-task-chat-composer");
   const editor = composer.getByRole("textbox", {
     name: "editable markdown",
     exact: true,
   });
-  const send = classic
-    ? composer.getByRole("button", { name: /Send|Reply/ }).last()
-    : page.getByTestId("task-chat-composer-send");
+  const send = page.getByTestId("task-chat-composer-send");
   await expect(editor).toBeVisible();
   return {
-    classic,
     company,
     issue,
     composer,
@@ -134,327 +127,284 @@ async function upload(
   return receipt;
 }
 
-for (const classic of [false, true]) {
-  test(`uploaded file and image receipts survive reload and bind exactly once (classic=${classic})`, async ({
-    page,
-    request,
-  }, testInfo) => {
-    const fixture = await setup(page, request, classic);
-    await fixture.editor.fill(
-      "Inspect only these fresh Board attachments. Keep this internal.",
-    );
-    const receipts = [];
-    for (const file of files) receipts.push(await upload(page, fixture, file));
-    const draftKey = `paperclip:issue-comment-draft:${fixture.issue.id}`;
-    await expect
-      .poll(() =>
-        page.evaluate(
-          (key) =>
-            JSON.parse(localStorage.getItem(`${key}:attachments:v1`) ?? "null")
-              ?.attachments?.length,
-          draftKey,
-        ),
-      )
-      .toBe(2);
-    await expect
-      .poll(() => page.evaluate((key) => localStorage.getItem(key), draftKey))
-      .toContain("Inspect only these fresh Board attachments.");
-    await testInfo.attach("before-reload-draft", {
-      body: JSON.stringify(
-        await page.evaluate(
-          (key) => ({
-            text: localStorage.getItem(key),
-            receipts: localStorage.getItem(`${key}:attachments:v1`),
-          }),
-          draftKey,
-        ),
+test(`uploaded file and image receipts survive reload and bind exactly once`, async ({
+  page,
+  request,
+}, testInfo) => {
+  const fixture = await setup(page, request);
+  await fixture.editor.fill(
+    "Inspect only these fresh Board attachments. Keep this internal.",
+  );
+  const receipts = [];
+  for (const file of files) receipts.push(await upload(page, fixture, file));
+  const draftKey = `paperclip:issue-comment-draft:${fixture.issue.id}`;
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) =>
+          JSON.parse(localStorage.getItem(`${key}:attachments:v1`) ?? "null")
+            ?.attachments?.length,
+        draftKey,
       ),
+    )
+    .toBe(2);
+  await expect
+    .poll(() => page.evaluate((key) => localStorage.getItem(key), draftKey))
+    .toContain("Inspect only these fresh Board attachments.");
+  await testInfo.attach("before-reload-draft", {
+    body: JSON.stringify(
+      await page.evaluate(
+        (key) => ({
+          text: localStorage.getItem(key),
+          receipts: localStorage.getItem(`${key}:attachments:v1`),
+        }),
+        draftKey,
+      ),
+    ),
+    contentType: "application/json",
+  });
+  await page.reload();
+  await expect(fixture.editor).toContainText(
+    "Inspect only these fresh Board attachments.",
+  );
+  await expect(
+    fixture.composer.getByText("board-fresh.txt", { exact: true }),
+  ).toBeVisible();
+  await expect(fixture.composer.locator("img")).toHaveCount(1);
+  const outbound = page.waitForRequest(
+    (req) =>
+      req.method() === "POST" &&
+      new URL(req.url()).pathname.endsWith("/comments"),
+  );
+  await fixture.send.click();
+  expect((await outbound).postDataJSON().attachmentIds.sort()).toEqual(
+    receipts.map((row) => row.id).sort(),
+  );
+  await expect.poll(async () => (await fixture.comments()).length).toBe(1);
+  const [comment] = await fixture.comments();
+  const savedBubble = page.getByTestId("task-chat-human-bubble").filter({
+        hasText:
+          "Inspect only these fresh Board attachments. Keep this internal.",
+      });
+  await expect(savedBubble).toHaveCount(1);
+  expect(comment.body).toContain(receipts[0]!.contentPath);
+  expect(comment.body).toContain(receipts[1]!.contentPath);
+  expect(
+    (await fixture.attachments()).map((item) => item.issueCommentId),
+  ).toEqual([comment.id, comment.id]);
+  for (let index = 0; index < receipts.length; index++) {
+    const downloaded = await request.get(receipts[index]!.contentPath);
+    expect(downloaded.ok()).toBe(true);
+    expect(await downloaded.body()).toEqual(files[index]!.buffer);
+  }
+  await expect
+    .poll(() =>
+      page.evaluate(
+        (key) => localStorage.getItem(`${key}:attachments:v1`),
+        draftKey,
+      ),
+    )
+    .toBeNull();
+  await page.reload();
+  await expect(fixture.editor).toBeEmpty();
+  expect(await fixture.comments()).toHaveLength(1);
+  await expect(savedBubble).toHaveCount(1);
+  await page.screenshot({
+    path: testInfo.outputPath("bound-board-attachments.png"),
+    fullPage: true,
+  });
+});
+
+test(`lost accepted response settles from its exact receipt without replay`, async ({
+  page,
+  request,
+}, testInfo) => {
+  const fixture = await setup(page, request);
+  await fixture.editor.fill("Accepted once: inspect this exact file.");
+  const receipt = await upload(page, fixture, files[0]!);
+  let accepted = false;
+  let attempts = 0;
+  let acceptedRequestId: string | undefined;
+  await page.route("**/api/issues/*/comments", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    attempts++;
+    if (accepted) return route.continue();
+    acceptedRequestId = route.request().postDataJSON().clientRequestId;
+    const response = await route.fetch();
+    expect(response.status()).toBe(201);
+    accepted = true;
+    await route.abort("connectionreset");
+  });
+  await fixture.send.click();
+  await expect.poll(() => accepted).toBe(true);
+  expect(await fixture.comments()).toHaveLength(1);
+  expect(acceptedRequestId).toEqual(expect.any(String));
+  expect((await fixture.comments())[0]!.clientRequestId).toBe(acceptedRequestId);
+  expect(
+    (await fixture.attachments()).find((row) => row.id === receipt.id)
+      ?.issueCommentId,
+  ).toBeTruthy();
+  await page.reload();
+  await expect(fixture.editor).toBeEmpty();
+  await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
+  await expect(fixture.composer.getByText("board-fresh.txt", { exact: true })).toHaveCount(0);
+  await expect(fixture.send).toBeDisabled();
+  await fixture.editor.press("Control+Enter");
+  expect(attempts).toBe(1);
+  expect(await fixture.comments()).toHaveLength(1);
+  await page.screenshot({
+    path: testInfo.outputPath("accepted-response-lost.png"),
+    fullPage: true,
+  });
+  expect(
+    (await fixture.attachments()).find((row) => row.id === receipt.id)
+      ?.issueCommentId,
+  ).toBeTruthy();
+  await page.reload();
+  await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
+  await fixture.editor.fill(
+    "A deliberately new comment after the original receipt settled.",
+  );
+  await fixture.send.click();
+  await expect.poll(async () => (await fixture.comments()).length).toBe(2);
+});
+
+test(`known rejection retains the same uploaded receipt for explicit retry`, async ({
+  page,
+  request,
+}) => {
+  const fixture = await setup(page, request);
+  await fixture.editor.fill("Known rejection, then retry the same file.");
+  const receipt = await upload(page, fixture, files[0]!);
+  let rejected = false;
+  await page.route("**/api/issues/*/comments", async (route) => {
+    if (route.request().method() !== "POST" || rejected)
+      return route.continue();
+    rejected = true;
+    await route.fulfill({
+      status: 422,
       contentType: "application/json",
+      body: JSON.stringify({ error: "Fixture policy rejected this attempt" }),
     });
+  });
+  await fixture.send.click();
+  await expect(fixture.editor).toContainText("Known rejection,");
+  await expect(fixture.send).toBeEnabled();
+  expect(await fixture.comments()).toHaveLength(0);
+  await page.reload();
+  await expect(fixture.editor).toContainText("Known rejection,");
+  await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
+  await fixture.send.click();
+  await expect.poll(async () => (await fixture.comments()).length).toBe(1);
+  expect(
+    (await fixture.attachments()).find((row) => row.id === receipt.id)
+      ?.issueCommentId,
+  ).toBeTruthy();
+});
+
+test(`reload during a pending save settles its receipt and preserves a newer draft`, async ({
+  page,
+  request,
+}) => {
+  const fixture = await setup(page, request);
+  await fixture.editor.fill("One text-only save interrupted by reload.");
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let accepted = false;
+  let attempts = 0;
+  let acceptedRequestId: string | undefined;
+  await page.route("**/api/issues/*/comments", async (route) => {
+    if (route.request().method() !== "POST") return route.continue();
+    attempts++;
+    acceptedRequestId ??= route.request().postDataJSON().clientRequestId;
+    const response = await route.fetch();
+    expect(response.status()).toBe(201);
+    accepted = true;
+    await held;
+    await route.fulfill({ response }).catch(() => {});
+  });
+  try {
+    await fixture.send.click();
+    await expect.poll(() => accepted).toBe(true);
+    expect(await fixture.comments()).toHaveLength(1);
+    await fixture.editor.fill("A newer draft written while delivery was pending.");
     await page.reload();
-    await expect(fixture.editor).toContainText(
-      "Inspect only these fresh Board attachments.",
+    release();
+    await expect(fixture.editor).toHaveText(
+      "A newer draft written while delivery was pending.",
     );
+    await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
+    await expect(fixture.send).toBeEnabled();
+    expect(attempts).toBe(1);
+    expect(await fixture.comments()).toHaveLength(1);
+    expect(acceptedRequestId).toEqual(expect.any(String));
+    expect((await fixture.comments())[0]!.clientRequestId).toBe(acceptedRequestId);
+    await fixture.send.click();
+    await expect.poll(async () => (await fixture.comments()).length).toBe(2);
+    expect(attempts).toBe(2);
+    expect((await fixture.comments()).map((comment) => comment.body).sort()).toEqual([
+      "A newer draft written while delivery was pending.",
+      "One text-only save interrupted by reload.",
+    ]);
+  } finally {
+    release();
+  }
+});
+
+test(`removed pending inline upload cannot reappear or submit after its HTTP response`, async ({
+  page,
+  request,
+}) => {
+  const fixture = await setup(page, request);
+  await fixture.editor.fill("Send without the removed image.");
+  let release!: () => void;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  let arrived = false;
+  await page.route(
+    `**/api/companies/${fixture.company.id}/issues/${fixture.issue.id}/attachments`,
+    async (route) => {
+      const response = await route.fetch();
+      arrived = true;
+      await held;
+      await route.fulfill({ response });
+    },
+  );
+  const chooser = await openAttachmentChooser(page, fixture.composer);
+  await chooser.setFiles(files[1]!);
+  await expect.poll(() => arrived).toBe(true);
+  await expect(fixture.send).toBeDisabled();
+  try {
     await expect(
-      fixture.composer.getByText("board-fresh.txt", { exact: true }),
+      fixture.composer.getByText(
+        "Uploading…",
+        { exact: true },
+      ),
     ).toBeVisible();
-    await expect(fixture.composer.locator("img")).toHaveCount(1);
+    const remove = fixture.composer.getByRole("button", {
+      name: "Remove board-fresh.png",
+    });
+    await expect(remove).toBeVisible();
+    await remove.click();
+    release();
+    await expect(fixture.send).toBeEnabled();
+    await expect(fixture.composer.locator("img")).toHaveCount(0);
     const outbound = page.waitForRequest(
       (req) =>
         req.method() === "POST" &&
         new URL(req.url()).pathname.endsWith("/comments"),
     );
     await fixture.send.click();
-    expect((await outbound).postDataJSON().attachmentIds.sort()).toEqual(
-      receipts.map((row) => row.id).sort(),
-    );
+    expect((await outbound).postDataJSON().attachmentIds).toBeUndefined();
     await expect.poll(async () => (await fixture.comments()).length).toBe(1);
-    const [comment] = await fixture.comments();
-    const savedBubble = classic
-      ? page.locator(`[id="comment-${comment!.id}"]`)
-      : page.getByTestId("task-chat-human-bubble").filter({
-          hasText:
-            "Inspect only these fresh Board attachments. Keep this internal.",
-        });
-    await expect(savedBubble).toHaveCount(1);
-    expect(comment.body).toContain(receipts[0]!.contentPath);
-    expect(comment.body).toContain(receipts[1]!.contentPath);
-    expect(
-      (await fixture.attachments()).map((item) => item.issueCommentId),
-    ).toEqual([comment.id, comment.id]);
-    for (let index = 0; index < receipts.length; index++) {
-      const downloaded = await request.get(receipts[index]!.contentPath);
-      expect(downloaded.ok()).toBe(true);
-      expect(await downloaded.body()).toEqual(files[index]!.buffer);
-    }
-    await expect
-      .poll(() =>
-        page.evaluate(
-          (key) => localStorage.getItem(`${key}:attachments:v1`),
-          draftKey,
-        ),
-      )
-      .toBeNull();
-    await page.reload();
-    await expect(fixture.editor).toBeEmpty();
-    expect(await fixture.comments()).toHaveLength(1);
-    await expect(savedBubble).toHaveCount(1);
-    await page.screenshot({
-      path: testInfo.outputPath("bound-board-attachments.png"),
-      fullPage: true,
-    });
-  });
-
-  test(`lost accepted response settles from its exact receipt without replay (classic=${classic})`, async ({
-    page,
-    request,
-  }, testInfo) => {
-    const fixture = await setup(page, request, classic);
-    await fixture.editor.fill("Accepted once: inspect this exact file.");
-    const receipt = await upload(page, fixture, files[0]!);
-    let accepted = false;
-    let attempts = 0;
-    let acceptedRequestId: string | undefined;
-    await page.route("**/api/issues/*/comments", async (route) => {
-      if (route.request().method() !== "POST") return route.continue();
-      attempts++;
-      if (accepted) return route.continue();
-      acceptedRequestId = route.request().postDataJSON().clientRequestId;
-      const response = await route.fetch();
-      expect(response.status()).toBe(201);
-      accepted = true;
-      await route.abort("connectionreset");
-    });
-    await fixture.send.click();
-    await expect.poll(() => accepted).toBe(true);
-    expect(await fixture.comments()).toHaveLength(1);
-    expect(acceptedRequestId).toEqual(expect.any(String));
-    expect((await fixture.comments())[0]!.clientRequestId).toBe(acceptedRequestId);
-    expect(
-      (await fixture.attachments()).find((row) => row.id === receipt.id)
-        ?.issueCommentId,
-    ).toBeTruthy();
-    await page.reload();
-    // The durable request receipt proves delivery even though the POST reply
-    // was lost. No manual Review/Discard bookkeeping or blind replay remains.
-    await expect(fixture.editor).toBeEmpty();
-    await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
-    await expect(fixture.composer.getByText("board-fresh.txt", { exact: true })).toHaveCount(0);
-    await expect(fixture.send).toBeDisabled();
-    await fixture.editor.press("Control+Enter");
-    expect(attempts).toBe(1);
-    expect(await fixture.comments()).toHaveLength(1);
-    await page.screenshot({
-      path: testInfo.outputPath("accepted-response-lost.png"),
-      fullPage: true,
-    });
-    expect(
-      (await fixture.attachments()).find((row) => row.id === receipt.id)
-        ?.issueCommentId,
-    ).toBeTruthy();
-    await page.reload();
-    await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
-    await fixture.editor.fill(
-      "A deliberately new comment after the original receipt settled.",
+    expect((await fixture.comments())[0]!.body).not.toContain(
+      "/api/attachments/",
     );
-    await fixture.send.click();
-    await expect.poll(async () => (await fixture.comments()).length).toBe(2);
-  });
-
-  test(`known rejection retains the same uploaded receipt for explicit retry (classic=${classic})`, async ({
-    page,
-    request,
-  }) => {
-    const fixture = await setup(page, request, classic);
-    await fixture.editor.fill("Known rejection, then retry the same file.");
-    const receipt = await upload(page, fixture, files[0]!);
-    let rejected = false;
-    await page.route("**/api/issues/*/comments", async (route) => {
-      if (route.request().method() !== "POST" || rejected)
-        return route.continue();
-      rejected = true;
-      await route.fulfill({
-        status: 422,
-        contentType: "application/json",
-        body: JSON.stringify({ error: "Fixture policy rejected this attempt" }),
-      });
-    });
-    await fixture.send.click();
-    await expect(fixture.editor).toContainText("Known rejection,");
-    await expect(fixture.send).toBeEnabled();
-    expect(await fixture.comments()).toHaveLength(0);
-    await page.reload();
-    await expect(fixture.editor).toContainText("Known rejection,");
-    await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
-    await fixture.send.click();
-    await expect.poll(async () => (await fixture.comments()).length).toBe(1);
-    expect(
-      (await fixture.attachments()).find((row) => row.id === receipt.id)
-        ?.issueCommentId,
-    ).toBeTruthy();
-  });
-
-  test(`reload during a pending save settles its receipt and preserves a newer draft (classic=${classic})`, async ({
-    page,
-    request,
-  }) => {
-    const fixture = await setup(page, request, classic);
-    await fixture.editor.fill("One text-only save interrupted by reload.");
-    let release!: () => void;
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    let accepted = false;
-    let attempts = 0;
-    let acceptedRequestId: string | undefined;
-    await page.route("**/api/issues/*/comments", async (route) => {
-      if (route.request().method() !== "POST") return route.continue();
-      attempts++;
-      acceptedRequestId ??= route.request().postDataJSON().clientRequestId;
-      const response = await route.fetch();
-      expect(response.status()).toBe(201);
-      accepted = true;
-      await held;
-      // Reload cancels the original browser request; the owned server response
-      // has already been observed and must never be replayed by the fixture.
-      await route.fulfill({ response }).catch(() => {});
-    });
-    try {
-      await fixture.send.click();
-      await expect.poll(() => accepted).toBe(true);
-      expect(await fixture.comments()).toHaveLength(1);
-      await fixture.editor.fill("A newer draft written while delivery was pending.");
-      await page.reload();
-      release();
-      await expect(fixture.editor).toHaveText(
-        "A newer draft written while delivery was pending.",
-      );
-      await expect(fixture.composer.getByRole("alert")).toHaveCount(0);
-      await expect(fixture.send).toBeEnabled();
-      expect(attempts).toBe(1);
-      expect(await fixture.comments()).toHaveLength(1);
-      expect(acceptedRequestId).toEqual(expect.any(String));
-      expect((await fixture.comments())[0]!.clientRequestId).toBe(acceptedRequestId);
-      await fixture.send.click();
-      await expect.poll(async () => (await fixture.comments()).length).toBe(2);
-      expect(attempts).toBe(2);
-      expect((await fixture.comments()).map((comment) => comment.body).sort()).toEqual([
-        "A newer draft written while delivery was pending.",
-        "One text-only save interrupted by reload.",
-      ]);
-    } finally {
-      release();
-    }
-  });
-}
-
-for (const classic of [false, true])
-  test(`removed pending inline upload cannot reappear or submit after its HTTP response (classic=${classic})`, async ({
-    page,
-    request,
-  }) => {
-    const fixture = await setup(page, request, classic);
-    await fixture.editor.fill("Send without the removed image.");
-    let release!: () => void;
-    const held = new Promise<void>((resolve) => {
-      release = resolve;
-    });
-    let arrived = false;
-    await page.route(
-      `**/api/companies/${fixture.company.id}/issues/${fixture.issue.id}/attachments`,
-      async (route) => {
-        const response = await route.fetch();
-        arrived = true;
-        await held;
-        await route.fulfill({ response });
-      },
-    );
-    const chooser = await openAttachmentChooser(page, fixture.composer);
-    await chooser.setFiles(files[1]!);
-    await expect.poll(() => arrived).toBe(true);
-    await expect(fixture.send).toBeDisabled();
-    try {
-      await expect(
-        fixture.composer.getByText(
-          classic ? "Uploading to task" : "Uploading…",
-          { exact: true },
-        ),
-      ).toBeVisible();
-      const remove = fixture.composer.getByRole("button", {
-        name: "Remove board-fresh.png",
-      });
-      await expect(remove).toBeVisible();
-      await remove.click();
-      release();
-      await expect(fixture.send).toBeEnabled();
-      await expect(fixture.composer.locator("img")).toHaveCount(0);
-      const outbound = page.waitForRequest(
-        (req) =>
-          req.method() === "POST" &&
-          new URL(req.url()).pathname.endsWith("/comments"),
-      );
-      await fixture.send.click();
-      expect((await outbound).postDataJSON().attachmentIds).toBeUndefined();
-      await expect.poll(async () => (await fixture.comments()).length).toBe(1);
-      expect((await fixture.comments())[0]!.body).not.toContain(
-        "/api/attachments/",
-      );
-      expect((await fixture.attachments())[0]!.issueCommentId).toBeNull();
-    } finally {
-      release();
-    }
-  });
-
-test("legacy failed upload can be removed before sending the retained text", async ({
-  page,
-  request,
-}) => {
-  const fixture = await setup(page, request, true);
-  await fixture.editor.fill("Keep this text after removing the failed file.");
-  await page.route(
-    `**/api/companies/${fixture.company.id}/issues/${fixture.issue.id}/attachments`,
-    (route) =>
-      route.fulfill({
-        status: 500,
-        contentType: "application/json",
-        body: JSON.stringify({ error: "Fixture upload rejected" }),
-      }),
-  );
-  const chooser = await openAttachmentChooser(page, fixture.composer);
-  await chooser.setFiles(files[0]!);
-  await expect(
-    fixture.composer.getByText("Fixture upload rejected", { exact: true }),
-  ).toBeVisible();
-  await expect(fixture.send).toBeDisabled();
-  const remove = fixture.composer.getByRole("button", {
-    name: "Remove board-fresh.txt",
-  });
-  await expect(remove).toBeVisible();
-  await remove.click();
-  await fixture.send.click();
-  await expect.poll(async () => (await fixture.comments()).length).toBe(1);
-  expect((await fixture.comments())[0]!.body).toBe(
-    "Keep this text after removing the failed file.",
-  );
-  expect(await fixture.attachments()).toHaveLength(0);
+    expect((await fixture.attachments())[0]!.issueCommentId).toBeNull();
+  } finally {
+    release();
+  }
 });

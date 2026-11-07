@@ -117,7 +117,6 @@ import { TaskChatComposerDock } from "@/components/task-chat/TaskChatComposerDoc
 import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { useSidebar } from "@/context/SidebarContext";
-import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
 import { useDismissedTaskQuestions } from "@/hooks/useDismissedTaskQuestions";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -479,11 +478,6 @@ function durableInputLabel(
 /**
  * Chat-style task thread — the default task detail experience.
  *
- * Renders the Claude-Code-style thread for the live task. It shares
- * IssueChatThread's exact prop type — so the IssueDetail seam ternary
- * (`classic ? IssueChatThread : TaskChatThread`, flag:
- * `enableClassicTaskInterface`) type-checks with no casts.
- *
  * Two data sources feed the render layer, both reused from the existing thread:
  *   - the comment stream (incl. optimistic echoes) → author-typed bubbles, and
  *   - the live run transcript (useLiveRunTranscripts, the same poll+websocket
@@ -499,7 +493,6 @@ function durableInputLabel(
  * folded row. flag-OFF remains byte-for-byte IssueChatThread.
  */
 export function TaskChatThread(props: TaskChatThreadProps) {
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const {
     initialHistoryPending = false,
     initialHistoryError = false,
@@ -2331,7 +2324,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
     : "";
   const threadContentKey = `${taskChatContentKey(items)}:${tailContentKey}:${tailPlanContentKey}:${blockerContentKey}`;
   const repeatBlockersAtBottom =
-    !streamlinedUiEnabled || shouldRepeatTaskChatBlockers(items);
+    shouldRepeatTaskChatBlockers(items);
   const bottomBlockerLinks = repeatBlockersAtBottom ? (
     liveWorkLinks ? (
       <TaskChatLiveWorkLinks liveWork={liveWorkLinks} placement="bottom" />
@@ -3018,7 +3011,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
           enabled={isMobile && historyRevealed}
         />
         <TaskChatPresentationProvider
-          mode={streamlinedUiEnabled ? "streamlined" : "production"}
+          mode={"streamlined"}
         >
           <div
             className={cn(
@@ -3033,7 +3026,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               frameClassName={cn(
                 "mx-auto w-full max-w-(--tc-shell-max-w) shrink-0 px-4",
                 isMobile ? "pt-4" : "pt-3",
-                streamlinedUiEnabled && "md:px-0",
+                "md:px-0",
               )}
             />
             <div
@@ -3091,7 +3084,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         className={cn(
                           "mx-auto flex w-full max-w-(--tc-shell-max-w) flex-col gap-6 px-4",
                           isMobile ? "pt-4" : "pt-3",
-                          streamlinedUiEnabled && "md:px-0",
+                          "md:px-0",
                         )}
                         data-testid="task-chat-thread-header"
                       >
@@ -3105,7 +3098,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                       <div
                         className={cn(
                           "mx-auto w-full max-w-(--tc-shell-max-w) px-4 pb-4",
-                          streamlinedUiEnabled && "md:px-0",
+                          "md:px-0",
                         )}
                       >
                         {bottomBlockerLinks}
@@ -3237,7 +3230,6 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               <TaskChatComposerDock
                 ref={isMobile ? composerDockRef : undefined}
                 mobile={isMobile}
-                streamlined={streamlinedUiEnabled}
                 reserve={isMobile ? composerReserve : undefined}
                 concealed={!historyRevealed}
               >
