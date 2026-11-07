@@ -5,6 +5,8 @@ import {
   type OmpInstallProbe,
 } from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
 
+const GATE_PROBE_TIMEOUT_MS = 5_000;
+
 export interface OnboardingOmpGateInput {
   adapterType: unknown;
   adapterConfig: unknown;
@@ -14,7 +16,7 @@ export interface OnboardingOmpGateInput {
 export async function onboardingOmpGateFailure(
   input: OnboardingOmpGateInput,
   env: NodeJS.ProcessEnv = process.env,
-  probe: (command: string | null) => Promise<OmpInstallProbe> = (command) => probeOmpInstall({ command, env }),
+  probe: (command: string | null) => Promise<OmpInstallProbe> = (command) => probeOmpInstall({ command, env, timeoutMs: GATE_PROBE_TIMEOUT_MS }),
 ): Promise<string | null> {
   if (input.adapterType !== "omp_local") return null;
   if (typeof input.defaultEnvironmentId === "string" && input.defaultEnvironmentId) return null;

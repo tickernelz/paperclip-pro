@@ -7,6 +7,18 @@ export const FIRST_AGENT_ROLE = "general";
 export const TASK_TITLE_MAX = 120;
 
 export type CheckView = "install" | "old" | "offline" | "ready";
+export const ADMIN_ONLY_MESSAGE = "Only an instance admin can set up OMP on this server.";
+
+export interface StatusFailure {
+  message: string;
+  retry: boolean;
+}
+
+export function statusFailure(error: { status?: unknown; message?: string } | null | undefined): StatusFailure | null {
+  if (!error) return null;
+  if (error.status === 403) return { message: ADMIN_ONLY_MESSAGE, retry: false };
+  return { message: error.message || "Could not check OMP on this server.", retry: true };
+}
 export type ProviderChoice = "anthropic" | "openai-codex" | "openrouter" | "other";
 
 export const PROVIDER_OPTIONS: ReadonlyArray<{ id: ProviderChoice; name: string; detail: string }> = [

@@ -37,6 +37,8 @@ import {
   nextStepAfterCheck,
   nextStepAfterRemote,
   olderCopies,
+  statusFailure,
+  type StatusFailure,
   recommendedModelLabel,
   signedInProvider,
   taskTitle,
@@ -224,12 +226,14 @@ function OmpFilePicker({ open, onOpenChange, onPick }: { open: boolean; onOpenCh
 
 function CheckOmpScreen({
   status,
+  failure,
   command,
   onChooseCommand,
   onRemote,
   onRetry,
 }: {
   status: OnboardingOmpStatus | undefined;
+  failure: StatusFailure | null;
   command: string | null;
   onChooseCommand: (path: string) => void;
   onRemote: () => void;
@@ -245,7 +249,13 @@ function CheckOmpScreen({
     return (
       <>
         <Heading title="Install OMP" lede="Looking for OMP on this computer." />
-        <Checks label="OMP checks" rows={[{ state: "run", label: "Looking for omp", value: "every 2 s" }]} />
+        <Checks
+          label="OMP checks"
+          rows={[failure && !failure.retry
+            ? { state: "bad", label: "Looking for omp", value: "stopped" }
+            : { state: "run", label: "Looking for omp", value: "every 2 s" }]}
+        />
+        {failure ? <Note tone="bad">{failure.message}</Note> : null}
       </>
     );
   }
@@ -576,9 +586,14 @@ function OnboardingFlowDialog({ companyId, onClose }: { companyId: string | null
   const statusQuery = useQuery({
     queryKey: [...OMP_STATUS_KEY, command],
     queryFn: () => onboardingOmpApi.status({ command }),
-    refetchInterval: (query) => (step === 2 && query.state.data ? false : POLL_MS),
+    retry: (count, error) => (statusFailure(error as ApiError)?.retry ?? true) && count < 2,
+    refetchInterval: (query) => {
+      if (statusFailure(query.state.error as ApiError | null)?.retry === false) return false;
+      return step === 2 && query.state.data ? false : POLL_MS;
+    },
   });
   const status = statusQuery.data;
+  const failure = statusFailure(statusQuery.error as ApiError | null);
   const networkQuery = useQuery({
     queryKey: [...OMP_STATUS_KEY, "network", command],
     queryFn: () => onboardingOmpApi.status({ command, network: true }),
@@ -728,6 +743,7 @@ function OnboardingFlowDialog({ companyId, onClose }: { companyId: string | null
             {step === 0 && mode === "local" ? (
               <CheckOmpScreen
                 status={shownStatus}
+                failure={failure}
                 command={command}
                 onChooseCommand={setCommand}
                 onRemote={() => setMode("remote")}
