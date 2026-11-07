@@ -1201,12 +1201,12 @@ describe("MarkdownEditor", () => {
   });
 
   it("keeps mention queries active across spaces", () => {
-    expect(findMentionMatch("Ping @Wardmote App", "Ping @Wardmote App".length)).toEqual({
+    expect(findMentionMatch("Ping @Paperclip App", "Ping @Paperclip App".length)).toEqual({
       trigger: "mention",
       marker: "@",
-      query: "Wardmote App",
+      query: "Paperclip App",
       atPos: 5,
-      endPos: "Ping @Wardmote App".length,
+      endPos: "Ping @Paperclip App".length,
     });
   });
 
@@ -1366,12 +1366,12 @@ describe("MarkdownEditor", () => {
       {
         id: "project:project-123",
         kind: "project" as const,
-        name: "Wardmote App",
+        name: "Paperclip App",
         projectId: "project-123",
         projectColor: "#336699",
       },
     ],
-    matchText = "Wardmote App",
+    matchText = "Paperclip App",
   ): Promise<{ option: HTMLButtonElement; root: ReturnType<typeof createRoot>; menu: HTMLElement }> {
     const root = createRoot(container);
 
@@ -1425,7 +1425,7 @@ describe("MarkdownEditor", () => {
     });
 
     expect(handleChange).toHaveBeenCalledWith(
-      `[@Wardmote App](${buildProjectMentionHref("project-123", "#336699")}) `,
+      `[@Paperclip App](${buildProjectMentionHref("project-123", "#336699")}) `,
     );
 
     await act(async () => {
@@ -1526,7 +1526,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 12 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Wardmote App ${index}`,
+      name: `Paperclip App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));
@@ -1554,7 +1554,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 12 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Wardmote App ${index}`,
+      name: `Paperclip App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));
@@ -1612,7 +1612,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 60 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Wardmote App ${index}`,
+      name: `Paperclip App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));
@@ -1638,7 +1638,7 @@ describe("MarkdownEditor", () => {
     const mentions = Array.from({ length: 12 }, (_, index) => ({
       id: `project:project-${index}`,
       kind: "project" as const,
-      name: `Wardmote App ${index}`,
+      name: `Paperclip App ${index}`,
       projectId: `project-${index}`,
       projectColor: "#336699",
     }));

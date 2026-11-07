@@ -276,7 +276,7 @@ for (const journey of [
         .toBe(true);
       await page.goto(base + prefix + `/agents/${agent.id}/configuration`);
       await page.getByRole("button", { name: "Codex", exact: true }).click();
-      await page.getByRole("button", { name: /Paperclip Runner/ }).click();
+      await page.getByRole("button", { name: /Wardmote Runner/ }).click();
       await page
         .getByRole("button", { name: /^Save(?: changes)?$/ })
         .first()

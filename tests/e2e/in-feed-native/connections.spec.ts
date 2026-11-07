@@ -59,7 +59,7 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
     await expect.poll(async () => (await api('/instance/settings/experimental')).enableNativeRunner).toBe(true);
     await page.goto(base + prefix + `/agents/${agent.id}/configuration`);
     await page.getByRole('button', { name: 'Codex', exact: true }).click();
-    await page.getByRole('button', { name: /Paperclip Runner/ }).click();
+    await page.getByRole('button', { name: /Wardmote Runner/ }).click();
     await page.getByRole('button', { name: 'Save', exact: true }).first().click();
     await expect.poll(async () => (await api(`/agents/${agent.id}`)).adapterType).toBe('paperclip_runner');
     const nativeAgent = await api(`/agents/${agent.id}`);

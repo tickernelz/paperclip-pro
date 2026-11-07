@@ -275,7 +275,7 @@ describe("plugin SDK FileTree bridge", () => {
           onSelectFile: () => undefined,
         }),
       ),
-    ).toThrow('Wardmote plugin UI runtime is not initialized for "FileTree"');
+    ).toThrow('Paperclip plugin UI runtime is not initialized for "FileTree"');
   });
 });
 

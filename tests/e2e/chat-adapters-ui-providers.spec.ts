@@ -494,7 +494,7 @@ test.describe.serial("native chat adapter UI", () => {
 
       if (provider.provider === "slack") {
         await expect(page.getByRole("heading", { name: "Verify Slack connection" })).toBeVisible();
-        await expect(page.getByText("Slack needs to confirm that it can reach your Paperclip instance.")).toBeVisible();
+        await expect(page.getByText("Slack needs to confirm that it can reach your Wardmote instance.")).toBeVisible();
         mock.setWebhookVerified();
         await expect(page.getByRole("heading", { name: "Connect your Slack account" })).toBeVisible();
         await expect(page.getByText("/maya connect", { exact: true })).toBeVisible();
