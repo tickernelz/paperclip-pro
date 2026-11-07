@@ -893,7 +893,7 @@ for (const execution of executions) {
         await setupGitStreamingWorkspace(workspacePath);
       }
       fixtures = execution.task.flow === "first_task"
-        ? await setupFirstTaskFixtures({ page, api, execution, nonce, credentials, observe: value => { fixtures = value; } })
+        ? await setupFirstTaskFixtures({ api, execution, nonce, credentials, observe: value => { fixtures = value; } })
         : await setupLiveFixtures({
         api,
         execution,
