@@ -1,4 +1,5 @@
 import type { DashboardRunActivityDay, HeartbeatRun } from "@tickernelz/paperclip-pro-shared";
+import { cn } from "../lib/utils";
 
 /* ---- Utilities ---- */
 
@@ -69,9 +70,9 @@ function ChartLegend({ items }: { items: { color: string; label: string }[] }) {
   );
 }
 
-export function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
+export function ChartCard({ title, subtitle, className, children }: { title: string; subtitle?: string; className?: string; children: React.ReactNode }) {
   return (
-    <div className="border border-line rounded-lg p-4 space-y-3">
+    <div className={cn("border border-line rounded-lg p-4 space-y-3", className)}>
       <div>
         <h3 className="text-xs font-medium text-ink-3">{title}</h3>
         {subtitle && <span className="text-(length:--text-nano) text-ink-3/60">{subtitle}</span>}

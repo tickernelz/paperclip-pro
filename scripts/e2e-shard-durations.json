@@ -26,6 +26,7 @@
     "tests/e2e/pipelines-tutorial-flow.spec.ts": 30545,
     "tests/e2e/planning-mode-visual-verification.spec.ts": 26193,
     "tests/e2e/project-repositories.spec.ts": 21634,
+    "tests/e2e/responsive-shell.spec.ts": 250000,
     "tests/e2e/runner-e2e-dashboard.spec.ts": 2028,
     "tests/e2e/sidebar-takeover.spec.ts": 19034,
     "tests/e2e/signoff-policy.spec.ts": 12121,

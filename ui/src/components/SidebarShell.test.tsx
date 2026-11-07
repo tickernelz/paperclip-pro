@@ -79,7 +79,7 @@ describe("SidebarShell", () => {
     separator!.setPointerCapture = vi.fn();
 
     act(() => {
-      separator!.dispatchEvent(pointerEvent("pointerdown", 240));
+      separator!.dispatchEvent(pointerEvent("pointerdown", 232));
       separator!.dispatchEvent(pointerEvent("pointermove", 320));
       separator!.dispatchEvent(pointerEvent("pointerup", 320));
     });
@@ -122,8 +122,8 @@ describe("SidebarShell", () => {
     act(() => {
       separator?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     });
-    expect(panel().style.width).toBe("256px");
-    expect(window.localStorage.getItem("test.sidebar.width")).toBe("256");
+    expect(panel().style.width).toBe("248px");
+    expect(window.localStorage.getItem("test.sidebar.width")).toBe("248");
 
     act(() => {
       separator?.dispatchEvent(new KeyboardEvent("keydown", { key: "Home", bubbles: true }));
@@ -146,7 +146,7 @@ describe("SidebarShell", () => {
     });
 
     expect(handle()).toBeNull();
-    expect(panel().style.width).toBe("240px");
+    expect(panel().style.width).toBe("232px");
   });
 
   it("reserves only the rail width when collapsed and hides the resize handle", () => {

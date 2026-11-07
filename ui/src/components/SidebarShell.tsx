@@ -12,7 +12,7 @@ import {
 } from "react";
 import { cn } from "@/lib/utils";
 
-const DEFAULT_SIDEBAR_WIDTH = 240;
+const DEFAULT_SIDEBAR_WIDTH = 232;
 const MIN_SIDEBAR_WIDTH = 208;
 const MAX_SIDEBAR_WIDTH = 420;
 const SIDEBAR_WIDTH_STEP = 16;

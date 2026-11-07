@@ -180,7 +180,7 @@ describe("PropertiesPanel", () => {
     it("falls back to the default width when the stored value is garbage", async () => {
       window.localStorage.setItem("taskChatRedesign.propertiesPaneWidth", "not-a-number");
       await renderPanel();
-      expect(container.querySelector("aside")!.style.width).toBe("322px");
+      expect(container.querySelector("aside")!.style.width).toBe("320px");
     });
 
     it("keeps the collapse-to-0 behavior when the panel is hidden", async () => {

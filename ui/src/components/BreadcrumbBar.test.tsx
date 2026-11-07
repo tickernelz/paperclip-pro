@@ -7,6 +7,7 @@ import { BreadcrumbProvider, useBreadcrumbs } from "../context/BreadcrumbContext
 import { BreadcrumbBar } from "./BreadcrumbBar";
 
 const viewport = vi.hoisted(() => ({ isMobile: false }));
+const dialog = vi.hoisted(() => ({ openNewIssue: vi.fn() }));
 
 vi.mock("@/lib/router", () => ({
   Link: ({ children, className, to }: { children: ReactNode; className?: string; to: string }) => (
@@ -25,6 +26,10 @@ vi.mock("../context/SidebarContext", () => ({
 
 vi.mock("../context/CompanyContext", () => ({
   useCompany: () => ({ selectedCompanyId: "company-1", selectedCompany: { issuePrefix: "TES" } }),
+}));
+
+vi.mock("../context/DialogContext", () => ({
+  useDialogActions: () => dialog,
 }));
 
 vi.mock("../context/PanelContext", () => ({
@@ -103,6 +108,7 @@ describe("BreadcrumbBar", () => {
 
   beforeEach(() => {
     viewport.isMobile = false;
+    dialog.openNewIssue.mockReset();
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -157,6 +163,9 @@ describe("BreadcrumbBar", () => {
     expect(identifier?.previousElementSibling?.textContent).toBe("Hire your first engineer and create a hiring plan");
     expect(identifier?.previousElementSibling?.className).toContain("truncate");
     expect(container.querySelector('button[aria-label="Open sidebar"]')).not.toBeNull();
+    const newTask = container.querySelector<HTMLButtonElement>('button[aria-label="New Task"]');
+    act(() => newTask?.click());
+    expect(dialog.openNewIssue).toHaveBeenCalledOnce();
   });
 
   it("renders a page toolbar in the same persistent row as the task breadcrumb", async () => {

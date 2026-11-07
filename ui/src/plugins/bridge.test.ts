@@ -112,11 +112,17 @@ describe("useHostNavigation mobile drawer behavior", () => {
       value: width,
     });
     if (typeof window.matchMedia !== "function") {
+      const feature = (term: string) => {
+        const match = /\((min|max)-(width|height):\s*(\d+)px\)/.exec(term);
+        if (!match) return false;
+        const actual = match[2] === "width" ? window.innerWidth : window.innerHeight;
+        return match[1] === "min" ? actual >= Number(match[3]) : actual <= Number(match[3]);
+      };
       Object.defineProperty(window, "matchMedia", {
         configurable: true,
         writable: true,
         value: (query: string) => ({
-          matches: /max-width:\s*767px/.test(query) ? width < 768 : false,
+          matches: query.split(",").some((part) => part.split(" and ").every(feature)),
           media: query,
           onchange: null,
           addEventListener: () => undefined,

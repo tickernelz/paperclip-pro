@@ -111,7 +111,7 @@ test("new-task assignee, model, and project sheets scroll by touch and retain th
     });
   });
   await page.goto(`/${company.issuePrefix}/dashboard`);
-  await page.getByRole("navigation", { name: "Mobile navigation" }).getByRole("button", { name: "New Task", exact: true }).tap();
+  await page.locator('[data-slot="mobile-topbar"]').getByRole("button", { name: "New Task", exact: true }).tap();
   const draft = page.getByRole("textbox", { name: "editable markdown" });
   await draft.fill("Keep this touch selection draft");
   const trigger = page.getByRole("button", { name: "Select assignee, model and thinking", exact: true });

@@ -1295,6 +1295,7 @@ export function AgentDetail() {
             })}
           />
           <AgentActionButtons
+            className="flex min-w-0 flex-wrap items-center gap-2"
             agent={currentAgent}
             companyId={resolvedCompanyId}
             assignLabel="Assign Task"
@@ -1797,7 +1798,7 @@ export function AgentOverview({
         <section className="rounded-lg border border-line p-4" aria-labelledby="agent-runtime-heading">
           <div className="mb-4 flex items-center justify-between gap-3">
             <h3 id="agent-runtime-heading" className="text-sm font-medium">Harness / Runtime</h3>
-            <Link className="text-xs text-ink-3 hover:text-ink" to={agentDetailHref(agentRouteId, "runtime")}>Configure</Link>
+            <Link className="inline-flex items-center text-xs text-ink-3 hover:text-ink pointer-coarse:min-h-11" to={agentDetailHref(agentRouteId, "runtime")}>Configure</Link>
           </div>
           <div className="space-y-3">
             <SummaryRow label="Adapter"><span className="text-sm">{getAdapterDisplay(agent.adapterType === "paperclip_runner" && agent.adapterConfig.provider === "openai_dot" ? "openai_dot" : agent.adapterType).label}</span></SummaryRow>
@@ -1821,7 +1822,7 @@ export function AgentOverview({
         <section className="rounded-lg border border-line p-4" aria-labelledby="agent-skills-heading">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h3 id="agent-skills-heading" className="text-sm font-medium">Skills</h3>
-            <Link className="text-xs text-ink-3 hover:text-ink" to={agentDetailHref(agentRouteId, "skills")}>Manage</Link>
+            <Link className="inline-flex items-center text-xs text-ink-3 hover:text-ink pointer-coarse:min-h-11" to={agentDetailHref(agentRouteId, "skills")}>Manage</Link>
           </div>
           {skillNames.length > 0 ? (
             <div className="flex flex-wrap gap-2">
@@ -1839,7 +1840,7 @@ export function AgentOverview({
           <h3 id="agent-recent-tasks-heading" className="text-sm font-medium">Recent Tasks</h3>
           <Link
             to={`/issues?participantAgentId=${agent.id}`}
-            className="text-xs text-ink-3 hover:text-ink transition-colors"
+            className="inline-flex items-center text-xs text-ink-3 hover:text-ink transition-colors pointer-coarse:min-h-11"
           >
             See All &rarr;
           </Link>
